@@ -32,7 +32,7 @@ func TestCasinoWarCuiPresenter_Output_BetPhase(t *testing.T) {
 	setupCasinoWarCuiMockDefaults(m)
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "chips: 1000")
+	assert.Contains(t, result, "チップ: 1000")
 	assert.Contains(t, result, "BET")
 }
 
@@ -65,9 +65,9 @@ func TestCasinoWarCuiPresenter_Output_TieDecision(t *testing.T) {
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "TIE DECISION")
 	assert.Contains(t, result, "INITIAL")
-	assert.Contains(t, result, "ante: 100")
-	assert.Contains(t, result, "player:")
-	assert.Contains(t, result, "dealer:")
+	assert.Contains(t, result, "アンテ: 100")
+	assert.Contains(t, result, "プレイヤー:")
+	assert.Contains(t, result, "ディーラー:")
 }
 
 func TestCasinoWarCuiPresenter_Output_WarDealt(t *testing.T) {
@@ -99,7 +99,7 @@ func TestCasinoWarCuiPresenter_Output_WarDealt(t *testing.T) {
 	assert.Contains(t, result, "WAR DEALT")
 	assert.Contains(t, result, "BURN")
 	assert.Contains(t, result, "WAR")
-	assert.Contains(t, result, "warBet: 100")
+	assert.Contains(t, result, "ウォーベット: 100")
 }
 
 func TestCasinoWarCuiPresenter_Output_EndWin(t *testing.T) {
@@ -121,8 +121,8 @@ func TestCasinoWarCuiPresenter_Output_EndWin(t *testing.T) {
 	m.On("GetTotalPayout").Return(200)
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "Player wins")
-	assert.Contains(t, result, "total payout: 200")
+	assert.Contains(t, result, "プレイヤーの勝ち")
+	assert.Contains(t, result, "合計払戻し: 200")
 }
 
 func TestCasinoWarCuiPresenter_Output_EndLose(t *testing.T) {
@@ -141,7 +141,7 @@ func TestCasinoWarCuiPresenter_Output_EndLose(t *testing.T) {
 	m.On("GetResult").Return(domain.GameResultLose)
 	m.On("GetTotalPayout").Return(0)
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "Player loses")
+	assert.Contains(t, result, "プレイヤーの負け")
 }
 
 func TestCasinoWarCuiPresenter_Output_EndPush(t *testing.T) {
@@ -160,7 +160,7 @@ func TestCasinoWarCuiPresenter_Output_EndPush(t *testing.T) {
 	m.On("GetResult").Return(domain.GameResultDraw)
 	m.On("GetTotalPayout").Return(100)
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "Push")
+	assert.Contains(t, result, "プッシュ")
 }
 
 func TestCasinoWarCuiPresenter_PhaseStr_AllBranches(t *testing.T) {

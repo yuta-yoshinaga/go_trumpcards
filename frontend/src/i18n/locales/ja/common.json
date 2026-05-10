@@ -95,7 +95,10 @@
     "egyptianratscrew": "エジプシャン・ラットスクリュー",
     "bakersdozen": "ベーカーズ・ダズン",
     "tonk": "トンク",
-    "casinowar": "カジノウォー"
+    "casinowar": "カジノウォー",
+    "dragontiger": "ドラゴンタイガー",
+    "blackjackswitch": "ブラックジャック・スイッチ",
+    "montecarlo": "モンテカルロ・ソリティア"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -107,7 +110,15 @@
   "settings": {
     "title": "設定",
     "showHelp": "説明を表示",
-    "hideHelp": "説明を非表示"
+    "hideHelp": "説明を非表示",
+    "replaySpeed": {
+      "title": "アニメーション設定",
+      "label": "CPUアニメーション速度",
+      "tooltip": "CPUターンのアニメーション再生速度を切り替えます。Fast は約3倍速、Instant はアニメーションを一気に進めます。",
+      "normal": "Normal",
+      "fast": "Fast",
+      "instant": "Instant"
+    }
   },
   "player": {
     "you": "あなた",

@@ -613,6 +613,69 @@ type fortyThievesJSON struct {
 	MoveCount   int                                                `json:"mc"`
 	ActionLog   []*ActionLogEntry                                  `json:"al"`
 	IsStalemate bool                                               `json:"sl"`
+	History     []*fortyThievesSnapshot                            `json:"hi,omitempty"`
+}
+
+// fortyThievesSnapshotJSON is the wire format for a single undo snapshot.
+// fortyThievesSnapshot uses unexported fields, so we project to/from this
+// shape with explicit Marshal/Unmarshal methods. Field names match
+// fortyThievesJSON's short keys to keep the KV payload compact (#1654).
+type fortyThievesSnapshotJSON struct {
+	Tableau     [FortyThievesTableauCnt][]*FortyThievesTableauCard `json:"tb"`
+	Stock       []*Card                                            `json:"st"`
+	Waste       []*Card                                            `json:"wa"`
+	Foundation  [FortyThievesFoundationCnt][]*Card                 `json:"fd"`
+	Phase       FortyThievesPhase                                  `json:"ps"`
+	MoveCount   int                                                `json:"mc"`
+	IsStalemate bool                                               `json:"sl"`
+}
+
+// MarshalJSON implements json.Marshaler for fortyThievesSnapshot.
+func (s *fortyThievesSnapshot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(fortyThievesSnapshotJSON{
+		Tableau:     s.tableau,
+		Stock:       s.stock,
+		Waste:       s.waste,
+		Foundation:  s.foundation,
+		Phase:       s.phase,
+		MoveCount:   s.moveCount,
+		IsStalemate: s.isStalemate,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler for fortyThievesSnapshot.
+func (s *fortyThievesSnapshot) UnmarshalJSON(data []byte) error {
+	var j fortyThievesSnapshotJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Stock) > fortyThievesMaxSliceLen || len(j.Waste) > fortyThievesMaxSliceLen {
+		return fmt.Errorf("fortythieves: snapshot array exceeds maximum allowed size")
+	}
+	for _, col := range j.Tableau {
+		if len(col) > fortyThievesMaxSliceLen {
+			return fmt.Errorf("fortythieves: snapshot tableau column exceeds maximum allowed size")
+		}
+	}
+	for _, pile := range j.Foundation {
+		if len(pile) > fortyThievesMaxSliceLen {
+			return fmt.Errorf("fortythieves: snapshot foundation pile exceeds maximum allowed size")
+		}
+	}
+	s.tableau = j.Tableau
+	s.stock = j.Stock
+	if s.stock == nil {
+		s.stock = make([]*Card, 0)
+	}
+	s.waste = j.Waste
+	if s.waste == nil {
+		s.waste = make([]*Card, 0)
+	}
+	s.foundation = j.Foundation
+	s.phase = j.Phase
+	s.moveCount = j.MoveCount
+	s.isStalemate = j.IsStalemate
+	return nil
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -627,6 +690,7 @@ func (ft *FortyThieves) MarshalJSON() ([]byte, error) {
 		MoveCount:   ft.moveCount,
 		ActionLog:   ft.actionLog,
 		IsStalemate: ft.isStalemate,
+		History:     ft.history,
 	})
 }
 
@@ -640,8 +704,18 @@ func (ft *FortyThieves) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if len(j.Stock) > fortyThievesMaxSliceLen || len(j.Waste) > fortyThievesMaxSliceLen ||
-		len(j.ActionLog) > fortyThievesMaxSliceLen {
+		len(j.ActionLog) > fortyThievesMaxSliceLen || len(j.History) > fortyThievesMaxSliceLen {
 		return fmt.Errorf("fortythieves: input array exceeds maximum allowed size")
+	}
+	for _, col := range j.Tableau {
+		if len(col) > fortyThievesMaxSliceLen {
+			return fmt.Errorf("fortythieves: tableau column exceeds maximum allowed size")
+		}
+	}
+	for _, pile := range j.Foundation {
+		if len(pile) > fortyThievesMaxSliceLen {
+			return fmt.Errorf("fortythieves: foundation pile exceeds maximum allowed size")
+		}
 	}
 
 	ft.trumpCards = j.TrumpCards
@@ -664,8 +738,10 @@ func (ft *FortyThieves) UnmarshalJSON(data []byte) error {
 	if ft.actionLog == nil {
 		ft.actionLog = make([]*ActionLogEntry, 0)
 	}
-	// Undo history is not serialised; set to nil on restore.
-	ft.history = nil
+	ft.history = j.History
+	if ft.history == nil {
+		ft.history = make([]*fortyThievesSnapshot, 0)
+	}
 	ft.isStalemate = j.IsStalemate
 	return nil
 }

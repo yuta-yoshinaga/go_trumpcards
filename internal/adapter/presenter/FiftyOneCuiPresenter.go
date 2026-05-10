@@ -1,80 +1,86 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// FiftyOneCuiPresenter フィフティワンCUIプレゼンタークラス
+// FiftyOneCuiPresenter renders the Fifty-one CUI view.
 type FiftyOneCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *FiftyOneCuiPresenter) Output(fo interfaces.FiftyOneGame, lastErr error) string {
-	return buildCuiOutput("Fifty-one (フィフティワン)", func(b *strings.Builder) {
-		// 各プレイヤー情報
+	return buildCuiOutput(i18n.T("fiftyone.outputTitle"), func(b *strings.Builder) {
+		// Per-player info
 		for i := 0; i < fo.GetPlayerCnt(); i++ {
 			player := fo.GetPlayer(i)
 			b.WriteString(cuiPlayerName(player, i))
 			score := player.BestSuitScore()
 			if player.GetIsHuman() {
-				fmt.Fprintf(b, " (スコア: %d)\n", score)
-				b.WriteString(cuiIndexedCardListStr(player))
-				b.WriteString("\n")
+				b.WriteString(i18n.Tf("fiftyone.humanScoreLine",
+					"score", strconv.Itoa(score)) + "\n")
+				b.WriteString(cuiIndexedCardListStr(player) + "\n")
 			} else {
-				scoreStr := "?"
+				scoreStr := i18n.T("fiftyone.scoreUnknown")
 				if fo.GetGameEndFlag() {
-					scoreStr = fmt.Sprintf("%d", score)
+					scoreStr = strconv.Itoa(score)
 				}
-				fmt.Fprintf(b, ": %d枚 (スコア: %s)\n", player.GetCardsSize(), scoreStr)
+				b.WriteString(i18n.Tf("fiftyone.cpuScoreLine",
+					"count", strconv.Itoa(player.GetCardsSize()),
+					"score", scoreStr) + "\n")
 			}
 		}
 
-		// 場札
+		// Table cards
 		b.WriteString("----------\n")
-		b.WriteString("場札: ")
+		b.WriteString(i18n.T("fiftyone.tableHeader"))
 		tableCards := fo.GetTableCards()
 		for i, c := range tableCards {
 			if i > 0 {
 				b.WriteString("  ")
 			}
-			fmt.Fprintf(b, "[%d]%s", i, cuiCardStr(c))
+			b.WriteString(i18n.Tf("fiftyone.tableCard",
+				"idx", strconv.Itoa(i),
+				"card", cuiCardStr(c)))
 		}
 		b.WriteString("\n")
 
-		// ストップ状態
+		// Stop state
 		if fo.GetStopCallerIdx() >= 0 {
 			callerName := cuiPlayerName(fo.GetPlayer(fo.GetStopCallerIdx()), fo.GetStopCallerIdx())
-			fmt.Fprintf(b, "⚠ %s がストップ宣言！\n", callerName)
+			b.WriteString(i18n.Tf("fiftyone.stopCalled", "name", callerName) + "\n")
 		}
 
 		b.WriteString("----------\n")
 
-		if lastErr != nil {
-			b.WriteString("Error: " + lastErr.Error() + "\n")
-		}
+		cuiErrorBlock(b, lastErr)
 
 		if fo.GetGameEndFlag() {
-			b.WriteString("=== ゲーム終了 ===\n")
+			b.WriteString(i18n.T("fiftyone.gameEndHeader") + "\n")
 			for i := 0; i < fo.GetPlayerCnt(); i++ {
 				name := cuiPlayerName(fo.GetPlayer(i), i)
-				fmt.Fprintf(b, "  %s: %d点\n", name, fo.GetPlayer(i).BestSuitScore())
+				b.WriteString(i18n.Tf("fiftyone.scoreEntry",
+					"name", name,
+					"score", strconv.Itoa(fo.GetPlayer(i).BestSuitScore())) + "\n")
 			}
 			winnerIdx := fo.GetWinnerIdx()
 			winner := fo.GetPlayer(winnerIdx)
 			if winner != nil && winner.GetIsHuman() {
-				b.WriteString("あなたの勝ち！\n")
+				b.WriteString(i18n.T("fiftyone.winHuman") + "\n")
 			} else {
-				fmt.Fprintf(b, "CPU %dの勝ち！\n", winnerIdx)
+				b.WriteString(i18n.Tf("fiftyone.winCpu",
+					"idx", strconv.Itoa(winnerIdx)) + "\n")
 			}
 		} else if fo.IsHumanTurn() {
-			b.WriteString("あなたのターン: p <手札番号> <場札番号> / a (全交換) / stop\n")
+			b.WriteString(i18n.T("fiftyone.promptHumanTurn") + "\n")
 		}
 	})
 }
 
-// ActionLogOutput 棋譜を文字列出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *FiftyOneCuiPresenter) ActionLogOutput(fo interfaces.FiftyOneGame) string {
 	return actionLogOutputText(fo)
 }

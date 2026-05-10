@@ -5,5 +5,17 @@
   "helpStop": "  stop                   call stop",
   "helpSetDifficulty": "  sd <0-2>               CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "result.humanWin": "Game over! You win!",
-  "result.cpuWin": "Game over! CPU {{cpuId}} wins!"
+  "result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+  "outputTitle": "Fifty-one",
+  "humanScoreLine": " (score: {{score}})",
+  "cpuScoreLine": ": {{count}} cards (score: {{score}})",
+  "scoreUnknown": "?",
+  "tableHeader": "Table: ",
+  "tableCard": "[{{idx}}]{{card}}",
+  "stopCalled": "⚠ {{name}} called stop!",
+  "gameEndHeader": "=== Game over ===",
+  "scoreEntry": "  {{name}}: {{score}}",
+  "winHuman": "You win!",
+  "winCpu": "CPU {{idx}} wins!",
+  "promptHumanTurn": "Your turn: p <handIdx> <tableIdx> / a (swap all) / stop"
 }

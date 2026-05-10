@@ -521,6 +521,54 @@ type russianSolitaireJSON struct {
 	MoveCount   int                                                `json:"mc"`
 	ActionLog   []*ActionLogEntry                                  `json:"al"`
 	IsStalemate bool                                               `json:"sl"`
+	History     []*russianSolitaireSnapshot                        `json:"hi,omitempty"`
+}
+
+// russianSolitaireSnapshotJSON is the wire format for a single undo
+// snapshot. russianSolitaireSnapshot uses unexported fields, so we project
+// to/from this shape with explicit Marshal/Unmarshal methods. Field names
+// match russianSolitaireJSON's short keys to keep the KV payload compact (#1654).
+type russianSolitaireSnapshotJSON struct {
+	Tableau     [RussianSolitaireTableauCnt][]*KlondikeTableauCard `json:"tb"`
+	Foundation  [RussianSolitaireFoundationCnt][]*Card             `json:"fd"`
+	Phase       RussianSolitairePhase                              `json:"ps"`
+	MoveCount   int                                                `json:"mc"`
+	IsStalemate bool                                               `json:"sl"`
+}
+
+// MarshalJSON implements json.Marshaler for russianSolitaireSnapshot.
+func (s *russianSolitaireSnapshot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(russianSolitaireSnapshotJSON{
+		Tableau:     s.tableau,
+		Foundation:  s.foundation,
+		Phase:       s.phase,
+		MoveCount:   s.moveCount,
+		IsStalemate: s.isStalemate,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler for russianSolitaireSnapshot.
+func (s *russianSolitaireSnapshot) UnmarshalJSON(data []byte) error {
+	var j russianSolitaireSnapshotJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	for _, col := range j.Tableau {
+		if len(col) > russianSolitaireMaxSliceLen {
+			return fmt.Errorf("russiansolitaire: snapshot tableau column exceeds maximum allowed size")
+		}
+	}
+	for _, pile := range j.Foundation {
+		if len(pile) > russianSolitaireMaxSliceLen {
+			return fmt.Errorf("russiansolitaire: snapshot foundation pile exceeds maximum allowed size")
+		}
+	}
+	s.tableau = j.Tableau
+	s.foundation = j.Foundation
+	s.phase = j.Phase
+	s.moveCount = j.MoveCount
+	s.isStalemate = j.IsStalemate
+	return nil
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -533,6 +581,7 @@ func (y *RussianSolitaire) MarshalJSON() ([]byte, error) {
 		MoveCount:   y.moveCount,
 		ActionLog:   y.actionLog,
 		IsStalemate: y.isStalemate,
+		History:     y.history,
 	})
 }
 
@@ -545,12 +594,18 @@ func (y *RussianSolitaire) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if len(j.ActionLog) > russianSolitaireMaxSliceLen {
+	if len(j.ActionLog) > russianSolitaireMaxSliceLen ||
+		len(j.History) > russianSolitaireMaxSliceLen {
 		return fmt.Errorf("russiansolitaire: input array exceeds maximum allowed size")
 	}
-	for i := range RussianSolitaireTableauCnt {
-		if len(j.Tableau[i]) > russianSolitaireMaxSliceLen {
-			return fmt.Errorf("russiansolitaire: input array exceeds maximum allowed size")
+	for _, col := range j.Tableau {
+		if len(col) > russianSolitaireMaxSliceLen {
+			return fmt.Errorf("russiansolitaire: tableau column exceeds maximum allowed size")
+		}
+	}
+	for _, pile := range j.Foundation {
+		if len(pile) > russianSolitaireMaxSliceLen {
+			return fmt.Errorf("russiansolitaire: foundation pile exceeds maximum allowed size")
 		}
 	}
 
@@ -566,8 +621,10 @@ func (y *RussianSolitaire) UnmarshalJSON(data []byte) error {
 	if y.actionLog == nil {
 		y.actionLog = make([]*ActionLogEntry, 0)
 	}
-	// Undo history is not serialised; set to nil on restore.
-	y.history = nil
+	y.history = j.History
+	if y.history == nil {
+		y.history = make([]*russianSolitaireSnapshot, 0)
+	}
 	y.isStalemate = j.IsStalemate
 	return nil
 }

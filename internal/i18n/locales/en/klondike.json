@@ -9,5 +9,15 @@
   "helpFoundation": "  f [<col>]            move to foundation (waste or tableau)",
   "helpGiveUp": "  g                    give up",
   "helpHint": "  h                    hint",
-  "helpAutoComplete": "  ac                   auto-complete"
+  "helpAutoComplete": "  ac                   auto-complete",
+  "foundationHeader": "Foundation: ",
+  "stockLine": "Stock: {{count}}",
+  "wasteCard": " | Waste: {{card}}",
+  "wasteEmpty": " | Waste: [empty]",
+  "columnLabel": "Column {{col}}:",
+  "hintFromTableau": "tableau column {{col}}[{{idx}}]",
+  "hintFromWaste": "waste",
+  "hintToFoundation": "foundation",
+  "hintToTableau": "tableau column {{col}}",
+  "hintLine": "Hint: {{from}} → {{to}}"
 }

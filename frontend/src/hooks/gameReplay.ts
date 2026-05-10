@@ -1,8 +1,19 @@
+import { getReplaySpeedMultiplier } from './useReplaySpeed';
+
 /** Default delay in milliseconds between replay animation steps. */
 export const REPLAY_DELAY_MS = 800;
 
 /** Return a promise that resolves after the given milliseconds. */
 export const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Apply the user's CPU replay speed preference (#1649) to a base delay.
+ * Multiplier is read fresh from localStorage so settings changes take effect
+ * on the very next replay step.
+ */
+function scaledDelay(baseMs: number): number {
+  return Math.round(baseMs * getReplaySpeedMultiplier());
+}
 
 /** Configuration for the replay animation runner. */
 export interface ReplayConfig<TState> {
@@ -38,7 +49,7 @@ export async function runReplay<TState>(
   const humanState = config.buildHumanActionState?.(finalState) ?? null;
   if (humanState) {
     setDisplayState(humanState);
-    await delay(REPLAY_DELAY_MS);
+    await delay(scaledDelay(REPLAY_DELAY_MS));
   }
 
   const replayStates = config.buildReplayStates(finalState);
@@ -50,7 +61,7 @@ export async function runReplay<TState>(
   for (let i = 0; i < replayStates.length; i++) {
     setDisplayState(replayStates[i]);
     const actionDelay = config.getActionDelay?.(finalState, i) ?? REPLAY_DELAY_MS;
-    await delay(actionDelay);
+    await delay(scaledDelay(actionDelay));
   }
 
   setDisplayState(finalState);

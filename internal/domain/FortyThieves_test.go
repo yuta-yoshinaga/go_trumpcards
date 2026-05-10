@@ -712,7 +712,7 @@ func TestFortyThieves_JSON(t *testing.T) {
 		assert.Equal(t, ft.GetMoveCount(), ft2.GetMoveCount())
 		assert.Equal(t, ft.GetStockCount(), ft2.GetStockCount())
 		assert.Equal(t, len(ft.GetWaste()), len(ft2.GetWaste()))
-		assert.False(t, ft2.CanUndo()) // history not serialized
+		assert.True(t, ft2.CanUndo()) // history is now serialized (#1654)
 	})
 
 	t.Run("unmarshal with nil trumpCards", func(t *testing.T) {

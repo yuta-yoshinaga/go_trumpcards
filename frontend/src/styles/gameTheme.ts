@@ -20,6 +20,8 @@ export type GameKey =
   | 'letitride'
   | 'reddog'
   | 'casinowar'
+  | 'dragontiger'
+  | 'blackjackswitch'
   // Poker
   | 'poker'
   | 'holdem'
@@ -85,6 +87,7 @@ export type GameKey =
   | 'scorpion'
   | 'accordion'
   | 'pokersquares'
+  | 'montecarlo'
   | 'calculation'
   // Counting/Rummy
   | 'ginrummy'
@@ -122,6 +125,8 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   letitride: CASINO,
   reddog: CASINO,
   casinowar: CASINO,
+  dragontiger: CASINO,
+  blackjackswitch: BRIGHT_GREEN,
   // Poker
   poker: POKER,
   holdem: POKER,
@@ -187,6 +192,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   scorpion: CASINO,
   accordion: CASINO,
   pokersquares: CASINO,
+  montecarlo: CASINO,
   calculation: CASINO,
   // Counting/Rummy
   ginrummy: BLUE,

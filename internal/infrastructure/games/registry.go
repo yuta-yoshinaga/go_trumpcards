@@ -5,7 +5,7 @@
 // binaries (TinyGo / WASM) stay under the 1 MB gzipped free-tier limit:
 //
 //   - registry.go (this file, no tag)  — types and bare metadata (Name +
-//     Category) for all 77 games. Cheap; no references to game code.
+//     Category) for all 80 games. Cheap; no references to game code.
 //   - games_server.go (!js || !wasm)   — installs Web-server factories for
 //     every game via BindWebController. Imported by TrumpCardsWeb.
 //   - casino/, classic/, solo/ (js && wasm) — per-category worker bindings.
@@ -163,6 +163,9 @@ var registry = []*Game{
 	{Name: "tonk", Category: CategoryClassic, Description: "Tonk (トンク)"},
 	{Name: "casinowar", Category: CategoryCasino, Description: "Casino War (カジノウォー)"},
 	{Name: "pitch", Category: CategoryClassic, Description: "Pitch / Setback (ピッチ / セットバック)"},
+	{Name: "dragontiger", Category: CategoryCasino, Description: "Dragon Tiger (ドラゴンタイガー)"},
+	{Name: "blackjackswitch", Category: CategoryCasino, Description: "Blackjack Switch (ブラックジャック・スイッチ)"},
+	{Name: "montecarlo", Category: CategorySolo, Description: "Monte Carlo Solitaire (モンテカルロ・ソリティア)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.
@@ -186,6 +189,16 @@ func ByCategory(cat Category) []Game {
 		}
 	}
 	return out
+}
+
+// AllCategories returns every Category value in canonical display order
+// (casino, classic, solo). The returned slice is fresh per call so callers
+// cannot mutate package state. Adding a new Category value to the iota above
+// requires extending this slice — that intentional coupling is the SSoT
+// guarantee that consumers (e.g. the CLI --help summary) cannot drift out
+// of sync with the registry.
+func AllCategories() []Category {
+	return []Category{CategoryCasino, CategoryClassic, CategorySolo}
 }
 
 // descriptionCache holds Name→Description for every registered game. Built

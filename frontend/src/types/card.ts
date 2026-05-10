@@ -2927,6 +2927,49 @@ export interface PokerSquaresResponse {
   messageParams?: Record<string, string>;
 }
 
+// --- Monte Carlo Solitaire (モンテカルロ・ソリティア) ---
+
+/** Single cell of the 5x5 Monte Carlo board. */
+export interface MonteCarloBoardCell {
+  /** Card on this cell, or `null` when empty (gap awaiting compression). */
+  card: Card | null;
+}
+
+/** Suggested hint for Monte Carlo Solitaire. */
+export interface MonteCarloHint {
+  /** "remove" suggests a pair to take off; "deal" suggests pressing the Deal button. */
+  action: 'remove' | 'deal';
+  /** First cell of the pair (for `action === 'remove'`). */
+  fromR?: number;
+  fromC?: number;
+  /** Second cell of the pair (for `action === 'remove'`). */
+  toR?: number;
+  toC?: number;
+}
+
+/** Monte Carlo Solitaire API response. */
+export interface MonteCarloResponse {
+  /** 5x5 board. Empty cells (post-removal, pre-deal) have `card === null`. */
+  board: MonteCarloBoardCell[][];
+  /** 0 = playing, 1 = game clear, 2 = game over. */
+  phase: number;
+  /** Cards remaining in the stock (52 - drawn so far). */
+  stockCount: number;
+  /** Cards removed from the board so far (must hit 52 to win). */
+  removedCount: number;
+  /** Number of times the player has pressed Deal. */
+  dealCount: number;
+  /** Whether the last action can be undone. */
+  canUndo: boolean;
+  /** True when no remove pairs exist and the stock cannot help. */
+  isStalemate: boolean;
+  /** Server-generated hint, present only on `/montecarlo/exec` with `command: "hint"`. */
+  hint?: MonteCarloHint;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
 // --- Let It Ride (レット・イット・ライド) ---
 
 /** Let It Ride API response. */
@@ -2992,6 +3035,70 @@ export interface CasinoWarResponse {
   /** Additional bet placed when going to war (equal to ante). */
   warBet: number;
   result: number;
+  totalPayout: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
+/** Dragon Tiger game state response. Bet types: 0=Dragon, 1=Tiger, 2=Tie. */
+export interface DragonTigerResponse {
+  /** Card dealt to the Dragon slot. */
+  dragonCard?: Card;
+  /** Card dealt to the Tiger slot. */
+  tigerCard?: Card;
+  phase: number;
+  chips: number;
+  betAmount: number;
+  /** 0=Dragon, 1=Tiger, 2=Tie */
+  betType: number;
+  /** Domain GameResult: 1=Win (Dragon), 2=Lose (Tiger), 3=Draw (Tie) */
+  result: number;
+  payout: number;
+  /** Big Road history. 0=Dragon, 1=Tiger, 2=Tie. */
+  history: number[];
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
+/** A single hand within a Blackjack Switch round. */
+export interface BlackJackSwitchHand {
+  /** Cards in this hand. Null entries represent face-down cards (e.g. dealer hole). */
+  cards: (Card | null)[];
+  score: number;
+  bet: number;
+  stood: boolean;
+  doubled: boolean;
+  busted: boolean;
+  /** True when the hand is a 2-card 21 (natural). Pays 1:1 in Blackjack Switch. */
+  isBJ: boolean;
+  /** Domain GameResult: 1=Win, 0=Draw, -1=Lose. */
+  result: number;
+  /** Per-hand payout (bet returned + winnings). */
+  payout: number;
+}
+
+/** Blackjack Switch game state response. */
+export interface BlackJackSwitchResponse {
+  /** Two player hands; the player may switch the second card between them. */
+  hands: BlackJackSwitchHand[];
+  /** Dealer's cards. The hole card is null until the round ends. */
+  dealerCards: (Card | null)[];
+  /** Visible dealer score (up-card only mid-round; full score at end). */
+  dealerScore: number;
+  /** 1=BET, 2=SWITCH, 3=ACTION, 4=END. */
+  phase: number;
+  /** Index of the player hand currently acting (during ACTION phase). */
+  currentHandIdx: number;
+  chips: number;
+  /** True when the player exercised the switch this round. */
+  switched: boolean;
+  /** True when the dealer ended on 22 (push rule, not natural BJ). */
+  dealerPushed22: boolean;
+  /** Aggregate of hand results: 1=net win, 0=draw, -1=net loss. */
+  overallResult: number;
+  /** Sum of per-hand payouts. */
   totalPayout: number;
   message: string;
   messageCode?: string;
@@ -3148,6 +3255,8 @@ export interface SpiteAndMaliceResponse {
   winner: number;
   goalSize: number;
   cpuDifficulty: number;
+  /** True when the human can auto-complete at least one foundation move on their turn. */
+  canAutoComplete: boolean;
   hint?: SpiteAndMaliceHint;
   message: string;
   messageCode?: string;

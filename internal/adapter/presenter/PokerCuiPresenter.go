@@ -2,161 +2,160 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// PokerCuiPresenter ポーカーCUIプレゼンタークラス
+// PokerCuiPresenter renders the 5-Card Draw Poker CUI view.
 type PokerCuiPresenter struct{}
 
-// Output ゲーム状態を出力
+// Output renders the current game state for the active locale (#1699).
 func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) string {
-	var b strings.Builder
-	players := p.GetPlayers()
-
-	b.WriteString("==========\n")
+	titleKey := "poker.outputTitle"
 	if p.GetConfig().IsLowball {
-		b.WriteString("5-Card Draw Poker [2-7 Lowball]\n")
-	} else {
-		b.WriteString("5-Card Draw Poker\n")
+		titleKey = "poker.outputTitleLowball"
 	}
-	b.WriteString("==========\n")
+	return buildCuiOutput(i18n.T(titleKey), func(b *strings.Builder) {
+		players := p.GetPlayers()
 
-	// ディーラー位置
-	fmt.Fprintf(&b, "ディーラー: Player %d\n", p.GetDealerIdx())
+		b.WriteString(i18n.Tf("poker.dealerLine", "idx", strconv.Itoa(p.GetDealerIdx())) + "\n")
+		b.WriteString(i18n.Tf("poker.potLine", "pot", strconv.Itoa(p.GetPot())) + "\n")
 
-	// ポット
-	fmt.Fprintf(&b, "ポット: %d\n", p.GetPot())
-
-	// ジョーカー枚数
-	if p.GetConfig().JokerCount > 0 {
-		fmt.Fprintf(&b, "ジョーカー: %d枚\n", p.GetConfig().JokerCount)
-	}
-
-	// ベッティングリミット
-	cfg := p.GetConfig()
-	if int(cfg.BettingLimit) < len(domain.BettingLimitNames) {
-		fmt.Fprintf(&b, "リミット: %s\n", domain.BettingLimitNames[cfg.BettingLimit])
-	}
-
-	// プレイヤー情報
-	b.WriteString("----------\n")
-	isEnd := p.GetPhase() == domain.PokerPhaseEnd
-	for i, player := range players {
-		b.WriteString(cuiPlayerNameWithStyle(player, i))
-
-		fmt.Fprintf(&b, " チップ:%d", player.GetChips())
-
-		if player.GetFolded() {
-			b.WriteString(" " + color.BoldYellow("[フォールド]"))
-		} else if player.GetAllIn() {
-			b.WriteString(" " + color.BoldYellow("[オールイン]"))
+		if p.GetConfig().JokerCount > 0 {
+			b.WriteString(i18n.Tf("poker.jokerLine", "count", strconv.Itoa(p.GetConfig().JokerCount)) + "\n")
 		}
 
-		if player.GetCurrentBet() > 0 {
-			fmt.Fprintf(&b, " ベット:%d", player.GetCurrentBet())
+		cfg := p.GetConfig()
+		if int(cfg.BettingLimit) < len(domain.BettingLimitNames) {
+			b.WriteString(i18n.Tf("poker.limitLine", "name", domain.BettingLimitNames[cfg.BettingLimit]) + "\n")
 		}
 
-		if player.GetExchangeCount() > 0 && (p.GetPhase() == domain.PokerPhaseSecondBet || isEnd) {
-			fmt.Fprintf(&b, " 交換:%d枚", player.GetExchangeCount())
-		}
-		b.WriteString("\n")
-
-		// 人間の手札は常に表示
-		if player.GetIsHuman() && !player.GetFolded() {
-			handStr := cuiIndexedCardListStrEmoji(player)
-			if isEnd {
-				fmt.Fprintf(&b, "  手札: %s  [%s]\n", handStr, player.GetHandName())
-			} else {
-				fmt.Fprintf(&b, "  手札: %s\n", handStr)
-			}
-		}
-
-		// CPUの手札は終了時のみ表示
-		if !player.GetIsHuman() && isEnd && !player.GetFolded() {
-			fmt.Fprintf(&b, "  手札: %s  [%s]\n", cuiCardListStrEmoji(player), player.GetHandName())
-		}
-	}
-
-	// CPU行動記録
-	cpuActions := p.GetCpuActions()
-	if len(cpuActions) > 0 {
 		b.WriteString("----------\n")
-		b.WriteString(color.Bold("[CPU行動]") + "\n")
-		for _, action := range cpuActions {
-			fmt.Fprintf(&b, "  Player %d: %s", action.PlayerIdx, cuiBettingActionName(action.Action))
-			if action.Amount > 0 {
-				fmt.Fprintf(&b, " (%d)", action.Amount)
+		isEnd := p.GetPhase() == domain.PokerPhaseEnd
+		for i, player := range players {
+			b.WriteString(cuiPlayerNameWithStyle(player, i))
+			b.WriteString(i18n.Tf("poker.playerChips", "chips", strconv.Itoa(player.GetChips())))
+
+			if player.GetFolded() {
+				b.WriteString(color.BoldYellow(i18n.T("poker.playerFolded")))
+			} else if player.GetAllIn() {
+				b.WriteString(color.BoldYellow(i18n.T("poker.playerAllIn")))
+			}
+
+			if player.GetCurrentBet() > 0 {
+				b.WriteString(i18n.Tf("poker.playerBet", "bet", strconv.Itoa(player.GetCurrentBet())))
+			}
+
+			if player.GetExchangeCount() > 0 && (p.GetPhase() == domain.PokerPhaseSecondBet || isEnd) {
+				b.WriteString(i18n.Tf("poker.playerExchange", "count", strconv.Itoa(player.GetExchangeCount())))
 			}
 			b.WriteString("\n")
-		}
-	}
 
-	// CPU交換記録
-	cpuExchanges := p.GetCpuExchanges()
-	if len(cpuExchanges) > 0 {
-		b.WriteString("----------\n")
-		b.WriteString(color.Bold("[CPU交換]") + "\n")
-		for _, ex := range cpuExchanges {
-			fmt.Fprintf(&b, "  Player %d: %d枚交換\n", ex.PlayerIdx, ex.ExchangeCount)
-		}
-	}
-
-	// ショーダウン結果
-	results := p.GetRoundResults()
-	if len(results) > 0 && isEnd {
-		b.WriteString("==========\n")
-		b.WriteString(color.Bold("[結果]") + "\n")
-		for _, r := range results {
-			name := cuiPlayerName(players[r.PlayerIdx], r.PlayerIdx)
-			kickers := ""
-			if ks := domain.FormatKickers(r.Kickers); ks != "" {
-				kickers = " (キッカー: " + ks + ")"
+			// Human's hand is always shown.
+			if player.GetIsHuman() && !player.GetFolded() {
+				handStr := cuiIndexedCardListStrEmoji(player)
+				if isEnd {
+					b.WriteString(i18n.Tf("poker.humanHandWithName",
+						"cards", handStr,
+						"name", player.GetHandName()) + "\n")
+				} else {
+					b.WriteString(i18n.Tf("poker.humanHand", "cards", handStr) + "\n")
+				}
 			}
-			if r.HandName != "" {
-				fmt.Fprintf(&b, "  %s: %s%s", name, r.HandName, kickers)
-			} else {
-				fmt.Fprintf(&b, "  %s", name)
+
+			// CPU hands are revealed only at end-of-hand.
+			if !player.GetIsHuman() && isEnd && !player.GetFolded() {
+				b.WriteString(i18n.Tf("poker.humanHandWithName",
+					"cards", cuiCardListStrEmoji(player),
+					"name", player.GetHandName()) + "\n")
 			}
-			if r.WonAmount > 0 {
-				fmt.Fprintf(&b, " → %dチップ獲得", r.WonAmount)
-			}
-			b.WriteString("\n")
 		}
-	}
 
-	// エラーメッセージ
-	if lastErr != nil {
-		fmt.Fprintf(&b, "%s\n", color.Red(lastErr.Error()))
-	}
+		cpuActions := p.GetCpuActions()
+		if len(cpuActions) > 0 {
+			b.WriteString("----------\n")
+			b.WriteString(color.Bold(i18n.T("poker.cpuActionsHeader")) + "\n")
+			for _, action := range cpuActions {
+				b.WriteString(i18n.Tf("poker.cpuActionLine",
+					"idx", strconv.Itoa(action.PlayerIdx),
+					"action", cuiBettingActionName(action.Action)))
+				if action.Amount > 0 {
+					b.WriteString(i18n.Tf("poker.cpuActionAmount", "amount", strconv.Itoa(action.Amount)))
+				}
+				b.WriteString("\n")
+			}
+		}
 
-	// ゲーム終了メッセージ
-	if p.GetGameEndFlag() {
-		b.WriteString("ゲーム終了\n")
-	}
+		cpuExchanges := p.GetCpuExchanges()
+		if len(cpuExchanges) > 0 {
+			b.WriteString("----------\n")
+			b.WriteString(color.Bold(i18n.T("poker.cpuExchangesHeader")) + "\n")
+			for _, ex := range cpuExchanges {
+				b.WriteString(i18n.Tf("poker.cpuExchangeLine",
+					"idx", strconv.Itoa(ex.PlayerIdx),
+					"count", strconv.Itoa(ex.ExchangeCount)) + "\n")
+			}
+		}
 
-	return b.String()
+		results := p.GetRoundResults()
+		if len(results) > 0 && isEnd {
+			b.WriteString("==========\n")
+			b.WriteString(color.Bold(i18n.T("poker.resultsHeader")) + "\n")
+			for _, r := range results {
+				name := cuiPlayerName(players[r.PlayerIdx], r.PlayerIdx)
+				kickers := ""
+				if ks := domain.FormatKickers(r.Kickers); ks != "" {
+					kickers = i18n.Tf("poker.resultKickers", "kickers", ks)
+				}
+				if r.HandName != "" {
+					b.WriteString(i18n.Tf("poker.resultHand",
+						"name", name,
+						"hand", r.HandName,
+						"kickers", kickers))
+				} else {
+					b.WriteString(i18n.Tf("poker.resultName", "name", name))
+				}
+				if r.WonAmount > 0 {
+					b.WriteString(i18n.Tf("poker.wonAmount", "total", strconv.Itoa(r.WonAmount)))
+				}
+				b.WriteString("\n")
+			}
+		}
+
+		cuiErrorBlock(b, lastErr)
+
+		if p.GetGameEndFlag() {
+			b.WriteString(i18n.T("poker.gameEnd") + "\n")
+		}
+	})
 }
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (pcp *PokerCuiPresenter) ActionLogOutput(p interfaces.PokerGame) string {
 	return actionLogOutputText(p)
 }
 
-// OutputWithOdds ゲーム状態 + オッズ出力
+// OutputWithOdds appends the draw-odds table to the standard Output.
+// The base Output already ends with the buildCuiOutput "==========\n" footer,
+// so this appends only the odds-section body without a redundant divider.
 func (pcp *PokerCuiPresenter) OutputWithOdds(p interfaces.PokerGame, lastErr error, odds []domain.PokerDrawOdds) string {
 	base := pcp.Output(p, lastErr)
 	if len(odds) == 0 {
 		return base
 	}
 	var oddsBuilder strings.Builder
-	oddsBuilder.WriteString("==========\n")
-	oddsBuilder.WriteString(color.Bold("[ドローオッズ]") + "\n")
+	oddsBuilder.WriteString(color.Bold(i18n.T("poker.drawOddsHeader")) + "\n")
 	for _, o := range odds {
-		fmt.Fprintf(&oddsBuilder, "  %s: %.2f%% (%d/%d)\n", o.HandName, o.Probability*100, o.Count, o.Total)
+		oddsBuilder.WriteString(i18n.Tf("poker.drawOddsLine",
+			"name", o.HandName,
+			"prob", fmt.Sprintf("%.2f", o.Probability*100),
+			"count", strconv.Itoa(o.Count),
+			"total", strconv.Itoa(o.Total)) + "\n")
 	}
 	return base + oddsBuilder.String()
 }

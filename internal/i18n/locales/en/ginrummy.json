@@ -7,5 +7,20 @@
   "helpLayoff": "  lo <idx,idx,...>     lay off cards",
   "helpNextRound": "  nr                   next round",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
-  "helpSetLimit": "  sl <n>               point limit"
+  "helpSetLimit": "  sl <n>               point limit",
+  "header": "Round: {{round}}  Stock: {{stock}}",
+  "discardLine": "Discard: {{card}}",
+  "playerLine": "{{name}}: cumulative {{cum}} round {{round}} cards {{cards}}",
+  "gameEnd": "Game over! {{name}} wins!",
+  "promptDraw": "{{name}} to act (draw phase)",
+  "promptDrawHelpStock": "ds: draw from stock",
+  "promptDrawHelpDiscard": "dd: draw from discard",
+  "promptDiscard": "{{name}} to act (discard phase)",
+  "promptDiscardHelp": "d <idx>: discard a card",
+  "promptKnockHelp": "k <idx>: knock (discard + knock)",
+  "promptLayoff": "Layoff phase",
+  "promptLayoffHelp": "lo <idx,idx,...>: choose cards to lay off",
+  "promptLayoffSkip": "lo: skip layoff and score",
+  "promptRoundEnd": "Round complete",
+  "promptRoundEndHelp": "nr / nextround: advance to next round"
 }

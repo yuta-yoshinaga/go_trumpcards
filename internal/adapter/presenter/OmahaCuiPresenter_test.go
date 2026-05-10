@@ -10,6 +10,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func makeOmahaForPresenter() (*domain.Omaha, []*domain.OmahaPlayer) {
@@ -744,4 +745,49 @@ func TestOmahaCuiPresenter_HiLo_ResultRendering(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestOmahaCuiPresenter_English verifies issue #1699 Phase 2: every
+// previously-hardcoded Japanese string in OmahaCuiPresenter now follows
+// the active locale. The default ja path is exercised by the assertions
+// above; this suite re-runs Output under LANG=en and checks the English
+// keys win out.
+func TestOmahaCuiPresenter_English(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	i18n.SetLang("en")
+	defer i18n.SetLang("ja")
+	p := new(presenter.OmahaCuiPresenter)
+
+	t.Run("output uses English headers and labels", func(t *testing.T) {
+		o, _ := makeOmahaForPresenter()
+		out := p.Output(o, nil)
+		assert.Contains(t, out, "Omaha Hold'em")
+		assert.Contains(t, out, "Table: 4-max")
+		assert.Contains(t, out, "Dealer: Player")
+		assert.Contains(t, out, "Pot:")
+		assert.NotContains(t, out, "テーブル") // no Japanese leakage
+	})
+
+	t.Run("output uses English Hi-Lo title", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.OmahaPlayer{
+			domain.NewOmahaPlayer(true, domain.HoldemStyleTAG),
+			domain.NewOmahaPlayer(false, domain.HoldemStyleLAP),
+			domain.NewOmahaPlayer(false, domain.HoldemStyleTAP),
+			domain.NewOmahaPlayer(false, domain.HoldemStyleGTO),
+		}
+		o := domain.NewOmahaHiLo(tc, players, domain.DefaultOmahaConfig())
+		out := p.Output(o, nil)
+		assert.Contains(t, out, "Omaha Hi-Lo")
+	})
+
+	t.Run("output uses English game-end banner", func(t *testing.T) {
+		o, _ := makeOmahaForPresenter()
+		o.SetGameEndFlag(true)
+		out := p.Output(o, nil)
+		assert.Contains(t, out, "Game over")
+		assert.NotContains(t, out, "ゲーム終了")
+	})
 }

@@ -15,7 +15,12 @@ vi.mock('./ManualButton', () => ({
 }));
 
 vi.mock('./motion/WinCelebration', () => ({
-  WinCelebration: ({ show }: { show: boolean }) => (show ? <div data-testid="win-celebration">Win!</div> : null),
+  WinCelebration: ({ show, onCelebrate }: { show: boolean; onCelebrate?: () => void }) =>
+    show ? (
+      <button type="button" data-testid="win-celebration" onClick={() => onCelebrate?.()}>
+        Win!
+      </button>
+    ) : null,
 }));
 
 vi.mock('./GameResetDialog', () => ({
@@ -46,6 +51,18 @@ const baseProps = {
   phaseName: 'Play Phase',
   isHumanTurn: false,
   gamePath: '/hearts',
+  gameEndFlag: false,
+  loading: false,
+  confirmOpen: false,
+  confirmReset: vi.fn(),
+  cancelReset: vi.fn(),
+};
+
+const propsWithoutTurn = {
+  title: 'TriPeaks',
+  gameThemeBg: 'bg-game-bg-blue',
+  phaseName: 'Play Phase',
+  gamePath: '/tripeaks',
   gameEndFlag: false,
   loading: false,
   confirmOpen: false,
@@ -184,5 +201,84 @@ describe('GamePageShell', () => {
       </GamePageShell>,
     );
     expect(container.firstChild).toHaveAttribute('aria-busy', 'true');
+  });
+
+  it('uses winShow override when provided (suppress celebration even at game end)', () => {
+    render(
+      <GamePageShell {...baseProps} gameEndFlag={true} winShow={false}>
+        <div />
+      </GamePageShell>,
+    );
+    expect(screen.queryByTestId('win-celebration')).not.toBeInTheDocument();
+  });
+
+  it('uses winShow override when provided (show celebration before gameEndFlag flips)', () => {
+    render(
+      <GamePageShell {...baseProps} gameEndFlag={false} winShow={true}>
+        <div />
+      </GamePageShell>,
+    );
+    expect(screen.getByTestId('win-celebration')).toBeInTheDocument();
+  });
+
+  it('forwards onCelebrate to WinCelebration', () => {
+    const onCelebrate = vi.fn();
+    render(
+      <GamePageShell {...baseProps} gameEndFlag={true} onCelebrate={onCelebrate}>
+        <div />
+      </GamePageShell>,
+    );
+    fireEvent.click(screen.getByTestId('win-celebration'));
+    expect(onCelebrate).toHaveBeenCalledOnce();
+  });
+
+  it('renders headerEnd after ManualButton (right of buttons)', () => {
+    render(
+      <GamePageShell
+        {...baseProps}
+        headerExtra={<span data-testid="header-extra">extra</span>}
+        headerEnd={<span data-testid="header-end">end</span>}
+      >
+        <div />
+      </GamePageShell>,
+    );
+    const extra = screen.getByTestId('header-extra');
+    const manual = screen.getByRole('button', { name: 'manual-/hearts' });
+    const end = screen.getByTestId('header-end');
+    // headerExtra → TutorialButton → ManualButton → headerEnd, in DOM order.
+    expect(extra.compareDocumentPosition(manual) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(manual.compareDocumentPosition(end) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('remounts the outer container when outerKey changes (drives shake animation)', () => {
+    const { container, rerender } = render(
+      <GamePageShell {...baseProps} outerKey={0}>
+        <div data-testid="game-body" />
+      </GamePageShell>,
+    );
+    const firstBody = screen.getByTestId('game-body');
+    rerender(
+      <GamePageShell {...baseProps} outerKey={1}>
+        <div data-testid="game-body" />
+      </GamePageShell>,
+    );
+    // Changing outerKey forces React to unmount the previous subtree and mount a new one,
+    // which is what restarts the shake CSS animation. Verify by ensuring the body element
+    // is no longer the same DOM node.
+    expect(container.contains(firstBody)).toBe(false);
+    expect(screen.getByTestId('game-body')).toBeInTheDocument();
+  });
+
+  it('omits the turn-indicator span when isHumanTurn is not provided', () => {
+    render(
+      <GamePageShell {...propsWithoutTurn}>
+        <div />
+      </GamePageShell>,
+    );
+    // PhaseIndicator should still render the phase name…
+    expect(screen.getByText('Play Phase')).toBeInTheDocument();
+    // …but no "your turn / waiting" label is rendered when the prop is undefined.
+    expect(screen.queryByText('あなたのターン')).not.toBeInTheDocument();
+    expect(screen.queryByText('待機中')).not.toBeInTheDocument();
   });
 });

@@ -10,16 +10,11 @@ import { DoubtHandCard } from '../components/doubt/DoubtHandCard';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
@@ -35,7 +30,6 @@ import {
 } from '../hooks/useDoubtGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess, focusRingAccent } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -214,8 +208,6 @@ function DoubtPageContent() {
     void exec('reset', undefined, undefined, undefined, doubtConfig);
   }, [exec, hideActionLog, doubtConfig]);
 
-  useGameRoundGuard(!!state && !state.gameEndFlag);
-
   if (!state)
     return (
       <GameSkeleton
@@ -243,18 +235,20 @@ function DoubtPageContent() {
   );
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.doubt.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.doubt')} />
-      {/* Phase indicator */}
-      <PhaseIndicator
-        phaseName={state.gameEndFlag ? t('phase.end') : state.phase === 1 ? t('phase.doubt') : t('phase.play')}
-        isHumanTurn={isHumanTurn}
-      >
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/doubt" />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.doubt')}
+      gameThemeBg={gameTheme.doubt.bg}
+      phaseName={state.gameEndFlag ? t('phase.end') : state.phase === 1 ? t('phase.doubt') : t('phase.play')}
+      isHumanTurn={isHumanTurn}
+      gamePath="/doubt"
+      gameEndFlag={!!state.gameEndFlag}
+      onCelebrate={() => playSound('winFanfare')}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -590,8 +584,6 @@ function DoubtPageContent() {
           </GameFooter>
         </>
       )}
-      <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-    </div>
+    </GamePageShell>
   );
 }

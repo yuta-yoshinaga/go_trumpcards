@@ -1,0 +1,20 @@
+{
+  "helpTitle": "Monte Carlo Solitaire (モンテカルロ・ソリティア)",
+  "helpRemove": "  m <r1> <c1> <r2> <c2>  隣接する同ランクのペアを取り除く (例: m 0 0 0 1)",
+  "helpDeal": "  d, deal             盤面を詰めて山札から補充",
+  "helpGiveup": "  g, giveup           ギブアップ",
+  "helpHint": "  h, hint             ヒントを表示",
+  "helpLog": "  log, l              棋譜を表示",
+  "helpUndo": "  u, undo             1手戻す",
+  "playing": "プレイ中",
+  "stalemate": "手詰まりです",
+  "gameClear": "ゲームクリア！ 補充回数: {{dealCount}}",
+  "gameOver": "ゲームオーバー",
+  "hintAvailable": "ヒントがあります",
+  "noHint": "ヒントはありません",
+  "cellEmpty": "({{r}},{{c}}) .....",
+  "cellCard": "({{r}},{{c}}) {{card}}",
+  "header": "残り山札: {{stock}}  取り除いた枚数: {{removed}}/52  補充回数: {{deals}}",
+  "hintLineRemove": "ヒント: ({{r1}},{{c1}}) と ({{r2}},{{c2}}) を取り除く",
+  "hintLineDeal": "ヒント: 山札から補充 (deal)"
+}

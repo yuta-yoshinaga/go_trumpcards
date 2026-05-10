@@ -7,26 +7,21 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, focusRingWhite } from '../styles/buttonStyles';
@@ -213,7 +208,48 @@ function AccordionPageContent() {
     },
     [selectedIdx, dispatchMove],
   );
-  useGameRoundGuard(isGameRoundActive(state));
+
+  // Keyboard shortcuts: arrow keys scrub the selection, `1`/`3` perform the
+  // two legal merges, `u`/`h`/`g` mirror the action buttons. Hook reads from
+  // the live state so it stays in sync without a separate effect.
+  const pileCount = state?.pileCount ?? 0;
+  const moveSelection = useCallback(
+    (delta: number) => {
+      setSelectedIdx((prev) => {
+        if (prev === null) return delta > 0 ? 0 : Math.max(0, pileCount - 1);
+        const next = prev + delta;
+        if (next < 0 || next >= pileCount) return prev;
+        return next;
+      });
+    },
+    [pileCount],
+  );
+  const mergeFromSelection = useCallback(
+    (offset: 1 | 3) => {
+      if (selectedIdx === null) return;
+      const target = selectedIdx - offset;
+      if (target < 0) return;
+      dispatchMove(selectedIdx, target);
+    },
+    [dispatchMove, selectedIdx],
+  );
+  const accordionBindings = useMemo(
+    () => [
+      { key: 'ArrowLeft', action: () => moveSelection(-1) },
+      { key: 'ArrowRight', action: () => moveSelection(1) },
+      { key: '1', action: () => mergeFromSelection(1) },
+      { key: '3', action: () => mergeFromSelection(3) },
+      { key: 'u', action: handleUndo },
+      { key: 'h', action: handleHint },
+      { key: 'g', action: handleGiveUp },
+      { key: 'Escape', action: () => setSelectedIdx(null) },
+    ],
+    [moveSelection, mergeFromSelection, handleUndo, handleHint, handleGiveUp],
+  );
+  useActionKeyboardNav({
+    bindings: accordionBindings,
+    enabled: state?.phase === AccordionPhase.PLAYING && !loading,
+  });
 
   if (error) return <ErrorAlert message={error} onRetry={retry} />;
   if (!state) return <GameSkeleton gameKey="accordion" layout={{ kind: 'tableau', topRow: 6, tableau: 7 }} />;
@@ -226,20 +262,29 @@ function AccordionPageContent() {
   const phaseName = isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing');
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.accordion.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.accordion')} />
-      <PhaseIndicator phaseName={phaseName}>
-        <span>
-          {t('moveCount')}: {state.moveCount}
-        </span>
-        <span>
-          {t('piles')}: {state.pileCount}
-        </span>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/accordion" />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.accordion')}
+      gameThemeBg={gameTheme.accordion.bg}
+      phaseName={phaseName}
+      gamePath="/accordion"
+      gameEndFlag={isEnded}
+      winShow={isGameClear}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={
+        <>
+          <span>
+            {t('moveCount')}: {state.moveCount}
+          </span>
+          <span>
+            {t('piles')}: {state.pileCount}
+          </span>
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        </>
+      }
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -372,9 +417,6 @@ function AccordionPageContent() {
           </div>
         </>
       )}
-
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-      {isGameClear && <WinCelebration show={true} />}
-    </div>
+    </GamePageShell>
   );
 }

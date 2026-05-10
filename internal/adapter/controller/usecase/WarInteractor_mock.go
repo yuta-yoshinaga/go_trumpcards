@@ -31,6 +31,12 @@ func (_m *MockWarInteractor) Step() string {
 	return ret.Get(0).(string)
 }
 
+// AutoPlay モック
+func (_m *MockWarInteractor) AutoPlay() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
 // GetConfig モック
 func (_m *MockWarInteractor) GetConfig() domain.WarConfig {
 	ret := _m.Called()

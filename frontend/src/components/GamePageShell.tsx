@@ -15,12 +15,24 @@ export interface GamePageShellProps {
   gameThemeBg: string;
   /** Current phase label shown in the PhaseIndicator. */
   phaseName: string;
-  /** Whether it is the human player's turn, controls the turn indicator color. */
-  isHumanTurn: boolean;
+  /**
+   * Whether it is the human player's turn, controls the turn indicator color.
+   * Optional — when omitted, the PhaseIndicator hides the turn indicator entirely
+   * (used by single-player solitaire pages without a "your turn / waiting" concept).
+   */
+  isHumanTurn?: boolean;
   /** Path used by ManualButton to load the game manual (e.g., "/hearts"). */
   gamePath: string;
-  /** Whether a game-end condition has been reached, controls WinCelebration. */
+  /** Whether a game-end condition has been reached, controls WinCelebration default and the round-leave guard. */
   gameEndFlag: boolean;
+  /**
+   * Optional override for whether to display the win celebration. Defaults to `gameEndFlag`.
+   * Pages that only celebrate on a player win (e.g., War, Slapjack, RedDog) should pass
+   * a stricter condition like `gameEndFlag && humanWon`.
+   */
+  winShow?: boolean;
+  /** Optional callback invoked when WinCelebration plays — typically used to trigger sound effects. */
+  onCelebrate?: () => void;
   /** Whether an async operation is in progress; forwarded to aria-busy on the outer container. */
   loading: boolean;
   /** Whether the reset confirmation dialog is open. */
@@ -29,8 +41,21 @@ export interface GamePageShellProps {
   confirmReset: () => void;
   /** Callback to cancel the reset action. */
   cancelReset: () => void;
-  /** Extra elements rendered inside the PhaseIndicator alongside TutorialButton/ManualButton. */
+  /**
+   * Optional `key` applied to the outer container. Use for animations that must
+   * restart on demand by remounting the subtree (e.g., Old Maid's shake-key
+   * pattern, where the wrapper needs to re-mount every time an invalid action
+   * triggers `animate-shake`).
+   */
+  outerKey?: string | number;
+  /** Extra elements rendered inside the PhaseIndicator before TutorialButton/ManualButton. */
   headerExtra?: ReactNode;
+  /**
+   * Extra elements rendered inside the PhaseIndicator after ManualButton.
+   * Use this when a stat or chip needs to appear at the right edge of the header
+   * (e.g. Spider's `completed: N/8`). Most pages will only need `headerExtra`.
+   */
+  headerEnd?: ReactNode;
   /**
    * Game-specific content placed between the PhaseIndicator and the win/reset overlays.
    * Typically includes: settings panel, scrollable game area, and GameFooter.
@@ -51,25 +76,30 @@ export function GamePageShell({
   isHumanTurn,
   gamePath,
   gameEndFlag,
+  winShow,
+  onCelebrate,
   loading,
   confirmOpen,
   confirmReset,
   cancelReset,
+  outerKey,
   headerExtra,
+  headerEnd,
   children,
 }: GamePageShellProps) {
   // long-form games (Hearts, Spades, Skat, …) don't silently lose state.
   useGameRoundGuard(!gameEndFlag);
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameThemeBg}`} aria-busy={loading}>
+    <div key={outerKey} className={`flex-1 flex flex-col min-h-0 ${gameThemeBg}`} aria-busy={loading}>
       <GamePageHeading title={title} />
       <PhaseIndicator phaseName={phaseName} isHumanTurn={isHumanTurn}>
         {headerExtra}
         <TutorialButton />
         <ManualButton gamePath={gamePath} />
+        {headerEnd}
       </PhaseIndicator>
       {children}
-      <WinCelebration show={gameEndFlag} />
+      <WinCelebration show={winShow ?? gameEndFlag} onCelebrate={onCelebrate} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

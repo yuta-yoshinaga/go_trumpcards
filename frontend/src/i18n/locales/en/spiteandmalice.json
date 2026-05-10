@@ -19,6 +19,7 @@
   "moveCount": "Moves",
   "endTurn": "End turn",
   "discard": "Discard",
+  "autoComplete": "Auto Complete",
   "selectSource": "Select a card to play",
   "selectFoundation": "Select a foundation",
   "selectSide": "Select a side pile to discard to",

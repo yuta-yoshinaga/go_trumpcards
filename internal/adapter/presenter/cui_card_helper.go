@@ -7,6 +7,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // isRedSuit returns true for heart and diamond suits.
@@ -61,14 +62,16 @@ type cuiPlayer interface {
 // Index 0 is unused (joker); indices 1–4 correspond to CardDesignSpade–CardDesignDiamond.
 var suitNames = []string{"", "SPADE", "CLOVER", "HEART", "DIAMOND"}
 
-// bettingActionNames maps betting action constants to Japanese action name strings.
-var bettingActionNames = map[int]string{
-	domain.PokerActionFold:  "フォールド",
-	domain.PokerActionCheck: "チェック",
-	domain.PokerActionCall:  "コール",
-	domain.PokerActionBet:   "ベット",
-	domain.PokerActionRaise: "レイズ",
-	domain.PokerActionAllIn: "オールイン",
+// bettingActionKeys maps betting action constants to i18n keys in
+// cui_common.json. Used by cuiBettingActionName so the displayed action
+// text follows the active locale (issue #1699 Phase 1).
+var bettingActionKeys = map[int]string{
+	domain.PokerActionFold:  "cuiBettingActionFold",
+	domain.PokerActionCheck: "cuiBettingActionCheck",
+	domain.PokerActionCall:  "cuiBettingActionCall",
+	domain.PokerActionBet:   "cuiBettingActionBet",
+	domain.PokerActionRaise: "cuiBettingActionRaise",
+	domain.PokerActionAllIn: "cuiBettingActionAllIn",
 }
 
 // cuiCardStr returns a text-based card string (e.g. "SPADE 5", "JOKER", "??").
@@ -118,19 +121,20 @@ func cuiSuitName(suit int) string {
 	return "UNKNOWN"
 }
 
-// cuiPlayerName returns "あなた" for human players, "CPU N" for CPU players,
-// or "UNKNOWN" if the player is nil/zero.
-// Used by OldMaid, Daifugo, Sevens, Doubt, Poker, Holdem, Omaha, Hearts,
-// Spades, CrazyEights, GinRummy, and Memory CUI presenters.
+// cuiPlayerName returns the human-friendly display name for a player:
+// "You" / "あなた" for the human, "CPU N" for CPU opponents, or
+// "UNKNOWN" if the player is nil/zero. Locale-aware via i18n.T (issue
+// #1699 Phase 1). Used by OldMaid, Daifugo, Sevens, Doubt, Poker,
+// Holdem, Omaha, Hearts, Spades, CrazyEights, GinRummy, and Memory.
 func cuiPlayerName[P cuiPlayer](player P, idx int) string {
 	var zero P
 	if player == zero {
-		return "UNKNOWN"
+		return i18n.T("cuiPlayerUnknown")
 	}
 	if player.GetIsHuman() {
-		return color.Bold("あなた")
+		return color.Bold(i18n.T("cuiPlayerYou"))
 	}
-	return color.Bold(fmt.Sprintf("CPU %d", idx))
+	return color.Bold(i18n.Tf("cuiPlayerCpu", "idx", strconv.Itoa(idx)))
 }
 
 // cuiPlayerWithStyle is the type constraint for players that have a play style.
@@ -149,13 +153,13 @@ func cuiPlayerNameWithStyle[P cuiPlayerWithStyle](player P, idx int) string {
 	return name
 }
 
-// cuiBettingActionName returns the Japanese action name for betting actions.
-// Used by Poker and Holdem CUI presenters.
+// cuiBettingActionName returns the localized action name for betting
+// actions. Used by Poker and Holdem CUI presenters.
 func cuiBettingActionName(action int) string {
-	if name, ok := bettingActionNames[action]; ok {
-		return name
+	if key, ok := bettingActionKeys[action]; ok {
+		return i18n.T(key)
 	}
-	return "不明"
+	return i18n.T("cuiBettingActionUnknown")
 }
 
 // cuiIndexedCardListStr returns a double-space separated indexed card string.

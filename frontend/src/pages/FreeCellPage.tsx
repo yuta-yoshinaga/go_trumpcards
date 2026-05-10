@@ -8,18 +8,13 @@ import { DropZone } from '../components/DropZone';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -28,7 +23,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useFreeCellGame } from '../hooks/useFreeCellGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
@@ -156,14 +150,21 @@ function FreeCellPageContent() {
     enabled: !!isPlayingForKbd && !loading,
   });
 
-  useGameRoundGuard(isGameRoundActive(state));
-
   if (!state) return <GameSkeleton gameKey="freecell" layout={{ kind: 'tableau', topRow: 8, tableau: 8 }} />;
 
   const isPlaying = state.phase === FreeCellPhase.PLAYING;
   const isGameClear = state.phase === FreeCellPhase.GAME_CLEAR;
   const isGameOver = state.phase === FreeCellPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
+
+  // Supermove limit: a tableau stack of N cards can only move when
+  // (1 + freeCells) * 2^emptyCols >= N. We compute the upper-bound limit (the
+  // optimistic case where the destination is NOT one of the empty columns) and
+  // mark anything deeper than that as undraggable, with a red ring + tooltip
+  // so the player sees the cap before the engine rejects the move.
+  const emptyFreeCells = state.freeCells.filter((c) => c === null).length;
+  const emptyTableauCols = state.tableau.filter((col: (Card | null)[]) => col.length === 0).length;
+  const supermoveLimit = (1 + emptyFreeCells) * 2 ** emptyTableauCols;
 
   const isSourceSelected = (zone: string, col?: number, cell?: number, cardIndex?: number) =>
     selectedSource !== null &&
@@ -173,19 +174,27 @@ function FreeCellPageContent() {
     selectedSource.cardIndex === cardIndex;
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.freecell.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.freecell')} />
-      <PhaseIndicator
-        phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
-      >
-        <span>
-          {t('moveCount')}: {state.moveCount}
-        </span>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/freecell" />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.freecell')}
+      gameThemeBg={gameTheme.freecell.bg}
+      phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
+      gamePath="/freecell"
+      gameEndFlag={isEnded}
+      winShow={isGameClear}
+      onCelebrate={() => playSound('winFanfare')}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={
+        <>
+          <span>
+            {t('moveCount')}: {state.moveCount}
+          </span>
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        </>
+      }
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -338,6 +347,8 @@ function FreeCellPageContent() {
                                 col: colIdx,
                                 cardIndex: cardIdx,
                               };
+                              const stackSize = col.length - cardIdx;
+                              const exceedsSupermove = stackSize > supermoveLimit;
                               return (
                                 <div
                                   key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
@@ -357,10 +368,25 @@ function FreeCellPageContent() {
                                       disabled={!isPlaying || loading}
                                       aria-label={cardAlt(card)}
                                       aria-pressed={isSourceSelected('tableau', colIdx, undefined, cardIdx)}
-                                      draggable={isPlaying && !loading}
+                                      draggable={isPlaying && !loading && !exceedsSupermove}
                                       onDragStart={dnd.handleDragStart(cardZone)}
                                       onDragEnd={dnd.handleDragEnd}
-                                      className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, undefined, cardIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                                      title={
+                                        exceedsSupermove
+                                          ? t('supermoveLimitTooltip', { limit: supermoveLimit })
+                                          : undefined
+                                      }
+                                      data-supermove-blocked={exceedsSupermove ? 'true' : undefined}
+                                      className={[
+                                        'p-0 border-0 bg-transparent cursor-pointer w-full rounded',
+                                        focusRingWhite,
+                                        isSourceSelected('tableau', colIdx, undefined, cardIdx) &&
+                                          'ring-2 ring-ds-warning',
+                                        dnd.isDragSource(cardZone) && 'opacity-50',
+                                        exceedsSupermove && 'opacity-60 ring-1 ring-ds-error',
+                                      ]
+                                        .filter(Boolean)
+                                        .join(' ')}
                                     >
                                       <AnimatedCard
                                         card={card}
@@ -489,8 +515,6 @@ function FreeCellPageContent() {
           </GameFooter>
         </>
       )}
-      <WinCelebration show={state.phase === FreeCellPhase.GAME_CLEAR} onCelebrate={() => playSound('winFanfare')} />
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-    </div>
+    </GamePageShell>
   );
 }

@@ -38,6 +38,13 @@ func (h *BlackJackHand) GetCard(idx int) *Card {
 	return nil
 }
 
+// SetCard 指定番目のカードを差し替える（範囲外なら no-op）。
+func (h *BlackJackHand) SetCard(idx int, card *Card) {
+	if 0 <= idx && idx < len(h.cards) {
+		h.cards[idx] = card
+	}
+}
+
 // GetCardsSize カード枚数取得
 func (h *BlackJackHand) GetCardsSize() int {
 	return len(h.cards)

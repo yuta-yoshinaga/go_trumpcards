@@ -21,6 +21,7 @@
   "discardButton": "クリブに捨てる",
   "pegButton": "カードを出す",
   "goButton": "Go",
+  "autoGoNotice": "出せるカードがないため Go を自動宣言しました",
   "showNextButton": "次を表示",
   "nextRound": "次のラウンド",
   "discardPhase": "クリブに捨てるカードを2枚選んでください",

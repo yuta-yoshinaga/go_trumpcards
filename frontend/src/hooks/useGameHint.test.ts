@@ -958,4 +958,23 @@ describe('useGameHint', () => {
     const { result } = renderHook(() => useGameHint('casinowar', state));
     expect(result.current.hint).toBeNull();
   });
+
+  it('routes blackjackswitch through getBlackjackswitchHint (currently a null stub)', () => {
+    localStorage.setItem('hint_enabled_blackjackswitch', 'true');
+    const state = {
+      hands: [],
+      dealerCards: [],
+      dealerScore: 0,
+      phase: 3,
+      currentHandIdx: 0,
+      chips: 1000,
+      switched: false,
+      dealerPushed22: false,
+      overallResult: 0,
+      totalPayout: 0,
+      message: '',
+    };
+    const { result } = renderHook(() => useGameHint('blackjackswitch', state));
+    expect(result.current.hint).toBeNull();
+  });
 });

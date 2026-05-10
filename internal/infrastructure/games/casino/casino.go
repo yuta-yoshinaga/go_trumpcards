@@ -206,4 +206,20 @@ func init() {
 			return usecase.RestoreCasinoWarInteractor(data, new(presenter.CasinoWarWebPresenter))
 		},
 		controller.NewCasinoWarWebControllerWithProvider)
+	games.RegisterKVGame("dragontiger", games.CategoryCasino,
+		func() usecase.DragonTigerInteractorIF {
+			return usecase.NewDragonTigerInteractor(domain.NewDefaultDragonTiger(), new(presenter.DragonTigerWebPresenter))
+		},
+		func(data []byte) (usecase.DragonTigerInteractorIF, error) {
+			return usecase.RestoreDragonTigerInteractor(data, new(presenter.DragonTigerWebPresenter))
+		},
+		controller.NewDragonTigerWebControllerWithProvider)
+	games.RegisterKVGame("blackjackswitch", games.CategoryCasino,
+		func() usecase.BlackJackSwitchInteractorIF {
+			return usecase.NewBlackJackSwitchInteractor(domain.NewDefaultBlackJackSwitch(), new(presenter.BlackJackSwitchWebPresenter))
+		},
+		func(data []byte) (usecase.BlackJackSwitchInteractorIF, error) {
+			return usecase.RestoreBlackJackSwitchInteractor(data, new(presenter.BlackJackSwitchWebPresenter))
+		},
+		controller.NewBlackJackSwitchWebControllerWithProvider)
 }

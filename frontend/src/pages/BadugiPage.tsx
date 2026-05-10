@@ -12,16 +12,11 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useBadugiGame } from '../hooks/useBadugiGame';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
@@ -30,7 +25,6 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useSound } from '../providers/SoundProvider';
 import { btnSuccess, btnWarning, focusRingAccent } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
@@ -40,6 +34,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BadugiResponse } from '../types/card';
 import { BadugiPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { isCompleteBadugiHand } from '../utils/badugiUtils';
 import { cardAlt } from '../utils/cardAlt';
 import { BADUGI_HELP, parseBadugiCommand } from '../utils/cli/commands/badugiCommands';
 import { formatBadugiState } from '../utils/cli/formatters/badugiFormatter';
@@ -160,6 +155,13 @@ function BadugiPageContent() {
   const minRaise = state?.minRaise ?? 10;
   const cardCount = humanPlayer?.cards?.length ?? 0;
   const cpuPlayers = useMemo(() => state?.players?.filter((p) => !p.isHuman) ?? [], [state?.players]);
+  // Stand-pat protection: warn the player when their 4 cards are already a complete Badugi
+  // (4 distinct ranks + 4 distinct suits). Exchanging from this state can only weaken the hand.
+  // Memoised so the Set allocations only run when the hand actually changes.
+  const humanHasCompleteBadugi = useMemo(
+    () => (canExchange ? isCompleteBadugiHand(humanPlayer?.cards ?? []) : false),
+    [canExchange, humanPlayer?.cards],
+  );
 
   useCardKeyboardNav({
     cardCount,
@@ -176,8 +178,6 @@ function BadugiPageContent() {
     execAction('reset', undefined, undefined, { bettingLimit, cpuMetaAI });
   }, [execAction, hideActionLog, bettingLimit, cpuMetaAI]);
 
-  useGameRoundGuard(!!state && !state.gameEndFlag);
-
   if (!state)
     return (
       <GameSkeleton
@@ -187,24 +187,37 @@ function BadugiPageContent() {
     );
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.badugi.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.badugi')} />
-      {/* Phase indicator + info bar */}
-      <PhaseIndicator phaseName={phaseLabel} isHumanTurn={canAct || canExchange}>
-        <span>
-          {tc('label.pot')} <strong>{state?.pot ?? 0}</strong>
-        </span>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/badugi" />
-        <span>
-          {tc('label.dealer')} <strong>Player {state?.dealerIdx ?? 0}</strong>
-        </span>
-        <span className="text-xs bg-black/20 text-ds-text-primary px-2 py-0.5 rounded">
-          {drawIndex === 0 ? t('preDrawLabel') : t('drawBadge', { n: drawIndex })}
-        </span>
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.badugi')}
+      gameThemeBg={gameTheme.badugi.bg}
+      phaseName={phaseLabel}
+      isHumanTurn={canAct || canExchange}
+      gamePath="/badugi"
+      gameEndFlag={isEnd}
+      onCelebrate={() => playSound('winFanfare')}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={
+        <>
+          <span>
+            {tc('label.pot')} <strong>{state?.pot ?? 0}</strong>
+          </span>
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        </>
+      }
+      headerEnd={
+        <>
+          <span>
+            {tc('label.dealer')} <strong>Player {state?.dealerIdx ?? 0}</strong>
+          </span>
+          <span className="text-xs bg-black/20 text-ds-text-primary px-2 py-0.5 rounded">
+            {drawIndex === 0 ? t('preDrawLabel') : t('drawBadge', { n: drawIndex })}
+          </span>
+        </>
+      }
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -361,19 +374,33 @@ function BadugiPageContent() {
             {/* Exchange controls */}
             {canExchange && (
               <div className="text-center mb-2" data-tutorial="bg-exchange-button">
+                {humanHasCompleteBadugi && (
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    data-testid="bg-complete-badugi-banner"
+                    className="mb-2 inline-block px-3 py-1 rounded bg-ds-accent/15 border border-ds-accent text-ds-accent text-sm font-bold"
+                  >
+                    {t('completeBadugiBanner')}
+                  </div>
+                )}
                 <button
                   type="button"
                   className={`${btnWarning} min-w-[90px]`}
                   disabled={loading}
                   onClick={() => execAction('exchange', selected)}
+                  data-testid="bg-exchange-btn"
                 >
                   {t('exchangeLabel')}
                 </button>
                 <button
                   type="button"
-                  className={`${btnSuccess} min-w-[90px]`}
+                  className={`${btnSuccess} min-w-[90px]${
+                    humanHasCompleteBadugi ? ' ring-2 ring-ds-accent animate-pulse' : ''
+                  }`}
                   disabled={loading}
                   onClick={() => execAction('stand')}
+                  data-testid="bg-stand-btn"
                 >
                   {t('standLabel')}
                 </button>
@@ -429,8 +456,6 @@ function BadugiPageContent() {
           </GameFooter>
         </>
       )}
-      <WinCelebration show={isEnd} onCelebrate={() => playSound('winFanfare')} />
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-    </div>
+    </GamePageShell>
   );
 }

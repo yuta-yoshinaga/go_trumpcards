@@ -7,16 +7,11 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { LandscapeBanner } from '../components/LandscapeBanner';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -24,7 +19,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSound } from '../providers/SoundProvider';
 import { btnOutline, btnPrimary, focusRingWhite } from '../styles/buttonStyles';
@@ -67,6 +61,9 @@ function parseSamCommand(input: string): CliParseResult<ApiArgs> {
       return { args: ['reset'] };
     case 'cpu':
       return { args: ['cpu'] };
+    case 'ac':
+    case 'autocomplete':
+      return { args: ['autocomplete'] };
     case 'l':
     case 'log':
       return { args: ['log'] };
@@ -155,6 +152,7 @@ function SpiteAndMalicePageContent() {
         'ps <s> <f>     Play side[s] top to foundation f',
         'd <h> <s>      Discard hand[h] to side[s] (ends turn)',
         'cpu            Advance CPU turn',
+        'ac             Auto-complete (play every legal foundation move)',
         'h              Hint',
         'r              Reset',
         'l              Action log',
@@ -172,6 +170,11 @@ function SpiteAndMalicePageContent() {
     void apiCall('reset');
     playSound('shuffle');
   }, [apiCall, playSound]);
+
+  const handleAutoComplete = useCallback(() => {
+    setSelection(null);
+    void apiCall('autocomplete');
+  }, [apiCall]);
 
   const isHumanTurn = state ? state.current === 0 : false;
   const isGameOver = state ? state.phase === SpiteAndMalicePhase.GAME_OVER : false;
@@ -223,8 +226,6 @@ function SpiteAndMalicePageContent() {
     },
     [apiCall, selection, isHumanTurn, isGameOver, playSound],
   );
-  useGameRoundGuard(isGameRoundActive(state));
-
   if (error) return <ErrorAlert message={error} onRetry={retry} />;
 
   if (!state) return <GameSkeleton gameKey="spiteandmalice" layout={{ kind: 'tableau', topRow: 6, tableau: 7 }} />;
@@ -238,17 +239,26 @@ function SpiteAndMalicePageContent() {
   const selectionIsHand = selection?.kind === 'hand';
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.spiteandmalice.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.spiteandmalice')} />
-      <PhaseIndicator phaseName={phaseName}>
-        <span>
-          {tc('moveCount', { defaultValue: 'Moves' })}: {state.moveCount}
-        </span>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/spiteandmalice" />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.spiteandmalice')}
+      gameThemeBg={gameTheme.spiteandmalice.bg}
+      phaseName={phaseName}
+      gamePath="/spiteandmalice"
+      gameEndFlag={isGameOver}
+      winShow={isGameOver && state.winner === 0}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={
+        <>
+          <span>
+            {tc('moveCount', { defaultValue: 'Moves' })}: {state.moveCount}
+          </span>
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        </>
+      }
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -352,6 +362,18 @@ function SpiteAndMalicePageContent() {
                 dataTutorial="sam-reset"
               />
 
+              {!isGameOver && isHumanTurn && (
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handleAutoComplete}
+                  disabled={loading || !state.canAutoComplete}
+                  data-testid="sam-autocomplete-btn"
+                >
+                  {t('autoComplete')}
+                </button>
+              )}
+
               {isGameOver && (
                 <button type="button" className={btnOutline} onClick={() => showActionLog()} disabled={loading}>
                   {tc('showActionLog', { defaultValue: 'Show action log' })}
@@ -361,10 +383,7 @@ function SpiteAndMalicePageContent() {
           </div>
         </>
       )}
-
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-      {isGameOver && state.winner === 0 && <WinCelebration show={true} />}
-    </div>
+    </GamePageShell>
   );
 }
 

@@ -1,5 +1,14 @@
 {
   "helpTitle": "Clock Solitaire",
   "helpStep": "  s                        step (flip next card)",
-  "helpAutoPlay": "  a                        auto play (run all steps)"
+  "helpAutoPlay": "  a                        auto play (run all steps)",
+  "hourLabel": "[{{label}}:00]",
+  "centerLabel": "[Center K]",
+  "pileFootnote": " ({{up}}/{{total}})",
+  "currentCard": "In hand: {{card}}",
+  "stepLine": "Steps: {{count}}",
+  "gameClearLine": "Game clear! Steps: {{count}}",
+  "gameOverLine": "Game over. Steps: {{count}}",
+  "actionLogTitle": "Clock Solitaire Action Log",
+  "actionLogEntry": "[{{turn}}] {{detail}}"
 }

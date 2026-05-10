@@ -10,6 +10,7 @@ import { useGameRouteSearch } from '../hooks/useGameRouteSearch';
 import { useNavFocusTrap } from '../hooks/useNavFocusTrap';
 import { useRecentGames } from '../hooks/useRecentGames';
 import { focusRingWhite } from '../styles/buttonStyles';
+import { FavoriteToggleButton } from './nav/FavoriteToggleButton';
 import { NavLangToggle } from './nav/NavLangToggle';
 import { SoundToggle } from './SoundToggle';
 import { TutorialProgressPanel } from './tutorial/TutorialProgressPanel';
@@ -225,15 +226,17 @@ export function NavBar() {
         ) : (
           <div className="flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:flex-1 sm:justify-end sm:gap-3">
             {gameCategories.map(({ labelKey, icon: catIcon, routes }) => {
-              const hasActivePage = routes.some(({ path }) => path === pathname);
               return (
                 <details
                   key={labelKey}
                   className="nav-category sm:flex sm:items-center"
-                  open={isMobile || hasActivePage}
+                  open
                   onToggle={(e) => {
-                    // On mobile or medium desktop (sm-lg), force details to stay open
-                    if ((isMobile || isMediumDesktop) && !e.currentTarget.open) {
+                    // NavBar is lg:hidden, so we are always on mobile or
+                    // medium desktop. Force categories to stay open on every
+                    // applicable breakpoint so the full 77-game catalog is
+                    // discoverable on first visit (#1698).
+                    if (!e.currentTarget.open) {
                       e.currentTarget.open = true;
                     }
                   }}
@@ -254,17 +257,16 @@ export function NavBar() {
                           {t(routeLabel)}
                         </Link>
                         {isMobile && (
-                          <button
-                            type="button"
-                            aria-label={isFavorite(path) ? t('nav.removeFavorite') : t('nav.addFavorite')}
-                            aria-pressed={isFavorite(path)}
-                            onClick={() => toggleFavorite(path)}
-                            className={`min-h-[44px] min-w-[44px] flex items-center justify-center text-sm shrink-0 transition-colors ${
-                              isFavorite(path) ? 'text-ds-accent' : 'text-ds-text-muted hover:text-ds-accent'
-                            }`}
-                          >
-                            {isFavorite(path) ? '★' : '☆'}
-                          </button>
+                          <FavoriteToggleButton
+                            path={path}
+                            pressed={isFavorite(path)}
+                            onToggle={toggleFavorite}
+                            className={(pressed) =>
+                              `min-h-[44px] min-w-[44px] flex items-center justify-center text-sm shrink-0 transition-colors ${
+                                pressed ? 'text-ds-accent' : 'text-ds-text-muted hover:text-ds-accent'
+                              }`
+                            }
+                          />
                         )}
                       </div>
                     ))}

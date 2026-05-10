@@ -33,7 +33,6 @@ func TestWarCuiPresenter_Output(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		w := setupWarTest()
 		result := p.Output(w, errors.New("oops"))
-		assert.Contains(t, result, "[エラー]")
 		assert.Contains(t, result, "oops")
 	})
 

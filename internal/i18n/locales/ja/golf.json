@@ -3,5 +3,12 @@
   "helpDraw": "  d                        ストックからカードを引く",
   "helpRemove": "  rm <col>                  カードを除去",
   "helpGiveUp": "  g                        ギブアップ",
-  "helpHint": "  h                        ヒント"
+  "helpHint": "  h                        ヒント",
+  "exposedCard": "({{col}}){{card}}",
+  "stockLine": "Stock: {{count}}枚",
+  "wasteCard": " | Waste: {{card}}",
+  "wasteEmpty": " | Waste: [空]",
+  "hintRemove": "ヒント: カード除去: 列{{col}}",
+  "hintDraw": "ヒント: ストックからカードを引いてください",
+  "hintUnknown": "ヒント: 不明"
 }

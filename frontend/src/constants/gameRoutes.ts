@@ -38,6 +38,8 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/letitride', labelKey: 'nav.letitride', icon: '🎰', page: 'LetItRide' },
       { path: '/reddog', labelKey: 'nav.reddog', icon: '🐕', page: 'RedDog' },
       { path: '/casinowar', labelKey: 'nav.casinowar', icon: '⚔️', page: 'CasinoWar' },
+      { path: '/dragontiger', labelKey: 'nav.dragontiger', icon: '🐉', page: 'DragonTiger' },
+      { path: '/blackjackswitch', labelKey: 'nav.blackjackswitch', icon: '🔀', page: 'BlackJackSwitch' },
     ],
   },
   {
@@ -128,6 +130,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/scorpion', labelKey: 'nav.scorpion', icon: '🦂', page: 'Scorpion' },
       { path: '/accordion', labelKey: 'nav.accordion', icon: '🪗', page: 'Accordion' },
       { path: '/pokersquares', labelKey: 'nav.pokersquares', icon: '🔢', page: 'PokerSquares' },
+      { path: '/montecarlo', labelKey: 'nav.montecarlo', icon: '🎲', page: 'MonteCarlo' },
       { path: '/calculation', labelKey: 'nav.calculation', icon: '🧮', page: 'Calculation' },
     ],
   },

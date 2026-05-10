@@ -1,0 +1,20 @@
+{
+  "helpTitle": "Monte Carlo Solitaire",
+  "helpRemove": "  m <r1> <c1> <r2> <c2>  Remove an adjacent same-rank pair (e.g. m 0 0 0 1)",
+  "helpDeal": "  d, deal             Compress board and refill from stock",
+  "helpGiveup": "  g, giveup           Give up",
+  "helpHint": "  h, hint             Show hint",
+  "helpLog": "  log, l              Show action log",
+  "helpUndo": "  u, undo             Undo last move",
+  "playing": "Playing",
+  "stalemate": "No moves available",
+  "gameClear": "Game Clear! Deals: {{dealCount}}",
+  "gameOver": "Game Over",
+  "hintAvailable": "Hint available",
+  "noHint": "No hints available",
+  "cellEmpty": "({{r}},{{c}}) .....",
+  "cellCard": "({{r}},{{c}}) {{card}}",
+  "header": "Stock: {{stock}}  Removed: {{removed}}/52  Deals: {{deals}}",
+  "hintLineRemove": "Hint: remove ({{r1}},{{c1}}) and ({{r2}},{{c2}})",
+  "hintLineDeal": "Hint: deal from stock"
+}

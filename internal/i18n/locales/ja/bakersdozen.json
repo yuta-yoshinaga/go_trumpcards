@@ -4,5 +4,11 @@
   "helpMoveTT": "  m <fromCol> <toCol>  タブロー間で1枚移動",
   "helpGiveUp": "  g                    ギブアップ",
   "helpHint": "  h                    ヒント",
-  "helpAutoComplete": "  ac                   オートコンプリート"
+  "helpAutoComplete": "  ac                   オートコンプリート",
+  "foundationHeader": "Foundation: ",
+  "columnLabel": "列{{col}}:",
+  "hintFrom": "タブロー列{{col}}[{{idx}}]",
+  "hintToFoundation": "ファンデーション",
+  "hintToTableau": "タブロー列{{col}}",
+  "hintLine": "ヒント: {{from}} → {{to}}"
 }

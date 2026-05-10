@@ -1,5 +1,23 @@
 {
   "helpTitle": "Pai Gow Poker (パイガオポーカー)",
   "helpBet": "  b <金額>             ベット",
-  "helpSet": "  s <idx1> <idx2>      ローハンド設定 (カードのインデックスを2つ選択)"
+  "helpSet": "  s <idx1> <idx2>      ローハンド設定 (カードのインデックスを2つ選択)",
+  "chipsLine": "チップ: {{chips}}",
+  "phaseLine": "フェーズ: {{phase}}",
+  "cardsLabel": "カード: ",
+  "highLine": "  ハイ: {{cards}} ({{rank}})",
+  "lowLine": "  ロー: {{cards}} ({{rank}})",
+  "playerHeader": "PLAYER",
+  "dealerHeader": "DEALER",
+  "phaseBet": "BET",
+  "phaseSetHands": "SET HANDS",
+  "phaseEnd": "END",
+  "phaseUnknown": "UNKNOWN",
+  "rankUnknown": "Unknown",
+  "betLine": "ベット: {{bet}}",
+  "playerWins": "プレイヤーの勝ち！",
+  "dealerWins": "ディーラーの勝ち！",
+  "push": "プッシュ！",
+  "payoutLine": "払戻し: {{payout}}",
+  "payoutWithCommissionLine": "払戻し: {{payout}} (手数料: {{commission}})"
 }

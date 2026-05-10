@@ -1,0 +1,11 @@
+{
+  "helpTitle": "Poker Squares (ポーカー・スクエアズ)",
+  "cellEmpty": "({{r}},{{c}}) .....",
+  "cellCard": "({{r}},{{c}}) {{card}}",
+  "rowScore": "   => 行スコア: {{score}}",
+  "colScore": "col{{idx}}={{score}}",
+  "currentCard": "手持ちカード: {{card}}",
+  "currentCardNone": "手持ちカード: (なし)",
+  "placedLine": "配置済み: {{placed}}/{{total}}  合計得点: {{score}}",
+  "gameComplete": "ゲーム終了 合計得点: {{score}}"
+}

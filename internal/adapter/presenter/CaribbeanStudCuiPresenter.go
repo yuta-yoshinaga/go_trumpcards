@@ -1,12 +1,13 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // CaribbeanStudCuiPresenter カリビアンスタッドポーカーCUIプレゼンタークラス
@@ -18,15 +19,15 @@ func (cp *CaribbeanStudCuiPresenter) Output(cs interfaces.CaribbeanStudGame, las
 	var sb strings.Builder
 
 	sb.WriteString("----------\n")
-	fmt.Fprintf(&sb, "chips: %d\n", cs.GetChips())
-	fmt.Fprintf(&sb, "phase: %s\n", cp.phaseStr(cs.GetPhase()))
+	sb.WriteString(i18n.Tf("caribbeanstud.chipsLine", "chips", strconv.Itoa(cs.GetChips())) + "\n")
+	sb.WriteString(i18n.Tf("caribbeanstud.phaseLine", "phase", cp.phaseStr(cs.GetPhase())) + "\n")
 
 	playerHand := cs.GetPlayerHand()
 	if len(playerHand) > 0 {
-		sb.WriteString("--- " + color.Bold("PLAYER") + " ---\n")
+		sb.WriteString("--- " + color.Bold(i18n.T("caribbeanstud.playerHeader")) + " ---\n")
 		rank := cs.GetPlayerHandRank()
 		if rank >= 0 && rank < len(domain.PokerHandNames) {
-			fmt.Fprintf(&sb, "hand: %s\n", domain.PokerHandNames[rank])
+			sb.WriteString(i18n.Tf("caribbeanstud.handLine", "hand", domain.PokerHandNames[rank]) + "\n")
 		}
 		parts := make([]string, len(playerHand))
 		for i, card := range playerHand {
@@ -38,16 +39,16 @@ func (cp *CaribbeanStudCuiPresenter) Output(cs interfaces.CaribbeanStudGame, las
 
 	dealerHand := cs.GetDealerHand()
 	if len(dealerHand) > 0 {
-		sb.WriteString("--- " + color.Bold("DEALER") + " ---\n")
+		sb.WriteString("--- " + color.Bold(i18n.T("caribbeanstud.dealerHeader")) + " ---\n")
 		if cs.GetPhase() == domain.CaribbeanStudPhaseEnd {
 			rank := cs.GetDealerHandRank()
 			if rank >= 0 && rank < len(domain.PokerHandNames) {
-				fmt.Fprintf(&sb, "hand: %s\n", domain.PokerHandNames[rank])
+				sb.WriteString(i18n.Tf("caribbeanstud.handLine", "hand", domain.PokerHandNames[rank]) + "\n")
 			}
 			if cs.GetDealerQualified() {
-				sb.WriteString("(Qualified)\n")
+				sb.WriteString(i18n.T("caribbeanstud.qualified") + "\n")
 			} else {
-				sb.WriteString("(Not Qualified)\n")
+				sb.WriteString(i18n.T("caribbeanstud.notQualified") + "\n")
 			}
 			parts := make([]string, len(dealerHand))
 			for i, card := range dealerHand {
@@ -56,7 +57,7 @@ func (cp *CaribbeanStudCuiPresenter) Output(cs interfaces.CaribbeanStudGame, las
 			sb.WriteString(strings.Join(parts, ","))
 			sb.WriteString("\n")
 		} else {
-			// Action phase: show only the first card; hide the rest
+			// Action phase: show only the first dealer card; hide the rest behind "??".
 			parts := make([]string, len(dealerHand))
 			parts[0] = cuiCardStr(dealerHand[0])
 			for i := 1; i < len(dealerHand); i++ {
@@ -70,28 +71,28 @@ func (cp *CaribbeanStudCuiPresenter) Output(cs interfaces.CaribbeanStudGame, las
 	sb.WriteString("----------\n")
 
 	if lastErr != nil {
-		fmt.Fprintf(&sb, "%s\n", color.Red(lastErr.Error()))
+		sb.WriteString(color.Red(lastErr.Error()) + "\n")
 	}
 
 	if cs.GetGameEndFlag() {
-		fmt.Fprintf(&sb, "ante: %d\n", cs.GetAnteBet())
+		sb.WriteString(i18n.Tf("caribbeanstud.anteLine", "ante", strconv.Itoa(cs.GetAnteBet())) + "\n")
 		if cs.GetPlayBet() > 0 {
-			fmt.Fprintf(&sb, "play: %d\n", cs.GetPlayBet())
+			sb.WriteString(i18n.Tf("caribbeanstud.playLine", "play", strconv.Itoa(cs.GetPlayBet())) + "\n")
 		}
 		switch cs.GetResult() {
 		case domain.GameResultWin:
-			sb.WriteString(color.Green("Player wins!") + "\n")
+			sb.WriteString(color.Green(i18n.T("caribbeanstud.playerWins")) + "\n")
 		case domain.GameResultLose:
 			if cs.GetPlayBet() == 0 {
-				sb.WriteString(color.Red("Player folded.") + "\n")
+				sb.WriteString(color.Red(i18n.T("caribbeanstud.playerFolded")) + "\n")
 			} else {
-				sb.WriteString(color.Red("Dealer wins!") + "\n")
+				sb.WriteString(color.Red(i18n.T("caribbeanstud.dealerWins")) + "\n")
 			}
 		case domain.GameResultDraw:
-			sb.WriteString(color.Yellow("Push!") + "\n")
+			sb.WriteString(color.Yellow(i18n.T("caribbeanstud.push")) + "\n")
 		default:
 		}
-		fmt.Fprintf(&sb, "total payout: %d\n", cs.GetTotalPayout())
+		sb.WriteString(i18n.Tf("caribbeanstud.totalPayoutLine", "payout", strconv.Itoa(cs.GetTotalPayout())) + "\n")
 		sb.WriteString("----------\n")
 	}
 
@@ -107,12 +108,12 @@ func (cp *CaribbeanStudCuiPresenter) ActionLogOutput(cs interfaces.CaribbeanStud
 func (cp *CaribbeanStudCuiPresenter) phaseStr(phase int) string {
 	switch phase {
 	case domain.CaribbeanStudPhaseBet:
-		return "BET"
+		return i18n.T("caribbeanstud.phaseBet")
 	case domain.CaribbeanStudPhaseAction:
-		return "ACTION"
+		return i18n.T("caribbeanstud.phaseAction")
 	case domain.CaribbeanStudPhaseEnd:
-		return "END"
+		return i18n.T("caribbeanstud.phaseEnd")
 	default:
-		return "UNKNOWN"
+		return i18n.T("caribbeanstud.phaseUnknown")
 	}
 }

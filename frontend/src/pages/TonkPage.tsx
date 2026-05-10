@@ -7,16 +7,12 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TonkOnDealCelebration } from '../components/TonkOnDealCelebration';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
@@ -24,7 +20,6 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useTonkGame } from '../hooks/useTonkGame';
 import { useSound } from '../providers/SoundProvider';
@@ -153,8 +148,6 @@ function TonkPageContent() {
     });
   }, [gameExec, hideActionLog, tonkConfig.cpuDifficulty, tonkConfig.pointLimit]);
 
-  useGameRoundGuard(!!state && !state.gameEndFlag);
-
   if (!state)
     return (
       <GameSkeleton
@@ -171,14 +164,20 @@ function TonkPageContent() {
   const isHumanTurn = (isDrawPhase || isDiscardPhase) && state.players[state.currentPlayerIdx]?.isHuman === true;
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.tonk.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.tonk')} />
-      <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn}>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/tonk" />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.tonk')}
+      gameThemeBg={gameTheme.tonk.bg}
+      phaseName={phaseNames[state.phase] ?? ''}
+      isHumanTurn={isHumanTurn}
+      gamePath="/tonk"
+      gameEndFlag={isGameEnd}
+      onCelebrate={() => playSound('winFanfare')}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -413,8 +412,21 @@ function TonkPageContent() {
           </GameFooter>
         </>
       )}
-      <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-    </div>
+      {(() => {
+        // Tonk-on-deal sets winnerIdx >= 0; guard defensively so we never index
+        // players[-1] (which would surface as "CPU 0 wins" via playerName).
+        const winner =
+          state && state.winnerIdx >= 0 && state.winnerIdx < state.players.length
+            ? state.players[state.winnerIdx]
+            : undefined;
+        return (
+          <TonkOnDealCelebration
+            show={!!state?.isTonk && (isRoundEnd || isGameEnd) && winner !== undefined}
+            winnerCards={winner?.cards ?? []}
+            winnerName={winner ? playerName(winner.id, winner.isHuman) : undefined}
+          />
+        );
+      })()}
+    </GamePageShell>
   );
 }

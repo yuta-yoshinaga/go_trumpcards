@@ -1,24 +1,25 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // bridgePlayerStr returns the display string for a single Bridge player.
 func bridgePlayerStr(player *domain.BridgePlayer, i int) string {
 	var b strings.Builder
-	name := cuiPlayerName(player, i)
-	fmt.Fprintf(&b, "%s: チーム%d 獲得%dトリック %d枚\n",
-		name,
-		player.GetTeam(),
-		player.GetTrickCount(),
-		player.GetCardsSize(),
-	)
+	b.WriteString(i18n.Tf("bridge.playerLine",
+		"name", cuiPlayerName(player, i),
+		"team", strconv.Itoa(player.GetTeam()),
+		"tricks", strconv.Itoa(player.GetTrickCount()),
+		"cards", strconv.Itoa(player.GetCardsSize()),
+	))
+	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player))
 		b.WriteString("\n")
@@ -26,71 +27,81 @@ func bridgePlayerStr(player *domain.BridgePlayer, i int) string {
 	return b.String()
 }
 
-// BridgeCuiPresenter ブリッジCUIプレゼンタークラス
+// BridgeCuiPresenter renders the Bridge CUI view.
 type BridgeCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *BridgeCuiPresenter) Output(b interfaces.BridgeGame, lastErr error) string {
-	return buildCuiOutput("Contract Bridge (コントラクトブリッジ)", func(sb *strings.Builder) {
-		fmt.Fprintf(sb, "ラウンド: %d  トリック: %d\n", b.GetRoundNumber(), b.GetTrickNumber())
-		fmt.Fprintf(sb, "ディーラー: %s\n", cuiPlayerName(b.GetPlayer(b.GetDealerIdx()), b.GetDealerIdx()))
+	return buildCuiOutput(i18n.T("bridge.helpTitle"), func(sb *strings.Builder) {
+		sb.WriteString(i18n.Tf("bridge.round",
+			"round", strconv.Itoa(b.GetRoundNumber()),
+			"trick", strconv.Itoa(b.GetTrickNumber())) + "\n")
+		sb.WriteString(i18n.Tf("bridge.dealer",
+			"name", cuiPlayerName(b.GetPlayer(b.GetDealerIdx()), b.GetDealerIdx())) + "\n")
 
 		trumpSuit := b.GetTrumpSuit()
-		if trumpSuit == -1 {
-			sb.WriteString("切り札: ノートランプ\n")
-		} else if trumpSuit > 0 {
-			fmt.Fprintf(sb, "切り札: %s\n", cuiSuitName(trumpSuit))
-		} else {
-			sb.WriteString("切り札: 未決定\n")
+		switch {
+		case trumpSuit == -1:
+			sb.WriteString(i18n.T("bridge.trumpNoTrump") + "\n")
+		case trumpSuit > 0:
+			sb.WriteString(i18n.Tf("bridge.trumpSuit", "suit", cuiSuitName(trumpSuit)) + "\n")
+		default:
+			sb.WriteString(i18n.T("bridge.trumpUndecided") + "\n")
 		}
 
-		contractLevel := b.GetContractLevel()
-		if contractLevel > 0 {
-			fmt.Fprintf(sb, "コントラクト: %dレベル スート%d", contractLevel, b.GetContractSuit())
+		if contractLevel := b.GetContractLevel(); contractLevel > 0 {
+			sb.WriteString(i18n.Tf("bridge.contractLine",
+				"level", strconv.Itoa(contractLevel),
+				"suit", strconv.Itoa(b.GetContractSuit())))
 			switch b.GetDoubled() {
 			case 1:
-				sb.WriteString(" ダブル")
+				sb.WriteString(i18n.T("bridge.contractDoubled"))
 			case 2:
-				sb.WriteString(" リダブル")
+				sb.WriteString(i18n.T("bridge.contractRedoubled"))
 			}
 			sb.WriteString("\n")
 
 			declarerIdx := b.GetDeclarerIdx()
 			if declarerIdx >= 0 {
-				fmt.Fprintf(sb, "デクレアラー: %s  ダミー: %s\n",
-					cuiPlayerName(b.GetPlayer(declarerIdx), declarerIdx),
-					cuiPlayerName(b.GetPlayer(b.GetDummyIdx()), b.GetDummyIdx()))
+				sb.WriteString(i18n.Tf("bridge.declarerLine",
+					"declarer", cuiPlayerName(b.GetPlayer(declarerIdx), declarerIdx),
+					"dummy", cuiPlayerName(b.GetPlayer(b.GetDummyIdx()), b.GetDummyIdx())) + "\n")
 			}
 		}
 
-		// バルネラビリティ
-		fmt.Fprintf(sb, "バルネラビリティ: チーム0=%v チーム1=%v\n", b.GetVulnerability(0), b.GetVulnerability(1))
+		// Vulnerability
+		sb.WriteString(i18n.Tf("bridge.vulnerability",
+			"a", strconv.FormatBool(b.GetVulnerability(0)),
+			"b", strconv.FormatBool(b.GetVulnerability(1))) + "\n")
 
-		// チームスコア
-		fmt.Fprintf(sb, "チーム0: %d点 (ゲーム%d勝 ライン下%d)  チーム1: %d点 (ゲーム%d勝 ライン下%d)\n",
-			b.GetTeamScore(0), b.GetGamesWon(0), b.GetBelowLine(0),
-			b.GetTeamScore(1), b.GetGamesWon(1), b.GetBelowLine(1))
+		// Team scores
+		sb.WriteString(i18n.Tf("bridge.teamScores",
+			"a", strconv.Itoa(b.GetTeamScore(0)),
+			"aGames", strconv.Itoa(b.GetGamesWon(0)),
+			"aBelow", strconv.Itoa(b.GetBelowLine(0)),
+			"b", strconv.Itoa(b.GetTeamScore(1)),
+			"bGames", strconv.Itoa(b.GetGamesWon(1)),
+			"bBelow", strconv.Itoa(b.GetBelowLine(1))) + "\n")
 
-		// プレイヤー情報
+		// Player rows
 		for i := 0; i < b.GetPlayerCnt(); i++ {
 			sb.WriteString(bridgePlayerStr(b.GetPlayer(i), i))
 		}
 
-		// ダミーの手札 (公開後)
+		// Dummy hand (after the opening lead)
 		if b.IsOpeningLeadDone() {
-			dummyHand := b.GetDummyHand()
-			if len(dummyHand) > 0 {
+			if dummyHand := b.GetDummyHand(); len(dummyHand) > 0 {
 				parts := make([]string, len(dummyHand))
 				for i, c := range dummyHand {
 					parts[i] = cuiCardStr(c)
 				}
-				fmt.Fprintf(sb, "ダミー手札: %s\n", strings.Join(parts, ", "))
+				sb.WriteString(i18n.Tf("bridge.dummyHand", "cards", strings.Join(parts, ", ")) + "\n")
 			}
 		}
 
 		sb.WriteString("----------\n")
 
-		// 現在のトリック
+		// Current trick
 		trick := b.GetCurrentTrick()
 		cuiTrickBlock(sb, trick,
 			func(tc *domain.BridgeTrickCard) int { return tc.PlayerIdx },
@@ -100,83 +111,99 @@ func (p *BridgeCuiPresenter) Output(b interfaces.BridgeGame, lastErr error) stri
 
 		cuiErrorBlock(sb, lastErr)
 
-		// ゲーム状態
+		// Game state
 		if b.GetGameEndFlag() {
-			winnerTeam := b.GetWinnerTeam()
-			fmt.Fprintf(sb, "ゲーム終了！ %s\n", color.Green(fmt.Sprintf("チーム%dの勝利です！", winnerTeam)))
-		} else {
-			phase := b.GetPhase()
-			switch phase {
-			case domain.BridgePhaseBid:
-				bidIdx := b.GetBidPlayerIdx()
-				player := b.GetPlayer(bidIdx)
-				fmt.Fprintf(sb, "ビッドフェーズ: %sの番\n", cuiPlayerName(player, bidIdx))
-				sb.WriteString("b <type> [level] [suit] (bid: 0=Pass, 1=Normal, 2=Double, 3=Redouble)\n")
-			case domain.BridgePhasePlay:
-				currentIdx := b.GetCurrentPlayerIdx()
-				player := b.GetPlayer(currentIdx)
-				fmt.Fprintf(sb, "手番: %s\n", cuiPlayerName(player, currentIdx))
-				sb.WriteString("p <i> (play)\n")
-			case domain.BridgePhaseTrickEnd:
-				sb.WriteString("トリック終了\n")
-				sb.WriteString("n (next trick)\n")
-			case domain.BridgePhaseRoundEnd:
-				sb.WriteString("ラウンド終了\n")
-				sb.WriteString("nr (next round)\n")
-			}
+			banner := color.Green(i18n.Tf("bridge.winnerBanner",
+				"team", strconv.Itoa(b.GetWinnerTeam())))
+			sb.WriteString(i18n.Tf("bridge.gameEnd", "banner", banner) + "\n")
+			return
+		}
+		switch b.GetPhase() {
+		case domain.BridgePhaseBid:
+			bidIdx := b.GetBidPlayerIdx()
+			sb.WriteString(i18n.Tf("bridge.promptBid",
+				"name", cuiPlayerName(b.GetPlayer(bidIdx), bidIdx)) + "\n")
+			sb.WriteString(i18n.T("bridge.promptBidHelp") + "\n")
+		case domain.BridgePhasePlay:
+			currentIdx := b.GetCurrentPlayerIdx()
+			sb.WriteString(i18n.Tf("bridge.promptPlay",
+				"name", cuiPlayerName(b.GetPlayer(currentIdx), currentIdx)) + "\n")
+			sb.WriteString(i18n.T("bridge.promptPlayHelp") + "\n")
+		case domain.BridgePhaseTrickEnd:
+			sb.WriteString(i18n.T("bridge.promptTrickEnd") + "\n")
+			sb.WriteString(i18n.T("bridge.promptTrickEndHelp") + "\n")
+		case domain.BridgePhaseRoundEnd:
+			sb.WriteString(i18n.T("bridge.promptRoundEnd") + "\n")
+			sb.WriteString(i18n.T("bridge.promptRoundEndHelp") + "\n")
 		}
 	})
 }
 
-// HintOutput ヒント情報を出力する
+// HintOutput emits the current Bridge hint.
 func (p *BridgeCuiPresenter) HintOutput(b interfaces.BridgeGame) string {
 	hint := b.GetHint()
 	if hint == nil {
-		return "ヒントはありません。\n"
+		return i18n.T("bridge.hintNone") + "\n"
 	}
+	reason := bridgeHintReasonStr(hint.Reason)
 	if hint.BidType != nil {
 		bidTypeStr := bridgeBidTypeStr(*hint.BidType)
 		if *hint.BidType == int(domain.BridgeBidNormal) && hint.BidLevel != nil && hint.BidSuit != nil {
-			return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: %s %dレベル スート%d (%s)]", bidTypeStr, *hint.BidLevel, *hint.BidSuit, bridgeHintReasonStr(hint.Reason))))
+			return color.Yellow(i18n.Tf("bridge.hintBidWithLevel",
+				"type", bidTypeStr,
+				"level", strconv.Itoa(*hint.BidLevel),
+				"suit", strconv.Itoa(*hint.BidSuit),
+				"reason", reason)) + "\n"
 		}
-		return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: %s (%s)]", bidTypeStr, bridgeHintReasonStr(hint.Reason))))
+		return color.Yellow(i18n.Tf("bridge.hintBidNoLevel",
+			"type", bidTypeStr,
+			"reason", reason)) + "\n"
 	}
 	if hint.CardIndex == nil {
-		return "ヒントはありません。\n"
+		return i18n.T("bridge.hintNone") + "\n"
 	}
-	player := b.GetPlayer(0)
-	card := player.GetCard(*hint.CardIndex)
-	return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: [%d]%s (%s)]", *hint.CardIndex, cuiCardStr(card), bridgeHintReasonStr(hint.Reason))))
+	card := b.GetPlayer(0).GetCard(*hint.CardIndex)
+	return color.Yellow(i18n.Tf("bridge.hintCard",
+		"idx", strconv.Itoa(*hint.CardIndex),
+		"card", cuiCardStr(card),
+		"reason", reason)) + "\n"
 }
 
-// bridgeBidTypeStr ビッドタイプを日本語に変換する
+// bridgeBidTypeKeys maps a bid type constant to its i18n key.
+var bridgeBidTypeKeys = map[domain.BridgeBidType]string{
+	domain.BridgeBidPass:     "bridge.bidPass",
+	domain.BridgeBidNormal:   "bridge.bidNormal",
+	domain.BridgeBidDouble:   "bridge.bidDouble",
+	domain.BridgeBidRedouble: "bridge.bidRedouble",
+}
+
+// bridgeBidTypeStr returns the localized bid-type label, falling back to a
+// debug-friendly numeric form for unknown values.
 func bridgeBidTypeStr(bidType int) string {
-	switch domain.BridgeBidType(bidType) {
-	case domain.BridgeBidPass:
-		return "パス"
-	case domain.BridgeBidNormal:
-		return "ビッド"
-	case domain.BridgeBidDouble:
-		return "ダブル"
-	case domain.BridgeBidRedouble:
-		return "リダブル"
-	default:
-		return fmt.Sprintf("不明(%d)", bidType)
+	if key, ok := bridgeBidTypeKeys[domain.BridgeBidType(bidType)]; ok {
+		return i18n.T(key)
 	}
+	return i18n.Tf("bridge.bidUnknown", "n", strconv.Itoa(bidType))
 }
 
-// bridgeHintReasons はBridge固有のヒント理由翻訳
-var bridgeHintReasons = map[string]string{
-	"support_partner": "パートナーをサポート",
-	"competitive_bid": "競り合い",
+// bridgeHintReasonKeys maps Bridge-specific hint-reason identifiers to
+// their i18n keys. Reasons not in this map fall through to
+// lookupHintReason → cui_common (e.g. strategic_bid).
+var bridgeHintReasonKeys = map[string]string{
+	"support_partner": "bridge.hintReasonSupportPartner",
+	"competitive_bid": "bridge.hintReasonCompetitiveBid",
 }
 
-// bridgeHintReasonStr ヒント理由を日本語に変換する
+// bridgeHintReasonStr resolves a reason via the per-game map first, then
+// the shared (cui_common) layer.
 func bridgeHintReasonStr(reason string) string {
-	return lookupHintReason(reason, bridgeHintReasons)
+	if key, ok := bridgeHintReasonKeys[reason]; ok {
+		return i18n.T(key)
+	}
+	return lookupHintReason(reason, nil)
 }
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *BridgeCuiPresenter) ActionLogOutput(b interfaces.BridgeGame) string {
 	return actionLogOutputText(b)
 }

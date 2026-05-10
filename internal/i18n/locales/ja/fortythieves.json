@@ -7,5 +7,15 @@
   "helpMoveTT": "  m t <col> <idx> t <col>  move tableau to tableau",
   "helpGiveUp": "  g                    give up",
   "helpHint": "  h                    hint",
-  "helpAutoComplete": "  ac                   auto-complete"
+  "helpAutoComplete": "  ac                   auto-complete",
+  "foundationHeader": "Foundation: ",
+  "stockLine": "Stock: {{count}}枚",
+  "wasteCard": " | Waste: {{card}}",
+  "wasteEmpty": " | Waste: [空]",
+  "columnLabel": "列{{col}}:",
+  "hintFromTableau": "タブロー列{{col}}[{{idx}}]",
+  "hintFromWaste": "ウェイスト",
+  "hintToFoundation": "ファンデーション",
+  "hintToTableau": "タブロー列{{col}}",
+  "hintLine": "ヒント: {{from}} → {{to}}"
 }

@@ -2,5 +2,13 @@
   "helpTitle": "Memory (神経衰弱)",
   "helpFlip": "  f <pos>              flip a card",
   "helpNext": "  n                    next turn",
-  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)"
+  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "playerLine": "{{name}}: {{pairs}}ペア",
+  "promptFlip1": "手番: {{name}} — 1枚目を選んでください",
+  "promptFlip2": "手番: {{name}} — 2枚目を選んでください",
+  "promptFlipHelp": "f <pos>・・・カードをめくる",
+  "resultMatch": "ペアが揃いました！",
+  "resultMismatch": "残念、不一致です。",
+  "promptNextHelp": "n・・・次へ",
+  "gameEnd": "ゲーム終了！ {{name}}の勝利です！"
 }

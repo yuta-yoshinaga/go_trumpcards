@@ -541,6 +541,58 @@ type scorpionJSON struct {
 	MoveCount      int                                        `json:"mc"`
 	ActionLog      []*ActionLogEntry                          `json:"al"`
 	IsStalemate    bool                                       `json:"sl"`
+	History        []*scorpionSnapshot                        `json:"hi,omitempty"`
+}
+
+// scorpionSnapshotJSON is the wire format for a single undo snapshot.
+// scorpionSnapshot uses unexported fields, so we project to/from this
+// shape with explicit Marshal/Unmarshal methods. Field names match
+// scorpionJSON's short keys to keep the KV payload compact (#1654).
+type scorpionSnapshotJSON struct {
+	Tableau        [ScorpionTableauCnt][]*KlondikeTableauCard `json:"tb"`
+	Stock          []*Card                                    `json:"st"`
+	CompletedSuits int                                        `json:"cs"`
+	Phase          ScorpionPhase                              `json:"ps"`
+	MoveCount      int                                        `json:"mc"`
+	IsStalemate    bool                                       `json:"sl"`
+}
+
+// MarshalJSON implements json.Marshaler for scorpionSnapshot.
+func (s *scorpionSnapshot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(scorpionSnapshotJSON{
+		Tableau:        s.tableau,
+		Stock:          s.stock,
+		CompletedSuits: s.completedSuits,
+		Phase:          s.phase,
+		MoveCount:      s.moveCount,
+		IsStalemate:    s.isStalemate,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler for scorpionSnapshot.
+func (s *scorpionSnapshot) UnmarshalJSON(data []byte) error {
+	var j scorpionSnapshotJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Stock) > scorpionMaxSliceLen {
+		return fmt.Errorf("scorpion: snapshot stock exceeds maximum allowed size")
+	}
+	for _, col := range j.Tableau {
+		if len(col) > scorpionMaxSliceLen {
+			return fmt.Errorf("scorpion: snapshot tableau column exceeds maximum allowed size")
+		}
+	}
+	s.tableau = j.Tableau
+	s.stock = j.Stock
+	if s.stock == nil {
+		s.stock = make([]*Card, 0)
+	}
+	s.completedSuits = j.CompletedSuits
+	s.phase = j.Phase
+	s.moveCount = j.MoveCount
+	s.isStalemate = j.IsStalemate
+	return nil
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -554,6 +606,7 @@ func (s *Scorpion) MarshalJSON() ([]byte, error) {
 		MoveCount:      s.moveCount,
 		ActionLog:      s.actionLog,
 		IsStalemate:    s.isStalemate,
+		History:        s.history,
 	})
 }
 
@@ -566,12 +619,13 @@ func (s *Scorpion) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if len(j.Stock) > scorpionMaxSliceLen || len(j.ActionLog) > scorpionMaxSliceLen {
+	if len(j.Stock) > scorpionMaxSliceLen || len(j.ActionLog) > scorpionMaxSliceLen ||
+		len(j.History) > scorpionMaxSliceLen {
 		return fmt.Errorf("scorpion: input array exceeds maximum allowed size")
 	}
-	for i := range ScorpionTableauCnt {
-		if len(j.Tableau[i]) > scorpionMaxSliceLen {
-			return fmt.Errorf("scorpion: input array exceeds maximum allowed size")
+	for _, col := range j.Tableau {
+		if len(col) > scorpionMaxSliceLen {
+			return fmt.Errorf("scorpion: tableau column exceeds maximum allowed size")
 		}
 	}
 	s.trumpCards = j.TrumpCards
@@ -590,7 +644,10 @@ func (s *Scorpion) UnmarshalJSON(data []byte) error {
 	if s.actionLog == nil {
 		s.actionLog = make([]*ActionLogEntry, 0)
 	}
-	s.history = nil
+	s.history = j.History
+	if s.history == nil {
+		s.history = make([]*scorpionSnapshot, 0)
+	}
 	s.isStalemate = j.IsStalemate
 	return nil
 }

@@ -2,34 +2,38 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// TrashCuiPresenter トラッシュCUIプレゼンタークラス
+// TrashCuiPresenter renders the Trash CUI view.
 type TrashCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *TrashCuiPresenter) Output(t interfaces.TrashGame, lastErr error) string {
-	return buildCuiOutput("Trash (トラッシュ)", func(b *strings.Builder) {
+	return buildCuiOutput(i18n.T("trash.helpTitle"), func(b *strings.Builder) {
 		// Opponent first, then player — mirrors the physical table view.
 		for _, idx := range [...]int{domain.TrashCpuIdx, domain.TrashHumanIdx} {
-			label := "あなた"
+			label := i18n.T("trash.playerLabelHuman")
 			if t.IsCpuPlayer(idx) {
-				label = "CPU"
+				label = i18n.T("trash.playerLabelCpu")
 			}
 			if idx == t.GetCurrent() && t.GetPhase() != domain.TrashPhaseGameOver {
-				label += " (ターン中)"
+				label += i18n.T("trash.playerLabelTurnSuffix")
 			}
-			fmt.Fprintf(b, "%s:\n  ", label)
+			b.WriteString(i18n.Tf("trash.playerLineHeader", "label", label) + "\n  ")
 			for j, s := range t.GetPlayerSlots(idx) {
+				idxStr := fmt.Sprintf("%02d", j+1)
 				if s.FaceUp && s.Card != nil {
-					fmt.Fprintf(b, "[%02d %s] ", j+1, cuiCardStr(s.Card))
+					b.WriteString(i18n.Tf("trash.slotFaceUp",
+						"idx", idxStr, "card", cuiCardStr(s.Card)))
 				} else {
-					fmt.Fprintf(b, "[%02d  ? ] ", j+1)
+					b.WriteString(i18n.Tf("trash.slotFaceDown", "idx", idxStr))
 				}
 				if (j+1)%5 == 0 && j+1 < domain.TrashSlotCnt {
 					b.WriteString("\n  ")
@@ -39,36 +43,37 @@ func (p *TrashCuiPresenter) Output(t interfaces.TrashGame, lastErr error) string
 		}
 
 		b.WriteString("----------\n")
-		fmt.Fprintf(b, "山札: %d   捨て札: %d", t.GetStockSize(), t.GetDiscardSize())
+		b.WriteString(i18n.Tf("trash.stockLine",
+			"stock", strconv.Itoa(t.GetStockSize()),
+			"discard", strconv.Itoa(t.GetDiscardSize())))
 		if top := t.GetDiscardTop(); top != nil {
-			fmt.Fprintf(b, " (top: %s)", cuiCardStr(top))
+			b.WriteString(i18n.Tf("trash.stockTop", "card", cuiCardStr(top)))
 		}
 		b.WriteString("\n")
 		if pending := t.GetPending(); pending != nil {
-			fmt.Fprintf(b, "ペンディング: %s\n", cuiCardStr(pending))
+			b.WriteString(i18n.Tf("trash.pending", "card", cuiCardStr(pending)) + "\n")
 		}
 		b.WriteString("----------\n")
 
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
-		}
+		cuiErrorBlock(b, lastErr)
 
+		movesLine := i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(t.GetMoveCount()))
 		switch t.GetPhase() {
 		case domain.TrashPhasePlayerTurn:
-			fmt.Fprintf(b, "手数: %d\n", t.GetMoveCount())
+			b.WriteString(movesLine + "\n")
 		case domain.TrashPhaseAwaitWild:
-			fmt.Fprintf(b, "%s 手数: %d\n", color.Green("ワイルドを配置してください (p <位置>)"), t.GetMoveCount())
+			b.WriteString(color.Green(i18n.T("trash.promptAwaitWild")) + " " + movesLine + "\n")
 		case domain.TrashPhaseGameOver:
 			if t.GetWinner() == domain.TrashHumanIdx {
-				fmt.Fprintf(b, "%s 手数: %d\n", color.Green("あなたの勝ち！"), t.GetMoveCount())
+				b.WriteString(color.Green(i18n.T("trash.winHuman")) + " " + movesLine + "\n")
 			} else {
-				fmt.Fprintf(b, "%s 手数: %d\n", color.Red("CPUの勝ち"), t.GetMoveCount())
+				b.WriteString(color.Red(i18n.T("trash.winCpu")) + " " + movesLine + "\n")
 			}
 		}
 	})
 }
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *TrashCuiPresenter) ActionLogOutput(t interfaces.TrashGame) string {
 	if t.GetPhase() != domain.TrashPhaseGameOver {
 		return actionLogToText(nil)

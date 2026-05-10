@@ -301,6 +301,41 @@ describe('AccordionPage', () => {
     expect(hintToggle).toBeChecked();
   });
 
+  it('pressing "1" merges the selected pile onto its left neighbour', async () => {
+    const fourPileState: AccordionResponse = {
+      ...playingState,
+      piles: [
+        { cards: [card('SPADE', 2)], size: 1 },
+        { cards: [card('HEART', 2)], size: 1 }, // pile 1: same rank as pile 0 → 1-left merge legal
+        { cards: [card('CLOVER', 3)], size: 1 },
+        { cards: [card('DIAMOND', 4)], size: 1 },
+      ],
+    };
+    mockExec.mockResolvedValue(fourPileState);
+    renderWithProviders(<AccordionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    // ArrowRight from no-selection lands on index 0; press once more to reach 1.
+    fireEvent.keyDown(document, { key: 'ArrowRight' });
+    fireEvent.keyDown(document, { key: 'ArrowRight' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(fourPileState);
+    fireEvent.keyDown(document, { key: '1' });
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'pile', index: 1 }, { zone: 'pile', index: 0 }),
+    );
+  });
+
+  it('pressing "u" issues an undo when canUndo is true', async () => {
+    mockExec.mockResolvedValue({ ...playingState, canUndo: true });
+    renderWithProviders(<AccordionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'u' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
+  });
+
   it('shows 次のゲーム at game-end and fires reset directly (no confirm)', async () => {
     mockExec.mockResolvedValue(gameOverState);
     renderWithProviders(<AccordionPage />);

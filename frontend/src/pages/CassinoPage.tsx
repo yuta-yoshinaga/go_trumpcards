@@ -5,16 +5,11 @@ import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCassinoGame } from '../hooks/useCassinoGame';
@@ -22,7 +17,6 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { gameTheme } from '../styles/gameTheme';
 import type { CassinoResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
@@ -128,8 +122,6 @@ function CassinoPageContent() {
 
   const onReset = useCallback(() => handleResetWithConfig(), [handleResetWithConfig]);
 
-  useGameRoundGuard(!!state && !state.gameEndFlag);
-
   if (!state || state.players.length < 4) {
     return (
       <div className={`flex-1 flex items-center justify-center ${gameTheme.cassino.bg} text-ds-text-muted`} aria-busy>
@@ -148,14 +140,20 @@ function CassinoPageContent() {
   const phaseName = isGameEnd ? t('phase.end') : t(`phase.${state.phase}`, t('phase.play'));
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.cassino.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.cassino')} />
-      <PhaseIndicator phaseName={phaseName} isHumanTurn={isHumanTurn}>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/cassino" />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.cassino')}
+      gameThemeBg={gameTheme.cassino.bg}
+      phaseName={phaseName}
+      isHumanTurn={isHumanTurn}
+      gamePath="/cassino"
+      gameEndFlag={isGameEnd}
+      winShow={humanWon}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -377,11 +375,8 @@ function CassinoPageContent() {
               />
             </div>
           </GameFooter>
-
-          <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-          <WinCelebration show={isGameEnd && humanWon} />
         </>
       )}
-    </div>
+    </GamePageShell>
   );
 }

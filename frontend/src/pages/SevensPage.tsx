@@ -1,34 +1,30 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { sevensApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { ReplaySpeedSettingsPanel } from '../components/common/ReplaySpeedSettingsPanel';
 import type { SettingsGroup } from '../components/common/SettingsPanel';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { ManualButton } from '../components/ManualButton';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { SevensBoard } from '../components/sevens/SevensBoard';
 import { SevensCpuArea } from '../components/sevens/SevensCpuArea';
 import { SevensHumanArea } from '../components/sevens/SevensHumanArea';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useSevensGame } from '../hooks/useSevensGame';
 import { useSound } from '../providers/SoundProvider';
+import { badgeSuccess, badgeWarning } from '../styles/badgeStyles';
 import { btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -38,7 +34,7 @@ import { parseSevensCommand, SEVENS_HELP } from '../utils/cli/commands/sevensCom
 import { formatSevensState } from '../utils/cli/formatters/sevensFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
-import { actionDesc } from '../utils/sevensUtils';
+import { actionDesc, listJokerPlacements } from '../utils/sevensUtils';
 
 /** Sevens tutorial step definitions. */
 const SV_TUTORIAL_STEPS: TutorialStep[] = [
@@ -74,24 +70,9 @@ function SevensPageContent() {
     retry,
     jokerCardIdx,
     setJokerCardIdx,
-    cfgTunnel,
-    setCfgTunnel,
-    cfgTunnelSkipWidth,
-    setCfgTunnelSkipWidth,
-    cfgJokerCount,
-    setCfgJokerCount,
-    cfgCpuStrategy,
-    setCfgCpuStrategy,
-    cfgMaxPasses,
-    setCfgMaxPasses,
-    cfgNoJokerFinish,
-    setCfgNoJokerFinish,
-    cfgJokerReclaim,
-    setCfgJokerReclaim,
-    cfgEndStop,
-    setCfgEndStop,
-    cfgJokerConsBan,
-    setCfgJokerConsBan,
+    config,
+    handleConfigChange,
+    handleToggle,
     handleCardPlay,
     handleJokerPlace,
   } = useSevensGame();
@@ -135,32 +116,52 @@ function SevensPageContent() {
   const runAction = exec;
   const handleManualReset = useCallback(() => {
     hideActionLog();
-    void runAction('reset', -1, 0, 0, {
-      tunnelEnabled: cfgTunnel,
-      tunnelSkipWidth: cfgTunnelSkipWidth,
-      jokerCount: cfgJokerCount,
-      cpuStrategy: cfgCpuStrategy,
-      maxPasses: cfgMaxPasses,
-      noJokerFinish: cfgNoJokerFinish,
-      jokerReclaim: cfgJokerReclaim,
-      endStop: cfgEndStop,
-      jokerConsecutiveBanned: cfgJokerConsBan,
-    });
-  }, [
-    runAction,
-    hideActionLog,
-    cfgTunnel,
-    cfgTunnelSkipWidth,
-    cfgJokerCount,
-    cfgCpuStrategy,
-    cfgMaxPasses,
-    cfgNoJokerFinish,
-    cfgJokerReclaim,
-    cfgEndStop,
-    cfgJokerConsBan,
-  ]);
+    void runAction('reset', -1, 0, 0, config);
+  }, [runAction, hideActionLog, config]);
 
-  useGameRoundGuard(!!state && !state.gameEndFlag);
+  // Auto-place: when the player has just selected a joker and the board offers
+  // exactly one legal slot, skip the redundant click and dispatch the placement
+  // immediately. Anything more than one slot still requires the player to pick
+  // (otherwise we'd remove their strategic choice).
+  //
+  // Important: useSevensGame only clears jokerCardIdx on a *successful* api
+  // response. If the placement fails (network error, server-side validation),
+  // loading flips back to false but jokerCardIdx is still non-null, which
+  // would cause the effect to re-fire and dispatch the same failing placement
+  // forever. We guard with a ref that tracks "we already tried auto-placing
+  // for this jokerCardIdx", and only reset it once the index changes.
+  const tablePlacedForAuto = state?.tablePlaced;
+  const tunnelEnabledForAuto = state?.config.tunnelEnabled;
+  const endStopEnabledForAuto = state?.config.endStopEnabled;
+  const tunnelSkipWidthForAuto = state?.config.tunnelSkipWidth;
+  const lastAutoAttemptedRef = useRef<number | null>(null);
+  useEffect(() => {
+    // Reset the guard whenever the joker selection clears or changes.
+    if (jokerCardIdx === null) {
+      lastAutoAttemptedRef.current = null;
+      return;
+    }
+    if (lastAutoAttemptedRef.current === jokerCardIdx) return;
+    if (loading || tablePlacedForAuto === undefined) return;
+    const slots = listJokerPlacements(
+      tablePlacedForAuto,
+      tunnelEnabledForAuto ?? false,
+      endStopEnabledForAuto ?? false,
+      tunnelSkipWidthForAuto ?? 0,
+    );
+    if (slots.length === 1) {
+      lastAutoAttemptedRef.current = jokerCardIdx;
+      handleJokerPlace(slots[0].suit, slots[0].value);
+    }
+  }, [
+    jokerCardIdx,
+    loading,
+    tablePlacedForAuto,
+    tunnelEnabledForAuto,
+    endStopEnabledForAuto,
+    tunnelSkipWidthForAuto,
+    handleJokerPlace,
+  ]);
 
   if (!state)
     return (
@@ -193,16 +194,16 @@ function SevensPageContent() {
       items: [
         {
           type: 'checkbox',
-          id: 'cfgTunnel',
+          id: 'tunnelEnabled',
           label: t('config.tunnel'),
-          checked: cfgTunnel,
-          onToggle: setCfgTunnel,
+          checked: config.tunnelEnabled,
+          onToggle: (v) => handleToggle('tunnelEnabled', v),
         },
         {
           type: 'select',
-          id: 'cfgTunnelSkipWidth',
+          id: 'tunnelSkipWidth',
           label: t('config.tunnelSkip'),
-          value: cfgTunnelSkipWidth,
+          value: config.tunnelSkipWidth,
           options: [
             { value: 0, label: t('config.tunnelSkipOff') },
             { value: 2, label: '2' },
@@ -211,35 +212,35 @@ function SevensPageContent() {
             { value: 5, label: '5' },
             { value: 6, label: '6' },
           ],
-          onSelect: (v) => setCfgTunnelSkipWidth(Number(v)),
+          onSelect: (v) => handleConfigChange('tunnelSkipWidth', String(v)),
         },
         {
           type: 'checkbox',
-          id: 'cfgNoJokerFinish',
+          id: 'noJokerFinish',
           label: t('config.noJokerFinish'),
-          checked: cfgNoJokerFinish,
-          onToggle: setCfgNoJokerFinish,
+          checked: config.noJokerFinish,
+          onToggle: (v) => handleToggle('noJokerFinish', v),
         },
         {
           type: 'checkbox',
-          id: 'cfgJokerReclaim',
+          id: 'jokerReclaim',
           label: t('config.jokerReclaim'),
-          checked: cfgJokerReclaim,
-          onToggle: setCfgJokerReclaim,
+          checked: config.jokerReclaim,
+          onToggle: (v) => handleToggle('jokerReclaim', v),
         },
         {
           type: 'checkbox',
-          id: 'cfgEndStop',
+          id: 'endStop',
           label: t('config.endStop'),
-          checked: cfgEndStop,
-          onToggle: setCfgEndStop,
+          checked: config.endStop,
+          onToggle: (v) => handleToggle('endStop', v),
         },
         {
           type: 'checkbox',
-          id: 'cfgJokerConsBan',
+          id: 'jokerConsecutiveBanned',
           label: t('config.jokerConsecutiveBanned'),
-          checked: cfgJokerConsBan,
-          onToggle: setCfgJokerConsBan,
+          checked: config.jokerConsecutiveBanned,
+          onToggle: (v) => handleToggle('jokerConsecutiveBanned', v),
         },
       ],
     },
@@ -248,40 +249,40 @@ function SevensPageContent() {
       items: [
         {
           type: 'select',
-          id: 'cfgJokerCount',
+          id: 'jokerCount',
           label: t('config.joker'),
-          value: cfgJokerCount,
+          value: config.jokerCount,
           options: [
             { value: 0, label: '0' },
             { value: 1, label: '1' },
             { value: 2, label: '2' },
           ],
-          onSelect: (v) => setCfgJokerCount(Number(v)),
+          onSelect: (v) => handleConfigChange('jokerCount', String(v)),
         },
         {
           type: 'select',
-          id: 'cfgCpuStrategy',
+          id: 'cpuStrategy',
           label: t('config.cpuStrategy'),
-          value: cfgCpuStrategy,
+          value: config.cpuStrategy,
           options: [
             { value: 0, label: t('config.cpuStrategyOff') },
             { value: 1, label: t('config.cpuStrategyStrategic') },
             { value: 2, label: t('config.cpuStrategyHarassment') },
           ],
-          onSelect: (v) => setCfgCpuStrategy(Number(v)),
+          onSelect: (v) => handleConfigChange('cpuStrategy', String(v)),
         },
         {
           type: 'select',
-          id: 'cfgMaxPasses',
+          id: 'maxPasses',
           label: t('config.passCount'),
-          value: cfgMaxPasses,
+          value: config.maxPasses,
           options: [
             { value: 3, label: '3' },
             { value: 5, label: '5' },
             { value: 10, label: '10' },
             { value: 0, label: t('config.passUnlimited') },
           ],
-          onSelect: (v) => setCfgMaxPasses(Number(v)),
+          onSelect: (v) => handleConfigChange('maxPasses', String(v)),
         },
         {
           type: 'checkbox',
@@ -295,14 +296,20 @@ function SevensPageContent() {
   ];
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.sevens.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.sevens')} />
-      <PhaseIndicator phaseName={state.gameEndFlag ? t('phase.end') : t('phase.play')} isHumanTurn={isHumanTurn}>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/sevens" />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.sevens')}
+      gameThemeBg={gameTheme.sevens.bg}
+      phaseName={state.gameEndFlag ? t('phase.end') : t('phase.play')}
+      isHumanTurn={isHumanTurn}
+      gamePath="/sevens"
+      gameEndFlag={!!state.gameEndFlag}
+      onCelebrate={() => playSound('winFanfare')}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -357,7 +364,7 @@ function SevensPageContent() {
             {state.humanAction && (
               <div
                 data-testid={state.humanAction.forcedPass ? 'human-action-forced-pass' : 'human-action'}
-                className={`rounded-lg py-2 px-3.5 my-2 text-xs ${state.humanAction.forcedPass ? 'bg-ds-error/50 text-ds-warning/80 border border-ds-error/50' : 'bg-black/40 text-ds-success/80'}`}
+                className={`my-2 ${state.humanAction.forcedPass ? badgeWarning : badgeSuccess}`}
               >
                 {actionDesc(state.players, state.humanAction, t)}
               </div>
@@ -370,7 +377,7 @@ function SevensPageContent() {
                   <div
                     key={`cpu-action-${a.playerIdx}-${i}`}
                     data-testid={a.forcedPass ? `cpu-action-forced-pass-${i}` : `cpu-action-${i}`}
-                    className={a.forcedPass ? 'text-ds-warning/80' : 'text-ds-text-primary'}
+                    className={a.forcedPass ? 'text-ds-warning' : 'text-ds-text-primary'}
                   >
                     {actionDesc(state.players, a, t)}
                   </div>
@@ -422,6 +429,7 @@ function SevensPageContent() {
 
             <div data-tutorial="sv-settings">
               <SettingsPanel title={t('config.title')} groups={settingsGroups} />
+              <ReplaySpeedSettingsPanel />
             </div>
 
             <ErrorAlert message={error} onRetry={retry} />
@@ -457,8 +465,6 @@ function SevensPageContent() {
           </GameFooter>
         </>
       )}
-      <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-    </div>
+    </GamePageShell>
   );
 }

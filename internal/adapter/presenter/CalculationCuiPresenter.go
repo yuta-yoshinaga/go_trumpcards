@@ -1,92 +1,105 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// CalculationCuiPresenter カルキュレーションCUIプレゼンタークラス
+// CalculationCuiPresenter renders the Calculation Solitaire CUI view.
 type CalculationCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *CalculationCuiPresenter) Output(g interfaces.CalculationGame, lastErr error) string {
-	return buildCuiOutput("Calculation (カルキュレーション)", func(b *strings.Builder) {
-		// ファンデーション
+	return buildCuiOutput(i18n.T("calculation.helpTitle"), func(b *strings.Builder) {
+		// Foundations (one per step: +1, +2, +3, +4)
 		foundations := g.GetFoundations()
 		stepLabels := []string{"+1", "+2", "+3", "+4"}
+		maxStr := strconv.Itoa(domain.CardValueMax)
 		for i := range domain.CalculationFoundationCnt {
 			pile := foundations[i]
-			fmt.Fprintf(b, "[F%d %s] ", i, stepLabels[i])
+			b.WriteString(i18n.Tf("calculation.foundationLabel",
+				"idx", strconv.Itoa(i),
+				"step", stepLabels[i]))
 			if len(pile) == 0 {
-				b.WriteString("(empty)")
+				b.WriteString(i18n.T("calculation.foundationEmpty"))
 			} else {
 				top := pile[len(pile)-1]
-				fmt.Fprintf(b, "%s (%d/%d)", cuiCardStr(top), len(pile), domain.CardValueMax)
+				b.WriteString(i18n.Tf("calculation.foundationFilled",
+					"card", cuiCardStr(top),
+					"count", strconv.Itoa(len(pile)),
+					"max", maxStr))
 			}
 			b.WriteString("\n")
 		}
 		b.WriteString("----------\n")
 
-		// ウェイスト
+		// Wastes
 		wastes := g.GetWastes()
 		for i := range domain.CalculationWasteCnt {
 			pile := wastes[i]
-			fmt.Fprintf(b, "[W%d] ", i)
+			b.WriteString(i18n.Tf("calculation.wasteLabel", "idx", strconv.Itoa(i)))
 			if len(pile) == 0 {
-				b.WriteString("(empty)")
+				b.WriteString(i18n.T("calculation.wasteEmpty"))
 			} else {
 				top := pile[len(pile)-1]
-				fmt.Fprintf(b, "%s (%d枚)", cuiCardStr(top), len(pile))
+				b.WriteString(i18n.Tf("calculation.wasteFilled",
+					"card", cuiCardStr(top),
+					"count", strconv.Itoa(len(pile))))
 			}
 			b.WriteString("\n")
 		}
 		b.WriteString("----------\n")
 
-		// ストック
-		fmt.Fprintf(b, "ストック: %d枚", g.GetStockCount())
+		// Stock
+		b.WriteString(i18n.Tf("calculation.stockLine",
+			"count", strconv.Itoa(g.GetStockCount())))
 		if top := g.GetStockTop(); top != nil {
-			fmt.Fprintf(b, " 次のカード: %s", cuiCardStr(top))
+			b.WriteString(i18n.Tf("calculation.stockNext", "card", cuiCardStr(top)))
 		}
 		b.WriteString("\n")
 
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
-		}
+		cuiErrorBlock(b, lastErr)
 
 		switch g.GetPhase() {
 		case domain.CalculationPhasePlaying:
 			if g.IsStalemate() {
-				fmt.Fprintf(b, "%s\n", color.Red("手詰まりです"))
+				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
 			}
-			fmt.Fprintf(b, "手数: %d\n", g.GetMoveCount())
+			b.WriteString(i18n.Tf("cuiSolitaireMoves",
+				"count", strconv.Itoa(g.GetMoveCount())) + "\n")
 		case domain.CalculationPhaseGameClear:
-			fmt.Fprintf(b, "%s 手数: %d\n", color.Green("ゲームクリア！"), g.GetMoveCount())
+			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
+				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(g.GetMoveCount())) + "\n")
 		case domain.CalculationPhaseGameOver:
-			b.WriteString(color.Red("ゲームオーバー") + "\n")
+			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
 		}
 	})
 }
 
-// HintOutput ヒントを文字列出力
+// HintOutput emits the current Calculation hint.
 func (p *CalculationCuiPresenter) HintOutput(g interfaces.CalculationGame) string {
 	hint := g.GetHint()
 	if hint == nil {
-		return "ヒントはありません。\n"
+		return i18n.T("cuiHintNone") + "\n"
 	}
 	switch hint.FromZone {
 	case "stock":
-		return fmt.Sprintf("ヒント: ストック → ファンデーション%d\n", hint.FoundationIdx)
+		return i18n.Tf("calculation.hintStock",
+			"foundation", strconv.Itoa(hint.FoundationIdx)) + "\n"
 	case "waste":
-		return fmt.Sprintf("ヒント: ウェイスト%d → ファンデーション%d\n", hint.WasteIdx, hint.FoundationIdx)
+		return i18n.Tf("calculation.hintWaste",
+			"waste", strconv.Itoa(hint.WasteIdx),
+			"foundation", strconv.Itoa(hint.FoundationIdx)) + "\n"
 	}
-	return "ヒントはありません。\n"
+	return i18n.T("cuiHintNone") + "\n"
 }
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *CalculationCuiPresenter) ActionLogOutput(g interfaces.CalculationGame) string {
 	if g.GetPhase() == domain.CalculationPhasePlaying {
 		return actionLogToText(nil)

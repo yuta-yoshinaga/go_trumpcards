@@ -1,123 +1,108 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// IndianPokerCuiPresenter インディアンポーカーCUIプレゼンタークラス
+// IndianPokerCuiPresenter renders the Indian Poker CUI view.
 type IndianPokerCuiPresenter struct{}
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *IndianPokerCuiPresenter) ActionLogOutput(ip interfaces.IndianPokerGame) string {
 	return actionLogOutputText(ip)
 }
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *IndianPokerCuiPresenter) Output(ip interfaces.IndianPokerGame, lastErr error) string {
-	var b strings.Builder
+	return buildCuiOutput(i18n.T("indianpoker.outputTitle"), func(b *strings.Builder) {
+		b.WriteString(i18n.Tf("indianpoker.dealerLine", "idx", strconv.Itoa(ip.GetDealerIdx())) + "\n")
+		b.WriteString(i18n.Tf("indianpoker.potLine", "pot", strconv.Itoa(ip.GetPot())) + "\n")
 
-	b.WriteString("==========\n")
-	b.WriteString("Indian Poker\n")
-	b.WriteString("==========\n")
-
-	// ディーラー位置
-	fmt.Fprintf(&b, "ディーラー: Player %d\n", ip.GetDealerIdx())
-
-	// ポット
-	fmt.Fprintf(&b, "ポット: %d\n", ip.GetPot())
-
-	// ベッティングリミット
-	cfg := ip.GetConfig()
-	if int(cfg.BettingLimit) < len(domain.BettingLimitNames) {
-		fmt.Fprintf(&b, "リミット: %s\n", domain.BettingLimitNames[cfg.BettingLimit])
-	}
-
-	// アンティ
-	fmt.Fprintf(&b, "アンティ: %d\n", cfg.Ante)
-
-	// プレイヤー情報
-	b.WriteString("----------\n")
-	isShowdown := ip.GetPhase() == domain.IndianPokerPhaseShowdown || ip.GetPhase() == domain.IndianPokerPhaseEnd
-	for i := 0; i < ip.GetPlayerCnt(); i++ {
-		player := ip.GetPlayer(i)
-		b.WriteString(cuiPlayerNameWithStyle(player, i))
-
-		fmt.Fprintf(&b, " チップ:%d", player.GetChips())
-
-		if player.GetFolded() {
-			b.WriteString(" " + color.BoldYellow("[フォールド]"))
-		} else if player.GetAllIn() {
-			b.WriteString(" " + color.BoldYellow("[オールイン]"))
+		cfg := ip.GetConfig()
+		if int(cfg.BettingLimit) < len(domain.BettingLimitNames) {
+			b.WriteString(i18n.Tf("indianpoker.limitLine", "name", domain.BettingLimitNames[cfg.BettingLimit]) + "\n")
 		}
 
-		if player.GetCurrentBet() > 0 {
-			fmt.Fprintf(&b, " ベット:%d", player.GetCurrentBet())
-		}
-		b.WriteString("\n")
+		b.WriteString(i18n.Tf("indianpoker.anteLine", "ante", strconv.Itoa(cfg.Ante)) + "\n")
 
-		// カード表示
-		if player.GetCardsSize() > 0 {
-			if player.GetIsHuman() {
-				// 人間は自分のカードが見えない
-				if isShowdown {
-					fmt.Fprintf(&b, "  カード: %s\n", cuiCardStrEmoji(player.GetCard(0)))
-				} else {
-					b.WriteString("  カード: ??\n")
-				}
-			} else {
-				// CPUのカードは常に表示 (インディアンポーカーでは他人のカードが見える)
-				fmt.Fprintf(&b, "  カード: %s\n", cuiCardStrEmoji(player.GetCard(0)))
-			}
-		}
-	}
-
-	// CPU行動記録
-	cpuActions := ip.GetCpuActions()
-	if len(cpuActions) > 0 {
 		b.WriteString("----------\n")
-		b.WriteString(color.Bold("[CPU行動]") + "\n")
-		for _, action := range cpuActions {
-			fmt.Fprintf(&b, "  Player %d: %s", action.PlayerIdx, cuiBettingActionName(action.Action))
-			if action.Amount > 0 {
-				fmt.Fprintf(&b, " (%d)", action.Amount)
+		isShowdown := ip.GetPhase() == domain.IndianPokerPhaseShowdown || ip.GetPhase() == domain.IndianPokerPhaseEnd
+		for i := 0; i < ip.GetPlayerCnt(); i++ {
+			player := ip.GetPlayer(i)
+			b.WriteString(cuiPlayerNameWithStyle(player, i))
+			b.WriteString(i18n.Tf("indianpoker.playerChips", "chips", strconv.Itoa(player.GetChips())))
+
+			if player.GetFolded() {
+				b.WriteString(color.BoldYellow(i18n.T("indianpoker.playerFolded")))
+			} else if player.GetAllIn() {
+				b.WriteString(color.BoldYellow(i18n.T("indianpoker.playerAllIn")))
+			}
+
+			if player.GetCurrentBet() > 0 {
+				b.WriteString(i18n.Tf("indianpoker.playerBet", "bet", strconv.Itoa(player.GetCurrentBet())))
 			}
 			b.WriteString("\n")
-		}
-	}
 
-	// ショーダウン結果
-	results := ip.GetRoundResults()
-	if len(results) > 0 && isShowdown {
-		b.WriteString("==========\n")
-		b.WriteString(color.Bold("[結果]") + "\n")
-		for _, r := range results {
-			name := cuiPlayerName(ip.GetPlayer(r.PlayerIdx), r.PlayerIdx)
-			if r.Card != nil {
-				fmt.Fprintf(&b, "  %s: %s", name, cuiCardStrEmoji(r.Card))
-			} else {
-				fmt.Fprintf(&b, "  %s", name)
+			// Indian Poker: humans never see their own card until showdown,
+			// while CPU cards are always visible (everyone-but-yourself rule).
+			if player.GetCardsSize() > 0 {
+				if player.GetIsHuman() {
+					if isShowdown {
+						b.WriteString(i18n.Tf("indianpoker.cardLine", "card", cuiCardStrEmoji(player.GetCard(0))) + "\n")
+					} else {
+						b.WriteString(i18n.T("indianpoker.cardHidden") + "\n")
+					}
+				} else {
+					b.WriteString(i18n.Tf("indianpoker.cardLine", "card", cuiCardStrEmoji(player.GetCard(0))) + "\n")
+				}
 			}
-			if r.WonAmount > 0 {
-				fmt.Fprintf(&b, " → %dチップ獲得", r.WonAmount)
-			}
-			b.WriteString("\n")
 		}
-	}
 
-	// エラーメッセージ
-	if lastErr != nil {
-		fmt.Fprintf(&b, "%s\n", color.Red(lastErr.Error()))
-	}
+		cpuActions := ip.GetCpuActions()
+		if len(cpuActions) > 0 {
+			b.WriteString("----------\n")
+			b.WriteString(color.Bold(i18n.T("indianpoker.cpuActionsHeader")) + "\n")
+			for _, action := range cpuActions {
+				b.WriteString(i18n.Tf("indianpoker.cpuActionLine",
+					"idx", strconv.Itoa(action.PlayerIdx),
+					"action", cuiBettingActionName(action.Action)))
+				if action.Amount > 0 {
+					b.WriteString(i18n.Tf("indianpoker.cpuActionAmount", "amount", strconv.Itoa(action.Amount)))
+				}
+				b.WriteString("\n")
+			}
+		}
 
-	// ゲーム終了メッセージ
-	if ip.GetGameEndFlag() {
-		b.WriteString("ゲーム終了\n")
-	}
+		results := ip.GetRoundResults()
+		if len(results) > 0 && isShowdown {
+			b.WriteString("==========\n")
+			b.WriteString(color.Bold(i18n.T("indianpoker.resultsHeader")) + "\n")
+			for _, r := range results {
+				name := cuiPlayerName(ip.GetPlayer(r.PlayerIdx), r.PlayerIdx)
+				if r.Card != nil {
+					b.WriteString(i18n.Tf("indianpoker.resultCard",
+						"name", name,
+						"card", cuiCardStrEmoji(r.Card)))
+				} else {
+					b.WriteString(i18n.Tf("indianpoker.resultName", "name", name))
+				}
+				if r.WonAmount > 0 {
+					b.WriteString(i18n.Tf("indianpoker.wonAmount", "total", strconv.Itoa(r.WonAmount)))
+				}
+				b.WriteString("\n")
+			}
+		}
 
-	return b.String()
+		cuiErrorBlock(b, lastErr)
+
+		if ip.GetGameEndFlag() {
+			b.WriteString(i18n.T("indianpoker.gameEnd") + "\n")
+		}
+	})
 }

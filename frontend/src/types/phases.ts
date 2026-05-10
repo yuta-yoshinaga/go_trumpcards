@@ -556,6 +556,13 @@ export const PokerSquaresPhase = {
   COMPLETE: 1,
 } as const;
 
+/** Monte Carlo Solitaire phase constants (sync: internal/domain/MonteCarlo.go). */
+export const MonteCarloPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 export const LetItRidePhase = {
   BET: 1,
   FIRST_DECISION: 2,
@@ -579,6 +586,41 @@ export const CasinoWarPhase = {
   TIE_DECISION: 3,
   WAR_DEALT: 4,
   END: 5,
+} as const;
+
+/** Dragon Tiger phase constants (sync: internal/domain/DragonTiger.go). */
+export const DragonTigerPhase = {
+  BET: 1,
+  END: 2,
+} as const;
+
+/** Dragon Tiger bet-type constants (sync: internal/domain/DragonTiger.go). */
+export const DragonTigerBetType = {
+  DRAGON: 0,
+  TIGER: 1,
+  TIE: 2,
+} as const;
+
+/** Dragon Tiger Big Road history values (sync: internal/domain/DragonTiger.go). */
+export const DragonTigerHistoryResult = {
+  DRAGON: 0,
+  TIGER: 1,
+  TIE: 2,
+} as const;
+
+/** Blackjack Switch phase constants (sync: internal/domain/BlackJackSwitch.go). */
+export const BlackJackSwitchPhase = {
+  BET: 1,
+  SWITCH: 2,
+  ACTION: 3,
+  END: 4,
+} as const;
+
+/** Blackjack Switch domain GameResult values (sync: internal/domain/BlackJack.go). */
+export const BlackJackSwitchResult = {
+  WIN: 1,
+  DRAW: 0,
+  LOSE: -1,
 } as const;
 
 /** Nertz / Pounce phase constants (sync: internal/domain/Nertz.go). */

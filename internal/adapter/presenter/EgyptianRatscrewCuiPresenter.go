@@ -1,93 +1,103 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// EgyptianRatscrewCuiPresenter エジプシャン・ラットスクリュー CUI プレゼンター
+// EgyptianRatscrewCuiPresenter renders the Egyptian Ratscrew CUI view.
 type EgyptianRatscrewCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *EgyptianRatscrewCuiPresenter) Output(g interfaces.EgyptianRatscrewGame, lastErr error) string {
-	return buildCuiOutput("Egyptian Ratscrew (エジプシャン・ラットスクリュー)", func(b *strings.Builder) {
+	return buildCuiOutput(i18n.T("egyptianratscrew.helpTitle"), func(b *strings.Builder) {
 		cpu := g.GetPlayer(1)
 		human := g.GetPlayer(0)
 		if cpu == nil || human == nil {
 			return
 		}
 
-		fmt.Fprintf(b, "CPU: ストック%d枚\n", cpu.GetStockSize())
+		b.WriteString(i18n.Tf("egyptianratscrew.cpuStockLine",
+			"count", strconv.Itoa(cpu.GetStockSize())) + "\n")
 		b.WriteString("----------\n")
-		b.WriteString(color.Bold("[場札]") + " ")
+		b.WriteString(color.Bold(i18n.T("egyptianratscrew.boardLabel")) + " ")
+		centerSize := strconv.Itoa(g.GetCenterPileSize())
 		if c := g.GetTopCard(); c != nil {
-			fmt.Fprintf(b, "%s  (場に%d枚)\n", cuiCardStr(c), g.GetCenterPileSize())
+			b.WriteString(i18n.Tf("egyptianratscrew.boardCard",
+				"card", cuiCardStr(c),
+				"count", centerSize) + "\n")
 		} else {
-			fmt.Fprintf(b, "--  (場に%d枚)\n", g.GetCenterPileSize())
+			b.WriteString(i18n.Tf("egyptianratscrew.boardEmpty",
+				"count", centerSize) + "\n")
 		}
 		b.WriteString("----------\n")
-		fmt.Fprintf(b, "あなた: ストック%d枚\n", human.GetStockSize())
+		b.WriteString(i18n.Tf("egyptianratscrew.humanStockLine",
+			"count", strconv.Itoa(human.GetStockSize())) + "\n")
 
 		if g.GetChanceRemaining() > 0 {
-			fmt.Fprintf(b, color.Yellow("チャンスバトル中: 残り %d 回\n"), g.GetChanceRemaining())
+			b.WriteString(color.Yellow(i18n.Tf("egyptianratscrew.promptChance",
+				"count", strconv.Itoa(g.GetChanceRemaining()))) + "\n")
 		}
 		if g.IsSlappable() {
-			b.WriteString(color.Yellow("ペア/サンドイッチ成立！ j (slap) で叩いてください\n"))
+			b.WriteString(color.Yellow(i18n.T("egyptianratscrew.promptSlappable")) + "\n")
 		} else if g.GetCurrentTurnIdx() == 0 {
-			b.WriteString("あなたの番です。s (step) でカードをめくってください\n")
+			b.WriteString(i18n.T("egyptianratscrew.promptHumanTurn") + "\n")
 		} else {
-			b.WriteString("CPU の番です。tick で進めるか、待ってください\n")
+			b.WriteString(i18n.T("egyptianratscrew.promptCpuTurn") + "\n")
 		}
 
 		switch g.GetLastEvent().Kind {
 		case domain.EgyptianRatscrewEventSlapCorrect:
-			label := "スラップ"
+			label := i18n.T("egyptianratscrew.slapLabelDefault")
 			switch g.GetLastEvent().SlapReason {
 			case domain.EgyptianRatscrewSlapReasonPair:
-				label = "ペアスラップ"
+				label = i18n.T("egyptianratscrew.slapLabelPair")
 			case domain.EgyptianRatscrewSlapReasonSandwich:
-				label = "サンドイッチスラップ"
+				label = i18n.T("egyptianratscrew.slapLabelSandwich")
 			}
 			if g.GetLastEvent().PlayerIdx == 0 {
-				fmt.Fprintf(b, color.Green("あなたが%sで場札を獲得！\n"), label)
+				b.WriteString(color.Green(i18n.Tf("egyptianratscrew.slapCorrectHuman",
+					"label", label)) + "\n")
 			} else {
-				fmt.Fprintf(b, color.Red("CPU が%sで場札を奪った...\n"), label)
+				b.WriteString(color.Red(i18n.Tf("egyptianratscrew.slapCorrectCpu",
+					"label", label)) + "\n")
 			}
 		case domain.EgyptianRatscrewEventSlapWrong:
 			if g.GetLastEvent().PlayerIdx == 0 {
-				b.WriteString(color.Red("誤スラップ！ 1 枚 CPU に渡しました\n"))
+				b.WriteString(color.Red(i18n.T("egyptianratscrew.slapWrongHuman")) + "\n")
 			} else {
-				b.WriteString(color.Green("CPU が誤スラップ。1 枚もらいました\n"))
+				b.WriteString(color.Green(i18n.T("egyptianratscrew.slapWrongCpu")) + "\n")
 			}
 		case domain.EgyptianRatscrewEventChanceWin:
 			if g.GetLastEvent().PlayerIdx == 0 {
-				b.WriteString(color.Green("チャンスバトル勝利！ 場札を獲得\n"))
+				b.WriteString(color.Green(i18n.T("egyptianratscrew.chanceWinHuman")) + "\n")
 			} else {
-				b.WriteString(color.Red("チャンスバトルで CPU に場札を奪われた...\n"))
+				b.WriteString(color.Red(i18n.T("egyptianratscrew.chanceWinCpu")) + "\n")
 			}
 		}
 
 		if g.GetGameEndFlag() {
 			switch g.GetWinnerIdx() {
 			case 0:
-				b.WriteString(color.Green("あなたの勝ちです！\n"))
+				b.WriteString(color.Green(i18n.T("egyptianratscrew.winHuman")) + "\n")
 			case -1:
-				b.WriteString(color.Yellow("引き分けです\n"))
+				b.WriteString(color.Yellow(i18n.T("egyptianratscrew.winDraw")) + "\n")
 			default:
-				b.WriteString(color.Red("CPUの勝ちです...\n"))
+				b.WriteString(color.Red(i18n.T("egyptianratscrew.winCpu")) + "\n")
 			}
-		} else if lastErr != nil {
-			// 終局済みのときは終局メッセージを優先し、エラーは抑止する。
-			fmt.Fprintf(b, "%s %s\n", color.Red("[エラー]"), lastErr.Error())
+		} else {
+			// Game over takes precedence; otherwise show the error.
+			cuiErrorBlock(b, lastErr)
 		}
 	})
 }
 
-// ActionLogOutput 棋譜を文字列出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *EgyptianRatscrewCuiPresenter) ActionLogOutput(g interfaces.EgyptianRatscrewGame) string {
 	return actionLogOutputText(g)
 }

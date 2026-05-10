@@ -85,12 +85,21 @@ function Board({
                         type="button"
                         onClick={() => onJokerPlace?.(idx, v)}
                         aria-label={t('placeAriaLabel', { suit: suitName(idx), value: valueName(v) })}
-                        className={`${baseClass}${bold} ring-2 ring-ds-info ring-offset-1 ring-offset-black/30 motion-safe:animate-pulse cursor-pointer p-0 hover:brightness-110`}
+                        className={`${baseClass}${bold} relative ring-2 ring-ds-info ring-offset-1 ring-offset-black/30 motion-safe:animate-pulse cursor-pointer p-0 hover:brightness-110`}
                         style={colors}
                         data-testid="board-cell"
                         data-joker-placeable="true"
                       >
-                        {valueName(v)}
+                        {/* Translucent joker glyph hints that this cell will accept the held joker.
+                            The rank label is rendered after this span so it stacks on top in DOM
+                            order, keeping the value legible at full strength. */}
+                        <span
+                          aria-hidden="true"
+                          className="absolute inset-0 flex items-center justify-center text-[0.85em] opacity-40"
+                        >
+                          🃏
+                        </span>
+                        <span className="relative">{valueName(v)}</span>
                       </button>
                     );
                   }

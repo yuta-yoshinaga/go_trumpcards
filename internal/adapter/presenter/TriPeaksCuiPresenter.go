@@ -1,25 +1,25 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// TriPeaksCuiPresenter トリピークスCUIプレゼンタークラス
+// TriPeaksCuiPresenter renders the TriPeaks Solitaire CUI view.
 type TriPeaksCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (pr *TriPeaksCuiPresenter) Output(t interfaces.TriPeaksGame, lastErr error) string {
-	return buildCuiOutput("TriPeaks (トリピークス)", func(b *strings.Builder) {
+	return buildCuiOutput(i18n.T("tripeaks.helpTitle"), func(b *strings.Builder) {
 		layout := t.GetLayout()
 
-		// タブロー表示
+		// Tableau (with row indent)
 		for row := range domain.TriPeaksRowCnt {
-			// インデント
 			indent := strings.Repeat("  ", domain.TriPeaksRowCnt-1-row)
 			b.WriteString(indent)
 			first := true
@@ -35,7 +35,10 @@ func (pr *TriPeaksCuiPresenter) Output(t interfaces.TriPeaksGame, lastErr error)
 				if tc.Removed {
 					b.WriteString("    ")
 				} else {
-					fmt.Fprintf(b, "(%d,%d)%s", row, col, cuiCardStr(tc.Card))
+					b.WriteString(i18n.Tf("tripeaks.tableauCard",
+						"row", strconv.Itoa(row),
+						"col", strconv.Itoa(col),
+						"card", cuiCardStr(tc.Card)))
 				}
 			}
 			b.WriteString("\n")
@@ -43,65 +46,60 @@ func (pr *TriPeaksCuiPresenter) Output(t interfaces.TriPeaksGame, lastErr error)
 
 		b.WriteString("----------\n")
 
-		// ストックとウェイスト
-		fmt.Fprintf(b, "Stock: %d枚", t.GetStockCount())
+		// Stock + waste
+		b.WriteString(i18n.Tf("tripeaks.stockLine",
+			"count", strconv.Itoa(t.GetStockCount())))
 		waste := t.GetWaste()
 		if len(waste) > 0 {
-			fmt.Fprintf(b, " | Waste: %s", cuiCardStr(waste[len(waste)-1]))
+			b.WriteString(i18n.Tf("tripeaks.wasteCard",
+				"card", cuiCardStr(waste[len(waste)-1])))
 		} else {
-			b.WriteString(" | Waste: [空]")
+			b.WriteString(i18n.T("tripeaks.wasteEmpty"))
 		}
 		b.WriteString("\n")
 
 		b.WriteString("----------\n")
 
-		// エラーメッセージ
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
-		}
+		cuiErrorBlock(b, lastErr)
 
-		// ゲーム状態
-		phase := t.GetPhase()
-		switch phase {
+		switch t.GetPhase() {
 		case domain.TriPeaksPhasePlaying:
 			if t.IsStalemate() {
-				fmt.Fprintf(b, "%s\n", color.Red("手詰まりです"))
+				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
 			}
-			fmt.Fprintf(b, "手数: %d\n", t.GetMoveCount())
+			b.WriteString(i18n.Tf("cuiSolitaireMoves",
+				"count", strconv.Itoa(t.GetMoveCount())) + "\n")
 		case domain.TriPeaksPhaseGameClear:
-			fmt.Fprintf(b, "%s 手数: %d\n", color.Green("ゲームクリア！"), t.GetMoveCount())
+			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
+				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(t.GetMoveCount())) + "\n")
 		case domain.TriPeaksPhaseGameOver:
-			b.WriteString(color.Red("ゲームオーバー") + "\n")
+			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
 		}
 	})
 }
 
-// HintOutput ヒントを文字列出力
+// HintOutput emits the current TriPeaks hint.
 func (pr *TriPeaksCuiPresenter) HintOutput(t interfaces.TriPeaksGame) string {
 	hint := t.GetHint()
 	if hint == nil {
-		return "ヒントはありません。\n"
+		return i18n.T("cuiHintNone") + "\n"
 	}
-	return fmt.Sprintf("ヒント: %s\n", triPeaksHintStr(hint))
+	switch hint.Type {
+	case "remove":
+		return i18n.Tf("tripeaks.hintRemove",
+			"row", strconv.Itoa(hint.Row),
+			"col", strconv.Itoa(hint.Col)) + "\n"
+	case "draw":
+		return i18n.T("tripeaks.hintDraw") + "\n"
+	default:
+		return i18n.T("tripeaks.hintUnknown") + "\n"
+	}
 }
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (pr *TriPeaksCuiPresenter) ActionLogOutput(t interfaces.TriPeaksGame) string {
-	phase := t.GetPhase()
-	if phase == domain.TriPeaksPhasePlaying {
+	if t.GetPhase() == domain.TriPeaksPhasePlaying {
 		return actionLogToText(nil)
 	}
 	return actionLogToText(t.GetActionLog())
-}
-
-// triPeaksHintStr ヒントを文字列に変換
-func triPeaksHintStr(hint *domain.TriPeaksHint) string {
-	switch hint.Type {
-	case "remove":
-		return fmt.Sprintf("カード除去: (%d,%d)", hint.Row, hint.Col)
-	case "draw":
-		return "ストックからカードを引いてください"
-	default:
-		return "不明"
-	}
 }

@@ -527,6 +527,54 @@ type yukonJSON struct {
 	MoveCount   int                                     `json:"mc"`
 	ActionLog   []*ActionLogEntry                       `json:"al"`
 	IsStalemate bool                                    `json:"sl"`
+	History     []*yukonSnapshot                        `json:"hi,omitempty"`
+}
+
+// yukonSnapshotJSON is the wire format for a single undo snapshot.
+// yukonSnapshot uses unexported fields, so we project to/from this
+// shape with explicit Marshal/Unmarshal methods. Field names match
+// yukonJSON's short keys to keep the KV payload compact (#1654).
+type yukonSnapshotJSON struct {
+	Tableau     [YukonTableauCnt][]*KlondikeTableauCard `json:"tb"`
+	Foundation  [YukonFoundationCnt][]*Card             `json:"fd"`
+	Phase       YukonPhase                              `json:"ps"`
+	MoveCount   int                                     `json:"mc"`
+	IsStalemate bool                                    `json:"sl"`
+}
+
+// MarshalJSON implements json.Marshaler for yukonSnapshot.
+func (s *yukonSnapshot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(yukonSnapshotJSON{
+		Tableau:     s.tableau,
+		Foundation:  s.foundation,
+		Phase:       s.phase,
+		MoveCount:   s.moveCount,
+		IsStalemate: s.isStalemate,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler for yukonSnapshot.
+func (s *yukonSnapshot) UnmarshalJSON(data []byte) error {
+	var j yukonSnapshotJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	for _, col := range j.Tableau {
+		if len(col) > yukonMaxSliceLen {
+			return fmt.Errorf("yukon: snapshot tableau column exceeds maximum allowed size")
+		}
+	}
+	for _, pile := range j.Foundation {
+		if len(pile) > yukonMaxSliceLen {
+			return fmt.Errorf("yukon: snapshot foundation pile exceeds maximum allowed size")
+		}
+	}
+	s.tableau = j.Tableau
+	s.foundation = j.Foundation
+	s.phase = j.Phase
+	s.moveCount = j.MoveCount
+	s.isStalemate = j.IsStalemate
+	return nil
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -539,6 +587,7 @@ func (y *Yukon) MarshalJSON() ([]byte, error) {
 		MoveCount:   y.moveCount,
 		ActionLog:   y.actionLog,
 		IsStalemate: y.isStalemate,
+		History:     y.history,
 	})
 }
 
@@ -551,12 +600,17 @@ func (y *Yukon) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if len(j.ActionLog) > yukonMaxSliceLen {
+	if len(j.ActionLog) > yukonMaxSliceLen || len(j.History) > yukonMaxSliceLen {
 		return fmt.Errorf("yukon: input array exceeds maximum allowed size")
 	}
-	for i := range YukonTableauCnt {
-		if len(j.Tableau[i]) > yukonMaxSliceLen {
-			return fmt.Errorf("yukon: input array exceeds maximum allowed size")
+	for _, col := range j.Tableau {
+		if len(col) > yukonMaxSliceLen {
+			return fmt.Errorf("yukon: tableau column exceeds maximum allowed size")
+		}
+	}
+	for _, pile := range j.Foundation {
+		if len(pile) > yukonMaxSliceLen {
+			return fmt.Errorf("yukon: foundation pile exceeds maximum allowed size")
 		}
 	}
 
@@ -572,8 +626,10 @@ func (y *Yukon) UnmarshalJSON(data []byte) error {
 	if y.actionLog == nil {
 		y.actionLog = make([]*ActionLogEntry, 0)
 	}
-	// Undo history is not serialised; set to nil on restore.
-	y.history = nil
+	y.history = j.History
+	if y.history == nil {
+		y.history = make([]*yukonSnapshot, 0)
+	}
 	y.isStalemate = j.IsStalemate
 	return nil
 }

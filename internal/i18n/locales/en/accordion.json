@@ -12,5 +12,9 @@
   "gameClear": "Game Clear! Moves: {{moveCount}}",
   "gameOver": "Game Over",
   "hintAvailable": "Hint available",
-  "noHint": "No hints available"
+  "noHint": "No hints available",
+  "header": "Piles remaining: {{count}}",
+  "pileSingle": "[{{idx}}]{{card}} ",
+  "pileStack": "[{{idx}}]{{card}}(+{{count}}) ",
+  "hintLine": "Hint: pile {{from}} → pile {{to}}"
 }

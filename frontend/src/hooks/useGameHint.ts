@@ -5,6 +5,7 @@ import type {
   BadugiResponse,
   BakersDozenResponse,
   BlackJackResponse,
+  BlackJackSwitchResponse,
   CalculationResponse,
   CanastaResponse,
   CanfieldResponse,
@@ -16,6 +17,7 @@ import type {
   CribbageResponse,
   DaifugoResponse,
   DoubtResponse,
+  DragonTigerResponse,
   DurakResponse,
   EgyptianRatscrewResponse,
   EuchreResponse,
@@ -29,6 +31,7 @@ import type {
   KlondikeResponse,
   LetItRideResponse,
   MemoryResponse,
+  MonteCarloResponse,
   NapoleonResponse,
   NertzResponse,
   OhHellResponse,
@@ -73,6 +76,7 @@ import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBadugiHint } from '../utils/hints/badugiHint';
 import { getBakersdozenHint } from '../utils/hints/bakersdozenHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
+import { getBlackjackswitchHint } from '../utils/hints/blackjackswitchHint';
 import { getCalculationHint } from '../utils/hints/calculationHint';
 import { getCanastaHint } from '../utils/hints/canastaHint';
 import { getCanfieldHint } from '../utils/hints/canfieldHint';
@@ -86,6 +90,7 @@ import { getCribbageHint } from '../utils/hints/cribbageHint';
 import { getDaifugoHint } from '../utils/hints/daifugoHint';
 import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
 import { getDoubtHint } from '../utils/hints/doubtHint';
+import { getDragontigerHint } from '../utils/hints/dragontigerHint';
 import { getDurakHint } from '../utils/hints/durakHint';
 import { getEgyptianRatscrewHint } from '../utils/hints/egyptianratscrewHint';
 import { getEuchreHint } from '../utils/hints/euchreHint';
@@ -100,6 +105,7 @@ import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
 import { getKlondikeHint } from '../utils/hints/klondikeHint';
 import { getLetitrideHint } from '../utils/hints/letitrideHint';
 import { getMemoryHint } from '../utils/hints/memoryHint';
+import { getMonteCarloHint } from '../utils/hints/montecarloHint';
 import { getNapoleonHint } from '../utils/hints/napoleonHint';
 import { getNertzHint } from '../utils/hints/nertzHint';
 import { getOhHellHint } from '../utils/hints/ohhellHint';
@@ -199,9 +205,12 @@ const hintFactories = {
   pageone: (s) => getPageOneHint(s as PageOneResponse),
   pigtail: (s) => getPigstailHint(s as PigsTailResponse),
   pokersquares: (s) => getPokersquaresHint(s as PokerSquaresResponse),
+  montecarlo: (s) => getMonteCarloHint(s as MonteCarloResponse),
   letitride: (s) => getLetitrideHint(s as LetItRideResponse),
   reddog: (s) => getReddogHint(s as RedDogResponse),
   casinowar: (s) => getCasinowarHint(s as CasinoWarResponse),
+  dragontiger: (s) => getDragontigerHint(s as DragonTigerResponse),
+  blackjackswitch: (s) => getBlackjackswitchHint(s as BlackJackSwitchResponse),
   war: (s) => getWarHint(s as WarResponse),
   whist: (s) => getWhistHint(s as WhistResponse),
   yukon: (s) => getYukonHint(s as YukonResponse),

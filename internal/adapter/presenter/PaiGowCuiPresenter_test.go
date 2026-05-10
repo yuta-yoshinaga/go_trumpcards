@@ -39,8 +39,8 @@ func TestPaiGowCuiPresenter_Output_BetPhase(t *testing.T) {
 	setupPaiGowCuiMockDefaults(m)
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "chips: 1000")
-	assert.Contains(t, result, "phase: BET")
+	assert.Contains(t, result, "チップ: 1000")
+	assert.Contains(t, result, "フェーズ: BET")
 }
 
 func TestPaiGowCuiPresenter_Output_SetHandsPhase(t *testing.T) {
@@ -76,7 +76,7 @@ func TestPaiGowCuiPresenter_Output_SetHandsPhase(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "phase: SET HANDS")
+	assert.Contains(t, result, "フェーズ: SET HANDS")
 	assert.Contains(t, result, "[0]")
 	assert.Contains(t, result, "[6]")
 }
@@ -115,9 +115,9 @@ func TestPaiGowCuiPresenter_Output_PlayerWins(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "Player wins!")
-	assert.Contains(t, result, "payout: 190")
-	assert.Contains(t, result, "commission: 10")
+	assert.Contains(t, result, "プレイヤーの勝ち")
+	assert.Contains(t, result, "払戻し: 190")
+	assert.Contains(t, result, "手数料: 10")
 }
 
 func TestPaiGowCuiPresenter_Output_DealerWins(t *testing.T) {
@@ -145,7 +145,7 @@ func TestPaiGowCuiPresenter_Output_DealerWins(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "Dealer wins!")
+	assert.Contains(t, result, "ディーラーの勝ち")
 }
 
 func TestPaiGowCuiPresenter_Output_Push(t *testing.T) {
@@ -173,8 +173,8 @@ func TestPaiGowCuiPresenter_Output_Push(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "Push!")
-	assert.Contains(t, result, "payout: 100")
+	assert.Contains(t, result, "プッシュ")
+	assert.Contains(t, result, "払戻し: 100")
 }
 
 func TestPaiGowCuiPresenter_Output_EndPhaseWithHands(t *testing.T) {
@@ -220,8 +220,8 @@ func TestPaiGowCuiPresenter_Output_EndPhaseWithHands(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "high:")
-	assert.Contains(t, result, "low:")
+	assert.Contains(t, result, "ハイ:")
+	assert.Contains(t, result, "ロー:")
 	assert.Contains(t, result, "DEALER")
 	assert.Contains(t, result, "Straight")
 	assert.Contains(t, result, "High Card")

@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { cribbageApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -7,16 +7,11 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
@@ -25,7 +20,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useCribbageGame } from '../hooks/useCribbageGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
@@ -186,7 +180,33 @@ function CribbagePageContent() {
     });
   }, [gameExec, hideActionLog, cribbageConfig.cpuDifficulty, cribbageConfig.pointLimit]);
 
-  useGameRoundGuard(!!state && !state.gameEndFlag);
+  // Auto-Go: when the human is on the pegging turn but holds no playable card,
+  // there is no actual decision left — the rule forces a Go declaration.
+  // Schedule the call after a short delay so the player notices the cause and
+  // briefly reads the toast before the turn rotates to the opponent. Computed
+  // here (before the early return) so the hooks order stays stable across
+  // renders.
+  const currentPlayer = state?.players[state.currentPlayerIdx ?? -1];
+  const shouldAutoGo =
+    state?.phase === CribbagePhase.PEGGING &&
+    currentPlayer?.isHuman === true &&
+    !currentPlayer.cards?.some((c) => {
+      const cv = c.value >= 10 ? 10 : c.value;
+      return state.pegCount + cv <= 31;
+    }) &&
+    !loading;
+  const [autoGoNoticeVisible, setAutoGoNoticeVisible] = useState(false);
+  useEffect(() => {
+    if (!shouldAutoGo) {
+      setAutoGoNoticeVisible(false);
+      return;
+    }
+    setAutoGoNoticeVisible(true);
+    const timer = setTimeout(() => {
+      handleGo();
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [shouldAutoGo, handleGo]);
 
   if (!state)
     return (
@@ -212,6 +232,7 @@ function CribbagePageContent() {
     });
 
   const nonDealerIsHuman = state.players[1 - state.dealerIdx]?.isHuman === true;
+
   const scoreLabels = [
     nonDealerIsHuman ? t('handScoreLabels.you') : t('handScoreLabels.cpu'),
     nonDealerIsHuman ? t('handScoreLabels.cpu') : t('handScoreLabels.you'),
@@ -219,14 +240,20 @@ function CribbagePageContent() {
   ];
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.cribbage.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.cribbage')} />
-      <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn}>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/cribbage" />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.cribbage')}
+      gameThemeBg={gameTheme.cribbage.bg}
+      phaseName={phaseNames[state.phase]}
+      isHumanTurn={isHumanTurn}
+      gamePath="/cribbage"
+      gameEndFlag={!!state.gameEndFlag}
+      onCelebrate={() => playSound('winFanfare')}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -491,6 +518,16 @@ function CribbagePageContent() {
               )}
               {isPeggingPhase && isHumanTurn && (
                 <>
+                  {autoGoNoticeVisible && (
+                    <div
+                      role="status"
+                      aria-live="polite"
+                      data-testid="cb-auto-go-notice"
+                      className="px-3 py-1.5 rounded bg-ds-surface border border-ds-info text-ds-text-primary text-sm"
+                    >
+                      {t('autoGoNotice')}
+                    </div>
+                  )}
                   <button
                     type="button"
                     className={btnPrimary}
@@ -525,8 +562,6 @@ function CribbagePageContent() {
           </GameFooter>
         </>
       )}
-      <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-    </div>
+    </GamePageShell>
   );
 }

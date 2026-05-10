@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/signal"
 	"slices"
 	"sort"
 	"strconv"
@@ -379,8 +380,12 @@ func run() int {
 		}
 		if flagSetVisited(fs, "port", "p") {
 			if !portInRange(port) {
+				// Usage error (out-of-range value), not a runtime failure.
+				// Aligns with the documented EXIT CODES: 2 reads as "the
+				// invocation itself is wrong" so systemd / CI can branch on it.
 				fmt.Fprintln(os.Stderr, i18n.Tf("cliInvalidPort", "port", strconv.Itoa(port)))
-				return 1
+				fmt.Fprintln(os.Stderr, i18n.Tf("cliTryHelp", "cmd", "web"))
+				return 2
 			}
 			_ = os.Setenv("PORT", strconv.Itoa(port))
 		}
@@ -417,14 +422,31 @@ func run() int {
 				})
 			}
 		}
+		// Track which signal (if any) triggers the server's shutdown so we can
+		// return 130 (SIGINT) or 143 (SIGTERM) rather than always returning 0.
+		// Both this channel and TrumpCardsWeb's internal signal.NotifyContext
+		// receive the signal concurrently; TrumpCardsWeb handles graceful
+		// shutdown while this channel records which signal was received.
+		sigCh := make(chan os.Signal, 1)
+		signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
 		if err := w.Exec(); err != nil {
+			signal.Stop(sigCh)
 			fmt.Fprintln(os.Stderr, i18n.Tf("cliWebStartFailed", "err", err.Error()))
 			if errors.Is(err, syscall.EADDRINUSE) {
 				fmt.Fprintln(os.Stderr, i18n.T("cliWebPortInUseHint"))
 			}
 			return 1
 		}
-		return 0
+		signal.Stop(sigCh)
+		select {
+		case sig := <-sigCh:
+			if sig == syscall.SIGTERM {
+				return 143
+			}
+			return 130
+		default:
+			return 0
+		}
 	}
 
 	// Commands that parse their own sub-flags; skip the extra-args warning for these.
@@ -540,6 +562,14 @@ var builtinSubcommandHelp = map[string][]string{
 		"  by --quiet / TRUMPCARDS_QUIET=1, and slog's structured 'web server listening'",
 		"  event always fires regardless. The default 127.0.0.1 bind never warns.",
 		"",
+		"EXIT CODES:",
+		"    0  Server exited cleanly without receiving a signal",
+		"    1  Server start failure (includes EADDRINUSE / port already in use —",
+		"       systemd / Docker `restart: on-failure` should retry on this code)",
+		"    2  Usage error (unknown flag, --port out of range)",
+		"  130  Graceful shutdown triggered by SIGINT (Ctrl+C)  (128 + 2)",
+		"  143  Graceful shutdown triggered by SIGTERM  (128 + 15)",
+		"",
 		"EXAMPLES:",
 		"  trumpcards web",
 		"  trumpcards web --port 3000",
@@ -590,6 +620,11 @@ var builtinSubcommandHelp = map[string][]string{
 		"      --no-hint   Suppress installation hint comments in the output",
 		"                  (implied when stdout is not a TTY, e.g. shell redirection)",
 		"",
+		"EXIT CODES:",
+		"  0  Script written successfully",
+		"  1  Write error (e.g. broken pipe, full disk)",
+		"  2  Usage error (missing shell argument or unsupported shell name)",
+		"",
 		"EXAMPLES:",
 		"  source <(trumpcards completion bash)",
 		"  trumpcards completion bash > /etc/bash_completion.d/trumpcards",
@@ -614,6 +649,11 @@ var builtinSubcommandHelp = map[string][]string{
 		"                           casino, classic, or solo. Combinable with --short / --json.",
 		"                           Invalid value exits 2.",
 		"",
+		"EXIT CODES:",
+		"  0  List printed successfully",
+		"  1  --json: encoding error while writing the JSON array",
+		"  2  Usage error (unknown flag, invalid --category value)",
+		"",
 		"EXAMPLES:",
 		"  trumpcards games",
 		"  trumpcards games --short",
@@ -626,6 +666,10 @@ var builtinSubcommandHelp = map[string][]string{
 		"USAGE:",
 		"  trumpcards help [game|command]",
 		"",
+		"EXIT CODES:",
+		"  0  Help printed (top-level, a known game, or a known subcommand)",
+		"  1  Unknown game / command name (a 'did you mean…' hint is offered when close)",
+		"",
 		"EXAMPLES:",
 		"  trumpcards help",
 		"  trumpcards help blackjack",
@@ -637,6 +681,10 @@ var builtinSubcommandHelp = map[string][]string{
 		"",
 		"FLAGS:",
 		"      --short   Print the version number only (machine-readable)",
+		"",
+		"EXIT CODES:",
+		"  0  Version printed successfully",
+		"  2  Usage error (unknown flag)",
 		"",
 		"EXAMPLES:",
 		"  trumpcards version              # full info: trumpcards <ver> (commit: <sha>, built: <date>)",
@@ -953,17 +1001,50 @@ func hasHelpFlag(args []string) bool {
 	return false
 }
 
-// buildHelpText generates the CLI help text with the games section derived from the registry.
+// gameCategoryPreview is the number of representative game names rendered per
+// category in the top-level --help GAMES summary. Five names is enough to
+// hint at the variety in each category (e.g. casino → blackjack, baccarat,
+// poker, omaha, holdem) without pushing COMMANDS / OPTIONS off the screen.
+const gameCategoryPreview = 5
+
+// buildHelpText generates the CLI help text with the games section derived
+// from the registry.
+//
+// The GAMES section used to enumerate every one of the 77 games (#1694),
+// which pushed COMMANDS / OPTIONS / EXIT CODES off the visible terminal in
+// the common 24–40 line case. Now it presents a category-grouped summary
+// with a pointer to `trumpcards games` for the full list, mirroring the
+// `git --help` / `kubectl --help` / `cargo --help` style.
 func buildHelpText() string {
 	var sb strings.Builder
-	sb.WriteString(`USAGE:
+	categories := games.AllCategories()
+	categoryNames := make([]string, len(categories))
+	for i, c := range categories {
+		categoryNames[i] = c.String()
+	}
+	fmt.Fprintf(&sb, `USAGE:
   trumpcards [--lang ja|en] [game]
   trumpcards --help
 
 GAMES:
-`)
-	for _, entry := range ui.GameRegistry() {
-		fmt.Fprintf(&sb, "  %-16s %s\n", entry.Name, entry.Description())
+  %d games across %d categories. Run 'trumpcards games' for the full list,
+  or 'trumpcards games --category <%s>' to filter.
+
+`, len(ui.GameRegistry()), len(categories), strings.Join(categoryNames, "|"))
+	for _, cat := range categories {
+		entries := games.ByCategory(cat)
+		preview := make([]string, 0, gameCategoryPreview)
+		for i, g := range entries {
+			if i >= gameCategoryPreview {
+				break
+			}
+			preview = append(preview, g.Name)
+		}
+		more := ""
+		if len(entries) > gameCategoryPreview {
+			more = ", …"
+		}
+		fmt.Fprintf(&sb, "  %-8s (%2d)  %s%s\n", cat.String(), len(entries), strings.Join(preview, ", "), more)
 	}
 	sb.WriteString(`
 COMMANDS:
@@ -1215,6 +1296,16 @@ func printGamesJSON(category string, w io.Writer) error {
 	return enc.Encode(out)
 }
 
+// realtimeGames are the CUI games that run with the realtime runner
+// (raw-mode keystrokes + auto-tick goroutine) instead of the standard
+// line-based loop. Slapjack and Egyptian Ratscrew rely on a fast tick
+// cadence for CPU pending actions; the line-based loop forced the user
+// to type "tick" to advance, which broke the "reflexes" gameplay (#1653).
+var realtimeGames = map[string]bool{
+	"slapjack":         true,
+	"egyptianratscrew": true,
+}
+
 // buildGameCommands generates command handlers for all games from the registry.
 func buildGameCommands() map[string]func() int {
 	registry := ui.GameRegistry()
@@ -1223,7 +1314,11 @@ func buildGameCommands() map[string]func() int {
 		e := entry // capture loop variable
 		commands[e.Name] = func() int {
 			g := e.NewCui()
-			ui.RunCuiLoop(e.Name, g.Controller(), g.HelpLines())
+			if realtimeGames[e.Name] {
+				ui.RunRealtimeCuiLoop(e.Name, g.Controller(), g.HelpLines())
+			} else {
+				ui.RunCuiLoop(e.Name, g.Controller(), g.HelpLines())
+			}
 			return 0
 		}
 	}

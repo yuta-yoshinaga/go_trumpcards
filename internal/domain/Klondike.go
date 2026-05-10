@@ -729,6 +729,77 @@ type klondikeJSON struct {
 	IsStalemate          bool                                       `json:"sl"`
 	NoProgressCycles     int                                        `json:"np"`
 	ProgressSinceRecycle bool                                       `json:"pr"`
+	History              []*klondikeSnapshot                        `json:"hi,omitempty"`
+}
+
+// klondikeSnapshotJSON is the wire format for a single undo snapshot.
+// klondikeSnapshot uses unexported fields, so we project to/from this
+// shape with explicit Marshal/Unmarshal methods. Field names match
+// klondikeJSON's short keys to keep the KV payload compact (#1654).
+type klondikeSnapshotJSON struct {
+	Tableau              [KlondikeTableauCnt][]*KlondikeTableauCard `json:"tb"`
+	Stock                []*Card                                    `json:"st"`
+	Waste                []*Card                                    `json:"wa"`
+	Foundation           [KlondikeFoundationCnt][]*Card             `json:"fd"`
+	Phase                KlondikePhase                              `json:"ps"`
+	MoveCount            int                                        `json:"mc"`
+	IsStalemate          bool                                       `json:"sl"`
+	NoProgressCycles     int                                        `json:"np"`
+	ProgressSinceRecycle bool                                       `json:"pr"`
+}
+
+// MarshalJSON implements json.Marshaler for klondikeSnapshot, projecting
+// the unexported fields onto an exported wire shape. Used so that
+// Klondike.MarshalJSON can persist the undo history (#1654).
+func (s *klondikeSnapshot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(klondikeSnapshotJSON{
+		Tableau:              s.tableau,
+		Stock:                s.stock,
+		Waste:                s.waste,
+		Foundation:           s.foundation,
+		Phase:                s.phase,
+		MoveCount:            s.moveCount,
+		IsStalemate:          s.isStalemate,
+		NoProgressCycles:     s.noProgressCycles,
+		ProgressSinceRecycle: s.progressSinceRecycle,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler for klondikeSnapshot.
+func (s *klondikeSnapshot) UnmarshalJSON(data []byte) error {
+	var j klondikeSnapshotJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Stock) > klondikeMaxSliceLen || len(j.Waste) > klondikeMaxSliceLen {
+		return fmt.Errorf("klondike: snapshot array exceeds maximum allowed size")
+	}
+	for _, col := range j.Tableau {
+		if len(col) > klondikeMaxSliceLen {
+			return fmt.Errorf("klondike: snapshot tableau column exceeds maximum allowed size")
+		}
+	}
+	for _, pile := range j.Foundation {
+		if len(pile) > klondikeMaxSliceLen {
+			return fmt.Errorf("klondike: snapshot foundation pile exceeds maximum allowed size")
+		}
+	}
+	s.tableau = j.Tableau
+	s.stock = j.Stock
+	if s.stock == nil {
+		s.stock = make([]*Card, 0)
+	}
+	s.waste = j.Waste
+	if s.waste == nil {
+		s.waste = make([]*Card, 0)
+	}
+	s.foundation = j.Foundation
+	s.phase = j.Phase
+	s.moveCount = j.MoveCount
+	s.isStalemate = j.IsStalemate
+	s.noProgressCycles = j.NoProgressCycles
+	s.progressSinceRecycle = j.ProgressSinceRecycle
+	return nil
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -747,6 +818,7 @@ func (k *Klondike) MarshalJSON() ([]byte, error) {
 		IsStalemate:          k.isStalemate,
 		NoProgressCycles:     k.noProgressCycles,
 		ProgressSinceRecycle: k.progressSinceRecycle,
+		History:              k.history,
 	})
 }
 
@@ -760,8 +832,18 @@ func (k *Klondike) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if len(j.Stock) > klondikeMaxSliceLen || len(j.Waste) > klondikeMaxSliceLen ||
-		len(j.ActionLog) > klondikeMaxSliceLen {
+		len(j.ActionLog) > klondikeMaxSliceLen || len(j.History) > klondikeMaxSliceLen {
 		return fmt.Errorf("klondike: input array exceeds maximum allowed size")
+	}
+	for _, col := range j.Tableau {
+		if len(col) > klondikeMaxSliceLen {
+			return fmt.Errorf("klondike: tableau column exceeds maximum allowed size")
+		}
+	}
+	for _, pile := range j.Foundation {
+		if len(pile) > klondikeMaxSliceLen {
+			return fmt.Errorf("klondike: foundation pile exceeds maximum allowed size")
+		}
 	}
 
 	k.trumpCards = j.TrumpCards
@@ -788,8 +870,10 @@ func (k *Klondike) UnmarshalJSON(data []byte) error {
 	if k.drawCount == 0 {
 		k.drawCount = 1
 	}
-	// Undo history is not serialised; set to nil on restore.
-	k.history = nil
+	k.history = j.History
+	if k.history == nil {
+		k.history = make([]*klondikeSnapshot, 0)
+	}
 	k.scoringMode = j.ScoringMode
 	k.isStalemate = j.IsStalemate
 	k.noProgressCycles = j.NoProgressCycles

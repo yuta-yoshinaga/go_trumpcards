@@ -4,6 +4,7 @@ package domain
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -285,6 +286,46 @@ func TestGoFish_JSON_RoundTrip(t *testing.T) {
 	assert.Equal(t, g.GetTurnNumber(), restored.GetTurnNumber())
 	assert.Equal(t, g.GetDeckRemaining(), restored.GetDeckRemaining())
 	assert.Equal(t, g.GetConfig(), restored.GetConfig())
+}
+
+// TestGoFish_UnmarshalJSON_RejectsOversizedCpuMemories pins ADR-0028's policy
+// that every deserialised slice field is bounded — the GoFish unmarshaller
+// previously had no guard at all, so a hostile session blob could allocate
+// arbitrary heap before any check ran.
+func TestGoFish_UnmarshalJSON_RejectsOversizedCpuMemories(t *testing.T) {
+	var sb strings.Builder
+	sb.WriteString(`{"cm":[`)
+	for i := 0; i < goFishMaxSliceLen+1; i++ {
+		if i > 0 {
+			sb.WriteByte(',')
+		}
+		sb.WriteString(`{"a":0,"g":1,"r":2,"h":false,"t":0}`)
+	}
+	sb.WriteString(`]}`)
+
+	var g GoFish
+	err := json.Unmarshal([]byte(sb.String()), &g)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "exceeds maximum allowed size")
+}
+
+// TestGoFish_JSON_RoundTrip_PreservesCpuMemories pins #1655: goFishMemoryEntry
+// fields are unexported, so the previous wire format silently flattened every
+// entry to its zero value on restore. The round-trip must keep ask history.
+func TestGoFish_JSON_RoundTrip_PreservesCpuMemories(t *testing.T) {
+	g := newTestGoFish()
+	g.cpuMemories = []goFishMemoryEntry{
+		{askerIdx: 0, targetIdx: 2, rank: 5, hadCards: false, turnSeen: 1},
+		{askerIdx: 1, targetIdx: 3, rank: 11, hadCards: true, turnSeen: 4},
+	}
+
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+
+	var restored GoFish
+	require.NoError(t, json.Unmarshal(data, &restored))
+
+	assert.Equal(t, g.cpuMemories, restored.cpuMemories)
 }
 
 func TestGoFish_ActionLog(t *testing.T) {

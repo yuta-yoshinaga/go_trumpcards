@@ -1533,11 +1533,11 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('待機中'));
   });
 
-  it('phase indicator shows no turn indicator during insurance phase', async () => {
+  it('phase indicator shows your turn during insurance phase', async () => {
     mockExec.mockResolvedValue(insurancePhaseState);
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
-    expect(screen.queryByText('あなたのターン')).not.toBeInTheDocument();
+    expect(screen.getByText('あなたのターン')).toBeInTheDocument();
     expect(screen.queryByText('待機中')).not.toBeInTheDocument();
   });
 

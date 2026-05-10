@@ -52,7 +52,10 @@ export function ChipBetInput({
   invalid,
   describedBy,
 }: ChipBetInputProps) {
-  const errorClasses = invalid ? 'bg-ds-error/40 border-ds-error text-ds-error' : '';
+  // Foreground stays text-ds-text-primary (10.1:1 AAA on surface) — pairing
+  // text-ds-error with bg-ds-surface only hits ~2.7:1, well below WCAG AA.
+  // The error semantic is carried entirely by the coloured border.
+  const errorClasses = invalid ? 'bg-ds-surface border-ds-error text-ds-text-primary' : '';
   return (
     <div className="flex items-center gap-2">
       <label htmlFor={id} className="text-ds-text-primary text-sm">

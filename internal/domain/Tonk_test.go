@@ -730,8 +730,12 @@ func TestTonk_ScoreNormalKnock(t *testing.T) {
 
 func TestTonk_PlayerDiscard_GameEnded(t *testing.T) {
 	g := newTestTonk()
-	g.SetConfig(domain.TonkConfig{CpuDifficulty: domain.TonkCpuDifficultyNormal, PointLimit: 1})
+	// Reset() runs the random deal under newTestTonk's safe PointLimit (10000)
+	// so a Tonk-on-deal cannot pre-end the game. Apply the strict PointLimit=1
+	// only afterwards — the test's PlayerKnock(3) scoreRound is what should
+	// trip the game-end here, not the random deal.
 	g.Reset()
+	g.SetConfig(domain.TonkConfig{CpuDifficulty: domain.TonkCpuDifficultyNormal, PointLimit: 1})
 	giveHand(g.GetPlayer(0), []*domain.Card{
 		domain.NewCard(domain.CardDesignSpade, 1, false),
 		domain.NewCard(domain.CardDesignHeart, 1, false),

@@ -398,4 +398,19 @@ func init() {
 			return usecase.NewPitchInteractor(domain.NewDefaultPitch(), new(presenter.PitchWebPresenter))
 		},
 		controller.NewPitchWebController)
+	BindWebControllerFor("dragontiger",
+		func() usecase.DragonTigerInteractorIF {
+			return usecase.NewDragonTigerInteractor(domain.NewDefaultDragonTiger(), new(presenter.DragonTigerWebPresenter))
+		},
+		controller.NewDragonTigerWebController)
+	BindWebControllerFor("blackjackswitch",
+		func() usecase.BlackJackSwitchInteractorIF {
+			return usecase.NewBlackJackSwitchInteractor(domain.NewDefaultBlackJackSwitch(), new(presenter.BlackJackSwitchWebPresenter))
+		},
+		controller.NewBlackJackSwitchWebController)
+	BindWebControllerFor("montecarlo",
+		func() usecase.MonteCarloInteractorIF {
+			return usecase.NewMonteCarloInteractor(domain.NewDefaultMonteCarlo(), new(presenter.MonteCarloWebPresenter))
+		},
+		controller.NewMonteCarloWebController)
 }

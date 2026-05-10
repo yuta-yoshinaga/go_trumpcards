@@ -185,6 +185,30 @@ func TestCanastaCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ラウンド終了")
 		assert.Contains(t, result, "nr / nextround")
 	})
+
+	t.Run("red 3 tag shown", func(t *testing.T) {
+		m, players := setupCanastaCuiMockWithPlayers()
+		players[0].AddRed3(domain.NewCard(domain.CardDesignHeart, 3, false))
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "赤3: 1枚")
+	})
+
+	t.Run("canasta star tag shown when player holds a canasta meld", func(t *testing.T) {
+		m, players := setupCanastaCuiMockWithPlayers()
+		// A 7-card natural meld of 4s satisfies HasCanasta() (>=7 cards).
+		// IsNatural=true also exercises the "ナチュラル" meld-type label;
+		// the m.IsCanasta() branch attaches "カナスタ" to that label.
+		cards := make([]*domain.Card, 7)
+		for i := range cards {
+			cards[i] = domain.NewCard(domain.CardDesignSpade, 4, false)
+		}
+		players[0].AddMeld(&domain.CanastaMeld{Cards: cards, IsNatural: true})
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "★カナスタ")
+		assert.Contains(t, result, "ナチュラルカナスタ")
+	})
 }
 
 func TestCanastaCuiPresenter_ActionLogOutput(t *testing.T) {

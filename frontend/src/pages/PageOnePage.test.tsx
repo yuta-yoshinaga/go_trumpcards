@@ -149,6 +149,57 @@ describe('PageOnePage', () => {
     await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
   });
 
+  it('shows the last-card warning banner when the human is at 1 undeclared card during play', async () => {
+    const oneCardPlayState: PageOneResponse = {
+      ...playPhaseState,
+      players: [
+        { ...playPhaseState.players[0], cardCount: 1, cards: [{ design: 'SPADE', value: 1 }] },
+        ...playPhaseState.players.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(oneCardPlayState);
+    renderWithProviders(<PageOnePage />);
+    await waitFor(() => expect(screen.getByTestId('po-last-card-banner')).toBeInTheDocument());
+    expect(screen.getByTestId('po-last-card-banner')).toHaveAttribute('aria-live', 'assertive');
+  });
+
+  it('hides the last-card banner once the human has declared', async () => {
+    const declaredState: PageOneResponse = {
+      ...playPhaseState,
+      players: [
+        { ...playPhaseState.players[0], cardCount: 1, cards: [{ design: 'SPADE', value: 1 }], hasDeclared: true },
+        ...playPhaseState.players.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(declaredState);
+    renderWithProviders(<PageOnePage />);
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    expect(screen.queryByTestId('po-last-card-banner')).not.toBeInTheDocument();
+  });
+
+  it('pulses the declare button when the human must declare', async () => {
+    mockExec.mockResolvedValue(mustDeclareState);
+    renderWithProviders(<PageOnePage />);
+    await waitFor(() => expect(screen.getByTestId('po-declare-btn')).toBeInTheDocument());
+    expect(screen.getByTestId('po-declare-btn').className).toContain('animate-pulse');
+  });
+
+  it('highlights a CPU at 1 card with the warning badge', async () => {
+    const cpuOneCardState: PageOneResponse = {
+      ...playPhaseState,
+      players: [
+        playPhaseState.players[0],
+        { ...playPhaseState.players[1], cardCount: 1 },
+        playPhaseState.players[2],
+        playPhaseState.players[3],
+      ],
+    };
+    mockExec.mockResolvedValue(cpuOneCardState);
+    renderWithProviders(<PageOnePage />);
+    await waitFor(() => expect(screen.getByTestId('po-cpu-1-last-card-badge')).toBeInTheDocument());
+    expect(screen.queryByTestId('po-cpu-2-last-card-badge')).not.toBeInTheDocument();
+  });
+
   it('shows 次のゲーム at game-end and fires reset directly (no confirm)', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<PageOnePage />);

@@ -1,51 +1,55 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // whistPlayerStr returns the display string for a single Whist player.
 func whistPlayerStr(player *domain.WhistPlayer, i int) string {
 	var b strings.Builder
-	name := cuiPlayerName(player, i)
-	fmt.Fprintf(&b, "%s (チーム%d): 獲得%dトリック 累積%d点 ラウンド%d点 %d枚\n",
-		name,
-		player.GetTeam(),
-		player.GetTrickCount(),
-		player.GetCumulativeScore(),
-		player.GetRoundScore(),
-		player.GetCardsSize(),
-	)
+	b.WriteString(i18n.Tf("whist.playerLine",
+		"name", cuiPlayerName(player, i),
+		"team", strconv.Itoa(player.GetTeam()),
+		"tricks", strconv.Itoa(player.GetTrickCount()),
+		"cum", strconv.Itoa(player.GetCumulativeScore()),
+		"round", strconv.Itoa(player.GetRoundScore()),
+		"cards", strconv.Itoa(player.GetCardsSize()),
+	))
+	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player))
-		b.WriteString("\n")
+		b.WriteString(cuiIndexedCardListStr(player) + "\n")
 	}
 	return b.String()
 }
 
-// WhistCuiPresenter ホイストCUIプレゼンタークラス
+// WhistCuiPresenter renders the Whist CUI view.
 type WhistCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *WhistCuiPresenter) Output(w interfaces.WhistGame, lastErr error) string {
-	return buildCuiOutput("Whist (ホイスト)", func(b *strings.Builder) {
-		fmt.Fprintf(b, "ラウンド: %d  トリック: %d\n", w.GetRoundNumber(), w.GetTrickNumber())
-		fmt.Fprintf(b, "トランプ: %s\n", suitDisplayName(w.GetTrumpSuit()))
-		fmt.Fprintf(b, "チームスコア: チーム0=%d  チーム1=%d\n", w.GetTeamScore(0), w.GetTeamScore(1))
+	return buildCuiOutput(i18n.T("whist.helpTitle"), func(b *strings.Builder) {
+		b.WriteString(i18n.Tf("whist.header",
+			"round", strconv.Itoa(w.GetRoundNumber()),
+			"trick", strconv.Itoa(w.GetTrickNumber())) + "\n")
+		b.WriteString(i18n.Tf("whist.trumpLine",
+			"suit", suitDisplayName(w.GetTrumpSuit())) + "\n")
+		b.WriteString(i18n.Tf("whist.teamScoreLine",
+			"t0", strconv.Itoa(w.GetTeamScore(0)),
+			"t1", strconv.Itoa(w.GetTeamScore(1))) + "\n")
 
-		// プレイヤー情報
 		for i := 0; i < w.GetPlayerCnt(); i++ {
 			b.WriteString(whistPlayerStr(w.GetPlayer(i), i))
 		}
 
 		b.WriteString("----------\n")
 
-		// 現在のトリック
+		// Current trick
 		trick := w.GetCurrentTrick()
 		cuiTrickBlock(b, trick,
 			func(tc *domain.WhistTrickCard) int { return tc.PlayerIdx },
@@ -55,54 +59,59 @@ func (p *WhistCuiPresenter) Output(w interfaces.WhistGame, lastErr error) string
 
 		cuiErrorBlock(b, lastErr)
 
-		// ゲーム状態
+		// Game state
 		if w.GetGameEndFlag() {
-			winnerTeam := w.GetWinnerTeam()
-			fmt.Fprintf(b, "ゲーム終了！ %s\n", color.Green(fmt.Sprintf("チーム%dの勝利です！", winnerTeam)))
-		} else {
-			phase := w.GetPhase()
-			switch phase {
-			case domain.WhistPhasePlay:
-				currentIdx := w.GetCurrentPlayerIdx()
-				player := w.GetPlayer(currentIdx)
-				fmt.Fprintf(b, "手番: %s\n", cuiPlayerName(player, currentIdx))
-				b.WriteString("play <idx>・・・カードを出す\n")
-			case domain.WhistPhaseTrickEnd:
-				b.WriteString("トリック終了\n")
-				b.WriteString("next・・・次のトリックへ\n")
-			case domain.WhistPhaseRoundEnd:
-				b.WriteString("ラウンド終了\n")
-				b.WriteString("nr / nextround・・・次のラウンドへ\n")
-			}
+			banner := i18n.Tf("whist.gameEnd", "team", strconv.Itoa(w.GetWinnerTeam()))
+			b.WriteString(color.Green(banner) + "\n")
+			return
+		}
+		switch w.GetPhase() {
+		case domain.WhistPhasePlay:
+			currentIdx := w.GetCurrentPlayerIdx()
+			b.WriteString(i18n.Tf("whist.promptCurrentPlayer",
+				"name", cuiPlayerName(w.GetPlayer(currentIdx), currentIdx)) + "\n")
+			b.WriteString(i18n.T("whist.promptPlay") + "\n")
+		case domain.WhistPhaseTrickEnd:
+			b.WriteString(i18n.T("whist.promptTrickEnd") + "\n")
+			b.WriteString(i18n.T("whist.promptTrickEndHelp") + "\n")
+		case domain.WhistPhaseRoundEnd:
+			b.WriteString(i18n.T("whist.promptRoundEnd") + "\n")
+			b.WriteString(i18n.T("whist.promptRoundEndHelp") + "\n")
 		}
 	})
 }
 
-// HintOutput ヒント情報を出力する
+// HintOutput emits the current Whist hint.
 func (p *WhistCuiPresenter) HintOutput(w interfaces.WhistGame) string {
 	hint := w.GetHint()
-	if hint == nil {
-		return "ヒントはありません。\n"
-	}
-	if hint.CardIndex == nil {
-		return "ヒントはありません。\n"
+	if hint == nil || hint.CardIndex == nil {
+		return i18n.T("whist.hintNone") + "\n"
 	}
 	player := w.GetPlayer(0)
 	card := player.GetCard(*hint.CardIndex)
-	return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: [%d]%s (%s)]", *hint.CardIndex, cuiCardStr(card), whistHintReasonStr(hint.Reason))))
+	return color.Yellow(i18n.Tf("whist.hintCard",
+		"idx", strconv.Itoa(*hint.CardIndex),
+		"card", cuiCardStr(card),
+		"reason", whistHintReasonStr(hint.Reason))) + "\n"
 }
 
-// whistHintReasons はWhist固有のヒント理由翻訳
-var whistHintReasons = map[string]string{
-	"trump_cut": "トランプでカット",
+// whistHintReasonKeys maps Whist-specific hint-reason identifiers to their
+// i18n keys. Reasons not listed here fall through to cui_common via
+// lookupHintReason.
+var whistHintReasonKeys = map[string]string{
+	"trump_cut": "whist.hintReasonTrumpCut",
 }
 
-// whistHintReasonStr ヒント理由を日本語に変換する
+// whistHintReasonStr resolves a reason via the per-game map first, then the
+// shared (cui_common) layer.
 func whistHintReasonStr(reason string) string {
-	return lookupHintReason(reason, whistHintReasons)
+	if key, ok := whistHintReasonKeys[reason]; ok {
+		return i18n.T(key)
+	}
+	return lookupHintReason(reason, nil)
 }
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *WhistCuiPresenter) ActionLogOutput(w interfaces.WhistGame) string {
 	return actionLogOutputText(w)
 }

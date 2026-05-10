@@ -17,5 +17,15 @@
   "gameClear": "Game Clear! Moves: {{moveCount}}",
   "gameOver": "Game Over",
   "hintAvailable": "Hint available",
-  "noHint": "No hint"
+  "noHint": "No hint",
+  "foundationLabel": "[F{{idx}} {{step}}] ",
+  "foundationEmpty": "(empty)",
+  "foundationFilled": "{{card}} ({{count}}/{{max}})",
+  "wasteLabel": "[W{{idx}}] ",
+  "wasteEmpty": "(empty)",
+  "wasteFilled": "{{card}} ({{count}})",
+  "stockLine": "Stock: {{count}}",
+  "stockNext": " next: {{card}}",
+  "hintStock": "Hint: stock → foundation {{foundation}}",
+  "hintWaste": "Hint: waste {{waste}} → foundation {{foundation}}"
 }

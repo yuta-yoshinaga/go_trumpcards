@@ -62,7 +62,7 @@ func TestTrashCuiPresenter_Output(t *testing.T) {
 		})
 		p := new(TrashCuiPresenter)
 		out := p.Output(tg, nil)
-		assert.Contains(t, out, "top:")
+		assert.Contains(t, out, "上:")
 	})
 }
 

@@ -7,6 +7,7 @@ import baccarat from '../../../docs/manual/web/baccarat.md?raw';
 import badugi from '../../../docs/manual/web/badugi.md?raw';
 import bakersdozen from '../../../docs/manual/web/bakersdozen.md?raw';
 import blackjack from '../../../docs/manual/web/blackjack.md?raw';
+import blackjackswitch from '../../../docs/manual/web/blackjackswitch.md?raw';
 import bridge from '../../../docs/manual/web/bridge.md?raw';
 import calculation from '../../../docs/manual/web/calculation.md?raw';
 import canasta from '../../../docs/manual/web/canasta.md?raw';
@@ -21,6 +22,7 @@ import cribbage from '../../../docs/manual/web/cribbage.md?raw';
 import daifugo from '../../../docs/manual/web/daifugo.md?raw';
 import deuceswild from '../../../docs/manual/web/deuceswild.md?raw';
 import doubt from '../../../docs/manual/web/doubt.md?raw';
+import dragontiger from '../../../docs/manual/web/dragontiger.md?raw';
 import durak from '../../../docs/manual/web/durak.md?raw';
 import egyptianratscrew from '../../../docs/manual/web/egyptianratscrew.md?raw';
 import euchre from '../../../docs/manual/web/euchre.md?raw';
@@ -37,6 +39,7 @@ import jokerpoker from '../../../docs/manual/web/jokerpoker.md?raw';
 import klondike from '../../../docs/manual/web/klondike.md?raw';
 import letitride from '../../../docs/manual/web/letitride.md?raw';
 import memory from '../../../docs/manual/web/memory.md?raw';
+import montecarlo from '../../../docs/manual/web/montecarlo.md?raw';
 import napoleon from '../../../docs/manual/web/napoleon.md?raw';
 import nertz from '../../../docs/manual/web/nertz.md?raw';
 import ohhell from '../../../docs/manual/web/ohhell.md?raw';
@@ -97,6 +100,8 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/daifugo': daifugo,
   '/deuceswild': deuceswild,
   '/doubt': doubt,
+  '/dragontiger': dragontiger,
+  '/blackjackswitch': blackjackswitch,
   '/durak': durak,
   '/bakersdozen': bakersdozen,
   '/egyptianratscrew': egyptianratscrew,
@@ -126,6 +131,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/pinochle': pinochle,
   '/poker': poker,
   '/pokersquares': pokersquares,
+  '/montecarlo': montecarlo,
   '/pyramid': pyramid,
   '/razz': razz,
   '/badugi': badugi,

@@ -32,6 +32,11 @@
   "discardPhase": "Discard a card or knock (deadwood <= 5)",
   "roundEnd": "Round end",
   "tonkOnDeal": "Tonk on deal! Instant win",
+  "tonkOnDealBanner": {
+    "title": "TONK!",
+    "points": "{{points}} pts — instant win",
+    "winner": "{{name}} wins"
+  },
   "knockerMelds": "Knocker's melds",
   "knockerDeadwood": "Knocker's deadwood",
   "result": {

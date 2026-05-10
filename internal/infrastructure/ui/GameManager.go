@@ -779,7 +779,7 @@ var gameRegistry = []GameRegistryEntry{
 				domain.NewDefaultWar(), new(presenter.WarCuiPresenter))),
 			CuiHelpSpec{
 				TitleKey:    "war.helpTitle",
-				CommandKeys: []string{"war.helpStep"},
+				CommandKeys: []string{"war.helpStep", "war.helpAutoPlay"},
 				SettingKeys: []string{"war.helpSetMax"},
 			})
 	}},
@@ -1243,6 +1243,49 @@ var gameRegistry = []GameRegistryEntry{
 				CommandKeys:       []string{"pitch.helpBid", "pitch.helpPlay", "pitch.helpNext", "pitch.helpNextRound"},
 				ExtraCommandLines: []string{"  l                    action log"},
 				SettingKeys:       []string{"pitch.helpSetDifficulty", "pitch.helpSetLimit"},
+			})
+	}},
+	{Name: "dragontiger", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewDragonTigerCuiController(usecase.NewDragonTigerInteractor(
+				domain.NewDefaultDragonTiger(), new(presenter.DragonTigerCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "dragontiger.helpTitle",
+				CommandKeys:       []string{"dragontiger.helpBet", "dragontiger.helpClear"},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
+	{Name: "blackjackswitch", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBlackJackSwitchCuiController(usecase.NewBlackJackSwitchInteractor(
+				domain.NewDefaultBlackJackSwitch(), new(presenter.BlackJackSwitchCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "blackjackswitch.helpTitle",
+				CommandKeys: []string{
+					"blackjackswitch.helpBet",
+					"blackjackswitch.helpSwitch",
+					"blackjackswitch.helpKeep",
+					"blackjackswitch.helpHit",
+					"blackjackswitch.helpStand",
+					"blackjackswitch.helpDoubleDown",
+				},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
+	{Name: "montecarlo", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewMonteCarloCuiController(usecase.NewMonteCarloInteractor(
+				domain.NewDefaultMonteCarlo(), new(presenter.MonteCarloCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "montecarlo.helpTitle",
+				CommandKeys: []string{
+					"montecarlo.helpRemove",
+					"montecarlo.helpDeal",
+					"montecarlo.helpUndo",
+					"montecarlo.helpHint",
+					"montecarlo.helpGiveup",
+					"montecarlo.helpLog",
+				},
 			})
 	}},
 }

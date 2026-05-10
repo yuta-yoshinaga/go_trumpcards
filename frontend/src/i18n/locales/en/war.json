@@ -1,6 +1,7 @@
 {
   "button": {
-    "step": "Flip"
+    "step": "Flip",
+    "autoplay": "Auto Play"
   },
   "phase": {
     "reveal": "Ready",
@@ -28,6 +29,7 @@
     "arena": "Battle arena. Revealed cards and pot size shown here.",
     "playerPile": "Your card pile. You lose when you run out of cards.",
     "stepButton": "Press this button to flip the next card.",
+    "autoplayButton": "Press this button to auto-flip until the game ends.",
     "resetButton": "Start a new game."
   }
 }

@@ -307,19 +307,6 @@ describe('NavBar', () => {
       window.dispatchEvent(new Event('resize'));
     });
 
-    it('only expands active category on large desktop viewport', () => {
-      const original = window.innerWidth;
-      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
-      window.dispatchEvent(new Event('resize'));
-      renderNavBar('/poker');
-      const pokerDetails = screen.getByText(labelFor('nav.category.poker')).closest('details');
-      expect(pokerDetails).toHaveAttribute('open');
-      const trickDetails = screen.getByText(labelFor('nav.category.trickTaking')).closest('details');
-      expect(trickDetails).not.toHaveAttribute('open');
-      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
-      window.dispatchEvent(new Event('resize'));
-    });
-
     it('forces details open on mobile when toggled closed', () => {
       const original = window.innerWidth;
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
@@ -339,17 +326,6 @@ describe('NavBar', () => {
       renderNavBar('/poker');
       const pokerDetails = screen.getByText(labelFor('nav.category.poker')).closest('details');
       expect(pokerDetails).toHaveAttribute('open');
-    });
-
-    it('keeps other categories closed by default on desktop', () => {
-      const original = window.innerWidth;
-      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
-      window.dispatchEvent(new Event('resize'));
-      renderNavBar('/poker');
-      const trickDetails = screen.getByText(labelFor('nav.category.trickTaking')).closest('details');
-      expect(trickDetails).not.toHaveAttribute('open');
-      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
-      window.dispatchEvent(new Event('resize'));
     });
 
     it('auto-opens home category when on root path', () => {
@@ -373,19 +349,6 @@ describe('NavBar', () => {
 
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
       window.dispatchEvent(new Event('resize'));
-    });
-
-    it('closes open dropdown when clicking outside on large desktop', () => {
-      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
-      window.dispatchEvent(new Event('resize'));
-      renderNavBar('/poker');
-      const pokerDetails = screen.getByText(labelFor('nav.category.poker')).closest('details') as HTMLDetailsElement;
-      expect(pokerDetails).toHaveAttribute('open');
-
-      // Click outside the nav — handleOutsideClick should close the details
-      fireEvent.mouseDown(document.body);
-
-      expect(pokerDetails).not.toHaveAttribute('open');
     });
 
     it('does not close other categories on mousedown inside a category on mobile', () => {
@@ -459,7 +422,7 @@ describe('NavBar', () => {
       window.dispatchEvent(new Event('resize'));
       renderNavBar();
       fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
-      const starButtons = screen.getAllByRole('button', { name: i18n.t('nav.addFavorite') });
+      const starButtons = screen.getAllByRole('button', { name: i18n.t('nav.favoriteGames') });
       expect(starButtons.length).toBeGreaterThan(0);
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
       window.dispatchEvent(new Event('resize'));
@@ -470,7 +433,7 @@ describe('NavBar', () => {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
       window.dispatchEvent(new Event('resize'));
       renderNavBar();
-      expect(screen.queryByRole('button', { name: i18n.t('nav.addFavorite') })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: i18n.t('nav.favoriteGames') })).not.toBeInTheDocument();
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
       window.dispatchEvent(new Event('resize'));
     });
@@ -485,7 +448,7 @@ describe('NavBar', () => {
       // No favorites section initially
       expect(screen.queryByText(i18n.t('nav.favoriteGames'))).not.toBeInTheDocument();
       // Click the first star button
-      const starButtons = screen.getAllByRole('button', { name: i18n.t('nav.addFavorite') });
+      const starButtons = screen.getAllByRole('button', { name: i18n.t('nav.favoriteGames') });
       fireEvent.click(starButtons[0]);
       // Favorites section should appear
       expect(screen.getByText(i18n.t('nav.favoriteGames'))).toBeInTheDocument();
@@ -526,11 +489,11 @@ describe('NavBar', () => {
       window.dispatchEvent(new Event('resize'));
       renderNavBar();
       fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
-      const [firstStar] = screen.getAllByRole('button', { name: i18n.t('nav.addFavorite') });
+      const [firstStar] = screen.getAllByRole('button', { name: i18n.t('nav.favoriteGames') });
       expect(firstStar).toHaveAttribute('aria-pressed', 'false');
       expect(firstStar.className).toContain('text-ds-text-muted');
       fireEvent.click(firstStar);
-      const toggled = screen.getAllByRole('button', { name: i18n.t('nav.removeFavorite') })[0];
+      const toggled = screen.getAllByRole('button', { name: i18n.t('nav.favoriteGames') })[0];
       expect(toggled).toHaveAttribute('aria-pressed', 'true');
       expect(toggled.className).toContain('text-ds-accent');
       expect(toggled.className).not.toContain('text-ds-text-muted');

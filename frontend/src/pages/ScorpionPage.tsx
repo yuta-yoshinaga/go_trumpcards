@@ -8,19 +8,14 @@ import { DropZone } from '../components/DropZone';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
@@ -29,7 +24,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSound } from '../providers/SoundProvider';
@@ -224,6 +218,20 @@ function ScorpionPageContent() {
     playSound('cardPlace');
   }, [apiCall, playSound]);
 
+  // Empty-column deal guard: surfaces a shake animation + tooltip instead of failing silently.
+  const [emptyDealAttemptKey, setEmptyDealAttemptKey] = useState(0);
+  const hasEmptyColumn = useMemo(() => state?.tableau.some((col) => col.length === 0) ?? false, [state?.tableau]);
+  const dealBlockedByEmpty = hasEmptyColumn && (state?.stockCount ?? 0) > 0;
+  const handleDealGuarded = useCallback(() => {
+    if (dealBlockedByEmpty) {
+      setEmptyDealAttemptKey((k) => k + 1);
+      return;
+    }
+    // Reset on a successful deal so a future empty-column attempt can re-trigger the shake.
+    setEmptyDealAttemptKey(0);
+    handleDeal();
+  }, [dealBlockedByEmpty, handleDeal]);
+
   const handleGiveUp = useCallback(() => {
     void apiCall('giveup');
   }, [apiCall]);
@@ -281,16 +289,15 @@ function ScorpionPageContent() {
       { key: 'a', action: handleAutoComplete },
       { key: 'g', action: handleGiveUp },
       { key: 'z', action: handleUndo },
-      { key: 'd', action: handleDeal },
+      { key: 'd', action: handleDealGuarded },
     ],
-    [handleHint, handleAutoComplete, handleGiveUp, handleUndo, handleDeal],
+    [handleHint, handleAutoComplete, handleGiveUp, handleUndo, handleDealGuarded],
   );
 
   useActionKeyboardNav({
     bindings: actionBindings,
     enabled: !!isPlayingForKbd && !loading,
   });
-  useGameRoundGuard(isGameRoundActive(state));
 
   if (error) return <ErrorAlert message={error} onRetry={retry} />;
 
@@ -308,22 +315,29 @@ function ScorpionPageContent() {
     selectedSource.cardIndex === cardIndex;
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.scorpion.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.scorpion')} />
-      <PhaseIndicator
-        phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
-      >
-        <span>
-          {t('moveCount')}: {state.moveCount}
-        </span>
-        <span data-tutorial="sc-stock">
-          {t('stock')}: {state.stockCount} / {t('completed')}: {state.completedSuits}/4
-        </span>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/scorpion" />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.scorpion')}
+      gameThemeBg={gameTheme.scorpion.bg}
+      phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
+      gamePath="/scorpion"
+      gameEndFlag={isEnded}
+      winShow={isGameClear}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={
+        <>
+          <span>
+            {t('moveCount')}: {state.moveCount}
+          </span>
+          <span data-tutorial="sc-stock">
+            {t('stock')}: {state.stockCount} / {t('completed')}: {state.completedSuits}/4
+          </span>
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        </>
+      }
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -359,14 +373,16 @@ function ScorpionPageContent() {
                       isDropTarget={dnd.isDropTarget({ zone: 'tableau', col: colIdx })}
                     >
                       <button
+                        key={`empty-${colIdx.toString()}-${emptyDealAttemptKey.toString()}`}
                         type="button"
                         className={`border-2 border-dashed border-game-border rounded-lg flex items-center justify-center text-game-text-muted ${focusRingWhite} ${
                           selectedSource ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''
-                        }`}
+                        }${emptyDealAttemptKey > 0 ? ' animate-shake border-ds-warning text-ds-warning' : ''}`}
                         style={{ width: sc.cw, height: sc.ch }}
                         onClick={() => selectedSource && handleSelectTarget('tableau', colIdx)}
                         disabled={!isPlaying || !selectedSource}
                         aria-label={`${t('empty')} ${t('tableau')} ${colIdx}`}
+                        data-testid={`sc-empty-col-${colIdx.toString()}`}
                       >
                         {t('empty')}
                       </button>
@@ -475,8 +491,9 @@ function ScorpionPageContent() {
                   <button
                     type="button"
                     className={btnSuccess}
-                    onClick={handleDeal}
+                    onClick={handleDealGuarded}
                     disabled={loading || state.stockCount === 0}
+                    title={dealBlockedByEmpty ? t('cannotDealEmptyColExists') : undefined}
                   >
                     {t('deal')}
                   </button>
@@ -516,9 +533,6 @@ function ScorpionPageContent() {
           </div>
         </>
       )}
-
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-      {isGameClear && <WinCelebration show={true} />}
-    </div>
+    </GamePageShell>
   );
 }

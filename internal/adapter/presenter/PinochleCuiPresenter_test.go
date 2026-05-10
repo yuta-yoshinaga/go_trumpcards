@@ -12,6 +12,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupPinochleCuiMock() *interfaces.MockPinochleGame {
@@ -289,5 +290,64 @@ func TestPinochleCuiPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, "棋譜")
 		assert.Contains(t, result, "bid")
+	})
+}
+
+// TestPinochleCuiPresenter_English verifies issue #1699 Phase 2: every
+// previously-hardcoded Japanese string in PinochleCuiPresenter now follows
+// the active locale. The default ja path is exercised by the assertions
+// above; this suite re-runs the hint API and the player-line builder
+// under LANG=en and checks the English keys win out.
+func TestPinochleCuiPresenter_English(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	i18n.SetLang("en")
+	defer i18n.SetLang("ja")
+	p := new(presenter.PinochleCuiPresenter)
+
+	t.Run("hint output uses English labels", func(t *testing.T) {
+		m := new(interfaces.MockPinochleGame)
+		m.On("GetHint").Return((*domain.PinochleHint)(nil))
+		assert.Equal(t, "No hint", p.HintOutput(m))
+	})
+
+	t.Run("hint suit uses English label", func(t *testing.T) {
+		m := new(interfaces.MockPinochleGame)
+		suit := 2
+		m.On("GetHint").Return(&domain.PinochleHint{Suit: &suit, Reason: "hint_trump"})
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "Hint:")
+		assert.Contains(t, result, "suit")
+	})
+
+	t.Run("hint card index uses English label", func(t *testing.T) {
+		m := new(interfaces.MockPinochleGame)
+		idx := 3
+		m.On("GetHint").Return(&domain.PinochleHint{CardIndex: &idx, Reason: "hint_play"})
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "card 3")
+	})
+
+	t.Run("output uses English game-end banner", func(t *testing.T) {
+		m, _ := setupPinochleCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetWinnerTeam")
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetWinnerTeam").Return(0)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "Game over!")
+		assert.Contains(t, result, "Team 0 wins")
+		assert.NotContains(t, result, "チーム") // no Japanese leakage
+	})
+
+	t.Run("output uses English headers, dealer, scores, prompt", func(t *testing.T) {
+		m, _ := setupPinochleCuiMockWithPlayers()
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "Round: 1")
+		assert.Contains(t, result, "Trick: 1")
+		assert.Contains(t, result, "Dealer: You")
+		assert.Contains(t, result, "Team 0: 0pt")
+		assert.Contains(t, result, "to play")
 	})
 }

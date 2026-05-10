@@ -546,6 +546,63 @@ type pyramidJSON struct {
 	MoveCount   int                           `json:"mc"`
 	ActionLog   []*ActionLogEntry             `json:"al"`
 	IsStalemate bool                          `json:"sm"`
+	History     []*pyramidSnapshot            `json:"hi,omitempty"`
+}
+
+// pyramidSnapshotJSON is the wire format for a single undo snapshot.
+// pyramidSnapshot uses unexported fields, so we project to/from this
+// shape with explicit Marshal/Unmarshal methods. Field names match
+// pyramidJSON's short keys to keep the KV payload compact (#1654).
+type pyramidSnapshotJSON struct {
+	Pyramid     [PyramidRowCnt][]*PyramidCard `json:"py"`
+	Stock       []*Card                       `json:"st"`
+	Waste       []*Card                       `json:"wa"`
+	Phase       PyramidPhase                  `json:"ps"`
+	MoveCount   int                           `json:"mc"`
+	IsStalemate bool                          `json:"sm"`
+}
+
+// MarshalJSON implements json.Marshaler for pyramidSnapshot, projecting
+// the unexported fields onto an exported wire shape so that
+// Pyramid.MarshalJSON can persist the undo history (#1654).
+func (s *pyramidSnapshot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(pyramidSnapshotJSON{
+		Pyramid:     s.pyramid,
+		Stock:       s.stock,
+		Waste:       s.waste,
+		Phase:       s.phase,
+		MoveCount:   s.moveCount,
+		IsStalemate: s.isStalemate,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler for pyramidSnapshot.
+func (s *pyramidSnapshot) UnmarshalJSON(data []byte) error {
+	var j pyramidSnapshotJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Stock) > pyramidMaxSliceLen || len(j.Waste) > pyramidMaxSliceLen {
+		return fmt.Errorf("pyramid: snapshot array exceeds maximum allowed size")
+	}
+	for _, row := range j.Pyramid {
+		if len(row) > pyramidMaxSliceLen {
+			return fmt.Errorf("pyramid: snapshot pyramid row exceeds maximum allowed size")
+		}
+	}
+	s.pyramid = j.Pyramid
+	s.stock = j.Stock
+	if s.stock == nil {
+		s.stock = make([]*Card, 0)
+	}
+	s.waste = j.Waste
+	if s.waste == nil {
+		s.waste = make([]*Card, 0)
+	}
+	s.phase = j.Phase
+	s.moveCount = j.MoveCount
+	s.isStalemate = j.IsStalemate
+	return nil
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -559,6 +616,7 @@ func (p *Pyramid) MarshalJSON() ([]byte, error) {
 		MoveCount:   p.moveCount,
 		ActionLog:   p.actionLog,
 		IsStalemate: p.isStalemate,
+		History:     p.history,
 	})
 }
 
@@ -572,8 +630,13 @@ func (p *Pyramid) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if len(j.Stock) > pyramidMaxSliceLen || len(j.Waste) > pyramidMaxSliceLen ||
-		len(j.ActionLog) > pyramidMaxSliceLen {
+		len(j.ActionLog) > pyramidMaxSliceLen || len(j.History) > pyramidMaxSliceLen {
 		return fmt.Errorf("pyramid: input array exceeds maximum allowed size")
+	}
+	for _, row := range j.Pyramid {
+		if len(row) > pyramidMaxSliceLen {
+			return fmt.Errorf("pyramid: pyramid row exceeds maximum allowed size")
+		}
 	}
 
 	p.trumpCards = j.TrumpCards
@@ -595,8 +658,10 @@ func (p *Pyramid) UnmarshalJSON(data []byte) error {
 	if p.actionLog == nil {
 		p.actionLog = make([]*ActionLogEntry, 0)
 	}
-	// Undo history is not serialised; set to nil on restore.
-	p.history = nil
+	p.history = j.History
+	if p.history == nil {
+		p.history = make([]*pyramidSnapshot, 0)
+	}
 	p.isStalemate = j.IsStalemate
 	return nil
 }

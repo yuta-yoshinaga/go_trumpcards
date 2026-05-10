@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	mockUsecases "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
@@ -25,6 +26,9 @@ func TestCrazyEightsCuiController_Exec(t *testing.T) {
 		m.On("Draw").Return(mockOutput)
 		m.On("NextRound").Return(mockOutput)
 		m.On("ActionLog").Return(mockOutput)
+		// Default: assume the play did NOT trigger the choose-suit phase. Tests
+		// that exercise the inline suit prompt override this expectation below.
+		m.On("IsHumanChooseSuitTurn").Return(false)
 		return m
 	}
 
@@ -85,6 +89,30 @@ func TestCrazyEightsCuiController_Exec(t *testing.T) {
 		c := controller.NewCrazyEightsCuiController(newMock())
 		result := c.Exec("p abc")
 		assert.Contains(t, result, "Invalid card index")
+	})
+
+	t.Run("playing an 8 inlines a suit prompt instead of forcing 's' on the next line", func(t *testing.T) {
+		m := new(mockUsecases.MockCrazyEightsInteractor)
+		m.On("Play", 0).Return(mockOutput)
+		m.On("IsHumanChooseSuitTurn").Return(true)
+		c := controller.NewCrazyEightsCuiController(m)
+		result := c.Exec("p 0")
+		assert.True(t, cuiutil.IsPromptRequest(result), "expected a PROMPT response, got %q", result)
+		_, tmpl := cuiutil.ParsePromptRequest(result)
+		assert.Equal(t, "s {0}", tmpl)
+		m.AssertCalled(t, "Play", 0)
+		m.AssertCalled(t, "IsHumanChooseSuitTurn")
+	})
+
+	t.Run("playing a non-8 returns the play result unchanged (no prompt)", func(t *testing.T) {
+		m := new(mockUsecases.MockCrazyEightsInteractor)
+		m.On("Play", 2).Return(mockOutput)
+		m.On("IsHumanChooseSuitTurn").Return(false)
+		c := controller.NewCrazyEightsCuiController(m)
+		result := c.Exec("p 2")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "Play", 2)
+		m.AssertCalled(t, "IsHumanChooseSuitTurn")
 	})
 
 	// draw

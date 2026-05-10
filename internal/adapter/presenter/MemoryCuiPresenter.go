@@ -2,11 +2,13 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // memoryCellStr returns the display string for a single Memory board cell.
@@ -20,22 +22,23 @@ func memoryCellStr(bc *domain.MemoryBoardCard, pos int) string {
 	return fmt.Sprintf("[%2d]%-10s", pos, "??")
 }
 
-// MemoryCuiPresenter 神経衰弱CUIプレゼンタークラス
+// MemoryCuiPresenter renders the Memory (Concentration) CUI view.
 type MemoryCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *MemoryCuiPresenter) Output(m interfaces.MemoryGame, lastErr error) string {
-	return buildCuiOutput("Memory (神経衰弱)", func(b *strings.Builder) {
-		// プレイヤー情報
+	return buildCuiOutput(i18n.T("memory.helpTitle"), func(b *strings.Builder) {
+		// Players
 		for i := 0; i < m.GetPlayerCnt(); i++ {
 			player := m.GetPlayer(i)
-			name := cuiPlayerName(player, i)
-			fmt.Fprintf(b, "%s: %dペア\n", name, player.GetPairCount())
+			b.WriteString(i18n.Tf("memory.playerLine",
+				"name", cuiPlayerName(player, i),
+				"pairs", strconv.Itoa(player.GetPairCount())) + "\n")
 		}
 
 		b.WriteString("----------\n")
 
-		// ボードを4×13グリッドで表示
+		// Render the 4×13 board
 		board := m.GetBoard()
 		for row := 0; row < 4; row++ {
 			rowParts := make([]string, 13)
@@ -49,41 +52,36 @@ func (p *MemoryCuiPresenter) Output(m interfaces.MemoryGame, lastErr error) stri
 
 		b.WriteString("----------\n")
 
-		// エラーメッセージ
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
-		}
+		cuiErrorBlock(b, lastErr)
 
-		// ゲーム状態
 		if m.GetGameEndFlag() {
 			winnerIdx := m.GetWinnerIdx()
-			player := m.GetPlayer(winnerIdx)
-			fmt.Fprintf(b, "ゲーム終了！ %s\n", color.Green(cuiPlayerName(player, winnerIdx)+"の勝利です！"))
-		} else {
-			phase := m.GetPhase()
-			currentIdx := m.GetCurrentPlayerIdx()
-			player := m.GetPlayer(currentIdx)
-			playerStr := cuiPlayerName(player, currentIdx)
-			switch phase {
-			case domain.MemoryPhaseFlip1:
-				fmt.Fprintf(b, "手番: %s — 1枚目を選んでください\n", playerStr)
-				b.WriteString("f <pos>・・・カードをめくる\n")
-			case domain.MemoryPhaseFlip2:
-				fmt.Fprintf(b, "手番: %s — 2枚目を選んでください\n", playerStr)
-				b.WriteString("f <pos>・・・カードをめくる\n")
-			case domain.MemoryPhaseResult:
-				if m.GetLastMatchResult() {
-					b.WriteString(color.Green("ペアが揃いました！") + "\n")
-				} else {
-					b.WriteString(color.Yellow("残念、不一致です。") + "\n")
-				}
-				b.WriteString("n・・・次へ\n")
+			banner := i18n.Tf("memory.gameEnd",
+				"name", cuiPlayerName(m.GetPlayer(winnerIdx), winnerIdx))
+			b.WriteString(color.Green(banner) + "\n")
+			return
+		}
+		currentIdx := m.GetCurrentPlayerIdx()
+		name := cuiPlayerName(m.GetPlayer(currentIdx), currentIdx)
+		switch m.GetPhase() {
+		case domain.MemoryPhaseFlip1:
+			b.WriteString(i18n.Tf("memory.promptFlip1", "name", name) + "\n")
+			b.WriteString(i18n.T("memory.promptFlipHelp") + "\n")
+		case domain.MemoryPhaseFlip2:
+			b.WriteString(i18n.Tf("memory.promptFlip2", "name", name) + "\n")
+			b.WriteString(i18n.T("memory.promptFlipHelp") + "\n")
+		case domain.MemoryPhaseResult:
+			if m.GetLastMatchResult() {
+				b.WriteString(color.Green(i18n.T("memory.resultMatch")) + "\n")
+			} else {
+				b.WriteString(color.Yellow(i18n.T("memory.resultMismatch")) + "\n")
 			}
+			b.WriteString(i18n.T("memory.promptNextHelp") + "\n")
 		}
 	})
 }
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *MemoryCuiPresenter) ActionLogOutput(m interfaces.MemoryGame) string {
 	return actionLogOutputText(m)
 }

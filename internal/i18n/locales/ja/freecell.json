@@ -10,5 +10,14 @@
   "helpFoundation": "  f <col>              タブローから組札へ (省略形)",
   "helpGiveUp": "  g                    give up",
   "helpHint": "  h                    hint",
-  "helpAutoComplete": "  ac                   auto-complete"
+  "helpAutoComplete": "  ac                   auto-complete",
+  "freeCellHeader": "FreeCells: ",
+  "foundationHeader": "Foundation: ",
+  "columnLabel": "列{{col}}:",
+  "hintFromTableau": "タブロー列{{col}}[{{idx}}]",
+  "hintFromFreeCell": "フリーセル{{col}}",
+  "hintToFoundation": "ファンデーション",
+  "hintToTableau": "タブロー列{{col}}",
+  "hintToFreeCell": "フリーセル{{col}}",
+  "hintLine": "ヒント: {{from}} → {{to}}"
 }

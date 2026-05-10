@@ -15,5 +15,9 @@
   "gameOver": "Game over",
   "stalemate": "Stalemate",
   "hintAvailable": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "header": "Completed: {{completed}}/{{total}} | Stock: {{stock}}",
+  "columnLabel": "Column {{col}}:",
+  "hintDeal": "Hint: deal stock cards with d",
+  "hintLine": "Hint: tableau column {{fromCol}}[{{idx}}] → tableau column {{toCol}}"
 }

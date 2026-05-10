@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { type ReplayConfig, runReplay, shouldSkipReplay } from './gameReplay';
+import { REPLAY_DELAY_MS, type ReplayConfig, runReplay, shouldSkipReplay } from './gameReplay';
+import { REPLAY_SPEED_STORAGE_KEY } from './useReplaySpeed';
 
 describe('runReplay', () => {
   beforeEach(() => {
@@ -90,6 +91,60 @@ describe('runReplay', () => {
     expect(setDisplayState).toHaveBeenNthCalledWith(1, 'human');
     expect(setDisplayState).toHaveBeenNthCalledWith(2, 'r1');
     expect(setDisplayState).toHaveBeenNthCalledWith(3, 'final');
+  });
+
+  it('scales delays by the persisted CPU replay speed (fast)', async () => {
+    localStorage.setItem(REPLAY_SPEED_STORAGE_KEY, 'fast');
+    try {
+      const setDisplayState = vi.fn();
+      const config: ReplayConfig<string> = {
+        buildReplayStates: () => ['r1'],
+        buildHumanActionState: () => 'human',
+      };
+
+      const promise = runReplay('final', setDisplayState, config);
+
+      // 'fast' = 0.3 multiplier, so 800 -> 240ms. After 239ms only the human
+      // state has been shown; after the full 240ms we move on.
+      await vi.advanceTimersByTimeAsync(239);
+      expect(setDisplayState).toHaveBeenCalledTimes(1);
+      expect(setDisplayState).toHaveBeenCalledWith('human');
+
+      await vi.advanceTimersByTimeAsync(1);
+      expect(setDisplayState).toHaveBeenNthCalledWith(2, 'r1');
+
+      await vi.runAllTimersAsync();
+      await promise;
+      expect(setDisplayState).toHaveBeenLastCalledWith('final');
+    } finally {
+      localStorage.removeItem(REPLAY_SPEED_STORAGE_KEY);
+    }
+  });
+
+  it('collapses delays to zero on instant speed', async () => {
+    localStorage.setItem(REPLAY_SPEED_STORAGE_KEY, 'instant');
+    try {
+      const setDisplayState = vi.fn();
+      const config: ReplayConfig<string> = {
+        buildReplayStates: () => ['r1', 'r2'],
+        buildHumanActionState: () => 'human',
+      };
+
+      const promise = runReplay('final', setDisplayState, config);
+      await vi.runAllTimersAsync();
+      await promise;
+
+      expect(setDisplayState).toHaveBeenNthCalledWith(1, 'human');
+      expect(setDisplayState).toHaveBeenNthCalledWith(2, 'r1');
+      expect(setDisplayState).toHaveBeenNthCalledWith(3, 'r2');
+      expect(setDisplayState).toHaveBeenNthCalledWith(4, 'final');
+    } finally {
+      localStorage.removeItem(REPLAY_SPEED_STORAGE_KEY);
+    }
+  });
+
+  it('keeps base delay constant when speed is normal', () => {
+    expect(REPLAY_DELAY_MS).toBe(800);
   });
 
   it('uses custom getActionDelay per action', async () => {

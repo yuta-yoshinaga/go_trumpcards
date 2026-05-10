@@ -120,6 +120,19 @@ func TestFortyThievesCuiPresenter_Output(t *testing.T) {
 		result := p.Output(fg, nil)
 		assert.Contains(t, result, "[空]")
 	})
+
+	t.Run("foundation with cards", func(t *testing.T) {
+		fg := new(interfaces.MockFortyThievesGame)
+		setupFortyThievesCuiMockDefaults(fg)
+		fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "GetFoundation")
+		var foundation [domain.FortyThievesFoundationCnt][]*domain.Card
+		foundation[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}
+		fg.On("GetFoundation").Return(foundation)
+
+		p := new(FortyThievesCuiPresenter)
+		result := p.Output(fg, nil)
+		assert.Contains(t, result, "SPADE 1")
+	})
 }
 
 func TestFortyThievesCuiPresenter_HintOutput(t *testing.T) {

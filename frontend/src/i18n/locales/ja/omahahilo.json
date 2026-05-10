@@ -64,6 +64,8 @@
     "negativeEV": "期待値マイナス — フォールド推奨",
     "strongHandRank": "強いハンド — レイズ推奨",
     "decentHandRank": "まずまずのハンド — コール推奨",
-    "weakHandRank": "弱いハンド — フォールド推奨"
+    "weakHandRank": "弱いハンド — フォールド推奨",
+    "scoopChance": "ハイ＋ローのスクープ圏内 — レイズ推奨",
+    "lowDraw": "ロー成立濃厚 — 半分狙いでコール推奨"
   }
 }

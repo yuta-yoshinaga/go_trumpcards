@@ -4,5 +4,19 @@
   "helpNext": "  n                    next trick",
   "helpNextRound": "  nr                   next round",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
-  "helpSetLimit": "  sl <n>               point limit"
+  "helpSetLimit": "  sl <n>               point limit",
+  "header": "ラウンド: {{round}}  トリック: {{trick}}",
+  "trumpLine": "トランプ: {{suit}}",
+  "teamScoreLine": "チームスコア: チーム0={{t0}}  チーム1={{t1}}",
+  "playerLine": "{{name}} (チーム{{team}}): 獲得{{tricks}}トリック 累積{{cum}}点 ラウンド{{round}}点 {{cards}}枚",
+  "gameEnd": "ゲーム終了！ チーム{{team}}の勝利です！",
+  "promptCurrentPlayer": "手番: {{name}}",
+  "promptPlay": "play <idx>・・・カードを出す",
+  "promptTrickEnd": "トリック終了",
+  "promptTrickEndHelp": "next・・・次のトリックへ",
+  "promptRoundEnd": "ラウンド終了",
+  "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
+  "hintNone": "ヒントはありません。",
+  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "hintReasonTrumpCut": "トランプでカット"
 }

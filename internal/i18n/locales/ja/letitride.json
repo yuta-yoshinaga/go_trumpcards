@@ -2,5 +2,22 @@
   "helpTitle": "Let It Ride (レット・イット・ライド)",
   "helpBet": "  b <金額>             ベット (3口分を賭ける)",
   "helpPull": "  p                    プル (ベットを取り下げる)",
-  "helpLetItRide": "  l                    レット・イット・ライド (ベットを維持)"
+  "helpLetItRide": "  l                    レット・イット・ライド (ベットを維持)",
+  "chipsLine": "チップ: {{chips}}",
+  "phaseLine": "フェーズ: {{phase}}",
+  "betLine": "ベット: {{amount}} x {{active}} アクティブ",
+  "handLine": "ハンド: {{hand}}",
+  "betsLine": "ベット1: {{bet1}}  ベット2: {{bet2}}  ベット3: {{bet3}}",
+  "playerHeader": "PLAYER",
+  "communityHeader": "COMMUNITY",
+  "phaseBet": "BET",
+  "phaseFirstDecision": "FIRST DECISION",
+  "phaseSecondDecision": "SECOND DECISION",
+  "phaseEnd": "END",
+  "phaseUnknown": "UNKNOWN",
+  "betStatusRide": "RIDE",
+  "betStatusPull": "PULL",
+  "playerWins": "プレイヤーの勝ち！",
+  "playerLoses": "プレイヤーの負け。",
+  "totalPayoutLine": "合計払戻し: {{payout}}"
 }

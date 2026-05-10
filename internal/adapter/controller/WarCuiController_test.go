@@ -18,6 +18,7 @@ func newWarCuiMock() *usecase.MockWarInteractor {
 	m := new(usecase.MockWarInteractor)
 	m.On("ResetWithConfig", mock.Anything).Return("reset-ok")
 	m.On("Step").Return("step-ok")
+	m.On("AutoPlay").Return("autoplay-ok")
 	m.On("ActionLog").Return("log-ok")
 	m.On("GetConfig").Return(domain.DefaultWarConfig())
 	return m
@@ -43,6 +44,13 @@ func TestWarCuiController_Exec(t *testing.T) {
 		c := controller.NewWarCuiController(m)
 		assert.Equal(t, "step-ok", c.Exec("s"))
 		assert.Equal(t, "step-ok", c.Exec("step"))
+	})
+
+	t.Run("autoplay", func(t *testing.T) {
+		m := newWarCuiMock()
+		c := controller.NewWarCuiController(m)
+		assert.Equal(t, "autoplay-ok", c.Exec("a"))
+		assert.Equal(t, "autoplay-ok", c.Exec("autoplay"))
 	})
 
 	t.Run("setmax", func(t *testing.T) {

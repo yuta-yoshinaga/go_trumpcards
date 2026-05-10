@@ -3,6 +3,7 @@ import type { daifugoApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { ReplaySpeedSettingsPanel } from '../components/common/ReplaySpeedSettingsPanel';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { DaifugoCpuArea } from '../components/daifugo/DaifugoCpuArea';
 import { DaifugoCpuCompact } from '../components/daifugo/DaifugoCpuCompact';
@@ -13,16 +14,11 @@ import { DaifugoSettingsPanel } from '../components/daifugo/DaifugoSettingsPanel
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
@@ -32,7 +28,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useDaifugoGame } from '../hooks/useDaifugoGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -166,8 +161,6 @@ function DaifugoPageContent() {
     void exec('reset', [], configInput);
   }, [exec, configInput, hideActionLog]);
 
-  useGameRoundGuard(!!state && !state.gameEndFlag);
-
   if (!state)
     return (
       <GameSkeleton
@@ -218,19 +211,27 @@ function DaifugoPageContent() {
   ] as const;
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.daifugo.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.daifugo')} />
-      <PhaseIndicator phaseName={state.gameEndFlag ? t('phase.end') : t('phase.play')} isHumanTurn={isHumanTurn}>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/daifugo" />
-      </PhaseIndicator>
+    <GamePageShell
+      title={tc('nav.daifugo')}
+      gameThemeBg={gameTheme.daifugo.bg}
+      phaseName={state.gameEndFlag ? t('phase.end') : t('phase.play')}
+      isHumanTurn={isHumanTurn}
+      gamePath="/daifugo"
+      gameEndFlag={!!state.gameEndFlag}
+      onCelebrate={() => playSound('winFanfare')}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
             <DaifugoSettingsPanel config={configInput} onChange={handleConfigChange} />
+            <ReplaySpeedSettingsPanel />
             <SettingsPanel
               title=""
               groups={[
@@ -428,8 +429,6 @@ function DaifugoPageContent() {
           </GameFooter>
         </>
       )}
-      <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-    </div>
+    </GamePageShell>
   );
 }

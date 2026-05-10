@@ -19,5 +19,19 @@
   "gameClear": "Game cleared! Moves: {{moveCount}}",
   "gameOver": "Game over",
   "hintAvailable": "Hint available",
-  "noHint": "No hint"
+  "noHint": "No hint",
+  "baseRank": "Base rank: {{rank}}",
+  "foundationHeader": "Foundation: ",
+  "reserveLine": "Reserve: {{count}} (top: {{card}})",
+  "reserveEmpty": "Reserve: [empty]",
+  "stockLine": "Stock: {{count}}",
+  "wasteCard": " | Waste: {{card}}",
+  "wasteEmpty": " | Waste: [empty]",
+  "columnLabel": "Column {{col}}:",
+  "hintFromTableau": "tableau column {{col}}[{{idx}}]",
+  "hintFromReserve": "reserve",
+  "hintFromWaste": "waste",
+  "hintToFoundation": "foundation",
+  "hintToTableau": "tableau column {{col}}",
+  "hintLine": "Hint: {{from}} → {{to}}"
 }

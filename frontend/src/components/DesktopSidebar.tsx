@@ -3,10 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { gameCategories, gameRoutes } from '../constants/gameRoutes';
 import { SITE_NAME } from '../constants/site';
+import { useCategoryExpansion } from '../hooks/useCategoryExpansion';
 import { useFavoriteGames } from '../hooks/useFavoriteGames';
 import { useGameRouteSearch } from '../hooks/useGameRouteSearch';
 import { useRecentGames } from '../hooks/useRecentGames';
 import { focusRingWhite } from '../styles/buttonStyles';
+import { FavoriteToggleButton } from './nav/FavoriteToggleButton';
 import { NavLangToggle } from './nav/NavLangToggle';
 import { SoundToggle } from './SoundToggle';
 import { TutorialProgressPanel } from './tutorial/TutorialProgressPanel';
@@ -20,6 +22,7 @@ export function DesktopSidebar() {
   const { t } = useTranslation('common');
   const [searchTerm, setSearchTerm] = useState('');
   const { favorites, isFavorite, toggleFavorite } = useFavoriteGames();
+  const { isExpanded, setExpanded } = useCategoryExpansion();
   const recentGames = useRecentGames(pathname);
   const { filteredPaths } = useGameRouteSearch(searchTerm);
 
@@ -160,23 +163,27 @@ export function DesktopSidebar() {
                       <span aria-hidden="true">{icon}</span>
                       {t(routeLabel)}
                     </Link>
-                    <button
-                      type="button"
-                      aria-label={isFavorite(path) ? t('nav.removeFavorite') : t('nav.addFavorite')}
-                      onClick={() => toggleFavorite(path)}
-                      className={`text-ds-accent min-w-[44px] min-h-[44px] flex items-center justify-center text-sm shrink-0 hover:scale-110 transition-transform ${focusRingWhite}`}
-                    >
-                      {isFavorite(path) ? '★' : '☆'}
-                    </button>
+                    <FavoriteToggleButton
+                      path={path}
+                      pressed={isFavorite(path)}
+                      onToggle={toggleFavorite}
+                      className={() =>
+                        `text-ds-accent min-w-[44px] min-h-[44px] flex items-center justify-center text-sm shrink-0 hover:scale-110 transition-transform ${focusRingWhite}`
+                      }
+                    />
                   </div>
                 ))
             )}
           </div>
         ) : (
           gameCategories.map(({ labelKey, icon: catIcon, routes }) => {
-            const hasActivePage = routes.some(({ path }) => path === pathname);
             return (
-              <details key={labelKey} className="sidebar-category mb-1" open={hasActivePage}>
+              <details
+                key={labelKey}
+                className="sidebar-category mb-1"
+                open={isExpanded(labelKey)}
+                onToggle={(e) => setExpanded(labelKey, e.currentTarget.open)}
+              >
                 <summary className="text-ds-text-muted text-[10px] uppercase tracking-wider px-1 py-1 font-semibold flex items-center gap-1 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
                   <span aria-hidden="true">{catIcon}</span> {t(labelKey)}
                   <span className="ml-auto text-[8px] text-ds-text-muted sidebar-category-chevron" aria-hidden="true">
@@ -194,14 +201,14 @@ export function DesktopSidebar() {
                         <span aria-hidden="true">{icon}</span>
                         {t(routeLabel)}
                       </Link>
-                      <button
-                        type="button"
-                        aria-label={isFavorite(path) ? t('nav.removeFavorite') : t('nav.addFavorite')}
-                        onClick={() => toggleFavorite(path)}
-                        className={`text-ds-accent min-w-[44px] min-h-[44px] flex items-center justify-center text-sm shrink-0 hover:scale-110 transition-transform ${focusRingWhite}`}
-                      >
-                        {isFavorite(path) ? '★' : '☆'}
-                      </button>
+                      <FavoriteToggleButton
+                        path={path}
+                        pressed={isFavorite(path)}
+                        onToggle={toggleFavorite}
+                        className={() =>
+                          `text-ds-accent min-w-[44px] min-h-[44px] flex items-center justify-center text-sm shrink-0 hover:scale-110 transition-transform ${focusRingWhite}`
+                        }
+                      />
                     </div>
                   ))}
                 </div>

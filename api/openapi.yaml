@@ -164,6 +164,12 @@ tags:
     description: Casino War (カジノウォー) game - simple player-vs-dealer table game; high card wins (Aces high), tie offers Surrender (forfeit half ante) or War (match ante and re-draw)
   - name: pitch
     description: Pitch / Setback (ピッチ / セットバック) game - 4-player single-handed Auction Pitch trick-taking; bid 0/2/3/4 then compete for High/Low/Jack/Game points (4 max); set back on a missed bid
+  - name: dragontiger
+    description: Dragon Tiger (ドラゴンタイガー) game - simple 1-on-1 high-card showdown; Dragon vs Tiger (Aces low, Kings high), 1:1 on win, half refund on tie for Dragon/Tiger bets, 8:1 on tie for the Tie bet
+  - name: blackjackswitch
+    description: Blackjack Switch (ブラックジャック・スイッチ) game - blackjack variant where the player plays two hands and may swap the second card between them; in return, naturals pay 1:1 and a dealer 22 is a push (not a bust)
+  - name: montecarlo
+    description: Monte Carlo Solitaire (モンテカルロ・ソリティア) game - 5x5 grid solitaire; remove 8-direction adjacent same-rank pairs, then deal to compress the board top-left and refill from the stock; clear all 52 cards to win
 
 paths:
   /blackjack/exec:
@@ -7563,6 +7569,216 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CasinoWarResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+
+  /dragontiger/exec:
+    post:
+      tags:
+        - dragontiger
+      summary: Execute a Dragon Tiger game command
+      description: |
+        Send a command to advance the Dragon Tiger (ドラゴンタイガー) game session
+        identified by `sessionId`. Dragon Tiger is the simplest of the casino
+        lineup: 1 card is dealt to the **Dragon** slot and 1 to the **Tiger**
+        slot, and the higher rank wins (Aces are **lowest**, Kings highest).
+        Three bet types: Dragon (1:1 if Dragon wins), Tiger (1:1 if Tiger wins),
+        Tie (8:1 if equal ranks). On a tie with a Dragon or Tiger bet, half the
+        stake is refunded.
+
+        | Phase | Value | Description |
+        |-------|-------|-------------|
+        | Bet   | `1`   | Place bet (auto-resolves to End) |
+        | End   | `2`   | Round complete |
+
+        | Bet type | Value | Pays |
+        |----------|-------|------|
+        | Dragon   | `0`   | 1:1 on Dragon win, half refund on tie |
+        | Tiger    | `1`   | 1:1 on Tiger win, half refund on tie |
+        | Tie      | `2`   | 8:1 on tie, otherwise lose stake |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `bet`   | `b`     | Place a bet (requires `amount` and `betType`) |
+        | `clear` | —       | Clear Big Road (history) |
+        | `log`   | —       | View action log |
+      operationId: dragontigerExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DragonTigerRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              betDragon:
+                summary: Bet 100 on Dragon
+                value:
+                  command: bet
+                  amount: 100
+                  betType: 0
+                  sessionId: my-session-001
+              betTie:
+                summary: Bet 10 on Tie
+                value:
+                  command: bet
+                  amount: 10
+                  betType: 2
+                  sessionId: my-session-001
+              clear:
+                summary: Clear the Big Road history
+                value:
+                  command: clear
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Updated game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DragonTigerResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+
+  /blackjackswitch/exec:
+    post:
+      tags:
+        - blackjackswitch
+      summary: Execute a Blackjack Switch game command
+      description: |
+        Send a command to advance the Blackjack Switch (ブラックジャック・スイッチ)
+        game session identified by `sessionId`. The player is dealt two hands
+        and may swap the second card between them. In return, naturals pay 1:1
+        (not 3:2) and a dealer 22 is treated as a push for any non-natural hand.
+
+        | Phase  | Value | Description |
+        |--------|-------|-------------|
+        | Bet    | `1`   | Place bet (per hand; total cost is 2x amount) |
+        | Switch | `2`   | Choose to switch the second cards between hands |
+        | Action | `3`   | Hit / stand / double down on each hand in turn |
+        | End    | `4`   | Round complete |
+
+        | Command       | Aliases | Description |
+        |---------------|---------|-------------|
+        | `reset`       | `r`     | Start / restart a game |
+        | `bet`         | `b`     | Place a bet (requires `amount`; total cost = amount * 2) |
+        | `switch`      | `sw`    | Swap second cards between hands |
+        | `keep`        | `k`     | Keep current hands and proceed to action |
+        | `hit`         | `h`     | Hit the current hand |
+        | `stand`       | `s`     | Stand the current hand |
+        | `doubledown`  | `dd`    | Double down on the current hand (requires 2 cards) |
+        | `log`         | —       | View action log |
+      operationId: blackjackswitchExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlackJackSwitchRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 100 per hand (total 200)
+                value:
+                  command: bet
+                  amount: 100
+                  sessionId: my-session-001
+              switch:
+                summary: Swap second cards
+                value:
+                  command: switch
+                  sessionId: my-session-001
+              hit:
+                summary: Hit the current hand
+                value:
+                  command: hit
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Updated game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlackJackSwitchResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+
+  /montecarlo/exec:
+    post:
+      tags:
+        - montecarlo
+      summary: Execute a Monte Carlo Solitaire game command
+      description: |
+        Send a command to advance the Monte Carlo Solitaire (モンテカルロ・ソリティア)
+        game session identified by `sessionId`. The first 25 cards of a single
+        52-card deck are dealt row-major into a 5x5 grid, leaving 27 in the
+        stock. Pick two adjacent (orthogonal or diagonal) cells of the same
+        rank to remove them; press `deal` to compress the board top-left and
+        refill empty cells from the stock. Win by clearing all 52 cards.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | `0`   | Remove or deal |
+        | GameClear | `1`   | All 52 cards removed |
+        | GameOver  | `2`   | Stalemate or giveup |
+
+        | Command  | Aliases       | Description |
+        |----------|---------------|-------------|
+        | `reset`  | `r`           | Start / restart a game |
+        | `remove` | `m`, `move`   | Remove an adjacent same-rank pair (requires `fromR`, `fromC`, `toR`, `toC`) |
+        | `deal`   | `d`           | Compress the board and refill from the stock |
+        | `undo`   | `u`           | Undo the last remove or deal |
+        | `giveup` | `g`           | End the game as a loss |
+        | `hint`   | `h`           | Return a recommended remove pair, or `deal` when none exists |
+        | `log`    | `l`           | View action log |
+      operationId: montecarloExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MonteCarloRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              remove:
+                summary: Remove the pair at (0,0) and (0,1)
+                value:
+                  command: remove
+                  fromR: 0
+                  fromC: 0
+                  toR: 0
+                  toC: 1
+                  sessionId: my-session-001
+              deal:
+                summary: Compress + refill from stock
+                value:
+                  command: deal
+                  sessionId: my-session-001
+              hint:
+                summary: Ask the server for a hint
+                value:
+                  command: hint
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Updated game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonteCarloResponse'
         '400':
           description: Bad request (unsupported command, missing/invalid parameters, or session error)
 
@@ -16045,6 +16261,188 @@ components:
           description: Interpolation parameters for the message template.
 
     # -------------------------------------------------------------------------
+    # Dragon Tiger (ドラゴンタイガー)
+    # -------------------------------------------------------------------------
+    DragonTigerRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          enum: [reset, r, bet, b, clear, log]
+          description: Game command to execute.
+        amount:
+          type: integer
+          description: Bet amount (required for `bet` command). Must be a multiple of 10, min 10, max 10000.
+          example: 100
+        betType:
+          type: integer
+          enum: [0, 1, 2]
+          description: "Bet target (required for `bet` command): 0=Dragon, 1=Tiger, 2=Tie."
+          example: 0
+        sessionId:
+          type: string
+          description: Session identifier for game state persistence.
+
+    DragonTigerResponse:
+      type: object
+      properties:
+        dragonCard:
+          description: Card dealt to the Dragon slot (present after `bet`).
+          oneOf:
+            - $ref: '#/components/schemas/Card'
+            - type: "null"
+        tigerCard:
+          description: Card dealt to the Tiger slot (present after `bet`).
+          oneOf:
+            - $ref: '#/components/schemas/Card'
+            - type: "null"
+        phase:
+          type: integer
+          description: "Current game phase: 1=Bet, 2=End."
+          example: 1
+        chips:
+          type: integer
+          description: Player's chip balance.
+          example: 1000
+        betAmount:
+          type: integer
+          description: Bet amount placed in the current round.
+          example: 0
+        betType:
+          type: integer
+          description: "Bet target placed in the current round: 0=Dragon, 1=Tiger, 2=Tie."
+          example: 0
+        result:
+          type: integer
+          description: "Round result (domain.GameResult): 1=Dragon wins, 2=Tiger wins, 3=Tie."
+          example: 0
+        payout:
+          type: integer
+          description: Payout returned to the player for the round (includes stake on a win, half-stake refund on a Dragon/Tiger tie).
+          example: 0
+        history:
+          type: array
+          description: "Big Road history (most recent appended). Values: 0=Dragon win, 1=Tiger win, 2=Tie."
+          items:
+            type: integer
+        message:
+          type: string
+          description: Human-readable status or result message.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code for i18n.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template.
+
+    # -------------------------------------------------------------------------
+    # Blackjack Switch (ブラックジャック・スイッチ)
+    # -------------------------------------------------------------------------
+    BlackJackSwitchRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          enum: [reset, r, bet, b, switch, sw, keep, k, hit, h, stand, s, doubledown, dd, log, l]
+          description: Game command to execute.
+        amount:
+          type: integer
+          description: Bet amount per hand (required for `bet`). Total cost is amount * 2.
+          example: 100
+        sessionId:
+          type: string
+          description: Session identifier for game state persistence.
+
+    BlackJackSwitchHand:
+      type: object
+      properties:
+        cards:
+          type: array
+          description: Cards in the hand. Null entries are face-down placeholders.
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/Card'
+              - type: "null"
+        score:
+          type: integer
+          description: Best blackjack score for this hand (Aces 1 or 11).
+        bet:
+          type: integer
+          description: Bet amount on this hand (doubles after a successful double-down).
+        stood:
+          type: boolean
+        doubled:
+          type: boolean
+        busted:
+          type: boolean
+        isBJ:
+          type: boolean
+          description: True if the hand is a 2-card 21 (natural). Pays 1:1 in this variant.
+        result:
+          type: integer
+          description: "Per-hand domain.GameResult: 1=Win, 0=Draw, -1=Lose. Set after End phase."
+        payout:
+          type: integer
+          description: Per-hand payout including stake return.
+
+    BlackJackSwitchResponse:
+      type: object
+      properties:
+        hands:
+          type: array
+          description: Always two hands; the player may switch their second cards in the Switch phase.
+          items:
+            $ref: '#/components/schemas/BlackJackSwitchHand'
+        dealerCards:
+          type: array
+          description: Dealer's cards. The hole card (index 1) is null until the round ends.
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/Card'
+              - type: "null"
+        dealerScore:
+          type: integer
+          description: Visible dealer score (up-card only mid-round; full score at end).
+        phase:
+          type: integer
+          description: "Current game phase: 1=Bet, 2=Switch, 3=Action, 4=End."
+        currentHandIdx:
+          type: integer
+          description: Index of the player hand currently acting (during Action phase).
+        chips:
+          type: integer
+          description: Player's chip balance.
+        switched:
+          type: boolean
+          description: True when the player exercised the switch this round.
+        dealerPushed22:
+          type: boolean
+          description: True when the dealer ended on 22 (push rule, not natural BJ).
+        overallResult:
+          type: integer
+          description: "Aggregate of hand results: 1=net win, 0=draw, -1=net loss."
+        totalPayout:
+          type: integer
+          description: Sum of per-hand payouts.
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    # -------------------------------------------------------------------------
     # Pitch / Setback (ピッチ / セットバック)
     # -------------------------------------------------------------------------
     PitchRequest:
@@ -16657,6 +17055,131 @@ components:
           description: 0=easy, 1=normal, 2=hard
         hint:
           $ref: '#/components/schemas/SpiteAndMaliceHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    MonteCarloRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `remove` (`m`, `move`),
+            `deal` (`d`), `undo` (`u`), `giveup` (`g`), `hint` (`h`), `log` (`l`).
+          enum: [r, reset, m, move, remove, d, deal, u, undo, g, giveup, h, hint, log, l]
+          example: remove
+        fromR:
+          type: integer
+          description: First-cell row (0-4) for the `remove` command.
+          minimum: 0
+          maximum: 4
+        fromC:
+          type: integer
+          description: First-cell column (0-4) for the `remove` command.
+          minimum: 0
+          maximum: 4
+        toR:
+          type: integer
+          description: Second-cell row (0-4) for the `remove` command.
+          minimum: 0
+          maximum: 4
+        toC:
+          type: integer
+          description: Second-cell column (0-4) for the `remove` command.
+          minimum: 0
+          maximum: 4
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    MonteCarloOutputCard:
+      type: object
+      description: A single cell in the 5x5 Monte Carlo board (empty when `card` is null).
+      properties:
+        card:
+          description: Card on this cell, or null if the cell is empty (gap awaiting compression).
+          $ref: '#/components/schemas/Card'
+
+    MonteCarloHint:
+      type: object
+      description: Recommended next move - either a remove pair or a deal call.
+      required:
+        - action
+      properties:
+        action:
+          type: string
+          description: "Recommended action: 'remove' for a pair, 'deal' to compress + refill."
+          enum: [remove, deal]
+        fromR:
+          type: integer
+          description: First-cell row for `remove`.
+        fromC:
+          type: integer
+          description: First-cell column for `remove`.
+        toR:
+          type: integer
+          description: Second-cell row for `remove`.
+        toC:
+          type: integer
+          description: Second-cell column for `remove`.
+
+    MonteCarloResponse:
+      type: object
+      description: Current state of the Monte Carlo Solitaire game
+      required:
+        - board
+        - phase
+        - stockCount
+        - removedCount
+        - dealCount
+        - canUndo
+        - isStalemate
+        - message
+      properties:
+        board:
+          type: array
+          description: "5x5 grid of cells (row-major). Empty cells (post-removal, pre-deal) have `card: null`."
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/MonteCarloOutputCard'
+        phase:
+          type: integer
+          description: "Game phase: 0 = Playing, 1 = GameClear, 2 = GameOver"
+          enum: [0, 1, 2]
+          example: 0
+        stockCount:
+          type: integer
+          description: Cards remaining in the stock (0-27 after a fresh reset).
+          minimum: 0
+          maximum: 52
+        removedCount:
+          type: integer
+          description: Cards removed from the board so far (must reach 52 to win).
+          minimum: 0
+          maximum: 52
+        dealCount:
+          type: integer
+          description: Number of times the player has called `deal`.
+          minimum: 0
+        canUndo:
+          type: boolean
+          description: Whether the undo action is available.
+        isStalemate:
+          type: boolean
+          description: True when no remove pair exists and `deal` cannot change the board.
+        hint:
+          $ref: '#/components/schemas/MonteCarloHint'
         message:
           type: string
         messageCode:

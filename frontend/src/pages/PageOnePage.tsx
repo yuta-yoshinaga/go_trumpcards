@@ -7,16 +7,11 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
@@ -24,7 +19,6 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, usePageOneGame } from '../hooks/usePageOneGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
@@ -140,8 +134,6 @@ function PageOnePageContent() {
     });
   }, [gameCall, hideActionLog, pageOneConfig.cpuDifficulty, pageOneConfig.pointLimit]);
 
-  useGameRoundGuard(!!state && !state.gameEndFlag);
-
   if (!state)
     return (
       <GameSkeleton
@@ -157,16 +149,27 @@ function PageOnePageContent() {
   const isGameEnd = state.phase === PageOnePhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const isHumanMustDeclare = isMustDeclare && state.players[state.currentPlayerIdx]?.isHuman === true;
+  // Last-card alert: easy to miss the "Page One!" declaration window without strong feedback.
+  // Use cardCount for both human + CPU so the "1 card left" check stays consistent across roles.
+  const isGameActive = !isGameEnd && !isRoundEnd;
+  const humanAtOneCard = (humanPlayer?.cardCount ?? 0) === 1 && !humanPlayer?.hasDeclared;
+  const showLastCardBanner = isGameActive && humanAtOneCard;
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.pageone.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.pageone')} />
-      <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn || isHumanMustDeclare}>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/pageone" />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.pageone')}
+      gameThemeBg={gameTheme.pageone.bg}
+      phaseName={phaseNames[state.phase]}
+      isHumanTurn={isHumanTurn || isHumanMustDeclare}
+      gamePath="/pageone"
+      gameEndFlag={!!isGameEnd}
+      onCelebrate={() => playSound('winFanfare')}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -245,16 +248,37 @@ function PageOnePageContent() {
               <div>
                 {state.players
                   .filter((p) => !p.isHuman)
-                  .map((p) => (
-                    <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                      <div className="text-ds-text-muted text-sm">
-                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                        {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
-                        {t('roundScore', { score: p.roundScore })}
-                        {p.hasDeclared ? ` • ${t('declaredBadge')}` : ''}
+                  .map((p) => {
+                    const cpuAtOne = p.cardCount === 1 && !p.hasDeclared && isGameActive;
+                    return (
+                      <div
+                        key={p.id}
+                        data-testid={`po-cpu-${p.id}`}
+                        className={`mb-2 p-2 rounded ${
+                          cpuAtOne ? 'bg-ds-warning/15 ring-2 ring-ds-warning' : 'bg-black/30'
+                        }`}
+                      >
+                        <div className="text-ds-text-muted text-sm">
+                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                          {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
+                          {t('roundScore', { score: p.roundScore })}
+                          {p.hasDeclared ? ` • ${t('declaredBadge')}` : ''}
+                          {cpuAtOne && (
+                            <span
+                              data-testid={`po-cpu-${p.id}-last-card-badge`}
+                              className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded bg-ds-warning/30 text-ds-warning text-xs font-bold"
+                            >
+                              <span
+                                aria-hidden="true"
+                                className="inline-block w-2 h-2 rounded-full bg-ds-warning animate-pulse"
+                              />
+                              {t('cpuLastCardBadge')}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
 
                 <div className="my-3 p-2 rounded bg-black/30">
                   <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
@@ -284,6 +308,17 @@ function PageOnePageContent() {
           </div>
 
           <GameFooter className={`${gameTheme.pageone.footer} px-4 py-2.5`}>
+            {showLastCardBanner && (
+              <div
+                role="alert"
+                aria-live="assertive"
+                data-testid="po-last-card-banner"
+                className="mb-2 px-3 py-2 rounded bg-ds-warning/20 border-2 border-ds-warning text-ds-warning text-sm font-bold flex items-center gap-2"
+              >
+                <span aria-hidden="true" className="inline-block w-2 h-2 rounded-full bg-ds-warning animate-pulse" />
+                {t('lastCardBanner')}
+              </div>
+            )}
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="po-player-hand">
                 {humanPlayer.cards.map((card, idx) => (
@@ -336,7 +371,13 @@ function PageOnePageContent() {
               )}
               {isHumanMustDeclare && (
                 <div className="flex gap-2" data-tutorial="po-declare">
-                  <button type="button" className={btnSuccess} onClick={handleDeclare} disabled={loading}>
+                  <button
+                    type="button"
+                    className={`${btnSuccess} ring-2 ring-ds-warning animate-pulse`}
+                    onClick={handleDeclare}
+                    disabled={loading}
+                    data-testid="po-declare-btn"
+                  >
                     {t('declareButton')}
                   </button>
                   <button type="button" className={btnWarning} onClick={handleSkipDeclare} disabled={loading}>
@@ -360,8 +401,6 @@ function PageOnePageContent() {
           </GameFooter>
         </>
       )}
-      <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-    </div>
+    </GamePageShell>
   );
 }

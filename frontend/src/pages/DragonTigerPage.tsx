@@ -1,0 +1,268 @@
+import { useMemo, useState } from 'react';
+import { dragontigerApi } from '../api/gameApi';
+import { ActionLogPanel } from '../components/ActionLogPanel';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
+import { ChipBetInput } from '../components/common/ChipBetInput';
+import { SettingsPanel } from '../components/common/SettingsPanel';
+import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
+import { GameMessageBox } from '../components/GameMessageBox';
+import { GamePageShell } from '../components/GamePageShell';
+import { GameResetButton } from '../components/GameResetButton';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
+import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
+import { useGameApi } from '../hooks/useGameApi';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
+import { useSound } from '../providers/SoundProvider';
+import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { lgCardAreaConstraint } from '../styles/gameStyles';
+import { gameTheme } from '../styles/gameTheme';
+import type { DragonTigerResponse } from '../types/card';
+import { DragonTigerBetType, DragonTigerHistoryResult, DragonTigerPhase } from '../types/phases';
+import type { TutorialStep } from '../types/tutorial';
+import type { CliGameConfig } from '../utils/cli/types';
+
+const DT_TUTORIAL_STEPS: TutorialStep[] = [];
+
+const DRAGONTIGER_CLI_HELP: string[] = [];
+
+/** Stub CLI parser — Dragon Tiger doesn't ship CLI commands yet (per checklist item 11 minimum). */
+function parseDragonTigerCommand(): { error: string } {
+  return { error: 'CLI commands are not yet implemented for Dragon Tiger.' };
+}
+
+/** Stub formatter — used only when CLI mode is enabled. */
+function formatDragonTigerState(_state: DragonTigerResponse | null): string {
+  return 'CLI mode is not implemented for Dragon Tiger.';
+}
+
+/** Renders the Dragon Tiger game page (#1684). */
+export const DragonTigerPage = withTutorial(DragonTigerPageContent, 'dragontiger', DT_TUTORIAL_STEPS);
+
+function DragonTigerPageContent() {
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('dragontiger');
+
+  const [betAmount, setBetAmount] = useState(100);
+  const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
+  const { state, loading, error, exec: execApi, retry } = useGameApi(dragontigerApi.exec);
+
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('dragontiger');
+  const cliConfig: CliGameConfig<DragonTigerResponse, Parameters<typeof dragontigerApi.exec>> = useMemo(
+    () => ({
+      gameName: 'dragontiger',
+      parseCommand: parseDragonTigerCommand,
+      formatResponse: formatDragonTigerState,
+      helpText: DRAGONTIGER_CLI_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
+
+  useMountReset(execApi);
+
+  const isBetPhase = state?.phase === DragonTigerPhase.BET;
+  const isEndPhase = state?.phase === DragonTigerPhase.END;
+
+  const actionBindings = useMemo(
+    () => [
+      { key: 'd', action: () => execApi('bet', betAmount, DragonTigerBetType.DRAGON), enabled: isBetPhase },
+      { key: 't', action: () => execApi('bet', betAmount, DragonTigerBetType.TIGER), enabled: isBetPhase },
+      { key: 'e', action: () => execApi('bet', betAmount, DragonTigerBetType.TIE), enabled: isBetPhase },
+      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
+    ],
+    [execApi, betAmount, isBetPhase, isEndPhase],
+  );
+  useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
+
+  if (!state) {
+    return (
+      <div className={`flex-1 flex items-center justify-center ${gameTheme.dragontiger.bg}`}>
+        <div className="text-ds-text-primary">Loading...</div>
+      </div>
+    );
+  }
+
+  const handleBet = (betType: number) => execApi('bet', betAmount, betType);
+  const handleReset = () => execApi('reset');
+  const handleClearHistory = () => execApi('clear');
+
+  const phaseName = isBetPhase ? t('phase.bet') : t('phase.end');
+
+  return (
+    <GamePageShell
+      title={tc('nav.dragontiger')}
+      gameThemeBg={gameTheme.dragontiger.bg}
+      phaseName={phaseName}
+      gamePath="/dragontiger"
+      gameEndFlag={isEndPhase}
+      winShow={isEndPhase && state.payout > state.betAmount}
+      onCelebrate={() => playSound('winFanfare')}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={
+        <>
+          <span>
+            {t('label.chips')}: {state.chips}
+          </span>
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        </>
+      }
+    >
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <div
+            data-testid="card-area"
+            className={[`overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`, !isBetPhase && 'flex-1']
+              .filter(Boolean)
+              .join(' ')}
+          >
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+
+            {isBetPhase && (
+              <div className="flex flex-col items-center justify-center py-4 gap-4">
+                <p className="text-ds-text-muted text-lg">{t('betGuide')}</p>
+              </div>
+            )}
+
+            {(state.dragonCard || state.tigerCard) && (
+              <div className="mb-4">
+                <div className="flex justify-center gap-6 flex-wrap">
+                  {state.dragonCard && (
+                    <div className="flex flex-col items-center">
+                      <div className="text-ds-warning text-sm font-bold mb-1">{t('label.dragon')}</div>
+                      <AnimatedCard
+                        card={state.dragonCard}
+                        width={cardWidth}
+                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                      />
+                    </div>
+                  )}
+                  {state.tigerCard && (
+                    <div className="flex flex-col items-center">
+                      <div className="text-ds-info text-sm font-bold mb-1">{t('label.tiger')}</div>
+                      <AnimatedCard
+                        card={state.tigerCard}
+                        width={cardWidth}
+                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {state.history.length > 0 && (
+              <div className="mb-4" data-testid="bigroad">
+                <div className="text-ds-text-primary text-center text-sm font-bold mb-1">{t('label.bigRoad')}</div>
+                <div className="flex justify-center gap-1 flex-wrap max-w-3xl mx-auto">
+                  {state.history.map((r, i) => {
+                    const label =
+                      r === DragonTigerHistoryResult.DRAGON ? 'D' : r === DragonTigerHistoryResult.TIGER ? 'T' : '=';
+                    const tone =
+                      r === DragonTigerHistoryResult.DRAGON
+                        ? 'bg-ds-error text-white'
+                        : r === DragonTigerHistoryResult.TIGER
+                          ? 'bg-ds-warning text-ds-text-on-accent'
+                          : 'bg-ds-surface-elevated text-ds-text-primary';
+                    return (
+                      <span
+                        key={`bigroad-${i}-${r}`}
+                        className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${tone}`}
+                      >
+                        {label}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {isEndPhase && (
+              <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="payout-breakdown">
+                <div className="font-bold">
+                  {t('payout.total')}: {state.payout}
+                </div>
+              </div>
+            )}
+
+            {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
+          </div>
+
+          <GameFooter className={`${gameTheme.dragontiger.footer} px-4 pt-3`}>
+            <ErrorAlert message={error} onRetry={retry} />
+            <SettingsPanel title={tc('settings.title')} groups={[]} />
+            {isBetPhase && (
+              <div className="flex flex-col items-center gap-2 pb-2">
+                <ChipBetInput
+                  id="dragontiger-bet-amount"
+                  label={t('label.bet')}
+                  value={betAmount}
+                  onChange={setBetAmount}
+                  max={state.chips}
+                />
+                <div className="flex justify-center gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    className={btnWarning}
+                    onClick={() => handleBet(DragonTigerBetType.DRAGON)}
+                    disabled={loading}
+                  >
+                    {t('button.betDragon')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={() => handleBet(DragonTigerBetType.TIGER)}
+                    disabled={loading}
+                  >
+                    {t('button.betTiger')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={() => handleBet(DragonTigerBetType.TIE)}
+                    disabled={loading}
+                  >
+                    {t('button.betTie')}
+                  </button>
+                </div>
+              </div>
+            )}
+            {isEndPhase && (
+              <div className="flex justify-center gap-2 pb-2 flex-wrap">
+                <GameResetButton
+                  isGameEnd={isEndPhase}
+                  onReset={handleReset}
+                  requestConfirm={requestConfirm}
+                  loading={loading}
+                />
+                <button type="button" className={btnSecondary} onClick={handleClearHistory} disabled={loading}>
+                  {t('button.clearHistory')}
+                </button>
+                <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
+                  {tc('actionLog.view')}
+                </button>
+              </div>
+            )}
+          </GameFooter>
+        </>
+      )}
+    </GamePageShell>
+  );
+}

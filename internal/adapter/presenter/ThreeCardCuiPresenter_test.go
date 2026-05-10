@@ -36,8 +36,8 @@ func TestThreeCardCuiPresenter_Output_BetPhase(t *testing.T) {
 	setupThreeCardCuiMockDefaults(m)
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "chips: 1000")
-	assert.Contains(t, result, "phase: BET")
+	assert.Contains(t, result, "チップ: 1000")
+	assert.Contains(t, result, "フェーズ: BET")
 }
 
 func TestThreeCardCuiPresenter_Output_ActionPhase(t *testing.T) {
@@ -67,7 +67,7 @@ func TestThreeCardCuiPresenter_Output_ActionPhase(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "phase: ACTION")
+	assert.Contains(t, result, "フェーズ: ACTION")
 	assert.Contains(t, result, "PLAYER")
 	assert.Contains(t, result, "High Card")
 }
@@ -103,11 +103,11 @@ func TestThreeCardCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "phase: END")
-	assert.Contains(t, result, "Player wins!")
+	assert.Contains(t, result, "フェーズ: END")
+	assert.Contains(t, result, "プレイヤーの勝ち")
 	assert.Contains(t, result, "DEALER")
 	assert.Contains(t, result, "(Qualified)")
-	assert.Contains(t, result, "total payout: 400")
+	assert.Contains(t, result, "合計払戻し: 400")
 }
 
 func TestThreeCardCuiPresenter_Output_EndPhase_Fold(t *testing.T) {
@@ -141,7 +141,7 @@ func TestThreeCardCuiPresenter_Output_EndPhase_Fold(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "Player folded.")
+	assert.Contains(t, result, "プレイヤーがフォールド")
 }
 
 func TestThreeCardCuiPresenter_Output_Error(t *testing.T) {

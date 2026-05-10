@@ -1,71 +1,76 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// SpeedCuiPresenter スピードCUIプレゼンタークラス
+// SpeedCuiPresenter renders the Speed CUI view.
 type SpeedCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *SpeedCuiPresenter) Output(s interfaces.SpeedGame, lastErr error) string {
-	return buildCuiOutput("Speed (スピード)", func(b *strings.Builder) {
-		// CPU情報
+	return buildCuiOutput(i18n.T("speed.helpTitle"), func(b *strings.Builder) {
+		// CPU info
 		cpu := s.GetPlayer(1)
-		fmt.Fprintf(b, "CPU: 手札%d枚 / 山札%d枚\n", cpu.GetCardsSize(), cpu.GetDrawPileSize())
+		b.WriteString(i18n.Tf("speed.cpuStats",
+			"hand", strconv.Itoa(cpu.GetCardsSize()),
+			"draw", strconv.Itoa(cpu.GetDrawPileSize())) + "\n")
 
-		// 台札
+		// Center piles
 		b.WriteString("----------\n")
-		b.WriteString(color.Bold("[台札]") + " ")
+		b.WriteString(color.Bold(i18n.T("speed.centerLabel")) + " ")
 		for i := range 2 {
 			c := s.GetCenterPile(i)
 			if c != nil {
-				fmt.Fprintf(b, "[%d] %s ", i, cuiCardStr(c))
+				b.WriteString(i18n.Tf("speed.centerCard",
+					"idx", strconv.Itoa(i),
+					"card", cuiCardStr(c)))
 			}
 		}
 		b.WriteString("\n")
 		b.WriteString("----------\n")
 
-		// 人間プレイヤー情報
+		// Human player info
 		human := s.GetPlayer(0)
-		fmt.Fprintf(b, "あなた: 手札%d枚 / 山札%d枚\n", human.GetCardsSize(), human.GetDrawPileSize())
-		b.WriteString(cuiIndexedCardListStr(human))
-		b.WriteString("\n")
+		b.WriteString(i18n.Tf("speed.humanStats",
+			"hand", strconv.Itoa(human.GetCardsSize()),
+			"draw", strconv.Itoa(human.GetDrawPileSize())) + "\n")
+		b.WriteString(cuiIndexedCardListStr(human) + "\n")
 
-		// ヒント
+		// Hint
 		ci, pi, found := s.GetHint()
 		if found {
-			fmt.Fprintf(b, "%s カード[%d]を台札[%d]に出せます\n", color.Bold("[ヒント]"), ci, pi)
+			b.WriteString(i18n.Tf("speed.hintLine",
+				"ci", strconv.Itoa(ci),
+				"pi", strconv.Itoa(pi)) + "\n")
 		}
 
-		// フェーズ状態
+		// Phase state
 		switch s.GetPhase() {
 		case domain.SpeedPhaseStuck:
-			b.WriteString(color.Yellow("膠着状態です。flip コマンドでカードをめくってください。\n"))
+			b.WriteString(color.Yellow(i18n.T("speed.promptStuck")) + "\n")
 		}
 
-		// 勝敗
+		// Outcome
 		if s.GetGameEndFlag() {
 			if s.GetWinnerIdx() == 0 {
-				b.WriteString(color.Green("あなたの勝ちです！\n"))
+				b.WriteString(color.Green(i18n.T("speed.winHuman")) + "\n")
 			} else {
-				b.WriteString(color.Red("CPUの勝ちです...\n"))
+				b.WriteString(color.Red(i18n.T("speed.winCpu")) + "\n")
 			}
 		}
 
-		// エラー
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s %s\n", color.Red("[エラー]"), lastErr.Error())
-		}
+		cuiErrorBlock(b, lastErr)
 	})
 }
 
-// ActionLogOutput 棋譜を文字列出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *SpeedCuiPresenter) ActionLogOutput(s interfaces.SpeedGame) string {
 	return actionLogOutputText(s)
 }

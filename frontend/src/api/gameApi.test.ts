@@ -3,6 +3,7 @@ import {
   actionLogApi,
   baccaratApi,
   blackjackApi,
+  blackjackswitchApi,
   canfieldApi,
   crazyeightsApi,
   daifugoApi,
@@ -15,6 +16,7 @@ import {
   klondikeApi,
   letitrideApi,
   memoryApi,
+  montecarloApi,
   oldmaidApi,
   omahaApi,
   pokerApi,
@@ -3178,6 +3180,80 @@ describe('gameApi', () => {
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(slapjackApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
+  describe('blackjackswitchApi.exec', () => {
+    const payload = {
+      hands: [],
+      dealerCards: [],
+      dealerScore: 0,
+      phase: 1,
+      currentHandIdx: 0,
+      chips: 1000,
+      switched: false,
+      dealerPushed22: false,
+      overallResult: 0,
+      totalPayout: 0,
+      message: '',
+    };
+
+    it('calls reset with the correct URL and body', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await blackjackswitchApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/blackjackswitch/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'reset', amount: undefined, sessionId }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('forwards bet amount in the body', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await blackjackswitchApi.exec('bet', 100);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/blackjackswitch/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'bet', amount: 100, sessionId }),
+        }),
+      );
+    });
+  });
+
+  describe('montecarloApi.exec', () => {
+    const payload = {
+      board: Array.from({ length: 5 }, () => Array.from({ length: 5 }, () => ({ card: null }))),
+      phase: 0,
+      stockCount: 27,
+      removedCount: 0,
+      dealCount: 0,
+      canUndo: false,
+      isStalemate: false,
+      message: '',
+    };
+
+    it('calls reset with the correct URL and body', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await montecarloApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/montecarlo/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          fromR: undefined,
+          fromC: undefined,
+          toR: undefined,
+          toC: undefined,
+          sessionId,
+        }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('throws on non-OK responses', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(montecarloApi.exec('reset')).rejects.toThrow('HTTP error: 500');
     });
   });
 });

@@ -15,5 +15,11 @@
   "gameOver": "Game over",
   "stalemate": "Stalemate",
   "hintAvailable": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "foundationHeader": "Foundation: ",
+  "columnLabel": "Column {{col}}:",
+  "hintFrom": "tableau column {{col}}[{{idx}}]",
+  "hintToFoundation": "foundation",
+  "hintToTableau": "tableau column {{col}}",
+  "hintLine": "Hint: {{from}} → {{to}}"
 }

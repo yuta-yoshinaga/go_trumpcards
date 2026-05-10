@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { SpiderMoveZone, spiderApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -8,27 +8,21 @@ import { DropZone } from '../components/DropZone';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useResponsiveTableau } from '../hooks/useResponsiveTableau';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSpiderGame } from '../hooks/useSpiderGame';
 import { useSound } from '../providers/SoundProvider';
@@ -116,7 +110,10 @@ function SpiderPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('spider', state);
-  const { cardHeight, cardOverlap, cardWidth } = useCardDimensions();
+  // Responsive 10-column dimensions matching this page's `px-4` scroll container and `gap-0.5`
+  // tableau so a 375 px viewport doesn't crush each card below 28 px (#1648). Stock uses the
+  // same dimensions so cards don't visibly pop when the deal animation moves them to the tableau.
+  const tableau = useResponsiveTableau(10, { padX: 32, gapPx: 2 });
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('spider');
   const cliConfig: CliGameConfig<SpiderResponse, Parameters<typeof spiderApi.exec>> = useMemo(
@@ -131,6 +128,20 @@ function SpiderPageContent() {
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const isPlayingForKbd = state?.phase === SpiderPhase.PLAYING;
+
+  // Empty-column deal guard: surfaces a shake animation + tooltip instead of failing silently.
+  const [emptyDealAttemptKey, setEmptyDealAttemptKey] = useState(0);
+  const hasEmptyColumn = useMemo(() => state?.tableau.some((col) => col.length === 0) ?? false, [state?.tableau]);
+  const dealBlockedByEmpty = hasEmptyColumn && (state?.stockCount ?? 0) > 0;
+  const handleDealGuarded = useCallback(() => {
+    if (dealBlockedByEmpty) {
+      setEmptyDealAttemptKey((k) => k + 1);
+      return;
+    }
+    // Reset on a successful deal so a future empty-column attempt can re-trigger the shake.
+    setEmptyDealAttemptKey(0);
+    handleDeal();
+  }, [dealBlockedByEmpty, handleDeal]);
 
   const dispatchMove = useCallback(
     (source: SpiderMoveZone, target: SpiderMoveZone) => {
@@ -153,21 +164,19 @@ function SpiderPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'd', action: handleDeal },
+      { key: 'd', action: handleDealGuarded },
       { key: 'h', action: handleHint },
       { key: 'a', action: handleAutoComplete },
       { key: 'g', action: handleGiveUp },
       { key: 'z', action: handleUndo },
     ],
-    [handleDeal, handleHint, handleAutoComplete, handleGiveUp, handleUndo],
+    [handleDealGuarded, handleHint, handleAutoComplete, handleGiveUp, handleUndo],
   );
 
   useActionKeyboardNav({
     bindings: actionBindings,
     enabled: !!isPlayingForKbd && !loading,
   });
-
-  useGameRoundGuard(isGameRoundActive(state));
 
   if (!state) return <GameSkeleton gameKey="spider" layout={{ kind: 'tableau', topRow: 3, tableau: 10 }} />;
 
@@ -186,26 +195,35 @@ function SpiderPageContent() {
   const autoCompleteReady = state.stockCount === 0 && isTableauAllFaceUp(state.tableau);
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.spider.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.spider')} />
-      {/* Phase indicator */}
-      <PhaseIndicator
-        phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
-      >
-        <span>
-          {t('moveCount')}: {state.moveCount}
-        </span>
-        <span className="ml-3">
-          {t('score')}: {state.score}
-        </span>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/spider" />
+    <GamePageShell
+      title={tc('nav.spider')}
+      gameThemeBg={gameTheme.spider.bg}
+      phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
+      gamePath="/spider"
+      gameEndFlag={isEnded}
+      winShow={isGameClear}
+      onCelebrate={() => playSound('winFanfare')}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={
+        <>
+          <span>
+            {t('moveCount')}: {state.moveCount}
+          </span>
+          <span className="ml-3">
+            {t('score')}: {state.score}
+          </span>
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        </>
+      }
+      headerEnd={
         <span className="ml-3" data-tutorial="spd-completed-suits">
           {t('completed')}: {state.completedSuits}/8
         </span>
-      </PhaseIndicator>
-
+      }
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -223,14 +241,14 @@ function SpiderPageContent() {
                 </div>
                 {state.stockCount > 0 ? (
                   <AnimatedCardBack
-                    width={cardWidth}
-                    onClick={isPlaying ? handleDeal : undefined}
+                    width={tableau.cw}
+                    onClick={isPlaying ? handleDealGuarded : undefined}
                     ariaLabel={t('deal')}
                     onFlipComplete={() => playSound('cardFlip')}
                   />
                 ) : (
                   <div
-                    style={{ width: cardWidth, height: cardHeight }}
+                    style={{ width: tableau.cw, height: tableau.ch }}
                     className="rounded border border-white/20 flex items-center justify-center text-game-text-muted text-xs"
                   >
                     {t('empty')}
@@ -258,14 +276,16 @@ function SpiderPageContent() {
                         onDragLeave={dnd.handleDragLeave}
                         className="relative block"
                       >
-                        <div className="relative" style={{ minHeight: cardHeight }}>
+                        <div className="relative" style={{ minHeight: tableau.ch }}>
                           {col.length === 0 ? (
                             <button
+                              key={`empty-${colIdx.toString()}-${emptyDealAttemptKey.toString()}`}
                               type="button"
                               onClick={() => handleSelectTarget(tableauColZone)}
                               disabled={!isPlaying || loading || !selectedSource}
-                              style={{ height: cardHeight }}
-                              className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                              style={{ height: tableau.ch }}
+                              data-testid={`spd-empty-col-${colIdx.toString()}`}
+                              className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${emptyDealAttemptKey > 0 ? ' animate-shake border-ds-warning text-ds-warning' : ''}`}
                             >
                               {t('empty')}
                             </button>
@@ -280,7 +300,7 @@ function SpiderPageContent() {
                                 <div
                                   key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
                                   className="absolute left-0 right-0"
-                                  style={{ top: cardIdx * cardOverlap }}
+                                  style={{ top: cardIdx * tableau.co }}
                                 >
                                   {tc.faceUp && tc.card ? (
                                     <button
@@ -308,7 +328,7 @@ function SpiderPageContent() {
                                     >
                                       <AnimatedCard
                                         card={tc.card}
-                                        width={cardWidth}
+                                        width={tableau.cw}
                                         draggable={false}
                                         style={{ width: '100%' }}
                                         onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
@@ -316,7 +336,7 @@ function SpiderPageContent() {
                                     </button>
                                   ) : (
                                     <AnimatedCardBack
-                                      width={cardWidth}
+                                      width={tableau.cw}
                                       style={{ width: '100%' }}
                                       onFlipComplete={() => playSound('cardFlip')}
                                     />
@@ -325,7 +345,7 @@ function SpiderPageContent() {
                               );
                             })
                           )}
-                          {col.length > 0 && <div style={{ height: (col.length - 1) * cardOverlap + cardHeight }} />}
+                          {col.length > 0 && <div style={{ height: (col.length - 1) * tableau.co + tableau.ch }} />}
                         </div>
                       </DropZone>
                     </div>
@@ -389,8 +409,9 @@ function SpiderPageContent() {
                   <button
                     type="button"
                     className={btnPrimary}
-                    onClick={handleDeal}
+                    onClick={handleDealGuarded}
                     disabled={loading || isAutoCompleting}
+                    title={dealBlockedByEmpty ? t('cannotDealEmptyColExists') : undefined}
                   >
                     {t('deal')}
                   </button>
@@ -463,8 +484,6 @@ function SpiderPageContent() {
           </GameFooter>
         </>
       )}
-      <WinCelebration show={state.phase === SpiderPhase.GAME_CLEAR} onCelebrate={() => playSound('winFanfare')} />
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-    </div>
+    </GamePageShell>
   );
 }

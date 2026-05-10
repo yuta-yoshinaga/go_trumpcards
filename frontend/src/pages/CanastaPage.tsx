@@ -7,15 +7,10 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useCanastaGame } from '../hooks/useCanastaGame';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -24,7 +19,6 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
@@ -140,8 +134,6 @@ function CanastaPageContent() {
     enabled: !!isHumanTurn && !loading,
   });
 
-  useGameRoundGuard(!!state && !state.gameEndFlag);
-
   if (!state) {
     return (
       <div className="p-4 text-center text-ds-text-primary">
@@ -151,14 +143,20 @@ function CanastaPageContent() {
   }
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.canasta.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.canasta')} />
-      <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn}>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/canasta" />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.canasta')}
+      gameThemeBg={gameTheme.canasta.bg}
+      phaseName={phaseNames[state.phase]}
+      isHumanTurn={isHumanTurn}
+      gamePath="/canasta"
+      gameEndFlag={isGameEnd}
+      onCelebrate={() => playSound('winFanfare')}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -437,8 +435,6 @@ function CanastaPageContent() {
           </GameFooter>
         </>
       )}
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-      <WinCelebration show={isGameEnd} onCelebrate={() => playSound('winFanfare')} />
-    </div>
+    </GamePageShell>
   );
 }

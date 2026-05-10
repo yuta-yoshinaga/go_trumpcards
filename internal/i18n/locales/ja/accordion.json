@@ -12,5 +12,9 @@
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
   "gameOver": "ゲームオーバー",
   "hintAvailable": "ヒントがあります",
-  "noHint": "ヒントはありません"
+  "noHint": "ヒントはありません",
+  "header": "残りパイル: {{count}}",
+  "pileSingle": "[{{idx}}]{{card}} ",
+  "pileStack": "[{{idx}}]{{card}}(+{{count}}) ",
+  "hintLine": "ヒント: パイル{{from}} → パイル{{to}}"
 }

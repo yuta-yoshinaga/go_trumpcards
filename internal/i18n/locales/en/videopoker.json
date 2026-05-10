@@ -1,5 +1,17 @@
 {
   "helpTitle": "Video Poker (Jacks or Better)",
   "helpBet": "  b <coins>            bet 1-5 coins and deal",
-  "helpHold": "  h [0 1 2 3 4]       hold cards at indices (empty = hold all)"
+  "helpHold": "  h [0 1 2 3 4]       hold cards at indices (empty = hold all)",
+  "chipsLine": "chips: {{chips}}",
+  "phaseLine": "phase: {{phase}}",
+  "phaseBet": "BET",
+  "phaseDraw": "DRAW",
+  "phaseResult": "RESULT",
+  "phaseUnknown": "UNKNOWN",
+  "handHeader": "--- HAND ---",
+  "holdLabel": "[HOLD]",
+  "betLine": "bet: {{bet}} coin(s)",
+  "winLine": "{{handName}}! You win!",
+  "noWin": "No winning hand.",
+  "payoutLine": "payout: {{payout}}"
 }

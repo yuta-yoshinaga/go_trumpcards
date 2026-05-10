@@ -1,3 +1,25 @@
 {
-  "helpTitle": "Durak"
+  "helpTitle": "Durak",
+  "helpAttack": "  a <idx,...>          play attack cards",
+  "helpDefend": "  d <idx,...>          play defense cards",
+  "helpTake": "  take                 pick up the table cards",
+  "helpEnd": "  end                  end attack (beat)",
+  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "trumpLine": "Trump: {{suit}}",
+  "trumpBottom": " (bottom: {{card}})",
+  "stockLine": "  Stock: {{stock}}",
+  "labelAttacker": " [attack]",
+  "labelDefender": " [defense]",
+  "playerFinished": ": finished",
+  "playerHand": ": {{count}} cards",
+  "tableHeader": "Table:",
+  "tableEmpty": "Table: (empty)",
+  "tablePairDefended": "  {{idx}}: {{attack}} ← {{defense}}",
+  "tablePairOpen": "  {{idx}}: {{attack}} ← ?",
+  "phaseAttack": "Phase: attack",
+  "phaseDefend": "Phase: defense",
+  "phaseGameEnd": "Phase: game over",
+  "gameEndDraw": "Draw!",
+  "gameEndHumanLost": "You are the durak (loser)!",
+  "gameEndCpuLost": "CPU {{idx}} is the durak (loser)!"
 }

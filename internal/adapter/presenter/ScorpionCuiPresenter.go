@@ -1,32 +1,34 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// ScorpionCuiPresenter スコーピオンCUIプレゼンタークラス
+// ScorpionCuiPresenter renders the Scorpion Solitaire CUI view.
 type ScorpionCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *ScorpionCuiPresenter) Output(s interfaces.ScorpionGame, lastErr error) string {
-	return buildCuiOutput("Scorpion (スコーピオン)", func(b *strings.Builder) {
-		fmt.Fprintf(b, "Completed: %d/%d", s.GetCompletedSuits(), domain.ScorpionCompletedSuitsCnt)
-		fmt.Fprintf(b, " | Stock: %d枚", s.GetStockCount())
-		b.WriteString("\n")
+	return buildCuiOutput(i18n.T("scorpion.helpTitle"), func(b *strings.Builder) {
+		b.WriteString(i18n.Tf("scorpion.header",
+			"completed", strconv.Itoa(s.GetCompletedSuits()),
+			"total", strconv.Itoa(domain.ScorpionCompletedSuitsCnt),
+			"stock", strconv.Itoa(s.GetStockCount())) + "\n")
 
 		b.WriteString("----------\n")
 
 		tableau := s.GetTableau()
 		for col := range domain.ScorpionTableauCnt {
 			colCards := tableau[col]
-			fmt.Fprintf(b, "列%d:", col)
+			b.WriteString(i18n.Tf("scorpion.columnLabel", "col", strconv.Itoa(col)))
 			if len(colCards) == 0 {
-				b.WriteString(" [空]")
+				b.WriteString(" " + i18n.T("cuiEmptyCol"))
 			} else {
 				b.WriteString(klondikeColumnStr(colCards))
 			}
@@ -35,41 +37,42 @@ func (p *ScorpionCuiPresenter) Output(s interfaces.ScorpionGame, lastErr error) 
 
 		b.WriteString("----------\n")
 
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
-		}
+		cuiErrorBlock(b, lastErr)
 
-		phase := s.GetPhase()
-		switch phase {
+		switch s.GetPhase() {
 		case domain.ScorpionPhasePlaying:
 			if s.IsStalemate() {
-				fmt.Fprintf(b, "%s\n", color.Red("手詰まりです"))
+				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
 			}
-			fmt.Fprintf(b, "手数: %d\n", s.GetMoveCount())
+			b.WriteString(i18n.Tf("cuiSolitaireMoves",
+				"count", strconv.Itoa(s.GetMoveCount())) + "\n")
 		case domain.ScorpionPhaseGameClear:
-			fmt.Fprintf(b, "%s 手数: %d\n", color.Green("ゲームクリア！"), s.GetMoveCount())
+			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
+				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(s.GetMoveCount())) + "\n")
 		case domain.ScorpionPhaseGameOver:
-			b.WriteString(color.Red("ゲームオーバー") + "\n")
+			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
 		}
 	})
 }
 
-// HintOutput ヒントを文字列出力
+// HintOutput emits the current Scorpion hint.
 func (p *ScorpionCuiPresenter) HintOutput(s interfaces.ScorpionGame) string {
 	hint := s.GetHint()
 	if hint == nil {
-		return "ヒントはありません。\n"
+		return i18n.T("cuiHintNone") + "\n"
 	}
 	if hint.IsDeal() {
-		return "ヒント: d でストックから配ってください\n"
+		return i18n.T("scorpion.hintDeal") + "\n"
 	}
-	return fmt.Sprintf("ヒント: タブロー列%d[%d] → タブロー列%d\n", hint.FromCol, hint.CardIndex, hint.ToCol)
+	return i18n.Tf("scorpion.hintLine",
+		"fromCol", strconv.Itoa(hint.FromCol),
+		"idx", strconv.Itoa(hint.CardIndex),
+		"toCol", strconv.Itoa(hint.ToCol)) + "\n"
 }
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *ScorpionCuiPresenter) ActionLogOutput(s interfaces.ScorpionGame) string {
-	phase := s.GetPhase()
-	if phase == domain.ScorpionPhasePlaying {
+	if s.GetPhase() == domain.ScorpionPhasePlaying {
 		return actionLogToText(nil)
 	}
 	return actionLogToText(s.GetActionLog())

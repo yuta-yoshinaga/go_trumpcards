@@ -1,67 +1,66 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // ohHellPlayerStr returns the display string for a single Oh Hell player.
 func ohHellPlayerStr(player *domain.OhHellPlayer, i int) string {
 	var b strings.Builder
-	name := cuiPlayerName(player, i)
-	bidStr := "未ビッド"
+	bidStr := i18n.T("ohhell.bidPending")
 	if player.GetBid() >= 0 {
-		bidStr = fmt.Sprintf("%d", player.GetBid())
+		bidStr = strconv.Itoa(player.GetBid())
 	}
-	fmt.Fprintf(&b, "%s: ビッド=%s 獲得%dトリック 累積%d点 ラウンド%d点 %d枚\n",
-		name,
-		bidStr,
-		player.GetTrickCount(),
-		player.GetCumulativeScore(),
-		player.GetRoundScore(),
-		player.GetCardsSize(),
-	)
+	b.WriteString(i18n.Tf("ohhell.playerLine",
+		"name", cuiPlayerName(player, i),
+		"bid", bidStr,
+		"tricks", strconv.Itoa(player.GetTrickCount()),
+		"cum", strconv.Itoa(player.GetCumulativeScore()),
+		"round", strconv.Itoa(player.GetRoundScore()),
+		"cards", strconv.Itoa(player.GetCardsSize()),
+	))
+	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player))
-		b.WriteString("\n")
+		b.WriteString(cuiIndexedCardListStr(player) + "\n")
 	}
 	return b.String()
 }
 
-// OhHellCuiPresenter オー・ヘルCUIプレゼンタークラス
+// OhHellCuiPresenter renders the Oh Hell CUI view.
 type OhHellCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *OhHellCuiPresenter) Output(o interfaces.OhHellGame, lastErr error) string {
-	return buildCuiOutput("Oh Hell (オー・ヘル)", func(b *strings.Builder) {
-		fmt.Fprintf(b, "ラウンド: %d/%d  手札枚数: %d  トリック: %d\n",
-			o.GetRoundNumber(), o.GetTotalRounds(), o.GetHandSize(), o.GetTrickNumber())
+	return buildCuiOutput(i18n.T("ohhell.helpTitle"), func(b *strings.Builder) {
+		b.WriteString(i18n.Tf("ohhell.header",
+			"round", strconv.Itoa(o.GetRoundNumber()),
+			"total", strconv.Itoa(o.GetTotalRounds()),
+			"hand", strconv.Itoa(o.GetHandSize()),
+			"trick", strconv.Itoa(o.GetTrickNumber())) + "\n")
 
-		// 切り札表示
-		trumpCard := o.GetTrumpCard()
-		if trumpCard != nil {
-			fmt.Fprintf(b, "切り札: %s\n", cuiCardStr(trumpCard))
+		if trumpCard := o.GetTrumpCard(); trumpCard != nil {
+			b.WriteString(i18n.Tf("ohhell.trumpCard", "card", cuiCardStr(trumpCard)) + "\n")
 		} else {
-			b.WriteString("切り札: なし\n")
+			b.WriteString(i18n.T("ohhell.trumpNone") + "\n")
 		}
 
-		// ディーラー表示
 		dealerIdx := o.GetDealerIdx()
-		dealer := o.GetPlayer(dealerIdx)
-		fmt.Fprintf(b, "ディーラー: %s\n", cuiPlayerName(dealer, dealerIdx))
+		b.WriteString(i18n.Tf("ohhell.dealer",
+			"name", cuiPlayerName(o.GetPlayer(dealerIdx), dealerIdx)) + "\n")
 
-		// プレイヤー情報
 		for i := 0; i < o.GetPlayerCnt(); i++ {
 			b.WriteString(ohHellPlayerStr(o.GetPlayer(i), i))
 		}
 
 		b.WriteString("----------\n")
 
-		// 現在のトリック
+		// Current trick
 		trick := o.GetCurrentTrick()
 		cuiTrickBlock(b, trick,
 			func(tc *domain.OhHellTrickCard) int { return tc.PlayerIdx },
@@ -71,51 +70,55 @@ func (p *OhHellCuiPresenter) Output(o interfaces.OhHellGame, lastErr error) stri
 
 		cuiErrorBlock(b, lastErr)
 
-		// ゲーム状態
+		// Game state
 		if o.GetGameEndFlag() {
 			winnerIdx := o.GetWinnerIdx()
 			player := o.GetPlayer(winnerIdx)
-			fmt.Fprintf(b, "ゲーム終了！ %s\n", color.Green(cuiPlayerName(player, winnerIdx)+"の勝利です！"))
-		} else {
-			phase := o.GetPhase()
-			switch phase {
-			case domain.OhHellPhaseBid:
-				bidIdx := o.GetBidPlayerIdx()
-				player := o.GetPlayer(bidIdx)
-				msg := fmt.Sprintf("ビッドフェーズ: %sの番", cuiPlayerName(player, bidIdx))
-				restricted := o.GetRestrictedBid()
-				if restricted >= 0 {
-					msg += fmt.Sprintf(" (ビッド%dは不可)", restricted)
-				}
-				fmt.Fprintf(b, "%s\n", msg)
-				b.WriteString("b <n>・・・ビッドを宣言 (0-手札枚数)\n")
-			case domain.OhHellPhasePlay:
-				currentIdx := o.GetCurrentPlayerIdx()
-				player := o.GetPlayer(currentIdx)
-				fmt.Fprintf(b, "手番: %s\n", cuiPlayerName(player, currentIdx))
-				b.WriteString("play <idx>・・・カードを出す\n")
-			case domain.OhHellPhaseTrickEnd:
-				b.WriteString("トリック終了\n")
-				b.WriteString("next・・・次のトリックへ\n")
-			case domain.OhHellPhaseRoundEnd:
-				b.WriteString("ラウンド終了\n")
-				b.WriteString("nr / nextround・・・次のラウンドへ\n")
+			banner := i18n.Tf("ohhell.gameEnd", "name", cuiPlayerName(player, winnerIdx))
+			b.WriteString(color.Green(banner) + "\n")
+			return
+		}
+		switch o.GetPhase() {
+		case domain.OhHellPhaseBid:
+			bidIdx := o.GetBidPlayerIdx()
+			name := cuiPlayerName(o.GetPlayer(bidIdx), bidIdx)
+			if restricted := o.GetRestrictedBid(); restricted >= 0 {
+				b.WriteString(i18n.Tf("ohhell.promptBidRestricted",
+					"name", name,
+					"restricted", strconv.Itoa(restricted)) + "\n")
+			} else {
+				b.WriteString(i18n.Tf("ohhell.promptBid", "name", name) + "\n")
 			}
+			b.WriteString(i18n.T("ohhell.promptBidHelp") + "\n")
+		case domain.OhHellPhasePlay:
+			currentIdx := o.GetCurrentPlayerIdx()
+			b.WriteString(i18n.Tf("ohhell.promptPlay",
+				"name", cuiPlayerName(o.GetPlayer(currentIdx), currentIdx)) + "\n")
+			b.WriteString(i18n.T("ohhell.promptPlayHelp") + "\n")
+		case domain.OhHellPhaseTrickEnd:
+			b.WriteString(i18n.T("ohhell.promptTrickEnd") + "\n")
+			b.WriteString(i18n.T("ohhell.promptTrickEndHelp") + "\n")
+		case domain.OhHellPhaseRoundEnd:
+			b.WriteString(i18n.T("ohhell.promptRoundEnd") + "\n")
+			b.WriteString(i18n.T("ohhell.promptRoundEndHelp") + "\n")
 		}
 	})
 }
 
-// HintOutput ヒント情報を出力する
+// HintOutput emits the current Oh Hell hint.
 func (p *OhHellCuiPresenter) HintOutput(o interfaces.OhHellGame) string {
 	hint := o.GetHint()
 	if hint == nil {
-		return "ヒントはありません。\n"
+		return i18n.T("ohhell.hintNone") + "\n"
 	}
+	reason := ohHellHintReasonStr(hint.Reason)
 	if hint.Bid != nil {
-		return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: ビッド %d を推奨 (%s)]", *hint.Bid, ohHellHintReasonStr(hint.Reason))))
+		return color.Yellow(i18n.Tf("ohhell.hintBid",
+			"bid", strconv.Itoa(*hint.Bid),
+			"reason", reason)) + "\n"
 	}
 	if hint.CardIndex == nil {
-		return "ヒントはありません。\n"
+		return i18n.T("ohhell.hintNone") + "\n"
 	}
 	humanIdx := -1
 	for i := 0; i < o.GetPlayerCnt(); i++ {
@@ -125,19 +128,22 @@ func (p *OhHellCuiPresenter) HintOutput(o interfaces.OhHellGame) string {
 		}
 	}
 	if humanIdx < 0 {
-		return "ヒントはありません。\n"
+		return i18n.T("ohhell.hintNone") + "\n"
 	}
-	player := o.GetPlayer(humanIdx)
-	card := player.GetCard(*hint.CardIndex)
-	return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: [%d]%s (%s)]", *hint.CardIndex, cuiCardStr(card), ohHellHintReasonStr(hint.Reason))))
+	card := o.GetPlayer(humanIdx).GetCard(*hint.CardIndex)
+	return color.Yellow(i18n.Tf("ohhell.hintCard",
+		"idx", strconv.Itoa(*hint.CardIndex),
+		"card", cuiCardStr(card),
+		"reason", reason)) + "\n"
 }
 
-// ohHellHintReasonStr ヒント理由を日本語に変換する
+// ohHellHintReasonStr falls through to the cui_common shared keys (Oh Hell
+// has no game-specific hint reasons today).
 func ohHellHintReasonStr(reason string) string {
 	return lookupHintReason(reason, nil)
 }
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *OhHellCuiPresenter) ActionLogOutput(o interfaces.OhHellGame) string {
 	return actionLogOutputText(o)
 }

@@ -2,5 +2,13 @@
   "helpTitle": "Memory / Concentration",
   "helpFlip": "  f <pos>              flip a card",
   "helpNext": "  n                    next turn",
-  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)"
+  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "playerLine": "{{name}}: {{pairs}} pair(s)",
+  "promptFlip1": "{{name}} — pick the first card",
+  "promptFlip2": "{{name}} — pick the second card",
+  "promptFlipHelp": "f <pos>: flip a card",
+  "resultMatch": "match!",
+  "resultMismatch": "no match.",
+  "promptNextHelp": "n: next",
+  "gameEnd": "Game over! {{name}} wins!"
 }

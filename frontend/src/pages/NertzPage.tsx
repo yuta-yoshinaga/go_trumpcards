@@ -10,6 +10,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -165,6 +166,37 @@ function NertzPageContent() {
     },
     [dispatchMove, isHumanTurn, selection],
   );
+
+  // Keyboard shortcuts for the realtime competitive flow — matches the issue
+  // spec (`d` to draw stock, `n`/`w` to pick the Nertz/waste pile, `1-9` to
+  // route a held card to a foundation index, `u` to undo).
+  const handleFoundationKey = useCallback(
+    (idx: number) => {
+      if (!state || idx >= state.foundations.length) return;
+      if (selection) {
+        dispatchMove({ zone: 'foundation', idx });
+      }
+    },
+    [dispatchMove, selection, state],
+  );
+  const actionBindings = useMemo(
+    () => [
+      { key: 'd', action: handleDrawStock },
+      { key: 'n', action: handleSelectNertz },
+      { key: 'w', action: handleSelectWaste },
+      { key: 'u', action: handleUndo },
+      ...Array.from({ length: 9 }, (_, i) => ({
+        key: String(i + 1),
+        action: () => handleFoundationKey(i),
+      })),
+      { key: 'Escape', action: () => setSelection(null) },
+    ],
+    [handleDrawStock, handleSelectNertz, handleSelectWaste, handleUndo, handleFoundationKey],
+  );
+  useActionKeyboardNav({
+    bindings: actionBindings,
+    enabled: state?.phase === NertzPhase.PLAYING && !loading,
+  });
 
   const phaseName = useMemo(() => {
     if (isGameEnd) return t('phase.gameEnd');

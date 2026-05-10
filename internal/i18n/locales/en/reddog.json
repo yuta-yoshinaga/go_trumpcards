@@ -2,5 +2,22 @@
   "helpTitle": "Red Dog",
   "helpBet": "  b <amount>           bet (places ante and deals 2 cards)",
   "helpRaise": "  raise <amount>       raise (up to ante)",
-  "helpStay": "  s                    stay (draw third card without raising)"
+  "helpStay": "  s                    stay (draw third card without raising)",
+  "chipsLine": "chips: {{chips}}",
+  "phaseLine": "phase: {{phase}}",
+  "anteLine": "ante: {{ante}}",
+  "raiseInline": "  raise: {{raise}}",
+  "spreadLine": "spread: {{spread}}",
+  "initialHeader": "INITIAL",
+  "thirdHeader": "THIRD",
+  "phaseBet": "BET",
+  "phaseInitialDealt": "INITIAL DEALT",
+  "phaseSpreadDecision": "SPREAD DECISION",
+  "phasePairThird": "PAIR THIRD",
+  "phaseEnd": "END",
+  "phaseUnknown": "UNKNOWN",
+  "playerWins": "Player wins!",
+  "playerLoses": "Player loses.",
+  "push": "Push.",
+  "totalPayoutLine": "total payout: {{payout}}"
 }

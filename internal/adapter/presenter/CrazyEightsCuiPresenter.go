@@ -1,92 +1,87 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // crazyEightsPlayerStr returns the display string for a single CrazyEights player.
 func crazyEightsPlayerStr(player *domain.CrazyEightsPlayer, i int) string {
 	var b strings.Builder
-	name := cuiPlayerName(player, i)
-	fmt.Fprintf(&b, "%s: 累積%d点 ラウンド%d点 %d枚\n",
-		name,
-		player.GetCumulativeScore(),
-		player.GetRoundScore(),
-		player.GetCardsSize(),
-	)
+	b.WriteString(i18n.Tf("crazyeights.playerLine",
+		"name", cuiPlayerName(player, i),
+		"cum", strconv.Itoa(player.GetCumulativeScore()),
+		"round", strconv.Itoa(player.GetRoundScore()),
+		"cards", strconv.Itoa(player.GetCardsSize())) + "\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player))
-		b.WriteString("\n")
+		b.WriteString(cuiIndexedCardListStr(player) + "\n")
 	}
 	return b.String()
 }
 
-// CrazyEightsCuiPresenter クレイジーエイトCUIプレゼンタークラス
+// CrazyEightsCuiPresenter renders the Crazy Eights CUI view.
 type CrazyEightsCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *CrazyEightsCuiPresenter) Output(g interfaces.CrazyEightsGame, lastErr error) string {
-	return buildCuiOutput("Crazy Eights (クレイジーエイト)", func(b *strings.Builder) {
-		fmt.Fprintf(b, "ラウンド: %d  山札: %d枚\n", g.GetRoundNumber(), g.GetDrawPileCount())
+	return buildCuiOutput(i18n.T("crazyeights.helpTitle"), func(b *strings.Builder) {
+		b.WriteString(i18n.Tf("crazyeights.header",
+			"round", strconv.Itoa(g.GetRoundNumber()),
+			"stock", strconv.Itoa(g.GetDrawPileCount())) + "\n")
 
-		// 捨て札トップ
-		top := g.GetDiscardTop()
-		if top != nil {
-			fmt.Fprintf(b, "捨て札: %s", cuiCardStr(top))
+		// Top of discard pile
+		if top := g.GetDiscardTop(); top != nil {
+			b.WriteString(i18n.Tf("crazyeights.discardLine", "card", cuiCardStr(top)))
 			if g.GetChosenSuit() > 0 {
-				fmt.Fprintf(b, " (指定スート: %s)", suitDisplayName(g.GetChosenSuit()))
+				b.WriteString(i18n.Tf("crazyeights.chosenSuit",
+					"suit", suitDisplayName(g.GetChosenSuit())))
 			}
 			b.WriteString("\n")
 		}
 
-		// プレイヤー情報
 		for i := 0; i < g.GetPlayerCnt(); i++ {
 			b.WriteString(crazyEightsPlayerStr(g.GetPlayer(i), i))
 		}
 
 		b.WriteString("----------\n")
 
-		// エラーメッセージ
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
-		}
+		cuiErrorBlock(b, lastErr)
 
-		// ゲーム状態
 		if g.GetGameEndFlag() {
 			winnerIdx := g.GetWinnerIdx()
-			player := g.GetPlayer(winnerIdx)
-			fmt.Fprintf(b, "ゲーム終了！ %s\n", color.Green(cuiPlayerName(player, winnerIdx)+"の勝利です！"))
-		} else {
-			phase := g.GetPhase()
-			switch phase {
-			case domain.CrazyEightsPhasePlay:
-				currentIdx := g.GetCurrentPlayerIdx()
-				player := g.GetPlayer(currentIdx)
-				fmt.Fprintf(b, "手番: %s\n", cuiPlayerName(player, currentIdx))
-				b.WriteString("play <idx>・・・カードを出す\n")
-				b.WriteString("draw・・・カードを引く\n")
-			case domain.CrazyEightsPhaseChooseSuit:
-				b.WriteString("スート選択フェーズ\n")
-				b.WriteString("suit <1-4>・・・スートを選択 (1=♠, 2=♣, 3=♥, 4=♦)\n")
-			case domain.CrazyEightsPhaseRoundEnd:
-				b.WriteString("ラウンド終了\n")
-				b.WriteString("nr / nextround・・・次のラウンドへ\n")
-			}
+			banner := i18n.Tf("crazyeights.gameEnd",
+				"name", cuiPlayerName(g.GetPlayer(winnerIdx), winnerIdx))
+			b.WriteString(color.Green(banner) + "\n")
+			return
+		}
+		switch g.GetPhase() {
+		case domain.CrazyEightsPhasePlay:
+			currentIdx := g.GetCurrentPlayerIdx()
+			b.WriteString(i18n.Tf("crazyeights.promptCurrentPlayer",
+				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
+			b.WriteString(i18n.T("crazyeights.promptPlayHelp") + "\n")
+			b.WriteString(i18n.T("crazyeights.promptDrawHelp") + "\n")
+		case domain.CrazyEightsPhaseChooseSuit:
+			b.WriteString(i18n.T("crazyeights.promptChooseSuit") + "\n")
+			b.WriteString(i18n.T("crazyeights.promptChooseSuitHelp") + "\n")
+		case domain.CrazyEightsPhaseRoundEnd:
+			b.WriteString(i18n.T("crazyeights.promptRoundEnd") + "\n")
+			b.WriteString(i18n.T("crazyeights.promptRoundEndHelp") + "\n")
 		}
 	})
 }
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *CrazyEightsCuiPresenter) ActionLogOutput(g interfaces.CrazyEightsGame) string {
 	return actionLogOutputText(g)
 }
 
-// suitDisplayName スート表示名を返す
+// suitDisplayName returns the suit display string.
 func suitDisplayName(suit int) string {
 	switch suit {
 	case domain.CardDesignSpade:

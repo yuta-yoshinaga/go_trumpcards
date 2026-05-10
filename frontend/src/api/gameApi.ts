@@ -6,6 +6,7 @@ import type {
   BakersDozenMoveZone,
   BakersDozenResponse,
   BlackJackResponse,
+  BlackJackSwitchResponse,
   BridgeResponse,
   CalculationMoveZone,
   CalculationResponse,
@@ -21,6 +22,7 @@ import type {
   DaifugoResponse,
   DoubtConfig,
   DoubtResponse,
+  DragonTigerResponse,
   DurakConfigInput,
   DurakResponse,
   EgyptianRatscrewResponse,
@@ -38,6 +40,7 @@ import type {
   KlondikeResponse,
   LetItRideResponse,
   MemoryResponse,
+  MonteCarloResponse,
   NapoleonResponse,
   NertzConfig as NertzConfigType,
   NertzMoveZone,
@@ -173,6 +176,9 @@ const workerUrl: Record<string, string> = {
   egyptianratscrew: WORKER_CLASSIC,
   bakersdozen: WORKER_SOLO,
   tonk: WORKER_CLASSIC,
+  dragontiger: WORKER_CASINO,
+  blackjackswitch: WORKER_CASINO,
+  montecarlo: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1174,7 +1180,7 @@ export const jokerpokerApi = createVideoPokerApi('jokerpoker');
 
 /** API client for the War /war/exec endpoint. */
 export const warApi = {
-  exec: (command: 'reset' | 'step' | 'log', config?: { maxRounds?: number }) =>
+  exec: (command: 'reset' | 'step' | 'autoplay' | 'log', config?: { maxRounds?: number }) =>
     gameExec<WarResponse>('war', { command, ...config }),
 };
 
@@ -1379,7 +1385,7 @@ export const calculationApi = createSolitaireMoveApi<
 >('calculation');
 
 /** Command verbs accepted by the Spite & Malice /spiteandmalice/exec endpoint. */
-export type SpiteAndMaliceCommand = 'reset' | 'move' | 'discard' | 'cpu' | 'hint' | 'log';
+export type SpiteAndMaliceCommand = 'reset' | 'move' | 'discard' | 'cpu' | 'autocomplete' | 'hint' | 'log';
 
 /** API client for the Spite & Malice /spiteandmalice/exec endpoint. */
 export const spiteAndMaliceApi = {
@@ -1471,6 +1477,29 @@ export const casinowarApi = createBetAmountApi<CasinoWarResponse, 'reset' | 'bet
   'casinowar',
 );
 
+/** API client for the Dragon Tiger /dragontiger/exec endpoint. */
+export const dragontigerApi = {
+  exec: (command: 'reset' | 'bet' | 'clear' | 'log', amount?: number, betType?: number) =>
+    gameExec<DragonTigerResponse>('dragontiger', { command, amount, betType }),
+};
+
+/** API client for the Blackjack Switch /blackjackswitch/exec endpoint. */
+export const blackjackswitchApi = {
+  exec: (command: 'reset' | 'bet' | 'switch' | 'keep' | 'hit' | 'stand' | 'doubledown' | 'log', amount?: number) =>
+    gameExec<BlackJackSwitchResponse>('blackjackswitch', { command, amount }),
+};
+
+/** API client for the Monte Carlo Solitaire /montecarlo/exec endpoint. */
+export const montecarloApi = {
+  exec: (
+    command: 'reset' | 'remove' | 'deal' | 'undo' | 'giveup' | 'hint' | 'log',
+    fromR?: number,
+    fromC?: number,
+    toR?: number,
+    toC?: number,
+  ) => gameExec<MonteCarloResponse>('montecarlo', { command, fromR, fromC, toR, toC }),
+};
+
 const games = [
   'blackjack',
   'poker',
@@ -1549,6 +1578,9 @@ const games = [
   'tonk',
   'casinowar',
   'pitch',
+  'dragontiger',
+  'blackjackswitch',
+  'montecarlo',
 ] as const;
 type Game = (typeof games)[number];
 

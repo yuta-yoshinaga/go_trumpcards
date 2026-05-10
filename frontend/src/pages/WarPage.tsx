@@ -6,17 +6,12 @@ import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -24,7 +19,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useMountReset } from '../hooks/useMountReset';
 import { gameTheme } from '../styles/gameTheme';
 import type { WarResponse } from '../types/card';
@@ -53,6 +47,12 @@ const WR_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
   {
+    target: '[data-tutorial="wr-autoplay-button"]',
+    messageKey: 'tutorial.autoplayButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
     target: '[data-tutorial="wr-reset-button"]',
     messageKey: 'tutorial.resetButton',
     placement: 'top',
@@ -67,7 +67,6 @@ function WarPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('war');
   const { state, loading, error, exec: execApi, retry } = useGameApi(warApi.exec);
-  useGameRoundGuard(!!state && !state.gameEndFlag);
   const { cardWidth } = useCardDimensions();
   const [maxRounds, setMaxRounds] = useState(DEFAULT_MAX_ROUNDS);
   const {
@@ -77,6 +76,7 @@ function WarPageContent() {
   } = useGameHint('war', state);
 
   const handleStep = useCallback(() => execApi('step'), [execApi]);
+  const handleAutoPlay = useCallback(() => execApi('autoplay'), [execApi]);
   const handleReset = useCallback(() => execApi('reset', { maxRounds }), [execApi, maxRounds]);
 
   useMountReset(execApi);
@@ -90,6 +90,7 @@ function WarPageContent() {
         const cmd = input.trim().toLowerCase();
         if (cmd === 'reset' || cmd === 'r') return { args: ['reset'] };
         if (cmd === 'step' || cmd === 's') return { args: ['step'] };
+        if (cmd === 'autoplay' || cmd === 'a') return { args: ['autoplay'] };
         if (cmd === 'log' || cmd === 'l') return { args: ['log'] };
         return { error: `Unknown command: ${cmd}` };
       },
@@ -104,7 +105,12 @@ function WarPageContent() {
         if (s.message) lines.push(s.message);
         return lines.join('\n');
       },
-      helpText: ['s/step  - Flip next card', 'r/reset - Reset game', 'l/log   - Show action log'],
+      helpText: [
+        's/step     - Flip next card',
+        'a/autoplay - Auto play to end',
+        'r/reset    - Reset game',
+        'l/log      - Show action log',
+      ],
     }),
     [],
   );
@@ -127,14 +133,20 @@ function WarPageContent() {
         : t('phase.reveal');
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.war.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.war')} />
-      <PhaseIndicator phaseName={phaseName} isHumanTurn={!isGameEnd}>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/war" />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.war')}
+      gameThemeBg={gameTheme.war.bg}
+      phaseName={phaseName}
+      isHumanTurn={!isGameEnd}
+      gamePath="/war"
+      gameEndFlag={isGameEnd}
+      winShow={humanWon}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -272,6 +284,16 @@ function WarPageContent() {
               >
                 {t('button.step')}
               </button>
+              <button
+                type="button"
+                onClick={handleAutoPlay}
+                disabled={loading || isGameEnd}
+                className="px-6 py-2 rounded-lg bg-ds-success hover:bg-ds-success-hover text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+                data-testid="autoplay-button"
+                data-tutorial="wr-autoplay-button"
+              >
+                {t('button.autoplay')}
+              </button>
               <GameResetButton
                 isGameEnd={isGameEnd}
                 onReset={handleReset}
@@ -287,11 +309,8 @@ function WarPageContent() {
               />
             </div>
           </GameFooter>
-
-          <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-          <WinCelebration show={isGameEnd && humanWon} />
         </>
       )}
-    </div>
+    </GamePageShell>
   );
 }

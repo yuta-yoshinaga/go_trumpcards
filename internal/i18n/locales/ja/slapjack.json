@@ -5,5 +5,19 @@
   "helpTick": "  tick                 CPUを1tick進める",
   "helpSetDifficulty": "  sd <n>               CPU難易度 (0=Easy, 1=Normal, 2=Hard) を設定してリセット",
   "labelHuman": "あなた",
-  "labelCpu": "CPU"
+  "labelCpu": "CPU",
+  "cpuStockLine": "CPU: ストック{{count}}枚",
+  "humanStockLine": "あなた: ストック{{count}}枚",
+  "boardLabel": "[場札]",
+  "boardCard": "{{card}}  (場に{{count}}枚)",
+  "boardEmpty": "--  (場に{{count}}枚)",
+  "promptJackOnTop": "J が場に出ました！ j (slap) で叩いてください",
+  "promptHumanTurn": "あなたの番です。s (step) でカードをめくってください",
+  "promptCpuTurn": "CPU の番です。tick で進めるか、待ってください",
+  "slapCorrectHuman": "あなたが正しくスラップ! 場札を獲得",
+  "slapCorrectCpu": "CPU が先にスラップ... 場札を奪われた",
+  "slapWrongHuman": "誤スラップ！ 1 枚 CPU に渡しました",
+  "slapWrongCpu": "CPU が誤スラップ。1 枚もらいました",
+  "winHuman": "あなたの勝ちです！",
+  "winCpu": "CPUの勝ちです..."
 }
