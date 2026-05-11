@@ -1306,6 +1306,21 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"contractrummy.helpSetDifficulty", "contractrummy.helpSetPenalty"},
 			})
 	}},
+	{Name: "ultimatetexasholdem", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewUltimateTexasHoldemCuiController(usecase.NewUltimateTexasHoldemInteractor(
+				domain.NewDefaultUltimateTexasHoldem(), new(presenter.UltimateTexasHoldemCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "ultimatetexasholdem.helpTitle",
+				CommandKeys: []string{
+					"ultimatetexasholdem.helpBet",
+					"ultimatetexasholdem.helpPlay",
+					"ultimatetexasholdem.helpCheck",
+					"ultimatetexasholdem.helpFold",
+				},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
@@ -1352,6 +1367,8 @@ var GameAliases = map[string]string{
 	"stud":   "caribbeanstud",
 	"thb":    "texasholdembonus",
 	"thbp":   "texasholdembonus",
+	"uth":    "ultimatetexasholdem",
+	"uthe":   "ultimatetexasholdem",
 	"40t":    "fortythieves",
 	"pgp":    "paigow",
 	"lir":    "letitride",

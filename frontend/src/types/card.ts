@@ -2049,6 +2049,37 @@ export interface TexasHoldemBonusResponse {
   messageParams?: Record<string, string>;
 }
 
+// --- Ultimate Texas Hold'em (アルティメット・テキサスホールデム) ---
+
+/** Ultimate Texas Hold'em API response. */
+export interface UltimateTexasHoldemResponse {
+  /** Player's two hole cards. */
+  playerHand: Card[];
+  /** Dealer's hole cards: masked as `MaskedCard` until the showdown. */
+  dealerHand: (Card | MaskedCard)[];
+  /** Community cards (flop / turn / river). Length grows from 0 → 5 over phases. */
+  community: Card[];
+  phase: number;
+  chips: number;
+  anteBet: number;
+  blindBet: number;
+  tripsBet: number;
+  playBet: number;
+  folded: boolean;
+  result: number;
+  dealerQualified: boolean;
+  antePayout: number;
+  blindPayout: number;
+  playPayout: number;
+  tripsPayout: number;
+  totalPayout: number;
+  playerHandRank: number;
+  dealerHandRank: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
 // --- Pai Gow Poker (パイゴウポーカー) ---
 
 /** Pai Gow Poker API response. */

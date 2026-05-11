@@ -79,6 +79,7 @@ import tonk from '../../../docs/manual/web/tonk.md?raw';
 import trash from '../../../docs/manual/web/trash.md?raw';
 import tripeaks from '../../../docs/manual/web/tripeaks.md?raw';
 import twotenjack from '../../../docs/manual/web/twotenjack.md?raw';
+import ultimatetexasholdem from '../../../docs/manual/web/ultimatetexasholdem.md?raw';
 import videopoker from '../../../docs/manual/web/videopoker.md?raw';
 import war from '../../../docs/manual/web/war.md?raw';
 import whist from '../../../docs/manual/web/whist.md?raw';
@@ -134,6 +135,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/pokersquares': pokersquares,
   '/montecarlo': montecarlo,
   '/contractrummy': contractrummy,
+  '/ultimatetexasholdem': ultimatetexasholdem,
   '/pyramid': pyramid,
   '/razz': razz,
   '/badugi': badugi,

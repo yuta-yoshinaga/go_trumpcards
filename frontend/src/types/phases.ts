@@ -384,6 +384,15 @@ export const TexasHoldemBonusPhase = {
   END: 5,
 } as const;
 
+/** Ultimate Texas Hold'em phase constants (sync: internal/domain/UltimateTexasHoldem.go). */
+export const UltimateTexasHoldemPhase = {
+  BET: 1,
+  PRE_FLOP: 2,
+  FLOP: 3,
+  RIVER: 4,
+  END: 5,
+} as const;
+
 /** Doubt phase constants (sync: internal/domain/Doubt.go). */
 export const DoubtPhase = {
   PLAY: 0,

@@ -418,4 +418,9 @@ func init() {
 			return usecase.NewContractRummyInteractor(domain.NewDefaultContractRummy(), new(presenter.ContractRummyWebPresenter))
 		},
 		controller.NewContractRummyWebController)
+	BindWebControllerFor("ultimatetexasholdem",
+		func() usecase.UltimateTexasHoldemInteractorIF {
+			return usecase.NewUltimateTexasHoldemInteractor(domain.NewDefaultUltimateTexasHoldem(), new(presenter.UltimateTexasHoldemWebPresenter))
+		},
+		controller.NewUltimateTexasHoldemWebController)
 }
