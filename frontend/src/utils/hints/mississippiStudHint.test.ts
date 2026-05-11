@@ -86,6 +86,16 @@ describe('getMississippiStudHint', () => {
     expect(getMississippiStudHint(state)?.targetAction).toBe('fold');
   });
 
+  it('recommends fold for a low pair (3s) at 3rd Street — pays 0', () => {
+    const state = makeState({ playerHand: [card('SPADE', 3), card('HEART', 3)] });
+    expect(getMississippiStudHint(state)?.targetAction).toBe('fold');
+  });
+
+  it('does NOT recommend play1x for a bare 2-card same-suit hole pair at 3rd Street', () => {
+    const state = makeState({ playerHand: [card('SPADE', 2), card('SPADE', 4)] });
+    expect(getMississippiStudHint(state)?.targetAction).toBe('fold');
+  });
+
   it('recommends fold at 5th Street if no made hand and no draw', () => {
     const state = makeState({
       phase: MississippiStudPhase.FIFTH_STREET,

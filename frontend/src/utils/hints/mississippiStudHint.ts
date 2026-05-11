@@ -82,7 +82,7 @@ function hasFlushDraw(cards: Card[], slotsLeft: number): boolean {
   const bySuit = new Map<string, number>();
   for (const c of cards) bySuit.set(c.design, (bySuit.get(c.design) ?? 0) + 1);
   for (const count of bySuit.values()) {
-    if (count + slotsLeft >= 5) return true;
+    if (count >= 3 && count + slotsLeft >= 5) return true;
   }
   return false;
 }
@@ -98,7 +98,7 @@ function hasOpenStraightDraw(cards: Card[], slotsLeft: number): boolean {
   for (let i = 1; i < values.length; i++) {
     if (values[i] === values[i - 1] + 1) {
       bestRun++;
-    } else if (values[i] !== values[i - 1]) {
+    } else {
       bestRun = 1;
     }
     if (bestRun + slotsLeft >= 5) return true;

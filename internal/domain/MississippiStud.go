@@ -103,9 +103,7 @@ func (m *MississippiStud) Reset() {
 		m.chips.SetChips(MississippiStudDefaultChips)
 	}
 	m.trumpCards = NewTrumpCards(0)
-	for range 10 {
-		m.trumpCards.Shuffle()
-	}
+	m.trumpCards.Shuffle()
 }
 
 // Bet ベット (アンティ) を置きカードを配る。
