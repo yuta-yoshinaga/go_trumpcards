@@ -113,8 +113,14 @@ func (cr *Crescent) Reset() {
 	suits := []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond}
 	for idx, suit := range suits {
 		aceIdx := findFirstCard(deck, suit, 1)
+		if aceIdx < 0 {
+			panic(fmt.Sprintf("crescent Reset: ace of suit %d not found in deck", suit))
+		}
 		deck, cr.foundation[idx] = takeCardAt(deck, aceIdx), []*Card{deck[aceIdx]}
 		kingIdx := findFirstCard(deck, suit, CardValueMax)
+		if kingIdx < 0 {
+			panic(fmt.Sprintf("crescent Reset: king of suit %d not found in deck", suit))
+		}
 		deck, cr.foundation[idx+CrescentAscendingFoundationCnt] = takeCardAt(deck, kingIdx), []*Card{deck[kingIdx]}
 	}
 
@@ -374,6 +380,13 @@ func (cr *Crescent) Undo() error {
 	snap := cr.history[len(cr.history)-1]
 	cr.history = cr.history[:len(cr.history)-1]
 	cr.restoreSnapshot(snap)
+	// Truncate the matching log entry so the action log stays in sync with
+	// state. Each undoable action (Move*/Redeal/AutoComplete) appends exactly
+	// one log entry after its takeSnapshot+state change, so the last entry is
+	// always the one being reverted.
+	if len(cr.actionLog) > 0 {
+		cr.actionLog = cr.actionLog[:len(cr.actionLog)-1]
+	}
 	return nil
 }
 

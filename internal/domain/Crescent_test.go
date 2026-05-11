@@ -478,11 +478,15 @@ func TestCrescent_UndoFlow(t *testing.T) {
 	require.NoError(t, cr.MoveTableauToTableau(0, 1))
 	assert.True(t, cr.CanUndo())
 
+	logBefore := len(cr.GetActionLog())
+	require.Equal(t, 1, logBefore, "the move should have appended one action log entry")
+
 	require.NoError(t, cr.Undo())
 	got := cr.GetTableau()
 	assert.Len(t, got[0], 1)
 	assert.Len(t, got[1], 1)
 	assert.Equal(t, 0, cr.GetMoveCount())
+	assert.Empty(t, cr.GetActionLog(), "Undo should truncate the matching action log entry")
 
 	err := cr.Undo()
 	assert.Error(t, err)

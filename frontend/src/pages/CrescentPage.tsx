@@ -160,7 +160,10 @@ function CrescentPageContent() {
   const isGameClear = state.phase === CrescentPhase.GAME_CLEAR;
   const isGameOver = state.phase === CrescentPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
-  const autoCompleteReady = state.foundation.some((pile) => pile.length > 0); // any progress invites auto-complete
+  // Foundations are pre-seeded with an A (ascending) / K (descending) per suit,
+  // so a length>0 check would always pass. Require at least one foundation to
+  // have progressed beyond its seed card before the pulse animation fires.
+  const autoCompleteReady = state.foundation.some((pile) => pile.length > 1);
 
   const isSourceSelected = (zone: string, col?: number) =>
     selectedSource !== null && selectedSource.zone === zone && selectedSource.col === col;
@@ -258,7 +261,7 @@ function CrescentPageContent() {
               })}
             </div>
 
-            {/* Tableau (16 piles, 4×4 grid) */}
+            {/* Tableau (16 piles, 4-col mobile / 8-col desktop) */}
             <div className="grid grid-cols-4 sm:grid-cols-8 gap-1 sm:gap-2 mb-3" data-tutorial="crescent-tableau">
               {state.tableau.map((col, colIdx) => {
                 const tableauColZone: CrescentMoveZone = { zone: 'tableau', col: colIdx };
