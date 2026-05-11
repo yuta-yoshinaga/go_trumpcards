@@ -222,4 +222,12 @@ func init() {
 			return usecase.RestoreBlackJackSwitchInteractor(data, new(presenter.BlackJackSwitchWebPresenter))
 		},
 		controller.NewBlackJackSwitchWebControllerWithProvider)
+	games.RegisterKVGame("ultimatetexasholdem", games.CategoryCasino,
+		func() usecase.UltimateTexasHoldemInteractorIF {
+			return usecase.NewUltimateTexasHoldemInteractor(domain.NewDefaultUltimateTexasHoldem(), new(presenter.UltimateTexasHoldemWebPresenter))
+		},
+		func(data []byte) (usecase.UltimateTexasHoldemInteractorIF, error) {
+			return usecase.RestoreUltimateTexasHoldemInteractor(data, new(presenter.UltimateTexasHoldemWebPresenter))
+		},
+		controller.NewUltimateTexasHoldemWebControllerWithProvider)
 }

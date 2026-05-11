@@ -79,6 +79,7 @@ import tonk from '../../../docs/manual/cui/tonk.md?raw';
 import trash from '../../../docs/manual/cui/trash.md?raw';
 import tripeaks from '../../../docs/manual/cui/tripeaks.md?raw';
 import twotenjack from '../../../docs/manual/cui/twotenjack.md?raw';
+import ultimatetexasholdem from '../../../docs/manual/cui/ultimatetexasholdem.md?raw';
 import videopoker from '../../../docs/manual/cui/videopoker.md?raw';
 import war from '../../../docs/manual/cui/war.md?raw';
 import whist from '../../../docs/manual/cui/whist.md?raw';
@@ -97,6 +98,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/texasholdembonus': texasholdembonus,
   '/clocksolitaire': clocksolitaire,
   '/contractrummy': contractrummy,
+  '/ultimatetexasholdem': ultimatetexasholdem,
   '/crazyeights': crazyeights,
   '/cribbage': cribbage,
   '/daifugo': daifugo,

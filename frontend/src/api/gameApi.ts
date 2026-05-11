@@ -83,6 +83,7 @@ import type {
   TrashResponse,
   TriPeaksResponse,
   TwoTenJackResponse,
+  UltimateTexasHoldemResponse,
   VideoPokerResponse,
   WarResponse,
   WhistConfig,
@@ -181,6 +182,7 @@ const workerUrl: Record<string, string> = {
   blackjackswitch: WORKER_CASINO,
   montecarlo: WORKER_SOLO,
   contractrummy: WORKER_SOLO,
+  ultimatetexasholdem: WORKER_CASINO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -903,6 +905,16 @@ export const texasholdembonusApi = {
     gameExec<TexasHoldemBonusResponse>('texasholdembonus', { command, amount, bonusBet }),
 };
 
+/** API client for the Ultimate Texas Hold'em /ultimatetexasholdem/exec endpoint. */
+export const ultimatetexasholdemApi = {
+  exec: (
+    command: 'reset' | 'bet' | 'play' | 'check' | 'fold' | 'log',
+    amount?: number,
+    tripsBet?: number,
+    multiplier?: number,
+  ) => gameExec<UltimateTexasHoldemResponse>('ultimatetexasholdem', { command, amount, tripsBet, multiplier }),
+};
+
 /** API client for the Pai Gow Poker /paigow/exec endpoint. */
 export const paigowApi = {
   exec: (command: 'reset' | 'bet' | 'set' | 'log', amount?: number, low0?: number, low1?: number) =>
@@ -1608,6 +1620,7 @@ const games = [
   'blackjackswitch',
   'montecarlo',
   'contractrummy',
+  'ultimatetexasholdem',
 ] as const;
 type Game = (typeof games)[number];
 

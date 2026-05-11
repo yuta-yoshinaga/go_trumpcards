@@ -172,6 +172,8 @@ tags:
     description: Monte Carlo Solitaire (モンテカルロ・ソリティア) game - 5x5 grid solitaire; remove 8-direction adjacent same-rank pairs, then deal to compress the board top-left and refill from the stock; clear all 52 cards to win
   - name: contractrummy
     description: Contract Rummy (コントラクトラミー) game - 3-player rummy (1 human + 2 CPU) over 7 progressive rounds; each round has a fixed contract (sets / runs) the player must lay before going out; lowest cumulative penalty across rounds wins
+  - name: ultimatetexasholdem
+    description: Ultimate Texas Hold'em (アルティメット・テキサスホールデム) game - single-player vs dealer Texas Hold'em variant with Ante + equal Blind wagers, optional Trips side bet, and one-shot Play raise at Pre-flop (3x / 4x), Flop (2x) or River (1x); dealer must qualify with a pair or better
 
 paths:
   /blackjack/exec:
@@ -7906,6 +7908,98 @@ paths:
                 $ref: '#/components/schemas/PitchResponse'
         '400':
           description: Bad request (unsupported command, missing/invalid parameters, or session error)
+
+  /ultimatetexasholdem/exec:
+    post:
+      tags:
+        - ultimatetexasholdem
+      summary: Execute an Ultimate Texas Hold'em game command
+      description: |
+        Send a command to advance the Ultimate Texas Hold'em
+        (アルティメット・テキサスホールデム) session identified by `sessionId`.
+        Ultimate Texas Hold'em is a single-player casino Texas Hold'em variant
+        using a standard 52-card deck. The player posts an Ante and an equal
+        Blind (mandatory) plus an optional Trips side bet, then receives 2 hole
+        cards. The dealer also receives 2 hole cards.
+
+        There is exactly one place where the player commits to a Play bet:
+        pre-flop (3x or 4x Ante), after the flop (2x Ante), or after the river
+        (1x Ante). Choosing Check at pre-flop or flop defers the decision; at the
+        river the player must either Play 1x or Fold (losing Ante + Blind).
+
+        Dealer qualifies with a **pair or better**. If the dealer does not
+        qualify, the Ante pushes (returned). The Play bet always pays 1:1 on
+        win, pushes on tie, and loses on loss (regardless of qualifying).
+        The Blind pays per its paytable only when the player wins with a
+        Straight or better; otherwise it pushes on win / tie or loses on a
+        loss. The optional Trips side bet pays on the player's 7-card best
+        hand independent of the dealer and the round result.
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Bet      | `1`   | Place Ante + Blind (equal) and optional Trips |
+        | PreFlop  | `2`   | Play 3x / 4x or Check |
+        | Flop     | `3`   | Play 2x or Check (only when checked pre-flop) |
+        | River    | `4`   | Play 1x or Fold (only when checked twice) |
+        | End      | `5`   | Showdown complete; result and payouts shown |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `bet`   | `b`     | Place Ante (`amount`) and optional Trips (`tripsBet`); Blind is set automatically |
+        | `play`  | `p`     | Place Play bet (`multiplier` ∈ {1, 2, 3, 4}) |
+        | `check` | `c`     | Pre-flop / Flop: advance without an additional bet |
+        | `fold`  | `f`     | River: forfeit Ante + Blind |
+        | `log`   | `l`     | View action log |
+      operationId: ultimatetexasholdemExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UltimateTexasHoldemRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 100 Ante (Blind matches) + 20 Trips
+                value:
+                  command: bet
+                  amount: 100
+                  tripsBet: 20
+                  sessionId: my-session-001
+              play4x:
+                summary: Pre-flop Play 4x
+                value:
+                  command: play
+                  multiplier: 4
+                  sessionId: my-session-001
+              check:
+                summary: Check (pre-flop / flop)
+                value:
+                  command: check
+                  sessionId: my-session-001
+              fold:
+                summary: Fold at the river
+                value:
+                  command: fold
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UltimateTexasHoldemResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UltimateTexasHoldemResponse'
 
 components:
   schemas:
@@ -17390,3 +17484,164 @@ components:
           type: object
           additionalProperties:
             type: string
+
+    # -------------------------------------------------------------------------
+    # Ultimate Texas Hold'em
+    # -------------------------------------------------------------------------
+    UltimateTexasHoldemRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `bet` (`b`),
+            `play` (`p`), `check` (`c`), `fold` (`f`), `log` (`l`).
+          enum: [r, reset, b, bet, p, play, c, check, f, fold, log, l]
+          example: bet
+        amount:
+          type: integer
+          description: |
+            Ante bet amount. Required for `bet` command (minimum 10, must be a
+            multiple of 10). The Blind is set to the same value automatically.
+          minimum: 10
+          example: 100
+        tripsBet:
+          type: integer
+          description: |
+            Trips side bet amount. Optional; used with the `bet` command. 0 or
+            omitted means no side bet.
+          minimum: 0
+          example: 20
+        multiplier:
+          type: integer
+          description: |
+            Play bet multiplier (in units of Ante). Used with the `play`
+            command. Pre-flop accepts 3 or 4, flop accepts 2, river accepts 1.
+          enum: [1, 2, 3, 4]
+          example: 4
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    UltimateTexasHoldemResponse:
+      type: object
+      description: Current state of the Ultimate Texas Hold'em game
+      required:
+        - playerHand
+        - dealerHand
+        - community
+        - phase
+        - chips
+        - anteBet
+        - blindBet
+        - tripsBet
+        - playBet
+        - folded
+        - result
+        - dealerQualified
+        - antePayout
+        - blindPayout
+        - playPayout
+        - tripsPayout
+        - totalPayout
+        - playerHandRank
+        - dealerHandRank
+        - message
+      properties:
+        playerHand:
+          type: array
+          description: Player's two hole cards
+          items:
+            $ref: '#/components/schemas/Card'
+        dealerHand:
+          type: array
+          description: Dealer's two hole cards (masked until showdown)
+          items:
+            $ref: '#/components/schemas/Card'
+        community:
+          type: array
+          description: Community cards (length grows from 0 to 5 as streets advance)
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 1=Bet, 2=PreFlop, 3=Flop, 4=River, 5=End"
+          enum: [1, 2, 3, 4, 5]
+          example: 1
+        chips:
+          type: integer
+          description: Current chip count
+          example: 1000
+        anteBet:
+          type: integer
+          description: Ante bet amount
+          example: 100
+        blindBet:
+          type: integer
+          description: Blind bet amount (always equal to anteBet)
+          example: 100
+        tripsBet:
+          type: integer
+          description: Trips side bet amount
+          example: 0
+        playBet:
+          type: integer
+          description: Play bet amount (0 / 1x / 2x / 3x / 4x Ante)
+          example: 0
+        folded:
+          type: boolean
+          description: Whether the player folded at the river
+          example: false
+        result:
+          type: integer
+          description: "Game result: 1=Player wins, -1=Dealer wins, 0=Push/not resolved"
+          enum: [-1, 0, 1]
+          example: 0
+        dealerQualified:
+          type: boolean
+          description: Whether the dealer qualified (pair or better)
+          example: false
+        antePayout:
+          type: integer
+          description: Ante payout (returned amount + profit)
+          example: 0
+        blindPayout:
+          type: integer
+          description: Blind payout (returned amount + profit per paytable, only when player wins with Straight+)
+          example: 0
+        playPayout:
+          type: integer
+          description: Play bet payout (returned amount + profit)
+          example: 0
+        tripsPayout:
+          type: integer
+          description: Trips side bet payout (returned amount + profit per paytable)
+          example: 0
+        totalPayout:
+          type: integer
+          description: Sum of antePayout + blindPayout + playPayout + tripsPayout
+          example: 0
+        playerHandRank:
+          type: integer
+          description: Player's best 5-card hand rank
+          example: 0
+        dealerHandRank:
+          type: integer
+          description: Dealer's best 5-card hand rank
+          example: 0
+        message:
+          type: string
+          description: Human-readable status message (empty when no event)
+          example: ''
+        messageCode:
+          type: string
+          description: i18n code for the message
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.

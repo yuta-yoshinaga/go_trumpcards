@@ -1,0 +1,95 @@
+{
+  "title": "Ultimate Texas Hold'em",
+  "player": "Player",
+  "dealer": "Dealer",
+  "board": "Board",
+  "label": {
+    "chips": "Chips",
+    "ante": "Ante",
+    "blind": "Blind",
+    "trips": "Trips",
+    "playBet": "Play bet",
+    "handRank": "Rank"
+  },
+  "button": {
+    "bet": "Bet",
+    "play4x": "Play 4×",
+    "play3x": "Play 3×",
+    "play2x": "Play 2×",
+    "play1x": "Play 1×",
+    "check": "Check",
+    "fold": "Fold",
+    "reset": "Reset"
+  },
+  "phase": {
+    "bet": "Bet",
+    "preFlop": "Pre-flop",
+    "flop": "Flop",
+    "river": "River",
+    "end": "Result"
+  },
+  "result": {
+    "playerWins": "You win!",
+    "dealerWins": "Dealer wins!",
+    "push": "Push!",
+    "fold": "Folded",
+    "dealerQualified": "Dealer qualified (pair or better)",
+    "dealerNotQualified": "Dealer did not qualify (Ante pushes)"
+  },
+  "payout": {
+    "ante": "Ante",
+    "blind": "Blind",
+    "play": "Play",
+    "trips": "Trips",
+    "total": "Total"
+  },
+  "handRank": {
+    "0": "High card",
+    "1": "One pair",
+    "2": "Two pair",
+    "3": "Three of a kind",
+    "4": "Straight",
+    "5": "Flush",
+    "6": "Full house",
+    "7": "Four of a kind",
+    "8": "Straight flush",
+    "9": "Royal flush"
+  },
+  "settings": {
+    "title": "Settings"
+  },
+  "betGuide": "Set the Ante (the Blind matches automatically). Trips is an optional side bet.",
+  "payoutRef": {
+    "title": "Payouts",
+    "blindHeader": "Blind (only when player wins with a Straight or better; otherwise pushes or lost)",
+    "blindRoyalFlush": "Royal Flush: 500:1",
+    "blindStraightFlush": "Straight Flush: 50:1",
+    "blindFourOfAKind": "Four of a Kind: 10:1",
+    "blindFullHouse": "Full House: 3:1",
+    "blindFlush": "Flush: 3:2",
+    "blindStraight": "Straight: 1:1",
+    "tripsHeader": "Trips side bet (pays regardless of dealer / result)",
+    "tripsRoyalFlush": "Royal Flush: 50:1",
+    "tripsStraightFlush": "Straight Flush: 40:1",
+    "tripsFourOfAKind": "Four of a Kind: 30:1",
+    "tripsFullHouse": "Full House: 8:1",
+    "tripsFlush": "Flush: 7:1",
+    "tripsStraight": "Straight: 4:1",
+    "tripsThreeOfAKind": "Three of a Kind: 3:1"
+  },
+  "tutorial": {
+    "betControls": "Set the Ante — the Blind is matched automatically. Trips is an optional side bet.",
+    "preFlopButtons": "Pre-flop: bet aggressively with Play 4× or 3×, or Check to see more cards.",
+    "postFlopButtons": "After the flop: Play 2× to commit, or Check to see the turn and river.",
+    "riverButtons": "After the river you must either Play 1× or Fold.",
+    "results": "Check dealer qualification, the result and per-bet payouts."
+  },
+  "hint": {
+    "pocketPair": "Pocket pair — Play 4×",
+    "acePlay": "Hand contains an Ace — consider Play 4×",
+    "suitedBroadway": "Suited Broadway — consider Play 4×",
+    "broadwayCards": "Broadway — consider Play 3×",
+    "madeHandRiver": "Made hand — Play 1× on the river",
+    "weakHand": "Weak hand"
+  }
+}

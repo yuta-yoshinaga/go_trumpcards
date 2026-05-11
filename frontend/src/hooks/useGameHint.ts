@@ -65,6 +65,7 @@ import type {
   TrashResponse,
   TriPeaksResponse,
   TwoTenJackResponse,
+  UltimateTexasHoldemResponse,
   VideoPokerResponse,
   WarResponse,
   WhistResponse,
@@ -140,6 +141,7 @@ import { getThreeCardHint } from '../utils/hints/threecardHint';
 import { getTrashHint } from '../utils/hints/trashHint';
 import { getTriPeaksHint } from '../utils/hints/tripeaksHint';
 import { getTwoTenJackHint } from '../utils/hints/twotenjackHint';
+import { getUltimateTexasHoldemHint } from '../utils/hints/ultimateTexasHoldemHint';
 import { getVideoPokerHint } from '../utils/hints/videopokerHint';
 import { getWarHint } from '../utils/hints/warHint';
 import { getWhistHint } from '../utils/hints/whistHint';
@@ -190,6 +192,7 @@ const hintFactories = {
   gofish: (s) => getGoFishHint(s as GoFishResponse),
   caribbeanstud: (s) => getCaribbeanStudHint(s as CaribbeanStudResponse),
   texasholdembonus: (s) => getTexasHoldemBonusHint(s as TexasHoldemBonusResponse),
+  ultimatetexasholdem: (s) => getUltimateTexasHoldemHint(s as UltimateTexasHoldemResponse),
   durak: (s) => getDurakHint(s as DurakResponse),
   canasta: (s) => getCanastaHint(s as CanastaResponse),
   canfield: (s) => getCanfieldHint(s as CanfieldResponse),

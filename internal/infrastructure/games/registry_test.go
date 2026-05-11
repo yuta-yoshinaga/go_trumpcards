@@ -13,7 +13,7 @@ import (
 // here indicates that a game's Category is wrong (and would route to the
 // wrong worker in production).
 const (
-	expectedCasino  = 26
+	expectedCasino  = 27
 	expectedClassic = 32
 	expectedSolo    = 23
 	expectedTotal   = expectedCasino + expectedClassic + expectedSolo

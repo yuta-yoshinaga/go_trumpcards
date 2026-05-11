@@ -1,0 +1,95 @@
+{
+  "title": "アルティメット・テキサスホールデム",
+  "player": "プレイヤー",
+  "dealer": "ディーラー",
+  "board": "ボード",
+  "label": {
+    "chips": "チップ",
+    "ante": "アンテ",
+    "blind": "ブラインド",
+    "trips": "トリップス",
+    "playBet": "プレイベット",
+    "handRank": "役"
+  },
+  "button": {
+    "bet": "ベット",
+    "play4x": "プレイ 4×",
+    "play3x": "プレイ 3×",
+    "play2x": "プレイ 2×",
+    "play1x": "プレイ 1×",
+    "check": "チェック",
+    "fold": "フォールド",
+    "reset": "リセット"
+  },
+  "phase": {
+    "bet": "ベット",
+    "preFlop": "プリフロップ",
+    "flop": "フロップ",
+    "river": "リバー",
+    "end": "結果"
+  },
+  "result": {
+    "playerWins": "勝利！",
+    "dealerWins": "ディーラー勝利！",
+    "push": "引き分け！",
+    "fold": "フォールド",
+    "dealerQualified": "ディーラー：クオリファイ（ペア以上）",
+    "dealerNotQualified": "ディーラー：クオリファイなし（アンテはプッシュ）"
+  },
+  "payout": {
+    "ante": "アンテ",
+    "blind": "ブラインド",
+    "play": "プレイ",
+    "trips": "トリップス",
+    "total": "合計"
+  },
+  "handRank": {
+    "0": "ハイカード",
+    "1": "ワンペア",
+    "2": "ツーペア",
+    "3": "スリーカード",
+    "4": "ストレート",
+    "5": "フラッシュ",
+    "6": "フルハウス",
+    "7": "フォーカード",
+    "8": "ストレートフラッシュ",
+    "9": "ロイヤルフラッシュ"
+  },
+  "settings": {
+    "title": "設定"
+  },
+  "betGuide": "アンテを設定するとブラインドも同額でベットされます。任意でトリップスを追加できます。",
+  "payoutRef": {
+    "title": "配当表",
+    "blindHeader": "ブラインド（プレイヤー勝利かつストレート以上のみ。それ以外はプッシュ／負けで没収）",
+    "blindRoyalFlush": "ロイヤルフラッシュ: 500:1",
+    "blindStraightFlush": "ストレートフラッシュ: 50:1",
+    "blindFourOfAKind": "フォーカード: 10:1",
+    "blindFullHouse": "フルハウス: 3:1",
+    "blindFlush": "フラッシュ: 3:2",
+    "blindStraight": "ストレート: 1:1",
+    "tripsHeader": "トリップス（ディーラーの手・勝敗に関係なく評価）",
+    "tripsRoyalFlush": "ロイヤルフラッシュ: 50:1",
+    "tripsStraightFlush": "ストレートフラッシュ: 40:1",
+    "tripsFourOfAKind": "フォーカード: 30:1",
+    "tripsFullHouse": "フルハウス: 8:1",
+    "tripsFlush": "フラッシュ: 7:1",
+    "tripsStraight": "ストレート: 4:1",
+    "tripsThreeOfAKind": "スリーカード: 3:1"
+  },
+  "tutorial": {
+    "betControls": "アンテを設定するとブラインドも同額でベットされます。トリップスは任意のサイドベットです。",
+    "preFlopButtons": "プリフロップではプレイ 4× / 3× で強気にベットするか、チェックで様子を見ます。",
+    "postFlopButtons": "フロップ後はプレイ 2× で勝負するか、チェックでターン＋リバーを見ます。",
+    "riverButtons": "リバー後はプレイ 1× かフォールドのいずれかを選ぶ必要があります。",
+    "results": "クオリファイ状況・結果・各ベットの配当を確認してください。"
+  },
+  "hint": {
+    "pocketPair": "ポケットペア — 強気でプレイ 4×",
+    "acePlay": "Aを含む — プレイ 4× を検討",
+    "suitedBroadway": "スーテッドブロードウェイ — プレイ 4× を検討",
+    "broadwayCards": "ブロードウェイ — プレイ 3× を検討",
+    "madeHandRiver": "出来役 — リバーでプレイ 1×",
+    "weakHand": "弱い手札"
+  }
+}

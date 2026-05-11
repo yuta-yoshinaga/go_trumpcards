@@ -34,6 +34,12 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/threecard', labelKey: 'nav.threecard', icon: '🎴', page: 'ThreeCard' },
       { path: '/caribbeanstud', labelKey: 'nav.caribbeanstud', icon: '🏝️', page: 'CaribbeanStud' },
       { path: '/texasholdembonus', labelKey: 'nav.texasholdembonus', icon: '🤠', page: 'TexasHoldemBonus' },
+      {
+        path: '/ultimatetexasholdem',
+        labelKey: 'nav.ultimatetexasholdem',
+        icon: '♠️',
+        page: 'UltimateTexasHoldem',
+      },
       { path: '/paigow', labelKey: 'nav.paigow', icon: '🀄', page: 'PaiGow' },
       { path: '/letitride', labelKey: 'nav.letitride', icon: '🎰', page: 'LetItRide' },
       { path: '/reddog', labelKey: 'nav.reddog', icon: '🐕', page: 'RedDog' },
