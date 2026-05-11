@@ -174,6 +174,8 @@ tags:
     description: Contract Rummy (コントラクトラミー) game - 3-player rummy (1 human + 2 CPU) over 7 progressive rounds; each round has a fixed contract (sets / runs) the player must lay before going out; lowest cumulative penalty across rounds wins
   - name: ultimatetexasholdem
     description: Ultimate Texas Hold'em (アルティメット・テキサスホールデム) game - single-player vs dealer Texas Hold'em variant with Ante + equal Blind wagers, optional Trips side bet, and one-shot Play raise at Pre-flop (3x / 4x), Flop (2x) or River (1x); dealer must qualify with a pair or better
+  - name: crescent
+    description: Crescent Solitaire (クレセント・ソリティア) game - 2-deck (104-card) solitaire with 16 tableau piles arranged around 8 foundations (4 ascending from A, 4 descending from K); same-suit ±1 moves with A↔K wrap, top card only; up to 3 redeals reverse every tableau pile
 
 paths:
   /blackjack/exec:
@@ -4558,6 +4560,131 @@ paths:
                   message:
                     type: string
 
+  /crescent/exec:
+    post:
+      tags:
+        - crescent
+      summary: Execute a Crescent Solitaire game command
+      description: |
+        Send a command to advance the Crescent Solitaire (クレセント・ソリティア)
+        game session identified by `sessionId`. Crescent is a single-player
+        solitaire using 2 standard decks (104 cards). 16 tableau piles of 6
+        cards each surround 8 foundations: 4 ascending from A and 4 descending
+        from K (one per suit). Tableau moves are restricted to the top card
+        only, same suit, value ±1, with A↔K wrap. Empty tableau piles cannot
+        be refilled. Up to 3 redeals per game reverse every tableau pile.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | `0`   | Game in progress |
+        | GameClear | `1`   | All 104 cards on the foundations |
+        | GameOver  | `2`   | Gave up or stalemated |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `move`         | `m`     | Move tableau→tableau or tableau→foundation |
+        | `redeal`       |         | Reverse every tableau pile (max 3 per game) |
+        | `undo`         | `u`     | Undo the last action |
+        | `giveup`       | `g`     | Give up the current game |
+        | `hint`         | `h`     | Show a hint for the next move |
+        | `autocomplete` | `ac`    | Drain tops to foundations |
+        | `log`          | `l`     | View action log |
+      operationId: crescentExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, move, m, redeal, undo, u, undo_n, giveup, g, hint, h, autocomplete, ac, log, l]
+                from:
+                  $ref: '#/components/schemas/CrescentMoveZone'
+                to:
+                  $ref: '#/components/schemas/CrescentMoveZone'
+                n:
+                  type: integer
+                  description: Number of times to undo (for undo_n command)
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              redeal:
+                summary: Reverse every tableau pile
+                value:
+                  command: redeal
+                  sessionId: my-session-001
+              moveTableauToFoundation:
+                summary: Move col 3 top card onto ascending foundation 0
+                value:
+                  command: move
+                  from:
+                    zone: tableau
+                    col: 3
+                  to:
+                    zone: foundation
+                    col: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                    description: 16 tableau piles (each an array of face-up cards)
+                    items:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Card'
+                  foundation:
+                    type: array
+                    description: 8 foundation piles (asc 0-3 build A→K, desc 4-7 build K→A)
+                    items:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Card'
+                  redealsRemaining:
+                    type: integer
+                    description: Redeals left for this game (0..3)
+                  moveCount:
+                    type: integer
+                  phase:
+                    type: integer
+                    description: "0=Playing, 1=GameClear, 2=GameOver"
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                    items:
+                      type: array
+                  phase:
+                    type: integer
+                  message:
+                    type: string
+
   /paigow/exec:
     post:
       tags:
@@ -8022,6 +8149,19 @@ components:
         cardIndex:
           type: integer
           description: Card index within the column (required when moving from tableau)
+    CrescentMoveZone:
+      type: object
+      description: Source or target zone for a Crescent Solitaire card move
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: Zone identifier (tableau, foundation)
+          enum: [tableau, foundation]
+        col:
+          type: integer
+          description: Column index (tableau column 0..15, or foundation id 0..7)
     BakersDozenMoveZone:
       type: object
       description: Source or target zone for a Baker's Dozen card move

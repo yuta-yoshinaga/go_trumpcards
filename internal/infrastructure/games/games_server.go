@@ -423,4 +423,9 @@ func init() {
 			return usecase.NewUltimateTexasHoldemInteractor(domain.NewDefaultUltimateTexasHoldem(), new(presenter.UltimateTexasHoldemWebPresenter))
 		},
 		controller.NewUltimateTexasHoldemWebController)
+	BindWebControllerFor("crescent",
+		func() usecase.CrescentInteractorIF {
+			return usecase.NewCrescentInteractor(domain.NewDefaultCrescent(), new(presenter.CrescentWebPresenter))
+		},
+		controller.NewCrescentWebController)
 }

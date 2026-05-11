@@ -2638,6 +2638,44 @@ export interface FortyThievesMoveZone {
   cardIndex?: number;
 }
 
+// --- Crescent (クレセント・ソリティア) ---
+
+/** A single tableau card in Crescent (always face-up). */
+export interface CrescentTableauCard {
+  card: Card | null;
+  faceUp: boolean;
+}
+
+/** A suggested move hint in Crescent. */
+export interface CrescentHint {
+  fromCol: number;
+  toZone: string;
+  toCol: number;
+  redeal: boolean;
+}
+
+/** Full Crescent game state returned from the API. */
+export interface CrescentResponse {
+  tableau: CrescentTableauCard[][];
+  foundation: Card[][];
+  redealsRemaining: number;
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: CrescentHint;
+}
+
+/** Source or target zone for a Crescent card move. */
+export interface CrescentMoveZone {
+  zone: 'tableau' | 'foundation';
+  col?: number;
+}
+
 // --- Baker's Dozen (ベーカーズ・ダズン) ---
 
 /** A single tableau card in Baker's Dozen. */

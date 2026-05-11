@@ -198,4 +198,12 @@ func init() {
 			return usecase.RestoreContractRummyInteractor(data, new(presenter.ContractRummyWebPresenter))
 		},
 		controller.NewContractRummyWebControllerWithProvider)
+	games.RegisterKVGame("crescent", games.CategorySolo,
+		func() usecase.CrescentInteractorIF {
+			return usecase.NewCrescentInteractor(domain.NewDefaultCrescent(), new(presenter.CrescentWebPresenter))
+		},
+		func(data []byte) (usecase.CrescentInteractorIF, error) {
+			return usecase.RestoreCrescentInteractor(data, new(presenter.CrescentWebPresenter))
+		},
+		controller.NewCrescentWebControllerWithProvider)
 }

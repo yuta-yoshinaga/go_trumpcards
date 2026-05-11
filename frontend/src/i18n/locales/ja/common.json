@@ -100,7 +100,8 @@
     "blackjackswitch": "ブラックジャック・スイッチ",
     "montecarlo": "モンテカルロ・ソリティア",
     "contractrummy": "コントラクトラミー",
-    "ultimatetexasholdem": "アルティメット・テキサスホールデム"
+    "ultimatetexasholdem": "アルティメット・テキサスホールデム",
+    "crescent": "クレセント・ソリティア"
   },
   "sound": {
     "mute": "サウンドをオフにする",

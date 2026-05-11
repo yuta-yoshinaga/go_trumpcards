@@ -90,6 +90,7 @@ export type GameKey =
   | 'pokersquares'
   | 'montecarlo'
   | 'calculation'
+  | 'crescent'
   // Counting/Rummy
   | 'ginrummy'
   | 'tonk'
@@ -197,6 +198,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   pokersquares: CASINO,
   montecarlo: CASINO,
   calculation: CASINO,
+  crescent: CASINO,
   // Counting/Rummy
   ginrummy: BLUE,
   tonk: BLUE,

@@ -100,7 +100,8 @@
     "blackjackswitch": "Blackjack Switch",
     "montecarlo": "Monte Carlo Solitaire",
     "contractrummy": "Contract Rummy",
-    "ultimatetexasholdem": "Ultimate Texas Hold'em"
+    "ultimatetexasholdem": "Ultimate Texas Hold'em",
+    "crescent": "Crescent Solitaire"
   },
   "sound": {
     "mute": "Mute sound",
