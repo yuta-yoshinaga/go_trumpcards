@@ -1460,7 +1460,7 @@ export const cassinoApi = {
     gameExec<CassinoResponse>('cassino', { command, ...(params ?? {}) }),
 };
 
-export type { BakersDozenMoveZone, FortyThievesMoveZone };
+export type { BakersDozenMoveZone, CrescentMoveZone, FortyThievesMoveZone };
 
 /** API client for the Whist /whist/exec endpoint. */
 export const whistApi = {

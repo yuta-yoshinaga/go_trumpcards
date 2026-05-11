@@ -35,7 +35,7 @@ func (p *CrescentCuiPresenter) Output(cr interfaces.CrescentGame, lastErr error)
 				b.WriteString(" | ")
 			}
 			pile := foundation[i]
-			b.WriteString(fmt.Sprintf("[%d]", i))
+			fmt.Fprintf(b, "[%d]", i)
 			if len(pile) == 0 {
 				b.WriteString(i18n.T("cuiEmptyCol"))
 			} else {
@@ -51,7 +51,7 @@ func (p *CrescentCuiPresenter) Output(cr interfaces.CrescentGame, lastErr error)
 				b.WriteString(" | ")
 			}
 			pile := foundation[i]
-			b.WriteString(fmt.Sprintf("[%d]", i))
+			fmt.Fprintf(b, "[%d]", i)
 			if len(pile) == 0 {
 				b.WriteString(i18n.T("cuiEmptyCol"))
 			} else {
