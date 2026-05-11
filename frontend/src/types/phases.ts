@@ -689,3 +689,10 @@ export const EgyptianRatscrewSlapReason = {
   PAIR: 1,
   SANDWICH: 2,
 } as const;
+
+/** Crescent Solitaire phase constants (sync: internal/domain/Crescent.go). */
+export const CrescentPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;

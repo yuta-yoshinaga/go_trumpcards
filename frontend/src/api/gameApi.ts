@@ -18,6 +18,8 @@ import type {
   ClockSolitaireResponse,
   ContractRummyResponse,
   CrazyEightsResponse,
+  CrescentMoveZone,
+  CrescentResponse,
   CribbageResponse,
   DaifugoConfigInput,
   DaifugoResponse,
@@ -183,6 +185,7 @@ const workerUrl: Record<string, string> = {
   montecarlo: WORKER_SOLO,
   contractrummy: WORKER_SOLO,
   ultimatetexasholdem: WORKER_CASINO,
+  crescent: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1384,6 +1387,13 @@ export const fortyThievesApi = createSolitaireMoveApi<
   'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('fortythieves');
 
+/** API client for the Crescent Solitaire /crescent/exec endpoint. */
+export const crescentApi = createSolitaireMoveApi<
+  CrescentResponse,
+  CrescentMoveZone,
+  'reset' | 'move' | 'redeal' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('crescent');
+
 /** API client for the Baker's Dozen /bakersdozen/exec endpoint. */
 export const bakersDozenApi = createSolitaireMoveApi<
   BakersDozenResponse,
@@ -1621,6 +1631,7 @@ const games = [
   'montecarlo',
   'contractrummy',
   'ultimatetexasholdem',
+  'crescent',
 ] as const;
 type Game = (typeof games)[number];
 

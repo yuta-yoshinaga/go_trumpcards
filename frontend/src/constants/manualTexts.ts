@@ -19,6 +19,7 @@ import clocksolitaire from '../../../docs/manual/web/clocksolitaire.md?raw';
 import contractrummy from '../../../docs/manual/web/contractrummy.md?raw';
 import crazyeights from '../../../docs/manual/web/crazyeights.md?raw';
 import crazypineapple from '../../../docs/manual/web/crazypineapple.md?raw';
+import crescent from '../../../docs/manual/web/crescent.md?raw';
 import cribbage from '../../../docs/manual/web/cribbage.md?raw';
 import daifugo from '../../../docs/manual/web/daifugo.md?raw';
 import deuceswild from '../../../docs/manual/web/deuceswild.md?raw';
@@ -136,6 +137,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/montecarlo': montecarlo,
   '/contractrummy': contractrummy,
   '/ultimatetexasholdem': ultimatetexasholdem,
+  '/crescent': crescent,
   '/pyramid': pyramid,
   '/razz': razz,
   '/badugi': badugi,

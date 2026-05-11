@@ -233,6 +233,7 @@ const hintFactories = {
   slapjack: (s) => getSlapjackHint(s as SlapjackResponse),
   egyptianratscrew: (s) => getEgyptianRatscrewHint(s as EgyptianRatscrewResponse),
   contractrummy: () => null,
+  crescent: () => null,
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

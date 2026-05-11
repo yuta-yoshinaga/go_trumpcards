@@ -1321,6 +1321,23 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},
+	{Name: "crescent", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCrescentCuiController(usecase.NewCrescentInteractor(
+				domain.NewDefaultCrescent(), new(presenter.CrescentCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "crescent.helpTitle",
+				CommandKeys: []string{
+					"crescent.helpMoveTT",
+					"crescent.helpMoveTF",
+					"crescent.helpRedeal",
+					"crescent.helpGiveUp",
+					"crescent.helpHint",
+					"crescent.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

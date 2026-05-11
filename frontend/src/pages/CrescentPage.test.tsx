@@ -1,0 +1,232 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { actionLogApi, crescentApi } from '../api/gameApi';
+import { useGameHint } from '../hooks/useGameHint';
+import { renderWithProviders } from '../test/renderWithProviders';
+import type { Card, CardDesign, CrescentResponse, CrescentTableauCard } from '../types/card';
+import { CrescentPage } from './CrescentPage';
+
+vi.mock('../api/gameApi', () => ({
+  crescentApi: { exec: vi.fn() },
+  actionLogApi: { crescent: vi.fn() },
+}));
+
+vi.mock('../hooks/useGameHint', () => ({
+  useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
+}));
+
+const mockExec = vi.mocked(crescentApi.exec);
+
+function makeTableau(cols: CrescentTableauCard[][]): CrescentTableauCard[][] {
+  const result: CrescentTableauCard[][] = [];
+  for (let i = 0; i < 16; i++) {
+    result.push(cols[i] ?? []);
+  }
+  return result;
+}
+
+const card = (design: CardDesign, value: number): Card => ({ design, value });
+
+const playingState: CrescentResponse = {
+  tableau: makeTableau([
+    [
+      { card: card('SPADE', 5), faceUp: true },
+      { card: card('SPADE', 4), faceUp: true },
+    ],
+    [{ card: card('HEART', 6), faceUp: true }],
+  ]),
+  foundation: [
+    [card('SPADE', 1)],
+    [card('CLOVER', 1)],
+    [card('HEART', 1)],
+    [card('DIAMOND', 1)],
+    [card('SPADE', 13)],
+    [card('CLOVER', 13)],
+    [card('HEART', 13)],
+    [card('DIAMOND', 13)],
+  ],
+  redealsRemaining: 3,
+  phase: 0,
+  moveCount: 5,
+  canUndo: false,
+  isStalemate: false,
+  message: '',
+};
+
+const gameClearState: CrescentResponse = {
+  ...playingState,
+  phase: 1,
+  message: 'ゲームクリア！',
+  messageCode: 'crescent.gameClear',
+};
+
+const gameOverState: CrescentResponse = {
+  ...playingState,
+  phase: 2,
+  message: 'ゲームオーバー',
+  messageCode: 'crescent.gameOver',
+};
+
+const noRedealsState: CrescentResponse = {
+  ...playingState,
+  redealsRemaining: 0,
+};
+
+beforeEach(() => {
+  mockExec.mockResolvedValue(playingState);
+  vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+});
+
+describe('CrescentPage', () => {
+  it('renders skeleton when no state', () => {
+    mockExec.mockReturnValue(new Promise(() => undefined));
+    renderWithProviders(<CrescentPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('renders redeals remaining in header', async () => {
+    renderWithProviders(<CrescentPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.getByText(/残り再配り回数: 3/)).toBeInTheDocument();
+  });
+
+  it('renders move count', async () => {
+    renderWithProviders(<CrescentPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(/手数: 5/));
+  });
+
+  it('renders ascending and descending foundation suit headers', async () => {
+    renderWithProviders(<CrescentPage />);
+    await waitFor(() => expect(screen.getAllByText(/♠ ↑/).length).toBeGreaterThanOrEqual(1));
+    expect(screen.getAllByText(/♣ ↑/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/♥ ↑/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/♦ ↑/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/♠ ↓/).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('redeal button shows remaining count', async () => {
+    renderWithProviders(<CrescentPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /再配り/ })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: /再配り \(3\)/ })).toBeInTheDocument();
+  });
+
+  it('clicking redeal dispatches redeal', async () => {
+    renderWithProviders(<CrescentPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /再配り \(3\)/ })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    fireEvent.click(screen.getByRole('button', { name: /再配り \(3\)/ }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('redeal'));
+  });
+
+  it('redeal button disabled when no redeals remain', async () => {
+    mockExec.mockResolvedValue(noRedealsState);
+    renderWithProviders(<CrescentPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /再配り \(0\)/ })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: /再配り \(0\)/ })).toBeDisabled();
+  });
+
+  it('clicking hint dispatches hint', async () => {
+    renderWithProviders(<CrescentPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...playingState, hint: undefined });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+  });
+
+  it('clicking give up dispatches giveup', async () => {
+    renderWithProviders(<CrescentPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(gameOverState);
+    fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
+  });
+
+  it('clicking tableau top card selects it as source', async () => {
+    renderWithProviders(<CrescentPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    const cardImg = screen.getByAltText('♠ 4');
+    const cardButton = cardImg.closest('button') as HTMLButtonElement;
+    fireEvent.click(cardButton);
+    await waitFor(() => expect(cardButton.className).toContain('ring-2'));
+  });
+
+  it('selecting source then foundation dispatches move', async () => {
+    renderWithProviders(<CrescentPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    // Select top card of col 0 (♠ 4)
+    const cardImg = screen.getByAltText('♠ 4');
+    const cardButton = cardImg.closest('button') as HTMLButtonElement;
+    fireEvent.click(cardButton);
+    await waitFor(() => expect(cardButton.className).toContain('ring-2'));
+
+    // Click a foundation (♠ A ascending)
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    const foundationImg = screen.getByAltText('♠ A');
+    const foundationButton = foundationImg.closest('button') as HTMLButtonElement;
+    fireEvent.click(foundationButton);
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        expect.objectContaining({ zone: 'tableau', col: 0 }),
+        expect.objectContaining({ zone: 'foundation', col: 0 }),
+      ),
+    );
+  });
+
+  it('clicking reset dispatches reset (after confirm)', async () => {
+    renderWithProviders(<CrescentPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('game clear shows action log button', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<CrescentPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument());
+  });
+
+  it('game over hides play buttons', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<CrescentPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'ヒント' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'ギブアップ' })).not.toBeInTheDocument();
+  });
+
+  it('renders empty foundation placeholder', async () => {
+    const emptyFndState: CrescentResponse = {
+      ...playingState,
+      foundation: [[], [], [], [], [], [], [], []],
+    };
+    mockExec.mockResolvedValue(emptyFndState);
+    renderWithProviders(<CrescentPage />);
+    await waitFor(() => expect(screen.getAllByText(/♠ ↑/).length).toBeGreaterThanOrEqual(1));
+    // Empty asc foundations show "A"; descending show "K".
+    expect(screen.getAllByText('A').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('K').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('action log fetches and shows log entries', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    const mockLogApi = vi.mocked(actionLogApi.crescent);
+    mockLogApi.mockResolvedValue({
+      entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'redeal', detail: 'shuffle' }],
+    });
+
+    renderWithProviders(<CrescentPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: '棋譜を見る' }));
+    await waitFor(() => expect(screen.getByText('棋譜')).toBeInTheDocument());
+  });
+});
