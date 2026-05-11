@@ -33,7 +33,7 @@ describe('TutorialProgressPanel', () => {
   it('renders game links as icons', () => {
     renderPanel();
     const links = screen.getAllByRole('link');
-    expect(links.length).toBe(83);
+    expect(links.length).toBe(84);
   });
 
   it('shows checkmark for completed games', () => {
@@ -46,7 +46,7 @@ describe('TutorialProgressPanel', () => {
   it('shows circle for incomplete games', () => {
     renderPanel();
     const incompleteMarkers = screen.getAllByText('○');
-    expect(incompleteMarkers.length).toBe(83);
+    expect(incompleteMarkers.length).toBe(84);
   });
 
   it('renders as details/summary collapsible', () => {
