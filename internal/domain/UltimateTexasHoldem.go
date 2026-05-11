@@ -122,6 +122,9 @@ func (u *UltimateTexasHoldem) Reset() {
 	if u.chips.GetChips() < UltimateTexasHoldemMinBet*2 {
 		u.chips.SetChips(UltimateTexasHoldemDefaultChips)
 	}
+	// Reset re-creates and re-shuffles the deck. Ten shuffles (vs one in the
+	// constructor) is a deliberate paranoia step to reduce correlation between
+	// successive rounds — match the TexasHoldemBonus / CaribbeanStud convention.
 	u.trumpCards = NewTrumpCards(0)
 	for range 10 {
 		u.trumpCards.Shuffle()

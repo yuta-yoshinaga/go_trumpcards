@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
@@ -106,4 +107,32 @@ func TestUltimateTexasHoldemInteractor_ActionLog(t *testing.T) {
 	mockPresenter.On("ActionLogOutput", mockGame).Return("action log output")
 
 	assert.Equal(t, "action log output", ui.ActionLog())
+}
+
+func TestRestoreUltimateTexasHoldemInteractor(t *testing.T) {
+	// Build a live game, drive it through a bet, snapshot it via Snapshot,
+	// then restore — the restored interactor should be able to keep playing.
+	src := NewUltimateTexasHoldemInteractor(domain.NewDefaultUltimateTexasHoldem(), new(presenter.MockUltimateTexasHoldemPresenter))
+	// Pre-flop is reachable after a successful bet without invoking the
+	// presenter (Bet calls execAndPresent which calls Output, so we register
+	// a permissive expectation).
+	src.up.(*presenter.MockUltimateTexasHoldemPresenter).On("Output", mock.Anything, mock.Anything).Return("ok")
+	out := src.Bet(100, 0)
+	assert.NotEmpty(t, out)
+
+	data, err := src.Snapshot()
+	assert.NoError(t, err)
+	assert.NotEmpty(t, data)
+
+	restored, err := RestoreUltimateTexasHoldemInteractor(data, new(presenter.MockUltimateTexasHoldemPresenter))
+	assert.NoError(t, err)
+	assert.NotNil(t, restored)
+	// Phase carries over from the snapshot — the restored interactor should
+	// already be at PreFlop, not Bet.
+	assert.Equal(t, domain.UltimateTexasHoldemPhasePreFlop, restored.Game.GetPhase())
+}
+
+func TestRestoreUltimateTexasHoldemInteractor_InvalidJSON(t *testing.T) {
+	_, err := RestoreUltimateTexasHoldemInteractor([]byte("{not json"), new(presenter.MockUltimateTexasHoldemPresenter))
+	assert.Error(t, err)
 }

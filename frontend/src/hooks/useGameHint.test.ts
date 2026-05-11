@@ -977,4 +977,38 @@ describe('useGameHint', () => {
     const { result } = renderHook(() => useGameHint('blackjackswitch', state));
     expect(result.current.hint).toBeNull();
   });
+
+  it('returns ultimatetexasholdem hint when enabled', () => {
+    localStorage.setItem('hint_enabled_ultimatetexasholdem', 'true');
+    const state = {
+      playerHand: [
+        { design: 'SPADE', value: 13 },
+        { design: 'HEART', value: 13 },
+      ],
+      dealerHand: [],
+      community: [],
+      phase: 2, // PRE_FLOP
+      chips: 800,
+      anteBet: 100,
+      blindBet: 100,
+      tripsBet: 0,
+      playBet: 0,
+      folded: false,
+      result: 0,
+      dealerQualified: false,
+      antePayout: 0,
+      blindPayout: 0,
+      playPayout: 0,
+      tripsPayout: 0,
+      totalPayout: 0,
+      playerHandRank: 0,
+      dealerHandRank: 0,
+      message: '',
+    };
+    const { result } = renderHook(() => useGameHint('ultimatetexasholdem', state));
+    expect(result.current.hint).not.toBeNull();
+    // Pocket pair (KK) → strong "play" suggestion.
+    expect(result.current.hint?.targetAction).toBe('play');
+    expect(result.current.hint?.reason).toBe('hint.pocketPair');
+  });
 });

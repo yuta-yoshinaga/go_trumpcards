@@ -270,4 +270,74 @@ describe('UltimateTexasHoldemPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ 4×' })).toBeInTheDocument());
     expect(screen.getByRole('checkbox')).toBeInTheDocument();
   });
+
+  it('renders hint tooltip when the checkbox is enabled', async () => {
+    mockApi.mockResolvedValue(preFlopState);
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ 4×' })).toBeInTheDocument());
+
+    const checkbox = screen.getByRole('checkbox') as HTMLInputElement;
+    fireEvent.click(checkbox);
+    expect(checkbox.checked).toBe(true);
+    // Pre-flop with hole cards A♠/K♠ -> suited Broadway -> hint should render.
+    await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
+  });
+
+  it('sends multiplier 2 when Play 2× is pressed on the flop', async () => {
+    mockApi.mockResolvedValue(flopState);
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ 2×' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'プレイ 2×' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('play', undefined, undefined, 2));
+  });
+
+  it('sends multiplier 1 when Play 1× is pressed on the river', async () => {
+    mockApi.mockResolvedValue(riverState);
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ 1×' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'プレイ 1×' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('play', undefined, undefined, 1));
+  });
+
+  it('sends fold when Fold is pressed on the river', async () => {
+    mockApi.mockResolvedValue(riverState);
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'フォールド' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('fold'));
+  });
+
+  it('renders the action-log button at end phase', async () => {
+    mockApi.mockResolvedValue(endPlayerWins);
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    await waitFor(() => expect(screen.getByText('勝利！')).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument();
+  });
+
+  it('caps the ante input max at half the available chips', async () => {
+    mockApi.mockResolvedValue({ ...betPhaseState, chips: 400 });
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 400')).toBeInTheDocument());
+
+    const anteInput = screen.getByLabelText('アンテ') as HTMLInputElement;
+    expect(anteInput.max).toBe('200');
+  });
+
+  it('clamps the ante input when chips drop below the current ante', async () => {
+    // Initial render with 1000 chips, default ante 100. Then chips drop to 100.
+    mockApi.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce({ ...betPhaseState, chips: 100 });
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    // Force a re-fetch by clicking bet (which the mock returns as a low-chip state).
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(screen.getByText('チップ: 100')).toBeInTheDocument());
+
+    const anteInput = screen.getByLabelText('アンテ') as HTMLInputElement;
+    // Math.floor(100 / 2) === 50, so the input cannot stay at 100.
+    expect(Number(anteInput.value)).toBeLessThanOrEqual(50);
+  });
 });

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ultimatetexasholdemApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -59,7 +59,10 @@ const UTH_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Hand rank display name lookup. */
+/**
+ * Hand rank display name lookup. Indices mirror Go's `PokerHandNames`
+ * (sync: `internal/domain/PokerPlayer.go`), so 0 = High card, 9 = Royal flush.
+ */
 const HAND_RANK_KEYS: Readonly<Record<number, string>> = {
   0: 'handRank.0',
   1: 'handRank.1',
@@ -98,6 +101,14 @@ function UltimateTexasHoldemPageContent() {
   } = useGameHint('ultimatetexasholdem', state);
 
   useMountReset(execApi);
+
+  // Cap the ante input whenever chips drop below the current selection
+  // (e.g. after a losing round) so the UI cannot submit an out-of-range bet.
+  useEffect(() => {
+    if (!state) return;
+    const cap = Math.floor(state.chips / 2);
+    setAnteAmount((a) => (a > cap ? Math.max(cap, 0) : a));
+  }, [state]);
 
   const isBetPhase = state?.phase === UltimateTexasHoldemPhase.BET;
   const isPreFlopPhase = state?.phase === UltimateTexasHoldemPhase.PRE_FLOP;
