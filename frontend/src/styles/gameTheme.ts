@@ -17,6 +17,7 @@ export type GameKey =
   | 'caribbeanstud'
   | 'texasholdembonus'
   | 'ultimatetexasholdem'
+  | 'mississippistud'
   | 'paigow'
   | 'letitride'
   | 'reddog'
@@ -125,6 +126,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   caribbeanstud: CASINO,
   texasholdembonus: POKER,
   ultimatetexasholdem: POKER,
+  mississippistud: POKER,
   paigow: CASINO,
   letitride: CASINO,
   reddog: CASINO,

@@ -230,4 +230,12 @@ func init() {
 			return usecase.RestoreUltimateTexasHoldemInteractor(data, new(presenter.UltimateTexasHoldemWebPresenter))
 		},
 		controller.NewUltimateTexasHoldemWebControllerWithProvider)
+	games.RegisterKVGame("mississippistud", games.CategoryCasino,
+		func() usecase.MississippiStudInteractorIF {
+			return usecase.NewMississippiStudInteractor(domain.NewDefaultMississippiStud(), new(presenter.MississippiStudWebPresenter))
+		},
+		func(data []byte) (usecase.MississippiStudInteractorIF, error) {
+			return usecase.RestoreMississippiStudInteractor(data, new(presenter.MississippiStudWebPresenter))
+		},
+		controller.NewMississippiStudWebControllerWithProvider)
 }

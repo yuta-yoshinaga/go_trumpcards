@@ -1338,6 +1338,20 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "mississippistud", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewMississippiStudCuiController(usecase.NewMississippiStudInteractor(
+				domain.NewDefaultMississippiStud(), new(presenter.MississippiStudCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "mississippistud.helpTitle",
+				CommandKeys: []string{
+					"mississippistud.helpBet",
+					"mississippistud.helpPlay",
+					"mississippistud.helpFold",
+				},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
@@ -1390,6 +1404,8 @@ var GameAliases = map[string]string{
 	"pgp":    "paigow",
 	"lir":    "letitride",
 	"ride":   "letitride",
+	"ms":     "mississippistud",
+	"mstud":  "mississippistud",
 	"sp21":   "spanish21",
 	"s21":    "spanish21",
 }

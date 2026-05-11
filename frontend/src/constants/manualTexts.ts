@@ -41,6 +41,7 @@ import jokerpoker from '../../../docs/manual/web/jokerpoker.md?raw';
 import klondike from '../../../docs/manual/web/klondike.md?raw';
 import letitride from '../../../docs/manual/web/letitride.md?raw';
 import memory from '../../../docs/manual/web/memory.md?raw';
+import mississippistud from '../../../docs/manual/web/mississippistud.md?raw';
 import montecarlo from '../../../docs/manual/web/montecarlo.md?raw';
 import napoleon from '../../../docs/manual/web/napoleon.md?raw';
 import nertz from '../../../docs/manual/web/nertz.md?raw';
@@ -138,6 +139,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/contractrummy': contractrummy,
   '/ultimatetexasholdem': ultimatetexasholdem,
   '/crescent': crescent,
+  '/mississippistud': mississippistud,
   '/pyramid': pyramid,
   '/razz': razz,
   '/badugi': badugi,

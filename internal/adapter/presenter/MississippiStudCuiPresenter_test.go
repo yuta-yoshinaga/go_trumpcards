@@ -1,0 +1,199 @@
+package presenter
+
+import (
+	"errors"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+)
+
+func setupMississippiStudCuiMockDefaults(m *interfaces.MockMississippiStudGame) {
+	m.On("GetChips").Return(1000).Maybe()
+	m.On("GetPhase").Return(domain.MississippiStudPhaseAnte).Maybe()
+	m.On("GetPlayerHand").Return(([]*domain.Card)(nil)).Maybe()
+	m.On("GetCommunityCards").Return(([]*domain.Card)(nil)).Maybe()
+	m.On("GetCommunityRevealed").Return([domain.MississippiStudCommunityCnt]bool{}).Maybe()
+	m.On("GetGameEndFlag").Return(false).Maybe()
+	m.On("GetAnteAmount").Return(0).Maybe()
+	m.On("GetStreetMultipliers").Return([domain.MississippiStudStreetCnt]int{}).Maybe()
+	m.On("GetFolded").Return(false).Maybe()
+	m.On("GetTotalBet").Return(0).Maybe()
+	m.On("GetResult").Return(domain.GameResult(0)).Maybe()
+	m.On("GetHandRank").Return(0).Maybe()
+	m.On("GetPayoutMultiplier").Return(0).Maybe()
+	m.On("GetAntePayout").Return(0).Maybe()
+	m.On("GetStreetPayouts").Return([domain.MississippiStudStreetCnt]int{}).Maybe()
+	m.On("GetTotalPayout").Return(0).Maybe()
+	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+}
+
+func TestMississippiStudCuiPresenter_Output_AntePhase(t *testing.T) {
+	p := new(MississippiStudCuiPresenter)
+	m := new(interfaces.MockMississippiStudGame)
+	setupMississippiStudCuiMockDefaults(m)
+
+	result := p.Output(m, nil)
+	assert.Contains(t, result, "1000")
+	assert.Contains(t, result, "ANTE")
+}
+
+func TestMississippiStudCuiPresenter_Output_Error(t *testing.T) {
+	p := new(MississippiStudCuiPresenter)
+	m := new(interfaces.MockMississippiStudGame)
+	setupMississippiStudCuiMockDefaults(m)
+
+	result := p.Output(m, errors.New("nope"))
+	assert.Contains(t, result, "nope")
+}
+
+func TestMississippiStudCuiPresenter_Output_ThirdSt(t *testing.T) {
+	p := new(MississippiStudCuiPresenter)
+	m := new(interfaces.MockMississippiStudGame)
+
+	hole := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 11, true),
+		domain.NewCard(domain.CardDesignHeart, 11, true),
+	}
+	community := []*domain.Card{
+		domain.NewCard(domain.CardDesignDiamond, 2, true),
+		domain.NewCard(domain.CardDesignClover, 3, true),
+		domain.NewCard(domain.CardDesignSpade, 4, true),
+	}
+	m.On("GetChips").Return(900)
+	m.On("GetPhase").Return(domain.MississippiStudPhaseThirdSt)
+	m.On("GetPlayerHand").Return(hole)
+	m.On("GetCommunityCards").Return(community)
+	m.On("GetCommunityRevealed").Return([domain.MississippiStudCommunityCnt]bool{})
+	m.On("GetGameEndFlag").Return(false)
+	m.On("GetAnteAmount").Return(100)
+	m.On("GetStreetMultipliers").Return([domain.MississippiStudStreetCnt]int{})
+	m.On("GetFolded").Return(false)
+	m.On("GetTotalBet").Return(100)
+	m.On("GetResult").Return(domain.GameResult(0))
+	m.On("GetHandRank").Return(0)
+	m.On("GetPayoutMultiplier").Return(0)
+	m.On("GetAntePayout").Return(0)
+	m.On("GetStreetPayouts").Return([domain.MississippiStudStreetCnt]int{})
+	m.On("GetTotalPayout").Return(0)
+
+	result := p.Output(m, nil)
+	assert.Contains(t, result, "3RD")
+	assert.Contains(t, result, "??") // community masked
+}
+
+func TestMississippiStudCuiPresenter_Output_Win(t *testing.T) {
+	p := new(MississippiStudCuiPresenter)
+	m := new(interfaces.MockMississippiStudGame)
+
+	hole := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 11, true),
+		domain.NewCard(domain.CardDesignHeart, 11, true),
+	}
+	community := []*domain.Card{
+		domain.NewCard(domain.CardDesignDiamond, 2, true),
+		domain.NewCard(domain.CardDesignClover, 3, true),
+		domain.NewCard(domain.CardDesignSpade, 4, true),
+	}
+	m.On("GetChips").Return(1600)
+	m.On("GetPhase").Return(domain.MississippiStudPhaseEnd)
+	m.On("GetPlayerHand").Return(hole)
+	m.On("GetCommunityCards").Return(community)
+	m.On("GetCommunityRevealed").Return([domain.MississippiStudCommunityCnt]bool{true, true, true})
+	m.On("GetGameEndFlag").Return(true)
+	m.On("GetAnteAmount").Return(100)
+	m.On("GetStreetMultipliers").Return([domain.MississippiStudStreetCnt]int{3, 1, 1})
+	m.On("GetFolded").Return(false)
+	m.On("GetTotalBet").Return(600)
+	m.On("GetResult").Return(domain.GameResultWin)
+	m.On("GetHandRank").Return(domain.PokerHandOnePair)
+	m.On("GetPayoutMultiplier").Return(domain.MississippiStudPayHighPair)
+	m.On("GetAntePayout").Return(200)
+	m.On("GetStreetPayouts").Return([domain.MississippiStudStreetCnt]int{600, 200, 200})
+	m.On("GetTotalPayout").Return(1200)
+
+	result := p.Output(m, nil)
+	assert.Contains(t, result, "One Pair")
+	assert.Contains(t, result, "1200")
+}
+
+func TestMississippiStudCuiPresenter_Output_Push(t *testing.T) {
+	p := new(MississippiStudCuiPresenter)
+	m := new(interfaces.MockMississippiStudGame)
+
+	hole := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 6, true),
+		domain.NewCard(domain.CardDesignHeart, 6, true),
+	}
+	community := []*domain.Card{
+		domain.NewCard(domain.CardDesignDiamond, 2, true),
+		domain.NewCard(domain.CardDesignClover, 3, true),
+		domain.NewCard(domain.CardDesignSpade, 4, true),
+	}
+	m.On("GetChips").Return(1000)
+	m.On("GetPhase").Return(domain.MississippiStudPhaseEnd)
+	m.On("GetPlayerHand").Return(hole)
+	m.On("GetCommunityCards").Return(community)
+	m.On("GetCommunityRevealed").Return([domain.MississippiStudCommunityCnt]bool{true, true, true})
+	m.On("GetGameEndFlag").Return(true)
+	m.On("GetAnteAmount").Return(100)
+	m.On("GetStreetMultipliers").Return([domain.MississippiStudStreetCnt]int{1, 1, 1})
+	m.On("GetFolded").Return(false)
+	m.On("GetTotalBet").Return(400)
+	m.On("GetResult").Return(domain.GameResultDraw)
+	m.On("GetHandRank").Return(domain.PokerHandOnePair)
+	m.On("GetPayoutMultiplier").Return(domain.MississippiStudPayPush)
+	m.On("GetAntePayout").Return(100)
+	m.On("GetStreetPayouts").Return([domain.MississippiStudStreetCnt]int{100, 100, 100})
+	m.On("GetTotalPayout").Return(400)
+
+	result := p.Output(m, nil)
+	assert.Contains(t, result, "400")
+}
+
+func TestMississippiStudCuiPresenter_Output_Fold(t *testing.T) {
+	p := new(MississippiStudCuiPresenter)
+	m := new(interfaces.MockMississippiStudGame)
+
+	hole := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 6, true),
+		domain.NewCard(domain.CardDesignHeart, 6, true),
+	}
+	community := []*domain.Card{
+		domain.NewCard(domain.CardDesignDiamond, 2, true),
+		domain.NewCard(domain.CardDesignClover, 3, true),
+		domain.NewCard(domain.CardDesignSpade, 4, true),
+	}
+	m.On("GetChips").Return(900)
+	m.On("GetPhase").Return(domain.MississippiStudPhaseEnd)
+	m.On("GetPlayerHand").Return(hole)
+	m.On("GetCommunityCards").Return(community)
+	m.On("GetCommunityRevealed").Return([domain.MississippiStudCommunityCnt]bool{})
+	m.On("GetGameEndFlag").Return(true)
+	m.On("GetAnteAmount").Return(100)
+	m.On("GetStreetMultipliers").Return([domain.MississippiStudStreetCnt]int{})
+	m.On("GetFolded").Return(true)
+	m.On("GetTotalBet").Return(100)
+	m.On("GetResult").Return(domain.GameResultLose)
+	m.On("GetHandRank").Return(0)
+	m.On("GetPayoutMultiplier").Return(0)
+	m.On("GetAntePayout").Return(0)
+	m.On("GetStreetPayouts").Return([domain.MississippiStudStreetCnt]int{})
+	m.On("GetTotalPayout").Return(0)
+
+	result := p.Output(m, nil)
+	// Fold path should NOT include a hand name (player did not play)
+	assert.NotContains(t, result, "One Pair")
+}
+
+func TestMississippiStudCuiPresenter_ActionLogOutput(t *testing.T) {
+	p := new(MississippiStudCuiPresenter)
+	m := new(interfaces.MockMississippiStudGame)
+	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	m.On("GetGameEndFlag").Return(true).Maybe()
+
+	result := p.ActionLogOutput(m)
+	assert.NotEmpty(t, result)
+}

@@ -42,6 +42,7 @@ import jokerpoker from '../../../docs/manual/cui/jokerpoker.md?raw';
 import klondike from '../../../docs/manual/cui/klondike.md?raw';
 import letitride from '../../../docs/manual/cui/letitride.md?raw';
 import memory from '../../../docs/manual/cui/memory.md?raw';
+import mississippistud from '../../../docs/manual/cui/mississippistud.md?raw';
 import napoleon from '../../../docs/manual/cui/napoleon.md?raw';
 import nertz from '../../../docs/manual/cui/nertz.md?raw';
 import ohhell from '../../../docs/manual/cui/ohhell.md?raw';
@@ -101,6 +102,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/contractrummy': contractrummy,
   '/ultimatetexasholdem': ultimatetexasholdem,
   '/crescent': crescent,
+  '/mississippistud': mississippistud,
   '/crazyeights': crazyeights,
   '/cribbage': cribbage,
   '/daifugo': daifugo,

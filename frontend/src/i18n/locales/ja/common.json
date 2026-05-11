@@ -101,7 +101,8 @@
     "montecarlo": "モンテカルロ・ソリティア",
     "contractrummy": "コントラクトラミー",
     "ultimatetexasholdem": "アルティメット・テキサスホールデム",
-    "crescent": "クレセント・ソリティア"
+    "crescent": "クレセント・ソリティア",
+    "mississippistud": "ミシシッピ・スタッド"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -354,6 +355,9 @@
     "texasholdembonus.result.fold": "フォールド",
     "letitride.result.win": "勝利！",
     "letitride.result.lose": "役なし",
+    "mississippistud.result.playerWins": "プレイヤーの勝ち！",
+    "mississippistud.result.playerLoses": "プレイヤーの負け",
+    "mississippistud.result.push": "プッシュ",
     "klondike.playing": "プレイ中",
     "klondike.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
     "klondike.gameOver": "ゲームオーバー",

@@ -43,6 +43,7 @@ import type {
   KlondikeResponse,
   LetItRideResponse,
   MemoryResponse,
+  MississippiStudResponse,
   MonteCarloResponse,
   NapoleonResponse,
   NertzConfig as NertzConfigType,
@@ -186,6 +187,7 @@ const workerUrl: Record<string, string> = {
   contractrummy: WORKER_SOLO,
   ultimatetexasholdem: WORKER_CASINO,
   crescent: WORKER_SOLO,
+  mississippistud: WORKER_CASINO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1524,6 +1526,12 @@ export const montecarloApi = {
   ) => gameExec<MonteCarloResponse>('montecarlo', { command, fromR, fromC, toR, toC }),
 };
 
+/** API client for the Mississippi Stud /mississippistud/exec endpoint. */
+export const mississippiStudApi = {
+  exec: (command: 'reset' | 'bet' | 'play' | 'fold' | 'log', amount?: number, multiplier?: number) =>
+    gameExec<MississippiStudResponse>('mississippistud', { command, amount, multiplier }),
+};
+
 /** API client for the Contract Rummy /contractrummy/exec endpoint. */
 export const contractrummyApi = {
   exec: (
@@ -1632,6 +1640,7 @@ const games = [
   'contractrummy',
   'ultimatetexasholdem',
   'crescent',
+  'mississippistud',
 ] as const;
 type Game = (typeof games)[number];
 

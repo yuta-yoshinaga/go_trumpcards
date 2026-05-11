@@ -1,0 +1,74 @@
+{
+  "title": "Mississippi Stud",
+  "player": "Player",
+  "label": {
+    "chips": "Chips",
+    "ante": "Ante",
+    "totalBet": "Total Bet",
+    "totalPayout": "Total Payout",
+    "hand": "Hand",
+    "community": "Community Cards",
+    "street3": "3rd",
+    "street4": "4th",
+    "street5": "5th"
+  },
+  "button": {
+    "bet": "Ante",
+    "play1x": "1x",
+    "play2x": "2x",
+    "play3x": "3x",
+    "fold": "Fold",
+    "reset": "Reset"
+  },
+  "phase": {
+    "ante": "Ante",
+    "thirdStreet": "3rd Street",
+    "fourthStreet": "4th Street",
+    "fifthStreet": "5th Street",
+    "end": "Result"
+  },
+  "result": {
+    "playerWins": "Player wins!",
+    "playerLoses": "Player loses.",
+    "push": "Push."
+  },
+  "handRank": {
+    "0": "High Card",
+    "1": "Pair",
+    "2": "Two Pair",
+    "3": "Three of a Kind",
+    "4": "Straight",
+    "5": "Flush",
+    "6": "Full House",
+    "7": "Four of a Kind",
+    "8": "Straight Flush",
+    "9": "Royal Flush"
+  },
+  "settings": {
+    "title": "Settings"
+  },
+  "betGuide": "Set your ante amount, then choose 1x / 2x / 3x or Fold for each street.",
+  "payoutRef": {
+    "title": "Payout Table",
+    "payRoyalFlush": "Royal Flush: 500:1",
+    "payStraightFlush": "Straight Flush: 100:1",
+    "payFourOfAKind": "Four of a Kind: 40:1",
+    "payFullHouse": "Full House: 10:1",
+    "payFlush": "Flush: 6:1",
+    "payStraight": "Straight: 4:1",
+    "payThreeOfAKind": "Three of a Kind: 3:1",
+    "payTwoPair": "Two Pair: 2:1",
+    "payHighPair": "Pair of Jacks or better: 1:1",
+    "payMidPair": "Pair of 6s through 10s: Push"
+  },
+  "tutorial": {
+    "betControls": "Place your ante. After the hole cards are dealt, you bet 1x / 2x / 3x or fold each street.",
+    "streetButtons": "Each street has 1x / 2x / 3x and Fold options. Folding forfeits every bet on the table.",
+    "results": "Check the hand rank, community cards, and total payout here."
+  },
+  "hint": {
+    "raiseBig": "Strong made hand — 3x recommended",
+    "raiseSmall": "Marginal hand — 1x recommended",
+    "fold": "Weak hand — Fold recommended"
+  }
+}
