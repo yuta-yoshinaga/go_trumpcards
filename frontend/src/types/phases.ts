@@ -393,6 +393,15 @@ export const UltimateTexasHoldemPhase = {
   END: 5,
 } as const;
 
+/** Mississippi Stud phase constants (sync: internal/domain/MississippiStud.go). */
+export const MississippiStudPhase = {
+  ANTE: 1,
+  THIRD_STREET: 2,
+  FOURTH_STREET: 3,
+  FIFTH_STREET: 4,
+  END: 5,
+} as const;
+
 /** Doubt phase constants (sync: internal/domain/Doubt.go). */
 export const DoubtPhase = {
   PLAY: 0,

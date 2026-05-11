@@ -176,6 +176,8 @@ tags:
     description: Ultimate Texas Hold'em (アルティメット・テキサスホールデム) game - single-player vs dealer Texas Hold'em variant with Ante + equal Blind wagers, optional Trips side bet, and one-shot Play raise at Pre-flop (3x / 4x), Flop (2x) or River (1x); dealer must qualify with a pair or better
   - name: crescent
     description: Crescent Solitaire (クレセント・ソリティア) game - 2-deck (104-card) solitaire with 16 tableau piles arranged around 8 foundations (4 ascending from A, 4 descending from K); same-suit ±1 moves with A↔K wrap, top card only; up to 3 redeals reverse every tableau pile
+  - name: mississippistud
+    description: Mississippi Stud (ミシシッピ・スタッド) game - single-player vs paytable casino poker; 2 hole cards plus 3 community cards revealed across 3rd / 4th / 5th Street, with 1x / 2x / 3x bet or fold at each street; winning hands paid per fixed paytable (pair of Jacks+ = 1:1, pair of 6s-10s = push)
 
 paths:
   /blackjack/exec:
@@ -8127,6 +8129,80 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UltimateTexasHoldemResponse'
+
+  /mississippistud/exec:
+    post:
+      tags:
+        - mississippistud
+      summary: Execute a Mississippi Stud game command
+      description: |
+        Send a command to advance the Mississippi Stud
+        (ミシシッピ・スタッド) session identified by `sessionId`.
+        Mississippi Stud is a single-player vs paytable casino poker game.
+        After placing an Ante, the player receives 2 hole cards. Three
+        community cards (3rd / 4th / 5th Street) are revealed one at a time;
+        before each reveal the player chooses 1x / 2x / 3x bet or fold.
+        Folding forfeits every bet on the table. After 5th Street, the best
+        5-card hand is scored against a fixed paytable.
+
+        | Phase        | Value | Description |
+        |--------------|-------|-------------|
+        | Ante         | `1`   | Place the Ante |
+        | 3rd Street   | `2`   | Hole cards dealt; 1x / 2x / 3x or fold |
+        | 4th Street   | `3`   | 1st community card revealed; 1x / 2x / 3x or fold |
+        | 5th Street   | `4`   | 2nd community card revealed; 1x / 2x / 3x or fold |
+        | End          | `5`   | 3rd community card revealed; payout |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `bet`   | `b`     | Place Ante (`amount`) |
+        | `play`  | `p`     | Place street bet (`multiplier` ∈ {1, 2, 3}) |
+        | `fold`  | `f`     | Forfeit all bets on the table |
+        | `log`   | `l`     | View action log |
+      operationId: mississippistudExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MississippiStudRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Place Ante of 100
+                value:
+                  command: bet
+                  amount: 100
+                  sessionId: my-session-001
+              play3x:
+                summary: Raise 3x at the current street
+                value:
+                  command: play
+                  multiplier: 3
+                  sessionId: my-session-001
+              fold:
+                summary: Fold and forfeit all bets
+                value:
+                  command: fold
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MississippiStudResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MississippiStudResponse'
 
 components:
   schemas:
@@ -17776,6 +17852,145 @@ components:
         message:
           type: string
           description: Human-readable status message (empty when no event)
+          example: ''
+        messageCode:
+          type: string
+          description: i18n code for the message
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Mississippi Stud
+    # -------------------------------------------------------------------------
+    MississippiStudRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `bet` (`b`),
+            `play` (`p`), `fold` (`f`), `log` (`l`).
+          enum: [r, reset, b, bet, p, play, f, fold, log, l]
+          example: bet
+        amount:
+          type: integer
+          description: Ante amount. Required for `bet` (minimum 10). Ignored for other commands.
+          minimum: 10
+          example: 100
+        multiplier:
+          type: integer
+          description: Street bet multiplier (1, 2, or 3). Required for `play`. Ignored for other commands.
+          enum: [1, 2, 3]
+          example: 3
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    MississippiStudResponse:
+      type: object
+      description: Current state of the Mississippi Stud game
+      required:
+        - playerHand
+        - communityCards
+        - communityRevealed
+        - phase
+        - chips
+        - anteAmount
+        - streetMultipliers
+        - folded
+        - totalBet
+        - result
+        - handRank
+        - payoutMultiplier
+        - antePayout
+        - streetPayouts
+        - totalPayout
+        - message
+      properties:
+        playerHand:
+          type: array
+          description: The player's hole cards (2 cards once dealt)
+          items:
+            $ref: '#/components/schemas/Card'
+        communityCards:
+          type: array
+          description: |
+            Community cards (3 cards). Each card is masked (`{design: '', value: 0}`)
+            until its street is revealed; on game end every card is revealed.
+          items:
+            $ref: '#/components/schemas/Card'
+        communityRevealed:
+          type: array
+          description: Per-card reveal state for `communityCards` (length 3)
+          items:
+            type: boolean
+        phase:
+          type: integer
+          description: 'Game phase: 1 = Ante, 2 = 3rd Street, 3 = 4th Street, 4 = 5th Street, 5 = End'
+          enum: [1, 2, 3, 4, 5]
+          example: 1
+        chips:
+          type: integer
+          description: Current chip balance
+          example: 1000
+        anteAmount:
+          type: integer
+          description: Ante placed for the current round (0 before bet)
+          example: 100
+        streetMultipliers:
+          type: array
+          description: 3rd / 4th / 5th street bet multipliers (length 3, values 0/1/2/3)
+          items:
+            type: integer
+            enum: [0, 1, 2, 3]
+        folded:
+          type: boolean
+          description: True if the player folded during the round
+          example: false
+        totalBet:
+          type: integer
+          description: Total chips committed to the round (ante + all street bets)
+          example: 100
+        result:
+          type: integer
+          description: 'Game result: 1 = Player wins, -1 = Player loses, 0 = Push / not resolved'
+          enum: [-1, 0, 1]
+          example: 0
+        handRank:
+          type: integer
+          description: |
+            Final 5-card hand rank
+            (0 = High Card, 1 = One Pair, 2 = Two Pair, 3 = Three of a Kind,
+            4 = Straight, 5 = Flush, 6 = Full House, 7 = Four of a Kind,
+            8 = Straight Flush, 9 = Royal Flush). 0 until resolution.
+          example: 0
+        payoutMultiplier:
+          type: integer
+          description: Applied paytable multiplier (-1 = push, 0 = loss, positive = win)
+          example: 0
+        antePayout:
+          type: integer
+          description: Payout from the ante portion
+          example: 0
+        streetPayouts:
+          type: array
+          description: Payouts from each street bet (length 3)
+          items:
+            type: integer
+        totalPayout:
+          type: integer
+          description: Total payout returned to the player
+          example: 0
+        message:
+          type: string
+          description: Human-readable status message
           example: ''
         messageCode:
           type: string

@@ -2080,6 +2080,35 @@ export interface UltimateTexasHoldemResponse {
   messageParams?: Record<string, string>;
 }
 
+// --- Mississippi Stud (ミシシッピ・スタッド) ---
+
+/** Mississippi Stud API response. */
+export interface MississippiStudResponse {
+  /** Player's two hole cards (revealed once the round starts). */
+  playerHand: Card[];
+  /** Community cards: masked as `MaskedCard` until the matching street is revealed. */
+  communityCards: (Card | MaskedCard)[];
+  /** Per-card reveal state for `communityCards` (length 3). */
+  communityRevealed: boolean[];
+  phase: number;
+  chips: number;
+  anteAmount: number;
+  /** 3rd / 4th / 5th street bet multipliers (0=未ベット, 1/2/3=倍率). Length 3. */
+  streetMultipliers: number[];
+  folded: boolean;
+  totalBet: number;
+  result: number;
+  handRank: number;
+  /** Applied payout multiplier (-1=push, 0=loss, positive=win). */
+  payoutMultiplier: number;
+  antePayout: number;
+  streetPayouts: number[];
+  totalPayout: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
 // --- Pai Gow Poker (パイゴウポーカー) ---
 
 /** Pai Gow Poker API response. */

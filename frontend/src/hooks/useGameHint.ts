@@ -31,6 +31,7 @@ import type {
   KlondikeResponse,
   LetItRideResponse,
   MemoryResponse,
+  MississippiStudResponse,
   MonteCarloResponse,
   NapoleonResponse,
   NertzResponse,
@@ -106,6 +107,7 @@ import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
 import { getKlondikeHint } from '../utils/hints/klondikeHint';
 import { getLetitrideHint } from '../utils/hints/letitrideHint';
 import { getMemoryHint } from '../utils/hints/memoryHint';
+import { getMississippiStudHint } from '../utils/hints/mississippiStudHint';
 import { getMonteCarloHint } from '../utils/hints/montecarloHint';
 import { getNapoleonHint } from '../utils/hints/napoleonHint';
 import { getNertzHint } from '../utils/hints/nertzHint';
@@ -193,6 +195,7 @@ const hintFactories = {
   caribbeanstud: (s) => getCaribbeanStudHint(s as CaribbeanStudResponse),
   texasholdembonus: (s) => getTexasHoldemBonusHint(s as TexasHoldemBonusResponse),
   ultimatetexasholdem: (s) => getUltimateTexasHoldemHint(s as UltimateTexasHoldemResponse),
+  mississippistud: (s) => getMississippiStudHint(s as MississippiStudResponse),
   durak: (s) => getDurakHint(s as DurakResponse),
   canasta: (s) => getCanastaHint(s as CanastaResponse),
   canfield: (s) => getCanfieldHint(s as CanfieldResponse),

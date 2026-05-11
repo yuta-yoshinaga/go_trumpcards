@@ -101,7 +101,8 @@
     "montecarlo": "Monte Carlo Solitaire",
     "contractrummy": "Contract Rummy",
     "ultimatetexasholdem": "Ultimate Texas Hold'em",
-    "crescent": "Crescent Solitaire"
+    "crescent": "Crescent Solitaire",
+    "mississippistud": "Mississippi Stud"
   },
   "sound": {
     "mute": "Mute sound",
@@ -354,6 +355,9 @@
     "texasholdembonus.result.fold": "Folded",
     "letitride.result.win": "You win!",
     "letitride.result.lose": "No winning hand",
+    "mississippistud.result.playerWins": "Player wins!",
+    "mississippistud.result.playerLoses": "Player loses.",
+    "mississippistud.result.push": "Push.",
     "klondike.playing": "Playing",
     "klondike.gameClear": "Game Clear! Moves: {{moveCount}}",
     "klondike.gameOver": "Game Over",

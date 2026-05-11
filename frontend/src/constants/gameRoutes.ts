@@ -46,6 +46,12 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/casinowar', labelKey: 'nav.casinowar', icon: '⚔️', page: 'CasinoWar' },
       { path: '/dragontiger', labelKey: 'nav.dragontiger', icon: '🐉', page: 'DragonTiger' },
       { path: '/blackjackswitch', labelKey: 'nav.blackjackswitch', icon: '🔀', page: 'BlackJackSwitch' },
+      {
+        path: '/mississippistud',
+        labelKey: 'nav.mississippistud',
+        icon: '🚢',
+        page: 'MississippiStud',
+      },
     ],
   },
   {

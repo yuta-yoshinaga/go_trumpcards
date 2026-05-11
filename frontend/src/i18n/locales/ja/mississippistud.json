@@ -1,0 +1,74 @@
+{
+  "title": "ミシシッピ・スタッド",
+  "player": "プレイヤー",
+  "label": {
+    "chips": "チップ",
+    "ante": "アンティ",
+    "totalBet": "合計ベット",
+    "totalPayout": "合計配当",
+    "hand": "ハンド",
+    "community": "コミュニティカード",
+    "street3": "3rd",
+    "street4": "4th",
+    "street5": "5th"
+  },
+  "button": {
+    "bet": "アンティ",
+    "play1x": "1倍",
+    "play2x": "2倍",
+    "play3x": "3倍",
+    "fold": "フォールド",
+    "reset": "リセット"
+  },
+  "phase": {
+    "ante": "アンティ",
+    "thirdStreet": "3rdストリート",
+    "fourthStreet": "4thストリート",
+    "fifthStreet": "5thストリート",
+    "end": "結果"
+  },
+  "result": {
+    "playerWins": "プレイヤーの勝ち！",
+    "playerLoses": "プレイヤーの負け",
+    "push": "プッシュ"
+  },
+  "handRank": {
+    "0": "ハイカード",
+    "1": "ワンペア",
+    "2": "ツーペア",
+    "3": "スリーカード",
+    "4": "ストレート",
+    "5": "フラッシュ",
+    "6": "フルハウス",
+    "7": "フォーカード",
+    "8": "ストレートフラッシュ",
+    "9": "ロイヤルフラッシュ"
+  },
+  "settings": {
+    "title": "設定"
+  },
+  "betGuide": "アンティ額を決め、各ストリートで 1倍/2倍/3倍 またはフォールドを選択します。",
+  "payoutRef": {
+    "title": "ペイテーブル",
+    "payRoyalFlush": "ロイヤルフラッシュ: 500:1",
+    "payStraightFlush": "ストレートフラッシュ: 100:1",
+    "payFourOfAKind": "フォーカード: 40:1",
+    "payFullHouse": "フルハウス: 10:1",
+    "payFlush": "フラッシュ: 6:1",
+    "payStraight": "ストレート: 4:1",
+    "payThreeOfAKind": "スリーカード: 3:1",
+    "payTwoPair": "ツーペア: 2:1",
+    "payHighPair": "J以上のペア: 1:1",
+    "payMidPair": "6〜10のペア: プッシュ"
+  },
+  "tutorial": {
+    "betControls": "アンティを置きます。ホールカードが配られた後、各ストリートで 1倍/2倍/3倍 またはフォールドを選択します。",
+    "streetButtons": "各ストリートには 1倍 / 2倍 / 3倍 とフォールドのボタンがあります。フォールドすると場のベットはすべて没収されます。",
+    "results": "ハンドランク・コミュニティカード・合計配当をここで確認できます。"
+  },
+  "hint": {
+    "raiseBig": "強いハンド — 3倍ベット推奨",
+    "raiseSmall": "微妙なハンド — 1倍ベット推奨",
+    "fold": "弱いハンド — フォールド推奨"
+  }
+}
