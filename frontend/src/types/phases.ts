@@ -264,6 +264,13 @@ export const SpiderPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Spiderette phase constants (sync: internal/domain/Spiderette.go). */
+export const SpiderettePhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Skat phase constants (sync: internal/domain/Skat.go). */
 export const SkatPhase = {
   BID: 0,
@@ -381,6 +388,34 @@ export const TexasHoldemBonusPhase = {
   PRE_FLOP: 2,
   FLOP: 3,
   TURN: 4,
+  END: 5,
+} as const;
+
+/** Ultimate Texas Hold'em phase constants (sync: internal/domain/UltimateTexasHoldem.go). */
+export const UltimateTexasHoldemPhase = {
+  BET: 1,
+  PRE_FLOP: 2,
+  FLOP: 3,
+  RIVER: 4,
+  END: 5,
+} as const;
+
+/** Belote phase constants (sync: internal/domain/Belote.go). */
+export const BelotePhase = {
+  BID_PICK_UP: 0,
+  BID_CALL_TRUMP: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
+/** Mississippi Stud phase constants (sync: internal/domain/MississippiStud.go). */
+export const MississippiStudPhase = {
+  ANTE: 1,
+  THIRD_STREET: 2,
+  FOURTH_STREET: 3,
+  FIFTH_STREET: 4,
   END: 5,
 } as const;
 
@@ -679,4 +714,11 @@ export const EgyptianRatscrewSlapReason = {
   NONE: 0,
   PAIR: 1,
   SANDWICH: 2,
+} as const;
+
+/** Crescent Solitaire phase constants (sync: internal/domain/Crescent.go). */
+export const CrescentPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
 } as const;

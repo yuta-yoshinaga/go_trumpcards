@@ -222,4 +222,20 @@ func init() {
 			return usecase.RestoreBlackJackSwitchInteractor(data, new(presenter.BlackJackSwitchWebPresenter))
 		},
 		controller.NewBlackJackSwitchWebControllerWithProvider)
+	games.RegisterKVGame("ultimatetexasholdem", games.CategoryCasino,
+		func() usecase.UltimateTexasHoldemInteractorIF {
+			return usecase.NewUltimateTexasHoldemInteractor(domain.NewDefaultUltimateTexasHoldem(), new(presenter.UltimateTexasHoldemWebPresenter))
+		},
+		func(data []byte) (usecase.UltimateTexasHoldemInteractorIF, error) {
+			return usecase.RestoreUltimateTexasHoldemInteractor(data, new(presenter.UltimateTexasHoldemWebPresenter))
+		},
+		controller.NewUltimateTexasHoldemWebControllerWithProvider)
+	games.RegisterKVGame("mississippistud", games.CategoryCasino,
+		func() usecase.MississippiStudInteractorIF {
+			return usecase.NewMississippiStudInteractor(domain.NewDefaultMississippiStud(), new(presenter.MississippiStudWebPresenter))
+		},
+		func(data []byte) (usecase.MississippiStudInteractorIF, error) {
+			return usecase.RestoreMississippiStudInteractor(data, new(presenter.MississippiStudWebPresenter))
+		},
+		controller.NewMississippiStudWebControllerWithProvider)
 }

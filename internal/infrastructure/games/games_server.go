@@ -413,4 +413,34 @@ func init() {
 			return usecase.NewMonteCarloInteractor(domain.NewDefaultMonteCarlo(), new(presenter.MonteCarloWebPresenter))
 		},
 		controller.NewMonteCarloWebController)
+	BindWebControllerFor("contractrummy",
+		func() usecase.ContractRummyInteractorIF {
+			return usecase.NewContractRummyInteractor(domain.NewDefaultContractRummy(), new(presenter.ContractRummyWebPresenter))
+		},
+		controller.NewContractRummyWebController)
+	BindWebControllerFor("ultimatetexasholdem",
+		func() usecase.UltimateTexasHoldemInteractorIF {
+			return usecase.NewUltimateTexasHoldemInteractor(domain.NewDefaultUltimateTexasHoldem(), new(presenter.UltimateTexasHoldemWebPresenter))
+		},
+		controller.NewUltimateTexasHoldemWebController)
+	BindWebControllerFor("crescent",
+		func() usecase.CrescentInteractorIF {
+			return usecase.NewCrescentInteractor(domain.NewDefaultCrescent(), new(presenter.CrescentWebPresenter))
+		},
+		controller.NewCrescentWebController)
+	BindWebControllerFor("mississippistud",
+		func() usecase.MississippiStudInteractorIF {
+			return usecase.NewMississippiStudInteractor(domain.NewDefaultMississippiStud(), new(presenter.MississippiStudWebPresenter))
+		},
+		controller.NewMississippiStudWebController)
+	BindWebControllerFor("belote",
+		func() usecase.BeloteInteractorIF {
+			return usecase.NewBeloteInteractor(domain.NewDefaultBelote(), new(presenter.BeloteWebPresenter))
+		},
+		controller.NewBeloteWebController)
+	BindWebControllerFor("spiderette",
+		func() usecase.SpideretteInteractorIF {
+			return usecase.NewSpideretteInteractor(domain.NewDefaultSpiderette(), new(presenter.SpideretteWebPresenter))
+		},
+		controller.NewSpideretteWebController)
 }

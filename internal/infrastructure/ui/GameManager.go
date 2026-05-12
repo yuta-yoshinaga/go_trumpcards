@@ -1288,6 +1288,104 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "contractrummy", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewContractRummyCuiController(usecase.NewContractRummyInteractor(
+				domain.NewDefaultContractRummy(), new(presenter.ContractRummyCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "contractrummy.helpTitle",
+				CommandKeys: []string{
+					"contractrummy.helpDrawStock",
+					"contractrummy.helpDrawDiscard",
+					"contractrummy.helpMeldContract",
+					"contractrummy.helpMeldExtra",
+					"contractrummy.helpLayoff",
+					"contractrummy.helpDiscard",
+					"contractrummy.helpNextRound",
+				},
+				SettingKeys: []string{"contractrummy.helpSetDifficulty", "contractrummy.helpSetPenalty"},
+			})
+	}},
+	{Name: "ultimatetexasholdem", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewUltimateTexasHoldemCuiController(usecase.NewUltimateTexasHoldemInteractor(
+				domain.NewDefaultUltimateTexasHoldem(), new(presenter.UltimateTexasHoldemCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "ultimatetexasholdem.helpTitle",
+				CommandKeys: []string{
+					"ultimatetexasholdem.helpBet",
+					"ultimatetexasholdem.helpPlay",
+					"ultimatetexasholdem.helpCheck",
+					"ultimatetexasholdem.helpFold",
+				},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
+	{Name: "crescent", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCrescentCuiController(usecase.NewCrescentInteractor(
+				domain.NewDefaultCrescent(), new(presenter.CrescentCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "crescent.helpTitle",
+				CommandKeys: []string{
+					"crescent.helpMoveTT",
+					"crescent.helpMoveTF",
+					"crescent.helpRedeal",
+					"crescent.helpGiveUp",
+					"crescent.helpHint",
+					"crescent.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
+	{Name: "mississippistud", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewMississippiStudCuiController(usecase.NewMississippiStudInteractor(
+				domain.NewDefaultMississippiStud(), new(presenter.MississippiStudCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "mississippistud.helpTitle",
+				CommandKeys: []string{
+					"mississippistud.helpBet",
+					"mississippistud.helpPlay",
+					"mississippistud.helpFold",
+				},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
+	{Name: "belote", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBeloteCuiController(usecase.NewBeloteInteractor(
+				domain.NewDefaultBelote(), new(presenter.BeloteCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "belote.helpTitle",
+				CommandKeys: []string{
+					"belote.helpOrderUp",
+					"belote.helpPass",
+					"belote.helpCall",
+					"belote.helpPlay",
+					"belote.helpNext",
+					"belote.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"belote.helpSetDifficulty", "belote.helpSetTarget"},
+			})
+	}},
+	{Name: "spiderette", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSpideretteCuiController(usecase.NewSpideretteInteractor(
+				domain.NewDefaultSpiderette(), new(presenter.SpideretteCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "spiderette.helpTitle",
+				CommandKeys: []string{
+					"spiderette.helpDeal",
+					"spiderette.helpMove",
+					"spiderette.helpGiveUp",
+					"spiderette.helpHint",
+					"spiderette.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
@@ -1334,10 +1432,14 @@ var GameAliases = map[string]string{
 	"stud":   "caribbeanstud",
 	"thb":    "texasholdembonus",
 	"thbp":   "texasholdembonus",
+	"uth":    "ultimatetexasholdem",
+	"uthe":   "ultimatetexasholdem",
 	"40t":    "fortythieves",
 	"pgp":    "paigow",
 	"lir":    "letitride",
 	"ride":   "letitride",
+	"ms":     "mississippistud",
+	"mstud":  "mississippistud",
 	"sp21":   "spanish21",
 	"s21":    "spanish21",
 }

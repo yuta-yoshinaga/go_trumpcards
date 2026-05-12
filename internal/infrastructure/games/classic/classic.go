@@ -271,4 +271,12 @@ func init() {
 			return usecase.RestorePitchInteractor(data, new(presenter.PitchWebPresenter))
 		},
 		controller.NewPitchWebControllerWithProvider)
+	games.RegisterKVGame("belote", games.CategoryClassic,
+		func() usecase.BeloteInteractorIF {
+			return usecase.NewBeloteInteractor(domain.NewDefaultBelote(), new(presenter.BeloteWebPresenter))
+		},
+		func(data []byte) (usecase.BeloteInteractorIF, error) {
+			return usecase.RestoreBeloteInteractor(data, new(presenter.BeloteWebPresenter))
+		},
+		controller.NewBeloteWebControllerWithProvider)
 }

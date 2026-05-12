@@ -1,0 +1,36 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "Spiderette",
+  "stock": "Stock",
+  "completed": "Completed",
+  "tableau": "Tableau",
+  "moveCount": "Moves",
+  "deal": "Deal",
+  "giveup": "Give Up",
+  "hint": "Hint",
+  "autoComplete": "Auto Complete",
+  "autoCompleteNotReady": "Available when stock is empty and every card is face up",
+  "undo": "Undo",
+  "empty": "Empty",
+  "score": "Score",
+  "gameClear": "Game Clear! Moves: {{moveCount}} Score: {{score}}",
+  "gameOver": "Game Over",
+  "playing": "Playing",
+  "noHint": "No hint available",
+  "hintAvailable": "Hint available",
+  "stalemate": "No more moves",
+  "dealsRemaining": "{{count}} deals remaining",
+  "cannotDealEmptyColExists": "Fill every empty column before dealing",
+  "tutorial": {
+    "stockPile": "Stock pile (24 cards). Click to deal one card to each column. All columns must have cards.",
+    "tableau": "Klondike-style seven-column staircase. Arrange cards same-suit descending; Ace-to-King sequences are removed.",
+    "completedSuits": "Number of completed suits. Complete all 4 to win.",
+    "controls": "Control buttons: Undo, Hint, Auto-complete.",
+    "resetButton": "Press the reset button to start a new game."
+  },
+  "landscapeBanner": "Rotate to landscape for easier play"
+}

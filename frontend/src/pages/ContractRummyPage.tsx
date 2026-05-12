@@ -1,0 +1,382 @@
+import { useCallback, useMemo, useState } from 'react';
+import { contractrummyApi } from '../api/gameApi';
+import { ActionLogSection } from '../components/ActionLogSection';
+import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
+import { GameMessageBox } from '../components/GameMessageBox';
+import { GamePageShell } from '../components/GamePageShell';
+import { GameResetButton } from '../components/GameResetButton';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
+import { withTutorial } from '../components/tutorial/withTutorial';
+import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useGameApi } from '../hooks/useGameApi';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
+import { usePhaseNames } from '../hooks/usePhaseNames';
+import { btnDanger, btnOutline, btnPrimary, focusRingWhite } from '../styles/buttonStyles';
+import { gameTheme } from '../styles/gameTheme';
+import type { Card, ContractRummyContractSlot, ContractRummyResponse } from '../types/card';
+import type { TutorialStep } from '../types/tutorial';
+
+/** Phase identifiers for Contract Rummy. */
+const CR_PHASE = {
+  DRAW: 0,
+  PLAY: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
+const CR_PHASE_KEYS: Readonly<Record<number, string>> = {
+  [CR_PHASE.DRAW]: 'draw',
+  [CR_PHASE.PLAY]: 'play',
+  [CR_PHASE.ROUND_END]: 'roundEnd',
+  [CR_PHASE.GAME_END]: 'gameEnd',
+};
+
+/** Contract Rummy tutorial step definitions. */
+const CR_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="cr-contract"]',
+    messageKey: 'tutorial.contract',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="cr-hand"]',
+    messageKey: 'tutorial.hand',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="cr-actions"]',
+    messageKey: 'tutorial.actions',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
+/** Renders the Contract Rummy game page. */
+export const ContractRummyPage = withTutorial(ContractRummyPageContent, 'contractrummy', CR_TUTORIAL_STEPS);
+
+/** Format a contract slot as a short human-readable string. */
+function formatSlot(
+  slot: ContractRummyContractSlot,
+  t: (k: string, v?: Record<string, string | number>) => string,
+): string {
+  if (slot.kind === 0) {
+    return t('slotSet', { n: slot.size });
+  }
+  return t('slotRun', { n: slot.size });
+}
+
+/** Inner content of the Contract Rummy page. */
+function ContractRummyPageContent() {
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('contractrummy');
+  const { cardWidth } = useCardDimensions();
+  const { state, loading, error, exec: execApi, retry } = useGameApi(contractrummyApi.exec);
+
+  useMountReset(execApi);
+  const phaseNames = usePhaseNames('contractrummy', CR_PHASE_KEYS);
+
+  // Selected card indices in the human's hand (multi-select).
+  const [selectedCards, setSelectedCards] = useState<number[]>([]);
+  // Slots being assembled for the contract meld (one card-set per slot).
+  const [contractSlots, setContractSlots] = useState<number[][]>([]);
+  // Layoff target: { playerIdx, meldIdx }.
+  const [layoffTarget, setLayoffTarget] = useState<{ playerIdx: number; meldIdx: number } | null>(null);
+
+  const humanIdx = 0;
+  const humanPlayer = state?.players[humanIdx];
+  const isHumanTurn = state?.currentPlayerIdx === humanIdx && !state?.gameEndFlag;
+  const isDrawPhase = isHumanTurn && state?.phase === CR_PHASE.DRAW;
+  const isPlayPhase = isHumanTurn && state?.phase === CR_PHASE.PLAY;
+  const isRoundEnd = state?.phase === CR_PHASE.ROUND_END;
+
+  const toggleCard = useCallback((idx: number) => {
+    setSelectedCards((prev) => (prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]));
+  }, []);
+
+  const clearSelection = useCallback(() => {
+    setSelectedCards([]);
+    setContractSlots([]);
+    setLayoffTarget(null);
+  }, []);
+
+  const handleDrawStock = useCallback(() => {
+    void execApi('drawstock');
+    clearSelection();
+  }, [execApi, clearSelection]);
+
+  const handleDrawDiscard = useCallback(() => {
+    void execApi('drawdiscard');
+    clearSelection();
+  }, [execApi, clearSelection]);
+
+  const handleDiscard = useCallback(() => {
+    if (selectedCards.length !== 1) return;
+    void execApi('discard', { cardIndex: selectedCards[0] });
+    clearSelection();
+  }, [execApi, selectedCards, clearSelection]);
+
+  const handleAddSlot = useCallback(() => {
+    if (selectedCards.length === 0) return;
+    setContractSlots((prev) => [...prev, [...selectedCards]]);
+    setSelectedCards([]);
+  }, [selectedCards]);
+
+  const handleRemoveLastSlot = useCallback(() => {
+    setContractSlots((prev) => prev.slice(0, -1));
+  }, []);
+
+  const handleSubmitContract = useCallback(() => {
+    if (contractSlots.length === 0) return;
+    void execApi('meldcontract', { indicesPerSlot: contractSlots });
+    clearSelection();
+  }, [execApi, contractSlots, clearSelection]);
+
+  const handleMeldExtra = useCallback(() => {
+    if (selectedCards.length < 3) return;
+    void execApi('meldextra', { cardIndices: selectedCards });
+    clearSelection();
+  }, [execApi, selectedCards, clearSelection]);
+
+  const handleLayoff = useCallback(() => {
+    if (selectedCards.length !== 1 || !layoffTarget) return;
+    void execApi('layoff', {
+      targetPlayerIdx: layoffTarget.playerIdx,
+      meldIdx: layoffTarget.meldIdx,
+      cardIndex: selectedCards[0],
+    });
+    clearSelection();
+  }, [execApi, selectedCards, layoffTarget, clearSelection]);
+
+  const handleNextRound = useCallback(() => {
+    void execApi('nextround');
+    clearSelection();
+  }, [execApi, clearSelection]);
+
+  const handleReset = useCallback(() => {
+    void execApi('reset');
+    clearSelection();
+  }, [execApi, clearSelection]);
+
+  const phaseName = useMemo(() => {
+    if (!state) return '';
+    return phaseNames[state.phase] ?? '';
+  }, [phaseNames, state]);
+
+  if (!state) {
+    return (
+      <GameSkeleton
+        gameKey="contractrummy"
+        layout={{ kind: 'card-grid', count: 11, cols: 'repeat(11, minmax(0, 1fr))' }}
+      />
+    );
+  }
+
+  return (
+    <GamePageShell
+      title={tc('nav.contractrummy')}
+      gameThemeBg={gameTheme.contractrummy.bg}
+      phaseName={phaseName}
+      isHumanTurn={isHumanTurn}
+      gamePath="/contractrummy"
+      gameEndFlag={state.gameEndFlag}
+      winShow={state.gameEndFlag && state.winnerIdx === humanIdx}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+    >
+      {error && <ErrorAlert message={error} onRetry={retry} />}
+
+      <section className="px-4 py-2 flex flex-wrap gap-3 items-center text-white" data-tutorial="cr-contract">
+        <span className="font-semibold">{t('roundLabel', { round: state.roundNumber, total: state.totalRounds })}</span>
+        <span>
+          {t('contractLabel')}: {state.contractSlots.map((s) => formatSlot(s, t)).join(' + ')}
+        </span>
+        <span>
+          {t('stockLabel')}: {state.drawPileCount}
+        </span>
+        {state.discardTop && (
+          <span className="flex items-center gap-2">
+            {t('discardLabel')}:
+            <AnimatedCard card={state.discardTop} width={cardWidth} />
+          </span>
+        )}
+      </section>
+
+      <section className="px-4 py-2 grid gap-2 md:grid-cols-3">
+        {state.players.map((p) => (
+          <div
+            key={p.id}
+            className={`p-3 rounded border ${
+              state.currentPlayerIdx === p.id ? 'border-ds-warning' : 'border-white/30'
+            } text-white text-sm bg-black/20`}
+          >
+            <div className="flex justify-between font-semibold">
+              <span>
+                {p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id })}
+                {p.contractMet ? ` ✓` : ''}
+              </span>
+              <span>
+                {t('cards')}: {p.cardCount}
+              </span>
+            </div>
+            <div className="text-xs opacity-75">
+              {t('scoreLabel')}: {p.cumulativeScore} (+{p.roundScore})
+            </div>
+            {p.melds.length > 0 && (
+              <div className="mt-2">
+                {p.melds.map((m, mi) => (
+                  <button
+                    type="button"
+                    key={`${p.id}-${mi}`}
+                    onClick={() => {
+                      if (humanPlayer?.contractMet && p.contractMet) {
+                        setLayoffTarget({ playerIdx: p.id, meldIdx: mi });
+                      }
+                    }}
+                    className={`flex flex-wrap gap-1 mb-1 px-1 rounded ${focusRingWhite} ${
+                      layoffTarget?.playerIdx === p.id && layoffTarget?.meldIdx === mi ? 'ring-2 ring-ds-warning' : ''
+                    }`}
+                  >
+                    {m.cards.map((c, ci) => (
+                      <AnimatedCard key={`${p.id}-${mi}-${ci}`} card={c} width={cardWidth * 0.6} />
+                    ))}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </section>
+
+      {humanPlayer && (
+        <section className="px-4 py-2" data-tutorial="cr-hand">
+          <div className="text-white text-sm mb-1">
+            {t('yourHand')} ({humanPlayer.cardCount})
+            {contractSlots.length > 0 && (
+              <span className="ml-2 opacity-75">
+                {t('slotsBuilt')}: {contractSlots.length}
+              </span>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {humanPlayer.cards.map((c: Card, idx: number) => {
+              const isSelected = selectedCards.includes(idx);
+              const isInSlot = contractSlots.some((slot) => slot.includes(idx));
+              return (
+                <button
+                  type="button"
+                  key={`${idx}-${c.design}-${c.value}`}
+                  onClick={() => toggleCard(idx)}
+                  disabled={isInSlot}
+                  className={`${focusRingWhite} ${isSelected ? 'ring-2 ring-ds-warning' : ''} ${
+                    isInSlot ? 'opacity-40' : ''
+                  }`}
+                >
+                  <AnimatedCard card={c} width={cardWidth} />
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      <section className="px-4 py-2 flex flex-wrap gap-2" data-tutorial="cr-actions">
+        {isDrawPhase && (
+          <>
+            <button type="button" onClick={handleDrawStock} className={btnPrimary}>
+              {t('drawStock')}
+            </button>
+            {state.discardTop && (
+              <button type="button" onClick={handleDrawDiscard} className={btnPrimary}>
+                {t('drawDiscard')}
+              </button>
+            )}
+          </>
+        )}
+        {isPlayPhase && humanPlayer && !humanPlayer.contractMet && (
+          <>
+            <button type="button" onClick={handleAddSlot} disabled={selectedCards.length === 0} className={btnOutline}>
+              {t('addSlot')}
+            </button>
+            <button
+              type="button"
+              onClick={handleRemoveLastSlot}
+              disabled={contractSlots.length === 0}
+              className={btnOutline}
+            >
+              {t('removeLastSlot')}
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmitContract}
+              disabled={contractSlots.length !== state.contractSlots.length}
+              className={btnPrimary}
+            >
+              {t('submitContract')}
+            </button>
+          </>
+        )}
+        {isPlayPhase && humanPlayer?.contractMet && (
+          <>
+            <button type="button" onClick={handleMeldExtra} disabled={selectedCards.length < 3} className={btnOutline}>
+              {t('meldExtra')}
+            </button>
+            <button
+              type="button"
+              onClick={handleLayoff}
+              disabled={selectedCards.length !== 1 || !layoffTarget}
+              className={btnOutline}
+            >
+              {t('layoff')}
+            </button>
+          </>
+        )}
+        {isPlayPhase && (
+          <button type="button" onClick={handleDiscard} disabled={selectedCards.length !== 1} className={btnDanger}>
+            {t('discard')}
+          </button>
+        )}
+        {isRoundEnd && (
+          <button type="button" onClick={handleNextRound} className={btnPrimary}>
+            {t('nextRound')}
+          </button>
+        )}
+      </section>
+
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+
+      <ActionLogSection
+        isEndPhase={state.gameEndFlag || isRoundEnd}
+        actionLog={actionLog}
+        showActionLog={showActionLog}
+        hideActionLog={hideActionLog}
+      />
+
+      <GameFooter className={`${gameTheme.contractrummy.footer} px-4 py-2.5`}>
+        <div className="flex gap-2 items-center flex-wrap">
+          <GameResetButton
+            isGameEnd={state.gameEndFlag}
+            onReset={handleReset}
+            requestConfirm={requestConfirm}
+            loading={loading}
+          />
+        </div>
+      </GameFooter>
+    </GamePageShell>
+  );
+}
+
+/** Unwrapped variant for testing. */
+export const ContractRummyPageBare = ContractRummyPageContent;
+
+/** Default export for lazy loading via App.tsx routes. */
+export default ContractRummyPage;
+
+// Re-export ContractRummyResponse for convenience (used by tests).
+export type { ContractRummyResponse };

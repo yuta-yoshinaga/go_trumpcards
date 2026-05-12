@@ -1,0 +1,34 @@
+{
+  "title": "Contract Rummy",
+  "phase": {
+    "draw": "Draw",
+    "play": "Play",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "roundLabel": "Round {{round}} / {{total}}",
+  "contractLabel": "Contract",
+  "stockLabel": "Stock",
+  "discardLabel": "Discard",
+  "yourHand": "Your hand",
+  "cards": "cards",
+  "scoreLabel": "Total",
+  "slotsBuilt": "Slots staged",
+  "slotSet": "Set of {{n}}",
+  "slotRun": "Run of {{n}}",
+  "drawStock": "Draw from stock",
+  "drawDiscard": "Take discard",
+  "addSlot": "Add to slot",
+  "removeLastSlot": "Undo last slot",
+  "submitContract": "Submit contract",
+  "meldExtra": "Lay extra meld",
+  "layoff": "Lay off",
+  "discard": "Discard card",
+  "nextRound": "Next round",
+  "viewLog": "View log",
+  "tutorial": {
+    "contract": "Each round has a fixed set of melds you must lay down before you can go out. Watch the contract banner at the top.",
+    "hand": "Pick cards from your hand and add them to slots that match the contract. A card can only fill one slot.",
+    "actions": "Each turn: draw a card → meet the contract / lay melds / lay off → discard one card to end your turn."
+  }
+}

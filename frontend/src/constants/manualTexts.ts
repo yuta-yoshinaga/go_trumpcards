@@ -6,6 +6,7 @@ import accordion from '../../../docs/manual/web/accordion.md?raw';
 import baccarat from '../../../docs/manual/web/baccarat.md?raw';
 import badugi from '../../../docs/manual/web/badugi.md?raw';
 import bakersdozen from '../../../docs/manual/web/bakersdozen.md?raw';
+import belote from '../../../docs/manual/web/belote.md?raw';
 import blackjack from '../../../docs/manual/web/blackjack.md?raw';
 import blackjackswitch from '../../../docs/manual/web/blackjackswitch.md?raw';
 import bridge from '../../../docs/manual/web/bridge.md?raw';
@@ -16,8 +17,10 @@ import caribbeanstud from '../../../docs/manual/web/caribbeanstud.md?raw';
 import casinowar from '../../../docs/manual/web/casinowar.md?raw';
 import cassino from '../../../docs/manual/web/cassino.md?raw';
 import clocksolitaire from '../../../docs/manual/web/clocksolitaire.md?raw';
+import contractrummy from '../../../docs/manual/web/contractrummy.md?raw';
 import crazyeights from '../../../docs/manual/web/crazyeights.md?raw';
 import crazypineapple from '../../../docs/manual/web/crazypineapple.md?raw';
+import crescent from '../../../docs/manual/web/crescent.md?raw';
 import cribbage from '../../../docs/manual/web/cribbage.md?raw';
 import daifugo from '../../../docs/manual/web/daifugo.md?raw';
 import deuceswild from '../../../docs/manual/web/deuceswild.md?raw';
@@ -39,6 +42,7 @@ import jokerpoker from '../../../docs/manual/web/jokerpoker.md?raw';
 import klondike from '../../../docs/manual/web/klondike.md?raw';
 import letitride from '../../../docs/manual/web/letitride.md?raw';
 import memory from '../../../docs/manual/web/memory.md?raw';
+import mississippistud from '../../../docs/manual/web/mississippistud.md?raw';
 import montecarlo from '../../../docs/manual/web/montecarlo.md?raw';
 import napoleon from '../../../docs/manual/web/napoleon.md?raw';
 import nertz from '../../../docs/manual/web/nertz.md?raw';
@@ -71,6 +75,7 @@ import spades from '../../../docs/manual/web/spades.md?raw';
 import spanish21 from '../../../docs/manual/web/spanish21.md?raw';
 import speed from '../../../docs/manual/web/speed.md?raw';
 import spider from '../../../docs/manual/web/spider.md?raw';
+import spiderette from '../../../docs/manual/web/spiderette.md?raw';
 import spiteandmalice from '../../../docs/manual/web/spiteandmalice.md?raw';
 import texasholdembonus from '../../../docs/manual/web/texasholdembonus.md?raw';
 import threecard from '../../../docs/manual/web/threecard.md?raw';
@@ -78,6 +83,7 @@ import tonk from '../../../docs/manual/web/tonk.md?raw';
 import trash from '../../../docs/manual/web/trash.md?raw';
 import tripeaks from '../../../docs/manual/web/tripeaks.md?raw';
 import twotenjack from '../../../docs/manual/web/twotenjack.md?raw';
+import ultimatetexasholdem from '../../../docs/manual/web/ultimatetexasholdem.md?raw';
 import videopoker from '../../../docs/manual/web/videopoker.md?raw';
 import war from '../../../docs/manual/web/war.md?raw';
 import whist from '../../../docs/manual/web/whist.md?raw';
@@ -87,6 +93,7 @@ import yukon from '../../../docs/manual/web/yukon.md?raw';
 export const manualTexts: Readonly<Record<string, string>> = {
   '/': blackjack,
   '/baccarat': baccarat,
+  '/belote': belote,
   '/bridge': bridge,
   '/calculation': calculation,
   '/canasta': canasta,
@@ -132,6 +139,10 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/poker': poker,
   '/pokersquares': pokersquares,
   '/montecarlo': montecarlo,
+  '/contractrummy': contractrummy,
+  '/ultimatetexasholdem': ultimatetexasholdem,
+  '/crescent': crescent,
+  '/mississippistud': mississippistud,
   '/pyramid': pyramid,
   '/razz': razz,
   '/badugi': badugi,
@@ -144,6 +155,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/spanish21': spanish21,
   '/speed': speed,
   '/spider': spider,
+  '/spiderette': spiderette,
   '/threecard': threecard,
   '/tonk': tonk,
   '/tripeaks': tripeaks,

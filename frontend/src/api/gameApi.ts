@@ -5,6 +5,7 @@ import type {
   BadugiResponse,
   BakersDozenMoveZone,
   BakersDozenResponse,
+  BeloteResponse,
   BlackJackResponse,
   BlackJackSwitchResponse,
   BridgeResponse,
@@ -16,7 +17,10 @@ import type {
   CasinoWarResponse,
   CassinoResponse,
   ClockSolitaireResponse,
+  ContractRummyResponse,
   CrazyEightsResponse,
+  CrescentMoveZone,
+  CrescentResponse,
   CribbageResponse,
   DaifugoConfigInput,
   DaifugoResponse,
@@ -40,6 +44,7 @@ import type {
   KlondikeResponse,
   LetItRideResponse,
   MemoryResponse,
+  MississippiStudResponse,
   MonteCarloResponse,
   NapoleonResponse,
   NertzConfig as NertzConfigType,
@@ -73,6 +78,7 @@ import type {
   SpadesResponse,
   SpeedConfig,
   SpeedResponse,
+  SpideretteResponse,
   SpiderResponse,
   SpiteAndMaliceMoveZone,
   SpiteAndMaliceResponse,
@@ -82,6 +88,7 @@ import type {
   TrashResponse,
   TriPeaksResponse,
   TwoTenJackResponse,
+  UltimateTexasHoldemResponse,
   VideoPokerResponse,
   WarResponse,
   WhistConfig,
@@ -179,6 +186,12 @@ const workerUrl: Record<string, string> = {
   dragontiger: WORKER_CASINO,
   blackjackswitch: WORKER_CASINO,
   montecarlo: WORKER_SOLO,
+  contractrummy: WORKER_SOLO,
+  ultimatetexasholdem: WORKER_CASINO,
+  crescent: WORKER_SOLO,
+  mississippistud: WORKER_CASINO,
+  belote: WORKER_CLASSIC,
+  spiderette: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -901,6 +914,16 @@ export const texasholdembonusApi = {
     gameExec<TexasHoldemBonusResponse>('texasholdembonus', { command, amount, bonusBet }),
 };
 
+/** API client for the Ultimate Texas Hold'em /ultimatetexasholdem/exec endpoint. */
+export const ultimatetexasholdemApi = {
+  exec: (
+    command: 'reset' | 'bet' | 'play' | 'check' | 'fold' | 'log',
+    amount?: number,
+    tripsBet?: number,
+    multiplier?: number,
+  ) => gameExec<UltimateTexasHoldemResponse>('ultimatetexasholdem', { command, amount, tripsBet, multiplier }),
+};
+
 /** API client for the Pai Gow Poker /paigow/exec endpoint. */
 export const paigowApi = {
   exec: (command: 'reset' | 'bet' | 'set' | 'log', amount?: number, low0?: number, low1?: number) =>
@@ -926,6 +949,20 @@ export const spiderApi = createSolitaireMoveApiWithConfig<
   SpiderConfigInput,
   'reset' | 'deal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('spider');
+
+/** Source or target zone for a Spiderette card move. */
+export interface SpideretteMoveZone {
+  zone: string;
+  col?: number;
+  cardIndex?: number;
+}
+
+/** API client for the Spiderette /spiderette/exec endpoint. */
+export const spideretteApi = createSolitaireMoveApi<
+  SpideretteResponse,
+  SpideretteMoveZone,
+  'reset' | 'deal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('spiderette');
 
 /** Configuration options for Napoleon game settings. */
 export interface NapoleonConfigInput {
@@ -1115,6 +1152,30 @@ export interface EuchreConfigInput {
   cpuDifficulty?: number;
   pointLimit?: number;
 }
+
+/** Belote game configuration input shape. */
+export interface BeloteConfigInput {
+  cpuDifficulty?: number;
+  targetScore?: number;
+  dixDeDer?: number;
+  enableBeloteRebelote?: boolean;
+}
+
+/** API client for the Belote /belote/exec endpoint. */
+export const beloteApi = {
+  exec: (
+    command: 'reset' | 'orderup' | 'pass' | 'calltrump' | 'play' | 'next' | 'nextround' | 'hint',
+    cardIndex?: number,
+    suit?: number,
+    config?: BeloteConfigInput,
+  ) =>
+    gameExec<BeloteResponse>('belote', {
+      command,
+      cardIndex,
+      suit,
+      config,
+    }),
+};
 
 /** API client for the Euchre /euchre/exec endpoint. */
 export const euchreApi = {
@@ -1370,6 +1431,13 @@ export const fortyThievesApi = createSolitaireMoveApi<
   'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('fortythieves');
 
+/** API client for the Crescent Solitaire /crescent/exec endpoint. */
+export const crescentApi = createSolitaireMoveApi<
+  CrescentResponse,
+  CrescentMoveZone,
+  'reset' | 'move' | 'redeal' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('crescent');
+
 /** API client for the Baker's Dozen /bakersdozen/exec endpoint. */
 export const bakersDozenApi = createSolitaireMoveApi<
   BakersDozenResponse,
@@ -1436,7 +1504,7 @@ export const cassinoApi = {
     gameExec<CassinoResponse>('cassino', { command, ...(params ?? {}) }),
 };
 
-export type { BakersDozenMoveZone, FortyThievesMoveZone };
+export type { BakersDozenMoveZone, CrescentMoveZone, FortyThievesMoveZone };
 
 /** API client for the Whist /whist/exec endpoint. */
 export const whistApi = {
@@ -1498,6 +1566,36 @@ export const montecarloApi = {
     toR?: number,
     toC?: number,
   ) => gameExec<MonteCarloResponse>('montecarlo', { command, fromR, fromC, toR, toC }),
+};
+
+/** API client for the Mississippi Stud /mississippistud/exec endpoint. */
+export const mississippiStudApi = {
+  exec: (command: 'reset' | 'bet' | 'play' | 'fold' | 'log', amount?: number, multiplier?: number) =>
+    gameExec<MississippiStudResponse>('mississippistud', { command, amount, multiplier }),
+};
+
+/** API client for the Contract Rummy /contractrummy/exec endpoint. */
+export const contractrummyApi = {
+  exec: (
+    command:
+      | 'reset'
+      | 'drawstock'
+      | 'drawdiscard'
+      | 'meldcontract'
+      | 'meldextra'
+      | 'layoff'
+      | 'discard'
+      | 'nextround'
+      | 'log',
+    params?: {
+      cardIndex?: number;
+      cardIndices?: number[];
+      indicesPerSlot?: number[][];
+      targetPlayerIdx?: number;
+      meldIdx?: number;
+      config?: { cpuDifficulty?: number; failContractPenalty?: number };
+    },
+  ) => gameExec<ContractRummyResponse>('contractrummy', { command, ...(params ?? {}) }),
 };
 
 const games = [
@@ -1581,6 +1679,12 @@ const games = [
   'dragontiger',
   'blackjackswitch',
   'montecarlo',
+  'contractrummy',
+  'ultimatetexasholdem',
+  'crescent',
+  'mississippistud',
+  'belote',
+  'spiderette',
 ] as const;
 type Game = (typeof games)[number];
 

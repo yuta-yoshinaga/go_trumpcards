@@ -30,7 +30,7 @@ function readMap(): ExpansionMap {
 /**
  * Hook that tracks whether each navigation category accordion is
  * expanded. Defaults every category to `true` on first visit (so all
- * 77 games are discoverable), and persists user-toggled collapses to
+ * 86 games are discoverable), and persists user-toggled collapses to
  * localStorage so repeat visitors see their preferred layout.
  */
 export function useCategoryExpansion() {

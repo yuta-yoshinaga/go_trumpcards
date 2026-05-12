@@ -1582,6 +1582,38 @@ export interface SpiderResponse {
   hint?: SpiderHint;
 }
 
+// --- Spiderette (スパイダレット) ---
+
+/** Hint returned by the Spiderette /hint endpoint. */
+export interface SpideretteHint {
+  fromCol: number;
+  cardIndex: number;
+  toCol: number;
+}
+
+/** Tableau card with face-up state in Spiderette. */
+export interface SpideretteTableauCard {
+  card: Card | null;
+  faceUp: boolean;
+}
+
+/** Full Spiderette Solitaire game state returned from the API. */
+export interface SpideretteResponse {
+  tableau: SpideretteTableauCard[][];
+  stockCount: number;
+  completedSuits: number;
+  score: number;
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: SpideretteHint;
+}
+
 // --- Indian Poker (インディアンポーカー) ---
 
 /** Indian Poker player data with card, chips, and betting status. */
@@ -1701,6 +1733,67 @@ export interface EuchreResponse {
   messageParams?: Record<string, string>;
   config: EuchreConfig;
   hint?: EuchreHint;
+}
+
+// --- Belote (ベロート) ---
+
+/** Belote player data with team, trick count, and hand. */
+export interface BelotePlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  team: number;
+  trickCount: number;
+}
+
+/** A card played in a Belote trick. */
+export interface BeloteTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Belote game configuration. */
+export interface BeloteConfig {
+  cpuDifficulty: number;
+  targetScore: number;
+  dixDeDer: number;
+  enableBeloteRebelote: boolean;
+}
+
+/** A suggested hint for Belote. */
+export interface BeloteHint {
+  cardIndex?: number;
+  orderUp?: boolean;
+  suit?: number;
+  reason: string;
+}
+
+/** Full Belote game state returned from the API. */
+export interface BeloteResponse {
+  players: BelotePlayerData[];
+  phase: number;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  bidPlayerIdx: number;
+  dealerIdx: number;
+  trumpSuit: number;
+  faceUpCard: Card | null;
+  makerTeam: number;
+  makerPlayerIdx: number;
+  currentTrick: BeloteTrickCard[];
+  teamScores: number[];
+  roundPoints: number[];
+  roundBeloteBonus: number[];
+  gameEndFlag: boolean;
+  winnerTeam: number;
+  leadPlayerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: BeloteConfig;
+  hint?: BeloteHint;
 }
 
 // --- Contract Bridge (コントラクトブリッジ) ---
@@ -2044,6 +2137,66 @@ export interface TexasHoldemBonusResponse {
   totalPayout: number;
   playerHandRank: number;
   dealerHandRank: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
+// --- Ultimate Texas Hold'em (アルティメット・テキサスホールデム) ---
+
+/** Ultimate Texas Hold'em API response. */
+export interface UltimateTexasHoldemResponse {
+  /** Player's two hole cards. */
+  playerHand: Card[];
+  /** Dealer's hole cards: masked as `MaskedCard` until the showdown. */
+  dealerHand: (Card | MaskedCard)[];
+  /** Community cards (flop / turn / river). Length grows from 0 → 5 over phases. */
+  community: Card[];
+  phase: number;
+  chips: number;
+  anteBet: number;
+  blindBet: number;
+  tripsBet: number;
+  playBet: number;
+  folded: boolean;
+  result: number;
+  dealerQualified: boolean;
+  antePayout: number;
+  blindPayout: number;
+  playPayout: number;
+  tripsPayout: number;
+  totalPayout: number;
+  playerHandRank: number;
+  dealerHandRank: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
+// --- Mississippi Stud (ミシシッピ・スタッド) ---
+
+/** Mississippi Stud API response. */
+export interface MississippiStudResponse {
+  /** Player's two hole cards (revealed once the round starts). */
+  playerHand: Card[];
+  /** Community cards: masked as `MaskedCard` until the matching street is revealed. */
+  communityCards: (Card | MaskedCard)[];
+  /** Per-card reveal state for `communityCards` (length 3). */
+  communityRevealed: boolean[];
+  phase: number;
+  chips: number;
+  anteAmount: number;
+  /** 3rd / 4th / 5th street bet multipliers (0=未ベット, 1/2/3=倍率). Length 3. */
+  streetMultipliers: number[];
+  folded: boolean;
+  totalBet: number;
+  result: number;
+  handRank: number;
+  /** Applied payout multiplier (-1=push, 0=loss, positive=win). */
+  payoutMultiplier: number;
+  antePayout: number;
+  streetPayouts: number[];
+  totalPayout: number;
   message: string;
   messageCode?: string;
   messageParams?: Record<string, string>;
@@ -2605,6 +2758,44 @@ export interface FortyThievesMoveZone {
   zone: string;
   col?: number;
   cardIndex?: number;
+}
+
+// --- Crescent (クレセント・ソリティア) ---
+
+/** A single tableau card in Crescent (always face-up). */
+export interface CrescentTableauCard {
+  card: Card | null;
+  faceUp: boolean;
+}
+
+/** A suggested move hint in Crescent. */
+export interface CrescentHint {
+  fromCol: number;
+  toZone: string;
+  toCol: number;
+  redeal: boolean;
+}
+
+/** Full Crescent game state returned from the API. */
+export interface CrescentResponse {
+  tableau: CrescentTableauCard[][];
+  foundation: Card[][];
+  redealsRemaining: number;
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: CrescentHint;
+}
+
+/** Source or target zone for a Crescent card move. */
+export interface CrescentMoveZone {
+  zone: 'tableau' | 'foundation';
+  col?: number;
 }
 
 // --- Baker's Dozen (ベーカーズ・ダズン) ---
@@ -3401,6 +3592,61 @@ export interface EgyptianRatscrewResponse {
   lastEventKind: number;
   lastEventPlayerIdx: number;
   lastSlapReason: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
+// --- Contract Rummy (コントラクトラミー) ---
+
+/** Contract Rummy meld: a set or run of cards laid down on the table. */
+export interface ContractRummyMeld {
+  cards: Card[];
+}
+
+/** Contract Rummy contract slot: a single requirement of the round's contract. */
+export interface ContractRummyContractSlot {
+  /** 0 = set (same rank), 1 = run (same suit consecutive). */
+  kind: number;
+  /** Number of cards required to fill this slot. */
+  size: number;
+}
+
+/** Contract Rummy player state. */
+export interface ContractRummyPlayer {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  melds: ContractRummyMeld[];
+  /** Whether the player has met this round's contract. */
+  contractMet: boolean;
+  roundScore: number;
+  cumulativeScore: number;
+}
+
+/** Contract Rummy game configuration. */
+export interface ContractRummyConfig {
+  cpuDifficulty: number;
+  failContractPenalty: number;
+}
+
+/** Contract Rummy API response. */
+export interface ContractRummyResponse {
+  players: ContractRummyPlayer[];
+  /** 0 = draw, 1 = play, 2 = round end, 3 = game end. */
+  phase: number;
+  roundNumber: number;
+  totalRounds: number;
+  currentPlayerIdx: number;
+  discardTop: Card | null;
+  drawPileCount: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  roundWinnerIdx: number;
+  /** The current round's contract (sequence of slots to satisfy). */
+  contractSlots: ContractRummyContractSlot[];
+  config: ContractRummyConfig;
   message: string;
   messageCode?: string;
   messageParams?: Record<string, string>;

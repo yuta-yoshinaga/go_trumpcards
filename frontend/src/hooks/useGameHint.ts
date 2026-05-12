@@ -4,6 +4,7 @@ import type {
   BaccaratResponse,
   BadugiResponse,
   BakersDozenResponse,
+  BeloteResponse,
   BlackJackResponse,
   BlackJackSwitchResponse,
   CalculationResponse,
@@ -31,6 +32,7 @@ import type {
   KlondikeResponse,
   LetItRideResponse,
   MemoryResponse,
+  MississippiStudResponse,
   MonteCarloResponse,
   NapoleonResponse,
   NertzResponse,
@@ -58,6 +60,7 @@ import type {
   SlapjackResponse,
   SpadesResponse,
   SpeedResponse,
+  SpideretteResponse,
   SpiderResponse,
   SpiteAndMaliceResponse,
   TexasHoldemBonusResponse,
@@ -65,6 +68,7 @@ import type {
   TrashResponse,
   TriPeaksResponse,
   TwoTenJackResponse,
+  UltimateTexasHoldemResponse,
   VideoPokerResponse,
   WarResponse,
   WhistResponse,
@@ -75,6 +79,7 @@ import { getAccordionHint } from '../utils/hints/accordionHint';
 import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBadugiHint } from '../utils/hints/badugiHint';
 import { getBakersdozenHint } from '../utils/hints/bakersdozenHint';
+import { getBeloteHint } from '../utils/hints/beloteHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getBlackjackswitchHint } from '../utils/hints/blackjackswitchHint';
 import { getCalculationHint } from '../utils/hints/calculationHint';
@@ -105,6 +110,7 @@ import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
 import { getKlondikeHint } from '../utils/hints/klondikeHint';
 import { getLetitrideHint } from '../utils/hints/letitrideHint';
 import { getMemoryHint } from '../utils/hints/memoryHint';
+import { getMississippiStudHint } from '../utils/hints/mississippiStudHint';
 import { getMonteCarloHint } from '../utils/hints/montecarloHint';
 import { getNapoleonHint } from '../utils/hints/napoleonHint';
 import { getNertzHint } from '../utils/hints/nertzHint';
@@ -133,6 +139,7 @@ import { getSkatHint } from '../utils/hints/skatHint';
 import { getSlapjackHint } from '../utils/hints/slapjackHint';
 import { getSpadesHint } from '../utils/hints/spadesHint';
 import { getSpeedHint } from '../utils/hints/speedHint';
+import { getSpideretteHint } from '../utils/hints/spideretteHint';
 import { getSpiderHint } from '../utils/hints/spiderHint';
 import { getSpiteAndMaliceHint } from '../utils/hints/spiteAndMaliceHint';
 import { getTexasHoldemBonusHint } from '../utils/hints/texasHoldemBonusHint';
@@ -140,6 +147,7 @@ import { getThreeCardHint } from '../utils/hints/threecardHint';
 import { getTrashHint } from '../utils/hints/trashHint';
 import { getTriPeaksHint } from '../utils/hints/tripeaksHint';
 import { getTwoTenJackHint } from '../utils/hints/twotenjackHint';
+import { getUltimateTexasHoldemHint } from '../utils/hints/ultimateTexasHoldemHint';
 import { getVideoPokerHint } from '../utils/hints/videopokerHint';
 import { getWarHint } from '../utils/hints/warHint';
 import { getWhistHint } from '../utils/hints/whistHint';
@@ -170,6 +178,7 @@ const hintFactories = {
   indianpoker: (s) => getIndianPokerHint(s as IndianPokerResponse),
   threecard: (s) => getThreeCardHint(s as ThreeCardResponse),
   euchre: (s) => getEuchreHint(s as EuchreResponse),
+  belote: (s) => getBeloteHint(s as BeloteResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
   ohhell: (s) => getOhHellHint(s as OhHellResponse),
@@ -190,6 +199,8 @@ const hintFactories = {
   gofish: (s) => getGoFishHint(s as GoFishResponse),
   caribbeanstud: (s) => getCaribbeanStudHint(s as CaribbeanStudResponse),
   texasholdembonus: (s) => getTexasHoldemBonusHint(s as TexasHoldemBonusResponse),
+  ultimatetexasholdem: (s) => getUltimateTexasHoldemHint(s as UltimateTexasHoldemResponse),
+  mississippistud: (s) => getMississippiStudHint(s as MississippiStudResponse),
   durak: (s) => getDurakHint(s as DurakResponse),
   canasta: (s) => getCanastaHint(s as CanastaResponse),
   canfield: (s) => getCanfieldHint(s as CanfieldResponse),
@@ -229,6 +240,9 @@ const hintFactories = {
   nertz: (s) => getNertzHint(s as NertzResponse),
   slapjack: (s) => getSlapjackHint(s as SlapjackResponse),
   egyptianratscrew: (s) => getEgyptianRatscrewHint(s as EgyptianRatscrewResponse),
+  contractrummy: () => null,
+  crescent: () => null,
+  spiderette: (s) => getSpideretteHint(s as SpideretteResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

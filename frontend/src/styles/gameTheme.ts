@@ -16,6 +16,8 @@ export type GameKey =
   | 'threecard'
   | 'caribbeanstud'
   | 'texasholdembonus'
+  | 'ultimatetexasholdem'
+  | 'mississippistud'
   | 'paigow'
   | 'letitride'
   | 'reddog'
@@ -49,6 +51,7 @@ export type GameKey =
   | 'whist'
   | 'pinochle'
   | 'skat'
+  | 'belote'
   // Matching/Pass
   | 'oldmaid'
   | 'doubt'
@@ -74,6 +77,7 @@ export type GameKey =
   | 'klondike'
   | 'freecell'
   | 'spider'
+  | 'spiderette'
   | 'pyramid'
   | 'tripeaks'
   | 'golf'
@@ -89,12 +93,14 @@ export type GameKey =
   | 'pokersquares'
   | 'montecarlo'
   | 'calculation'
+  | 'crescent'
   // Counting/Rummy
   | 'ginrummy'
   | 'tonk'
   | 'canasta'
   | 'cribbage'
-  | 'sevenbridge';
+  | 'sevenbridge'
+  | 'contractrummy';
 
 /** Theme classes (Tailwind) applied to the page background and footer for each game. */
 export interface GameThemeClasses {
@@ -121,6 +127,8 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   threecard: CASINO,
   caribbeanstud: CASINO,
   texasholdembonus: POKER,
+  ultimatetexasholdem: POKER,
+  mississippistud: POKER,
   paigow: CASINO,
   letitride: CASINO,
   reddog: CASINO,
@@ -154,6 +162,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   whist: BLUE,
   pinochle: BLUE,
   skat: BLUE,
+  belote: BLUE,
   // Matching/Pass
   oldmaid: GREEN,
   doubt: GREEN,
@@ -179,6 +188,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   klondike: CASINO,
   freecell: CASINO,
   spider: CASINO,
+  spiderette: CASINO,
   pyramid: CASINO,
   tripeaks: CASINO,
   golf: CASINO,
@@ -194,10 +204,12 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   pokersquares: CASINO,
   montecarlo: CASINO,
   calculation: CASINO,
+  crescent: CASINO,
   // Counting/Rummy
   ginrummy: BLUE,
   tonk: BLUE,
   canasta: BLUE,
   cribbage: BLUE,
   sevenbridge: BLUE,
+  contractrummy: BLUE,
 };

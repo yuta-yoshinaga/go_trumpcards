@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した80種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した86種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -43,6 +43,7 @@ Go + Clean Architecture で実装した80種類のトランプゲーム。CLI �
 | ジンラミー (Gin Rummy) | `ginrummy` | [CUI](docs/manual/cui/ginrummy.md) / [Web](docs/manual/web/ginrummy.md) |
 | カナスタ (Canasta) | `canasta` | [CUI](docs/manual/cui/canasta.md) / [Web](docs/manual/web/canasta.md) |
 | スパイダーソリティア (Spider Solitaire) | `spider` | [CUI](docs/manual/cui/spider.md) / [Web](docs/manual/web/spider.md) |
+| スパイダレット (Spiderette) | `spiderette` | [CUI](docs/manual/cui/spiderette.md) / [Web](docs/manual/web/spiderette.md) |
 | ナポレオン (Napoleon) | `napoleon` | [CUI](docs/manual/cui/napoleon.md) / [Web](docs/manual/web/napoleon.md) |
 | インディアンポーカー (Indian Poker) | `indianpoker` | [CUI](docs/manual/cui/indianpoker.md) / [Web](docs/manual/web/indianpoker.md) |
 | ビデオポーカー (Video Poker) | `videopoker` | [CUI](docs/manual/cui/videopoker.md) / [Web](docs/manual/web/videopoker.md) |
@@ -99,6 +100,11 @@ Go + Clean Architecture で実装した80種類のトランプゲーム。CLI �
 | ドラゴンタイガー (Dragon Tiger) | `dragontiger` | [CUI](docs/manual/cui/dragontiger.md) / [Web](docs/manual/web/dragontiger.md) |
 | ブラックジャック・スイッチ (Blackjack Switch) | `blackjackswitch` | [CUI](docs/manual/cui/blackjackswitch.md) / [Web](docs/manual/web/blackjackswitch.md) |
 | モンテカルロ・ソリティア (Monte Carlo Solitaire) | `montecarlo` | [CUI](docs/manual/cui/montecarlo.md) / [Web](docs/manual/web/montecarlo.md) |
+| コントラクトラミー (Contract Rummy) | `contractrummy` | [CUI](docs/manual/cui/contractrummy.md) / [Web](docs/manual/web/contractrummy.md) |
+| アルティメット・テキサスホールデム (Ultimate Texas Hold'em) | `ultimatetexasholdem` | [CUI](docs/manual/cui/ultimatetexasholdem.md) / [Web](docs/manual/web/ultimatetexasholdem.md) |
+| クレセント・ソリティア (Crescent Solitaire) | `crescent` | [CUI](docs/manual/cui/crescent.md) / [Web](docs/manual/web/crescent.md) |
+| ミシシッピ・スタッド (Mississippi Stud) | `mississippistud` | [CUI](docs/manual/cui/mississippistud.md) / [Web](docs/manual/web/mississippistud.md) |
+| ベロート (Belote) | `belote` | [CUI](docs/manual/cui/belote.md) / [Web](docs/manual/web/belote.md) |
 
 ## Demo
 

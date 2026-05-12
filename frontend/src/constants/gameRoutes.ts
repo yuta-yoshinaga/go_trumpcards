@@ -34,12 +34,24 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/threecard', labelKey: 'nav.threecard', icon: '🎴', page: 'ThreeCard' },
       { path: '/caribbeanstud', labelKey: 'nav.caribbeanstud', icon: '🏝️', page: 'CaribbeanStud' },
       { path: '/texasholdembonus', labelKey: 'nav.texasholdembonus', icon: '🤠', page: 'TexasHoldemBonus' },
+      {
+        path: '/ultimatetexasholdem',
+        labelKey: 'nav.ultimatetexasholdem',
+        icon: '♠️',
+        page: 'UltimateTexasHoldem',
+      },
       { path: '/paigow', labelKey: 'nav.paigow', icon: '🀄', page: 'PaiGow' },
       { path: '/letitride', labelKey: 'nav.letitride', icon: '🎰', page: 'LetItRide' },
       { path: '/reddog', labelKey: 'nav.reddog', icon: '🐕', page: 'RedDog' },
       { path: '/casinowar', labelKey: 'nav.casinowar', icon: '⚔️', page: 'CasinoWar' },
       { path: '/dragontiger', labelKey: 'nav.dragontiger', icon: '🐉', page: 'DragonTiger' },
       { path: '/blackjackswitch', labelKey: 'nav.blackjackswitch', icon: '🔀', page: 'BlackJackSwitch' },
+      {
+        path: '/mississippistud',
+        labelKey: 'nav.mississippistud',
+        icon: '🚢',
+        page: 'MississippiStud',
+      },
     ],
   },
   {
@@ -75,6 +87,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/bridge', labelKey: 'nav.bridge', icon: '🌉', page: 'Bridge' },
       { path: '/napoleon', labelKey: 'nav.napoleon', icon: '👑', page: 'Napoleon' },
       { path: '/whist', labelKey: 'nav.whist', icon: '🎴', page: 'Whist' },
+      { path: '/belote', labelKey: 'nav.belote', icon: '🇫🇷', page: 'Belote' },
     ],
   },
   {
@@ -112,6 +125,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/klondike', labelKey: 'nav.klondike', icon: '⛏️', page: 'Klondike' },
       { path: '/freecell', labelKey: 'nav.freecell', icon: '🔲', page: 'FreeCell' },
       { path: '/spider', labelKey: 'nav.spider', icon: '🕷️', page: 'Spider' },
+      { path: '/spiderette', labelKey: 'nav.spiderette', icon: '🕸️', page: 'Spiderette' },
       { path: '/pyramid', labelKey: 'nav.pyramid', icon: '🔺', page: 'Pyramid' },
       { path: '/tripeaks', labelKey: 'nav.tripeaks', icon: '⛰️', page: 'TriPeaks' },
       { path: '/golf', labelKey: 'nav.golf', icon: '⛳', page: 'Golf' },
@@ -132,6 +146,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/pokersquares', labelKey: 'nav.pokersquares', icon: '🔢', page: 'PokerSquares' },
       { path: '/montecarlo', labelKey: 'nav.montecarlo', icon: '🎲', page: 'MonteCarlo' },
       { path: '/calculation', labelKey: 'nav.calculation', icon: '🧮', page: 'Calculation' },
+      { path: '/crescent', labelKey: 'nav.crescent', icon: '🌙', page: 'Crescent' },
     ],
   },
   {
@@ -143,6 +158,12 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/canasta', labelKey: 'nav.canasta', icon: '🃏', page: 'Canasta' },
       { path: '/cribbage', labelKey: 'nav.cribbage', icon: '📌', page: 'Cribbage' },
       { path: '/sevenbridge', labelKey: 'nav.sevenbridge', icon: '7️⃣', page: 'SevenBridge' },
+      {
+        path: '/contractrummy',
+        labelKey: 'nav.contractrummy',
+        icon: '📜',
+        page: 'ContractRummy',
+      },
     ],
   },
 ] as const;
