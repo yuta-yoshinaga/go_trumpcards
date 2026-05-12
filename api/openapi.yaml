@@ -178,6 +178,8 @@ tags:
     description: Crescent Solitaire (クレセント・ソリティア) game - 2-deck (104-card) solitaire with 16 tableau piles arranged around 8 foundations (4 ascending from A, 4 descending from K); same-suit ±1 moves with A↔K wrap, top card only; up to 3 redeals reverse every tableau pile
   - name: mississippistud
     description: Mississippi Stud (ミシシッピ・スタッド) game - single-player vs paytable casino poker; 2 hole cards plus 3 community cards revealed across 3rd / 4th / 5th Street, with 1x / 2x / 3x bet or fold at each street; winning hands paid per fixed paytable (pair of Jacks+ = 1:1, pair of 6s-10s = push)
+  - name: belote
+    description: Belote (ベロート) game - French 4-player partnership trick-taking on a 32-card deck (7-A × 4 suits); two-round bidding (take face-up suit / call other suit), strict obligation to follow / over-trump, last-trick bonus (Dix de Der +10) and K+Q-of-trumps bonus (Belote/Rebelote +20)
 
 paths:
   /blackjack/exec:
@@ -8203,6 +8205,82 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MississippiStudResponse'
+
+  /belote/exec:
+    post:
+      tags:
+        - belote
+      summary: Execute a Belote game command
+      description: |
+        Send a command to advance the Belote (ベロート) session identified
+        by `sessionId`. Belote is a French 4-player partnership trick-taking
+        game played on a 32-card deck (7-A × 4 suits). Each round deals 5
+        cards plus a face-up "turn-up" card; the human is player 0, partner
+        with player 2.
+
+        | Phase           | Value | Description |
+        |-----------------|-------|-------------|
+        | BidPickUp       | `0`   | Round 1: take the turn-up's suit as trump |
+        | BidCallTrump    | `1`   | Round 2: name any of the other 3 suits |
+        | Play            | `2`   | Trick play (follow-suit + obligation à couper / monter) |
+        | TrickEnd        | `3`   | Trick complete, advance with `next` |
+        | RoundEnd        | `4`   | 8 tricks complete, score and advance with `nextround` |
+        | GameEnd         | `5`   | Target score reached |
+
+        | Command      | Aliases | Description |
+        |--------------|---------|-------------|
+        | `reset`      | `r`     | Start / restart a game |
+        | `orderup`    | `o`     | Take the face-up card's suit as trump |
+        | `pass`       | `pa`    | Pass (PickUp or CallTrump) |
+        | `calltrump`  | `c`     | Call trump (`suit` ∈ {1,2,3,4}, ≠ face-up's suit) |
+        | `play`       | `p`     | Play card by `cardIndex` |
+        | `next`       | `n`     | Advance to next trick |
+        | `nextround`  | `nr`    | Score round and start the next |
+        | `hint`       | `h`     | Suggest an action / card |
+        | `log`        | `l`     | View action log |
+      operationId: beloteExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BeloteRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              orderup:
+                summary: Take the face-up suit as trump
+                value:
+                  command: orderup
+                  sessionId: my-session-001
+              calltrump:
+                summary: Call clubs (suit=2) as trump
+                value:
+                  command: calltrump
+                  suit: 2
+                  sessionId: my-session-001
+              play:
+                summary: Play the card at index 0
+                value:
+                  command: play
+                  cardIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeloteResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeloteResponse'
 
 components:
   schemas:
@@ -18000,3 +18078,201 @@ components:
           additionalProperties:
             type: string
           description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Belote
+    # -------------------------------------------------------------------------
+    BeloteRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `orderup` (`o`),
+            `pass` (`pa`), `calltrump` (`c`), `play` (`p`), `next` (`n`),
+            `nextround` (`nr`), `hint` (`h`), `log` (`l`).
+          enum: [r, reset, o, orderup, pa, pass, c, calltrump, p, play, n, next, nr, nextround, h, hint, l, log]
+          example: orderup
+        suit:
+          type: integer
+          description: Trump suit for `calltrump` (1=Spade, 2=Clover, 3=Heart, 4=Diamond). Must differ from the face-up card's suit.
+          enum: [1, 2, 3, 4]
+          example: 2
+        cardIndex:
+          type: integer
+          description: Index into the player's hand for `play`. Required for `play`.
+          minimum: 0
+          example: 0
+        config:
+          $ref: '#/components/schemas/BeloteConfig'
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    BeloteConfig:
+      type: object
+      description: Belote game configuration
+      properties:
+        cpuDifficulty:
+          type: integer
+          description: 'CPU difficulty: 0=Easy, 1=Normal, 2=Hard'
+          enum: [0, 1, 2]
+          example: 1
+        targetScore:
+          type: integer
+          description: Score required to win the game (default 1000)
+          minimum: 1
+          example: 1000
+        dixDeDer:
+          type: integer
+          description: Bonus points awarded to the winner of the last trick (default 10)
+          minimum: 0
+          example: 10
+        enableBeloteRebelote:
+          type: boolean
+          description: Enable +20 bonus for K+Q of trumps in one hand
+          example: true
+
+    BelotePlayer:
+      type: object
+      description: One Belote player's public state
+      required:
+        - id
+        - isHuman
+        - cardCount
+        - cards
+        - team
+        - trickCount
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        team:
+          type: integer
+          enum: [0, 1]
+        trickCount:
+          type: integer
+
+    BeloteTrickCard:
+      type: object
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+        card:
+          $ref: '#/components/schemas/Card'
+
+    BeloteHint:
+      type: object
+      required:
+        - reason
+      properties:
+        cardIndex:
+          type: integer
+        orderUp:
+          type: boolean
+        suit:
+          type: integer
+        reason:
+          type: string
+
+    BeloteResponse:
+      type: object
+      description: Current state of the Belote game
+      required:
+        - players
+        - phase
+        - roundNumber
+        - trickNumber
+        - currentPlayerIdx
+        - bidPlayerIdx
+        - dealerIdx
+        - trumpSuit
+        - makerTeam
+        - makerPlayerIdx
+        - currentTrick
+        - teamScores
+        - roundPoints
+        - roundBeloteBonus
+        - gameEndFlag
+        - winnerTeam
+        - leadPlayerIdx
+        - message
+        - config
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/BelotePlayer'
+        phase:
+          type: integer
+          description: 'Game phase: 0=BidPickUp, 1=BidCallTrump, 2=Play, 3=TrickEnd, 4=RoundEnd, 5=GameEnd'
+          enum: [0, 1, 2, 3, 4, 5]
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        bidPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        trumpSuit:
+          type: integer
+          enum: [0, 1, 2, 3, 4]
+        faceUpCard:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/Card'
+        makerTeam:
+          type: integer
+        makerPlayerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/BeloteTrickCard'
+        teamScores:
+          type: array
+          items:
+            type: integer
+        roundPoints:
+          type: array
+          items:
+            type: integer
+        roundBeloteBonus:
+          type: array
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        hint:
+          $ref: '#/components/schemas/BeloteHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+        config:
+          $ref: '#/components/schemas/BeloteConfig'

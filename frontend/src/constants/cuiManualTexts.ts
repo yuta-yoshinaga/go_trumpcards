@@ -7,6 +7,7 @@ import accordion from '../../../docs/manual/cui/accordion.md?raw';
 import baccarat from '../../../docs/manual/cui/baccarat.md?raw';
 import badugi from '../../../docs/manual/cui/badugi.md?raw';
 import bakersdozen from '../../../docs/manual/cui/bakersdozen.md?raw';
+import belote from '../../../docs/manual/cui/belote.md?raw';
 import blackjack from '../../../docs/manual/cui/blackjack.md?raw';
 import blackjackswitch from '../../../docs/manual/cui/blackjackswitch.md?raw';
 import bridge from '../../../docs/manual/cui/bridge.md?raw';
@@ -91,6 +92,7 @@ import yukon from '../../../docs/manual/cui/yukon.md?raw';
 export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/': blackjack,
   '/baccarat': baccarat,
+  '/belote': belote,
   '/bridge': bridge,
   '/calculation': calculation,
   '/canasta': canasta,

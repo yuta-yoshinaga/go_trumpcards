@@ -1352,6 +1352,24 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},
+	{Name: "belote", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBeloteCuiController(usecase.NewBeloteInteractor(
+				domain.NewDefaultBelote(), new(presenter.BeloteCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "belote.helpTitle",
+				CommandKeys: []string{
+					"belote.helpOrderUp",
+					"belote.helpPass",
+					"belote.helpCall",
+					"belote.helpPlay",
+					"belote.helpNext",
+					"belote.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"belote.helpSetDifficulty", "belote.helpSetTarget"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

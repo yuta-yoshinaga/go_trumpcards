@@ -170,6 +170,7 @@ var registry = []*Game{
 	{Name: "ultimatetexasholdem", Category: CategoryCasino, Description: "Ultimate Texas Hold'em (アルティメット・テキサスホールデム)"},
 	{Name: "crescent", Category: CategorySolo, Description: "Crescent Solitaire (クレセント・ソリティア)"},
 	{Name: "mississippistud", Category: CategoryCasino, Description: "Mississippi Stud (ミシシッピ・スタッド)"},
+	{Name: "belote", Category: CategoryClassic, Description: "Belote (ベロート)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

@@ -4,6 +4,7 @@ import type {
   BaccaratResponse,
   BadugiResponse,
   BakersDozenResponse,
+  BeloteResponse,
   BlackJackResponse,
   BlackJackSwitchResponse,
   CalculationResponse,
@@ -77,6 +78,7 @@ import { getAccordionHint } from '../utils/hints/accordionHint';
 import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBadugiHint } from '../utils/hints/badugiHint';
 import { getBakersdozenHint } from '../utils/hints/bakersdozenHint';
+import { getBeloteHint } from '../utils/hints/beloteHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getBlackjackswitchHint } from '../utils/hints/blackjackswitchHint';
 import { getCalculationHint } from '../utils/hints/calculationHint';
@@ -174,6 +176,7 @@ const hintFactories = {
   indianpoker: (s) => getIndianPokerHint(s as IndianPokerResponse),
   threecard: (s) => getThreeCardHint(s as ThreeCardResponse),
   euchre: (s) => getEuchreHint(s as EuchreResponse),
+  belote: (s) => getBeloteHint(s as BeloteResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
   ohhell: (s) => getOhHellHint(s as OhHellResponse),

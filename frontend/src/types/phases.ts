@@ -393,6 +393,16 @@ export const UltimateTexasHoldemPhase = {
   END: 5,
 } as const;
 
+/** Belote phase constants (sync: internal/domain/Belote.go). */
+export const BelotePhase = {
+  BID_PICK_UP: 0,
+  BID_CALL_TRUMP: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
 /** Mississippi Stud phase constants (sync: internal/domain/MississippiStud.go). */
 export const MississippiStudPhase = {
   ANTE: 1,
