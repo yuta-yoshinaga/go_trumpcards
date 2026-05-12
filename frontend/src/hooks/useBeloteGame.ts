@@ -59,7 +59,6 @@ export function useBeloteGame() {
     beloteConfig: base.config,
     selectedCardIndices: base.selectedCardIndices,
     toggleCard: base.toggleCard,
-    clearSelection: base.clearSelection,
     handleConfigChange: base.handleConfigChange,
     handleToggle: base.handleToggle,
     handlePlay: base.handlePlay,

@@ -22,7 +22,10 @@ const TRUMP_VALUE_SCORE: Readonly<Record<number, number>> = {
   7: 0,
 };
 
-const PICKUP_TAKE_THRESHOLD = 18;
+// Thresholds mirror the backend Normal-difficulty CPU heuristic
+// (internal/domain/Belote.go cpuPickUpNormal / cpuSelectCallTrump).
+const PICKUP_TAKE_THRESHOLD = 25;
+const PICKUP_DEALER_THRESHOLD = 18;
 const CALL_TRUMP_THRESHOLD = 22;
 
 /** Returns a frontend HintResult for Belote, or null if no suggestion. */
@@ -50,17 +53,27 @@ export function getBeloteHint(state: BeloteResponse): HintResult | null {
   return null;
 }
 
-/** Hint for pick-up phase: take if trump-suit cards have enough strength. */
+/**
+ * Hint for pick-up phase: take if the would-be trump-suit cards
+ * (including the face-up card the dealer would receive) have enough strength.
+ * Dealer uses a looser threshold because the face-up card joins their hand.
+ */
 function getPickUpHint(cards: Card[], state: BeloteResponse): HintResult {
-  const trumpDesign = state.faceUpCard?.design;
-  if (!trumpDesign) {
+  const faceUp = state.faceUpCard;
+  if (!faceUp) {
     return { targetAction: 'pass', reason: 'hint.passWeak', confidence: 'moderate' };
   }
-  const score = cards
+  const trumpDesign = faceUp.design;
+  let score = cards
     .filter((c) => c.design === trumpDesign)
     .reduce((acc, c) => acc + (TRUMP_VALUE_SCORE[c.value] ?? 0), 0);
+  // The face-up card itself ends up in the trump-taker's hand.
+  score += TRUMP_VALUE_SCORE[faceUp.value] ?? 0;
 
-  if (score >= PICKUP_TAKE_THRESHOLD) {
+  const humanIdx = state.players.findIndex((p) => p.isHuman);
+  const threshold = state.dealerIdx === humanIdx ? PICKUP_DEALER_THRESHOLD : PICKUP_TAKE_THRESHOLD;
+
+  if (score >= threshold) {
     return { targetAction: 'orderUp', reason: 'hint.orderUpStrong', confidence: 'strong' };
   }
   return { targetAction: 'pass', reason: 'hint.passWeak', confidence: 'moderate' };

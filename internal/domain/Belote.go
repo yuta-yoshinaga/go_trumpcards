@@ -161,6 +161,10 @@ func (b *Belote) NextRound() {
 
 // beginRound ラウンドの初期処理 (配布 + ビッドフェーズ突入)
 func (b *Belote) beginRound() {
+	// Reset() doesn't clear these explicitly; clearing them here keeps a
+	// mid-game reset from leaking ghost trick cards into the new bid phase.
+	b.currentTrick = nil
+	b.leadPlayerIdx = -1
 	b.roundPoints = [BeloteTeamCnt]int{}
 	b.roundBeloteBonus = [BeloteTeamCnt]int{}
 	b.beloteHolderIdx = -1
@@ -644,6 +648,10 @@ func (b *Belote) SetMakerTeam(team int) { b.makerTeam = team }
 // GetMakerPlayerIdx メイカープレイヤー取得
 func (b *Belote) GetMakerPlayerIdx() int { return b.makerPlayerIdx }
 
+// SetBeloteHolderIdx Belote/Rebelote (K+Q トランプ) 所持者を設定する (テスト用)。
+// 通常は dealRemainder 経由で detectBeloteHolder が呼ばれて埋まる。
+func (b *Belote) SetBeloteHolderIdx(idx int) { b.beloteHolderIdx = idx }
+
 // GetTeamScore チームスコア取得
 func (b *Belote) GetTeamScore(team int) int {
 	if team < 0 || team >= BeloteTeamCnt {
@@ -992,7 +1000,6 @@ func (b *Belote) currentLeader() int {
 	winner := b.currentTrick[0].PlayerIdx
 	winnerRank := b.cardRank(b.currentTrick[0].Card)
 	winnerSuit := b.currentTrick[0].Card.GetDesign()
-	leadSuit := winnerSuit
 	for _, tc := range b.currentTrick[1:] {
 		suit := tc.Card.GetDesign()
 		rank := b.cardRank(tc.Card)
@@ -1005,12 +1012,6 @@ func (b *Belote) currentLeader() int {
 		if suit == winnerSuit && rank > winnerRank {
 			winner = tc.PlayerIdx
 			winnerRank = rank
-			continue
-		}
-		if suit == leadSuit && winnerSuit != b.trumpSuit && winnerSuit != leadSuit && rank > winnerRank {
-			winner = tc.PlayerIdx
-			winnerRank = rank
-			winnerSuit = suit
 		}
 	}
 	return winner
@@ -1079,7 +1080,10 @@ func beloteSortHand(p *BelotePlayer, b *Belote) {
 		if si != sj {
 			return si < sj
 		}
-		return b.cardRank(cards[i]) < b.cardRank(cards[j])
+		// Strongest card first within each suit — matches the manual's display
+		// example and lets the CPU's "play valid[0]" easy-lead actually pick a
+		// strong card instead of the weakest.
+		return b.cardRank(cards[i]) > b.cardRank(cards[j])
 	})
 	p.Reset()
 	for _, c := range cards {
@@ -1306,18 +1310,25 @@ func (b *Belote) cpuSelectPlayCard(playerIdx int) int {
 }
 
 // cpuPlayChoose 標準ヒューリスティック:
-//   - リード時: トランプを温存し、A や 10 を持つ長いスートをリード
+//   - リード時: 強いトランプ (J/9) または高得点の非トランプ A/10 を優先
 //   - フォロー時: 勝てるなら最弱の勝てるカード、勝てないなら最低点のカードを捨てる
 func (b *Belote) cpuPlayChoose(playerIdx int, valid []int) int {
 	player := b.players[playerIdx]
 	if len(b.currentTrick) == 0 {
-		// リード: 最も価値の高い非トランプ A/10 を出す。なければ最弱を出す。
+		// リード: 強い切り札 (J/9) で相手の切り札を引き出すか、外スートの A/10 を切り出す。
 		best := valid[0]
 		bestScore := -1
 		for _, idx := range valid {
 			c := player.GetCard(idx)
 			s := 0
-			if c.GetDesign() != b.trumpSuit {
+			if c.GetDesign() == b.trumpSuit {
+				switch c.GetValue() {
+				case 11: // Trump J — strongest; lead it to flush opponents' trumps.
+					s = 25
+				case 9: // Trump 9 — second-strongest; also useful as a lead.
+					s = 15
+				}
+			} else {
 				switch c.GetValue() {
 				case 1:
 					s = 30

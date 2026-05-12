@@ -574,57 +574,99 @@ func TestBelote_BeloteRebelote_AwardsBonus(t *testing.T) {
 	b := newTestBelote()
 	b.Reset()
 	b.SetTrumpSuit(domain.CardDesignSpade)
+	b.SetMakerTeam(0)
+	b.SetBeloteHolderIdx(0) // P0 (human, team 0) holds K+Q of trumps
 	b.SetPhase(domain.BelotePhasePlay)
 	b.SetCurrentPlayerIdx(0)
 	b.SetLeadPlayerIdx(0)
 	b.SetTrickNumber(1)
-	// Give P0 K+Q of trumps + 6 fillers
+
+	// P0: K spade (trump), Q spade (trump), plus 6 weak fillers.
 	setupBeloteHand(b, 0, []*domain.Card{
-		domain.NewCard(domain.CardDesignSpade, 13, false), // K trump
-		domain.NewCard(domain.CardDesignSpade, 12, false), // Q trump
+		domain.NewCard(domain.CardDesignSpade, 13, false), // K of trumps
+		domain.NewCard(domain.CardDesignSpade, 12, false), // Q of trumps
 		domain.NewCard(domain.CardDesignHeart, 7, false),
 		domain.NewCard(domain.CardDesignHeart, 8, false),
-		domain.NewCard(domain.CardDesignHeart, 9, false),
-		domain.NewCard(domain.CardDesignHeart, 10, false),
-		domain.NewCard(domain.CardDesignHeart, 11, false),
-		domain.NewCard(domain.CardDesignHeart, 12, false),
+		domain.NewCard(domain.CardDesignClover, 7, false),
+		domain.NewCard(domain.CardDesignClover, 8, false),
+		domain.NewCard(domain.CardDesignDiamond, 7, false),
+		domain.NewCard(domain.CardDesignDiamond, 8, false),
 	})
-	// Other players: non-K/Q of trumps, all hearts
+	// CPUs: 8 cards each of unique non-trump suits so they can never follow spades
+	// (forcing them to discard freely and never beat P0's trump leads).
 	setupBeloteHand(b, 1, []*domain.Card{
-		domain.NewCard(domain.CardDesignClover, 7, false), domain.NewCard(domain.CardDesignClover, 8, false),
+		domain.NewCard(domain.CardDesignHeart, 9, false), domain.NewCard(domain.CardDesignHeart, 10, false),
+		domain.NewCard(domain.CardDesignHeart, 11, false), domain.NewCard(domain.CardDesignHeart, 12, false),
+		domain.NewCard(domain.CardDesignHeart, 13, false), domain.NewCard(domain.CardDesignHeart, 1, false),
 		domain.NewCard(domain.CardDesignClover, 9, false), domain.NewCard(domain.CardDesignClover, 10, false),
+	})
+	setupBeloteHand(b, 2, []*domain.Card{
+		domain.NewCard(domain.CardDesignClover, 11, false), domain.NewCard(domain.CardDesignClover, 12, false),
+		domain.NewCard(domain.CardDesignClover, 13, false), domain.NewCard(domain.CardDesignClover, 1, false),
+		domain.NewCard(domain.CardDesignDiamond, 9, false), domain.NewCard(domain.CardDesignDiamond, 10, false),
+		domain.NewCard(domain.CardDesignDiamond, 11, false), domain.NewCard(domain.CardDesignDiamond, 12, false),
+	})
+	setupBeloteHand(b, 3, []*domain.Card{
+		domain.NewCard(domain.CardDesignDiamond, 13, false), domain.NewCard(domain.CardDesignDiamond, 1, false),
+		domain.NewCard(domain.CardDesignHeart, 9, false), domain.NewCard(domain.CardDesignHeart, 10, false),
 		domain.NewCard(domain.CardDesignClover, 11, false), domain.NewCard(domain.CardDesignClover, 12, false),
 		domain.NewCard(domain.CardDesignClover, 13, false), domain.NewCard(domain.CardDesignClover, 1, false),
 	})
-	setupBeloteHand(b, 2, []*domain.Card{
-		domain.NewCard(domain.CardDesignDiamond, 7, false), domain.NewCard(domain.CardDesignDiamond, 8, false),
-		domain.NewCard(domain.CardDesignDiamond, 9, false), domain.NewCard(domain.CardDesignDiamond, 10, false),
-		domain.NewCard(domain.CardDesignDiamond, 11, false), domain.NewCard(domain.CardDesignDiamond, 12, false),
-		domain.NewCard(domain.CardDesignDiamond, 13, false), domain.NewCard(domain.CardDesignDiamond, 1, false),
-	})
-	setupBeloteHand(b, 3, []*domain.Card{
-		domain.NewCard(domain.CardDesignSpade, 7, false), domain.NewCard(domain.CardDesignSpade, 8, false),
-		domain.NewCard(domain.CardDesignSpade, 9, false), domain.NewCard(domain.CardDesignSpade, 10, false),
-		domain.NewCard(domain.CardDesignSpade, 11, false), domain.NewCard(domain.CardDesignSpade, 1, false),
-		domain.NewCard(domain.CardDesignHeart, 1, false), domain.NewCard(domain.CardDesignHeart, 13, false),
-	})
 
-	// Make detectBeloteHolder run by simulating dealRemainder path: easiest is to use the existing
-	// reset → manual hands path, then nudge via SetMakerTeam (no-op for detection).
-	// detectBeloteHolder is only called from dealRemainder; for the test we rely on the helper being
-	// exercised by Play flow + maybeDeclareBeloteRebelote when both K & Q are played.
-	// Use SetMakerTeam to ensure team accounting; we then explicitly simulate K then Q.
-	b.SetMakerTeam(0)
-
-	// Skip Belote/Rebelote check by directly playing K then Q in different tricks. The helper
-	// `maybeDeclareBeloteRebelote` is gated on `beloteHolderIdx`, which is set only via
-	// `detectBeloteHolder`. To test the bonus we need that side-effect; the cleanest path is to
-	// trigger a full Reset → fresh-hands shortcut, which would re-deal. Instead exercise the helper
-	// via the dealing flow on a tiny non-randomised path: call Reset → PlayerPickUp on the human
-	// with carefully chosen face-up. That path runs dealRemainder → detectBeloteHolder.
-	// For now this asserts the field plumbing (bonus accessor) only.
+	// Trick 1: P0 leads K of trumps.
+	assert.NoError(t, b.PlayerPlay(0))
+	b.CpuPlay()
+	b.CpuPlay()
+	b.CpuPlay()
+	assert.Equal(t, domain.BelotePhaseTrickEnd, b.GetPhase())
+	b.ResolveTrick()
+	assert.Equal(t, 0, b.GetLeadPlayerIdx(), "P0 should win trick 1 (trump K beats non-trumps)")
+	// Belote not yet declared — only K has been played.
 	assert.Equal(t, 0, b.GetRoundBeloteBonus(0))
-	assert.Equal(t, 0, b.GetRoundBeloteBonus(1))
+	b.NextTrick()
+
+	// Trick 2: P0 leads Q of trumps — this completes K+Q and awards +20.
+	qIdx := -1
+	for i := 0; i < b.GetPlayer(0).GetCardsSize(); i++ {
+		c := b.GetPlayer(0).GetCard(i)
+		if c.GetDesign() == domain.CardDesignSpade && c.GetValue() == 12 {
+			qIdx = i
+			break
+		}
+	}
+	if !assert.GreaterOrEqual(t, qIdx, 0, "P0 should still hold Q of trumps") {
+		return
+	}
+	assert.NoError(t, b.PlayerPlay(qIdx))
+	assert.Equal(t, domain.BeloteRebeloteBonus, b.GetRoundBeloteBonus(0), "Belote/Rebelote should award +20 to team 0")
+	assert.Equal(t, 0, b.GetRoundBeloteBonus(1), "opposite team should not receive the bonus")
+}
+
+func TestBelote_BeloteRebelote_DisabledByConfig(t *testing.T) {
+	b := newTestBelote()
+	cfg := b.GetConfig()
+	cfg.EnableBeloteRebelote = false
+	b.SetConfig(cfg)
+	b.Reset()
+	b.SetTrumpSuit(domain.CardDesignSpade)
+	b.SetMakerTeam(0)
+	b.SetBeloteHolderIdx(0)
+	b.SetPhase(domain.BelotePhasePlay)
+	b.SetCurrentPlayerIdx(0)
+	b.SetLeadPlayerIdx(0)
+	b.SetTrickNumber(1)
+	setupBeloteHand(b, 0, []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 13, false),
+		domain.NewCard(domain.CardDesignSpade, 12, false),
+		domain.NewCard(domain.CardDesignHeart, 7, false),
+	})
+	setupBeloteHand(b, 1, []*domain.Card{domain.NewCard(domain.CardDesignHeart, 8, false)})
+	setupBeloteHand(b, 2, []*domain.Card{domain.NewCard(domain.CardDesignClover, 8, false)})
+	setupBeloteHand(b, 3, []*domain.Card{domain.NewCard(domain.CardDesignDiamond, 8, false)})
+
+	// Play K of trumps — config disabled, no bonus should accrue.
+	assert.NoError(t, b.PlayerPlay(0))
+	assert.Equal(t, 0, b.GetRoundBeloteBonus(0))
 }
 
 // --- Game end ---
