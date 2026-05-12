@@ -68,6 +68,9 @@ type spideretteSnapshot struct {
 	moveCount      int
 	score          int
 	isStalemate    bool
+	// actionLogLen は、アンドゥ時にログを取り消し前の長さへ切り詰めるための
+	// マーカー (#1676 review)。
+	actionLogLen int
 }
 
 // NewSpiderette コンストラクタ
@@ -105,8 +108,9 @@ func (s *Spiderette) Reset() {
 		}
 	}
 
-	// 残り24枚をストックへ (3回 × 7枚 + 残り3枚は最後の Deal で配れないので
-	// 実プレイ上は3回 Deal するとストックが尽きる。実体は標準ルール通り)
+	// 残り24枚をストックへ。3回フル Deal (7枚×3=21) + 最後の Deal は
+	// 残り3枚を左の3列へ配って終わり (標準 Spiderette のルール: 最後だけ
+	// 部分的に配る)。
 	s.stock = nil
 	for s.trumpCards.GetRemainingCount() > 0 {
 		card := s.trumpCards.DrawCard()
@@ -115,11 +119,13 @@ func (s *Spiderette) Reset() {
 }
 
 // Deal ストックからタブローに1枚ずつ配る。空列がある場合は配れない。
+// 山札が SpideretteDealCnt 未満の場合は残り全カードを左の列から配る
+// (標準 Spiderette ルール) ので、最後の3枚も到達可能。
 func (s *Spiderette) Deal() error {
 	if s.phase != SpiderettePhasePlaying {
 		return errors.New("game is not in playing phase")
 	}
-	if len(s.stock) < SpideretteDealCnt {
+	if len(s.stock) == 0 {
 		return errors.New("not enough cards in stock")
 	}
 	for i := range SpideretteTableauCnt {
@@ -128,7 +134,11 @@ func (s *Spiderette) Deal() error {
 		}
 	}
 	s.takeSnapshot()
-	for i := range SpideretteTableauCnt {
+	numToDeal := len(s.stock)
+	if numToDeal > SpideretteDealCnt {
+		numToDeal = SpideretteDealCnt
+	}
+	for i := 0; i < numToDeal; i++ {
 		card := s.stock[len(s.stock)-1]
 		s.stock = s.stock[:len(s.stock)-1]
 		s.tableau[i] = append(s.tableau[i], &SpideretteTableauCard{Card: card, FaceUp: true})
@@ -485,7 +495,7 @@ func (s *Spiderette) checkSpideretteStalemate() {
 		s.isStalemate = false
 		return
 	}
-	if len(s.stock) >= SpideretteDealCnt {
+	if len(s.stock) > 0 {
 		hasEmpty := false
 		for i := range SpideretteTableauCnt {
 			if len(s.tableau[i]) == 0 {
@@ -509,6 +519,7 @@ func (s *Spiderette) takeSnapshot() {
 		moveCount:      s.moveCount,
 		score:          s.score,
 		isStalemate:    s.isStalemate,
+		actionLogLen:   len(s.actionLog),
 	}
 	for i := range SpideretteTableauCnt {
 		snap.tableau[i] = make([]*SpideretteTableauCard, len(s.tableau[i]))
@@ -530,6 +541,9 @@ func (s *Spiderette) restoreSnapshot(snap *spideretteSnapshot) {
 	s.moveCount = snap.moveCount
 	s.score = snap.score
 	s.isStalemate = snap.isStalemate
+	if snap.actionLogLen >= 0 && snap.actionLogLen <= len(s.actionLog) {
+		s.actionLog = s.actionLog[:snap.actionLogLen]
+	}
 }
 
 // appendLog 棋譜エントリを追加
@@ -566,6 +580,7 @@ type spideretteSnapshotJSON struct {
 	MoveCount      int                                            `json:"mc"`
 	Score          int                                            `json:"sc"`
 	IsStalemate    bool                                           `json:"sm"`
+	ActionLogLen   int                                            `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler for spideretteSnapshot.
@@ -578,6 +593,7 @@ func (s *spideretteSnapshot) MarshalJSON() ([]byte, error) {
 		MoveCount:      s.moveCount,
 		Score:          s.score,
 		IsStalemate:    s.isStalemate,
+		ActionLogLen:   s.actionLogLen,
 	})
 }
 
@@ -605,6 +621,7 @@ func (s *spideretteSnapshot) UnmarshalJSON(data []byte) error {
 	s.moveCount = j.MoveCount
 	s.score = j.Score
 	s.isStalemate = j.IsStalemate
+	s.actionLogLen = j.ActionLogLen
 	return nil
 }
 

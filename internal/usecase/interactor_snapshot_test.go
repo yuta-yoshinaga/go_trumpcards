@@ -145,6 +145,13 @@ func (s *stubSpiderPresenter) Output(_ interfaces.SpiderGame, _ error) string { 
 func (s *stubSpiderPresenter) ActionLogOutput(_ interfaces.SpiderGame) string { return `{}` }
 func (s *stubSpiderPresenter) HintOutput(_ interfaces.SpiderGame) string      { return `{}` }
 
+// stubSpiderettePresenter implements presenter.SpiderettePresenter.
+type stubSpiderettePresenter struct{}
+
+func (s *stubSpiderettePresenter) Output(_ interfaces.SpideretteGame, _ error) string { return `{}` }
+func (s *stubSpiderettePresenter) ActionLogOutput(_ interfaces.SpideretteGame) string { return `{}` }
+func (s *stubSpiderettePresenter) HintOutput(_ interfaces.SpideretteGame) string      { return `{}` }
+
 // stubPyramidPresenter implements presenter.PyramidPresenter (GamePresenter + HintOutput)
 type stubPyramidPresenter struct{}
 
@@ -489,6 +496,24 @@ func TestSpiderInteractor_SnapshotRestore(t *testing.T) {
 	restored, err := RestoreSpiderInteractor(data, new(stubSpiderPresenter))
 	require.NoError(t, err)
 	require.NotNil(t, restored)
+}
+
+func TestSpideretteInteractor_SnapshotRestore(t *testing.T) {
+	s := domain.NewDefaultSpiderette()
+	si := NewSpideretteInteractor(s, new(stubSpiderettePresenter))
+
+	data, err := si.Snapshot()
+	require.NoError(t, err)
+	require.NotEmpty(t, data)
+
+	restored, err := RestoreSpideretteInteractor(data, new(stubSpiderettePresenter))
+	require.NoError(t, err)
+	require.NotNil(t, restored)
+}
+
+func TestSpideretteInteractor_RestoreInvalidJSON(t *testing.T) {
+	_, err := RestoreSpideretteInteractor([]byte(`not json`), new(stubSpiderettePresenter))
+	require.Error(t, err)
 }
 
 func TestPyramidInteractor_SnapshotRestore(t *testing.T) {

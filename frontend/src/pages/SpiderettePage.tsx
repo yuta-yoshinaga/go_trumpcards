@@ -141,7 +141,9 @@ function SpiderettePageContent() {
     selectedSource.col === col &&
     selectedSource.cardIndex === cardIndex;
 
-  const dealsRemaining = Math.floor(state.stockCount / TABLEAU_COLS);
+  // A partial final deal (1–6 cards) still counts as one deal opportunity,
+  // so round up rather than down (#1676 review).
+  const dealsRemaining = Math.ceil(state.stockCount / TABLEAU_COLS);
   const autoCompleteReady = state.stockCount === 0 && isTableauAllFaceUp(state.tableau);
 
   return (
