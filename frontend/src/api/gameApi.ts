@@ -192,6 +192,7 @@ const workerUrl: Record<string, string> = {
   mississippistud: WORKER_CASINO,
   belote: WORKER_CLASSIC,
   spiderette: WORKER_SOLO,
+  mighty: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
