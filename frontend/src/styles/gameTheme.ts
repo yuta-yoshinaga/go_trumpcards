@@ -77,6 +77,7 @@ export type GameKey =
   | 'klondike'
   | 'freecell'
   | 'spider'
+  | 'spiderette'
   | 'pyramid'
   | 'tripeaks'
   | 'golf'
@@ -187,6 +188,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   klondike: CASINO,
   freecell: CASINO,
   spider: CASINO,
+  spiderette: CASINO,
   pyramid: CASINO,
   tripeaks: CASINO,
   golf: CASINO,

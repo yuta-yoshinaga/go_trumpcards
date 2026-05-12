@@ -180,6 +180,8 @@ tags:
     description: Mississippi Stud (ミシシッピ・スタッド) game - single-player vs paytable casino poker; 2 hole cards plus 3 community cards revealed across 3rd / 4th / 5th Street, with 1x / 2x / 3x bet or fold at each street; winning hands paid per fixed paytable (pair of Jacks+ = 1:1, pair of 6s-10s = push)
   - name: belote
     description: Belote (ベロート) game - French 4-player partnership trick-taking on a 32-card deck (7-A × 4 suits); two-round bidding (take face-up suit / call other suit), strict obligation to follow / over-trump, last-trick bonus (Dix de Der +10) and K+Q-of-trumps bonus (Belote/Rebelote +20)
+  - name: spiderette
+    description: Spiderette (スパイダレット) game - single-player solitaire combining Klondike's 7-column staircase deal with Spider's same-suit descending move rules on a single 52-card deck; clear all 4 suits to win
 
 paths:
   /blackjack/exec:
@@ -8282,6 +8284,82 @@ paths:
               schema:
                 $ref: '#/components/schemas/BeloteResponse'
 
+  /spiderette/exec:
+    post:
+      tags:
+        - spiderette
+      summary: Execute a Spiderette game command
+      description: |
+        Send a command to advance the Spiderette session identified by
+        `sessionId`. Spiderette is a single-deck (52 cards) variant of
+        Spider Solitaire played on a Klondike-style 7-column staircase
+        (column i holds i+1 cards; only the bottom card is face-up).
+        Movement rules match Spider: a card may be placed on any card one
+        rank higher (regardless of suit), but only same-suit descending
+        runs move as a group. K-through-A same-suit sequences are
+        auto-removed; clearing all 4 suits wins.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | `0`   | Game in progress |
+        | GameClear | `1`   | All 4 suits completed |
+        | GameOver  | `2`   | Player gave up |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `deal`         | `d`     | Deal 1 card to each column from stock |
+        | `move`         | `m`     | Move cards between tableau columns |
+        | `giveup`       | `g`     | Give up |
+        | `hint`         | `h`     | Get a move suggestion |
+        | `autocomplete` | `ac`    | Auto-complete (when all face up) |
+        | `undo`         | `u`     | Undo last move |
+        | `undo_n`       |         | Undo N moves (requires `n` parameter) |
+        | `log`          | `l`     | View action log |
+      operationId: spideretteExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpideretteRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              deal:
+                summary: Deal cards from stock
+                value:
+                  command: deal
+                  sessionId: my-session-001
+              move:
+                summary: Move card(s) from column 3, index 2 to column 5
+                value:
+                  command: move
+                  from:
+                    zone: tableau
+                    col: 3
+                    cardIndex: 2
+                  to:
+                    zone: tableau
+                    col: 5
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpideretteResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpideretteResponse'
+
 components:
   schemas:
     # -------------------------------------------------------------------------
@@ -13158,6 +13236,113 @@ components:
           enum: [1, 2, 4]
         hint:
           $ref: '#/components/schemas/SpiderHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    # -------------------------------------------------------------------------
+    # Spiderette types
+    # -------------------------------------------------------------------------
+    SpideretteRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          enum: [reset, deal, move, giveup, hint, autocomplete, undo, undo_n, log]
+        n:
+          type: integer
+          description: Number of undos to perform (required when command is undo_n)
+          example: 3
+        sessionId:
+          type: string
+        from:
+          $ref: '#/components/schemas/SpideretteZone'
+        to:
+          $ref: '#/components/schemas/SpideretteZone'
+
+    SpideretteZone:
+      type: object
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          enum: [tableau]
+        col:
+          type: integer
+        cardIndex:
+          type: integer
+
+    SpideretteTableauCard:
+      type: object
+      required:
+        - faceUp
+      properties:
+        card:
+          $ref: '#/components/schemas/Card'
+        faceUp:
+          type: boolean
+
+    SpideretteHint:
+      type: object
+      properties:
+        fromCol:
+          type: integer
+        cardIndex:
+          type: integer
+        toCol:
+          type: integer
+
+    SpideretteResponse:
+      type: object
+      required:
+        - tableau
+        - stockCount
+        - completedSuits
+        - score
+        - phase
+        - moveCount
+        - canUndo
+        - isStalemate
+        - message
+      properties:
+        tableau:
+          type: array
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/SpideretteTableauCard'
+        stockCount:
+          type: integer
+        completedSuits:
+          type: integer
+          description: Number of suits completed (max 4)
+        score:
+          type: integer
+        phase:
+          type: integer
+          enum: [0, 1, 2]
+          description: "0=Playing, 1=GameClear, 2=GameOver"
+        moveCount:
+          type: integer
+        canUndo:
+          type: boolean
+        isStalemate:
+          type: boolean
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to reach a non-stalemate state (0 if not stalemate, -1 if no escape)
+          example: 0
+        hint:
+          $ref: '#/components/schemas/SpideretteHint'
         message:
           type: string
         messageCode:
