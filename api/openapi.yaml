@@ -182,6 +182,8 @@ tags:
     description: Belote (ベロート) game - French 4-player partnership trick-taking on a 32-card deck (7-A × 4 suits); two-round bidding (take face-up suit / call other suit), strict obligation to follow / over-trump, last-trick bonus (Dix de Der +10) and K+Q-of-trumps bonus (Belote/Rebelote +20)
   - name: spiderette
     description: Spiderette (スパイダレット) game - single-player solitaire combining Klondike's 7-column staircase deal with Spider's same-suit descending move rules on a single 52-card deck; clear all 4 suits to win
+  - name: mighty
+    description: Mighty (マイティ) game - Korean 5-player trick-taking card game with bidding for point cards (10/J/Q/K/A, 20 max) and a separate No-Trump axis; declarer names a trump suit and a secret partner card; special cards Mighty (♠A normally; ♦A under spade trump), Joker (second-highest when not led, with a Joker-lead demand-suit rule and a Joker Call card ♣3/♠3 forcing the Joker)
 
 paths:
   /blackjack/exec:
@@ -8359,6 +8361,125 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SpideretteResponse'
+
+  /mighty/exec:
+    post:
+      tags:
+        - mighty
+      summary: Execute a Mighty game command
+      description: |
+        Send a command to advance the Mighty (マイティ) game session identified by
+        `sessionId`. Mighty is a Korean 5-player trick-taking card game using 52 cards
+        + 1 Joker (53 total). 10 cards are dealt to each player plus a 3-card kitty.
+        Players bid the number of point cards (10/J/Q/K/A across 4 suits = 20 max) they
+        expect to capture, with a separate No-Trump axis (bid floor +2, round score
+        doubled ×2). The highest bidder becomes the declarer, declares the trump suit
+        (−1 = No-Trump, 1−4 = Spade/Clover/Heart/Diamond) and names a partner card
+        (suit + value); whoever holds the partner card becomes the secret partner. The
+        declarer then exchanges 3 cards with the kitty. Special cards: **Mighty**
+        (♠A normally; ♦A under spade trump) beats everything including the Joker;
+        **Joker** is the second-highest card when not led, can be played any time;
+        **Joker-lead rule** -- leading the Joker forces the holder to name a demand
+        suit and the Joker loses the trick; **Joker Call** (♣3 normally; ♠3 under
+        clubs trump) when led after the first trick forces the Joker holder to play
+        the Joker.
+
+        The game proceeds through these phases:
+
+        | Phase           | Value | Description |
+        |-----------------|-------|-------------|
+        | Bid             | `0`   | Each player bids point-card count (or passes) |
+        | TrumpAndFriend  | `1`   | Declarer declares trump suit and names partner card |
+        | KittyExchange   | `2`   | Declarer exchanges 3 cards with the kitty |
+        | Play            | `3`   | Trick play (follow-suit; trump as declared) |
+        | TrickEnd        | `4`   | Trick resolved; advance with `next` |
+        | RoundEnd        | `5`   | All 10 tricks played; advance with `nextround` |
+        | GameEnd         | `6`   | A player reached the point limit |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `bid`          | `b`     | Place a bid (requires `bid`; optionally `noTrump`) or pass (bid = 0) |
+        | `trump`        | `t`     | Declare trump suit and partner card (requires `trumpSuit`, `partnerSuit`, `partnerValue`) |
+        | `exchange`     | `e`     | Exchange 3 cards with the kitty (requires `discardIndices` of length 3) |
+        | `play`         | `p`     | Play a card (requires `cardIndex`) |
+        | `jokerlead`    | `jl`    | Lead the Joker and name a demand suit (requires `cardIndex` and `jokerLeadSuit`) |
+        | `next`         | `n`     | Advance to the next trick |
+        | `nextround`    | `nr`    | Score the round and start the next |
+        | `hint`         | `h`     | Get a play suggestion |
+        | `log`          | `l`     | View action log |
+      operationId: mightyExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MightyRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Bid 14 point cards
+                value:
+                  command: bid
+                  bid: 14
+                  sessionId: my-session-001
+              bidNoTrump:
+                summary: Bid 15 under No-Trump
+                value:
+                  command: bid
+                  bid: 15
+                  noTrump: true
+                  sessionId: my-session-001
+              pass:
+                summary: Pass on bidding
+                value:
+                  command: bid
+                  bid: 0
+                  sessionId: my-session-001
+              trump:
+                summary: Declare spades trump and ♥A partner
+                value:
+                  command: trump
+                  trumpSuit: 1
+                  partnerSuit: 3
+                  partnerValue: 1
+                  sessionId: my-session-001
+              exchange:
+                summary: Discard kitty-exchange cards at indices 0, 3, 9
+                value:
+                  command: exchange
+                  discardIndices: [0, 3, 9]
+                  sessionId: my-session-001
+              play:
+                summary: Play card at index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+              jokerlead:
+                summary: Lead the Joker at index 5 and demand hearts
+                value:
+                  command: jokerlead
+                  cardIndex: 5
+                  jokerLeadSuit: 3
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MightyResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MightyResponse'
 
 components:
   schemas:
@@ -18461,3 +18582,295 @@ components:
             type: string
         config:
           $ref: '#/components/schemas/BeloteConfig'
+
+    # -------------------------------------------------------------------------
+    # Mighty
+    # -------------------------------------------------------------------------
+    MightyRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `bid` (`b`),
+            `trump` (`t`), `exchange` (`e`), `play` (`p`),
+            `jokerlead` (`jl`), `next` (`n`), `nextround` (`nr`),
+            `hint` (`h`), `log` (`l`).
+          enum: [reset, r, bid, b, trump, t, exchange, e, play, p, jokerlead, jl, next, n, nextround, nr, hint, h, log, l]
+          example: reset
+        bid:
+          type: integer
+          description: |
+            Bid value (target number of point cards, or 0 to pass). Required for `bid`.
+            The effective floor is `config.minBid` (default 13) and is raised by
+            `config.noTrumpExtra` when `noTrump=true`. Maximum 20 (all point cards).
+          minimum: 0
+          maximum: 39
+          example: 14
+        noTrump:
+          type: boolean
+          description: When `true`, the bid is placed on the No-Trump axis (bid floor +`config.noTrumpExtra`; round score is doubled).
+          example: false
+        cardIndex:
+          type: integer
+          description: Index into the declarer's hand. Required for `play` and `jokerlead`.
+          minimum: 0
+          example: 2
+        trumpSuit:
+          type: integer
+          description: "Declared trump suit (−1 = No-Trump, 1 = Spade, 2 = Clover, 3 = Heart, 4 = Diamond). Required for `trump`."
+          enum: [-1, 1, 2, 3, 4]
+          example: 1
+        partnerSuit:
+          type: integer
+          description: "Partner-card suit (0 = Joker, 1 = Spade, 2 = Clover, 3 = Heart, 4 = Diamond). Required for `trump`."
+          enum: [0, 1, 2, 3, 4]
+          example: 3
+        partnerValue:
+          type: integer
+          description: Partner-card rank (1 = Ace, 11 = J, 12 = Q, 13 = K). Required for `trump`.
+          minimum: 1
+          maximum: 13
+          example: 1
+        discardIndices:
+          type: array
+          description: Indices of the 3 cards to discard during kitty exchange (declarer's hand after picking up the kitty). Required for `exchange`; must have length 3.
+          minItems: 3
+          maxItems: 3
+          items:
+            type: integer
+            minimum: 0
+          example: [0, 3, 9]
+        jokerLeadSuit:
+          type: integer
+          description: Demand suit when leading the Joker (1 = Spade, 2 = Clover, 3 = Heart, 4 = Diamond). Required for `jokerlead`.
+          enum: [1, 2, 3, 4]
+          example: 3
+        config:
+          $ref: '#/components/schemas/MightyConfig'
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    MightyConfig:
+      type: object
+      description: Mighty game configuration
+      properties:
+        cpuDifficulty:
+          type: integer
+          description: 'CPU difficulty: 0=Easy, 1=Normal, 2=Hard'
+          enum: [0, 1, 2]
+          example: 1
+        minBid:
+          type: integer
+          description: Minimum bid amount (default 13)
+          minimum: 1
+          maximum: 20
+          example: 13
+        noTrumpExtra:
+          type: integer
+          description: Extra bid amount required when bidding No-Trump (default 2)
+          minimum: 0
+          maximum: 19
+          example: 2
+        pointLimit:
+          type: integer
+          description: Cumulative score needed to end the game (default 100)
+          minimum: 1
+          example: 100
+
+    MightyPlayer:
+      type: object
+      description: One Mighty player's public state
+      required:
+        - id
+        - isHuman
+        - cardCount
+        - cards
+        - bid
+        - bidNoTrump
+        - isDeclarer
+        - isPartner
+        - partnerRevealed
+        - pointCards
+        - roundScore
+        - cumulativeScore
+        - trickCount
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        bid:
+          type: integer
+          description: Player's current bid value (0 = pass).
+        bidNoTrump:
+          type: boolean
+          description: Whether the player's current bid is on the No-Trump axis.
+        isDeclarer:
+          type: boolean
+        isPartner:
+          type: boolean
+          description: Whether the player is the secret partner (only revealed after `partnerRevealed` becomes true).
+        partnerRevealed:
+          type: boolean
+          description: Whether the partner identity has been revealed during the round.
+        pointCards:
+          type: integer
+          description: Number of point cards captured this round.
+        roundScore:
+          type: integer
+        cumulativeScore:
+          type: integer
+        trickCount:
+          type: integer
+
+    MightyTrickCard:
+      type: object
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+        card:
+          $ref: '#/components/schemas/Card'
+        isJokerLead:
+          type: boolean
+          description: Whether this card is a Joker played as the lead under the Joker-lead rule.
+        leadDemandSuit:
+          type: integer
+          description: Demand suit the Joker lead asked followers to follow (1-4).
+
+    MightyHint:
+      type: object
+      required:
+        - reason
+      properties:
+        cardIndex:
+          type: integer
+          nullable: true
+        bid:
+          type: integer
+          nullable: true
+        bidNoTrump:
+          type: boolean
+          nullable: true
+        trumpSuit:
+          type: integer
+          nullable: true
+        partnerSuit:
+          type: integer
+          nullable: true
+        partnerValue:
+          type: integer
+          nullable: true
+        discardIndices:
+          type: array
+          items:
+            type: integer
+          nullable: true
+        jokerLeadSuit:
+          type: integer
+          nullable: true
+        reason:
+          type: string
+          description: Machine-readable reason key for the hint.
+
+    MightyResponse:
+      type: object
+      description: Current state of the Mighty game
+      required:
+        - players
+        - phase
+        - currentPlayerIdx
+        - declarerIdx
+        - partnerIdx
+        - partnerRevealed
+        - trumpSuit
+        - highestBid
+        - highestBidder
+        - winningBidNoTrump
+        - currentTrick
+        - gameEndFlag
+        - winnerTeam
+        - leadPlayerIdx
+        - message
+        - config
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/MightyPlayer'
+        phase:
+          type: integer
+          description: 'Game phase: 0=Bid, 1=TrumpAndFriend, 2=KittyExchange, 3=Play, 4=TrickEnd, 5=RoundEnd, 6=GameEnd'
+          enum: [0, 1, 2, 3, 4, 5, 6]
+        currentPlayerIdx:
+          type: integer
+        declarerIdx:
+          type: integer
+          description: Index of the declarer (-1 if not yet decided)
+        partnerIdx:
+          type: integer
+          description: Index of the secret partner (-1 if not yet bound or self-friend)
+        partnerRevealed:
+          type: boolean
+          description: Whether the secret partner has been revealed (set when the partner card is played).
+        trumpSuit:
+          type: integer
+          description: "Declared trump suit (−1 = No-Trump, 0 = not yet declared, 1−4 = Spade/Clover/Heart/Diamond)."
+          enum: [-1, 0, 1, 2, 3, 4]
+        partnerCard:
+          nullable: true
+          description: The partner card named by the declarer (suit + rank).
+          allOf:
+            - $ref: '#/components/schemas/Card'
+        highestBid:
+          type: integer
+          description: Highest bid placed during the bid phase (0 if no bid yet).
+        highestBidder:
+          type: integer
+          description: Index of the highest bidder (-1 if no bid yet).
+        winningBidNoTrump:
+          type: boolean
+          description: Whether the winning bid is on the No-Trump axis.
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/MightyTrickCard'
+        kitty:
+          type: array
+          description: Kitty cards (visible to the declarer during the KittyExchange phase).
+          items:
+            $ref: '#/components/schemas/Card'
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: 'Winning team after RoundEnd / GameEnd (0 = declarer team, 1 = defenders, -1 = undecided).'
+        leadPlayerIdx:
+          type: integer
+          description: Index of the player who leads the current trick.
+        hint:
+          $ref: '#/components/schemas/MightyHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+        config:
+          $ref: '#/components/schemas/MightyConfig'

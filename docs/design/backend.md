@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全86ゲーム)](#12-ゲームドメイン-全86ゲーム)
+  - [1.2 ゲームドメイン (全87ゲーム)](#12-ゲームドメイン-全87ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -30,6 +30,7 @@
   - [2.15 FortyThieves ドロー・ムーブフロー](#215-fortythieves-ドロームーブフロー)
   - [2.16 PaiGow ベット・セットフロー](#216-paigow-ベットセットフロー)
   - [2.17 RedDog ベット・スプレッドフロー](#217-reddog-ベットスプレッドフロー)
+  - [2.18 Mighty ビッド・宣言・トリックフロー](#218-mighty-ビッド宣言トリックフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 BlackJack フェーズ遷移](#31-blackjack-フェーズ遷移)
   - [3.2 Poker フェーズ遷移](#32-poker-フェーズ遷移)
@@ -82,6 +83,7 @@
   - [3.48 SevenBridge フェーズ遷移](#348-sevenbridge-フェーズ遷移)
   - [3.49 RussianSolitaire フェーズ遷移](#349-russiansolitaire-フェーズ遷移)
   - [3.50 CasinoWar フェーズ遷移](#350-casinowar-フェーズ遷移)
+  - [3.51 Mighty フェーズ遷移](#351-mighty-フェーズ遷移)
 
 ---
 
@@ -149,7 +151,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全86ゲーム)
+### 1.2 ゲームドメイン (全87ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -472,6 +474,65 @@ classDiagram
         +*Card Card
     }
 
+    class Mighty {
+        -trumpCards *TrumpCards
+        -players []*MightyPlayer
+        -config MightyConfig
+        -phase MightyPhase
+        -currentTrick []*MightyTrickCard
+        -declarerIdx int
+        -partnerIdx int
+        -partnerCard *Card
+        -trumpSuit int
+        -highestBid int
+        -winningBidNoTrump bool
+        -kitty []*Card
+        -leadPlayerIdx int
+        -partnerRevealed bool
+        +Reset()
+        +PlayerBid(bid int, noTrump bool) error
+        +CpuBid()
+        +PlayerDeclareTrumpAndFriend(trump int, partnerSuit int, partnerValue int) error
+        +CpuDeclareTrumpAndFriend()
+        +PlayerExchangeKitty(discardIndices []int) error
+        +CpuExchangeKitty()
+        +PlayerPlay(cardIndex int) error
+        +PlayerPlayJokerLead(cardIndex int, demandSuit int) error
+        +CpuPlay()
+        +ResolveTrick()
+        +NextTrick()
+        +ScoreRound()
+        +NextRound()
+        +GetHint() *MightyHint
+        +GetPhase() MightyPhase
+    }
+
+    class MightyTrickCard {
+        +int PlayerIdx
+        +*Card Card
+        +bool IsJokerLead
+        +int LeadDemandSuit
+    }
+
+    class MightyConfig {
+        +int CpuDifficulty
+        +int MinBid
+        +int NoTrumpExtra
+        +int PointLimit
+    }
+
+    class MightyHint {
+        +*int CardIndex
+        +*int Bid
+        +*bool BidNoTrump
+        +*int TrumpSuit
+        +*int PartnerSuit
+        +*int PartnerValue
+        +[]int DiscardIndices
+        +*int JokerLeadSuit
+        +string Reason
+    }
+
     class Euchre {
         -trumpCards *TrumpCards
         -players []*EuchrePlayer
@@ -578,6 +639,10 @@ classDiagram
     Spades --> "*" SpadesTrickCard
     Napoleon --> "4" NapoleonPlayer
     Napoleon --> "*" NapoleonTrickCard
+    Mighty *-- "5" MightyPlayer
+    Mighty *-- "1" MightyConfig
+    Mighty --> "*" MightyTrickCard
+    Mighty ..> MightyHint
     Euchre --> "4" EuchrePlayer
     Euchre --> "*" EuchreTrickCard
     OhHell --> "4" OhHellPlayer
@@ -589,6 +654,7 @@ classDiagram
     HeartsPlayer --|> GamePlayer
     SpadesPlayer --|> GamePlayer
     NapoleonPlayer --|> GamePlayer
+    MightyPlayer --|> GamePlayer
     EuchrePlayer --|> GamePlayer
     OhHellPlayer --|> GamePlayer
     BridgePlayer --|> GamePlayer
@@ -1616,8 +1682,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "86ゲーム × CUI/Web = 172 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
-    note for GameCuiPresenter "86ゲーム × CUI/Web = 172 Presenter 実装"
+    note for GameCuiController "87ゲーム × CUI/Web = 174 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
+    note for GameCuiPresenter "87ゲーム × CUI/Web = 174 Presenter 実装"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -1644,6 +1710,7 @@ classDiagram
         -ginrummy *GinRummyWebController
         -spider *SpiderWebController
         -napoleon *NapoleonWebController
+        -mighty *MightyWebController
         -indianpoker *IndianPokerWebController
         -videopoker *VideoPokerWebController
         -deuceswild *DeucesWildWebController
@@ -1684,8 +1751,8 @@ classDiagram
         +Exec(input string) string
     }
 
-    TrumpCardsWeb --> "*" GameWebController : holds 86 controllers
-    GameManager --> "*" CuiExecer : holds 86 games
+    TrumpCardsWeb --> "*" GameWebController : holds 87 controllers
+    GameManager --> "*" CuiExecer : holds 87 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```
@@ -2310,6 +2377,78 @@ sequenceDiagram
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
     Pres-->>User: ベット画面
+```
+
+### 2.18 Mighty ビッド・宣言・トリックフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as MightyController
+    participant Interactor as MightyInteractor
+    participant Domain as Mighty
+    participant Pres as MightyPresenter
+
+    Note over User,Pres: ラウンド開始
+    User->>Ctrl: reset
+    Ctrl->>Interactor: Reset()
+    Interactor->>Domain: Reset()
+    Domain->>Domain: 配札 (10枚×5 + キティ3枚) → phase=Bid
+
+    Note over User,Pres: ビッドフェーズ (phase=Bid)
+    Domain->>Domain: CpuBid() ループ (人間の番まで)
+    User->>Ctrl: bid 14 (またはパス: bid 0)
+    Ctrl->>Interactor: Bid(14, noTrump=false)
+    Interactor->>Domain: PlayerBid(14, false)
+    Domain->>Domain: CpuBid() ループ → 落札者確定 → phase=TrumpAndFriend
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+
+    Note over User,Pres: 切り札 + 副官指名 (phase=TrumpAndFriend)
+    alt 落札者が人間
+        User->>Ctrl: trump 1 3 1 (♠切り札・♥A副官)
+        Ctrl->>Interactor: DeclareTrumpAndFriend(1, 3, 1)
+        Interactor->>Domain: PlayerDeclareTrumpAndFriend(1, 3, 1)
+    else 落札者がCPU
+        Domain->>Domain: CpuDeclareTrumpAndFriend()
+    end
+    Domain->>Domain: 切り札・副官カード確定 → phase=KittyExchange
+
+    Note over User,Pres: キティ交換 (phase=KittyExchange)
+    alt 宣言者が人間
+        User->>Ctrl: exchange [0,3,9]
+        Ctrl->>Interactor: ExchangeKitty([0,3,9])
+        Interactor->>Domain: PlayerExchangeKitty([0,3,9])
+    else 宣言者がCPU
+        Domain->>Domain: CpuExchangeKitty()
+    end
+    Domain->>Domain: 手札 13 → 10 → phase=Play
+
+    Note over User,Pres: トリック (phase=Play)
+    Domain->>Domain: CpuPlay() ループ (人間の番まで)
+    User->>Ctrl: play 2 (またはジョーカーリード: jokerlead 5 3)
+    Ctrl->>Interactor: Play(2)
+    Interactor->>Domain: PlayerPlay(2)
+    Domain->>Domain: フォロースート検証 → 残りCPU自動プレイ
+    Domain->>Domain: ResolveTrick() → 副官公開判定 → phase=TrickEnd
+
+    Note over User,Pres: トリック終了 (phase=TrickEnd)
+    User->>Ctrl: next
+    Ctrl->>Interactor: Next()
+    Interactor->>Domain: NextTrick()
+    Domain->>Domain: 10トリック未満なら phase=Play
+    Domain->>Domain: 10トリック完了で phase=RoundEnd
+
+    Note over User,Pres: ラウンド終了 (phase=RoundEnd)
+    User->>Ctrl: nextround
+    Ctrl->>Interactor: NextRound()
+    Interactor->>Domain: ScoreRound() → NextRound()
+    Domain->>Domain: (|得点-ビッド|+1)×倍率 を加算 (NoTrump×2, セルフフレンド×2)
+    Domain->>Domain: 累積点 < PointLimit なら phase=Bid
+    Domain->>Domain: 累積点 ≥ PointLimit で phase=GameEnd
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: ラウンド結果・スコア表示
 ```
 
 ---
@@ -3281,5 +3420,27 @@ stateDiagram-v2
 ```
 
 CasinoWar は RedDog と同じく `ChipHolder` を持つ単純なステートマシン。タイ時のみ追加判断が発生し、ウォー後のタイは「プレイヤー勝ち扱い」として扱う。RedDog と同じ A 高ランク評価 (`rankOf`) を再利用している。
+
+### 3.51 Mighty フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Bid : Reset()
+    Bid --> TrumpAndFriend : 落札者確定 (人間ビッド or CPUループ)
+    TrumpAndFriend --> KittyExchange : 切り札宣言 + 副官カード指名
+    KittyExchange --> Play : キティ3枚交換完了
+    Play --> TrickEnd : 5人全員カード出し完了 (ResolveTrick)
+    TrickEnd --> Play : NextTrick() / 残りトリックあり
+    TrickEnd --> RoundEnd : 10トリック完了
+    RoundEnd --> Bid : NextRound() / PointLimit 未到達
+    RoundEnd --> GameEnd : 累積点 ≥ PointLimit
+    GameEnd --> [*]
+
+    note right of Bid : MightyPhaseBid = 0\n人間ビッド + CpuBid ループ\nNoTrump 軸は別 (bid floor +NoTrumpExtra)
+    note right of TrumpAndFriend : MightyPhaseTrumpAndFriend = 1\n切り札 (-1=NoTrump, 1-4=スート)\n副官カード = suit+value\nセルフフレンド可
+    note right of KittyExchange : MightyPhaseKittyExchange = 2\n宣言者 手札 10 + キティ 3 = 13\n3枚ディスカードして 10 に戻す
+    note right of Play : MightyPhasePlay = 3\nフォロースート + ジョーカーリード\nMighty (♠A or ♦A) > Joker\nJokerCall (♣3 or ♠3) でジョーカー強制
+    note right of RoundEnd : MightyPhaseRoundEnd = 5\nスコア = (|得点-ビッド|+1)×倍率\nNoTrump 倍率 = 2, セルフフレンド ×2
+```
 
 **注:** OldMaid・Daifugo・Sevens・President はターン制で進行する手札削り系のため、明示的なフェーズ定数を持ちません (currentTurn が巡回し、全プレイヤーの手札が 0 枚またはランクが確定するまで進行)。
