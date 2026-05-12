@@ -6,6 +6,7 @@ import accordion from '../../../docs/manual/web/accordion.md?raw';
 import baccarat from '../../../docs/manual/web/baccarat.md?raw';
 import badugi from '../../../docs/manual/web/badugi.md?raw';
 import bakersdozen from '../../../docs/manual/web/bakersdozen.md?raw';
+import belote from '../../../docs/manual/web/belote.md?raw';
 import blackjack from '../../../docs/manual/web/blackjack.md?raw';
 import blackjackswitch from '../../../docs/manual/web/blackjackswitch.md?raw';
 import bridge from '../../../docs/manual/web/bridge.md?raw';
@@ -91,6 +92,7 @@ import yukon from '../../../docs/manual/web/yukon.md?raw';
 export const manualTexts: Readonly<Record<string, string>> = {
   '/': blackjack,
   '/baccarat': baccarat,
+  '/belote': belote,
   '/bridge': bridge,
   '/calculation': calculation,
   '/canasta': canasta,

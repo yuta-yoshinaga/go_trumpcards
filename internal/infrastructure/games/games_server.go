@@ -433,4 +433,9 @@ func init() {
 			return usecase.NewMississippiStudInteractor(domain.NewDefaultMississippiStud(), new(presenter.MississippiStudWebPresenter))
 		},
 		controller.NewMississippiStudWebController)
+	BindWebControllerFor("belote",
+		func() usecase.BeloteInteractorIF {
+			return usecase.NewBeloteInteractor(domain.NewDefaultBelote(), new(presenter.BeloteWebPresenter))
+		},
+		controller.NewBeloteWebController)
 }

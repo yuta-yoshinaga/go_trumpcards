@@ -5,6 +5,7 @@ import type {
   BadugiResponse,
   BakersDozenMoveZone,
   BakersDozenResponse,
+  BeloteResponse,
   BlackJackResponse,
   BlackJackSwitchResponse,
   BridgeResponse,
@@ -188,6 +189,7 @@ const workerUrl: Record<string, string> = {
   ultimatetexasholdem: WORKER_CASINO,
   crescent: WORKER_SOLO,
   mississippistud: WORKER_CASINO,
+  belote: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1135,6 +1137,30 @@ export interface EuchreConfigInput {
   pointLimit?: number;
 }
 
+/** Belote game configuration input shape. */
+export interface BeloteConfigInput {
+  cpuDifficulty?: number;
+  targetScore?: number;
+  dixDeDer?: number;
+  enableBeloteRebelote?: boolean;
+}
+
+/** API client for the Belote /belote/exec endpoint. */
+export const beloteApi = {
+  exec: (
+    command: 'reset' | 'orderup' | 'pass' | 'calltrump' | 'play' | 'next' | 'nextround' | 'hint',
+    cardIndex?: number,
+    suit?: number,
+    config?: BeloteConfigInput,
+  ) =>
+    gameExec<BeloteResponse>('belote', {
+      command,
+      cardIndex,
+      suit,
+      config,
+    }),
+};
+
 /** API client for the Euchre /euchre/exec endpoint. */
 export const euchreApi = {
   exec: (
@@ -1641,6 +1667,7 @@ const games = [
   'ultimatetexasholdem',
   'crescent',
   'mississippistud',
+  'belote',
 ] as const;
 type Game = (typeof games)[number];
 

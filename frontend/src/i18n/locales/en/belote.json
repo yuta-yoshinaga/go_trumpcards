@@ -1,0 +1,80 @@
+{
+  "phase": {
+    "bidPickUp": "Take Face-up Suit",
+    "bidCallTrump": "Call Trump",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetScore": "Target Score",
+    "dixDeDer": "Dix de Der (Last-trick bonus)",
+    "enableBeloteRebelote": "Belote/Rebelote (K+Q of trumps = +20)",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "cards": "{{count}} cards",
+  "teamScores": "Team Scores",
+  "team": "Team {{n}}",
+  "teamYou": "Team {{n}} (You)",
+  "trumpSuit": "Trump: {{suit}}",
+  "noTrump": "Trump not set",
+  "dealer": "Dealer",
+  "maker": "Maker: Team {{team}}",
+  "faceUpCard": "Face-up Card",
+  "currentTrick": "Current Trick",
+  "partnership": "Partner: {{partner}}",
+  "trickCount": "Tricks: {{count}}",
+  "roundPoints": "Round: {{points}} pts",
+  "beloteRebelote": "Belote/Rebelote +20",
+  "orderUpButton": "Take",
+  "passButton": "Pass",
+  "callTrumpButton": "Call Trump",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "pickUpPhase": "Take the face-up card's suit as trump?",
+  "callTrumpPhase": "Choose a trump suit (other than the face-up card's suit)",
+  "playPhase": {
+    "lead": "Lead a card",
+    "follow": "Play a card (must follow suit; if void, must trump if able)"
+  },
+  "trickEnd": "Trick complete — click Next Trick",
+  "roundEnd": "Round complete — click Next Round",
+  "suitSpade": "♠ Spades",
+  "suitClover": "♣ Clubs",
+  "suitHeart": "♥ Hearts",
+  "suitDiamond": "♦ Diamonds",
+  "result": {
+    "team0Win": "Team 0 wins!",
+    "team1Win": "Team 1 wins!",
+    "yourTeamWin": "Your team wins!",
+    "opponentTeamWin": "Opponent team wins!"
+  },
+  "hintPlay": "Recommended card",
+  "hintReason": {
+    "strategic_pickup": "Take based on hand strength",
+    "pass_recommended": "Pass with weak hand",
+    "strategic_call": "Call with strongest suit",
+    "lead_trump": "Lead with trump",
+    "lead_strong": "Lead with a strong card",
+    "follow_suit": "Follow the led suit",
+    "trump_cut": "Cut with trump",
+    "discard_weak": "Discard the lowest-value card"
+  },
+  "tutorial": {
+    "bidControls": "In the pick-up phase, decide whether to take the face-up card's suit as trump.",
+    "trickDisplay": "The current trick. The trump suit always wins.",
+    "playerHand": "Your hand. Follow the led suit; if you can't, you must trump.",
+    "playButton": "Press to play the selected card.",
+    "scoreTable": "Team scores. First to {{target}} points wins.",
+    "teamInfo": "The player across from you is your partner.",
+    "resetButton": "Press the reset button to start a new game."
+  }
+}
