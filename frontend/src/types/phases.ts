@@ -264,6 +264,13 @@ export const SpiderPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Spiderette phase constants (sync: internal/domain/Spiderette.go). */
+export const SpiderettePhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Skat phase constants (sync: internal/domain/Skat.go). */
 export const SkatPhase = {
   BID: 0,

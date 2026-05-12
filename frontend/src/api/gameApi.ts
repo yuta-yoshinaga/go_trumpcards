@@ -78,6 +78,7 @@ import type {
   SpadesResponse,
   SpeedConfig,
   SpeedResponse,
+  SpideretteResponse,
   SpiderResponse,
   SpiteAndMaliceMoveZone,
   SpiteAndMaliceResponse,
@@ -190,6 +191,7 @@ const workerUrl: Record<string, string> = {
   crescent: WORKER_SOLO,
   mississippistud: WORKER_CASINO,
   belote: WORKER_CLASSIC,
+  spiderette: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -948,6 +950,20 @@ export const spiderApi = createSolitaireMoveApiWithConfig<
   'reset' | 'deal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('spider');
 
+/** Source or target zone for a Spiderette card move. */
+export interface SpideretteMoveZone {
+  zone: string;
+  col?: number;
+  cardIndex?: number;
+}
+
+/** API client for the Spiderette /spiderette/exec endpoint. */
+export const spideretteApi = createSolitaireMoveApi<
+  SpideretteResponse,
+  SpideretteMoveZone,
+  'reset' | 'deal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('spiderette');
+
 /** Configuration options for Napoleon game settings. */
 export interface NapoleonConfigInput {
   cpuDifficulty?: number;
@@ -1668,6 +1684,7 @@ const games = [
   'crescent',
   'mississippistud',
   'belote',
+  'spiderette',
 ] as const;
 type Game = (typeof games)[number];
 

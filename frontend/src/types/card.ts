@@ -1582,6 +1582,38 @@ export interface SpiderResponse {
   hint?: SpiderHint;
 }
 
+// --- Spiderette (スパイダレット) ---
+
+/** Hint returned by the Spiderette /hint endpoint. */
+export interface SpideretteHint {
+  fromCol: number;
+  cardIndex: number;
+  toCol: number;
+}
+
+/** Tableau card with face-up state in Spiderette. */
+export interface SpideretteTableauCard {
+  card: Card | null;
+  faceUp: boolean;
+}
+
+/** Full Spiderette Solitaire game state returned from the API. */
+export interface SpideretteResponse {
+  tableau: SpideretteTableauCard[][];
+  stockCount: number;
+  completedSuits: number;
+  score: number;
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: SpideretteHint;
+}
+
 // --- Indian Poker (インディアンポーカー) ---
 
 /** Indian Poker player data with card, chips, and betting status. */

@@ -1,0 +1,36 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "title": "スパイダレット",
+  "stock": "山札",
+  "completed": "完成",
+  "tableau": "場札",
+  "moveCount": "手数",
+  "deal": "配る",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "autoComplete": "自動完成",
+  "autoCompleteNotReady": "山札が空で全カードが表向きになるとクリックできます",
+  "undo": "元に戻す",
+  "empty": "空",
+  "score": "スコア",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}} スコア: {{score}}",
+  "gameOver": "ゲームオーバー",
+  "playing": "プレイ中",
+  "noHint": "ヒントはありません",
+  "hintAvailable": "ヒントがあります",
+  "stalemate": "手詰まりです",
+  "dealsRemaining": "残り{{count}}回配れます",
+  "cannotDealEmptyColExists": "空の列をすべて埋めないと配れません",
+  "tutorial": {
+    "stockPile": "山札（24枚）です。クリックすると各列に1枚ずつカードが配られます。全ての列にカードがある必要があります。",
+    "tableau": "クロンダイクと同じ7列の階段配置です。同じスートの降順でカードを並べ、AからKまで揃うと自動的に除去されます。",
+    "completedSuits": "完成したスートの数です。4スート全て完成すれば勝利です。",
+    "controls": "元に戻す、ヒント、自動完了などの操作ボタンです。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "landscapeBanner": "横向きにすると操作しやすくなります"
+}

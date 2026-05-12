@@ -84,6 +84,7 @@
   "klondike.invalidToZone": "無効な移動先です: {{val}}。't' (場札) または 'f' (組札) を入力してください。",
   "klondike.moveUsage": "使い方: m t <列> <カードIdx> t <列>",
   "spider.moveUsage": "使い方: m t <移動元列> <カードIdx> t <移動先列>",
+  "spiderette.moveUsage": "使い方: m t <移動元列> <カードIdx> t <移動先列>",
   "fortythieves.promptSourceZone": "移動元を入力してください (w=捨て札, t=場札):",
   "fortythieves.promptToZone": "移動先を入力してください (t=場札, f=組札):",
   "fortythieves.invalidFromZone": "無効な移動元です: {{val}}。'w' (捨て札) または 't' (場札) を入力してください。",

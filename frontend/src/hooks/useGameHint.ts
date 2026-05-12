@@ -60,6 +60,7 @@ import type {
   SlapjackResponse,
   SpadesResponse,
   SpeedResponse,
+  SpideretteResponse,
   SpiderResponse,
   SpiteAndMaliceResponse,
   TexasHoldemBonusResponse,
@@ -138,6 +139,7 @@ import { getSkatHint } from '../utils/hints/skatHint';
 import { getSlapjackHint } from '../utils/hints/slapjackHint';
 import { getSpadesHint } from '../utils/hints/spadesHint';
 import { getSpeedHint } from '../utils/hints/speedHint';
+import { getSpideretteHint } from '../utils/hints/spideretteHint';
 import { getSpiderHint } from '../utils/hints/spiderHint';
 import { getSpiteAndMaliceHint } from '../utils/hints/spiteAndMaliceHint';
 import { getTexasHoldemBonusHint } from '../utils/hints/texasHoldemBonusHint';
@@ -240,6 +242,7 @@ const hintFactories = {
   egyptianratscrew: (s) => getEgyptianRatscrewHint(s as EgyptianRatscrewResponse),
   contractrummy: () => null,
   crescent: () => null,
+  spiderette: (s) => getSpideretteHint(s as SpideretteResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

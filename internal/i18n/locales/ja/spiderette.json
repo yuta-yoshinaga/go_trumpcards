@@ -1,0 +1,13 @@
+{
+  "helpTitle": "Spiderette (スパイダレット)",
+  "helpDeal": "  d                        deal from stock",
+  "helpMove": "  m t <col> <idx> t <col>  move tableau to tableau",
+  "helpMoveShorthand": "  m <col> <col>            最上段移動 (省略形)",
+  "helpGiveUp": "  g                        give up",
+  "helpHint": "  h                        hint",
+  "helpAutoComplete": "  ac                       auto-complete",
+  "header": "完成スーツ: {{completed}}/{{total}} | 山札: {{stock}}枚 | スコア: {{score}}",
+  "columnLabel": "列{{col}}:",
+  "gameClearLine": "ゲームクリア！ 手数: {{moves}} スコア: {{score}}",
+  "hintLine": "ヒント: タブロー列{{fromCol}}[{{idx}}] → タブロー列{{toCol}}"
+}

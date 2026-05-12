@@ -1370,6 +1370,22 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"belote.helpSetDifficulty", "belote.helpSetTarget"},
 			})
 	}},
+	{Name: "spiderette", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSpideretteCuiController(usecase.NewSpideretteInteractor(
+				domain.NewDefaultSpiderette(), new(presenter.SpideretteCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "spiderette.helpTitle",
+				CommandKeys: []string{
+					"spiderette.helpDeal",
+					"spiderette.helpMove",
+					"spiderette.helpGiveUp",
+					"spiderette.helpHint",
+					"spiderette.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

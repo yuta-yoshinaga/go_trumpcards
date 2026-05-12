@@ -171,6 +171,7 @@ var registry = []*Game{
 	{Name: "crescent", Category: CategorySolo, Description: "Crescent Solitaire (クレセント・ソリティア)"},
 	{Name: "mississippistud", Category: CategoryCasino, Description: "Mississippi Stud (ミシシッピ・スタッド)"},
 	{Name: "belote", Category: CategoryClassic, Description: "Belote (ベロート)"},
+	{Name: "spiderette", Category: CategorySolo, Description: "Spiderette (スパイダレット)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

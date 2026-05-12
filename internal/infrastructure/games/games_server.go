@@ -438,4 +438,9 @@ func init() {
 			return usecase.NewBeloteInteractor(domain.NewDefaultBelote(), new(presenter.BeloteWebPresenter))
 		},
 		controller.NewBeloteWebController)
+	BindWebControllerFor("spiderette",
+		func() usecase.SpideretteInteractorIF {
+			return usecase.NewSpideretteInteractor(domain.NewDefaultSpiderette(), new(presenter.SpideretteWebPresenter))
+		},
+		controller.NewSpideretteWebController)
 }

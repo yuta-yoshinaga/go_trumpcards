@@ -206,4 +206,12 @@ func init() {
 			return usecase.RestoreCrescentInteractor(data, new(presenter.CrescentWebPresenter))
 		},
 		controller.NewCrescentWebControllerWithProvider)
+	games.RegisterKVGame("spiderette", games.CategorySolo,
+		func() usecase.SpideretteInteractorIF {
+			return usecase.NewSpideretteInteractor(domain.NewDefaultSpiderette(), new(presenter.SpideretteWebPresenter))
+		},
+		func(data []byte) (usecase.SpideretteInteractorIF, error) {
+			return usecase.RestoreSpideretteInteractor(data, new(presenter.SpideretteWebPresenter))
+		},
+		controller.NewSpideretteWebControllerWithProvider)
 }
