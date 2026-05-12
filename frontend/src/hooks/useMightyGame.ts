@@ -10,7 +10,7 @@ import { useGameConfig } from './useGameConfig';
 export const DEFAULT_MIGHTY_CONFIG: MightyConfig = {
   cpuDifficulty: 1,
   minBid: 13,
-  noTrumpExtra: 1,
+  noTrumpExtra: 2,
   pointLimit: 100,
 };
 

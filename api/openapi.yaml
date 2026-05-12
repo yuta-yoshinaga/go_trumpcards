@@ -18608,7 +18608,7 @@ components:
             The effective floor is `config.minBid` (default 13) and is raised by
             `config.noTrumpExtra` when `noTrump=true`. Maximum 20 (all point cards).
           minimum: 0
-          maximum: 39
+          maximum: 20
           example: 14
         noTrump:
           type: boolean
