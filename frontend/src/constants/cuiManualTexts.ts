@@ -43,6 +43,7 @@ import jokerpoker from '../../../docs/manual/cui/jokerpoker.md?raw';
 import klondike from '../../../docs/manual/cui/klondike.md?raw';
 import letitride from '../../../docs/manual/cui/letitride.md?raw';
 import memory from '../../../docs/manual/cui/memory.md?raw';
+import mighty from '../../../docs/manual/cui/mighty.md?raw';
 import mississippistud from '../../../docs/manual/cui/mississippistud.md?raw';
 import napoleon from '../../../docs/manual/cui/napoleon.md?raw';
 import nertz from '../../../docs/manual/cui/nertz.md?raw';
@@ -130,6 +131,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/klondike': klondike,
   '/letitride': letitride,
   '/memory': memory,
+  '/mighty': mighty,
   '/napoleon': napoleon,
   '/ohhell': ohhell,
   '/oldmaid': oldmaid,

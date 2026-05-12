@@ -32,6 +32,7 @@ import type {
   KlondikeResponse,
   LetItRideResponse,
   MemoryResponse,
+  MightyResponse,
   MississippiStudResponse,
   MonteCarloResponse,
   NapoleonResponse,
@@ -110,6 +111,7 @@ import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
 import { getKlondikeHint } from '../utils/hints/klondikeHint';
 import { getLetitrideHint } from '../utils/hints/letitrideHint';
 import { getMemoryHint } from '../utils/hints/memoryHint';
+import { getMightyHint } from '../utils/hints/mightyHint';
 import { getMississippiStudHint } from '../utils/hints/mississippiStudHint';
 import { getMonteCarloHint } from '../utils/hints/montecarloHint';
 import { getNapoleonHint } from '../utils/hints/napoleonHint';
@@ -181,6 +183,7 @@ const hintFactories = {
   belote: (s) => getBeloteHint(s as BeloteResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
+  mighty: (s) => getMightyHint(s as MightyResponse),
   ohhell: (s) => getOhHellHint(s as OhHellResponse),
   oldmaid: (s) => getOldMaidHint(s as OldMaidResponse),
   doubt: (s) => getDoubtHint(s as DoubtResponse),
