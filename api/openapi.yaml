@@ -188,6 +188,8 @@ tags:
     description: Oasis Poker (オアシスポーカー) game - Caribbean Stud variant adding a card-exchange phase between Bet and Action; exchange 1..5 cards for a fee equal to ante per card, then Call or Fold against the dealer
   - name: beleagueredcastle
     description: Beleaguered Castle (包囲された城) game - single-player open-information solitaire with 8 tableau columns of 6 cards each and 4 aces pre-seeded on the foundations; empty columns accept any card
+  - name: piquet
+    description: Piquet (ピケ) game - 2-player classical trick-taking using a 32-card deck (7-A); each deal has Exchange (Elder swaps 1-5, Younger 0-3), Declaration (Point/Sequence/Set auto-compared, honest claims), and 12-trick Play; full traditional bonuses (carte blanche, repique, pique, cards, capot) plus 6-deal partie with rubicon scoring
 
 paths:
   /blackjack/exec:
@@ -5300,6 +5302,95 @@ paths:
                     type: object
                     additionalProperties:
                       type: string
+
+  /piquet/exec:
+    post:
+      tags:
+        - piquet
+      summary: Execute a Piquet (ピケ) game command
+      description: |
+        Send a command to advance the Piquet game session identified by
+        `sessionId`. Piquet is a 2-player trick-taking game using a 32-card
+        deck (7..A). Each deal: 12 cards each + 8-card talon (top 5 / bottom 3).
+
+        Phases:
+
+        | Phase       | Value | Description |
+        |-------------|-------|-------------|
+        | Exchange    | `0`   | Elder swaps 1..5 cards then Younger swaps 0..3 |
+        | Declaration | `1`   | Point → Sequence → Set, advanced one step per `d` |
+        | Play        | `2`   | 12-trick play, follow suit when possible |
+        | Score       | `3`   | Round ended; call `nd` for the next deal |
+        | GameEnd     | `4`   | Partie completed |
+
+        Commands:
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a partie (optional config) |
+        | `e`     | `elder` | Elder exchange (1..5 discard indices) |
+        | `y`     | `younger` | Younger exchange (0..3 discard indices; empty list = pass) |
+        | `d`     | `declare` | Advance one declaration step |
+        | `p`     | `play`  | Play card at index |
+        | `nd`    | `nextdeal` | Advance to next deal after Score |
+        | `h`     | `hint`  | Show suggested move |
+        | `log`   | `l`     | View action log |
+      operationId: piquetExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, e, elder, y, younger, d, declare, p, play, nd, nextdeal, h, hint, log, l]
+                cardIndex:
+                  type: integer
+                  description: Card index for `p`/`play`
+                discardIndices:
+                  type: array
+                  items:
+                    type: integer
+                  description: Discard indices for `e`/`y` exchanges
+                config:
+                  $ref: '#/components/schemas/PiquetConfig'
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new partie
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              exchangeElder:
+                summary: Elder swaps cards at indices 0,1,2
+                value:
+                  command: e
+                  discardIndices: [0, 1, 2]
+                  sessionId: my-session-001
+              declare:
+                summary: Advance to next declaration step
+                value:
+                  command: d
+                  sessionId: my-session-001
+              play:
+                summary: Play hand[3]
+                value:
+                  command: p
+                  cardIndex: 3
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PiquetResponse'
 
   /war/exec:
     post:
@@ -13489,6 +13580,197 @@ components:
               type: integer
             pointLimit:
               type: integer
+
+    # -------------------------------------------------------------------------
+    # Piquet types
+    # -------------------------------------------------------------------------
+    PiquetConfig:
+      type: object
+      description: Piquet configuration (Web request payload)
+      properties:
+        cpuDifficulty:
+          type: integer
+          description: 0=Easy, 1=Normal, 2=Hard
+        dealsPerPartie:
+          type: integer
+          minimum: 1
+          maximum: 100
+          description: Number of deals per partie (default 6)
+
+    PiquetClaim:
+      type: object
+      description: Point/Sequence/Set claim evidence
+      properties:
+        length:
+          type: integer
+        topRank:
+          type: integer
+        pipTotal:
+          type: integer
+        suit:
+          type: integer
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+
+    PiquetDeclaration:
+      type: object
+      description: Result of a single declaration comparison
+      properties:
+        kind:
+          type: integer
+          description: 0=Point, 1=Sequence, 2=Set
+        elderClaim:
+          allOf:
+            - $ref: '#/components/schemas/PiquetClaim'
+          nullable: true
+        youngerClaim:
+          allOf:
+            - $ref: '#/components/schemas/PiquetClaim'
+          nullable: true
+        winner:
+          type: integer
+          description: 0/1 = player index, -1 = tied
+        score:
+          type: integer
+        scoredBy:
+          type: integer
+        sets:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/PiquetClaim'
+
+    PiquetResponse:
+      type: object
+      description: Current state of the Piquet game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              trickCount:
+                type: integer
+              declScore:
+                type: integer
+              trickScore:
+                type: integer
+              bonusScore:
+                type: integer
+              roundScore:
+                type: integer
+              matchScore:
+                type: integer
+        phase:
+          type: integer
+          description: "0=Exchange, 1=Declaration, 2=Play, 3=Score, 4=GameEnd"
+        dealNumber:
+          type: integer
+        dealsPerPartie:
+          type: integer
+        elderIdx:
+          type: integer
+        youngerIdx:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        trickNumber:
+          type: integer
+        tricksWon:
+          type: array
+          items:
+            type: integer
+          minItems: 2
+          maxItems: 2
+        exchangeTurn:
+          type: integer
+          description: "0=Elder, 1=Younger, 2=Done"
+        elderExchangedCnt:
+          type: integer
+        youngerExchangedCnt:
+          type: integer
+        elderTalon:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        youngerTalon:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        elderRevealedTalon:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        youngerRevealedTalon:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        carteBlanche:
+          type: array
+          items:
+            type: boolean
+          minItems: 2
+          maxItems: 2
+        declStage:
+          type: integer
+        declResults:
+          type: array
+          items:
+            $ref: '#/components/schemas/PiquetDeclaration'
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        legalPlayIndices:
+          type: array
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: "-1 = undetermined or draw"
+        hint:
+          type: object
+          nullable: true
+          properties:
+            cardIndex:
+              type: integer
+            discardIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+        config:
+          $ref: '#/components/schemas/PiquetConfig'
 
     # -------------------------------------------------------------------------
     # Spider Solitaire types
