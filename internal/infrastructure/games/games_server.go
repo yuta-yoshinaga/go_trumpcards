@@ -458,4 +458,9 @@ func init() {
 			return usecase.NewBeleagueredCastleInteractor(domain.NewDefaultBeleagueredCastle(), new(presenter.BeleagueredCastleWebPresenter))
 		},
 		controller.NewBeleagueredCastleWebController)
+	BindWebControllerFor("piquet",
+		func() usecase.PiquetInteractorIF {
+			return usecase.NewPiquetInteractor(domain.NewDefaultPiquet(), new(presenter.PiquetWebPresenter))
+		},
+		controller.NewPiquetWebController)
 }
