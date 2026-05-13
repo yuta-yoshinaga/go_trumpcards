@@ -42,6 +42,7 @@ import jokerpoker from '../../../docs/manual/web/jokerpoker.md?raw';
 import klondike from '../../../docs/manual/web/klondike.md?raw';
 import letitride from '../../../docs/manual/web/letitride.md?raw';
 import memory from '../../../docs/manual/web/memory.md?raw';
+import mighty from '../../../docs/manual/web/mighty.md?raw';
 import mississippistud from '../../../docs/manual/web/mississippistud.md?raw';
 import montecarlo from '../../../docs/manual/web/montecarlo.md?raw';
 import napoleon from '../../../docs/manual/web/napoleon.md?raw';
@@ -125,6 +126,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/klondike': klondike,
   '/letitride': letitride,
   '/memory': memory,
+  '/mighty': mighty,
   '/napoleon': napoleon,
   '/ohhell': ohhell,
   '/oldmaid': oldmaid,

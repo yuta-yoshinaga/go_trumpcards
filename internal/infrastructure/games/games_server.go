@@ -443,4 +443,9 @@ func init() {
 			return usecase.NewSpideretteInteractor(domain.NewDefaultSpiderette(), new(presenter.SpideretteWebPresenter))
 		},
 		controller.NewSpideretteWebController)
+	BindWebControllerFor("mighty",
+		func() usecase.MightyInteractorIF {
+			return usecase.NewMightyInteractor(domain.NewDefaultMighty(), new(presenter.MightyWebPresenter))
+		},
+		controller.NewMightyWebController)
 }

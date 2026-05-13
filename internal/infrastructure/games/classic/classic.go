@@ -279,4 +279,12 @@ func init() {
 			return usecase.RestoreBeloteInteractor(data, new(presenter.BeloteWebPresenter))
 		},
 		controller.NewBeloteWebControllerWithProvider)
+	games.RegisterKVGame("mighty", games.CategoryClassic,
+		func() usecase.MightyInteractorIF {
+			return usecase.NewMightyInteractor(domain.NewDefaultMighty(), new(presenter.MightyWebPresenter))
+		},
+		func(data []byte) (usecase.MightyInteractorIF, error) {
+			return usecase.RestoreMightyInteractor(data, new(presenter.MightyWebPresenter))
+		},
+		controller.NewMightyWebControllerWithProvider)
 }

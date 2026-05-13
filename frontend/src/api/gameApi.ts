@@ -44,6 +44,7 @@ import type {
   KlondikeResponse,
   LetItRideResponse,
   MemoryResponse,
+  MightyResponse,
   MississippiStudResponse,
   MonteCarloResponse,
   NapoleonResponse,
@@ -192,6 +193,7 @@ const workerUrl: Record<string, string> = {
   mississippistud: WORKER_CASINO,
   belote: WORKER_CLASSIC,
   spiderette: WORKER_SOLO,
+  mighty: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1007,6 +1009,59 @@ export const napoleonApi = {
     }),
 };
 
+/** Configuration options for Mighty game settings. */
+export interface MightyConfigInput {
+  cpuDifficulty?: number;
+  minBid?: number;
+  noTrumpExtra?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Mighty /mighty/exec endpoint. */
+export const mightyApi = {
+  exec: (
+    command:
+      | 'reset'
+      | 'b'
+      | 'bid'
+      | 't'
+      | 'trump'
+      | 'e'
+      | 'exchange'
+      | 'p'
+      | 'play'
+      | 'jl'
+      | 'jokerlead'
+      | 'n'
+      | 'next'
+      | 'nr'
+      | 'nextround'
+      | 'hint'
+      | 'log',
+    bid?: number,
+    noTrump?: boolean,
+    cardIndex?: number,
+    trumpSuit?: number,
+    partnerSuit?: number,
+    partnerValue?: number,
+    discardIndices?: number[],
+    jokerLeadSuit?: number,
+    config?: MightyConfigInput,
+  ) =>
+    gameExec<MightyResponse>('mighty', {
+      command,
+      bid,
+      noTrump,
+      cardIndex,
+      trumpSuit,
+      partnerSuit,
+      partnerValue,
+      discardIndices,
+      jokerLeadSuit,
+      config,
+    }),
+};
+
 /** Configuration options for Skat game settings. */
 export interface SkatConfigInput {
   cpuDifficulty?: number;
@@ -1685,6 +1740,7 @@ const games = [
   'mississippistud',
   'belote',
   'spiderette',
+  'mighty',
 ] as const;
 type Game = (typeof games)[number];
 

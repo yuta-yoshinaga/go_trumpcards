@@ -1386,6 +1386,25 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "mighty", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewMightyCuiController(usecase.NewMightyInteractor(
+				domain.NewDefaultMighty(), new(presenter.MightyCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "mighty.helpTitle",
+				CommandKeys: []string{
+					"mighty.helpBid",
+					"mighty.helpTrump",
+					"mighty.helpExchange",
+					"mighty.helpPlay",
+					"mighty.helpJokerLead",
+					"mighty.helpNext",
+					"mighty.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"mighty.helpSetDifficulty", "mighty.helpSetLimit", "mighty.helpSetMinBid", "mighty.helpSetNoTrumpExtra"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
