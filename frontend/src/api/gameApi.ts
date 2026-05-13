@@ -62,6 +62,8 @@ import type {
   PigsTailResponse,
   PineappleResponse,
   PinochleResponse,
+  PiquetConfig as PiquetConfigType,
+  PiquetResponse,
   PitchResponse,
   PokerResponse,
   PokerSquaresResponse,
@@ -199,6 +201,7 @@ const workerUrl: Record<string, string> = {
   mighty: WORKER_CLASSIC,
   oasispoker: WORKER_CASINO,
   beleagueredcastle: WORKER_SOLO,
+  piquet: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -867,6 +870,28 @@ export const pinochleApi = {
       config,
       bidAmount,
       suit,
+    }),
+};
+
+/** Configuration options for Piquet game settings. */
+export interface PiquetConfigInput {
+  cpuDifficulty?: number;
+  dealsPerPartie?: number;
+}
+
+/** API client for the Piquet /piquet/exec endpoint. */
+export const piquetApi = {
+  exec: (
+    command: 'reset' | 'e' | 'y' | 'd' | 'p' | 'nd' | 'h' | 'log',
+    cardIndex?: number,
+    discardIndices?: number[],
+    config?: PiquetConfigType,
+  ) =>
+    gameExec<PiquetResponse>('piquet', {
+      command,
+      cardIndex,
+      discardIndices,
+      config,
     }),
 };
 
@@ -1765,6 +1790,7 @@ const games = [
   'mighty',
   'oasispoker',
   'beleagueredcastle',
+  'piquet',
 ] as const;
 type Game = (typeof games)[number];
 
