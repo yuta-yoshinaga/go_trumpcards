@@ -741,3 +741,10 @@ export const OasisPokerPhase = {
   ACTION: 3,
   END: 4,
 } as const;
+
+/** Beleaguered Castle phase constants (sync: internal/domain/BeleagueredCastle.go). */
+export const BeleagueredCastlePhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;

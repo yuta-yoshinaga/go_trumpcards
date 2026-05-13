@@ -135,6 +135,12 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/clocksolitaire', labelKey: 'nav.clocksolitaire', icon: '🕐', page: 'ClockSolitaire' },
       { path: '/fortythieves', labelKey: 'nav.fortythieves', icon: '🏰', page: 'FortyThieves' },
       { path: '/bakersdozen', labelKey: 'nav.bakersdozen', icon: '🥖', page: 'BakersDozen' },
+      {
+        path: '/beleagueredcastle',
+        labelKey: 'nav.beleagueredcastle',
+        icon: '🏯',
+        page: 'BeleagueredCastle',
+      },
       { path: '/canfield', labelKey: 'nav.canfield', icon: '🎩', page: 'Canfield' },
       { path: '/yukon', labelKey: 'nav.yukon', icon: '🏔️', page: 'Yukon' },
       {

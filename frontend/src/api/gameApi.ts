@@ -5,6 +5,8 @@ import type {
   BadugiResponse,
   BakersDozenMoveZone,
   BakersDozenResponse,
+  BeleagueredCastleMoveZone,
+  BeleagueredCastleResponse,
   BeloteResponse,
   BlackJackResponse,
   BlackJackSwitchResponse,
@@ -196,6 +198,7 @@ const workerUrl: Record<string, string> = {
   spiderette: WORKER_SOLO,
   mighty: WORKER_CLASSIC,
   oasispoker: WORKER_CASINO,
+  beleagueredcastle: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1512,6 +1515,13 @@ export const bakersDozenApi = createSolitaireMoveApi<
   'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('bakersdozen');
 
+/** API client for the Beleaguered Castle /beleagueredcastle/exec endpoint. */
+export const beleagueredCastleApi = createSolitaireMoveApi<
+  BeleagueredCastleResponse,
+  BeleagueredCastleMoveZone,
+  'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('beleagueredcastle');
+
 /** API client for the Calculation /calculation/exec endpoint. */
 export const calculationApi = createSolitaireMoveApi<
   CalculationResponse,
@@ -1571,7 +1581,7 @@ export const cassinoApi = {
     gameExec<CassinoResponse>('cassino', { command, ...(params ?? {}) }),
 };
 
-export type { BakersDozenMoveZone, CrescentMoveZone, FortyThievesMoveZone };
+export type { BakersDozenMoveZone, BeleagueredCastleMoveZone, CrescentMoveZone, FortyThievesMoveZone };
 
 /** API client for the Whist /whist/exec endpoint. */
 export const whistApi = {
@@ -1754,6 +1764,7 @@ const games = [
   'spiderette',
   'mighty',
   'oasispoker',
+  'beleagueredcastle',
 ] as const;
 type Game = (typeof games)[number];
 

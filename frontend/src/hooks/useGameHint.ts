@@ -4,6 +4,7 @@ import type {
   BaccaratResponse,
   BadugiResponse,
   BakersDozenResponse,
+  BeleagueredCastleResponse,
   BeloteResponse,
   BlackJackResponse,
   BlackJackSwitchResponse,
@@ -80,6 +81,7 @@ import { getAccordionHint } from '../utils/hints/accordionHint';
 import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBadugiHint } from '../utils/hints/badugiHint';
 import { getBakersdozenHint } from '../utils/hints/bakersdozenHint';
+import { getBeleagueredcastleHint } from '../utils/hints/beleagueredcastleHint';
 import { getBeloteHint } from '../utils/hints/beloteHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getBlackjackswitchHint } from '../utils/hints/blackjackswitchHint';
@@ -214,6 +216,7 @@ const hintFactories = {
   badugi: (s) => getBadugiHint(s as BadugiResponse),
   fortythieves: () => null,
   bakersdozen: (s) => getBakersdozenHint(s as BakersDozenResponse),
+  beleagueredcastle: (s) => getBeleagueredcastleHint(s as BeleagueredCastleResponse),
   tonk: () => null,
   paigow: () => null,
   pageone: (s) => getPageOneHint(s as PageOneResponse),
