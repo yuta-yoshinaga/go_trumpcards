@@ -174,7 +174,7 @@ function OasisPokerPageContent() {
         ? t('phase.action')
         : t('phase.end');
 
-  const exchangePreviewFee = anteAmount * selectedIndices.length;
+  const exchangePreviewFee = state.anteBet * selectedIndices.length;
 
   return (
     <GamePageShell
