@@ -113,7 +113,7 @@ const playPhaseState: MightyResponse = {
   winnerTeam: -1,
   leadPlayerIdx: 0,
   message: '',
-  config: { cpuDifficulty: 1, minBid: 13, noTrumpExtra: 1, pointLimit: 100 },
+  config: { cpuDifficulty: 1, minBid: 13, noTrumpExtra: 2, pointLimit: 100 },
 };
 
 const bidPhaseState: MightyResponse = {
@@ -253,7 +253,7 @@ describe('MightyPage', () => {
         undefined,
         undefined,
         undefined,
-        { cpuDifficulty: 1, minBid: 13, noTrumpExtra: 1, pointLimit: 100 },
+        { cpuDifficulty: 1, minBid: 13, noTrumpExtra: 2, pointLimit: 100 },
       ),
     );
   });
@@ -580,7 +580,7 @@ describe('MightyPage', () => {
         undefined,
         undefined,
         undefined,
-        { cpuDifficulty: 2, pointLimit: 100, minBid: 13, noTrumpExtra: 1 },
+        { cpuDifficulty: 2, pointLimit: 100, minBid: 13, noTrumpExtra: 2 },
       ),
     );
   });
@@ -605,7 +605,7 @@ describe('MightyPage', () => {
         undefined,
         undefined,
         undefined,
-        { cpuDifficulty: 1, pointLimit: 100, minBid: 13, noTrumpExtra: 1 },
+        { cpuDifficulty: 1, pointLimit: 100, minBid: 13, noTrumpExtra: 2 },
       ),
     );
   });
