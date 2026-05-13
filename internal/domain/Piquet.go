@@ -452,6 +452,9 @@ func (p *Piquet) GetActionLog() []*ActionLogEntry { return p.actionLog }
 // GetConfig 設定値
 func (p *Piquet) GetConfig() PiquetConfig { return p.config }
 
+// SetConfig 設定を上書きする
+func (p *Piquet) SetConfig(cfg PiquetConfig) { p.config = cfg }
+
 // IsHumanTurn 現在の手番が人間か
 func (p *Piquet) IsHumanTurn() bool {
 	return p.players[p.currentPlayerIdx].GetIsHuman()
