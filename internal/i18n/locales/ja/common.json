@@ -91,6 +91,7 @@
   "fortythieves.invalidToZone": "無効な移動先です: {{val}}。't' (場札) または 'f' (組札) を入力してください。",
   "fortythieves.moveUsage": "使い方: m t <列> <カードIdx> t <列>",
   "bakersdozen.promptToZone": "移動先を入力してください (列番号, または f=組札):",
+  "beleagueredcastle.promptToZone": "移動先を入力してください (列番号, または f=組札):",
   "webServerRunning": "サーバーが http://{{addr}} で起動しました",
   "webServerExposureWarning": "警告: {{addr}} で待機中。LAN/VPN 上の他端末から到達可能です。意図しない場合は --host 127.0.0.1 を指定するか、--quiet で本警告を抑止してください。",
   "webServerStop": "Ctrl+C で停止できます",

@@ -214,4 +214,12 @@ func init() {
 			return usecase.RestoreSpideretteInteractor(data, new(presenter.SpideretteWebPresenter))
 		},
 		controller.NewSpideretteWebControllerWithProvider)
+	games.RegisterKVGame("beleagueredcastle", games.CategorySolo,
+		func() usecase.BeleagueredCastleInteractorIF {
+			return usecase.NewBeleagueredCastleInteractor(domain.NewDefaultBeleagueredCastle(), new(presenter.BeleagueredCastleWebPresenter))
+		},
+		func(data []byte) (usecase.BeleagueredCastleInteractorIF, error) {
+			return usecase.RestoreBeleagueredCastleInteractor(data, new(presenter.BeleagueredCastleWebPresenter))
+		},
+		controller.NewBeleagueredCastleWebControllerWithProvider)
 }

@@ -3757,3 +3757,41 @@ export interface OasisPokerResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
 }
+
+// --- Beleaguered Castle (包囲された城) ---
+
+/** A single tableau card in Beleaguered Castle. */
+export interface BeleagueredCastleTableauCard {
+  card: Card | null;
+  faceUp: boolean;
+}
+
+/** A suggested move hint in Beleaguered Castle. */
+export interface BeleagueredCastleHint {
+  fromCol: number;
+  cardIndex: number;
+  toZone: string;
+  toCol: number;
+}
+
+/** Full Beleaguered Castle game state returned from the API. */
+export interface BeleagueredCastleResponse {
+  tableau: BeleagueredCastleTableauCard[][];
+  foundation: Card[][];
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: BeleagueredCastleHint;
+}
+
+/** Source or target zone for a Beleaguered Castle card move. */
+export interface BeleagueredCastleMoveZone {
+  zone: string;
+  col?: number;
+  cardIndex?: number;
+}

@@ -1,0 +1,136 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beleagueredCastleApi } from '../api/gameApi';
+import { useGameHint } from '../hooks/useGameHint';
+import { renderWithProviders } from '../test/renderWithProviders';
+import type { BeleagueredCastleResponse, BeleagueredCastleTableauCard, Card, CardDesign } from '../types/card';
+import { BeleagueredCastlePage } from './BeleagueredCastlePage';
+
+vi.mock('../api/gameApi', () => ({
+  beleagueredCastleApi: { exec: vi.fn() },
+  actionLogApi: { beleagueredcastle: vi.fn() },
+}));
+
+vi.mock('../hooks/useGameHint', () => ({
+  useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
+}));
+
+const mockExec = vi.mocked(beleagueredCastleApi.exec);
+
+function makeTableau(cols: BeleagueredCastleTableauCard[][]): BeleagueredCastleTableauCard[][] {
+  const result: BeleagueredCastleTableauCard[][] = [];
+  for (let i = 0; i < 8; i++) {
+    result.push(cols[i] ?? []);
+  }
+  return result;
+}
+
+const card = (design: CardDesign, value: number): Card => ({ design, value });
+
+const playingState: BeleagueredCastleResponse = {
+  tableau: makeTableau([
+    [
+      { card: card('SPADE', 13), faceUp: true },
+      { card: card('SPADE', 5), faceUp: true },
+    ],
+    [{ card: card('HEART', 6), faceUp: true }],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+  ]),
+  foundation: [[card('SPADE', 1)], [card('CLOVER', 1)], [card('HEART', 1)], [card('DIAMOND', 1)]],
+  phase: 0,
+  moveCount: 3,
+  canUndo: false,
+  isStalemate: false,
+  message: '',
+};
+
+const gameClearState: BeleagueredCastleResponse = {
+  ...playingState,
+  phase: 1,
+  message: 'ゲームクリア！',
+  messageCode: 'beleagueredcastle.gameClear',
+  messageParams: { moveCount: '42' },
+};
+
+const gameOverState: BeleagueredCastleResponse = {
+  ...playingState,
+  phase: 2,
+  message: 'ゲームオーバー',
+  messageCode: 'beleagueredcastle.gameOver',
+};
+
+describe('BeleagueredCastlePage', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+  });
+
+  it('calls reset on initial render', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(mockExec.mock.calls[0]?.[0]).toBe('reset');
+  });
+
+  it('renders heading and move count', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    await waitFor(() => expect(screen.getByText(/包囲された城/)).toBeInTheDocument());
+    expect(screen.getByText(/手数: 3/)).toBeInTheDocument();
+  });
+
+  it('renders 4 foundation suits', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    await waitFor(() => expect(screen.getAllByLabelText(/組札 1枚/).length).toBe(4));
+  });
+
+  it('renders giveup button when playing', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeInTheDocument());
+  });
+
+  it('hides giveup button when game cleared', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'ギブアップ' })).not.toBeInTheDocument());
+  });
+
+  it('shows phase name in header for game over', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    await waitFor(() => expect(screen.getAllByText(/ゲームオーバー/).length).toBeGreaterThan(0));
+  });
+
+  it('renders auto-complete button enabled while playing', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeEnabled());
+  });
+
+  it('shows StalemateEscapeButton when stalemate flag is set', async () => {
+    const stalemate: BeleagueredCastleResponse = {
+      ...playingState,
+      isStalemate: true,
+      undoToEscape: 2,
+      canUndo: true,
+    };
+    mockExec.mockResolvedValue(stalemate);
+    renderWithProviders(<BeleagueredCastlePage />);
+    await waitFor(() => expect(screen.getByTestId('stalemate-escape-button')).toBeInTheDocument());
+  });
+
+  it('selecting a tableau card marks it as selected', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    const sourceBtn = await screen.findByRole('button', { name: '♠ 5' });
+    fireEvent.click(sourceBtn);
+    await waitFor(() => expect(sourceBtn).toHaveAttribute('aria-pressed', 'true'));
+  });
+});
