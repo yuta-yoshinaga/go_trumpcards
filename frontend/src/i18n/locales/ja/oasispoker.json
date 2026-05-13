@@ -1,0 +1,89 @@
+{
+  "title": "オアシスポーカー",
+  "player": "プレイヤー",
+  "dealer": "ディーラー",
+  "label": {
+    "chips": "チップ",
+    "ante": "アンテ",
+    "jackpot": "ジャックポット",
+    "play": "プレイベット",
+    "exchangeFee": "交換手数料",
+    "handRank": "役"
+  },
+  "button": {
+    "bet": "ベット",
+    "exchange": "交換",
+    "stand": "ステイ",
+    "play": "コール",
+    "fold": "フォールド",
+    "reset": "リセット"
+  },
+  "phase": {
+    "bet": "ベット",
+    "exchange": "カード交換",
+    "action": "コール/フォールド",
+    "end": "結果"
+  },
+  "result": {
+    "playerWins": "勝利！",
+    "dealerWins": "ディーラー勝利！",
+    "push": "引き分け！",
+    "fold": "フォールド",
+    "dealerNotQualified": "ディーラー未クオリファイ！"
+  },
+  "payout": {
+    "ante": "アンテ",
+    "play": "プレイ",
+    "jackpot": "ジャックポット",
+    "exchange": "交換手数料",
+    "total": "合計"
+  },
+  "handRank": {
+    "0": "ハイカード",
+    "1": "ワンペア",
+    "2": "ツーペア",
+    "3": "スリーカード",
+    "4": "ストレート",
+    "5": "フラッシュ",
+    "6": "フルハウス",
+    "7": "フォーカード",
+    "8": "ストレートフラッシュ",
+    "9": "ロイヤルフラッシュ"
+  },
+  "settings": {
+    "title": "設定"
+  },
+  "betGuide": "アンテと任意のジャックポットを設定してベット",
+  "exchangeGuide": "交換したいカードをタップで選択し、「交換」または「ステイ」を押してください",
+  "exchangeFeeInfo": "手数料: 1枚あたりアンテ × {{ante}} = {{fee}}",
+  "exchangeSelected": "選択中: {{count}}枚",
+  "payoutRef": {
+    "title": "配当表",
+    "playHeader": "プレイ配当（コール時）",
+    "payRoyalFlush": "ロイヤルフラッシュ: 100:1",
+    "payStraightFlush": "ストレートフラッシュ: 50:1",
+    "payFourOfAKind": "フォーカード: 20:1",
+    "payFullHouse": "フルハウス: 7:1",
+    "payFlush": "フラッシュ: 5:1",
+    "payStraight": "ストレート: 4:1",
+    "payThreeOfAKind": "スリーカード: 3:1",
+    "payTwoPair": "ツーペア: 2:1",
+    "payPair": "ペア以下: 1:1",
+    "jackpotHeader": "ジャックポット（サイドベット）",
+    "jackpotRoyalFlush": "ロイヤルフラッシュ: 20000x",
+    "jackpotStraightFlush": "ストレートフラッシュ: 5000x",
+    "jackpotFourOfAKind": "フォーカード: 500x",
+    "jackpotFullHouse": "フルハウス: 100x",
+    "jackpotFlush": "フラッシュ: 50x",
+    "exchangeHeader": "交換手数料",
+    "exchangeFee": "1枚交換ごとにアンテと同額"
+  },
+  "dealerQualified": "クオリファイ",
+  "dealerNotQualified": "未クオリファイ",
+  "tutorial": {
+    "betControls": "アンテとオプションのジャックポットを設定し、ベットを押してください。",
+    "exchangeControls": "交換したいカードをタップで選択し、交換するかステイするかを選んでください。1枚交換するごとにアンテと同額の手数料が必要です。",
+    "actionButtons": "コールでアンテの2倍を賭けるか、フォールドで降りるか選択してください。",
+    "results": "結果と配当を確認してください。"
+  }
+}

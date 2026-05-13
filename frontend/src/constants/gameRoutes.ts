@@ -33,6 +33,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/baccarat', labelKey: 'nav.baccarat', icon: '💎', page: 'Baccarat' },
       { path: '/threecard', labelKey: 'nav.threecard', icon: '🎴', page: 'ThreeCard' },
       { path: '/caribbeanstud', labelKey: 'nav.caribbeanstud', icon: '🏝️', page: 'CaribbeanStud' },
+      { path: '/oasispoker', labelKey: 'nav.oasispoker', icon: '🌴', page: 'OasisPoker' },
       { path: '/texasholdembonus', labelKey: 'nav.texasholdembonus', icon: '🤠', page: 'TexasHoldemBonus' },
       {
         path: '/ultimatetexasholdem',

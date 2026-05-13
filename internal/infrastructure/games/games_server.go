@@ -448,4 +448,9 @@ func init() {
 			return usecase.NewMightyInteractor(domain.NewDefaultMighty(), new(presenter.MightyWebPresenter))
 		},
 		controller.NewMightyWebController)
+	BindWebControllerFor("oasispoker",
+		func() usecase.OasisPokerInteractorIF {
+			return usecase.NewOasisPokerInteractor(domain.NewDefaultOasisPoker(), new(presenter.OasisPokerWebPresenter))
+		},
+		controller.NewOasisPokerWebController)
 }

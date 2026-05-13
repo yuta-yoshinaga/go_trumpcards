@@ -184,6 +184,8 @@ tags:
     description: Spiderette (スパイダレット) game - single-player solitaire combining Klondike's 7-column staircase deal with Spider's same-suit descending move rules on a single 52-card deck; clear all 4 suits to win
   - name: mighty
     description: Mighty (マイティ) game - Korean 5-player trick-taking card game with bidding for point cards (10/J/Q/K/A, 20 max) and a separate No-Trump axis; declarer names a trump suit and a secret partner card; special cards Mighty (♠A normally; ♦A under spade trump), Joker (second-highest when not led, with a Joker-lead demand-suit rule and a Joker Call card ♣3/♠3 forcing the Joker)
+  - name: oasispoker
+    description: Oasis Poker (オアシスポーカー) game - Caribbean Stud variant adding a card-exchange phase between Bet and Action; exchange 1..5 cards for a fee equal to ante per card, then Call or Fold against the dealer
 
 paths:
   /blackjack/exec:
@@ -8480,6 +8482,94 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MightyResponse'
+
+  /oasispoker/exec:
+    post:
+      tags:
+        - oasispoker
+      summary: Execute an Oasis Poker game command
+      description: |
+        Send a command to advance the Oasis Poker (オアシスポーカー) game session
+        identified by `sessionId`. Oasis Poker is a Caribbean Stud variant that
+        inserts a card exchange phase between Bet and Action. After receiving 5
+        cards, the player may exchange 1..5 cards (or stand) for a fee equal to
+        the ante per card, then either Call (place a Play bet equal to 2x ante)
+        or Fold (forfeit ante and exchange fee). Dealer must have Ace-King high
+        or any pair to qualify. Pay tables and the optional Jackpot side bet are
+        identical to Caribbean Stud.
+
+        The game proceeds through these phases:
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Bet      | `1`   | Place Ante and optional Jackpot side bet |
+        | Exchange | `2`   | Optionally exchange 1..5 cards (fee = ante × cards) |
+        | Action   | `3`   | Decide to Call or Fold |
+        | End      | `4`   | Round complete; shows result and payout |
+
+        | Command    | Aliases | Description |
+        |------------|---------|-------------|
+        | `reset`    | `r`     | Start / restart a game |
+        | `bet`      | `b`     | Place Ante bet (requires `amount`; optional `jackpotBet`) |
+        | `exchange` | `e`     | Exchange cards at the given `indices` (0..4); fee = ante × len |
+        | `stand`    | `s`     | Skip exchange, advance to action |
+        | `play`     | `p`     | Call: place Play bet (2x Ante) and reveal dealer hand |
+        | `fold`     | `f`     | Forfeit Ante bet and exchange fee |
+        | `log`      | `l`     | View action log |
+      operationId: oasispokerExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OasisPokerRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 100 Ante with 10 Jackpot
+                value:
+                  command: bet
+                  amount: 100
+                  jackpotBet: 10
+                  sessionId: my-session-001
+              exchange:
+                summary: Exchange cards at indices 0 and 2
+                value:
+                  command: exchange
+                  indices: [0, 2]
+                  sessionId: my-session-001
+              stand:
+                summary: Skip exchange
+                value:
+                  command: stand
+                  sessionId: my-session-001
+              play:
+                summary: Call (place Play bet)
+                value:
+                  command: play
+                  sessionId: my-session-001
+              fold:
+                summary: Fold hand
+                value:
+                  command: fold
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OasisPokerResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OasisPokerResponse'
 
 components:
   schemas:
@@ -18874,3 +18964,160 @@ components:
             type: string
         config:
           $ref: '#/components/schemas/MightyConfig'
+
+    # -------------------------------------------------------------------------
+    # Oasis Poker
+    # -------------------------------------------------------------------------
+    OasisPokerRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `bet` (`b`),
+            `exchange` (`e`), `stand` (`s`), `play` (`p`), `fold` (`f`),
+            `log` (`l`).
+          enum: [r, reset, b, bet, e, exchange, s, stand, p, play, f, fold, log, l]
+          example: exchange
+        amount:
+          type: integer
+          description: |
+            Ante bet amount. Required for `bet` command (minimum 10, must be a
+            multiple of 10). Ignored for other commands.
+          minimum: 10
+          example: 100
+        jackpotBet:
+          type: integer
+          description: |
+            Jackpot side bet amount. Optional; used with the `bet` command.
+            0 or omitted means no side bet.
+          minimum: 0
+          example: 10
+        indices:
+          type: array
+          description: |
+            Card indices to exchange (0..4, max 5 cards, no duplicates).
+            Used with the `exchange` command. Empty array is equivalent to `stand`.
+          items:
+            type: integer
+            minimum: 0
+            maximum: 4
+          example: [0, 2]
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    OasisPokerResponse:
+      type: object
+      description: Current state of the Oasis Poker game
+      required:
+        - playerHand
+        - dealerHand
+        - phase
+        - chips
+        - anteBet
+        - jackpotBet
+        - exchangeCount
+        - exchangeFee
+        - playBet
+        - result
+        - antePayout
+        - playPayout
+        - jackpotPayout
+        - totalPayout
+        - dealerQualified
+        - playerHandRank
+        - dealerHandRank
+        - message
+      properties:
+        playerHand:
+          type: array
+          description: Cards in the player's hand (5 cards)
+          items:
+            $ref: '#/components/schemas/Card'
+        dealerHand:
+          type: array
+          description: Cards in the dealer's hand (5 cards; the 2nd-5th cards are hidden until End phase)
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 1 = Bet, 2 = Exchange, 3 = Action, 4 = End"
+          enum: [1, 2, 3, 4]
+          example: 1
+        chips:
+          type: integer
+          description: Current chip count
+          example: 1000
+        anteBet:
+          type: integer
+          description: Current Ante bet amount
+          example: 100
+        jackpotBet:
+          type: integer
+          description: Current Jackpot side bet amount
+          example: 10
+        exchangeCount:
+          type: integer
+          description: Number of cards exchanged this round
+          minimum: 0
+          maximum: 5
+          example: 2
+        exchangeFee:
+          type: integer
+          description: Total exchange fee collected (ante × exchangeCount)
+          minimum: 0
+          example: 200
+        playBet:
+          type: integer
+          description: Current Play bet amount (2x Ante on Call)
+          example: 0
+        result:
+          type: integer
+          description: "Game result: 1 = Player wins, -1 = Dealer wins, 0 = Push/not resolved"
+          enum: [-1, 0, 1]
+          example: 0
+        antePayout:
+          type: integer
+          description: Payout from the Ante bet
+          example: 0
+        playPayout:
+          type: integer
+          description: Payout from the Play bet
+          example: 0
+        jackpotPayout:
+          type: integer
+          description: Jackpot side bet payout
+          example: 0
+        totalPayout:
+          type: integer
+          description: Total payout for the current round (sum of all payouts)
+          example: 0
+        dealerQualified:
+          type: boolean
+          description: Whether the dealer qualified (Ace-King high or any pair)
+          example: false
+        playerHandRank:
+          type: integer
+          description: Player's 5-card hand rank (0=High Card, 1=One Pair, 2=Two Pair, 3=Three of a Kind, 4=Straight, 5=Flush, 6=Full House, 7=Four of a Kind, 8=Straight Flush, 9=Royal Flush)
+          example: 1
+        dealerHandRank:
+          type: integer
+          description: Dealer's 5-card hand rank (same encoding as `playerHandRank`)
+          example: 1
+        message:
+          type: string
+          description: Game result or error message. Empty during bet/exchange/action phases.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.

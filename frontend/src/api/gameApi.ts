@@ -51,6 +51,7 @@ import type {
   NertzConfig as NertzConfigType,
   NertzMoveZone,
   NertzResponse,
+  OasisPokerResponse,
   OhHellResponse,
   OldMaidResponse,
   OmahaResponse,
@@ -194,6 +195,7 @@ const workerUrl: Record<string, string> = {
   belote: WORKER_CLASSIC,
   spiderette: WORKER_SOLO,
   mighty: WORKER_CLASSIC,
+  oasispoker: WORKER_CASINO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -908,6 +910,16 @@ export const threecardApi = {
 export const caribbeanstudApi = {
   exec: (command: 'reset' | 'bet' | 'play' | 'fold' | 'log', amount?: number, jackpotBet?: number) =>
     gameExec<CaribbeanStudResponse>('caribbeanstud', { command, amount, jackpotBet }),
+};
+
+/** API client for the Oasis Poker /oasispoker/exec endpoint. */
+export const oasispokerApi = {
+  exec: (
+    command: 'reset' | 'bet' | 'exchange' | 'stand' | 'play' | 'fold' | 'log',
+    amount?: number,
+    jackpotBet?: number,
+    indices?: number[],
+  ) => gameExec<OasisPokerResponse>('oasispoker', { command, amount, jackpotBet, indices }),
 };
 
 /** API client for the Texas Hold'em Bonus Poker /texasholdembonus/exec endpoint. */
@@ -1741,6 +1753,7 @@ const games = [
   'belote',
   'spiderette',
   'mighty',
+  'oasispoker',
 ] as const;
 type Game = (typeof games)[number];
 
