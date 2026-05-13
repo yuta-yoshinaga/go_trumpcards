@@ -16,7 +16,9 @@ func (p *BeleagueredCastleWebPresenter) Output(bc interfaces.BeleagueredCastleGa
 	resObj := new(controller.BeleagueredCastleWebOutput)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, bc, int(bc.GetPhase()))
 
-	// タブロー — every card in Beleaguered Castle is face-up by rule.
+	// タブロー — every card in Beleaguered Castle is face-up by rule, but we
+	// surface the domain's FaceUp field rather than hardcoding it so a future
+	// hidden-deal variant would not silently leak state through this presenter.
 	tableau := bc.GetTableau()
 	resObj.Tableau = make([][]*controller.BeleagueredCastleWebOutputTableauCard, domain.BeleagueredCastleTableauCnt)
 	for i := range domain.BeleagueredCastleTableauCnt {
@@ -25,7 +27,7 @@ func (p *BeleagueredCastleWebPresenter) Output(bc interfaces.BeleagueredCastleGa
 		for j, tc := range colCards {
 			resObj.Tableau[i][j] = &controller.BeleagueredCastleWebOutputTableauCard{
 				Card:   cardToOutput(tc.Card),
-				FaceUp: true,
+				FaceUp: tc.FaceUp,
 			}
 		}
 	}

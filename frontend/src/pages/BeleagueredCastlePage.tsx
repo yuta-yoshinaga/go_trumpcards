@@ -108,8 +108,9 @@ function BeleagueredCastlePageContent() {
     if (!isMobile) return { cw: cardWidth, ch: cardHeight, co: cardOverlap };
     const padX = 16;
     const gapPx = 4;
-    const cols = 4;
-    const colW = Math.floor((windowWidth - padX - (cols - 1) * gapPx) / cols / 2);
+    // Layout has 9 visual columns: 4 left tableau + 1 foundation strip + 4 right tableau.
+    const totalCols = 9;
+    const colW = Math.floor((windowWidth - padX - (totalCols - 1) * gapPx) / totalCols);
     const cw = Math.min(Math.max(colW, 30), cardWidth);
     const ch = Math.round(cw * 1.5);
     const co = Math.round(cw * 0.32);

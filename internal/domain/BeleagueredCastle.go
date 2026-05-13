@@ -286,6 +286,7 @@ func (bc *BeleagueredCastle) AutoComplete() error {
 	}
 	bc.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
 	bc.checkGameClear()
+	bc.checkStalemate()
 	return nil
 }
 

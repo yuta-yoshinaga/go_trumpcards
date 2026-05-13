@@ -346,6 +346,51 @@ func TestBeleagueredCastle_AutoComplete(t *testing.T) {
 		assert.Error(t, err)
 	})
 
+	t.Run("re-evaluates stalemate after partial completion", func(t *testing.T) {
+		// Build a board where AutoComplete drops a single Two onto its Ace but
+		// leaves the remaining columns dead (only 5s). After the partial drop
+		// the new state has no legal moves, so isStalemate must flip to true.
+		bc := newTestBeleagueredCastle()
+		bc.Reset()
+		clearBCTableau(bc)
+		bc.SetIsStalemate(false)
+
+		// Foundations: pre-seeded Aces.
+		suits := []int{
+			domain.CardDesignSpade, domain.CardDesignClover,
+			domain.CardDesignHeart, domain.CardDesignDiamond,
+		}
+		var foundation [domain.BeleagueredCastleFoundationCnt][]*domain.Card
+		for i, s := range suits {
+			foundation[i] = []*domain.Card{makeBCCard(s, 1)}
+		}
+		bc.SetFoundation(foundation)
+
+		// Column 0 holds [5♣, 2♠] so AutoComplete drops the Two onto foundation
+		// 0 but leaves a buried 5 behind. The other 7 columns each hold a
+		// single 5. After AutoComplete every column still holds a 5 (no empty
+		// column to dump into) and there are no 6s or 3s available, so the
+		// position is genuinely stuck.
+		var tableau [domain.BeleagueredCastleTableauCnt][]*domain.BeleagueredCastleTableauCard
+		tableau[0] = []*domain.BeleagueredCastleTableauCard{
+			makeBCTableauCard(domain.CardDesignClover, 5),
+			makeBCTableauCard(domain.CardDesignSpade, 2),
+		}
+		fiveSuits := []int{
+			domain.CardDesignSpade, domain.CardDesignHeart, domain.CardDesignDiamond,
+			domain.CardDesignSpade, domain.CardDesignClover,
+			domain.CardDesignHeart, domain.CardDesignDiamond,
+		}
+		for i, s := range fiveSuits {
+			tableau[i+1] = []*domain.BeleagueredCastleTableauCard{makeBCTableauCard(s, 5)}
+		}
+		bc.SetTableau(tableau)
+
+		require.NoError(t, bc.AutoComplete())
+		assert.Equal(t, domain.BeleagueredCastlePhasePlaying, bc.GetPhase())
+		assert.True(t, bc.IsStalemate(), "stalemate must be re-evaluated after partial AutoComplete")
+	})
+
 	t.Run("clears all to foundation when fully orderable", func(t *testing.T) {
 		bc := newTestBeleagueredCastle()
 		bc.Reset()
