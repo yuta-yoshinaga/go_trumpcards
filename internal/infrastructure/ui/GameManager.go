@@ -1405,6 +1405,22 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"mighty.helpSetDifficulty", "mighty.helpSetLimit", "mighty.helpSetMinBid", "mighty.helpSetNoTrumpExtra"},
 			})
 	}},
+	{Name: "oasispoker", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewOasisPokerCuiController(usecase.NewOasisPokerInteractor(
+				domain.NewDefaultOasisPoker(), new(presenter.OasisPokerCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "oasispoker.helpTitle",
+				CommandKeys: []string{
+					"oasispoker.helpBet",
+					"oasispoker.helpExchange",
+					"oasispoker.helpStand",
+					"oasispoker.helpPlay",
+					"oasispoker.helpFold",
+				},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
@@ -1449,6 +1465,8 @@ var GameAliases = map[string]string{
 	"3card":  "threecard",
 	"csp":    "caribbeanstud",
 	"stud":   "caribbeanstud",
+	"oasis":  "oasispoker",
+	"oasp":   "oasispoker",
 	"thb":    "texasholdembonus",
 	"thbp":   "texasholdembonus",
 	"uth":    "ultimatetexasholdem",

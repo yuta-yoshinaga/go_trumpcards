@@ -47,6 +47,7 @@ import mississippistud from '../../../docs/manual/web/mississippistud.md?raw';
 import montecarlo from '../../../docs/manual/web/montecarlo.md?raw';
 import napoleon from '../../../docs/manual/web/napoleon.md?raw';
 import nertz from '../../../docs/manual/web/nertz.md?raw';
+import oasispoker from '../../../docs/manual/web/oasispoker.md?raw';
 import ohhell from '../../../docs/manual/web/ohhell.md?raw';
 import oldmaid from '../../../docs/manual/web/oldmaid.md?raw';
 import omaha from '../../../docs/manual/web/omaha.md?raw';
@@ -128,6 +129,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/memory': memory,
   '/mighty': mighty,
   '/napoleon': napoleon,
+  '/oasispoker': oasispoker,
   '/ohhell': ohhell,
   '/oldmaid': oldmaid,
   '/omaha': omaha,

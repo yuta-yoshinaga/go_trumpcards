@@ -238,4 +238,12 @@ func init() {
 			return usecase.RestoreMississippiStudInteractor(data, new(presenter.MississippiStudWebPresenter))
 		},
 		controller.NewMississippiStudWebControllerWithProvider)
+	games.RegisterKVGame("oasispoker", games.CategoryCasino,
+		func() usecase.OasisPokerInteractorIF {
+			return usecase.NewOasisPokerInteractor(domain.NewDefaultOasisPoker(), new(presenter.OasisPokerWebPresenter))
+		},
+		func(data []byte) (usecase.OasisPokerInteractorIF, error) {
+			return usecase.RestoreOasisPokerInteractor(data, new(presenter.OasisPokerWebPresenter))
+		},
+		controller.NewOasisPokerWebControllerWithProvider)
 }

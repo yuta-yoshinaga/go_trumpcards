@@ -733,3 +733,11 @@ export const CrescentPhase = {
   GAME_CLEAR: 1,
   GAME_OVER: 2,
 } as const;
+
+/** Oasis Poker phase constants (sync: internal/domain/OasisPoker.go). */
+export const OasisPokerPhase = {
+  BET: 1,
+  EXCHANGE: 2,
+  ACTION: 3,
+  END: 4,
+} as const;
