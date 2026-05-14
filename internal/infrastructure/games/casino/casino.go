@@ -1,7 +1,7 @@
 //go:build js && wasm
 
 // Package casino binds the Cloudflare Worker KV-backed handlers for the
-// 18 table and poker games. A worker main must blank-import this package
+// table and poker games. A worker main must blank-import this package
 // so that the init below runs before games.RegisterCategory is called.
 package casino
 
@@ -246,4 +246,12 @@ func init() {
 			return usecase.RestoreOasisPokerInteractor(data, new(presenter.OasisPokerWebPresenter))
 		},
 		controller.NewOasisPokerWebControllerWithProvider)
+	games.RegisterKVGame("casinoholdem", games.CategoryCasino,
+		func() usecase.CasinoHoldemInteractorIF {
+			return usecase.NewCasinoHoldemInteractor(domain.NewDefaultCasinoHoldem(), new(presenter.CasinoHoldemWebPresenter))
+		},
+		func(data []byte) (usecase.CasinoHoldemInteractorIF, error) {
+			return usecase.RestoreCasinoHoldemInteractor(data, new(presenter.CasinoHoldemWebPresenter))
+		},
+		controller.NewCasinoHoldemWebControllerWithProvider)
 }

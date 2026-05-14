@@ -1,0 +1,83 @@
+{
+  "title": "カジノホールデム",
+  "player": "プレイヤー",
+  "dealer": "ディーラー",
+  "board": "ボード",
+  "dealerQualified": "ディーラークオリファイ",
+  "dealerDoesNotQualify": "ディーラーノークオリファイ",
+  "label": {
+    "chips": "チップ",
+    "ante": "アンテ",
+    "bonus": "AAボーナス",
+    "callBet": "コールベット",
+    "handRank": "役"
+  },
+  "button": {
+    "bet": "ベット",
+    "call": "コール (2×)",
+    "fold": "フォールド",
+    "reset": "リセット"
+  },
+  "phase": {
+    "bet": "ベット",
+    "flop": "フロップ",
+    "end": "結果"
+  },
+  "result": {
+    "playerWins": "勝利！",
+    "dealerWins": "ディーラー勝利！",
+    "push": "引き分け！",
+    "fold": "フォールド"
+  },
+  "payout": {
+    "ante": "アンテ",
+    "call": "コール",
+    "bonus": "AAボーナス",
+    "total": "合計"
+  },
+  "handRank": {
+    "0": "ハイカード",
+    "1": "ワンペア",
+    "2": "ツーペア",
+    "3": "スリーカード",
+    "4": "ストレート",
+    "5": "フラッシュ",
+    "6": "フルハウス",
+    "7": "フォーカード",
+    "8": "ストレートフラッシュ",
+    "9": "ロイヤルフラッシュ"
+  },
+  "settings": {
+    "title": "設定"
+  },
+  "betGuide": "アンテと任意のAAボーナスを設定してベット",
+  "payoutRef": {
+    "title": "配当表",
+    "anteHeader": "アンテ配当",
+    "anteRoyalFlush": "ロイヤルフラッシュ: 100:1",
+    "anteStraightFlush": "ストレートフラッシュ: 20:1",
+    "anteFourOfAKind": "フォーカード: 10:1",
+    "anteFullHouse": "フルハウス: 3:1",
+    "anteFlush": "フラッシュ: 2:1",
+    "anteOther": "その他の役: 1:1",
+    "bonusHeader": "AAボーナス（ホール+フロップ 5 枚）",
+    "bonusRoyalFlush": "ロイヤルフラッシュ: 100:1",
+    "bonusStraightFlush": "ストレートフラッシュ: 50:1",
+    "bonusFourOfAKind": "フォーカード: 40:1",
+    "bonusFullHouse": "フルハウス: 30:1",
+    "bonusFlush": "フラッシュ: 20:1",
+    "bonusStraight": "ストレート: 10:1",
+    "bonusThreeOfAKind": "スリーカード: 8:1",
+    "bonusTwoPair": "ツーペア: 7:1",
+    "bonusPairOfAces": "エースペア: 7:1"
+  },
+  "tutorial": {
+    "betControls": "アンテと任意のAAボーナスを設定し、ベットを押してください。",
+    "flopButtons": "フロップ3枚を見てコール（2×アンテ）かフォールドを選びます。",
+    "results": "結果と配当を確認してください。"
+  },
+  "hint": {
+    "pairOrBetter": "ペア以上 — コール推奨",
+    "weakHand": "弱い手札 — フォールド検討"
+  }
+}

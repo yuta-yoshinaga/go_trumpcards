@@ -1454,6 +1454,20 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "casinoholdem", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCasinoHoldemCuiController(usecase.NewCasinoHoldemInteractor(
+				domain.NewDefaultCasinoHoldem(), new(presenter.CasinoHoldemCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "casinoholdem.helpTitle",
+				CommandKeys: []string{
+					"casinoholdem.helpBet",
+					"casinoholdem.helpCall",
+					"casinoholdem.helpFold",
+				},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
@@ -1484,34 +1498,36 @@ func GameDescriptions() map[string]string {
 // GameAliases maps short alias names to their canonical game names.
 // Aliases are not shown in help or game lists.
 var GameAliases = map[string]string{
-	"7stud":  "sevencardstud",
-	"7cs":    "sevencardstud",
-	"clock":  "clocksolitaire",
-	"crazy8": "crazyeights",
-	"indian": "indianpoker",
-	"video":  "videopoker",
-	"deuces": "deuceswild",
-	"joker":  "jokerpoker",
-	"short":  "shortdeck",
-	"6plus":  "shortdeck",
-	"gin":    "ginrummy",
-	"3card":  "threecard",
-	"csp":    "caribbeanstud",
-	"stud":   "caribbeanstud",
-	"oasis":  "oasispoker",
-	"oasp":   "oasispoker",
-	"thb":    "texasholdembonus",
-	"thbp":   "texasholdembonus",
-	"uth":    "ultimatetexasholdem",
-	"uthe":   "ultimatetexasholdem",
-	"40t":    "fortythieves",
-	"pgp":    "paigow",
-	"lir":    "letitride",
-	"ride":   "letitride",
-	"ms":     "mississippistud",
-	"mstud":  "mississippistud",
-	"sp21":   "spanish21",
-	"s21":    "spanish21",
+	"7stud":   "sevencardstud",
+	"7cs":     "sevencardstud",
+	"clock":   "clocksolitaire",
+	"crazy8":  "crazyeights",
+	"indian":  "indianpoker",
+	"video":   "videopoker",
+	"deuces":  "deuceswild",
+	"joker":   "jokerpoker",
+	"short":   "shortdeck",
+	"6plus":   "shortdeck",
+	"gin":     "ginrummy",
+	"3card":   "threecard",
+	"csp":     "caribbeanstud",
+	"stud":    "caribbeanstud",
+	"oasis":   "oasispoker",
+	"oasp":    "oasispoker",
+	"thb":     "texasholdembonus",
+	"thbp":    "texasholdembonus",
+	"ch":      "casinoholdem",
+	"choldem": "casinoholdem",
+	"uth":     "ultimatetexasholdem",
+	"uthe":    "ultimatetexasholdem",
+	"40t":     "fortythieves",
+	"pgp":     "paigow",
+	"lir":     "letitride",
+	"ride":    "letitride",
+	"ms":      "mississippistud",
+	"mstud":   "mississippistud",
+	"sp21":    "spanish21",
+	"s21":     "spanish21",
 }
 
 // cuiGame is implemented by each *Cui struct to expose its controller and help lines.

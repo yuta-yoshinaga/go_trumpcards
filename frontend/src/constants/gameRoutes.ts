@@ -35,6 +35,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/caribbeanstud', labelKey: 'nav.caribbeanstud', icon: '🏝️', page: 'CaribbeanStud' },
       { path: '/oasispoker', labelKey: 'nav.oasispoker', icon: '🌴', page: 'OasisPoker' },
       { path: '/texasholdembonus', labelKey: 'nav.texasholdembonus', icon: '🤠', page: 'TexasHoldemBonus' },
+      { path: '/casinoholdem', labelKey: 'nav.casinoholdem', icon: '🎰', page: 'CasinoHoldem' },
       {
         path: '/ultimatetexasholdem',
         labelKey: 'nav.ultimatetexasholdem',

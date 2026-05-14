@@ -16,6 +16,7 @@ import type {
   CanastaResponse,
   CanfieldResponse,
   CaribbeanStudResponse,
+  CasinoHoldemResponse,
   CasinoWarResponse,
   CassinoResponse,
   ClockSolitaireResponse,
@@ -127,6 +128,7 @@ const workerUrl: Record<string, string> = {
   threecard: WORKER_CASINO,
   caribbeanstud: WORKER_CASINO,
   texasholdembonus: WORKER_CASINO,
+  casinoholdem: WORKER_CASINO,
   paigow: WORKER_CASINO,
   pineapple: WORKER_CASINO,
   crazypineapple: WORKER_CASINO,
@@ -954,6 +956,12 @@ export const oasispokerApi = {
 export const texasholdembonusApi = {
   exec: (command: 'reset' | 'bet' | 'play' | 'fold' | 'check' | 'raise' | 'log', amount?: number, bonusBet?: number) =>
     gameExec<TexasHoldemBonusResponse>('texasholdembonus', { command, amount, bonusBet }),
+};
+
+/** API client for the Casino Hold'em /casinoholdem/exec endpoint. */
+export const casinoholdemApi = {
+  exec: (command: 'reset' | 'bet' | 'call' | 'fold' | 'log', amount?: number, bonusBet?: number) =>
+    gameExec<CasinoHoldemResponse>('casinoholdem', { command, amount, bonusBet }),
 };
 
 /** API client for the Ultimate Texas Hold'em /ultimatetexasholdem/exec endpoint. */

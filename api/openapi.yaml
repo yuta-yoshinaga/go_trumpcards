@@ -190,6 +190,8 @@ tags:
     description: Beleaguered Castle (包囲された城) game - single-player open-information solitaire with 8 tableau columns of 6 cards each and 4 aces pre-seeded on the foundations; empty columns accept any card
   - name: piquet
     description: Piquet (ピケ) game - 2-player classical trick-taking using a 32-card deck (7-A); each deal has Exchange (Elder swaps 1-5, Younger 0-3), Declaration (Point/Sequence/Set auto-compared, honest claims), and 12-trick Play; full traditional bonuses (carte blanche, repique, pique, cards, capot) plus 6-deal partie with rubicon scoring
+  - name: casinoholdem
+    description: Casino Hold'em (カジノホールデム) game - single-player casino Texas Hold'em variant with Ante and optional AA Bonus side bet; flop revealed with hole cards, then Call (2x Ante) or Fold; dealer qualifies on Pair of Fours or better
 
 paths:
   /blackjack/exec:
@@ -3280,6 +3282,92 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TexasHoldemBonusResponse'
+
+  /casinoholdem/exec:
+    post:
+      tags:
+        - casinoholdem
+      summary: Execute a Casino Hold'em game command
+      description: |
+        Send a command to advance the Casino Hold'em (カジノホールデム) session
+        identified by `sessionId`. Casino Hold'em is a single-player casino variant
+        of Texas Hold'em using a standard 52-card deck. Player places an Ante bet
+        (required) and an optional AA Bonus side bet, receives 2 hole cards and the
+        flop (3 community cards) is revealed immediately. After the flop the player
+        must either Call (2x Ante) to see the turn and river, or Fold (forfeit Ante;
+        the AA Bonus still resolves on the visible 5 cards).
+
+        Dealer must qualify with **Pair of Fours or better**. When dealer does not
+        qualify, the Ante still pays per the Ante pay table but the Call bet pushes.
+
+        Ante pay table (player win or dealer no-qualify): Royal Flush 100:1,
+        Straight Flush 20:1, Four of a Kind 10:1, Full House 3:1, Flush 2:1, all
+        other wins 1:1. Call bet pays 1:1 only when dealer qualifies and player
+        wins.
+
+        AA Bonus pay table (uses player's 2 hole + 3 flop cards): Royal Flush
+        100:1, Straight Flush 50:1, Four of a Kind 40:1, Full House 30:1, Flush
+        20:1, Straight 10:1, Three of a Kind 8:1, Two Pair 7:1, Pair of Aces 7:1.
+        Pair of Kings or lower forfeits the AA bet.
+
+        The game proceeds through these phases:
+
+        | Phase | Value | Description |
+        |-------|-------|-------------|
+        | Bet   | `1`   | Place Ante and optional AA Bonus side bet |
+        | Flop  | `2`   | Decide to Call (2x Ante) or Fold |
+        | End   | `3`   | Round complete; shows result and payout |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `bet`   | `b`     | Place Ante bet (requires `amount`; optional `bonusBet`) |
+        | `call`  | `c`     | Bet 2x Ante and reveal turn/river |
+        | `fold`  | `f`     | Forfeit Ante (AA Bonus still resolves) |
+        | `log`   | `l`     | View action log |
+      operationId: casinoholdemExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CasinoHoldemRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 100 Ante with 10 AA Bonus
+                value:
+                  command: bet
+                  amount: 100
+                  bonusBet: 10
+                  sessionId: my-session-001
+              call:
+                summary: Call (2x Ante)
+                value:
+                  command: call
+                  sessionId: my-session-001
+              fold:
+                summary: Fold at flop
+                value:
+                  command: fold
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CasinoHoldemResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CasinoHoldemResponse'
 
   /ohhell/exec:
     post:
@@ -15458,6 +15546,145 @@ components:
         bonusPayout:
           type: integer
           description: Bonus side bet payout
+          example: 0
+        totalPayout:
+          type: integer
+          description: Total payout for the round (sum of all payouts)
+          example: 0
+        playerHandRank:
+          type: integer
+          description: Player's best 5-card hand rank (0=High Card .. 9=Royal Flush)
+          example: 0
+        dealerHandRank:
+          type: integer
+          description: Dealer's best 5-card hand rank (same encoding as `playerHandRank`)
+          example: 0
+        message:
+          type: string
+          description: Game result or error message. Empty during pre-resolution phases.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Casino Hold'em
+    # -------------------------------------------------------------------------
+    CasinoHoldemRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `bet` (`b`),
+            `call` (`c`), `fold` (`f`), `log` (`l`).
+          enum: [r, reset, b, bet, c, call, f, fold, log, l]
+          example: bet
+        amount:
+          type: integer
+          description: |
+            Ante bet amount. Required for `bet` command (minimum 10, must be a
+            multiple of 10). Ignored for other commands.
+          minimum: 10
+          example: 100
+        bonusBet:
+          type: integer
+          description: |
+            AA Bonus side bet amount. Optional; used with the `bet` command.
+            0 or omitted means no side bet.
+          minimum: 0
+          example: 10
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    CasinoHoldemResponse:
+      type: object
+      description: Current state of the Casino Hold'em game
+      required:
+        - playerHand
+        - dealerHand
+        - community
+        - phase
+        - chips
+        - anteBet
+        - bonusBet
+        - callBet
+        - result
+        - dealerQualify
+        - antePayout
+        - callPayout
+        - bonusPayout
+        - totalPayout
+        - playerHandRank
+        - dealerHandRank
+        - message
+      properties:
+        playerHand:
+          type: array
+          description: Player's two hole cards
+          items:
+            $ref: '#/components/schemas/Card'
+        dealerHand:
+          type: array
+          description: Dealer's two hole cards (masked until showdown after a Call)
+          items:
+            $ref: '#/components/schemas/Card'
+        community:
+          type: array
+          description: Community cards (3 after the flop, 5 at showdown)
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 1=Bet, 2=Flop, 3=End"
+          enum: [1, 2, 3]
+          example: 1
+        chips:
+          type: integer
+          description: Current chip count
+          example: 1000
+        anteBet:
+          type: integer
+          description: Ante bet amount
+          example: 100
+        bonusBet:
+          type: integer
+          description: AA Bonus side bet amount
+          example: 10
+        callBet:
+          type: integer
+          description: Call bet amount (2x Ante after a Call). 0 if folded.
+          example: 0
+        result:
+          type: integer
+          description: "Game result: 1=Player wins, -1=Dealer wins, 0=Push/not resolved"
+          enum: [-1, 0, 1]
+          example: 0
+        dealerQualify:
+          type: boolean
+          description: Whether the dealer qualified (Pair of Fours or better)
+          example: false
+        antePayout:
+          type: integer
+          description: Payout from the Ante bet (per the Ante pay table)
+          example: 0
+        callPayout:
+          type: integer
+          description: Payout from the Call bet (1:1 on win, push on dealer no-qualify)
+          example: 0
+        bonusPayout:
+          type: integer
+          description: AA Bonus side bet payout
           example: 0
         totalPayout:
           type: integer
