@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"encoding/json"
 	"errors"
 	"strings"
 	"testing"
@@ -19,6 +20,38 @@ func newPiquetForPresenter(t *testing.T) *domain.Piquet {
 	}
 	g := domain.NewPiquet(domain.NewTrumpCardsBelote(), players, domain.DefaultPiquetConfig())
 	g.Reset()
+	return g
+}
+
+// driveToPhase advances both CPUs forward until phase is reached or game ends.
+// Players are swapped to both-CPU first so we don't need human input.
+func driveToPhase(t *testing.T, phase domain.PiquetPhase) *domain.Piquet {
+	t.Helper()
+	players := []*domain.PiquetPlayer{
+		domain.NewPiquetPlayer(false),
+		domain.NewPiquetPlayer(false),
+	}
+	g := domain.NewPiquet(domain.NewTrumpCardsBelote(), players,
+		domain.PiquetConfig{DealsPerPartie: 1, CpuDifficulty: domain.PiquetCpuDifficultyNormal})
+	g.Reset()
+	// Exchange autoruns to Declaration via CpuPlay
+	for g.GetPhase() == domain.PiquetPhaseExchange {
+		g.CpuPlay()
+	}
+	if phase == domain.PiquetPhaseDeclaration {
+		return g
+	}
+	// Resolve 3 declarations
+	for g.GetPhase() == domain.PiquetPhaseDeclaration {
+		_, _ = g.ResolveDeclaration()
+	}
+	if phase == domain.PiquetPhasePlay {
+		return g
+	}
+	// Drive plays to end
+	for g.GetPhase() == domain.PiquetPhasePlay {
+		g.CpuPlay()
+	}
 	return g
 }
 
@@ -52,6 +85,15 @@ func TestPiquetCuiPresenter_HintOutput(t *testing.T) {
 	}
 }
 
+func TestPiquetCuiPresenter_HintOutput_PlayPhase(t *testing.T) {
+	g := driveToPhase(t, domain.PiquetPhasePlay)
+	p := &PiquetCuiPresenter{}
+	out := p.HintOutput(g)
+	if out == "" {
+		t.Error("expected non-empty hint output in play phase")
+	}
+}
+
 func TestPiquetCuiPresenter_ActionLogOutput(t *testing.T) {
 	g := newPiquetForPresenter(t)
 	p := &PiquetCuiPresenter{}
@@ -61,22 +103,97 @@ func TestPiquetCuiPresenter_ActionLogOutput(t *testing.T) {
 	}
 }
 
-func TestPiquetCuiPresenter_PhaseTransitions(t *testing.T) {
+func TestPiquetCuiPresenter_Output_DeclarationPhase(t *testing.T) {
+	g := driveToPhase(t, domain.PiquetPhaseDeclaration)
 	p := &PiquetCuiPresenter{}
-	for _, phase := range []domain.PiquetPhase{
-		domain.PiquetPhaseExchange,
-		domain.PiquetPhaseDeclaration,
-		domain.PiquetPhasePlay,
-		domain.PiquetPhaseScore,
-		domain.PiquetPhaseGameEnd,
-	} {
-		g := newPiquetForPresenter(t)
-		// Phase-only test — we coerce phase to verify the renderer covers each branch.
-		// The unexported field is set via Marshal/Unmarshal round trip through the JSON.
-		out := p.Output(g, nil)
-		_ = phase
-		if out == "" {
-			t.Errorf("empty output for phase %d", phase)
-		}
+	out := p.Output(g, nil)
+	if out == "" {
+		t.Error("expected non-empty output in declaration phase")
+	}
+}
+
+func TestPiquetCuiPresenter_Output_PlayPhase(t *testing.T) {
+	g := driveToPhase(t, domain.PiquetPhasePlay)
+	p := &PiquetCuiPresenter{}
+	out := p.Output(g, nil)
+	if out == "" {
+		t.Error("expected non-empty output in play phase")
+	}
+}
+
+func TestPiquetCuiPresenter_Output_ScoreOrGameEnd(t *testing.T) {
+	// After driving plays to end with DealsPerPartie=1, phase is GameEnd or Score
+	g := driveToPhase(t, domain.PiquetPhasePlay)
+	for g.GetPhase() == domain.PiquetPhasePlay {
+		g.CpuPlay()
+	}
+	p := &PiquetCuiPresenter{}
+	out := p.Output(g, nil)
+	if out == "" {
+		t.Error("expected non-empty output in score/game-end phase")
+	}
+}
+
+// TestPiquetCuiPresenter_DeclResultsRendering uses JSON round-trip to set up
+// declaration results and exercise piquetFormatDeclResult/piquetKindLabel paths.
+func TestPiquetCuiPresenter_DeclResultsRendering(t *testing.T) {
+	g := newPiquetForPresenter(t)
+	// Force phase to Declaration with seeded results via JSON round-trip
+	data, _ := json.Marshal(g)
+	var raw map[string]any
+	_ = json.Unmarshal(data, &raw)
+	raw["ph"] = int(domain.PiquetPhaseDeclaration)
+	raw["dr"] = []map[string]any{
+		{"k": 0, "w": 0, "sc": 5, "sb": 0},   // Point — Elder scores
+		{"k": 1, "w": -1, "sc": 0, "sb": -1}, // Sequence — tied
+		{"k": 2, "w": 1, "sc": 14, "sb": 1},  // Set — Younger scores
+	}
+	mod, _ := json.Marshal(raw)
+	g2 := &domain.Piquet{}
+	if err := json.Unmarshal(mod, g2); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	p := &PiquetCuiPresenter{}
+	out := p.Output(g2, nil)
+	if !strings.Contains(out, "Point") && !strings.Contains(out, "Sequence") && !strings.Contains(out, "Set") {
+		t.Errorf("expected at least one declaration label, got: %s", out)
+	}
+}
+
+// TestPiquetCuiPresenter_GameEndWithWinner exercises piquetWriteGameEndView's winner branch.
+func TestPiquetCuiPresenter_GameEndWithWinner(t *testing.T) {
+	g := newPiquetForPresenter(t)
+	data, _ := json.Marshal(g)
+	var raw map[string]any
+	_ = json.Unmarshal(data, &raw)
+	raw["ph"] = int(domain.PiquetPhaseGameEnd)
+	raw["wi"] = 0
+	raw["ge"] = true
+	mod, _ := json.Marshal(raw)
+	g2 := &domain.Piquet{}
+	_ = json.Unmarshal(mod, g2)
+	p := &PiquetCuiPresenter{}
+	out := p.Output(g2, nil)
+	if !strings.Contains(out, "0") {
+		t.Errorf("expected winner idx in output: %s", out)
+	}
+}
+
+// TestPiquetCuiPresenter_GameEndDraw exercises the draw branch.
+func TestPiquetCuiPresenter_GameEndDraw(t *testing.T) {
+	g := newPiquetForPresenter(t)
+	data, _ := json.Marshal(g)
+	var raw map[string]any
+	_ = json.Unmarshal(data, &raw)
+	raw["ph"] = int(domain.PiquetPhaseGameEnd)
+	raw["wi"] = -1
+	raw["ge"] = true
+	mod, _ := json.Marshal(raw)
+	g2 := &domain.Piquet{}
+	_ = json.Unmarshal(mod, g2)
+	p := &PiquetCuiPresenter{}
+	out := p.Output(g2, nil)
+	if out == "" {
+		t.Error("expected non-empty draw output")
 	}
 }

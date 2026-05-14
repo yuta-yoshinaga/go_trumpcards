@@ -111,4 +111,59 @@ describe('formatPiquetState', () => {
     const out = formatPiquetState(baseState({ phase: PiquetPhase.GAME_END, winnerIdx: -1 }));
     expect(out).toContain('draw');
   });
+
+  it('renders play-phase trick when current trick is non-empty', () => {
+    const out = formatPiquetState(
+      baseState({
+        phase: PiquetPhase.PLAY,
+        currentTrick: [
+          { playerIdx: 0, card: { design: 'SPADE', value: 13 } },
+          { playerIdx: 1, card: { design: 'SPADE', value: 7 } },
+        ],
+      }),
+    );
+    expect(out).toContain('Trick:');
+  });
+
+  it('shows human hand when present', () => {
+    const out = formatPiquetState(
+      baseState({
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 2,
+            cards: [
+              { design: 'SPADE', value: 1 },
+              { design: 'HEART', value: 13 },
+            ],
+            trickCount: 0,
+            declScore: 0,
+            trickScore: 0,
+            bonusScore: 0,
+            roundScore: 0,
+            matchScore: 0,
+          },
+          {
+            id: 1,
+            isHuman: false,
+            cardCount: 0,
+            cards: [],
+            trickCount: 0,
+            declScore: 0,
+            trickScore: 0,
+            bonusScore: 0,
+            roundScore: 0,
+            matchScore: 0,
+          },
+        ],
+      }),
+    );
+    expect(out).toMatch(/\[0\]/);
+  });
+
+  it('appends message when present', () => {
+    const out = formatPiquetState(baseState({ message: 'hello world' }));
+    expect(out).toContain('hello world');
+  });
 });
