@@ -192,6 +192,8 @@ tags:
     description: Piquet (ピケ) game - 2-player classical trick-taking using a 32-card deck (7-A); each deal has Exchange (Elder swaps 1-5, Younger 0-3), Declaration (Point/Sequence/Set auto-compared, honest claims), and 12-trick Play; full traditional bonuses (carte blanche, repique, pique, cards, capot) plus 6-deal partie with rubicon scoring
   - name: casinoholdem
     description: Casino Hold'em (カジノホールデム) game - single-player casino Texas Hold'em variant with Ante and optional AA Bonus side bet; flop revealed with hole cards, then Call (2x Ante) or Fold; dealer qualifies on Pair of Fours or better
+  - name: callbreak
+    description: Call Break (コールブレイク) game - 4-player Spades-style trick-taking game from South Asia; spades are permanent trump, must-trump-if-void rule, int×10 scoring (bid hit = bid*10 + overtricks, miss = -bid*10); 5 rounds fixed, highest cumulative score wins
 
 paths:
   /blackjack/exec:
@@ -8886,6 +8888,98 @@ paths:
               schema:
                 $ref: '#/components/schemas/OasisPokerResponse'
 
+  /callbreak/exec:
+    post:
+      tags:
+        - callbreak
+      summary: Execute a Call Break (コールブレイク) game command
+      description: |
+        Send a command to advance the Call Break game session identified by
+        `sessionId`. Call Break is a 4-player trick-taking game from South
+        Asia, structurally Spades with different scoring. Spades are the
+        permanent trump. Bids are 1..13 (no Nil). If void in the led suit
+        and you hold spades you must trump with a spade. Scoring is stored
+        as int×10 (display "X.Y"): meeting the bid scores `bid*10 +
+        overtricks`, missing scores `-bid*10`. The game runs for 5 rounds
+        by default and the highest cumulative score wins.
+
+        Phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Bid       | `0`   | Each player declares 1..13 |
+        | Play      | `1`   | 13-trick play (must follow / must trump if void) |
+        | TrickEnd  | `2`   | Trick resolved; call `n`/`next` to continue |
+        | RoundEnd  | `3`   | Round scored; call `nr`/`nextround` |
+        | GameEnd   | `4`   | MaxRounds reached; highest cumulative score wins |
+
+        Commands:
+
+        | Command       | Aliases       | Description |
+        |---------------|---------------|-------------|
+        | `reset` / `r` |               | Restart with optional config |
+        | `bid` / `b`   |               | Place bid (1..13) |
+        | `play` / `p`  |               | Play card at index |
+        | `next` / `n`  |               | Advance to next trick |
+        | `nextround` / `nr` |          | Score round and start next |
+        | `hint` / `h`  |               | Suggested move |
+        | `log` / `l`   |               | View action log |
+      operationId: callbreakExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bid, b, play, p, next, n, nextround, nr, hint, h, log, l]
+                bid:
+                  type: integer
+                  description: Bid amount for `bid`/`b` (1..13)
+                cardIndex:
+                  type: integer
+                  description: Card index for `play`/`p`
+                config:
+                  $ref: '#/components/schemas/CallBreakConfig'
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Declare bid 4
+                value:
+                  command: b
+                  bid: 4
+                  sessionId: my-session-001
+              play:
+                summary: Play hand[0]
+                value:
+                  command: p
+                  cardIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CallBreakResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CallBreakResponse'
+
 components:
   schemas:
     # -------------------------------------------------------------------------
@@ -12635,6 +12729,106 @@ components:
             reason:
               type: string
               description: Machine-readable reason key for the hint
+
+    # -------------------------------------------------------------------------
+    # Call Break
+    # -------------------------------------------------------------------------
+    CallBreakConfig:
+      type: object
+      description: Call Break game configuration
+      properties:
+        cpuDifficulty:
+          type: integer
+          minimum: 0
+          maximum: 2
+        maxRounds:
+          type: integer
+          minimum: 1
+          maximum: 50
+
+    CallBreakResponse:
+      type: object
+      description: |
+        Current state of the Call Break game. `roundScore` and
+        `cumulativeScore` are int×10 — the wire integer 41 represents 4.1
+        points. The frontend divides by 10 for display.
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              bid:
+                type: integer
+              roundScore:
+                type: integer
+                description: Round score in int×10 form (display = value/10)
+              cumulativeScore:
+                type: integer
+                description: Cumulative score in int×10 form (display = value/10)
+              trickCount:
+                type: integer
+        phase:
+          type: integer
+          description: "0 = Bid, 1 = Play, 2 = TrickEnd, 3 = RoundEnd, 4 = GameEnd"
+          enum: [0, 1, 2, 3, 4]
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        bidPlayerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        spadesBroken:
+          type: boolean
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        config:
+          $ref: '#/components/schemas/CallBreakConfig'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+        hint:
+          type: object
+          nullable: true
+          properties:
+            cardIndex:
+              type: integer
+              nullable: true
+            bid:
+              type: integer
+              nullable: true
+            reason:
+              type: string
 
     # -------------------------------------------------------------------------
     # Two Ten Jack

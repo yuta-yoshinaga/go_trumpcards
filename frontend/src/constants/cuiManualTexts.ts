@@ -13,6 +13,7 @@ import blackjack from '../../../docs/manual/cui/blackjack.md?raw';
 import blackjackswitch from '../../../docs/manual/cui/blackjackswitch.md?raw';
 import bridge from '../../../docs/manual/cui/bridge.md?raw';
 import calculation from '../../../docs/manual/cui/calculation.md?raw';
+import callbreak from '../../../docs/manual/cui/callbreak.md?raw';
 import canasta from '../../../docs/manual/cui/canasta.md?raw';
 import canfield from '../../../docs/manual/cui/canfield.md?raw';
 import caribbeanstud from '../../../docs/manual/cui/caribbeanstud.md?raw';
@@ -103,6 +104,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/canfield': canfield,
   '/caribbeanstud': caribbeanstud,
   '/casinoholdem': casinoholdem,
+  '/callbreak': callbreak,
   '/casinowar': casinowar,
   '/texasholdembonus': texasholdembonus,
   '/clocksolitaire': clocksolitaire,

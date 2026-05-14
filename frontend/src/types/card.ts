@@ -879,6 +879,61 @@ export interface SpadesResponse {
   hint?: SpadesHint;
 }
 
+// --- Call Break ---
+
+/** Call Break player data with bid and integer×10 scores. */
+export interface CallBreakPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  bid: number;
+  /** Round score in internal int×10 form (e.g. 41 == 4.1 points). */
+  roundScore: number;
+  /** Cumulative score in internal int×10 form. */
+  cumulativeScore: number;
+  trickCount: number;
+}
+
+/** A card played in a Call Break trick. */
+export interface CallBreakTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Call Break game configuration. */
+export interface CallBreakConfig {
+  cpuDifficulty: number;
+  maxRounds: number;
+}
+
+/** A suggested hint for Call Break. */
+export interface CallBreakHint {
+  cardIndex?: number;
+  bid?: number;
+  reason: string;
+}
+
+/** Full Call Break game state returned from the API. */
+export interface CallBreakResponse {
+  players: CallBreakPlayerData[];
+  phase: number;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  bidPlayerIdx: number;
+  currentTrick: CallBreakTrickCard[];
+  spadesBroken: boolean;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  leadPlayerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: CallBreakConfig;
+  hint?: CallBreakHint;
+}
+
 // --- Pitch (Setback / Auction Pitch) ---
 
 /** Pitch player data (4-player single-handed scoring). */

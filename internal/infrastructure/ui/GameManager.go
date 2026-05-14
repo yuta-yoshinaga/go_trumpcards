@@ -1468,6 +1468,17 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},
+	{Name: "callbreak", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCallBreakCuiController(usecase.NewCallBreakInteractor(
+				domain.NewDefaultCallBreak(), new(presenter.CallBreakCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "callbreak.helpTitle",
+				CommandKeys:       []string{"callbreak.helpBid", "callbreak.helpPlay", "callbreak.helpNext", "callbreak.helpNextRound"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"callbreak.helpSetDifficulty", "callbreak.helpSetRounds"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
