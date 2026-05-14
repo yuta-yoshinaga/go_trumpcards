@@ -9,7 +9,7 @@ test.describe('Call Break E2E', () => {
     await expect(
       page
         .locator('main')
-        .getByText(/ラウンド/)
+        .getByText(/ラウンド \d/)
         .first(),
     ).toBeVisible({
       timeout: TIMEOUT_ACTION,
@@ -29,7 +29,7 @@ test.describe('Call Break E2E', () => {
     await expect(
       page
         .locator('main')
-        .getByText(/ラウンド/)
+        .getByText(/ラウンド \d/)
         .first(),
     ).toBeVisible({
       timeout: TIMEOUT_ACTION,
