@@ -1013,9 +1013,14 @@ func (cb *CallBreak) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// callBreakMaxSliceLen caps slice sizes during deserialisation to prevent
-// excessive memory allocation from malformed input.
+// callBreakMaxSliceLen caps small fixed-size slice fields during deserialisation
+// (players: max 4, currentTrick: max 4) to prevent excessive memory allocation.
 const callBreakMaxSliceLen = 1000
+
+// callBreakMaxActionLogLen caps the ActionLog slice during deserialisation.
+// ActionLog grows by ~70 entries per round (52 plays + 4 bids + 13 trick winners +
+// 1 score entry); 5000 accommodates ~71 rounds while still bounding DoS risk.
+const callBreakMaxActionLogLen = 5000
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (cb *CallBreak) UnmarshalJSON(data []byte) error {
@@ -1024,7 +1029,7 @@ func (cb *CallBreak) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if len(j.Players) > callBreakMaxSliceLen || len(j.CurrentTrick) > callBreakMaxSliceLen ||
-		len(j.ActionLog) > callBreakMaxSliceLen {
+		len(j.ActionLog) > callBreakMaxActionLogLen {
 		return fmt.Errorf("callbreak: input array exceeds maximum allowed size")
 	}
 	cb.trumpCards = j.TrumpCards
