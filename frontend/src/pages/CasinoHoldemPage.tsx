@@ -365,7 +365,21 @@ function CasinoHoldemPageContent() {
                     className="w-24 px-2 py-1 rounded text-sm"
                   />
                 </div>
-                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handleBet}
+                  disabled={
+                    loading ||
+                    Number.isNaN(anteAmount) ||
+                    Number.isNaN(bonusAmount) ||
+                    anteAmount < 10 ||
+                    anteAmount % 10 !== 0 ||
+                    (bonusAmount > 0 && bonusAmount < 10) ||
+                    bonusAmount % 10 !== 0 ||
+                    anteAmount + bonusAmount > state.chips
+                  }
+                >
                   {t('button.bet')}
                 </button>
               </div>
