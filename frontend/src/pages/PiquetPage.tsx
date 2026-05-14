@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react';
 import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
@@ -223,8 +222,6 @@ function PiquetPageContent() {
           {state.winnerIdx === -1 ? t('partieDraw') : t('partieWinner', { idx: state.winnerIdx })}
         </div>
       ) : null}
-
-      <GameFooter />
     </GamePageShell>
   );
 }
