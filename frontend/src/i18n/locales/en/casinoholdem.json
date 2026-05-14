@@ -1,0 +1,83 @@
+{
+  "title": "Casino Hold'em",
+  "player": "Player",
+  "dealer": "Dealer",
+  "board": "Board",
+  "dealerQualified": "Dealer qualifies",
+  "dealerDoesNotQualify": "Dealer does not qualify",
+  "label": {
+    "chips": "Chips",
+    "ante": "Ante",
+    "bonus": "AA Bonus",
+    "callBet": "Call",
+    "handRank": "Hand"
+  },
+  "button": {
+    "bet": "Bet",
+    "call": "Call (2x)",
+    "fold": "Fold",
+    "reset": "Reset"
+  },
+  "phase": {
+    "bet": "Bet",
+    "flop": "Flop",
+    "end": "Result"
+  },
+  "result": {
+    "playerWins": "Player wins!",
+    "dealerWins": "Dealer wins!",
+    "push": "Push!",
+    "fold": "Folded"
+  },
+  "payout": {
+    "ante": "Ante",
+    "call": "Call",
+    "bonus": "AA Bonus",
+    "total": "Total"
+  },
+  "handRank": {
+    "0": "High Card",
+    "1": "One Pair",
+    "2": "Two Pair",
+    "3": "Three of a Kind",
+    "4": "Straight",
+    "5": "Flush",
+    "6": "Full House",
+    "7": "Four of a Kind",
+    "8": "Straight Flush",
+    "9": "Royal Flush"
+  },
+  "settings": {
+    "title": "Settings"
+  },
+  "betGuide": "Set ante and optional AA bonus, then place your bet",
+  "payoutRef": {
+    "title": "Pay Table",
+    "anteHeader": "Ante Payout",
+    "anteRoyalFlush": "Royal Flush: 100:1",
+    "anteStraightFlush": "Straight Flush: 20:1",
+    "anteFourOfAKind": "Four of a Kind: 10:1",
+    "anteFullHouse": "Full House: 3:1",
+    "anteFlush": "Flush: 2:1",
+    "anteOther": "Other wins: 1:1",
+    "bonusHeader": "AA Bonus (Hole + 3 Flop)",
+    "bonusRoyalFlush": "Royal Flush: 100:1",
+    "bonusStraightFlush": "Straight Flush: 50:1",
+    "bonusFourOfAKind": "Four of a Kind: 40:1",
+    "bonusFullHouse": "Full House: 30:1",
+    "bonusFlush": "Flush: 20:1",
+    "bonusStraight": "Straight: 10:1",
+    "bonusThreeOfAKind": "Three of a Kind: 8:1",
+    "bonusTwoPair": "Two Pair: 7:1",
+    "bonusPairOfAces": "Pair of Aces: 7:1"
+  },
+  "tutorial": {
+    "betControls": "Set the ante and optional AA bonus, then press Bet.",
+    "flopButtons": "See the 3 flop cards: Call (2x ante) to see the turn/river, or Fold.",
+    "results": "Review the result and payout."
+  },
+  "hint": {
+    "pairOrBetter": "Pair or better — recommend Call",
+    "weakHand": "Weak hand — consider Fold"
+  }
+}

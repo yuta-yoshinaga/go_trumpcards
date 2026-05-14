@@ -2188,6 +2188,37 @@ export interface CaribbeanStudResponse {
   messageParams?: Record<string, string>;
 }
 
+// --- Casino Hold'em (カジノホールデム) ---
+
+/** Casino Hold'em API response. */
+export interface CasinoHoldemResponse {
+  /** Player's two hole cards. */
+  playerHand: Card[];
+  /** Dealer's hole cards: masked as `MaskedCard` until the showdown (only after a call). */
+  dealerHand: (Card | MaskedCard)[];
+  /** Community cards (flop / turn / river). Length grows from 3 (flop) → 5 (showdown). */
+  community: Card[];
+  phase: number;
+  chips: number;
+  anteBet: number;
+  /** AA Bonus side bet wager. */
+  bonusBet: number;
+  /** Call bet placed at flop (2× ante). 0 if folded. */
+  callBet: number;
+  result: number;
+  /** Whether the dealer qualified (Pair of Fours or better). */
+  dealerQualify: boolean;
+  antePayout: number;
+  callPayout: number;
+  bonusPayout: number;
+  totalPayout: number;
+  playerHandRank: number;
+  dealerHandRank: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
 // --- Texas Hold'em Bonus Poker (テキサスホールデムボーナスポーカー) ---
 
 /** Texas Hold'em Bonus Poker API response. */

@@ -463,4 +463,9 @@ func init() {
 			return usecase.NewPiquetInteractor(domain.NewDefaultPiquet(), new(presenter.PiquetWebPresenter))
 		},
 		controller.NewPiquetWebController)
+	BindWebControllerFor("casinoholdem",
+		func() usecase.CasinoHoldemInteractorIF {
+			return usecase.NewCasinoHoldemInteractor(domain.NewDefaultCasinoHoldem(), new(presenter.CasinoHoldemWebPresenter))
+		},
+		controller.NewCasinoHoldemWebController)
 }

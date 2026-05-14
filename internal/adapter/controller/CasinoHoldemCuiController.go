@@ -1,0 +1,51 @@
+package controller
+
+import (
+	"math"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
+)
+
+// CasinoHoldemCuiController カジノホールデムCUIコントローラークラス
+type CasinoHoldemCuiController struct {
+	ci usecase.CasinoHoldemInteractorIF
+}
+
+// NewCasinoHoldemCuiController コンストラクタ
+func NewCasinoHoldemCuiController(ci usecase.CasinoHoldemInteractorIF) *CasinoHoldemCuiController {
+	return &CasinoHoldemCuiController{ci: ci}
+}
+
+// Exec ゲーム実行
+// コマンド例: "r", "b 100", "b 100 10", "c", "f", "log"
+func (cc *CasinoHoldemCuiController) Exec(command string) string {
+	return execCuiCommand(
+		command,
+		func(_ []string) string { return cc.ci.Reset() },
+		[]string{"b", "bet", "c", "call", "f", "fold", "log", "l"},
+		func(cmd string, args []string) (string, bool) {
+			switch cmd {
+			case "b", "bet":
+				ante, errMsg, ok := cuiutil.ParseIntArg(args, "Ante amount is required.", "Invalid ante amount. Please enter a number.", 1, math.MaxInt)
+				if !ok {
+					return errMsg, true
+				}
+				bonus := 0
+				if len(args) > 1 {
+					bonus, errMsg, ok = cuiutil.ParseIntArg(args[1:], "", "Invalid bonus amount.", 0, math.MaxInt)
+					if !ok {
+						return errMsg, true
+					}
+				}
+				return cc.ci.Bet(ante, bonus), true
+			case "c", "call":
+				return cc.ci.Call(), true
+			case "f", "fold":
+				return cc.ci.Fold(), true
+			default:
+				return handleCuiLog(cmd, cc.ci.ActionLog)
+			}
+		},
+	)
+}

@@ -12,6 +12,7 @@ import type {
   CanastaResponse,
   CanfieldResponse,
   CaribbeanStudResponse,
+  CasinoHoldemResponse,
   CasinoWarResponse,
   CassinoResponse,
   ClockSolitaireResponse,
@@ -89,6 +90,7 @@ import { getCalculationHint } from '../utils/hints/calculationHint';
 import { getCanastaHint } from '../utils/hints/canastaHint';
 import { getCanfieldHint } from '../utils/hints/canfieldHint';
 import { getCaribbeanStudHint } from '../utils/hints/caribbeanstudHint';
+import { getCasinoHoldemHint } from '../utils/hints/casinoholdemHint';
 import { getCasinowarHint } from '../utils/hints/casinowarHint';
 import { getCassinoHint } from '../utils/hints/cassinoHint';
 import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
@@ -203,6 +205,7 @@ const hintFactories = {
   cribbage: (s) => getCribbageHint(s as CribbageResponse),
   gofish: (s) => getGoFishHint(s as GoFishResponse),
   caribbeanstud: (s) => getCaribbeanStudHint(s as CaribbeanStudResponse),
+  casinoholdem: (s) => getCasinoHoldemHint(s as CasinoHoldemResponse),
   texasholdembonus: (s) => getTexasHoldemBonusHint(s as TexasHoldemBonusResponse),
   ultimatetexasholdem: (s) => getUltimateTexasHoldemHint(s as UltimateTexasHoldemResponse),
   mississippistud: (s) => getMississippiStudHint(s as MississippiStudResponse),

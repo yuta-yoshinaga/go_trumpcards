@@ -5,6 +5,7 @@ import {
   blackjackApi,
   blackjackswitchApi,
   canfieldApi,
+  casinoholdemApi,
   crazyeightsApi,
   daifugoApi,
   doubtApi,
@@ -3255,5 +3256,73 @@ describe('gameApi', () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(montecarloApi.exec('reset')).rejects.toThrow('HTTP error: 500');
     });
+  });
+});
+
+describe('casinoholdemApi', () => {
+  const mockFetch = vi.fn();
+
+  beforeEach(() => {
+    vi.stubGlobal('fetch', mockFetch);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.clearAllMocks();
+  });
+
+  function makeResponse(data: unknown, ok = true, status = 200) {
+    return Promise.resolve({
+      ok,
+      status,
+      json: () => Promise.resolve(data),
+    });
+  }
+
+  it('sends reset command', async () => {
+    const mockResponse = { phase: 1, chips: 1000 };
+    mockFetch.mockReturnValue(makeResponse(mockResponse));
+    const result = await casinoholdemApi.exec('reset');
+    expect(mockFetch).toHaveBeenCalledWith('/casinoholdem/exec', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ command: 'reset', amount: undefined, bonusBet: undefined, sessionId }),
+    });
+    expect(result).toEqual(mockResponse);
+  });
+
+  it('sends bet command with ante and AA bonus', async () => {
+    mockFetch.mockReturnValue(makeResponse({ phase: 2 }));
+    await casinoholdemApi.exec('bet', 100, 10);
+    expect(mockFetch).toHaveBeenCalledWith('/casinoholdem/exec', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ command: 'bet', amount: 100, bonusBet: 10, sessionId }),
+    });
+  });
+
+  it('sends call command', async () => {
+    mockFetch.mockReturnValue(makeResponse({ phase: 3 }));
+    await casinoholdemApi.exec('call');
+    expect(mockFetch).toHaveBeenCalledWith('/casinoholdem/exec', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ command: 'call', amount: undefined, bonusBet: undefined, sessionId }),
+    });
+  });
+
+  it('sends fold command', async () => {
+    mockFetch.mockReturnValue(makeResponse({ phase: 3 }));
+    await casinoholdemApi.exec('fold');
+    expect(mockFetch).toHaveBeenCalledWith('/casinoholdem/exec', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ command: 'fold', amount: undefined, bonusBet: undefined, sessionId }),
+    });
+  });
+
+  it('throws on HTTP error', async () => {
+    mockFetch.mockReturnValue(makeResponse(null, false, 500));
+    await expect(casinoholdemApi.exec('reset')).rejects.toThrow('HTTP error: 500');
   });
 });

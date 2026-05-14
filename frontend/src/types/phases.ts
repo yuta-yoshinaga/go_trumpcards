@@ -393,6 +393,13 @@ export const CaribbeanStudPhase = {
   END: 3,
 } as const;
 
+/** Casino Hold'em phase constants (sync: internal/domain/CasinoHoldem.go). */
+export const CasinoHoldemPhase = {
+  BET: 1,
+  FLOP: 2,
+  END: 3,
+} as const;
+
 /** Texas Hold'em Bonus Poker phase constants (sync: internal/domain/TexasHoldemBonus.go). */
 export const TexasHoldemBonusPhase = {
   BET: 1,
