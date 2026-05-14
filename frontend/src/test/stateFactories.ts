@@ -1,4 +1,4 @@
-import type { HeartsResponse, SpadesResponse, TwoTenJackResponse } from '../types/card';
+import type { CallBreakResponse, HeartsResponse, SpadesResponse, TwoTenJackResponse } from '../types/card';
 
 /** Base Hearts player data for player 0 (human). */
 const heartsHumanPlayer = {
@@ -124,6 +124,78 @@ const baseSpadesState: SpadesResponse = {
  */
 export function makeSpadesState(overrides?: Partial<SpadesResponse>): SpadesResponse {
   return { ...baseSpadesState, ...overrides };
+}
+
+/** Base Call Break player data used by {@link makeCallBreakState}. */
+const callBreakPlayers: CallBreakResponse['players'] = [
+  {
+    id: 0,
+    isHuman: true,
+    cardCount: 13,
+    cards: [
+      { design: 'SPADE' as const, value: 1 },
+      { design: 'HEART' as const, value: 11 },
+    ],
+    bid: 3,
+    roundScore: 0,
+    cumulativeScore: 0,
+    trickCount: 0,
+  },
+  {
+    id: 1,
+    isHuman: false,
+    cardCount: 13,
+    cards: [],
+    bid: 4,
+    roundScore: 0,
+    cumulativeScore: 41,
+    trickCount: 1,
+  },
+  {
+    id: 2,
+    isHuman: false,
+    cardCount: 13,
+    cards: [],
+    bid: 3,
+    roundScore: 0,
+    cumulativeScore: 30,
+    trickCount: 2,
+  },
+  {
+    id: 3,
+    isHuman: false,
+    cardCount: 13,
+    cards: [],
+    bid: 2,
+    roundScore: 0,
+    cumulativeScore: -20,
+    trickCount: 0,
+  },
+];
+
+/** Base Call Break state for {@link makeCallBreakState}. */
+const baseCallBreakState: CallBreakResponse = {
+  players: callBreakPlayers,
+  phase: 1,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  bidPlayerIdx: 0,
+  currentTrick: [],
+  spadesBroken: false,
+  gameEndFlag: false,
+  winnerIdx: -1,
+  leadPlayerIdx: 0,
+  message: '',
+  config: { cpuDifficulty: 1, maxRounds: 5 },
+};
+
+/**
+ * Creates a {@link CallBreakResponse} with sensible defaults. Scores are int×10
+ * (e.g. 41 = 4.1 points).
+ */
+export function makeCallBreakState(overrides?: Partial<CallBreakResponse>): CallBreakResponse {
+  return { ...baseCallBreakState, ...overrides };
 }
 
 /** Base Two Ten Jack player data used by {@link makeTwoTenJackState}. */

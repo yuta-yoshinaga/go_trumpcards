@@ -9,6 +9,7 @@ import type {
   BlackJackResponse,
   BlackJackSwitchResponse,
   CalculationResponse,
+  CallBreakResponse,
   CanastaResponse,
   CanfieldResponse,
   CaribbeanStudResponse,
@@ -87,6 +88,7 @@ import { getBeloteHint } from '../utils/hints/beloteHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getBlackjackswitchHint } from '../utils/hints/blackjackswitchHint';
 import { getCalculationHint } from '../utils/hints/calculationHint';
+import { getCallBreakHint } from '../utils/hints/callbreakHint';
 import { getCanastaHint } from '../utils/hints/canastaHint';
 import { getCanfieldHint } from '../utils/hints/canfieldHint';
 import { getCaribbeanStudHint } from '../utils/hints/caribbeanstudHint';
@@ -171,6 +173,7 @@ const hintFactories = {
   poker: (s) => getPokerHint(s as PokerResponse),
   hearts: (s) => getHeartsHint(s as HeartsResponse),
   spades: (s) => getSpadesHint(s as SpadesResponse),
+  callbreak: (s) => getCallBreakHint(s as CallBreakResponse),
   pitch: (s) => getPitchHint(s as PitchResponse),
   holdem: (s) => getHoldemHint(s as HoldemResponse),
   omaha: (s) => getOmahaHint(s as OmahaResponse),

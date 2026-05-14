@@ -295,4 +295,12 @@ func init() {
 			return usecase.RestorePiquetInteractor(data, new(presenter.PiquetWebPresenter))
 		},
 		controller.NewPiquetWebControllerWithProvider)
+	games.RegisterKVGame("callbreak", games.CategoryClassic,
+		func() usecase.CallBreakInteractorIF {
+			return usecase.NewCallBreakInteractor(domain.NewDefaultCallBreak(), new(presenter.CallBreakWebPresenter))
+		},
+		func(data []byte) (usecase.CallBreakInteractorIF, error) {
+			return usecase.RestoreCallBreakInteractor(data, new(presenter.CallBreakWebPresenter))
+		},
+		controller.NewCallBreakWebControllerWithProvider)
 }

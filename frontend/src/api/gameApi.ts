@@ -13,6 +13,7 @@ import type {
   BridgeResponse,
   CalculationMoveZone,
   CalculationResponse,
+  CallBreakResponse,
   CanastaResponse,
   CanfieldResponse,
   CaribbeanStudResponse,
@@ -204,6 +205,7 @@ const workerUrl: Record<string, string> = {
   oasispoker: WORKER_CASINO,
   beleagueredcastle: WORKER_SOLO,
   piquet: WORKER_CLASSIC,
+  callbreak: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -599,6 +601,15 @@ function createBidPlayApi<T, C>(game: string) {
 
 /** API client for the Spades /spades/exec endpoint. */
 export const spadesApi = createBidPlayApi<SpadesResponse, SpadesConfigInput>('spades');
+
+/** Configuration options for Call Break game settings. */
+export interface CallBreakConfigInput {
+  cpuDifficulty?: number;
+  maxRounds?: number;
+}
+
+/** API client for the Call Break /callbreak/exec endpoint. */
+export const callBreakApi = createBidPlayApi<CallBreakResponse, CallBreakConfigInput>('callbreak');
 
 /** Configuration options for Pitch (Setback) game settings. */
 export interface PitchConfigInput {
@@ -1800,6 +1811,7 @@ const games = [
   'beleagueredcastle',
   'piquet',
   'casinoholdem',
+  'callbreak',
 ] as const;
 type Game = (typeof games)[number];
 

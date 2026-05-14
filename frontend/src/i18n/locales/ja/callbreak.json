@@ -1,0 +1,75 @@
+{
+  "phase": {
+    "bid": "ビッド",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "maxRounds": "総ラウンド数",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}} / {{max}}",
+  "trick": "トリック {{n}}",
+  "spadesBroken": "スペードブレイク済",
+  "spadesNotBroken": "スペード未ブレイク",
+  "cards": "{{count}}枚",
+  "cumulativeScore": "累計: {{score}}",
+  "roundScore": "ラウンド: {{score}}",
+  "bid": "ビッド {{n}}",
+  "bidNone": "未ビッド",
+  "currentTrick": "現在のトリック",
+  "scores": "スコア",
+  "scoresPlayer": "プレイヤー",
+  "scoresBid": "ビッド",
+  "scoresTricks": "トリック",
+  "scoresRound": "ラウンド",
+  "scoresTotal": "累計",
+  "bidButton": "ビッド",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド",
+  "bidPhase": "ビッド宣言 (1-13)",
+  "playPhase": {
+    "lead": "リードしてください",
+    "follow": "カードを出してください (ボイドならスペードで切る)"
+  },
+  "trickEnd": "トリック終了",
+  "roundEnd": "ラウンド終了",
+  "result": {
+    "humanWin": "あなたの勝利！",
+    "cpuWin": "CPU {{cpuId}} の勝利！"
+  },
+  "hintBid": "推奨ビッド",
+  "hintPlay": "推奨カード",
+  "hintReason": {
+    "strategic_bid": "戦略的なビッド",
+    "lead_strong": "強いカードでリード",
+    "lead_low": "低いカードでリード",
+    "follow_suit": "リードスートに追随",
+    "trump_cut": "スペードでカット",
+    "discard_high": "高いカードを捨てる"
+  },
+  "tutorial": {
+    "bidControls": "ビッドフェーズでは取れると思うトリック数 (1-13) を宣言します。",
+    "trickDisplay": "現在のトリックです。スペードが常に切り札です。",
+    "playerHand": "あなたの手札です。リードスートに従い、ボイドならスペードで切らなければなりません。",
+    "playButton": "カードを選んだらこのボタンで出します。",
+    "scoreTable": "スコア表です。ビッド達成で +bid 点、超過 1 トリック毎に +0.1 点 (例: 4 ビッド・5 取り→4.1 点)。未達は -bid 点です。",
+    "bagsInfo": "Call Break には Bag (バッグ) ペナルティはありません。5 ラウンド固定で累計スコアが最も高いプレイヤーが勝者です。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "hint": {
+    "bidEstimate": "手札の強さに基づくビッド推奨",
+    "leadNonSpade": "スペード以外のカードでリード推奨",
+    "leadStrategic": "戦略的にリード推奨",
+    "followSuit": "リードされたスートに従ってプレイ推奨",
+    "mustTrumpWithSpade": "ボイドなのでスペードで切らなければなりません",
+    "discardLowest": "最も低いカードを捨てることを推奨"
+  }
+}

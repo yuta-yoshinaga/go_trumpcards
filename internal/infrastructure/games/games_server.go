@@ -468,4 +468,9 @@ func init() {
 			return usecase.NewCasinoHoldemInteractor(domain.NewDefaultCasinoHoldem(), new(presenter.CasinoHoldemWebPresenter))
 		},
 		controller.NewCasinoHoldemWebController)
+	BindWebControllerFor("callbreak",
+		func() usecase.CallBreakInteractorIF {
+			return usecase.NewCallBreakInteractor(domain.NewDefaultCallBreak(), new(presenter.CallBreakWebPresenter))
+		},
+		controller.NewCallBreakWebController)
 }

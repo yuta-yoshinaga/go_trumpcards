@@ -92,6 +92,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/belote', labelKey: 'nav.belote', icon: '🇫🇷', page: 'Belote' },
       { path: '/mighty', labelKey: 'nav.mighty', icon: '👊', page: 'Mighty' },
       { path: '/piquet', labelKey: 'nav.piquet', icon: '🎴', page: 'Piquet' },
+      { path: '/callbreak', labelKey: 'nav.callbreak', icon: '🃏', page: 'CallBreak' },
     ],
   },
   {

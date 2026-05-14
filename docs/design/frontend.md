@@ -926,7 +926,7 @@ classDiagram
 
     RedDogApi --> gameApi : uses postJson/gameExec
 
-    note for BlackJackApi "全91ゲーム分のAPI Objectが存在\n(blackjack, spanish21, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, omahahilo, shortdeck,\npineapple, crazypineapple, hearts, memory, klondike, freecell,\nbaccarat, spades, twotenjack, crazyeights, ginrummy, canasta,\nspider, spiderette, napoleon, mighty, indianpoker, videopoker,\ndeuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, caribbeanstud, texasholdembonus,\nultimatetexasholdem, mississippistud, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow, war, canfield, fiftyone, yukon, russiansolitaire, scorpion, accordion, whist,\nletitride, pokersquares, pageone, reddog, razz, badugi, trash,\nsevenbridge, president, cassino, calculation, crescent, spiteandmalice,\nskat, shithead, nertz, slapjack, egyptianratscrew, bakersdozen, tonk,\ncasinowar, pitch, dragontiger, blackjackswitch, montecarlo, contractrummy, belote)"
+    note for BlackJackApi "全92ゲーム分のAPI Objectが存在\n(blackjack, spanish21, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, omahahilo, shortdeck,\npineapple, crazypineapple, hearts, memory, klondike, freecell,\nbaccarat, spades, twotenjack, crazyeights, ginrummy, canasta,\nspider, spiderette, napoleon, mighty, indianpoker, videopoker,\ndeuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, caribbeanstud, texasholdembonus,\nultimatetexasholdem, mississippistud, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow, war, canfield, fiftyone, yukon, russiansolitaire, scorpion, accordion, whist,\nletitride, pokersquares, pageone, reddog, razz, badugi, trash,\nsevenbridge, president, cassino, calculation, crescent, spiteandmalice,\nskat, shithead, nertz, slapjack, egyptianratscrew, bakersdozen, tonk,\ncasinowar, pitch, dragontiger, blackjackswitch, montecarlo, contractrummy, belote)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -1927,7 +1927,7 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (91ゲーム)
+        +Routes (92ゲーム)
     }
 
     class gameCategories {
@@ -1954,7 +1954,7 @@ classDiagram
     GamePage --> TutorialProvider : wraps (per-game)
     TutorialProvider --> TutorialOverlay : renders when active
 
-    note for i18n "93名前空間: common + 91ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
+    note for i18n "94名前空間: common + 92ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
 ```
 
 ---

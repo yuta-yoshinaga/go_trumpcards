@@ -109,6 +109,7 @@ Go + Clean Architecture で実装した90種類のトランプゲーム。CLI �
 | クレセント・ソリティア (Crescent Solitaire) | `crescent` | [CUI](docs/manual/cui/crescent.md) / [Web](docs/manual/web/crescent.md) |
 | ミシシッピ・スタッド (Mississippi Stud) | `mississippistud` | [CUI](docs/manual/cui/mississippistud.md) / [Web](docs/manual/web/mississippistud.md) |
 | ベロート (Belote) | `belote` | [CUI](docs/manual/cui/belote.md) / [Web](docs/manual/web/belote.md) |
+| コールブレイク (Call Break) | `callbreak` | [CUI](docs/manual/cui/callbreak.md) / [Web](docs/manual/web/callbreak.md) |
 
 ## Demo
 

@@ -12,6 +12,7 @@ import blackjack from '../../../docs/manual/web/blackjack.md?raw';
 import blackjackswitch from '../../../docs/manual/web/blackjackswitch.md?raw';
 import bridge from '../../../docs/manual/web/bridge.md?raw';
 import calculation from '../../../docs/manual/web/calculation.md?raw';
+import callbreak from '../../../docs/manual/web/callbreak.md?raw';
 import canasta from '../../../docs/manual/web/canasta.md?raw';
 import canfield from '../../../docs/manual/web/canfield.md?raw';
 import caribbeanstud from '../../../docs/manual/web/caribbeanstud.md?raw';
@@ -105,6 +106,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/canfield': canfield,
   '/caribbeanstud': caribbeanstud,
   '/casinoholdem': casinoholdem,
+  '/callbreak': callbreak,
   '/casinowar': casinowar,
   '/texasholdembonus': texasholdembonus,
   '/clocksolitaire': clocksolitaire,

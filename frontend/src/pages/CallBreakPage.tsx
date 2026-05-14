@@ -1,0 +1,480 @@
+import { useCallback, useMemo, useState } from 'react';
+import type { callBreakApi } from '../api/gameApi';
+import { ActionLogSection } from '../components/ActionLogSection';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
+import { SettingsPanel } from '../components/common/SettingsPanel';
+import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
+import { GameMessageBox } from '../components/GameMessageBox';
+import { GamePageShell } from '../components/GamePageShell';
+import { GameResetButton } from '../components/GameResetButton';
+import { HintTooltip } from '../components/hint/HintTooltip';
+import { PlayerHandSection } from '../components/PlayerHandSection';
+import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
+import { ScrollFadeHint } from '../components/ScrollFadeHint';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
+import { TrickDisplay } from '../components/TrickDisplay';
+import { withTutorial } from '../components/tutorial/withTutorial';
+import {
+  CALLBREAK_CPU_DIFFICULTY_OPTIONS,
+  CALLBREAK_MAX_ROUNDS_OPTIONS,
+  useCallBreakGame,
+} from '../hooks/useCallBreakGame';
+import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
+import { useGameHint } from '../hooks/useGameHint';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { usePhaseNames } from '../hooks/usePhaseNames';
+import { useSound } from '../providers/SoundProvider';
+import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
+import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
+import { gameTheme } from '../styles/gameTheme';
+import type { CallBreakResponse } from '../types/card';
+import { CallBreakPhase } from '../types/phases';
+import type { TutorialStep } from '../types/tutorial';
+import { CALLBREAK_HELP, parseCallBreakCommand } from '../utils/cli/commands/callbreakCommands';
+import { formatCallBreakState } from '../utils/cli/formatters/callbreakFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
+import { playerName } from '../utils/playerUtils';
+
+/**
+ * Render a Call Break int×10 score (e.g. 41) as "X.Y" / "-X.Y" for the UI.
+ * Mirrors `FormatCallBreakScore` in the Go backend so the wire integer round-trips
+ * to the same display string on both sides.
+ */
+function fmtScore(internal: number): string {
+  const sign = internal < 0 ? '-' : '';
+  const n = Math.abs(internal);
+  return `${sign}${Math.trunc(n / 10)}.${n % 10}`;
+}
+
+/** Call Break tutorial step definitions. */
+const CB_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="cb-bid-controls"]',
+    messageKey: 'tutorial.bidControls',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="cb-trick-display"]',
+    messageKey: 'tutorial.trickDisplay',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="cb-player-hand"]',
+    messageKey: 'tutorial.playerHand',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="cb-play-button"]',
+    messageKey: 'tutorial.playButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="cb-score-table"]',
+    messageKey: 'tutorial.scoreTable',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="cb-bags-info"]',
+    messageKey: 'tutorial.bagsInfo',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="cb-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
+const CALLBREAK_PHASE_KEYS: Readonly<Record<number, string>> = {
+  [CallBreakPhase.BID]: 'bid',
+  [CallBreakPhase.PLAY]: 'play',
+  [CallBreakPhase.TRICK_END]: 'trickEnd',
+  [CallBreakPhase.ROUND_END]: 'roundEnd',
+  [CallBreakPhase.GAME_END]: 'gameEnd',
+};
+
+/** Renders the Call Break game page with bidding, trick play, and decimal scoring. */
+export const CallBreakPage = withTutorial(CallBreakPageContent, 'callbreak', CB_TUTORIAL_STEPS);
+/** Inner content of the Call Break page, wrapped by TutorialProvider. */
+function CallBreakPageContent() {
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('callbreak');
+  const { playSound } = useSound();
+  const {
+    state,
+    loading,
+    error,
+    exec,
+    retry,
+    callBreakConfig,
+    selectedCardIndices,
+    toggleCard,
+    clearSelection,
+    handleConfigChange,
+    handleBid,
+    handlePlay,
+    handleNextTrick,
+    handleNextRound,
+    hint,
+    hintError,
+    hintLoading,
+    handleHint,
+  } = useCallBreakGame();
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('callbreak', state);
+  const { cardWidth, isMobile } = useCardDimensions();
+  const [bidValue, setBidValue] = useState(1);
+  // CLI mode
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('callbreak');
+  const cliConfig: CliGameConfig<CallBreakResponse, Parameters<typeof callBreakApi.exec>> = useMemo(
+    () => ({
+      gameName: 'callbreak',
+      parseCommand: parseCallBreakCommand,
+      formatResponse: formatCallBreakState,
+      helpText: CALLBREAK_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
+
+  const isPlayPhaseForKbd = state?.phase === CallBreakPhase.PLAY;
+  const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
+  const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
+
+  const confirmAction = useCallback(() => {
+    handlePlay();
+  }, [handlePlay]);
+
+  useCardKeyboardNav({
+    cardCount: humanCardCountForKbd,
+    onToggle: toggleCard,
+    onConfirm: confirmAction,
+    onClear: clearSelection,
+    enabled: !!isHumanTurnForKbd && !loading,
+  });
+
+  const phaseNames = usePhaseNames('callbreak', CALLBREAK_PHASE_KEYS);
+
+  const runAction = exec;
+  const handleManualReset = useCallback(() => {
+    hideActionLog();
+    void runAction('reset', undefined, undefined, {
+      cpuDifficulty: callBreakConfig.cpuDifficulty,
+      maxRounds: callBreakConfig.maxRounds,
+    });
+  }, [runAction, hideActionLog, callBreakConfig.cpuDifficulty, callBreakConfig.maxRounds]);
+
+  if (!state)
+    return <GameSkeleton gameKey="callbreak" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
+
+  const humanPlayer = state.players.find((p) => p.isHuman);
+  const isBidPhase = state.phase === CallBreakPhase.BID;
+  const isPlayPhase = state.phase === CallBreakPhase.PLAY;
+  const isTrickEnd = state.phase === CallBreakPhase.TRICK_END;
+  const isRoundEnd = state.phase === CallBreakPhase.ROUND_END;
+  const isGameEnd = state.phase === CallBreakPhase.GAME_END || state.gameEndFlag;
+  const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const isHumanBidTurn = isBidPhase && state.players[state.bidPlayerIdx]?.isHuman === true;
+
+  return (
+    <GamePageShell
+      title={tc('nav.callbreak')}
+      gameThemeBg={gameTheme.callbreak.bg}
+      phaseName={phaseNames[state.phase]}
+      isHumanTurn={isHumanBidTurn || isHumanTurn}
+      gamePath="/callbreak"
+      gameEndFlag={!!state?.gameEndFlag}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
+    >
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <SettingsPanel
+            title={t('settings.title')}
+            groups={[
+              {
+                items: [
+                  {
+                    type: 'select',
+                    id: 'cpuDifficulty',
+                    label: t('settings.cpuDifficulty'),
+                    value: callBreakConfig.cpuDifficulty,
+                    options: CALLBREAK_CPU_DIFFICULTY_OPTIONS.map((o) => ({
+                      value: o.value,
+                      label: t(`settings.${o.label.toLowerCase()}`),
+                    })),
+                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+                  },
+                  {
+                    type: 'select',
+                    id: 'maxRounds',
+                    label: t('settings.maxRounds'),
+                    value: callBreakConfig.maxRounds,
+                    options: CALLBREAK_MAX_ROUNDS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+                    onSelect: (v) => handleConfigChange('maxRounds', v),
+                  },
+                  {
+                    type: 'checkbox',
+                    id: 'frontendHint',
+                    label: tc('hint.toggle', { ns: 'tutorial' }),
+                    checked: frontendHintEnabled,
+                    onToggle: setFrontendHintEnabled,
+                  },
+                ],
+              },
+            ]}
+          />
+
+          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            <div className="text-ds-text-primary text-center mb-2">
+              <span className="mr-4">{t('round', { n: state.roundNumber, max: state.config.maxRounds })}</span>
+              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
+              <span>{state.spadesBroken ? t('spadesBroken') : t('spadesNotBroken')}</span>
+            </div>
+
+            <div className={lgTwoColGrid}>
+              <div>
+                {isHumanBidTurn && (
+                  <div className="text-ds-warning text-center mb-2" data-tutorial="cb-bid-controls">
+                    {t('bidPhase')}
+                  </div>
+                )}
+
+                <TrickDisplay
+                  currentTrick={state.currentTrick}
+                  players={state.players}
+                  cardWidth={cardWidth}
+                  label={t('currentTrick')}
+                  dataTutorial="cb-trick-display"
+                  onCardDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                />
+              </div>
+
+              <div>
+                {isMobile ? (
+                  <details className="mb-2 p-2 rounded bg-black/30">
+                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                      {tc('label.cpuOpponents', { count: state.players.filter((p) => !p.isHuman).length })}
+                    </summary>
+                    <div className="mt-1">
+                      {state.players
+                        .filter((p) => !p.isHuman)
+                        .map((p) => (
+                          <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                            {t('cumulativeScore', { score: fmtScore(p.cumulativeScore) })} |{' '}
+                            {t('roundScore', { score: fmtScore(p.roundScore) })} |{' '}
+                            {p.bid >= 0 ? t('bid', { n: p.bid }) : t('bidNone')}
+                          </div>
+                        ))}
+                    </div>
+                  </details>
+                ) : (
+                  state.players
+                    .filter((p) => !p.isHuman)
+                    .map((p) => (
+                      <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                        <div className="text-ds-text-muted text-sm">
+                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                          {t('cumulativeScore', { score: fmtScore(p.cumulativeScore) })} |{' '}
+                          {t('roundScore', { score: fmtScore(p.roundScore) })} |{' '}
+                          {p.bid >= 0 ? t('bid', { n: p.bid }) : t('bidNone')}
+                        </div>
+                      </div>
+                    ))
+                )}
+
+                {isMobile ? (
+                  <details
+                    className="my-3 p-2 rounded bg-black/30 relative"
+                    data-tutorial="cb-score-table"
+                    open={isRoundEnd || isGameEnd || undefined}
+                  >
+                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
+                    <div className="overflow-x-auto -mx-2 px-2">
+                      <table className="w-full text-sm text-ds-text-muted min-w-[360px] mt-1">
+                        <thead>
+                          <tr>
+                            <th scope="col" className="text-left">
+                              {t('scoresPlayer')}
+                            </th>
+                            <th scope="col">{t('scoresBid')}</th>
+                            <th scope="col">{t('scoresTricks')}</th>
+                            <th scope="col">{t('scoresRound')}</th>
+                            <th scope="col">{t('scoresTotal')}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {state.players.map((p) => (
+                            <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
+                              <td>{playerName(p.id, p.isHuman)}</td>
+                              <td className="text-center">{p.bid >= 0 ? p.bid : '-'}</td>
+                              <td className="text-center">{p.trickCount}</td>
+                              <td className="text-center">{fmtScore(p.roundScore)}</td>
+                              <td className="text-center">{fmtScore(p.cumulativeScore)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <ScrollFadeHint />
+                  </details>
+                ) : (
+                  <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="cb-score-table">
+                    <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
+                    <div className="overflow-x-auto -mx-2 px-2">
+                      <table className="w-full text-sm text-ds-text-muted min-w-[360px]">
+                        <thead>
+                          <tr>
+                            <th scope="col" className="text-left">
+                              {t('scoresPlayer')}
+                            </th>
+                            <th scope="col">{t('scoresBid')}</th>
+                            <th scope="col">{t('scoresTricks')}</th>
+                            <th scope="col">{t('scoresRound')}</th>
+                            <th scope="col">{t('scoresTotal')}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {state.players.map((p) => (
+                            <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
+                              <td>{playerName(p.id, p.isHuman)}</td>
+                              <td className="text-center">{p.bid >= 0 ? p.bid : '-'}</td>
+                              <td className="text-center">{p.trickCount}</td>
+                              <td className="text-center">{fmtScore(p.roundScore)}</td>
+                              <td className="text-center">{fmtScore(p.cumulativeScore)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+                <RoundScoreAnnouncement
+                  active={isRoundEnd || isGameEnd}
+                  entries={state.players.map((p) => ({
+                    name: playerName(p.id, p.isHuman),
+                    roundScore: p.roundScore,
+                    cumulativeScore: p.cumulativeScore,
+                  }))}
+                />
+              </div>
+            </div>
+
+            <div data-tutorial="cb-bags-info">
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            </div>
+
+            <ActionLogSection
+              isEndPhase={isGameEnd}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+          </div>
+
+          <GameFooter className={`${gameTheme.callbreak.footer} px-4 py-2.5`}>
+            {humanPlayer && (
+              <PlayerHandSection
+                humanPlayer={humanPlayer}
+                selectedCardIndices={selectedCardIndices}
+                toggleCard={toggleCard}
+                cardWidth={cardWidth}
+                isMobile={isMobile}
+                dataTutorialPrefix="cb"
+              />
+            )}
+
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
+
+            {hint && (
+              <div className="text-ds-warning text-sm mb-2">
+                {hint.bid != null
+                  ? `${t('hintBid')}: ${hint.bid} (${t(`hintReason.${hint.reason}`)})`
+                  : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
+              </div>
+            )}
+            {frontendHintEnabled && frontendHint && (
+              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+            )}
+
+            <div className="flex gap-2 items-center" data-tutorial="cb-play-button">
+              {(isHumanBidTurn || isHumanTurn) && (
+                <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
+                  {tc('button.hint')}
+                </button>
+              )}
+              {isHumanBidTurn && (
+                <>
+                  <input
+                    type="number"
+                    min={1}
+                    max={13}
+                    value={bidValue}
+                    onChange={(e) => setBidValue(Number(e.target.value))}
+                    className="w-16 px-2 py-1 rounded bg-white/20 text-ds-text-primary text-center"
+                    aria-label="bid-input"
+                  />
+                  <button type="button" className={btnPrimary} onClick={() => handleBid(bidValue)} disabled={loading}>
+                    {t('bidButton')}
+                  </button>
+                </>
+              )}
+              {isHumanTurn && (
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handlePlay}
+                  disabled={loading || selectedCardIndices.length !== 1}
+                >
+                  {t('playButton')}
+                </button>
+              )}
+              {isTrickEnd && (
+                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                  {t('nextTrick')}
+                </button>
+              )}
+              {isRoundEnd && (
+                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                  {t('nextRound')}
+                </button>
+              )}
+              <GameResetButton
+                isGameEnd={!!isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="cb-reset-button"
+              />
+            </div>
+          </GameFooter>
+        </>
+      )}
+    </GamePageShell>
+  );
+}
