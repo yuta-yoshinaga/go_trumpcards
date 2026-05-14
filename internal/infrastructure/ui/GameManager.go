@@ -1437,6 +1437,23 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "piquet", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPiquetCuiController(usecase.NewPiquetInteractor(
+				domain.NewDefaultPiquet(), new(presenter.PiquetCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "piquet.helpTitle",
+				CommandKeys: []string{
+					"piquet.helpExchange",
+					"piquet.helpExchangeY",
+					"piquet.helpDeclare",
+					"piquet.helpPlay",
+					"piquet.helpNextDeal",
+					"piquet.helpHint",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

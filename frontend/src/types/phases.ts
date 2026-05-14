@@ -478,6 +478,29 @@ export const PinochlePhase = {
   GAME_END: 6,
 } as const;
 
+/** Piquet phase constants (sync: internal/domain/Piquet.go). */
+export const PiquetPhase = {
+  EXCHANGE: 0,
+  DECLARATION: 1,
+  PLAY: 2,
+  SCORE: 3,
+  GAME_END: 4,
+} as const;
+
+/** Piquet declaration kind constants (sync: internal/domain/Piquet.go). */
+export const PiquetDeclarationKind = {
+  POINT: 0,
+  SEQUENCE: 1,
+  SET: 2,
+} as const;
+
+/** Piquet exchange turn constants (sync: internal/domain/Piquet.go). */
+export const PiquetExchangeTurn = {
+  ELDER: 0,
+  YOUNGER: 1,
+  DONE: 2,
+} as const;
+
 /** Golf Solitaire phase constants (sync: internal/domain/Golf.go). */
 export const GolfPhase = {
   PLAYING: 0,

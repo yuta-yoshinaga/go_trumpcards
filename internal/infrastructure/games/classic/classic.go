@@ -287,4 +287,12 @@ func init() {
 			return usecase.RestoreMightyInteractor(data, new(presenter.MightyWebPresenter))
 		},
 		controller.NewMightyWebControllerWithProvider)
+	games.RegisterKVGame("piquet", games.CategoryClassic,
+		func() usecase.PiquetInteractorIF {
+			return usecase.NewPiquetInteractor(domain.NewDefaultPiquet(), new(presenter.PiquetWebPresenter))
+		},
+		func(data []byte) (usecase.PiquetInteractorIF, error) {
+			return usecase.RestorePiquetInteractor(data, new(presenter.PiquetWebPresenter))
+		},
+		controller.NewPiquetWebControllerWithProvider)
 }

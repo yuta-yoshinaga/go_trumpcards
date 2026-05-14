@@ -51,6 +51,7 @@ export type GameKey =
   | 'napoleon'
   | 'whist'
   | 'pinochle'
+  | 'piquet'
   | 'skat'
   | 'belote'
   | 'mighty'
@@ -165,6 +166,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   napoleon: BLUE,
   whist: BLUE,
   pinochle: BLUE,
+  piquet: BLUE,
   skat: BLUE,
   belote: BLUE,
   mighty: BLUE,

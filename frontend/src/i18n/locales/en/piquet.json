@@ -1,0 +1,22 @@
+{
+  "title": "Piquet",
+  "yourHand": "Your hand",
+  "roleElder": "Elder",
+  "roleYounger": "Younger",
+  "dealHeader": "Deal {{deal}} / {{total}}",
+  "exchangeHeader": "Exchange phase",
+  "declarationHeader": "Declaration phase",
+  "playHeader": "Play phase",
+  "roundEnd": "Round ended",
+  "partieEnd": "Partie ended",
+  "exchangeElder": "Elder exchange ({{count}})",
+  "exchangeYounger": "Younger exchange ({{count}})",
+  "advanceDeclaration": "Next: {{kind}}",
+  "nextDeal": "Next deal",
+  "partieWinner": "★ Partie winner: player {{idx}}",
+  "partieDraw": "Partie ended in a draw",
+  "tutorial": {
+    "hand": "Your hand. Click to select for exchange, or click to play during the play phase.",
+    "controls": "Action buttons (exchange, declaration advance, next deal) appear here."
+  }
+}
