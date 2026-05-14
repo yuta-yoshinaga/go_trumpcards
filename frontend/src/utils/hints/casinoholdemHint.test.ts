@@ -8,14 +8,14 @@ import { getCasinoHoldemHint } from './casinoholdemHint';
 function makeState(overrides: Partial<CasinoHoldemResponse> = {}): CasinoHoldemResponse {
   return {
     playerHand: [
-      { design: 'S', value: 7 },
-      { design: 'H', value: 7 },
+      { design: 'SPADE', value: 7 },
+      { design: 'HEART', value: 7 },
     ],
     dealerHand: [],
     community: [
-      { design: 'D', value: 3 },
-      { design: 'C', value: 9 },
-      { design: 'S', value: 11 },
+      { design: 'DIAMOND', value: 3 },
+      { design: 'CLOVER', value: 9 },
+      { design: 'SPADE', value: 11 },
     ],
     phase: CasinoHoldemPhase.FLOP,
     chips: 1000,

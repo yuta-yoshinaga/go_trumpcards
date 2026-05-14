@@ -1799,6 +1799,7 @@ const games = [
   'oasispoker',
   'beleagueredcastle',
   'piquet',
+  'casinoholdem',
 ] as const;
 type Game = (typeof games)[number];
 
