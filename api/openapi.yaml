@@ -42,6 +42,8 @@ tags:
     description: Klondike (ソリティア) game
   - name: freecell
     description: FreeCell (フリーセル) game
+  - name: seahaventowers
+    description: Seahaven Towers (シーヘイブンタワーズ) game
   - name: baccarat
     description: Baccarat (バカラ) game
   - name: spades
@@ -1522,6 +1524,88 @@ paths:
                   value:
                     tableau: []
                     freeCells: []
+                    foundation: []
+                    phase: 0
+                    moveCount: 0
+                    canUndo: false
+                    message: param error.
+
+  /seahaventowers/exec:
+    post:
+      tags:
+        - seahaventowers
+      summary: Execute a Seahaven Towers game command
+      description: |
+        Send a command to advance the Seahaven Towers (シーヘイブンタワーズ) game session
+        identified by `sessionId`. Seahaven Towers is a single-player solitaire
+        card game using a standard 52-card deck — a higher-difficulty FreeCell
+        variant. 10 tableau columns × 5 cards each (50 cards), all dealt face-up;
+        the remaining 2 cards are pre-placed in 2 upper reserved cells (towers).
+        4 foundation piles build up by suit Ace to King. Tableau builds
+        **same-suit descending**; only Kings may move to an empty column.
+        Supermove limit: max movable cards = 1 + emptyReservedCells.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All foundations completed; player wins |
+        | GameOver   | `2`   | No more moves available; game over |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset`        | `r`  | Start / restart a game |
+        | `move`         | `m`  | Move card(s) between zones (requires `from` and `to`) |
+        | `giveup`       | `g`  | Give up the current game |
+        | `hint`         | `h`  | Get a hint for the next move |
+        | `autocomplete` | `ac` | Auto-complete remaining moves to foundation |
+        | `undo`         | `u`  | Undo the last action |
+        | `undo_n`       |      | Undo N actions (requires `n` parameter) |
+        | `log`          | `l`  | View action log |
+      operationId: seahaventowersExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SeahavenTowersRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              move:
+                summary: Move a card
+                value:
+                  command: move
+                  from:
+                    zone: tableau
+                    col: 0
+                    cardIndex: 4
+                  to:
+                    zone: reserved
+                    cell: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeahavenTowersResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeahavenTowersResponse'
+              examples:
+                paramError:
+                  value:
+                    tableau: []
+                    reservedCells: []
                     foundation: []
                     phase: 0
                     moveCount: 0
@@ -12396,6 +12480,138 @@ components:
               $ref: '#/components/schemas/FreeCellZone'
             to:
               $ref: '#/components/schemas/FreeCellZone'
+        message:
+          type: string
+          description: Game result or status message. Empty while the game is in progress.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Seahaven Towers
+    # -------------------------------------------------------------------------
+    SeahavenTowersZone:
+      type: object
+      description: Specifies a zone on the Seahaven Towers board for move commands
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: "Zone name: tableau, reserved, or foundation"
+          enum: [tableau, reserved, foundation]
+          example: tableau
+        col:
+          type: integer
+          description: Column index (0-based, used for tableau and foundation zones)
+          example: 3
+        cell:
+          type: integer
+          description: Reserved cell index (0-based, used for reserved zone)
+          example: 0
+        cardIndex:
+          type: integer
+          description: Index of the card within the column (for moving multiple cards from tableau)
+          example: 0
+
+    SeahavenTowersRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `move` (`m`),
+            `giveup` (`g`), `hint` (`h`), `autocomplete` (`ac`),
+            `undo` (`u`), `undo_n`, `log` (`l`).
+          enum: [reset, r, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+          example: move
+        from:
+          description: Source zone for a move command
+          $ref: '#/components/schemas/SeahavenTowersZone'
+        to:
+          description: Destination zone for a move command
+          $ref: '#/components/schemas/SeahavenTowersZone'
+        n:
+          type: integer
+          description: Number of undos to perform (required when command is undo_n)
+          example: 3
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    SeahavenTowersResponse:
+      type: object
+      description: Current state of the Seahaven Towers game
+      required:
+        - tableau
+        - reservedCells
+        - foundation
+        - phase
+        - moveCount
+        - canUndo
+        - isStalemate
+        - undoToEscape
+        - message
+      properties:
+        tableau:
+          type: array
+          description: The 10 tableau columns, each containing an array of face-up cards
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        reservedCells:
+          type: array
+          description: The 2 reserved cells / towers (null or a Card)
+          items:
+            nullable: true
+            $ref: '#/components/schemas/Card'
+        foundation:
+          type: array
+          description: The 4 foundation piles (one per suit), each containing an array of cards
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 0 = Playing, 1 = GameClear, 2 = GameOver"
+          enum: [0, 1, 2]
+          example: 0
+        moveCount:
+          type: integer
+          description: Total number of moves made in the current game
+          example: 0
+        canUndo:
+          type: boolean
+          description: Whether the undo action is available
+          example: false
+        isStalemate:
+          type: boolean
+          description: Whether the game is in a stalemate (no moves can lead to a win)
+          example: false
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to reach a non-stalemate state (0 if not stalemate, -1 if no escape)
+          example: 0
+        hint:
+          type: object
+          description: Hint for the next available move (only present when hint command is used)
+          properties:
+            from:
+              $ref: '#/components/schemas/SeahavenTowersZone'
+            to:
+              $ref: '#/components/schemas/SeahavenTowersZone'
         message:
           type: string
           description: Game result or status message. Empty while the game is in progress.

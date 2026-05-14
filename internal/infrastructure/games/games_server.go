@@ -93,6 +93,11 @@ func init() {
 			return usecase.NewFreeCellInteractor(domain.NewDefaultFreeCell(), new(presenter.FreeCellWebPresenter))
 		},
 		controller.NewFreeCellWebController)
+	BindWebControllerFor("seahaventowers",
+		func() usecase.SeahavenTowersInteractorIF {
+			return usecase.NewSeahavenTowersInteractor(domain.NewDefaultSeahavenTowers(), new(presenter.SeahavenTowersWebPresenter))
+		},
+		controller.NewSeahavenTowersWebController)
 	BindWebControllerFor("baccarat",
 		func() usecase.BaccaratInteractorIF {
 			return usecase.NewBaccaratInteractor(domain.NewDefaultBaccarat(), new(presenter.BaccaratWebPresenter))

@@ -74,6 +74,7 @@ import type {
   RedDogResponse,
   RussianSolitaireResponse,
   ScorpionResponse,
+  SeahavenTowersResponse,
   SevenBridgeResponse,
   SevenCardStudResponse,
   SevensResponse,
@@ -160,6 +161,7 @@ const workerUrl: Record<string, string> = {
   twotenjack: WORKER_CLASSIC,
   klondike: WORKER_SOLO,
   freecell: WORKER_SOLO,
+  seahaventowers: WORKER_SOLO,
   spider: WORKER_SOLO,
   pyramid: WORKER_SOLO,
   pokersquares: WORKER_SOLO,
@@ -753,6 +755,21 @@ export const freecellApi = createSolitaireMoveApi<
   FreeCellMoveZone,
   'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('freecell');
+
+/** Source or target zone for a Seahaven Towers card move. */
+export interface SeahavenTowersMoveZone {
+  zone: string;
+  col?: number;
+  cell?: number;
+  cardIndex?: number;
+}
+
+/** API client for the Seahaven Towers /seahaventowers/exec endpoint. */
+export const seahaventowersApi = createSolitaireMoveApi<
+  SeahavenTowersResponse,
+  SeahavenTowersMoveZone,
+  'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('seahaventowers');
 
 /** Configuration options for Crazy Eights game settings. */
 export interface CrazyEightsConfigInput {
@@ -1744,6 +1761,7 @@ const games = [
   'memory',
   'klondike',
   'freecell',
+  'seahaventowers',
   'baccarat',
   'crazyeights',
   'ginrummy',
