@@ -69,4 +69,18 @@ func TestCallBreakConfig_Validate(t *testing.T) {
 		cfg.MaxRounds = 1
 		assert.NoError(t, cfg.Validate())
 	})
+
+	t.Run("max rounds at cap valid", func(t *testing.T) {
+		cfg := domain.DefaultCallBreakConfig()
+		cfg.MaxRounds = domain.CallBreakMaxAllowedRounds
+		assert.NoError(t, cfg.Validate())
+	})
+
+	t.Run("max rounds above cap invalid", func(t *testing.T) {
+		cfg := domain.DefaultCallBreakConfig()
+		cfg.MaxRounds = domain.CallBreakMaxAllowedRounds + 1
+		err := cfg.Validate()
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "max rounds")
+	})
 }

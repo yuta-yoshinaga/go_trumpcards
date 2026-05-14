@@ -1,6 +1,7 @@
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { callBreakApi } from '../api/gameApi';
+import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeCallBreakState } from '../test/stateFactories';
 import { CallBreakPage } from './CallBreakPage';
@@ -20,12 +21,38 @@ const bidPhaseState = makeCallBreakState({
   players: makeCallBreakState().players.map((p) => ({ ...p, bid: -1 })),
 });
 
+const bidPhaseCpuTurnState = makeCallBreakState({
+  ...bidPhaseState,
+  bidPlayerIdx: 1,
+});
+
+const trickEndState = makeCallBreakState({
+  phase: 2,
+  currentTrick: [
+    { playerIdx: 0, card: { design: 'DIAMOND', value: 3 } },
+    { playerIdx: 1, card: { design: 'HEART', value: 5 } },
+  ],
+});
+
+const roundEndState = makeCallBreakState({ phase: 3 });
+
 const gameEndState = makeCallBreakState({
   phase: 4,
   gameEndFlag: true,
   winnerIdx: 0,
   message: 'Game end!',
 });
+
+const gameEndByFlagState = makeCallBreakState({
+  phase: 1,
+  gameEndFlag: true,
+  winnerIdx: 0,
+  message: 'Game end!',
+});
+
+const spadesBrokenState = makeCallBreakState({ spadesBroken: true });
+
+const cpuTurnState = makeCallBreakState({ currentPlayerIdx: 1 });
 
 beforeEach(() => {
   mockExec.mockResolvedValue(playPhaseState);
@@ -48,28 +75,167 @@ describe('CallBreakPage', () => {
     );
   });
 
-  it('renders bid phase elements', async () => {
-    mockExec.mockResolvedValue(bidPhaseState);
+  it('renders play phase with human cards', async () => {
     renderWithProviders(<CallBreakPage />);
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /ビッド/ })).toBeInTheDocument();
+      expect(screen.getByAltText('♠ A')).toBeInTheDocument();
+      expect(screen.getByAltText('♥ J')).toBeInTheDocument();
     });
   });
 
-  it('shows decimal score in the score table (cumulativeScore 41 → 4.1)', async () => {
-    mockExec.mockResolvedValue(playPhaseState);
+  it('renders bid phase with bid button and input', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<CallBreakPage />);
     await waitFor(() => {
-      // CPU 1 has cumulativeScore=41 in the factory; should render as 4.1
+      expect(screen.getByRole('button', { name: 'ビッド' })).toBeInTheDocument();
+      expect(screen.getByLabelText('bid-input')).toBeInTheDocument();
+    });
+  });
+
+  it('shows bid phase instruction when human bid turn', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => {
+      expect(screen.getByText('ビッド宣言 (1-13)')).toBeInTheDocument();
+    });
+  });
+
+  it('does not show bid instruction on CPU bid turn', async () => {
+    mockExec.mockResolvedValue(bidPhaseCpuTurnState);
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => expect(screen.getAllByText(/CPU 1/).length).toBeGreaterThan(0));
+    expect(screen.queryByText(/ビッド宣言/)).not.toBeInTheDocument();
+  });
+
+  it('calls bid command when bid button is clicked', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ビッド' })).toBeInTheDocument());
+
+    const input = screen.getByLabelText('bid-input');
+    fireEvent.change(input, { target: { value: '5' } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'ビッド' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', 5));
+  });
+
+  it('play button disabled when not 1 card selected', async () => {
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '出す' })).toBeDisabled());
+  });
+
+  it('play button enabled when 1 card selected', async () => {
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    expect(screen.getByRole('button', { name: '出す' })).not.toBeDisabled();
+  });
+
+  it('does not show play button when not human turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => expect(screen.getAllByText(/CPU 1/).length).toBeGreaterThan(0));
+    expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
+  });
+
+  it('shows next trick button on trick end', async () => {
+    mockExec.mockResolvedValue(trickEndState);
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+  });
+
+  it('shows next round button on round end', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
+  });
+
+  it('shows game end with action log button (phase 4)', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => {
+      expect(screen.getByText('Game end!')).toBeInTheDocument();
+      expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
+    });
+  });
+
+  it('shows game end via gameEndFlag with non-4 phase', async () => {
+    mockExec.mockResolvedValue(gameEndByFlagState);
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => {
+      expect(screen.getByText('Game end!')).toBeInTheDocument();
+      expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
+    });
+  });
+
+  it('renders spades-broken status text', async () => {
+    mockExec.mockResolvedValue(spadesBrokenState);
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => expect(screen.getByText('スペードブレイク済')).toBeInTheDocument());
+  });
+
+  it('shows decimal score in the score table (cumulativeScore 41 → 4.1)', async () => {
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => {
       expect(screen.getAllByText(/4\.1/).length).toBeGreaterThan(0);
     });
   });
 
-  it('renders game end winner banner', async () => {
-    mockExec.mockResolvedValue(gameEndState);
+  it('shows error alert when API rejects', async () => {
     renderWithProviders(<CallBreakPage />);
-    await waitFor(() => {
-      expect(screen.getByText(/Game end!/i)).toBeInTheDocument();
-    });
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+
+    mockExec.mockReset();
+    mockExec.mockRejectedValue(new Error('network error'));
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
+  });
+
+  it('settings panel changes cpuDifficulty', async () => {
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => expect(screen.getByText('コールブレイク')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByText('設定'));
+    const selects = screen.getAllByRole('combobox');
+    fireEvent.change(selects[0], { target: { value: '2' } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+        cpuDifficulty: 2,
+        maxRounds: 5,
+      }),
+    );
+  });
+
+  it('settings panel changes maxRounds', async () => {
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => expect(screen.getByText('コールブレイク')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByText('設定'));
+    const selects = screen.getAllByRole('combobox');
+    fireEvent.change(selects[1], { target: { value: '10' } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+        cpuDifficulty: 1,
+        maxRounds: 10,
+      }),
+    );
   });
 });

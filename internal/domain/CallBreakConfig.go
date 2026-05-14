@@ -16,6 +16,11 @@ const (
 // CallBreakDefaultMaxRounds 固定ラウンド数 (Call Break の伝統的なルール)
 const CallBreakDefaultMaxRounds = 5
 
+// CallBreakMaxAllowedRounds is the upper bound enforced by Validate. Tuned so
+// that even at the cap the per-round ~80-entry ActionLog stays under
+// callBreakMaxActionLogLen (= 5000) when restoring from JSON.
+const CallBreakMaxAllowedRounds = 50
+
 // CallBreakMinBid Call Break の最小ビッド (Nil ビッドは無い)
 const CallBreakMinBid = 1
 
@@ -45,7 +50,7 @@ func (c CallBreakConfig) Validate() error {
 	if err := ValidateRange("CPU difficulty", int(c.CpuDifficulty), int(CallBreakCpuDifficultyEasy), int(CallBreakCpuDifficultyHard)); err != nil {
 		return err
 	}
-	if err := ValidateMin("max rounds", c.MaxRounds, 1); err != nil {
+	if err := ValidateRange("max rounds", c.MaxRounds, 1, CallBreakMaxAllowedRounds); err != nil {
 		return err
 	}
 	return nil
