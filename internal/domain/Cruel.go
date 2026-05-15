@@ -324,6 +324,12 @@ func (c *Cruel) AutoComplete() error {
 	}
 	c.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
 	c.checkGameClear()
+	// AutoComplete can partially clear the board (e.g. some suits reach the
+	// foundation but others remain blocked). Refresh the stalemate flag so
+	// the UI doesn't show stale "stuck" / "escape" hints after a partial run.
+	if c.phase == CruelPhasePlaying {
+		c.checkStalemate()
+	}
 	return nil
 }
 
@@ -545,10 +551,23 @@ func (s *cruelSnapshot) UnmarshalJSON(data []byte) error {
 		if len(col) > cruelMaxSliceLen {
 			return fmt.Errorf("cruel: snapshot tableau column exceeds maximum allowed size")
 		}
+		// A JSON `null` array element unmarshals to a nil *KlondikeTableauCard,
+		// which would panic on dereference (e.g. in checkStalemate or the Web
+		// presenter). Reject the payload up front.
+		for _, tc := range col {
+			if tc == nil {
+				return fmt.Errorf("cruel: snapshot tableau contains nil card")
+			}
+		}
 	}
 	for _, pile := range j.Foundation {
 		if len(pile) > cruelMaxSliceLen {
 			return fmt.Errorf("cruel: snapshot foundation pile exceeds maximum allowed size")
+		}
+		for _, card := range pile {
+			if card == nil {
+				return fmt.Errorf("cruel: snapshot foundation contains nil card")
+			}
 		}
 	}
 	s.tableau = j.Tableau
@@ -590,10 +609,20 @@ func (c *Cruel) UnmarshalJSON(data []byte) error {
 		if len(col) > cruelMaxSliceLen {
 			return fmt.Errorf("cruel: tableau column exceeds maximum allowed size")
 		}
+		for _, tc := range col {
+			if tc == nil {
+				return fmt.Errorf("cruel: tableau contains nil card")
+			}
+		}
 	}
 	for _, pile := range j.Foundation {
 		if len(pile) > cruelMaxSliceLen {
 			return fmt.Errorf("cruel: foundation pile exceeds maximum allowed size")
+		}
+		for _, card := range pile {
+			if card == nil {
+				return fmt.Errorf("cruel: foundation contains nil card")
+			}
 		}
 	}
 

@@ -161,7 +161,9 @@ function CruelPageContent() {
     error,
     exec: apiExec,
     retry,
-  } = useGameApi<CruelResponse, Parameters<typeof cruelApi.exec>>((...args) => cruelApi.exec(...args));
+  } = useGameApi<CruelResponse, Parameters<typeof cruelApi.exec>>(
+    useCallback((...args: Parameters<typeof cruelApi.exec>) => cruelApi.exec(...args), []),
+  );
 
   useMountReset(apiExec);
 
@@ -245,8 +247,13 @@ function CruelPageContent() {
   }, [apiExec]);
 
   const handleHint = useCallback(async () => {
-    const res = await cruelApi.exec('hint');
-    setState((prev) => (prev ? { ...prev, hint: res.hint } : prev));
+    try {
+      const res = await cruelApi.exec('hint');
+      setState((prev) => (prev ? { ...prev, hint: res.hint } : prev));
+    } catch {
+      // Hint is best-effort UX — swallow transient network errors so the page
+      // stays usable. The main apiExec path still surfaces fatal failures.
+    }
   }, [setState]);
 
   const handleAutoComplete = useCallback(() => {

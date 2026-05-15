@@ -487,6 +487,28 @@ func TestCruel_AutoComplete_GameClear(t *testing.T) {
 	assert.True(t, c.GetGameEndFlag())
 }
 
+func TestCruel_AutoComplete_RefreshesStalemate(t *testing.T) {
+	c := setupPlayingCruel()
+	clearCruelTableau(c)
+	setCruelFoundationToAces(c)
+
+	// Partial-clear scenario: the 2s sweep to foundation, but the remaining
+	// cards have no playable move. Stalemate must be re-evaluated.
+	var tab [domain.CruelTableauCnt][]*domain.KlondikeTableauCard
+	for s := 1; s <= domain.CruelFoundationCnt; s++ {
+		tab[s-1] = []*domain.KlondikeTableauCard{makeTableauCard(s, 2, true)}
+	}
+	// Add an isolated K with no matching neighbour to lock the board after the sweep.
+	tab[4] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, domain.CardValueMax, true)}
+	c.SetTableau(tab)
+	c.SetIsStalemate(false)
+
+	require.NoError(t, c.AutoComplete())
+	// After AC, the lone K can't move and can't go to foundation (next needed
+	// after 2 is 3); the flag must now read true so the UI surfaces Shift.
+	assert.True(t, c.IsStalemate(), "AutoComplete should refresh stalemate flag")
+}
+
 func TestCruel_AutoComplete_NotPlaying(t *testing.T) {
 	c := setupPlayingCruel()
 	c.SetPhase(domain.CruelPhaseGameOver)

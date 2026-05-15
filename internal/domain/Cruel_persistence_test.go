@@ -177,6 +177,83 @@ func TestCruel_SnapshotFoundationPileRespectsMaxSliceLen(t *testing.T) {
 	require.Error(t, err, "oversized snapshot foundation pile must be rejected")
 }
 
+// TestCruel_TopLevelTableauNilCardRejected ensures a JSON payload with a
+// `null` tableau-card entry is rejected, preventing nil dereference panics
+// in downstream code (presenters, stalemate check, undo restore).
+func TestCruel_TopLevelTableauNilCardRejected(t *testing.T) {
+	t.Parallel()
+
+	tableau := make([]any, CruelTableauCnt)
+	tableau[0] = []any{nil}
+	payload := map[string]any{
+		"tc": nil,
+		"tb": tableau,
+	}
+	data, err := json.Marshal(payload)
+	require.NoError(t, err)
+
+	var restored Cruel
+	err = json.Unmarshal(data, &restored)
+	require.Error(t, err, "nil tableau card must be rejected")
+	assert.Contains(t, err.Error(), "nil card")
+}
+
+// TestCruel_TopLevelFoundationNilCardRejected does the same for foundations.
+func TestCruel_TopLevelFoundationNilCardRejected(t *testing.T) {
+	t.Parallel()
+
+	payload := map[string]any{
+		"tc": nil,
+		"fd": []any{[]any{nil}, nil, nil, nil},
+	}
+	data, err := json.Marshal(payload)
+	require.NoError(t, err)
+
+	var restored Cruel
+	err = json.Unmarshal(data, &restored)
+	require.Error(t, err, "nil foundation card must be rejected")
+	assert.Contains(t, err.Error(), "nil card")
+}
+
+// TestCruel_SnapshotTableauNilCardRejected guards the same surface inside
+// history snapshots — these go through cruelSnapshot.UnmarshalJSON.
+func TestCruel_SnapshotTableauNilCardRejected(t *testing.T) {
+	t.Parallel()
+
+	tableau := make([]any, CruelTableauCnt)
+	tableau[0] = []any{nil}
+	snapshot := map[string]any{"tb": tableau}
+	payload := map[string]any{
+		"tc": nil,
+		"hi": []any{snapshot},
+	}
+	data, err := json.Marshal(payload)
+	require.NoError(t, err)
+
+	var restored Cruel
+	err = json.Unmarshal(data, &restored)
+	require.Error(t, err, "nil snapshot tableau card must be rejected")
+	assert.Contains(t, err.Error(), "nil card")
+}
+
+// TestCruel_SnapshotFoundationNilCardRejected mirrors the above for snapshot foundations.
+func TestCruel_SnapshotFoundationNilCardRejected(t *testing.T) {
+	t.Parallel()
+
+	snapshot := map[string]any{"fd": []any{[]any{nil}, nil, nil, nil}}
+	payload := map[string]any{
+		"tc": nil,
+		"hi": []any{snapshot},
+	}
+	data, err := json.Marshal(payload)
+	require.NoError(t, err)
+
+	var restored Cruel
+	err = json.Unmarshal(data, &restored)
+	require.Error(t, err, "nil snapshot foundation card must be rejected")
+	assert.Contains(t, err.Error(), "nil card")
+}
+
 // TestCruel_RoundTripEmptyState ensures an unstarted game (nil action log,
 // nil history) roundtrips cleanly without panicking.
 func TestCruel_RoundTripEmptyState(t *testing.T) {
