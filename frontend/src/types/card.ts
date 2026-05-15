@@ -1380,6 +1380,33 @@ export interface FreeCellResponse {
   hint?: FreeCellHint;
 }
 
+// --- Seahaven Towers (シーヘイブンタワーズ) ---
+
+/** A suggested move hint in Seahaven Towers. */
+export interface SeahavenTowersHint {
+  fromZone: string;
+  fromCol: number;
+  cardIndex: number;
+  toZone: string;
+  toCol: number;
+}
+
+/** Full Seahaven Towers game state returned from the API. */
+export interface SeahavenTowersResponse {
+  tableau: (Card | null)[][];
+  reservedCells: (Card | null)[];
+  foundation: Card[][];
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: SeahavenTowersHint;
+}
+
 /** Result of a Baccarat side bet (player pair, banker pair). */
 export interface BaccaratSideBetResult {
   betType: number;

@@ -325,6 +325,26 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "seahaventowers", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSeahavenTowersCuiController(usecase.NewSeahavenTowersInteractor(
+				domain.NewDefaultSeahavenTowers(), new(presenter.SeahavenTowersCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "seahaventowers.helpTitle",
+				CommandKeys: []string{
+					"seahaventowers.helpMove",
+					"seahaventowers.helpMoveTF",
+					"seahaventowers.helpMoveTT",
+					"seahaventowers.helpMoveTC",
+					"seahaventowers.helpMoveCT",
+					"seahaventowers.helpMoveCF",
+					"seahaventowers.helpGiveUp",
+					"seahaventowers.helpHint",
+					"seahaventowers.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "baccarat", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewBaccaratCuiController(usecase.NewBaccaratInteractor(

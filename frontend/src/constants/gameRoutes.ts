@@ -129,6 +129,7 @@ export const gameCategories: readonly GameCategory[] = [
     routes: [
       { path: '/klondike', labelKey: 'nav.klondike', icon: '⛏️', page: 'Klondike' },
       { path: '/freecell', labelKey: 'nav.freecell', icon: '🔲', page: 'FreeCell' },
+      { path: '/seahaventowers', labelKey: 'nav.seahaventowers', icon: '🏖️', page: 'SeahavenTowers' },
       { path: '/spider', labelKey: 'nav.spider', icon: '🕷️', page: 'Spider' },
       { path: '/spiderette', labelKey: 'nav.spiderette', icon: '🕸️', page: 'Spiderette' },
       { path: '/pyramid', labelKey: 'nav.pyramid', icon: '🔺', page: 'Pyramid' },

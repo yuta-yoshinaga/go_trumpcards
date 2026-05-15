@@ -165,6 +165,13 @@ export const FreeCellPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Seahaven Towers phase constants (sync: internal/domain/SeahavenTowers.go). */
+export const SeahavenTowersPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Spades phase constants (sync: internal/domain/Spades.go). */
 export const SpadesPhase = {
   BID: 0,

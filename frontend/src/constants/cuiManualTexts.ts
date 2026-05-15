@@ -68,6 +68,7 @@ import razz from '../../../docs/manual/cui/razz.md?raw';
 import reddog from '../../../docs/manual/cui/reddog.md?raw';
 import russiansolitaire from '../../../docs/manual/cui/russiansolitaire.md?raw';
 import scorpion from '../../../docs/manual/cui/scorpion.md?raw';
+import seahaventowers from '../../../docs/manual/cui/seahaventowers.md?raw';
 import sevenbridge from '../../../docs/manual/cui/sevenbridge.md?raw';
 import sevencardstud from '../../../docs/manual/cui/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/cui/sevens.md?raw';
@@ -127,6 +128,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/fortythieves': fortythieves,
   '/euchre': euchre,
   '/freecell': freecell,
+  '/seahaventowers': seahaventowers,
   '/ginrummy': ginrummy,
   '/gofish': gofish,
   '/golf': golf,

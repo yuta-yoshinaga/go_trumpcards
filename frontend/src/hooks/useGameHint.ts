@@ -55,6 +55,7 @@ import type {
   RedDogResponse,
   RussianSolitaireResponse,
   ScorpionResponse,
+  SeahavenTowersResponse,
   SevenBridgeResponse,
   SevenCardStudResponse,
   SevensResponse,
@@ -139,6 +140,7 @@ import { getRazzHint } from '../utils/hints/razzHint';
 import { getReddogHint } from '../utils/hints/reddogHint';
 import { getRussianSolitaireHint } from '../utils/hints/russianSolitaireHint';
 import { getScorpionHint } from '../utils/hints/scorpionHint';
+import { getSeahavenTowersHint } from '../utils/hints/seahavenTowersHint';
 import { getSevenbridgeHint } from '../utils/hints/sevenbridgeHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
 import { getShitheadHint } from '../utils/hints/shitheadHint';
@@ -200,6 +202,7 @@ const hintFactories = {
   speed: (s) => getSpeedHint(s as SpeedResponse),
   klondike: (s) => getKlondikeHint(s as KlondikeResponse),
   freecell: (s) => getFreeCellHint(s as FreeCellResponse),
+  seahaventowers: (s) => getSeahavenTowersHint(s as SeahavenTowersResponse),
   spider: (s) => getSpiderHint(s as SpiderResponse),
   pyramid: (s) => getPyramidHint(s as PyramidResponse),
   tripeaks: (s) => getTriPeaksHint(s as TriPeaksResponse),

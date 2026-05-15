@@ -70,6 +70,7 @@ import razz from '../../../docs/manual/web/razz.md?raw';
 import reddog from '../../../docs/manual/web/reddog.md?raw';
 import russiansolitaire from '../../../docs/manual/web/russiansolitaire.md?raw';
 import scorpion from '../../../docs/manual/web/scorpion.md?raw';
+import seahaventowers from '../../../docs/manual/web/seahaventowers.md?raw';
 import sevenbridge from '../../../docs/manual/web/sevenbridge.md?raw';
 import sevencardstud from '../../../docs/manual/web/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/web/sevens.md?raw';
@@ -124,6 +125,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/fortythieves': fortythieves,
   '/euchre': euchre,
   '/freecell': freecell,
+  '/seahaventowers': seahaventowers,
   '/ginrummy': ginrummy,
   '/gofish': gofish,
   '/golf': golf,
