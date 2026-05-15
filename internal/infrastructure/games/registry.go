@@ -5,7 +5,7 @@
 // binaries (TinyGo / WASM) stay under the 1 MB gzipped free-tier limit:
 //
 //   - registry.go (this file, no tag)  — types and bare metadata (Name +
-//     Category) for all 86 games. Cheap; no references to game code.
+//     Category) for all 94 games. Cheap; no references to game code.
 //   - games_server.go (!js || !wasm)   — installs Web-server factories for
 //     every game via BindWebController. Imported by TrumpCardsWeb.
 //   - casino/, classic/, solo/ (js && wasm) — per-category worker bindings.
@@ -102,6 +102,8 @@ var registry = []*Game{
 	{Name: "memory", Category: CategorySolo, Description: "Memory / Concentration (神経衰弱)"},
 	{Name: "klondike", Category: CategorySolo, Description: "Klondike Solitaire (ソリティア)"},
 	{Name: "freecell", Category: CategorySolo, Description: "FreeCell (フリーセル)"},
+	{Name: "seahaventowers", Category: CategorySolo, Description: "Seahaven Towers (シーヘイブンタワーズ)"},
+	{Name: "cruel", Category: CategorySolo, Description: "Cruel (クルーエル)"},
 	{Name: "baccarat", Category: CategoryCasino, Description: "Baccarat (バカラ)"},
 	{Name: "spades", Category: CategoryClassic, Description: "Spades (スペード)"},
 	{Name: "crazyeights", Category: CategoryClassic, Description: "Crazy Eights (クレイジーエイト)"},
@@ -172,6 +174,12 @@ var registry = []*Game{
 	{Name: "mississippistud", Category: CategoryCasino, Description: "Mississippi Stud (ミシシッピ・スタッド)"},
 	{Name: "belote", Category: CategoryClassic, Description: "Belote (ベロート)"},
 	{Name: "spiderette", Category: CategorySolo, Description: "Spiderette (スパイダレット)"},
+	{Name: "mighty", Category: CategoryClassic, Description: "Mighty (マイティ)"},
+	{Name: "oasispoker", Category: CategoryCasino, Description: "Oasis Poker (オアシスポーカー)"},
+	{Name: "beleagueredcastle", Category: CategorySolo, Description: "Beleaguered Castle (包囲された城)"},
+	{Name: "piquet", Category: CategoryClassic, Description: "Piquet (ピケ)"},
+	{Name: "casinoholdem", Category: CategoryCasino, Description: "Casino Hold'em (カジノホールデム)"},
+	{Name: "callbreak", Category: CategoryClassic, Description: "Call Break (コールブレイク)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

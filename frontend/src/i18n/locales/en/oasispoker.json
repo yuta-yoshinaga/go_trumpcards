@@ -1,0 +1,89 @@
+{
+  "title": "Oasis Poker",
+  "player": "Player",
+  "dealer": "Dealer",
+  "label": {
+    "chips": "Chips",
+    "ante": "Ante",
+    "jackpot": "Jackpot",
+    "play": "Play Bet",
+    "exchangeFee": "Exchange Fee",
+    "handRank": "Hand"
+  },
+  "button": {
+    "bet": "Bet",
+    "exchange": "Exchange",
+    "stand": "Stand",
+    "play": "Call",
+    "fold": "Fold",
+    "reset": "Reset"
+  },
+  "phase": {
+    "bet": "Bet",
+    "exchange": "Exchange",
+    "action": "Call / Fold",
+    "end": "Result"
+  },
+  "result": {
+    "playerWins": "You win!",
+    "dealerWins": "Dealer wins!",
+    "push": "Push!",
+    "fold": "Folded",
+    "dealerNotQualified": "Dealer does not qualify!"
+  },
+  "payout": {
+    "ante": "Ante",
+    "play": "Play",
+    "jackpot": "Jackpot",
+    "exchange": "Exchange fee",
+    "total": "Total"
+  },
+  "handRank": {
+    "0": "High Card",
+    "1": "One Pair",
+    "2": "Two Pair",
+    "3": "Three of a Kind",
+    "4": "Straight",
+    "5": "Flush",
+    "6": "Full House",
+    "7": "Four of a Kind",
+    "8": "Straight Flush",
+    "9": "Royal Flush"
+  },
+  "settings": {
+    "title": "Settings"
+  },
+  "betGuide": "Place an Ante and an optional Jackpot side bet",
+  "exchangeGuide": "Tap cards to select them, then press Exchange or Stand",
+  "exchangeFeeInfo": "Fee: ante × {{ante}} per card = {{fee}}",
+  "exchangeSelected": "Selected: {{count}}",
+  "payoutRef": {
+    "title": "Payouts",
+    "playHeader": "Play payouts (on call)",
+    "payRoyalFlush": "Royal Flush: 100:1",
+    "payStraightFlush": "Straight Flush: 50:1",
+    "payFourOfAKind": "Four of a Kind: 20:1",
+    "payFullHouse": "Full House: 7:1",
+    "payFlush": "Flush: 5:1",
+    "payStraight": "Straight: 4:1",
+    "payThreeOfAKind": "Three of a Kind: 3:1",
+    "payTwoPair": "Two Pair: 2:1",
+    "payPair": "Pair or less: 1:1",
+    "jackpotHeader": "Jackpot side bet",
+    "jackpotRoyalFlush": "Royal Flush: 20000x",
+    "jackpotStraightFlush": "Straight Flush: 5000x",
+    "jackpotFourOfAKind": "Four of a Kind: 500x",
+    "jackpotFullHouse": "Full House: 100x",
+    "jackpotFlush": "Flush: 50x",
+    "exchangeHeader": "Exchange fee",
+    "exchangeFee": "1x ante per exchanged card"
+  },
+  "dealerQualified": "Qualified",
+  "dealerNotQualified": "Not qualified",
+  "tutorial": {
+    "betControls": "Set your ante and optional jackpot bet, then press Bet.",
+    "exchangeControls": "Tap cards to mark them for exchange, then press Exchange or Stand. Each exchanged card costs 1x ante.",
+    "actionButtons": "Choose Call (2x ante) to face the dealer, or Fold to forfeit your ante.",
+    "results": "Review your result and payouts."
+  }
+}

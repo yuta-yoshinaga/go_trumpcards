@@ -4,18 +4,22 @@ import type {
   BaccaratResponse,
   BadugiResponse,
   BakersDozenResponse,
+  BeleagueredCastleResponse,
   BeloteResponse,
   BlackJackResponse,
   BlackJackSwitchResponse,
   CalculationResponse,
+  CallBreakResponse,
   CanastaResponse,
   CanfieldResponse,
   CaribbeanStudResponse,
+  CasinoHoldemResponse,
   CasinoWarResponse,
   CassinoResponse,
   ClockSolitaireResponse,
   CrazyEightsResponse,
   CribbageResponse,
+  CruelResponse,
   DaifugoResponse,
   DoubtResponse,
   DragonTigerResponse,
@@ -32,6 +36,7 @@ import type {
   KlondikeResponse,
   LetItRideResponse,
   MemoryResponse,
+  MightyResponse,
   MississippiStudResponse,
   MonteCarloResponse,
   NapoleonResponse,
@@ -51,6 +56,7 @@ import type {
   RedDogResponse,
   RussianSolitaireResponse,
   ScorpionResponse,
+  SeahavenTowersResponse,
   SevenBridgeResponse,
   SevenCardStudResponse,
   SevensResponse,
@@ -79,19 +85,23 @@ import { getAccordionHint } from '../utils/hints/accordionHint';
 import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBadugiHint } from '../utils/hints/badugiHint';
 import { getBakersdozenHint } from '../utils/hints/bakersdozenHint';
+import { getBeleagueredcastleHint } from '../utils/hints/beleagueredcastleHint';
 import { getBeloteHint } from '../utils/hints/beloteHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getBlackjackswitchHint } from '../utils/hints/blackjackswitchHint';
 import { getCalculationHint } from '../utils/hints/calculationHint';
+import { getCallBreakHint } from '../utils/hints/callbreakHint';
 import { getCanastaHint } from '../utils/hints/canastaHint';
 import { getCanfieldHint } from '../utils/hints/canfieldHint';
 import { getCaribbeanStudHint } from '../utils/hints/caribbeanstudHint';
+import { getCasinoHoldemHint } from '../utils/hints/casinoholdemHint';
 import { getCasinowarHint } from '../utils/hints/casinowarHint';
 import { getCassinoHint } from '../utils/hints/cassinoHint';
 import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
 import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
 import { getCrazyPineappleHint } from '../utils/hints/crazyPineappleHint';
 import { getCribbageHint } from '../utils/hints/cribbageHint';
+import { getCruelHint } from '../utils/hints/cruelHint';
 import { getDaifugoHint } from '../utils/hints/daifugoHint';
 import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
 import { getDoubtHint } from '../utils/hints/doubtHint';
@@ -110,6 +120,7 @@ import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
 import { getKlondikeHint } from '../utils/hints/klondikeHint';
 import { getLetitrideHint } from '../utils/hints/letitrideHint';
 import { getMemoryHint } from '../utils/hints/memoryHint';
+import { getMightyHint } from '../utils/hints/mightyHint';
 import { getMississippiStudHint } from '../utils/hints/mississippiStudHint';
 import { getMonteCarloHint } from '../utils/hints/montecarloHint';
 import { getNapoleonHint } from '../utils/hints/napoleonHint';
@@ -131,6 +142,7 @@ import { getRazzHint } from '../utils/hints/razzHint';
 import { getReddogHint } from '../utils/hints/reddogHint';
 import { getRussianSolitaireHint } from '../utils/hints/russianSolitaireHint';
 import { getScorpionHint } from '../utils/hints/scorpionHint';
+import { getSeahavenTowersHint } from '../utils/hints/seahavenTowersHint';
 import { getSevenbridgeHint } from '../utils/hints/sevenbridgeHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
 import { getShitheadHint } from '../utils/hints/shitheadHint';
@@ -165,6 +177,7 @@ const hintFactories = {
   poker: (s) => getPokerHint(s as PokerResponse),
   hearts: (s) => getHeartsHint(s as HeartsResponse),
   spades: (s) => getSpadesHint(s as SpadesResponse),
+  callbreak: (s) => getCallBreakHint(s as CallBreakResponse),
   pitch: (s) => getPitchHint(s as PitchResponse),
   holdem: (s) => getHoldemHint(s as HoldemResponse),
   omaha: (s) => getOmahaHint(s as OmahaResponse),
@@ -181,6 +194,7 @@ const hintFactories = {
   belote: (s) => getBeloteHint(s as BeloteResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
+  mighty: (s) => getMightyHint(s as MightyResponse),
   ohhell: (s) => getOhHellHint(s as OhHellResponse),
   oldmaid: (s) => getOldMaidHint(s as OldMaidResponse),
   doubt: (s) => getDoubtHint(s as DoubtResponse),
@@ -190,6 +204,7 @@ const hintFactories = {
   speed: (s) => getSpeedHint(s as SpeedResponse),
   klondike: (s) => getKlondikeHint(s as KlondikeResponse),
   freecell: (s) => getFreeCellHint(s as FreeCellResponse),
+  seahaventowers: (s) => getSeahavenTowersHint(s as SeahavenTowersResponse),
   spider: (s) => getSpiderHint(s as SpiderResponse),
   pyramid: (s) => getPyramidHint(s as PyramidResponse),
   tripeaks: (s) => getTriPeaksHint(s as TriPeaksResponse),
@@ -198,6 +213,7 @@ const hintFactories = {
   cribbage: (s) => getCribbageHint(s as CribbageResponse),
   gofish: (s) => getGoFishHint(s as GoFishResponse),
   caribbeanstud: (s) => getCaribbeanStudHint(s as CaribbeanStudResponse),
+  casinoholdem: (s) => getCasinoHoldemHint(s as CasinoHoldemResponse),
   texasholdembonus: (s) => getTexasHoldemBonusHint(s as TexasHoldemBonusResponse),
   ultimatetexasholdem: (s) => getUltimateTexasHoldemHint(s as UltimateTexasHoldemResponse),
   mississippistud: (s) => getMississippiStudHint(s as MississippiStudResponse),
@@ -211,6 +227,7 @@ const hintFactories = {
   badugi: (s) => getBadugiHint(s as BadugiResponse),
   fortythieves: () => null,
   bakersdozen: (s) => getBakersdozenHint(s as BakersDozenResponse),
+  beleagueredcastle: (s) => getBeleagueredcastleHint(s as BeleagueredCastleResponse),
   tonk: () => null,
   paigow: () => null,
   pageone: (s) => getPageOneHint(s as PageOneResponse),
@@ -226,6 +243,7 @@ const hintFactories = {
   whist: (s) => getWhistHint(s as WhistResponse),
   yukon: (s) => getYukonHint(s as YukonResponse),
   russiansolitaire: (s) => getRussianSolitaireHint(s as RussianSolitaireResponse),
+  cruel: (s) => getCruelHint(s as CruelResponse),
   scorpion: (s) => getScorpionHint(s as ScorpionResponse),
   accordion: (s) => getAccordionHint(s as AccordionResponse),
   calculation: (s) => getCalculationHint(s as CalculationResponse),

@@ -93,6 +93,16 @@ func init() {
 			return usecase.NewFreeCellInteractor(domain.NewDefaultFreeCell(), new(presenter.FreeCellWebPresenter))
 		},
 		controller.NewFreeCellWebController)
+	BindWebControllerFor("seahaventowers",
+		func() usecase.SeahavenTowersInteractorIF {
+			return usecase.NewSeahavenTowersInteractor(domain.NewDefaultSeahavenTowers(), new(presenter.SeahavenTowersWebPresenter))
+		},
+		controller.NewSeahavenTowersWebController)
+	BindWebControllerFor("cruel",
+		func() usecase.CruelInteractorIF {
+			return usecase.NewCruelInteractor(domain.NewDefaultCruel(), new(presenter.CruelWebPresenter))
+		},
+		controller.NewCruelWebController)
 	BindWebControllerFor("baccarat",
 		func() usecase.BaccaratInteractorIF {
 			return usecase.NewBaccaratInteractor(domain.NewDefaultBaccarat(), new(presenter.BaccaratWebPresenter))
@@ -443,4 +453,34 @@ func init() {
 			return usecase.NewSpideretteInteractor(domain.NewDefaultSpiderette(), new(presenter.SpideretteWebPresenter))
 		},
 		controller.NewSpideretteWebController)
+	BindWebControllerFor("mighty",
+		func() usecase.MightyInteractorIF {
+			return usecase.NewMightyInteractor(domain.NewDefaultMighty(), new(presenter.MightyWebPresenter))
+		},
+		controller.NewMightyWebController)
+	BindWebControllerFor("oasispoker",
+		func() usecase.OasisPokerInteractorIF {
+			return usecase.NewOasisPokerInteractor(domain.NewDefaultOasisPoker(), new(presenter.OasisPokerWebPresenter))
+		},
+		controller.NewOasisPokerWebController)
+	BindWebControllerFor("beleagueredcastle",
+		func() usecase.BeleagueredCastleInteractorIF {
+			return usecase.NewBeleagueredCastleInteractor(domain.NewDefaultBeleagueredCastle(), new(presenter.BeleagueredCastleWebPresenter))
+		},
+		controller.NewBeleagueredCastleWebController)
+	BindWebControllerFor("piquet",
+		func() usecase.PiquetInteractorIF {
+			return usecase.NewPiquetInteractor(domain.NewDefaultPiquet(), new(presenter.PiquetWebPresenter))
+		},
+		controller.NewPiquetWebController)
+	BindWebControllerFor("casinoholdem",
+		func() usecase.CasinoHoldemInteractorIF {
+			return usecase.NewCasinoHoldemInteractor(domain.NewDefaultCasinoHoldem(), new(presenter.CasinoHoldemWebPresenter))
+		},
+		controller.NewCasinoHoldemWebController)
+	BindWebControllerFor("callbreak",
+		func() usecase.CallBreakInteractorIF {
+			return usecase.NewCallBreakInteractor(domain.NewDefaultCallBreak(), new(presenter.CallBreakWebPresenter))
+		},
+		controller.NewCallBreakWebController)
 }

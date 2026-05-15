@@ -1,0 +1,36 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear!",
+    "gameOver": "Game Over"
+  },
+  "reserved": "Reserved",
+  "foundation": "Foundation",
+  "tableau": "Tableau",
+  "giveup": "Give Up",
+  "hint": "Hint",
+  "autoComplete": "Auto Complete",
+  "undo": "Undo",
+  "moveCount": "Moves",
+  "empty": "Empty",
+  "hintAvailable": "Hint",
+  "foundationAriaLabel": "{{suit}} Foundation ({{cardCount}} cards)",
+  "emptyFoundationAriaLabel": "{{suit}} Foundation (empty)",
+  "emptyReservedAriaLabel": "Reserved cell {{idx}} (empty)",
+  "supermoveLimitTooltip": "Only {{limit}} card(s) can be moved at once",
+  "tutorial": {
+    "reservedCells": "Reserved cells (towers). Two temporary slots — Seahaven gives you fewer than FreeCell.",
+    "foundation": "Foundation piles. Build each suit from Ace to King.",
+    "tableau": "Tableau columns. Stack in the same suit, descending. Only Kings can move to an empty column.",
+    "controls": "Control buttons: Undo, Hint, Auto-complete.",
+    "resetButton": "Press the reset button to start a new game."
+  },
+  "landscapeBanner": "Rotate to landscape for easier play",
+  "shortLabel": "ST",
+  "frontendHint": {
+    "moveToFoundation": "A card can be moved to the foundation",
+    "reservedFilling": "Both reserved cells are full — try to clear one",
+    "useEmptyColumn": "An empty column is available — only a King can land there",
+    "useReserved": "Consider parking a card in a reserved cell to open up moves"
+  }
+}

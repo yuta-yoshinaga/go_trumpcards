@@ -165,8 +165,24 @@ export const FreeCellPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Seahaven Towers phase constants (sync: internal/domain/SeahavenTowers.go). */
+export const SeahavenTowersPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Spades phase constants (sync: internal/domain/Spades.go). */
 export const SpadesPhase = {
+  BID: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/** Call Break phase constants (sync: internal/domain/CallBreak.go). */
+export const CallBreakPhase = {
   BID: 0,
   PLAY: 1,
   TRICK_END: 2,
@@ -302,6 +318,17 @@ export const NapoleonPhase = {
   GAME_END: 6,
 } as const;
 
+/** Mighty phase constants (sync: internal/domain/Mighty.go). */
+export const MightyPhase = {
+  BID: 0,
+  TRUMP_AND_FRIEND: 1,
+  KITTY_EXCHANGE: 2,
+  PLAY: 3,
+  TRICK_END: 4,
+  ROUND_END: 5,
+  GAME_END: 6,
+} as const;
+
 /** Baccarat phase constants (sync: internal/domain/Baccarat.go). */
 export const BaccaratPhase = {
   BET: 1,
@@ -379,6 +406,13 @@ export const ThreeCardPhase = {
 export const CaribbeanStudPhase = {
   BET: 1,
   ACTION: 2,
+  END: 3,
+} as const;
+
+/** Casino Hold'em phase constants (sync: internal/domain/CasinoHoldem.go). */
+export const CasinoHoldemPhase = {
+  BET: 1,
+  FLOP: 2,
   END: 3,
 } as const;
 
@@ -467,6 +501,29 @@ export const PinochlePhase = {
   GAME_END: 6,
 } as const;
 
+/** Piquet phase constants (sync: internal/domain/Piquet.go). */
+export const PiquetPhase = {
+  EXCHANGE: 0,
+  DECLARATION: 1,
+  PLAY: 2,
+  SCORE: 3,
+  GAME_END: 4,
+} as const;
+
+/** Piquet declaration kind constants (sync: internal/domain/Piquet.go). */
+export const PiquetDeclarationKind = {
+  POINT: 0,
+  SEQUENCE: 1,
+  SET: 2,
+} as const;
+
+/** Piquet exchange turn constants (sync: internal/domain/Piquet.go). */
+export const PiquetExchangeTurn = {
+  ELDER: 0,
+  YOUNGER: 1,
+  DONE: 2,
+} as const;
+
 /** Golf Solitaire phase constants (sync: internal/domain/Golf.go). */
 export const GolfPhase = {
   PLAYING: 0,
@@ -544,6 +601,13 @@ export const YukonPhase = {
 
 /** Russian Solitaire phase constants (sync: internal/domain/RussianSolitaire.go). */
 export const RussianSolitairePhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** Cruel phase constants (sync: internal/domain/Cruel.go). */
+export const CruelPhase = {
   PLAYING: 0,
   GAME_CLEAR: 1,
   GAME_OVER: 2,
@@ -718,6 +782,21 @@ export const EgyptianRatscrewSlapReason = {
 
 /** Crescent Solitaire phase constants (sync: internal/domain/Crescent.go). */
 export const CrescentPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** Oasis Poker phase constants (sync: internal/domain/OasisPoker.go). */
+export const OasisPokerPhase = {
+  BET: 1,
+  EXCHANGE: 2,
+  ACTION: 3,
+  END: 4,
+} as const;
+
+/** Beleaguered Castle phase constants (sync: internal/domain/BeleagueredCastle.go). */
+export const BeleagueredCastlePhase = {
   PLAYING: 0,
   GAME_CLEAR: 1,
   GAME_OVER: 2,

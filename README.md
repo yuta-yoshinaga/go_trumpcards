@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した86種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した94種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -36,6 +36,7 @@ Go + Clean Architecture で実装した86種類のトランプゲーム。CLI �
 | クロンダイク (Klondike) | `klondike` | [CUI](docs/manual/cui/klondike.md) / [Web](docs/manual/web/klondike.md) |
 | レットイットライド (Let It Ride) | `letitride` | [CUI](docs/manual/cui/letitride.md) / [Web](docs/manual/web/letitride.md) |
 | フリーセル (FreeCell) | `freecell` | [CUI](docs/manual/cui/freecell.md) / [Web](docs/manual/web/freecell.md) |
+| シーヘイブンタワーズ (Seahaven Towers) | `seahaventowers` | [CUI](docs/manual/cui/seahaventowers.md) / [Web](docs/manual/web/seahaventowers.md) |
 | バカラ (Baccarat) | `baccarat` | [CUI](docs/manual/cui/baccarat.md) / [Web](docs/manual/web/baccarat.md) |
 | スペード (Spades) | `spades` | [CUI](docs/manual/cui/spades.md) / [Web](docs/manual/web/spades.md) |
 | ツーテンジャック (Two Ten Jack) | `twotenjack` | [CUI](docs/manual/cui/twotenjack.md) / [Web](docs/manual/web/twotenjack.md) |
@@ -45,6 +46,7 @@ Go + Clean Architecture で実装した86種類のトランプゲーム。CLI �
 | スパイダーソリティア (Spider Solitaire) | `spider` | [CUI](docs/manual/cui/spider.md) / [Web](docs/manual/web/spider.md) |
 | スパイダレット (Spiderette) | `spiderette` | [CUI](docs/manual/cui/spiderette.md) / [Web](docs/manual/web/spiderette.md) |
 | ナポレオン (Napoleon) | `napoleon` | [CUI](docs/manual/cui/napoleon.md) / [Web](docs/manual/web/napoleon.md) |
+| マイティ (Mighty) | `mighty` | [CUI](docs/manual/cui/mighty.md) / [Web](docs/manual/web/mighty.md) |
 | インディアンポーカー (Indian Poker) | `indianpoker` | [CUI](docs/manual/cui/indianpoker.md) / [Web](docs/manual/web/indianpoker.md) |
 | ビデオポーカー (Video Poker) | `videopoker` | [CUI](docs/manual/cui/videopoker.md) / [Web](docs/manual/web/videopoker.md) |
 | デューシーズワイルド (Deuces Wild) | `deuceswild` | [CUI](docs/manual/cui/deuceswild.md) / [Web](docs/manual/web/deuceswild.md) |
@@ -55,6 +57,7 @@ Go + Clean Architecture で実装した86種類のトランプゲーム。CLI �
 | クリベッジ (Cribbage) | `cribbage` | [CUI](docs/manual/cui/cribbage.md) / [Web](docs/manual/web/cribbage.md) |
 | スリーカードポーカー (Three Card Poker) | `threecard` | [CUI](docs/manual/cui/threecard.md) / [Web](docs/manual/web/threecard.md) |
 | カリビアンスタッドポーカー (Caribbean Stud Poker) | `caribbeanstud` | [CUI](docs/manual/cui/caribbeanstud.md) / [Web](docs/manual/web/caribbeanstud.md) |
+| オアシスポーカー (Oasis Poker) | `oasispoker` | [CUI](docs/manual/cui/oasispoker.md) / [Web](docs/manual/web/oasispoker.md) |
 | テキサスホールデムボーナスポーカー (Texas Hold'em Bonus Poker) | `texasholdembonus` | [CUI](docs/manual/cui/texasholdembonus.md) / [Web](docs/manual/web/texasholdembonus.md) |
 | オー・ヘル (Oh Hell) | `ohhell` | [CUI](docs/manual/cui/ohhell.md) / [Web](docs/manual/web/ohhell.md) |
 | コントラクトブリッジ (Contract Bridge) | `bridge` | [CUI](docs/manual/cui/bridge.md) / [Web](docs/manual/web/bridge.md) |
@@ -73,6 +76,7 @@ Go + Clean Architecture で実装した86種類のトランプゲーム。CLI �
 | フィフティワン (Fifty-one) | `fiftyone` | [CUI](docs/manual/cui/fiftyone.md) / [Web](docs/manual/web/fiftyone.md) |
 | ユーコン (Yukon) | `yukon` | [CUI](docs/manual/cui/yukon.md) / [Web](docs/manual/web/yukon.md) |
 | ロシアンソリティア (Russian Solitaire) | `russiansolitaire` | [CUI](docs/manual/cui/russiansolitaire.md) / [Web](docs/manual/web/russiansolitaire.md) |
+| クルーエル (Cruel) | `cruel` | [CUI](docs/manual/cui/cruel.md) / [Web](docs/manual/web/cruel.md) |
 | ホイスト (Whist) | `whist` | [CUI](docs/manual/cui/whist.md) / [Web](docs/manual/web/whist.md) |
 | ポーカー・スクエア (Poker Squares) | `pokersquares` | [CUI](docs/manual/cui/pokersquares.md) / [Web](docs/manual/web/pokersquares.md) |
 | ページワン (Page One) | `pageone` | [CUI](docs/manual/cui/pageone.md) / [Web](docs/manual/web/pageone.md) |
@@ -94,6 +98,8 @@ Go + Clean Architecture で実装した86種類のトランプゲーム。CLI �
 | スラップジャック (Slapjack) | `slapjack` | [CUI](docs/manual/cui/slapjack.md) / [Web](docs/manual/web/slapjack.md) |
 | エジプシャン・ラットスクリュー (Egyptian Ratscrew) | `egyptianratscrew` | [CUI](docs/manual/cui/egyptianratscrew.md) / [Web](docs/manual/web/egyptianratscrew.md) |
 | ベーカーズ・ダズン (Baker's Dozen) | `bakersdozen` | [CUI](docs/manual/cui/bakersdozen.md) / [Web](docs/manual/web/bakersdozen.md) |
+| 包囲された城 (Beleaguered Castle) | `beleagueredcastle` | [CUI](docs/manual/cui/beleagueredcastle.md) / [Web](docs/manual/web/beleagueredcastle.md) |
+| ピケ (Piquet) | `piquet` | [CUI](docs/manual/cui/piquet.md) / [Web](docs/manual/web/piquet.md) |
 | トンク (Tonk) | `tonk` | [CUI](docs/manual/cui/tonk.md) / [Web](docs/manual/web/tonk.md) |
 | カジノウォー (Casino War) | `casinowar` | [CUI](docs/manual/cui/casinowar.md) / [Web](docs/manual/web/casinowar.md) |
 | ピッチ / セットバック (Pitch / Setback) | `pitch` | [CUI](docs/manual/cui/pitch.md) / [Web](docs/manual/web/pitch.md) |
@@ -105,6 +111,8 @@ Go + Clean Architecture で実装した86種類のトランプゲーム。CLI �
 | クレセント・ソリティア (Crescent Solitaire) | `crescent` | [CUI](docs/manual/cui/crescent.md) / [Web](docs/manual/web/crescent.md) |
 | ミシシッピ・スタッド (Mississippi Stud) | `mississippistud` | [CUI](docs/manual/cui/mississippistud.md) / [Web](docs/manual/web/mississippistud.md) |
 | ベロート (Belote) | `belote` | [CUI](docs/manual/cui/belote.md) / [Web](docs/manual/web/belote.md) |
+| カジノホールデム (Casino Hold'em) | `casinoholdem` | [CUI](docs/manual/cui/casinoholdem.md) / [Web](docs/manual/web/casinoholdem.md) |
+| コールブレイク (Call Break) | `callbreak` | [CUI](docs/manual/cui/callbreak.md) / [Web](docs/manual/web/callbreak.md) |
 
 ## Demo
 

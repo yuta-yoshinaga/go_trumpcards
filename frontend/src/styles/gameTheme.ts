@@ -15,7 +15,9 @@ export type GameKey =
   | 'baccarat'
   | 'threecard'
   | 'caribbeanstud'
+  | 'oasispoker'
   | 'texasholdembonus'
+  | 'casinoholdem'
   | 'ultimatetexasholdem'
   | 'mississippistud'
   | 'paigow'
@@ -50,8 +52,11 @@ export type GameKey =
   | 'napoleon'
   | 'whist'
   | 'pinochle'
+  | 'piquet'
+  | 'callbreak'
   | 'skat'
   | 'belote'
+  | 'mighty'
   // Matching/Pass
   | 'oldmaid'
   | 'doubt'
@@ -76,6 +81,7 @@ export type GameKey =
   // Solitaire
   | 'klondike'
   | 'freecell'
+  | 'seahaventowers'
   | 'spider'
   | 'spiderette'
   | 'pyramid'
@@ -85,9 +91,11 @@ export type GameKey =
   | 'clocksolitaire'
   | 'fortythieves'
   | 'bakersdozen'
+  | 'beleagueredcastle'
   | 'canfield'
   | 'yukon'
   | 'russiansolitaire'
+  | 'cruel'
   | 'scorpion'
   | 'accordion'
   | 'pokersquares'
@@ -126,7 +134,9 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   baccarat: CASINO,
   threecard: CASINO,
   caribbeanstud: CASINO,
+  oasispoker: CASINO,
   texasholdembonus: POKER,
+  casinoholdem: POKER,
   ultimatetexasholdem: POKER,
   mississippistud: POKER,
   paigow: CASINO,
@@ -161,8 +171,11 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   napoleon: BLUE,
   whist: BLUE,
   pinochle: BLUE,
+  piquet: BLUE,
   skat: BLUE,
   belote: BLUE,
+  mighty: BLUE,
+  callbreak: BLUE,
   // Matching/Pass
   oldmaid: GREEN,
   doubt: GREEN,
@@ -187,6 +200,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Solitaire
   klondike: CASINO,
   freecell: CASINO,
+  seahaventowers: CASINO,
   spider: CASINO,
   spiderette: CASINO,
   pyramid: CASINO,
@@ -196,9 +210,11 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   clocksolitaire: CASINO,
   fortythieves: CASINO,
   bakersdozen: CASINO,
+  beleagueredcastle: CASINO,
   canfield: CASINO,
   yukon: CASINO,
   russiansolitaire: CASINO,
+  cruel: CASINO,
   scorpion: CASINO,
   accordion: CASINO,
   pokersquares: CASINO,

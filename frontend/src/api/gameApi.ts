@@ -5,15 +5,19 @@ import type {
   BadugiResponse,
   BakersDozenMoveZone,
   BakersDozenResponse,
+  BeleagueredCastleMoveZone,
+  BeleagueredCastleResponse,
   BeloteResponse,
   BlackJackResponse,
   BlackJackSwitchResponse,
   BridgeResponse,
   CalculationMoveZone,
   CalculationResponse,
+  CallBreakResponse,
   CanastaResponse,
   CanfieldResponse,
   CaribbeanStudResponse,
+  CasinoHoldemResponse,
   CasinoWarResponse,
   CassinoResponse,
   ClockSolitaireResponse,
@@ -22,6 +26,7 @@ import type {
   CrescentMoveZone,
   CrescentResponse,
   CribbageResponse,
+  CruelResponse,
   DaifugoConfigInput,
   DaifugoResponse,
   DoubtConfig,
@@ -44,12 +49,14 @@ import type {
   KlondikeResponse,
   LetItRideResponse,
   MemoryResponse,
+  MightyResponse,
   MississippiStudResponse,
   MonteCarloResponse,
   NapoleonResponse,
   NertzConfig as NertzConfigType,
   NertzMoveZone,
   NertzResponse,
+  OasisPokerResponse,
   OhHellResponse,
   OldMaidResponse,
   OmahaResponse,
@@ -58,6 +65,8 @@ import type {
   PigsTailResponse,
   PineappleResponse,
   PinochleResponse,
+  PiquetConfig as PiquetConfigType,
+  PiquetResponse,
   PitchResponse,
   PokerResponse,
   PokerSquaresResponse,
@@ -66,6 +75,7 @@ import type {
   RedDogResponse,
   RussianSolitaireResponse,
   ScorpionResponse,
+  SeahavenTowersResponse,
   SevenBridgeResponse,
   SevenCardStudResponse,
   SevensResponse,
@@ -121,6 +131,7 @@ const workerUrl: Record<string, string> = {
   threecard: WORKER_CASINO,
   caribbeanstud: WORKER_CASINO,
   texasholdembonus: WORKER_CASINO,
+  casinoholdem: WORKER_CASINO,
   paigow: WORKER_CASINO,
   pineapple: WORKER_CASINO,
   crazypineapple: WORKER_CASINO,
@@ -151,6 +162,8 @@ const workerUrl: Record<string, string> = {
   twotenjack: WORKER_CLASSIC,
   klondike: WORKER_SOLO,
   freecell: WORKER_SOLO,
+  seahaventowers: WORKER_SOLO,
+  cruel: WORKER_SOLO,
   spider: WORKER_SOLO,
   pyramid: WORKER_SOLO,
   pokersquares: WORKER_SOLO,
@@ -192,6 +205,11 @@ const workerUrl: Record<string, string> = {
   mississippistud: WORKER_CASINO,
   belote: WORKER_CLASSIC,
   spiderette: WORKER_SOLO,
+  mighty: WORKER_CLASSIC,
+  oasispoker: WORKER_CASINO,
+  beleagueredcastle: WORKER_SOLO,
+  piquet: WORKER_CLASSIC,
+  callbreak: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -588,6 +606,15 @@ function createBidPlayApi<T, C>(game: string) {
 /** API client for the Spades /spades/exec endpoint. */
 export const spadesApi = createBidPlayApi<SpadesResponse, SpadesConfigInput>('spades');
 
+/** Configuration options for Call Break game settings. */
+export interface CallBreakConfigInput {
+  cpuDifficulty?: number;
+  maxRounds?: number;
+}
+
+/** API client for the Call Break /callbreak/exec endpoint. */
+export const callBreakApi = createBidPlayApi<CallBreakResponse, CallBreakConfigInput>('callbreak');
+
 /** Configuration options for Pitch (Setback) game settings. */
 export interface PitchConfigInput {
   cpuDifficulty?: number;
@@ -731,6 +758,21 @@ export const freecellApi = createSolitaireMoveApi<
   'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('freecell');
 
+/** Source or target zone for a Seahaven Towers card move. */
+export interface SeahavenTowersMoveZone {
+  zone: string;
+  col?: number;
+  cell?: number;
+  cardIndex?: number;
+}
+
+/** API client for the Seahaven Towers /seahaventowers/exec endpoint. */
+export const seahaventowersApi = createSolitaireMoveApi<
+  SeahavenTowersResponse,
+  SeahavenTowersMoveZone,
+  'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('seahaventowers');
+
 /** Configuration options for Crazy Eights game settings. */
 export interface CrazyEightsConfigInput {
   cpuDifficulty?: number;
@@ -863,6 +905,28 @@ export const pinochleApi = {
     }),
 };
 
+/** Configuration options for Piquet game settings. */
+export interface PiquetConfigInput {
+  cpuDifficulty?: number;
+  dealsPerPartie?: number;
+}
+
+/** API client for the Piquet /piquet/exec endpoint. */
+export const piquetApi = {
+  exec: (
+    command: 'reset' | 'e' | 'y' | 'd' | 'p' | 'nd' | 'h' | 'log',
+    cardIndex?: number,
+    discardIndices?: number[],
+    config?: PiquetConfigType,
+  ) =>
+    gameExec<PiquetResponse>('piquet', {
+      command,
+      cardIndex,
+      discardIndices,
+      config,
+    }),
+};
+
 /** Configuration options for Cribbage game settings. */
 export interface CribbageConfigInput {
   cpuDifficulty?: number;
@@ -908,10 +972,26 @@ export const caribbeanstudApi = {
     gameExec<CaribbeanStudResponse>('caribbeanstud', { command, amount, jackpotBet }),
 };
 
+/** API client for the Oasis Poker /oasispoker/exec endpoint. */
+export const oasispokerApi = {
+  exec: (
+    command: 'reset' | 'bet' | 'exchange' | 'stand' | 'play' | 'fold' | 'log',
+    amount?: number,
+    jackpotBet?: number,
+    indices?: number[],
+  ) => gameExec<OasisPokerResponse>('oasispoker', { command, amount, jackpotBet, indices }),
+};
+
 /** API client for the Texas Hold'em Bonus Poker /texasholdembonus/exec endpoint. */
 export const texasholdembonusApi = {
   exec: (command: 'reset' | 'bet' | 'play' | 'fold' | 'check' | 'raise' | 'log', amount?: number, bonusBet?: number) =>
     gameExec<TexasHoldemBonusResponse>('texasholdembonus', { command, amount, bonusBet }),
+};
+
+/** API client for the Casino Hold'em /casinoholdem/exec endpoint. */
+export const casinoholdemApi = {
+  exec: (command: 'reset' | 'bet' | 'call' | 'fold' | 'log', amount?: number, bonusBet?: number) =>
+    gameExec<CasinoHoldemResponse>('casinoholdem', { command, amount, bonusBet }),
 };
 
 /** API client for the Ultimate Texas Hold'em /ultimatetexasholdem/exec endpoint. */
@@ -1003,6 +1083,59 @@ export const napoleonApi = {
       adjutantValue,
       discardIndex,
       cardIndex,
+      config,
+    }),
+};
+
+/** Configuration options for Mighty game settings. */
+export interface MightyConfigInput {
+  cpuDifficulty?: number;
+  minBid?: number;
+  noTrumpExtra?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Mighty /mighty/exec endpoint. */
+export const mightyApi = {
+  exec: (
+    command:
+      | 'reset'
+      | 'b'
+      | 'bid'
+      | 't'
+      | 'trump'
+      | 'e'
+      | 'exchange'
+      | 'p'
+      | 'play'
+      | 'jl'
+      | 'jokerlead'
+      | 'n'
+      | 'next'
+      | 'nr'
+      | 'nextround'
+      | 'hint'
+      | 'log',
+    bid?: number,
+    noTrump?: boolean,
+    cardIndex?: number,
+    trumpSuit?: number,
+    partnerSuit?: number,
+    partnerValue?: number,
+    discardIndices?: number[],
+    jokerLeadSuit?: number,
+    config?: MightyConfigInput,
+  ) =>
+    gameExec<MightyResponse>('mighty', {
+      command,
+      bid,
+      noTrump,
+      cardIndex,
+      trumpSuit,
+      partnerSuit,
+      partnerValue,
+      discardIndices,
+      jokerLeadSuit,
       config,
     }),
 };
@@ -1295,6 +1428,19 @@ export const yukonApi = createSolitaireMoveApi<
   'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('yukon');
 
+/** Source or target zone for a Cruel card move. */
+export interface CruelMoveZone {
+  zone: string;
+  col?: number;
+}
+
+/** API client for the Cruel /cruel/exec endpoint. */
+export const cruelApi = createSolitaireMoveApi<
+  CruelResponse,
+  CruelMoveZone,
+  'reset' | 'move' | 'shift' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('cruel');
+
 /** Source or target zone for a Russian Solitaire card move. */
 export interface RussianSolitaireMoveZone {
   zone: string;
@@ -1445,6 +1591,13 @@ export const bakersDozenApi = createSolitaireMoveApi<
   'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('bakersdozen');
 
+/** API client for the Beleaguered Castle /beleagueredcastle/exec endpoint. */
+export const beleagueredCastleApi = createSolitaireMoveApi<
+  BeleagueredCastleResponse,
+  BeleagueredCastleMoveZone,
+  'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('beleagueredcastle');
+
 /** API client for the Calculation /calculation/exec endpoint. */
 export const calculationApi = createSolitaireMoveApi<
   CalculationResponse,
@@ -1504,7 +1657,7 @@ export const cassinoApi = {
     gameExec<CassinoResponse>('cassino', { command, ...(params ?? {}) }),
 };
 
-export type { BakersDozenMoveZone, CrescentMoveZone, FortyThievesMoveZone };
+export type { BakersDozenMoveZone, BeleagueredCastleMoveZone, CrescentMoveZone, FortyThievesMoveZone };
 
 /** API client for the Whist /whist/exec endpoint. */
 export const whistApi = {
@@ -1623,6 +1776,8 @@ const games = [
   'memory',
   'klondike',
   'freecell',
+  'seahaventowers',
+  'cruel',
   'baccarat',
   'crazyeights',
   'ginrummy',
@@ -1685,6 +1840,12 @@ const games = [
   'mississippistud',
   'belote',
   'spiderette',
+  'mighty',
+  'oasispoker',
+  'beleagueredcastle',
+  'piquet',
+  'casinoholdem',
+  'callbreak',
 ] as const;
 type Game = (typeof games)[number];
 

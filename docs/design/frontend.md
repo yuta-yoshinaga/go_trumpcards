@@ -37,6 +37,7 @@
   - [2.22 ScorpionPage フェーズ別レンダリングフロー](#222-scorpionpage-フェーズ別レンダリングフロー)
   - [2.23 TrashPage フェーズ別レンダリングフロー](#223-trashpage-フェーズ別レンダリングフロー)
   - [2.24 RussianSolitairePage フェーズ別レンダリングフロー](#224-russiansolitairepage-フェーズ別レンダリングフロー)
+  - [2.25 MightyPage フェーズ別レンダリングフロー](#225-mightypage-フェーズ別レンダリングフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 ゲームページ表示状態](#31-ゲームページ表示状態)
   - [3.2 カード選択状態 (useCardSelection)](#32-カード選択状態-usecardselection)
@@ -45,6 +46,7 @@
   - [3.5 ゲーム設定パネル状態](#35-ゲーム設定パネル状態)
   - [3.6 チュートリアル状態 (useTutorial)](#36-チュートリアル状態-usetutorial)
   - [3.7 CLIモード状態 (useCliMode + useCliGame)](#37-cliモード状態-useclimode--usecligame)
+  - [3.8 Mighty フェーズ遷移 (MightyPhase)](#38-mighty-フェーズ遷移-mightyphase)
 
 ---
 
@@ -431,7 +433,7 @@ classDiagram
         +object messageParams
     }
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全86ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全94ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -543,6 +545,17 @@ classDiagram
         <<enumeration>>
         BID = 0
         TRUMP_DECLARATION = 1
+        KITTY_EXCHANGE = 2
+        PLAY = 3
+        TRICK_END = 4
+        ROUND_END = 5
+        GAME_END = 6
+    }
+
+    class MightyPhase {
+        <<enumeration>>
+        BID = 0
+        TRUMP_AND_FRIEND = 1
         KITTY_EXCHANGE = 2
         PLAY = 3
         TRICK_END = 4
@@ -851,7 +864,7 @@ classDiagram
     class actionLogApi {
         +blackjack() Promise~ActionLogResponse~
         +poker() Promise~ActionLogResponse~
-        ...全86ゲーム()
+        ...全94ゲーム()
     }
 
     BlackJackApi --> gameApi : uses postJson/gameExec
@@ -913,7 +926,7 @@ classDiagram
 
     RedDogApi --> gameApi : uses postJson/gameExec
 
-    note for BlackJackApi "全86ゲーム分のAPI Objectが存在\n(blackjack, spanish21, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, omahahilo, shortdeck,\npineapple, crazypineapple, hearts, memory, klondike, freecell,\nbaccarat, spades, twotenjack, crazyeights, ginrummy, canasta,\nspider, spiderette, napoleon, indianpoker, videopoker,\ndeuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, caribbeanstud, texasholdembonus,\nultimatetexasholdem, mississippistud, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow, war, canfield, fiftyone, yukon, russiansolitaire, scorpion, accordion, whist,\nletitride, pokersquares, pageone, reddog, razz, badugi, trash,\nsevenbridge, president, cassino, calculation, crescent, spiteandmalice,\nskat, shithead, nertz, slapjack, egyptianratscrew, bakersdozen, tonk,\ncasinowar, pitch, dragontiger, blackjackswitch, montecarlo, contractrummy, belote)"
+    note for BlackJackApi "全94ゲーム分のAPI Objectが存在\n(blackjack, spanish21, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, omahahilo, shortdeck,\npineapple, crazypineapple, hearts, memory, klondike, freecell,\nseahaventowers, cruel, baccarat, spades, twotenjack, crazyeights,\nginrummy, canasta, spider, spiderette, napoleon, mighty,\nindianpoker, videopoker, deuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, caribbeanstud, texasholdembonus,\nultimatetexasholdem, mississippistud, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow, war, canfield, fiftyone, yukon, russiansolitaire, scorpion, accordion, whist,\nletitride, pokersquares, pageone, reddog, razz, badugi, trash,\nsevenbridge, president, cassino, calculation, crescent, spiteandmalice,\nskat, shithead, nertz, slapjack, egyptianratscrew, bakersdozen, tonk,\ncasinowar, pitch, dragontiger, blackjackswitch, montecarlo, contractrummy, belote,\noasispoker, beleagueredcastle, piquet, casinoholdem, callbreak)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -1292,7 +1305,7 @@ classDiagram
 
     useCanastaGame --> useGameApi : uses
 
-    note for useBlackJackGame "全86ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    note for useBlackJackGame "全94ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -1549,6 +1562,22 @@ classDiagram
         +フロントエンドヒント (useGameHint)
     }
 
+    class MightyPage {
+        +useMightyGame() : MightyGameState
+        +useGameHint() : MightyHint
+        +useCliMode() : CliState
+        +useGameRoundGuard() : RoundGuard
+        +ビッドUI (NoTrump スイッチ + 数値)
+        +切り札・副官宣言UI (trumpSuit + partnerSuit + partnerValue)
+        +キティ交換UI (3枚ディスカード)
+        +ジョーカーリードUI (jokerLeadSuit 指定)
+        +トリック表示エリア (5プレイヤー円卓)
+        +スコアテーブル (ラウンド/累積)
+        +PhaseIndicator
+        +SettingsPanel (cpuDifficulty, minBid, noTrumpExtra, pointLimit)
+        +ヒントシステム
+    }
+
     class IndianPokerPage {
         +他プレイヤーカード表示
         +自分カード非表示（???）
@@ -1633,6 +1662,7 @@ classDiagram
     MemoryPage --|> GamePage : follows pattern
     DoubtPage --|> GamePage : follows pattern
     NapoleonPage --|> GamePage : follows pattern
+    MightyPage --|> GamePage : follows pattern
     IndianPokerPage --|> GamePage : follows pattern
     VideoPokerPage --|> GamePage : follows pattern
     DeucesWildPage --|> GamePage : follows pattern
@@ -1874,7 +1904,7 @@ classDiagram
     GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck/Pineapple/SevenCardStud/Razz)
     PokerTableLayout --> CpuPlayerCard : wraps
 
-    note for GamePage "全86ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全94ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -1897,15 +1927,15 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (86ゲーム)
+        +Routes (94ゲーム)
     }
 
     class gameCategories {
-        +table: [BlackJack, Spanish21, Baccarat, ThreeCard, CaribbeanStud, TexasHoldemBonus, PaiGow, LetItRide, RedDog, CasinoWar, DragonTiger, BlackJackSwitch]
+        +table: [BlackJack, Spanish21, Baccarat, ThreeCard, CaribbeanStud, OasisPoker, TexasHoldemBonus, CasinoHoldem, UltimateTexasHoldem, PaiGow, LetItRide, RedDog, CasinoWar, DragonTiger, BlackJackSwitch, MississippiStud]
         +poker: [Poker, Holdem, Omaha, OmahaHiLo, ShortDeck, Pineapple, CrazyPineapple, SevenCardStud, Razz, Badugi, IndianPoker, VideoPoker, DeucesWild, JokerPoker]
-        +trickTaking: [Hearts, Spades, Pitch, TwoTenJack, OhHell, Euchre, Bridge, Napoleon, Whist]
+        +trickTaking: [Hearts, Spades, Pitch, TwoTenJack, OhHell, Euchre, Bridge, Napoleon, Whist, Belote, Mighty, Piquet, CallBreak]
         +matching: [OldMaid, Doubt, Durak, Daifugo, President, Cassino, Sevens, CrazyEights, PageOne, Speed, GoFish, Pinochle, PigsTail, War, FiftyOne, Trash, SpiteAndMalice, Skat, Shithead, Nertz, Slapjack, EgyptianRatscrew]
-        +solitaire: [Klondike, FreeCell, Spider, Pyramid, TriPeaks, Golf, Memory, ClockSolitaire, FortyThieves, BakersDozen, Canfield, Yukon, RussianSolitaire, Scorpion, Accordion, PokerSquares, MonteCarlo, Calculation]
+        +solitaire: [Klondike, FreeCell, SeahavenTowers, Spider, Spiderette, Pyramid, TriPeaks, Golf, Memory, ClockSolitaire, FortyThieves, BakersDozen, BeleagueredCastle, Canfield, Yukon, RussianSolitaire, Cruel, Scorpion, Accordion, PokerSquares, MonteCarlo, Calculation, Crescent]
         +rummy: [GinRummy, Tonk, Canasta, Cribbage, SevenBridge, ContractRummy]
     }
 
@@ -1920,11 +1950,11 @@ classDiagram
     App --> i18n : initializes
     App --> gameCategories : routes from
     App --> NavBar : renders
-    App --> GamePage : routes to 80 pages
+    App --> GamePage : routes to 94 pages
     GamePage --> TutorialProvider : wraps (per-game)
     TutorialProvider --> TutorialOverlay : renders when active
 
-    note for i18n "88名前空間: common + 86ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
+    note for i18n "96名前空間: common + 94ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
 ```
 
 ---
@@ -2783,6 +2813,70 @@ sequenceDiagram
 
 YukonPage と同一のフロー。タブロー間の積み重ね判定はサーバ側 (`canPlaceOnTableau` で同スート降順チェック) で行われるため、フロントエンドの呼び出しシーケンスは Yukon と完全に一致する。
 
+### 2.25 MightyPage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Page as MightyPage
+    participant Hook as useMightyGame
+    participant API as gameApi
+
+    Note over User,API: マウント時 (Reset)
+    Page->>Hook: useEffect → reset()
+    Hook->>API: gameExec("reset")
+    API-->>Hook: MightyResponse (phase=0, BID)
+    Hook-->>Page: 再レンダリング → ビッドUI 表示
+
+    Note over User,API: ビッドフェーズ (phase=0)
+    User->>Page: bid値・NoTrumpスイッチ・bidボタンクリック
+    Page->>Hook: handleBid(bid, noTrump)
+    Hook->>API: gameExec("bid", {bid, noTrump})
+    API-->>Hook: MightyResponse (phase=0 or 1, CPU自動ビッドループ済)
+    Hook-->>Page: 再レンダリング → 切り札・副官UI or 次の人間ビッド待ち
+
+    Note over User,API: 切り札・副官指名 (phase=1)
+    User->>Page: trumpSuit/partnerSuit/partnerValue 選択
+    Page->>Hook: handleTrumpAndFriend(t, ps, pv)
+    Hook->>API: gameExec("trump", {trumpSuit, partnerSuit, partnerValue})
+    API-->>Hook: MightyResponse (phase=2, KittyExchange)
+    Hook-->>Page: 再レンダリング → キティ交換UI 表示
+
+    Note over User,API: キティ交換 (phase=2)
+    User->>Page: 3枚のディスカード選択 → 確定
+    Page->>Hook: handleExchange(discardIndices)
+    Hook->>API: gameExec("exchange", {discardIndices})
+    API-->>Hook: MightyResponse (phase=3, Play)
+    Hook-->>Page: 再レンダリング → トリック盤面
+
+    Note over User,API: トリック (phase=3)
+    User->>Page: 手札カードをクリック → 出すボタン
+    alt 通常プレイ
+        Page->>Hook: handlePlay(cardIndex)
+        Hook->>API: gameExec("play", {cardIndex})
+    else ジョーカーリード
+        User->>Page: ジョーカーリード + 要求スート選択
+        Page->>Hook: handleJokerLead(cardIndex, jokerLeadSuit)
+        Hook->>API: gameExec("jokerlead", {cardIndex, jokerLeadSuit})
+    end
+    API-->>Hook: MightyResponse (phase=3 or 4, ResolveTrick)
+    Hook-->>Page: 再レンダリング → トリック結果UI
+
+    Note over User,API: トリック終了 (phase=4)
+    User->>Page: 次のトリックボタン
+    Page->>Hook: handleNext()
+    Hook->>API: gameExec("next")
+    API-->>Hook: MightyResponse (phase=3 or 5)
+    Hook-->>Page: 再レンダリング → 次トリックUI or ラウンド終了UI
+
+    Note over User,API: ラウンド終了 (phase=5)
+    User->>Page: 次のラウンドボタン
+    Page->>Hook: handleNextRound()
+    Hook->>API: gameExec("nextround")
+    API-->>Hook: MightyResponse (phase=0 or 6)
+    Hook-->>Page: 再レンダリング → 次ラウンドUI or ゲーム終了UI
+```
+
 ---
 
 ## 3. ステートマシン図
@@ -2922,4 +3016,26 @@ stateDiagram-v2
     note right of GUI : GUIコンポーネント表示\nGameFooter + カードUI
     note right of CLI : CliTerminal表示\n黒背景 + 等幅フォント\nコマンド履歴 (up/down)
     note left of GUI : ゲーム状態はGUI/CLI共有\nuseGameApi.state は同一
+```
+
+### 3.8 Mighty フェーズ遷移 (MightyPhase)
+
+```mermaid
+stateDiagram-v2
+    [*] --> BID : reset()
+    BID --> TRUMP_AND_FRIEND : 全員ビッド/パス完了
+    TRUMP_AND_FRIEND --> KITTY_EXCHANGE : 切り札 + 副官カード指名
+    KITTY_EXCHANGE --> PLAY : ディスカード3枚確定
+    PLAY --> TRICK_END : 5プレイヤーのカード出し完了
+    TRICK_END --> PLAY : next() / 残りトリックあり
+    TRICK_END --> ROUND_END : 10トリック完了
+    ROUND_END --> BID : nextround() / PointLimit 未到達
+    ROUND_END --> GAME_END : 累積点 ≥ PointLimit
+    GAME_END --> [*]
+
+    note right of BID : MightyPhase.BID = 0\nNoTrump 軸は別フラグ\n(bid floor +noTrumpExtra)
+    note right of TRUMP_AND_FRIEND : MightyPhase.TRUMP_AND_FRIEND = 1\ntrumpSuit = -1 (NoTrump) or 1-4\npartnerSuit/partnerValue 指定\nセルフフレンド可
+    note right of KITTY_EXCHANGE : MightyPhase.KITTY_EXCHANGE = 2\n宣言者のみ手札 10+3=13\n3枚ディスカードで 10 に戻る
+    note right of PLAY : MightyPhase.PLAY = 3\n通常 play(cardIndex)\nまたは jokerlead(cardIndex,jokerLeadSuit)
+    note right of ROUND_END : MightyPhase.ROUND_END = 5\nスコア = (|points-bid|+1)×倍率\nNoTrump 倍率 = 2, セルフフレンド ×2
 ```

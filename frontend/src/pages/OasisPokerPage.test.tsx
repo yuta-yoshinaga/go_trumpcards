@@ -1,0 +1,220 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { oasispokerApi } from '../api/gameApi';
+import { renderWithProviders } from '../test/renderWithProviders';
+import type { Card, CardDesign, OasisPokerResponse } from '../types/card';
+import { OasisPokerPage } from './OasisPokerPage';
+
+vi.mock('../api/gameApi', () => ({
+  oasispokerApi: { exec: vi.fn() },
+  actionLogApi: { oasispoker: vi.fn() },
+}));
+
+const mockApi = vi.mocked(oasispokerApi.exec);
+
+const card = (design: CardDesign, value: number): Card => ({ design, value });
+
+const betPhaseState: OasisPokerResponse = {
+  playerHand: [],
+  dealerHand: [],
+  phase: 1,
+  chips: 1000,
+  anteBet: 0,
+  jackpotBet: 0,
+  exchangeCount: 0,
+  exchangeFee: 0,
+  playBet: 0,
+  result: 0,
+  antePayout: 0,
+  playPayout: 0,
+  jackpotPayout: 0,
+  totalPayout: 0,
+  dealerQualified: false,
+  playerHandRank: 0,
+  dealerHandRank: 0,
+  message: '',
+};
+
+const maskedCard = { design: '' as CardDesign, value: 0 };
+
+const exchangePhaseState: OasisPokerResponse = {
+  ...betPhaseState,
+  phase: 2,
+  playerHand: [card('SPADE', 10), card('HEART', 11), card('DIAMOND', 13), card('CLOVER', 5), card('SPADE', 7)],
+  dealerHand: [card('HEART', 13), maskedCard, maskedCard, maskedCard, maskedCard],
+  anteBet: 100,
+  chips: 900,
+};
+
+const actionPhaseState: OasisPokerResponse = {
+  ...exchangePhaseState,
+  phase: 3,
+  exchangeCount: 1,
+  exchangeFee: 100,
+  chips: 800,
+};
+
+const endPhasePlayerWins: OasisPokerResponse = {
+  playerHand: [card('SPADE', 7), card('CLOVER', 7), card('HEART', 7), card('DIAMOND', 4), card('SPADE', 2)],
+  dealerHand: [card('CLOVER', 5), card('DIAMOND', 5), card('HEART', 8), card('SPADE', 11), card('DIAMOND', 1)],
+  phase: 4,
+  chips: 1500,
+  anteBet: 100,
+  jackpotBet: 0,
+  exchangeCount: 1,
+  exchangeFee: 100,
+  playBet: 200,
+  result: 1,
+  antePayout: 200,
+  playPayout: 800,
+  jackpotPayout: 0,
+  totalPayout: 1000,
+  dealerQualified: true,
+  playerHandRank: 3,
+  dealerHandRank: 1,
+  message: '勝利！',
+  messageCode: 'oasispoker.result.playerWins',
+};
+
+const endPhaseFold: OasisPokerResponse = {
+  ...endPhasePlayerWins,
+  result: -1,
+  playBet: 0,
+  antePayout: 0,
+  playPayout: 0,
+  totalPayout: 0,
+  dealerHand: [],
+  dealerQualified: false,
+  dealerHandRank: 0,
+  message: 'フォールド',
+  messageCode: 'oasispoker.result.fold',
+};
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
+afterEach(() => {
+  localStorage.clear();
+});
+
+describe('OasisPokerPage', () => {
+  it('renders bet phase on mount', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument();
+  });
+
+  it('renders skeleton before state loads', () => {
+    mockApi.mockReturnValue(new Promise(() => {}));
+    renderWithProviders(<OasisPokerPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('transitions bet → exchange and shows exchange UI', async () => {
+    mockApi.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(exchangePhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ステイ' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument();
+  });
+
+  it('exchange button is disabled until a card is selected', async () => {
+    mockApi.mockResolvedValue(exchangePhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
+
+    const exchangeBtn = screen.getByRole('button', { name: '交換' });
+    expect(exchangeBtn).toBeDisabled();
+
+    // Click a card to select it
+    fireEvent.click(screen.getByTestId('player-card-0'));
+    expect(exchangeBtn).not.toBeDisabled();
+  });
+
+  it('clicking a selected card toggles it off', async () => {
+    mockApi.mockResolvedValue(exchangePhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
+
+    const card0 = screen.getByTestId('player-card-0');
+    fireEvent.click(card0);
+    expect(card0).toHaveAttribute('data-selected', 'true');
+    fireEvent.click(card0);
+    expect(card0).toHaveAttribute('data-selected', 'false');
+  });
+
+  it('exchange sends selected indices to the API', async () => {
+    mockApi.mockResolvedValueOnce(exchangePhaseState).mockResolvedValueOnce(actionPhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('player-card-0'));
+    fireEvent.click(screen.getByTestId('player-card-2'));
+    fireEvent.click(screen.getByRole('button', { name: '交換' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('exchange', undefined, undefined, [0, 2]));
+  });
+
+  it('stand transitions to action phase without exchanging', async () => {
+    mockApi.mockResolvedValueOnce(exchangePhaseState).mockResolvedValueOnce(actionPhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ステイ' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'ステイ' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('stand'));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+  });
+
+  it('action phase shows call/fold buttons', async () => {
+    mockApi.mockResolvedValue(actionPhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
+  });
+
+  it('end phase player wins shows payout breakdown', async () => {
+    mockApi.mockResolvedValueOnce(actionPhaseState).mockResolvedValueOnce(endPhasePlayerWins);
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    await waitFor(() => expect(screen.getByText('勝利！')).toBeInTheDocument());
+    expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument();
+  });
+
+  it('end phase shows fold message', async () => {
+    mockApi.mockResolvedValueOnce(actionPhaseState).mockResolvedValueOnce(endPhaseFold);
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'フォールド' }));
+    await waitFor(() => expect(screen.getByText('フォールド')).toBeInTheDocument());
+  });
+
+  it('can change ante and jackpot amounts', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    const anteInput = screen.getByLabelText('アンテ');
+    fireEvent.change(anteInput, { target: { value: '200' } });
+
+    const jpInput = screen.getByLabelText('ジャックポット');
+    fireEvent.change(jpInput, { target: { value: '10' } });
+
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 200, 10));
+  });
+
+  it('shows network error', async () => {
+    mockApi.mockResolvedValueOnce(betPhaseState).mockRejectedValueOnce(new Error('Network'));
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+  });
+});

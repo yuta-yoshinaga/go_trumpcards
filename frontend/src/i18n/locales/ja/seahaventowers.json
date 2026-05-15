@@ -1,0 +1,36 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア！",
+    "gameOver": "ゲームオーバー"
+  },
+  "reserved": "リザーブセル",
+  "foundation": "ファンデーション",
+  "tableau": "タブロー",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "autoComplete": "オートコンプリート",
+  "undo": "元に戻す",
+  "moveCount": "手数",
+  "empty": "空",
+  "hintAvailable": "ヒント",
+  "foundationAriaLabel": "{{suit}} ファンデーション ({{cardCount}}枚)",
+  "emptyFoundationAriaLabel": "{{suit}} ファンデーション (空)",
+  "emptyReservedAriaLabel": "リザーブセル {{idx}} (空)",
+  "supermoveLimitTooltip": "一度に動かせるのは{{limit}}枚までです",
+  "tutorial": {
+    "reservedCells": "リザーブセル (タワー)。一時的にカードを置ける2つのスペースです。フリーセルより1つ少なく難易度が高くなっています。",
+    "foundation": "ファウンデーションです。各スートをAからKまで順番に積み上げます。",
+    "tableau": "タブローです。同じスートのカードを降順で積みます。空の列にはキングのみ移動できます。",
+    "controls": "元に戻す、ヒント、自動完了などの操作ボタンです。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "landscapeBanner": "横向きにすると操作しやすくなります",
+  "shortLabel": "ST",
+  "frontendHint": {
+    "moveToFoundation": "組札に移動できるカードがあります",
+    "reservedFilling": "リザーブセルが両方とも埋まっています — 空けることを検討しましょう",
+    "useEmptyColumn": "空の列があります — 移動できるのはキングだけです",
+    "useReserved": "リザーブセルにカードを移動して手を広げましょう"
+  }
+}

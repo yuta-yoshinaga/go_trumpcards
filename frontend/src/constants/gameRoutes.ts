@@ -33,7 +33,9 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/baccarat', labelKey: 'nav.baccarat', icon: '💎', page: 'Baccarat' },
       { path: '/threecard', labelKey: 'nav.threecard', icon: '🎴', page: 'ThreeCard' },
       { path: '/caribbeanstud', labelKey: 'nav.caribbeanstud', icon: '🏝️', page: 'CaribbeanStud' },
+      { path: '/oasispoker', labelKey: 'nav.oasispoker', icon: '🌴', page: 'OasisPoker' },
       { path: '/texasholdembonus', labelKey: 'nav.texasholdembonus', icon: '🤠', page: 'TexasHoldemBonus' },
+      { path: '/casinoholdem', labelKey: 'nav.casinoholdem', icon: '🎰', page: 'CasinoHoldem' },
       {
         path: '/ultimatetexasholdem',
         labelKey: 'nav.ultimatetexasholdem',
@@ -88,6 +90,9 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/napoleon', labelKey: 'nav.napoleon', icon: '👑', page: 'Napoleon' },
       { path: '/whist', labelKey: 'nav.whist', icon: '🎴', page: 'Whist' },
       { path: '/belote', labelKey: 'nav.belote', icon: '🇫🇷', page: 'Belote' },
+      { path: '/mighty', labelKey: 'nav.mighty', icon: '👊', page: 'Mighty' },
+      { path: '/piquet', labelKey: 'nav.piquet', icon: '🎴', page: 'Piquet' },
+      { path: '/callbreak', labelKey: 'nav.callbreak', icon: '🃏', page: 'CallBreak' },
     ],
   },
   {
@@ -124,6 +129,7 @@ export const gameCategories: readonly GameCategory[] = [
     routes: [
       { path: '/klondike', labelKey: 'nav.klondike', icon: '⛏️', page: 'Klondike' },
       { path: '/freecell', labelKey: 'nav.freecell', icon: '🔲', page: 'FreeCell' },
+      { path: '/seahaventowers', labelKey: 'nav.seahaventowers', icon: '🏖️', page: 'SeahavenTowers' },
       { path: '/spider', labelKey: 'nav.spider', icon: '🕷️', page: 'Spider' },
       { path: '/spiderette', labelKey: 'nav.spiderette', icon: '🕸️', page: 'Spiderette' },
       { path: '/pyramid', labelKey: 'nav.pyramid', icon: '🔺', page: 'Pyramid' },
@@ -133,6 +139,12 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/clocksolitaire', labelKey: 'nav.clocksolitaire', icon: '🕐', page: 'ClockSolitaire' },
       { path: '/fortythieves', labelKey: 'nav.fortythieves', icon: '🏰', page: 'FortyThieves' },
       { path: '/bakersdozen', labelKey: 'nav.bakersdozen', icon: '🥖', page: 'BakersDozen' },
+      {
+        path: '/beleagueredcastle',
+        labelKey: 'nav.beleagueredcastle',
+        icon: '🏯',
+        page: 'BeleagueredCastle',
+      },
       { path: '/canfield', labelKey: 'nav.canfield', icon: '🎩', page: 'Canfield' },
       { path: '/yukon', labelKey: 'nav.yukon', icon: '🏔️', page: 'Yukon' },
       {
@@ -141,6 +153,7 @@ export const gameCategories: readonly GameCategory[] = [
         icon: '🪆',
         page: 'RussianSolitaire',
       },
+      { path: '/cruel', labelKey: 'nav.cruel', icon: '🪓', page: 'Cruel' },
       { path: '/scorpion', labelKey: 'nav.scorpion', icon: '🦂', page: 'Scorpion' },
       { path: '/accordion', labelKey: 'nav.accordion', icon: '🪗', page: 'Accordion' },
       { path: '/pokersquares', labelKey: 'nav.pokersquares', icon: '🔢', page: 'PokerSquares' },

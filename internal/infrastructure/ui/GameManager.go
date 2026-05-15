@@ -325,6 +325,43 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "seahaventowers", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSeahavenTowersCuiController(usecase.NewSeahavenTowersInteractor(
+				domain.NewDefaultSeahavenTowers(), new(presenter.SeahavenTowersCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "seahaventowers.helpTitle",
+				CommandKeys: []string{
+					"seahaventowers.helpMove",
+					"seahaventowers.helpMoveTF",
+					"seahaventowers.helpMoveTT",
+					"seahaventowers.helpMoveTC",
+					"seahaventowers.helpMoveCT",
+					"seahaventowers.helpMoveCF",
+					"seahaventowers.helpGiveUp",
+					"seahaventowers.helpHint",
+					"seahaventowers.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
+	{Name: "cruel", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCruelCuiController(usecase.NewCruelInteractor(
+				domain.NewDefaultCruel(), new(presenter.CruelCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "cruel.helpTitle",
+				CommandKeys: []string{
+					"cruel.helpMove",
+					"cruel.helpMoveTF",
+					"cruel.helpShift",
+					"cruel.helpGiveUp",
+					"cruel.helpHint",
+					"cruel.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "baccarat", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewBaccaratCuiController(usecase.NewBaccaratInteractor(
@@ -1386,6 +1423,99 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "mighty", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewMightyCuiController(usecase.NewMightyInteractor(
+				domain.NewDefaultMighty(), new(presenter.MightyCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "mighty.helpTitle",
+				CommandKeys: []string{
+					"mighty.helpBid",
+					"mighty.helpTrump",
+					"mighty.helpExchange",
+					"mighty.helpPlay",
+					"mighty.helpJokerLead",
+					"mighty.helpNext",
+					"mighty.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"mighty.helpSetDifficulty", "mighty.helpSetLimit", "mighty.helpSetMinBid", "mighty.helpSetNoTrumpExtra"},
+			})
+	}},
+	{Name: "oasispoker", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewOasisPokerCuiController(usecase.NewOasisPokerInteractor(
+				domain.NewDefaultOasisPoker(), new(presenter.OasisPokerCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "oasispoker.helpTitle",
+				CommandKeys: []string{
+					"oasispoker.helpBet",
+					"oasispoker.helpExchange",
+					"oasispoker.helpStand",
+					"oasispoker.helpPlay",
+					"oasispoker.helpFold",
+				},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
+	{Name: "beleagueredcastle", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBeleagueredCastleCuiController(usecase.NewBeleagueredCastleInteractor(
+				domain.NewDefaultBeleagueredCastle(), new(presenter.BeleagueredCastleCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "beleagueredcastle.helpTitle",
+				CommandKeys: []string{
+					"beleagueredcastle.helpMoveTT",
+					"beleagueredcastle.helpMoveTF",
+					"beleagueredcastle.helpGiveUp",
+					"beleagueredcastle.helpHint",
+					"beleagueredcastle.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
+	{Name: "piquet", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPiquetCuiController(usecase.NewPiquetInteractor(
+				domain.NewDefaultPiquet(), new(presenter.PiquetCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "piquet.helpTitle",
+				CommandKeys: []string{
+					"piquet.helpExchange",
+					"piquet.helpExchangeY",
+					"piquet.helpDeclare",
+					"piquet.helpPlay",
+					"piquet.helpNextDeal",
+					"piquet.helpHint",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
+	{Name: "casinoholdem", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCasinoHoldemCuiController(usecase.NewCasinoHoldemInteractor(
+				domain.NewDefaultCasinoHoldem(), new(presenter.CasinoHoldemCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "casinoholdem.helpTitle",
+				CommandKeys: []string{
+					"casinoholdem.helpBet",
+					"casinoholdem.helpCall",
+					"casinoholdem.helpFold",
+				},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
+	{Name: "callbreak", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCallBreakCuiController(usecase.NewCallBreakInteractor(
+				domain.NewDefaultCallBreak(), new(presenter.CallBreakCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "callbreak.helpTitle",
+				CommandKeys:       []string{"callbreak.helpBid", "callbreak.helpPlay", "callbreak.helpNext", "callbreak.helpNextRound"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"callbreak.helpSetDifficulty", "callbreak.helpSetRounds"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
@@ -1416,32 +1546,36 @@ func GameDescriptions() map[string]string {
 // GameAliases maps short alias names to their canonical game names.
 // Aliases are not shown in help or game lists.
 var GameAliases = map[string]string{
-	"7stud":  "sevencardstud",
-	"7cs":    "sevencardstud",
-	"clock":  "clocksolitaire",
-	"crazy8": "crazyeights",
-	"indian": "indianpoker",
-	"video":  "videopoker",
-	"deuces": "deuceswild",
-	"joker":  "jokerpoker",
-	"short":  "shortdeck",
-	"6plus":  "shortdeck",
-	"gin":    "ginrummy",
-	"3card":  "threecard",
-	"csp":    "caribbeanstud",
-	"stud":   "caribbeanstud",
-	"thb":    "texasholdembonus",
-	"thbp":   "texasholdembonus",
-	"uth":    "ultimatetexasholdem",
-	"uthe":   "ultimatetexasholdem",
-	"40t":    "fortythieves",
-	"pgp":    "paigow",
-	"lir":    "letitride",
-	"ride":   "letitride",
-	"ms":     "mississippistud",
-	"mstud":  "mississippistud",
-	"sp21":   "spanish21",
-	"s21":    "spanish21",
+	"7stud":   "sevencardstud",
+	"7cs":     "sevencardstud",
+	"clock":   "clocksolitaire",
+	"crazy8":  "crazyeights",
+	"indian":  "indianpoker",
+	"video":   "videopoker",
+	"deuces":  "deuceswild",
+	"joker":   "jokerpoker",
+	"short":   "shortdeck",
+	"6plus":   "shortdeck",
+	"gin":     "ginrummy",
+	"3card":   "threecard",
+	"csp":     "caribbeanstud",
+	"stud":    "caribbeanstud",
+	"oasis":   "oasispoker",
+	"oasp":    "oasispoker",
+	"thb":     "texasholdembonus",
+	"thbp":    "texasholdembonus",
+	"ch":      "casinoholdem",
+	"choldem": "casinoholdem",
+	"uth":     "ultimatetexasholdem",
+	"uthe":    "ultimatetexasholdem",
+	"40t":     "fortythieves",
+	"pgp":     "paigow",
+	"lir":     "letitride",
+	"ride":    "letitride",
+	"ms":      "mississippistud",
+	"mstud":   "mississippistud",
+	"sp21":    "spanish21",
+	"s21":     "spanish21",
 }
 
 // cuiGame is implemented by each *Cui struct to expose its controller and help lines.

@@ -1,7 +1,7 @@
 //go:build js && wasm
 
 // Package solo binds the Cloudflare Worker KV-backed handlers for the
-// 17 solitaire and rummy variants. A worker main must blank-import this
+// 27 solitaire and rummy variants. A worker main must blank-import this
 // package so the init below runs before games.RegisterCategory is called.
 package solo
 
@@ -38,6 +38,22 @@ func init() {
 			return usecase.RestoreFreeCellInteractor(data, new(presenter.FreeCellWebPresenter))
 		},
 		controller.NewFreeCellWebControllerWithProvider)
+	games.RegisterKVGame("seahaventowers", games.CategorySolo,
+		func() usecase.SeahavenTowersInteractorIF {
+			return usecase.NewSeahavenTowersInteractor(domain.NewDefaultSeahavenTowers(), new(presenter.SeahavenTowersWebPresenter))
+		},
+		func(data []byte) (usecase.SeahavenTowersInteractorIF, error) {
+			return usecase.RestoreSeahavenTowersInteractor(data, new(presenter.SeahavenTowersWebPresenter))
+		},
+		controller.NewSeahavenTowersWebControllerWithProvider)
+	games.RegisterKVGame("cruel", games.CategorySolo,
+		func() usecase.CruelInteractorIF {
+			return usecase.NewCruelInteractor(domain.NewDefaultCruel(), new(presenter.CruelWebPresenter))
+		},
+		func(data []byte) (usecase.CruelInteractorIF, error) {
+			return usecase.RestoreCruelInteractor(data, new(presenter.CruelWebPresenter))
+		},
+		controller.NewCruelWebControllerWithProvider)
 	games.RegisterKVGame("ginrummy", games.CategorySolo,
 		func() usecase.GinRummyInteractorIF {
 			return usecase.NewGinRummyInteractor(domain.NewDefaultGinRummy(), new(presenter.GinRummyWebPresenter))
@@ -214,4 +230,12 @@ func init() {
 			return usecase.RestoreSpideretteInteractor(data, new(presenter.SpideretteWebPresenter))
 		},
 		controller.NewSpideretteWebControllerWithProvider)
+	games.RegisterKVGame("beleagueredcastle", games.CategorySolo,
+		func() usecase.BeleagueredCastleInteractorIF {
+			return usecase.NewBeleagueredCastleInteractor(domain.NewDefaultBeleagueredCastle(), new(presenter.BeleagueredCastleWebPresenter))
+		},
+		func(data []byte) (usecase.BeleagueredCastleInteractorIF, error) {
+			return usecase.RestoreBeleagueredCastleInteractor(data, new(presenter.BeleagueredCastleWebPresenter))
+		},
+		controller.NewBeleagueredCastleWebControllerWithProvider)
 }

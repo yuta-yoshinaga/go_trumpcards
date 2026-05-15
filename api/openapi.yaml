@@ -42,6 +42,8 @@ tags:
     description: Klondike (ソリティア) game
   - name: freecell
     description: FreeCell (フリーセル) game
+  - name: seahaventowers
+    description: Seahaven Towers (シーヘイブンタワーズ) game
   - name: baccarat
     description: Baccarat (バカラ) game
   - name: spades
@@ -124,6 +126,7 @@ tags:
     description: Fifty-one (フィフティワン) game
   - name: yukon
     description: Yukon (ユーコン) game
+  - name: cruel
   - name: russiansolitaire
     description: Russian Solitaire (ロシアンソリティア) game - Yukon variant requiring same-suit descending tableau moves
   - name: letitride
@@ -182,6 +185,18 @@ tags:
     description: Belote (ベロート) game - French 4-player partnership trick-taking on a 32-card deck (7-A × 4 suits); two-round bidding (take face-up suit / call other suit), strict obligation to follow / over-trump, last-trick bonus (Dix de Der +10) and K+Q-of-trumps bonus (Belote/Rebelote +20)
   - name: spiderette
     description: Spiderette (スパイダレット) game - single-player solitaire combining Klondike's 7-column staircase deal with Spider's same-suit descending move rules on a single 52-card deck; clear all 4 suits to win
+  - name: mighty
+    description: Mighty (マイティ) game - Korean 5-player trick-taking card game with bidding for point cards (10/J/Q/K/A, 20 max) and a separate No-Trump axis; declarer names a trump suit and a secret partner card; special cards Mighty (♠A normally; ♦A under spade trump), Joker (second-highest when not led, with a Joker-lead demand-suit rule and a Joker Call card ♣3/♠3 forcing the Joker)
+  - name: oasispoker
+    description: Oasis Poker (オアシスポーカー) game - Caribbean Stud variant adding a card-exchange phase between Bet and Action; exchange 1..5 cards for a fee equal to ante per card, then Call or Fold against the dealer
+  - name: beleagueredcastle
+    description: Beleaguered Castle (包囲された城) game - single-player open-information solitaire with 8 tableau columns of 6 cards each and 4 aces pre-seeded on the foundations; empty columns accept any card
+  - name: piquet
+    description: Piquet (ピケ) game - 2-player classical trick-taking using a 32-card deck (7-A); each deal has Exchange (Elder swaps 1-5, Younger 0-3), Declaration (Point/Sequence/Set auto-compared, honest claims), and 12-trick Play; full traditional bonuses (carte blanche, repique, pique, cards, capot) plus 6-deal partie with rubicon scoring
+  - name: casinoholdem
+    description: Casino Hold'em (カジノホールデム) game - single-player casino Texas Hold'em variant with Ante and optional AA Bonus side bet; flop revealed with hole cards, then Call (2x Ante) or Fold; dealer qualifies on Pair of Fours or better
+  - name: callbreak
+    description: Call Break (コールブレイク) game - 4-player Spades-style trick-taking game from South Asia; spades are permanent trump, must-trump-if-void rule, int×10 scoring (bid hit = bid*10 + overtricks, miss = -bid*10); 5 rounds fixed, highest cumulative score wins
 
 paths:
   /blackjack/exec:
@@ -1510,6 +1525,88 @@ paths:
                   value:
                     tableau: []
                     freeCells: []
+                    foundation: []
+                    phase: 0
+                    moveCount: 0
+                    canUndo: false
+                    message: param error.
+
+  /seahaventowers/exec:
+    post:
+      tags:
+        - seahaventowers
+      summary: Execute a Seahaven Towers game command
+      description: |
+        Send a command to advance the Seahaven Towers (シーヘイブンタワーズ) game session
+        identified by `sessionId`. Seahaven Towers is a single-player solitaire
+        card game using a standard 52-card deck — a higher-difficulty FreeCell
+        variant. 10 tableau columns × 5 cards each (50 cards), all dealt face-up;
+        the remaining 2 cards are pre-placed in 2 upper reserved cells (towers).
+        4 foundation piles build up by suit Ace to King. Tableau builds
+        **same-suit descending**; only Kings may move to an empty column.
+        Supermove limit: max movable cards = 1 + emptyReservedCells.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All foundations completed; player wins |
+        | GameOver   | `2`   | No more moves available; game over |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset`        | `r`  | Start / restart a game |
+        | `move`         | `m`  | Move card(s) between zones (requires `from` and `to`) |
+        | `giveup`       | `g`  | Give up the current game |
+        | `hint`         | `h`  | Get a hint for the next move |
+        | `autocomplete` | `ac` | Auto-complete remaining moves to foundation |
+        | `undo`         | `u`  | Undo the last action |
+        | `undo_n`       |      | Undo N actions (requires `n` parameter) |
+        | `log`          | `l`  | View action log |
+      operationId: seahaventowersExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SeahavenTowersRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              move:
+                summary: Move a card
+                value:
+                  command: move
+                  from:
+                    zone: tableau
+                    col: 0
+                    cardIndex: 4
+                  to:
+                    zone: reserved
+                    cell: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeahavenTowersResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeahavenTowersResponse'
+              examples:
+                paramError:
+                  value:
+                    tableau: []
+                    reservedCells: []
                     foundation: []
                     phase: 0
                     moveCount: 0
@@ -3272,6 +3369,92 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TexasHoldemBonusResponse'
+
+  /casinoholdem/exec:
+    post:
+      tags:
+        - casinoholdem
+      summary: Execute a Casino Hold'em game command
+      description: |
+        Send a command to advance the Casino Hold'em (カジノホールデム) session
+        identified by `sessionId`. Casino Hold'em is a single-player casino variant
+        of Texas Hold'em using a standard 52-card deck. Player places an Ante bet
+        (required) and an optional AA Bonus side bet, receives 2 hole cards and the
+        flop (3 community cards) is revealed immediately. After the flop the player
+        must either Call (2x Ante) to see the turn and river, or Fold (forfeit Ante;
+        the AA Bonus still resolves on the visible 5 cards).
+
+        Dealer must qualify with **Pair of Fours or better**. When dealer does not
+        qualify, the Ante still pays per the Ante pay table but the Call bet pushes.
+
+        Ante pay table (player win or dealer no-qualify): Royal Flush 100:1,
+        Straight Flush 20:1, Four of a Kind 10:1, Full House 3:1, Flush 2:1, all
+        other wins 1:1. Call bet pays 1:1 only when dealer qualifies and player
+        wins.
+
+        AA Bonus pay table (uses player's 2 hole + 3 flop cards): Royal Flush
+        100:1, Straight Flush 50:1, Four of a Kind 40:1, Full House 30:1, Flush
+        20:1, Straight 10:1, Three of a Kind 8:1, Two Pair 7:1, Pair of Aces 7:1.
+        Pair of Kings or lower forfeits the AA bet.
+
+        The game proceeds through these phases:
+
+        | Phase | Value | Description |
+        |-------|-------|-------------|
+        | Bet   | `1`   | Place Ante and optional AA Bonus side bet |
+        | Flop  | `2`   | Decide to Call (2x Ante) or Fold |
+        | End   | `3`   | Round complete; shows result and payout |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `bet`   | `b`     | Place Ante bet (requires `amount`; optional `bonusBet`) |
+        | `call`  | `c`     | Bet 2x Ante and reveal turn/river |
+        | `fold`  | `f`     | Forfeit Ante (AA Bonus still resolves) |
+        | `log`   | `l`     | View action log |
+      operationId: casinoholdemExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CasinoHoldemRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 100 Ante with 10 AA Bonus
+                value:
+                  command: bet
+                  amount: 100
+                  bonusBet: 10
+                  sessionId: my-session-001
+              call:
+                summary: Call (2x Ante)
+                value:
+                  command: call
+                  sessionId: my-session-001
+              fold:
+                summary: Fold at flop
+                value:
+                  command: fold
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CasinoHoldemResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CasinoHoldemResponse'
 
   /ohhell/exec:
     post:
@@ -5161,6 +5344,229 @@ paths:
                     additionalProperties:
                       type: string
 
+  /beleagueredcastle/exec:
+    post:
+      tags:
+        - beleagueredcastle
+      summary: Execute a Beleaguered Castle game command
+      description: |
+        Send a command to advance the Beleaguered Castle (包囲された城) game
+        session identified by `sessionId`. Beleaguered Castle is a
+        single-player open-information solitaire using a single 52-card deck.
+        The 4 aces are pre-seeded onto the foundations at deal time and the
+        remaining 48 cards are dealt face-up into 8 tableau columns of 6 cards
+        each — visually arranged with 4 columns flanking the centred
+        foundations. Foundations build up by suit Ace→King. Tableau builds
+        rank-only descending (suit doesn't matter); only single-card moves are
+        allowed. Empty columns accept any card. No stock or waste pile.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | `0`   | Game in progress |
+        | GameClear | `1`   | All foundations complete |
+        | GameOver  | `2`   | Player gave up |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `move`         | `m`     | Move a card between tableau/foundation |
+        | `undo`         | `u`     | Undo the last action |
+        | `giveup`       | `g`     | Give up the current game |
+        | `hint`         | `h`     | Show a hint for the next move |
+        | `autocomplete` | `ac`    | Auto-move cards to foundations |
+        | `log`          | `l`     | View action log |
+      operationId: beleagueredCastleExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, move, m, undo, u, undo_n, giveup, g, hint, h, autocomplete, ac, log, l]
+                from:
+                  $ref: '#/components/schemas/BeleagueredCastleMoveZone'
+                to:
+                  $ref: '#/components/schemas/BeleagueredCastleMoveZone'
+                n:
+                  type: integer
+                  description: Number of times to undo (for undo_n command)
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              move:
+                summary: Move tableau column 0's top card to column 5
+                value:
+                  command: move
+                  from:
+                    zone: tableau
+                    col: 0
+                  to:
+                    zone: tableau
+                    col: 5
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                    description: 8 tableau columns, each an array of cards (with face-up flag)
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          card:
+                            nullable: true
+                            allOf:
+                              - $ref: '#/components/schemas/Card'
+                          faceUp:
+                            type: boolean
+                  foundation:
+                    type: array
+                    description: 4 foundation piles (cards by suit, A→K). Pre-seeded with the four aces at deal time.
+                    items:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Card'
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  phase:
+                    type: integer
+                    description: "0=Playing, 1=GameClear, 2=GameOver"
+                  hint:
+                    type: object
+                    nullable: true
+                    properties:
+                      fromCol:
+                        type: integer
+                      cardIndex:
+                        type: integer
+                      toZone:
+                        type: string
+                      toCol:
+                        type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+                    additionalProperties:
+                      type: string
+
+  /piquet/exec:
+    post:
+      tags:
+        - piquet
+      summary: Execute a Piquet (ピケ) game command
+      description: |
+        Send a command to advance the Piquet game session identified by
+        `sessionId`. Piquet is a 2-player trick-taking game using a 32-card
+        deck (7..A). Each deal: 12 cards each + 8-card talon (top 5 / bottom 3).
+
+        Phases:
+
+        | Phase       | Value | Description |
+        |-------------|-------|-------------|
+        | Exchange    | `0`   | Elder swaps 1..5 cards then Younger swaps 0..3 |
+        | Declaration | `1`   | Point → Sequence → Set, advanced one step per `d` |
+        | Play        | `2`   | 12-trick play, follow suit when possible |
+        | Score       | `3`   | Round ended; call `nd` for the next deal |
+        | GameEnd     | `4`   | Partie completed |
+
+        Commands:
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a partie (optional config) |
+        | `e`     | `elder` | Elder exchange (1..5 discard indices) |
+        | `y`     | `younger` | Younger exchange (0..3 discard indices; empty list = pass) |
+        | `d`     | `declare` | Advance one declaration step |
+        | `p`     | `play`  | Play card at index |
+        | `nd`    | `nextdeal` | Advance to next deal after Score |
+        | `h`     | `hint`  | Show suggested move |
+        | `log`   | `l`     | View action log |
+      operationId: piquetExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, e, elder, y, younger, d, declare, p, play, nd, nextdeal, h, hint, log, l]
+                cardIndex:
+                  type: integer
+                  description: Card index for `p`/`play`
+                discardIndices:
+                  type: array
+                  items:
+                    type: integer
+                  description: Discard indices for `e`/`y` exchanges
+                config:
+                  $ref: '#/components/schemas/PiquetConfig'
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new partie
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              exchangeElder:
+                summary: Elder swaps cards at indices 0,1,2
+                value:
+                  command: e
+                  discardIndices: [0, 1, 2]
+                  sessionId: my-session-001
+              declare:
+                summary: Advance to next declaration step
+                value:
+                  command: d
+                  sessionId: my-session-001
+              play:
+                summary: Play hand[3]
+                value:
+                  command: p
+                  cardIndex: 3
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PiquetResponse'
+
   /war/exec:
     post:
       tags:
@@ -5629,6 +6035,111 @@ paths:
                     col:
                       type: integer
                     cardIndex:
+                      type: integer
+                to:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau, foundation]
+                    col:
+                      type: integer
+                n:
+                  type: integer
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                  foundation:
+                    type: array
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  hint:
+                    type: object
+                    properties:
+                      fromCol:
+                        type: integer
+                      cardIndex:
+                        type: integer
+                      toZone:
+                        type: string
+                      toCol:
+                        type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request
+
+  /cruel/exec:
+    post:
+      tags:
+        - cruel
+      summary: Execute a Cruel (クルーエル) game command
+      description: |
+        Send a command to advance a Cruel solitaire session identified by `sessionId`.
+        Cruel is a puzzle-style solitaire. At deal time the four Aces are auto-placed on
+        the foundations and the remaining 48 cards are dealt face-up into 12 columns of 4.
+        Only the top card of each column can be moved, and only onto a same-suit card one
+        rank higher. Empty columns cannot receive cards. When stuck, **Shift** gathers the
+        remaining tableau cards left-to-right (preserving column order and in-column order)
+        and redeals them into 12×4 left-aligned columns.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | 0     | Game in progress |
+        | GameClear | 1     | All foundations complete |
+        | GameOver  | 2     | Player gave up |
+
+        | Command          | Aliases | Description |
+        |------------------|---------|-------------|
+        | `reset`          | `r`     | Start / restart a game |
+        | `move`           | `m`     | Move top card between zones (requires `from`, `to`) |
+        | `shift`          | `s`     | Gather and re-deal the tableau |
+        | `giveup`         | `g`     | Give up the current game |
+        | `hint`           | `h`     | Get a move suggestion |
+        | `autocomplete`   | `ac`    | Auto-promote any tableau top cards to foundations |
+        | `undo`           | `u`     | Undo last move |
+        | `undo_n`         | —       | Undo N moves (requires `n`) |
+        | `log`            | `l`     | View action log |
+      operationId: cruelExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, move, m, shift, s, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau]
+                    col:
                       type: integer
                 to:
                   type: object
@@ -8360,6 +8871,305 @@ paths:
               schema:
                 $ref: '#/components/schemas/SpideretteResponse'
 
+  /mighty/exec:
+    post:
+      tags:
+        - mighty
+      summary: Execute a Mighty game command
+      description: |
+        Send a command to advance the Mighty (マイティ) game session identified by
+        `sessionId`. Mighty is a Korean 5-player trick-taking card game using 52 cards
+        + 1 Joker (53 total). 10 cards are dealt to each player plus a 3-card kitty.
+        Players bid the number of point cards (10/J/Q/K/A across 4 suits = 20 max) they
+        expect to capture, with a separate No-Trump axis (bid floor +2, round score
+        doubled ×2). The highest bidder becomes the declarer, declares the trump suit
+        (−1 = No-Trump, 1−4 = Spade/Clover/Heart/Diamond) and names a partner card
+        (suit + value); whoever holds the partner card becomes the secret partner. The
+        declarer then exchanges 3 cards with the kitty. Special cards: **Mighty**
+        (♠A normally; ♦A under spade trump) beats everything including the Joker;
+        **Joker** is the second-highest card when not led, can be played any time;
+        **Joker-lead rule** -- leading the Joker forces the holder to name a demand
+        suit and the Joker loses the trick; **Joker Call** (♣3 normally; ♠3 under
+        clubs trump) when led after the first trick forces the Joker holder to play
+        the Joker.
+
+        The game proceeds through these phases:
+
+        | Phase           | Value | Description |
+        |-----------------|-------|-------------|
+        | Bid             | `0`   | Each player bids point-card count (or passes) |
+        | TrumpAndFriend  | `1`   | Declarer declares trump suit and names partner card |
+        | KittyExchange   | `2`   | Declarer exchanges 3 cards with the kitty |
+        | Play            | `3`   | Trick play (follow-suit; trump as declared) |
+        | TrickEnd        | `4`   | Trick resolved; advance with `next` |
+        | RoundEnd        | `5`   | All 10 tricks played; advance with `nextround` |
+        | GameEnd         | `6`   | A player reached the point limit |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `bid`          | `b`     | Place a bid (requires `bid`; optionally `noTrump`) or pass (bid = 0) |
+        | `trump`        | `t`     | Declare trump suit and partner card (requires `trumpSuit`, `partnerSuit`, `partnerValue`) |
+        | `exchange`     | `e`     | Exchange 3 cards with the kitty (requires `discardIndices` of length 3) |
+        | `play`         | `p`     | Play a card (requires `cardIndex`) |
+        | `jokerlead`    | `jl`    | Lead the Joker and name a demand suit (requires `cardIndex` and `jokerLeadSuit`) |
+        | `next`         | `n`     | Advance to the next trick |
+        | `nextround`    | `nr`    | Score the round and start the next |
+        | `hint`         | `h`     | Get a play suggestion |
+        | `log`          | `l`     | View action log |
+      operationId: mightyExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MightyRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Bid 14 point cards
+                value:
+                  command: bid
+                  bid: 14
+                  sessionId: my-session-001
+              bidNoTrump:
+                summary: Bid 15 under No-Trump
+                value:
+                  command: bid
+                  bid: 15
+                  noTrump: true
+                  sessionId: my-session-001
+              pass:
+                summary: Pass on bidding
+                value:
+                  command: bid
+                  bid: 0
+                  sessionId: my-session-001
+              trump:
+                summary: Declare spades trump and ♥A partner
+                value:
+                  command: trump
+                  trumpSuit: 1
+                  partnerSuit: 3
+                  partnerValue: 1
+                  sessionId: my-session-001
+              exchange:
+                summary: Discard kitty-exchange cards at indices 0, 3, 9
+                value:
+                  command: exchange
+                  discardIndices: [0, 3, 9]
+                  sessionId: my-session-001
+              play:
+                summary: Play card at index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+              jokerlead:
+                summary: Lead the Joker at index 5 and demand hearts
+                value:
+                  command: jokerlead
+                  cardIndex: 5
+                  jokerLeadSuit: 3
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MightyResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MightyResponse'
+
+  /oasispoker/exec:
+    post:
+      tags:
+        - oasispoker
+      summary: Execute an Oasis Poker game command
+      description: |
+        Send a command to advance the Oasis Poker (オアシスポーカー) game session
+        identified by `sessionId`. Oasis Poker is a Caribbean Stud variant that
+        inserts a card exchange phase between Bet and Action. After receiving 5
+        cards, the player may exchange 1..5 cards (or stand) for a fee equal to
+        the ante per card, then either Call (place a Play bet equal to 2x ante)
+        or Fold (forfeit ante and exchange fee). Dealer must have Ace-King high
+        or any pair to qualify. Pay tables and the optional Jackpot side bet are
+        identical to Caribbean Stud.
+
+        The game proceeds through these phases:
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Bet      | `1`   | Place Ante and optional Jackpot side bet |
+        | Exchange | `2`   | Optionally exchange 1..5 cards (fee = ante × cards) |
+        | Action   | `3`   | Decide to Call or Fold |
+        | End      | `4`   | Round complete; shows result and payout |
+
+        | Command    | Aliases | Description |
+        |------------|---------|-------------|
+        | `reset`    | `r`     | Start / restart a game |
+        | `bet`      | `b`     | Place Ante bet (requires `amount`; optional `jackpotBet`) |
+        | `exchange` | `e`     | Exchange cards at the given `indices` (0..4); fee = ante × len |
+        | `stand`    | `s`     | Skip exchange, advance to action |
+        | `play`     | `p`     | Call: place Play bet (2x Ante) and reveal dealer hand |
+        | `fold`     | `f`     | Forfeit Ante bet and exchange fee |
+        | `log`      | `l`     | View action log |
+      operationId: oasispokerExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OasisPokerRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 100 Ante with 10 Jackpot
+                value:
+                  command: bet
+                  amount: 100
+                  jackpotBet: 10
+                  sessionId: my-session-001
+              exchange:
+                summary: Exchange cards at indices 0 and 2
+                value:
+                  command: exchange
+                  indices: [0, 2]
+                  sessionId: my-session-001
+              stand:
+                summary: Skip exchange
+                value:
+                  command: stand
+                  sessionId: my-session-001
+              play:
+                summary: Call (place Play bet)
+                value:
+                  command: play
+                  sessionId: my-session-001
+              fold:
+                summary: Fold hand
+                value:
+                  command: fold
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OasisPokerResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OasisPokerResponse'
+
+  /callbreak/exec:
+    post:
+      tags:
+        - callbreak
+      summary: Execute a Call Break (コールブレイク) game command
+      description: |
+        Send a command to advance the Call Break game session identified by
+        `sessionId`. Call Break is a 4-player trick-taking game from South
+        Asia, structurally Spades with different scoring. Spades are the
+        permanent trump. Bids are 1..13 (no Nil). If void in the led suit
+        and you hold spades you must trump with a spade. Scoring is stored
+        as int×10 (display "X.Y"): meeting the bid scores `bid*10 +
+        overtricks`, missing scores `-bid*10`. The game runs for 5 rounds
+        by default and the highest cumulative score wins.
+
+        Phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Bid       | `0`   | Each player declares 1..13 |
+        | Play      | `1`   | 13-trick play (must follow / must trump if void) |
+        | TrickEnd  | `2`   | Trick resolved; call `n`/`next` to continue |
+        | RoundEnd  | `3`   | Round scored; call `nr`/`nextround` |
+        | GameEnd   | `4`   | MaxRounds reached; highest cumulative score wins |
+
+        Commands:
+
+        | Command       | Aliases       | Description |
+        |---------------|---------------|-------------|
+        | `reset` / `r` |               | Restart with optional config |
+        | `bid` / `b`   |               | Place bid (1..13) |
+        | `play` / `p`  |               | Play card at index |
+        | `next` / `n`  |               | Advance to next trick |
+        | `nextround` / `nr` |          | Score round and start next |
+        | `hint` / `h`  |               | Suggested move |
+        | `log` / `l`   |               | View action log |
+      operationId: callbreakExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bid, b, play, p, next, n, nextround, nr, hint, h, log, l]
+                bid:
+                  type: integer
+                  description: Bid amount for `bid`/`b` (1..13)
+                cardIndex:
+                  type: integer
+                  description: Card index for `play`/`p`
+                config:
+                  $ref: '#/components/schemas/CallBreakConfig'
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Declare bid 4
+                value:
+                  command: b
+                  bid: 4
+                  sessionId: my-session-001
+              play:
+                summary: Play hand[0]
+                value:
+                  command: p
+                  cardIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CallBreakResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CallBreakResponse'
+
 components:
   schemas:
     # -------------------------------------------------------------------------
@@ -8410,6 +9220,22 @@ components:
         cardIndex:
           type: integer
           description: Optional / ignored. The server always operates on the top card of the source column; clients may omit this field. Retained for parity with FortyThievesMoveZone.
+    BeleagueredCastleMoveZone:
+      type: object
+      description: Source or target zone for a Beleaguered Castle card move
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: Zone identifier (tableau, foundation)
+          enum: [tableau, foundation]
+        col:
+          type: integer
+          description: Column index (required for tableau zone; tableau is 0..7)
+        cardIndex:
+          type: integer
+          description: Optional / ignored. The server always operates on the top card of the source column; clients may omit this field. Retained for parity with BakersDozenMoveZone.
     Card:
       type: object
       description: A single playing card
@@ -11774,6 +12600,138 @@ components:
           description: Interpolation parameters for the message template keyed by placeholder name.
 
     # -------------------------------------------------------------------------
+    # Seahaven Towers
+    # -------------------------------------------------------------------------
+    SeahavenTowersZone:
+      type: object
+      description: Specifies a zone on the Seahaven Towers board for move commands
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: "Zone name: tableau, reserved, or foundation"
+          enum: [tableau, reserved, foundation]
+          example: tableau
+        col:
+          type: integer
+          description: Column index (0-based, used for tableau and foundation zones)
+          example: 3
+        cell:
+          type: integer
+          description: Reserved cell index (0-based, used for reserved zone)
+          example: 0
+        cardIndex:
+          type: integer
+          description: Index of the card within the column (for moving multiple cards from tableau)
+          example: 0
+
+    SeahavenTowersRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `move` (`m`),
+            `giveup` (`g`), `hint` (`h`), `autocomplete` (`ac`),
+            `undo` (`u`), `undo_n`, `log` (`l`).
+          enum: [reset, r, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+          example: move
+        from:
+          description: Source zone for a move command
+          $ref: '#/components/schemas/SeahavenTowersZone'
+        to:
+          description: Destination zone for a move command
+          $ref: '#/components/schemas/SeahavenTowersZone'
+        n:
+          type: integer
+          description: Number of undos to perform (required when command is undo_n)
+          example: 3
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    SeahavenTowersResponse:
+      type: object
+      description: Current state of the Seahaven Towers game
+      required:
+        - tableau
+        - reservedCells
+        - foundation
+        - phase
+        - moveCount
+        - canUndo
+        - isStalemate
+        - undoToEscape
+        - message
+      properties:
+        tableau:
+          type: array
+          description: The 10 tableau columns, each containing an array of face-up cards
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        reservedCells:
+          type: array
+          description: The 2 reserved cells / towers (null or a Card)
+          items:
+            nullable: true
+            $ref: '#/components/schemas/Card'
+        foundation:
+          type: array
+          description: The 4 foundation piles (one per suit), each containing an array of cards
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 0 = Playing, 1 = GameClear, 2 = GameOver"
+          enum: [0, 1, 2]
+          example: 0
+        moveCount:
+          type: integer
+          description: Total number of moves made in the current game
+          example: 0
+        canUndo:
+          type: boolean
+          description: Whether the undo action is available
+          example: false
+        isStalemate:
+          type: boolean
+          description: Whether the game is in a stalemate (no moves can lead to a win)
+          example: false
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to reach a non-stalemate state (0 if not stalemate, -1 if no escape)
+          example: 0
+        hint:
+          type: object
+          description: Hint for the next available move (only present when hint command is used)
+          properties:
+            from:
+              $ref: '#/components/schemas/SeahavenTowersZone'
+            to:
+              $ref: '#/components/schemas/SeahavenTowersZone'
+        message:
+          type: string
+          description: Game result or status message. Empty while the game is in progress.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
     # Baccarat
     # -------------------------------------------------------------------------
     BaccaratRequest:
@@ -12093,6 +13051,106 @@ components:
             reason:
               type: string
               description: Machine-readable reason key for the hint
+
+    # -------------------------------------------------------------------------
+    # Call Break
+    # -------------------------------------------------------------------------
+    CallBreakConfig:
+      type: object
+      description: Call Break game configuration
+      properties:
+        cpuDifficulty:
+          type: integer
+          minimum: 0
+          maximum: 2
+        maxRounds:
+          type: integer
+          minimum: 1
+          maximum: 50
+
+    CallBreakResponse:
+      type: object
+      description: |
+        Current state of the Call Break game. `roundScore` and
+        `cumulativeScore` are int×10 — the wire integer 41 represents 4.1
+        points. The frontend divides by 10 for display.
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              bid:
+                type: integer
+              roundScore:
+                type: integer
+                description: Round score in int×10 form (display = value/10)
+              cumulativeScore:
+                type: integer
+                description: Cumulative score in int×10 form (display = value/10)
+              trickCount:
+                type: integer
+        phase:
+          type: integer
+          description: "0 = Bid, 1 = Play, 2 = TrickEnd, 3 = RoundEnd, 4 = GameEnd"
+          enum: [0, 1, 2, 3, 4]
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        bidPlayerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        spadesBroken:
+          type: boolean
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        config:
+          $ref: '#/components/schemas/CallBreakConfig'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+        hint:
+          type: object
+          nullable: true
+          properties:
+            cardIndex:
+              type: integer
+              nullable: true
+            bid:
+              type: integer
+              nullable: true
+            reason:
+              type: string
 
     # -------------------------------------------------------------------------
     # Two Ten Jack
@@ -13126,6 +14184,197 @@ components:
               type: integer
             pointLimit:
               type: integer
+
+    # -------------------------------------------------------------------------
+    # Piquet types
+    # -------------------------------------------------------------------------
+    PiquetConfig:
+      type: object
+      description: Piquet configuration (Web request payload)
+      properties:
+        cpuDifficulty:
+          type: integer
+          description: 0=Easy, 1=Normal, 2=Hard
+        dealsPerPartie:
+          type: integer
+          minimum: 1
+          maximum: 100
+          description: Number of deals per partie (default 6)
+
+    PiquetClaim:
+      type: object
+      description: Point/Sequence/Set claim evidence
+      properties:
+        length:
+          type: integer
+        topRank:
+          type: integer
+        pipTotal:
+          type: integer
+        suit:
+          type: integer
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+
+    PiquetDeclaration:
+      type: object
+      description: Result of a single declaration comparison
+      properties:
+        kind:
+          type: integer
+          description: 0=Point, 1=Sequence, 2=Set
+        elderClaim:
+          allOf:
+            - $ref: '#/components/schemas/PiquetClaim'
+          nullable: true
+        youngerClaim:
+          allOf:
+            - $ref: '#/components/schemas/PiquetClaim'
+          nullable: true
+        winner:
+          type: integer
+          description: 0/1 = player index, -1 = tied
+        score:
+          type: integer
+        scoredBy:
+          type: integer
+        sets:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/PiquetClaim'
+
+    PiquetResponse:
+      type: object
+      description: Current state of the Piquet game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              trickCount:
+                type: integer
+              declScore:
+                type: integer
+              trickScore:
+                type: integer
+              bonusScore:
+                type: integer
+              roundScore:
+                type: integer
+              matchScore:
+                type: integer
+        phase:
+          type: integer
+          description: "0=Exchange, 1=Declaration, 2=Play, 3=Score, 4=GameEnd"
+        dealNumber:
+          type: integer
+        dealsPerPartie:
+          type: integer
+        elderIdx:
+          type: integer
+        youngerIdx:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        trickNumber:
+          type: integer
+        tricksWon:
+          type: array
+          items:
+            type: integer
+          minItems: 2
+          maxItems: 2
+        exchangeTurn:
+          type: integer
+          description: "0=Elder, 1=Younger, 2=Done"
+        elderExchangedCnt:
+          type: integer
+        youngerExchangedCnt:
+          type: integer
+        elderTalon:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        youngerTalon:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        elderRevealedTalon:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        youngerRevealedTalon:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        carteBlanche:
+          type: array
+          items:
+            type: boolean
+          minItems: 2
+          maxItems: 2
+        declStage:
+          type: integer
+        declResults:
+          type: array
+          items:
+            $ref: '#/components/schemas/PiquetDeclaration'
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        legalPlayIndices:
+          type: array
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: "-1 = undetermined or draw"
+        hint:
+          type: object
+          nullable: true
+          properties:
+            cardIndex:
+              type: integer
+            discardIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+        config:
+          $ref: '#/components/schemas/PiquetConfig'
 
     # -------------------------------------------------------------------------
     # Spider Solitaire types
@@ -14813,6 +16062,145 @@ components:
         bonusPayout:
           type: integer
           description: Bonus side bet payout
+          example: 0
+        totalPayout:
+          type: integer
+          description: Total payout for the round (sum of all payouts)
+          example: 0
+        playerHandRank:
+          type: integer
+          description: Player's best 5-card hand rank (0=High Card .. 9=Royal Flush)
+          example: 0
+        dealerHandRank:
+          type: integer
+          description: Dealer's best 5-card hand rank (same encoding as `playerHandRank`)
+          example: 0
+        message:
+          type: string
+          description: Game result or error message. Empty during pre-resolution phases.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Casino Hold'em
+    # -------------------------------------------------------------------------
+    CasinoHoldemRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `bet` (`b`),
+            `call` (`c`), `fold` (`f`), `log` (`l`).
+          enum: [r, reset, b, bet, c, call, f, fold, log, l]
+          example: bet
+        amount:
+          type: integer
+          description: |
+            Ante bet amount. Required for `bet` command (minimum 10, must be a
+            multiple of 10). Ignored for other commands.
+          minimum: 10
+          example: 100
+        bonusBet:
+          type: integer
+          description: |
+            AA Bonus side bet amount. Optional; used with the `bet` command.
+            0 or omitted means no side bet.
+          minimum: 0
+          example: 10
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    CasinoHoldemResponse:
+      type: object
+      description: Current state of the Casino Hold'em game
+      required:
+        - playerHand
+        - dealerHand
+        - community
+        - phase
+        - chips
+        - anteBet
+        - bonusBet
+        - callBet
+        - result
+        - dealerQualify
+        - antePayout
+        - callPayout
+        - bonusPayout
+        - totalPayout
+        - playerHandRank
+        - dealerHandRank
+        - message
+      properties:
+        playerHand:
+          type: array
+          description: Player's two hole cards
+          items:
+            $ref: '#/components/schemas/Card'
+        dealerHand:
+          type: array
+          description: Dealer's two hole cards (masked until showdown after a Call)
+          items:
+            $ref: '#/components/schemas/Card'
+        community:
+          type: array
+          description: Community cards (3 after the flop, 5 at showdown)
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 1=Bet, 2=Flop, 3=End"
+          enum: [1, 2, 3]
+          example: 1
+        chips:
+          type: integer
+          description: Current chip count
+          example: 1000
+        anteBet:
+          type: integer
+          description: Ante bet amount
+          example: 100
+        bonusBet:
+          type: integer
+          description: AA Bonus side bet amount
+          example: 10
+        callBet:
+          type: integer
+          description: Call bet amount (2x Ante after a Call). 0 if folded.
+          example: 0
+        result:
+          type: integer
+          description: "Game result: 1=Player wins, -1=Dealer wins, 0=Push/not resolved"
+          enum: [-1, 0, 1]
+          example: 0
+        dealerQualify:
+          type: boolean
+          description: Whether the dealer qualified (Pair of Fours or better)
+          example: false
+        antePayout:
+          type: integer
+          description: Payout from the Ante bet (per the Ante pay table)
+          example: 0
+        callPayout:
+          type: integer
+          description: Payout from the Call bet (1:1 on win, push on dealer no-qualify)
+          example: 0
+        bonusPayout:
+          type: integer
+          description: AA Bonus side bet payout
           example: 0
         totalPayout:
           type: integer
@@ -18461,3 +19849,452 @@ components:
             type: string
         config:
           $ref: '#/components/schemas/BeloteConfig'
+
+    # -------------------------------------------------------------------------
+    # Mighty
+    # -------------------------------------------------------------------------
+    MightyRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `bid` (`b`),
+            `trump` (`t`), `exchange` (`e`), `play` (`p`),
+            `jokerlead` (`jl`), `next` (`n`), `nextround` (`nr`),
+            `hint` (`h`), `log` (`l`).
+          enum: [reset, r, bid, b, trump, t, exchange, e, play, p, jokerlead, jl, next, n, nextround, nr, hint, h, log, l]
+          example: reset
+        bid:
+          type: integer
+          description: |
+            Bid value (target number of point cards, or 0 to pass). Required for `bid`.
+            The effective floor is `config.minBid` (default 13) and is raised by
+            `config.noTrumpExtra` when `noTrump=true`. Maximum 20 (all point cards).
+          minimum: 0
+          maximum: 20
+          example: 14
+        noTrump:
+          type: boolean
+          description: When `true`, the bid is placed on the No-Trump axis (bid floor +`config.noTrumpExtra`; round score is doubled).
+          example: false
+        cardIndex:
+          type: integer
+          description: Index into the declarer's hand. Required for `play` and `jokerlead`.
+          minimum: 0
+          example: 2
+        trumpSuit:
+          type: integer
+          description: "Declared trump suit (−1 = No-Trump, 1 = Spade, 2 = Clover, 3 = Heart, 4 = Diamond). Required for `trump`."
+          enum: [-1, 1, 2, 3, 4]
+          example: 1
+        partnerSuit:
+          type: integer
+          description: "Partner-card suit (0 = Joker, 1 = Spade, 2 = Clover, 3 = Heart, 4 = Diamond). Required for `trump`."
+          enum: [0, 1, 2, 3, 4]
+          example: 3
+        partnerValue:
+          type: integer
+          description: Partner-card rank (1 = Ace, 11 = J, 12 = Q, 13 = K). Required for `trump`.
+          minimum: 1
+          maximum: 13
+          example: 1
+        discardIndices:
+          type: array
+          description: Indices of the 3 cards to discard during kitty exchange (declarer's hand after picking up the kitty). Required for `exchange`; must have length 3.
+          minItems: 3
+          maxItems: 3
+          items:
+            type: integer
+            minimum: 0
+          example: [0, 3, 9]
+        jokerLeadSuit:
+          type: integer
+          description: Demand suit when leading the Joker (1 = Spade, 2 = Clover, 3 = Heart, 4 = Diamond). Required for `jokerlead`.
+          enum: [1, 2, 3, 4]
+          example: 3
+        config:
+          $ref: '#/components/schemas/MightyConfig'
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    MightyConfig:
+      type: object
+      description: Mighty game configuration
+      properties:
+        cpuDifficulty:
+          type: integer
+          description: 'CPU difficulty: 0=Easy, 1=Normal, 2=Hard'
+          enum: [0, 1, 2]
+          example: 1
+        minBid:
+          type: integer
+          description: Minimum bid amount (default 13)
+          minimum: 1
+          maximum: 20
+          example: 13
+        noTrumpExtra:
+          type: integer
+          description: Extra bid amount required when bidding No-Trump (default 2)
+          minimum: 0
+          maximum: 19
+          example: 2
+        pointLimit:
+          type: integer
+          description: Cumulative score needed to end the game (default 100)
+          minimum: 1
+          example: 100
+
+    MightyPlayer:
+      type: object
+      description: One Mighty player's public state
+      required:
+        - id
+        - isHuman
+        - cardCount
+        - cards
+        - bid
+        - bidNoTrump
+        - isDeclarer
+        - isPartner
+        - partnerRevealed
+        - pointCards
+        - roundScore
+        - cumulativeScore
+        - trickCount
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        bid:
+          type: integer
+          description: Player's current bid value (0 = pass).
+        bidNoTrump:
+          type: boolean
+          description: Whether the player's current bid is on the No-Trump axis.
+        isDeclarer:
+          type: boolean
+        isPartner:
+          type: boolean
+          description: Whether the player is the secret partner (only revealed after `partnerRevealed` becomes true).
+        partnerRevealed:
+          type: boolean
+          description: Whether the partner identity has been revealed during the round.
+        pointCards:
+          type: integer
+          description: Number of point cards captured this round.
+        roundScore:
+          type: integer
+        cumulativeScore:
+          type: integer
+        trickCount:
+          type: integer
+
+    MightyTrickCard:
+      type: object
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+        card:
+          $ref: '#/components/schemas/Card'
+        isJokerLead:
+          type: boolean
+          description: Whether this card is a Joker played as the lead under the Joker-lead rule.
+        leadDemandSuit:
+          type: integer
+          description: Demand suit the Joker lead asked followers to follow (1-4).
+
+    MightyHint:
+      type: object
+      required:
+        - reason
+      properties:
+        cardIndex:
+          type: integer
+          nullable: true
+        bid:
+          type: integer
+          nullable: true
+        bidNoTrump:
+          type: boolean
+          nullable: true
+        trumpSuit:
+          type: integer
+          nullable: true
+        partnerSuit:
+          type: integer
+          nullable: true
+        partnerValue:
+          type: integer
+          nullable: true
+        discardIndices:
+          type: array
+          items:
+            type: integer
+          nullable: true
+        jokerLeadSuit:
+          type: integer
+          nullable: true
+        reason:
+          type: string
+          description: Machine-readable reason key for the hint.
+
+    MightyResponse:
+      type: object
+      description: Current state of the Mighty game
+      required:
+        - players
+        - phase
+        - currentPlayerIdx
+        - declarerIdx
+        - partnerIdx
+        - partnerRevealed
+        - trumpSuit
+        - highestBid
+        - highestBidder
+        - winningBidNoTrump
+        - currentTrick
+        - gameEndFlag
+        - winnerTeam
+        - leadPlayerIdx
+        - message
+        - config
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/MightyPlayer'
+        phase:
+          type: integer
+          description: 'Game phase: 0=Bid, 1=TrumpAndFriend, 2=KittyExchange, 3=Play, 4=TrickEnd, 5=RoundEnd, 6=GameEnd'
+          enum: [0, 1, 2, 3, 4, 5, 6]
+        currentPlayerIdx:
+          type: integer
+        declarerIdx:
+          type: integer
+          description: Index of the declarer (-1 if not yet decided)
+        partnerIdx:
+          type: integer
+          description: Index of the secret partner (-1 if not yet bound or self-friend)
+        partnerRevealed:
+          type: boolean
+          description: Whether the secret partner has been revealed (set when the partner card is played).
+        trumpSuit:
+          type: integer
+          description: "Declared trump suit (−1 = No-Trump, 0 = not yet declared, 1−4 = Spade/Clover/Heart/Diamond)."
+          enum: [-1, 0, 1, 2, 3, 4]
+        partnerCard:
+          nullable: true
+          description: The partner card named by the declarer (suit + rank).
+          allOf:
+            - $ref: '#/components/schemas/Card'
+        highestBid:
+          type: integer
+          description: Highest bid placed during the bid phase (0 if no bid yet).
+        highestBidder:
+          type: integer
+          description: Index of the highest bidder (-1 if no bid yet).
+        winningBidNoTrump:
+          type: boolean
+          description: Whether the winning bid is on the No-Trump axis.
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/MightyTrickCard'
+        kitty:
+          type: array
+          description: Kitty cards (visible to the declarer during the KittyExchange phase).
+          items:
+            $ref: '#/components/schemas/Card'
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: 'Winning team after RoundEnd / GameEnd (0 = declarer team, 1 = defenders, -1 = undecided).'
+        leadPlayerIdx:
+          type: integer
+          description: Index of the player who leads the current trick.
+        hint:
+          $ref: '#/components/schemas/MightyHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+        config:
+          $ref: '#/components/schemas/MightyConfig'
+
+    # -------------------------------------------------------------------------
+    # Oasis Poker
+    # -------------------------------------------------------------------------
+    OasisPokerRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `bet` (`b`),
+            `exchange` (`e`), `stand` (`s`), `play` (`p`), `fold` (`f`),
+            `log` (`l`).
+          enum: [r, reset, b, bet, e, exchange, s, stand, p, play, f, fold, log, l]
+          example: exchange
+        amount:
+          type: integer
+          description: |
+            Ante bet amount. Required for `bet` command (minimum 10, must be a
+            multiple of 10). Ignored for other commands.
+          minimum: 10
+          example: 100
+        jackpotBet:
+          type: integer
+          description: |
+            Jackpot side bet amount. Optional; used with the `bet` command.
+            0 or omitted means no side bet.
+          minimum: 0
+          example: 10
+        indices:
+          type: array
+          description: |
+            Card indices to exchange (0..4, max 5 cards, no duplicates).
+            Used with the `exchange` command. Empty array is equivalent to `stand`.
+          items:
+            type: integer
+            minimum: 0
+            maximum: 4
+          example: [0, 2]
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    OasisPokerResponse:
+      type: object
+      description: Current state of the Oasis Poker game
+      required:
+        - playerHand
+        - dealerHand
+        - phase
+        - chips
+        - anteBet
+        - jackpotBet
+        - exchangeCount
+        - exchangeFee
+        - playBet
+        - result
+        - antePayout
+        - playPayout
+        - jackpotPayout
+        - totalPayout
+        - dealerQualified
+        - playerHandRank
+        - dealerHandRank
+        - message
+      properties:
+        playerHand:
+          type: array
+          description: Cards in the player's hand (5 cards)
+          items:
+            $ref: '#/components/schemas/Card'
+        dealerHand:
+          type: array
+          description: Cards in the dealer's hand (5 cards; the 2nd-5th cards are hidden until End phase)
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 1 = Bet, 2 = Exchange, 3 = Action, 4 = End"
+          enum: [1, 2, 3, 4]
+          example: 1
+        chips:
+          type: integer
+          description: Current chip count
+          example: 1000
+        anteBet:
+          type: integer
+          description: Current Ante bet amount
+          example: 100
+        jackpotBet:
+          type: integer
+          description: Current Jackpot side bet amount
+          example: 10
+        exchangeCount:
+          type: integer
+          description: Number of cards exchanged this round
+          minimum: 0
+          maximum: 5
+          example: 2
+        exchangeFee:
+          type: integer
+          description: Total exchange fee collected (ante × exchangeCount)
+          minimum: 0
+          example: 200
+        playBet:
+          type: integer
+          description: Current Play bet amount (2x Ante on Call)
+          example: 0
+        result:
+          type: integer
+          description: "Game result: 1 = Player wins, -1 = Dealer wins, 0 = Push/not resolved"
+          enum: [-1, 0, 1]
+          example: 0
+        antePayout:
+          type: integer
+          description: Payout from the Ante bet
+          example: 0
+        playPayout:
+          type: integer
+          description: Payout from the Play bet
+          example: 0
+        jackpotPayout:
+          type: integer
+          description: Jackpot side bet payout
+          example: 0
+        totalPayout:
+          type: integer
+          description: Total payout for the current round (sum of all payouts)
+          example: 0
+        dealerQualified:
+          type: boolean
+          description: Whether the dealer qualified (Ace-King high or any pair)
+          example: false
+        playerHandRank:
+          type: integer
+          description: Player's 5-card hand rank (0=High Card, 1=One Pair, 2=Two Pair, 3=Three of a Kind, 4=Straight, 5=Flush, 6=Full House, 7=Four of a Kind, 8=Straight Flush, 9=Royal Flush)
+          example: 1
+        dealerHandRank:
+          type: integer
+          description: Dealer's 5-card hand rank (same encoding as `playerHandRank`)
+          example: 1
+        message:
+          type: string
+          description: Game result or error message. Empty during bet/exchange/action phases.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.

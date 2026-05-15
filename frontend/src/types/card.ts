@@ -879,6 +879,61 @@ export interface SpadesResponse {
   hint?: SpadesHint;
 }
 
+// --- Call Break ---
+
+/** Call Break player data with bid and integer×10 scores. */
+export interface CallBreakPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  bid: number;
+  /** Round score in internal int×10 form (e.g. 41 == 4.1 points). */
+  roundScore: number;
+  /** Cumulative score in internal int×10 form. */
+  cumulativeScore: number;
+  trickCount: number;
+}
+
+/** A card played in a Call Break trick. */
+export interface CallBreakTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Call Break game configuration. */
+export interface CallBreakConfig {
+  cpuDifficulty: number;
+  maxRounds: number;
+}
+
+/** A suggested hint for Call Break. */
+export interface CallBreakHint {
+  cardIndex?: number;
+  bid?: number;
+  reason: string;
+}
+
+/** Full Call Break game state returned from the API. */
+export interface CallBreakResponse {
+  players: CallBreakPlayerData[];
+  phase: number;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  bidPlayerIdx: number;
+  currentTrick: CallBreakTrickCard[];
+  spadesBroken: boolean;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  leadPlayerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: CallBreakConfig;
+  hint?: CallBreakHint;
+}
+
 // --- Pitch (Setback / Auction Pitch) ---
 
 /** Pitch player data (4-player single-handed scoring). */
@@ -1325,6 +1380,33 @@ export interface FreeCellResponse {
   hint?: FreeCellHint;
 }
 
+// --- Seahaven Towers (シーヘイブンタワーズ) ---
+
+/** A suggested move hint in Seahaven Towers. */
+export interface SeahavenTowersHint {
+  fromZone: string;
+  fromCol: number;
+  cardIndex: number;
+  toZone: string;
+  toCol: number;
+}
+
+/** Full Seahaven Towers game state returned from the API. */
+export interface SeahavenTowersResponse {
+  tableau: (Card | null)[][];
+  reservedCells: (Card | null)[];
+  foundation: Card[][];
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: SeahavenTowersHint;
+}
+
 /** Result of a Baccarat side bet (player pair, banker pair). */
 export interface BaccaratSideBetResult {
   betType: number;
@@ -1421,6 +1503,82 @@ export interface NapoleonResponse {
   messageParams?: Record<string, string>;
   config: NapoleonConfig;
   hint?: NapoleonHint;
+}
+
+// --- Mighty (マイティ) ---
+
+/** Mighty player data with bid, roles, scores, and point-card count. */
+export interface MightyPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  bid: number;
+  bidNoTrump: boolean;
+  isDeclarer: boolean;
+  isPartner: boolean;
+  partnerRevealed: boolean;
+  pointCards: number;
+  roundScore: number;
+  cumulativeScore: number;
+  trickCount: number;
+}
+
+/** A card played in a Mighty trick. */
+export interface MightyTrickCard {
+  playerIdx: number;
+  card: Card;
+  isJokerLead?: boolean;
+  leadDemandSuit?: number;
+}
+
+/** Mighty game configuration. */
+export interface MightyConfig {
+  cpuDifficulty: number;
+  minBid: number;
+  noTrumpExtra: number;
+  pointLimit: number;
+}
+
+/** A suggested hint for Mighty. */
+export interface MightyHint {
+  cardIndex?: number;
+  bid?: number;
+  bidNoTrump?: boolean;
+  trumpSuit?: number;
+  partnerSuit?: number;
+  partnerValue?: number;
+  discardIndices?: number[];
+  jokerLeadSuit?: number;
+  reason: string;
+}
+
+/** Full Mighty game state returned from the API. */
+export interface MightyResponse {
+  players: MightyPlayerData[];
+  phase: number;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  bidPlayerIdx: number;
+  currentTrick: MightyTrickCard[];
+  trumpSuit: number;
+  partnerCard?: Card | null;
+  declarerIdx: number;
+  partnerIdx: number;
+  partnerRevealed: boolean;
+  highestBid: number;
+  highestBidder: number;
+  winningBidNoTrump: boolean;
+  kitty?: Card[];
+  gameEndFlag: boolean;
+  winnerTeam: number;
+  leadPlayerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: MightyConfig;
+  hint?: MightyHint;
 }
 
 // --- Skat (スカート) ---
@@ -2112,6 +2270,37 @@ export interface CaribbeanStudResponse {
   messageParams?: Record<string, string>;
 }
 
+// --- Casino Hold'em (カジノホールデム) ---
+
+/** Casino Hold'em API response. */
+export interface CasinoHoldemResponse {
+  /** Player's two hole cards. */
+  playerHand: Card[];
+  /** Dealer's hole cards: masked as `MaskedCard` until the showdown (only after a call). */
+  dealerHand: (Card | MaskedCard)[];
+  /** Community cards (flop / turn / river). Length grows from 3 (flop) → 5 (showdown). */
+  community: Card[];
+  phase: number;
+  chips: number;
+  anteBet: number;
+  /** AA Bonus side bet wager. */
+  bonusBet: number;
+  /** Call bet placed at flop (2× ante). 0 if folded. */
+  callBet: number;
+  result: number;
+  /** Whether the dealer qualified (Pair of Fours or better). */
+  dealerQualify: boolean;
+  antePayout: number;
+  callPayout: number;
+  bonusPayout: number;
+  totalPayout: number;
+  playerHandRank: number;
+  dealerHandRank: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
 // --- Texas Hold'em Bonus Poker (テキサスホールデムボーナスポーカー) ---
 
 /** Texas Hold'em Bonus Poker API response. */
@@ -2479,6 +2668,91 @@ export interface PinochleResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
   config: PinochleConfig;
+}
+
+// --- Piquet (ピケ) ---
+
+/** Piquet game configuration. */
+export interface PiquetConfig {
+  cpuDifficulty: number;
+  dealsPerPartie: number;
+}
+
+/** Piquet player data. */
+export interface PiquetPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  trickCount: number;
+  declScore: number;
+  trickScore: number;
+  bonusScore: number;
+  roundScore: number;
+  matchScore: number;
+}
+
+/** Piquet trick card data. */
+export interface PiquetTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Piquet claim (Point/Sequence/Set declaration evidence). */
+export interface PiquetClaim {
+  length: number;
+  topRank: number;
+  pipTotal: number;
+  suit: number;
+  cards: Card[];
+}
+
+/** Piquet declaration result. */
+export interface PiquetDeclaration {
+  kind: number;
+  elderClaim?: PiquetClaim;
+  youngerClaim?: PiquetClaim;
+  winner: number;
+  score: number;
+  scoredBy: number;
+  sets?: PiquetClaim[];
+}
+
+/** Full Piquet game state returned from the API. */
+export interface PiquetResponse {
+  players: PiquetPlayerData[];
+  phase: number;
+  dealNumber: number;
+  dealsPerPartie: number;
+  elderIdx: number;
+  youngerIdx: number;
+  currentPlayerIdx: number;
+  leadPlayerIdx: number;
+  trickNumber: number;
+  tricksWon: [number, number];
+  exchangeTurn: number;
+  elderExchangedCnt: number;
+  youngerExchangedCnt: number;
+  elderTalon: Card[];
+  youngerTalon: Card[];
+  elderRevealedTalon: Card[];
+  youngerRevealedTalon: Card[];
+  carteBlanche: [boolean, boolean];
+  declStage: number;
+  declResults: PiquetDeclaration[];
+  currentTrick: PiquetTrickCard[];
+  legalPlayIndices?: number[];
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  hint?: {
+    cardIndex?: number;
+    discardIndices?: number[];
+    reason: string;
+  };
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: PiquetConfig;
 }
 
 // --- Golf Solitaire (ゴルフ) ---
@@ -2947,6 +3221,31 @@ export interface RussianSolitaireResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
   hint?: RussianSolitaireHint;
+}
+
+// --- Cruel (クルーエル) ---
+
+/** A suggested move hint in Cruel. */
+export interface CruelHint {
+  fromCol: number;
+  cardIndex: number;
+  toZone: string;
+  toCol: number;
+}
+
+/** API response shape for a Cruel game. */
+export interface CruelResponse {
+  tableau: KlondikeTableauCard[][];
+  foundation: Card[][];
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: CruelHint;
 }
 
 // --- Scorpion (スコーピオン) ---
@@ -3650,4 +3949,72 @@ export interface ContractRummyResponse {
   message: string;
   messageCode?: string;
   messageParams?: Record<string, string>;
+}
+
+// --- Oasis Poker (オアシスポーカー) ---
+
+/** Oasis Poker API response. */
+export interface OasisPokerResponse {
+  playerHand: Card[];
+  /** Dealer hand: during bet/exchange/action phases only the first card is revealed and
+   * the remaining slots are `MaskedCard`. After the end phase all 5 are real `Card`s. */
+  dealerHand: (Card | MaskedCard)[];
+  phase: number;
+  chips: number;
+  anteBet: number;
+  jackpotBet: number;
+  /** Number of cards exchanged this round (0..5). */
+  exchangeCount: number;
+  /** Fee collected for exchanging cards (ante × exchangeCount). */
+  exchangeFee: number;
+  playBet: number;
+  result: number;
+  antePayout: number;
+  playPayout: number;
+  jackpotPayout: number;
+  totalPayout: number;
+  dealerQualified: boolean;
+  playerHandRank: number;
+  dealerHandRank: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
+// --- Beleaguered Castle (包囲された城) ---
+
+/** A single tableau card in Beleaguered Castle. */
+export interface BeleagueredCastleTableauCard {
+  card: Card | null;
+  faceUp: boolean;
+}
+
+/** A suggested move hint in Beleaguered Castle. */
+export interface BeleagueredCastleHint {
+  fromCol: number;
+  cardIndex: number;
+  toZone: string;
+  toCol: number;
+}
+
+/** Full Beleaguered Castle game state returned from the API. */
+export interface BeleagueredCastleResponse {
+  tableau: BeleagueredCastleTableauCard[][];
+  foundation: Card[][];
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: BeleagueredCastleHint;
+}
+
+/** Source or target zone for a Beleaguered Castle card move. */
+export interface BeleagueredCastleMoveZone {
+  zone: string;
+  col?: number;
+  cardIndex?: number;
 }

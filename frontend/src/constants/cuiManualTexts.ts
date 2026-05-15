@@ -7,14 +7,17 @@ import accordion from '../../../docs/manual/cui/accordion.md?raw';
 import baccarat from '../../../docs/manual/cui/baccarat.md?raw';
 import badugi from '../../../docs/manual/cui/badugi.md?raw';
 import bakersdozen from '../../../docs/manual/cui/bakersdozen.md?raw';
+import beleagueredcastle from '../../../docs/manual/cui/beleagueredcastle.md?raw';
 import belote from '../../../docs/manual/cui/belote.md?raw';
 import blackjack from '../../../docs/manual/cui/blackjack.md?raw';
 import blackjackswitch from '../../../docs/manual/cui/blackjackswitch.md?raw';
 import bridge from '../../../docs/manual/cui/bridge.md?raw';
 import calculation from '../../../docs/manual/cui/calculation.md?raw';
+import callbreak from '../../../docs/manual/cui/callbreak.md?raw';
 import canasta from '../../../docs/manual/cui/canasta.md?raw';
 import canfield from '../../../docs/manual/cui/canfield.md?raw';
 import caribbeanstud from '../../../docs/manual/cui/caribbeanstud.md?raw';
+import casinoholdem from '../../../docs/manual/cui/casinoholdem.md?raw';
 import casinowar from '../../../docs/manual/cui/casinowar.md?raw';
 import cassino from '../../../docs/manual/cui/cassino.md?raw';
 import clocksolitaire from '../../../docs/manual/cui/clocksolitaire.md?raw';
@@ -23,6 +26,7 @@ import crazyeights from '../../../docs/manual/cui/crazyeights.md?raw';
 import crazypineapple from '../../../docs/manual/cui/crazypineapple.md?raw';
 import crescent from '../../../docs/manual/cui/crescent.md?raw';
 import cribbage from '../../../docs/manual/cui/cribbage.md?raw';
+import cruel from '../../../docs/manual/cui/cruel.md?raw';
 import daifugo from '../../../docs/manual/cui/daifugo.md?raw';
 import deuceswild from '../../../docs/manual/cui/deuceswild.md?raw';
 import doubt from '../../../docs/manual/cui/doubt.md?raw';
@@ -43,6 +47,7 @@ import jokerpoker from '../../../docs/manual/cui/jokerpoker.md?raw';
 import klondike from '../../../docs/manual/cui/klondike.md?raw';
 import letitride from '../../../docs/manual/cui/letitride.md?raw';
 import memory from '../../../docs/manual/cui/memory.md?raw';
+import mighty from '../../../docs/manual/cui/mighty.md?raw';
 import mississippistud from '../../../docs/manual/cui/mississippistud.md?raw';
 import napoleon from '../../../docs/manual/cui/napoleon.md?raw';
 import nertz from '../../../docs/manual/cui/nertz.md?raw';
@@ -64,6 +69,7 @@ import razz from '../../../docs/manual/cui/razz.md?raw';
 import reddog from '../../../docs/manual/cui/reddog.md?raw';
 import russiansolitaire from '../../../docs/manual/cui/russiansolitaire.md?raw';
 import scorpion from '../../../docs/manual/cui/scorpion.md?raw';
+import seahaventowers from '../../../docs/manual/cui/seahaventowers.md?raw';
 import sevenbridge from '../../../docs/manual/cui/sevenbridge.md?raw';
 import sevencardstud from '../../../docs/manual/cui/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/cui/sevens.md?raw';
@@ -99,6 +105,8 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/canasta': canasta,
   '/canfield': canfield,
   '/caribbeanstud': caribbeanstud,
+  '/casinoholdem': casinoholdem,
+  '/callbreak': callbreak,
   '/casinowar': casinowar,
   '/texasholdembonus': texasholdembonus,
   '/clocksolitaire': clocksolitaire,
@@ -114,12 +122,14 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/dragontiger': dragontiger,
   '/blackjackswitch': blackjackswitch,
   '/bakersdozen': bakersdozen,
+  '/beleagueredcastle': beleagueredcastle,
   '/durak': durak,
   '/egyptianratscrew': egyptianratscrew,
   '/fiftyone': fiftyone,
   '/fortythieves': fortythieves,
   '/euchre': euchre,
   '/freecell': freecell,
+  '/seahaventowers': seahaventowers,
   '/ginrummy': ginrummy,
   '/gofish': gofish,
   '/golf': golf,
@@ -130,6 +140,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/klondike': klondike,
   '/letitride': letitride,
   '/memory': memory,
+  '/mighty': mighty,
   '/napoleon': napoleon,
   '/ohhell': ohhell,
   '/oldmaid': oldmaid,
@@ -165,6 +176,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/whist': whist,
   '/yukon': yukon,
   '/russiansolitaire': russiansolitaire,
+  '/cruel': cruel,
   '/scorpion': scorpion,
   '/sevenbridge': sevenbridge,
   '/accordion': accordion,
