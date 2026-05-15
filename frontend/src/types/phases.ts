@@ -801,3 +801,13 @@ export const BeleagueredCastlePhase = {
   GAME_CLEAR: 1,
   GAME_OVER: 2,
 } as const;
+
+/** Tarneeb phase constants (sync: internal/domain/Tarneeb.go). */
+export const TarneebPhase = {
+  BID: 0,
+  TRUMP_DECLARATION: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;

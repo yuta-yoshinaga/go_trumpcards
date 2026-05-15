@@ -303,4 +303,12 @@ func init() {
 			return usecase.RestoreCallBreakInteractor(data, new(presenter.CallBreakWebPresenter))
 		},
 		controller.NewCallBreakWebControllerWithProvider)
+	games.RegisterKVGame("tarneeb", games.CategoryClassic,
+		func() usecase.TarneebInteractorIF {
+			return usecase.NewTarneebInteractor(domain.NewDefaultTarneeb(), new(presenter.TarneebWebPresenter))
+		},
+		func(data []byte) (usecase.TarneebInteractorIF, error) {
+			return usecase.RestoreTarneebInteractor(data, new(presenter.TarneebWebPresenter))
+		},
+		controller.NewTarneebWebControllerWithProvider)
 }

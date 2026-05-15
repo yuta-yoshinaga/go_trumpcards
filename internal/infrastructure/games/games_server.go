@@ -483,4 +483,9 @@ func init() {
 			return usecase.NewCallBreakInteractor(domain.NewDefaultCallBreak(), new(presenter.CallBreakWebPresenter))
 		},
 		controller.NewCallBreakWebController)
+	BindWebControllerFor("tarneeb",
+		func() usecase.TarneebInteractorIF {
+			return usecase.NewTarneebInteractor(domain.NewDefaultTarneeb(), new(presenter.TarneebWebPresenter))
+		},
+		controller.NewTarneebWebController)
 }

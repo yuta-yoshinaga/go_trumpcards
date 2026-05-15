@@ -1516,6 +1516,23 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"callbreak.helpSetDifficulty", "callbreak.helpSetRounds"},
 			})
 	}},
+	{Name: "tarneeb", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewTarneebCuiController(usecase.NewTarneebInteractor(
+				domain.NewDefaultTarneeb(), new(presenter.TarneebCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "tarneeb.helpTitle",
+				CommandKeys: []string{
+					"tarneeb.helpBid",
+					"tarneeb.helpTrump",
+					"tarneeb.helpPlay",
+					"tarneeb.helpNext",
+					"tarneeb.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"tarneeb.helpSetDifficulty", "tarneeb.helpSetLimit", "tarneeb.helpSetMinBid"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
