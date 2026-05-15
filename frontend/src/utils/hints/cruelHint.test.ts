@@ -48,6 +48,8 @@ describe('getCruelHint', () => {
   });
 
   it('returns null when game has cleared', () => {
-    expect(getCruelHint(makeState({ phase: 1, hint: { fromCol: 0, cardIndex: 0, toZone: 'foundation', toCol: 0 } }))).toBeNull();
+    expect(
+      getCruelHint(makeState({ phase: 1, hint: { fromCol: 0, cardIndex: 0, toZone: 'foundation', toCol: 0 } })),
+    ).toBeNull();
   });
 });

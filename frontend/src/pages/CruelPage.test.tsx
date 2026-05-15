@@ -36,12 +36,7 @@ const playingState: CruelResponse = {
     fourColumn('CLOVER', 10),
     fourColumn('DIAMOND', 10),
   ],
-  foundation: [
-    [card('SPADE', 1)],
-    [card('CLOVER', 1)],
-    [card('HEART', 1)],
-    [card('DIAMOND', 1)],
-  ],
+  foundation: [[card('SPADE', 1)], [card('CLOVER', 1)], [card('HEART', 1)], [card('DIAMOND', 1)]],
   phase: 0,
   moveCount: 0,
   canUndo: false,

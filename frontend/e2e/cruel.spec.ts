@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { TIMEOUT_TRANSITION, navigateTo } from './helpers';
+import { navigateTo, TIMEOUT_TRANSITION } from './helpers';
 
 test.describe('Cruel E2E', () => {
   test('navigates and renders the game', async ({ page }) => {
