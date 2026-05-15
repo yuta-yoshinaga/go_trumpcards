@@ -83,6 +83,7 @@ import speed from '../../../docs/manual/cui/speed.md?raw';
 import spider from '../../../docs/manual/cui/spider.md?raw';
 import spiderette from '../../../docs/manual/cui/spiderette.md?raw';
 import spiteandmalice from '../../../docs/manual/cui/spiteandmalice.md?raw';
+import tarneeb from '../../../docs/manual/cui/tarneeb.md?raw';
 import texasholdembonus from '../../../docs/manual/cui/texasholdembonus.md?raw';
 import threecard from '../../../docs/manual/cui/threecard.md?raw';
 import tonk from '../../../docs/manual/cui/tonk.md?raw';
@@ -188,6 +189,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/shithead': shithead,
   '/nertz': nertz,
   '/slapjack': slapjack,
+  '/tarneeb': tarneeb,
 };
 
 /** Returns true when CLI mode is enabled for the game at the given path. */

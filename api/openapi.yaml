@@ -197,6 +197,8 @@ tags:
     description: Casino Hold'em (カジノホールデム) game - single-player casino Texas Hold'em variant with Ante and optional AA Bonus side bet; flop revealed with hole cards, then Call (2x Ante) or Fold; dealer qualifies on Pair of Fours or better
   - name: callbreak
     description: Call Break (コールブレイク) game - 4-player Spades-style trick-taking game from South Asia; spades are permanent trump, must-trump-if-void rule, int×10 scoring (bid hit = bid*10 + overtricks, miss = -bid*10); 5 rounds fixed, highest cumulative score wins
+  - name: tarneeb
+    description: Tarneeb (ターニーブ) game - 4-player Middle-Eastern partnership trick-taking. Bid 7..13 or pass; bid winner declares trump suit; bidder team scores +tricks on success / -bid on failure, defender team always scores +tricks; first team to PointLimit wins.
 
 paths:
   /blackjack/exec:
@@ -9170,6 +9172,110 @@ paths:
               schema:
                 $ref: '#/components/schemas/CallBreakResponse'
 
+  /tarneeb/exec:
+    post:
+      tags:
+        - tarneeb
+      summary: Execute a Tarneeb (ターニーブ) game command
+      description: |
+        Send a command to advance the Tarneeb game session identified by
+        `sessionId`. Tarneeb is a 4-player Middle-Eastern partnership
+        trick-taking game. Bids are 7..13 or 0 (pass); the highest bidder
+        declares the trump suit in a separate phase, then plays out 13 tricks
+        following the led suit when possible. Bidder team scores +tricks on
+        success or -bid on failure; defender team always scores +tricks. First
+        team to PointLimit wins.
+
+        Phases:
+
+        | Phase             | Value | Description |
+        |-------------------|-------|-------------|
+        | Bid               | `0`   | Each player bids 7..13 or 0 (pass); all-pass triggers redeal |
+        | TrumpDeclaration  | `1`   | Bid winner picks the trump suit |
+        | Play              | `2`   | 13-trick play (must follow / free choice when void) |
+        | TrickEnd          | `3`   | Trick resolved; call `n`/`next` to continue |
+        | RoundEnd          | `4`   | Round scored; call `nr`/`nextround` |
+        | GameEnd           | `5`   | Game over once a team reaches PointLimit |
+
+        Commands:
+
+        | Command            | Aliases | Description |
+        |--------------------|---------|-------------|
+        | `reset` / `r`      |         | Restart with optional config |
+        | `bid` / `b`        |         | Place bid (0=pass, 7..13) |
+        | `trump` / `t`      |         | Declare trump suit (1=♠ 2=♣ 3=♥ 4=♦) |
+        | `play` / `p`       |         | Play card at index |
+        | `next` / `n`       |         | Advance to next trick |
+        | `nextround` / `nr` |         | Score round and start next |
+        | `hint` / `h`       |         | Suggested move |
+        | `log` / `l`        |         | View action log |
+      operationId: tarneebExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bid, b, trump, t, play, p, next, n, nextround, nr, hint, h, log, l]
+                bid:
+                  type: integer
+                  description: Bid amount for `bid`/`b` (0=pass, 7..13)
+                trumpSuit:
+                  type: integer
+                  description: Trump suit for `trump`/`t` (1=♠, 2=♣, 3=♥, 4=♦)
+                  minimum: 1
+                  maximum: 4
+                cardIndex:
+                  type: integer
+                  description: Card index for `play`/`p`
+                config:
+                  $ref: '#/components/schemas/TarneebConfig'
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Declare bid 8
+                value:
+                  command: b
+                  bid: 8
+                  sessionId: my-session-001
+              trump:
+                summary: Declare spades trump
+                value:
+                  command: t
+                  trumpSuit: 1
+                  sessionId: my-session-001
+              play:
+                summary: Play hand[0]
+                value:
+                  command: p
+                  cardIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TarneebResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TarneebResponse'
+
 components:
   schemas:
     # -------------------------------------------------------------------------
@@ -13147,6 +13253,125 @@ components:
               type: integer
               nullable: true
             bid:
+              type: integer
+              nullable: true
+            reason:
+              type: string
+
+    # -------------------------------------------------------------------------
+    # Tarneeb
+    # -------------------------------------------------------------------------
+    TarneebConfig:
+      type: object
+      description: Tarneeb game configuration
+      properties:
+        cpuDifficulty:
+          type: integer
+          minimum: 0
+          maximum: 2
+        pointLimit:
+          type: integer
+          minimum: 1
+          maximum: 200
+        minBid:
+          type: integer
+          minimum: 1
+          maximum: 13
+
+    TarneebResponse:
+      type: object
+      description: Current state of the Tarneeb game.
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              team:
+                type: integer
+                description: "0 or 1"
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              bid:
+                type: integer
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+              trickCount:
+                type: integer
+        teamScores:
+          type: array
+          items:
+            type: integer
+        phase:
+          type: integer
+          description: "0=Bid, 1=TrumpDeclaration, 2=Play, 3=TrickEnd, 4=RoundEnd, 5=GameEnd"
+          enum: [0, 1, 2, 3, 4, 5]
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        bidPlayerIdx:
+          type: integer
+        bidWinnerIdx:
+          type: integer
+        highestBid:
+          type: integer
+        trumpSuit:
+          type: integer
+          description: "0 = not yet declared, 1=♠, 2=♣, 3=♥, 4=♦"
+        redealCount:
+          type: integer
+        dealerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: -1 if undecided
+        leadPlayerIdx:
+          type: integer
+        config:
+          $ref: '#/components/schemas/TarneebConfig'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+        hint:
+          type: object
+          nullable: true
+          properties:
+            cardIndex:
+              type: integer
+              nullable: true
+            bid:
+              type: integer
+              nullable: true
+            trumpSuit:
               type: integer
               nullable: true
             reason:

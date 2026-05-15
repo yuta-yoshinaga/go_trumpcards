@@ -1682,8 +1682,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "94ゲーム × CUI/Web = 188 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
-    note for GameCuiPresenter "94ゲーム × CUI/Web = 188 Presenter 実装"
+    note for GameCuiController "95ゲーム × CUI/Web = 190 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
+    note for GameCuiPresenter "95ゲーム × CUI/Web = 190 Presenter 実装"
 ```
 
 ### 1.5 インフラストラクチャ層

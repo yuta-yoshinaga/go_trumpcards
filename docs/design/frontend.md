@@ -1927,13 +1927,13 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (94ゲーム)
+        +Routes (95ゲーム)
     }
 
     class gameCategories {
         +table: [BlackJack, Spanish21, Baccarat, ThreeCard, CaribbeanStud, OasisPoker, TexasHoldemBonus, CasinoHoldem, UltimateTexasHoldem, PaiGow, LetItRide, RedDog, CasinoWar, DragonTiger, BlackJackSwitch, MississippiStud]
         +poker: [Poker, Holdem, Omaha, OmahaHiLo, ShortDeck, Pineapple, CrazyPineapple, SevenCardStud, Razz, Badugi, IndianPoker, VideoPoker, DeucesWild, JokerPoker]
-        +trickTaking: [Hearts, Spades, Pitch, TwoTenJack, OhHell, Euchre, Bridge, Napoleon, Whist, Belote, Mighty, Piquet, CallBreak]
+        +trickTaking: [Hearts, Spades, Pitch, TwoTenJack, OhHell, Euchre, Bridge, Napoleon, Whist, Belote, Mighty, Piquet, CallBreak, Tarneeb]
         +matching: [OldMaid, Doubt, Durak, Daifugo, President, Cassino, Sevens, CrazyEights, PageOne, Speed, GoFish, Pinochle, PigsTail, War, FiftyOne, Trash, SpiteAndMalice, Skat, Shithead, Nertz, Slapjack, EgyptianRatscrew]
         +solitaire: [Klondike, FreeCell, SeahavenTowers, Spider, Spiderette, Pyramid, TriPeaks, Golf, Memory, ClockSolitaire, FortyThieves, BakersDozen, BeleagueredCastle, Canfield, Yukon, RussianSolitaire, Cruel, Scorpion, Accordion, PokerSquares, MonteCarlo, Calculation, Crescent]
         +rummy: [GinRummy, Tonk, Canasta, Cribbage, SevenBridge, ContractRummy]
@@ -1950,11 +1950,11 @@ classDiagram
     App --> i18n : initializes
     App --> gameCategories : routes from
     App --> NavBar : renders
-    App --> GamePage : routes to 94 pages
+    App --> GamePage : routes to 95 pages
     GamePage --> TutorialProvider : wraps (per-game)
     TutorialProvider --> TutorialOverlay : renders when active
 
-    note for i18n "96名前空間: common + 94ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
+    note for i18n "97名前空間: common + 95ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
 ```
 
 ---

@@ -85,6 +85,7 @@ import speed from '../../../docs/manual/web/speed.md?raw';
 import spider from '../../../docs/manual/web/spider.md?raw';
 import spiderette from '../../../docs/manual/web/spiderette.md?raw';
 import spiteandmalice from '../../../docs/manual/web/spiteandmalice.md?raw';
+import tarneeb from '../../../docs/manual/web/tarneeb.md?raw';
 import texasholdembonus from '../../../docs/manual/web/texasholdembonus.md?raw';
 import threecard from '../../../docs/manual/web/threecard.md?raw';
 import tonk from '../../../docs/manual/web/tonk.md?raw';
@@ -193,4 +194,5 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/shithead': shithead,
   '/nertz': nertz,
   '/slapjack': slapjack,
+  '/tarneeb': tarneeb,
 };
