@@ -44,6 +44,7 @@ import type {
   GoFishResponse,
   GolfResponse,
   HeartsResponse,
+  HighCardFlushResponse,
   HoldemResponse,
   IndianPokerResponse,
   KlondikeResponse,
@@ -212,6 +213,7 @@ const workerUrl: Record<string, string> = {
   piquet: WORKER_CLASSIC,
   callbreak: WORKER_CLASSIC,
   tarneeb: WORKER_CLASSIC,
+  highcardflush: WORKER_CASINO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1004,6 +1006,24 @@ export const baccaratApi = {
 export const threecardApi = {
   exec: (command: 'reset' | 'bet' | 'play' | 'fold' | 'log', amount?: number, pairPlusBet?: number) =>
     gameExec<ThreeCardResponse>('threecard', { command, amount, pairPlusBet }),
+};
+
+/** API client for the High Card Flush /highcardflush/exec endpoint. */
+export const highcardflushApi = {
+  exec: (
+    command: 'reset' | 'bet' | 'raise' | 'fold' | 'log',
+    amount?: number,
+    flushBonusBet?: number,
+    straightFlushBet?: number,
+    multiplier?: number,
+  ) =>
+    gameExec<HighCardFlushResponse>('highcardflush', {
+      command,
+      amount,
+      flushBonusBet,
+      straightFlushBet,
+      multiplier,
+    }),
 };
 
 /** API client for the Caribbean Stud Poker /caribbeanstud/exec endpoint. */
@@ -1887,6 +1907,7 @@ const games = [
   'casinoholdem',
   'callbreak',
   'tarneeb',
+  'highcardflush',
 ] as const;
 type Game = (typeof games)[number];
 

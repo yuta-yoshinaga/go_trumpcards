@@ -199,6 +199,8 @@ tags:
     description: Call Break (コールブレイク) game - 4-player Spades-style trick-taking game from South Asia; spades are permanent trump, must-trump-if-void rule, int×10 scoring (bid hit = bid*10 + overtricks, miss = -bid*10); 5 rounds fixed, highest cumulative score wins
   - name: tarneeb
     description: Tarneeb (ターニーブ) game - 4-player Middle-Eastern partnership trick-taking. Bid 7..13 or pass; bid winner declares trump suit; bidder team scores +tricks on success / -bid on failure, defender team always scores +tricks; first team to PointLimit wins.
+  - name: highcardflush
+    description: High Card Flush (ハイカードフラッシュ) game - single-player casino table game. Both player and dealer get 7 cards; longest same-suit subset (flush length) decides the winner (ties broken by high card within the flush). Player places an Ante and optional Flush Bonus / Straight Flush Bonus side bets, then chooses Raise (1x/2x/3x capped by flush length) or Fold. Dealer qualifies on 3+ card flush with 9-high or better.
 
 paths:
   /blackjack/exec:
@@ -9275,6 +9277,106 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TarneebResponse'
+
+  /highcardflush/exec:
+    post:
+      tags:
+        - highcardflush
+      summary: Execute a High Card Flush (ハイカードフラッシュ) game command
+      description: |
+        Single-player casino table game. Each round both player and dealer get
+        7 cards; the longest same-suit subset (flush length) decides the winner
+        (ties broken by high card descending within the flush). The player
+        places an Ante and optional **Flush Bonus** / **Straight Flush Bonus**
+        side bets, then chooses **Raise** (1x / 2x / 3x of Ante, capped by
+        their flush length: 2-4 cards = 1x, 5 cards = 2x, 6-7 cards = 3x) or
+        **Fold**. Dealer qualifies on a 3+ card flush with 9-high or better.
+
+        Phases:
+
+        | Phase  | Value | Description |
+        |--------|-------|-------------|
+        | Bet    | `1`   | Place Ante and optional side bets |
+        | Action | `2`   | Raise (1/2/3x) or Fold |
+        | End    | `3`   | Result and payout displayed |
+
+        Commands:
+
+        | Command         | Aliases | Description |
+        |-----------------|---------|-------------|
+        | `reset` / `r`   |         | Restart the round |
+        | `bet` / `b`     |         | Place Ante + optional Flush Bonus + Straight Flush Bonus |
+        | `raise` / `ra`  |         | Raise with multiplier 1..MaxRaiseMultiplier |
+        | `fold` / `f`    |         | Fold and forfeit the Ante (side bets still evaluate) |
+        | `log` / `l`     |         | View action log |
+      operationId: highcardflushExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bet, b, raise, ra, fold, f, log, l]
+                amount:
+                  type: integer
+                  description: Ante amount for `bet`/`b`
+                flushBonusBet:
+                  type: integer
+                  description: Optional Flush Bonus side bet for `bet`/`b` (0 = no bet)
+                straightFlushBet:
+                  type: integer
+                  description: Optional Straight Flush Bonus side bet for `bet`/`b` (0 = no bet)
+                multiplier:
+                  type: integer
+                  description: Raise multiplier for `raise`/`ra` (1..3, capped by flush length)
+                  minimum: 1
+                  maximum: 3
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Ante 100 + Flush Bonus 50 + Straight Flush Bonus 20
+                value:
+                  command: b
+                  amount: 100
+                  flushBonusBet: 50
+                  straightFlushBet: 20
+                  sessionId: my-session-001
+              raise2x:
+                summary: Raise 2x
+                value:
+                  command: ra
+                  multiplier: 2
+                  sessionId: my-session-001
+              fold:
+                summary: Fold and forfeit Ante
+                value:
+                  command: f
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HighCardFlushResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HighCardFlushResponse'
 
 components:
   schemas:
@@ -20515,6 +20617,95 @@ components:
           type: string
           description: Game result or error message. Empty during bet/exchange/action phases.
           example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # HighCardFlush
+    # -------------------------------------------------------------------------
+    HighCardFlushResponse:
+      type: object
+      description: Current state of the High Card Flush game returned after every command.
+      properties:
+        playerHand:
+          type: array
+          description: Player's 7 cards (only populated from the Action phase onwards).
+          items:
+            $ref: '#/components/schemas/Card'
+        dealerHand:
+          type: array
+          description: Dealer's 7 cards (revealed only at the End phase).
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Current phase. 1=Bet, 2=Action, 3=End"
+          enum: [1, 2, 3]
+          example: 1
+        chips:
+          type: integer
+          description: Player's current chip balance.
+          example: 1000
+        anteBet:
+          type: integer
+          description: Ante bet placed this round.
+          example: 100
+        flushBonusBet:
+          type: integer
+          description: Optional Flush Bonus side bet (0 = no bet).
+          example: 0
+        straightFlushBet:
+          type: integer
+          description: Optional Straight Flush Bonus side bet (0 = no bet).
+          example: 0
+        raiseBet:
+          type: integer
+          description: Raise bet placed during the Action phase (0 = not raised yet or folded).
+          example: 0
+        result:
+          type: integer
+          description: "Game result. -1=dealer win, 0=push, 1=player win"
+          enum: [-1, 0, 1]
+          example: 0
+        antePayout:
+          type: integer
+          description: Ante payout including the returned stake (0 = forfeited).
+        raisePayout:
+          type: integer
+          description: Raise payout including the returned stake (0 = forfeited).
+        flushBonusPayout:
+          type: integer
+          description: Flush Bonus payout including the returned stake (0 = no win).
+        straightFlushPayout:
+          type: integer
+          description: Straight Flush Bonus payout including the returned stake (0 = no win).
+        totalPayout:
+          type: integer
+          description: Sum of all payouts.
+        dealerQualified:
+          type: boolean
+          description: True when the dealer's best flush is 3+ cards with high card 9 or better.
+        playerFlushLen:
+          type: integer
+          description: Length of the player's longest same-suit subset.
+        dealerFlushLen:
+          type: integer
+          description: Length of the dealer's longest same-suit subset (revealed at End phase).
+        playerStraightFlushLen:
+          type: integer
+          description: Length of the player's longest straight flush (0 if none).
+        maxRaiseMultiplier:
+          type: integer
+          description: Maximum raise multiplier permitted by the player's flush length (1, 2, or 3).
+        message:
+          type: string
+          description: Game result or error message.
         messageCode:
           type: string
           description: Machine-readable message code corresponding to the message field.

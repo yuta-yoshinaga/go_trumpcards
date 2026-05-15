@@ -1533,6 +1533,16 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"tarneeb.helpSetDifficulty", "tarneeb.helpSetLimit", "tarneeb.helpSetMinBid"},
 			})
 	}},
+	{Name: "highcardflush", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewHighCardFlushCuiController(usecase.NewHighCardFlushInteractor(
+				domain.NewDefaultHighCardFlush(), new(presenter.HighCardFlushCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "highcardflush.helpTitle",
+				CommandKeys:       []string{"highcardflush.helpBet", "highcardflush.helpRaise", "highcardflush.helpFold"},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

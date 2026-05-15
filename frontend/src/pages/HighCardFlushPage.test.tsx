@@ -1,0 +1,152 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { highcardflushApi } from '../api/gameApi';
+import { useGameHint } from '../hooks/useGameHint';
+import { renderWithProviders } from '../test/renderWithProviders';
+import type { Card, CardDesign, HighCardFlushResponse } from '../types/card';
+import { HighCardFlushPage } from './HighCardFlushPage';
+
+vi.mock('../hooks/useGameHint');
+
+vi.mock('../api/gameApi', () => ({
+  highcardflushApi: { exec: vi.fn() },
+  actionLogApi: { highcardflush: vi.fn() },
+}));
+
+const mockExec = vi.mocked(highcardflushApi.exec);
+const card = (design: CardDesign, value: number): Card => ({ design, value });
+
+const betPhaseState: HighCardFlushResponse = {
+  playerHand: [],
+  dealerHand: [],
+  phase: 1,
+  chips: 1000,
+  anteBet: 0,
+  flushBonusBet: 0,
+  straightFlushBet: 0,
+  raiseBet: 0,
+  result: 0,
+  antePayout: 0,
+  raisePayout: 0,
+  flushBonusPayout: 0,
+  straightFlushPayout: 0,
+  totalPayout: 0,
+  dealerQualified: false,
+  playerFlushLen: 0,
+  dealerFlushLen: 0,
+  playerStraightFlushLen: 0,
+  maxRaiseMultiplier: 1,
+  message: '',
+};
+
+const actionPhase5Flush: HighCardFlushResponse = {
+  ...betPhaseState,
+  phase: 2,
+  playerHand: [
+    card('SPADE', 5),
+    card('SPADE', 6),
+    card('SPADE', 7),
+    card('SPADE', 11),
+    card('SPADE', 13),
+    card('HEART', 9),
+    card('CLOVER', 4),
+  ],
+  anteBet: 100,
+  chips: 900,
+  playerFlushLen: 5,
+  maxRaiseMultiplier: 2,
+};
+
+const endPhasePlayerWins: HighCardFlushResponse = {
+  ...actionPhase5Flush,
+  phase: 3,
+  dealerHand: [
+    card('CLOVER', 4),
+    card('CLOVER', 6),
+    card('CLOVER', 9),
+    card('HEART', 8),
+    card('DIAMOND', 11),
+    card('SPADE', 2),
+    card('DIAMOND', 13),
+  ],
+  raiseBet: 100,
+  result: 1,
+  antePayout: 200,
+  raisePayout: 200,
+  totalPayout: 400,
+  dealerQualified: true,
+  dealerFlushLen: 3,
+  message: 'Player wins!',
+  messageCode: 'highcardflush.result.playerWins',
+};
+
+const endPhaseFold: HighCardFlushResponse = {
+  ...actionPhase5Flush,
+  phase: 3,
+  raiseBet: 0,
+  result: -1,
+  totalPayout: 0,
+  dealerHand: [],
+  message: 'Folded',
+  messageCode: 'highcardflush.result.fold',
+};
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+});
+
+describe('HighCardFlushPage', () => {
+  it('renders skeleton before state loads', () => {
+    mockExec.mockReturnValue(new Promise(() => {}));
+    renderWithProviders(<HighCardFlushPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('renders bet phase with bet button on mount', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument();
+  });
+
+  it('shows action phase with raise/fold buttons matching multiplier cap', async () => {
+    mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(actionPhase5Flush);
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'レイズ x2' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'レイズ x1' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'レイズ x3' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
+  });
+
+  it('calls raise API on raise button click', async () => {
+    mockExec.mockResolvedValueOnce(actionPhase5Flush).mockResolvedValueOnce(endPhasePlayerWins);
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'レイズ x2' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'レイズ x2' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('raise', undefined, undefined, undefined, 2));
+  });
+
+  it('shows end phase with player wins and payout breakdown', async () => {
+    mockExec.mockResolvedValueOnce(actionPhase5Flush).mockResolvedValueOnce(endPhasePlayerWins);
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'レイズ x1' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'レイズ x1' }));
+    await waitFor(() => expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument());
+    expect(screen.getByText(/合計: 400/)).toBeInTheDocument();
+  });
+
+  it('shows end phase with fold', async () => {
+    mockExec.mockResolvedValueOnce(actionPhase5Flush).mockResolvedValueOnce(endPhaseFold);
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'フォールド' }));
+    await waitFor(() => expect(mockExec).toHaveBeenLastCalledWith('fold'));
+  });
+});

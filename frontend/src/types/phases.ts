@@ -811,3 +811,10 @@ export const TarneebPhase = {
   ROUND_END: 4,
   GAME_END: 5,
 } as const;
+
+/** High Card Flush phase constants (sync: internal/domain/HighCardFlush.go). */
+export const HighCardFlushPhase = {
+  BET: 1,
+  ACTION: 2,
+  END: 3,
+} as const;

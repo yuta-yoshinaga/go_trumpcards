@@ -41,6 +41,7 @@ import ginrummy from '../../../docs/manual/cui/ginrummy.md?raw';
 import gofish from '../../../docs/manual/cui/gofish.md?raw';
 import golf from '../../../docs/manual/cui/golf.md?raw';
 import hearts from '../../../docs/manual/cui/hearts.md?raw';
+import highcardflush from '../../../docs/manual/cui/highcardflush.md?raw';
 import holdem from '../../../docs/manual/cui/holdem.md?raw';
 import indianpoker from '../../../docs/manual/cui/indianpoker.md?raw';
 import jokerpoker from '../../../docs/manual/cui/jokerpoker.md?raw';
@@ -190,6 +191,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/nertz': nertz,
   '/slapjack': slapjack,
   '/tarneeb': tarneeb,
+  '/highcardflush': highcardflush,
 };
 
 /** Returns true when CLI mode is enabled for the game at the given path. */

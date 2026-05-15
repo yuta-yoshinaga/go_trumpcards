@@ -4079,3 +4079,31 @@ export interface TarneebResponse {
   config: TarneebConfig;
   hint?: TarneebHint;
 }
+
+// --- High Card Flush (ハイカードフラッシュ) ---
+
+/** High Card Flush API response. */
+export interface HighCardFlushResponse {
+  playerHand: Card[];
+  dealerHand: Card[];
+  phase: number;
+  chips: number;
+  anteBet: number;
+  flushBonusBet: number;
+  straightFlushBet: number;
+  raiseBet: number;
+  result: number;
+  antePayout: number;
+  raisePayout: number;
+  flushBonusPayout: number;
+  straightFlushPayout: number;
+  totalPayout: number;
+  dealerQualified: boolean;
+  playerFlushLen: number;
+  dealerFlushLen: number;
+  playerStraightFlushLen: number;
+  maxRaiseMultiplier: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
