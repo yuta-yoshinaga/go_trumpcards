@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全92ゲーム)](#12-ゲームドメイン-全92ゲーム)
+  - [1.2 ゲームドメイン (全94ゲーム)](#12-ゲームドメイン-全94ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -151,7 +151,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全92ゲーム)
+### 1.2 ゲームドメイン (全94ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -1610,7 +1610,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全86ゲーム共通)**
+**Interactor パターン (全94ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -1682,8 +1682,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "92ゲーム × CUI/Web = 184 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
-    note for GameCuiPresenter "92ゲーム × CUI/Web = 184 Presenter 実装"
+    note for GameCuiController "94ゲーム × CUI/Web = 188 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
+    note for GameCuiPresenter "94ゲーム × CUI/Web = 188 Presenter 実装"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -2581,21 +2581,21 @@ stateDiagram-v2
     note right of Result : MemoryPhaseResult = 2
 ```
 
-### 3.8 Klondike / FreeCell / Spider / Pyramid / TriPeaks / Golf / ClockSolitaire フェーズ遷移
+### 3.8 Klondike / FreeCell / SeahavenTowers / Cruel / Spider / Pyramid / TriPeaks / Golf / ClockSolitaire フェーズ遷移
 
-7つのソリティア系ゲームは共通のフェーズ構造を持ちます。
+9つのソリティア系ゲームは共通のフェーズ構造を持ちます。
 
 ```mermaid
 stateDiagram-v2
     [*] --> Playing : Reset()
-    Playing --> Playing : Move / Draw / Deal / Remove / Step / Undo
+    Playing --> Playing : Move / Draw / Deal / Remove / Step / Undo / Redeal
     Playing --> GameClear : 全カードをFoundation/Pyramid/Tableau除去完了または全表向き
-    Playing --> GameClear : Autocomplete成功 (Klondike/FreeCell/Spider のみ)
-    Playing --> GameOver : GiveUp または4枚目のK表向き(ClockSolitaire)
+    Playing --> GameClear : Autocomplete成功 (Klondike/FreeCell/SeahavenTowers/Spider のみ)
+    Playing --> GameOver : GiveUp / 4枚目のK表向き(ClockSolitaire) / Redeal不可かつ手詰まり(Cruel)
     GameClear --> [*]
     GameOver --> [*]
 
-    note right of Playing : Klondike/FreeCell/Spider/Pyramid/TriPeaks/Golf/ClockSolitaire 共通 Phase = 0
+    note right of Playing : Klondike/FreeCell/SeahavenTowers/Cruel/Spider/Pyramid/TriPeaks/Golf/ClockSolitaire 共通 Phase = 0
     note right of GameClear : Phase = 1
     note right of GameOver : Phase = 2
 ```
@@ -2608,7 +2608,11 @@ Golf 固有のアクション: `Draw` / `Remove` / `Undo`。除去条件はウ�
 
 ClockSolitaire 固有のアクション: `Step` / `AutoPlay`。52枚を13山に4枚ずつ配り、ランクに対応する山へ移動させる完全自動ゲーム。4枚目のKが表向きになる前に全カードが表向きになるとクリア。
 
-各ゲームのフェーズ定数名: `KlondikePhasePlaying` / `FreeCellPhasePlaying` / `SpiderPhasePlaying` / `PyramidPhasePlaying` / `TriPeaksPhasePlaying` / `GolfPhasePlaying` / `ClockSolitairePhasePlaying` = 0、`…GameClear` = 1、`…GameOver` = 2。
+SeahavenTowers 固有のアクション: `Move` / `Undo` / `Autocomplete`。FreeCell 派生の 4 セル + 10 タブロー構成。タブローへ置けるのは K のみで、自由セルは 4 枚まで。全 52 枚を Foundation に積み上げてクリア。
+
+Cruel 固有のアクション: `Move` / `Redeal` / `Undo`。タブロー 12 山 × 4 枚に配置されたカードを Foundation へ送る。詰まったら `Redeal` で残りカードを再配置（回数無制限）。Foundation に全 52 枚揃えればクリア、Redeal 後も手詰まりなら GameOver。
+
+各ゲームのフェーズ定数名: `KlondikePhasePlaying` / `FreeCellPhasePlaying` / `SeahavenTowersPhasePlaying` / `CruelPhasePlaying` / `SpiderPhasePlaying` / `PyramidPhasePlaying` / `TriPeaksPhasePlaying` / `GolfPhasePlaying` / `ClockSolitairePhasePlaying` = 0、`…GameClear` = 1、`…GameOver` = 2。
 
 ### 3.9 CrazyEights フェーズ遷移
 
