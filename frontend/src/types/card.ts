@@ -3223,6 +3223,31 @@ export interface RussianSolitaireResponse {
   hint?: RussianSolitaireHint;
 }
 
+// --- Cruel (クルーエル) ---
+
+/** A suggested move hint in Cruel. */
+export interface CruelHint {
+  fromCol: number;
+  cardIndex: number;
+  toZone: string;
+  toCol: number;
+}
+
+/** API response shape for a Cruel game. */
+export interface CruelResponse {
+  tableau: KlondikeTableauCard[][];
+  foundation: Card[][];
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: CruelHint;
+}
+
 // --- Scorpion (スコーピオン) ---
 
 /** A suggested move hint in Scorpion. */

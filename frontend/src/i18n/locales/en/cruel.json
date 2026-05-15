@@ -1,0 +1,42 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game clear",
+    "gameOver": "Game over"
+  },
+  "title": "Cruel",
+  "foundation": "Foundation",
+  "tableau": "Tableau",
+  "moveCount": "Moves",
+  "shift": "Shift",
+  "giveup": "Give up",
+  "hint": "Hint",
+  "autoComplete": "Auto-complete",
+  "undo": "Undo",
+  "empty": "Empty",
+  "landscapeBanner": "Rotate to landscape for an easier view of the 12-column tableau",
+  "gameClear": "Game clear! Moves: {{moveCount}}",
+  "gameOver": "Game over",
+  "playing": "Build down by suit on the tableau and stack each suit to the foundation",
+  "noHint": "No hint available",
+  "hintAvailable": "Hint available",
+  "stalemate": "Stalemate — use Shift to rebuild the tableau",
+  "stalemateWithEscape": "Stalemate — undo {{count}} move(s) to escape",
+  "foundationAriaLabel": "{{suit}} foundation, {{count}} cards",
+  "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
+  "frontendHint": {
+    "moveToFoundation": "A card is ready to move to the foundation",
+    "moveToTableau": "A tableau-to-tableau move is available",
+    "shiftRecommended": "Try Shift to rebuild the tableau and create new moves"
+  },
+  "tutorial": {
+    "foundation": "The 4 Aces are auto-placed here at deal time. Build each suit up A→K.",
+    "tableau": "12 columns of 4 face-up cards. Only the top card of a column can move, and only onto a same-suit card one rank higher.",
+    "shift": "When you get stuck, Shift gathers the remaining tableau cards and redeals them into 12×4 left-aligned columns.",
+    "controls": "Hint, auto-complete, undo, and give-up controls.",
+    "resetButton": "Start a new game."
+  },
+  "nav": {
+    "cruel": "Cruel"
+  }
+}

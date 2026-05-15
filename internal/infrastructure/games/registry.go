@@ -103,6 +103,7 @@ var registry = []*Game{
 	{Name: "klondike", Category: CategorySolo, Description: "Klondike Solitaire (ソリティア)"},
 	{Name: "freecell", Category: CategorySolo, Description: "FreeCell (フリーセル)"},
 	{Name: "seahaventowers", Category: CategorySolo, Description: "Seahaven Towers (シーヘイブンタワーズ)"},
+	{Name: "cruel", Category: CategorySolo, Description: "Cruel (クルーエル)"},
 	{Name: "baccarat", Category: CategoryCasino, Description: "Baccarat (バカラ)"},
 	{Name: "spades", Category: CategoryClassic, Description: "Spades (スペード)"},
 	{Name: "crazyeights", Category: CategoryClassic, Description: "Crazy Eights (クレイジーエイト)"},

@@ -1,0 +1,582 @@
+import { useCallback, useMemo, useState } from 'react';
+import { type CruelMoveZone, cruelApi } from '../api/gameApi';
+import { ActionLogSection } from '../components/ActionLogSection';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
+import { SettingsPanel } from '../components/common/SettingsPanel';
+import { DropZone } from '../components/DropZone';
+import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
+import { GameMessageBox } from '../components/GameMessageBox';
+import { GamePageShell } from '../components/GamePageShell';
+import { GameResetButton } from '../components/GameResetButton';
+import { HintTooltip } from '../components/hint/HintTooltip';
+import { LandscapeBanner } from '../components/LandscapeBanner';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
+import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
+import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
+import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
+import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
+import { useSound } from '../providers/SoundProvider';
+import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { gameTheme } from '../styles/gameTheme';
+import type { CruelResponse } from '../types/card';
+import { CruelPhase } from '../types/phases';
+import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
+import type { CliGameConfig } from '../utils/cli/types';
+
+const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
+const noop = () => {};
+
+/** Cruel tutorial step definitions. */
+const CRUEL_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="cruel-foundation"]',
+    messageKey: 'tutorial.foundation',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="cruel-tableau"]',
+    messageKey: 'tutorial.tableau',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="cruel-shift"]',
+    messageKey: 'tutorial.shift',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="cruel-controls"]',
+    messageKey: 'tutorial.controls',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="cruel-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
+/** CLI help text for Cruel. */
+const CRUEL_HELP = [
+  'm <from> <to>  Move top card between tableau columns',
+  'm <from> f     Move tableau top card to foundation',
+  's              Shift (rebuild tableau)',
+  'g              Give up',
+  'h              Hint',
+  'ac             Auto-complete',
+  'u              Undo',
+  'r              Reset',
+];
+
+/** Parse a Cruel CLI command into API call arguments. */
+function parseCruelCommand(input: string): { args: Parameters<typeof cruelApi.exec> } | { error: string } {
+  const parts = input.trim().split(/\s+/);
+  const cmd = parts[0]?.toLowerCase();
+  switch (cmd) {
+    case 'r':
+    case 'reset':
+      return { args: ['reset'] };
+    case 's':
+    case 'shift':
+      return { args: ['shift'] };
+    case 'g':
+    case 'giveup':
+      return { args: ['giveup'] };
+    case 'h':
+    case 'hint':
+      return { args: ['hint'] };
+    case 'ac':
+    case 'autocomplete':
+      return { args: ['autocomplete'] };
+    case 'u':
+    case 'undo':
+      return { args: ['undo'] };
+    case 'm':
+    case 'move': {
+      if (parts.length === 3) {
+        const from = Number.parseInt(parts[1], 10);
+        if (Number.isNaN(from)) return { error: 'Invalid source column' };
+        if (parts[2] === 'f') {
+          return { args: ['move', { zone: 'tableau', col: from }, { zone: 'foundation' }] };
+        }
+        const to = Number.parseInt(parts[2], 10);
+        if (Number.isNaN(to)) return { error: 'Invalid destination' };
+        return { args: ['move', { zone: 'tableau', col: from }, { zone: 'tableau', col: to }] };
+      }
+      return { error: 'Usage: m <fromCol> <toCol|f>' };
+    }
+    default:
+      return { error: `Unknown command: ${cmd}` };
+  }
+}
+
+/** Format Cruel state for CLI display. */
+function formatCruelState(state: CruelResponse): string {
+  const lines: string[] = [];
+  lines.push('Foundation:');
+  for (let i = 0; i < state.foundation.length; i++) {
+    const pile = state.foundation[i];
+    const top = pile.length > 0 ? `${pile[pile.length - 1].design}-${pile[pile.length - 1].value}` : 'empty';
+    lines.push(`  ${FOUNDATION_SUITS[i]}: ${top} (${pile.length})`);
+  }
+  lines.push('');
+  lines.push('Tableau:');
+  for (let col = 0; col < state.tableau.length; col++) {
+    const cards = state.tableau[col]
+      .map((tc, i) => (tc.faceUp && tc.card ? `[${i}]${tc.card.design}-${tc.card.value}` : `[${i}]??`))
+      .join(' ');
+    lines.push(`  ${col}: ${cards || '(empty)'}`);
+  }
+  lines.push('');
+  lines.push(`Moves: ${state.moveCount}  Phase: ${state.phase}`);
+  return lines.join('\n');
+}
+
+/** Renders the Cruel solitaire page. */
+export const CruelPage = withTutorial(CruelPageContent, 'cruel', CRUEL_TUTORIAL_STEPS);
+/** Inner content of the Cruel page. */
+function CruelPageContent() {
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('cruel');
+  const { playSound } = useSound();
+  const {
+    state,
+    setState,
+    loading,
+    error,
+    exec: apiExec,
+    retry,
+  } = useGameApi<CruelResponse, Parameters<typeof cruelApi.exec>>(
+    useCallback((...args: Parameters<typeof cruelApi.exec>) => cruelApi.exec(...args), []),
+  );
+
+  useMountReset(apiExec);
+
+  const [selectedSource, setSelectedSource] = useState<CruelMoveZone | null>(null);
+
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('cruel', state);
+
+  // CLI mode
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('cruel');
+  const cruelCliConfig: CliGameConfig<CruelResponse, Parameters<typeof cruelApi.exec>> = useMemo(
+    () => ({
+      gameName: 'cruel',
+      parseCommand: parseCruelCommand,
+      formatResponse: formatCruelState,
+      helpText: CRUEL_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(apiExec, cruelCliConfig, state, {
+    addInput,
+    addOutput,
+    addError,
+    clearLog,
+  });
+
+  const { cardWidth, isMobile } = useCardDimensions();
+  const windowWidth = useWindowWidth();
+
+  // Responsive card dimensions — Cruel uses 12 narrow columns, so cards must
+  // shrink to fit. We also cap maximum table width to 1400px on desktop.
+  const cr = useMemo(() => {
+    const cols = 12;
+    if (!isMobile) {
+      const padX = 32;
+      const gapPx = 8;
+      const colW = Math.floor((Math.min(windowWidth, 1400) - padX - (cols - 1) * gapPx) / cols);
+      const cw = Math.min(Math.max(colW, 36), cardWidth);
+      const ch = Math.round(cw * 1.5);
+      const co = Math.round(cw * 0.35);
+      return { cw, ch, co };
+    }
+    const padX = 8;
+    const gapPx = 2;
+    const colW = Math.floor((windowWidth - padX - (cols - 1) * gapPx) / cols);
+    const cw = Math.min(Math.max(colW, 22), cardWidth);
+    const ch = Math.round(cw * 1.5);
+    const co = Math.round(cw * 0.4);
+    return { cw, ch, co };
+  }, [isMobile, windowWidth, cardWidth]);
+
+  // Drag-and-drop
+  const dispatchMove = useCallback(
+    (source: CruelMoveZone, target: CruelMoveZone) => {
+      void apiExec('move', source, target);
+    },
+    [apiExec],
+  );
+  const dnd = useSolitaireDragDrop<CruelMoveZone>({
+    onMove: dispatchMove,
+    isPlaying: state?.phase === CruelPhase.PLAYING,
+    disabled: loading,
+  });
+
+  // Action handlers
+  const handleManualReset = useCallback(() => {
+    void apiExec('reset');
+    playSound('shuffle');
+  }, [apiExec, playSound]);
+
+  const handleShift = useCallback(() => {
+    void apiExec('shift');
+    playSound('shuffle');
+  }, [apiExec, playSound]);
+
+  const handleGiveUp = useCallback(() => {
+    void apiExec('giveup');
+  }, [apiExec]);
+
+  const handleHint = useCallback(async () => {
+    try {
+      const res = await cruelApi.exec('hint');
+      setState((prev) => (prev ? { ...prev, hint: res.hint } : prev));
+    } catch {
+      // Hint is best-effort UX — swallow transient network errors so the page
+      // stays usable. The main apiExec path still surfaces fatal failures.
+    }
+  }, [setState]);
+
+  const handleAutoComplete = useCallback(() => {
+    void apiExec('autocomplete');
+  }, [apiExec]);
+
+  const handleUndo = useCallback(() => {
+    void apiExec('undo');
+  }, [apiExec]);
+
+  const handleUndoEscape = useCallback(
+    (n: number) => {
+      void apiExec('undo_n', undefined, undefined, n);
+    },
+    [apiExec],
+  );
+
+  const handleSelectSource = useCallback(
+    (zone: string, col: number) => {
+      if (selectedSource && selectedSource.zone === zone && selectedSource.col === col) {
+        setSelectedSource(null);
+        return;
+      }
+      setSelectedSource({ zone, col });
+    },
+    [selectedSource],
+  );
+
+  const handleSelectTarget = useCallback(
+    (zone: string, col?: number) => {
+      if (!selectedSource) return;
+      const target: CruelMoveZone = col === undefined ? { zone } : { zone, col };
+      void apiExec('move', selectedSource, target);
+      setSelectedSource(null);
+      playSound('cardPlace');
+    },
+    [apiExec, selectedSource, playSound],
+  );
+
+  const isPlayingForKbd = state?.phase === CruelPhase.PLAYING;
+
+  const actionBindings = useMemo(
+    () => [
+      { key: 'h', action: handleHint },
+      { key: 'a', action: handleAutoComplete },
+      { key: 'g', action: handleGiveUp },
+      { key: 'z', action: handleUndo },
+      { key: 's', action: handleShift },
+    ],
+    [handleHint, handleAutoComplete, handleGiveUp, handleUndo, handleShift],
+  );
+
+  useActionKeyboardNav({
+    bindings: actionBindings,
+    enabled: !!isPlayingForKbd && !loading,
+  });
+
+  if (error) return <ErrorAlert message={error} onRetry={retry} />;
+
+  if (!state) return <GameSkeleton gameKey="cruel" layout={{ kind: 'tableau', topRow: 4, tableau: 12 }} />;
+
+  const isPlaying = state.phase === CruelPhase.PLAYING;
+  const isGameClear = state.phase === CruelPhase.GAME_CLEAR;
+  const isGameOver = state.phase === CruelPhase.GAME_OVER;
+  const isEnded = isGameClear || isGameOver;
+
+  const isSourceSelected = (zone: string, col?: number) =>
+    selectedSource !== null && selectedSource.zone === zone && selectedSource.col === col;
+
+  return (
+    <GamePageShell
+      title={tc('nav.cruel')}
+      gameThemeBg={gameTheme.cruel.bg}
+      phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
+      gamePath="/cruel"
+      gameEndFlag={isEnded}
+      winShow={isGameClear}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={
+        <>
+          <span>
+            {t('moveCount')}: {state.moveCount}
+          </span>
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        </>
+      }
+    >
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <SettingsPanel
+            title={tc('settings.title', { ns: 'common' })}
+            groups={[
+              {
+                items: [
+                  {
+                    type: 'checkbox' as const,
+                    id: 'frontendHint',
+                    label: tc('hint.toggle', { ns: 'tutorial' }),
+                    checked: frontendHintEnabled,
+                    onToggle: setFrontendHintEnabled,
+                  },
+                ],
+              },
+            ]}
+          />
+          <LandscapeBanner message={t('landscapeBanner')} />
+
+          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
+            {/* Foundation row (4 suits — Cruel autoplaces Aces on reset). */}
+            <div className="flex gap-1 sm:gap-2 mb-3 items-start justify-center" data-tutorial="cruel-foundation">
+              {state.foundation.map((pile, i) => {
+                const topCard = pile.length > 0 ? pile[pile.length - 1] : null;
+                const isTarget = selectedSource !== null;
+                return (
+                  <DropZone
+                    key={i}
+                    onDrop={dnd.handleDrop({ zone: 'foundation' })}
+                    onDragOver={dnd.handleDragOver({ zone: 'foundation' })}
+                    onDragLeave={dnd.handleDragLeave}
+                    isDropTarget={dnd.isDropTarget({ zone: 'foundation' })}
+                  >
+                    <button
+                      type="button"
+                      className={`${focusRingWhite} rounded-lg transition-colors ${
+                        isTarget ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''
+                      }`}
+                      onClick={() => isTarget && handleSelectTarget('foundation')}
+                      disabled={!isPlaying || !isTarget}
+                      aria-label={
+                        topCard
+                          ? t('foundationAriaLabel', {
+                              suit: FOUNDATION_SUITS[i],
+                              count: pile.length,
+                            })
+                          : t('emptyFoundationAriaLabel', {
+                              suit: FOUNDATION_SUITS[i],
+                            })
+                      }
+                      style={{ width: cr.cw, height: cr.ch }}
+                    >
+                      {topCard ? (
+                        <AnimatedCard card={topCard} width={cr.cw} />
+                      ) : (
+                        <div
+                          className="border-2 border-dashed border-game-border rounded-lg flex items-center justify-center text-game-text-muted"
+                          style={{ width: cr.cw, height: cr.ch }}
+                        >
+                          {FOUNDATION_SUITS[i]}
+                        </div>
+                      )}
+                    </button>
+                  </DropZone>
+                );
+              })}
+            </div>
+
+            {/* Tableau (12 columns, top-card-only moves). */}
+            <div className="flex gap-1 sm:gap-2 justify-center" data-tutorial="cruel-tableau">
+              {state.tableau.map((col, colIdx) => (
+                <div key={colIdx} className="flex flex-col items-center" style={{ width: cr.cw }}>
+                  <div className="text-game-text-muted text-xs mb-1">{colIdx}</div>
+                  {col.length === 0 ? (
+                    <div
+                      role="img"
+                      className="border-2 border-dashed border-game-border rounded-lg flex items-center justify-center text-game-text-muted"
+                      style={{ width: cr.cw, height: cr.ch }}
+                      aria-label={`${t('empty')} ${t('tableau')} ${colIdx}`}
+                    >
+                      {t('empty')}
+                    </div>
+                  ) : (
+                    <div className="relative" style={{ width: cr.cw, height: cr.ch + (col.length - 1) * cr.co }}>
+                      {col.map((tc, cardIdx) => {
+                        const isLast = cardIdx === col.length - 1;
+                        const isSelected = isLast && isSourceSelected('tableau', colIdx);
+                        const zone: CruelMoveZone = { zone: 'tableau', col: colIdx };
+                        const isDragSrc = isLast && dnd.isDragSource(zone);
+
+                        // Hint highlight (Cruel only allows top-card moves).
+                        const hintFrom = isLast && state.hint && state.hint.fromCol === colIdx;
+                        const hintTo =
+                          isLast && state.hint && state.hint.toZone === 'tableau' && state.hint.toCol === colIdx;
+
+                        return (
+                          <div key={cardIdx} className="absolute" style={{ top: cardIdx * cr.co, zIndex: cardIdx }}>
+                            <DropZone
+                              onDrop={isLast ? dnd.handleDrop(zone) : noop}
+                              onDragOver={isLast ? dnd.handleDragOver(zone) : noop}
+                              onDragLeave={isLast ? dnd.handleDragLeave : undefined}
+                              isDropTarget={isLast && dnd.isDropTarget({ zone: 'tableau', col: colIdx })}
+                            >
+                              <button
+                                type="button"
+                                draggable={isPlaying && isLast}
+                                onDragStart={isLast ? dnd.handleDragStart(zone) : undefined}
+                                onDragEnd={isLast ? dnd.handleDragEnd : undefined}
+                                className={`${focusRingWhite} rounded-lg transition-all ${
+                                  isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
+                                } ${isDragSrc ? 'opacity-50' : ''} ${
+                                  hintFrom ? 'ring-2 ring-ds-info motion-safe:animate-pulse' : ''
+                                } ${hintTo ? 'ring-2 ring-ds-success motion-safe:animate-pulse' : ''}`}
+                                onClick={() => {
+                                  if (!isLast) return;
+                                  if (selectedSource) {
+                                    handleSelectTarget('tableau', colIdx);
+                                  } else {
+                                    handleSelectSource('tableau', colIdx);
+                                  }
+                                }}
+                                disabled={!isPlaying || !isLast}
+                                aria-label={tc.card ? cardAlt(tc.card) : ''}
+                              >
+                                {tc.card && <AnimatedCard card={tc.card} width={cr.cw} />}
+                              </button>
+                            </DropZone>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Bottom controls */}
+          <div data-tutorial="cruel-controls">
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+
+            {error && <ErrorAlert message={error} onRetry={retry} />}
+
+            {state.hint && (
+              <div
+                className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1"
+                role="status"
+                aria-live="polite"
+              >
+                {state.hint.toZone === 'foundation' ? t('foundation') : `${t('tableau')} ${state.hint.toCol}`}
+              </div>
+            )}
+            {frontendHintEnabled && frontendHint && (
+              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+            )}
+
+            <ActionLogSection
+              isEndPhase={isEnded}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+
+            <GameFooter>
+              <GameResetButton
+                isGameEnd={isEnded}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="cruel-reset-button"
+              />
+
+              {isPlaying && (
+                <>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleShift}
+                    disabled={loading}
+                    data-tutorial="cruel-shift"
+                    data-testid="shift-button"
+                  >
+                    {t('shift')}
+                  </button>
+                  <button type="button" className={btnOutline} onClick={handleHint} disabled={loading}>
+                    {t('hint')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={handleAutoComplete}
+                    disabled={loading}
+                    data-testid="autocomplete-button"
+                  >
+                    {t('autoComplete')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnOutline}
+                    onClick={handleUndo}
+                    disabled={loading || !state.canUndo}
+                  >
+                    {t('undo')}
+                  </button>
+                  <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                    {t('giveup')}
+                  </button>
+                  {state.isStalemate && (
+                    <StalemateEscapeButton
+                      undoToEscape={state.undoToEscape ?? -1}
+                      onEscape={handleUndoEscape}
+                      disabled={loading}
+                    />
+                  )}
+                </>
+              )}
+
+              {isEnded && (
+                <button type="button" className={btnOutline} onClick={() => showActionLog()} disabled={loading}>
+                  {t('common:showActionLog')}
+                </button>
+              )}
+            </GameFooter>
+          </div>
+        </>
+      )}
+    </GamePageShell>
+  );
+}

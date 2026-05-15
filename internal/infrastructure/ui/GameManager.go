@@ -345,6 +345,23 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "cruel", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCruelCuiController(usecase.NewCruelInteractor(
+				domain.NewDefaultCruel(), new(presenter.CruelCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "cruel.helpTitle",
+				CommandKeys: []string{
+					"cruel.helpMove",
+					"cruel.helpMoveTF",
+					"cruel.helpShift",
+					"cruel.helpGiveUp",
+					"cruel.helpHint",
+					"cruel.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "baccarat", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewBaccaratCuiController(usecase.NewBaccaratInteractor(

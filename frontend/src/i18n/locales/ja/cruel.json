@@ -1,0 +1,42 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "title": "クルーエル",
+  "foundation": "組札",
+  "tableau": "場札",
+  "moveCount": "手数",
+  "shift": "シフト",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "autoComplete": "自動完成",
+  "undo": "元に戻す",
+  "empty": "空",
+  "landscapeBanner": "横向きにすると12列のタブローが見やすくなります",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "playing": "同スートの降順で並べ、Aから順に組札へ送りましょう",
+  "noHint": "ヒントはありません",
+  "hintAvailable": "ヒントがあります",
+  "stalemate": "手詰まりです。シフトで再構築できます",
+  "stalemateWithEscape": "手詰まりです。アンドゥで{{count}}手戻せます",
+  "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
+  "emptyFoundationAriaLabel": "空の組札 ({{suit}})",
+  "frontendHint": {
+    "moveToFoundation": "組札へ移動できるカードがあります",
+    "moveToTableau": "場札間で移動可能なカードがあります",
+    "shiftRecommended": "シフトで盤面を再構築すると新しい手が生まれるかもしれません"
+  },
+  "tutorial": {
+    "foundation": "4枚のAは最初から組札に置かれています。A→Kの順でスート別に積み上げましょう。",
+    "tableau": "12列×4枚のタブローです。各列の最上段カードのみが移動できます。同スートで1つ下の値の上にのみ置けます。",
+    "shift": "手詰まりになったら「シフト」で盤面を再構築できます。残ったカードを集めて12列×4枚に配り直します。",
+    "controls": "ヒント・自動完成・元に戻す・ギブアップなどの操作ボタンです。",
+    "resetButton": "新しいゲームを始めるボタンです。"
+  },
+  "nav": {
+    "cruel": "クルーエル"
+  }
+}

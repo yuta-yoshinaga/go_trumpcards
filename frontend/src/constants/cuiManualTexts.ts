@@ -26,6 +26,7 @@ import crazyeights from '../../../docs/manual/cui/crazyeights.md?raw';
 import crazypineapple from '../../../docs/manual/cui/crazypineapple.md?raw';
 import crescent from '../../../docs/manual/cui/crescent.md?raw';
 import cribbage from '../../../docs/manual/cui/cribbage.md?raw';
+import cruel from '../../../docs/manual/cui/cruel.md?raw';
 import daifugo from '../../../docs/manual/cui/daifugo.md?raw';
 import deuceswild from '../../../docs/manual/cui/deuceswild.md?raw';
 import doubt from '../../../docs/manual/cui/doubt.md?raw';
@@ -175,6 +176,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/whist': whist,
   '/yukon': yukon,
   '/russiansolitaire': russiansolitaire,
+  '/cruel': cruel,
   '/scorpion': scorpion,
   '/sevenbridge': sevenbridge,
   '/accordion': accordion,
