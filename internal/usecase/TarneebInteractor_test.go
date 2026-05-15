@@ -225,6 +225,24 @@ func TestTarneebInteractor_Play(t *testing.T) {
 		assert.Equal(t, mockOutput, ti.Play(2))
 		game.AssertCalled(t, "PlayerPlay", 2)
 	})
+
+	t.Run("human completes trick calls ResolveTrick", func(t *testing.T) {
+		// When the human plays the 4th card of a trick, PlayerPlay flips the
+		// phase to TrickEnd. The interactor must call ResolveTrick before
+		// looping to CPU turns; otherwise leadPlayerIdx and trick counts drift.
+		tp := new(presenter.MockTarneebPresenter)
+		tp.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
+		game := new(interfaces.MockTarneebGame)
+		game.On("GetGameEndFlag").Return(false)
+		game.On("IsHumanTurn").Return(true).Once()
+		game.On("PlayerPlay", 0).Return(nil)
+		game.On("GetPhase").Return(domain.TarneebPhaseTrickEnd).Once()
+		game.On("ResolveTrick").Return()
+		game.On("GetPhase").Return(domain.TarneebPhaseTrickEnd)
+		ti := usecase.NewTarneebInteractor(game, tp)
+		assert.Equal(t, mockOutput, ti.Play(0))
+		game.AssertCalled(t, "ResolveTrick")
+	})
 }
 
 func TestTarneebInteractor_NextTrick(t *testing.T) {

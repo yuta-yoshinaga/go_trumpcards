@@ -400,16 +400,29 @@ function TarneebPageContent() {
               )}
               {isHumanBidTurn && (
                 <>
+                  {/*
+                    Valid Tarneeb bids are 0 (pass) or 7-13. The pass case is exposed via a
+                    dedicated button below, so the input range is restricted to 7-13. Out-of-range
+                    values are clamped on Bid-button click to avoid noisy backend errors.
+                  */}
                   <input
                     type="number"
-                    min={0}
+                    min={state.config.minBid}
                     max={13}
                     value={bidValue}
                     onChange={(e) => setBidValue(Number(e.target.value))}
                     className="w-16 px-2 py-1 rounded bg-white/20 text-ds-text-primary text-center"
                     aria-label="bid-input"
                   />
-                  <button type="button" className={btnPrimary} onClick={() => handleBid(bidValue)} disabled={loading}>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={() => {
+                      const clamped = Math.min(13, Math.max(state.config.minBid, bidValue));
+                      handleBid(clamped);
+                    }}
+                    disabled={loading || bidValue < state.config.minBid || bidValue > 13}
+                  >
                     {t('bidButton')}
                   </button>
                   <button type="button" className={btnSuccess} onClick={() => handleBid(0)} disabled={loading}>

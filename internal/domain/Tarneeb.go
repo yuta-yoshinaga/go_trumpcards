@@ -666,33 +666,47 @@ func (t *Tarneeb) playerHasSuit(playerIdx, design int) bool {
 	return false
 }
 
+// tarneebRank converts a raw `Card.GetValue()` (1-13, where 1 = Ace) to
+// Tarneeb's comparison rank where the Ace is the highest card. Used across
+// trickWinner, hand sort, and the CPU AI so that every site agrees on the
+// canonical ordering A > K > Q > J > 10 > … > 2.
+func tarneebRank(v int) int {
+	if v == 1 {
+		return 14
+	}
+	return v
+}
+
 // trickWinner 現在のトリックの勝者を決定する。
 //   - 任意のトランプが出ていれば最高トランプの勝ち。
 //   - そうでなければリードスート最高の勝ち。
+//
+// Aces compare as the strongest rank (see tarneebRank).
 func (t *Tarneeb) trickWinner() int {
 	if len(t.currentTrick) == 0 {
 		return 0
 	}
 	leadSuit := t.currentTrick[0].Card.GetDesign()
 	winnerIdx := t.currentTrick[0].PlayerIdx
-	winnerValue := t.currentTrick[0].Card.GetValue()
+	winnerRank := tarneebRank(t.currentTrick[0].Card.GetValue())
 	winnerIsTrump := t.currentTrick[0].Card.GetDesign() == t.trumpSuit
 
 	for _, tc := range t.currentTrick[1:] {
 		isTrump := tc.Card.GetDesign() == t.trumpSuit
+		r := tarneebRank(tc.Card.GetValue())
 		switch {
 		case isTrump && !winnerIsTrump:
 			winnerIdx = tc.PlayerIdx
-			winnerValue = tc.Card.GetValue()
+			winnerRank = r
 			winnerIsTrump = true
 		case isTrump && winnerIsTrump:
-			if tc.Card.GetValue() > winnerValue {
+			if r > winnerRank {
 				winnerIdx = tc.PlayerIdx
-				winnerValue = tc.Card.GetValue()
+				winnerRank = r
 			}
-		case !isTrump && !winnerIsTrump && tc.Card.GetDesign() == leadSuit && tc.Card.GetValue() > winnerValue:
+		case !isTrump && !winnerIsTrump && tc.Card.GetDesign() == leadSuit && r > winnerRank:
 			winnerIdx = tc.PlayerIdx
-			winnerValue = tc.Card.GetValue()
+			winnerRank = r
 		}
 	}
 	return winnerIdx
@@ -715,7 +729,9 @@ func tarneebSortHand(p *TarneebPlayer) {
 		if cards[i].GetDesign() != cards[j].GetDesign() {
 			return cards[i].GetDesign() < cards[j].GetDesign()
 		}
-		return cards[i].GetValue() < cards[j].GetValue()
+		// Aces sort to the right (largest) so the hand display matches Tarneeb's
+		// A > K > … ranking.
+		return tarneebRank(cards[i].GetValue()) < tarneebRank(cards[j].GetValue())
 	})
 	p.Reset()
 	for _, c := range cards {
@@ -1013,16 +1029,14 @@ func (t *Tarneeb) cpuPlayHard(playerIdx int, valid []int) int {
 	p := t.players[playerIdx]
 	if len(t.currentTrick) == 0 {
 		// リード: A や K で取りに行く。トランプはなるべく温存。
+		// tarneebRank() で Ace(=14) を高位として比較する。
 		bestIdx := valid[0]
 		bestScore := -1
 		for _, idx := range valid {
 			c := p.GetCard(idx)
-			score := c.GetValue() * 2
+			score := tarneebRank(c.GetValue()) * 2
 			if c.GetDesign() == t.trumpSuit {
 				score -= 30 // 温存
-			}
-			if c.GetValue() == 1 {
-				score += 30
 			}
 			if score > bestScore {
 				bestScore = score
@@ -1063,12 +1077,12 @@ func (t *Tarneeb) cpuPlayHard(playerIdx int, valid []int) int {
 			return t.pickLowest(p, trumpIdxs)
 		}
 	}
-	// 捨て札は最高値カード (温存したくない非トランプ)
+	// 捨て札は最高値カード (温存したくない非トランプ)。Ace-high で評価する。
 	bestIdx := valid[0]
 	bestScore := -1
 	for _, idx := range valid {
 		c := p.GetCard(idx)
-		score := c.GetValue()
+		score := tarneebRank(c.GetValue())
 		if c.GetDesign() == t.trumpSuit {
 			score -= 100
 		}
@@ -1092,49 +1106,57 @@ func (t *Tarneeb) isPartnerCurrentlyWinning(playerIdx int) bool {
 	return t.players[winnerIdx].GetTeam() == t.players[playerIdx].GetTeam()
 }
 
-// summariseTrick 現トリックの最高リードスート値、リードスート所持フラグ、最高トランプ値、トランプ所持フラグを返す。
+// summariseTrick 現トリックの最高リードスート rank、リードスート所持フラグ、最高トランプ rank、トランプ所持フラグを返す。
+// max* 値は tarneebRank() を通した「Ace-high」順位なので、A=14 として King(13) より大きい。
 func (t *Tarneeb) summariseTrick(leadSuit int) (maxLead int, hasLead bool, maxTrump int, hasTrump bool) {
 	for _, tc := range t.currentTrick {
 		d := tc.Card.GetDesign()
-		v := tc.Card.GetValue()
+		r := tarneebRank(tc.Card.GetValue())
 		if d == leadSuit {
 			hasLead = true
-			if v > maxLead {
-				maxLead = v
+			if r > maxLead {
+				maxLead = r
 			}
 		}
 		if d == t.trumpSuit {
 			hasTrump = true
-			if v > maxTrump {
-				maxTrump = v
+			if r > maxTrump {
+				maxTrump = r
 			}
 		}
 	}
 	return
 }
 
-// pickHighest 値最大のインデックスを返す
+// pickHighest tarneebRank が最大のカードのインデックスを返す。Ace は最強として扱う。
 func (t *Tarneeb) pickHighest(p *TarneebPlayer, valid []int) int {
+	if p == nil || len(valid) == 0 {
+		return 0
+	}
 	best := valid[0]
-	bestV := p.GetCard(best).GetValue()
+	bestR := tarneebRank(p.GetCard(best).GetValue())
 	for _, idx := range valid[1:] {
-		v := p.GetCard(idx).GetValue()
-		if v > bestV {
-			bestV = v
+		r := tarneebRank(p.GetCard(idx).GetValue())
+		if r > bestR {
+			bestR = r
 			best = idx
 		}
 	}
 	return best
 }
 
-// pickLowest 値最小のインデックスを返す
+// pickLowest tarneebRank が最小のカードのインデックスを返す。Ace は最強として扱うため、
+// 最小に選ばれにくい。
 func (t *Tarneeb) pickLowest(p *TarneebPlayer, valid []int) int {
+	if p == nil || len(valid) == 0 {
+		return 0
+	}
 	best := valid[0]
-	bestV := p.GetCard(best).GetValue()
+	bestR := tarneebRank(p.GetCard(best).GetValue())
 	for _, idx := range valid[1:] {
-		v := p.GetCard(idx).GetValue()
-		if v < bestV {
-			bestV = v
+		r := tarneebRank(p.GetCard(idx).GetValue())
+		if r < bestR {
+			bestR = r
 			best = idx
 		}
 	}
@@ -1152,11 +1174,13 @@ func (t *Tarneeb) filterByDesign(p *TarneebPlayer, valid []int, design int) []in
 	return out
 }
 
-// filterAbove 値が threshold より大きいインデックスのみを返す
+// filterAbove rank が threshold より大きいインデックスのみを返す。Ace-high なので
+// A は K(13) より大きい 14 として比較される。`threshold` は呼び出し側で
+// `tarneebRank()` を通した値を渡すこと (`summariseTrick` の出力をそのまま使える)。
 func (t *Tarneeb) filterAbove(p *TarneebPlayer, valid []int, threshold int) []int {
 	out := make([]int, 0, len(valid))
 	for _, idx := range valid {
-		if p.GetCard(idx).GetValue() > threshold {
+		if tarneebRank(p.GetCard(idx).GetValue()) > threshold {
 			out = append(out, idx)
 		}
 	}

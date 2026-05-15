@@ -330,8 +330,8 @@ func TestTarneeb_TrickWinner_NoTrump_HighLeadWins(t *testing.T) {
 		{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignHeart, 12, false)},
 	})
 	tn.ResolveTrick()
-	// A♥ (value=1) はトリックで一番大きくない: 値1 < 値13。リードはハート、最高はK♥なので idx=0勝ち。
-	assert.Equal(t, 1, tn.GetPlayer(0).GetTrickCount())
+	// Ace は Tarneeb で最強。リードはハート、最高は A♥ なので idx=1 が勝ち。
+	assert.Equal(t, 1, tn.GetPlayer(1).GetTrickCount())
 }
 
 func TestTarneeb_ScoreRound_BidderHits(t *testing.T) {

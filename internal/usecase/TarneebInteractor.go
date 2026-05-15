@@ -98,6 +98,13 @@ func (ti *TarneebInteractor) Play(cardIndex int) string {
 	if err := ti.Game.PlayerPlay(cardIndex); err != nil {
 		return ti.tp.Output(ti.Game, err)
 	}
+	// 人間が最後 (4枚目) のカードを出してトリックが完了した場合、即座に解決する。
+	// PlayerPlay → playCard が phase を TrickEnd にした直後に runCpuTurns へ抜けると、
+	// runCpuTurnsLoop はトリック解決を行わずに break してしまい、leadPlayerIdx と
+	// トリック数の更新が漏れる (Whist/OhHell/Bridge と同じ理由で同じ処置を入れる)。
+	if ti.Game.GetPhase() == domain.TarneebPhaseTrickEnd {
+		ti.Game.ResolveTrick()
+	}
 	ti.runCpuTurns()
 	return ti.tp.Output(ti.Game, nil)
 }
