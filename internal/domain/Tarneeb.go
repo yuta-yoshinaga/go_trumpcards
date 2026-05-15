@@ -860,10 +860,10 @@ func (t *Tarneeb) estimateTricks(playerIdx int, useLength bool) int {
 	for i := 0; i < p.GetCardsSize(); i++ {
 		c := p.GetCard(i)
 		suitCnt[c.GetDesign()]++
-		v := c.GetValue()
-		if v == 1 || v == 13 {
+		switch v := c.GetValue(); {
+		case v == 1 || v == 13:
 			bid++
-		} else if v == 12 {
+		case v == 12:
 			// Q は半確実
 			bid++
 		}
@@ -919,14 +919,14 @@ func (t *Tarneeb) cpuSelectTrumpHard(playerIdx int) int {
 	score := map[int]int{}
 	for i := 0; i < p.GetCardsSize(); i++ {
 		c := p.GetCard(i)
-		score[c.GetDesign()] += 1
-		v := c.GetValue()
-		if v == 1 || v == 13 {
+		score[c.GetDesign()]++
+		switch v := c.GetValue(); {
+		case v == 1 || v == 13:
 			score[c.GetDesign()] += 3
-		} else if v == 12 {
+		case v == 12:
 			score[c.GetDesign()] += 2
-		} else if v == 11 {
-			score[c.GetDesign()] += 1
+		case v == 11:
+			score[c.GetDesign()]++
 		}
 	}
 	best := CardDesignSpade

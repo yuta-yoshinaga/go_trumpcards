@@ -9,6 +9,10 @@ const EXTRA_COMMANDS = ['bid', 'trump'];
 
 /** Parse a Tarneeb CLI command into API exec arguments. */
 export function parseTarneebCommand(input: string): CliParseResult<TarneebArgs> {
+  // `parseTrickCommand` is shared across trick-taking games and only carries
+  // `bid` / `cardIndex`. Tarneeb's `trump` argument piggybacks on `bid`: the
+  // tarneebApi.exec helper interprets `arg1` based on the command name, so a
+  // single int slot is sufficient.
   const result = parseTrickCommand(input, EXTRA_COMMANDS, (cmd, args) => {
     if (cmd === 'bid') {
       const parsed = parseIntArg(args, 0);
@@ -18,17 +22,14 @@ export function parseTarneebCommand(input: string): CliParseResult<TarneebArgs> 
     if (cmd === 'trump') {
       const parsed = parseIntArg(args, 0);
       if ('error' in parsed) return { error: 'Usage: trump <suit>  (1=Spade 2=Club 3=Heart 4=Diamond)' };
-      return { command: 'trump', trumpSuit: parsed.value };
+      return { command: 'trump', bid: parsed.value };
     }
     return null;
   });
 
   if ('error' in result) return { error: result.error };
-  if (result.command === 'bid') {
-    return { args: ['bid', result.bid] };
-  }
-  if (result.command === 'trump') {
-    return { args: ['trump', result.trumpSuit] };
+  if (result.command === 'bid' || result.command === 'trump') {
+    return { args: [result.command as TarneebArgs[0], result.bid] };
   }
   return { args: [result.command as TarneebArgs[0], undefined, result.cardIndex] };
 }

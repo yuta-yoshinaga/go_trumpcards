@@ -60,7 +60,7 @@ function getTrumpHint(cards: Card[]): HintResult {
     e.value += c.value === 1 ? 14 : c.value;
     counts.set(c.design, e);
   }
-  let bestSuit = SUITS[0];
+  let bestSuit: (typeof SUITS)[number] = SUITS[0];
   let bestLen = -1;
   let bestValue = -1;
   for (const suit of SUITS) {
