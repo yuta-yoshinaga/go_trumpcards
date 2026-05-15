@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した90種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した94種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -111,6 +111,7 @@ Go + Clean Architecture で実装した90種類のトランプゲーム。CLI �
 | クレセント・ソリティア (Crescent Solitaire) | `crescent` | [CUI](docs/manual/cui/crescent.md) / [Web](docs/manual/web/crescent.md) |
 | ミシシッピ・スタッド (Mississippi Stud) | `mississippistud` | [CUI](docs/manual/cui/mississippistud.md) / [Web](docs/manual/web/mississippistud.md) |
 | ベロート (Belote) | `belote` | [CUI](docs/manual/cui/belote.md) / [Web](docs/manual/web/belote.md) |
+| カジノホールデム (Casino Hold'em) | `casinoholdem` | [CUI](docs/manual/cui/casinoholdem.md) / [Web](docs/manual/web/casinoholdem.md) |
 | コールブレイク (Call Break) | `callbreak` | [CUI](docs/manual/cui/callbreak.md) / [Web](docs/manual/web/callbreak.md) |
 
 ## Demo
