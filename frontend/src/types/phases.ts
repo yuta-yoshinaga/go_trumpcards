@@ -606,6 +606,13 @@ export const RussianSolitairePhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Cruel phase constants (sync: internal/domain/Cruel.go). */
+export const CruelPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Scorpion phase constants (sync: internal/domain/Scorpion.go). */
 export const ScorpionPhase = {
   PLAYING: 0,

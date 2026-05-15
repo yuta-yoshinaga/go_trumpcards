@@ -153,6 +153,7 @@ export const gameCategories: readonly GameCategory[] = [
         icon: '🪆',
         page: 'RussianSolitaire',
       },
+      { path: '/cruel', labelKey: 'nav.cruel', icon: '🪓', page: 'Cruel' },
       { path: '/scorpion', labelKey: 'nav.scorpion', icon: '🦂', page: 'Scorpion' },
       { path: '/accordion', labelKey: 'nav.accordion', icon: '🪗', page: 'Accordion' },
       { path: '/pokersquares', labelKey: 'nav.pokersquares', icon: '🔢', page: 'PokerSquares' },

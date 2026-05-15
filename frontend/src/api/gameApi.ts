@@ -26,6 +26,7 @@ import type {
   CrescentMoveZone,
   CrescentResponse,
   CribbageResponse,
+  CruelResponse,
   DaifugoConfigInput,
   DaifugoResponse,
   DoubtConfig,
@@ -162,6 +163,7 @@ const workerUrl: Record<string, string> = {
   klondike: WORKER_SOLO,
   freecell: WORKER_SOLO,
   seahaventowers: WORKER_SOLO,
+  cruel: WORKER_SOLO,
   spider: WORKER_SOLO,
   pyramid: WORKER_SOLO,
   pokersquares: WORKER_SOLO,
@@ -1426,6 +1428,19 @@ export const yukonApi = createSolitaireMoveApi<
   'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('yukon');
 
+/** Source or target zone for a Cruel card move. */
+export interface CruelMoveZone {
+  zone: string;
+  col?: number;
+}
+
+/** API client for the Cruel /cruel/exec endpoint. */
+export const cruelApi = createSolitaireMoveApi<
+  CruelResponse,
+  CruelMoveZone,
+  'reset' | 'move' | 'shift' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('cruel');
+
 /** Source or target zone for a Russian Solitaire card move. */
 export interface RussianSolitaireMoveZone {
   zone: string;
@@ -1762,6 +1777,7 @@ const games = [
   'klondike',
   'freecell',
   'seahaventowers',
+  'cruel',
   'baccarat',
   'crazyeights',
   'ginrummy',

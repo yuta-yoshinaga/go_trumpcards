@@ -19,6 +19,7 @@ import type {
   ClockSolitaireResponse,
   CrazyEightsResponse,
   CribbageResponse,
+  CruelResponse,
   DaifugoResponse,
   DoubtResponse,
   DragonTigerResponse,
@@ -100,6 +101,7 @@ import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
 import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
 import { getCrazyPineappleHint } from '../utils/hints/crazyPineappleHint';
 import { getCribbageHint } from '../utils/hints/cribbageHint';
+import { getCruelHint } from '../utils/hints/cruelHint';
 import { getDaifugoHint } from '../utils/hints/daifugoHint';
 import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
 import { getDoubtHint } from '../utils/hints/doubtHint';
@@ -241,6 +243,7 @@ const hintFactories = {
   whist: (s) => getWhistHint(s as WhistResponse),
   yukon: (s) => getYukonHint(s as YukonResponse),
   russiansolitaire: (s) => getRussianSolitaireHint(s as RussianSolitaireResponse),
+  cruel: (s) => getCruelHint(s as CruelResponse),
   scorpion: (s) => getScorpionHint(s as ScorpionResponse),
   accordion: (s) => getAccordionHint(s as AccordionResponse),
   calculation: (s) => getCalculationHint(s as CalculationResponse),

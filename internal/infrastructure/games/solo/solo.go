@@ -46,6 +46,14 @@ func init() {
 			return usecase.RestoreSeahavenTowersInteractor(data, new(presenter.SeahavenTowersWebPresenter))
 		},
 		controller.NewSeahavenTowersWebControllerWithProvider)
+	games.RegisterKVGame("cruel", games.CategorySolo,
+		func() usecase.CruelInteractorIF {
+			return usecase.NewCruelInteractor(domain.NewDefaultCruel(), new(presenter.CruelWebPresenter))
+		},
+		func(data []byte) (usecase.CruelInteractorIF, error) {
+			return usecase.RestoreCruelInteractor(data, new(presenter.CruelWebPresenter))
+		},
+		controller.NewCruelWebControllerWithProvider)
 	games.RegisterKVGame("ginrummy", games.CategorySolo,
 		func() usecase.GinRummyInteractorIF {
 			return usecase.NewGinRummyInteractor(domain.NewDefaultGinRummy(), new(presenter.GinRummyWebPresenter))

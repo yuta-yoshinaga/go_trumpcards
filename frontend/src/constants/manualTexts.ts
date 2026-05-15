@@ -25,6 +25,7 @@ import crazyeights from '../../../docs/manual/web/crazyeights.md?raw';
 import crazypineapple from '../../../docs/manual/web/crazypineapple.md?raw';
 import crescent from '../../../docs/manual/web/crescent.md?raw';
 import cribbage from '../../../docs/manual/web/cribbage.md?raw';
+import cruel from '../../../docs/manual/web/cruel.md?raw';
 import daifugo from '../../../docs/manual/web/daifugo.md?raw';
 import deuceswild from '../../../docs/manual/web/deuceswild.md?raw';
 import doubt from '../../../docs/manual/web/doubt.md?raw';
@@ -180,6 +181,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/whist': whist,
   '/yukon': yukon,
   '/russiansolitaire': russiansolitaire,
+  '/cruel': cruel,
   '/scorpion': scorpion,
   '/sevenbridge': sevenbridge,
   '/accordion': accordion,

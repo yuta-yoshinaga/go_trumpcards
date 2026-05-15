@@ -76,6 +76,7 @@ Go + Clean Architecture で実装した90種類のトランプゲーム。CLI �
 | フィフティワン (Fifty-one) | `fiftyone` | [CUI](docs/manual/cui/fiftyone.md) / [Web](docs/manual/web/fiftyone.md) |
 | ユーコン (Yukon) | `yukon` | [CUI](docs/manual/cui/yukon.md) / [Web](docs/manual/web/yukon.md) |
 | ロシアンソリティア (Russian Solitaire) | `russiansolitaire` | [CUI](docs/manual/cui/russiansolitaire.md) / [Web](docs/manual/web/russiansolitaire.md) |
+| クルーエル (Cruel) | `cruel` | [CUI](docs/manual/cui/cruel.md) / [Web](docs/manual/web/cruel.md) |
 | ホイスト (Whist) | `whist` | [CUI](docs/manual/cui/whist.md) / [Web](docs/manual/web/whist.md) |
 | ポーカー・スクエア (Poker Squares) | `pokersquares` | [CUI](docs/manual/cui/pokersquares.md) / [Web](docs/manual/web/pokersquares.md) |
 | ページワン (Page One) | `pageone` | [CUI](docs/manual/cui/pageone.md) / [Web](docs/manual/web/pageone.md) |

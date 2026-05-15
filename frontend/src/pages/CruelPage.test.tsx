@@ -1,0 +1,185 @@
+import { screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { cruelApi } from '../api/gameApi';
+import { renderWithProviders } from '../test/renderWithProviders';
+import type { Card, CardDesign, CruelResponse } from '../types/card';
+import { CruelPage } from './CruelPage';
+
+vi.mock('../api/gameApi', () => ({
+  cruelApi: { exec: vi.fn() },
+  actionLogApi: { cruel: vi.fn() },
+}));
+
+const mockExec = vi.mocked(cruelApi.exec);
+
+const card = (design: CardDesign, value: number): Card => ({ design, value });
+
+const fourColumn = (suit: CardDesign, base: number) => [
+  { card: card(suit, base), faceUp: true },
+  { card: card(suit, base + 1), faceUp: true },
+  { card: card(suit, base + 2), faceUp: true },
+  { card: card(suit, base + 3), faceUp: true },
+];
+
+const playingState: CruelResponse = {
+  tableau: [
+    fourColumn('SPADE', 2),
+    fourColumn('HEART', 2),
+    fourColumn('CLOVER', 2),
+    fourColumn('DIAMOND', 2),
+    fourColumn('SPADE', 6),
+    fourColumn('HEART', 6),
+    fourColumn('CLOVER', 6),
+    fourColumn('DIAMOND', 6),
+    fourColumn('SPADE', 10),
+    fourColumn('HEART', 10),
+    fourColumn('CLOVER', 10),
+    fourColumn('DIAMOND', 10),
+  ],
+  foundation: [
+    [card('SPADE', 1)],
+    [card('CLOVER', 1)],
+    [card('HEART', 1)],
+    [card('DIAMOND', 1)],
+  ],
+  phase: 0,
+  moveCount: 0,
+  canUndo: false,
+  isStalemate: false,
+  message: '',
+  messageCode: 'cruel.playing',
+};
+
+const gameClearState: CruelResponse = {
+  ...playingState,
+  phase: 1,
+  moveCount: 42,
+  messageCode: 'cruel.gameClear',
+  messageParams: { moveCount: '42' },
+};
+
+const gameOverState: CruelResponse = {
+  ...playingState,
+  phase: 2,
+  messageCode: 'cruel.gameOver',
+};
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  mockExec.mockResolvedValue(playingState);
+});
+
+describe('CruelPage', () => {
+  it('renders heading', async () => {
+    renderWithProviders(<CruelPage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+  });
+
+  it('calls reset on mount', async () => {
+    renderWithProviders(<CruelPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('shows move count', async () => {
+    renderWithProviders(<CruelPage />);
+    await waitFor(() => expect(screen.getByText(/手数/)).toBeInTheDocument());
+  });
+
+  it('shows game clear phase', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<CruelPage />);
+    await waitFor(() => expect(screen.getAllByText('ゲームクリア').length).toBeGreaterThan(0));
+  });
+
+  it('shows game over phase', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<CruelPage />);
+    await waitFor(() => expect(screen.getAllByText('ゲームオーバー').length).toBeGreaterThan(0));
+  });
+
+  it('shift button fires shift command', async () => {
+    renderWithProviders(<CruelPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    screen.getByTestId('shift-button').click();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('shift'));
+  });
+
+  it('hint button fires hint command', async () => {
+    renderWithProviders(<CruelPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const btn = screen.getByRole('button', { name: 'ヒント' });
+    btn.click();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+  });
+
+  it('autocomplete button fires autocomplete command', async () => {
+    renderWithProviders(<CruelPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    screen.getByTestId('autocomplete-button').click();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
+  });
+
+  it('giveup button fires giveup command', async () => {
+    renderWithProviders(<CruelPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const btn = screen.getByRole('button', { name: 'ギブアップ' });
+    btn.click();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
+  });
+
+  it('shows error alert when API fails on mount', async () => {
+    mockExec.mockRejectedValue(new Error('network error'));
+    renderWithProviders(<CruelPage />);
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+  });
+
+  it('hides game action buttons after game over', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<CruelPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByRole('button', { name: 'ギブアップ' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'ヒント' })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('shift-button')).not.toBeInTheDocument();
+  });
+
+  it('undo button fires undo command when canUndo is true', async () => {
+    mockExec.mockResolvedValue({ ...playingState, canUndo: true });
+    renderWithProviders(<CruelPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const undoBtn = screen.getByRole('button', { name: '元に戻す' });
+    undoBtn.click();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
+  });
+
+  it('undo button is disabled when canUndo is false', async () => {
+    renderWithProviders(<CruelPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const undoBtn = screen.getByRole('button', { name: '元に戻す' });
+    expect(undoBtn).toBeDisabled();
+  });
+
+  it('renders empty tableau column placeholder', async () => {
+    const stateWithEmpty = {
+      ...playingState,
+      tableau: [[], ...playingState.tableau.slice(1)],
+    };
+    mockExec.mockResolvedValue(stateWithEmpty);
+    renderWithProviders(<CruelPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByText('空')).toBeInTheDocument();
+  });
+
+  it('renders foundation suit labels above placed Aces', async () => {
+    const stateWithEmptyFoundation: CruelResponse = {
+      ...playingState,
+      foundation: [[], [], [], []],
+    };
+    mockExec.mockResolvedValue(stateWithEmptyFoundation);
+    renderWithProviders(<CruelPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByText('♠')).toBeInTheDocument();
+    expect(screen.getByText('♣')).toBeInTheDocument();
+    expect(screen.getByText('♥')).toBeInTheDocument();
+    expect(screen.getByText('♦')).toBeInTheDocument();
+  });
+});

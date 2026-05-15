@@ -126,6 +126,7 @@ tags:
     description: Fifty-one (フィフティワン) game
   - name: yukon
     description: Yukon (ユーコン) game
+  - name: cruel
   - name: russiansolitaire
     description: Russian Solitaire (ロシアンソリティア) game - Yukon variant requiring same-suit descending tableau moves
   - name: letitride
@@ -6034,6 +6035,111 @@ paths:
                     col:
                       type: integer
                     cardIndex:
+                      type: integer
+                to:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau, foundation]
+                    col:
+                      type: integer
+                n:
+                  type: integer
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                  foundation:
+                    type: array
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  hint:
+                    type: object
+                    properties:
+                      fromCol:
+                        type: integer
+                      cardIndex:
+                        type: integer
+                      toZone:
+                        type: string
+                      toCol:
+                        type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request
+
+  /cruel/exec:
+    post:
+      tags:
+        - cruel
+      summary: Execute a Cruel (クルーエル) game command
+      description: |
+        Send a command to advance a Cruel solitaire session identified by `sessionId`.
+        Cruel is a puzzle-style solitaire. At deal time the four Aces are auto-placed on
+        the foundations and the remaining 48 cards are dealt face-up into 12 columns of 4.
+        Only the top card of each column can be moved, and only onto a same-suit card one
+        rank higher. Empty columns cannot receive cards. When stuck, **Shift** gathers the
+        remaining tableau cards left-to-right (preserving column order and in-column order)
+        and redeals them into 12×4 left-aligned columns.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | 0     | Game in progress |
+        | GameClear | 1     | All foundations complete |
+        | GameOver  | 2     | Player gave up |
+
+        | Command          | Aliases | Description |
+        |------------------|---------|-------------|
+        | `reset`          | `r`     | Start / restart a game |
+        | `move`           | `m`     | Move top card between zones (requires `from`, `to`) |
+        | `shift`          | `s`     | Gather and re-deal the tableau |
+        | `giveup`         | `g`     | Give up the current game |
+        | `hint`           | `h`     | Get a move suggestion |
+        | `autocomplete`   | `ac`    | Auto-promote any tableau top cards to foundations |
+        | `undo`           | `u`     | Undo last move |
+        | `undo_n`         | —       | Undo N moves (requires `n`) |
+        | `log`            | `l`     | View action log |
+      operationId: cruelExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, move, m, shift, s, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau]
+                    col:
                       type: integer
                 to:
                   type: object
