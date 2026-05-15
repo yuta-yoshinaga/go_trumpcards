@@ -63,7 +63,10 @@ function parseMoveCommand(args: string[]): CliParseResult<SeahavenTowersArgs> {
     const col = Number(fromZone.slice(1));
     if (Number.isNaN(col)) return { error: 'Usage: m t<col> ...' };
 
-    if (args.length >= 4 && args[2].toLowerCase().startsWith('t')) {
+    // `m t<col> <cardIdx> t<col>` packs the zone tokens together, so splitCommand
+    // yields exactly 3 args (e.g., ['t0','2','t1']). The previous `>= 4` check
+    // came from a space-separated tokenisation that never actually fires.
+    if (args.length >= 3 && args[2].toLowerCase().startsWith('t')) {
       const cardIdx = parseIntArg(args, 1);
       if ('error' in cardIdx) return { error: 'Usage: m t<col> <cardIdx> t<col>' };
       const toCol = Number(args[2].toLowerCase().slice(1));

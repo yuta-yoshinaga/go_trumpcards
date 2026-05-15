@@ -1,12 +1,15 @@
 package usecase
 
 import (
+	"encoding/json"
 	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
@@ -229,4 +232,61 @@ func TestSeahavenTowersInteractorUndo(t *testing.T) {
 		sp.On("Output", sg, err).Return("err")
 		assert.Equal(t, "err", si.Undo())
 	})
+}
+
+func TestSeahavenTowersInteractorUndoN(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		sg := newMockSeahavenTowersGame()
+		sp := newMockSeahavenTowersPresenter()
+		si := NewSeahavenTowersInteractor(sg, sp)
+
+		sg.On("UndoN", 3).Return(nil)
+		sp.On("Output", sg, nil).Return("undoN_output")
+		assert.Equal(t, "undoN_output", si.UndoN(3))
+	})
+	t.Run("error", func(t *testing.T) {
+		sg := newMockSeahavenTowersGame()
+		sp := newMockSeahavenTowersPresenter()
+		si := NewSeahavenTowersInteractor(sg, sp)
+
+		err := errors.New("undo step failed")
+		sg.On("UndoN", 5).Return(err)
+		sp.On("Output", sg, err).Return("err")
+		assert.Equal(t, "err", si.UndoN(5))
+	})
+}
+
+func TestSeahavenTowersInteractorSnapshotRoundTrip(t *testing.T) {
+	// Snapshot must serialise into a payload that RestoreSeahavenTowersInteractor
+	// can deserialise into a working interactor. The usecase layer cannot import
+	// the adapter presenter implementations (Clean Architecture); use the mock
+	// presenter with permissive setups instead.
+	original := domain.NewDefaultSeahavenTowers()
+	original.Reset()
+	sp1 := newMockSeahavenTowersPresenter()
+	sp1.On("Output", mock.Anything, mock.Anything).Return("ok").Maybe()
+	si := NewSeahavenTowersInteractor(original, sp1)
+
+	data, err := si.Snapshot()
+	require.NoError(t, err)
+	require.NotEmpty(t, data)
+	require.True(t, json.Valid(data), "snapshot must be valid JSON")
+
+	sp2 := newMockSeahavenTowersPresenter()
+	sp2.On("HintOutput", mock.Anything).Return("hint").Maybe()
+	sp2.On("ActionLogOutput", mock.Anything).Return("log").Maybe()
+	sp2.On("Output", mock.Anything, mock.Anything).Return("ok").Maybe()
+
+	restored, err := RestoreSeahavenTowersInteractor(data, sp2)
+	require.NoError(t, err)
+	require.NotNil(t, restored)
+
+	assert.Equal(t, "hint", restored.Hint())
+	assert.Equal(t, "log", restored.ActionLog())
+}
+
+func TestRestoreSeahavenTowersInteractorRejectsBadJSON(t *testing.T) {
+	sp := newMockSeahavenTowersPresenter()
+	_, err := RestoreSeahavenTowersInteractor([]byte("not-json"), sp)
+	assert.Error(t, err)
 }

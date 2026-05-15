@@ -211,6 +211,46 @@ func TestSeahavenTowersCanPlaceOnTableau_SolverRules(t *testing.T) {
 	})
 }
 
+// TestSeahavenTowersSolver_NoTableauReservedKeyCollision is a regression guard
+// for the encoding bug where col=8/pos=0 hashed to the same uint16 (513) as
+// reserved cell 1 (512+1). With 10 tableau columns the tableau key range now
+// reaches `9*64 + 51 + 1 = 628`, so the reserved base must live above that.
+// Two boards differing only by swapping a card between tableau[8][0] and
+// freeCells[1] must produce distinct state keys.
+func TestSeahavenTowersSolver_NoTableauReservedKeyCollision(t *testing.T) {
+	s := NewSeahavenTowers(NewTrumpCards(0))
+	s.Reset()
+
+	cardA := NewCard(CardDesignSpade, 5, false)
+	cardB := NewCard(CardDesignHeart, 9, false)
+
+	// Board 1: cardA on tableau[8][0], cardB on reserved cell 1.
+	var tableau1 [SeahavenTowersTableauCnt][]*Card
+	tableau1[8] = []*Card{cardA}
+	s.SetTableau(tableau1)
+	var cells1 [SeahavenTowersCellCnt]*Card
+	cells1[1] = cardB
+	s.SetFreeCells(cells1)
+	var foundation [SeahavenTowersFoundationCnt][]*Card
+	s.SetFoundation(foundation)
+
+	solver1 := newSeahavenTowersSolver(s)
+	key1 := solver1.stateKey()
+
+	// Board 2: swap the two cards' locations.
+	var tableau2 [SeahavenTowersTableauCnt][]*Card
+	tableau2[8] = []*Card{cardB}
+	s.SetTableau(tableau2)
+	var cells2 [SeahavenTowersCellCnt]*Card
+	cells2[1] = cardA
+	s.SetFreeCells(cells2)
+
+	solver2 := newSeahavenTowersSolver(s)
+	key2 := solver2.stateKey()
+
+	assert.NotEqual(t, key1, key2, "boards differing by tableau[8][0]/reserved[1] swap must hash differently")
+}
+
 func TestSeahavenTowersCanPlaceOnFoundation_SolverRules(t *testing.T) {
 	var foundation [SeahavenTowersFoundationCnt]int
 

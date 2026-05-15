@@ -1,4 +1,5 @@
 import type { SeahavenTowersResponse } from '../../../types/card';
+import { SeahavenTowersPhase } from '../../../types/phases';
 import { formatCard, formatHeader, formatSeparator } from '../formatterBase';
 
 /** Format a Seahaven Towers game state as terminal text. */
@@ -37,7 +38,7 @@ export function formatSeahavenTowersState(state: SeahavenTowersResponse): string
     );
   }
   if (state.message) lines.push(state.message);
-  if (state.phase === 1) lines.push('Congratulations! You win!');
+  if (state.phase === SeahavenTowersPhase.GAME_CLEAR) lines.push('Congratulations! You win!');
 
   lines.push(formatSeparator());
   return lines.join('\n');

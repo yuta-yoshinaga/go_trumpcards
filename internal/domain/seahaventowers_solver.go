@@ -277,7 +277,12 @@ func (s *seahavenTowersSolver) stateKey() [52]uint16 {
 // seahavenTowersStateKeyFromState encodes the board state into a compact key for memoization.
 // Each card (identified by (design-1)*13+value-1) maps to a uint16 location.
 // Tableau: col*64 + pos + 1 (supports up to 63 cards per column).
-// Reserved: 512 + cell. Foundation: 0 (default).
+// Reserved: 640 + cell. Foundation: 0 (default).
+//
+// The reserved base is 640, not 512 (as FreeCell uses): with 10 columns, the
+// tableau range reaches `9*64 + 51 + 1 = 628`, and 512+cell would collide
+// with col=8/pos=0 (8*64+0+1 = 513 == 512+1), letting the solver mark
+// distinct boards as already-visited and producing false stalemates.
 func seahavenTowersStateKeyFromState(st *seahavenTowersState) [52]uint16 {
 	var key [52]uint16
 	for col := range SeahavenTowersTableauCnt {
@@ -299,7 +304,7 @@ func seahavenTowersStateKeyFromState(st *seahavenTowersState) [52]uint16 {
 			}
 			idx := (card.GetDesign()-1)*CardValueMax + card.GetValue() - 1
 			if idx >= 0 && idx < 52 {
-				key[idx] = uint16(512 + cell)
+				key[idx] = uint16(640 + cell)
 			}
 		}
 	}
