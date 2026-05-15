@@ -636,6 +636,22 @@ func TestTarneeb_PlayerBid_BadBidPlayerIdx(t *testing.T) {
 	assert.ErrorIs(t, tn.PlayerBid(7), ErrWrongPhase)
 }
 
+func TestTarneeb_SetConfig_GetActionLog(t *testing.T) {
+	tn := newCov(TarneebCpuDifficultyNormal)
+	tn.Reset()
+	cfg := tn.GetConfig()
+	cfg.PointLimit = 41
+	tn.SetConfig(cfg)
+	assert.Equal(t, 41, tn.GetConfig().PointLimit)
+
+	tn.SetPhase(TarneebPhaseRoundEnd)
+	tn.SetBidWinnerIdx(0)
+	tn.SetHighestBid(7)
+	tn.ScoreRound()
+	logEntries := tn.GetActionLog()
+	assert.NotEmpty(t, logEntries)
+}
+
 func TestTarneeb_PlayerDeclareTrump_BadBidWinnerIdx(t *testing.T) {
 	tn := newCov(TarneebCpuDifficultyNormal)
 	tn.Reset()

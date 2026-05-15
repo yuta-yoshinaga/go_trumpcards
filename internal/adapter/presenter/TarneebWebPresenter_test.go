@@ -70,8 +70,8 @@ func TestTarneebWebPresenter_Output(t *testing.T) {
 		var got webOutPartial
 		require.NoError(t, json.Unmarshal([]byte(p.Output(tn, nil)), &got))
 		assert.Equal(t, "tarneeb.playPhase.follow", got.MessageCode)
-		assert.Equal(t, 1, len(got.Players))
-		// buildTrickOutput coverage path
+		// 4 players always in a default Tarneeb game.
+		assert.Equal(t, 4, len(got.Players))
 	})
 
 	t.Run("error returned as message", func(t *testing.T) {
