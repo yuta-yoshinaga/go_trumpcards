@@ -11,6 +11,8 @@ import type {
   BlackJackResponse,
   BlackJackSwitchResponse,
   BridgeResponse,
+  BriscolaConfig,
+  BriscolaResponse,
   CalculationMoveZone,
   CalculationResponse,
   CallBreakResponse,
@@ -1729,6 +1731,12 @@ export const whistApi = {
   ) => gameExec<WhistResponse>('whist', { command, cardIndex, config }),
 };
 
+/** API client for the Briscola /briscola/exec endpoint. */
+export const briscolaApi = {
+  exec: (command: 'reset' | 'play' | 'next' | 'hint' | 'log', cardIndex?: number, config?: Partial<BriscolaConfig>) =>
+    gameExec<BriscolaResponse>('briscola', { command, cardIndex, config }),
+};
+
 /** API client for the Poker Squares /pokersquares/exec endpoint. */
 export const pokersquaresApi = {
   exec: (command: 'reset' | 'place' | 'undo' | 'giveup' | 'log', row?: number, col?: number) =>
@@ -1909,6 +1917,7 @@ const games = [
   'callbreak',
   'tarneeb',
   'highcardflush',
+  'briscola',
 ] as const;
 type Game = (typeof games)[number];
 

@@ -3386,6 +3386,59 @@ export interface WhistResponse {
   hint?: WhistHint;
 }
 
+// --- Briscola (ブリスコラ) ---
+
+/** Briscola player data with points and trick count. */
+export interface BriscolaPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  points: number;
+  trickCount: number;
+}
+
+/** A card played in a Briscola trick. */
+export interface BriscolaTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Briscola game configuration. */
+export interface BriscolaConfig {
+  cpuDifficulty: number;
+}
+
+/** A suggested hint for Briscola. */
+export interface BriscolaHint {
+  cardIndex?: number;
+  reason: string;
+}
+
+/** Full Briscola game state returned from the API. */
+export interface BriscolaResponse {
+  players: BriscolaPlayerData[];
+  phase: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  currentTrick: BriscolaTrickCard[];
+  trumpSuit: number;
+  /** Face-up trump card (omitted once the stock is exhausted). */
+  trumpCard?: Card;
+  dealerIdx: number;
+  leadPlayerIdx: number;
+  /** Cards left in the stock, counting the face-up trump card. */
+  stockRemaining: number;
+  gameEndFlag: boolean;
+  /** -1 = tie or unfinished. */
+  winnerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: BriscolaConfig;
+  hint?: BriscolaHint;
+}
+
 // --- Poker Squares (ポーカー・スクエア) ---
 
 /** Single cell of the 5x5 Poker Squares board. */

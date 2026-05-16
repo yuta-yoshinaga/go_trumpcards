@@ -1,0 +1,36 @@
+{
+  "title": "Briscola (ブリスコラ)",
+  "subtitle": "イタリアの古典トリックテイキング — 40枚デッキ, must-followなし",
+  "header": {
+    "trick": "トリック",
+    "stock": "山札",
+    "you": "あなた",
+    "cpu": "CPU",
+    "points": "得点",
+    "trump": "トランプ (ブリスコラ)",
+    "trumpNone": "トランプ: 使い切り",
+    "tricks": "獲得"
+  },
+  "phase": {
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "actions": {
+    "play": "出す",
+    "next": "次のトリックへ",
+    "reset": "リセット",
+    "hint": "ヒント"
+  },
+  "result": {
+    "youWin": "あなたの勝ち！ ({{p0}}-{{p1}})",
+    "cpuWin": "CPUの勝ち ({{p0}}-{{p1}})",
+    "tie": "引き分け ({{p0}}-{{p1}})"
+  },
+  "message": {
+    "yourTurn": "あなたの番です — どのカードでも出せます (must-followなし)",
+    "cpuTurn": "CPUの番です…",
+    "trickComplete": "トリック完了 — 次へ進んでください",
+    "loading": "ロード中…"
+  }
+}
