@@ -171,6 +171,26 @@ func NewTrumpCardsPinochle() *TrumpCards {
 	return t
 }
 
+// NewTrumpCardsBriscola ブリスコラ用40枚デッキコンストラクタ
+// A,2,3,4,5,6,7,J,Q,K (値: 1,2,3,4,5,6,7,11,12,13) × 4スート = 40枚
+// 8,9,10 を除外する。
+func NewTrumpCardsBriscola() *TrumpCards {
+	briscolaValues := []int{1, 2, 3, 4, 5, 6, 7, 11, 12, 13}
+	suits := []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond}
+	totalCards := len(briscolaValues) * len(suits) // 40
+
+	t := new(TrumpCards)
+	t.deckCnt = totalCards
+	t.deck = make([]*Card, 0, totalCards)
+	for _, suit := range suits {
+		for _, val := range briscolaValues {
+			t.deck = append(t.deck, NewCard(suit, val, false))
+		}
+	}
+	t.deckInit()
+	return t
+}
+
 // NewTrumpCardsShortDeck ショートデック(6+)用36枚デッキコンストラクタ
 // A,6,7,8,9,10,J,Q,K (値: 1,6,7,8,9,10,11,12,13) × 4スート = 36枚
 func NewTrumpCardsShortDeck() *TrumpCards {
