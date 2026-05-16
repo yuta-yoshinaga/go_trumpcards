@@ -16,6 +16,9 @@ import (
 	"sort"
 )
 
+// BriscolaPlayerCnt ブリスコラのプレイヤー数 (v1は2人固定)
+const BriscolaPlayerCnt = 2
+
 // BriscolaHandSize 各プレイヤーの手札最大枚数 (山札がある間は補充される)
 const BriscolaHandSize = 3
 
@@ -218,7 +221,7 @@ func (b *Briscola) ResolveTrick() {
 		trickCards)
 
 	b.leadPlayerIdx = winnerIdx
-	b.phase = BriscolaPhaseTrickEnd
+	// Phase is already BriscolaPhaseTrickEnd (guarded at function entry); leave it.
 }
 
 // NextTrick 次のトリックを開始する。山札が残っていれば補充も行う。
@@ -326,7 +329,8 @@ func (b *Briscola) GetDealerIdx() int { return b.dealerIdx }
 // SetDealerIdx ディーラーインデックス設定 (テスト用)
 func (b *Briscola) SetDealerIdx(idx int) { b.dealerIdx = idx }
 
-// GetStockRemaining 山札の残り枚数 (場に出ている表向きトランプを含む)
+// GetStockRemaining 山札の残り枚数 (場に出ている表向きトランプは含まない;
+// それは GetTrumpCard() != nil の間 別カウントとして残る最後の 1 枚)。
 func (b *Briscola) GetStockRemaining() int {
 	return b.trumpCards.GetRemainingCount()
 }
@@ -804,25 +808,34 @@ func (b *Briscola) MarshalJSON() ([]byte, error) {
 const briscolaMaxSliceLen = 1000
 
 // UnmarshalJSON implements json.Unmarshaler.
+//
+// Validates that the deserialised game state matches Briscola's fixed shape
+// (BriscolaPlayerCnt = 2 players, at most BriscolaPlayerCnt cards on the current
+// trick, PlayerPoints aligned to the player count) and that the variable-length
+// ActionLog does not exceed briscolaMaxSliceLen, preventing DoS via crafted
+// payloads and out-of-bounds access during play.
 func (b *Briscola) UnmarshalJSON(data []byte) error {
 	var j briscolaJSON
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if len(j.Players) > briscolaMaxSliceLen ||
-		len(j.CurrentTrick) > briscolaMaxSliceLen ||
-		len(j.PlayerPoints) > briscolaMaxSliceLen ||
-		len(j.ActionLog) > briscolaMaxSliceLen {
-		return fmt.Errorf("briscola: input array exceeds maximum allowed size")
+	if len(j.Players) != BriscolaPlayerCnt {
+		return fmt.Errorf("briscola: expected %d players, got %d", BriscolaPlayerCnt, len(j.Players))
+	}
+	if len(j.CurrentTrick) > BriscolaPlayerCnt {
+		return fmt.Errorf("briscola: current trick has %d cards (max %d)", len(j.CurrentTrick), BriscolaPlayerCnt)
+	}
+	if j.PlayerPoints != nil && len(j.PlayerPoints) != BriscolaPlayerCnt {
+		return fmt.Errorf("briscola: expected %d player points entries, got %d", BriscolaPlayerCnt, len(j.PlayerPoints))
+	}
+	if len(j.ActionLog) > briscolaMaxSliceLen {
+		return fmt.Errorf("briscola: action log exceeds maximum allowed size")
 	}
 	b.trumpCards = j.TrumpCards
 	if b.trumpCards == nil {
 		b.trumpCards = NewTrumpCardsBriscola()
 	}
 	b.players = j.Players
-	if b.players == nil {
-		b.players = make([]*BriscolaPlayer, 0)
-	}
 	b.config = j.Config
 	b.phase = j.Phase
 	b.trickNumber = j.TrickNumber
@@ -837,7 +850,7 @@ func (b *Briscola) UnmarshalJSON(data []byte) error {
 	b.dealerIdx = j.DealerIdx
 	b.playerPoints = j.PlayerPoints
 	if b.playerPoints == nil {
-		b.playerPoints = make([]int, len(b.players))
+		b.playerPoints = make([]int, BriscolaPlayerCnt)
 	}
 	b.gameEndFlag = j.GameEndFlag
 	b.winnerIdx = j.WinnerIdx

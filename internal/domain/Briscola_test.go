@@ -95,7 +95,7 @@ func TestBriscola_ValidatePlay_AlwaysAllows(t *testing.T) {
 	// 任意の状態でも全カードがプレイ可能
 	human := b.GetPlayer(0)
 	for i := 0; i < human.GetCardsSize(); i++ {
-		if err := human.GetCard(i); err == nil {
+		if card := human.GetCard(i); card == nil {
 			t.Fatalf("card at %d is nil", i)
 		}
 	}
@@ -473,12 +473,25 @@ func TestBriscola_JSONRoundtrip(t *testing.T) {
 	}
 }
 
-func TestBriscola_UnmarshalJSON_RejectsLargeArrays(t *testing.T) {
-	// Synthesise a payload with an absurd Players array size
-	payload := `{"ps":[` + repeat(`null,`, 1001) + `null]}`
-	var b domain.Briscola
-	if err := json.Unmarshal([]byte(payload), &b); err == nil {
-		t.Error("expected error for oversized Players array")
+func TestBriscola_UnmarshalJSON_RejectsBadShape(t *testing.T) {
+	cases := []struct {
+		name    string
+		payload string
+	}{
+		{"oversized players array", `{"ps":[` + repeat(`null,`, 1001) + `null]}`},
+		{"wrong player count", `{"ps":[null,null,null]}`},
+		{"empty players array", `{"ps":[]}`},
+		{"too many trick cards", `{"ps":[null,null],"ct":[{"pi":0,"c":null},{"pi":1,"c":null},{"pi":0,"c":null}]}`},
+		{"wrong player points length", `{"ps":[null,null],"pp":[0,0,0]}`},
+		{"oversized action log", `{"ps":[null,null],"al":[` + repeat(`null,`, 1001) + `null]}`},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var b domain.Briscola
+			if err := json.Unmarshal([]byte(tc.payload), &b); err == nil {
+				t.Errorf("expected error for %s, got nil", tc.name)
+			}
+		})
 	}
 }
 

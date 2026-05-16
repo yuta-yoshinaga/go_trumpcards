@@ -3427,7 +3427,10 @@ export interface BriscolaResponse {
   trumpCard?: Card;
   dealerIdx: number;
   leadPlayerIdx: number;
-  /** Cards left in the stock, counting the face-up trump card. */
+  /**
+   * Cards remaining in the stock; this does NOT include the face-up trump
+   * card (which is tracked separately via `trumpCard` until drawn last).
+   */
   stockRemaining: number;
   gameEndFlag: boolean;
   /** -1 = tie or unfinished. */

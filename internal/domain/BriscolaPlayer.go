@@ -2,9 +2,6 @@ package domain
 
 import "encoding/json"
 
-// BriscolaPlayerCnt ブリスコラのプレイヤー数 (v1は2人固定)
-const BriscolaPlayerCnt = 2
-
 // BriscolaPlayer ブリスコラプレイヤークラス
 type BriscolaPlayer struct {
 	*GamePlayer

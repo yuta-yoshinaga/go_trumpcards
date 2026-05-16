@@ -3,7 +3,6 @@ import { briscolaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -22,13 +21,14 @@ import type { TutorialStep } from '../types/tutorial';
 const BRISCOLA_TUTORIAL_STEPS: TutorialStep[] = [];
 
 /**
- * Renders the Briscola game page: 2-player Italian trick-taking with a face-up
- * trump card, no must-follow rule, and per-card point values (A=11, 3=10,
- * K=4, Q=3, J=2). Players hold 3 cards, replenished from the stock after each
- * trick; the game ends when all 40 cards have been played and the player with
- * more than 60 points wins.
+ * Inner content for the Briscola page (wrapped by `withTutorial` below).
+ *
+ * Renders the 2-player Italian trick-taking game with a face-up trump card,
+ * no must-follow rule, and per-card point values (A=11, 3=10, K=4, Q=3, J=2).
+ * Players hold 3 cards, replenished from the stock after each trick; the game
+ * ends when all 40 cards have been played and the player with more than 60
+ * points wins.
  */
-/** Inner Briscola page content; wrapped by withTutorial below. */
 function BriscolaPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('briscola');
@@ -61,10 +61,6 @@ function BriscolaPageContent() {
   const handleNext = useCallback(() => {
     void dispatch('next');
   }, [dispatch]);
-
-  const handleViewLog = useCallback(() => {
-    void showActionLog();
-  }, [showActionLog]);
 
   if (!state) {
     return <GameSkeleton gameKey="briscola" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 3 }} />;
@@ -144,13 +140,8 @@ function BriscolaPageContent() {
           </div>
         )}
 
-        <GameMessageBox
-          message={state.message}
-          messageCode={state.messageCode}
-          messageParams={state.messageParams}
-          ns="briscola"
-        />
-        <ErrorAlert error={error} onRetry={retry} />
+        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+        <ErrorAlert message={error} onRetry={retry} />
 
         {/* Human hand */}
         {human && human.cards.length > 0 && (
@@ -188,8 +179,12 @@ function BriscolaPageContent() {
         </div>
       </div>
 
-      <GameFooter onViewLog={handleViewLog} disabled={loading} />
-      <ActionLogSection actionLog={actionLog} onClose={hideActionLog} />
+      <ActionLogSection
+        isEndPhase={isGameEnd}
+        actionLog={actionLog}
+        showActionLog={showActionLog}
+        hideActionLog={hideActionLog}
+      />
     </GamePageShell>
   );
 }

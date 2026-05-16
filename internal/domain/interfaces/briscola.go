@@ -49,7 +49,8 @@ type BriscolaGame interface {
 	GetPlayerCnt() int
 	// GetPlayer 指定インデックスのプレイヤーを取得する
 	GetPlayer(i int) *domain.BriscolaPlayer
-	// GetStockRemaining 山札の残り枚数 (場に出ている表向きトランプを含む)
+	// GetStockRemaining 山札の残り枚数 (場に出ている表向きトランプは含まない;
+	// それは GetTrumpCard() != nil の間 別カウントとして残る最後の 1 枚)。
 	GetStockRemaining() int
 	// GetValidPlayIndices プレイ可能なカードのインデックスリストを返す
 	GetValidPlayIndices(playerIdx int) []int
