@@ -40,6 +40,7 @@ import ginrummy from '../../../docs/manual/web/ginrummy.md?raw';
 import gofish from '../../../docs/manual/web/gofish.md?raw';
 import golf from '../../../docs/manual/web/golf.md?raw';
 import hearts from '../../../docs/manual/web/hearts.md?raw';
+import highcardflush from '../../../docs/manual/web/highcardflush.md?raw';
 import holdem from '../../../docs/manual/web/holdem.md?raw';
 import indianpoker from '../../../docs/manual/web/indianpoker.md?raw';
 import jokerpoker from '../../../docs/manual/web/jokerpoker.md?raw';
@@ -195,4 +196,5 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/nertz': nertz,
   '/slapjack': slapjack,
   '/tarneeb': tarneeb,
+  '/highcardflush': highcardflush,
 };

@@ -54,6 +54,7 @@ export const gameCategories: readonly GameCategory[] = [
         icon: '🚢',
         page: 'MississippiStud',
       },
+      { path: '/highcardflush', labelKey: 'nav.highcardflush', icon: '♣️', page: 'HighCardFlush' },
     ],
   },
   {

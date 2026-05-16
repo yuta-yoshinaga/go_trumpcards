@@ -1,0 +1,79 @@
+{
+  "title": "ハイカードフラッシュ",
+  "player": "プレイヤー",
+  "dealer": "ディーラー",
+  "label": {
+    "chips": "チップ",
+    "ante": "アンテ",
+    "flushBonus": "フラッシュボーナス",
+    "straightFlush": "ストレートフラッシュ",
+    "raise": "レイズ",
+    "flushLen": "最長フラッシュ",
+    "multiplier": "倍率"
+  },
+  "button": {
+    "bet": "ベット",
+    "raise1x": "レイズ x1",
+    "raise2x": "レイズ x2",
+    "raise3x": "レイズ x3",
+    "fold": "フォールド",
+    "reset": "リセット"
+  },
+  "phase": {
+    "bet": "ベット",
+    "action": "レイズ/フォールド",
+    "end": "結果"
+  },
+  "result": {
+    "playerWins": "勝利！",
+    "dealerWins": "ディーラー勝利！",
+    "push": "引き分け！",
+    "fold": "フォールド",
+    "dealerNotQualified": "ディーラー未クオリファイ！"
+  },
+  "payout": {
+    "ante": "アンテ",
+    "raise": "レイズ",
+    "flushBonus": "フラッシュボーナス",
+    "straightFlush": "ストレートフラッシュ",
+    "total": "合計"
+  },
+  "hintReason": {
+    "raise3x": "6枚以上のフラッシュ — 3倍レイズ推奨",
+    "raise2x": "5枚フラッシュ — 2倍レイズ推奨",
+    "raise1xHighFlush": "4枚フラッシュ — 1倍レイズ推奨",
+    "raise1xMarginal": "3枚フラッシュ（Q以上） — 1倍レイズ推奨",
+    "fold": "フラッシュが弱い — フォールド推奨"
+  },
+  "settings": {
+    "title": "設定"
+  },
+  "betGuide": "アンテと任意のサイドベットを設定してください",
+  "payoutRef": {
+    "title": "配当表",
+    "flushBonusHeader": "フラッシュボーナス（プレイヤーの最長フラッシュ）",
+    "flushBonus4": "4枚フラッシュ: 1:1",
+    "flushBonus5": "5枚フラッシュ: 10:1",
+    "flushBonus6": "6枚フラッシュ: 50:1",
+    "flushBonus7": "7枚フラッシュ: 100:1",
+    "straightFlushHeader": "ストレートフラッシュボーナス",
+    "straightFlush3": "3枚: 8:1",
+    "straightFlush4": "4枚: 60:1",
+    "straightFlush5": "5枚: 100:1",
+    "straightFlush6": "6枚: 1000:1",
+    "straightFlush7": "7枚: 8000:1",
+    "raiseRulesHeader": "レイズルール",
+    "raise24": "2〜4枚フラッシュ: 最大1倍",
+    "raise5": "5枚フラッシュ: 最大2倍",
+    "raise67": "6〜7枚フラッシュ: 最大3倍",
+    "dealerQualify": "ディーラークオリファイ: 3枚フラッシュ（9以上）"
+  },
+  "dealerQualified": "クオリファイ",
+  "dealerNotQualified": "未クオリファイ",
+  "flushLine": "{{count}}枚フラッシュ",
+  "tutorial": {
+    "betControls": "アンテと任意のサイドベットを設定し、ベットを押してください。",
+    "actionButtons": "プレイヤーのフラッシュ枚数で許される最大倍率まで「レイズ」できます。「フォールド」でアンテを放棄します。",
+    "results": "結果と配当を確認してください。"
+  }
+}

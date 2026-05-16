@@ -488,4 +488,9 @@ func init() {
 			return usecase.NewTarneebInteractor(domain.NewDefaultTarneeb(), new(presenter.TarneebWebPresenter))
 		},
 		controller.NewTarneebWebController)
+	BindWebControllerFor("highcardflush",
+		func() usecase.HighCardFlushInteractorIF {
+			return usecase.NewHighCardFlushInteractor(domain.NewDefaultHighCardFlush(), new(presenter.HighCardFlushWebPresenter))
+		},
+		controller.NewHighCardFlushWebController)
 }

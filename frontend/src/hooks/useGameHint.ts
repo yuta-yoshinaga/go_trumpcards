@@ -31,6 +31,7 @@ import type {
   GinRummyResponse,
   GoFishResponse,
   HeartsResponse,
+  HighCardFlushResponse,
   HoldemResponse,
   IndianPokerResponse,
   KlondikeResponse,
@@ -115,6 +116,7 @@ import { getFreeCellHint } from '../utils/hints/freecellHint';
 import { getGinRummyHint } from '../utils/hints/ginrummyHint';
 import { getGoFishHint } from '../utils/hints/gofishHint';
 import { getHeartsHint } from '../utils/hints/heartsHint';
+import { getHighCardFlushHint } from '../utils/hints/highcardflushHint';
 import { getHoldemHint } from '../utils/hints/holdemHint';
 import { getIndianPokerHint } from '../utils/hints/indianpokerHint';
 import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
@@ -193,6 +195,7 @@ const hintFactories = {
   jokerpoker: (s) => getJokerPokerHint(s as VideoPokerResponse),
   indianpoker: (s) => getIndianPokerHint(s as IndianPokerResponse),
   threecard: (s) => getThreeCardHint(s as ThreeCardResponse),
+  highcardflush: (s) => getHighCardFlushHint(s as HighCardFlushResponse),
   euchre: (s) => getEuchreHint(s as EuchreResponse),
   belote: (s) => getBeloteHint(s as BeloteResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),

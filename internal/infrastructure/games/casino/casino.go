@@ -254,4 +254,12 @@ func init() {
 			return usecase.RestoreCasinoHoldemInteractor(data, new(presenter.CasinoHoldemWebPresenter))
 		},
 		controller.NewCasinoHoldemWebControllerWithProvider)
+	games.RegisterKVGame("highcardflush", games.CategoryCasino,
+		func() usecase.HighCardFlushInteractorIF {
+			return usecase.NewHighCardFlushInteractor(domain.NewDefaultHighCardFlush(), new(presenter.HighCardFlushWebPresenter))
+		},
+		func(data []byte) (usecase.HighCardFlushInteractorIF, error) {
+			return usecase.RestoreHighCardFlushInteractor(data, new(presenter.HighCardFlushWebPresenter))
+		},
+		controller.NewHighCardFlushWebControllerWithProvider)
 }
