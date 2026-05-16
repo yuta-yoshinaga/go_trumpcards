@@ -16,6 +16,7 @@ import type {
   EuchreResponse,
   GinRummyResponse,
   GoFishResponse,
+  HighCardFlushResponse,
   NapoleonResponse,
   OhHellResponse,
   OldMaidResponse,
@@ -162,6 +163,43 @@ describe('useGameHint', () => {
     const { result } = renderHook(() => useGameHint('threecard', state as ThreeCardResponse));
     expect(result.current.hint).not.toBeNull();
     expect(result.current.hint?.targetAction).toBe('play');
+  });
+
+  it('returns highcardflush hint when enabled', () => {
+    localStorage.setItem('hint_enabled_highcardflush', 'true');
+    const state: Partial<HighCardFlushResponse> = {
+      phase: 2,
+      playerFlushLen: 5,
+      playerHand: [
+        { design: 'SPADE', value: 5 },
+        { design: 'SPADE', value: 6 },
+        { design: 'SPADE', value: 7 },
+        { design: 'SPADE', value: 11 },
+        { design: 'SPADE', value: 13 },
+        { design: 'HEART', value: 9 },
+        { design: 'CLOVER', value: 4 },
+      ],
+      dealerHand: [],
+      chips: 1000,
+      anteBet: 100,
+      flushBonusBet: 0,
+      straightFlushBet: 0,
+      raiseBet: 0,
+      result: 0,
+      antePayout: 0,
+      raisePayout: 0,
+      flushBonusPayout: 0,
+      straightFlushPayout: 0,
+      totalPayout: 0,
+      dealerQualified: false,
+      dealerFlushLen: 0,
+      playerStraightFlushLen: 0,
+      maxRaiseMultiplier: 2,
+      message: '',
+    };
+    const { result } = renderHook(() => useGameHint('highcardflush', state as HighCardFlushResponse));
+    expect(result.current.hint).not.toBeNull();
+    expect(result.current.hint?.targetAction).toBe('raise2x');
   });
 
   it('returns euchre hint when enabled', () => {

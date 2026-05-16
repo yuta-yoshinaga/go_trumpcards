@@ -386,11 +386,10 @@ func compareHighCardFlushHands(a, b HighCardFlushHand) int {
 }
 
 // checkHCFDealerQualifies returns true when the dealer's best flush is 3+ cards with high ≥ 9.
+// Length and HighCards are kept consistent by evalHighCardFlushHand, so a non-zero length
+// always implies a non-empty HighCards slice.
 func checkHCFDealerQualifies(best HighCardFlushHand) bool {
 	if best.Length < HighCardFlushDealerMinFlushLen {
-		return false
-	}
-	if len(best.HighCards) == 0 {
 		return false
 	}
 	return best.HighCards[0] >= HighCardFlushDealerMinHigh

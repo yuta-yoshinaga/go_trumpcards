@@ -31,7 +31,7 @@ func (hp *HighCardFlushWebPresenter) Output(hcf interfaces.HighCardFlushGame, la
 	resObj.DealerQualified = hcf.GetDealerQualified()
 	resObj.PlayerFlushLen = hcf.GetPlayerFlushLen()
 	resObj.DealerFlushLen = hcf.GetDealerFlushLen()
-	resObj.PlayerStraightFlushLn = hcf.GetPlayerStraightFlushLen()
+	resObj.PlayerStraightFlushLen = hcf.GetPlayerStraightFlushLen()
 	resObj.MaxRaiseMultiplier = hcf.MaxRaiseMultiplier()
 
 	if lastErr != nil {

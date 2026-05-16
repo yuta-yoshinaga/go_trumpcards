@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { highcardflushApi } from '../api/gameApi';
+import { actionLogApi, highcardflushApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, HighCardFlushResponse } from '../types/card';
@@ -148,5 +148,88 @@ describe('HighCardFlushPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'フォールド' }));
     await waitFor(() => expect(mockExec).toHaveBeenLastCalledWith('fold'));
+  });
+
+  it('keyboard shortcut "1" triggers raise 1x during action phase', async () => {
+    mockExec.mockResolvedValue(actionPhase5Flush);
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'レイズ x1' })).toBeInTheDocument());
+
+    fireEvent.keyDown(document, { key: '1' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('raise', undefined, undefined, undefined, 1));
+  });
+
+  it('keyboard shortcut "f" triggers fold during action phase', async () => {
+    mockExec.mockResolvedValue(actionPhase5Flush);
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument());
+
+    fireEvent.keyDown(document, { key: 'f' });
+    await waitFor(() => expect(mockExec).toHaveBeenLastCalledWith('fold'));
+  });
+
+  it('keyboard shortcut "r" triggers reset during end phase', async () => {
+    mockExec.mockResolvedValue(endPhasePlayerWins);
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument());
+
+    fireEvent.keyDown(document, { key: 'r' });
+    await waitFor(() => expect(mockExec).toHaveBeenLastCalledWith('reset'));
+  });
+
+  it('renders payout reference panel during bet phase', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByText('配当表')).toBeInTheDocument());
+    expect(screen.getByText(/レイズルール/)).toBeInTheDocument();
+    expect(screen.getByText(/ディーラークオリファイ/)).toBeInTheDocument();
+  });
+
+  it('shows hint tooltip when hints are enabled', async () => {
+    vi.mocked(useGameHint).mockReturnValue({
+      hint: { targetAction: 'raise2x', reason: 'hintReason.raise2x', confidence: 'strong' },
+      hintEnabled: true,
+      setHintEnabled: vi.fn(),
+    });
+    mockExec.mockResolvedValue(actionPhase5Flush);
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByText(/5枚フラッシュ — 2倍レイズ推奨/)).toBeInTheDocument());
+  });
+
+  it('updates ante input value', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    const anteInput = screen.getByLabelText('アンテ') as HTMLInputElement;
+    fireEvent.change(anteInput, { target: { value: '200' } });
+    expect(anteInput.value).toBe('200');
+  });
+
+  it('opens action log panel from end phase', async () => {
+    mockExec.mockResolvedValueOnce(endPhasePlayerWins);
+    // Mock the log fetch
+    vi.mocked(actionLogApi.highcardflush).mockResolvedValue({ entries: [] });
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: '棋譜を見る' }));
+    await waitFor(() => expect(actionLogApi.highcardflush).toHaveBeenCalled());
+  });
+
+  it('renders dealer hand at end phase with qualified label', async () => {
+    mockExec.mockResolvedValue(endPhasePlayerWins);
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByText(/クオリファイ/)).toBeInTheDocument());
+  });
+
+  it('renders 3x raise button when maxRaiseMultiplier is 3', async () => {
+    mockExec.mockResolvedValue({
+      ...actionPhase5Flush,
+      playerFlushLen: 6,
+      maxRaiseMultiplier: 3,
+    });
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'レイズ x3' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'レイズ x2' })).toBeInTheDocument();
   });
 });

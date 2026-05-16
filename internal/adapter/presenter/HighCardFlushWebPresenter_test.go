@@ -132,6 +132,18 @@ func TestHighCardFlushWebPresenter_Output_DealerNotQualified(t *testing.T) {
 	assert.Equal(t, "highcardflush.result.dealerNotQualified", result.MessageCode)
 }
 
+// In the rare case where the dealer does not qualify *and* the hand is a draw,
+// the "dealer not qualified" message dominates because it is the rule that
+// produced the chip outcome (ante pays 1:1, raise pushes — same as the
+// dealer-qualified-draw payout, so the displayed message reflecting the
+// not-qualified rule is the more useful signal to the player).
+func TestHighCardFlushWebPresenter_Output_DealerNotQualifiedOverridesDraw(t *testing.T) {
+	p := new(HighCardFlushWebPresenter)
+	m := endStateMock(t, domain.GameResultDraw, 100, false)
+	result := parseHighCardFlushOutput(t, p.Output(m, nil))
+	assert.Equal(t, "highcardflush.result.dealerNotQualified", result.MessageCode)
+}
+
 func TestHighCardFlushWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(HighCardFlushWebPresenter)
 	m := new(interfaces.MockHighCardFlushGame)

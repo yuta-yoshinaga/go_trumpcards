@@ -17,25 +17,25 @@ type HighCardFlushWebInput struct {
 
 // HighCardFlushWebOutput ハイカードフラッシュWebアウトプット
 type HighCardFlushWebOutput struct {
-	PlayerHand            []*WebOutputCard `json:"playerHand"`
-	DealerHand            []*WebOutputCard `json:"dealerHand"`
-	Phase                 int              `json:"phase"`
-	Chips                 int              `json:"chips"`
-	AnteBet               int              `json:"anteBet"`
-	FlushBonusBet         int              `json:"flushBonusBet"`
-	StraightFlushBet      int              `json:"straightFlushBet"`
-	RaiseBet              int              `json:"raiseBet"`
-	Result                int              `json:"result"`
-	AntePayout            int              `json:"antePayout"`
-	RaisePayout           int              `json:"raisePayout"`
-	FlushBonusPayout      int              `json:"flushBonusPayout"`
-	StraightFlushPayout   int              `json:"straightFlushPayout"`
-	TotalPayout           int              `json:"totalPayout"`
-	DealerQualified       bool             `json:"dealerQualified"`
-	PlayerFlushLen        int              `json:"playerFlushLen"`
-	DealerFlushLen        int              `json:"dealerFlushLen"`
-	PlayerStraightFlushLn int              `json:"playerStraightFlushLen"`
-	MaxRaiseMultiplier    int              `json:"maxRaiseMultiplier"`
+	PlayerHand             []*WebOutputCard `json:"playerHand"`
+	DealerHand             []*WebOutputCard `json:"dealerHand"`
+	Phase                  int              `json:"phase"`
+	Chips                  int              `json:"chips"`
+	AnteBet                int              `json:"anteBet"`
+	FlushBonusBet          int              `json:"flushBonusBet"`
+	StraightFlushBet       int              `json:"straightFlushBet"`
+	RaiseBet               int              `json:"raiseBet"`
+	Result                 int              `json:"result"`
+	AntePayout             int              `json:"antePayout"`
+	RaisePayout            int              `json:"raisePayout"`
+	FlushBonusPayout       int              `json:"flushBonusPayout"`
+	StraightFlushPayout    int              `json:"straightFlushPayout"`
+	TotalPayout            int              `json:"totalPayout"`
+	DealerQualified        bool             `json:"dealerQualified"`
+	PlayerFlushLen         int              `json:"playerFlushLen"`
+	DealerFlushLen         int              `json:"dealerFlushLen"`
+	PlayerStraightFlushLen int              `json:"playerStraightFlushLen"`
+	MaxRaiseMultiplier     int              `json:"maxRaiseMultiplier"`
 	WebOutputBase
 }
 

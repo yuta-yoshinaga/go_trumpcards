@@ -673,6 +673,25 @@ func TestHighCardFlush_JSONUnmarshal_GarbageRejected(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestHighCardFlush_EvalHandSkipsNilCard(t *testing.T) {
+	// evalHighCardFlushHand and evalLongestStraightFlushLen both have defensive
+	// nil-card guards — exercise them via SetPlayerHand so the package coverage
+	// records the branch.
+	hcf := domain.NewDefaultHighCardFlush()
+	hand := []*domain.Card{
+		nil, // skip
+		domain.NewCard(domain.CardDesignSpade, 5, false),
+		domain.NewCard(domain.CardDesignSpade, 6, false),
+		domain.NewCard(domain.CardDesignSpade, 7, false),
+		domain.NewCard(domain.CardDesignHeart, 9, false),
+		domain.NewCard(domain.CardDesignClover, 4, false),
+		domain.NewCard(domain.CardDesignDiamond, 8, false),
+	}
+	hcf.SetPlayerHand(hand)
+	assert.Equal(t, 3, hcf.GetPlayerFlushLen())
+	assert.Equal(t, 3, hcf.GetPlayerStraightFlushLen())
+}
+
 func TestHighCardFlush_DealerAndStraightFlushGetters(t *testing.T) {
 	hcf := domain.NewDefaultHighCardFlush()
 	hcf.SetDealerHand(makeHCFCards(
