@@ -214,6 +214,7 @@ const workerUrl: Record<string, string> = {
   callbreak: WORKER_CLASSIC,
   tarneeb: WORKER_CLASSIC,
   highcardflush: WORKER_CASINO,
+  briscola: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {

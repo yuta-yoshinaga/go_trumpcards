@@ -1705,8 +1705,8 @@ func TestBuildHelpTextDocumentsStartFlag(t *testing.T) {
 }
 
 // TestBuildHelpTextGamesSummaryStaysCompact verifies issue #1694: the
-// top-level --help GAMES section must NOT enumerate every one of the 77
-// games (which used to push COMMANDS / OPTIONS off a 24-line terminal).
+// top-level --help GAMES section must NOT enumerate every available game
+// (which used to push COMMANDS / OPTIONS off a 24-line terminal).
 // Instead it shows a category-grouped summary and points at
 // `trumpcards games` for the full list.
 func TestBuildHelpTextGamesSummaryStaysCompact(t *testing.T) {

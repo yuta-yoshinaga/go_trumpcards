@@ -493,4 +493,9 @@ func init() {
 			return usecase.NewHighCardFlushInteractor(domain.NewDefaultHighCardFlush(), new(presenter.HighCardFlushWebPresenter))
 		},
 		controller.NewHighCardFlushWebController)
+	BindWebControllerFor("briscola",
+		func() usecase.BriscolaInteractorIF {
+			return usecase.NewBriscolaInteractor(domain.NewDefaultBriscola(), new(presenter.BriscolaWebPresenter))
+		},
+		controller.NewBriscolaWebController)
 }
