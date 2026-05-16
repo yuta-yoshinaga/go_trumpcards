@@ -12,6 +12,7 @@ import belote from '../../../docs/manual/cui/belote.md?raw';
 import blackjack from '../../../docs/manual/cui/blackjack.md?raw';
 import blackjackswitch from '../../../docs/manual/cui/blackjackswitch.md?raw';
 import bridge from '../../../docs/manual/cui/bridge.md?raw';
+import briscola from '../../../docs/manual/cui/briscola.md?raw';
 import calculation from '../../../docs/manual/cui/calculation.md?raw';
 import callbreak from '../../../docs/manual/cui/callbreak.md?raw';
 import canasta from '../../../docs/manual/cui/canasta.md?raw';
@@ -192,6 +193,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/slapjack': slapjack,
   '/tarneeb': tarneeb,
   '/highcardflush': highcardflush,
+  '/briscola': briscola,
 };
 
 /** Returns true when CLI mode is enabled for the game at the given path. */

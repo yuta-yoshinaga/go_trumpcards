@@ -311,4 +311,12 @@ func init() {
 			return usecase.RestoreTarneebInteractor(data, new(presenter.TarneebWebPresenter))
 		},
 		controller.NewTarneebWebControllerWithProvider)
+	games.RegisterKVGame("briscola", games.CategoryClassic,
+		func() usecase.BriscolaInteractorIF {
+			return usecase.NewBriscolaInteractor(domain.NewDefaultBriscola(), new(presenter.BriscolaWebPresenter))
+		},
+		func(data []byte) (usecase.BriscolaInteractorIF, error) {
+			return usecase.RestoreBriscolaInteractor(data, new(presenter.BriscolaWebPresenter))
+		},
+		controller.NewBriscolaWebControllerWithProvider)
 }

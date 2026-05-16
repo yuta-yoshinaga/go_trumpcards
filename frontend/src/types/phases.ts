@@ -648,6 +648,13 @@ export const WhistPhase = {
   GAME_END: 3,
 } as const;
 
+/** Briscola phase constants (sync: internal/domain/Briscola.go). */
+export const BriscolaPhase = {
+  PLAY: 0,
+  TRICK_END: 1,
+  GAME_END: 2,
+} as const;
+
 /** Let It Ride phase constants (sync: internal/domain/LetItRide.go). */
 /** Poker Squares phase constants (sync: internal/domain/PokerSquares.go). */
 export const PokerSquaresPhase = {

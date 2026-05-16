@@ -1543,6 +1543,16 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},
+	{Name: "briscola", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBriscolaCuiController(usecase.NewBriscolaInteractor(
+				domain.NewDefaultBriscola(), new(presenter.BriscolaCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "briscola.helpTitle",
+				CommandKeys:       []string{"briscola.helpPlay", "briscola.helpNext"},
+				ExtraCommandLines: []string{"  l                    action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
