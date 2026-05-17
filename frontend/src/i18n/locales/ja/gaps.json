@@ -1,0 +1,32 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "title": "ギャップス / モンタナ",
+  "moveCount": "手数",
+  "redealsRemaining": "再配り残り",
+  "undo": "元に戻す",
+  "redeal": "再配り",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "gap": "空き",
+  "playing": "プレイ中",
+  "stalemate": "手詰まりです",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "noHint": "ヒントはありません",
+  "hintAvailable": "ヒントがあります",
+  "noRedealsLeft": "再配りはもう使えません",
+  "landscapeBanner": "横向きにすると操作しやすくなります",
+  "tutorial": {
+    "grid": "4行×13列のグリッドです。エースは抜かれており、空きセルが4つあります。",
+    "controls": "操作ボタンです。再配りは最大3回まで利用できます。",
+    "hintDisplay": "ヒントボタンを押すと次の一手が表示されます。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "frontendHint": {
+    "validMove": "サーバーが次の一手を提案しています"
+  }
+}

@@ -238,4 +238,12 @@ func init() {
 			return usecase.RestoreBeleagueredCastleInteractor(data, new(presenter.BeleagueredCastleWebPresenter))
 		},
 		controller.NewBeleagueredCastleWebControllerWithProvider)
+	games.RegisterKVGame("gaps", games.CategorySolo,
+		func() usecase.GapsInteractorIF {
+			return usecase.NewGapsInteractor(domain.NewDefaultGaps(), new(presenter.GapsWebPresenter))
+		},
+		func(data []byte) (usecase.GapsInteractorIF, error) {
+			return usecase.RestoreGapsInteractor(data, new(presenter.GapsWebPresenter))
+		},
+		controller.NewGapsWebControllerWithProvider)
 }

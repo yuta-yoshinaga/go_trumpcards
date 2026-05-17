@@ -42,6 +42,7 @@ import type {
   FortyThievesMoveZone,
   FortyThievesResponse,
   FreeCellResponse,
+  GapsResponse,
   GinRummyResponse,
   GoFishResponse,
   GolfResponse,
@@ -217,6 +218,7 @@ const workerUrl: Record<string, string> = {
   tarneeb: WORKER_CLASSIC,
   highcardflush: WORKER_CASINO,
   briscola: WORKER_CLASSIC,
+  gaps: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1737,6 +1739,20 @@ export const briscolaApi = {
     gameExec<BriscolaResponse>('briscola', { command, cardIndex, config }),
 };
 
+/** Source or target zone for a Gaps card move. */
+export interface GapsMoveZone {
+  zone: 'grid';
+  row: number;
+  col: number;
+}
+
+/** API client for the Gaps /gaps/exec endpoint. */
+export const gapsApi = createSolitaireMoveApi<
+  GapsResponse,
+  GapsMoveZone,
+  'reset' | 'move' | 'redeal' | 'giveup' | 'hint' | 'log' | 'undo' | 'undo_n'
+>('gaps');
+
 /** API client for the Poker Squares /pokersquares/exec endpoint. */
 export const pokersquaresApi = {
   exec: (command: 'reset' | 'place' | 'undo' | 'giveup' | 'log', row?: number, col?: number) =>
@@ -1918,6 +1934,7 @@ const games = [
   'tarneeb',
   'highcardflush',
   'briscola',
+  'gaps',
 ] as const;
 type Game = (typeof games)[number];
 

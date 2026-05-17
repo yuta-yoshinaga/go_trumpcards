@@ -1,0 +1,17 @@
+{
+  "helpTitle": "Gaps / Montana",
+  "helpMove": "  m <fr> <fc> <tr> <tc>     move card from (fr,fc) into the gap at (tr,tc)",
+  "helpRedeal": "  rd                       redeal the unsorted cards (max 3 times)",
+  "helpUndo": "  u                        undo the last move",
+  "helpGiveUp": "  g                        give up",
+  "helpHint": "  h                        hint",
+  "gridCard": "({{row}},{{col}}){{card}}",
+  "redealsLine": "Redeals {{used}}/3 (remaining {{remaining}})",
+  "hintMove": "Hint: ({{fromRow}},{{fromCol}}) -> ({{toRow}},{{toCol}})",
+  "playing": "Playing",
+  "stalemate": "Stalemate",
+  "gameClear": "Game Clear!",
+  "gameOver": "Game Over",
+  "hintAvailable": "Hint available",
+  "noHint": "No hint"
+}

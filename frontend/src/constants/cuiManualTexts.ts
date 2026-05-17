@@ -38,6 +38,7 @@ import euchre from '../../../docs/manual/cui/euchre.md?raw';
 import fiftyone from '../../../docs/manual/cui/fiftyone.md?raw';
 import fortythieves from '../../../docs/manual/cui/fortythieves.md?raw';
 import freecell from '../../../docs/manual/cui/freecell.md?raw';
+import gaps from '../../../docs/manual/cui/gaps.md?raw';
 import ginrummy from '../../../docs/manual/cui/ginrummy.md?raw';
 import gofish from '../../../docs/manual/cui/gofish.md?raw';
 import golf from '../../../docs/manual/cui/golf.md?raw';
@@ -158,6 +159,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/poker': poker,
   '/pokersquares': pokersquares,
   '/pyramid': pyramid,
+  '/gaps': gaps,
   '/razz': razz,
   '/badugi': badugi,
   '/reddog': reddog,

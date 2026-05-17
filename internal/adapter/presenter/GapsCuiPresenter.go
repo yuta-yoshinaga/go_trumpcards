@@ -1,0 +1,79 @@
+package presenter
+
+import (
+	"strconv"
+	"strings"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
+)
+
+// GapsCuiPresenter はGapsゲームのCUIプレゼンター。
+type GapsCuiPresenter struct{}
+
+// Output は現在のゲーム状態をテキストで描画する。
+func (pr *GapsCuiPresenter) Output(g interfaces.GapsGame, lastErr error) string {
+	return buildCuiOutput(i18n.T("gaps.helpTitle"), func(b *strings.Builder) {
+		grid := g.GetGrid()
+		for r := 0; r < domain.GapsRowCnt; r++ {
+			for c := 0; c < domain.GapsColCnt; c++ {
+				if c > 0 {
+					b.WriteString(" ")
+				}
+				cell := grid[r][c]
+				if cell == nil {
+					b.WriteString("[ . ]")
+				} else {
+					b.WriteString(i18n.Tf("gaps.gridCard",
+						"row", strconv.Itoa(r),
+						"col", strconv.Itoa(c),
+						"card", cuiCardStr(cell)))
+				}
+			}
+			b.WriteString("\n")
+		}
+		b.WriteString("----------\n")
+		b.WriteString(i18n.Tf("gaps.redealsLine",
+			"used", strconv.Itoa(g.GetRedealsUsed()),
+			"remaining", strconv.Itoa(g.GetRedealsRemaining())))
+		b.WriteString("\n")
+		b.WriteString("----------\n")
+		cuiErrorBlock(b, lastErr)
+		switch g.GetPhase() {
+		case domain.GapsPhasePlaying:
+			if g.IsStalemate() {
+				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
+			}
+			b.WriteString(i18n.Tf("cuiSolitaireMoves",
+				"count", strconv.Itoa(g.GetMoveCount())) + "\n")
+		case domain.GapsPhaseGameClear:
+			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
+				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(g.GetMoveCount())) + "\n")
+		case domain.GapsPhaseGameOver:
+			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
+		}
+	})
+}
+
+// HintOutput はヒントをテキストで返す。
+func (pr *GapsCuiPresenter) HintOutput(g interfaces.GapsGame) string {
+	hint := g.GetHint()
+	if hint == nil {
+		return i18n.T("cuiHintNone") + "\n"
+	}
+	return i18n.Tf("gaps.hintMove",
+		"fromRow", strconv.Itoa(hint.FromRow),
+		"fromCol", strconv.Itoa(hint.FromCol),
+		"toRow", strconv.Itoa(hint.ToRow),
+		"toCol", strconv.Itoa(hint.ToCol)) + "\n"
+}
+
+// ActionLogOutput は棋譜をテキストで返す。
+func (pr *GapsCuiPresenter) ActionLogOutput(g interfaces.GapsGame) string {
+	if g.GetPhase() == domain.GapsPhasePlaying {
+		return actionLogToText(nil)
+	}
+	return actionLogToText(g.GetActionLog())
+}

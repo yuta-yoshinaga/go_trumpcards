@@ -1,0 +1,17 @@
+{
+  "helpTitle": "Gaps / Montana (ギャップス)",
+  "helpMove": "  m <fr> <fc> <tr> <tc>     カードを (fr,fc) から空き (tr,tc) へ移動",
+  "helpRedeal": "  rd                       残ったカードを再配り (最大3回)",
+  "helpUndo": "  u                        直前の操作を取り消し",
+  "helpGiveUp": "  g                        ギブアップ",
+  "helpHint": "  h                        ヒント",
+  "gridCard": "({{row}},{{col}}){{card}}",
+  "redealsLine": "再配り {{used}}/3 (残り{{remaining}})",
+  "hintMove": "ヒント: ({{fromRow}},{{fromCol}})→({{toRow}},{{toCol}})",
+  "playing": "プレイ中",
+  "stalemate": "手詰まり",
+  "gameClear": "ゲームクリア！",
+  "gameOver": "ゲームオーバー",
+  "hintAvailable": "ヒントあり",
+  "noHint": "ヒントなし"
+}

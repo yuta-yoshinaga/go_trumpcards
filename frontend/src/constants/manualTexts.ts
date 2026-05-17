@@ -37,6 +37,7 @@ import euchre from '../../../docs/manual/web/euchre.md?raw';
 import fiftyone from '../../../docs/manual/web/fiftyone.md?raw';
 import fortythieves from '../../../docs/manual/web/fortythieves.md?raw';
 import freecell from '../../../docs/manual/web/freecell.md?raw';
+import gaps from '../../../docs/manual/web/gaps.md?raw';
 import ginrummy from '../../../docs/manual/web/ginrummy.md?raw';
 import gofish from '../../../docs/manual/web/gofish.md?raw';
 import golf from '../../../docs/manual/web/golf.md?raw';
@@ -162,6 +163,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/crescent': crescent,
   '/mississippistud': mississippistud,
   '/pyramid': pyramid,
+  '/gaps': gaps,
   '/razz': razz,
   '/badugi': badugi,
   '/reddog': reddog,

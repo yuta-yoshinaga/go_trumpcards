@@ -88,6 +88,7 @@ export type GameKey =
   | 'spider'
   | 'spiderette'
   | 'pyramid'
+  | 'gaps'
   | 'tripeaks'
   | 'golf'
   | 'memory'
@@ -210,6 +211,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   spider: CASINO,
   spiderette: CASINO,
   pyramid: CASINO,
+  gaps: CASINO,
   tripeaks: CASINO,
   golf: CASINO,
   memory: CASINO,
