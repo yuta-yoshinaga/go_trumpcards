@@ -118,6 +118,7 @@ Go + Clean Architecture で実装した94種類のトランプゲーム。CLI �
 | ギャップス (Gaps / Montana) | `gaps` | [CUI](docs/manual/cui/gaps.md) / [Web](docs/manual/web/gaps.md) |
 | フォーカードポーカー (Four Card Poker) | `fourcardpoker` | [CUI](docs/manual/cui/fourcardpoker.md) / [Web](docs/manual/web/fourcardpoker.md) |
 | ラミー 500 (Rummy 500) | `rummy500` | [CUI](docs/manual/cui/rummy500.md) / [Web](docs/manual/web/rummy500.md) |
+| エイトオフ (Eight Off) | `eightoff` | [CUI](docs/manual/cui/eightoff.md) / [Web](docs/manual/web/eightoff.md) |
 
 ## Demo
 

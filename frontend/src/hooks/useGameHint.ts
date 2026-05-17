@@ -25,6 +25,7 @@ import type {
   DragonTigerResponse,
   DurakResponse,
   EgyptianRatscrewResponse,
+  EightOffResponse,
   EuchreResponse,
   FiftyOneResponse,
   FourCardPokerResponse,
@@ -113,6 +114,7 @@ import { getDoubtHint } from '../utils/hints/doubtHint';
 import { getDragontigerHint } from '../utils/hints/dragontigerHint';
 import { getDurakHint } from '../utils/hints/durakHint';
 import { getEgyptianRatscrewHint } from '../utils/hints/egyptianratscrewHint';
+import { getEightOffHint } from '../utils/hints/eightoffHint';
 import { getEuchreHint } from '../utils/hints/euchreHint';
 import { getFiftyOneHint } from '../utils/hints/fiftyoneHint';
 import { getFourCardPokerHint } from '../utils/hints/fourcardpokerHint';
@@ -216,6 +218,7 @@ const hintFactories = {
   speed: (s) => getSpeedHint(s as SpeedResponse),
   klondike: (s) => getKlondikeHint(s as KlondikeResponse),
   freecell: (s) => getFreeCellHint(s as FreeCellResponse),
+  eightoff: (s) => getEightOffHint(s as EightOffResponse),
   seahaventowers: (s) => getSeahavenTowersHint(s as SeahavenTowersResponse),
   spider: (s) => getSpiderHint(s as SpiderResponse),
   pyramid: (s) => getPyramidHint(s as PyramidResponse),

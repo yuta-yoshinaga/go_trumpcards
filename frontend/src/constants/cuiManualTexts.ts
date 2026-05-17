@@ -34,6 +34,7 @@ import doubt from '../../../docs/manual/cui/doubt.md?raw';
 import dragontiger from '../../../docs/manual/cui/dragontiger.md?raw';
 import durak from '../../../docs/manual/cui/durak.md?raw';
 import egyptianratscrew from '../../../docs/manual/cui/egyptianratscrew.md?raw';
+import eightoff from '../../../docs/manual/cui/eightoff.md?raw';
 import euchre from '../../../docs/manual/cui/euchre.md?raw';
 import fiftyone from '../../../docs/manual/cui/fiftyone.md?raw';
 import fortythieves from '../../../docs/manual/cui/fortythieves.md?raw';
@@ -136,6 +137,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/fourcardpoker': fourcardpoker,
   '/euchre': euchre,
   '/freecell': freecell,
+  '/eightoff': eightoff,
   '/seahaventowers': seahaventowers,
   '/ginrummy': ginrummy,
   '/rummy500': rummy500,

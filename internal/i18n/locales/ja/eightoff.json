@@ -1,0 +1,23 @@
+{
+  "helpTitle": "Eight Off (エイトオフ)",
+  "helpMove": "  m t <col> t <col>    タブロー上部のカードをタブローへ",
+  "helpMoveTF": "  m t <col> f          タブローから組札へ",
+  "helpMoveTT": "  m t <col> <idx> t <col>  タブローのカード列をタブローへ",
+  "helpMoveTC": "  m t <col> c <cell>   タブローからフリーセルへ",
+  "helpMoveCT": "  m c <cell> t <col>   フリーセルからタブローへ",
+  "helpMoveCF": "  m c <cell> f         フリーセルから組札へ",
+  "helpMoveShorthand": "  m <col> <col>        タブロー間移動 (省略形)",
+  "helpFoundation": "  f <col>              タブローから組札へ (省略形)",
+  "helpGiveUp": "  g                    ギブアップ",
+  "helpHint": "  h                    ヒント",
+  "helpAutoComplete": "  ac                   オートコンプリート",
+  "freeCellHeader": "FreeCells: ",
+  "foundationHeader": "Foundation: ",
+  "columnLabel": "列{{col}}:",
+  "hintFromTableau": "タブロー列{{col}}[{{idx}}]",
+  "hintFromFreeCell": "フリーセル{{col}}",
+  "hintToFoundation": "ファンデーション",
+  "hintToTableau": "タブロー列{{col}}",
+  "hintToFreeCell": "フリーセル{{col}}",
+  "hintLine": "ヒント: {{from}} → {{to}}"
+}

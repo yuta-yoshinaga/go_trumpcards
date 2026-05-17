@@ -513,4 +513,9 @@ func init() {
 			return usecase.NewRummy500Interactor(domain.NewDefaultRummy500(), new(presenter.Rummy500WebPresenter))
 		},
 		controller.NewRummy500WebController)
+	BindWebControllerFor("eightoff",
+		func() usecase.EightOffInteractorIF {
+			return usecase.NewEightOffInteractor(domain.NewDefaultEightOff(), new(presenter.EightOffWebPresenter))
+		},
+		controller.NewEightOffWebController)
 }

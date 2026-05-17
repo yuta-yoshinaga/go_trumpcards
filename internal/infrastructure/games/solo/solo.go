@@ -254,4 +254,12 @@ func init() {
 			return usecase.RestoreRummy500Interactor(data, new(presenter.Rummy500WebPresenter))
 		},
 		controller.NewRummy500WebControllerWithProvider)
+	games.RegisterKVGame("eightoff", games.CategorySolo,
+		func() usecase.EightOffInteractorIF {
+			return usecase.NewEightOffInteractor(domain.NewDefaultEightOff(), new(presenter.EightOffWebPresenter))
+		},
+		func(data []byte) (usecase.EightOffInteractorIF, error) {
+			return usecase.RestoreEightOffInteractor(data, new(presenter.EightOffWebPresenter))
+		},
+		controller.NewEightOffWebControllerWithProvider)
 }
