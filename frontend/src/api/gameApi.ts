@@ -78,6 +78,7 @@ import type {
   PresidentResponse,
   PyramidResponse,
   RedDogResponse,
+  Rummy500Response,
   RussianSolitaireResponse,
   ScorpionResponse,
   SeahavenTowersResponse,
@@ -221,6 +222,7 @@ const workerUrl: Record<string, string> = {
   briscola: WORKER_CLASSIC,
   gaps: WORKER_SOLO,
   fourcardpoker: WORKER_CASINO,
+  rummy500: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -882,6 +884,40 @@ export const ginrummyApi = {
       command,
       cardIndex,
       cardIndices,
+      config,
+    }),
+};
+
+/** Configuration options for Rummy 500 game settings. */
+export interface Rummy500ConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** Layoff parameters: meld owner, meld index, and card index in hand. */
+export interface Rummy500LayoffInput {
+  meldOwner: number;
+  meldIdx: number;
+  cardIndex: number;
+}
+
+/** API client for the Rummy 500 /rummy500/exec endpoint. */
+export const rummy500Api = {
+  exec: (
+    command: 'reset' | 'drawstock' | 'drawdiscard' | 'meld' | 'layoff' | 'discard' | 'nextround' | 'log',
+    cardIndex?: number,
+    config?: Rummy500ConfigInput,
+    cardIndices?: number[],
+    discardIdx?: number,
+    layoff?: Rummy500LayoffInput,
+  ) =>
+    gameExec<Rummy500Response>('rummy500', {
+      command,
+      cardIndex: layoff?.cardIndex ?? cardIndex,
+      cardIndices,
+      discardIdx,
+      meldOwner: layoff?.meldOwner,
+      meldIdx: layoff?.meldIdx,
       config,
     }),
 };
@@ -1954,6 +1990,7 @@ const games = [
   'briscola',
   'gaps',
   'fourcardpoker',
+  'rummy500',
 ] as const;
 type Game = (typeof games)[number];
 

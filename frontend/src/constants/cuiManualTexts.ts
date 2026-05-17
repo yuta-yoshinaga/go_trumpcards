@@ -71,6 +71,7 @@ import president from '../../../docs/manual/cui/president.md?raw';
 import pyramid from '../../../docs/manual/cui/pyramid.md?raw';
 import razz from '../../../docs/manual/cui/razz.md?raw';
 import reddog from '../../../docs/manual/cui/reddog.md?raw';
+import rummy500 from '../../../docs/manual/cui/rummy500.md?raw';
 import russiansolitaire from '../../../docs/manual/cui/russiansolitaire.md?raw';
 import scorpion from '../../../docs/manual/cui/scorpion.md?raw';
 import seahaventowers from '../../../docs/manual/cui/seahaventowers.md?raw';
@@ -137,6 +138,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/freecell': freecell,
   '/seahaventowers': seahaventowers,
   '/ginrummy': ginrummy,
+  '/rummy500': rummy500,
   '/gofish': gofish,
   '/golf': golf,
   '/hearts': hearts,

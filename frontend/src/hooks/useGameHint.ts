@@ -57,6 +57,7 @@ import type {
   PresidentResponse,
   PyramidResponse,
   RedDogResponse,
+  Rummy500Response,
   RussianSolitaireResponse,
   ScorpionResponse,
   SeahavenTowersResponse,
@@ -147,6 +148,7 @@ import { getPresidentHint } from '../utils/hints/presidentHint';
 import { getPyramidHint } from '../utils/hints/pyramidHint';
 import { getRazzHint } from '../utils/hints/razzHint';
 import { getReddogHint } from '../utils/hints/reddogHint';
+import { getRummy500Hint } from '../utils/hints/rummy500Hint';
 import { getRussianSolitaireHint } from '../utils/hints/russianSolitaireHint';
 import { getScorpionHint } from '../utils/hints/scorpionHint';
 import { getSeahavenTowersHint } from '../utils/hints/seahavenTowersHint';
@@ -273,6 +275,7 @@ const hintFactories = {
   spiderette: (s) => getSpideretteHint(s as SpideretteResponse),
   gaps: (s) => getGapsHint(s as GapsResponse),
   fourcardpoker: (s) => getFourCardPokerHint(s as FourCardPokerResponse),
+  rummy500: (s) => getRummy500Hint(s as Rummy500Response),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

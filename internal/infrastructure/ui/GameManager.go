@@ -1579,6 +1579,24 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},
+	{Name: "rummy500", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewRummy500CuiController(usecase.NewRummy500Interactor(
+				domain.NewDefaultRummy500(), new(presenter.Rummy500CuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "rummy500.helpTitle",
+				CommandKeys: []string{
+					"rummy500.helpDrawStock",
+					"rummy500.helpDrawDiscard",
+					"rummy500.helpMeld",
+					"rummy500.helpLayoff",
+					"rummy500.helpDiscard",
+					"rummy500.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"rummy500.helpSetDifficulty", "rummy500.helpSetLimit"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
@@ -1639,6 +1657,9 @@ var GameAliases = map[string]string{
 	"mstud":   "mississippistud",
 	"sp21":    "spanish21",
 	"s21":     "spanish21",
+	"rummy":   "rummy500",
+	"500":     "rummy500",
+	"r500":    "rummy500",
 }
 
 // cuiGame is implemented by each *Cui struct to expose its controller and help lines.

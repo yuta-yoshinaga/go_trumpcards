@@ -1,0 +1,51 @@
+{
+  "phase": {
+    "draw": "Draw",
+    "play": "Play",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "pointLimit": "Point Limit",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "drawPile": "Stock: {{count}}",
+  "discardPile": "Discard pile",
+  "discardEmpty": "Discard pile is empty",
+  "cards": "{{count}} cards",
+  "cumulativeScore": "Total: {{score}}",
+  "roundScore": "Round: {{score}}",
+  "laidMelds": "Laid melds",
+  "drawStockButton": "Draw from stock",
+  "meldButton": "Meld",
+  "layoffOwner": "Owner",
+  "layoffMeld": "Meld#",
+  "layoffButton": "Lay off",
+  "discardButton": "Discard",
+  "nextRound": "Next round",
+  "drawPhase": "Draw from the stock or pick any card from the discard pile",
+  "playPhase": "Meld, lay off, then discard",
+  "roundEnd": "Round complete",
+  "drawDiscardHint": "Click any discard card to take it plus all cards above it",
+  "winner": {
+    "human": "You win!",
+    "cpu": "CPU {{idx}} wins"
+  },
+  "hint": {
+    "drawStock": "Draw a card from the stock",
+    "drawDiscardTop": "Taking the top of the discard pile is safe",
+    "meldSet": "You have a set ready. Meld it!",
+    "discardHighCard": "Discard a high-value card to reduce penalties"
+  },
+  "tutorial": {
+    "drawArea": "Draw area. Draw from stock or any card in the discard pile.",
+    "playerHand": "Your hand. Click cards to select.",
+    "meldButton": "Meld three or more cards of the same rank or a same-suit run.",
+    "discardButton": "Discard your selected card to end your turn."
+  }
+}
