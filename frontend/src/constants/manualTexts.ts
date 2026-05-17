@@ -73,6 +73,7 @@ import president from '../../../docs/manual/web/president.md?raw';
 import pyramid from '../../../docs/manual/web/pyramid.md?raw';
 import razz from '../../../docs/manual/web/razz.md?raw';
 import reddog from '../../../docs/manual/web/reddog.md?raw';
+import rummy500 from '../../../docs/manual/web/rummy500.md?raw';
 import russiansolitaire from '../../../docs/manual/web/russiansolitaire.md?raw';
 import scorpion from '../../../docs/manual/web/scorpion.md?raw';
 import seahaventowers from '../../../docs/manual/web/seahaventowers.md?raw';
@@ -169,6 +170,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/razz': razz,
   '/badugi': badugi,
   '/reddog': reddog,
+  '/rummy500': rummy500,
   '/sevencardstud': sevencardstud,
   '/sevens': sevens,
   '/shortdeck': shortdeck,

@@ -113,7 +113,8 @@ export type GameKey =
   | 'canasta'
   | 'cribbage'
   | 'sevenbridge'
-  | 'contractrummy';
+  | 'contractrummy'
+  | 'rummy500';
 
 /** Theme classes (Tailwind) applied to the page background and footer for each game. */
 export interface GameThemeClasses {
@@ -238,4 +239,5 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   cribbage: BLUE,
   sevenbridge: BLUE,
   contractrummy: BLUE,
+  rummy500: BLUE,
 };

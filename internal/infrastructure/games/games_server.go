@@ -508,4 +508,9 @@ func init() {
 			return usecase.NewFourCardPokerInteractor(domain.NewDefaultFourCardPoker(), new(presenter.FourCardPokerWebPresenter))
 		},
 		controller.NewFourCardPokerWebController)
+	BindWebControllerFor("rummy500",
+		func() usecase.Rummy500InteractorIF {
+			return usecase.NewRummy500Interactor(domain.NewDefaultRummy500(), new(presenter.Rummy500WebPresenter))
+		},
+		controller.NewRummy500WebController)
 }

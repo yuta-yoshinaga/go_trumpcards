@@ -182,6 +182,7 @@ export const gameCategories: readonly GameCategory[] = [
         icon: '📜',
         page: 'ContractRummy',
       },
+      { path: '/rummy500', labelKey: 'nav.rummy500', icon: '🥃', page: 'Rummy500' },
     ],
   },
 ] as const;

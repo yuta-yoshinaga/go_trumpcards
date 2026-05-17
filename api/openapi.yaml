@@ -207,6 +207,8 @@ tags:
     description: 'Gaps / Montana (ギャップス) - single-player puzzle solitaire on a 4x13 grid. All four Aces are removed leaving 4 gaps. A gap accepts the card whose suit matches its left neighbour and whose rank is +1. A gap in column 0 accepts any 2. A gap right-of-King is dead. Up to 3 redeals are allowed; the locked prefix of each row (2 then same-suit +1 successors) stays put and the rest is shuffled. Win when each row holds 2..K of one suit.'
   - name: fourcardpoker
     description: Four Card Poker (フォーカードポーカー) - single-player casino poker. Player is dealt 5 cards and dealer 6 (one upcard); both sides use their best 4-card hand. No dealer qualification. Player chooses Play (1x/2x/3x Ante) or Fold after seeing the upcard. 4-card ranks (ascending) - High Card < Pair < Two Pair < Straight < Flush < Three of a Kind < Straight Flush < Four of a Kind. Auto Ante Bonus pays for 3-of-a-Kind or better. Optional Aces Up sidebet pays on Pair of Aces or better.
+  - name: rummy500
+    description: Rummy 500 (500ラム / ラミー500) - 2-player rummy where the discard pile is an ordered stack and a player can draw any card from it (taking all cards above the chosen index). Sets (3+ same rank) and runs (3+ same-suit consecutive; Aces low or high but no K-A-2 wrap) are melded and may be extended by layoff. Scoring per round = laid-meld points (positive) minus remaining hand points (negative); A=1 (or 15 in a Q-K-A run), J/Q/K=10, others face value. First to the configured point limit (default 500) wins.
 
 paths:
   /blackjack/exec:
@@ -3259,6 +3261,64 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FourCardPokerResponse'
+
+  /rummy500/exec:
+    post:
+      tags:
+        - rummy500
+      summary: Execute a Rummy 500 game command
+      description: |
+        Send a command to advance the Rummy 500 (500ラム / ラミー500) game session
+        identified by `sessionId`. 2-player rummy variant with a 52-card deck (13 cards
+        per player). The discard pile is preserved in order — when drawing from the
+        discard pile the player may pick any card and receives it together with every
+        card stacked above it. After drawing the player may meld sets (3+ same rank)
+        or runs (3+ same-suit consecutive; Aces low or high but no K-A-2 wrap) and
+        lay off cards onto existing melds; the turn ends by discarding one card.
+
+        Scoring per round = laid-meld points (positive) minus remaining hand points
+        (negative). Card values: A=1 (or 15 inside a Q-K-A run), J/Q/K=10, others
+        face value. First player to reach the configured point limit (default 500)
+        wins. A round ends when a player goes out (hand empty) or the stock is
+        exhausted.
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Draw     | `0`   | Draw a card from stock or discard pile |
+        | Play     | `1`   | Meld / layoff / then discard to end turn |
+        | RoundEnd | `2`   | Round complete; advance via `nextround` |
+        | GameEnd  | `3`   | Game over (point limit reached) |
+
+        | Command       | Aliases | Description |
+        |---------------|---------|-------------|
+        | `reset`       | `r`     | Start / restart a game |
+        | `drawstock`   | `ds`    | Draw the top card from the stock |
+        | `drawdiscard` | `dd`    | Pick a card from the discard pile (idx + all cards above) |
+        | `meld`        | `m`     | Lay down a meld from hand (cardIndices) |
+        | `layoff`      | `lo`    | Lay off a card onto an existing meld |
+        | `discard`     | `d`     | Discard a card to end the turn |
+        | `nextround`   | `nr`    | Advance to the next round after RoundEnd |
+        | `log`         | `l`     | View action log |
+      operationId: rummy500Exec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Rummy500Request'
+      responses:
+        '200':
+          description: Game state after the command was executed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rummy500Response'
+        '400':
+          description: Invalid request body or missing required parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rummy500Response'
 
   /caribbeanstud/exec:
     post:
@@ -21287,3 +21347,129 @@ components:
           additionalProperties:
             type: string
           description: Interpolation parameters for the message template keyed by placeholder name.
+
+    Rummy500Request:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          enum: [reset, r, drawstock, ds, drawdiscard, dd, meld, m, layoff, lo, discard, d, nextround, nr, log, l, quit, q]
+          description: Game command alias.
+        sessionId:
+          type: string
+          description: Stable identifier for the active game session.
+        cardIndex:
+          type: integer
+          description: Card index in the human hand (for `discard` and the card argument of `layoff`).
+        cardIndices:
+          type: array
+          items:
+            type: integer
+          description: Card indices for `meld` (3+ entries describing the meld).
+        discardIdx:
+          type: integer
+          description: Discard pile index for `drawdiscard`. Omit or pass `-1` to draw the top of the pile.
+        meldOwner:
+          type: integer
+          description: Player index that owns the meld being laid off onto.
+        meldIdx:
+          type: integer
+          description: Index of the target meld within `meldOwner`'s laid melds.
+        config:
+          $ref: '#/components/schemas/Rummy500ConfigInput'
+
+    Rummy500ConfigInput:
+      type: object
+      properties:
+        cpuDifficulty:
+          type: integer
+          minimum: 0
+          maximum: 2
+          description: 0=Easy, 1=Normal, 2=Hard.
+        pointLimit:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          description: Target cumulative score; first to reach it wins.
+
+    Rummy500Response:
+      type: object
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/Rummy500PlayerData'
+        phase:
+          type: integer
+          enum: [0, 1, 2, 3]
+          description: 0=Draw, 1=Play, 2=RoundEnd, 3=GameEnd.
+        roundNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        discardPile:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+          description: Discard pile in order (index 0 = oldest). Drawing accepts an index and takes idx + all cards above.
+        drawPileCount:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: -1 until the game ends.
+        roundEnderIdx:
+          type: integer
+          description: Player index that ended the round, or -1 if the stock ran out.
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+        config:
+          $ref: '#/components/schemas/Rummy500ConfigOutput'
+
+    Rummy500ConfigOutput:
+      type: object
+      properties:
+        cpuDifficulty:
+          type: integer
+        pointLimit:
+          type: integer
+
+    Rummy500PlayerData:
+      type: object
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        roundScore:
+          type: integer
+        cumulativeScore:
+          type: integer
+        laidMelds:
+          type: array
+          items:
+            $ref: '#/components/schemas/Rummy500Meld'
+
+    Rummy500Meld:
+      type: object
+      properties:
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'

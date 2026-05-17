@@ -839,3 +839,11 @@ export const GapsPhase = {
   GAME_CLEAR: 1,
   GAME_OVER: 2,
 } as const;
+
+/** Rummy 500 phase constants (sync: internal/domain/Rummy500.go). */
+export const Rummy500Phase = {
+  DRAW: 0,
+  PLAY: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;

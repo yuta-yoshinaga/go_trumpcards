@@ -1224,6 +1224,47 @@ export interface SevenBridgeResponse {
   config: SevenBridgeConfig;
 }
 
+// --- Rummy 500 ---
+
+/** Rummy 500 player data with hand, laid melds and scores. */
+export interface Rummy500PlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  roundScore: number;
+  cumulativeScore: number;
+  laidMelds: Rummy500Meld[];
+}
+
+/** A meld (set or run) laid by a player in Rummy 500. */
+export interface Rummy500Meld {
+  cards: Card[];
+}
+
+/** Rummy 500 game configuration. */
+export interface Rummy500Config {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+/** Full Rummy 500 game state returned from the API. */
+export interface Rummy500Response {
+  players: Rummy500PlayerData[];
+  phase: number;
+  roundNumber: number;
+  currentPlayerIdx: number;
+  discardPile: Card[];
+  drawPileCount: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  roundEnderIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: Rummy500Config;
+}
+
 /** Full Gin Rummy game state returned from the API. */
 export interface GinRummyResponse {
   players: GinRummyPlayerData[];
