@@ -1,0 +1,72 @@
+{
+  "title": "フォーカードポーカー",
+  "player": "プレイヤー",
+  "dealer": "ディーラー",
+  "dealerUpcard": "アップカードのみ表示中",
+  "label": {
+    "chips": "チップ",
+    "ante": "アンテ",
+    "acesUp": "エースズアップ",
+    "play": "プレイベット",
+    "playMultiplier": "プレイ倍率",
+    "handRank": "役"
+  },
+  "button": {
+    "bet": "ベット",
+    "play": "プレイ",
+    "fold": "フォールド",
+    "reset": "リセット"
+  },
+  "phase": {
+    "bet": "ベット",
+    "action": "プレイ/フォールド",
+    "end": "結果"
+  },
+  "result": {
+    "playerWins": "勝利！",
+    "dealerWins": "ディーラー勝利！",
+    "push": "引き分け！",
+    "fold": "フォールド"
+  },
+  "payout": {
+    "ante": "アンテ",
+    "play": "プレイ",
+    "anteBonus": "アンテボーナス",
+    "acesUp": "エースズアップ",
+    "total": "合計"
+  },
+  "handRank": {
+    "1": "ハイカード",
+    "2": "ペア",
+    "3": "ツーペア",
+    "4": "ストレート",
+    "5": "フラッシュ",
+    "6": "スリーカード",
+    "7": "ストレートフラッシュ",
+    "8": "フォーカード"
+  },
+  "settings": {
+    "title": "設定"
+  },
+  "betGuide": "アンテと任意のエースズアップを設定してベット",
+  "payoutRef": {
+    "title": "配当表",
+    "anteBonusHeader": "アンテボーナス (自動配当)",
+    "anteBonusThreeOfAKind": "スリーカード: 2:1",
+    "anteBonusStraightFlush": "ストレートフラッシュ: 20:1",
+    "anteBonusFourOfAKind": "フォーカード: 25:1",
+    "acesUpHeader": "エースズアップ",
+    "acesUpPairOfAces": "Aペア: 1:1",
+    "acesUpTwoPair": "ツーペア: 2:1",
+    "acesUpStraight": "ストレート: 4:1",
+    "acesUpFlush": "フラッシュ: 5:1",
+    "acesUpThreeOfAKind": "スリーカード: 7:1",
+    "acesUpStraightFlush": "ストレートフラッシュ: 40:1",
+    "acesUpFourOfAKind": "フォーカード: 50:1"
+  },
+  "tutorial": {
+    "betControls": "アンテと任意のエースズアップを設定し、ベットを押してください。",
+    "actionButtons": "ディーラーのアップカードを見てプレイ倍率(1〜3倍)を選ぶか、フォールドしてください。",
+    "results": "ベスト4枚で勝負した結果と配当を確認してください。"
+  }
+}

@@ -205,6 +205,8 @@ tags:
     description: Briscola (ブリスコラ) game - 2-player Italian trick-taking classic. 40-card deck (A,2-7,J,Q,K x 4 suits — no 8/9/10), 3-card hands replenished from the stock, face-up trump (briscola) decides the trump suit. No must-follow — any card is legal at any time. Intra-suit rank order A>3>K>Q>J>7>6>5>4>2; trump beats non-trump. Card points A=11, 3=10, K=4, Q=3, J=2 (total 120); >60 points wins, 60-60 is a tie.
   - name: gaps
     description: 'Gaps / Montana (ギャップス) - single-player puzzle solitaire on a 4x13 grid. All four Aces are removed leaving 4 gaps. A gap accepts the card whose suit matches its left neighbour and whose rank is +1. A gap in column 0 accepts any 2. A gap right-of-King is dead. Up to 3 redeals are allowed; the locked prefix of each row (2 then same-suit +1 successors) stays put and the rest is shuffled. Win when each row holds 2..K of one suit.'
+  - name: fourcardpoker
+    description: Four Card Poker (フォーカードポーカー) - single-player casino poker. Player is dealt 5 cards and dealer 6 (one upcard); both sides use their best 4-card hand. No dealer qualification. Player chooses Play (1x/2x/3x Ante) or Fold after seeing the upcard. 4-card ranks (ascending) - High Card < Pair < Two Pair < Straight < Flush < Three of a Kind < Straight Flush < Four of a Kind. Auto Ante Bonus pays for 3-of-a-Kind or better. Optional Aces Up sidebet pays on Pair of Aces or better.
 
 paths:
   /blackjack/exec:
@@ -3184,6 +3186,79 @@ paths:
                     playerHandRank: 0
                     dealerHandRank: 0
                     message: param error.
+
+  /fourcardpoker/exec:
+    post:
+      tags:
+        - fourcardpoker
+      summary: Execute a Four Card Poker game command
+      description: |
+        Send a command to advance the Four Card Poker (フォーカードポーカー) game session
+        identified by `sessionId`. Single-player casino poker — the player is dealt 5 cards
+        and the dealer 6 (one face-up upcard); both sides build their best 4-card hand.
+        No dealer qualification. After seeing the upcard the player chooses Play
+        (1x / 2x / 3x Ante) or Fold.
+
+        Hand rankings (ascending): High Card, Pair, Two Pair, Straight, Flush,
+        Three of a Kind, Straight Flush, Four of a Kind.
+
+        | Phase  | Value | Description |
+        |--------|-------|-------------|
+        | Bet    | `1`   | Place Ante and optional Aces Up sidebet |
+        | Action | `2`   | Choose Play (1x-3x Ante) or Fold |
+        | End    | `3`   | Round complete; shows result and payouts |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `bet`   | `b`     | Place Ante (and optional Aces Up sidebet) |
+        | `play`  | `p`     | Place Play bet at `playMultiplier` × Ante and resolve |
+        | `fold`  | `f`     | Forfeit the Ante (Aces Up is still evaluated) |
+        | `log`   | `l`     | View action log |
+      operationId: fourcardpokerExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FourCardPokerRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 100 Ante with 50 Aces Up
+                value:
+                  command: bet
+                  amount: 100
+                  acesUpBet: 50
+                  sessionId: my-session-001
+              play:
+                summary: Play at 3x multiplier
+                value:
+                  command: play
+                  playMultiplier: 3
+                  sessionId: my-session-001
+              fold:
+                summary: Fold hand
+                value:
+                  command: fold
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FourCardPokerResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FourCardPokerResponse'
 
   /caribbeanstud/exec:
     post:
@@ -16467,6 +16542,156 @@ components:
           type: integer
           description: Dealer's hand rank (1=High Card, 2=Pair, 3=Flush, 4=Straight, 5=Three of a Kind, 6=Straight Flush)
           example: 1
+        message:
+          type: string
+          description: Game result or error message. Empty during bet/action phase.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Four Card Poker
+    # -------------------------------------------------------------------------
+    FourCardPokerRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `bet` (`b`),
+            `play` (`p`), `fold` (`f`), `log` (`l`).
+          enum: [r, reset, b, bet, p, play, f, fold, log, l]
+          example: bet
+        amount:
+          type: integer
+          description: Ante bet amount. Required for `bet` (minimum 10, multiples of 10).
+          minimum: 10
+          example: 100
+        acesUpBet:
+          type: integer
+          description: Aces Up sidebet amount. Optional; used with `bet`. 0 / omitted = no sidebet.
+          minimum: 0
+          example: 50
+        playMultiplier:
+          type: integer
+          description: Play bet multiplier of the Ante. Required for `play`; 1, 2, or 3. Defaults to 1.
+          minimum: 1
+          maximum: 3
+          example: 2
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters).
+          example: my-session-001
+
+    FourCardPokerResponse:
+      type: object
+      description: Current state of the Four Card Poker game.
+      required:
+        - playerHand
+        - dealerHand
+        - playerBest
+        - dealerBest
+        - phase
+        - chips
+        - anteBet
+        - acesUpBet
+        - playBet
+        - playMultiplier
+        - result
+        - antePayout
+        - playPayout
+        - anteBonusPayout
+        - acesUpPayout
+        - totalPayout
+        - playerHandRank
+        - dealerHandRank
+        - message
+      properties:
+        playerHand:
+          type: array
+          description: Player's 5 cards.
+          items:
+            $ref: '#/components/schemas/Card'
+        dealerHand:
+          type: array
+          description: Dealer's 6 cards. During the action phase only the upcard is exposed.
+          items:
+            $ref: '#/components/schemas/Card'
+        playerBest:
+          type: array
+          description: Player's best 4-card subset (populated at End phase).
+          items:
+            $ref: '#/components/schemas/Card'
+        dealerBest:
+          type: array
+          description: Dealer's best 4-card subset (populated at End phase).
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 1 = Bet, 2 = Action, 3 = End"
+          enum: [1, 2, 3]
+          example: 1
+        chips:
+          type: integer
+          description: Current chip count.
+          example: 1000
+        anteBet:
+          type: integer
+          description: Ante bet amount.
+          example: 100
+        acesUpBet:
+          type: integer
+          description: Aces Up sidebet amount.
+          example: 50
+        playBet:
+          type: integer
+          description: Play bet amount (anteBet * playMultiplier when Play was chosen).
+          example: 0
+        playMultiplier:
+          type: integer
+          description: Play multiplier chosen by the player (1, 2, or 3).
+          enum: [0, 1, 2, 3]
+          example: 0
+        result:
+          type: integer
+          description: "Game result: 1 = Player wins, -1 = Dealer wins, 0 = Push/not resolved"
+          enum: [-1, 0, 1]
+          example: 0
+        antePayout:
+          type: integer
+          example: 0
+        playPayout:
+          type: integer
+          example: 0
+        anteBonusPayout:
+          type: integer
+          description: Automatic Ante Bonus payout (Three of a Kind 2:1, Straight Flush 20:1, Four of a Kind 25:1).
+          example: 0
+        acesUpPayout:
+          type: integer
+          description: Aces Up sidebet payout.
+          example: 0
+        totalPayout:
+          type: integer
+          example: 0
+        playerHandRank:
+          type: integer
+          description: Player's 4-card hand rank (1=High Card, 2=Pair, 3=Two Pair, 4=Straight, 5=Flush, 6=Three of a Kind, 7=Straight Flush, 8=Four of a Kind).
+          example: 0
+        dealerHandRank:
+          type: integer
+          description: Dealer's 4-card hand rank (same scale as `playerHandRank`).
+          example: 0
         message:
           type: string
           description: Game result or error message. Empty during bet/action phase.

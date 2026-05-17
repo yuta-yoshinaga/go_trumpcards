@@ -1,0 +1,72 @@
+{
+  "title": "Four Card Poker",
+  "player": "Player",
+  "dealer": "Dealer",
+  "dealerUpcard": "Upcard only",
+  "label": {
+    "chips": "Chips",
+    "ante": "Ante",
+    "acesUp": "Aces Up",
+    "play": "Play Bet",
+    "playMultiplier": "Play Mul",
+    "handRank": "Hand"
+  },
+  "button": {
+    "bet": "Bet",
+    "play": "Play",
+    "fold": "Fold",
+    "reset": "Reset"
+  },
+  "phase": {
+    "bet": "Bet",
+    "action": "Play/Fold",
+    "end": "Result"
+  },
+  "result": {
+    "playerWins": "You Win!",
+    "dealerWins": "Dealer Wins!",
+    "push": "Push!",
+    "fold": "Folded"
+  },
+  "payout": {
+    "ante": "Ante",
+    "play": "Play",
+    "anteBonus": "Ante Bonus",
+    "acesUp": "Aces Up",
+    "total": "Total"
+  },
+  "handRank": {
+    "1": "High Card",
+    "2": "Pair",
+    "3": "Two Pair",
+    "4": "Straight",
+    "5": "Flush",
+    "6": "Three of a Kind",
+    "7": "Straight Flush",
+    "8": "Four of a Kind"
+  },
+  "settings": {
+    "title": "Settings"
+  },
+  "betGuide": "Place ante and optional Aces Up side bet",
+  "payoutRef": {
+    "title": "Paytable",
+    "anteBonusHeader": "Ante Bonus (auto)",
+    "anteBonusThreeOfAKind": "Three of a Kind: 2:1",
+    "anteBonusStraightFlush": "Straight Flush: 20:1",
+    "anteBonusFourOfAKind": "Four of a Kind: 25:1",
+    "acesUpHeader": "Aces Up",
+    "acesUpPairOfAces": "Pair of Aces: 1:1",
+    "acesUpTwoPair": "Two Pair: 2:1",
+    "acesUpStraight": "Straight: 4:1",
+    "acesUpFlush": "Flush: 5:1",
+    "acesUpThreeOfAKind": "Three of a Kind: 7:1",
+    "acesUpStraightFlush": "Straight Flush: 40:1",
+    "acesUpFourOfAKind": "Four of a Kind: 50:1"
+  },
+  "tutorial": {
+    "betControls": "Set ante and optional Aces Up bet, then press Bet.",
+    "actionButtons": "Pick a play multiplier (1x-3x) and press Play, or Fold.",
+    "results": "Compare best 4-card hands and review payouts."
+  }
+}

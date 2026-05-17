@@ -41,6 +41,7 @@ import type {
   FiftyOneResponse,
   FortyThievesMoveZone,
   FortyThievesResponse,
+  FourCardPokerResponse,
   FreeCellResponse,
   GapsResponse,
   GinRummyResponse,
@@ -219,6 +220,7 @@ const workerUrl: Record<string, string> = {
   highcardflush: WORKER_CASINO,
   briscola: WORKER_CLASSIC,
   gaps: WORKER_SOLO,
+  fourcardpoker: WORKER_CASINO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1011,6 +1013,22 @@ export const baccaratApi = {
 export const threecardApi = {
   exec: (command: 'reset' | 'bet' | 'play' | 'fold' | 'log', amount?: number, pairPlusBet?: number) =>
     gameExec<ThreeCardResponse>('threecard', { command, amount, pairPlusBet }),
+};
+
+/** API client for the Four Card Poker /fourcardpoker/exec endpoint. */
+export const fourcardpokerApi = {
+  exec: (
+    command: 'reset' | 'bet' | 'play' | 'fold' | 'log',
+    amount?: number,
+    acesUpBet?: number,
+    playMultiplier?: number,
+  ) =>
+    gameExec<FourCardPokerResponse>('fourcardpoker', {
+      command,
+      amount,
+      acesUpBet,
+      playMultiplier,
+    }),
 };
 
 /** API client for the High Card Flush /highcardflush/exec endpoint. */
@@ -1935,6 +1953,7 @@ const games = [
   'highcardflush',
   'briscola',
   'gaps',
+  'fourcardpoker',
 ] as const;
 type Game = (typeof games)[number];
 

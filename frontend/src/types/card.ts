@@ -4190,3 +4190,35 @@ export interface GapsResponse {
   messageParams?: Record<string, string>;
   hint?: GapsHint;
 }
+
+// --- Four Card Poker (フォーカードポーカー) ---
+
+/** Four Card Poker API response. */
+export interface FourCardPokerResponse {
+  /** Player's 5-card hand. */
+  playerHand: Card[];
+  /** Dealer hand: during the action phase only the upcard is revealed
+   * (length 1); after the end phase all 6 cards are revealed. */
+  dealerHand: Card[];
+  /** Player's best 4-card subset (populated at end phase). */
+  playerBest: Card[];
+  /** Dealer's best 4-card subset (populated at end phase). */
+  dealerBest: Card[];
+  phase: number;
+  chips: number;
+  anteBet: number;
+  acesUpBet: number;
+  playBet: number;
+  playMultiplier: number;
+  result: number;
+  antePayout: number;
+  playPayout: number;
+  anteBonusPayout: number;
+  acesUpPayout: number;
+  totalPayout: number;
+  playerHandRank: number;
+  dealerHandRank: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}

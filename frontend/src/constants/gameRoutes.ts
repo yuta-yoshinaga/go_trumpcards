@@ -55,6 +55,7 @@ export const gameCategories: readonly GameCategory[] = [
         page: 'MississippiStud',
       },
       { path: '/highcardflush', labelKey: 'nav.highcardflush', icon: '♣️', page: 'HighCardFlush' },
+      { path: '/fourcardpoker', labelKey: 'nav.fourcardpoker', icon: '🃏', page: 'FourCardPoker' },
     ],
   },
   {

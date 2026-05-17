@@ -503,4 +503,9 @@ func init() {
 			return usecase.NewGapsInteractor(domain.NewDefaultGaps(), new(presenter.GapsWebPresenter))
 		},
 		controller.NewGapsWebController)
+	BindWebControllerFor("fourcardpoker",
+		func() usecase.FourCardPokerInteractorIF {
+			return usecase.NewFourCardPokerInteractor(domain.NewDefaultFourCardPoker(), new(presenter.FourCardPokerWebPresenter))
+		},
+		controller.NewFourCardPokerWebController)
 }
