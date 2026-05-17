@@ -138,17 +138,17 @@ func (g *Gaps) Move(fromRow, fromCol, toRow, toCol int) error {
 	return nil
 }
 
-// isLegalMove は (fr,fc) のカードが (tr,tc) の隙間へ置けるかを判定する。
+// isLegalMove は (fromRow,fromCol) のカードが (toRow,toCol) の隙間へ置けるかを判定する。
 // 呼び出し側は事前に src!=nil, dst==nil および領域境界をチェックすること。
-func (g *Gaps) isLegalMove(fr, fc, tr, tc int) bool {
-	src := g.grid[fr][fc]
-	if src == nil || g.grid[tr][tc] != nil {
+func (g *Gaps) isLegalMove(fromRow, fromCol, toRow, toCol int) bool {
+	src := g.grid[fromRow][fromCol]
+	if src == nil || g.grid[toRow][toCol] != nil {
 		return false
 	}
-	if tc == 0 {
+	if toCol == 0 {
 		return src.GetValue() == GapsAnchorRank
 	}
-	left := g.grid[tr][tc-1]
+	left := g.grid[toRow][toCol-1]
 	if left == nil {
 		return false
 	}

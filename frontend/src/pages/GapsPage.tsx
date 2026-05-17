@@ -74,6 +74,7 @@ function GapsPageContent() {
 
   const handleReset = useCallback(() => {
     hideActionLog();
+    setHintEnabledByUser(false);
     void run('reset');
   }, [run, hideActionLog]);
 
@@ -241,7 +242,7 @@ function GapsPageContent() {
                 onClick={handleRedeal}
                 disabled={loading || state.redealsRemaining <= 0}
               >
-                {t('redeal')} ({state.redealsUsed}/3)
+                {t('redeal')} ({state.redealsUsed}/{state.redealsUsed + state.redealsRemaining})
               </button>
               <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
                 {t('hint')}
