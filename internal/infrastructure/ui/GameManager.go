@@ -1569,6 +1569,16 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "fourcardpoker", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewFourCardPokerCuiController(usecase.NewFourCardPokerInteractor(
+				domain.NewDefaultFourCardPoker(), new(presenter.FourCardPokerCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "fourcardpoker.helpTitle",
+				CommandKeys:       []string{"fourcardpoker.helpBet", "fourcardpoker.helpPlay", "fourcardpoker.helpFold"},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

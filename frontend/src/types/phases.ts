@@ -402,6 +402,13 @@ export const ThreeCardPhase = {
   END: 3,
 } as const;
 
+/** Four Card Poker phase constants (sync: internal/domain/FourCardPoker.go). */
+export const FourCardPokerPhase = {
+  BET: 1,
+  ACTION: 2,
+  END: 3,
+} as const;
+
 /** Caribbean Stud Poker phase constants (sync: internal/domain/CaribbeanStud.go). */
 export const CaribbeanStudPhase = {
   BET: 1,

@@ -262,4 +262,12 @@ func init() {
 			return usecase.RestoreHighCardFlushInteractor(data, new(presenter.HighCardFlushWebPresenter))
 		},
 		controller.NewHighCardFlushWebControllerWithProvider)
+	games.RegisterKVGame("fourcardpoker", games.CategoryCasino,
+		func() usecase.FourCardPokerInteractorIF {
+			return usecase.NewFourCardPokerInteractor(domain.NewDefaultFourCardPoker(), new(presenter.FourCardPokerWebPresenter))
+		},
+		func(data []byte) (usecase.FourCardPokerInteractorIF, error) {
+			return usecase.RestoreFourCardPokerInteractor(data, new(presenter.FourCardPokerWebPresenter))
+		},
+		controller.NewFourCardPokerWebControllerWithProvider)
 }

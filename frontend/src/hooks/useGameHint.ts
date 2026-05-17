@@ -27,6 +27,7 @@ import type {
   EgyptianRatscrewResponse,
   EuchreResponse,
   FiftyOneResponse,
+  FourCardPokerResponse,
   FreeCellResponse,
   GapsResponse,
   GinRummyResponse,
@@ -113,6 +114,7 @@ import { getDurakHint } from '../utils/hints/durakHint';
 import { getEgyptianRatscrewHint } from '../utils/hints/egyptianratscrewHint';
 import { getEuchreHint } from '../utils/hints/euchreHint';
 import { getFiftyOneHint } from '../utils/hints/fiftyoneHint';
+import { getFourCardPokerHint } from '../utils/hints/fourcardpokerHint';
 import { getFreeCellHint } from '../utils/hints/freecellHint';
 import { getGapsHint } from '../utils/hints/gapsHint';
 import { getGinRummyHint } from '../utils/hints/ginrummyHint';
@@ -270,6 +272,7 @@ const hintFactories = {
   crescent: () => null,
   spiderette: (s) => getSpideretteHint(s as SpideretteResponse),
   gaps: (s) => getGapsHint(s as GapsResponse),
+  fourcardpoker: (s) => getFourCardPokerHint(s as FourCardPokerResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

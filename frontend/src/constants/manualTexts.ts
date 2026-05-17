@@ -36,6 +36,7 @@ import egyptianratscrew from '../../../docs/manual/web/egyptianratscrew.md?raw';
 import euchre from '../../../docs/manual/web/euchre.md?raw';
 import fiftyone from '../../../docs/manual/web/fiftyone.md?raw';
 import fortythieves from '../../../docs/manual/web/fortythieves.md?raw';
+import fourcardpoker from '../../../docs/manual/web/fourcardpoker.md?raw';
 import freecell from '../../../docs/manual/web/freecell.md?raw';
 import gaps from '../../../docs/manual/web/gaps.md?raw';
 import ginrummy from '../../../docs/manual/web/ginrummy.md?raw';
@@ -128,6 +129,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/beleagueredcastle': beleagueredcastle,
   '/egyptianratscrew': egyptianratscrew,
   '/fortythieves': fortythieves,
+  '/fourcardpoker': fourcardpoker,
   '/euchre': euchre,
   '/freecell': freecell,
   '/seahaventowers': seahaventowers,
