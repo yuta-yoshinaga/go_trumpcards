@@ -169,10 +169,7 @@ func (fcp *FourCardPoker) Fold() error {
 	}
 	fcp.appendLog(0, "fold", "player folds", nil)
 
-	fcp.playerBest = pickBestFour(fcp.playerHand)
-	fcp.dealerBest = pickBestFour(fcp.dealerHand)
-	fcp.playerHandRank = evalFourCardHand(fcp.playerBest)
-	fcp.dealerHandRank = evalFourCardHand(fcp.dealerBest)
+	fcp.updateBestHands()
 	fcp.result = GameResultLose
 
 	// Aces Up still pays
@@ -200,12 +197,18 @@ func (fcp *FourCardPoker) deal() {
 	fcp.appendLog(-1, "deal", "dealt 5 to player and 6 to dealer", nil)
 }
 
-// resolve picks best hands, compares, and credits all payouts.
-func (fcp *FourCardPoker) resolve() {
+// updateBestHands picks the strongest 4-card subset for both player and dealer
+// and caches the resulting ranks. Shared by Fold and resolve.
+func (fcp *FourCardPoker) updateBestHands() {
 	fcp.playerBest = pickBestFour(fcp.playerHand)
 	fcp.dealerBest = pickBestFour(fcp.dealerHand)
 	fcp.playerHandRank = evalFourCardHand(fcp.playerBest)
 	fcp.dealerHandRank = evalFourCardHand(fcp.dealerBest)
+}
+
+// resolve picks best hands, compares, and credits all payouts.
+func (fcp *FourCardPoker) resolve() {
+	fcp.updateBestHands()
 
 	cmp := compareFourCardHands(fcp.playerBest, fcp.dealerBest)
 	if cmp > 0 {

@@ -7,6 +7,7 @@
   "phaseLine": "phase: {{phase}}",
   "handLine": "hand: {{hand}}",
   "dealerUpcard": "Upcard",
+  "bestHand": "Best 4",
   "anteLine": "ante: {{ante}}",
   "playLine": "play: {{play}}",
   "playerHeader": "PLAYER",

@@ -197,7 +197,9 @@ func fourCardTripsKicker(cards []*Card) (trip, kicker int) {
 	return trip, kicker
 }
 
-// fourCardQuadValue returns the quad value (Ace=14).
+// fourCardQuadValue returns the quad value (Ace=14). Precondition: cards is a
+// Four-of-a-Kind, so all four entries share the same value — reading cards[0]
+// is sufficient.
 func fourCardQuadValue(cards []*Card) int {
 	v := cards[0].GetValue()
 	if v == 1 {
@@ -300,9 +302,4 @@ func pickBestFour(cards []*Card) []*Card {
 	}
 	pick(0, 0)
 	return best
-}
-
-// pickBestFourFromFive is a convenience wrapper for the 5-card player hand.
-func pickBestFourFromFive(cards []*Card) []*Card {
-	return pickBestFour(cards)
 }

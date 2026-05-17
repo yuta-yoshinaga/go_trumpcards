@@ -344,8 +344,8 @@ func TestCompareFourCardHands_FlushCompareHighCards(t *testing.T) {
 	assert.Equal(t, -1, compareFourCardHands(a, b))
 }
 
-// pickBestFourFromFive must select the optimal 4-card hand out of 5.
-func TestPickBestFourFromFive_PicksFlushOverStraight(t *testing.T) {
+// pickBestFour must select the optimal 4-card hand out of 5.
+func TestPickBestFour_PicksFlushOverStraight(t *testing.T) {
 	// 4 spades present (forming flush) + one off-suit straight filler — flush should win.
 	cards := []*Card{
 		NewCard(CardDesignSpade, 2, false),
@@ -354,7 +354,7 @@ func TestPickBestFourFromFive_PicksFlushOverStraight(t *testing.T) {
 		NewCard(CardDesignSpade, 13, false),
 		NewCard(CardDesignClover, 6, false),
 	}
-	best := pickBestFourFromFive(cards)
+	best := pickBestFour(cards)
 	assert.Equal(t, FourCardHandFlush, evalFourCardHand(best))
 }
 

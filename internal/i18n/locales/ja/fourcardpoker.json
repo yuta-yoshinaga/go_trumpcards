@@ -7,6 +7,7 @@
   "phaseLine": "フェーズ: {{phase}}",
   "handLine": "ハンド: {{hand}}",
   "dealerUpcard": "アップカード",
+  "bestHand": "ベスト4枚",
   "anteLine": "アンテ: {{ante}}",
   "playLine": "プレイ: {{play}}",
   "playerHeader": "PLAYER",

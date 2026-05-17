@@ -34,6 +34,17 @@ func (p *FourCardPokerCuiPresenter) Output(g interfaces.FourCardPokerGame, lastE
 		}
 		sb.WriteString(strings.Join(parts, ","))
 		sb.WriteString("\n")
+		// At End phase, surface the best-4 subset so the player can see
+		// why the showdown went the way it did.
+		if g.GetPhase() == domain.FourCardPokerPhaseEnd {
+			if best := g.GetPlayerBest(); len(best) > 0 {
+				p2 := make([]string, len(best))
+				for i, card := range best {
+					p2[i] = cuiCardStr(card)
+				}
+				sb.WriteString(i18n.T("fourcardpoker.bestHand") + ": " + strings.Join(p2, ",") + "\n")
+			}
+		}
 	}
 
 	// Dealer display: while in action phase show only the upcard; on end reveal all.
@@ -58,6 +69,13 @@ func (p *FourCardPokerCuiPresenter) Output(g interfaces.FourCardPokerGame, lastE
 			}
 			sb.WriteString(strings.Join(parts, ","))
 			sb.WriteString("\n")
+			if best := g.GetDealerBest(); len(best) > 0 {
+				p2 := make([]string, len(best))
+				for i, card := range best {
+					p2[i] = cuiCardStr(card)
+				}
+				sb.WriteString(i18n.T("fourcardpoker.bestHand") + ": " + strings.Join(p2, ",") + "\n")
+			}
 		}
 	}
 
