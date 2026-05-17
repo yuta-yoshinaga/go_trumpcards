@@ -207,12 +207,12 @@ function EightOffPageContent() {
               {/* Free cells */}
               <div className="flex gap-2" data-tutorial="eo-free-cells">
                 {state.freeCells.map((card: Card | null, idx: number) => {
-                  const freeCellZone: EightOffMoveZone = { zone: 'eightoff', cell: idx };
+                  const freeCellZone: EightOffMoveZone = { zone: 'freecell', cell: idx };
                   return (
                     <div key={`fc-${idx.toString()}`} className="text-center">
                       <div className="text-game-text-muted text-xs mb-1">
                         <span className="hidden sm:inline">
-                          {t('eightoff')} {idx}
+                          {t('freecell')} {idx}
                         </span>
                         <span className="sm:hidden">
                           {t('freecellShort')}
@@ -231,11 +231,11 @@ function EightOffPageContent() {
                             onClick={() => handleSelectSource(freeCellZone)}
                             disabled={!isPlaying || loading}
                             aria-label={cardAlt(card)}
-                            aria-pressed={isSourceSelected('eightoff', undefined, idx)}
+                            aria-pressed={isSourceSelected('freecell', undefined, idx)}
                             draggable={isPlaying && !loading}
                             onDragStart={dnd.handleDragStart(freeCellZone)}
                             onDragEnd={dnd.handleDragEnd}
-                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('eightoff', undefined, idx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(freeCellZone) ? 'opacity-50' : ''}`}
+                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('freecell', undefined, idx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(freeCellZone) ? 'opacity-50' : ''}`}
                           >
                             <AnimatedCard
                               card={card}

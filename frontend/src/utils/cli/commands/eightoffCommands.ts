@@ -76,7 +76,7 @@ function parseMoveCommand(args: string[]): CliParseResult<EightOffArgs> {
     if (to.startsWith('c')) {
       const cell = Number(to.slice(1));
       if (Number.isNaN(cell)) return { error: 'Usage: m t<col> c<cell>' };
-      return { args: ['move', { zone: 'tableau', col }, { zone: 'cell', cell }] };
+      return { args: ['move', { zone: 'tableau', col }, { zone: 'freecell', cell }] };
     }
     if (to.startsWith('t')) {
       const toCol = Number(to.slice(1));
@@ -90,11 +90,11 @@ function parseMoveCommand(args: string[]): CliParseResult<EightOffArgs> {
     const cell = Number(fromZone.slice(1));
     if (Number.isNaN(cell)) return { error: 'Usage: m c<cell> ...' };
     const to = args[1].toLowerCase();
-    if (to === 'f') return { args: ['move', { zone: 'cell', cell }, { zone: 'foundation' }] };
+    if (to === 'f') return { args: ['move', { zone: 'freecell', cell }, { zone: 'foundation' }] };
     if (to.startsWith('t')) {
       const toCol = Number(to.slice(1));
       if (Number.isNaN(toCol)) return { error: 'Usage: m c<cell> t<col>' };
-      return { args: ['move', { zone: 'cell', cell }, { zone: 'tableau', col: toCol }] };
+      return { args: ['move', { zone: 'freecell', cell }, { zone: 'tableau', col: toCol }] };
     }
     return { error: 'Invalid target: use f (foundation) or t<col> (tableau)' };
   }
