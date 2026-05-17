@@ -28,6 +28,7 @@ import type {
   EuchreResponse,
   FiftyOneResponse,
   FreeCellResponse,
+  GapsResponse,
   GinRummyResponse,
   GoFishResponse,
   HeartsResponse,
@@ -113,6 +114,7 @@ import { getEgyptianRatscrewHint } from '../utils/hints/egyptianratscrewHint';
 import { getEuchreHint } from '../utils/hints/euchreHint';
 import { getFiftyOneHint } from '../utils/hints/fiftyoneHint';
 import { getFreeCellHint } from '../utils/hints/freecellHint';
+import { getGapsHint } from '../utils/hints/gapsHint';
 import { getGinRummyHint } from '../utils/hints/ginrummyHint';
 import { getGoFishHint } from '../utils/hints/gofishHint';
 import { getHeartsHint } from '../utils/hints/heartsHint';
@@ -267,6 +269,7 @@ const hintFactories = {
   contractrummy: () => null,
   crescent: () => null,
   spiderette: (s) => getSpideretteHint(s as SpideretteResponse),
+  gaps: (s) => getGapsHint(s as GapsResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

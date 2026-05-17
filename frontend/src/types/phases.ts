@@ -825,3 +825,10 @@ export const HighCardFlushPhase = {
   ACTION: 2,
   END: 3,
 } as const;
+
+/** Gaps / Montana phase constants (sync: internal/domain/Gaps.go). */
+export const GapsPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;

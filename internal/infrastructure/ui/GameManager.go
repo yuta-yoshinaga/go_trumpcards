@@ -1553,6 +1553,22 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                    action log"},
 			})
 	}},
+	{Name: "gaps", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewGapsCuiController(usecase.NewGapsInteractor(
+				domain.NewDefaultGaps(), new(presenter.GapsCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "gaps.helpTitle",
+				CommandKeys: []string{
+					"gaps.helpMove",
+					"gaps.helpRedeal",
+					"gaps.helpUndo",
+					"gaps.helpGiveUp",
+					"gaps.helpHint",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

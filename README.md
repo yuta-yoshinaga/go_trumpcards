@@ -115,6 +115,7 @@ Go + Clean Architecture で実装した94種類のトランプゲーム。CLI �
 | コールブレイク (Call Break) | `callbreak` | [CUI](docs/manual/cui/callbreak.md) / [Web](docs/manual/web/callbreak.md) |
 | ターニーブ (Tarneeb) | `tarneeb` | [CUI](docs/manual/cui/tarneeb.md) / [Web](docs/manual/web/tarneeb.md) |
 | ブリスコラ (Briscola) | `briscola` | [CUI](docs/manual/cui/briscola.md) / [Web](docs/manual/web/briscola.md) |
+| ギャップス (Gaps / Montana) | `gaps` | [CUI](docs/manual/cui/gaps.md) / [Web](docs/manual/web/gaps.md) |
 
 ## Demo
 

@@ -4163,3 +4163,30 @@ export interface HighCardFlushResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
 }
+
+// --- Gaps / Montana (ギャップス) ---
+
+/** A suggested next-move hint in Gaps. */
+export interface GapsHint {
+  fromRow: number;
+  fromCol: number;
+  toRow: number;
+  toCol: number;
+}
+
+/** Full Gaps game state returned from the API. */
+export interface GapsResponse {
+  /** 4-row x 13-col grid. `null` cells are gaps. */
+  grid: (Card | null)[][];
+  redealsUsed: number;
+  redealsRemaining: number;
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: GapsHint;
+}

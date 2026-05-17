@@ -1,0 +1,32 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "Gaps / Montana",
+  "moveCount": "Moves",
+  "redealsRemaining": "Redeals left",
+  "undo": "Undo",
+  "redeal": "Redeal",
+  "giveup": "Give Up",
+  "hint": "Hint",
+  "gap": "Gap",
+  "playing": "Playing",
+  "stalemate": "Stalemate",
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "noHint": "No hint available",
+  "hintAvailable": "Hint available",
+  "noRedealsLeft": "No redeals remaining",
+  "landscapeBanner": "Rotate to landscape for easier play",
+  "tutorial": {
+    "grid": "A 4-row by 13-column grid. Aces are removed, leaving four gaps.",
+    "controls": "Action buttons. You can redeal up to three times.",
+    "hintDisplay": "Press the hint button to see the next legal move.",
+    "resetButton": "Reset the deal to start a new game."
+  },
+  "frontendHint": {
+    "validMove": "The server suggests a next move"
+  }
+}

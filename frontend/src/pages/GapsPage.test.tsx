@@ -1,0 +1,145 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { gapsApi } from '../api/gameApi';
+import { useGameHint } from '../hooks/useGameHint';
+import { renderWithProviders } from '../test/renderWithProviders';
+import type { Card, CardDesign, GapsResponse } from '../types/card';
+import { GapsPage } from './GapsPage';
+
+vi.mock('../api/gameApi', () => ({
+  gapsApi: { exec: vi.fn() },
+  actionLogApi: { gaps: vi.fn() },
+}));
+
+vi.mock('../hooks/useGameHint', () => ({
+  useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
+}));
+
+const mockedRun = vi.mocked(gapsApi.exec);
+
+const card = (design: CardDesign, value: number): Card => ({ design, value });
+
+function makeGrid(): (Card | null)[][] {
+  const suits: CardDesign[] = ['SPADE', 'CLOVER', 'HEART', 'DIAMOND'];
+  return suits.map((s) => {
+    const row: (Card | null)[] = [];
+    for (let c = 0; c < 12; c++) row.push(card(s, c + 2));
+    row.push(null);
+    return row;
+  });
+}
+
+const playingState: GapsResponse = {
+  grid: makeGrid(),
+  redealsUsed: 0,
+  redealsRemaining: 3,
+  phase: 0,
+  moveCount: 5,
+  canUndo: false,
+  isStalemate: false,
+  message: '',
+};
+
+const gameClearState: GapsResponse = {
+  ...playingState,
+  phase: 1,
+  message: 'ゲームクリア！',
+  messageCode: 'gaps.gameClear',
+  messageParams: { moveCount: '42' },
+};
+
+const gameOverState: GapsResponse = {
+  ...playingState,
+  phase: 2,
+  message: 'ゲームオーバー',
+  messageCode: 'gaps.gameOver',
+};
+
+const withHintState: GapsResponse = {
+  ...playingState,
+  hint: { fromRow: 1, fromCol: 0, toRow: 0, toCol: 12 },
+};
+
+beforeEach(() => {
+  mockedRun.mockResolvedValue(playingState);
+  vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+});
+
+describe('GapsPage', () => {
+  it('renders skeleton when state is null', () => {
+    mockedRun.mockReturnValue(new Promise(() => undefined));
+    renderWithProviders(<GapsPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('renders move count in playing state', async () => {
+    renderWithProviders(<GapsPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(/手数: 5/));
+  });
+
+  it('renders redeals remaining', async () => {
+    renderWithProviders(<GapsPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(/再配り残り: 3/));
+  });
+
+  it('calls run reset on mount', async () => {
+    renderWithProviders(<GapsPage />);
+    await waitFor(() => expect(mockedRun).toHaveBeenCalledWith('reset'));
+  });
+
+  it('disables redeal button when no redeals remaining', async () => {
+    mockedRun.mockResolvedValue({ ...playingState, redealsRemaining: 0, redealsUsed: 3 });
+    renderWithProviders(<GapsPage />);
+    const btn = await screen.findByRole('button', { name: /再配り/ });
+    expect(btn).toBeDisabled();
+  });
+
+  it('calls run redeal when redeal clicked', async () => {
+    renderWithProviders(<GapsPage />);
+    const btn = await screen.findByRole('button', { name: /再配り/ });
+    fireEvent.click(btn);
+    await waitFor(() => expect(mockedRun).toHaveBeenCalledWith('redeal'));
+  });
+
+  it('calls run undo when undo clicked', async () => {
+    mockedRun.mockResolvedValue({ ...playingState, canUndo: true });
+    renderWithProviders(<GapsPage />);
+    const btn = await screen.findByRole('button', { name: '元に戻す' });
+    fireEvent.click(btn);
+    await waitFor(() => expect(mockedRun).toHaveBeenCalledWith('undo'));
+  });
+
+  it('calls run hint when hint clicked', async () => {
+    renderWithProviders(<GapsPage />);
+    const btn = await screen.findByRole('button', { name: 'ヒント' });
+    fireEvent.click(btn);
+    await waitFor(() => expect(mockedRun).toHaveBeenCalledWith('hint'));
+  });
+
+  it('calls run giveup when give up clicked', async () => {
+    renderWithProviders(<GapsPage />);
+    const btn = await screen.findByRole('button', { name: 'ギブアップ' });
+    fireEvent.click(btn);
+    await waitFor(() => expect(mockedRun).toHaveBeenCalledWith('giveup'));
+  });
+
+  it('shows hint coordinates when backend hint is present', async () => {
+    mockedRun.mockResolvedValue(withHintState);
+    renderWithProviders(<GapsPage />);
+    const btn = await screen.findByRole('button', { name: 'ヒント' });
+    fireEvent.click(btn);
+    await waitFor(() => expect(screen.getByText(/\(1,0\)/)).toBeInTheDocument());
+  });
+
+  it('hides action buttons when game is in game-clear phase', async () => {
+    mockedRun.mockResolvedValue(gameClearState);
+    renderWithProviders(<GapsPage />);
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'ヒント' })).not.toBeInTheDocument());
+  });
+
+  it('hides action buttons when game is over', async () => {
+    mockedRun.mockResolvedValue(gameOverState);
+    renderWithProviders(<GapsPage />);
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'ギブアップ' })).not.toBeInTheDocument());
+  });
+});

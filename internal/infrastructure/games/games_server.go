@@ -498,4 +498,9 @@ func init() {
 			return usecase.NewBriscolaInteractor(domain.NewDefaultBriscola(), new(presenter.BriscolaWebPresenter))
 		},
 		controller.NewBriscolaWebController)
+	BindWebControllerFor("gaps",
+		func() usecase.GapsInteractorIF {
+			return usecase.NewGapsInteractor(domain.NewDefaultGaps(), new(presenter.GapsWebPresenter))
+		},
+		controller.NewGapsWebController)
 }
