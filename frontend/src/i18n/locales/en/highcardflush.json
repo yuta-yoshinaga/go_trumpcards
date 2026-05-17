@@ -1,0 +1,79 @@
+{
+  "title": "High Card Flush",
+  "player": "Player",
+  "dealer": "Dealer",
+  "label": {
+    "chips": "Chips",
+    "ante": "Ante",
+    "flushBonus": "Flush Bonus",
+    "straightFlush": "Straight Flush",
+    "raise": "Raise",
+    "flushLen": "Longest Flush",
+    "multiplier": "Multiplier"
+  },
+  "button": {
+    "bet": "Bet",
+    "raise1x": "Raise x1",
+    "raise2x": "Raise x2",
+    "raise3x": "Raise x3",
+    "fold": "Fold",
+    "reset": "Reset"
+  },
+  "phase": {
+    "bet": "Bet",
+    "action": "Raise / Fold",
+    "end": "Result"
+  },
+  "result": {
+    "playerWins": "Player Wins!",
+    "dealerWins": "Dealer Wins!",
+    "push": "Push!",
+    "fold": "Folded",
+    "dealerNotQualified": "Dealer Not Qualified!"
+  },
+  "payout": {
+    "ante": "Ante",
+    "raise": "Raise",
+    "flushBonus": "Flush Bonus",
+    "straightFlush": "Straight Flush",
+    "total": "Total"
+  },
+  "hintReason": {
+    "raise3x": "6+ card flush — recommend Raise x3",
+    "raise2x": "5-card flush — recommend Raise x2",
+    "raise1xHighFlush": "4-card flush — recommend Raise x1",
+    "raise1xMarginal": "3-card flush (Q-high or better) — recommend Raise x1",
+    "fold": "Flush too weak — recommend Fold"
+  },
+  "settings": {
+    "title": "Settings"
+  },
+  "betGuide": "Place an ante and optional side bets",
+  "payoutRef": {
+    "title": "Paytable",
+    "flushBonusHeader": "Flush Bonus (player's longest flush)",
+    "flushBonus4": "4-card flush: 1:1",
+    "flushBonus5": "5-card flush: 10:1",
+    "flushBonus6": "6-card flush: 50:1",
+    "flushBonus7": "7-card flush: 100:1",
+    "straightFlushHeader": "Straight Flush Bonus",
+    "straightFlush3": "3 cards: 8:1",
+    "straightFlush4": "4 cards: 60:1",
+    "straightFlush5": "5 cards: 100:1",
+    "straightFlush6": "6 cards: 1000:1",
+    "straightFlush7": "7 cards: 8000:1",
+    "raiseRulesHeader": "Raise rules",
+    "raise24": "2–4 card flush: up to 1x",
+    "raise5": "5-card flush: up to 2x",
+    "raise67": "6–7 card flush: up to 3x",
+    "dealerQualify": "Dealer qualifies: 3-card flush (9-high or better)"
+  },
+  "dealerQualified": "Qualified",
+  "dealerNotQualified": "Not Qualified",
+  "flushLine": "{{count}}-card flush",
+  "tutorial": {
+    "betControls": "Set the ante and optional side bets, then press Bet.",
+    "actionButtons": "Raise up to the multiplier allowed by your flush length, or Fold to forfeit the ante.",
+    "results": "Review the result and payouts."
+  }
+}

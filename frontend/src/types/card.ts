@@ -1224,6 +1224,47 @@ export interface SevenBridgeResponse {
   config: SevenBridgeConfig;
 }
 
+// --- Rummy 500 ---
+
+/** Rummy 500 player data with hand, laid melds and scores. */
+export interface Rummy500PlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  roundScore: number;
+  cumulativeScore: number;
+  laidMelds: Rummy500Meld[];
+}
+
+/** A meld (set or run) laid by a player in Rummy 500. */
+export interface Rummy500Meld {
+  cards: Card[];
+}
+
+/** Rummy 500 game configuration. */
+export interface Rummy500Config {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+/** Full Rummy 500 game state returned from the API. */
+export interface Rummy500Response {
+  players: Rummy500PlayerData[];
+  phase: number;
+  roundNumber: number;
+  currentPlayerIdx: number;
+  discardPile: Card[];
+  drawPileCount: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  roundEnderIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: Rummy500Config;
+}
+
 /** Full Gin Rummy game state returned from the API. */
 export interface GinRummyResponse {
   players: GinRummyPlayerData[];
@@ -1378,6 +1419,33 @@ export interface FreeCellResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
   hint?: FreeCellHint;
+}
+
+// --- Eight Off (エイトオフ) ---
+
+/** A suggested move hint in Eight Off. */
+export interface EightOffHint {
+  fromZone: string;
+  fromCol: number;
+  cardIndex: number;
+  toZone: string;
+  toCol: number;
+}
+
+/** Full Eight Off game state returned from the API. */
+export interface EightOffResponse {
+  tableau: (Card | null)[][];
+  freeCells: (Card | null)[];
+  foundation: Card[][];
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: EightOffHint;
 }
 
 // --- Seahaven Towers (シーヘイブンタワーズ) ---
@@ -3386,6 +3454,62 @@ export interface WhistResponse {
   hint?: WhistHint;
 }
 
+// --- Briscola (ブリスコラ) ---
+
+/** Briscola player data with points and trick count. */
+export interface BriscolaPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  points: number;
+  trickCount: number;
+}
+
+/** A card played in a Briscola trick. */
+export interface BriscolaTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Briscola game configuration. */
+export interface BriscolaConfig {
+  cpuDifficulty: number;
+}
+
+/** A suggested hint for Briscola. */
+export interface BriscolaHint {
+  cardIndex?: number;
+  reason: string;
+}
+
+/** Full Briscola game state returned from the API. */
+export interface BriscolaResponse {
+  players: BriscolaPlayerData[];
+  phase: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  currentTrick: BriscolaTrickCard[];
+  trumpSuit: number;
+  /** Face-up trump card (omitted once the stock is exhausted). */
+  trumpCard?: Card;
+  dealerIdx: number;
+  leadPlayerIdx: number;
+  /**
+   * Cards remaining in the stock; this does NOT include the face-up trump
+   * card (which is tracked separately via `trumpCard` until drawn last).
+   */
+  stockRemaining: number;
+  gameEndFlag: boolean;
+  /** -1 = tie or unfinished. */
+  winnerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: BriscolaConfig;
+  hint?: BriscolaHint;
+}
+
 // --- Poker Squares (ポーカー・スクエア) ---
 
 /** Single cell of the 5x5 Poker Squares board. */
@@ -4017,4 +4141,152 @@ export interface BeleagueredCastleMoveZone {
   zone: string;
   col?: number;
   cardIndex?: number;
+}
+
+// --- Tarneeb ---
+
+/** Tarneeb player data with team and current bid. */
+export interface TarneebPlayerData {
+  id: number;
+  isHuman: boolean;
+  team: number;
+  cardCount: number;
+  cards: Card[];
+  bid: number;
+  roundScore: number;
+  cumulativeScore: number;
+  trickCount: number;
+}
+
+/** A card played in a Tarneeb trick. */
+export interface TarneebTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Tarneeb game configuration. */
+export interface TarneebConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+  minBid: number;
+}
+
+/** A suggested hint for Tarneeb. */
+export interface TarneebHint {
+  cardIndex?: number;
+  bid?: number;
+  trumpSuit?: number;
+  reason: string;
+}
+
+/** Full Tarneeb game state returned from the API. */
+export interface TarneebResponse {
+  players: TarneebPlayerData[];
+  teamScores: number[];
+  phase: number;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  bidPlayerIdx: number;
+  bidWinnerIdx: number;
+  highestBid: number;
+  trumpSuit: number;
+  redealCount: number;
+  dealerIdx: number;
+  currentTrick: TarneebTrickCard[];
+  gameEndFlag: boolean;
+  winnerTeam: number;
+  leadPlayerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: TarneebConfig;
+  hint?: TarneebHint;
+}
+
+// --- High Card Flush (ハイカードフラッシュ) ---
+
+/** High Card Flush API response. */
+export interface HighCardFlushResponse {
+  playerHand: Card[];
+  dealerHand: Card[];
+  phase: number;
+  chips: number;
+  anteBet: number;
+  flushBonusBet: number;
+  straightFlushBet: number;
+  raiseBet: number;
+  result: number;
+  antePayout: number;
+  raisePayout: number;
+  flushBonusPayout: number;
+  straightFlushPayout: number;
+  totalPayout: number;
+  dealerQualified: boolean;
+  playerFlushLen: number;
+  dealerFlushLen: number;
+  playerStraightFlushLen: number;
+  maxRaiseMultiplier: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
+// --- Gaps / Montana (ギャップス) ---
+
+/** A suggested next-move hint in Gaps. */
+export interface GapsHint {
+  fromRow: number;
+  fromCol: number;
+  toRow: number;
+  toCol: number;
+}
+
+/** Full Gaps game state returned from the API. */
+export interface GapsResponse {
+  /** 4-row x 13-col grid. `null` cells are gaps. */
+  grid: (Card | null)[][];
+  redealsUsed: number;
+  redealsRemaining: number;
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: GapsHint;
+}
+
+// --- Four Card Poker (フォーカードポーカー) ---
+
+/** Four Card Poker API response. */
+export interface FourCardPokerResponse {
+  /** Player's 5-card hand. */
+  playerHand: Card[];
+  /** Dealer hand: during the action phase only the upcard is revealed
+   * (length 1); after the end phase all 6 cards are revealed. */
+  dealerHand: Card[];
+  /** Player's best 4-card subset (populated at end phase). */
+  playerBest: Card[];
+  /** Dealer's best 4-card subset (populated at end phase). */
+  dealerBest: Card[];
+  phase: number;
+  chips: number;
+  anteBet: number;
+  acesUpBet: number;
+  playBet: number;
+  playMultiplier: number;
+  result: number;
+  antePayout: number;
+  playPayout: number;
+  anteBonusPayout: number;
+  acesUpPayout: number;
+  totalPayout: number;
+  playerHandRank: number;
+  dealerHandRank: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
 }

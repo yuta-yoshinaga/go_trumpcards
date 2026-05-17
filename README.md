@@ -113,6 +113,12 @@ Go + Clean Architecture で実装した94種類のトランプゲーム。CLI �
 | ベロート (Belote) | `belote` | [CUI](docs/manual/cui/belote.md) / [Web](docs/manual/web/belote.md) |
 | カジノホールデム (Casino Hold'em) | `casinoholdem` | [CUI](docs/manual/cui/casinoholdem.md) / [Web](docs/manual/web/casinoholdem.md) |
 | コールブレイク (Call Break) | `callbreak` | [CUI](docs/manual/cui/callbreak.md) / [Web](docs/manual/web/callbreak.md) |
+| ターニーブ (Tarneeb) | `tarneeb` | [CUI](docs/manual/cui/tarneeb.md) / [Web](docs/manual/web/tarneeb.md) |
+| ブリスコラ (Briscola) | `briscola` | [CUI](docs/manual/cui/briscola.md) / [Web](docs/manual/web/briscola.md) |
+| ギャップス (Gaps / Montana) | `gaps` | [CUI](docs/manual/cui/gaps.md) / [Web](docs/manual/web/gaps.md) |
+| フォーカードポーカー (Four Card Poker) | `fourcardpoker` | [CUI](docs/manual/cui/fourcardpoker.md) / [Web](docs/manual/web/fourcardpoker.md) |
+| ラミー 500 (Rummy 500) | `rummy500` | [CUI](docs/manual/cui/rummy500.md) / [Web](docs/manual/web/rummy500.md) |
+| エイトオフ (Eight Off) | `eightoff` | [CUI](docs/manual/cui/eightoff.md) / [Web](docs/manual/web/eightoff.md) |
 
 ## Demo
 

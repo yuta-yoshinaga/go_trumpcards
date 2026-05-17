@@ -483,4 +483,39 @@ func init() {
 			return usecase.NewCallBreakInteractor(domain.NewDefaultCallBreak(), new(presenter.CallBreakWebPresenter))
 		},
 		controller.NewCallBreakWebController)
+	BindWebControllerFor("tarneeb",
+		func() usecase.TarneebInteractorIF {
+			return usecase.NewTarneebInteractor(domain.NewDefaultTarneeb(), new(presenter.TarneebWebPresenter))
+		},
+		controller.NewTarneebWebController)
+	BindWebControllerFor("highcardflush",
+		func() usecase.HighCardFlushInteractorIF {
+			return usecase.NewHighCardFlushInteractor(domain.NewDefaultHighCardFlush(), new(presenter.HighCardFlushWebPresenter))
+		},
+		controller.NewHighCardFlushWebController)
+	BindWebControllerFor("briscola",
+		func() usecase.BriscolaInteractorIF {
+			return usecase.NewBriscolaInteractor(domain.NewDefaultBriscola(), new(presenter.BriscolaWebPresenter))
+		},
+		controller.NewBriscolaWebController)
+	BindWebControllerFor("gaps",
+		func() usecase.GapsInteractorIF {
+			return usecase.NewGapsInteractor(domain.NewDefaultGaps(), new(presenter.GapsWebPresenter))
+		},
+		controller.NewGapsWebController)
+	BindWebControllerFor("fourcardpoker",
+		func() usecase.FourCardPokerInteractorIF {
+			return usecase.NewFourCardPokerInteractor(domain.NewDefaultFourCardPoker(), new(presenter.FourCardPokerWebPresenter))
+		},
+		controller.NewFourCardPokerWebController)
+	BindWebControllerFor("rummy500",
+		func() usecase.Rummy500InteractorIF {
+			return usecase.NewRummy500Interactor(domain.NewDefaultRummy500(), new(presenter.Rummy500WebPresenter))
+		},
+		controller.NewRummy500WebController)
+	BindWebControllerFor("eightoff",
+		func() usecase.EightOffInteractorIF {
+			return usecase.NewEightOffInteractor(domain.NewDefaultEightOff(), new(presenter.EightOffWebPresenter))
+		},
+		controller.NewEightOffWebController)
 }

@@ -12,6 +12,7 @@ import belote from '../../../docs/manual/cui/belote.md?raw';
 import blackjack from '../../../docs/manual/cui/blackjack.md?raw';
 import blackjackswitch from '../../../docs/manual/cui/blackjackswitch.md?raw';
 import bridge from '../../../docs/manual/cui/bridge.md?raw';
+import briscola from '../../../docs/manual/cui/briscola.md?raw';
 import calculation from '../../../docs/manual/cui/calculation.md?raw';
 import callbreak from '../../../docs/manual/cui/callbreak.md?raw';
 import canasta from '../../../docs/manual/cui/canasta.md?raw';
@@ -33,14 +34,18 @@ import doubt from '../../../docs/manual/cui/doubt.md?raw';
 import dragontiger from '../../../docs/manual/cui/dragontiger.md?raw';
 import durak from '../../../docs/manual/cui/durak.md?raw';
 import egyptianratscrew from '../../../docs/manual/cui/egyptianratscrew.md?raw';
+import eightoff from '../../../docs/manual/cui/eightoff.md?raw';
 import euchre from '../../../docs/manual/cui/euchre.md?raw';
 import fiftyone from '../../../docs/manual/cui/fiftyone.md?raw';
 import fortythieves from '../../../docs/manual/cui/fortythieves.md?raw';
+import fourcardpoker from '../../../docs/manual/cui/fourcardpoker.md?raw';
 import freecell from '../../../docs/manual/cui/freecell.md?raw';
+import gaps from '../../../docs/manual/cui/gaps.md?raw';
 import ginrummy from '../../../docs/manual/cui/ginrummy.md?raw';
 import gofish from '../../../docs/manual/cui/gofish.md?raw';
 import golf from '../../../docs/manual/cui/golf.md?raw';
 import hearts from '../../../docs/manual/cui/hearts.md?raw';
+import highcardflush from '../../../docs/manual/cui/highcardflush.md?raw';
 import holdem from '../../../docs/manual/cui/holdem.md?raw';
 import indianpoker from '../../../docs/manual/cui/indianpoker.md?raw';
 import jokerpoker from '../../../docs/manual/cui/jokerpoker.md?raw';
@@ -67,6 +72,7 @@ import president from '../../../docs/manual/cui/president.md?raw';
 import pyramid from '../../../docs/manual/cui/pyramid.md?raw';
 import razz from '../../../docs/manual/cui/razz.md?raw';
 import reddog from '../../../docs/manual/cui/reddog.md?raw';
+import rummy500 from '../../../docs/manual/cui/rummy500.md?raw';
 import russiansolitaire from '../../../docs/manual/cui/russiansolitaire.md?raw';
 import scorpion from '../../../docs/manual/cui/scorpion.md?raw';
 import seahaventowers from '../../../docs/manual/cui/seahaventowers.md?raw';
@@ -83,6 +89,7 @@ import speed from '../../../docs/manual/cui/speed.md?raw';
 import spider from '../../../docs/manual/cui/spider.md?raw';
 import spiderette from '../../../docs/manual/cui/spiderette.md?raw';
 import spiteandmalice from '../../../docs/manual/cui/spiteandmalice.md?raw';
+import tarneeb from '../../../docs/manual/cui/tarneeb.md?raw';
 import texasholdembonus from '../../../docs/manual/cui/texasholdembonus.md?raw';
 import threecard from '../../../docs/manual/cui/threecard.md?raw';
 import tonk from '../../../docs/manual/cui/tonk.md?raw';
@@ -127,10 +134,13 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/egyptianratscrew': egyptianratscrew,
   '/fiftyone': fiftyone,
   '/fortythieves': fortythieves,
+  '/fourcardpoker': fourcardpoker,
   '/euchre': euchre,
   '/freecell': freecell,
+  '/eightoff': eightoff,
   '/seahaventowers': seahaventowers,
   '/ginrummy': ginrummy,
+  '/rummy500': rummy500,
   '/gofish': gofish,
   '/golf': golf,
   '/hearts': hearts,
@@ -155,6 +165,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/poker': poker,
   '/pokersquares': pokersquares,
   '/pyramid': pyramid,
+  '/gaps': gaps,
   '/razz': razz,
   '/badugi': badugi,
   '/reddog': reddog,
@@ -188,6 +199,9 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/shithead': shithead,
   '/nertz': nertz,
   '/slapjack': slapjack,
+  '/tarneeb': tarneeb,
+  '/highcardflush': highcardflush,
+  '/briscola': briscola,
 };
 
 /** Returns true when CLI mode is enabled for the game at the given path. */

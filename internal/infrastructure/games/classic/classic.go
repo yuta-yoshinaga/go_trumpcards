@@ -303,4 +303,20 @@ func init() {
 			return usecase.RestoreCallBreakInteractor(data, new(presenter.CallBreakWebPresenter))
 		},
 		controller.NewCallBreakWebControllerWithProvider)
+	games.RegisterKVGame("tarneeb", games.CategoryClassic,
+		func() usecase.TarneebInteractorIF {
+			return usecase.NewTarneebInteractor(domain.NewDefaultTarneeb(), new(presenter.TarneebWebPresenter))
+		},
+		func(data []byte) (usecase.TarneebInteractorIF, error) {
+			return usecase.RestoreTarneebInteractor(data, new(presenter.TarneebWebPresenter))
+		},
+		controller.NewTarneebWebControllerWithProvider)
+	games.RegisterKVGame("briscola", games.CategoryClassic,
+		func() usecase.BriscolaInteractorIF {
+			return usecase.NewBriscolaInteractor(domain.NewDefaultBriscola(), new(presenter.BriscolaWebPresenter))
+		},
+		func(data []byte) (usecase.BriscolaInteractorIF, error) {
+			return usecase.RestoreBriscolaInteractor(data, new(presenter.BriscolaWebPresenter))
+		},
+		controller.NewBriscolaWebControllerWithProvider)
 }

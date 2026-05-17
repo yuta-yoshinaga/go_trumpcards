@@ -1,0 +1,77 @@
+{
+  "phase": {
+    "bid": "ビッド",
+    "trump": "トランプ宣言",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "pointLimit": "目標点数",
+    "minBid": "最低ビッド",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "trick": "トリック {{n}}",
+  "trump": "トランプ",
+  "trumpUndeclared": "未宣言",
+  "highestBid": "現在の最高ビッド",
+  "cards": "{{count}}枚",
+  "bid": "ビッド {{n}}",
+  "bidNone": "未ビッド",
+  "currentTrick": "現在のトリック",
+  "scores": "チームスコア",
+  "scoresTeam": "チーム",
+  "scoresTotal": "累計",
+  "team": "チーム {{n}}",
+  "bidButton": "ビッド",
+  "passButton": "パス",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド",
+  "bidPhase": "ビッド宣言 (7-13、または 0=パス)",
+  "trumpPhase": "トランプスートを選択してください",
+  "playPhase": {
+    "lead": "リードしてください",
+    "follow": "カードを出してください"
+  },
+  "trickEnd": "トリック終了",
+  "roundEnd": "ラウンド終了",
+  "gameEndHumanWin": "チーム {{team}}（あなた）の勝利！",
+  "gameEndCpuWin": "チーム {{team}}（CPU）の勝利！",
+  "hintBid": "推奨ビッド",
+  "hintTrump": "推奨トランプ",
+  "hintPlay": "推奨カード",
+  "hintReason": {
+    "bid_pass": "強い札が少ないためパス推奨",
+    "bid_estimate": "手札評価に基づくビッド",
+    "trump_longest": "最長のスートをトランプに",
+    "lead_strong": "強いカードでリード",
+    "follow_suit": "リードスートに追随",
+    "trump_cut": "トランプで切る",
+    "discard_high": "高いカードを捨てる"
+  },
+  "tutorial": {
+    "bidControls": "ビッドフェーズではチームで取れると思うトリック数 (7-13) を宣言します。",
+    "trumpControls": "ビッドに勝ったプレイヤーはトランプスートを選びます。",
+    "trickDisplay": "現在のトリックです。トランプが他のすべてのスートに勝ちます。",
+    "playerHand": "あなたの手札です。リードスートに従ってください (持っていなければ自由)。",
+    "playButton": "カードを選んだらこのボタンで出します。",
+    "scoreTable": "チームスコア表です。ビッド達成で +トリック数、未達で -ビッド数。先に目標点数に到達したチームの勝利です。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "hint": {
+    "bidPass": "弱い手札なのでパス推奨",
+    "bidEstimate": "手札評価に基づくビッド推奨",
+    "trumpLongest": "最長のスートをトランプに推奨",
+    "leadStrategic": "戦略的にリード推奨",
+    "followSuit": "リードされたスートに従ってプレイ推奨",
+    "trumpCut": "トランプで切る推奨",
+    "discardLowest": "最も低いカードを捨てることを推奨"
+  }
+}

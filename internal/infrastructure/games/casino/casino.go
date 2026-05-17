@@ -254,4 +254,20 @@ func init() {
 			return usecase.RestoreCasinoHoldemInteractor(data, new(presenter.CasinoHoldemWebPresenter))
 		},
 		controller.NewCasinoHoldemWebControllerWithProvider)
+	games.RegisterKVGame("highcardflush", games.CategoryCasino,
+		func() usecase.HighCardFlushInteractorIF {
+			return usecase.NewHighCardFlushInteractor(domain.NewDefaultHighCardFlush(), new(presenter.HighCardFlushWebPresenter))
+		},
+		func(data []byte) (usecase.HighCardFlushInteractorIF, error) {
+			return usecase.RestoreHighCardFlushInteractor(data, new(presenter.HighCardFlushWebPresenter))
+		},
+		controller.NewHighCardFlushWebControllerWithProvider)
+	games.RegisterKVGame("fourcardpoker", games.CategoryCasino,
+		func() usecase.FourCardPokerInteractorIF {
+			return usecase.NewFourCardPokerInteractor(domain.NewDefaultFourCardPoker(), new(presenter.FourCardPokerWebPresenter))
+		},
+		func(data []byte) (usecase.FourCardPokerInteractorIF, error) {
+			return usecase.RestoreFourCardPokerInteractor(data, new(presenter.FourCardPokerWebPresenter))
+		},
+		controller.NewFourCardPokerWebControllerWithProvider)
 }

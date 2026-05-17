@@ -238,4 +238,28 @@ func init() {
 			return usecase.RestoreBeleagueredCastleInteractor(data, new(presenter.BeleagueredCastleWebPresenter))
 		},
 		controller.NewBeleagueredCastleWebControllerWithProvider)
+	games.RegisterKVGame("gaps", games.CategorySolo,
+		func() usecase.GapsInteractorIF {
+			return usecase.NewGapsInteractor(domain.NewDefaultGaps(), new(presenter.GapsWebPresenter))
+		},
+		func(data []byte) (usecase.GapsInteractorIF, error) {
+			return usecase.RestoreGapsInteractor(data, new(presenter.GapsWebPresenter))
+		},
+		controller.NewGapsWebControllerWithProvider)
+	games.RegisterKVGame("rummy500", games.CategorySolo,
+		func() usecase.Rummy500InteractorIF {
+			return usecase.NewRummy500Interactor(domain.NewDefaultRummy500(), new(presenter.Rummy500WebPresenter))
+		},
+		func(data []byte) (usecase.Rummy500InteractorIF, error) {
+			return usecase.RestoreRummy500Interactor(data, new(presenter.Rummy500WebPresenter))
+		},
+		controller.NewRummy500WebControllerWithProvider)
+	games.RegisterKVGame("eightoff", games.CategorySolo,
+		func() usecase.EightOffInteractorIF {
+			return usecase.NewEightOffInteractor(domain.NewDefaultEightOff(), new(presenter.EightOffWebPresenter))
+		},
+		func(data []byte) (usecase.EightOffInteractorIF, error) {
+			return usecase.RestoreEightOffInteractor(data, new(presenter.EightOffWebPresenter))
+		},
+		controller.NewEightOffWebControllerWithProvider)
 }

@@ -54,6 +54,8 @@ export const gameCategories: readonly GameCategory[] = [
         icon: '🚢',
         page: 'MississippiStud',
       },
+      { path: '/highcardflush', labelKey: 'nav.highcardflush', icon: '♣️', page: 'HighCardFlush' },
+      { path: '/fourcardpoker', labelKey: 'nav.fourcardpoker', icon: '🃏', page: 'FourCardPoker' },
     ],
   },
   {
@@ -93,6 +95,8 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/mighty', labelKey: 'nav.mighty', icon: '👊', page: 'Mighty' },
       { path: '/piquet', labelKey: 'nav.piquet', icon: '🎴', page: 'Piquet' },
       { path: '/callbreak', labelKey: 'nav.callbreak', icon: '🃏', page: 'CallBreak' },
+      { path: '/tarneeb', labelKey: 'nav.tarneeb', icon: '🎴', page: 'Tarneeb' },
+      { path: '/briscola', labelKey: 'nav.briscola', icon: '🇮🇹', page: 'Briscola' },
     ],
   },
   {
@@ -129,10 +133,12 @@ export const gameCategories: readonly GameCategory[] = [
     routes: [
       { path: '/klondike', labelKey: 'nav.klondike', icon: '⛏️', page: 'Klondike' },
       { path: '/freecell', labelKey: 'nav.freecell', icon: '🔲', page: 'FreeCell' },
+      { path: '/eightoff', labelKey: 'nav.eightoff', icon: '🎱', page: 'EightOff' },
       { path: '/seahaventowers', labelKey: 'nav.seahaventowers', icon: '🏖️', page: 'SeahavenTowers' },
       { path: '/spider', labelKey: 'nav.spider', icon: '🕷️', page: 'Spider' },
       { path: '/spiderette', labelKey: 'nav.spiderette', icon: '🕸️', page: 'Spiderette' },
       { path: '/pyramid', labelKey: 'nav.pyramid', icon: '🔺', page: 'Pyramid' },
+      { path: '/gaps', labelKey: 'nav.gaps', icon: '🧩', page: 'Gaps' },
       { path: '/tripeaks', labelKey: 'nav.tripeaks', icon: '⛰️', page: 'TriPeaks' },
       { path: '/golf', labelKey: 'nav.golf', icon: '⛳', page: 'Golf' },
       { path: '/memory', labelKey: 'nav.memory', icon: '🧠', page: 'Memory' },
@@ -177,6 +183,7 @@ export const gameCategories: readonly GameCategory[] = [
         icon: '📜',
         page: 'ContractRummy',
       },
+      { path: '/rummy500', labelKey: 'nav.rummy500', icon: '🥃', page: 'Rummy500' },
     ],
   },
 ] as const;

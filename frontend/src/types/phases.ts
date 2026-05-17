@@ -165,6 +165,13 @@ export const FreeCellPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Eight Off phase constants (sync: internal/domain/EightOff.go). */
+export const EightOffPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Seahaven Towers phase constants (sync: internal/domain/SeahavenTowers.go). */
 export const SeahavenTowersPhase = {
   PLAYING: 0,
@@ -397,6 +404,13 @@ export const BridgePhase = {
 
 /** Three Card Poker phase constants (sync: internal/domain/ThreeCard.go). */
 export const ThreeCardPhase = {
+  BET: 1,
+  ACTION: 2,
+  END: 3,
+} as const;
+
+/** Four Card Poker phase constants (sync: internal/domain/FourCardPoker.go). */
+export const FourCardPokerPhase = {
   BET: 1,
   ACTION: 2,
   END: 3,
@@ -648,6 +662,13 @@ export const WhistPhase = {
   GAME_END: 3,
 } as const;
 
+/** Briscola phase constants (sync: internal/domain/Briscola.go). */
+export const BriscolaPhase = {
+  PLAY: 0,
+  TRICK_END: 1,
+  GAME_END: 2,
+} as const;
+
 /** Let It Ride phase constants (sync: internal/domain/LetItRide.go). */
 /** Poker Squares phase constants (sync: internal/domain/PokerSquares.go). */
 export const PokerSquaresPhase = {
@@ -800,4 +821,36 @@ export const BeleagueredCastlePhase = {
   PLAYING: 0,
   GAME_CLEAR: 1,
   GAME_OVER: 2,
+} as const;
+
+/** Tarneeb phase constants (sync: internal/domain/Tarneeb.go). */
+export const TarneebPhase = {
+  BID: 0,
+  TRUMP_DECLARATION: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
+/** High Card Flush phase constants (sync: internal/domain/HighCardFlush.go). */
+export const HighCardFlushPhase = {
+  BET: 1,
+  ACTION: 2,
+  END: 3,
+} as const;
+
+/** Gaps / Montana phase constants (sync: internal/domain/Gaps.go). */
+export const GapsPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** Rummy 500 phase constants (sync: internal/domain/Rummy500.go). */
+export const Rummy500Phase = {
+  DRAW: 0,
+  PLAY: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
 } as const;

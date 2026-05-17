@@ -11,6 +11,7 @@ import belote from '../../../docs/manual/web/belote.md?raw';
 import blackjack from '../../../docs/manual/web/blackjack.md?raw';
 import blackjackswitch from '../../../docs/manual/web/blackjackswitch.md?raw';
 import bridge from '../../../docs/manual/web/bridge.md?raw';
+import briscola from '../../../docs/manual/web/briscola.md?raw';
 import calculation from '../../../docs/manual/web/calculation.md?raw';
 import callbreak from '../../../docs/manual/web/callbreak.md?raw';
 import canasta from '../../../docs/manual/web/canasta.md?raw';
@@ -32,14 +33,18 @@ import doubt from '../../../docs/manual/web/doubt.md?raw';
 import dragontiger from '../../../docs/manual/web/dragontiger.md?raw';
 import durak from '../../../docs/manual/web/durak.md?raw';
 import egyptianratscrew from '../../../docs/manual/web/egyptianratscrew.md?raw';
+import eightoff from '../../../docs/manual/web/eightoff.md?raw';
 import euchre from '../../../docs/manual/web/euchre.md?raw';
 import fiftyone from '../../../docs/manual/web/fiftyone.md?raw';
 import fortythieves from '../../../docs/manual/web/fortythieves.md?raw';
+import fourcardpoker from '../../../docs/manual/web/fourcardpoker.md?raw';
 import freecell from '../../../docs/manual/web/freecell.md?raw';
+import gaps from '../../../docs/manual/web/gaps.md?raw';
 import ginrummy from '../../../docs/manual/web/ginrummy.md?raw';
 import gofish from '../../../docs/manual/web/gofish.md?raw';
 import golf from '../../../docs/manual/web/golf.md?raw';
 import hearts from '../../../docs/manual/web/hearts.md?raw';
+import highcardflush from '../../../docs/manual/web/highcardflush.md?raw';
 import holdem from '../../../docs/manual/web/holdem.md?raw';
 import indianpoker from '../../../docs/manual/web/indianpoker.md?raw';
 import jokerpoker from '../../../docs/manual/web/jokerpoker.md?raw';
@@ -69,6 +74,7 @@ import president from '../../../docs/manual/web/president.md?raw';
 import pyramid from '../../../docs/manual/web/pyramid.md?raw';
 import razz from '../../../docs/manual/web/razz.md?raw';
 import reddog from '../../../docs/manual/web/reddog.md?raw';
+import rummy500 from '../../../docs/manual/web/rummy500.md?raw';
 import russiansolitaire from '../../../docs/manual/web/russiansolitaire.md?raw';
 import scorpion from '../../../docs/manual/web/scorpion.md?raw';
 import seahaventowers from '../../../docs/manual/web/seahaventowers.md?raw';
@@ -85,6 +91,7 @@ import speed from '../../../docs/manual/web/speed.md?raw';
 import spider from '../../../docs/manual/web/spider.md?raw';
 import spiderette from '../../../docs/manual/web/spiderette.md?raw';
 import spiteandmalice from '../../../docs/manual/web/spiteandmalice.md?raw';
+import tarneeb from '../../../docs/manual/web/tarneeb.md?raw';
 import texasholdembonus from '../../../docs/manual/web/texasholdembonus.md?raw';
 import threecard from '../../../docs/manual/web/threecard.md?raw';
 import tonk from '../../../docs/manual/web/tonk.md?raw';
@@ -124,8 +131,10 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/beleagueredcastle': beleagueredcastle,
   '/egyptianratscrew': egyptianratscrew,
   '/fortythieves': fortythieves,
+  '/fourcardpoker': fourcardpoker,
   '/euchre': euchre,
   '/freecell': freecell,
+  '/eightoff': eightoff,
   '/seahaventowers': seahaventowers,
   '/ginrummy': ginrummy,
   '/gofish': gofish,
@@ -159,9 +168,11 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/crescent': crescent,
   '/mississippistud': mississippistud,
   '/pyramid': pyramid,
+  '/gaps': gaps,
   '/razz': razz,
   '/badugi': badugi,
   '/reddog': reddog,
+  '/rummy500': rummy500,
   '/sevencardstud': sevencardstud,
   '/sevens': sevens,
   '/shortdeck': shortdeck,
@@ -193,4 +204,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/shithead': shithead,
   '/nertz': nertz,
   '/slapjack': slapjack,
+  '/tarneeb': tarneeb,
+  '/highcardflush': highcardflush,
+  '/briscola': briscola,
 };

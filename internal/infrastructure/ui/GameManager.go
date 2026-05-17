@@ -1516,6 +1516,107 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"callbreak.helpSetDifficulty", "callbreak.helpSetRounds"},
 			})
 	}},
+	{Name: "tarneeb", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewTarneebCuiController(usecase.NewTarneebInteractor(
+				domain.NewDefaultTarneeb(), new(presenter.TarneebCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "tarneeb.helpTitle",
+				CommandKeys: []string{
+					"tarneeb.helpBid",
+					"tarneeb.helpTrump",
+					"tarneeb.helpPlay",
+					"tarneeb.helpNext",
+					"tarneeb.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"tarneeb.helpSetDifficulty", "tarneeb.helpSetLimit", "tarneeb.helpSetMinBid"},
+			})
+	}},
+	{Name: "highcardflush", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewHighCardFlushCuiController(usecase.NewHighCardFlushInteractor(
+				domain.NewDefaultHighCardFlush(), new(presenter.HighCardFlushCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "highcardflush.helpTitle",
+				CommandKeys:       []string{"highcardflush.helpBet", "highcardflush.helpRaise", "highcardflush.helpFold"},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
+	{Name: "briscola", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBriscolaCuiController(usecase.NewBriscolaInteractor(
+				domain.NewDefaultBriscola(), new(presenter.BriscolaCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "briscola.helpTitle",
+				CommandKeys:       []string{"briscola.helpPlay", "briscola.helpNext"},
+				ExtraCommandLines: []string{"  l                    action log"},
+			})
+	}},
+	{Name: "gaps", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewGapsCuiController(usecase.NewGapsInteractor(
+				domain.NewDefaultGaps(), new(presenter.GapsCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "gaps.helpTitle",
+				CommandKeys: []string{
+					"gaps.helpMove",
+					"gaps.helpRedeal",
+					"gaps.helpUndo",
+					"gaps.helpGiveUp",
+					"gaps.helpHint",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
+	{Name: "fourcardpoker", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewFourCardPokerCuiController(usecase.NewFourCardPokerInteractor(
+				domain.NewDefaultFourCardPoker(), new(presenter.FourCardPokerCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "fourcardpoker.helpTitle",
+				CommandKeys:       []string{"fourcardpoker.helpBet", "fourcardpoker.helpPlay", "fourcardpoker.helpFold"},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
+	{Name: "rummy500", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewRummy500CuiController(usecase.NewRummy500Interactor(
+				domain.NewDefaultRummy500(), new(presenter.Rummy500CuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "rummy500.helpTitle",
+				CommandKeys: []string{
+					"rummy500.helpDrawStock",
+					"rummy500.helpDrawDiscard",
+					"rummy500.helpMeld",
+					"rummy500.helpLayoff",
+					"rummy500.helpDiscard",
+					"rummy500.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"rummy500.helpSetDifficulty", "rummy500.helpSetLimit"},
+			})
+	}},
+	{Name: "eightoff", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewEightOffCuiController(usecase.NewEightOffInteractor(
+				domain.NewDefaultEightOff(), new(presenter.EightOffCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "eightoff.helpTitle",
+				CommandKeys: []string{
+					"eightoff.helpMove",
+					"eightoff.helpMoveTF",
+					"eightoff.helpMoveTT",
+					"eightoff.helpMoveTC",
+					"eightoff.helpMoveCT",
+					"eightoff.helpMoveCF",
+					"eightoff.helpGiveUp",
+					"eightoff.helpHint",
+					"eightoff.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
@@ -1576,6 +1677,9 @@ var GameAliases = map[string]string{
 	"mstud":   "mississippistud",
 	"sp21":    "spanish21",
 	"s21":     "spanish21",
+	"rummy":   "rummy500",
+	"500":     "rummy500",
+	"r500":    "rummy500",
 }
 
 // cuiGame is implemented by each *Cui struct to expose its controller and help lines.

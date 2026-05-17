@@ -1,0 +1,51 @@
+{
+  "phase": {
+    "draw": "ドロー",
+    "play": "プレイ",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "pointLimit": "目標スコア",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "drawPile": "山札: {{count}}枚",
+  "discardPile": "捨て札",
+  "discardEmpty": "捨て札はありません",
+  "cards": "{{count}}枚",
+  "cumulativeScore": "累計: {{score}}",
+  "roundScore": "ラウンド: {{score}}",
+  "laidMelds": "場のメルド",
+  "drawStockButton": "山札から引く",
+  "meldButton": "メルドする",
+  "layoffOwner": "所有者",
+  "layoffMeld": "メルド#",
+  "layoffButton": "レイオフ",
+  "discardButton": "捨てる",
+  "nextRound": "次のラウンド",
+  "drawPhase": "山札か捨て札の任意のカードから引いてください",
+  "playPhase": "メルド・レイオフ・ディスカードを行ってください",
+  "roundEnd": "ラウンド終了",
+  "drawDiscardHint": "捨て札の任意のカードをクリックすると、そのカード以上をすべて引き取れます",
+  "winner": {
+    "human": "あなたの勝利！",
+    "cpu": "CPU {{idx}}の勝利"
+  },
+  "hint": {
+    "drawStock": "山札から1枚引きましょう",
+    "drawDiscardTop": "捨て札の一番上を取るのが安全です",
+    "meldSet": "3枚以上のセットが揃っています。メルドしましょう",
+    "discardHighCard": "高得点のカードを捨てて減点を減らしましょう"
+  },
+  "tutorial": {
+    "drawArea": "ドローエリア。山札または捨て札の任意のカードから引けます",
+    "playerHand": "あなたの手札。クリックで選択できます",
+    "meldButton": "3枚以上の同ランクまたは同スート連続でメルドできます",
+    "discardButton": "選択したカードを捨ててターン終了"
+  }
+}

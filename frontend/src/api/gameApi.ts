@@ -11,6 +11,8 @@ import type {
   BlackJackResponse,
   BlackJackSwitchResponse,
   BridgeResponse,
+  BriscolaConfig,
+  BriscolaResponse,
   CalculationMoveZone,
   CalculationResponse,
   CallBreakResponse,
@@ -35,15 +37,19 @@ import type {
   DurakConfigInput,
   DurakResponse,
   EgyptianRatscrewResponse,
+  EightOffResponse,
   EuchreResponse,
   FiftyOneResponse,
   FortyThievesMoveZone,
   FortyThievesResponse,
+  FourCardPokerResponse,
   FreeCellResponse,
+  GapsResponse,
   GinRummyResponse,
   GoFishResponse,
   GolfResponse,
   HeartsResponse,
+  HighCardFlushResponse,
   HoldemResponse,
   IndianPokerResponse,
   KlondikeResponse,
@@ -73,6 +79,7 @@ import type {
   PresidentResponse,
   PyramidResponse,
   RedDogResponse,
+  Rummy500Response,
   RussianSolitaireResponse,
   ScorpionResponse,
   SeahavenTowersResponse,
@@ -92,6 +99,7 @@ import type {
   SpiderResponse,
   SpiteAndMaliceMoveZone,
   SpiteAndMaliceResponse,
+  TarneebResponse,
   TexasHoldemBonusResponse,
   ThreeCardResponse,
   TonkResponse,
@@ -210,6 +218,13 @@ const workerUrl: Record<string, string> = {
   beleagueredcastle: WORKER_SOLO,
   piquet: WORKER_CLASSIC,
   callbreak: WORKER_CLASSIC,
+  tarneeb: WORKER_CLASSIC,
+  highcardflush: WORKER_CASINO,
+  briscola: WORKER_CLASSIC,
+  gaps: WORKER_SOLO,
+  fourcardpoker: WORKER_CASINO,
+  rummy500: WORKER_SOLO,
+  eightoff: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -615,6 +630,44 @@ export interface CallBreakConfigInput {
 /** API client for the Call Break /callbreak/exec endpoint. */
 export const callBreakApi = createBidPlayApi<CallBreakResponse, CallBreakConfigInput>('callbreak');
 
+/** Configuration options for Tarneeb game settings. */
+export interface TarneebConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+  minBid?: number;
+}
+
+/**
+ * API client for the Tarneeb /tarneeb/exec endpoint.
+ *
+ * Signature mirrors {@link twoTenJackApi}: `(command, arg1, cardIndex, config)`.
+ * `arg1` is overloaded based on the command:
+ *   - `command === 'bid'` → `arg1` is the bid value (0=pass, 7-13=bid).
+ *   - `command === 'trump'` → `arg1` is the trump suit (1=♠ 2=♣ 3=♥ 4=♦).
+ *   - otherwise `arg1` is ignored.
+ */
+export const tarneebApi = {
+  exec: (
+    command: 'reset' | 'bid' | 'trump' | 'play' | 'next' | 'nextround' | 'hint' | 'log',
+    arg1?: number,
+    cardIndex?: number,
+    config?: TarneebConfigInput,
+  ) => {
+    const body: {
+      command: string;
+      bid?: number;
+      trumpSuit?: number;
+      cardIndex?: number;
+      config?: TarneebConfigInput;
+    } = { command };
+    if (command === 'bid') body.bid = arg1;
+    else if (command === 'trump') body.trumpSuit = arg1;
+    if (cardIndex !== undefined) body.cardIndex = cardIndex;
+    if (config) body.config = config;
+    return gameExec<TarneebResponse>('tarneeb', body);
+  },
+};
+
 /** Configuration options for Pitch (Setback) game settings. */
 export interface PitchConfigInput {
   cpuDifficulty?: number;
@@ -758,6 +811,21 @@ export const freecellApi = createSolitaireMoveApi<
   'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('freecell');
 
+/** Source or target zone for an Eight Off card move. */
+export interface EightOffMoveZone {
+  zone: string;
+  col?: number;
+  cell?: number;
+  cardIndex?: number;
+}
+
+/** API client for the Eight Off /eightoff/exec endpoint. */
+export const eightoffApi = createSolitaireMoveApi<
+  EightOffResponse,
+  EightOffMoveZone,
+  'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('eightoff');
+
 /** Source or target zone for a Seahaven Towers card move. */
 export interface SeahavenTowersMoveZone {
   zone: string;
@@ -833,6 +901,40 @@ export const ginrummyApi = {
       command,
       cardIndex,
       cardIndices,
+      config,
+    }),
+};
+
+/** Configuration options for Rummy 500 game settings. */
+export interface Rummy500ConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** Layoff parameters: meld owner, meld index, and card index in hand. */
+export interface Rummy500LayoffInput {
+  meldOwner: number;
+  meldIdx: number;
+  cardIndex: number;
+}
+
+/** API client for the Rummy 500 /rummy500/exec endpoint. */
+export const rummy500Api = {
+  exec: (
+    command: 'reset' | 'drawstock' | 'drawdiscard' | 'meld' | 'layoff' | 'discard' | 'nextround' | 'log',
+    cardIndex?: number,
+    config?: Rummy500ConfigInput,
+    cardIndices?: number[],
+    discardIdx?: number,
+    layoff?: Rummy500LayoffInput,
+  ) =>
+    gameExec<Rummy500Response>('rummy500', {
+      command,
+      cardIndex: layoff?.cardIndex ?? cardIndex,
+      cardIndices,
+      discardIdx,
+      meldOwner: layoff?.meldOwner,
+      meldIdx: layoff?.meldIdx,
       config,
     }),
 };
@@ -964,6 +1066,40 @@ export const baccaratApi = {
 export const threecardApi = {
   exec: (command: 'reset' | 'bet' | 'play' | 'fold' | 'log', amount?: number, pairPlusBet?: number) =>
     gameExec<ThreeCardResponse>('threecard', { command, amount, pairPlusBet }),
+};
+
+/** API client for the Four Card Poker /fourcardpoker/exec endpoint. */
+export const fourcardpokerApi = {
+  exec: (
+    command: 'reset' | 'bet' | 'play' | 'fold' | 'log',
+    amount?: number,
+    acesUpBet?: number,
+    playMultiplier?: number,
+  ) =>
+    gameExec<FourCardPokerResponse>('fourcardpoker', {
+      command,
+      amount,
+      acesUpBet,
+      playMultiplier,
+    }),
+};
+
+/** API client for the High Card Flush /highcardflush/exec endpoint. */
+export const highcardflushApi = {
+  exec: (
+    command: 'reset' | 'bet' | 'raise' | 'fold' | 'log',
+    amount?: number,
+    flushBonusBet?: number,
+    straightFlushBet?: number,
+    multiplier?: number,
+  ) =>
+    gameExec<HighCardFlushResponse>('highcardflush', {
+      command,
+      amount,
+      flushBonusBet,
+      straightFlushBet,
+      multiplier,
+    }),
 };
 
 /** API client for the Caribbean Stud Poker /caribbeanstud/exec endpoint. */
@@ -1668,6 +1804,26 @@ export const whistApi = {
   ) => gameExec<WhistResponse>('whist', { command, cardIndex, config }),
 };
 
+/** API client for the Briscola /briscola/exec endpoint. */
+export const briscolaApi = {
+  exec: (command: 'reset' | 'play' | 'next' | 'hint' | 'log', cardIndex?: number, config?: Partial<BriscolaConfig>) =>
+    gameExec<BriscolaResponse>('briscola', { command, cardIndex, config }),
+};
+
+/** Source or target zone for a Gaps card move. */
+export interface GapsMoveZone {
+  zone: 'grid';
+  row: number;
+  col: number;
+}
+
+/** API client for the Gaps /gaps/exec endpoint. */
+export const gapsApi = createSolitaireMoveApi<
+  GapsResponse,
+  GapsMoveZone,
+  'reset' | 'move' | 'redeal' | 'giveup' | 'hint' | 'log' | 'undo' | 'undo_n'
+>('gaps');
+
 /** API client for the Poker Squares /pokersquares/exec endpoint. */
 export const pokersquaresApi = {
   exec: (command: 'reset' | 'place' | 'undo' | 'giveup' | 'log', row?: number, col?: number) =>
@@ -1846,6 +2002,13 @@ const games = [
   'piquet',
   'casinoholdem',
   'callbreak',
+  'tarneeb',
+  'highcardflush',
+  'briscola',
+  'gaps',
+  'fourcardpoker',
+  'rummy500',
+  'eightoff',
 ] as const;
 type Game = (typeof games)[number];
 

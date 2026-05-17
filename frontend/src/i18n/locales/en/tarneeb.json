@@ -1,0 +1,77 @@
+{
+  "phase": {
+    "bid": "Bid",
+    "trump": "Trump Declaration",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "pointLimit": "Target Score",
+    "minBid": "Minimum Bid",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "trump": "Trump",
+  "trumpUndeclared": "not yet declared",
+  "highestBid": "Current high bid",
+  "cards": "{{count}} cards",
+  "bid": "bid {{n}}",
+  "bidNone": "no bid",
+  "currentTrick": "Current trick",
+  "scores": "Team scores",
+  "scoresTeam": "Team",
+  "scoresTotal": "Total",
+  "team": "Team {{n}}",
+  "bidButton": "Bid",
+  "passButton": "Pass",
+  "playButton": "Play",
+  "nextTrick": "Next trick",
+  "nextRound": "Next round",
+  "bidPhase": "Place your bid (7-13, or 0 to pass)",
+  "trumpPhase": "Choose the trump suit",
+  "playPhase": {
+    "lead": "Lead a card",
+    "follow": "Follow the led suit if possible"
+  },
+  "trickEnd": "Trick ended",
+  "roundEnd": "Round ended",
+  "gameEndHumanWin": "Team {{team}} (you) wins!",
+  "gameEndCpuWin": "Team {{team}} (CPU) wins!",
+  "hintBid": "Suggested bid",
+  "hintTrump": "Suggested trump",
+  "hintPlay": "Suggested card",
+  "hintReason": {
+    "bid_pass": "Hand is weak — pass",
+    "bid_estimate": "Bid based on hand strength",
+    "trump_longest": "Pick longest suit as trump",
+    "lead_strong": "Lead a strong card",
+    "follow_suit": "Follow the led suit",
+    "trump_cut": "Cut with trump",
+    "discard_high": "Discard your highest card"
+  },
+  "tutorial": {
+    "bidControls": "In the bid phase, declare how many tricks (7-13) you and your partner think you can take.",
+    "trumpControls": "After winning the auction, choose the trump suit.",
+    "trickDisplay": "The current trick. The trump suit beats every other suit.",
+    "playerHand": "Your hand. Follow the led suit when possible; otherwise play any card.",
+    "playButton": "Pick a card and confirm with this button.",
+    "scoreTable": "Team scores. The bidding team scores +tricks if they meet their bid, or -bid if they fall short. First team to the target score wins.",
+    "resetButton": "Reset to start a new game."
+  },
+  "hint": {
+    "bidPass": "Hand too weak — pass",
+    "bidEstimate": "Suggested bid based on hand strength",
+    "trumpLongest": "Choose your longest suit as trump",
+    "leadStrategic": "Lead strategically",
+    "followSuit": "Follow the led suit",
+    "trumpCut": "Cut with trump",
+    "discardLowest": "Discard your lowest card"
+  }
+}

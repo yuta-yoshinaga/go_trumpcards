@@ -20,12 +20,14 @@ export type GameKey =
   | 'casinoholdem'
   | 'ultimatetexasholdem'
   | 'mississippistud'
+  | 'highcardflush'
   | 'paigow'
   | 'letitride'
   | 'reddog'
   | 'casinowar'
   | 'dragontiger'
   | 'blackjackswitch'
+  | 'fourcardpoker'
   // Poker
   | 'poker'
   | 'holdem'
@@ -54,6 +56,8 @@ export type GameKey =
   | 'pinochle'
   | 'piquet'
   | 'callbreak'
+  | 'tarneeb'
+  | 'briscola'
   | 'skat'
   | 'belote'
   | 'mighty'
@@ -81,10 +85,12 @@ export type GameKey =
   // Solitaire
   | 'klondike'
   | 'freecell'
+  | 'eightoff'
   | 'seahaventowers'
   | 'spider'
   | 'spiderette'
   | 'pyramid'
+  | 'gaps'
   | 'tripeaks'
   | 'golf'
   | 'memory'
@@ -108,7 +114,8 @@ export type GameKey =
   | 'canasta'
   | 'cribbage'
   | 'sevenbridge'
-  | 'contractrummy';
+  | 'contractrummy'
+  | 'rummy500';
 
 /** Theme classes (Tailwind) applied to the page background and footer for each game. */
 export interface GameThemeClasses {
@@ -139,12 +146,14 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   casinoholdem: POKER,
   ultimatetexasholdem: POKER,
   mississippistud: POKER,
+  highcardflush: CASINO,
   paigow: CASINO,
   letitride: CASINO,
   reddog: CASINO,
   casinowar: CASINO,
   dragontiger: CASINO,
   blackjackswitch: BRIGHT_GREEN,
+  fourcardpoker: CASINO,
   // Poker
   poker: POKER,
   holdem: POKER,
@@ -176,6 +185,8 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   belote: BLUE,
   mighty: BLUE,
   callbreak: BLUE,
+  tarneeb: BLUE,
+  briscola: BLUE,
   // Matching/Pass
   oldmaid: GREEN,
   doubt: GREEN,
@@ -200,10 +211,12 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Solitaire
   klondike: CASINO,
   freecell: CASINO,
+  eightoff: CASINO,
   seahaventowers: CASINO,
   spider: CASINO,
   spiderette: CASINO,
   pyramid: CASINO,
+  gaps: CASINO,
   tripeaks: CASINO,
   golf: CASINO,
   memory: CASINO,
@@ -228,4 +241,5 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   cribbage: BLUE,
   sevenbridge: BLUE,
   contractrummy: BLUE,
+  rummy500: BLUE,
 };
