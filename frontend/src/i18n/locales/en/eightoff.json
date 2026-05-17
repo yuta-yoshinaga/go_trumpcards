@@ -1,0 +1,36 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear!",
+    "gameOver": "Game Over"
+  },
+  "freecell": "Free Cell",
+  "foundation": "Foundation",
+  "tableau": "Tableau",
+  "giveup": "Give Up",
+  "hint": "Hint",
+  "autoComplete": "Auto Complete",
+  "undo": "Undo",
+  "moveCount": "Moves",
+  "empty": "Empty",
+  "hintAvailable": "Hint",
+  "foundationAriaLabel": "{{suit}} Foundation ({{cardCount}} cards)",
+  "emptyFoundationAriaLabel": "{{suit}} Foundation (empty)",
+  "emptyFreecellAriaLabel": "Free Cell {{idx}} (empty)",
+  "supermoveLimitTooltip": "Only {{limit}} card(s) can be moved at once",
+  "tutorial": {
+    "freeCells": "Eight free cells. Four are pre-filled with initial cards. More empty cells allow moving more cards at once.",
+    "foundation": "Foundation piles. Build each suit from Ace to King.",
+    "tableau": "Tableau columns. Unlike FreeCell, cards must be stacked in the SAME suit descending. Only Kings may move to empty columns.",
+    "controls": "Control buttons: Undo, Hint, Auto-complete.",
+    "resetButton": "Press the reset button to start a new game."
+  },
+  "landscapeBanner": "Rotate to landscape for easier play",
+  "freecellShort": "FC",
+  "frontendHint": {
+    "moveToFoundation": "A card can be moved to the foundation",
+    "freeCellsFilling": "Free cells are almost full — try to clear some",
+    "useEmptyColumnKing": "An empty column is available — move a King to use it",
+    "useFreeCells": "Consider moving a card to a free cell to open up moves"
+  }
+}

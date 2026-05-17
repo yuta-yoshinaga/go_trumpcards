@@ -37,6 +37,7 @@ import type {
   DurakConfigInput,
   DurakResponse,
   EgyptianRatscrewResponse,
+  EightOffResponse,
   EuchreResponse,
   FiftyOneResponse,
   FortyThievesMoveZone,
@@ -223,6 +224,7 @@ const workerUrl: Record<string, string> = {
   gaps: WORKER_SOLO,
   fourcardpoker: WORKER_CASINO,
   rummy500: WORKER_SOLO,
+  eightoff: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -808,6 +810,21 @@ export const freecellApi = createSolitaireMoveApi<
   FreeCellMoveZone,
   'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('freecell');
+
+/** Source or target zone for an Eight Off card move. */
+export interface EightOffMoveZone {
+  zone: string;
+  col?: number;
+  cell?: number;
+  cardIndex?: number;
+}
+
+/** API client for the Eight Off /eightoff/exec endpoint. */
+export const eightoffApi = createSolitaireMoveApi<
+  EightOffResponse,
+  EightOffMoveZone,
+  'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('eightoff');
 
 /** Source or target zone for a Seahaven Towers card move. */
 export interface SeahavenTowersMoveZone {
@@ -1991,6 +2008,7 @@ const games = [
   'gaps',
   'fourcardpoker',
   'rummy500',
+  'eightoff',
 ] as const;
 type Game = (typeof games)[number];
 

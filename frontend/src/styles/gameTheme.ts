@@ -85,6 +85,7 @@ export type GameKey =
   // Solitaire
   | 'klondike'
   | 'freecell'
+  | 'eightoff'
   | 'seahaventowers'
   | 'spider'
   | 'spiderette'
@@ -210,6 +211,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Solitaire
   klondike: CASINO,
   freecell: CASINO,
+  eightoff: CASINO,
   seahaventowers: CASINO,
   spider: CASINO,
   spiderette: CASINO,

@@ -33,6 +33,7 @@ import doubt from '../../../docs/manual/web/doubt.md?raw';
 import dragontiger from '../../../docs/manual/web/dragontiger.md?raw';
 import durak from '../../../docs/manual/web/durak.md?raw';
 import egyptianratscrew from '../../../docs/manual/web/egyptianratscrew.md?raw';
+import eightoff from '../../../docs/manual/web/eightoff.md?raw';
 import euchre from '../../../docs/manual/web/euchre.md?raw';
 import fiftyone from '../../../docs/manual/web/fiftyone.md?raw';
 import fortythieves from '../../../docs/manual/web/fortythieves.md?raw';
@@ -133,6 +134,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/fourcardpoker': fourcardpoker,
   '/euchre': euchre,
   '/freecell': freecell,
+  '/eightoff': eightoff,
   '/seahaventowers': seahaventowers,
   '/ginrummy': ginrummy,
   '/gofish': gofish,

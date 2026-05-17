@@ -1597,6 +1597,26 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"rummy500.helpSetDifficulty", "rummy500.helpSetLimit"},
 			})
 	}},
+	{Name: "eightoff", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewEightOffCuiController(usecase.NewEightOffInteractor(
+				domain.NewDefaultEightOff(), new(presenter.EightOffCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "eightoff.helpTitle",
+				CommandKeys: []string{
+					"eightoff.helpMove",
+					"eightoff.helpMoveTF",
+					"eightoff.helpMoveTT",
+					"eightoff.helpMoveTC",
+					"eightoff.helpMoveCT",
+					"eightoff.helpMoveCF",
+					"eightoff.helpGiveUp",
+					"eightoff.helpHint",
+					"eightoff.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

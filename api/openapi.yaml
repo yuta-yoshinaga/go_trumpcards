@@ -209,6 +209,8 @@ tags:
     description: Four Card Poker (フォーカードポーカー) - single-player casino poker. Player is dealt 5 cards and dealer 6 (one upcard); both sides use their best 4-card hand. No dealer qualification. Player chooses Play (1x/2x/3x Ante) or Fold after seeing the upcard. 4-card ranks (ascending) - High Card < Pair < Two Pair < Straight < Flush < Three of a Kind < Straight Flush < Four of a Kind. Auto Ante Bonus pays for 3-of-a-Kind or better. Optional Aces Up sidebet pays on Pair of Aces or better.
   - name: rummy500
     description: Rummy 500 (500ラム / ラミー500) - 2-player rummy where the discard pile is an ordered stack and a player can draw any card from it (taking all cards above the chosen index). Sets (3+ same rank) and runs (3+ same-suit consecutive; Aces low or high but no K-A-2 wrap) are melded and may be extended by layoff. Scoring per round = laid-meld points (positive) minus remaining hand points (negative); A=1 (or 15 in a Q-K-A run), J/Q/K=10, others face value. First to the configured point limit (default 500) wins.
+  - name: eightoff
+    description: Eight Off (エイトオフ) - single-player open-information solitaire and a stricter FreeCell variant. 8 tableau columns x 6 face-up cards (48 cards) plus the remaining 4 cards pre-placed in the first 4 of 8 free cells. 4 foundations build up by suit Ace to King. Tableau builds same-suit descending only; empty columns accept only Kings. Supermove limit (1 + emptyFreeCells) x 2^(emptyTableauCols). A* solver gates stalemate detection and auto-complete.
 
 paths:
   /blackjack/exec:
@@ -3319,6 +3321,59 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Rummy500Response'
+
+  /eightoff/exec:
+    post:
+      tags:
+        - eightoff
+      summary: Execute an Eight Off solitaire command
+      description: |
+        Send a command to advance the Eight Off (エイトオフ) game session
+        identified by `sessionId`. Eight Off is a stricter FreeCell variant:
+        the 52-card deck is dealt into **8 tableau columns of 6 face-up cards
+        (48 cards)** plus the remaining 4 cards in the first 4 of **8 free
+        cells**. Foundations build up by suit Ace→King. The tableau builds
+        **same-suit descending** only; **only Kings may be placed on an empty
+        column**. Supermove uses the FreeCell formula
+        `(1 + emptyFreeCells) × 2^(emptyTableauCols)`. An A* solver gates
+        stalemate detection and auto-complete.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | `0`   | Game in progress |
+        | GameClear | `1`   | All foundations are complete |
+        | GameOver  | `2`   | Player gave up |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `move`         | `m`     | Move card(s) between tableau / freecell / foundation |
+        | `giveup`       | `g`     | Forfeit the round |
+        | `hint`         | `h`     | Suggest the next move |
+        | `autocomplete` | `ac`    | Auto-move every safely-promotable card to foundations |
+        | `undo`         | `u`     | Undo the previous action |
+        | `undo_n`       |         | Undo `n` actions in a row |
+        | `log`          | `l`     | View action log |
+      operationId: eightoffExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EightOffRequest'
+      responses:
+        '200':
+          description: Game state after the command was executed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EightOffResponse'
+        '400':
+          description: Invalid request body or missing required parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EightOffResponse'
 
   /caribbeanstud/exec:
     post:
@@ -13108,6 +13163,138 @@ components:
               $ref: '#/components/schemas/FreeCellZone'
             to:
               $ref: '#/components/schemas/FreeCellZone'
+        message:
+          type: string
+          description: Game result or status message. Empty while the game is in progress.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Eight Off
+    # -------------------------------------------------------------------------
+    EightOffZone:
+      type: object
+      description: Specifies a zone on the Eight Off board for move commands
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: "Zone name: tableau, freecell, or foundation"
+          enum: [tableau, freecell, foundation]
+          example: tableau
+        col:
+          type: integer
+          description: Column index (0-based, used for tableau and foundation zones)
+          example: 3
+        cell:
+          type: integer
+          description: Free cell index (0-based, 0..7)
+          example: 4
+        cardIndex:
+          type: integer
+          description: Index of the card within the column (for moving multiple cards from tableau)
+          example: 0
+
+    EightOffRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `move` (`m`),
+            `giveup` (`g`), `hint` (`h`), `autocomplete` (`ac`),
+            `undo` (`u`), `undo_n`, `log` (`l`).
+          enum: [reset, r, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+          example: move
+        from:
+          description: Source zone for a move command
+          $ref: '#/components/schemas/EightOffZone'
+        to:
+          description: Destination zone for a move command
+          $ref: '#/components/schemas/EightOffZone'
+        n:
+          type: integer
+          description: Number of undos to perform (required when command is undo_n)
+          example: 3
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    EightOffResponse:
+      type: object
+      description: Current state of the Eight Off game
+      required:
+        - tableau
+        - freeCells
+        - foundation
+        - phase
+        - moveCount
+        - canUndo
+        - isStalemate
+        - undoToEscape
+        - message
+      properties:
+        tableau:
+          type: array
+          description: The 8 tableau columns, each containing an array of face-up cards
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        freeCells:
+          type: array
+          description: The 8 free cells (null or a Card)
+          items:
+            nullable: true
+            $ref: '#/components/schemas/Card'
+        foundation:
+          type: array
+          description: The 4 foundation piles (one per suit), each containing an array of cards
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 0 = Playing, 1 = GameClear, 2 = GameOver"
+          enum: [0, 1, 2]
+          example: 0
+        moveCount:
+          type: integer
+          description: Total number of moves made in the current game
+          example: 0
+        canUndo:
+          type: boolean
+          description: Whether the undo action is available
+          example: false
+        isStalemate:
+          type: boolean
+          description: Whether the game is in a stalemate (no moves can lead to a win)
+          example: false
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to reach a non-stalemate state (0 if not stalemate, -1 if no escape)
+          example: 0
+        hint:
+          type: object
+          description: Hint for the next available move (only present when hint command is used)
+          properties:
+            from:
+              $ref: '#/components/schemas/EightOffZone'
+            to:
+              $ref: '#/components/schemas/EightOffZone'
         message:
           type: string
           description: Game result or status message. Empty while the game is in progress.
