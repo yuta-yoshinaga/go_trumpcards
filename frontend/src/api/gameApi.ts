@@ -913,7 +913,7 @@ export const rummy500Api = {
   ) =>
     gameExec<Rummy500Response>('rummy500', {
       command,
-      cardIndex,
+      cardIndex: layoff?.cardIndex ?? cardIndex,
       cardIndices,
       discardIdx,
       meldOwner: layoff?.meldOwner,

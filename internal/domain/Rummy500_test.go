@@ -746,3 +746,24 @@ func TestRummy500_PlayerJSONRoundTrip(t *testing.T) {
 	assert.Equal(t, 40, p2.GetCumulativeScore())
 	require.Len(t, p2.GetLaidMelds(), 1)
 }
+
+// Regression: the CPU meld finder must surface Q-K-A as a valid run. Prior to
+// the fix in findAllRummy500Melds, scanning sorted ascending order treated
+// Ace as 1 only and could never reach 14, so Q-K-A runs were invisible to
+// the CPU even though rummy500IsValidRun accepted them.
+func TestRummy500_CpuFindsQKARun(t *testing.T) {
+	g := newTestRummy500()
+	g.Reset()
+	g.SetPhase(domain.Rummy500PhasePlay)
+	g.SetCurrentPlayerIdx(1) // CPU
+	setRummy500Hand(t, g.GetPlayer(1),
+		r5Card(t, 0, 1),  // Ace of spades
+		r5Card(t, 0, 13), // K of spades
+		r5Card(t, 0, 12), // Q of spades
+		r5Card(t, 1, 4),  // junk to discard
+	)
+	g.CpuPlay()
+	melds := g.GetPlayer(1).GetLaidMelds()
+	require.Len(t, melds, 1, "CPU should meld Q-K-A")
+	assert.Equal(t, 35, domain.Rummy500MeldScore(melds[0]))
+}

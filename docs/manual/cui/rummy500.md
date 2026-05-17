@@ -9,7 +9,7 @@ Rummy 500（500ラム）は2人で対戦するラミー系カードゲームで�
 ```sh
 go run ./cmd/trumpcards rummy500       # 日本語
 go run ./cmd/trumpcards --lang en rummy500  # 英語
-go run ./cmd/trumpcards 500           # エイリアス（rummy/r500 も可）
+go run ./cmd/trumpcards 500           # エイリアス（rummy, 500, r500 も可）
 ```
 
 ## ルール

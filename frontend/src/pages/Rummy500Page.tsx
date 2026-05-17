@@ -15,7 +15,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import {
-  DEFAULT_RUMMY500_CONFIG,
   RUMMY500_CPU_DIFFICULTY_OPTIONS,
   RUMMY500_POINT_LIMIT_OPTIONS,
   useRummy500Game,
@@ -359,6 +358,3 @@ function Rummy500PageContent() {
     </GamePageShell>
   );
 }
-
-// Suppress unused config import warning (kept for completeness; biome may flag otherwise)
-void DEFAULT_RUMMY500_CONFIG;

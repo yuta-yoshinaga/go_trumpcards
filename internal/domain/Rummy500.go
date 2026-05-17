@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strings"
 )
 
 // Rummy500PlayerCnt Rummy 500プレイヤー数（ヘッズアップ）
@@ -88,6 +89,8 @@ func (g *Rummy500) Reset() {
 		p.SetIsFinished(false)
 	}
 
+	// trumpCards.Shuffle resets the drawn-card pointer via deckInit,
+	// which dealInitialCards depends on to drain a full deck on every Reset.
 	g.trumpCards.Shuffle()
 	g.dealInitialCards()
 	g.sortAllHands()
@@ -111,6 +114,8 @@ func (g *Rummy500) NextRound() {
 		p.ResetRound()
 	}
 
+	// trumpCards.Shuffle resets the drawn-card pointer via deckInit,
+	// which dealInitialCards depends on to drain a full deck on every round.
 	g.trumpCards.Shuffle()
 	g.dealInitialCards()
 	g.sortAllHands()
@@ -897,6 +902,44 @@ func findAllRummy500Melds(cards []*Card) [][]*Card {
 				}
 			}
 		}
+
+		// Ace-highラン候補: Q-K-A や J-Q-K-A など、Aceを14として扱うラン。
+		// 上の low-Ace パスでは Ace=1 が常に先頭に出るため検出できない。
+		var ace *Card
+		for _, c := range sorted {
+			if c.GetValue() == 1 {
+				ace = c
+				break
+			}
+		}
+		if ace == nil {
+			continue
+		}
+		// Aceを除いた高位部分(>=2)を逆順に走査して連続ランを探す。
+		highPart := make([]*Card, 0, len(sorted))
+		for _, c := range sorted {
+			if c.GetValue() != 1 {
+				highPart = append(highPart, c)
+			}
+		}
+		// highPartはすでに昇順
+		if len(highPart) >= 2 && highPart[len(highPart)-1].GetValue() == 13 {
+			// 末尾からKに連続するシーケンスを取り出す
+			tail := []*Card{highPart[len(highPart)-1]}
+			for k := len(highPart) - 2; k >= 0; k-- {
+				if highPart[k].GetValue() == tail[0].GetValue()-1 {
+					tail = append([]*Card{highPart[k]}, tail...)
+				} else {
+					break
+				}
+			}
+			if len(tail) >= 2 {
+				// tail + Ace は長さ 3 以上のラン
+				runWithAce := append([]*Card{}, tail...)
+				runWithAce = append(runWithAce, ace)
+				melds = append(melds, runWithAce)
+			}
+		}
 	}
 
 	return melds
@@ -933,18 +976,7 @@ func formatCards(cards []*Card) string {
 	for _, c := range cards {
 		parts = append(parts, cardStr(c))
 	}
-	return joinComma(parts)
-}
-
-func joinComma(parts []string) string {
-	out := ""
-	for i, p := range parts {
-		if i > 0 {
-			out += ","
-		}
-		out += p
-	}
-	return out
+	return strings.Join(parts, ",")
 }
 
 // --- JSON wire format ---
