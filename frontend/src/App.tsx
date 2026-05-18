@@ -5,6 +5,7 @@ import { DesktopSidebar } from './components/DesktopSidebar';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { NavBar } from './components/NavBar';
 import { SkipNavLink } from './components/SkipNavLink';
+import { SkeletonBar } from './components/skeleton/SkeletonBar';
 import { gameRoutes } from './constants/gameRoutes';
 import { DiscoverPage } from './pages/DiscoverPage';
 import { DiscoverResultPage } from './pages/DiscoverResultPage';
@@ -22,9 +23,22 @@ const lazyPages = new Map<string, ComponentType>(
   gameRoutes.map(({ path, page }) => [path, resolvePageComponent(pageModules, path, page)]),
 );
 
-/** Minimal `aria-busy` placeholder shown while a lazy game-page chunk loads. */
-function RouteSuspenseFallback() {
-  return <div role="status" aria-busy="true" className="flex-1" />;
+/**
+ * Placeholder rendered while a lazy game-page chunk downloads. Shows a
+ * `SkeletonBar` so the user sees structure forming on cold-cache /
+ * slow-network first paints, bridging visually to the page-specific
+ * skeleton that mounts once the chunk resolves. Preserves the existing
+ * `role="status"` / `aria-busy` contract for assistive tech and adds an
+ * `sr-only` loading label mirroring `SkeletonShell`.
+ */
+export function RouteSuspenseFallback() {
+  const { t } = useTranslation('common');
+  return (
+    <div role="status" aria-busy="true" className="flex-1 flex flex-col min-h-0">
+      <SkeletonBar />
+      <span className="sr-only">{t('skeleton.loading')}</span>
+    </div>
+  );
 }
 
 /** Root application component with router and game page routes. */
