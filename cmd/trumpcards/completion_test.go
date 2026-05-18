@@ -134,6 +134,10 @@ func TestRunCompletion_NoArgs(t *testing.T) {
 	code := runCompletionTo(nil, &stdout, &stderr, false, false)
 	assert.Equal(t, 2, code)
 	assert.Contains(t, stderr.String(), "trumpcards completion")
+	// Issue #1838: missing-arg should also surface the same `help <cmd>`
+	// hint that parseSubFlagsTo emits for unknown flags, so the UX is
+	// symmetric across all subcommand error paths.
+	assert.Contains(t, stderr.String(), "help completion")
 }
 
 func TestRunCompletion_ExtraArgs(t *testing.T) {
