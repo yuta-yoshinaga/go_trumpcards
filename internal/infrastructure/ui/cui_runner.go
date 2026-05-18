@@ -142,9 +142,12 @@ func filterByPrefix(candidates []string, token string) []string {
 	return out
 }
 
-// RunInteractiveCuiLoop runs an interactive multi-game CUI loop with game switching support.
-// The manager handles help/? commands internally; other commands are delegated to the current game.
-func RunInteractiveCuiLoop(manager *GameManager) {
+// RunInteractiveCuiLoop runs an interactive multi-game CUI loop with game
+// switching support. Returns 0 on normal exit (EOF, "quit", "exit", or
+// QuitSentinel from a game) and 1 when stdin reads fail with a non-EOF I/O
+// error (issue #1839). The manager handles help/? commands internally;
+// other commands are delegated to the current game.
+func RunInteractiveCuiLoop(manager *GameManager) int {
 	setupSignalHandler()
 	initMsg := manager.InitCurrentGame()
 	if initMsg != "" {
@@ -158,16 +161,22 @@ func RunInteractiveCuiLoop(manager *GameManager) {
 	// CuiExecer interface and we don't know the concrete type.
 	installCompleter(reader, manager)
 	for {
-		input, exit := readInput(reader, manager.CurrentGame())
+		input, exit, ioErr := readInput(reader, manager.CurrentGame())
+		if ioErr != nil {
+			return 1
+		}
 		if exit {
-			break
+			return 0
 		}
 		reader.AppendHistory(input)
 		res := manager.Exec(input)
-		res = handlePromptLoop(reader, manager, res, manager.CurrentGame(), os.Stdout)
+		res, ioErr = handlePromptLoop(reader, manager, res, manager.CurrentGame(), os.Stdout)
+		if ioErr != nil {
+			return 1
+		}
 		if res == i18n.QuitSentinel {
 			fmt.Println(i18n.T("bye"))
-			break
+			return 0
 		}
 		printResult(res)
 	}
@@ -187,8 +196,10 @@ func printResult(res string) {
 // prompt — this gives scrollback context and lets users tell ターミナル/タブ
 // apart when running multiple games in parallel. Pass "" to keep the legacy
 // bare "> " prompt. helpLines is shown when the user types "help" / "?".
-// See issue #1605.
-func RunCuiLoop(gameName string, controller CuiExecer, helpLines []string) {
+//
+// Returns 0 on normal exit (EOF, "quit", QuitSentinel) and 1 when stdin
+// reads fail with a non-EOF I/O error (issue #1839). See issue #1605.
+func RunCuiLoop(gameName string, controller CuiExecer, helpLines []string) int {
 	setupSignalHandler()
 	fmt.Println(controller.Exec("r"))
 	fmt.Println(i18n.T("typeHelp"))
@@ -200,9 +211,12 @@ func RunCuiLoop(gameName string, controller CuiExecer, helpLines []string) {
 		installCompleter(reader, nil)
 	}
 	for {
-		input, exit := readInput(reader, gameName)
+		input, exit, ioErr := readInput(reader, gameName)
+		if ioErr != nil {
+			return 1
+		}
 		if exit {
-			break
+			return 0
 		}
 		reader.AppendHistory(input)
 		trimmed := strings.TrimSpace(input)
@@ -213,35 +227,45 @@ func RunCuiLoop(gameName string, controller CuiExecer, helpLines []string) {
 			continue
 		}
 		res := controller.Exec(input)
-		res = handlePromptLoop(reader, controller, res, gameName, os.Stdout)
+		res, ioErr = handlePromptLoop(reader, controller, res, gameName, os.Stdout)
+		if ioErr != nil {
+			return 1
+		}
 		if res == i18n.QuitSentinel {
 			fmt.Println(i18n.T("bye"))
-			break
+			return 0
 		}
 		printResult(res)
 	}
 }
 
-// handlePromptLoop handles interactive prompting when a controller returns a prompt request.
-// It loops until the controller returns a non-prompt result (allowing chained wizard-style prompts).
-func handlePromptLoop(reader LineReader, execer CuiExecer, result, gameName string, w io.Writer) string {
+// handlePromptLoop handles interactive prompting when a controller returns a
+// prompt request. It loops until the controller returns a non-prompt result
+// (allowing chained wizard-style prompts). Returns (result, ioErr); ioErr is
+// non-nil only when an inner stdin read fails with a non-EOF error so the
+// top-level runner can exit non-zero (issue #1839). EOF stays a clean quit
+// (QuitSentinel + nil error), matching the bye-on-Ctrl+D contract.
+func handlePromptLoop(reader LineReader, execer CuiExecer, result, gameName string, w io.Writer) (string, error) {
 	for cuiutil.IsPromptRequest(result) {
 		promptMsg, tmpl := cuiutil.ParsePromptRequest(result)
 		if tmpl == "" {
 			// Malformed prompt; treat as regular message.
-			return promptMsg
+			return promptMsg, nil
 		}
 		_, _ = fmt.Fprintln(w, promptMsg)
-		input, exit := readInput(reader, gameName)
+		input, exit, ioErr := readInput(reader, gameName)
+		if ioErr != nil {
+			return i18n.QuitSentinel, ioErr
+		}
 		if exit {
-			return i18n.QuitSentinel
+			return i18n.QuitSentinel, nil
 		}
 		input = strings.TrimSpace(input)
 		if input == "" {
-			return i18n.T("cancelled")
+			return i18n.T("cancelled"), nil
 		}
 		fullCmd := cuiutil.FillTemplate(tmpl, input)
 		result = execer.Exec(fullCmd)
 	}
-	return result
+	return result, nil
 }

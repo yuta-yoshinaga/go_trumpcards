@@ -111,22 +111,25 @@ func writeRealtimeOutput(w io.Writer, out string) {
 // stdio), it falls back to the standard line-mode loop so non-interactive
 // scripts keep working.
 //
+// Returns 0 on normal exit and the line-mode loop's code (0 normally, 1 on
+// non-EOF stdin error — issue #1839) when it falls back. The realtime loop
+// itself only exits on user quit / signal / stdin EOF, all of which are
+// clean shutdowns.
+//
 // Signal handling is local rather than via the package-level
 // setupSignalHandler — the latter calls os.Exit on SIGINT/SIGTERM, which
 // bypasses the deferred term.Restore and leaves the user's terminal in
 // raw mode. Here we close a quit channel instead, letting the loop return
 // normally and the deferred restore run.
-func RunRealtimeCuiLoop(gameName string, controller CuiExecer, helpLines []string) {
+func RunRealtimeCuiLoop(gameName string, controller CuiExecer, helpLines []string) int {
 	stdinFd := int(os.Stdin.Fd())
 	if !term.IsTerminal(stdinFd) {
-		RunCuiLoop(gameName, controller, helpLines)
-		return
+		return RunCuiLoop(gameName, controller, helpLines)
 	}
 	state, err := term.MakeRaw(stdinFd)
 	if err != nil {
 		// Raw mode failed (rare — e.g., unusual shells); degrade to line mode.
-		RunCuiLoop(gameName, controller, helpLines)
-		return
+		return RunCuiLoop(gameName, controller, helpLines)
 	}
 	defer func() { _ = term.Restore(stdinFd, state) }()
 
@@ -174,6 +177,7 @@ func RunRealtimeCuiLoop(gameName string, controller CuiExecer, helpLines []strin
 	realtimeCuiCore(controller, keys, ticks, quit, os.Stdout, SlapjackRealtimeKeyMap)
 	close(done)
 	fmt.Println(i18n.T("bye"))
+	return 0
 }
 
 // readRealtimeKeys reads single bytes from r and forwards them as runes.

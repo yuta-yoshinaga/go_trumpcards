@@ -511,8 +511,10 @@ func run() int {
 		fmt.Fprintln(os.Stderr, i18n.Tf("cliStartupGame", "game", startGame))
 	}
 	manager := ui.NewGameManager(startGame)
-	ui.RunInteractiveCuiLoop(manager)
-	return 0
+	// Issue #1839: propagate stdin read-error exit code so systemd / CI /
+	// supervisors can detect a broken terminal session, not just a clean
+	// EOF. EOF and "exit" still return 0.
+	return ui.RunInteractiveCuiLoop(manager)
 }
 
 // resolveStartGame resolves the --start flag value into a canonical game
@@ -1121,7 +1123,7 @@ ENVIRONMENT VARIABLES:
 
 EXIT CODES:
    0  Success (normal exit, EOF, or 'exit' command)
-   1  General error (e.g., web server failed to start)
+   1  General error (e.g., web server failed to start, interactive input read error)
    2  Usage error (invalid flags, unknown category, missing required argument)
   10  'update --check': a newer version is available (non-error signal for scripts)
   75  'update': user declined the confirmation prompt
@@ -1314,12 +1316,12 @@ func buildGameCommands() map[string]func() int {
 		e := entry // capture loop variable
 		commands[e.Name] = func() int {
 			g := e.NewCui()
+			// Issue #1839: thread the CUI loop's exit code up to the OS so
+			// stdin read errors surface as exit 1, not silently as 0.
 			if realtimeGames[e.Name] {
-				ui.RunRealtimeCuiLoop(e.Name, g.Controller(), g.HelpLines())
-			} else {
-				ui.RunCuiLoop(e.Name, g.Controller(), g.HelpLines())
+				return ui.RunRealtimeCuiLoop(e.Name, g.Controller(), g.HelpLines())
 			}
-			return 0
+			return ui.RunCuiLoop(e.Name, g.Controller(), g.HelpLines())
 		}
 	}
 	return commands
