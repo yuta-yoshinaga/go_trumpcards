@@ -71,8 +71,11 @@ const enModules = import.meta.glob('../i18n/locales/en/*.json', {
   import: 'default',
 }) as Record<string, Record<string, string>>;
 
-const jaResources = buildResources(jaModules);
-const enResources = buildResources(enModules);
+// Tests include the lazy namespaces eagerly so callers don't have to
+// orchestrate dynamic imports inside jsdom — the runtime path that
+// loads `discover` on /discover mount is covered by a dedicated test.
+const jaResources = buildResources(jaModules, { skipLazy: false });
+const enResources = buildResources(enModules, { skipLazy: false });
 
 i18n.use(initReactI18next).init({
   lng: 'ja',

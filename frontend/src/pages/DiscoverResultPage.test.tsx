@@ -1,10 +1,10 @@
 /**
  * @vitest-environment jsdom
  */
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import i18n from 'i18next';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { DiscoverResultPage } from './DiscoverResultPage';
 
@@ -57,5 +57,24 @@ describe('DiscoverResultPage', () => {
     });
     // A hero recommendation heading is rendered instead.
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+  });
+
+  it('fallback hero "browse" button scrolls the TOP3 section into view', async () => {
+    // Stub scrollIntoView since jsdom does not implement it. The button's
+    // onClick path is part of the fullySkipped branch coverage.
+    const scrollSpy = vi.fn();
+    HTMLElement.prototype.scrollIntoView = scrollSpy;
+    renderAt('/discover/result?m=-,-&s=-,-&so=-,-&t=-,-');
+    const browse = await screen.findByRole('button', {
+      name: i18n.t('discover:fallback.action.browse'),
+    });
+    fireEvent.click(browse);
+    expect(scrollSpy).toHaveBeenCalledWith({ behavior: 'smooth' });
+  });
+
+  it('renders the retake link back to /discover', async () => {
+    renderAt('/discover/result?m=0,0&s=0,0&so=1,1&t=0,0');
+    const retake = await screen.findByRole('link', { name: i18n.t('discover:action.retake') });
+    expect(retake).toHaveAttribute('href', '/discover');
   });
 });

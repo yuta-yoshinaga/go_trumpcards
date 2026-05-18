@@ -12,6 +12,7 @@
   - [1.5 コンポーネント層](#15-コンポーネント層)
   - [1.6 ページコンポーネント層](#16-ページコンポーネント層)
   - [1.7 i18n・プロバイダー・ルーティング](#17-i18nプロバイダールーティング)
+  - [1.8 AI Game Concierge (/discover)](#18-ai-game-concierge-discover)
 - [2. シーケンス図](#2-シーケンス図)
   - [2.1 ゲームアクション実行フロー](#21-ゲームアクション実行フロー)
   - [2.2 CPUリプレイアニメーションフロー](#22-cpuリプレイアニメーションフロー)
@@ -38,6 +39,7 @@
   - [2.23 TrashPage フェーズ別レンダリングフロー](#223-trashpage-フェーズ別レンダリングフロー)
   - [2.24 RussianSolitairePage フェーズ別レンダリングフロー](#224-russiansolitairepage-フェーズ別レンダリングフロー)
   - [2.25 MightyPage フェーズ別レンダリングフロー](#225-mightypage-フェーズ別レンダリングフロー)
+  - [2.26 AI Game Concierge サーベイ → 結果フロー](#226-ai-game-concierge-サーベイ--結果フロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 ゲームページ表示状態](#31-ゲームページ表示状態)
   - [3.2 カード選択状態 (useCardSelection)](#32-カード選択状態-usecardselection)
@@ -47,6 +49,7 @@
   - [3.6 チュートリアル状態 (useTutorial)](#36-チュートリアル状態-usetutorial)
   - [3.7 CLIモード状態 (useCliMode + useCliGame)](#37-cliモード状態-useclimode--usecligame)
   - [3.8 Mighty フェーズ遷移 (MightyPhase)](#38-mighty-フェーズ遷移-mightyphase)
+  - [3.9 Discover サーベイステップ遷移 (SurveyState)](#39-discover-サーベイステップ遷移-surveystate)
 
 ---
 
@@ -1957,6 +1960,167 @@ classDiagram
     note for i18n "103名前空間: common + 101ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
 ```
 
+### 1.8 AI Game Concierge (/discover)
+
+`/discover` (サーベイ) と `/discover/result` (結果) の関係する型・コンポーネント・hook・util の依存関係です。`profile: GameProfile` は `gameRoutes` の必須フィールドとして TypeScript レベルで強制されます。
+
+```mermaid
+classDiagram
+    class AxisDef {
+        +number questionCount
+        +string labelI18nKey
+        +string[] questionI18nKeys
+        +AxisOption[] options
+    }
+
+    class AxisOption {
+        +string key
+        +string i18nKey
+    }
+
+    class AXES {
+        <<const>>
+        +AxisDef mood
+        +AxisDef skill
+        +AxisDef social
+        +AxisDef theme
+    }
+
+    class GameProfile {
+        +number[] mood
+        +number[] skill
+        +number[] social
+        +number[] theme
+    }
+
+    class GameRoute {
+        +string path
+        +string labelKey
+        +string icon
+        +string page
+        +GameProfile profile
+    }
+
+    class UserMood {
+        +AxisAnswer[] mood
+        +AxisAnswer[] skill
+        +AxisAnswer[] social
+        +AxisAnswer[] theme
+    }
+
+    class RecommendationResult {
+        +ScoredGame[] top3
+        +ScoredGame stretch
+        +ScoredGame[] also
+    }
+
+    class recommendationScoring {
+        <<utility>>
+        +axisScore(profile, answers) number
+        +score(game, mood) number
+        +dominantAxis(game, mood) AxisKey
+        +profileDistance(a, b) number
+        +recommend(games, mood) RecommendationResult
+    }
+
+    class urlMoodCodec {
+        <<utility>>
+        +encodeMood(mood) string
+        +parseMood(query) UserMoodInput|null
+        +parseSearchParams(params) UserMoodInput|null
+        +hasAnyAnswer(mood) boolean
+    }
+
+    class useSurveyDraft {
+        <<hook>>
+        +Record axes
+        +setAnswer(axis, qIdx, value) void
+        +reset() void
+    }
+
+    class useGameRecommendations {
+        <<hook>>
+        +input UserMood
+        +output RecommendationResult
+    }
+
+    class useDiscoverI18nBundle {
+        <<hook>>
+        +dynamic import discover.json
+        +i18n.addResourceBundle
+        +returns ready boolean
+    }
+
+    class DiscoverPage {
+        +SurveyState state via useReducer
+        +keyboard 1-N and Backspace
+        +submit navigates discover-result
+    }
+
+    class DiscoverResultPage {
+        +parseSearchParams from URL
+        +useGameRecommendations
+        +fallback when !hasAnyAnswer
+    }
+
+    class DiscoverShell {
+        <<component>>
+        +DR-6 felt frame on lg+
+    }
+
+    class DiscoverSkeleton {
+        <<component>>
+        +DR-3 placeholder during bundle load
+    }
+
+    class MoodQuestion {
+        <<component>>
+        +renders options + skip
+    }
+
+    class SurveyProgress {
+        <<component>>
+        +8-card deck, current highlighted
+    }
+
+    class RecommendationCard {
+        <<component>>
+        +hero|row variant
+    }
+
+    class StretchPickCard {
+        <<component>>
+        +dashed gold border
+    }
+
+    AXES *-- AxisDef : 4 axes
+    AxisDef *-- AxisOption : options
+    GameRoute --> GameProfile : profile
+    GameProfile ..> AXES : index aligned with options
+    recommendationScoring ..> AXES : reads weights / SOCIAL_SOLO_IDX
+    recommendationScoring ..> GameRoute : ranks
+    useGameRecommendations --> recommendationScoring : memoizes recommend()
+    urlMoodCodec ..> AXES : validates option counts
+    useSurveyDraft ..> AXES : axis keys
+    DiscoverPage --> useSurveyDraft : draft state
+    DiscoverPage --> useDiscoverI18nBundle : lazy bundle
+    DiscoverPage --> MoodQuestion : current step
+    DiscoverPage --> SurveyProgress : 1..8 indicator
+    DiscoverPage --> DiscoverShell : felt frame
+    DiscoverPage --> DiscoverSkeleton : while loading
+    DiscoverPage --> urlMoodCodec : encodeMood on submit
+    DiscoverResultPage --> useGameRecommendations : top3 + stretch + also
+    DiscoverResultPage --> urlMoodCodec : parseSearchParams / hasAnyAnswer
+    DiscoverResultPage --> RecommendationCard : hero + rows
+    DiscoverResultPage --> StretchPickCard : stretch pick
+    DiscoverResultPage --> DiscoverShell : felt frame
+    DiscoverResultPage --> useDiscoverI18nBundle : lazy bundle
+
+    note for GameProfile "Vector values are integers 0..PROFILE_MAX (=5).\nIndex order is locked to AXES.<axis>.options ordering."
+    note for urlMoodCodec "Wire format: m=2,3&s=0,-&so=1,1&t=-,-\nskip token = '-' (one hyphen)"
+    note for useSurveyDraft "localStorage key: trumpcards-discover-draft\nVersion-tagged blob; mismatch wipes & restarts."
+```
+
 ---
 
 ## 2. シーケンス図
@@ -2877,6 +3041,68 @@ sequenceDiagram
     Hook-->>Page: 再レンダリング → 次ラウンドUI or ゲーム終了UI
 ```
 
+### 2.26 AI Game Concierge サーベイ → 結果フロー
+
+ユーザーが Sidebar/NavBar CTA から `/discover` を開き、8問のアンケートを進めて `/discover/result` で推薦結果を見るまで。i18n bundle は `/discover` mount 時に遅延ロードされ、その間 `DiscoverSkeleton` が表示されます。
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Sidebar as DesktopSidebar/NavBar
+    participant Page as DiscoverPage
+    participant Bundle as useDiscoverI18nBundle
+    participant i18n as i18next
+    participant Draft as useSurveyDraft
+    participant LS as localStorage
+    participant Result as DiscoverResultPage
+    participant Codec as urlMoodCodec
+    participant Recs as useGameRecommendations
+
+    User->>Sidebar: tap "🎲 おすすめを探す"
+    Sidebar->>Page: navigate /discover
+
+    Page->>Bundle: useDiscoverI18nBundle()
+    alt bundle not yet loaded
+        Bundle->>i18n: hasResourceBundle('discover') → false
+        Bundle->>Bundle: dynamic import('locales/{lang}/discover.json')
+        Page-->>User: DiscoverSkeleton (DR-3)
+        Bundle->>i18n: addResourceBundle(lang, 'discover', json)
+        Bundle-->>Page: ready=true
+    end
+
+    Page->>Draft: useSurveyDraft() → restored axes
+    Draft->>LS: read trumpcards-discover-draft
+    LS-->>Draft: { v: 1, axes } | null
+    Page->>Page: firstUnansweredStep(axes) → initial step
+
+    loop 8 questions (advance/back)
+        Page-->>User: MoodQuestion (current axis/qIdx)
+        User->>Page: select option N (1-N key or click)
+        Page->>Draft: setAnswer(axis, qIdx, idx)
+        Draft->>LS: persist (try/catch)
+        Page->>Page: dispatch advance — slide animation (DR-4)
+    end
+
+    Page->>Codec: encodeMood({ axes }) → "m=...&s=...&so=...&t=..."
+    Page->>Draft: reset() → clears localStorage
+    Page->>Result: navigate /discover/result?<query>
+
+    Result->>Bundle: useDiscoverI18nBundle() (already ready in most flows)
+    Result->>Codec: parseSearchParams(params) → UserMoodInput|null
+    alt parsed === null
+        Result->>Result: navigate('/discover', { replace: true })
+    end
+    Result->>Codec: hasAnyAnswer(mood) → boolean
+    Result->>Recs: useGameRecommendations(toUserMood(mood))
+    Recs-->>Result: { top3, stretch, also }
+
+    alt all-skip mood
+        Result-->>User: fallback hero (warm dashed border + 2 CTA)
+    else
+        Result-->>User: hero card (TOP1) + TOP2/3 + Stretch + Also rows
+    end
+```
+
 ---
 
 ## 3. ステートマシン図
@@ -3039,3 +3265,40 @@ stateDiagram-v2
     note right of PLAY : MightyPhase.PLAY = 3\n通常 play(cardIndex)\nまたは jokerlead(cardIndex,jokerLeadSuit)
     note right of ROUND_END : MightyPhase.ROUND_END = 5\nスコア = (|points-bid|+1)×倍率\nNoTrump 倍率 = 2, セルフフレンド ×2
 ```
+
+### 3.9 Discover サーベイステップ遷移 (SurveyState)
+
+`DiscoverPage` の `useReducer` が管理する step pointer (`0..TOTAL_QUESTIONS`) の遷移。マウント時に `firstUnansweredStep(restoredAxes)` で localStorage から再開位置を計算し、advance/back で 1 ステップずつ移動、`TOTAL_QUESTIONS` 到達で submit effect が発火して `/discover/result` へ遷移します。
+
+```mermaid
+stateDiagram-v2
+    [*] --> Restoring : mount
+
+    Restoring --> Step0 : firstUnansweredStep = 0
+    Restoring --> StepN : firstUnansweredStep = N (resume from draft)
+
+    state "Step N (0..7)" as StepN {
+        [*] --> Showing
+        Showing --> Showing : back / Backspace = max(step-1, 0)
+        Showing --> Animating : advance (select option or skip)
+        Animating --> Showing : transition complete (DR-4 200ms ease-out)
+    }
+
+    Step0 --> StepN : advance
+    StepN --> Submitted : advance from step=7
+    StepN --> StepN : back
+
+    state Submitted {
+        [*] --> Encoding
+        Encoding --> Clearing : encodeMood ok
+        Clearing --> Navigating : draft cleared
+        Navigating --> [*] : navigate /discover/result?...
+    }
+
+    Submitted --> [*]
+
+    note right of Restoring : axes = useSurveyDraft() (lazy useState)\nfirstUnansweredStep walks 0..7 looking\nfor the first (axis, qIdx) with null answer.
+    note right of StepN : current = stepToAxisQuestion(step)\nMoodQuestion renders 1 question.\nReducer pure = advance | back.
+    note right of Submitted : Submit effect deps include state.step.\nresetDraft() removes localStorage entry.
+```
+
