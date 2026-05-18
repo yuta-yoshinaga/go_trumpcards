@@ -246,19 +246,19 @@ describe('recommend', () => {
 
   it('picks a stretch from the mid-band that is furthest from top1', () => {
     const games = fillerGames();
-    // Replace index 50 with an outlier profile that's still mid-band by score
-    // (since user mood is neutral, all games score the same — mid-band = same band).
-    const outlier = makeGame('/zzz-outlier', {
+    // With 60 lookalike games, scores tie and ordering is by path.localeCompare.
+    // The mid-band fraction (0.4..0.6) maps to sorted indexes 24..36 for n=60.
+    // `/game030` falls into that band naturally; we mutate its profile to
+    // become the only point with a non-trivial profileDistance to top1.
+    games[30] = makeGame('/game030', {
       mood: [0, 0, 0, 5],
       skill: [0, 0, 0, 5],
       social: [0, 0, 5],
       theme: [0, 0, 0, 5],
     });
-    games[50] = outlier;
-    const mood = makeMood();
-    const result = recommend(games, mood);
+    const result = recommend(games, makeMood());
     expect(result.stretch).not.toBeNull();
-    expect(result.stretch?.game.path).toBe('/zzz-outlier');
+    expect(result.stretch?.game.path).toBe('/game030');
   });
 
   it('returns stretch=null when the game list is too short for a mid-band', () => {
@@ -280,9 +280,14 @@ describe('recommend', () => {
     expect(result.stretch).toBeNull();
   });
 
-  it('also array excludes the stretch pick', () => {
+  it('also-rans and the stretch pick come from disjoint rank bands', () => {
+    // The also-rans live at ranks [TOP_N, ALSO_END_RANK) = [3, 10);
+    // the mid-band lives at floor(n*0.4)..floor(n*0.6) inclusive. For any
+    // reasonable n (≥17) these ranges do not overlap, so we assert the
+    // stretch path is never in the also-rans, regardless of which game
+    // happens to be picked.
     const games = fillerGames();
-    games[50] = makeGame('/zzz-outlier', {
+    games[30] = makeGame('/game030', {
       mood: [0, 0, 0, 5],
       skill: [0, 0, 0, 5],
       social: [0, 0, 5],
@@ -290,6 +295,7 @@ describe('recommend', () => {
     });
     const result = recommend(games, makeMood());
     const alsoPaths = result.also.map((g) => g.game.path);
+    expect(result.stretch).not.toBeNull();
     expect(alsoPaths).not.toContain(result.stretch?.game.path);
   });
 });

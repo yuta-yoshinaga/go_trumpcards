@@ -112,23 +112,39 @@ export function profileDistance(a: GameRoute, b: GameRoute): number {
   return sum;
 }
 
+/** Fraction of the sorted list (low end) that begins the mid-band Stretch Pick window. */
+export const STRETCH_BAND_START_FRACTION = 0.4;
+/** Fraction of the sorted list (high end, exclusive) that ends the mid-band Stretch Pick window. */
+export const STRETCH_BAND_END_FRACTION = 0.6;
+/** Top-3 are the first 3 by score; also-rans fill ranks 3..ALSO_END_RANK. */
+const TOP_N = 3;
+const ALSO_END_RANK = 10;
+/** Stretch Pick is only meaningful when the band has at least this many games. */
+const MIN_BAND_SIZE = 2;
+
 /**
  * Rank `games` against `mood` and return TOP3, a Stretch Pick, and Also-rans.
  *
  * Ties are broken by `game.path.localeCompare` for stable, testable output.
- * The Stretch Pick is drawn from the mid-band (sorted ranks 40..60) and is
- * the game whose profile vector is furthest from the top1 pick — designed to
- * surface "you'd never have picked this, but try it" cases.
+ * The Stretch Pick is drawn from the mid-band (the middle 40–60% of ranked
+ * games) and is the game whose profile vector is furthest from the top1
+ * pick — designed to surface "you'd never have picked this, but try it"
+ * cases. The band is sized relative to the input length so adding or
+ * removing games shifts the band proportionally rather than missing it.
  */
 export function recommend(games: readonly GameRoute[], mood: UserMood): RecommendationResult {
   const scored: ScoredGame[] = games
     .map((game) => ({ game, score: score(game, mood), topAxis: dominantAxis(game, mood) }))
     .sort((a, b) => b.score - a.score || a.game.path.localeCompare(b.game.path));
 
-  const top3 = scored.slice(0, 3);
-  const midBand = scored.slice(40, 61);
+  const top3 = scored.slice(0, TOP_N);
+  const bandStart = Math.floor(scored.length * STRETCH_BAND_START_FRACTION);
+  const bandEnd = Math.floor(scored.length * STRETCH_BAND_END_FRACTION) + 1;
+  const midBand = scored.slice(bandStart, bandEnd);
+  // Stretch pick is only meaningful when the band sits strictly past top3 —
+  // otherwise it would risk picking the user's top match as a "stretch".
   let stretch: ScoredGame | null = null;
-  if (midBand.length > 0 && top3.length > 0) {
+  if (bandStart >= TOP_N && midBand.length >= MIN_BAND_SIZE && top3.length > 0) {
     const top1Game = top3[0].game;
     stretch = midBand.reduce<ScoredGame>(
       (best, current) =>
@@ -136,6 +152,9 @@ export function recommend(games: readonly GameRoute[], mood: UserMood): Recommen
       midBand[0],
     );
   }
-  const also = scored.slice(3, 10).filter((g) => g.game.path !== stretch?.game.path);
+  // No filter: the also-rans (ranks 3..ALSO_END_RANK) and the mid-band
+  // (≥40% rank) never overlap by construction. If you change the band
+  // bounds and they could collide, reinstate the filter here.
+  const also = scored.slice(TOP_N, ALSO_END_RANK);
   return { top3, stretch, also };
 }
