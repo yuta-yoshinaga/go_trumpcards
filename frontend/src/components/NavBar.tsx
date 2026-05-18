@@ -150,6 +150,17 @@ export function NavBar() {
             )}
           </div>
         )}
+        {!filteredRoutes && (
+          <Link
+            to="/discover"
+            aria-current={pathname.startsWith('/discover') ? 'page' : undefined}
+            onClick={closeMenu}
+            className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded min-h-[44px] border-l-2 border-ds-accent bg-gradient-to-r from-[rgba(212,168,83,0.12)] to-[rgba(212,168,83,0.04)] text-ds-text-primary hover:bg-[rgba(212,168,83,0.18)] transition-colors ${focusRingWhite}`}
+          >
+            <span aria-hidden="true">🎲</span>
+            {t('nav.discover')}
+          </Link>
+        )}
         {isMobile && !filteredRoutes && favorites.length > 0 && (
           <div className="flex flex-col gap-1">
             <span className="text-ds-text-muted text-xs uppercase tracking-wider px-1 py-1">
