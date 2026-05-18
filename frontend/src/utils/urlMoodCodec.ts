@@ -86,10 +86,20 @@ export function parseSearchParams(params: URLSearchParams): UserMoodInput | null
   };
 }
 
-/** Convenience: validate a `UserMoodInput` shape (used by tests and reducer). */
-export function isFullyAnswered(mood: UserMoodInput): boolean {
+/**
+ * `true` when at least one survey question (any axis, any index) was
+ * actually answered. The Result page uses this to decide whether to
+ * show the editor's-pick hero (some signal) or the warm fallback hero
+ * (zero signal). A partial-skip user — for example, 6/8 answered with
+ * one axis fully skipped — still has signal and should see real
+ * recommendations; the skipped axis is treated as neutral (0.5) by
+ * `axisScore` rather than rejected at the page level.
+ */
+export function hasAnyAnswer(mood: UserMoodInput): boolean {
   for (const axis of AXIS_KEYS) {
-    if (mood[axis][0] === null && mood[axis][1] === null) return false;
+    for (const a of mood[axis]) {
+      if (a !== null) return true;
+    }
   }
-  return true;
+  return false;
 }
