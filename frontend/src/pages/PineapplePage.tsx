@@ -394,11 +394,11 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                           aria-pressed={canDiscard ? selectedDiscard === idx : undefined}
                           className={canDiscard ? 'cursor-pointer' : 'cursor-default'}
                           disabled={!canDiscard}
+                          style={selectedCardStyle(canDiscard && selectedDiscard === idx)}
                         >
                           <AnimatedCard
                             card={card}
                             width={cardWidth}
-                            style={selectedCardStyle(canDiscard && selectedDiscard === idx)}
                             onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                           />
                         </button>
