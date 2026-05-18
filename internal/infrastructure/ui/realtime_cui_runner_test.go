@@ -4,12 +4,61 @@ package ui
 
 import (
 	"bytes"
+	"errors"
+	"io"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 )
+
+// erroringByteReader returns a fixed non-EOF error after streaming zero
+// bytes. Used to exercise the readRealtimeKeys contract that non-EOF read
+// failures are surfaced on errCh while keys is still closed cleanly.
+type erroringByteReader struct{ err error }
+
+func (e *erroringByteReader) Read(_ []byte) (int, error) { return 0, e.err }
+
+// TestReadRealtimeKeys_EOFLeavesErrChEmpty verifies that a clean EOF stops
+// the reader without writing to errCh — the caller must see no error and
+// can return exit 0.
+func TestReadRealtimeKeys_EOFLeavesErrChEmpty(t *testing.T) {
+	t.Parallel()
+	keys := make(chan rune)
+	errCh := make(chan error, 1)
+	go readRealtimeKeys(&erroringByteReader{err: io.EOF}, keys, errCh)
+	// Drain keys; the goroutine must close it without sending anything.
+	for range keys {
+		t.Fatalf("expected no key bytes on EOF reader")
+	}
+	select {
+	case got := <-errCh:
+		t.Fatalf("EOF must not surface on errCh, got %v", got)
+	default:
+	}
+}
+
+// TestReadRealtimeKeys_NonEOFErrorSurfacesOnErrCh verifies the contract the
+// realtime runner relies on for exit code 1: a non-EOF read failure both
+// closes keys (so realtimeCuiCore returns) and lands on errCh (so the
+// runner can map it to exit 1) — addresses gemini's "MUST" feedback.
+func TestReadRealtimeKeys_NonEOFErrorSurfacesOnErrCh(t *testing.T) {
+	t.Parallel()
+	sentinel := errors.New("pty hung up")
+	keys := make(chan rune)
+	errCh := make(chan error, 1)
+	go readRealtimeKeys(&erroringByteReader{err: sentinel}, keys, errCh)
+	for range keys {
+		t.Fatalf("expected no key bytes on erroring reader")
+	}
+	select {
+	case got := <-errCh:
+		assert.ErrorIs(t, got, sentinel)
+	case <-time.After(time.Second):
+		t.Fatal("non-EOF reader error did not surface on errCh")
+	}
+}
 
 // realtimeMockExecer records every command Exec receives and returns
 // canned responses. Unmatched calls return an empty string so the

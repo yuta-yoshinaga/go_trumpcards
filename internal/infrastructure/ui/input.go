@@ -14,16 +14,18 @@ import (
 //
 //   - normal line: ("...", false, nil)
 //   - EOF (pipe drained, Ctrl+D, signalled-quit reader): ("", true, nil)
-//   - any other I/O error: ("", true, err)
+//   - any other I/O error: ("", true, err); inputReadError already written to stderr
 //
-// EOF and "exit" are clean shutdowns; only the non-EOF error path carries an
-// ioErr so callers can map it to a non-zero process exit code (issue #1839).
-// Matches the Updater's stdin contract (Updater.go: scan errors propagate as
-// errors), giving the whole CLI a consistent exit-code-on-stdin-failure rule.
+// Side effects are deliberately scoped to error reporting: the "bye" goodbye
+// line is printed by the top-level loop on EOF, not here, so a Ctrl+D inside
+// a wizard-style prompt only prints "bye" once rather than twice. EOF and
+// "exit" remain clean shutdowns; only the non-EOF path carries an ioErr so
+// callers can map it to a non-zero process exit code. Matches the Updater's
+// stdin contract (Updater.go: scan errors propagate as errors).
 //
 // The prompt is constructed here rather than in cui_runner.go so the same
 // "[gameName] > " format is used by the top-level loop and the wizard-style
-// prompt loop (issue #1605).
+// prompt loop.
 func readInput(r LineReader, gameName string) (text string, exit bool, ioErr error) {
 	prompt := "> "
 	if gameName != "" {
@@ -32,7 +34,6 @@ func readInput(r LineReader, gameName string) (text string, exit bool, ioErr err
 	line, err := r.Prompt(prompt)
 	if err != nil {
 		if errors.Is(err, io.EOF) {
-			fmt.Println(i18n.T("bye"))
 			return "", true, nil
 		}
 		fmt.Fprintln(os.Stderr, i18n.Tf("inputReadError", "error", err.Error()))

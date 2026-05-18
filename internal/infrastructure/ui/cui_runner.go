@@ -166,6 +166,7 @@ func RunInteractiveCuiLoop(manager *GameManager) int {
 			return 1
 		}
 		if exit {
+			fmt.Println(i18n.T("bye"))
 			return 0
 		}
 		reader.AppendHistory(input)
@@ -216,6 +217,7 @@ func RunCuiLoop(gameName string, controller CuiExecer, helpLines []string) int {
 			return 1
 		}
 		if exit {
+			fmt.Println(i18n.T("bye"))
 			return 0
 		}
 		reader.AppendHistory(input)

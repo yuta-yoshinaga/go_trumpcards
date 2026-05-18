@@ -511,9 +511,6 @@ func run() int {
 		fmt.Fprintln(os.Stderr, i18n.Tf("cliStartupGame", "game", startGame))
 	}
 	manager := ui.NewGameManager(startGame)
-	// Issue #1839: propagate stdin read-error exit code so systemd / CI /
-	// supervisors can detect a broken terminal session, not just a clean
-	// EOF. EOF and "exit" still return 0.
 	return ui.RunInteractiveCuiLoop(manager)
 }
 
@@ -1316,8 +1313,6 @@ func buildGameCommands() map[string]func() int {
 		e := entry // capture loop variable
 		commands[e.Name] = func() int {
 			g := e.NewCui()
-			// Issue #1839: thread the CUI loop's exit code up to the OS so
-			// stdin read errors surface as exit 1, not silently as 0.
 			if realtimeGames[e.Name] {
 				return ui.RunRealtimeCuiLoop(e.Name, g.Controller(), g.HelpLines())
 			}

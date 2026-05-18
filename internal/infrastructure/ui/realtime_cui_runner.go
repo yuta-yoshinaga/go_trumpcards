@@ -149,7 +149,10 @@ func RunRealtimeCuiLoop(gameName string, controller CuiExecer, helpLines []strin
 	}()
 
 	keys := make(chan rune)
-	go readRealtimeKeys(os.Stdin, keys)
+	// Buffered so the reader goroutine never blocks waiting for us to
+	// consume the final error after we've already returned from the core.
+	errCh := make(chan error, 1)
+	go readRealtimeKeys(os.Stdin, keys, errCh)
 
 	ticker := time.NewTicker(SlapjackRealtimeTickInterval)
 	defer ticker.Stop()
@@ -176,20 +179,40 @@ func RunRealtimeCuiLoop(gameName string, controller CuiExecer, helpLines []strin
 
 	realtimeCuiCore(controller, keys, ticks, quit, os.Stdout, SlapjackRealtimeKeyMap)
 	close(done)
+	// Pick up any non-EOF stdin error the reader recorded before the keys
+	// channel closed. Non-blocking: EOF / signal exits leave errCh empty.
+	select {
+	case err := <-errCh:
+		if err != nil {
+			fmt.Fprintln(os.Stderr, i18n.Tf("inputReadError", "error", err.Error()))
+			return 1
+		}
+	default:
+	}
 	fmt.Println(i18n.T("bye"))
 	return 0
 }
 
 // readRealtimeKeys reads single bytes from r and forwards them as runes.
-// Closes keys on EOF or unrecoverable error so the core loop exits.
-func readRealtimeKeys(r io.Reader, keys chan<- rune) {
+// Closes keys on EOF or unrecoverable error so the core loop exits, and
+// sends the error on errCh for non-EOF failures so the caller can surface
+// them as exit 1 instead of swallowing them. EOF sends nothing — it is a
+// clean shutdown.
+func readRealtimeKeys(r io.Reader, keys chan<- rune, errCh chan<- error) {
 	defer close(keys)
 	br := bufio.NewReader(r)
 	for {
 		b, err := br.ReadByte()
 		if err != nil {
-			if errors.Is(err, io.EOF) {
-				return
+			if !errors.Is(err, io.EOF) {
+				// Non-blocking: errCh is buffered with cap 1 and is only
+				// ever sent to here, so this select cannot block; the
+				// default branch guards against any future redesign that
+				// might bypass that invariant.
+				select {
+				case errCh <- err:
+				default:
+				}
 			}
 			return
 		}
