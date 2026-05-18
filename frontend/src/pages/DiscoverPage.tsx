@@ -13,7 +13,7 @@ interface SurveyState {
   readonly step: number;
 }
 
-type Action = { type: 'advance' } | { type: 'back' } | { type: 'reset' };
+type Action = { type: 'advance' } | { type: 'back' };
 
 function reducer(state: SurveyState, action: Action): SurveyState {
   switch (action.type) {
@@ -21,8 +21,6 @@ function reducer(state: SurveyState, action: Action): SurveyState {
       return { step: Math.min(state.step + 1, TOTAL_QUESTIONS) };
     case 'back':
       return { step: Math.max(state.step - 1, 0) };
-    case 'reset':
-      return { step: 0 };
   }
 }
 
@@ -53,15 +51,13 @@ export function DiscoverPage() {
   const { t } = useTranslation('discover');
   const navigate = useNavigate();
   const { axes, setAnswer, reset: resetDraft } = useSurveyDraft();
-  const [state, dispatch] = useReducer(reducer, { step: 0 });
-
-  // On mount only, resume to the first unanswered step from any stored draft.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional mount-only restore
-  useEffect(() => {
-    dispatch({ type: 'reset' });
-    const resumeStep = firstUnansweredStep(axes);
-    for (let i = 0; i < resumeStep; i++) dispatch({ type: 'advance' });
-  }, []);
+  // `useSurveyDraft` lazy-initializes `axes` from localStorage on its first
+  // render, so the `axes` we read here on first paint is already the
+  // restored draft. We use the reducer's lazy-init form (3rd arg) to seed
+  // the step pointer in one shot — no post-mount effect needed.
+  const [state, dispatch] = useReducer(reducer, axes, (initialAxes) => ({
+    step: firstUnansweredStep(initialAxes),
+  }));
 
   const current = stepToAxisQuestion(state.step);
 
