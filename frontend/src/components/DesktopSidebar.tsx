@@ -38,6 +38,20 @@ export function DesktopSidebar() {
         </Link>
       </div>
 
+      {/* AI Game Concierge CTA */}
+      <div className="px-3 py-2 border-b border-ds-border-subtle">
+        <Link
+          to="/discover"
+          aria-current={pathname.startsWith('/discover') ? 'page' : undefined}
+          className={`block px-3 py-3 text-sm font-medium rounded-md border-l-2 border-ds-accent bg-gradient-to-r from-[rgba(212,168,83,0.12)] to-[rgba(212,168,83,0.04)] text-ds-text-primary hover:bg-[rgba(212,168,83,0.18)] transition-colors min-h-[44px] ${focusRingWhite}`}
+        >
+          <span aria-hidden="true" className="mr-1.5">
+            🎲
+          </span>
+          {t('nav.discover', { defaultValue: 'おすすめを探す' })}
+        </Link>
+      </div>
+
       {/* Search */}
       <div className="px-3 py-2 border-b border-ds-border-subtle">
         <div className="flex items-center gap-1">

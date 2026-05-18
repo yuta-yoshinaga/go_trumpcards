@@ -8,6 +8,7 @@
     "searchPlaceholder": "ゲームを検索...",
     "searchClear": "検索をクリア",
     "noResults": "該当するゲームがありません",
+    "discover": "おすすめを探す",
     "searchResultCount": "{{count}}件のゲームが見つかりました",
     "recentGames": "最近プレイしたゲーム",
     "favoriteGames": "お気に入り",

@@ -6,6 +6,8 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { NavBar } from './components/NavBar';
 import { SkipNavLink } from './components/SkipNavLink';
 import { gameRoutes } from './constants/gameRoutes';
+import { DiscoverPage } from './pages/DiscoverPage';
+import { DiscoverResultPage } from './pages/DiscoverResultPage';
 import { resolvePageComponent } from './utils/resolvePageComponent';
 
 // Vite resolves this glob at build time; each match becomes its own chunk
@@ -53,6 +55,9 @@ export default function App() {
                     />
                   );
                 })}
+                {/* AI Game Concierge — survey + recommendation result. */}
+                <Route path="/discover" element={<DiscoverPage />} />
+                <Route path="/discover/result" element={<DiscoverResultPage />} />
                 {/* BlackJack lives at "/", but external links may use "/blackjack". */}
                 <Route path="/blackjack" element={<Navigate to="/" replace />} />
                 {/* Unknown hash routes (e.g., "#/notagame") fall back to home
