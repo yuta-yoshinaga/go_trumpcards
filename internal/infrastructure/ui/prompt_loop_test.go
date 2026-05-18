@@ -4,6 +4,7 @@ package ui
 
 import (
 	"bytes"
+	"errors"
 	"strings"
 	"testing"
 
@@ -35,7 +36,8 @@ func TestHandlePromptLoop_NoPrompt(t *testing.T) {
 	var buf bytes.Buffer
 	reader := newScannerLineReader(strings.NewReader(""), &buf)
 	me := &promptMockExecer{}
-	result := handlePromptLoop(reader, me, "normal result", "", &buf)
+	result, err := handlePromptLoop(reader, me, "normal result", "", &buf)
+	assert.NoError(t, err)
 	assert.Equal(t, "normal result", result)
 	assert.Empty(t, me.calls)
 }
@@ -47,7 +49,8 @@ func TestHandlePromptLoop_SinglePrompt(t *testing.T) {
 	reader := newScannerLineReader(strings.NewReader("100\n"), &buf)
 	me := &promptMockExecer{results: []string{"bet ok"}}
 	prompt := cuiutil.PromptRequest("Enter bet amount:", "b {0}")
-	result := handlePromptLoop(reader, me, prompt, "", &buf)
+	result, err := handlePromptLoop(reader, me, prompt, "", &buf)
+	assert.NoError(t, err)
 	assert.Equal(t, "bet ok", result)
 	assert.Equal(t, []string{"b 100"}, me.calls)
 	assert.Contains(t, buf.String(), "Enter bet amount:")
@@ -61,7 +64,8 @@ func TestHandlePromptLoop_ChainedPrompts(t *testing.T) {
 	secondPrompt := cuiutil.PromptRequest("Enter column:", "m t {0}")
 	me := &promptMockExecer{results: []string{secondPrompt, "move ok"}}
 	firstPrompt := cuiutil.PromptRequest("Enter source zone:", "m {0}")
-	result := handlePromptLoop(reader, me, firstPrompt, "klondike", &buf)
+	result, err := handlePromptLoop(reader, me, firstPrompt, "klondike", &buf)
+	assert.NoError(t, err)
 	assert.Equal(t, "move ok", result)
 	assert.Equal(t, []string{"m t", "m t 3"}, me.calls)
 }
@@ -72,7 +76,8 @@ func TestHandlePromptLoop_EmptyInput_Cancels(t *testing.T) {
 	reader := newScannerLineReader(strings.NewReader("\n"), &buf)
 	me := &promptMockExecer{}
 	prompt := cuiutil.PromptRequest("Enter amount:", "b {0}")
-	result := handlePromptLoop(reader, me, prompt, "", &buf)
+	result, err := handlePromptLoop(reader, me, prompt, "", &buf)
+	assert.NoError(t, err)
 	assert.Equal(t, i18n.T("cancelled"), result)
 	assert.Empty(t, me.calls)
 }
@@ -83,7 +88,8 @@ func TestHandlePromptLoop_EOF_ReturnsQuit(t *testing.T) {
 	reader := newScannerLineReader(strings.NewReader(""), &buf)
 	me := &promptMockExecer{}
 	prompt := cuiutil.PromptRequest("Enter amount:", "b {0}")
-	result := handlePromptLoop(reader, me, prompt, "", &buf)
+	result, err := handlePromptLoop(reader, me, prompt, "", &buf)
+	assert.NoError(t, err, "EOF inside a prompt is still a clean shutdown")
 	assert.Equal(t, i18n.QuitSentinel, result)
 	assert.Empty(t, me.calls)
 }
@@ -99,7 +105,7 @@ func TestHandlePromptLoop_GameNameInPrompt(t *testing.T) {
 	reader := newScannerLineReader(strings.NewReader("100\n"), &buf)
 	me := &promptMockExecer{results: []string{"bet ok"}}
 	prompt := cuiutil.PromptRequest("Enter bet amount:", "b {0}")
-	_ = handlePromptLoop(reader, me, prompt, "blackjack", &buf)
+	_, _ = handlePromptLoop(reader, me, prompt, "blackjack", &buf)
 	assert.Contains(t, buf.String(), "[blackjack] > ", "prompt must include gameName context")
 }
 
@@ -110,7 +116,25 @@ func TestHandlePromptLoop_MalformedPrompt(t *testing.T) {
 	me := &promptMockExecer{}
 	// Malformed: no tab separator, so template is empty
 	malformed := "PROMPT:Just a message"
-	result := handlePromptLoop(reader, me, malformed, "", &buf)
+	result, err := handlePromptLoop(reader, me, malformed, "", &buf)
+	assert.NoError(t, err)
 	assert.Equal(t, "Just a message", result)
+	assert.Empty(t, me.calls)
+}
+
+// TestHandlePromptLoop_NonEOFError_PropagatesIOErr verifies issue #1839: a
+// non-EOF stdin failure inside a wizard-style prompt surfaces as ioErr so the
+// top-level runner can return exit 1, not 0. EOF is unchanged (covered by
+// TestHandlePromptLoop_EOF_ReturnsQuit above).
+func TestHandlePromptLoop_NonEOFError_PropagatesIOErr(t *testing.T) {
+	t.Parallel()
+	var buf bytes.Buffer
+	sentinel := errors.New("pty hung up")
+	reader := &erroringLineReader{err: sentinel}
+	me := &promptMockExecer{}
+	prompt := cuiutil.PromptRequest("Enter amount:", "b {0}")
+	result, err := handlePromptLoop(reader, me, prompt, "", &buf)
+	assert.ErrorIs(t, err, sentinel)
+	assert.Equal(t, i18n.QuitSentinel, result)
 	assert.Empty(t, me.calls)
 }
