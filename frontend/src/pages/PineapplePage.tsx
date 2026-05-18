@@ -33,6 +33,7 @@ import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
+import { selectedCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -397,10 +398,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                           <AnimatedCard
                             card={card}
                             width={cardWidth}
-                            style={{
-                              border:
-                                canDiscard && selectedDiscard === idx ? '3px solid #f59e0b' : '3px solid transparent',
-                            }}
+                            style={selectedCardStyle(canDiscard && selectedDiscard === idx)}
                             onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                           />
                         </button>
