@@ -13,9 +13,14 @@ import { useSurveyDraft } from '../hooks/useSurveyDraft';
 import { focusRingWhite } from '../styles/buttonStyles';
 import { encodeMood } from '../utils/urlMoodCodec';
 
+/** Direction of the most recent step change — drives the slide animation. */
+type SlideDirection = 'forward' | 'backward';
+
 interface SurveyState {
   /** Current step, 0..TOTAL_QUESTIONS (TOTAL means "submitted"). */
   readonly step: number;
+  /** Direction of the last transition, so motion follows navigation. */
+  readonly direction: SlideDirection;
 }
 
 type Action = { type: 'advance' } | { type: 'back' };
@@ -23,9 +28,9 @@ type Action = { type: 'advance' } | { type: 'back' };
 function reducer(state: SurveyState, action: Action): SurveyState {
   switch (action.type) {
     case 'advance':
-      return { step: Math.min(state.step + 1, TOTAL_QUESTIONS) };
+      return { step: Math.min(state.step + 1, TOTAL_QUESTIONS), direction: 'forward' };
     case 'back':
-      return { step: Math.max(state.step - 1, 0) };
+      return { step: Math.max(state.step - 1, 0), direction: 'backward' };
   }
 }
 
@@ -64,6 +69,7 @@ export function DiscoverPage() {
   // the step pointer in one shot — no post-mount effect needed.
   const [state, dispatch] = useReducer(reducer, axes, (initialAxes) => ({
     step: firstUnansweredStep(initialAxes),
+    direction: 'forward' as SlideDirection,
   }));
 
   const current = stepToAxisQuestion(state.step);
@@ -134,11 +140,15 @@ export function DiscoverPage() {
   }
 
   // DR-4: slide-in / slide-out on step change, reduced to a 50ms fade
-  // when the user prefers reduced motion (DR-7 #3).
+  // when the user prefers reduced motion (DR-7 #3). The slide direction
+  // follows the user's navigation — forward enters from the right and
+  // exits to the left; backward reverses both sides so Back feels like
+  // "rewinding" rather than another forward step.
+  const dirSign = state.direction === 'forward' ? 1 : -1;
   const transition = reducedMotion ? { duration: 0.05 } : { duration: 0.2, ease: 'easeOut' as const };
-  const initial = reducedMotion ? { opacity: 0 } : { opacity: 0, x: 24 };
+  const initial = reducedMotion ? { opacity: 0 } : { opacity: 0, x: 24 * dirSign };
   const animate = reducedMotion ? { opacity: 1 } : { opacity: 1, x: 0 };
-  const exit = reducedMotion ? { opacity: 0 } : { opacity: 0, x: -24 };
+  const exit = reducedMotion ? { opacity: 0 } : { opacity: 0, x: -24 * dirSign };
 
   return (
     <DiscoverShell testId="discover-survey">
