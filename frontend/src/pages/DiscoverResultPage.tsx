@@ -5,7 +5,7 @@ import { RecommendationCard } from '../components/discover/RecommendationCard';
 import { StretchPickCard } from '../components/discover/StretchPickCard';
 import { useGameRecommendations } from '../hooks/useGameRecommendations';
 import { btnPrimary, btnSecondary, focusRingWhite } from '../styles/buttonStyles';
-import { isFullyAnswered, parseSearchParams, type UserMoodInput } from '../utils/urlMoodCodec';
+import { hasAnyAnswer, parseSearchParams, type UserMoodInput } from '../utils/urlMoodCodec';
 
 /** Convert UserMoodInput to a UserMood (length-2 readonly tuples). */
 function toUserMood(input: UserMoodInput) {
@@ -40,7 +40,10 @@ export function DiscoverResultPage() {
     social: [null, null] as const,
     theme: [null, null] as const,
   };
-  const fullySkipped = !isFullyAnswered(moodInput);
+  // "Truly all-skip" — no question on any axis was answered. Partial
+  // answers (e.g. one axis fully skipped) still produce real
+  // recommendations via 0.5-neutral axisScore.
+  const fullySkipped = !hasAnyAnswer(moodInput);
   const recs = useGameRecommendations(toUserMood(moodInput));
 
   if (parsed === null) return null;
@@ -57,9 +60,13 @@ export function DiscoverResultPage() {
               <Link to="/discover" className={btnPrimary}>
                 {t('fallback.action.retry')}
               </Link>
-              <a href="#top3" className={`${btnSecondary} ${focusRingWhite}`}>
+              <button
+                type="button"
+                onClick={() => document.getElementById('top3')?.scrollIntoView({ behavior: 'smooth' })}
+                className={`${btnSecondary} ${focusRingWhite}`}
+              >
                 {t('fallback.action.browse')}
-              </a>
+              </button>
             </div>
           </section>
         ) : (
