@@ -114,12 +114,13 @@ describe('CliTerminal', () => {
   });
 
   describe('a11y announcement policy (issue #1843)', () => {
-    it('does not put aria-live on the log container (would announce every entry)', () => {
+    it('sets aria-live="off" on the log container to override role="log" implicit polite default', () => {
       render(<CliTerminal logEntries={[]} onCommand={vi.fn()} disabled={false} />);
-      // SR users hop into the log via focus instead — automatic per-entry
-      // announcement would flood them during normal play.
+      // role="log" has an implicit aria-live="polite" per WAI-ARIA; we must
+      // explicitly set "off" so SR users hop in via focus instead of being
+      // flooded with every entry during normal play (issue #1843).
       const log = screen.getByRole('log');
-      expect(log).not.toHaveAttribute('aria-live');
+      expect(log).toHaveAttribute('aria-live', 'off');
       expect(log).toHaveAttribute('tabindex', '0');
     });
 
@@ -137,6 +138,13 @@ describe('CliTerminal', () => {
 
     it('announces only the last line of the latest output (state summary)', () => {
       const entries: CliLogEntry[] = [makeEntry('output', 'Player: 7H KC (17)\nDealer: 5D ?\nYour move: hit / stand')];
+      const { container } = render(<CliTerminal logEntries={entries} onCommand={vi.fn()} disabled={false} />);
+      const liveRegion = container.querySelector('[aria-live="polite"]');
+      expect(liveRegion?.textContent).toBe('Your move: hit / stand');
+    });
+
+    it('announces the last non-empty line when output has a trailing newline', () => {
+      const entries: CliLogEntry[] = [makeEntry('output', 'Player: 7H KC (17)\nYour move: hit / stand\n')];
       const { container } = render(<CliTerminal logEntries={entries} onCommand={vi.fn()} disabled={false} />);
       const liveRegion = container.querySelector('[aria-live="polite"]');
       expect(liveRegion?.textContent).toBe('Your move: hit / stand');
