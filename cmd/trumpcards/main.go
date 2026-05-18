@@ -460,11 +460,14 @@ func run() int {
 	}
 	if handler, ok := commands[arg]; ok {
 		if !subFlagCommands[arg] {
-			// Apply --lang / --no-color when they land after the game name so
-			// `trumpcards <game> --lang en` matches the prepositional form.
-			// Done before the help short-circuit so `<game> --lang en --help`
-			// renders help in the requested locale.
-			extras := applyTrailingGlobalFlags(flag.Args()[1:], quiet, os.Stderr)
+			// Apply --lang / --no-color / -q when they land after the game name
+			// so `trumpcards <game> --lang en` and `trumpcards <game> -q`
+			// match the prepositional form. Done before the help short-circuit
+			// so `<game> --lang en --help` renders help in the requested locale.
+			// quiet is passed by pointer because a trailing -q must update the
+			// caller's value (otherwise the extras warning below would still
+			// fire after the user asked for silence).
+			extras := applyTrailingGlobalFlags(flag.Args()[1:], &quiet, os.Stderr)
 			// `<game> --help` / `<game> -h`: Go's flag package stops parsing at
 			// the first non-flag argument, so these trailing flags land in Args().
 			// Intercept them and print that game's help instead of launching the
@@ -473,7 +476,7 @@ func run() int {
 			if hasHelpFlag(extras) {
 				return runHelpCommand([]string{arg}, helpText, os.Stdout, os.Stderr)
 			}
-			if len(extras) > 0 {
+			if len(extras) > 0 && !quiet {
 				fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(extras, " ")))
 			}
 		}
@@ -881,11 +884,13 @@ func updateExitCode(err error) int {
 // that's about to run; applyColorMode's exit code is therefore
 // intentionally discarded here.
 //
-// `--quiet`/`-q` is a silent no-op here — its value was already resolved
-// before subcommand dispatch in run() — but we recognize the form so
-// users typing `trumpcards <game> -q` don't get a confusing "extra
-// arguments ignored" warning about a documented flag (PR #1582 review).
-func applyTrailingGlobalFlags(args []string, quiet bool, stderr io.Writer) []string {
+// `--quiet`/`-q` writes through quietPtr so trailing position has the same
+// effect as the leading position — Go's `flag` package stops parsing at the
+// first positional, so the global pass missed any -q after the game name.
+// Writing through a pointer keeps --lang/--color/-q symmetric in their
+// "trailing flags also apply" contract without forcing a struct return.
+func applyTrailingGlobalFlags(args []string, quietPtr *bool, stderr io.Writer) []string {
+	quiet := *quietPtr
 	rest := make([]string, 0, len(args))
 	// Accumulate color flags across the entire scan so precedence matches
 	// applyColorMode's documented order rather than depending on which
@@ -937,14 +942,13 @@ func applyTrailingGlobalFlags(args []string, quiet bool, stderr io.Writer) []str
 			colorVal = strings.TrimPrefix(a, "-color=")
 			haveColor, consumed = true, true
 		case a == "--quiet" || a == "-quiet" || a == "-q" || a == "--q":
-			// Silent no-op — the global pass already applied the value.
-			// Recognized here only so the trailing-args warning does not
-			// fire for a documented global flag.
+			quiet = true
 			consumed = true
 		case strings.HasPrefix(a, "--quiet=") || strings.HasPrefix(a, "-quiet=") ||
 			strings.HasPrefix(a, "--q=") || strings.HasPrefix(a, "-q="):
 			val := a[strings.Index(a, "=")+1:]
-			if _, err := strconv.ParseBool(val); err == nil {
+			if b, err := strconv.ParseBool(val); err == nil {
+				quiet = b
 				consumed = true
 			}
 		}
@@ -984,6 +988,7 @@ func applyTrailingGlobalFlags(args []string, quiet bool, stderr io.Writer) []str
 		}
 		_, _ = applyColorMode(mode, trailingNoColor, os.Getenv("NO_COLOR"), os.Stdout.Fd(), os.Stderr.Fd(), errSink)
 	}
+	*quietPtr = quiet
 	return rest
 }
 
