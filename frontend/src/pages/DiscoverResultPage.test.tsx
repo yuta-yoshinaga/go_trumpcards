@@ -2,6 +2,7 @@
  * @vitest-environment jsdom
  */
 import { screen, waitFor } from '@testing-library/react';
+import i18n from 'i18next';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -36,10 +37,25 @@ describe('DiscoverResultPage', () => {
 
   it('shows the fallback hero when every answer is a skip', async () => {
     renderAt('/discover/result?m=-,-&s=-,-&so=-,-&t=-,-');
-    // We can't rely on the i18n string, but we can check that a heading exists
-    // and that all 3 of TOP3 are still shown (alphabetical fallback).
+    // The fallback hero shows the "もう少しヒントをください" title; verify by
+    // looking up the translation directly so the assertion does not depend on
+    // the static blurb content.
     await waitFor(() => {
-      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { level: 1, name: i18n.t('discover:fallback.title') })).toBeInTheDocument();
     });
+  });
+
+  it('shows real recommendations (not the fallback) when at least one answer is given', async () => {
+    // Only one out of eight questions answered — every other axis is skipped.
+    // Per design, partial signal should still produce real recommendations
+    // (the skipped axes contribute a 0.5 neutral via `axisScore`).
+    renderAt('/discover/result?m=0,-&s=-,-&so=-,-&t=-,-');
+    await waitFor(() => {
+      expect(
+        screen.queryByRole('heading', { level: 1, name: i18n.t('discover:fallback.title') }),
+      ).not.toBeInTheDocument();
+    });
+    // A hero recommendation heading is rendered instead.
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
   });
 });
