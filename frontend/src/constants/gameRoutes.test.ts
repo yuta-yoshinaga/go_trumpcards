@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { AXIS_KEYS, AXIS_OPTION_COUNT, PROFILE_MAX } from './discoverAxes';
 import { gameCategories, gameRoutes } from './gameRoutes';
 
 describe('gameRoutes', () => {
@@ -35,5 +36,43 @@ describe('gameCategories', () => {
   it('gameRoutes is the flat list of all category routes', () => {
     const flat = gameCategories.flatMap((c) => c.routes);
     expect(gameRoutes).toEqual(flat);
+  });
+});
+
+describe('gameRoutes profile (concierge SSoT)', () => {
+  it('every route has a profile object', () => {
+    for (const route of gameRoutes) {
+      expect(route.profile).toBeDefined();
+      expect(typeof route.profile).toBe('object');
+    }
+  });
+
+  it('each axis vector length matches AXIS_OPTION_COUNT', () => {
+    for (const route of gameRoutes) {
+      for (const axis of AXIS_KEYS) {
+        expect(route.profile[axis].length).toBe(AXIS_OPTION_COUNT[axis]);
+      }
+    }
+  });
+
+  it('every profile value is an integer in 0..PROFILE_MAX', () => {
+    for (const route of gameRoutes) {
+      for (const axis of AXIS_KEYS) {
+        for (const v of route.profile[axis]) {
+          expect(Number.isInteger(v)).toBe(true);
+          expect(v).toBeGreaterThanOrEqual(0);
+          expect(v).toBeLessThanOrEqual(PROFILE_MAX);
+        }
+      }
+    }
+  });
+
+  it('every profile has at least one non-zero value on each axis', () => {
+    for (const route of gameRoutes) {
+      for (const axis of AXIS_KEYS) {
+        const sum = route.profile[axis].reduce((a, b) => a + b, 0);
+        expect(sum, `${route.path}.${axis} all-zero`).toBeGreaterThan(0);
+      }
+    }
   });
 });

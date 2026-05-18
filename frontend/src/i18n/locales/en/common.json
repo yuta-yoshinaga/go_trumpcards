@@ -8,6 +8,7 @@
     "searchPlaceholder": "Search games...",
     "searchClear": "Clear search",
     "noResults": "No games found",
+    "discover": "Find a game",
     "searchResultCount": "{{count}} games found",
     "recentGames": "Recently Played",
     "favoriteGames": "Favorites",
