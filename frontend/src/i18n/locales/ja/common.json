@@ -532,6 +532,7 @@
     "switchToCli": "CLIモードに切り替え",
     "switchToGui": "GUIモードに切り替え",
     "prompt": "コマンドを入力...",
+    "logLabel": "CLI 出力ログ",
     "unknownCommand": "不明なコマンド: {{cmd}}",
     "unknownCommandWithSuggestion": "不明なコマンド: {{cmd}}。もしかして: {{suggestion}}",
     "emptyInput": "コマンドを入力してください。'help' でヘルプを表示",

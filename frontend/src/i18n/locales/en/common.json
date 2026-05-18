@@ -532,6 +532,7 @@
     "switchToCli": "Switch to CLI mode",
     "switchToGui": "Switch to GUI mode",
     "prompt": "Enter command...",
+    "logLabel": "CLI output log",
     "unknownCommand": "Unknown command: {{cmd}}",
     "unknownCommandWithSuggestion": "Unknown command: {{cmd}}. Did you mean: {{suggestion}}",
     "emptyInput": "Please enter a command. Type 'help' for help.",
