@@ -889,8 +889,14 @@ func updateExitCode(err error) int {
 // first positional, so the global pass missed any -q after the game name.
 // Writing through a pointer keeps --lang/--color/-q symmetric in their
 // "trailing flags also apply" contract without forcing a struct return.
+//
+// quiet is resolved in a pre-pass so warning suppression is order-independent:
+// `<game> --lang xyz -q` and `<game> -q --lang xyz` both suppress the
+// cliUnsupportedLang warning. Without the pre-pass, the single-pass
+// implementation would only suppress when -q appeared first.
 func applyTrailingGlobalFlags(args []string, quietPtr *bool, stderr io.Writer) []string {
-	quiet := *quietPtr
+	quiet := resolveTrailingQuiet(args, *quietPtr)
+	*quietPtr = quiet
 	rest := make([]string, 0, len(args))
 	// Accumulate color flags across the entire scan so precedence matches
 	// applyColorMode's documented order rather than depending on which
@@ -942,13 +948,12 @@ func applyTrailingGlobalFlags(args []string, quietPtr *bool, stderr io.Writer) [
 			colorVal = strings.TrimPrefix(a, "-color=")
 			haveColor, consumed = true, true
 		case a == "--quiet" || a == "-quiet" || a == "-q" || a == "--q":
-			quiet = true
+			// Consumed; value already resolved by resolveTrailingQuiet.
 			consumed = true
 		case strings.HasPrefix(a, "--quiet=") || strings.HasPrefix(a, "-quiet=") ||
 			strings.HasPrefix(a, "--q=") || strings.HasPrefix(a, "-q="):
 			val := a[strings.Index(a, "=")+1:]
-			if b, err := strconv.ParseBool(val); err == nil {
-				quiet = b
+			if _, err := strconv.ParseBool(val); err == nil {
 				consumed = true
 			}
 		}
@@ -988,8 +993,32 @@ func applyTrailingGlobalFlags(args []string, quietPtr *bool, stderr io.Writer) [
 		}
 		_, _ = applyColorMode(mode, trailingNoColor, os.Getenv("NO_COLOR"), os.Stdout.Fd(), os.Stderr.Fd(), errSink)
 	}
-	*quietPtr = quiet
 	return rest
+}
+
+// resolveTrailingQuiet pre-scans args for -q / --quiet (and their =BOOL forms)
+// and folds them into the starting quiet value. Used so warning suppression
+// inside applyTrailingGlobalFlags is order-independent — `--lang xyz -q` must
+// suppress just like `-q --lang xyz`. Stops at the first "--" the same way
+// the main scan does.
+func resolveTrailingQuiet(args []string, start bool) bool {
+	quiet := start
+	for _, a := range args {
+		if a == "--" {
+			break
+		}
+		switch {
+		case a == "--quiet" || a == "-quiet" || a == "-q" || a == "--q":
+			quiet = true
+		case strings.HasPrefix(a, "--quiet=") || strings.HasPrefix(a, "-quiet=") ||
+			strings.HasPrefix(a, "--q=") || strings.HasPrefix(a, "-q="):
+			val := a[strings.Index(a, "=")+1:]
+			if b, err := strconv.ParseBool(val); err == nil {
+				quiet = b
+			}
+		}
+	}
+	return quiet
 }
 
 // hasHelpFlag reports whether args contains a help flag. It accepts all four

@@ -1315,6 +1315,16 @@ func TestApplyTrailingGlobalFlags_TrailingQuietPropagates(t *testing.T) {
 			wantRest: []string{},
 		},
 		{
+			// Order-independence: -q must suppress even when it appears
+			// after the offending --lang. Resolved via pre-pass in
+			// resolveTrailingQuiet; without that this case would still warn.
+			name:     "reverse order: --lang xyz -q also suppresses",
+			args:     []string{"--lang", "klingon", "-q"},
+			wantQ:    true,
+			wantWarn: "",
+			wantRest: []string{},
+		},
+		{
 			name:     "without -q the unsupported-lang warning fires",
 			args:     []string{"--lang", "klingon"},
 			wantQ:    false,
