@@ -2,8 +2,10 @@ import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { DiscoverShell } from '../components/discover/DiscoverShell';
+import { DiscoverSkeleton } from '../components/discover/DiscoverSkeleton';
 import { RecommendationCard } from '../components/discover/RecommendationCard';
 import { StretchPickCard } from '../components/discover/StretchPickCard';
+import { useDiscoverI18nBundle } from '../hooks/useDiscoverI18nBundle';
 import { useGameRecommendations } from '../hooks/useGameRecommendations';
 import { btnPrimary, btnSecondary, focusRingWhite } from '../styles/buttonStyles';
 import { hasAnyAnswer, parseSearchParams, type UserMoodInput } from '../utils/urlMoodCodec';
@@ -28,6 +30,7 @@ export function DiscoverResultPage() {
   const { t } = useTranslation('discover');
   const [params] = useSearchParams();
   const navigate = useNavigate();
+  const bundleReady = useDiscoverI18nBundle();
 
   const parsed = useMemo(() => parseSearchParams(params), [params]);
 
@@ -48,6 +51,14 @@ export function DiscoverResultPage() {
   const recs = useGameRecommendations(toUserMood(moodInput));
 
   if (parsed === null) return null;
+
+  if (!bundleReady) {
+    return (
+      <DiscoverShell testId="discover-result">
+        <DiscoverSkeleton />
+      </DiscoverShell>
+    );
+  }
 
   return (
     <DiscoverShell testId="discover-result">

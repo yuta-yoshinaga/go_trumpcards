@@ -2,9 +2,11 @@ import { useCallback, useEffect, useReducer } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { DiscoverShell } from '../components/discover/DiscoverShell';
+import { DiscoverSkeleton } from '../components/discover/DiscoverSkeleton';
 import { MoodQuestion } from '../components/discover/MoodQuestion';
 import { SurveyProgress } from '../components/discover/SurveyProgress';
 import { AXES, AXIS_KEYS, type AxisKey, TOTAL_QUESTIONS } from '../constants/discoverAxes';
+import { useDiscoverI18nBundle } from '../hooks/useDiscoverI18nBundle';
 import { useSurveyDraft } from '../hooks/useSurveyDraft';
 import { focusRingWhite } from '../styles/buttonStyles';
 import { encodeMood } from '../utils/urlMoodCodec';
@@ -51,6 +53,7 @@ function firstUnansweredStep(axes: ReturnType<typeof useSurveyDraft>['axes']): n
 export function DiscoverPage() {
   const { t } = useTranslation('discover');
   const navigate = useNavigate();
+  const bundleReady = useDiscoverI18nBundle();
   const { axes, setAnswer, reset: resetDraft } = useSurveyDraft();
   // `useSurveyDraft` lazy-initializes `axes` from localStorage on its first
   // render, so the `axes` we read here on first paint is already the
@@ -117,6 +120,14 @@ export function DiscoverPage() {
   if (!current) {
     // Submitted — the effect above is navigating away; render an empty shell.
     return null;
+  }
+
+  if (!bundleReady) {
+    return (
+      <DiscoverShell testId="discover-survey">
+        <DiscoverSkeleton />
+      </DiscoverShell>
+    );
   }
 
   return (
