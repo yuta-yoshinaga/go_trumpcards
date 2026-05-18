@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useEffect, useReducer } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +8,7 @@ import { MoodQuestion } from '../components/discover/MoodQuestion';
 import { SurveyProgress } from '../components/discover/SurveyProgress';
 import { AXES, AXIS_KEYS, type AxisKey, TOTAL_QUESTIONS } from '../constants/discoverAxes';
 import { useDiscoverI18nBundle } from '../hooks/useDiscoverI18nBundle';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 import { useSurveyDraft } from '../hooks/useSurveyDraft';
 import { focusRingWhite } from '../styles/buttonStyles';
 import { encodeMood } from '../utils/urlMoodCodec';
@@ -54,6 +56,7 @@ export function DiscoverPage() {
   const { t } = useTranslation('discover');
   const navigate = useNavigate();
   const bundleReady = useDiscoverI18nBundle();
+  const reducedMotion = useReducedMotion();
   const { axes, setAnswer, reset: resetDraft } = useSurveyDraft();
   // `useSurveyDraft` lazy-initializes `axes` from localStorage on its first
   // render, so the `axes` we read here on first paint is already the
@@ -130,20 +133,31 @@ export function DiscoverPage() {
     );
   }
 
+  // DR-4: slide-in / slide-out on step change, reduced to a 50ms fade
+  // when the user prefers reduced motion (DR-7 #3).
+  const transition = reducedMotion ? { duration: 0.05 } : { duration: 0.2, ease: 'easeOut' as const };
+  const initial = reducedMotion ? { opacity: 0 } : { opacity: 0, x: 24 };
+  const animate = reducedMotion ? { opacity: 1 } : { opacity: 1, x: 0 };
+  const exit = reducedMotion ? { opacity: 0 } : { opacity: 0, x: -24 };
+
   return (
     <DiscoverShell testId="discover-survey">
       <div className="flex-1 min-h-0 flex flex-col items-center justify-start px-4 py-8 gap-6">
         <SurveyProgress current={state.step + 1} />
         <div className="w-full max-w-md">
-          <MoodQuestion
-            axis={AXES[current.axis]}
-            questionIndex={current.qIdx}
-            selected={axes[current.axis][current.qIdx]}
-            onSelect={handleSelect}
-            onSkip={handleSkip}
-            questionNumber={state.step + 1}
-            totalQuestions={TOTAL_QUESTIONS}
-          />
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div key={state.step} initial={initial} animate={animate} exit={exit} transition={transition}>
+              <MoodQuestion
+                axis={AXES[current.axis]}
+                questionIndex={current.qIdx}
+                selected={axes[current.axis][current.qIdx]}
+                onSelect={handleSelect}
+                onSkip={handleSkip}
+                questionNumber={state.step + 1}
+                totalQuestions={TOTAL_QUESTIONS}
+              />
+            </motion.div>
+          </AnimatePresence>
           {state.step > 0 && (
             <button
               type="button"
