@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { DiscoverShell } from '../components/discover/DiscoverShell';
 import { RecommendationCard } from '../components/discover/RecommendationCard';
 import { StretchPickCard } from '../components/discover/StretchPickCard';
 import { useGameRecommendations } from '../hooks/useGameRecommendations';
@@ -49,69 +50,73 @@ export function DiscoverResultPage() {
   if (parsed === null) return null;
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col items-center px-4 py-8 gap-6">
-      <div className="w-full max-w-[600px] flex flex-col gap-8">
-        {fullySkipped ? (
-          <section className="flex flex-col gap-4 px-5 py-6 border-2 border-dashed border-ds-border rounded-md">
-            <p className="text-xs uppercase tracking-[0.18em] text-ds-accent">{t('fallback.eyebrow')}</p>
-            <h1 className="font-serif text-[28px] leading-[1.15] text-ds-text-primary">{t('fallback.title')}</h1>
-            <p className="text-sm text-ds-text-muted leading-relaxed">{t('fallback.body')}</p>
-            <div className="flex gap-3">
-              <Link to="/discover" className={btnPrimary}>
-                {t('fallback.action.retry')}
-              </Link>
-              <button
-                type="button"
-                onClick={() => document.getElementById('top3')?.scrollIntoView({ behavior: 'smooth' })}
-                className={`${btnSecondary} ${focusRingWhite}`}
-              >
-                {t('fallback.action.browse')}
-              </button>
-            </div>
-          </section>
-        ) : (
-          recs.top3[0] && <RecommendationCard game={recs.top3[0].game} variant="hero" topAxis={recs.top3[0].topAxis} />
-        )}
+    <DiscoverShell testId="discover-result">
+      <div className="flex-1 min-h-0 flex flex-col items-center px-4 py-8 gap-6">
+        <div className="w-full max-w-[600px] flex flex-col gap-8">
+          {fullySkipped ? (
+            <section className="flex flex-col gap-4 px-5 py-6 border-2 border-dashed border-ds-border rounded-md">
+              <p className="text-xs uppercase tracking-[0.18em] text-ds-accent">{t('fallback.eyebrow')}</p>
+              <h1 className="font-serif text-[28px] leading-[1.15] text-ds-text-primary">{t('fallback.title')}</h1>
+              <p className="text-sm text-ds-text-muted leading-relaxed">{t('fallback.body')}</p>
+              <div className="flex gap-3">
+                <Link to="/discover" className={btnPrimary}>
+                  {t('fallback.action.retry')}
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => document.getElementById('top3')?.scrollIntoView({ behavior: 'smooth' })}
+                  className={`${btnSecondary} ${focusRingWhite}`}
+                >
+                  {t('fallback.action.browse')}
+                </button>
+              </div>
+            </section>
+          ) : (
+            recs.top3[0] && (
+              <RecommendationCard game={recs.top3[0].game} variant="hero" topAxis={recs.top3[0].topAxis} />
+            )
+          )}
 
-        {recs.top3.slice(1).length > 0 && (
-          <section id="top3" className="flex flex-col gap-3">
-            <h2 className="text-xs uppercase tracking-[0.15em] text-ds-text-muted">{t('section.top3')}</h2>
-            <ul className="flex flex-col gap-2">
-              {recs.top3.slice(1).map((s) => (
-                <li key={s.game.path}>
-                  <RecommendationCard game={s.game} variant="row" topAxis={s.topAxis} />
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
+          {recs.top3.slice(1).length > 0 && (
+            <section id="top3" className="flex flex-col gap-3">
+              <h2 className="text-xs uppercase tracking-[0.15em] text-ds-text-muted">{t('section.top3')}</h2>
+              <ul className="flex flex-col gap-2">
+                {recs.top3.slice(1).map((s) => (
+                  <li key={s.game.path}>
+                    <RecommendationCard game={s.game} variant="row" topAxis={s.topAxis} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
-        {recs.stretch && !fullySkipped && (
-          <section>
-            <StretchPickCard game={recs.stretch.game} />
-          </section>
-        )}
+          {recs.stretch && !fullySkipped && (
+            <section>
+              <StretchPickCard game={recs.stretch.game} />
+            </section>
+          )}
 
-        {recs.also.length > 0 && (
-          <section className="flex flex-col gap-3">
-            <h2 className="text-xs uppercase tracking-[0.15em] text-ds-text-muted">{t('section.also')}</h2>
-            <ul className="flex flex-col gap-2">
-              {recs.also.map((s) => (
-                <li key={s.game.path}>
-                  <RecommendationCard game={s.game} variant="row" topAxis={s.topAxis} />
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
+          {recs.also.length > 0 && (
+            <section className="flex flex-col gap-3">
+              <h2 className="text-xs uppercase tracking-[0.15em] text-ds-text-muted">{t('section.also')}</h2>
+              <ul className="flex flex-col gap-2">
+                {recs.also.map((s) => (
+                  <li key={s.game.path}>
+                    <RecommendationCard game={s.game} variant="row" topAxis={s.topAxis} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
-        <div className="flex gap-3 mt-2">
-          <Link to="/discover" className={btnSecondary}>
-            {t('action.retake')}
-          </Link>
+          <div className="flex gap-3 mt-2">
+            <Link to="/discover" className={btnSecondary}>
+              {t('action.retake')}
+            </Link>
+          </div>
         </div>
       </div>
-    </div>
+    </DiscoverShell>
   );
 }
 

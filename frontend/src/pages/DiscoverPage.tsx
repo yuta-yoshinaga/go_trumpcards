@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useReducer } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { DiscoverShell } from '../components/discover/DiscoverShell';
 import { MoodQuestion } from '../components/discover/MoodQuestion';
 import { SurveyProgress } from '../components/discover/SurveyProgress';
 import { AXES, AXIS_KEYS, type AxisKey, TOTAL_QUESTIONS } from '../constants/discoverAxes';
@@ -119,29 +120,31 @@ export function DiscoverPage() {
   }
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col items-center justify-start px-4 py-8 gap-6">
-      <SurveyProgress current={state.step + 1} />
-      <div className="w-full max-w-md">
-        <MoodQuestion
-          axis={AXES[current.axis]}
-          questionIndex={current.qIdx}
-          selected={axes[current.axis][current.qIdx]}
-          onSelect={handleSelect}
-          onSkip={handleSkip}
-          questionNumber={state.step + 1}
-          totalQuestions={TOTAL_QUESTIONS}
-        />
-        {state.step > 0 && (
-          <button
-            type="button"
-            onClick={handleBack}
-            className={`mt-4 text-xs text-ds-text-muted hover:text-ds-text-primary underline ${focusRingWhite}`}
-          >
-            {t('action.back')}
-          </button>
-        )}
+    <DiscoverShell testId="discover-survey">
+      <div className="flex-1 min-h-0 flex flex-col items-center justify-start px-4 py-8 gap-6">
+        <SurveyProgress current={state.step + 1} />
+        <div className="w-full max-w-md">
+          <MoodQuestion
+            axis={AXES[current.axis]}
+            questionIndex={current.qIdx}
+            selected={axes[current.axis][current.qIdx]}
+            onSelect={handleSelect}
+            onSkip={handleSkip}
+            questionNumber={state.step + 1}
+            totalQuestions={TOTAL_QUESTIONS}
+          />
+          {state.step > 0 && (
+            <button
+              type="button"
+              onClick={handleBack}
+              className={`mt-4 text-xs text-ds-text-muted hover:text-ds-text-primary underline ${focusRingWhite}`}
+            >
+              {t('action.back')}
+            </button>
+          )}
+        </div>
       </div>
-    </div>
+    </DiscoverShell>
   );
 }
 
