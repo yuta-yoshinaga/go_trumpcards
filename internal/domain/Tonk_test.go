@@ -108,32 +108,30 @@ func TestTonk_Reset_NormalDeal(t *testing.T) {
 // producing an empty deal (totalCards=0, drawPileCount=0). See bug repro
 // where the user clicks "次のゲーム" on Render dev / Cloudflare workers
 // and the next round arrives with no cards.
+//
+// Seed 1 is the first int64 where both the 1st and 2nd consecutive Reset
+// produce a normal (non-Tonk-on-deal) hand, so the assertions exercise the
+// regression path directly — no retry loop / probabilistic guard needed.
 func TestTonk_ResetTwice(t *testing.T) {
-	// Reach a "normal deal" (non-Tonk) state via the same retry loop used
-	// by TestTonk_Reset_NormalDeal so deal-time Tonk doesn't blank the deck.
-	for trial := 0; trial < 50; trial++ {
-		g := newTestTonk()
-		g.Reset()
-		if g.GetPhase() != domain.TonkPhaseDraw {
-			continue
-		}
+	g := newTestTonk()
+	g.SetRand(rand.New(rand.NewSource(1)))
 
-		// 2nd Reset on the SAME Game instance — the failure mode.
-		g.Reset()
+	g.Reset()
+	require.Equal(t, domain.TonkPhaseDraw, g.GetPhase(),
+		"seed 1 should produce a non-Tonk deal on 1st Reset")
 
-		if g.GetPhase() != domain.TonkPhaseDraw {
-			continue // Tonk on the second deal — retry the whole trial.
-		}
-		for i := 0; i < 2; i++ {
-			assert.Equal(t, 5, g.GetPlayer(i).GetCardsSize(),
-				"player %d hand should be 5 cards after 2nd Reset", i)
-		}
-		assert.Len(t, g.GetDiscardPile(), 1, "discard pile should hold 1 card after 2nd Reset")
-		assert.Equal(t, 41, g.GetDrawPileCount(),
-			"draw pile should hold 41 cards after 2nd Reset (52 - 10 hand - 1 discard)")
-		return
+	// 2nd Reset on the SAME Game instance — the failure mode.
+	g.Reset()
+	require.Equal(t, domain.TonkPhaseDraw, g.GetPhase(),
+		"seed 1 should produce a non-Tonk deal on 2nd Reset")
+
+	for i := 0; i < 2; i++ {
+		assert.Equal(t, 5, g.GetPlayer(i).GetCardsSize(),
+			"player %d hand should be 5 cards after 2nd Reset", i)
 	}
-	t.Fatal("never observed a non-Tonk deal across 50 trials")
+	assert.Len(t, g.GetDiscardPile(), 1, "discard pile should hold 1 card after 2nd Reset")
+	assert.Equal(t, 41, g.GetDrawPileCount(),
+		"draw pile should hold 41 cards after 2nd Reset (52 - 10 hand - 1 discard)")
 }
 
 func TestTonk_Getters(t *testing.T) {

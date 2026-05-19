@@ -158,11 +158,7 @@ func (g *Tonk) NextRound() {
 
 // dealInitialCards 初期配布: 各プレイヤーにTonkHandSize枚、1枚を捨て札に
 func (g *Tonk) dealInitialCards() {
-	// Replenish the underlying deck — without this, a 2nd Reset (or NextRound
-	// after a normal hand) finds the deck drained from the previous deal and
-	// produces an empty drawPile, leaving the next round un-playable.
-	// Replenish (not Shuffle) so g.rng-driven determinism survives — the
-	// drawPile is shuffled separately below via the seeded rng.
+	// Refill draw counter so a 2nd deal isn't empty; Replenish (not Shuffle) keeps g.rng determinism.
 	g.trumpCards.Replenish()
 
 	g.drawPile = make([]*Card, 0, g.trumpCards.GetTotalCount())
