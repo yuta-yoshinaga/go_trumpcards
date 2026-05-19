@@ -34,7 +34,10 @@ describe('i18n namespace discipline', () => {
       // namespace is explicit and correct — only component-scope
       // `t()` / `tc()` (which are bound to a namespace already) are
       // the problem.
-      const matches = src.match(/(?<!\.)\b(?:t|tc)\(\s*['"`]common[.:][a-z][\w.]*['"`]/gi);
+      // `\w` (not just `[a-z]`) so uppercase- and digit-prefixed key
+      // segments (`common.Score`, `common.1stRound`) also trip the
+      // check — those would otherwise slip through and silently miss.
+      const matches = src.match(/(?<!\.)\b(?:t|tc)\(\s*['"`]common[.:]\w[\w.]*['"`]/gi);
       if (matches) {
         violations.push(`${path}: ${matches.join(', ')}`);
       }
