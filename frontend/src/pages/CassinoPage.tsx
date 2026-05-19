@@ -125,7 +125,7 @@ function CassinoPageContent() {
   if (!state || state.players.length < 4) {
     return (
       <div className={`flex-1 flex items-center justify-center ${gameTheme.cassino.bg} text-ds-text-muted`} aria-busy>
-        {tc('common.loading')}
+        {tc('skeleton.loading')}
       </div>
     );
   }

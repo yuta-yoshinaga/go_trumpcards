@@ -1,4 +1,5 @@
 {
+  "discardTop": "Discard",
   "phase": {
     "draw": "Draw",
     "meld": "Meld",

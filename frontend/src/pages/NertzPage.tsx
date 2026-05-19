@@ -210,7 +210,7 @@ function NertzPageContent() {
     return (
       <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.nertz.bg}`}>
         <div className="flex-1 flex items-center justify-center text-ds-text-primary">
-          <p>{tc('common.loading')}</p>
+          <p>{tc('skeleton.loading')}</p>
         </div>
       </div>
     );

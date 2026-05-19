@@ -375,7 +375,7 @@ function EuchrePageContent() {
                           <th scope="col" className="text-left">
                             {t('team', { n: '' })}
                           </th>
-                          <th scope="col">{tc('button.score', { defaultValue: 'Score' })}</th>
+                          <th scope="col">{tc('button.score')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -397,7 +397,7 @@ function EuchrePageContent() {
                           <th scope="col" className="text-left">
                             {t('team', { n: '' })}
                           </th>
-                          <th scope="col">{tc('button.score', { defaultValue: 'Score' })}</th>
+                          <th scope="col">{tc('button.score')}</th>
                         </tr>
                       </thead>
                       <tbody>

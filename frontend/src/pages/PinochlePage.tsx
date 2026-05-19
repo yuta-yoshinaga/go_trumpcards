@@ -284,7 +284,7 @@ function PinochlePageContent() {
             {/* Current Trick */}
             {state.currentTrick?.length > 0 && (
               <div className="mb-3 p-2 rounded bg-black/40" data-tutorial="pn-trick-display">
-                <div className="text-ds-text-muted text-sm mb-1">{tc('common:table', { defaultValue: 'Table' })}:</div>
+                <div className="text-ds-text-muted text-sm mb-1">{t('table')}:</div>
                 <div className="flex gap-2 justify-center">
                   {state.currentTrick.map((tc, i) => (
                     <div key={i} className="text-center">

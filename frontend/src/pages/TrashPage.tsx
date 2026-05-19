@@ -205,7 +205,7 @@ function TrashPageContent() {
       headerExtra={
         <>
           <span>
-            {tc('moveCount', { defaultValue: 'Moves' })}: {state.moveCount}
+            {t('moveCount')}: {state.moveCount}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>

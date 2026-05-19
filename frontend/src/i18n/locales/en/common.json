@@ -182,7 +182,8 @@
     "confirm": "Confirm",
     "hint": "Hint",
     "retry": "Retry",
-    "dismiss": "Dismiss"
+    "dismiss": "Dismiss",
+    "score": "Score"
   },
   "roundScoreAnnouncement": {
     "message": "Round complete. {{details}}",

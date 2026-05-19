@@ -130,7 +130,7 @@ function BriscolaPageContent() {
           currentTrick={state.currentTrick}
           players={state.players}
           cardWidth={cardWidth}
-          label={tc('currentTrick', { defaultValue: 'Current trick' })}
+          label={t('currentTrick')}
         />
 
         {/* Result banner */}
