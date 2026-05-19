@@ -29,6 +29,7 @@ import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
+import { placeholderCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -315,7 +316,7 @@ function RazzPageContent() {
                             key={`${card.design}-${card.value}`}
                             card={card}
                             width={cardWidth}
-                            style={{ border: '3px solid transparent' }}
+                            style={placeholderCardStyle}
                             onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                           />
                         ))
@@ -333,7 +334,7 @@ function RazzPageContent() {
                             key={`${card.design}-${card.value}`}
                             card={card}
                             width={cardWidth}
-                            style={{ border: '3px solid transparent' }}
+                            style={placeholderCardStyle}
                             onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                           />
                         ))
@@ -395,7 +396,7 @@ function RazzPageContent() {
                           key={`${card.design}-${card.value}`}
                           card={card}
                           width={cardWidth}
-                          style={{ border: '3px solid transparent' }}
+                          style={placeholderCardStyle}
                           onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                         />
                       ))
@@ -413,7 +414,7 @@ function RazzPageContent() {
                           key={`${card.design}-${card.value}`}
                           card={card}
                           width={cardWidth}
-                          style={{ border: '3px solid transparent' }}
+                          style={placeholderCardStyle}
                           onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                         />
                       ))

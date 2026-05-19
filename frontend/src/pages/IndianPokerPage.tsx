@@ -28,6 +28,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
+import { placeholderCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { IndianPokerResponse } from '../types/card';
@@ -240,7 +241,7 @@ function IndianPokerPageContent() {
                         <AnimatedCard
                           card={p.card}
                           width={cardWidth}
-                          style={{ border: '3px solid transparent' }}
+                          style={placeholderCardStyle}
                           onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                         />
                       ) : (
@@ -289,7 +290,7 @@ function IndianPokerPageContent() {
                     <AnimatedCard
                       card={humanPlayer.card}
                       width={cardWidth}
-                      style={{ border: '3px solid transparent' }}
+                      style={placeholderCardStyle}
                       onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                     />
                   ) : !humanPlayer.folded ? (
