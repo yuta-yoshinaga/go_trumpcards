@@ -2,8 +2,10 @@
  * @vitest-environment jsdom
  */
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import i18n from 'i18next';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { AXES } from '../constants/discoverAxes';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { DiscoverPage } from './DiscoverPage';
 
@@ -46,6 +48,17 @@ describe('DiscoverPage', () => {
   it('renders the first question on mount', () => {
     setup();
     expect(screen.getByRole('heading')).toBeInTheDocument();
+  });
+
+  it('renders translated question and option text, not raw i18n keys', () => {
+    setup();
+    const q1 = i18n.t('discover:' + AXES.mood.questionI18nKeys[0]);
+    const opt1 = i18n.t('discover:' + AXES.mood.options[0].i18nKey);
+    // Sanity: the bundle resolves both keys to real Japanese strings.
+    expect(q1).not.toBe('discover:' + AXES.mood.questionI18nKeys[0]);
+    expect(opt1).not.toBe('discover:' + AXES.mood.options[0].i18nKey);
+    expect(screen.getByRole('heading', { level: 2, name: q1 })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: new RegExp(opt1) })).toBeInTheDocument();
   });
 
   it('advances through 8 questions via keyboard digit shortcuts and navigates to /discover/result', async () => {
