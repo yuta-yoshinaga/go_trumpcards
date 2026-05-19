@@ -297,11 +297,7 @@ function EuchrePageContent() {
                   <div className="my-2 text-center">
                     <div className="text-ds-text-muted text-sm mb-1">{t('faceUpCard')}</div>
                     <div className="inline-block">
-                      <AnimatedCard
-                        card={state.faceUpCard}
-                        width={cardWidth}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={state.faceUpCard} width={cardWidth} />
                     </div>
                   </div>
                 )}
@@ -313,7 +309,6 @@ function EuchrePageContent() {
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="eu-trick-display"
-                  onCardDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                 />
 
                 {/* Partnership info */}
@@ -460,11 +455,7 @@ function EuchrePageContent() {
                       ...(isMobile ? { minWidth: solitaireMinColWidth, flexShrink: 0 } : {}),
                     }}
                   >
-                    <AnimatedCard
-                      card={card}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard card={card} width={cardWidth} />
                   </button>
                 ))}
               </div>

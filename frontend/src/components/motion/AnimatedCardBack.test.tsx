@@ -6,6 +6,14 @@ vi.mock('../../hooks/useReducedMotion', () => ({
   useReducedMotion: vi.fn(() => false),
 }));
 
+const mockPlaySound = vi.fn();
+
+// Mock SoundProvider so tests can render the component without a
+// provider wrap. Mirrors AnimatedCard.test.tsx (issue #1845).
+vi.mock('../../providers/SoundProvider', () => ({
+  useOptionalSound: () => ({ playSound: mockPlaySound, muted: false, toggleMute: vi.fn() }),
+}));
+
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 
 describe('AnimatedCardBack', () => {
@@ -61,5 +69,15 @@ describe('AnimatedCardBack', () => {
     const onFlipComplete = vi.fn();
     render(<AnimatedCardBack onFlipComplete={onFlipComplete} />);
     expect(screen.queryByTestId('animated-card-back')).not.toBeInTheDocument();
+  });
+
+  describe('default SFX contract (issue #1845)', () => {
+    // AnimatedCardBack internally plays the 'cardFlip' SFX on flip-in
+    // completion so page callsites no longer need to thread it.
+    it('accepts the silent prop without rendering changes', () => {
+      vi.mocked(useReducedMotion).mockReturnValue(false);
+      render(<AnimatedCardBack silent />);
+      expect(screen.getByTestId('animated-card-back')).toBeInTheDocument();
+    });
   });
 });

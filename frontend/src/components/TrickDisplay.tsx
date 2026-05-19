@@ -26,23 +26,15 @@ export interface TrickDisplayProps {
   label: string;
   /** Value for the `data-tutorial` attribute (e.g. `"ht-trick-display"`). */
   dataTutorial?: string;
-  /** Forwarded to {@link AnimatedCard#onDealComplete}; typically plays a deal sound. */
-  onCardDealComplete?: () => void;
 }
 
 /**
  * Shared trick-display area for trick-taking games (Hearts, Spades, Euchre, Bridge,
  * Napoleon, OhHell, TwoTenJack, Whist). Renders each played card with the player's
- * name underneath, or nothing when the trick is empty.
+ * name underneath, or nothing when the trick is empty. AnimatedCard plays the
+ * default deal SFX itself, so callers no longer need to thread a sound callback.
  */
-export function TrickDisplay({
-  currentTrick,
-  players,
-  cardWidth,
-  label,
-  dataTutorial,
-  onCardDealComplete,
-}: TrickDisplayProps) {
+export function TrickDisplay({ currentTrick, players, cardWidth, label, dataTutorial }: TrickDisplayProps) {
   if (currentTrick.length === 0) {
     return null;
   }
@@ -52,7 +44,7 @@ export function TrickDisplay({
       <div className="flex gap-2">
         {currentTrick.map((trickCard) => (
           <div key={`trick-${trickCard.playerIdx}`} className="text-center">
-            <AnimatedCard card={trickCard.card} width={cardWidth} onDealComplete={onCardDealComplete} />
+            <AnimatedCard card={trickCard.card} width={cardWidth} />
             <div className="text-game-text-muted text-xs mt-1">
               {playerName(
                 players[trickCard.playerIdx]?.id ?? trickCard.playerIdx,

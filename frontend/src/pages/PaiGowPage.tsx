@@ -232,11 +232,7 @@ function PaiGowPageContent() {
                       aria-pressed={selectedIndices.includes(i)}
                       aria-label={`Card ${i}`}
                     >
-                      <AnimatedCard
-                        card={card}
-                        width={cardWidth}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={card} width={cardWidth} />
                     </button>
                   ))}
                 </div>
@@ -256,12 +252,7 @@ function PaiGowPageContent() {
                     </div>
                     <div className="flex justify-center gap-2">
                       {state.playerHighHand.map((card, i) => (
-                        <AnimatedCard
-                          key={`ph-${card.design}-${card.value}-${i}`}
-                          card={card}
-                          width={cardWidth}
-                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                        />
+                        <AnimatedCard key={`ph-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
                       ))}
                     </div>
                   </div>
@@ -276,12 +267,7 @@ function PaiGowPageContent() {
                     </div>
                     <div className="flex justify-center gap-2">
                       {state.playerLowHand.map((card, i) => (
-                        <AnimatedCard
-                          key={`pl-${card.design}-${card.value}-${i}`}
-                          card={card}
-                          width={cardWidth}
-                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                        />
+                        <AnimatedCard key={`pl-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
                       ))}
                     </div>
                   </div>
@@ -298,12 +284,7 @@ function PaiGowPageContent() {
                     </div>
                     <div className="flex justify-center gap-2">
                       {state.dealerHighHand.map((card, i) => (
-                        <AnimatedCard
-                          key={`dh-${card.design}-${card.value}-${i}`}
-                          card={card}
-                          width={cardWidth}
-                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                        />
+                        <AnimatedCard key={`dh-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
                       ))}
                     </div>
                   </div>
@@ -318,12 +299,7 @@ function PaiGowPageContent() {
                     </div>
                     <div className="flex justify-center gap-2">
                       {state.dealerLowHand.map((card, i) => (
-                        <AnimatedCard
-                          key={`dl-${card.design}-${card.value}-${i}`}
-                          card={card}
-                          width={cardWidth}
-                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                        />
+                        <AnimatedCard key={`dl-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
                       ))}
                     </div>
                   </div>

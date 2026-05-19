@@ -146,21 +146,13 @@ function DragonTigerPageContent() {
                   {state.dragonCard && (
                     <div className="flex flex-col items-center">
                       <div className="text-ds-warning text-sm font-bold mb-1">{t('label.dragon')}</div>
-                      <AnimatedCard
-                        card={state.dragonCard}
-                        width={cardWidth}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={state.dragonCard} width={cardWidth} />
                     </div>
                   )}
                   {state.tigerCard && (
                     <div className="flex flex-col items-center">
                       <div className="text-ds-info text-sm font-bold mb-1">{t('label.tiger')}</div>
-                      <AnimatedCard
-                        card={state.tigerCard}
-                        width={cardWidth}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={state.tigerCard} width={cardWidth} />
                     </div>
                   )}
                 </div>

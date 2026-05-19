@@ -216,11 +216,7 @@ function GolfPageContent() {
                             isHinted && exposed ? 'ring-2 ring-ds-warning' : ''
                           } ${!exposed ? 'opacity-60' : ''}`}
                         >
-                          <AnimatedCard
-                            card={gc.card}
-                            width={effectiveCardWidth}
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                          />
+                          <AnimatedCard card={gc.card} width={effectiveCardWidth} />
                         </button>
                       </div>
                     );
@@ -240,7 +236,6 @@ function GolfPageContent() {
                     width={effectiveCardWidth}
                     onClick={isPlaying ? handleDraw : undefined}
                     ariaLabel={t('draw')}
-                    onFlipComplete={() => playSound('cardFlip')}
                   />
                 ) : (
                   <div
@@ -255,11 +250,7 @@ function GolfPageContent() {
               <div className="text-center">
                 <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
                 {state.waste.length > 0 ? (
-                  <AnimatedCard
-                    card={state.waste[state.waste.length - 1]}
-                    width={effectiveCardWidth}
-                    onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                  />
+                  <AnimatedCard card={state.waste[state.waste.length - 1]} width={effectiveCardWidth} />
                 ) : (
                   <div
                     style={{ width: effectiveCardWidth, height: cardHeight }}

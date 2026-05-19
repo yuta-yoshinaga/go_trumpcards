@@ -319,12 +319,7 @@ function MightyPageContent() {
                 {/* Partner card info */}
                 {state.partnerCard && (
                   <div className="text-ds-text-muted text-center text-sm mb-2" data-tutorial="mighty-partner-info">
-                    {t('partnerCard')}:{' '}
-                    <AnimatedCard
-                      card={state.partnerCard}
-                      width={cardWidth * 0.6}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    {t('partnerCard')}: <AnimatedCard card={state.partnerCard} width={cardWidth * 0.6} />
                     <span className="ml-2 text-xs">
                       {state.partnerRevealed ? t('partnerRevealed') : t('partnerHidden')}
                     </span>
@@ -362,12 +357,7 @@ function MightyPageContent() {
                     <div className="text-ds-text-muted text-sm mb-1">{t('kittyLabel')}</div>
                     <div className="flex gap-2">
                       {state.kitty.map((card, idx) => (
-                        <AnimatedCard
-                          key={`kitty-${card.design}-${card.value}-${idx}`}
-                          card={card}
-                          width={cardWidth}
-                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                        />
+                        <AnimatedCard key={`kitty-${card.design}-${card.value}-${idx}`} card={card} width={cardWidth} />
                       ))}
                     </div>
                   </div>
@@ -380,7 +370,6 @@ function MightyPageContent() {
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="mighty-trick-display"
-                  onCardDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                 />
               </div>
 
@@ -568,11 +557,7 @@ function MightyPageContent() {
                         boxSizing: 'border-box',
                       }}
                     >
-                      <AnimatedCard
-                        card={card}
-                        width={cardWidth}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={card} width={cardWidth} />
                     </button>
                   ))}
                 </div>

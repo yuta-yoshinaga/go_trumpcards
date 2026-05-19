@@ -165,11 +165,7 @@ function PokerSquaresPageContent() {
                     {t('label.currentCard')} ({state.placedCount}/25)
                   </div>
                   {state.currentCard ? (
-                    <AnimatedCard
-                      card={state.currentCard}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard card={state.currentCard} width={cardWidth} />
                   ) : (
                     <div
                       style={{ width: cardWidth, height: Math.round(cardWidth * 1.4) }}

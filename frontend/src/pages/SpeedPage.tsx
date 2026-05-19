@@ -179,7 +179,7 @@ function SpeedPageContent() {
               </span>
               <div className="flex gap-1">
                 {Array.from({ length: cpuPlayer.cardCount }).map((_, i) => (
-                  <AnimatedCardBack key={i} width={cardWidth * 0.7} onFlipComplete={() => playSound('cardFlip')} />
+                  <AnimatedCardBack key={i} width={cardWidth * 0.7} />
                 ))}
               </div>
               <span className="text-sm text-ds-text-muted">
@@ -198,13 +198,7 @@ function SpeedPageContent() {
                   className={`transition-transform hover:scale-105 disabled:opacity-50 ${focusRingCard}${isStuck && !loading ? ' animate-pulse cursor-pointer' : ''}`}
                   aria-label={isStuck ? t('flipButton') : `${t('centerPile')} ${pi}`}
                 >
-                  {card && (
-                    <AnimatedCard
-                      card={card}
-                      width={cardWidth * 1.2}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
-                  )}
+                  {card && <AnimatedCard card={card} width={cardWidth * 1.2} />}
                 </button>
               ))}
             </div>
@@ -229,11 +223,7 @@ function SpeedPageContent() {
                     className={`transition-transform ${focusRingCard}`}
                     style={selectedCardStyle(selectedCardIndices.includes(idx))}
                   >
-                    <AnimatedCard
-                      card={card}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard card={card} width={cardWidth} />
                   </button>
                 ))}
               </div>

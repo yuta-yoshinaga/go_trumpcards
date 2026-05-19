@@ -233,12 +233,7 @@ function CrescentPageContent() {
                                 })}
                                 className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
                               >
-                                <AnimatedCard
-                                  card={pile[pile.length - 1]}
-                                  width={tableauDim.cw}
-                                  draggable={false}
-                                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                                />
+                                <AnimatedCard card={pile[pile.length - 1]} width={tableauDim.cw} draggable={false} />
                               </button>
                             ) : (
                               <button
@@ -316,7 +311,6 @@ function CrescentPageContent() {
                                       draggable={false}
                                       style={{ width: '100%' }}
                                       wrapperClassName="block w-full"
-                                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                                     />
                                   </button>
                                 ) : null}

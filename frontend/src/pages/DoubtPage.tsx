@@ -407,12 +407,7 @@ function DoubtPageContent() {
                     {state.lastDoubtResult.revealedCards.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-1">
                         {state.lastDoubtResult.revealedCards.map((card, i) => (
-                          <AnimatedCard
-                            key={`${card.design}-${card.value}-${i}`}
-                            card={card}
-                            width={cardWidth}
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                          />
+                          <AnimatedCard key={`${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
                         ))}
                       </div>
                     )}

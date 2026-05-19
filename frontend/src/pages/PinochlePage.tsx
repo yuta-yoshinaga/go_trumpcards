@@ -288,11 +288,7 @@ function PinochlePageContent() {
                 <div className="flex gap-2 justify-center">
                   {state.currentTrick.map((tc, i) => (
                     <div key={i} className="text-center">
-                      <AnimatedCard
-                        card={tc.card}
-                        width={cardWidth * 0.8}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={tc.card} width={cardWidth * 0.8} />
                       <div className="text-xs text-ds-text-muted mt-1">P{tc.playerIdx}</div>
                     </div>
                   ))}
@@ -384,11 +380,7 @@ function PinochlePageContent() {
                         boxSizing: 'border-box',
                       }}
                     >
-                      <AnimatedCard
-                        card={card}
-                        width={cardWidth}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={card} width={cardWidth} />
                     </button>
                   );
                 })}

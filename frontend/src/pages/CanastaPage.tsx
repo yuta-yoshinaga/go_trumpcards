@@ -212,11 +212,7 @@ function CanastaPageContent() {
                 {/* Discard pile top */}
                 {state.discardTop && (
                   <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3" data-tutorial="ca-draw-area">
-                    <AnimatedCard
-                      card={state.discardTop}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard card={state.discardTop} width={cardWidth} />
                     <div className="text-ds-text-muted text-sm">
                       {tc('common:discardTop', { defaultValue: 'Discard' })}
                     </div>
@@ -246,12 +242,7 @@ function CanastaPageContent() {
                               : `(${m.cards.length})`}
                           </span>
                           {m.cards.map((card, ci) => (
-                            <AnimatedCard
-                              key={`meld-${pi}-${mi}-${ci}`}
-                              card={card}
-                              width={cardWidth * 0.6}
-                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                            />
+                            <AnimatedCard key={`meld-${pi}-${mi}-${ci}`} card={card} width={cardWidth * 0.6} />
                           ))}
                         </div>
                       ))}
@@ -259,12 +250,7 @@ function CanastaPageContent() {
                         <div className="flex flex-wrap gap-1 mt-1">
                           <span className="text-xs text-ds-error self-center mr-1">{t('red3s')}</span>
                           {p.red3s.map((card, ri) => (
-                            <AnimatedCard
-                              key={`red3-${pi}-${ri}`}
-                              card={card}
-                              width={cardWidth * 0.6}
-                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                            />
+                            <AnimatedCard key={`red3-${pi}-${ri}`} card={card} width={cardWidth * 0.6} />
                           ))}
                         </div>
                       )}
@@ -315,7 +301,6 @@ function CanastaPageContent() {
                                 key={`cpu-${card.design}-${card.value}-${idx}`}
                                 card={card}
                                 width={cardWidth * 0.7}
-                                onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                               />
                             ))}
                           </div>
@@ -362,11 +347,7 @@ function CanastaPageContent() {
                       boxSizing: 'border-box',
                     }}
                   >
-                    <AnimatedCard
-                      card={card}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard card={card} width={cardWidth} />
                   </button>
                 ))}
               </div>

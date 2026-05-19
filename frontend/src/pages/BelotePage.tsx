@@ -17,7 +17,6 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -87,7 +86,6 @@ export const BelotePage = withTutorial(BelotePageContent, 'belote', BELOTE_TUTOR
 function BelotePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('belote');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -246,7 +244,6 @@ function BelotePageContent() {
           cardWidth={cardWidth}
           label={t('currentTrick')}
           dataTutorial="be-trick-display"
-          onCardDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
         />
 
         {/* Team scores */}

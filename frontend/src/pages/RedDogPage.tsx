@@ -187,12 +187,7 @@ function RedDogPageContent() {
                 <div className="text-ds-warning font-bold text-center mb-1">{t('label.initial')}</div>
                 <div className="flex justify-center gap-2 flex-wrap">
                   {state.initialCards.map((card, i) => (
-                    <AnimatedCard
-                      key={`i-${card.design}-${card.value}-${i}`}
-                      card={card}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard key={`i-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
                   ))}
                 </div>
                 {state.spread > 0 && (isSpreadDecision || isEndPhase) && (
@@ -207,11 +202,7 @@ function RedDogPageContent() {
               <div className="mb-4">
                 <div className="text-ds-info font-bold text-center mb-1">{t('label.third')}</div>
                 <div className="flex justify-center">
-                  <AnimatedCard
-                    card={state.thirdCard}
-                    width={cardWidth}
-                    onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                  />
+                  <AnimatedCard card={state.thirdCard} width={cardWidth} />
                 </div>
               </div>
             )}

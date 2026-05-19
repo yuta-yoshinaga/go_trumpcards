@@ -235,12 +235,7 @@ function SeahavenTowersPageContent() {
                             onDragEnd={dnd.handleDragEnd}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('reserved', undefined, idx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(reservedZone) ? 'opacity-50' : ''}`}
                           >
-                            <AnimatedCard
-                              card={card}
-                              width={cardWidth}
-                              draggable={false}
-                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                            />
+                            <AnimatedCard card={card} width={cardWidth} draggable={false} />
                           </button>
                         ) : (
                           <button
@@ -291,7 +286,6 @@ function SeahavenTowersPageContent() {
                               width={cardWidth}
                               draggable={false}
                               dealDelay={isAutoCompleting ? idx * 0.15 : 0}
-                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                             />
                           </button>
                         ) : (
@@ -391,7 +385,6 @@ function SeahavenTowersPageContent() {
                                         width={cardWidth}
                                         draggable={false}
                                         style={{ width: '100%' }}
-                                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                                       />
                                     </button>
                                   ) : (

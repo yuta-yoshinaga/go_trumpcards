@@ -287,12 +287,9 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                             card={card}
                             width={cardWidth}
                             style={placeholderCardStyle}
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                           />
                         ))
-                      : Array.from({ length: 5 }).map((_, i) => (
-                          <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
-                        ))}
+                      : Array.from({ length: 5 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                   </div>
                 </>
               );
@@ -396,17 +393,11 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                           disabled={!canDiscard}
                           style={selectedCardStyle(canDiscard && selectedDiscard === idx)}
                         >
-                          <AnimatedCard
-                            card={card}
-                            width={cardWidth}
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                          />
+                          <AnimatedCard card={card} width={cardWidth} />
                         </button>
                       ))
                     : !humanPlayer.folded &&
-                      Array.from({ length: 3 }).map((_, i) => (
-                        <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
-                      ))}
+                      Array.from({ length: 3 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                 </div>
               </div>
             )}

@@ -149,12 +149,7 @@ function BlackJackSwitchPageContent() {
                 </div>
                 <div className="flex justify-center gap-2 flex-wrap">
                   {state.dealerCards.map((c, i) => (
-                    <CardSlot
-                      key={`dealer-${i}`}
-                      card={c}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <CardSlot key={`dealer-${i}`} card={c} width={cardWidth} />
                   ))}
                 </div>
               </div>
@@ -178,12 +173,7 @@ function BlackJackSwitchPageContent() {
                       </div>
                       <div className="flex justify-center gap-1 flex-wrap">
                         {hand.cards.map((c, j) => (
-                          <CardSlot
-                            key={`hand-${idx}-${j}`}
-                            card={c}
-                            width={cardWidth}
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                          />
+                          <CardSlot key={`hand-${idx}-${j}`} card={c} width={cardWidth} />
                         ))}
                       </div>
                       {isEndPhase && (
@@ -283,7 +273,7 @@ function BlackJackSwitchPageContent() {
 }
 
 /** Renders a face-up card or a face-down placeholder when card is null. */
-function CardSlot({ card, width, onDealComplete }: { card: Card | null; width: number; onDealComplete: () => void }) {
+function CardSlot({ card, width }: { card: Card | null; width: number }) {
   if (!card) {
     return (
       <div
@@ -293,7 +283,7 @@ function CardSlot({ card, width, onDealComplete }: { card: Card | null; width: n
       />
     );
   }
-  return <AnimatedCard card={card} width={width} onDealComplete={onDealComplete} />;
+  return <AnimatedCard card={card} width={width} />;
 }
 
 function handResultKey(result: number): string {

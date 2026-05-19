@@ -313,11 +313,7 @@ function PokerPageContent() {
                           boxSizing: 'border-box',
                         }}
                       >
-                        <AnimatedCard
-                          card={card}
-                          width={cardWidth}
-                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                        />
+                        <AnimatedCard card={card} width={cardWidth} />
                       </button>
                     );
                   })}

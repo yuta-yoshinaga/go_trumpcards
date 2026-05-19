@@ -238,14 +238,9 @@ function IndianPokerPageContent() {
                     </div>
                     <div className={isMobile ? 'flex justify-center' : 'flex flex-wrap gap-1'}>
                       {p.card ? (
-                        <AnimatedCard
-                          card={p.card}
-                          width={cardWidth}
-                          style={placeholderCardStyle}
-                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                        />
+                        <AnimatedCard card={p.card} width={cardWidth} style={placeholderCardStyle} />
                       ) : (
-                        <AnimatedCardBack width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
+                        <AnimatedCardBack width={cardWidth} />
                       )}
                     </div>
                   </div>
@@ -287,14 +282,9 @@ function IndianPokerPageContent() {
                 </div>
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {isShowdown && humanPlayer.card ? (
-                    <AnimatedCard
-                      card={humanPlayer.card}
-                      width={cardWidth}
-                      style={placeholderCardStyle}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard card={humanPlayer.card} width={cardWidth} style={placeholderCardStyle} />
                   ) : !humanPlayer.folded ? (
-                    <AnimatedCardBack width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
+                    <AnimatedCardBack width={cardWidth} />
                   ) : null}
                 </div>
               </div>
