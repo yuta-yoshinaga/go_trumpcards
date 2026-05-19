@@ -2,6 +2,7 @@
  * @vitest-environment jsdom
  */
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import i18n from 'i18next';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -46,6 +47,17 @@ describe('DiscoverPage', () => {
   it('renders the first question on mount', () => {
     setup();
     expect(screen.getByRole('heading')).toBeInTheDocument();
+  });
+
+  it('renders translated question and option text, not raw i18n keys', () => {
+    setup();
+    const q1 = i18n.t('discover:axis.mood.q1');
+    const opt1 = i18n.t('discover:option.mood.quiet_focus');
+    // Sanity: the bundle resolves both keys to real Japanese strings.
+    expect(q1).not.toBe('discover:axis.mood.q1');
+    expect(opt1).not.toBe('discover:option.mood.quiet_focus');
+    expect(screen.getByRole('heading', { level: 2, name: q1 })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: new RegExp(opt1) })).toBeInTheDocument();
   });
 
   it('advances through 8 questions via keyboard digit shortcuts and navigates to /discover/result', async () => {

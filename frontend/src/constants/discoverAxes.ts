@@ -16,7 +16,11 @@
 export interface AxisOption {
   /** Stable kebab-case identifier (do not rename without migrating data). */
   readonly key: string;
-  /** i18n key in the lazy-loaded `discover` namespace. */
+  /**
+   * i18n key resolved within the `discover` namespace — do NOT include
+   * a leading `discover.` prefix, since callers already pass the
+   * namespace via `useTranslation('discover')`.
+   */
   readonly i18nKey: string;
 }
 
@@ -24,9 +28,16 @@ export interface AxisOption {
 export interface AxisDef {
   /** Number of questions asked for this axis (premise: 2 per axis). */
   readonly questionCount: 2;
-  /** i18n key for the axis label (e.g. shown in result `topAxis` chip). */
+  /**
+   * i18n key for the axis label (e.g. shown in result `topAxis` chip).
+   * Resolved within the `discover` namespace — do NOT include a leading
+   * `discover.` prefix.
+   */
   readonly labelI18nKey: string;
-  /** i18n keys for the 2 question prompts (order = question index 0, 1). */
+  /**
+   * i18n keys for the 2 question prompts (order = question index 0, 1).
+   * Resolved within the `discover` namespace.
+   */
   readonly questionI18nKeys: readonly [string, string];
   /** Ordered list of options; index is the wire format. */
   readonly options: readonly AxisOption[];
@@ -59,45 +70,45 @@ export const SOCIAL_PENALTY = 0.5;
 export const AXES: Readonly<Record<AxisKey, AxisDef>> = {
   mood: {
     questionCount: 2,
-    labelI18nKey: 'discover.axis.mood.label',
-    questionI18nKeys: ['discover.axis.mood.q1', 'discover.axis.mood.q2'],
+    labelI18nKey: 'axis.mood.label',
+    questionI18nKeys: ['axis.mood.q1', 'axis.mood.q2'],
     options: [
-      { key: 'quiet_focus', i18nKey: 'discover.option.mood.quiet_focus' },
-      { key: 'lively', i18nKey: 'discover.option.mood.lively' },
-      { key: 'thoughtful', i18nKey: 'discover.option.mood.thoughtful' },
-      { key: 'quick', i18nKey: 'discover.option.mood.quick' },
+      { key: 'quiet_focus', i18nKey: 'option.mood.quiet_focus' },
+      { key: 'lively', i18nKey: 'option.mood.lively' },
+      { key: 'thoughtful', i18nKey: 'option.mood.thoughtful' },
+      { key: 'quick', i18nKey: 'option.mood.quick' },
     ],
   },
   skill: {
     questionCount: 2,
-    labelI18nKey: 'discover.axis.skill.label',
-    questionI18nKeys: ['discover.axis.skill.q1', 'discover.axis.skill.q2'],
+    labelI18nKey: 'axis.skill.label',
+    questionI18nKeys: ['axis.skill.q1', 'axis.skill.q2'],
     options: [
-      { key: 'beginner', i18nKey: 'discover.option.skill.beginner' },
-      { key: 'intermediate', i18nKey: 'discover.option.skill.intermediate' },
-      { key: 'advanced', i18nKey: 'discover.option.skill.advanced' },
-      { key: 'learning_rules', i18nKey: 'discover.option.skill.learning_rules' },
+      { key: 'beginner', i18nKey: 'option.skill.beginner' },
+      { key: 'intermediate', i18nKey: 'option.skill.intermediate' },
+      { key: 'advanced', i18nKey: 'option.skill.advanced' },
+      { key: 'learning_rules', i18nKey: 'option.skill.learning_rules' },
     ],
   },
   social: {
     questionCount: 2,
-    labelI18nKey: 'discover.axis.social.label',
-    questionI18nKeys: ['discover.axis.social.q1', 'discover.axis.social.q2'],
+    labelI18nKey: 'axis.social.label',
+    questionI18nKeys: ['axis.social.q1', 'axis.social.q2'],
     options: [
-      { key: 'solo', i18nKey: 'discover.option.social.solo' },
-      { key: 'vs_cpu', i18nKey: 'discover.option.social.vs_cpu' },
-      { key: 'with_friends', i18nKey: 'discover.option.social.with_friends' },
+      { key: 'solo', i18nKey: 'option.social.solo' },
+      { key: 'vs_cpu', i18nKey: 'option.social.vs_cpu' },
+      { key: 'with_friends', i18nKey: 'option.social.with_friends' },
     ],
   },
   theme: {
     questionCount: 2,
-    labelI18nKey: 'discover.axis.theme.label',
-    questionI18nKeys: ['discover.axis.theme.q1', 'discover.axis.theme.q2'],
+    labelI18nKey: 'axis.theme.label',
+    questionI18nKeys: ['axis.theme.q1', 'axis.theme.q2'],
     options: [
-      { key: 'casino', i18nKey: 'discover.option.theme.casino' },
-      { key: 'european', i18nKey: 'discover.option.theme.european' },
-      { key: 'western', i18nKey: 'discover.option.theme.western' },
-      { key: 'japanese_household', i18nKey: 'discover.option.theme.japanese_household' },
+      { key: 'casino', i18nKey: 'option.theme.casino' },
+      { key: 'european', i18nKey: 'option.theme.european' },
+      { key: 'western', i18nKey: 'option.theme.western' },
+      { key: 'japanese_household', i18nKey: 'option.theme.japanese_household' },
     ],
   },
 } as const;
