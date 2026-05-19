@@ -231,11 +231,7 @@ function PyramidPageContent() {
                               isSelected('pyramid', rowIdx, colIdx) ? 'ring-2 ring-ds-warning' : ''
                             } ${!exposed ? 'opacity-60' : ''}`}
                           >
-                            <AnimatedCard
-                              card={pc.card}
-                              width={effectiveCardWidth}
-                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                            />
+                            <AnimatedCard card={pc.card} width={effectiveCardWidth} />
                           </button>
                         </div>
                       );
@@ -257,7 +253,6 @@ function PyramidPageContent() {
                     width={effectiveCardWidth}
                     onClick={isPlaying ? handleDraw : undefined}
                     ariaLabel={t('draw')}
-                    onFlipComplete={() => playSound('cardFlip')}
                   />
                 ) : (
                   <div
@@ -286,11 +281,7 @@ function PyramidPageContent() {
                       isSelected('waste') ? 'ring-2 ring-ds-warning' : ''
                     }`}
                   >
-                    <AnimatedCard
-                      card={state.waste[state.waste.length - 1]}
-                      width={effectiveCardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard card={state.waste[state.waste.length - 1]} width={effectiveCardWidth} />
                   </button>
                 ) : (
                   <div

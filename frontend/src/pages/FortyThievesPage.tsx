@@ -214,7 +214,6 @@ function FortyThievesPageContent() {
                       width={ft.cw}
                       onClick={isPlaying ? handleDraw : undefined}
                       ariaLabel={t('draw')}
-                      onFlipComplete={() => playSound('cardFlip')}
                     />
                   ) : (
                     <div
@@ -244,12 +243,7 @@ function FortyThievesPageContent() {
                       onDragEnd={dnd.handleDragEnd}
                       className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste') ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource({ zone: 'waste' }) ? 'opacity-50' : ''}`}
                     >
-                      <AnimatedCard
-                        card={wasteDisplay[0]}
-                        width={ft.cw}
-                        draggable={false}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={wasteDisplay[0]} width={ft.cw} draggable={false} />
                     </button>
                   ) : (
                     <div
@@ -293,7 +287,6 @@ function FortyThievesPageContent() {
                               width={ft.cw}
                               draggable={false}
                               dealDelay={isAutoCompleting ? idx * 0.15 : 0}
-                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                             />
                           </button>
                         ) : (
@@ -376,15 +369,10 @@ function FortyThievesPageContent() {
                                       draggable={false}
                                       style={{ width: '100%' }}
                                       wrapperClassName="block w-full"
-                                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                                     />
                                   </button>
                                 ) : (
-                                  <AnimatedCardBack
-                                    width={ft.cw}
-                                    className="w-full"
-                                    onFlipComplete={() => playSound('cardFlip')}
-                                  />
+                                  <AnimatedCardBack width={ft.cw} className="w-full" />
                                 )}
                               </div>
                             );

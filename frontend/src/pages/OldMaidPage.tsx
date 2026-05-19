@@ -296,14 +296,10 @@ function OldMaidPageContent() {
               <div className="flex justify-center my-2" data-testid="card-reveal-area">
                 {revealedCard ? (
                   <div className="animate-flipIn">
-                    <AnimatedCard
-                      card={revealedCard}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard card={revealedCard} width={cardWidth} />
                   </div>
                 ) : (
-                  <AnimatedCardBack width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
+                  <AnimatedCardBack width={cardWidth} />
                 )}
               </div>
             )}

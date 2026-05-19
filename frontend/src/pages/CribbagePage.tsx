@@ -306,11 +306,7 @@ function CribbagePageContent() {
                 {/* Starter card */}
                 {state.starter && (
                   <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3">
-                    <AnimatedCard
-                      card={state.starter}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard card={state.starter} width={cardWidth} />
                     <div className="text-ds-text-muted text-sm">
                       <div>{t('starter')}</div>
                     </div>
@@ -329,7 +325,6 @@ function CribbagePageContent() {
                           key={`peg-${card.design}-${card.value}-${idx}`}
                           card={card}
                           width={cardWidth * 0.8}
-                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                         />
                       ))}
                     </div>
@@ -346,7 +341,6 @@ function CribbagePageContent() {
                           key={`crib-${card.design}-${card.value}-${idx}`}
                           card={card}
                           width={cardWidth * 0.8}
-                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                         />
                       ))}
                     </div>
@@ -409,7 +403,6 @@ function CribbagePageContent() {
                               key={`cpu-${card.design}-${card.value}-${idx}`}
                               card={card}
                               width={cardWidth * 0.8}
-                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                             />
                           ))}
                         </div>
@@ -488,11 +481,7 @@ function CribbagePageContent() {
                       boxSizing: 'border-box',
                     }}
                   >
-                    <AnimatedCard
-                      card={card}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard card={card} width={cardWidth} />
                   </button>
                 ))}
               </div>

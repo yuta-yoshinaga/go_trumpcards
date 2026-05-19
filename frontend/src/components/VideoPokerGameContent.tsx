@@ -235,11 +235,7 @@ export function VideoPokerGameContent({
                         aria-label={displayHeld[i] ? `${tNs('hold')} ${i}` : tNs('card', { index: i })}
                         aria-pressed={displayHeld[i] ?? false}
                       >
-                        <AnimatedCard
-                          card={card}
-                          width={cardWidth}
-                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                        />
+                        <AnimatedCard card={card} width={cardWidth} />
                       </button>
                       {displayHeld[i] && <span className="text-ds-warning text-xs font-bold mt-1">{tNs('hold')}</span>}
                     </div>

@@ -275,12 +275,7 @@ function DaifugoPageContent() {
                   <span className="text-ds-text-muted">{t('tableEmpty')}</span>
                 ) : (
                   state.tableCards.map((card) => (
-                    <AnimatedCard
-                      key={`${card.design}-${card.value}`}
-                      card={card}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard key={`${card.design}-${card.value}`} card={card} width={cardWidth} />
                   ))
                 )}
               </div>

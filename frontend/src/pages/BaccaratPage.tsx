@@ -300,12 +300,7 @@ function BaccaratPageContent() {
                 </div>
                 <div className="flex justify-center gap-2">
                   {state.playerHand.map((card, i) => (
-                    <AnimatedCard
-                      key={`p-${card.design}-${card.value}-${i}`}
-                      card={card}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard key={`p-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
                   ))}
                 </div>
               </div>
@@ -319,12 +314,7 @@ function BaccaratPageContent() {
                 </div>
                 <div className="flex justify-center gap-2">
                   {state.bankerHand.map((card, i) => (
-                    <AnimatedCard
-                      key={`b-${card.design}-${card.value}-${i}`}
-                      card={card}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard key={`b-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
                   ))}
                 </div>
               </div>

@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useRef } from 'react';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
+import { useOptionalSound } from '../../providers/SoundProvider';
 import { flipSpring } from '../../styles/motionPresets';
 import { CardBack } from '../CardImage';
 
@@ -9,13 +10,26 @@ interface AnimatedCardBackProps extends React.ComponentProps<typeof CardBack> {
   dealDelay?: number;
   /** Shared layout animation ID. */
   layoutId?: string;
-  /** Callback fired when the flip-in animation completes. */
+  /** Suppress the default 'cardFlip' SFX. */
+  silent?: boolean;
+  /**
+   * Optional callback fired after the flip-in animation completes,
+   * in addition to the default SFX. Pass only when extra side-effects
+   * need to fire alongside the default sound.
+   */
   onFlipComplete?: () => void;
 }
 
 /** Renders an animated face-down card back with deal and optional flip animation. */
-export function AnimatedCardBack({ dealDelay = 0, layoutId, onFlipComplete, ...rest }: AnimatedCardBackProps) {
+export function AnimatedCardBack({
+  dealDelay = 0,
+  layoutId,
+  silent = false,
+  onFlipComplete,
+  ...rest
+}: AnimatedCardBackProps) {
   const reduced = useReducedMotion();
+  const sound = useOptionalSound();
   // Guard: onAnimationComplete fires for any animation, not just the initial flip.
   // Use a ref so the flip callback fires exactly once per component instance.
   const flipCalledRef = useRef(false);
@@ -36,6 +50,7 @@ export function AnimatedCardBack({ dealDelay = 0, layoutId, onFlipComplete, ...r
       onAnimationComplete={() => {
         if (!flipCalledRef.current) {
           flipCalledRef.current = true;
+          if (!silent) sound?.playSound('cardFlip');
           onFlipComplete?.();
         }
       }}

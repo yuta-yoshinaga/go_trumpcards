@@ -244,7 +244,6 @@ function SpiderPageContent() {
                     width={tableau.cw}
                     onClick={isPlaying ? handleDealGuarded : undefined}
                     ariaLabel={t('deal')}
-                    onFlipComplete={() => playSound('cardFlip')}
                   />
                 ) : (
                   <div
@@ -331,15 +330,10 @@ function SpiderPageContent() {
                                         width={tableau.cw}
                                         draggable={false}
                                         style={{ width: '100%' }}
-                                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                                       />
                                     </button>
                                   ) : (
-                                    <AnimatedCardBack
-                                      width={tableau.cw}
-                                      style={{ width: '100%' }}
-                                      onFlipComplete={() => playSound('cardFlip')}
-                                    />
+                                    <AnimatedCardBack width={tableau.cw} style={{ width: '100%' }} />
                                   )}
                                 </div>
                               );

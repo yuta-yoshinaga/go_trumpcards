@@ -183,11 +183,7 @@ function SevenBridgePageContent() {
               <div data-tutorial="sb-draw-area">
                 {state?.discardTop && (
                   <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3">
-                    <AnimatedCard
-                      card={state.discardTop}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard card={state.discardTop} width={cardWidth} />
                     <div className="text-ds-text-muted text-sm">{t('discardTop')}</div>
                   </div>
                 )}
@@ -207,7 +203,6 @@ function SevenBridgePageContent() {
                               key={`cpu-${card.design}-${card.value}-${idx}`}
                               card={card}
                               width={cardWidth * 0.8}
-                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                             />
                           ))}
                         </div>
@@ -221,7 +216,6 @@ function SevenBridgePageContent() {
                                   key={`cpu-meld-${mi}-${c.design}-${c.value}-${ci}`}
                                   card={c}
                                   width={cardWidth * 0.6}
-                                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                                 />
                               ))}
                             </div>
@@ -293,11 +287,7 @@ function SevenBridgePageContent() {
                       boxSizing: 'border-box',
                     }}
                   >
-                    <AnimatedCard
-                      card={card}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard card={card} width={cardWidth} />
                   </button>
                 ))}
                 {humanPlayer.melds.length > 0 && (
@@ -310,7 +300,6 @@ function SevenBridgePageContent() {
                             key={`me-meld-${mi}-${c.design}-${c.value}-${ci}`}
                             card={c}
                             width={cardWidth * 0.6}
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                           />
                         ))}
                       </div>

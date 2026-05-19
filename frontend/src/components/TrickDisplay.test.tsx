@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { Card } from '../types/card';
 import { TrickDisplay, type TrickDisplayCard, type TrickDisplayPlayer } from './TrickDisplay';
 
@@ -54,11 +54,8 @@ describe('TrickDisplay', () => {
     expect(screen.getByText('CPU 7')).toBeInTheDocument();
   });
 
-  it('renders correctly when onCardDealComplete is provided', () => {
-    const onDeal = vi.fn();
-    render(
-      <TrickDisplay currentTrick={trick} players={players} cardWidth={40} label="label" onCardDealComplete={onDeal} />,
-    );
+  it('renders one AnimatedCard per trick entry', () => {
+    render(<TrickDisplay currentTrick={trick} players={players} cardWidth={40} label="label" />);
     expect(screen.getAllByTestId('animated-card')).toHaveLength(2);
   });
 });

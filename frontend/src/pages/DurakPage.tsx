@@ -263,11 +263,7 @@ function DurakPageContent() {
                           }`}
                           onClick={() => setSelectedAttackIdx(selectedAttackIdx === i ? null : i)}
                         >
-                          <AnimatedCard
-                            card={pair.attack}
-                            width={cardWidth * 0.8}
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                          />
+                          <AnimatedCard card={pair.attack} width={cardWidth * 0.8} />
                           {pair.defense ? (
                             <AnimatedCard card={pair.defense} width={cardWidth * 0.8} />
                           ) : (
@@ -360,12 +356,7 @@ function DurakPageContent() {
                       className={`cursor-pointer transition-transform ${selectedCardIdx === i ? '-translate-y-2' : ''}`}
                       onClick={() => setSelectedCardIdx(selectedCardIdx === i ? null : i)}
                     >
-                      <AnimatedCard
-                        card={card}
-                        width={cardWidth}
-                        isSelected={selectedCardIdx === i}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={card} width={cardWidth} isSelected={selectedCardIdx === i} />
                     </button>
                   ))}
                 </div>

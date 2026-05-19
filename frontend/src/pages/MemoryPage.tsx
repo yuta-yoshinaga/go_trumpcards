@@ -258,13 +258,7 @@ function MemoryPageContent() {
                         <img src="/images/z01.png" alt="" className="w-full h-full object-contain rounded" />
                       </div>
                       <div className="memory-card-front">
-                        {bc.card && (
-                          <AnimatedCard
-                            card={bc.card}
-                            width={cardWidth}
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                          />
-                        )}
+                        {bc.card && <AnimatedCard card={bc.card} width={cardWidth} />}
                       </div>
                     </div>
                   </button>

@@ -257,12 +257,9 @@ function OmahaPageContent() {
                             card={card}
                             width={cardWidth}
                             style={placeholderCardStyle}
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                           />
                         ))
-                      : Array.from({ length: 5 }).map((_, i) => (
-                          <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
-                        ))}
+                      : Array.from({ length: 5 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                   </div>
                 </>
               );
@@ -368,13 +365,10 @@ function OmahaPageContent() {
                           card={card}
                           width={cardWidth}
                           style={placeholderCardStyle}
-                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                         />
                       ))
                     : !humanPlayer.folded &&
-                      Array.from({ length: 4 }).map((_, i) => (
-                        <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
-                      ))}
+                      Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                 </div>
               </div>
             )}

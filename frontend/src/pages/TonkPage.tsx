@@ -228,11 +228,7 @@ function TonkPageContent() {
               <div>
                 {state.discardTop && (
                   <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3">
-                    <AnimatedCard
-                      card={state.discardTop}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard card={state.discardTop} width={cardWidth} />
                     <div className="text-ds-text-muted text-sm">
                       <div>{t('discardTop')}</div>
                     </div>
@@ -249,7 +245,6 @@ function TonkPageContent() {
                             key={`meld-${meldIdx}-${card.design}-${card.value}-${cardIdx}`}
                             card={card}
                             width={cardWidth * 0.7}
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                           />
                         ))}
                       </div>
@@ -275,7 +270,6 @@ function TonkPageContent() {
                               key={`cpu-${card.design}-${card.value}-${idx}`}
                               card={card}
                               width={cardWidth * 0.8}
-                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                             />
                           ))}
                         </div>
@@ -342,11 +336,7 @@ function TonkPageContent() {
                       boxSizing: 'border-box',
                     }}
                   >
-                    <AnimatedCard
-                      card={card}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard card={card} width={cardWidth} />
                   </button>
                 ))}
               </div>

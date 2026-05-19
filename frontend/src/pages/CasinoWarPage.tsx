@@ -172,21 +172,13 @@ function CasinoWarPageContent() {
                   {state.playerCard && (
                     <div className="flex flex-col items-center">
                       <div className="text-ds-text-primary text-sm mb-1">{t('label.playerCard')}</div>
-                      <AnimatedCard
-                        card={state.playerCard}
-                        width={cardWidth}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={state.playerCard} width={cardWidth} />
                     </div>
                   )}
                   {state.dealerCard && (
                     <div className="flex flex-col items-center">
                       <div className="text-ds-text-primary text-sm mb-1">{t('label.dealerCard')}</div>
-                      <AnimatedCard
-                        card={state.dealerCard}
-                        width={cardWidth}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={state.dealerCard} width={cardWidth} />
                     </div>
                   )}
                 </div>
@@ -211,21 +203,13 @@ function CasinoWarPageContent() {
                   {state.playerWarCard && (
                     <div className="flex flex-col items-center">
                       <div className="text-ds-text-primary text-sm mb-1">{t('label.playerCard')}</div>
-                      <AnimatedCard
-                        card={state.playerWarCard}
-                        width={cardWidth}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={state.playerWarCard} width={cardWidth} />
                     </div>
                   )}
                   {state.dealerWarCard && (
                     <div className="flex flex-col items-center">
                       <div className="text-ds-text-primary text-sm mb-1">{t('label.dealerCard')}</div>
-                      <AnimatedCard
-                        card={state.dealerWarCard}
-                        width={cardWidth}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={state.dealerWarCard} width={cardWidth} />
                     </div>
                   )}
                 </div>

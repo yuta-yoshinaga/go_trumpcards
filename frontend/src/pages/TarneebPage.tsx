@@ -28,7 +28,6 @@ import {
   TARNEEB_POINT_LIMIT_OPTIONS,
   useTarneebGame,
 } from '../hooks/useTarneebGame';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -111,7 +110,6 @@ export const TarneebPage = withTutorial(TarneebPageContent, 'tarneeb', TARNEEB_T
 function TarneebPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('tarneeb');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -290,7 +288,6 @@ function TarneebPageContent() {
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="tn-trick-display"
-                  onCardDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                 />
               </div>
 

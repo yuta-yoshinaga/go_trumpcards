@@ -328,7 +328,6 @@ function BridgePageContent() {
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="br-trick-display"
-                  onCardDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                 />
 
                 {/* Dummy hand */}
@@ -337,12 +336,7 @@ function BridgePageContent() {
                     <div className="text-ds-text-muted text-sm mb-1">{t('dummyHand')}</div>
                     <div className="flex gap-1 flex-wrap">
                       {state.dummyHand.map((card, idx) => (
-                        <AnimatedCard
-                          key={`dummy-${card.design}-${card.value}-${idx}`}
-                          card={card}
-                          width={cardWidth}
-                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                        />
+                        <AnimatedCard key={`dummy-${card.design}-${card.value}-${idx}`} card={card} width={cardWidth} />
                       ))}
                     </div>
                   </div>
@@ -504,11 +498,7 @@ function BridgePageContent() {
                       ...(isMobile ? { minWidth: solitaireMinColWidth, flexShrink: 0 } : {}),
                     }}
                   >
-                    <AnimatedCard
-                      card={card}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard card={card} width={cardWidth} />
                   </button>
                 ))}
               </div>

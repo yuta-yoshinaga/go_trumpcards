@@ -193,11 +193,7 @@ function Rummy500PageContent() {
                       className={`transition-transform ${focusRingCard}`}
                       style={{ background: 'none', padding: 0, borderRadius: 8 }}
                     >
-                      <AnimatedCard
-                        card={card}
-                        width={cardWidth * 0.7}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={card} width={cardWidth * 0.7} />
                     </button>
                   ))}
                 </div>
@@ -224,7 +220,6 @@ function Rummy500PageContent() {
                             key={`meld-${p.id}-${mIdx}-${card.design}-${card.value}-${ci}`}
                             card={card}
                             width={cardWidth * 0.6}
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                           />
                         ))}
                       </div>
@@ -265,11 +260,7 @@ function Rummy500PageContent() {
                   boxSizing: 'border-box',
                 }}
               >
-                <AnimatedCard
-                  card={card}
-                  width={cardWidth}
-                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                />
+                <AnimatedCard card={card} width={cardWidth} />
               </button>
             ))}
           </div>

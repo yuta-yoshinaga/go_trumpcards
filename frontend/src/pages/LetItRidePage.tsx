@@ -248,12 +248,7 @@ function LetItRidePageContent() {
                 </div>
                 <div className="flex justify-center gap-2 flex-wrap">
                   {state.playerHand.map((card, i) => (
-                    <AnimatedCard
-                      key={`p-${card.design}-${card.value}-${i}`}
-                      card={card}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard key={`p-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
                   ))}
                 </div>
               </div>
@@ -269,12 +264,7 @@ function LetItRidePageContent() {
                     isMaskedCard(card) ? (
                       <AnimatedCardBack key={`c-back-${i}`} width={cardWidth} />
                     ) : (
-                      <AnimatedCard
-                        key={`c-${card.design}-${card.value}-${i}`}
-                        card={card}
-                        width={cardWidth}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard key={`c-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
                     ),
                   )}
                 </div>

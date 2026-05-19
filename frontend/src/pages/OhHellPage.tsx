@@ -301,11 +301,7 @@ function OhHellPageContent() {
                 {state.trumpCard && (
                   <div className="my-2 flex justify-center">
                     <div className="text-center">
-                      <AnimatedCard
-                        card={state.trumpCard}
-                        width={cardWidth}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={state.trumpCard} width={cardWidth} />
                     </div>
                   </div>
                 )}
@@ -317,7 +313,6 @@ function OhHellPageContent() {
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="oh-trick-display"
-                  onCardDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                 />
               </div>
 
@@ -483,11 +478,7 @@ function OhHellPageContent() {
                         boxSizing: 'border-box',
                       }}
                     >
-                      <AnimatedCard
-                        card={card}
-                        width={cardWidth}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={card} width={cardWidth} />
                     </button>
                   ))}
                 </div>

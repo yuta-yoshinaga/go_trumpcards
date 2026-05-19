@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useRef } from 'react';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
+import { useOptionalSound } from '../../providers/SoundProvider';
 import { dealSpring, hoverLift, selectLift } from '../../styles/motionPresets';
 import { CardImage } from '../CardImage';
 
@@ -13,7 +14,17 @@ interface AnimatedCardProps extends React.ComponentProps<typeof CardImage> {
   layoutId?: string;
   /** Additional class name for the motion wrapper div. */
   wrapperClassName?: string;
-  /** Callback fired when the deal-in animation completes. */
+  /**
+   * Suppress the default 'cardDeal' SFX. Useful for silent re-renders
+   * or when a parent already plays a louder placement sound.
+   */
+  silent?: boolean;
+  /**
+   * Optional callback fired after the deal-in animation completes,
+   * in addition to the default SFX. Most call sites can omit this;
+   * pass one only when extra side-effects (e.g., onPlace plumbing in
+   * AnimatedPile) need to fire alongside the default sound.
+   */
   onDealComplete?: () => void;
 }
 
@@ -23,10 +34,12 @@ export function AnimatedCard({
   isSelected = false,
   layoutId,
   wrapperClassName,
+  silent = false,
   onDealComplete,
   ...rest
 }: AnimatedCardProps) {
   const reduced = useReducedMotion();
+  const sound = useOptionalSound();
   // Guard: onAnimationComplete fires for any animation (hover, selection), not just the initial deal.
   // Use a ref so the deal callback fires exactly once per component instance.
   const dealCalledRef = useRef(false);
@@ -53,6 +66,7 @@ export function AnimatedCard({
       onAnimationComplete={() => {
         if (!dealCalledRef.current) {
           dealCalledRef.current = true;
+          if (!silent) sound?.playSound('cardDeal', { pitchVariation: 0.03 });
           onDealComplete?.();
         }
       }}
