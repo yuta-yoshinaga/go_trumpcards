@@ -156,6 +156,42 @@ func TestTrumpCards_DrawCard(t *testing.T) {
 	})
 }
 
+func TestTrumpCards_Replenish(t *testing.T) {
+	t.Run("makes drawn cards available again without changing deck order", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+
+		// Capture the initial deck order by drawing all cards.
+		drawn := make([]*domain.Card, 0, 52)
+		for {
+			c := tc.DrawCard()
+			if c == nil {
+				break
+			}
+			drawn = append(drawn, c)
+		}
+		if tc.GetRemainingCount() != 0 {
+			t.Fatalf("setup: expected exhausted deck, got %d remaining", tc.GetRemainingCount())
+		}
+
+		// Replenish should restore full availability without shuffling.
+		tc.Replenish()
+		if got := tc.GetRemainingCount(); got != 52 {
+			t.Fatalf("expected 52 remaining after Replenish, got %d", got)
+		}
+
+		for i := 0; i < 52; i++ {
+			c := tc.DrawCard()
+			if c == nil {
+				t.Fatalf("DrawCard returned nil at index %d after Replenish", i)
+			}
+			if c.GetDesign() != drawn[i].GetDesign() || c.GetValue() != drawn[i].GetValue() {
+				t.Errorf("card %d differs from pre-Replenish order: got (%v,%d) want (%v,%d)",
+					i, c.GetDesign(), c.GetValue(), drawn[i].GetDesign(), drawn[i].GetValue())
+			}
+		}
+	})
+}
+
 func TestTrumpCards_GetRemainingCount(t *testing.T) {
 	t.Run("initial remaining equals total", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
