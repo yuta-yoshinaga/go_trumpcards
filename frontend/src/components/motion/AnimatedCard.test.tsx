@@ -1,8 +1,47 @@
-import { render, screen } from '@testing-library/react';
-import type { ReactNode } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { useOptionalSound } from '../../providers/SoundProvider';
 import type { Card } from '../../types/card';
 import { AnimatedCard } from './AnimatedCard';
+
+// Override the global framer-motion mock from `src/test/setup.ts` so
+// onAnimationComplete fires on mount via useEffect. The default mock
+// strips animation props entirely, which would mean the deal callback
+// — and therefore the default SFX path this file is verifying — never
+// runs. Mirrors `AnimatedCardBack.test.tsx`.
+vi.mock('framer-motion', async () => {
+  const React = await import('react');
+  function createMotionProxy() {
+    return new Proxy(
+      {},
+      {
+        get: (_target: Record<string, unknown>, prop: string) =>
+          React.forwardRef((props: Record<string, unknown>, ref: React.Ref<HTMLElement>) => {
+            const {
+              initial: _i,
+              animate: _a,
+              exit: _e,
+              transition: _t,
+              whileHover: _wh,
+              whileTap: _wt,
+              layout: _l,
+              layoutId: _li,
+              onAnimationComplete,
+              ...rest
+            } = props;
+            const cb = onAnimationComplete as (() => void) | undefined;
+            React.useEffect(() => {
+              cb?.();
+            }, [cb]);
+            return React.createElement(prop, { ...rest, ref });
+          }),
+      },
+    );
+  }
+  const AnimatePresence = ({ children }: { children: React.ReactNode }) =>
+    React.createElement(React.Fragment, null, children);
+  return { motion: createMotionProxy(), AnimatePresence };
+});
 
 const mockCard: Card = { design: 'SPADE', value: 1 };
 
@@ -14,30 +53,20 @@ import { useReducedMotion } from '../../hooks/useReducedMotion';
 
 const mockPlaySound = vi.fn();
 
-// Mock the SoundProvider module: useOptionalSound returns a spyable
-// playSound. This lets us assert on the default-SFX contract introduced
-// by issue #1845 without spinning up the real provider (and its Howler
-// init) in unit tests.
+// Mock the SoundProvider module so tests can render AnimatedCard
+// without wrapping in <SoundProvider>. The mocked useOptionalSound
+// returns a spyable playSound by default; individual tests override
+// it via vi.mocked(useOptionalSound).mockReturnValueOnce(null) to
+// exercise the provider-less code path. See issue #1845.
 vi.mock('../../providers/SoundProvider', () => ({
-  useOptionalSound: () => ({ playSound: mockPlaySound, muted: false, toggleMute: vi.fn() }),
+  useOptionalSound: vi.fn(() => ({ playSound: mockPlaySound, muted: false, toggleMute: vi.fn() })),
 }));
 
-function renderAndCompleteAnim(node: ReactNode) {
-  // Framer Motion fires onAnimationComplete naturally; jsdom doesn't run
-  // its RAF loop in tests, so we invoke the wrapper via the motion.div's
-  // onAnimationComplete callback. Easiest path: render and walk the
-  // motion.div instance through its callback prop. With the vi.mock for
-  // useReducedMotion forcing animated mode, the motion.div is rendered;
-  // we trigger animation completion by dispatching a custom event the
-  // component already listens for via framer-motion. In practice, the
-  // simplest contract test is to set up the mock and assert on the
-  // playSound call after first animation cycle — framer-motion fires
-  // onAnimationComplete synchronously on mount in jsdom when no real
-  // animation can run.
-  return render(node);
-}
-
 describe('AnimatedCard', () => {
+  beforeEach(() => {
+    mockPlaySound.mockClear();
+  });
+
   it('renders animated wrapper when motion is enabled', () => {
     vi.mocked(useReducedMotion).mockReturnValue(false);
     render(<AnimatedCard card={mockCard} />);
@@ -105,25 +134,34 @@ describe('AnimatedCard', () => {
   });
 
   describe('default SFX contract (issue #1845)', () => {
-    // After issue #1845, AnimatedCard internally plays the 'cardDeal' SFX
-    // on deal-in completion. Page-level callsites no longer need to
-    // duplicate this. The `silent` prop opts out for parents that play
-    // their own placement sound. Tests below pin the contract — framer-
-    // motion fires onAnimationComplete synchronously in jsdom (no real
-    // animation runs), so we can assert on the spy directly after render.
-    it('accepts the silent prop without rendering changes', () => {
+    it('plays cardDeal on deal-in completion', async () => {
       vi.mocked(useReducedMotion).mockReturnValue(false);
-      renderAndCompleteAnim(<AnimatedCard card={mockCard} silent />);
-      expect(screen.getByTestId('animated-card')).toBeInTheDocument();
+      render(<AnimatedCard card={mockCard} />);
+      await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('cardDeal', { pitchVariation: 0.03 }));
     });
 
-    it('still mounts when called outside a SoundProvider (graceful degrade)', () => {
-      // useOptionalSound returns null when there is no provider; the
-      // component must not throw. The mock at the top of this file makes
-      // useOptionalSound non-null here, but the design contract — using
-      // useOptionalSound rather than useSound — is what allows isolated
-      // tests like this whole file to render AnimatedCard at all. This
-      // test pins the design choice as documentation.
+    it('also fires onDealComplete after the default SFX', async () => {
+      vi.mocked(useReducedMotion).mockReturnValue(false);
+      const onDealComplete = vi.fn();
+      render(<AnimatedCard card={mockCard} onDealComplete={onDealComplete} />);
+      await waitFor(() => expect(onDealComplete).toHaveBeenCalledTimes(1));
+      expect(mockPlaySound).toHaveBeenCalledWith('cardDeal', { pitchVariation: 0.03 });
+    });
+
+    it('does not play sound when silent=true (but still fires onDealComplete)', async () => {
+      vi.mocked(useReducedMotion).mockReturnValue(false);
+      const onDealComplete = vi.fn();
+      render(<AnimatedCard card={mockCard} silent onDealComplete={onDealComplete} />);
+      // onDealComplete is the side-effect hook callers can still opt into;
+      // wait for it to confirm the animation cycle ran. Then assert no SFX.
+      await waitFor(() => expect(onDealComplete).toHaveBeenCalledTimes(1));
+      expect(mockPlaySound).not.toHaveBeenCalled();
+    });
+
+    it('does not throw when rendered outside a SoundProvider', () => {
+      // Force useOptionalSound to behave as if no provider is mounted.
+      // The component must degrade silently rather than crash.
+      vi.mocked(useOptionalSound).mockReturnValueOnce(null);
       vi.mocked(useReducedMotion).mockReturnValue(false);
       expect(() => render(<AnimatedCard card={mockCard} />)).not.toThrow();
     });

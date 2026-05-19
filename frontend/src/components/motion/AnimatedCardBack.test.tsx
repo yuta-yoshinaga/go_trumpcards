@@ -1,22 +1,63 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { useOptionalSound } from '../../providers/SoundProvider';
 import { AnimatedCardBack } from './AnimatedCardBack';
 
 vi.mock('../../hooks/useReducedMotion', () => ({
   useReducedMotion: vi.fn(() => false),
 }));
 
+// Override the global framer-motion mock so onAnimationComplete fires
+// on mount via useEffect. See AnimatedCard.test.tsx for the rationale.
+vi.mock('framer-motion', async () => {
+  const React = await import('react');
+  function createMotionProxy() {
+    return new Proxy(
+      {},
+      {
+        get: (_target: Record<string, unknown>, prop: string) =>
+          React.forwardRef((props: Record<string, unknown>, ref: React.Ref<HTMLElement>) => {
+            const {
+              initial: _i,
+              animate: _a,
+              exit: _e,
+              transition: _t,
+              whileHover: _wh,
+              whileTap: _wt,
+              layout: _l,
+              layoutId: _li,
+              onAnimationComplete,
+              ...rest
+            } = props;
+            const cb = onAnimationComplete as (() => void) | undefined;
+            React.useEffect(() => {
+              cb?.();
+            }, [cb]);
+            return React.createElement(prop, { ...rest, ref });
+          }),
+      },
+    );
+  }
+  const AnimatePresence = ({ children }: { children: React.ReactNode }) =>
+    React.createElement(React.Fragment, null, children);
+  return { motion: createMotionProxy(), AnimatePresence };
+});
+
 const mockPlaySound = vi.fn();
 
 // Mock SoundProvider so tests can render the component without a
 // provider wrap. Mirrors AnimatedCard.test.tsx (issue #1845).
 vi.mock('../../providers/SoundProvider', () => ({
-  useOptionalSound: () => ({ playSound: mockPlaySound, muted: false, toggleMute: vi.fn() }),
+  useOptionalSound: vi.fn(() => ({ playSound: mockPlaySound, muted: false, toggleMute: vi.fn() })),
 }));
 
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 
 describe('AnimatedCardBack', () => {
+  beforeEach(() => {
+    mockPlaySound.mockClear();
+  });
+
   it('renders animated wrapper when motion is enabled', () => {
     vi.mocked(useReducedMotion).mockReturnValue(false);
     render(<AnimatedCardBack />);
@@ -72,12 +113,32 @@ describe('AnimatedCardBack', () => {
   });
 
   describe('default SFX contract (issue #1845)', () => {
-    // AnimatedCardBack internally plays the 'cardFlip' SFX on flip-in
-    // completion so page callsites no longer need to thread it.
-    it('accepts the silent prop without rendering changes', () => {
+    it('plays cardFlip on flip-in completion', async () => {
       vi.mocked(useReducedMotion).mockReturnValue(false);
-      render(<AnimatedCardBack silent />);
-      expect(screen.getByTestId('animated-card-back')).toBeInTheDocument();
+      render(<AnimatedCardBack />);
+      await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('cardFlip'));
+    });
+
+    it('also fires onFlipComplete after the default SFX', async () => {
+      vi.mocked(useReducedMotion).mockReturnValue(false);
+      const onFlipComplete = vi.fn();
+      render(<AnimatedCardBack onFlipComplete={onFlipComplete} />);
+      await waitFor(() => expect(onFlipComplete).toHaveBeenCalledTimes(1));
+      expect(mockPlaySound).toHaveBeenCalledWith('cardFlip');
+    });
+
+    it('does not play sound when silent=true (but still fires onFlipComplete)', async () => {
+      vi.mocked(useReducedMotion).mockReturnValue(false);
+      const onFlipComplete = vi.fn();
+      render(<AnimatedCardBack silent onFlipComplete={onFlipComplete} />);
+      await waitFor(() => expect(onFlipComplete).toHaveBeenCalledTimes(1));
+      expect(mockPlaySound).not.toHaveBeenCalled();
+    });
+
+    it('does not throw when rendered outside a SoundProvider', () => {
+      vi.mocked(useOptionalSound).mockReturnValueOnce(null);
+      vi.mocked(useReducedMotion).mockReturnValue(false);
+      expect(() => render(<AnimatedCardBack />)).not.toThrow();
     });
   });
 });
