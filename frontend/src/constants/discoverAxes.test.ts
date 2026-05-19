@@ -56,7 +56,7 @@ describe('discoverAxes constants', () => {
   it('every option has an option.<axis>.* i18n key (no leading `discover.` — the namespace is supplied by useTranslation)', () => {
     for (const key of AXIS_KEYS) {
       for (const opt of AXES[key].options) {
-        expect(opt.i18nKey).toMatch(/^option\.[a-z]+\./);
+        expect(opt.i18nKey).toMatch(new RegExp('^option\\.' + key + '\\.'));
         expect(opt.i18nKey).not.toMatch(/^discover\./);
       }
     }
@@ -64,10 +64,10 @@ describe('discoverAxes constants', () => {
 
   it('every axis label and question key omits the `discover.` namespace prefix', () => {
     for (const key of AXIS_KEYS) {
-      expect(AXES[key].labelI18nKey).toMatch(/^axis\.[a-z]+\.label$/);
+      expect(AXES[key].labelI18nKey).toMatch(new RegExp('^axis\\.' + key + '\\.label$'));
       expect(AXES[key].labelI18nKey).not.toMatch(/^discover\./);
       for (const qk of AXES[key].questionI18nKeys) {
-        expect(qk).toMatch(/^axis\.[a-z]+\.q[12]$/);
+        expect(qk).toMatch(new RegExp('^axis\\.' + key + '\\.q[12]$'));
       }
     }
   });
