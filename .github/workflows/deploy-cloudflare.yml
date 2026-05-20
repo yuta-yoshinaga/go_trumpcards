@@ -128,4 +128,14 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           PAGES_PROJECT: ${{ github.ref == 'refs/heads/master' && 'go-trumpcards' || 'go-trumpcards-staging' }}
-        run: bunx wrangler pages deploy public --project-name "$PAGES_PROJECT" --commit-dirty=true
+        # Cloudflare Pages API (code 8000111) intermittently rejects auto-detected
+        # commit messages that contain non-ASCII text even when it is valid UTF-8.
+        # Pass an explicit ASCII commit message + commit hash so the deploy is stable.
+        # GITHUB_SHA is runner-controlled (not user input), so it is safe to interpolate.
+        run: |
+          SHORT_SHA="${GITHUB_SHA:0:7}"
+          bunx wrangler pages deploy public \
+            --project-name "$PAGES_PROJECT" \
+            --commit-hash "$GITHUB_SHA" \
+            --commit-message "deploy $SHORT_SHA" \
+            --commit-dirty=true
