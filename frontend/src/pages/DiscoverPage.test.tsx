@@ -115,6 +115,22 @@ describe('DiscoverPage', () => {
     expect(screen.getByLabelText(/Question 2 of 8/i)).toBeInTheDocument();
   });
 
+  it('ignores rapid double-fire of the same option (#1898)', async () => {
+    // Regression: ISSUE-003 — two rapid clicks on an option used to fire
+    // handleSelect twice with the same captured `current`, calling
+    // dispatch({type:'advance'}) twice and skipping the next question. The
+    // user would land on Q3 instead of Q2, with the in-between sub-dim
+    // silently left null. Verified by /qa on 2026-05-20.
+    setup();
+    await act(async () => {
+      // Both fires happen inside one batch — both see the Q1 closure.
+      fireEvent.keyDown(window, { key: '1' });
+      fireEvent.keyDown(window, { key: '1' });
+    });
+    // After a single answer, we expect Q2 — not Q3.
+    expect(screen.getByLabelText(/Question 2 of 8/i)).toBeInTheDocument();
+  });
+
   it('Backspace returns to the previous question', () => {
     setup();
     act(() => {
