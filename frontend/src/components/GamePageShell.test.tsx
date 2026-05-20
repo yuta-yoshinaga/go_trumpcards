@@ -281,4 +281,18 @@ describe('GamePageShell', () => {
     expect(screen.queryByText('あなたのターン')).not.toBeInTheDocument();
     expect(screen.queryByText('待機中')).not.toBeInTheDocument();
   });
+
+  it('establishes a positioning context so absolute-positioned children stay inside the page (#1900)', () => {
+    // Regression: ISSUE-005 — without `relative` on the outer container,
+    // absolutely-positioned descendants like CpuActionToast escape to the
+    // viewport and overlap the mobile NavBar's brand bar. Found by /qa on
+    // 2026-05-20 (mobile poker, top-left "Trump Cards" overlap).
+    const { container } = render(
+      <GamePageShell {...baseProps}>
+        <div data-testid="anchor" />
+      </GamePageShell>,
+    );
+    const outer = container.firstElementChild as HTMLElement;
+    expect(outer.className).toContain('relative');
+  });
 });

@@ -90,7 +90,7 @@ export function GamePageShell({
   // long-form games (Hearts, Spades, Skat, …) don't silently lose state.
   useGameRoundGuard(!gameEndFlag);
   return (
-    <div key={outerKey} className={`flex-1 flex flex-col min-h-0 ${gameThemeBg}`} aria-busy={loading}>
+    <div key={outerKey} className={`relative flex-1 flex flex-col min-h-0 ${gameThemeBg}`} aria-busy={loading}>
       <GamePageHeading title={title} />
       <PhaseIndicator phaseName={phaseName} isHumanTurn={isHumanTurn}>
         {headerExtra}
