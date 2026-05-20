@@ -24,7 +24,8 @@
   },
   "aria": {
     "question": "Question {{current}} of {{total}}",
-    "progress": "{{current}} / {{total}} に進みました"
+    "progress": "{{current}} / {{total}} に進みました",
+    "start": "全 {{total}} 問のアンケートを開始しました"
   },
   "action": {
     "skip": "この質問は飛ばす",

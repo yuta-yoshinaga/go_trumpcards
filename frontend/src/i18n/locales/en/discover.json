@@ -24,7 +24,8 @@
   },
   "aria": {
     "question": "Question {{current}} of {{total}}",
-    "progress": "Moved to {{current}} of {{total}}"
+    "progress": "Moved to {{current}} of {{total}}",
+    "start": "Survey started — {{total}} questions"
   },
   "action": {
     "skip": "Skip this question",

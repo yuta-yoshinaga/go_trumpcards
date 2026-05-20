@@ -38,7 +38,7 @@ export function SurveyProgress({ current }: SurveyProgressProps) {
         })}
       </ul>
       <p aria-live="polite" aria-atomic="true" className="sr-only">
-        {t('aria.progress', { current, total })}
+        {current === 1 ? t('aria.start', { total }) : t('aria.progress', { current, total })}
       </p>
     </div>
   );
