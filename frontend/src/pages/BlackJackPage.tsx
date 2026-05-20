@@ -291,8 +291,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
       headerEnd={
         <>
           <span>
-            {t('deck')} {state.deckCount}
-            {t('deckUnit')}
+            {t('deck')} {t('deckUnit', { count: state.deckCount })}
           </span>
           {countingEnabled && (
             <span>
