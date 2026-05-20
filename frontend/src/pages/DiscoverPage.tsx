@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useCallback, useEffect, useReducer } from 'react';
+import { useCallback, useEffect, useReducer, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { DiscoverShell } from '../components/discover/DiscoverShell';
@@ -92,16 +92,22 @@ export function DiscoverPage() {
   const handleBack = useCallback(() => dispatch({ type: 'back' }), []);
 
   // Submit when the user finishes the last question.
+  // `resetDraft()` clears `axes` to all-null, which is itself a dependency of
+  // this effect — without the ref guard the effect re-fires with empty axes
+  // and a second navigate() overwrites the good URL with `m=-,-&s=-,-&...`.
+  const submittedRef = useRef(false);
   useEffect(() => {
     if (state.step < TOTAL_QUESTIONS) return;
+    if (submittedRef.current) return;
+    submittedRef.current = true;
     const query = encodeMood({
       mood: [axes.mood[0], axes.mood[1]],
       skill: [axes.skill[0], axes.skill[1]],
       social: [axes.social[0], axes.social[1]],
       theme: [axes.theme[0], axes.theme[1]],
     });
-    resetDraft();
     navigate(`/discover/result?${query}`, { replace: false });
+    resetDraft();
   }, [state.step, axes, navigate, resetDraft]);
 
   // Keyboard shortcuts: digit keys pick options; Backspace goes back.
