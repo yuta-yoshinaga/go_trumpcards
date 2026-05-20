@@ -78,6 +78,32 @@ describe('DiscoverPage', () => {
     });
   });
 
+  it('submits the actual answer values to the URL, not all blanks (#1896)', async () => {
+    // Regression: ISSUE-001 — the submit useEffect listed `axes` in its dep
+    // array and called resetDraft() which mutated `axes` to EMPTY_ANSWERS.
+    // That fired the effect a second time, re-encoding the now-empty draft
+    // into the URL and silently overwriting the just-pushed good URL.
+    // Found by /qa on 2026-05-20
+    // Report: .gstack/qa-reports/qa-report-go-trumpcards-dev-2026-05-20.md
+    const { getLastPath } = setup();
+    for (let i = 0; i < 8; i++) {
+      await act(async () => {
+        fireEvent.keyDown(window, { key: '1' });
+      });
+    }
+    await waitFor(() => {
+      expect(getLastPath()).toMatch(/^\/discover\/result\?/);
+    });
+    const finalPath = getLastPath();
+    // Every key '1' selects option index 0 — every axis slot must be '0,0'.
+    // Pre-fix, this was 'm=-,-&s=-,-&so=-,-&t=-,-' regardless of the answers.
+    expect(finalPath).toContain('m=0,0');
+    expect(finalPath).toContain('s=0,0');
+    expect(finalPath).toContain('so=0,0');
+    expect(finalPath).toContain('t=0,0');
+    expect(finalPath).not.toMatch(/=-,-/);
+  });
+
   it('skip button advances without recording an answer', () => {
     setup();
     // Buttons rendered: mood Q1 options + skip; click the last one (skip).
