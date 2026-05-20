@@ -21,7 +21,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSound } from '../providers/SoundProvider';
-import { btnOutline, btnPrimary, focusRingWhite } from '../styles/buttonStyles';
+import { btnPrimary, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, SpiteAndMaliceResponse } from '../types/card';
 import { SpiteAndMalicePhase } from '../types/phases';
@@ -253,7 +253,7 @@ function SpiteAndMalicePageContent() {
       headerExtra={
         <>
           <span>
-            {tc('moveCount', { defaultValue: 'Moves' })}: {state.moveCount}
+            {t('moveCount')}: {state.moveCount}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
@@ -371,12 +371,6 @@ function SpiteAndMalicePageContent() {
                   data-testid="sam-autocomplete-btn"
                 >
                   {t('autoComplete')}
-                </button>
-              )}
-
-              {isGameOver && (
-                <button type="button" className={btnOutline} onClick={() => showActionLog()} disabled={loading}>
-                  {tc('showActionLog', { defaultValue: 'Show action log' })}
                 </button>
               )}
             </GameFooter>

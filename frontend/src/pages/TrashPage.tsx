@@ -21,7 +21,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSound } from '../providers/SoundProvider';
-import { btnOutline, focusRingWhite } from '../styles/buttonStyles';
+import { focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { TrashResponse, TrashSlot } from '../types/card';
 import { TrashPhase } from '../types/phases';
@@ -205,7 +205,7 @@ function TrashPageContent() {
       headerExtra={
         <>
           <span>
-            {tc('moveCount', { defaultValue: 'Moves' })}: {state.moveCount}
+            {t('moveCount')}: {state.moveCount}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
@@ -290,12 +290,6 @@ function TrashPageContent() {
                 loading={loading}
                 dataTutorial="tr-reset"
               />
-
-              {isGameOver && (
-                <button type="button" className={btnOutline} onClick={() => showActionLog()} disabled={loading}>
-                  {tc('showActionLog', { defaultValue: 'Show action log' })}
-                </button>
-              )}
             </GameFooter>
           </div>
         </>

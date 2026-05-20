@@ -548,12 +548,6 @@ function YukonPageContent() {
                   )}
                 </>
               )}
-
-              {isEnded && (
-                <button type="button" className={btnOutline} onClick={() => showActionLog()} disabled={loading}>
-                  {t('common:showActionLog')}
-                </button>
-              )}
             </GameFooter>
           </div>
         </>

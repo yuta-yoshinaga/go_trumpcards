@@ -213,9 +213,7 @@ function CanastaPageContent() {
                 {state.discardTop && (
                   <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3" data-tutorial="ca-draw-area">
                     <AnimatedCard card={state.discardTop} width={cardWidth} />
-                    <div className="text-ds-text-muted text-sm">
-                      {tc('common:discardTop', { defaultValue: 'Discard' })}
-                    </div>
+                    <div className="text-ds-text-muted text-sm">{t('discardTop')}</div>
                   </div>
                 )}
 

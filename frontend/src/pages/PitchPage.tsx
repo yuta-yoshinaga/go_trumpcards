@@ -430,7 +430,7 @@ function PitchPageContent() {
                 onClick={() => requestConfirm(handleManualReset)}
                 disabled={loading}
               >
-                {tc('common.reset')}
+                {tc('button.reset')}
               </button>
               <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
                 {tc('actionLog.view')}

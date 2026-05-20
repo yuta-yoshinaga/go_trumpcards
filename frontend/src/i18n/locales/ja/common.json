@@ -182,7 +182,8 @@
     "confirm": "確認",
     "hint": "ヒント",
     "retry": "再試行",
-    "dismiss": "閉じる"
+    "dismiss": "閉じる",
+    "score": "スコア"
   },
   "roundScoreAnnouncement": {
     "message": "ラウンド終了。{{details}}",
