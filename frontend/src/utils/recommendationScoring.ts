@@ -57,12 +57,16 @@ export interface RecommendationResult {
  * invert that to `1 - profile[idx] / MAX` so a single slot can encode
  * a binary preference (e.g. `learning_rules` vs `prefer_familiar`).
  */
-export function axisScore(profileVec: readonly number[], axisKey: AxisKey, answers: readonly AxisAnswer[]): number {
+export function axisScore(
+  profileVec: readonly number[],
+  axisKey: AxisKey,
+  answers: readonly [AxisAnswer, AxisAnswer],
+): number {
   const axis = AXES[axisKey];
   const valid: Array<{ qIdx: 0 | 1; optIdx: number }> = [];
-  for (let qIdx = 0; qIdx < answers.length; qIdx++) {
+  for (const qIdx of [0, 1] as const) {
     const optIdx = answers[qIdx];
-    if (optIdx !== null) valid.push({ qIdx: qIdx as 0 | 1, optIdx });
+    if (optIdx !== null) valid.push({ qIdx, optIdx });
   }
   if (valid.length === 0) return 0.5;
   let sum = 0;
@@ -77,7 +81,9 @@ export function axisScore(profileVec: readonly number[], axisKey: AxisKey, answe
       sum += 0.5;
       continue;
     }
-    const raw = profileVec[opt.profileIdx] / PROFILE_MAX;
+    // Clamp the raw value to [0, 1] before applying polarity — guards against
+    // profile data > PROFILE_MAX so a polarity:-1 answer cannot drop below 0.
+    const raw = Math.min(1, profileVec[opt.profileIdx] / PROFILE_MAX);
     sum += opt.polarity === -1 ? 1 - raw : raw;
   }
   return sum / valid.length;
@@ -92,7 +98,9 @@ export function score(game: GameRoute, mood: UserMood): number {
   // Solo-leaning user against a game that does not support solo well.
   // `mood.social[0]` is the Q1 answer; if the user picked solo there
   // and the game's solo affinity (profile slot for solo) is weak (< 2),
-  // apply a fixed penalty.
+  // apply a fixed penalty. Q2 (casual_play / serious_play) intentionally
+  // does not affect the penalty — it's a presentation-style dimension,
+  // not a player-count signal.
   if (mood.social[0] === SOCIAL_SOLO_IDX && game.profile.social[SOCIAL_SOLO_PROFILE_IDX] < 2) {
     total -= SOCIAL_PENALTY * AXIS_WEIGHTS.social;
   }

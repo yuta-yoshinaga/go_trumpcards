@@ -61,34 +61,32 @@ export function parseMood(query: string): UserMoodInput | null {
  * `navigate('/discover', { replace: true })` when this returns null.
  */
 export function parseSearchParams(params: URLSearchParams): UserMoodInput | null {
-  const out: Partial<Record<AxisKey, [number | null, number | null]>> = {};
+  // Built up to a full Record over AXIS_KEYS; the loop returns null on the
+  // first missing/invalid axis, so by exit every key is set.
+  const out: Record<AxisKey, [number | null, number | null]> = {
+    mood: [null, null],
+    skill: [null, null],
+    social: [null, null],
+    theme: [null, null],
+  };
   for (const axis of AXIS_KEYS) {
     const raw = params.get(QUERY_KEYS[axis]);
     if (raw === null) return null;
     const tokens = raw.split(',');
     if (tokens.length !== 2) return null;
-    const parsed: (number | null)[] = [];
-    for (let qIdx = 0; qIdx < tokens.length; qIdx++) {
+    const parsed: [number | null, number | null] = [null, null];
+    for (const qIdx of [0, 1] as const) {
       const token = tokens[qIdx];
-      if (token === SKIP_TOKEN) {
-        parsed.push(null);
-        continue;
-      }
+      if (token === SKIP_TOKEN) continue;
       if (!/^\d+$/.test(token)) return null;
       const n = Number.parseInt(token, 10);
-      const optCount = AXES[axis].questions[qIdx as 0 | 1].options.length;
+      const optCount = AXES[axis].questions[qIdx].options.length;
       if (!Number.isInteger(n) || n < 0 || n >= optCount) return null;
-      parsed.push(n);
+      parsed[qIdx] = n;
     }
-    out[axis] = parsed as [number | null, number | null];
+    out[axis] = parsed;
   }
-  // Every axis is set because AXIS_KEYS was fully iterated above; assert via cast.
-  return {
-    mood: out.mood ?? [null, null],
-    skill: out.skill ?? [null, null],
-    social: out.social ?? [null, null],
-    theme: out.theme ?? [null, null],
-  };
+  return out;
 }
 
 /**

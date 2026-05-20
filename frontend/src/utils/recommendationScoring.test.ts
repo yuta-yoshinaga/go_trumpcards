@@ -1,12 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  AXIS_KEYS,
-  AXIS_WEIGHTS,
-  PROFILE_MAX,
-  SOCIAL_PENALTY,
-  SOCIAL_SOLO_IDX,
-  SOCIAL_SOLO_PROFILE_IDX,
-} from '../constants/discoverAxes';
+import { AXIS_KEYS, AXIS_WEIGHTS, PROFILE_MAX, SOCIAL_PENALTY, SOCIAL_SOLO_IDX } from '../constants/discoverAxes';
 import type { GameProfile, GameRoute } from '../constants/gameRoutes';
 import { axisScore, dominantAxis, profileDistance, recommend, score, type UserMood } from './recommendationScoring';
 

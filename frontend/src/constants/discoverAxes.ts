@@ -175,17 +175,20 @@ export const AXES: Readonly<Record<AxisKey, AxisDef>> = {
   },
 } as const;
 
-/**
- * Index of the `solo` option inside `social` Q1 — used by the
- * solo-vs-multi-only penalty in scoring.
- */
-export const SOCIAL_SOLO_IDX = AXES.social.questions[0].options.findIndex((o) => o.key === 'solo');
+// `SOCIAL_SOLO_IDX` and `SOCIAL_SOLO_PROFILE_IDX` happen to both be 0 today
+// because `solo` is the first option in social Q1 AND the first slot in the
+// social profile vector — but they are distinct concepts: the first is the
+// answer index the user submits, the second is the profile slot the scorer
+// reads. Reorder the options and they diverge.
 
-/**
- * Index into `social` profile vector for the solo slot. Used by the
- * solo-vs-multi-only penalty to fetch a game's solo affinity.
- */
-export const SOCIAL_SOLO_PROFILE_IDX = AXES.social.questions[0].options.find((o) => o.key === 'solo')?.profileIdx ?? 0;
+/** Option index of `solo` within social Q1 — compared against the user's submitted answer. */
+const SOLO_OPT = AXES.social.questions[0].options.findIndex((o) => o.key === 'solo');
+if (SOLO_OPT < 0) throw new Error('discoverAxes: social Q1 is missing the `solo` option');
+export const SOCIAL_SOLO_IDX = SOLO_OPT;
+
+/** Profile vector slot that stores a game's solo affinity — read by the solo penalty. */
+const SOLO_PROFILE = AXES.social.questions[0].options[SOLO_OPT].profileIdx;
+export const SOCIAL_SOLO_PROFILE_IDX = SOLO_PROFILE;
 
 /**
  * Per-question option counts. Used to validate draft / URL input —
