@@ -141,8 +141,7 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
             >
               {VALID_DECK_COUNTS.map((d) => (
                 <option key={d} value={d}>
-                  {d}
-                  {t('deckUnit')}
+                  {t('deckUnit', { count: d })}
                 </option>
               ))}
             </select>

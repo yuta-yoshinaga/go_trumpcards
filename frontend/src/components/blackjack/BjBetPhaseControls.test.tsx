@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import i18n from 'i18next';
 import { describe, expect, it, vi } from 'vitest';
 import { BjBetPhaseControls, type BjBetPhaseControlsProps } from './BjBetPhaseControls';
 
@@ -353,5 +354,25 @@ describe('BjBetPhaseControls', () => {
       'H17=ソフト17でヒット / S17=ソフト17でスタンド',
     );
     expect(container.querySelector('#bj-das-help')).toHaveTextContent('DAS=スプリット後にダブルダウン可');
+  });
+});
+
+describe('blackjack.deckUnit i18n pluralization (#1901)', () => {
+  // Regression: ISSUE-006 — EN renders "Deck: 1deck(s)" because the source
+  // string was a literal "deck(s)" template instead of a real plural form,
+  // and there was no space between the count and the unit. Found by /qa on
+  // 2026-05-20 (mobile English BlackJack header).
+  it('en renders "1 deck" (singular) and "4 decks" (plural) with a leading space', () => {
+    const t = i18n.getFixedT('en', 'blackjack');
+    expect(t('deckUnit', { count: 1 })).toBe('1 deck');
+    expect(t('deckUnit', { count: 2 })).toBe('2 decks');
+    expect(t('deckUnit', { count: 4 })).toBe('4 decks');
+    expect(t('deckUnit', { count: 1 })).not.toContain('(s)');
+  });
+
+  it('ja renders "Nデッキ" with no plural variation', () => {
+    const t = i18n.getFixedT('ja', 'blackjack');
+    expect(t('deckUnit', { count: 1 })).toBe('1デッキ');
+    expect(t('deckUnit', { count: 4 })).toBe('4デッキ');
   });
 });

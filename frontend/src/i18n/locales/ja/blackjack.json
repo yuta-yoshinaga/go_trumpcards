@@ -9,7 +9,7 @@
   },
   "player": "プレイヤー:",
   "deck": "デッキ:",
-  "deckUnit": "デッキ",
+  "deckUnit": "{{count}}デッキ",
   "dealerHand": "ディーラー手札",
   "score": "スコア",
   "playerHand": "プレイヤー手札",
