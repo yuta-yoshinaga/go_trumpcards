@@ -11,13 +11,17 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { AXIS_KEYS, AXIS_OPTION_COUNT, type AxisKey } from '../constants/discoverAxes';
+import { AXIS_KEYS, AXIS_QUESTION_OPTION_COUNTS, type AxisKey } from '../constants/discoverAxes';
 
 /** localStorage key for the discover draft (versioned blob). */
 export const DISCOVER_DRAFT_KEY = 'trumpcards-discover-draft';
 
-/** Bumping this invalidates every previously stored draft. */
-export const DRAFT_SCHEMA_VERSION = 1;
+/**
+ * Bumping this invalidates every previously stored draft. v2 changed
+ * answer indices from "master option list" to "per-sub-question options",
+ * so old drafts must not be silently re-interpreted.
+ */
+export const DRAFT_SCHEMA_VERSION = 2;
 
 /** One axis's answers (length 2). */
 export type DraftAxisAnswers = readonly [number | null, number | null];
@@ -53,10 +57,12 @@ export function readDraft(): SurveyDraft | null {
     for (const key of AXIS_KEYS) {
       const v = (obj.axes as Record<string, unknown>)[key];
       if (Array.isArray(v) && v.length === 2) {
-        const sanitized: (number | null)[] = v.map((entry) => {
+        const limits = AXIS_QUESTION_OPTION_COUNTS[key];
+        const sanitized: (number | null)[] = v.map((entry, qIdx) => {
           if (entry === null) return null;
           if (typeof entry !== 'number' || !Number.isInteger(entry)) return null;
-          if (entry < 0 || entry >= AXIS_OPTION_COUNT[key]) return null;
+          const max = limits[qIdx as 0 | 1];
+          if (entry < 0 || entry >= max) return null;
           return entry;
         });
         axes[key] = [sanitized[0] ?? null, sanitized[1] ?? null] as const;

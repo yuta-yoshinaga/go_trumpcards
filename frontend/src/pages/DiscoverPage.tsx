@@ -116,7 +116,7 @@ export function DiscoverPage() {
         return;
       }
       const n = Number.parseInt(ev.key, 10);
-      const optCount = AXES[current.axis].options.length;
+      const optCount = AXES[current.axis].questions[current.qIdx].options.length;
       if (Number.isInteger(n) && n >= 1 && n <= optCount) {
         ev.preventDefault();
         handleSelect(n - 1);

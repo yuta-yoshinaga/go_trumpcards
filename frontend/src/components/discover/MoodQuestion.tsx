@@ -6,9 +6,9 @@ import { focusRingWhite } from '../../styles/buttonStyles';
 export interface MoodQuestionProps {
   /** The axis being asked. */
   readonly axis: AxisDef;
-  /** Index into `axis.questionI18nKeys` (0 = first prompt, 1 = second). */
+  /** Index into `axis.questions` (0 = first prompt, 1 = second). */
   readonly questionIndex: 0 | 1;
-  /** Currently selected option index, or null if unanswered. */
+  /** Currently selected option index within `axis.questions[questionIndex].options`, or null if unanswered. */
   readonly selected: number | null;
   /** Called when the user picks an option. */
   readonly onSelect: (optionIndex: number) => void;
@@ -21,10 +21,10 @@ export interface MoodQuestionProps {
 }
 
 /**
- * One survey question with four (or three) options rendered as large
- * tap targets. Each option exposes its number key (1-4) as a 22px
- * gold circle — keyboard activation is handled by the parent page so
- * one page-level listener serves the whole survey.
+ * One survey question with two-to-four options rendered as large tap
+ * targets. Each option exposes its number key (1-N) as a 22px gold
+ * circle — keyboard activation is handled by the parent page so one
+ * page-level listener serves the whole survey.
  */
 export function MoodQuestion({
   axis,
@@ -36,6 +36,7 @@ export function MoodQuestion({
   totalQuestions,
 }: MoodQuestionProps) {
   const { t } = useTranslation('discover');
+  const subQuestion = axis.questions[questionIndex];
   return (
     <section
       aria-label={t('aria.question', { current: questionNumber, total: totalQuestions })}
@@ -44,11 +45,9 @@ export function MoodQuestion({
       <p className="text-xs uppercase tracking-[0.18em] text-ds-accent">
         {t('eyebrow.question', { current: questionNumber, total: totalQuestions })}
       </p>
-      <h2 className="font-serif text-2xl text-ds-text-primary leading-tight">
-        {t(axis.questionI18nKeys[questionIndex])}
-      </h2>
+      <h2 className="font-serif text-2xl text-ds-text-primary leading-tight">{t(subQuestion.questionI18nKey)}</h2>
       <ul className="flex flex-col gap-2">
-        {axis.options.map((opt, idx) => {
+        {subQuestion.options.map((opt, idx) => {
           const isSelected = selected === idx;
           return (
             <li key={opt.key}>

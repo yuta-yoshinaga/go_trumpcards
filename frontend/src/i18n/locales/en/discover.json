@@ -35,8 +35,8 @@
   "axis": {
     "mood": {
       "label": "Mood",
-      "q1": "What kind of card-playing mood are you in?",
-      "q2": "If you were at a table, what's the vibe?"
+      "q1": "How is your energy right now?",
+      "q2": "What pace do you want?"
     },
     "skill": {
       "label": "Skill",
@@ -46,12 +46,12 @@
     "social": {
       "label": "Players",
       "q1": "Who do you want to play with?",
-      "q2": "More specifically, who's the opponent?"
+      "q2": "How heavy do you want the game to feel?"
     },
     "theme": {
       "label": "Vibe",
       "q1": "Which world do you want to be in?",
-      "q2": "What does the table smell like?"
+      "q2": "Showy or subdued presentation?"
     }
   },
   "option": {
@@ -65,18 +65,23 @@
       "beginner": "Beginner — cards now and then",
       "intermediate": "Intermediate — I know the classics",
       "advanced": "Advanced — I love deep strategy",
-      "learning_rules": "Learning new rules"
+      "learning_rules": "I want to learn new rules",
+      "prefer_familiar": "Stick to familiar rules"
     },
     "social": {
       "solo": "Solo",
       "vs_cpu": "Against the CPU",
-      "with_friends": "With friends"
+      "with_friends": "With friends",
+      "casual_play": "Light, low-stakes play",
+      "serious_play": "Serious, focused match"
     },
     "theme": {
       "casino": "Glamorous casino",
       "european": "Old-world Europe",
       "western": "American west / saloon",
-      "japanese_household": "Japanese household"
+      "japanese_household": "Japanese household",
+      "showy": "Showy, flashy presentation",
+      "subdued": "Subdued, refined feel"
     }
   },
   "blurb": {

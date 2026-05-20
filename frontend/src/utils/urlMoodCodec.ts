@@ -1,8 +1,11 @@
 /**
  * URL query encoding / decoding for the `/discover/result` route.
  *
- * Wire format example: `m=2,3&s=0,1&so=1,1&t=0,0` — two comma-separated
- * integers per axis. A skipped answer is the literal string `-`.
+ * Wire format example: `m=1,0&s=2,1&so=1,0&t=0,1` — two comma-separated
+ * integers per axis. Each integer is the option index **within that
+ * sub-question's options array** (not the master option list), so the
+ * legal range differs across Q1 and Q2 for the same axis. A skipped
+ * answer is the literal string `-`.
  *
  * The codec is the contract between `/discover` (writer) and
  * `/discover/result` (reader). Changing key names, ordering, or the
@@ -12,8 +15,8 @@
 import { AXES, AXIS_KEYS, type AxisKey } from '../constants/discoverAxes';
 
 /**
- * The user's survey answers as either an answer index (0..option_count-1)
- * or `null` (skipped).
+ * The user's survey answers as either an option index inside the
+ * sub-question's options array, or `null` (skipped).
  */
 export interface UserMoodInput {
   readonly mood: readonly [number | null, number | null];
@@ -54,8 +57,8 @@ export function parseMood(query: string): UserMoodInput | null {
  * Parse a `URLSearchParams` (e.g. from `useSearchParams()`) into a UserMoodInput.
  *
  * Returns `null` if any axis is missing, has the wrong arity, or contains
- * values outside the legal range. Callers should `navigate('/discover',
- * { replace: true })` when this returns null.
+ * values outside the legal per-question range. Callers should
+ * `navigate('/discover', { replace: true })` when this returns null.
  */
 export function parseSearchParams(params: URLSearchParams): UserMoodInput | null {
   const out: Partial<Record<AxisKey, [number | null, number | null]>> = {};
@@ -65,14 +68,16 @@ export function parseSearchParams(params: URLSearchParams): UserMoodInput | null
     const tokens = raw.split(',');
     if (tokens.length !== 2) return null;
     const parsed: (number | null)[] = [];
-    for (const token of tokens) {
+    for (let qIdx = 0; qIdx < tokens.length; qIdx++) {
+      const token = tokens[qIdx];
       if (token === SKIP_TOKEN) {
         parsed.push(null);
         continue;
       }
       if (!/^\d+$/.test(token)) return null;
       const n = Number.parseInt(token, 10);
-      if (!Number.isInteger(n) || n < 0 || n >= AXES[axis].options.length) return null;
+      const optCount = AXES[axis].questions[qIdx as 0 | 1].options.length;
+      if (!Number.isInteger(n) || n < 0 || n >= optCount) return null;
       parsed.push(n);
     }
     out[axis] = parsed as [number | null, number | null];
