@@ -74,20 +74,35 @@ export function DiscoverPage() {
 
   const current = stepToAxisQuestion(state.step);
 
+  // Drop a second answer fired before the next question's render — without
+  // this guard, two clicks within the same React batch share the *same*
+  // captured `current` and `dispatch({type:'advance'})` runs twice, silently
+  // skipping the next sub-dimension. The lock releases whenever `state.step`
+  // actually moves, so legitimate keyboard runs (one key per question)
+  // are unaffected. See #1898.
+  const lockedStepRef = useRef<number | null>(null);
+  if (lockedStepRef.current !== null && lockedStepRef.current !== state.step) {
+    lockedStepRef.current = null;
+  }
+
   const handleSelect = useCallback(
     (optIdx: number) => {
       if (!current) return;
+      if (lockedStepRef.current === state.step) return;
+      lockedStepRef.current = state.step;
       setAnswer(current.axis, current.qIdx, optIdx);
       dispatch({ type: 'advance' });
     },
-    [current, setAnswer],
+    [current, state.step, setAnswer],
   );
 
   const handleSkip = useCallback(() => {
     if (!current) return;
+    if (lockedStepRef.current === state.step) return;
+    lockedStepRef.current = state.step;
     setAnswer(current.axis, current.qIdx, null);
     dispatch({ type: 'advance' });
-  }, [current, setAnswer]);
+  }, [current, state.step, setAnswer]);
 
   const handleBack = useCallback(() => dispatch({ type: 'back' }), []);
 
