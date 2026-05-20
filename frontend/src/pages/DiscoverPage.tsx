@@ -125,6 +125,29 @@ export function DiscoverPage() {
     resetDraft();
   }, [state.step, axes, navigate, resetDraft]);
 
+  // Browser back integration (#1899). Each forward advance pushes a history
+  // entry so a subsequent browser-back lands within /discover instead of
+  // exiting the survey. The popstate listener catches that back press and
+  // dispatches the in-survey back action, so the native button walks
+  // through questions exactly like the on-page "← previous question" link.
+  // We only push on `forward` transitions — a back-walk would otherwise
+  // re-stack entries we just consumed.
+  useEffect(() => {
+    if (state.step === 0) return;
+    if (state.direction !== 'forward') return;
+    window.history.pushState({ discoverStep: state.step }, '');
+  }, [state.step, state.direction]);
+
+  useEffect(() => {
+    function onPopState() {
+      if (state.step > 0) {
+        dispatch({ type: 'back' });
+      }
+    }
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, [state.step]);
+
   // Keyboard shortcuts: digit keys pick options; Backspace goes back.
   useEffect(() => {
     function onKey(ev: KeyboardEvent) {

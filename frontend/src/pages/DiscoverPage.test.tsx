@@ -131,6 +131,23 @@ describe('DiscoverPage', () => {
     expect(screen.getByLabelText(/Question 2 of 8/i)).toBeInTheDocument();
   });
 
+  it('browser back walks to the previous question instead of exiting Discover (#1899)', async () => {
+    // Regression: ISSUE-004 — the browser back button used to pop /discover
+    // off the history stack entirely, dumping the user back on the previous
+    // page. With the popstate listener and per-advance pushState, back walks
+    // questions inside the survey. Found by /qa on 2026-05-20.
+    setup();
+    await act(async () => {
+      fireEvent.keyDown(window, { key: '1' });
+    });
+    expect(screen.getByLabelText(/Question 2 of 8/i)).toBeInTheDocument();
+    // Simulate the browser firing popstate as if the user pressed Back.
+    await act(async () => {
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+    expect(screen.getByLabelText(/Question 1 of 8/i)).toBeInTheDocument();
+  });
+
   it('Backspace returns to the previous question', () => {
     setup();
     act(() => {
