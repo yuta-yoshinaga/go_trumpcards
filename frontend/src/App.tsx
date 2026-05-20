@@ -9,6 +9,7 @@ import { SkeletonBar } from './components/skeleton/SkeletonBar';
 import { gameRoutes } from './constants/gameRoutes';
 import { DiscoverPage } from './pages/DiscoverPage';
 import { DiscoverResultPage } from './pages/DiscoverResultPage';
+import { NotFoundPage } from './pages/NotFoundPage';
 import { resolvePageComponent } from './utils/resolvePageComponent';
 
 // Vite resolves this glob at build time; each match becomes its own chunk
@@ -74,9 +75,9 @@ export default function App() {
                 <Route path="/discover/result" element={<DiscoverResultPage />} />
                 {/* BlackJack lives at "/", but external links may use "/blackjack". */}
                 <Route path="/blackjack" element={<Navigate to="/" replace />} />
-                {/* Unknown hash routes (e.g., "#/notagame") fall back to home
-                    instead of rendering an empty <main>. */}
-                <Route path="*" element={<Navigate to="/" replace />} />
+                {/* Unknown hash routes (e.g., "#/notagame") render the 404
+                    surface instead of silently redirecting home — #1902. */}
+                <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </main>
           </div>

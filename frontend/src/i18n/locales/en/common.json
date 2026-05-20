@@ -538,5 +538,13 @@
     "unknownCommandWithSuggestion": "Unknown command: {{cmd}}. Did you mean: {{suggestion}}",
     "emptyInput": "Please enter a command. Type 'help' for help.",
     "helpCommon": "Common commands: r/reset (reset), help/? (help), clear (clear log)"
+  },
+  "notFound": {
+    "eyebrow": "PAGE NOT FOUND",
+    "title": "We couldn't find that page",
+    "body": "The link may be stale or the URL might be off. Pick a destination below.",
+    "requestedPath": "Requested path",
+    "actionDiscover": "Find a game",
+    "actionHome": "Back to home"
   }
 }

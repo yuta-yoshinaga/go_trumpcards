@@ -538,5 +538,13 @@
     "unknownCommandWithSuggestion": "不明なコマンド: {{cmd}}。もしかして: {{suggestion}}",
     "emptyInput": "コマンドを入力してください。'help' でヘルプを表示",
     "helpCommon": "共通コマンド: r/reset (リセット), help/? (ヘルプ), clear (ログクリア)"
+  },
+  "notFound": {
+    "eyebrow": "PAGE NOT FOUND",
+    "title": "お探しのページは見つかりません",
+    "body": "リンクが古いか、URL に誤りがあるかもしれません。下から行き先を選んでください。",
+    "requestedPath": "要求されたパス",
+    "actionDiscover": "おすすめを探す",
+    "actionHome": "ホームに戻る"
   }
 }
