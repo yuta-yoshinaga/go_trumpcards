@@ -137,11 +137,31 @@ describe('DiscoverPage', () => {
     // page. With the popstate listener and per-advance pushState, back walks
     // questions inside the survey. Found by /qa on 2026-05-20.
     setup();
+    // Two advances cover both the forward-push effect AND the subsequent
+    // backward branch (step > 0 with direction === 'backward' skips the push).
     await act(async () => {
       fireEvent.keyDown(window, { key: '1' });
     });
+    await act(async () => {
+      fireEvent.keyDown(window, { key: '1' });
+    });
+    expect(screen.getByLabelText(/Question 3 of 8/i)).toBeInTheDocument();
+    // popstate walks back to Q2.
+    await act(async () => {
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
     expect(screen.getByLabelText(/Question 2 of 8/i)).toBeInTheDocument();
-    // Simulate the browser firing popstate as if the user pressed Back.
+    // popstate again walks back to Q1.
+    await act(async () => {
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+    expect(screen.getByLabelText(/Question 1 of 8/i)).toBeInTheDocument();
+  });
+
+  it('popstate at the first question is a no-op (no exit, no negative step) (#1899)', async () => {
+    setup();
+    // Mount at Q1 — fire popstate without advancing. Handler must not
+    // dispatch since state.step === 0, and the user stays on Q1.
     await act(async () => {
       window.dispatchEvent(new PopStateEvent('popstate'));
     });
