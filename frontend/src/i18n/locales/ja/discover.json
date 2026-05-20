@@ -35,8 +35,8 @@
   "axis": {
     "mood": {
       "label": "気分",
-      "q1": "今、どんな気分でカードを触りたい？",
-      "q2": "もしテーブルに着くなら、どの空気感？"
+      "q1": "今のテンションは？",
+      "q2": "プレイのペースは？"
     },
     "skill": {
       "label": "スキル",
@@ -46,12 +46,12 @@
     "social": {
       "label": "人数感",
       "q1": "誰と遊びたい？",
-      "q2": "もう少し具体的に、対戦相手は？"
+      "q2": "ゲームの重さはどっち？"
     },
     "theme": {
       "label": "雰囲気",
       "q1": "どんな世界観に浸りたい？",
-      "q2": "テーブルの匂いを選ぶなら？"
+      "q2": "演出はどっち寄り？"
     }
   },
   "option": {
@@ -65,18 +65,23 @@
       "beginner": "初心者・カードはたまに",
       "intermediate": "中級・定番は遊べる",
       "advanced": "上級・深い戦略が楽しい",
-      "learning_rules": "新しいルールを学びたい"
+      "learning_rules": "新しいルールを学びたい",
+      "prefer_familiar": "馴染んだルールでいい"
     },
     "social": {
       "solo": "ひとりで",
       "vs_cpu": "CPU相手に",
-      "with_friends": "友達と"
+      "with_friends": "友達と",
+      "casual_play": "気軽に流す感じ",
+      "serious_play": "真剣勝負したい"
     },
     "theme": {
       "casino": "華やかなカジノ",
       "european": "古き良きヨーロッパ",
       "western": "アメリカ西部・酒場",
-      "japanese_household": "日本の家庭・縁側"
+      "japanese_household": "日本の家庭・縁側",
+      "showy": "派手な演出",
+      "subdued": "渋い雰囲気"
     }
   },
   "blurb": {

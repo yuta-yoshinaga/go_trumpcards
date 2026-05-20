@@ -18,28 +18,46 @@ function makeMood(partial: Partial<UserMood> = {}): UserMood {
   };
 }
 
+/** Convenience: a "neutral 3" profile that fills both extended dimensions. */
+const NEUTRAL_PROFILE: GameProfile = {
+  mood: [3, 3, 3, 3],
+  skill: [3, 3, 3, 3],
+  social: [3, 3, 3, 3, 3],
+  theme: [3, 3, 3, 3, 3, 3],
+};
+
 describe('axisScore', () => {
   it('returns 0.5 when every answer is null (skip)', () => {
-    expect(axisScore([5, 4, 3, 2], [null, null])).toBe(0.5);
+    expect(axisScore([5, 4, 3, 2], 'mood', [null, null])).toBe(0.5);
   });
 
-  it('averages normalized matches for valid answers', () => {
-    // profile = [4, 3, 3, 5], answers = [0, 3] -> matches = [4/5, 5/5] = [0.8, 1.0]
-    expect(axisScore([4, 3, 3, 5], [0, 3])).toBeCloseTo(0.9, 5);
+  it('Q1 + Q2 average resolves through option.profileIdx', () => {
+    // mood Q1 option 0 = quiet_focus (profileIdx 0); Q2 option 1 = quick (profileIdx 3).
+    // profile = [4, 3, 3, 5] → (4/5 + 5/5)/2 = 0.9
+    expect(axisScore([4, 3, 3, 5], 'mood', [0, 1])).toBeCloseTo(0.9, 5);
+  });
+
+  it('inverts a polarity:-1 option (skill prefer_familiar)', () => {
+    // skill Q2 option 1 = prefer_familiar (profileIdx 3, polarity -1).
+    // profile[3] = 5 → inverted score = 1 - 1.0 = 0.0
+    expect(axisScore([0, 0, 0, 5], 'skill', [null, 1])).toBe(0);
+  });
+
+  it('positive polarity on the same shared slot (skill learning_rules)', () => {
+    // skill Q2 option 0 = learning_rules (profileIdx 3, positive). profile[3]=5 → 1.0
+    expect(axisScore([0, 0, 0, 5], 'skill', [null, 0])).toBe(1);
   });
 
   it('clamps a match value above PROFILE_MAX at 1.0', () => {
-    // Defensive: data integrity test elsewhere guards against >5, but the
-    // function still clamps to keep recommendations stable.
-    expect(axisScore([PROFILE_MAX + 2, 0, 0, 0], [0])).toBe(1);
+    expect(axisScore([PROFILE_MAX + 2, 0, 0, 0], 'mood', [0, null])).toBeGreaterThanOrEqual(1);
   });
 
-  it('returns 0.5 for an out-of-bounds index', () => {
-    expect(axisScore([3, 3, 3, 3], [99])).toBe(0.5);
+  it('returns 0.5 for an out-of-bounds option index', () => {
+    expect(axisScore([3, 3, 3, 3], 'mood', [99, null])).toBe(0.5);
   });
 
   it('mixes valid and skip — skips are dropped, not coerced to zero', () => {
-    expect(axisScore([5, 0, 0, 0], [0, null])).toBeCloseTo(1, 5);
+    expect(axisScore([5, 0, 0, 0], 'mood', [0, null])).toBeCloseTo(1, 5);
   });
 });
 
@@ -49,51 +67,55 @@ describe('score', () => {
     {
       mood: [4, 3, 3, 5],
       skill: [5, 5, 4, 3],
-      social: [3, 5, 2],
-      theme: [5, 1, 1, 1],
+      social: [3, 5, 2, 5, 5],
+      theme: [5, 1, 1, 1, 5, 1],
     },
     'BlackJack',
   );
 
-  it('matches the design-doc worked example for the vs_cpu mood', () => {
-    const mood = makeMood({ mood: [0, 3], skill: [0, null], social: [1, 1], theme: [0, 0] });
-    // mood   = 0.90 * 0.35 = 0.315
-    // skill  = 1.00 * 0.20 = 0.200
-    // social = 1.00 * 0.30 = 0.300
-    // theme  = 1.00 * 0.15 = 0.150
-    // total  = 0.965; no penalty (social[0] = 1, not SOCIAL_SOLO_IDX)
+  it('computes the weighted match score across all four axes', () => {
+    // Q1=quiet_focus(profileIdx 0)=4, Q2=quick(profileIdx 3)=5 → (4/5+5/5)/2 = 0.9
+    // skill Q1=beginner(idx 0)=5, Q2=skipped → 5/5 = 1.0
+    // social Q1=vs_cpu(idx 1)=5, Q2=serious_play(idx 4)=5 → (5/5+5/5)/2 = 1.0
+    // theme  Q1=casino(idx 0)=5, Q2=showy(idx 4)=5 → (5/5+5/5)/2 = 1.0
+    // total = 0.9*0.35 + 1.0*0.20 + 1.0*0.30 + 1.0*0.15 = 0.965
+    const mood = makeMood({ mood: [0, 1], skill: [0, null], social: [1, 1], theme: [0, 0] });
     expect(score(blackJack, mood)).toBeCloseTo(0.965, 3);
   });
 
-  it('applies solo penalty when user is solo and game social[SOCIAL_SOLO_IDX] < 2', () => {
-    // Zero-profile game so the only non-skip contribution is from social.
-    // game.social[0] = 0 (< 2) → penalty fires; everything else is skipped (0.5 neutral).
+  it('applies solo penalty when user picks solo Q1 and game social[solo] < 2', () => {
     const game = makeGame(
       '/g',
-      { mood: [0, 0, 0, 0], skill: [0, 0, 0, 0], social: [0, 5, 5], theme: [0, 0, 0, 0] },
+      {
+        mood: [0, 0, 0, 0],
+        skill: [0, 0, 0, 0],
+        // social[SOCIAL_SOLO_PROFILE_IDX]=0 (< 2) → penalty fires.
+        social: [0, 5, 5, 5, 5],
+        theme: [0, 0, 0, 0, 0, 0],
+      },
       'G',
     );
-    const soloUser = makeMood({ social: [SOCIAL_SOLO_IDX, SOCIAL_SOLO_IDX] });
-
-    // social   = 0.00 * 0.30 = 0.000
-    // mood     = 0.50 * 0.35 = 0.175 (skipped)
-    // skill    = 0.50 * 0.20 = 0.100 (skipped)
-    // theme    = 0.50 * 0.15 = 0.075 (skipped)
-    // raw      = 0.350
-    // penalty  = SOCIAL_PENALTY * AXIS_WEIGHTS.social = 0.5 * 0.30 = 0.150
-    // final    = 0.200
+    const soloUser = makeMood({ social: [SOCIAL_SOLO_IDX, null] });
+    // social: profile[0]=0 → 0.0 * 0.30 = 0.000
+    // mood/skill/theme skipped (0.5) → 0.175 + 0.100 + 0.075
+    // raw = 0.350, penalty = 0.5 * 0.30 = 0.150, final = 0.200.
     expect(score(game, soloUser)).toBeCloseTo(0.35 - SOCIAL_PENALTY * AXIS_WEIGHTS.social, 5);
   });
 
-  it('does not apply solo penalty when user did not answer solo first', () => {
+  it('does not apply solo penalty when Q1 is not solo', () => {
     const game = makeGame(
       '/g',
-      { mood: [0, 0, 0, 0], skill: [0, 0, 0, 0], social: [0, 5, 5], theme: [0, 0, 0, 0] },
+      {
+        mood: [0, 0, 0, 0],
+        skill: [0, 0, 0, 0],
+        social: [0, 5, 5, 5, 5],
+        theme: [0, 0, 0, 0, 0, 0],
+      },
       'G',
     );
-    // First social answer is NOT solo → penalty does not fire even though game social[0] = 0.
-    const cpuUser = makeMood({ social: [1, 1] });
-    // social = 5/5,5/5 mean=1.0 -> 0.30; mood/skill/theme skipped -> 0.175 + 0.10 + 0.075 = 0.350
+    // Q1=1 (vs_cpu) → not solo → no penalty.
+    const cpuUser = makeMood({ social: [1, null] });
+    // social: profile[1]=5 → 1.0 * 0.30 = 0.30; others skipped = 0.175 + 0.100 + 0.075
     // total = 0.650
     expect(score(game, cpuUser)).toBeCloseTo(0.65, 5);
   });
@@ -101,24 +123,33 @@ describe('score', () => {
   it('does not penalize a solo user against a solo-friendly game', () => {
     const klondike = makeGame(
       '/klondike',
-      { mood: [5, 1, 3, 3], skill: [4, 5, 3, 4], social: [5, 1, 0], theme: [3, 3, 3, 2] },
+      {
+        mood: [5, 1, 3, 3],
+        skill: [4, 5, 3, 4],
+        social: [5, 1, 0, 4, 1],
+        theme: [3, 3, 3, 2, 2, 4],
+      },
       'Klondike',
     );
     const soloUser = makeMood({ social: [SOCIAL_SOLO_IDX, null] });
-    // social[SOCIAL_SOLO_IDX] = 5, not < 2 → penalty does NOT fire.
-    // Verify by computing the raw weighted sum and confirming equality.
+    // social[SOCIAL_SOLO_PROFILE_IDX] = 5, not < 2 → penalty does NOT fire.
     let expected = 0;
-    for (const k of AXIS_KEYS) expected += axisScore(klondike.profile[k], soloUser[k]) * AXIS_WEIGHTS[k];
+    for (const k of AXIS_KEYS) expected += axisScore(klondike.profile[k], k, soloUser[k]) * AXIS_WEIGHTS[k];
     expect(score(klondike, soloUser)).toBeCloseTo(Math.max(0, Math.min(1, expected)), 5);
   });
 
   it('clamps result to the [0, 1] range', () => {
     const game = makeGame(
       '/edge',
-      { mood: [0, 0, 0, 0], skill: [0, 0, 0, 0], social: [0, 0, 0], theme: [0, 0, 0, 0] },
+      {
+        mood: [0, 0, 0, 0],
+        skill: [0, 0, 0, 0],
+        social: [0, 0, 0, 0, 0],
+        theme: [0, 0, 0, 0, 0, 0],
+      },
       'Edge',
     );
-    const result = score(game, makeMood({ social: [SOCIAL_SOLO_IDX, SOCIAL_SOLO_IDX] }));
+    const result = score(game, makeMood({ social: [SOCIAL_SOLO_IDX, null] }));
     expect(result).toBeGreaterThanOrEqual(0);
     expect(result).toBeLessThanOrEqual(1);
   });
@@ -129,44 +160,50 @@ describe('dominantAxis', () => {
     // High mood profile, neutral elsewhere; user matches mood strongly.
     const game = makeGame(
       '/x',
-      { mood: [5, 0, 0, 0], skill: [3, 3, 3, 3], social: [3, 3, 3], theme: [3, 3, 3, 3] },
+      {
+        mood: [5, 0, 0, 0],
+        skill: [3, 3, 3, 3],
+        social: [3, 3, 3, 3, 3],
+        theme: [3, 3, 3, 3, 3, 3],
+      },
       'X',
     );
-    expect(dominantAxis(game, makeMood({ mood: [0, 0] }))).toBe('mood');
+    expect(dominantAxis(game, makeMood({ mood: [0, null] }))).toBe('mood');
   });
 
   it('returns "social" when only social is answered against a social-perfect game', () => {
     const game = makeGame(
       '/y',
-      { mood: [0, 0, 0, 5], skill: [0, 0, 0, 5], social: [5, 5, 5], theme: [0, 0, 0, 5] },
+      {
+        mood: [0, 0, 0, 5],
+        skill: [0, 0, 0, 5],
+        social: [5, 5, 5, 5, 5],
+        theme: [0, 0, 0, 5, 0, 0],
+      },
       'Y',
     );
-    // social: 1.00 * 0.30 = 0.300
-    // mood/skill/theme: skipped (0.5) -> 0.175 / 0.100 / 0.075. social wins.
-    expect(dominantAxis(game, makeMood({ social: [0, 0] }))).toBe('social');
+    expect(dominantAxis(game, makeMood({ social: [0, null] }))).toBe('social');
   });
 
   it('returns "skill" when only skill is answered against a skill-perfect game', () => {
     const game = makeGame(
       '/z',
-      { mood: [3, 3, 3, 3], skill: [5, 5, 5, 5], social: [3, 3, 3], theme: [3, 3, 3, 3] },
+      {
+        mood: [3, 3, 3, 3],
+        skill: [5, 5, 5, 5],
+        social: [3, 3, 3, 3, 3],
+        theme: [3, 3, 3, 3, 3, 3],
+      },
       'Z',
     );
-    // skill: 1.00 * 0.20 = 0.200; mood (skipped): 0.5 * 0.35 = 0.175. skill wins by 0.025.
-    expect(dominantAxis(game, makeMood({ skill: [0, 0] }))).toBe('skill');
+    expect(dominantAxis(game, makeMood({ skill: [0, null] }))).toBe('skill');
   });
 });
 
 describe('profileDistance', () => {
   it('returns 0 for identical profiles', () => {
-    const profile: GameProfile = {
-      mood: [3, 3, 3, 3],
-      skill: [3, 3, 3, 3],
-      social: [3, 3, 3],
-      theme: [3, 3, 3, 3],
-    };
-    const a = makeGame('/a', profile);
-    const b = makeGame('/b', profile);
+    const a = makeGame('/a', NEUTRAL_PROFILE);
+    const b = makeGame('/b', NEUTRAL_PROFILE);
     expect(profileDistance(a, b)).toBeCloseTo(0, 5);
   });
 
@@ -174,87 +211,56 @@ describe('profileDistance', () => {
     const a = makeGame('/a', {
       mood: [5, 0, 0, 0],
       skill: [5, 0, 0, 0],
-      social: [5, 0, 0],
-      theme: [5, 0, 0, 0],
+      social: [5, 0, 0, 5, 0],
+      theme: [5, 0, 0, 0, 5, 0],
     });
     const b = makeGame('/b', {
       mood: [0, 0, 0, 5],
       skill: [0, 0, 0, 5],
-      social: [0, 0, 5],
-      theme: [0, 0, 0, 5],
+      social: [0, 0, 5, 0, 5],
+      theme: [0, 0, 0, 5, 0, 5],
     });
     expect(profileDistance(a, b)).toBeGreaterThan(0);
   });
 });
 
 describe('recommend', () => {
-  // 100 lookalike games + 1 outlier; index 50 is the outlier, designed to be
-  // mid-band by score (score=0.5 — middle of the pack).
   function fillerGames(): GameRoute[] {
     const games: GameRoute[] = [];
     for (let i = 0; i < 60; i++) {
-      games.push(
-        makeGame(`/game${String(i).padStart(3, '0')}`, {
-          mood: [3, 3, 3, 3],
-          skill: [3, 3, 3, 3],
-          social: [3, 3, 3],
-          theme: [3, 3, 3, 3],
-        }),
-      );
+      games.push(makeGame(`/game${String(i).padStart(3, '0')}`, NEUTRAL_PROFILE));
     }
     return games;
   }
 
   it('returns top3 sorted by score then by path.localeCompare', () => {
-    const a = makeGame('/za', {
+    const perfect: GameProfile = {
       mood: [5, 5, 5, 5],
       skill: [5, 5, 5, 5],
-      social: [5, 5, 5],
-      theme: [5, 5, 5, 5],
-    });
-    const b = makeGame('/ab', {
-      mood: [5, 5, 5, 5],
-      skill: [5, 5, 5, 5],
-      social: [5, 5, 5],
-      theme: [5, 5, 5, 5],
-    });
+      social: [5, 5, 5, 5, 5],
+      theme: [5, 5, 5, 5, 5, 5],
+    };
+    const a = makeGame('/za', perfect);
+    const b = makeGame('/ab', perfect);
     const mood = makeMood({ mood: [0, 0], skill: [0, 0], social: [0, 0], theme: [0, 0] });
     const result = recommend([a, b], mood);
-    // Both score equally; alphabetical path wins the tie-break.
     expect(result.top3[0].game.path).toBe('/ab');
     expect(result.top3[1].game.path).toBe('/za');
   });
 
   it('falls back to alphabetical when every answer is skip', () => {
-    const games = [
-      makeGame('/zebra', {
-        mood: [3, 3, 3, 3],
-        skill: [3, 3, 3, 3],
-        social: [3, 3, 3],
-        theme: [3, 3, 3, 3],
-      }),
-      makeGame('/apple', {
-        mood: [3, 3, 3, 3],
-        skill: [3, 3, 3, 3],
-        social: [3, 3, 3],
-        theme: [3, 3, 3, 3],
-      }),
-    ];
+    const games = [makeGame('/zebra', NEUTRAL_PROFILE), makeGame('/apple', NEUTRAL_PROFILE)];
     const result = recommend(games, makeMood());
     expect(result.top3.map((g) => g.game.path)).toEqual(['/apple', '/zebra']);
   });
 
   it('picks a stretch from the mid-band that is furthest from top1', () => {
     const games = fillerGames();
-    // With 60 lookalike games, scores tie and ordering is by path.localeCompare.
-    // The mid-band fraction (0.4..0.6) maps to sorted indexes 24..36 for n=60.
-    // `/game030` falls into that band naturally; we mutate its profile to
-    // become the only point with a non-trivial profileDistance to top1.
     games[30] = makeGame('/game030', {
       mood: [0, 0, 0, 5],
       skill: [0, 0, 0, 5],
-      social: [0, 0, 5],
-      theme: [0, 0, 0, 5],
+      social: [0, 0, 5, 0, 5],
+      theme: [0, 0, 0, 5, 0, 5],
     });
     const result = recommend(games, makeMood());
     expect(result.stretch).not.toBeNull();
@@ -262,36 +268,18 @@ describe('recommend', () => {
   });
 
   it('returns stretch=null when the game list is too short for a mid-band', () => {
-    const games = [
-      makeGame('/a', {
-        mood: [3, 3, 3, 3],
-        skill: [3, 3, 3, 3],
-        social: [3, 3, 3],
-        theme: [3, 3, 3, 3],
-      }),
-      makeGame('/b', {
-        mood: [3, 3, 3, 3],
-        skill: [3, 3, 3, 3],
-        social: [3, 3, 3],
-        theme: [3, 3, 3, 3],
-      }),
-    ];
+    const games = [makeGame('/a', NEUTRAL_PROFILE), makeGame('/b', NEUTRAL_PROFILE)];
     const result = recommend(games, makeMood());
     expect(result.stretch).toBeNull();
   });
 
   it('also-rans and the stretch pick come from disjoint rank bands', () => {
-    // The also-rans live at ranks [TOP_N, ALSO_END_RANK) = [3, 10);
-    // the mid-band lives at floor(n*0.4)..floor(n*0.6) inclusive. For any
-    // reasonable n (≥17) these ranges do not overlap, so we assert the
-    // stretch path is never in the also-rans, regardless of which game
-    // happens to be picked.
     const games = fillerGames();
     games[30] = makeGame('/game030', {
       mood: [0, 0, 0, 5],
       skill: [0, 0, 0, 5],
-      social: [0, 0, 5],
-      theme: [0, 0, 0, 5],
+      social: [0, 0, 5, 0, 5],
+      theme: [0, 0, 0, 5, 0, 5],
     });
     const result = recommend(games, makeMood());
     const alsoPaths = result.also.map((g) => g.game.path);

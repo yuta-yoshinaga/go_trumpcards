@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AXIS_KEYS, AXIS_OPTION_COUNT, PROFILE_MAX } from './discoverAxes';
+import { AXES, AXIS_KEYS, PROFILE_MAX } from './discoverAxes';
 import { gameCategories, gameRoutes } from './gameRoutes';
 
 describe('gameRoutes', () => {
@@ -47,10 +47,10 @@ describe('gameRoutes profile (concierge SSoT)', () => {
     }
   });
 
-  it('each axis vector length matches AXIS_OPTION_COUNT', () => {
+  it('each axis vector length matches AXES[axis].profileLength', () => {
     for (const route of gameRoutes) {
       for (const axis of AXIS_KEYS) {
-        expect(route.profile[axis].length).toBe(AXIS_OPTION_COUNT[axis]);
+        expect(route.profile[axis].length).toBe(AXES[axis].profileLength);
       }
     }
   });

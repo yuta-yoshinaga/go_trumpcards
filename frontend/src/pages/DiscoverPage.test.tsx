@@ -52,11 +52,13 @@ describe('DiscoverPage', () => {
 
   it('renders translated question and option text, not raw i18n keys', () => {
     setup();
-    const q1 = i18n.t('discover:' + AXES.mood.questionI18nKeys[0]);
-    const opt1 = i18n.t('discover:' + AXES.mood.options[0].i18nKey);
+    const q1Key = AXES.mood.questions[0].questionI18nKey;
+    const opt1Key = AXES.mood.questions[0].options[0].i18nKey;
+    const q1 = i18n.t('discover:' + q1Key);
+    const opt1 = i18n.t('discover:' + opt1Key);
     // Sanity: the bundle resolves both keys to real Japanese strings.
-    expect(q1).not.toBe('discover:' + AXES.mood.questionI18nKeys[0]);
-    expect(opt1).not.toBe('discover:' + AXES.mood.options[0].i18nKey);
+    expect(q1).not.toBe('discover:' + q1Key);
+    expect(opt1).not.toBe('discover:' + opt1Key);
     expect(screen.getByRole('heading', { level: 2, name: q1 })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: new RegExp(opt1) })).toBeInTheDocument();
   });
@@ -78,7 +80,7 @@ describe('DiscoverPage', () => {
 
   it('skip button advances without recording an answer', () => {
     setup();
-    // Buttons rendered: 4 mood options + skip; click the last one (skip).
+    // Buttons rendered: mood Q1 options + skip; click the last one (skip).
     const buttons = screen.getAllByRole('button');
     const skipBtn = buttons[buttons.length - 1];
     fireEvent.click(skipBtn);

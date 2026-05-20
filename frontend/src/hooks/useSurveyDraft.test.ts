@@ -23,16 +23,18 @@ describe('useSurveyDraft', () => {
   });
 
   it('restores a stored draft on mount', () => {
+    // Each value is now a per-sub-question option index, not a master-list index:
+    // mood Q1 ∈ [0,1], Q2 ∈ [0,1] ; skill Q1 ∈ [0..2], Q2 ∈ [0,1] ; etc.
     localStorage.setItem(
       DISCOVER_DRAFT_KEY,
       JSON.stringify({
         v: DRAFT_SCHEMA_VERSION,
-        axes: { mood: [2, null], skill: [null, null], social: [1, 1], theme: [0, 0] },
+        axes: { mood: [1, null], skill: [null, null], social: [1, 0], theme: [0, 0] },
       }),
     );
     const { result } = renderHook(() => useSurveyDraft());
-    expect(result.current.axes.mood).toEqual([2, null]);
-    expect(result.current.axes.social).toEqual([1, 1]);
+    expect(result.current.axes.mood).toEqual([1, null]);
+    expect(result.current.axes.social).toEqual([1, 0]);
   });
 
   it('drops a draft with a mismatched schema version', () => {
@@ -51,32 +53,33 @@ describe('useSurveyDraft', () => {
   });
 
   it('clamps out-of-range answer indices to null on read', () => {
+    // mood Q1 only has 2 options now, so 99 is dropped; Q2 also has 2 options, so 1 is valid.
     localStorage.setItem(
       DISCOVER_DRAFT_KEY,
       JSON.stringify({
         v: DRAFT_SCHEMA_VERSION,
-        axes: { mood: [99, 2], skill: [-1, 0], social: [0, 0], theme: [0, 0] },
+        axes: { mood: [99, 1], skill: [-1, 0], social: [0, 0], theme: [0, 0] },
       }),
     );
     const restored = readDraft();
-    expect(restored?.axes.mood).toEqual([null, 2]);
+    expect(restored?.axes.mood).toEqual([null, 1]);
     expect(restored?.axes.skill).toEqual([null, 0]);
   });
 
   it('setAnswer persists the change to localStorage', () => {
     const { result } = renderHook(() => useSurveyDraft());
-    act(() => result.current.setAnswer('mood', 0, 3));
-    expect(result.current.axes.mood).toEqual([3, null]);
+    act(() => result.current.setAnswer('mood', 0, 1));
+    expect(result.current.axes.mood).toEqual([1, null]);
     const stored = JSON.parse(localStorage.getItem(DISCOVER_DRAFT_KEY) ?? '{}');
-    expect(stored.axes.mood).toEqual([3, null]);
+    expect(stored.axes.mood).toEqual([1, null]);
     expect(stored.v).toBe(DRAFT_SCHEMA_VERSION);
   });
 
   it('reset wipes both in-memory state and localStorage', () => {
     const { result } = renderHook(() => useSurveyDraft());
     act(() => {
-      result.current.setAnswer('mood', 0, 3);
-      result.current.setAnswer('skill', 1, 2);
+      result.current.setAnswer('mood', 0, 1);
+      result.current.setAnswer('skill', 1, 1);
     });
     act(() => result.current.reset());
     expect(result.current.axes.mood).toEqual([null, null]);

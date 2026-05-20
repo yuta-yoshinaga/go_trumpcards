@@ -7,7 +7,7 @@ import { AXES } from '../../constants/discoverAxes';
 import { MoodQuestion } from './MoodQuestion';
 
 describe('MoodQuestion', () => {
-  it('renders all options for the mood axis', () => {
+  it('renders all options for the selected sub-question', () => {
     render(
       <MoodQuestion
         axis={AXES.mood}
@@ -19,7 +19,8 @@ describe('MoodQuestion', () => {
         totalQuestions={8}
       />,
     );
-    expect(screen.getAllByRole('button').length).toBeGreaterThanOrEqual(AXES.mood.options.length);
+    // Buttons include the per-option buttons + the skip button.
+    expect(screen.getAllByRole('button').length).toBeGreaterThanOrEqual(AXES.mood.questions[0].options.length);
   });
 
   it('marks the selected option with aria-pressed=true', () => {
@@ -27,7 +28,7 @@ describe('MoodQuestion', () => {
       <MoodQuestion
         axis={AXES.mood}
         questionIndex={0}
-        selected={2}
+        selected={1}
         onSelect={() => {}}
         onSkip={() => {}}
         questionNumber={1}
@@ -38,7 +39,7 @@ describe('MoodQuestion', () => {
     expect(pressed).toHaveLength(1);
   });
 
-  it('fires onSelect with the option index when clicked', () => {
+  it('fires onSelect with the sub-question option index when clicked', () => {
     const onSelect = vi.fn();
     render(
       <MoodQuestion
@@ -52,9 +53,25 @@ describe('MoodQuestion', () => {
       />,
     );
     const buttons = screen.getAllByRole('button');
-    // First button is option 0 (skip is rendered after options).
     fireEvent.click(buttons[0]);
     expect(onSelect).toHaveBeenCalledWith(0);
+  });
+
+  it('renders the Q2 sub-question independently of Q1', () => {
+    render(
+      <MoodQuestion
+        axis={AXES.skill}
+        questionIndex={1}
+        selected={null}
+        onSelect={() => {}}
+        onSkip={() => {}}
+        questionNumber={4}
+        totalQuestions={8}
+      />,
+    );
+    // Skill Q2 has 2 options (learning_rules, prefer_familiar); Q1 has 3 (beginner/intermediate/advanced).
+    expect(screen.getAllByRole('button').length).toBeGreaterThanOrEqual(AXES.skill.questions[1].options.length);
+    expect(screen.getAllByRole('button').length).toBeLessThan(AXES.skill.questions[0].options.length + 2);
   });
 
   it('fires onSkip when the skip button is clicked', () => {
@@ -70,7 +87,6 @@ describe('MoodQuestion', () => {
         totalQuestions={8}
       />,
     );
-    // Last button is the skip control.
     const buttons = screen.getAllByRole('button');
     fireEvent.click(buttons[buttons.length - 1]);
     expect(onSkip).toHaveBeenCalled();

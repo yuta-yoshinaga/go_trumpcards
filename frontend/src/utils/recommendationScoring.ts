@@ -9,12 +9,14 @@
  */
 
 import {
+  AXES,
   AXIS_KEYS,
   AXIS_WEIGHTS,
   type AxisKey,
   PROFILE_MAX,
   SOCIAL_PENALTY,
   SOCIAL_SOLO_IDX,
+  SOCIAL_SOLO_PROFILE_IDX,
 } from '../constants/discoverAxes';
 import type { GameRoute } from '../constants/gameRoutes';
 
@@ -47,22 +49,42 @@ export interface RecommendationResult {
   readonly also: readonly ScoredGame[];
 }
 
-/** Compute the 0..1 axis score for a profile vector against the user's answers. */
-export function axisScore(profileVec: readonly number[], answers: readonly AxisAnswer[]): number {
-  const valid = answers.filter((a): a is number => a !== null);
+/**
+ * Compute the 0..1 axis score for a game's profile vector against the
+ * user's answers for one axis. Each answer is resolved through the
+ * axis's sub-question option metadata: most options score against
+ * `profile[option.profileIdx] / MAX`, but options with `polarity: -1`
+ * invert that to `1 - profile[idx] / MAX` so a single slot can encode
+ * a binary preference (e.g. `learning_rules` vs `prefer_familiar`).
+ */
+export function axisScore(
+  profileVec: readonly number[],
+  axisKey: AxisKey,
+  answers: readonly [AxisAnswer, AxisAnswer],
+): number {
+  const axis = AXES[axisKey];
+  const valid: Array<{ qIdx: 0 | 1; optIdx: number }> = [];
+  for (const qIdx of [0, 1] as const) {
+    const optIdx = answers[qIdx];
+    if (optIdx !== null) valid.push({ qIdx, optIdx });
+  }
   if (valid.length === 0) return 0.5;
   let sum = 0;
-  for (const idx of valid) {
-    if (idx < 0 || idx >= profileVec.length) {
+  for (const { qIdx, optIdx } of valid) {
+    const opt = axis.questions[qIdx].options[optIdx];
+    if (!opt || opt.profileIdx < 0 || opt.profileIdx >= profileVec.length) {
       if (import.meta.env.DEV) {
         console.warn(
-          `[recommendationScoring] axisScore: idx ${idx} out of bounds for profile length ${profileVec.length}`,
+          `[recommendationScoring] axisScore: invalid option ${axisKey} q${qIdx} optIdx ${optIdx} (profile length ${profileVec.length})`,
         );
       }
       sum += 0.5;
       continue;
     }
-    sum += Math.min(1, profileVec[idx] / PROFILE_MAX);
+    // Clamp the raw value to [0, 1] before applying polarity — guards against
+    // profile data > PROFILE_MAX so a polarity:-1 answer cannot drop below 0.
+    const raw = Math.min(1, profileVec[opt.profileIdx] / PROFILE_MAX);
+    sum += opt.polarity === -1 ? 1 - raw : raw;
   }
   return sum / valid.length;
 }
@@ -71,12 +93,15 @@ export function axisScore(profileVec: readonly number[], answers: readonly AxisA
 export function score(game: GameRoute, mood: UserMood): number {
   let total = 0;
   for (const key of AXIS_KEYS) {
-    total += axisScore(game.profile[key], mood[key]) * AXIS_WEIGHTS[key];
+    total += axisScore(game.profile[key], key, mood[key]) * AXIS_WEIGHTS[key];
   }
   // Solo-leaning user against a game that does not support solo well.
-  // `mood.social[0]` is the first social answer; if the user picked solo there
-  // and the game's solo affinity is weak (< 2), apply a fixed penalty.
-  if (mood.social[0] === SOCIAL_SOLO_IDX && game.profile.social[SOCIAL_SOLO_IDX] < 2) {
+  // `mood.social[0]` is the Q1 answer; if the user picked solo there
+  // and the game's solo affinity (profile slot for solo) is weak (< 2),
+  // apply a fixed penalty. Q2 (casual_play / serious_play) intentionally
+  // does not affect the penalty — it's a presentation-style dimension,
+  // not a player-count signal.
+  if (mood.social[0] === SOCIAL_SOLO_IDX && game.profile.social[SOCIAL_SOLO_PROFILE_IDX] < 2) {
     total -= SOCIAL_PENALTY * AXIS_WEIGHTS.social;
   }
   return Math.max(0, Math.min(1, total));
@@ -87,7 +112,7 @@ export function dominantAxis(game: GameRoute, mood: UserMood): AxisKey {
   let bestKey: AxisKey = AXIS_KEYS[0];
   let bestContribution = -Infinity;
   for (const key of AXIS_KEYS) {
-    const contribution = axisScore(game.profile[key], mood[key]) * AXIS_WEIGHTS[key];
+    const contribution = axisScore(game.profile[key], key, mood[key]) * AXIS_WEIGHTS[key];
     if (contribution > bestContribution) {
       bestContribution = contribution;
       bestKey = key;
