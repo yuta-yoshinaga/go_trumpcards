@@ -3,9 +3,13 @@ package ui
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
+	"strconv"
 	"strings"
 	"time"
+
+	"golang.org/x/term"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -98,7 +102,7 @@ func (cui *DoubtCui) Exec() {
 
 // handleDoubtWindow ダウト待機ウィンドウを処理する
 // 人間がカードを出した場合: CPUダウターのみ即時処理
-// CPUがカードを出した場合: 10秒間人間のダウト入力を待ち、CPUダウターと合算して処理
+// CPUがカードを出した場合: 設定秒数だけ人間のダウト入力を待ち、CPUダウターと合算して処理
 func (cui *DoubtCui) handleDoubtWindow() {
 	lastAction := cui.game.GetLastAction()
 	if lastAction == nil {
@@ -123,17 +127,33 @@ func (cui *DoubtCui) handleDoubtWindow() {
 	var allDoubters []int
 
 	if humanCanDoubt {
-		timeout := time.Duration(cui.game.GetConfig().DoubtWindowSec) * time.Second
-		fmt.Println(i18n.Tf("doubt.doubtPrompt", "sec", fmt.Sprintf("%d", cui.game.GetConfig().DoubtWindowSec)))
-		select {
-		case input := <-cui.inputCh:
-			trimmed := strings.TrimSpace(input)
-			fields := strings.Fields(trimmed)
-			if len(fields) > 0 && (fields[0] == "d" || fields[0] == "doubt") {
-				allDoubters = append(allDoubters, humanIdx) // 人間がダウト
+		// Drop any keystrokes the user typed during the preceding CPU turn so
+		// the doubt window only sees input entered after the prompt appears.
+		cui.drainInput()
+		windowSec := cui.game.GetConfig().DoubtWindowSec
+		ticker := time.NewTicker(time.Second)
+		defer ticker.Stop()
+		ticks := make(chan struct{})
+		done := make(chan struct{})
+		defer close(done)
+		go func() {
+			defer close(ticks)
+			for {
+				select {
+				case <-ticker.C:
+					select {
+					case ticks <- struct{}{}:
+					case <-done:
+						return
+					}
+				case <-done:
+					return
+				}
 			}
-		case <-time.After(timeout):
-			fmt.Println(i18n.T("doubt.timeout"))
+		}()
+		tty := term.IsTerminal(int(os.Stdout.Fd()))
+		if runDoubtCountdown(os.Stdout, windowSec, cui.inputCh, ticks, tty) {
+			allDoubters = append(allDoubters, humanIdx) // 人間がダウト
 		}
 	}
 
@@ -149,5 +169,59 @@ func (cui *DoubtCui) handleDoubtWindow() {
 	} else {
 		res := cui.dc.Exec("s")
 		fmt.Println(res)
+	}
+}
+
+// runDoubtCountdown renders the human doubt-window prompt and waits for
+// either an input on inputCh or windowSec ticks. Returns true when the
+// caller typed "d"/"doubt" (first whitespace token) before the window
+// expired, false on any other input or on timeout.
+//
+// In TTY mode the helper emits BEL (\a) once on entry so a user looking
+// away from the terminal hears the alert, then rewrites the seconds
+// indicator in place via \r + ANSI erase-to-end on every tick. In
+// non-TTY mode (CI logs, piped output) it falls back to a single
+// prompt line so the transcript stays readable. See issue #1862.
+//
+// The tick channel is injected so tests can drive the countdown
+// deterministically; production code wires it to a 1s time.Ticker.
+func runDoubtCountdown(w io.Writer, windowSec int, inputCh <-chan string, ticks <-chan struct{}, tty bool) bool {
+	promptFor := func(sec int) string {
+		return i18n.Tf("doubt.doubtPrompt", "sec", strconv.Itoa(sec))
+	}
+
+	if tty {
+		// BEL + first prompt without a trailing newline so the next tick can
+		// overwrite the same row.
+		_, _ = fmt.Fprint(w, "\a"+promptFor(windowSec))
+	} else {
+		_, _ = fmt.Fprintln(w, promptFor(windowSec))
+	}
+
+	remaining := windowSec
+	for {
+		select {
+		case input := <-inputCh:
+			// In TTY mode the terminal's Enter echo already advanced the cursor
+			// to a fresh row, so the helper does not emit its own newline; in
+			// non-TTY mode the prompt was printed with a trailing newline up
+			// front. strings.Fields already trims whitespace on both sides.
+			fields := strings.Fields(input)
+			return len(fields) > 0 && (fields[0] == "d" || fields[0] == "doubt")
+		case <-ticks:
+			remaining--
+			if remaining <= 0 {
+				if tty {
+					_, _ = fmt.Fprintln(w)
+				}
+				_, _ = fmt.Fprintln(w, i18n.T("doubt.timeout"))
+				return false
+			}
+			if tty {
+				// \r repositions to column 0; \x1b[K clears anything left over
+				// from a longer previous render (e.g., 10→9 loses a digit).
+				_, _ = fmt.Fprint(w, "\r"+promptFor(remaining)+"\x1b[K")
+			}
+		}
 	}
 }
