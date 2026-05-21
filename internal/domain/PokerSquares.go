@@ -286,6 +286,59 @@ type pokerSquaresJSON struct {
 	PlacedCount int                                               `json:"pc"`
 	Phase       PokerSquaresPhase                                 `json:"ps"`
 	ActionLog   []*ActionLogEntry                                 `json:"al"`
+	History     []*pokerSquaresSnapshot                           `json:"hi,omitempty"`
+}
+
+// pokerSquaresSnapshotJSON is the wire format for a single undo snapshot.
+// pokerSquaresSnapshot uses unexported fields, so we project to/from this
+// shape with explicit Marshal/Unmarshal methods. Field names reuse
+// pokerSquaresJSON's short keys where possible to keep the KV payload
+// compact (#1654/#1860).
+type pokerSquaresSnapshotJSON struct {
+	Board       [PokerSquaresGridSize][PokerSquaresGridSize]*Card `json:"bd"`
+	CurrentCard *Card                                             `json:"cc"`
+	PlacedCount int                                               `json:"pc"`
+	Phase       PokerSquaresPhase                                 `json:"ps"`
+	DeckDrawCnt int                                               `json:"dd"`
+	ActionLogLn int                                               `json:"ll"`
+}
+
+// MarshalJSON implements json.Marshaler for pokerSquaresSnapshot, projecting
+// the unexported fields onto an exported wire shape so that
+// PokerSquares.MarshalJSON can persist the undo history (#1860).
+func (s *pokerSquaresSnapshot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(pokerSquaresSnapshotJSON{
+		Board:       s.board,
+		CurrentCard: s.currentCard,
+		PlacedCount: s.placedCount,
+		Phase:       s.phase,
+		DeckDrawCnt: s.deckDrawCnt,
+		ActionLogLn: s.actionLogLn,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler for pokerSquaresSnapshot.
+// Negative DeckDrawCnt would panic during Undo() (deck[i] with i<0);
+// negative ActionLogLn would panic via actionLog[:ll]. Both are rejected
+// at the trust boundary so malformed KV payloads cannot crash the worker.
+func (s *pokerSquaresSnapshot) UnmarshalJSON(data []byte) error {
+	var j pokerSquaresSnapshotJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if j.DeckDrawCnt < 0 {
+		return fmt.Errorf("pokersquares: snapshot deckDrawCnt must be non-negative")
+	}
+	if j.ActionLogLn < 0 {
+		return fmt.Errorf("pokersquares: snapshot actionLogLn must be non-negative")
+	}
+	s.board = j.Board
+	s.currentCard = j.CurrentCard
+	s.placedCount = j.PlacedCount
+	s.phase = j.Phase
+	s.deckDrawCnt = j.DeckDrawCnt
+	s.actionLogLn = j.ActionLogLn
+	return nil
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -297,6 +350,7 @@ func (p *PokerSquares) MarshalJSON() ([]byte, error) {
 		PlacedCount: p.placedCount,
 		Phase:       p.phase,
 		ActionLog:   p.actionLog,
+		History:     p.history,
 	})
 }
 
@@ -309,7 +363,7 @@ func (p *PokerSquares) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if len(j.ActionLog) > pokerSquaresMaxSliceLen {
+	if len(j.ActionLog) > pokerSquaresMaxSliceLen || len(j.History) > pokerSquaresMaxSliceLen {
 		return fmt.Errorf("pokersquares: input array exceeds maximum allowed size")
 	}
 	p.trumpCards = j.TrumpCards
@@ -324,6 +378,9 @@ func (p *PokerSquares) UnmarshalJSON(data []byte) error {
 	if p.actionLog == nil {
 		p.actionLog = make([]*ActionLogEntry, 0)
 	}
-	p.history = nil
+	p.history = j.History
+	if p.history == nil {
+		p.history = make([]*pokerSquaresSnapshot, 0)
+	}
 	return nil
 }

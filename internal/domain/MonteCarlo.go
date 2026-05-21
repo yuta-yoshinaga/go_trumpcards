@@ -402,6 +402,62 @@ type monteCarloJSON struct {
 	DealCount    int                                           `json:"dc"`
 	IsStalemate  bool                                          `json:"sl"`
 	ActionLog    []*ActionLogEntry                             `json:"al"`
+	History      []*monteCarloSnapshot                         `json:"hi,omitempty"`
+}
+
+// monteCarloSnapshotJSON is the wire format for a single undo snapshot.
+// monteCarloSnapshot uses unexported fields, so we project to/from this
+// shape with explicit Marshal/Unmarshal methods. Field names reuse
+// monteCarloJSON's short keys where possible to keep the KV payload
+// compact (#1654/#1860).
+type monteCarloSnapshotJSON struct {
+	Board        [MonteCarloGridSize][MonteCarloGridSize]*Card `json:"bd"`
+	RemovedCount int                                           `json:"rc"`
+	DealCount    int                                           `json:"dc"`
+	Phase        MonteCarloPhase                               `json:"ps"`
+	IsStalemate  bool                                          `json:"sl"`
+	DeckDrawCnt  int                                           `json:"dd"`
+	ActionLogLn  int                                           `json:"ll"`
+}
+
+// MarshalJSON implements json.Marshaler for monteCarloSnapshot, projecting
+// the unexported fields onto an exported wire shape so that
+// MonteCarlo.MarshalJSON can persist the undo history (#1860).
+func (s *monteCarloSnapshot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(monteCarloSnapshotJSON{
+		Board:        s.board,
+		RemovedCount: s.removedCount,
+		DealCount:    s.dealCount,
+		Phase:        s.phase,
+		IsStalemate:  s.isStalemate,
+		DeckDrawCnt:  s.deckDrawCnt,
+		ActionLogLn:  s.actionLogLn,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler for monteCarloSnapshot.
+// Negative DeckDrawCnt would panic during Undo() (deck[i] with i<0);
+// negative ActionLogLn would panic via actionLog[:ll]. Both are rejected
+// at the trust boundary so malformed KV payloads cannot crash the worker.
+func (s *monteCarloSnapshot) UnmarshalJSON(data []byte) error {
+	var j monteCarloSnapshotJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if j.DeckDrawCnt < 0 {
+		return fmt.Errorf("montecarlo: snapshot deckDrawCnt must be non-negative")
+	}
+	if j.ActionLogLn < 0 {
+		return fmt.Errorf("montecarlo: snapshot actionLogLn must be non-negative")
+	}
+	s.board = j.Board
+	s.removedCount = j.RemovedCount
+	s.dealCount = j.DealCount
+	s.phase = j.Phase
+	s.isStalemate = j.IsStalemate
+	s.deckDrawCnt = j.DeckDrawCnt
+	s.actionLogLn = j.ActionLogLn
+	return nil
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -414,6 +470,7 @@ func (m *MonteCarlo) MarshalJSON() ([]byte, error) {
 		DealCount:    m.dealCount,
 		IsStalemate:  m.isStalemate,
 		ActionLog:    m.actionLog,
+		History:      m.history,
 	})
 }
 
@@ -426,7 +483,7 @@ func (m *MonteCarlo) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if len(j.ActionLog) > monteCarloMaxSliceLen {
+	if len(j.ActionLog) > monteCarloMaxSliceLen || len(j.History) > monteCarloMaxSliceLen {
 		return fmt.Errorf("montecarlo: input array exceeds maximum allowed size")
 	}
 	m.trumpCards = j.TrumpCards
@@ -442,6 +499,9 @@ func (m *MonteCarlo) UnmarshalJSON(data []byte) error {
 	if m.actionLog == nil {
 		m.actionLog = make([]*ActionLogEntry, 0)
 	}
-	m.history = nil
+	m.history = j.History
+	if m.history == nil {
+		m.history = make([]*monteCarloSnapshot, 0)
+	}
 	return nil
 }

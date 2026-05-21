@@ -51,7 +51,7 @@ wrangler.toml の `[env.staging]` セクションで staging/prod の KV を分�
 
 - **セッション永続化**: Workers 版でも Docker 版と同等のゲーム体験が実現
 - **KV 無料枠制約**: 書き込み 1,000回/日のためデモ用途に限定（1アクション=1書き込み）
-- ~~**Undo 非永続**: ソリティア系ゲームの Undo 履歴（snapshot）は KV に保存しない。復元後は Undo 不可~~ — #1654 で順次解消中。Klondike から開始（snapshot を `klondikeSnapshotJSON` の Marshal/Unmarshal で永続化）。他のソリティア系ゲームは同パターンで追従予定
+- ~~**Undo 非永続**: ソリティア系ゲームの Undo 履歴（snapshot）は KV に保存しない。復元後は Undo 不可~~ — #1654 / #1860 で解消済み。Klondike を皮切りに、FreeCell・Spider・TriPeaks・Pyramid・Forty Thieves・Canfield・Yukon・Russian Solitaire・Scorpion・Accordion・Baker's Dozen・Calculation・Golf・Gaps・EightOff・Cruel・Crescent・Seahaven Towers・Spiderette・Beleaguered Castle・Monte Carlo・Poker Squares の全 23 ソリティア／グリッド系ゲームで snapshot を `*SnapshotJSON` の Marshal/Unmarshal で永続化
 - **Undo 永続（snapshot 配列方式）**: 当初検討時にイベントソーシングを「シャッフルの非決定性」を理由に却下したが、Klondike の典型 1 ハンドで snapshot 配列が ~150KB（KV 値上限 25 MB に対し十分小さい）に収まる実測を踏まえ、**snapshot 配列をそのまま KV に保存する** 方式を #1654 で採用。各 snapshot は元の `klondikeSnapshot` と同形（タブロー / ストック / ウェイスト / ファンデーション / 進行フラグ）で、`json.Marshaler` 実装を追加して unexported フィールドを露出
 - **CPU 記憶永続**: CPU プレイヤーの `memoryManager` (Old Maid / Go Fish / Memory / Doubt) は KV に永続化され、復元後も Hard 難易度の戦略が維持される (#1655 で対応)。データ量が小さいため KV 1MB 制限への影響は無視できる
 - ~~**CPU 記憶非永続**: CPU プレイヤーの `memoryManager` は復元時にリセット。CPU は再度学習する~~ — #1655 で解消済み
