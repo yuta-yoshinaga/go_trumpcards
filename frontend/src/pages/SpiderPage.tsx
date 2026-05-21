@@ -110,10 +110,17 @@ function SpiderPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('spider', state);
+  // Live longest-column length: shrinks the per-card vertical step on mobile so the tallest
+  // tableau column fits within 375×667 without scrolling (#1861). Spider columns grow long
+  // (initial deal up to 6, +5 stock deals = ~11 minimum, plus accumulated sequences).
+  const maxColCards = useMemo(
+    () => state?.tableau.reduce((m, col) => (col.length > m ? col.length : m), 0) ?? 0,
+    [state?.tableau],
+  );
   // Responsive 10-column dimensions matching this page's `px-4` scroll container and `gap-0.5`
   // tableau so a 375 px viewport doesn't crush each card below 28 px (#1648). Stock uses the
   // same dimensions so cards don't visibly pop when the deal animation moves them to the tableau.
-  const tableau = useResponsiveTableau(10, { padX: 32, gapPx: 2 });
+  const tableau = useResponsiveTableau(10, { padX: 32, gapPx: 2, maxColCards });
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('spider');
   const cliConfig: CliGameConfig<SpiderResponse, Parameters<typeof spiderApi.exec>> = useMemo(
