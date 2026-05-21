@@ -117,7 +117,14 @@ function FortyThievesPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('fortythieves', state);
-  const ft = useResponsiveTableau(10);
+  // Live longest-column length: shrinks the per-card vertical step on mobile so the tallest
+  // tableau column fits within 375×667 without scrolling (#1861). Forty Thieves columns start
+  // at 4 cards but accumulate quickly as descending same-suit sequences are built.
+  const maxColCards = useMemo(
+    () => state?.tableau.reduce((m, col) => (col.length > m ? col.length : m), 0) ?? 0,
+    [state?.tableau],
+  );
+  const ft = useResponsiveTableau(10, { maxColCards });
 
   const isPlayingForKbd = state?.phase === FortyThievesPhase.PLAYING;
 
