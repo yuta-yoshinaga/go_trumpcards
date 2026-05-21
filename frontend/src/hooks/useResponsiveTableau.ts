@@ -95,7 +95,7 @@ export function useResponsiveTableau(
     const ch = Math.round(cw * 1.5);
     const naturalCo = Math.round(cw * MOBILE_VERTICAL_OVERLAP_RATIO);
     let co = naturalCo;
-    if (maxColCards && maxColCards > 1) {
+    if (maxColCards !== undefined && maxColCards > 1) {
       const availableHeight = windowHeight - reservedHeightPx;
       const fittingCo = Math.floor((availableHeight - ch) / (maxColCards - 1));
       co = Math.max(MIN_VERTICAL_OVERLAP, Math.min(naturalCo, fittingCo));

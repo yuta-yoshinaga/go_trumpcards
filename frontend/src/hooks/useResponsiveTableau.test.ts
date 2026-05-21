@@ -122,6 +122,14 @@ describe('useResponsiveTableau', () => {
       expect(tallestCol).toBeLessThanOrEqual(667 - 300);
     });
 
+    it('does not trigger compression when maxColCards is 1 (single-card column)', () => {
+      setWidth(375);
+      setHeight(667);
+      const natural = renderHook(() => useResponsiveTableau(10)).result.current;
+      const single = renderHook(() => useResponsiveTableau(10, { maxColCards: 1 })).result.current;
+      expect(single.co).toBe(natural.co);
+    });
+
     it('never compresses below the minimum overlap so cards always have a tap strip', () => {
       setWidth(375);
       setHeight(300); // pathologically short viewport

@@ -124,6 +124,8 @@ function FortyThievesPageContent() {
     () => state?.tableau.reduce((m, col) => (col.length > m ? col.length : m), 0) ?? 0,
     [state?.tableau],
   );
+  // Forty Thieves uses `px-2 sm:px-4 lg:px-8` (padX=16 on mobile) and `gap-1 sm:gap-2`
+  // (gapPx=4 on mobile), which matches the hook's defaults — no overrides needed.
   const ft = useResponsiveTableau(10, { maxColCards });
 
   const isPlayingForKbd = state?.phase === FortyThievesPhase.PLAYING;
