@@ -318,19 +318,20 @@ func (s *pokerSquaresSnapshot) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON implements json.Unmarshaler for pokerSquaresSnapshot.
-// Negative DeckDrawCnt would panic during Undo() (deck[i] with i<0);
-// negative ActionLogLn would panic via actionLog[:ll]. Both are rejected
-// at the trust boundary so malformed KV payloads cannot crash the worker.
+// DeckDrawCnt must be in [0, CardCnt]; ActionLogLn must be in
+// [0, pokerSquaresMaxSliceLen]. Out-of-range values are rejected at the trust
+// boundary so malformed KV payloads cannot crash the worker via index/slice
+// panic inside Undo().
 func (s *pokerSquaresSnapshot) UnmarshalJSON(data []byte) error {
 	var j pokerSquaresSnapshotJSON
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if j.DeckDrawCnt < 0 {
-		return fmt.Errorf("pokersquares: snapshot deckDrawCnt must be non-negative")
+	if j.DeckDrawCnt < 0 || j.DeckDrawCnt > CardCnt {
+		return fmt.Errorf("pokersquares: snapshot deckDrawCnt out of range")
 	}
-	if j.ActionLogLn < 0 {
-		return fmt.Errorf("pokersquares: snapshot actionLogLn must be non-negative")
+	if j.ActionLogLn < 0 || j.ActionLogLn > pokerSquaresMaxSliceLen {
+		return fmt.Errorf("pokersquares: snapshot actionLogLn out of range")
 	}
 	s.board = j.Board
 	s.currentCard = j.CurrentCard

@@ -125,3 +125,39 @@ func TestPokerSquares_SnapshotNegativeActionLogLnRejected(t *testing.T) {
 	err = json.Unmarshal(data, &restored)
 	require.Error(t, err, "negative actionLogLn must be rejected")
 }
+
+// TestPokerSquares_SnapshotExcessiveDeckDrawCntRejected rejects snapshots with
+// DeckDrawCnt > CardCnt, which would cause an out-of-bounds panic in the deck
+// slice inside Undo().
+func TestPokerSquares_SnapshotExcessiveDeckDrawCntRejected(t *testing.T) {
+	t.Parallel()
+
+	payload := map[string]any{
+		"tc": nil,
+		"hi": []any{map[string]any{"dd": CardCnt + 1}},
+	}
+	data, err := json.Marshal(payload)
+	require.NoError(t, err)
+
+	var restored PokerSquares
+	err = json.Unmarshal(data, &restored)
+	require.Error(t, err, "excessive deckDrawCnt must be rejected")
+}
+
+// TestPokerSquares_SnapshotExcessiveActionLogLnRejected rejects snapshots with
+// ActionLogLn > pokerSquaresMaxSliceLen, consistent with the maxSliceLen
+// defence used across the codebase.
+func TestPokerSquares_SnapshotExcessiveActionLogLnRejected(t *testing.T) {
+	t.Parallel()
+
+	payload := map[string]any{
+		"tc": nil,
+		"hi": []any{map[string]any{"ll": pokerSquaresMaxSliceLen + 1}},
+	}
+	data, err := json.Marshal(payload)
+	require.NoError(t, err)
+
+	var restored PokerSquares
+	err = json.Unmarshal(data, &restored)
+	require.Error(t, err, "excessive actionLogLn must be rejected")
+}

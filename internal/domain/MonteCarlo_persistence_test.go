@@ -154,3 +154,39 @@ func TestMonteCarlo_SnapshotNegativeActionLogLnRejected(t *testing.T) {
 	err = json.Unmarshal(data, &restored)
 	require.Error(t, err, "negative actionLogLn must be rejected")
 }
+
+// TestMonteCarlo_SnapshotExcessiveDeckDrawCntRejected rejects snapshots with
+// DeckDrawCnt > MonteCarloDeckSize, which would cause an out-of-bounds panic
+// in the deck slice inside Undo().
+func TestMonteCarlo_SnapshotExcessiveDeckDrawCntRejected(t *testing.T) {
+	t.Parallel()
+
+	payload := map[string]any{
+		"tc": nil,
+		"hi": []any{map[string]any{"dd": MonteCarloDeckSize + 1}},
+	}
+	data, err := json.Marshal(payload)
+	require.NoError(t, err)
+
+	var restored MonteCarlo
+	err = json.Unmarshal(data, &restored)
+	require.Error(t, err, "excessive deckDrawCnt must be rejected")
+}
+
+// TestMonteCarlo_SnapshotExcessiveActionLogLnRejected rejects snapshots with
+// ActionLogLn > monteCarloMaxSliceLen, consistent with the maxSliceLen defence
+// used across the codebase.
+func TestMonteCarlo_SnapshotExcessiveActionLogLnRejected(t *testing.T) {
+	t.Parallel()
+
+	payload := map[string]any{
+		"tc": nil,
+		"hi": []any{map[string]any{"ll": monteCarloMaxSliceLen + 1}},
+	}
+	data, err := json.Marshal(payload)
+	require.NoError(t, err)
+
+	var restored MonteCarlo
+	err = json.Unmarshal(data, &restored)
+	require.Error(t, err, "excessive actionLogLn must be rejected")
+}
