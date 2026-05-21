@@ -512,7 +512,6 @@ function OhHellPageContent() {
                         className={btnPrimary}
                         onClick={() => handleBid(i)}
                         disabled={loading || isRestricted}
-                        aria-disabled={isRestricted || undefined}
                         title={isRestricted ? t('restrictedBidTooltip') : undefined}
                         aria-label={t('bid', { n: i })}
                       >

@@ -187,7 +187,6 @@ describe('OhHellPage', () => {
         'title',
         '\u30c7\u30a3\u30fc\u30e9\u30fc\u5236\u7d04\u306e\u305f\u3081\u9078\u629e\u3067\u304d\u307e\u305b\u3093',
       );
-      expect(restricted).toHaveAttribute('aria-disabled', 'true');
       // Other choices remain enabled
       expect(screen.getByRole('button', { name: '\u30d3\u30c3\u30c9 0' })).not.toBeDisabled();
       expect(screen.getByRole('button', { name: '\u30d3\u30c3\u30c9 5' })).not.toBeDisabled();
