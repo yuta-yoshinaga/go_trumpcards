@@ -127,10 +127,15 @@ func (cui *DoubtCui) handleDoubtWindow() {
 	var allDoubters []int
 
 	if humanCanDoubt {
+		// Drop any keystrokes the user typed during the preceding CPU turn so
+		// the doubt window only sees input entered after the prompt appears.
+		cui.drainInput()
 		windowSec := cui.game.GetConfig().DoubtWindowSec
 		ticker := time.NewTicker(time.Second)
+		defer ticker.Stop()
 		ticks := make(chan struct{})
 		done := make(chan struct{})
+		defer close(done)
 		go func() {
 			defer close(ticks)
 			for {
@@ -150,8 +155,6 @@ func (cui *DoubtCui) handleDoubtWindow() {
 		if runDoubtCountdown(os.Stdout, windowSec, cui.inputCh, ticks, tty) {
 			allDoubters = append(allDoubters, humanIdx) // 人間がダウト
 		}
-		close(done)
-		ticker.Stop()
 	}
 
 	allDoubters = append(allDoubters, cpuDoubters...)
@@ -199,19 +202,13 @@ func runDoubtCountdown(w io.Writer, windowSec int, inputCh <-chan string, ticks 
 	for {
 		select {
 		case input := <-inputCh:
-			if tty {
-				_, _ = fmt.Fprintln(w) // close the in-place line cleanly
-			}
-			fields := strings.Fields(strings.TrimSpace(input))
+			// In TTY mode the terminal's Enter echo already advanced the cursor
+			// to a fresh row, so the helper does not emit its own newline; in
+			// non-TTY mode the prompt was printed with a trailing newline up
+			// front. strings.Fields already trims whitespace on both sides.
+			fields := strings.Fields(input)
 			return len(fields) > 0 && (fields[0] == "d" || fields[0] == "doubt")
-		case _, ok := <-ticks:
-			if !ok {
-				if tty {
-					_, _ = fmt.Fprintln(w)
-				}
-				_, _ = fmt.Fprintln(w, i18n.T("doubt.timeout"))
-				return false
-			}
+		case <-ticks:
 			remaining--
 			if remaining <= 0 {
 				if tty {

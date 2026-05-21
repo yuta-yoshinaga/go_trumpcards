@@ -12,8 +12,10 @@ import (
 
 // TestRunDoubtCountdown_TTYReturnsTrueOnDoubtInput exercises the happy path:
 // the user types "d" while the countdown is running, so the helper must
-// return true without consuming any timer ticks and must close the in-place
-// prompt line with a newline so the next CUI line starts cleanly.
+// return true without consuming any timer ticks. In TTY mode the helper
+// does NOT emit its own closing newline — the terminal's Enter echo
+// already advanced the cursor, so a self-emitted "\n" would leave a
+// blank gap before the next CUI line.
 func TestRunDoubtCountdown_TTYReturnsTrueOnDoubtInput(t *testing.T) {
 	var buf bytes.Buffer
 	in := make(chan string, 1)
@@ -26,7 +28,7 @@ func TestRunDoubtCountdown_TTYReturnsTrueOnDoubtInput(t *testing.T) {
 	out := buf.String()
 	assert.Contains(t, out, "\a", "TTY mode must emit the bell on entry")
 	assert.Contains(t, out, "[10s]", "initial prompt must show the full window")
-	assert.True(t, strings.HasSuffix(out, "\n"), "must terminate the in-place line with a newline so subsequent output is not glued to the prompt")
+	assert.False(t, strings.HasSuffix(out, "\n"), "TTY input path must not emit its own newline; the terminal's Enter echo provides it")
 }
 
 // TestRunDoubtCountdown_TTYRedrawsEachTickAndTimesOut walks the countdown
@@ -100,4 +102,18 @@ func TestRunDoubtCountdown_BlankInputDoesNotDoubt(t *testing.T) {
 	got := runDoubtCountdown(&buf, 5, in, ticks, false)
 
 	assert.False(t, got)
+}
+
+// TestRunDoubtCountdown_WhitespacePaddedInputAccepted pins the contract
+// that strings.Fields handles leading/trailing whitespace on its own,
+// so the dropped explicit TrimSpace cannot regress doubt parsing.
+func TestRunDoubtCountdown_WhitespacePaddedInputAccepted(t *testing.T) {
+	var buf bytes.Buffer
+	in := make(chan string, 1)
+	ticks := make(chan struct{})
+
+	in <- "   d   "
+	got := runDoubtCountdown(&buf, 5, in, ticks, false)
+
+	assert.True(t, got)
 }
