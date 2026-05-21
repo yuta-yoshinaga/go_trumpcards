@@ -164,12 +164,33 @@ describe('OhHellPage', () => {
     });
   });
 
-  it('renders bid phase with bid button and input', async () => {
+  it('renders bid phase as a button group of bid choices', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<OhHellPage />);
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: '\u30d3\u30c3\u30c9' })).toBeInTheDocument();
-      expect(screen.getByLabelText('bid-input')).toBeInTheDocument();
+      // handSize = 5 \u2192 buttons 0..5
+      for (let i = 0; i <= 5; i++) {
+        expect(screen.getByRole('button', { name: `\u30d3\u30c3\u30c9 ${i}` })).toBeInTheDocument();
+      }
+      // No legacy number input
+      expect(screen.queryByLabelText('bid-input')).not.toBeInTheDocument();
+    });
+  });
+
+  it('disables the restricted bid button and exposes the tooltip', async () => {
+    mockExec.mockResolvedValue(bidPhaseDealerState);
+    renderWithProviders(<OhHellPage />);
+    await waitFor(() => {
+      const restricted = screen.getByRole('button', { name: '\u30d3\u30c3\u30c9 3' });
+      expect(restricted).toBeDisabled();
+      expect(restricted).toHaveAttribute(
+        'title',
+        '\u30c7\u30a3\u30fc\u30e9\u30fc\u5236\u7d04\u306e\u305f\u3081\u9078\u629e\u3067\u304d\u307e\u305b\u3093',
+      );
+      expect(restricted).toHaveAttribute('aria-disabled', 'true');
+      // Other choices remain enabled
+      expect(screen.getByRole('button', { name: '\u30d3\u30c3\u30c9 0' })).not.toBeDisabled();
+      expect(screen.getByRole('button', { name: '\u30d3\u30c3\u30c9 5' })).not.toBeDisabled();
     });
   });
 
@@ -200,17 +221,14 @@ describe('OhHellPage', () => {
     expect(screen.queryByText(/\u30d3\u30c3\u30c9\u5ba3\u8a00/)).not.toBeInTheDocument();
   });
 
-  it('calls bid command when bid button is clicked', async () => {
+  it('calls bid command with the clicked button value', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<OhHellPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '\u30d3\u30c3\u30c9' })).toBeInTheDocument());
-
-    const input = screen.getByLabelText('bid-input');
-    fireEvent.change(input, { target: { value: '3' } });
+    await waitFor(() => expect(screen.getByRole('button', { name: '\u30d3\u30c3\u30c9 3' })).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(playPhaseState);
-    fireEvent.click(screen.getByRole('button', { name: '\u30d3\u30c3\u30c9' }));
+    fireEvent.click(screen.getByRole('button', { name: '\u30d3\u30c3\u30c9 3' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', 3));
   });
