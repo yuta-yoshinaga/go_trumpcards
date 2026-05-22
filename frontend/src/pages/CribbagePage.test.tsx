@@ -693,4 +693,45 @@ describe('CribbagePage', () => {
     renderWithProviders(<CribbagePage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
+
+  it('disables a peg card whose value would push the count over 31', async () => {
+    const nearLimitState: CribbageResponse = { ...peggingPhaseState, pegCount: 28 };
+    mockExec.mockResolvedValue(nearLimitState);
+    renderWithProviders(<CribbagePage />);
+    // Hand has [A, J(11→10), 5, 8]. With pegCount=28, only A and 8 would exceed? A=1 ⇒ 29 OK; J→10 ⇒ 38 too big; 5 ⇒ 33 too big; 8 ⇒ 36 too big.
+    await waitFor(() => expect(screen.getByTestId('cb-card-restricted-1')).toBeInTheDocument());
+    expect(screen.getByTestId('cb-card-restricted-1')).toBeDisabled();
+  });
+
+  it('highlights the Go button when the human has no playable card', async () => {
+    const allRestrictedState: CribbageResponse = {
+      ...peggingPhaseState,
+      pegCount: 30,
+      players: [
+        {
+          ...peggingPhaseState.players[0],
+          cardCount: 2,
+          cards: [
+            { design: 'SPADE', value: 5 },
+            { design: 'HEART', value: 7 },
+          ],
+        },
+        peggingPhaseState.players[1],
+      ],
+    };
+    mockExec.mockResolvedValue(allRestrictedState);
+    renderWithProviders(<CribbagePage />);
+    await waitFor(() => expect(screen.getByTestId('cb-go-button')).toBeInTheDocument());
+    expect(screen.getByTestId('cb-go-button').className).toMatch(/animate-pulse/);
+  });
+
+  it('shows the hover preview when hovering an eligible peg card', async () => {
+    mockExec.mockResolvedValue({ ...peggingPhaseState, pegCount: 4 });
+    renderWithProviders(<CribbagePage />);
+    await waitFor(() => expect(screen.getByLabelText('♥ J')).toBeInTheDocument());
+    fireEvent.pointerEnter(screen.getByLabelText('♥ J'));
+    const preview = await screen.findByTestId('cb-peg-hover-preview');
+    expect(preview.textContent).toContain('4');
+    expect(preview.textContent).toContain('14');
+  });
 });

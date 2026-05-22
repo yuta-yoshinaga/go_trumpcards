@@ -196,6 +196,7 @@ function CribbagePageContent() {
     }) &&
     !loading;
   const [autoGoNoticeVisible, setAutoGoNoticeVisible] = useState(false);
+  const [hoveredPegValue, setHoveredPegValue] = useState<number | null>(null);
   useEffect(() => {
     if (!shouldAutoGo) {
       setAutoGoNoticeVisible(false);
@@ -464,27 +465,49 @@ function CribbagePageContent() {
 
           <GameFooter className={`${gameTheme.cribbage.footer} px-4 py-2.5`}>
             {humanPlayer && (
-              <div className="flex flex-wrap gap-1 mb-2" data-tutorial="cb-player-hand">
-                {humanPlayer.cards.map((card, idx) => (
-                  <button
-                    type="button"
-                    key={`${card.design}-${card.value}-${idx}`}
-                    onClick={() => toggleCard(idx)}
-                    aria-label={cardAlt(card)}
-                    aria-pressed={selectedCardIndices.includes(idx)}
-                    className={`transition-transform ${focusRingCard}`}
-                    style={{
-                      background: 'none',
-                      padding: 0,
-                      borderRadius: 8,
-                      ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                      boxSizing: 'border-box',
-                    }}
-                  >
-                    <AnimatedCard card={card} width={cardWidth} />
-                  </button>
-                ))}
-              </div>
+              <>
+                {isPeggingPhase && hoveredPegValue !== null && (
+                  <div className="text-ds-info text-xs mb-1" data-testid="cb-peg-hover-preview">
+                    {t('pegPreview', { from: state.pegCount, to: state.pegCount + hoveredPegValue })}
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-1 mb-2" data-tutorial="cb-player-hand">
+                  {humanPlayer.cards.map((card, idx) => {
+                    const cardValue = card.value >= 10 ? 10 : card.value;
+                    const pegRestricted = isPeggingPhase && isHumanTurn && state.pegCount + cardValue > 31;
+                    const restrictedTitle = pegRestricted ? t('pegRestrictedTooltip') : undefined;
+                    return (
+                      <button
+                        type="button"
+                        key={`${card.design}-${card.value}-${idx}`}
+                        onClick={() => {
+                          if (!pegRestricted) toggleCard(idx);
+                        }}
+                        onPointerEnter={() => isPeggingPhase && !pegRestricted && setHoveredPegValue(cardValue)}
+                        onPointerLeave={() => setHoveredPegValue(null)}
+                        onFocus={() => isPeggingPhase && !pegRestricted && setHoveredPegValue(cardValue)}
+                        onBlur={() => setHoveredPegValue(null)}
+                        aria-label={pegRestricted ? `${cardAlt(card)} (${t('pegRestrictedAria')})` : cardAlt(card)}
+                        aria-pressed={selectedCardIndices.includes(idx)}
+                        aria-disabled={pegRestricted || undefined}
+                        disabled={pegRestricted}
+                        title={restrictedTitle}
+                        data-testid={pegRestricted ? `cb-card-restricted-${idx}` : undefined}
+                        className={`transition-transform ${focusRingCard} ${pegRestricted ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        style={{
+                          background: 'none',
+                          padding: 0,
+                          borderRadius: 8,
+                          ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        <AnimatedCard card={card} width={cardWidth} />
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
             )}
 
             <ErrorAlert message={error} onRetry={retry} />
@@ -525,7 +548,13 @@ function CribbagePageContent() {
                   >
                     {t('pegButton')}
                   </button>
-                  <button type="button" className={btnPrimary} onClick={handleGo} disabled={loading || !!canHumanPeg}>
+                  <button
+                    type="button"
+                    className={`${btnPrimary} ${!canHumanPeg && !loading ? 'animate-pulse ring-2 ring-ds-warning' : ''}`}
+                    onClick={handleGo}
+                    disabled={loading || !!canHumanPeg}
+                    data-testid="cb-go-button"
+                  >
                     {t('goButton')}
                   </button>
                 </>
