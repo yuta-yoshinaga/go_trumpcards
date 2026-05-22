@@ -139,16 +139,37 @@ function NertzPageContent() {
 
   const [collidedFoundationIdx, setCollidedFoundationIdx] = useState<number | null>(null);
   const [collisionTick, setCollisionTick] = useState(0);
+  // `isCollisionError` flags that the current `error` from useGameApi was
+  // attributed to a foundation collision (already conveyed via the shake
+  // animation). The global ErrorAlert is suppressed for the lifetime of that
+  // error so it does not pop in once the shake animation expires.
+  const [isCollisionError, setIsCollisionError] = useState(false);
   // Tracks the target foundation of the most recent player-initiated move so we
   // can attribute the next error from `useGameApi` to a specific cell.
   const pendingFoundationRef = useRef<number | null>(null);
   const prevErrorRef = useRef<string | null>(null);
 
+  // Successful moves call `setState(res)` on the useGameApi side; whenever a new
+  // state arrives we know the in-flight move resolved without error, so the
+  // stale foundation pointer must be cleared. Without this, a later unrelated
+  // error (a tick that fails) would attribute itself to the previous foundation
+  // and flash the wrong cell.
   useEffect(() => {
-    if (error && error !== prevErrorRef.current && pendingFoundationRef.current !== null) {
-      setCollidedFoundationIdx(pendingFoundationRef.current);
-      setCollisionTick((n) => n + 1);
-      pendingFoundationRef.current = null;
+    if (state) pendingFoundationRef.current = null;
+  }, [state]);
+
+  useEffect(() => {
+    if (error && error !== prevErrorRef.current) {
+      if (pendingFoundationRef.current !== null) {
+        setCollidedFoundationIdx(pendingFoundationRef.current);
+        setCollisionTick((n) => n + 1);
+        setIsCollisionError(true);
+        pendingFoundationRef.current = null;
+      } else {
+        setIsCollisionError(false);
+      }
+    } else if (!error) {
+      setIsCollisionError(false);
     }
     prevErrorRef.current = error;
   }, [error]);
@@ -283,7 +304,7 @@ function NertzPageContent() {
               messageParams={state.messageParams}
             />
 
-            {error && collidedFoundationIdx === null && <ErrorAlert message={error} onRetry={retry} />}
+            {error && !isCollisionError && <ErrorAlert message={error} onRetry={retry} />}
 
             <div data-tutorial="nertz-foundations" className="bg-black/30 text-ds-text-primary p-3 rounded">
               <div className="text-xs uppercase tracking-wide text-ds-text-muted mb-2">{t('labels.foundation')}</div>

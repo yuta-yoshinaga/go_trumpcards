@@ -254,4 +254,29 @@ describe('NertzPage', () => {
     // Foundation grid is still rendered; the page didn't unmount into ErrorAlert.
     expect(screen.getAllByTestId(/nertz-foundation-/)).toHaveLength(8);
   });
+
+  it('does not attribute a later unrelated error to a previously-resolved foundation move', async () => {
+    // Bug 1 from the gemini/Claude review: after a foundation move succeeds, the
+    // pending-foundation ref must be cleared so a later unrelated error (e.g. a
+    // failing tick) does not flash that foundation.
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => expect(screen.getByText(/♥7/)).toBeInTheDocument());
+    fireEvent.click(screen.getByText('♥7').closest('button') as HTMLElement);
+
+    // Successful foundation move → state updates → pending ref must be cleared.
+    fireEvent.click(screen.getByTestId('nertz-foundation-2'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', expect.objectContaining({})));
+
+    // Now a different action fails — must NOT light up foundation 2.
+    mockExec.mockRejectedValueOnce(new Error('tick boom'));
+    fireEvent.click(screen.getByText('♥7').closest('button') as HTMLElement); // re-select
+    fireEvent.click(screen.getByTestId('nertz-foundation-3')); // dispatch to a different cell
+    // Only foundation 3 (the new target) should be marked, not foundation 2.
+    await waitFor(() => expect(screen.getByTestId('nertz-foundation-3')).toHaveAttribute('data-collided', 'true'));
+    expect(screen.getByTestId('nertz-foundation-2')).not.toHaveAttribute('data-collided');
+  });
 });
