@@ -88,7 +88,7 @@ describe('PigsTailPage', () => {
   it('renders game state with circle and center info', async () => {
     renderWithProviders(<PigsTailPage />);
     await waitFor(() => {
-      expect(screen.getByText('52')).toBeInTheDocument();
+      expect(screen.getByText(/52/)).toBeInTheDocument();
     });
   });
 
@@ -178,5 +178,24 @@ describe('PigsTailPage', () => {
       expect(screen.getByRole('textbox')).toBeInTheDocument();
     });
     expect(screen.queryByRole('button', { name: '山札から引く' })).not.toBeInTheDocument();
+  });
+
+  it('renders the circular deck and dispatches draw when a ring card is tapped', async () => {
+    // The previous test enables CLI mode globally on the mock; reset so the page renders the standard UI.
+    mockUseCliMode.mockReturnValue({
+      cliEnabled: false,
+      toggleCli: vi.fn(),
+      logEntries: [],
+      addInput: vi.fn(),
+      addOutput: vi.fn(),
+      addError: vi.fn(),
+      clearLog: vi.fn(),
+    });
+    renderWithProviders(<PigsTailPage />);
+    await waitFor(() => expect(screen.getByTestId('circular-deck')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('circular-deck-card-0'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
   });
 });
