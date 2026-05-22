@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { calculationApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { CalculationResponse, Card, CardDesign } from '../types/card';
-import { CalculationPage } from './CalculationPage';
+import { CalculationPage, calculationNextRank } from './CalculationPage';
 
 vi.mock('../api/gameApi', () => ({
   calculationApi: { exec: vi.fn() },
@@ -136,7 +136,7 @@ describe('CalculationPage', () => {
     renderWithProviders(<CalculationPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
-    const f0 = screen.getByLabelText(/Foundation 0 \+1/);
+    const f0 = screen.getByLabelText(/ファンデーション 0 \+1/);
     fireEvent.click(f0);
     expect(mockExec).not.toHaveBeenCalled();
   });
@@ -147,7 +147,7 @@ describe('CalculationPage', () => {
     mockExec.mockClear();
 
     fireEvent.click(screen.getByTestId('calc-stock-button'));
-    fireEvent.click(screen.getByLabelText(/Foundation 2 \+3/));
+    fireEvent.click(screen.getByLabelText(/ファンデーション 2 \+3/));
 
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'stock' }, { zone: 'foundation', idx: 2 }),
@@ -175,7 +175,7 @@ describe('CalculationPage', () => {
     mockExec.mockClear();
 
     fireEvent.click(screen.getByTestId('calc-waste-button-1'));
-    fireEvent.click(screen.getByLabelText(/Foundation 1 \+2/));
+    fireEvent.click(screen.getByLabelText(/ファンデーション 1 \+2/));
 
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste', idx: 1 }, { zone: 'foundation', idx: 1 }),
@@ -276,5 +276,59 @@ describe('CalculationPage', () => {
     fireEvent.click(cliToggle);
 
     await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
+  });
+
+  it('renders the next-rank badge on each foundation reflecting the +1/+2/+3/+4 progression', async () => {
+    renderWithProviders(<CalculationPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // Foundations seeded with A, 2, 3, 4 ⇒ next required ranks 2, 4, 6, 8.
+    expect(screen.getByTestId('calc-foundation-next-0')).toHaveTextContent('次:2');
+    expect(screen.getByTestId('calc-foundation-next-1')).toHaveTextContent('次:4');
+    expect(screen.getByTestId('calc-foundation-next-2')).toHaveTextContent('次:6');
+    expect(screen.getByTestId('calc-foundation-next-3')).toHaveTextContent('次:8');
+  });
+
+  it('hides the next-rank badge once a foundation reaches K (13 cards)', async () => {
+    const fullPile = Array.from({ length: 13 }, (_, i) => card('SPADE', i + 1));
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundations: [fullPile, [card('HEART', 2)], [card('DIAMOND', 3)], [card('CLOVER', 4)]],
+    });
+    renderWithProviders(<CalculationPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByTestId('calc-foundation-next-0')).not.toBeInTheDocument();
+    expect(screen.getByTestId('calc-foundation-next-1')).toHaveTextContent('次:4');
+  });
+
+  it('shows the seed rank on an empty foundation (no top card yet)', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundations: [[], [card('HEART', 2)], [card('DIAMOND', 3)], [card('CLOVER', 4)]],
+    });
+    renderWithProviders(<CalculationPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // F0 with step +1 and no cards ⇒ next required rank is A (1).
+    expect(screen.getByTestId('calc-foundation-next-0')).toHaveTextContent('次:A');
+  });
+});
+
+describe('calculationNextRank', () => {
+  it('returns the step value when the pile is empty', () => {
+    expect(calculationNextRank(0, undefined, 0)).toBe(1);
+    expect(calculationNextRank(1, undefined, 0)).toBe(2);
+    expect(calculationNextRank(2, undefined, 0)).toBe(3);
+    expect(calculationNextRank(3, undefined, 0)).toBe(4);
+  });
+
+  it('wraps modulo 13 when the next value exceeds K', () => {
+    // F3 (+4): K(13) → 4 → 8 → 12 → 3 → 7 → ...
+    expect(calculationNextRank(3, 13, 4)).toBe(4);
+    expect(calculationNextRank(3, 12, 7)).toBe(3);
+    // F2 (+3): J(11) → A(1)
+    expect(calculationNextRank(2, 11, 4)).toBe(1);
+  });
+
+  it('returns null once the pile already contains 13 cards', () => {
+    expect(calculationNextRank(0, 13, 13)).toBeNull();
   });
 });
