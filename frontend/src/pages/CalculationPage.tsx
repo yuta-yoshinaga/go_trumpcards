@@ -362,8 +362,8 @@ function CalculationPageContent() {
                     disabled={!isPlaying || loading || source === null}
                     aria-label={
                       nextRankLabel
-                        ? `Foundation ${idx} ${STEP_LABELS[idx]} ${t('nextRankAria', { rank: nextRankLabel })}`
-                        : `Foundation ${idx} ${STEP_LABELS[idx]} ${t('foundationCompleteAria')}`
+                        ? `${t('foundation')} ${idx} ${STEP_LABELS[idx]} ${t('nextRankAria', { rank: nextRankLabel })}`
+                        : `${t('foundation')} ${idx} ${STEP_LABELS[idx]} ${t('foundationCompleteAria')}`
                     }
                   >
                     <span className="text-[11px] mb-0.5 text-ds-text-muted">

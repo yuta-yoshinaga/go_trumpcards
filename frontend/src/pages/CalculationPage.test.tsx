@@ -136,7 +136,7 @@ describe('CalculationPage', () => {
     renderWithProviders(<CalculationPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
-    const f0 = screen.getByLabelText(/Foundation 0 \+1/);
+    const f0 = screen.getByLabelText(/ファンデーション 0 \+1/);
     fireEvent.click(f0);
     expect(mockExec).not.toHaveBeenCalled();
   });
@@ -147,7 +147,7 @@ describe('CalculationPage', () => {
     mockExec.mockClear();
 
     fireEvent.click(screen.getByTestId('calc-stock-button'));
-    fireEvent.click(screen.getByLabelText(/Foundation 2 \+3/));
+    fireEvent.click(screen.getByLabelText(/ファンデーション 2 \+3/));
 
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'stock' }, { zone: 'foundation', idx: 2 }),
@@ -175,7 +175,7 @@ describe('CalculationPage', () => {
     mockExec.mockClear();
 
     fireEvent.click(screen.getByTestId('calc-waste-button-1'));
-    fireEvent.click(screen.getByLabelText(/Foundation 1 \+2/));
+    fireEvent.click(screen.getByLabelText(/ファンデーション 1 \+2/));
 
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste', idx: 1 }, { zone: 'foundation', idx: 1 }),
@@ -298,6 +298,17 @@ describe('CalculationPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.queryByTestId('calc-foundation-next-0')).not.toBeInTheDocument();
     expect(screen.getByTestId('calc-foundation-next-1')).toHaveTextContent('次:4');
+  });
+
+  it('shows the seed rank on an empty foundation (no top card yet)', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundations: [[], [card('HEART', 2)], [card('DIAMOND', 3)], [card('CLOVER', 4)]],
+    });
+    renderWithProviders(<CalculationPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // F0 with step +1 and no cards ⇒ next required rank is A (1).
+    expect(screen.getByTestId('calc-foundation-next-0')).toHaveTextContent('次:A');
   });
 });
 
