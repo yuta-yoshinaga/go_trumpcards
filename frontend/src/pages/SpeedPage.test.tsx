@@ -241,6 +241,13 @@ describe('SpeedPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('flip'));
   });
 
+  it('shows the auto-flip countdown when stuck with auto-flip enabled', async () => {
+    mockExec.mockResolvedValue(stuckState);
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByTestId('auto-flip-countdown')).toBeInTheDocument());
+    expect(screen.getByRole('timer', { name: '自動めくりカウントダウン' })).toBeInTheDocument();
+  });
+
   it('center piles have pulse animation when stuck', async () => {
     mockExec.mockResolvedValue(stuckState);
     renderWithProviders(<SpeedPage />);

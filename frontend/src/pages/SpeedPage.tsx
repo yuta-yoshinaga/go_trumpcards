@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { speedApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { AutoFlipCountdown } from '../components/AutoFlipCountdown';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -19,7 +20,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { CPU_DIFFICULTY_OPTIONS, useSpeedGame } from '../hooks/useSpeedGame';
+import { AUTO_FLIP_DELAY_MS, CPU_DIFFICULTY_OPTIONS, useSpeedGame } from '../hooks/useSpeedGame';
 import { useSound } from '../providers/SoundProvider';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import type { SpeedResponse } from '../types/card';
@@ -238,6 +239,16 @@ function SpeedPageContent() {
                 aria-live="polite"
               >
                 <p className="text-ds-warning font-bold text-base sm:text-lg">{t('stuckMessage')}</p>
+                {speedConfig.autoFlip && !loading && (
+                  <div className="text-ds-warning">
+                    <AutoFlipCountdown
+                      key={`stuck-${state.message}-${state.centerPiles.map((c) => c?.value ?? 0).join(',')}`}
+                      durationMs={AUTO_FLIP_DELAY_MS}
+                      ariaLabel={t('autoFlipCountdownAria')}
+                      formatRemaining={(n) => t('autoFlipCountdownRemaining', { n })}
+                    />
+                  </div>
+                )}
                 <button
                   type="button"
                   onClick={handleFlip}
