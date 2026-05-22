@@ -245,7 +245,7 @@ function SpeedPageContent() {
                       key={`stuck-${state.message}-${state.centerPiles.map((c) => c?.value ?? 0).join(',')}`}
                       durationMs={AUTO_FLIP_DELAY_MS}
                       ariaLabel={t('autoFlipCountdownAria')}
-                      remainingLabel={t('autoFlipCountdownRemaining', { n: 0 })}
+                      formatRemaining={(n) => t('autoFlipCountdownRemaining', { n })}
                     />
                   </div>
                 )}

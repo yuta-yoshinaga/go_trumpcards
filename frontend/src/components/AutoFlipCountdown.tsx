@@ -10,34 +10,44 @@ export interface AutoFlipCountdownProps {
   /** Accessible label announced to screen readers. */
   ariaLabel: string;
   /**
-   * Localised template used to compose the remaining-seconds string.
-   * Must contain `{{n}}`; replaced with the integer second count.
+   * Formatter that produces the screen-reader announcement for the current
+   * remaining-seconds value. Called once per render — passing a function (not
+   * a pre-interpolated string) is required so the announcement updates on
+   * every tick.
    */
-  remainingLabel: string;
+  formatRemaining: (remainingSeconds: number) => string;
 }
 
 const STROKE_WIDTH_RATIO = 0.12;
-const TICK_INTERVAL_MS = 60;
 
 /**
  * Renders a small circular SVG countdown that drains over `durationMs`.
  * The remaining seconds are also rendered in the centre and announced
  * via `aria-live`. Honours `prefers-reduced-motion` by skipping the
  * animation and showing only the numeric countdown.
+ *
+ * Animation is driven by `requestAnimationFrame` so the indicator
+ * stays smooth and naturally pauses when the tab is backgrounded.
  */
-export function AutoFlipCountdown({ durationMs, size = 56, ariaLabel, remainingLabel }: AutoFlipCountdownProps) {
+export function AutoFlipCountdown({ durationMs, size = 56, ariaLabel, formatRemaining }: AutoFlipCountdownProps) {
   const reduced = useReducedMotion();
   const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
     setElapsed(0);
-    const id = window.setInterval(() => {
-      setElapsed((prev) => {
-        const next = prev + TICK_INTERVAL_MS;
-        return next >= durationMs ? durationMs : next;
-      });
-    }, TICK_INTERVAL_MS);
-    return () => window.clearInterval(id);
+    let raf = 0;
+    const start = Date.now();
+    const tick = (): void => {
+      const next = Date.now() - start;
+      if (next >= durationMs) {
+        setElapsed(durationMs);
+        return;
+      }
+      setElapsed(next);
+      raf = window.requestAnimationFrame(tick);
+    };
+    raf = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(raf);
   }, [durationMs]);
 
   const radius = size / 2 - (size * STROKE_WIDTH_RATIO) / 2;
@@ -91,7 +101,7 @@ export function AutoFlipCountdown({ durationMs, size = 56, ariaLabel, remainingL
           {remainingSeconds}
         </text>
       </svg>
-      <span className="sr-only">{remainingLabel.replace('{{n}}', String(remainingSeconds))}</span>
+      <span className="sr-only">{formatRemaining(remainingSeconds)}</span>
     </div>
   );
 }
