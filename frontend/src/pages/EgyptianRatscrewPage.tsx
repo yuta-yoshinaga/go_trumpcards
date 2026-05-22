@@ -9,6 +9,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { KbdBadge } from '../components/KbdBadge';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -19,6 +20,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
+import { useReflexShortcuts } from '../hooks/useReflexShortcuts';
 import { gameTheme } from '../styles/gameTheme';
 import type { EgyptianRatscrewResponse } from '../types/card';
 import { EgyptianRatscrewEventKind, EgyptianRatscrewPendingKind, EgyptianRatscrewPhase } from '../types/phases';
@@ -113,6 +115,10 @@ function EgyptianRatscrewPageContent() {
     [],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
+
+  const reflexShortcutsEnabled =
+    !!state && !state.gameEndFlag && state.phase !== EgyptianRatscrewPhase.GAME_END && !cliEnabled && !loading;
+  useReflexShortcuts({ onStep: handleStep, onSlap: handleSlap, enabled: reflexShortcutsEnabled });
 
   if (!state || state.players.length < 2) {
     return (
@@ -282,6 +288,7 @@ function EgyptianRatscrewPageContent() {
                 data-tutorial="er-step-button"
               >
                 {t('button.step')}
+                <KbdBadge label={t('kbd.step')} />
               </button>
               <button
                 type="button"
@@ -296,6 +303,7 @@ function EgyptianRatscrewPageContent() {
                 data-tutorial="er-slap-button"
               >
                 {t('egyptianratscrew.slap')}
+                <KbdBadge label={t('kbd.slap')} />
               </button>
               <GameResetButton
                 isGameEnd={isGameEnd}

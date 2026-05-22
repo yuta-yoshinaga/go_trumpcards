@@ -2,6 +2,10 @@
   "button": {
     "step": "Flip"
   },
+  "kbd": {
+    "step": "Enter",
+    "slap": "Space"
+  },
   "phase": {
     "play": "Playing",
     "slap": "JACK!",
