@@ -9,6 +9,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { KbdBadge } from '../components/KbdBadge';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -19,6 +20,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
+import { useReflexShortcuts } from '../hooks/useReflexShortcuts';
 import { gameTheme } from '../styles/gameTheme';
 import type { SlapjackResponse } from '../types/card';
 import { SlapjackEventKind, SlapjackPhase } from '../types/phases';
@@ -121,6 +123,18 @@ function SlapjackPageContent() {
     [],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
+
+  const reflexShortcutsEnabled =
+    !!state && !state.gameEndFlag && state.phase !== SlapjackPhase.GAME_END && !cliEnabled && !loading;
+  useReflexShortcuts({
+    onStep: handleStep,
+    onSlap: handleSlap,
+    enabled: reflexShortcutsEnabled,
+    // Mirror the step / slap button `disabled` predicates so the keyboard
+    // shortcut never fires when the visible button is greyed out.
+    stepEnabled: !!state?.isHumanTurn,
+    slapEnabled: (state?.centerPileSize ?? 0) > 0,
+  });
 
   if (!state || state.players.length < 2) {
     return (
@@ -279,6 +293,7 @@ function SlapjackPageContent() {
                 data-tutorial="sj-step-button"
               >
                 {t('button.step')}
+                <KbdBadge label={t('kbd.step')} />
               </button>
               <button
                 type="button"
@@ -293,6 +308,7 @@ function SlapjackPageContent() {
                 data-tutorial="sj-slap-button"
               >
                 {t('slapjack.slap')}
+                <KbdBadge label={t('kbd.slap')} />
               </button>
               <GameResetButton
                 isGameEnd={isGameEnd}

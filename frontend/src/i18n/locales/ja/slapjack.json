@@ -2,6 +2,10 @@
   "button": {
     "step": "めくる"
   },
+  "kbd": {
+    "step": "Enter / S",
+    "slap": "Space"
+  },
   "phase": {
     "play": "進行中",
     "slap": "Jだ！",
