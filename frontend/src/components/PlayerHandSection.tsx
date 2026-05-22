@@ -24,6 +24,14 @@ export interface PlayerHandSectionProps {
   isMobile: boolean;
   /** The game-specific tutorial prefix used for the data-tutorial attribute (e.g., "ht", "sp"). */
   dataTutorialPrefix: string;
+  /**
+   * Optional whitelist of card indices that are legal to play this turn.
+   * When provided, cards outside this list are rendered dimmed and disabled.
+   * When omitted, every card is interactive.
+   */
+  validIndices?: number[];
+  /** Tooltip surfaced on cards that are present but disabled by `validIndices`. */
+  restrictedTooltip?: string;
 }
 
 /**
@@ -38,8 +46,11 @@ export function PlayerHandSection({
   cardWidth,
   isMobile,
   dataTutorialPrefix,
+  validIndices,
+  restrictedTooltip,
 }: PlayerHandSectionProps) {
   const dataTutorial = `${dataTutorialPrefix}-player-hand`;
+  const isRestricted = (idx: number): boolean => validIndices != null && !validIndices.includes(idx);
 
   if (isMobile) {
     return (
@@ -49,6 +60,8 @@ export function PlayerHandSection({
         onToggle={toggleCard}
         cardWidth={cardWidth}
         dataTutorial={dataTutorial}
+        validIndices={validIndices}
+        restrictedTooltip={restrictedTooltip}
       />
     );
   }
@@ -57,14 +70,20 @@ export function PlayerHandSection({
     <div className="flex flex-wrap lg:flex-nowrap lg:overflow-x-auto gap-1 mb-2" data-tutorial={dataTutorial}>
       {humanPlayer.cards.map((card, idx) => {
         const isSelected = selectedCardIndices.includes(idx);
+        const restricted = isRestricted(idx);
         return (
           <button
             type="button"
             key={`${card.design}-${card.value}-${idx}`}
-            onClick={() => toggleCard(idx)}
+            onClick={() => {
+              if (!restricted) toggleCard(idx);
+            }}
             aria-label={cardAlt(card)}
             aria-pressed={isSelected}
-            className={`transition-transform ${focusRingCard}`}
+            aria-disabled={restricted || undefined}
+            disabled={restricted}
+            title={restricted ? restrictedTooltip : undefined}
+            className={`transition-transform ${focusRingCard} ${restricted ? 'opacity-50 cursor-not-allowed' : ''}`}
             style={{
               background: 'none',
               padding: 0,

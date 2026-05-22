@@ -59,4 +59,6 @@ type CallBreakGame interface {
 	GetPlayer(i int) *domain.CallBreakPlayer
 	// GetHint ヒントを取得する
 	GetHint() *domain.CallBreakHint
+	// GetValidPlayIndices プレイ可能なカードのインデックスを返す
+	GetValidPlayIndices(playerIdx int) []int
 }

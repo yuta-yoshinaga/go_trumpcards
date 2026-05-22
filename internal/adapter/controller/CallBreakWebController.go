@@ -64,6 +64,7 @@ type CallBreakWebOutput struct {
 	WinnerIdx        int                            `json:"winnerIdx"`
 	LeadPlayerIdx    int                            `json:"leadPlayerIdx"`
 	Hint             *CallBreakWebOutputHint        `json:"hint,omitempty"`
+	ValidPlayIndices []int                          `json:"validPlayIndices"`
 	WebOutputBase
 	Config CallBreakWebOutputConfig `json:"config"`
 }

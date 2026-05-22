@@ -13838,6 +13838,11 @@ components:
           type: integer
         leadPlayerIdx:
           type: integer
+        validPlayIndices:
+          type: array
+          description: Indices in the human player's hand legal to play this turn (empty when not the human's play turn).
+          items:
+            type: integer
         config:
           $ref: '#/components/schemas/CallBreakConfig'
         message:

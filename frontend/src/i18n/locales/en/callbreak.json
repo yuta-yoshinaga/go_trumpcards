@@ -35,6 +35,7 @@
   "nextTrick": "Next Trick",
   "nextRound": "Next Round",
   "bidPhase": "Place your bid (1-13)",
+  "mustTrumpSpadeTooltip": "You cannot play this card (follow the lead suit, or trump with a spade when void)",
   "playPhase": {
     "lead": "Lead a card",
     "follow": "Play a card (must trump if void)"

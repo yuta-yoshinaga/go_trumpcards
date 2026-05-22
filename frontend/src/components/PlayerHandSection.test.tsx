@@ -77,3 +77,50 @@ describe('PlayerHandSection (mobile)', () => {
     expect(toggleCard).toHaveBeenCalledWith(1);
   });
 });
+
+describe('PlayerHandSection (validIndices)', () => {
+  it('disables cards outside validIndices on desktop', () => {
+    const toggleCard = vi.fn();
+    render(
+      <PlayerHandSection
+        {...baseProps}
+        isMobile={false}
+        toggleCard={toggleCard}
+        validIndices={[0, 2]}
+        restrictedTooltip="Cannot play"
+      />,
+    );
+    const buttons = screen.getAllByRole('button');
+    expect(buttons[0]).not.toBeDisabled();
+    expect(buttons[1]).toBeDisabled();
+    expect(buttons[1]).toHaveAttribute('title', 'Cannot play');
+    fireEvent.click(buttons[1]);
+    expect(toggleCard).not.toHaveBeenCalled();
+    fireEvent.click(buttons[0]);
+    expect(toggleCard).toHaveBeenCalledWith(0);
+  });
+
+  it('disables cards outside validIndices on mobile', () => {
+    const toggleCard = vi.fn();
+    render(
+      <PlayerHandSection
+        {...baseProps}
+        isMobile={true}
+        toggleCard={toggleCard}
+        validIndices={[0, 2]}
+        restrictedTooltip="Cannot play"
+      />,
+    );
+    const buttons = screen.getAllByRole('button');
+    expect(buttons[1]).toBeDisabled();
+    expect(buttons[1]).toHaveAttribute('title', 'Cannot play');
+    fireEvent.click(buttons[1]);
+    expect(toggleCard).not.toHaveBeenCalled();
+  });
+
+  it('does not disable any card when validIndices is undefined', () => {
+    render(<PlayerHandSection {...baseProps} isMobile={false} />);
+    const buttons = screen.getAllByRole('button');
+    for (const btn of buttons) expect(btn).not.toBeDisabled();
+  });
+});
