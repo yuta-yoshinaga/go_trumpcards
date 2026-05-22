@@ -85,6 +85,36 @@ export function afTendency(af: string): Tendency {
   return 'balanced';
 }
 
+/** Combined VPIP+PFR profile that summarises a CPU's overall poker style. */
+export type PokerStyle = 'tag' | 'lag' | 'tap' | 'lap' | 'balanced';
+
+/**
+ * overallStyle classifies a player into one of the canonical poker styles
+ * from the combination of VPIP (looseness) and PFR (aggression), so the
+ * UI can surface a single "TAG / LAG / TP / LP" tag instead of forcing
+ * the player to read four percentages and combine them themselves.
+ * See issue #1873.
+ */
+export function overallStyle(vpip: number, pfr: number): PokerStyle {
+  const loose = vpipTendency(vpip) === 'loose';
+  const tight = vpipTendency(vpip) === 'tight';
+  const aggressive = pfrTendency(pfr) === 'aggressive';
+  const passive = pfrTendency(pfr) === 'passive';
+  if (tight && aggressive) return 'tag';
+  if (loose && aggressive) return 'lag';
+  if (tight && passive) return 'tap';
+  if (loose && passive) return 'lap';
+  return 'balanced';
+}
+
+const STYLE_ICONS: Record<PokerStyle, string> = {
+  tag: '🛡️',
+  lag: '⚔️',
+  tap: '🐢',
+  lap: '🐠',
+  balanced: '⚖️',
+};
+
 /**
  * tendencyClass maps a tendency to the design-system color class used for
  * the badge text. Loose / Aggressive surface as `text-ds-error` (warm
@@ -136,8 +166,18 @@ export function HudStats({ vpip, pfr, threeBet, af, namespace = 'holdem' }: HudS
   const pfrT = pfrTendency(pfr);
   const threeBetT = threeBetTendency(threeBet);
   const afT = afTendency(af);
+  const style = overallStyle(vpip, pfr);
   return (
     <span className="ml-2 text-ds-info text-[0.8em] hidden md:inline" data-testid="hud-stats">
+      <span
+        data-testid="hud-overall-style"
+        data-style={style}
+        title={t(`style.${style}Tooltip`)}
+        className="mr-1 inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-black/30 text-ds-text-primary"
+      >
+        <span aria-hidden="true">{STYLE_ICONS[style]}</span>
+        <span className="font-bold uppercase">{t(`style.${style}`)}</span>
+      </span>
       <StatTooltip label={t('stats.vpip')} tooltipText={t('stats.vpipTooltip')} />:
       <span className={tendencyClass(vpipT)} data-testid="hud-vpip-tendency" data-tendency={vpipT}>
         {vpip}%

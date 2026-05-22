@@ -37,6 +37,18 @@
     "af": "AF",
     "afTooltip": "AF (Aggression Factor): ratio of aggressive actions (bet/raise) to passive actions (call)"
   },
+  "style": {
+    "tag": "TAG",
+    "tagTooltip": "Tight Aggressive: plays few hands but bets strongly when in",
+    "lag": "LAG",
+    "lagTooltip": "Loose Aggressive: plays many hands and bets strongly",
+    "tap": "TP",
+    "tapTooltip": "Tight Passive: plays few hands, mostly calls",
+    "lap": "LP",
+    "lapTooltip": "Loose Passive: plays many hands but rarely raises",
+    "balanced": "BAL",
+    "balancedTooltip": "Balanced style"
+  },
   "learning": {
     "title": "Learning Mode",
     "toggle": "Learning Mode",
