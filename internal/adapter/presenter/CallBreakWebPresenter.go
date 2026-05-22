@@ -37,6 +37,18 @@ func (p *CallBreakWebPresenter) buildBase(cb interfaces.CallBreakGame) *controll
 
 	resObj.CurrentTrick = p.buildTrickOutput(cb.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(cb)
+
+	// Provide the human player's valid play indices so the frontend can grey out
+	// cards that the Call Break rules (lead-suit / must-trump-spade) forbid.
+	for i := 0; i < cb.GetPlayerCnt(); i++ {
+		if pl := cb.GetPlayer(i); pl != nil && pl.GetIsHuman() {
+			resObj.ValidPlayIndices = cb.GetValidPlayIndices(i)
+			break
+		}
+	}
+	if resObj.ValidPlayIndices == nil {
+		resObj.ValidPlayIndices = make([]int, 0)
+	}
 	return resObj
 }
 

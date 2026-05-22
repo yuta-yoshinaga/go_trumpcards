@@ -403,6 +403,8 @@ function CallBreakPageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="cb"
+                validIndices={isHumanTurn ? state.validPlayIndices : undefined}
+                restrictedTooltip={t('mustTrumpSpadeTooltip')}
               />
             )}
 

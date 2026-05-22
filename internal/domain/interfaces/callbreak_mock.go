@@ -127,3 +127,12 @@ func (m *MockCallBreakGame) GetActionLog() []*domain.ActionLogEntry {
 	args := m.Called()
 	return args.Get(0).([]*domain.ActionLogEntry)
 }
+
+// GetValidPlayIndices モック
+func (m *MockCallBreakGame) GetValidPlayIndices(playerIdx int) []int {
+	args := m.Called(playerIdx)
+	if val, ok := args.Get(0).([]int); ok {
+		return val
+	}
+	return nil
+}

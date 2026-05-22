@@ -77,3 +77,52 @@ describe('PlayerHandSection (mobile)', () => {
     expect(toggleCard).toHaveBeenCalledWith(1);
   });
 });
+
+describe('PlayerHandSection (validIndices)', () => {
+  it('marks cards outside validIndices as aria-disabled on desktop (still focusable)', () => {
+    const toggleCard = vi.fn();
+    render(
+      <PlayerHandSection
+        {...baseProps}
+        isMobile={false}
+        toggleCard={toggleCard}
+        validIndices={[0, 2]}
+        restrictedTooltip="Cannot play"
+      />,
+    );
+    const buttons = screen.getAllByRole('button');
+    expect(buttons[0]).not.toHaveAttribute('aria-disabled');
+    expect(buttons[1]).toHaveAttribute('aria-disabled', 'true');
+    expect(buttons[1]).not.toBeDisabled(); // must stay focusable for the tooltip
+    expect(buttons[1]).toHaveAttribute('title', 'Cannot play');
+    fireEvent.click(buttons[1]);
+    expect(toggleCard).not.toHaveBeenCalled();
+    fireEvent.click(buttons[0]);
+    expect(toggleCard).toHaveBeenCalledWith(0);
+  });
+
+  it('marks cards outside validIndices as aria-disabled on mobile (still focusable)', () => {
+    const toggleCard = vi.fn();
+    render(
+      <PlayerHandSection
+        {...baseProps}
+        isMobile={true}
+        toggleCard={toggleCard}
+        validIndices={[0, 2]}
+        restrictedTooltip="Cannot play"
+      />,
+    );
+    const buttons = screen.getAllByRole('button');
+    expect(buttons[1]).toHaveAttribute('aria-disabled', 'true');
+    expect(buttons[1]).not.toBeDisabled();
+    expect(buttons[1]).toHaveAttribute('title', 'Cannot play');
+    fireEvent.click(buttons[1]);
+    expect(toggleCard).not.toHaveBeenCalled();
+  });
+
+  it('does not mark any card aria-disabled when validIndices is undefined', () => {
+    render(<PlayerHandSection {...baseProps} isMobile={false} />);
+    const buttons = screen.getAllByRole('button');
+    for (const btn of buttons) expect(btn).not.toHaveAttribute('aria-disabled');
+  });
+});
