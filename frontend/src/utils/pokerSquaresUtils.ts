@@ -1,0 +1,95 @@
+import type { Card } from '../types/card';
+
+/** Hand rank constants used by Poker Squares — mirror the backend rank ints. */
+export const PokerHand = {
+  HighCard: 0,
+  OnePair: 1,
+  TwoPair: 2,
+  ThreeOfAKind: 3,
+  Straight: 4,
+  Flush: 5,
+  FullHouse: 6,
+  FourOfAKind: 7,
+  StraightFlush: 8,
+  RoyalFlush: 9,
+} as const;
+
+export type PokerHandRank = (typeof PokerHand)[keyof typeof PokerHand];
+
+/** American Poker Squares scoring (mirrors `pokerSquaresScoreTable` in Go). */
+const SCORE_TABLE: Record<PokerHandRank, number> = {
+  [PokerHand.HighCard]: 0,
+  [PokerHand.OnePair]: 2,
+  [PokerHand.TwoPair]: 5,
+  [PokerHand.ThreeOfAKind]: 10,
+  [PokerHand.Straight]: 15,
+  [PokerHand.Flush]: 20,
+  [PokerHand.FullHouse]: 25,
+  [PokerHand.FourOfAKind]: 50,
+  [PokerHand.StraightFlush]: 75,
+  [PokerHand.RoyalFlush]: 100,
+};
+
+/** Return the Poker Squares score for a hand rank. */
+export function pokerSquaresRankToScore(rank: PokerHandRank): number {
+  return SCORE_TABLE[rank] ?? 0;
+}
+
+/** i18n key suffix for a hand rank. */
+export function pokerHandKey(rank: PokerHandRank): string {
+  const names = [
+    'highCard',
+    'onePair',
+    'twoPair',
+    'threeOfAKind',
+    'straight',
+    'flush',
+    'fullHouse',
+    'fourOfAKind',
+    'straightFlush',
+    'royalFlush',
+  ] as const;
+  return names[rank];
+}
+
+/**
+ * Evaluate a 5-card poker hand. Returns `null` for any non-5-card input.
+ * Aces are low (value 1) when forming an A-2-3-4-5 straight and act as the
+ * high anchor for 10-J-Q-K-A (mirroring the Go backend's behaviour).
+ */
+export function evaluateFiveCardHand(cards: readonly Card[]): PokerHandRank | null {
+  if (cards.length !== 5) return null;
+
+  const values = cards.map((c) => c.value).sort((a, b) => a - b);
+  const designs = cards.map((c) => c.design);
+  const counts = countByValue(values);
+  const groupSizes = Object.values(counts).sort((a, b) => b - a);
+  const isFlush = designs.every((d) => d === designs[0]);
+  const isStraight = checkStraight(values);
+  const isRoyal = isStraight && values[0] === 1 && values[4] === 13 && values[1] === 10;
+
+  if (isFlush && isRoyal) return PokerHand.RoyalFlush;
+  if (isFlush && isStraight) return PokerHand.StraightFlush;
+  if (groupSizes[0] === 4) return PokerHand.FourOfAKind;
+  if (groupSizes[0] === 3 && groupSizes[1] === 2) return PokerHand.FullHouse;
+  if (isFlush) return PokerHand.Flush;
+  if (isStraight) return PokerHand.Straight;
+  if (groupSizes[0] === 3) return PokerHand.ThreeOfAKind;
+  if (groupSizes[0] === 2 && groupSizes[1] === 2) return PokerHand.TwoPair;
+  if (groupSizes[0] === 2) return PokerHand.OnePair;
+  return PokerHand.HighCard;
+}
+
+function countByValue(sortedValues: readonly number[]): Record<number, number> {
+  const out: Record<number, number> = {};
+  for (const v of sortedValues) out[v] = (out[v] ?? 0) + 1;
+  return out;
+}
+
+function checkStraight(sortedValues: readonly number[]): boolean {
+  // Five distinct sequential ranks, or the A-2-3-4-5 wheel.
+  if (new Set(sortedValues).size !== 5) return false;
+  if (sortedValues[4] - sortedValues[0] === 4) return true;
+  // 10-J-Q-K-A becomes [1, 10, 11, 12, 13] after sort. Treat that as a straight.
+  return sortedValues[0] === 1 && sortedValues[1] === 10 && sortedValues[4] === 13;
+}

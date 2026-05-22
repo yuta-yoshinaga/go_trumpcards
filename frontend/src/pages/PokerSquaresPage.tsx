@@ -23,13 +23,14 @@ import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { PokerSquaresResponse } from '../types/card';
+import type { Card, PokerSquaresResponse } from '../types/card';
 import { PokerSquaresPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { POKERSQUARES_HELP, parsePokerSquaresCommand } from '../utils/cli/commands/pokersquaresCommands';
 import { formatPokerSquaresState } from '../utils/cli/formatters/pokersquaresFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { evaluateFiveCardHand, pokerHandKey, pokerSquaresRankToScore } from '../utils/pokerSquaresUtils';
 
 const POKER_SQUARES_PHASE_KEYS: Readonly<Record<number, string>> = {
   [PokerSquaresPhase.PLAYING]: 'playing',
@@ -100,6 +101,32 @@ function PokerSquaresPageContent() {
       setCrossHover(null);
     }
   }, [loading, state?.board, crossHover]);
+
+  // While the player hovers an empty cell, compute the (hypothetical) row + col scores
+  // they would lock in by placing `currentCard` there. We can only score full lines, so
+  // the preview surfaces only when this placement would complete the row or column.
+  const preview = useMemo(() => {
+    if (!state || !crossHover || !state.currentCard) return null;
+    const board = state.board;
+    if (board[crossHover.row]?.[crossHover.col]?.card) return null;
+
+    const placedCard = state.currentCard;
+    const rowCards: (Card | null)[] = board[crossHover.row].map((c, ci) =>
+      ci === crossHover.col ? placedCard : c.card,
+    );
+    const colCards: (Card | null)[] = board.map((r, ri) =>
+      ri === crossHover.row ? placedCard : r[crossHover.col].card,
+    );
+
+    const rowComplete: Card[] | null = rowCards.every((c): c is Card => c != null) ? (rowCards as Card[]) : null;
+    const colComplete: Card[] | null = colCards.every((c): c is Card => c != null) ? (colCards as Card[]) : null;
+    const rowRank = rowComplete ? evaluateFiveCardHand(rowComplete) : null;
+    const colRank = colComplete ? evaluateFiveCardHand(colComplete) : null;
+    return {
+      row: rowRank != null ? { rank: rowRank, score: pokerSquaresRankToScore(rowRank) } : null,
+      col: colRank != null ? { rank: colRank, score: pokerSquaresRankToScore(colRank) } : null,
+    };
+  }, [state, crossHover]);
 
   const handlePlace = (row: number, col: number) => {
     execApi('place', row, col);
@@ -241,19 +268,30 @@ function PokerSquaresPageContent() {
                       >
                         {state.rowScores.map((s, i) => {
                           const highlighted = crossHover?.row === i;
+                          const rowPreview = highlighted ? preview?.row : null;
                           return (
                             <div
                               key={`row-score-${i}`}
                               data-testid={`row-score-${i}`}
                               data-cross-hover={highlighted ? 'true' : undefined}
                               style={{ height: Math.round(cardWidth * 1.4) }}
-                              className={`flex items-center justify-center text-sm font-mono px-2 rounded min-w-[2.5rem] ${
+                              className={`flex flex-col items-center justify-center text-sm font-mono px-2 rounded min-w-[3rem] ${
                                 highlighted
                                   ? 'text-ds-accent bg-ds-accent/15 ring-1 ring-ds-accent'
                                   : 'text-ds-text-primary bg-black/30'
                               }`}
                             >
-                              {s}
+                              <span>{s}</span>
+                              {rowPreview && rowPreview.score - s !== 0 && (
+                                <span
+                                  data-testid={`row-score-preview-${i}`}
+                                  className="text-[10px] text-ds-success leading-none mt-0.5"
+                                >
+                                  {`+${rowPreview.score - s}`}
+                                  <br />
+                                  {t(`hand.${pokerHandKey(rowPreview.rank)}`)}
+                                </span>
+                              )}
                             </div>
                           );
                         })}
@@ -266,6 +304,7 @@ function PokerSquaresPageContent() {
                     >
                       {state.colScores.map((s, i) => {
                         const highlighted = crossHover?.col === i;
+                        const colPreview = highlighted ? preview?.col : null;
                         return (
                           <div
                             key={`col-score-${i}`}
@@ -279,6 +318,15 @@ function PokerSquaresPageContent() {
                             }`}
                           >
                             {s}
+                            {colPreview && colPreview.score - s !== 0 && (
+                              <div
+                                data-testid={`col-score-preview-${i}`}
+                                className="text-[10px] text-ds-success leading-none mt-0.5"
+                              >
+                                +{colPreview.score - s}
+                                <div>{t(`hand.${pokerHandKey(colPreview.rank)}`)}</div>
+                              </div>
+                            )}
                           </div>
                         );
                       })}
