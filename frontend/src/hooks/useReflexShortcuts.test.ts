@@ -48,6 +48,8 @@ describe('useReflexShortcuts', () => {
 
     press('Enter', { ctrlKey: true });
     press(' ', { metaKey: true });
+    press(' ', { shiftKey: true }); // Shift+Space = browser scroll-up; must not slap
+    press('Enter', { shiftKey: true });
     expect(onStep).not.toHaveBeenCalled();
     expect(onSlap).not.toHaveBeenCalled();
   });
@@ -66,6 +68,35 @@ describe('useReflexShortcuts', () => {
 
     expect(onStep).not.toHaveBeenCalled();
     expect(onSlap).not.toHaveBeenCalled();
+  });
+
+  it('skips when the target is a <button> or <select> (avoids hijacking native activation)', () => {
+    const onStep = vi.fn();
+    const onSlap = vi.fn();
+    renderHook(() => useReflexShortcuts({ onStep, onSlap, enabled: true }));
+
+    for (const tag of ['button', 'select'] as const) {
+      const el = document.createElement(tag);
+      document.body.appendChild(el);
+      el.focus();
+      el.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+      el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      document.body.removeChild(el);
+    }
+
+    expect(onStep).not.toHaveBeenCalled();
+    expect(onSlap).not.toHaveBeenCalled();
+  });
+
+  it('respects per-action gates (stepEnabled / slapEnabled)', () => {
+    const onStep = vi.fn();
+    const onSlap = vi.fn();
+    renderHook(() => useReflexShortcuts({ onStep, onSlap, enabled: true, stepEnabled: false, slapEnabled: true }));
+
+    press('Enter'); // step disabled — should be ignored
+    press(' '); // slap enabled — should fire
+    expect(onStep).not.toHaveBeenCalled();
+    expect(onSlap).toHaveBeenCalledTimes(1);
   });
 
   it('honours the latest handler refs across re-renders', () => {

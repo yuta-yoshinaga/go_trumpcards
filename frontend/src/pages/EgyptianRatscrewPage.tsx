@@ -118,7 +118,15 @@ function EgyptianRatscrewPageContent() {
 
   const reflexShortcutsEnabled =
     !!state && !state.gameEndFlag && state.phase !== EgyptianRatscrewPhase.GAME_END && !cliEnabled && !loading;
-  useReflexShortcuts({ onStep: handleStep, onSlap: handleSlap, enabled: reflexShortcutsEnabled });
+  useReflexShortcuts({
+    onStep: handleStep,
+    onSlap: handleSlap,
+    enabled: reflexShortcutsEnabled,
+    // Mirror the step / slap button `disabled` predicates so the keyboard
+    // shortcut never fires when the visible button is greyed out.
+    stepEnabled: !!state?.isHumanTurn,
+    slapEnabled: (state?.centerPileSize ?? 0) > 0,
+  });
 
   if (!state || state.players.length < 2) {
     return (
