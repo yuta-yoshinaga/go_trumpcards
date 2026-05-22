@@ -80,8 +80,10 @@ export function PlayerHandSection({
             }}
             aria-label={cardAlt(card)}
             aria-pressed={isSelected}
+            // Use aria-disabled (not the HTML `disabled` attribute) so restricted
+            // cards remain focusable for keyboard / screen-reader users — they
+            // need to reach the tooltip that explains why the card is illegal.
             aria-disabled={restricted || undefined}
-            disabled={restricted}
             title={restricted ? restrictedTooltip : undefined}
             className={`transition-transform ${focusRingCard} ${restricted ? 'opacity-50 cursor-not-allowed' : ''}`}
             style={{

@@ -135,7 +135,7 @@ describe('CallBreakPage', () => {
     expect(screen.getByRole('button', { name: '出す' })).not.toBeDisabled();
   });
 
-  it('disables cards outside validPlayIndices with tooltip on human play turn', async () => {
+  it('marks cards outside validPlayIndices as aria-disabled with tooltip on human play turn', async () => {
     const must = makeCallBreakState({ validPlayIndices: [0] });
     mockExec.mockResolvedValue(must);
     renderWithProviders(<CallBreakPage />);
@@ -144,8 +144,11 @@ describe('CallBreakPage', () => {
     const allowed = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
     const blocked = screen.getByAltText('♥ J').closest('button') as HTMLButtonElement;
 
-    expect(allowed).not.toBeDisabled();
-    expect(blocked).toBeDisabled();
+    expect(allowed).not.toHaveAttribute('aria-disabled');
+    expect(blocked).toHaveAttribute('aria-disabled', 'true');
+    // Critical accessibility constraint: aria-disabled cards must stay focusable
+    // so keyboard / screen-reader users can reach the tooltip explaining the rule.
+    expect(blocked).not.toBeDisabled();
     expect(blocked).toHaveAttribute(
       'title',
       'このカードは出せません (リードスートに従うか、ボイドならスペードで切ってください)',

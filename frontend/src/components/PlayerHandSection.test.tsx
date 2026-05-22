@@ -79,7 +79,7 @@ describe('PlayerHandSection (mobile)', () => {
 });
 
 describe('PlayerHandSection (validIndices)', () => {
-  it('disables cards outside validIndices on desktop', () => {
+  it('marks cards outside validIndices as aria-disabled on desktop (still focusable)', () => {
     const toggleCard = vi.fn();
     render(
       <PlayerHandSection
@@ -91,8 +91,9 @@ describe('PlayerHandSection (validIndices)', () => {
       />,
     );
     const buttons = screen.getAllByRole('button');
-    expect(buttons[0]).not.toBeDisabled();
-    expect(buttons[1]).toBeDisabled();
+    expect(buttons[0]).not.toHaveAttribute('aria-disabled');
+    expect(buttons[1]).toHaveAttribute('aria-disabled', 'true');
+    expect(buttons[1]).not.toBeDisabled(); // must stay focusable for the tooltip
     expect(buttons[1]).toHaveAttribute('title', 'Cannot play');
     fireEvent.click(buttons[1]);
     expect(toggleCard).not.toHaveBeenCalled();
@@ -100,7 +101,7 @@ describe('PlayerHandSection (validIndices)', () => {
     expect(toggleCard).toHaveBeenCalledWith(0);
   });
 
-  it('disables cards outside validIndices on mobile', () => {
+  it('marks cards outside validIndices as aria-disabled on mobile (still focusable)', () => {
     const toggleCard = vi.fn();
     render(
       <PlayerHandSection
@@ -112,15 +113,16 @@ describe('PlayerHandSection (validIndices)', () => {
       />,
     );
     const buttons = screen.getAllByRole('button');
-    expect(buttons[1]).toBeDisabled();
+    expect(buttons[1]).toHaveAttribute('aria-disabled', 'true');
+    expect(buttons[1]).not.toBeDisabled();
     expect(buttons[1]).toHaveAttribute('title', 'Cannot play');
     fireEvent.click(buttons[1]);
     expect(toggleCard).not.toHaveBeenCalled();
   });
 
-  it('does not disable any card when validIndices is undefined', () => {
+  it('does not mark any card aria-disabled when validIndices is undefined', () => {
     render(<PlayerHandSection {...baseProps} isMobile={false} />);
     const buttons = screen.getAllByRole('button');
-    for (const btn of buttons) expect(btn).not.toBeDisabled();
+    for (const btn of buttons) expect(btn).not.toHaveAttribute('aria-disabled');
   });
 });

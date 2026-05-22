@@ -99,10 +99,11 @@ var NewCallBreakWebController, NewCallBreakWebControllerWithProvider = webContro
 
 func newCallBreakDefaultOutput(msg string) *CallBreakWebOutput {
 	return &CallBreakWebOutput{
-		Players:       make([]*CallBreakWebOutputPlayer, 0),
-		CurrentTrick:  make([]*CallBreakWebOutputTrickCard, 0),
-		WinnerIdx:     -1,
-		WebOutputBase: WebOutputBase{Message: msg},
+		Players:          make([]*CallBreakWebOutputPlayer, 0),
+		CurrentTrick:     make([]*CallBreakWebOutputTrickCard, 0),
+		ValidPlayIndices: make([]int, 0),
+		WinnerIdx:        -1,
+		WebOutputBase:    WebOutputBase{Message: msg},
 	}
 }
 
