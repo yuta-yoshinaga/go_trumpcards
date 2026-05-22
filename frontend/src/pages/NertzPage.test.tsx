@@ -222,4 +222,36 @@ describe('NertzPage', () => {
       }),
     );
   });
+
+  it('flashes the target foundation when a move to it is rejected (collision)', async () => {
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => expect(screen.getByText(/♥7/)).toBeInTheDocument());
+    fireEvent.click(screen.getByText('♥7').closest('button') as HTMLElement);
+
+    // Reject the next move (simulates CPU getting there first).
+    mockExec.mockRejectedValueOnce(new Error('collision'));
+    fireEvent.click(screen.getByTestId('nertz-foundation-0'));
+    await waitFor(() => expect(screen.getByTestId('nertz-foundation-0')).toHaveAttribute('data-collided', 'true'));
+    expect(screen.getByTestId('nertz-foundation-0').className).toMatch(/animate-shake/);
+  });
+
+  it('does not blow up the page when a foundation move is rejected (game continues)', async () => {
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => expect(screen.getByText(/♥7/)).toBeInTheDocument());
+    fireEvent.click(screen.getByText('♥7').closest('button') as HTMLElement);
+
+    mockExec.mockRejectedValueOnce(new Error('boom'));
+    fireEvent.click(screen.getByTestId('nertz-foundation-1'));
+    await waitFor(() => expect(screen.getByTestId('nertz-foundation-1')).toHaveAttribute('data-collided', 'true'));
+    // Foundation grid is still rendered; the page didn't unmount into ErrorAlert.
+    expect(screen.getAllByTestId(/nertz-foundation-/)).toHaveLength(8);
+  });
 });

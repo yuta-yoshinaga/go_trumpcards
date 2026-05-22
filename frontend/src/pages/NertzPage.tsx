@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type NertzMoveZone, nertzApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -28,6 +28,9 @@ import type { CliGameConfig } from '../utils/cli/types';
 
 /** CPU tick interval in milliseconds while the round is active. */
 const NERTZ_TICK_INTERVAL_MS = 700;
+
+/** Duration to leave the collision shake/red-ring on a rejected foundation. */
+const NERTZ_COLLISION_FEEDBACK_MS = 500;
 
 /** Tutorial step definitions for the Nertz / Pounce page. */
 const NERTZ_TUTORIAL_STEPS: TutorialStep[] = [
@@ -134,6 +137,30 @@ function NertzPageContent() {
     [isHumanTurn],
   );
 
+  const [collidedFoundationIdx, setCollidedFoundationIdx] = useState<number | null>(null);
+  const [collisionTick, setCollisionTick] = useState(0);
+  // Tracks the target foundation of the most recent player-initiated move so we
+  // can attribute the next error from `useGameApi` to a specific cell.
+  const pendingFoundationRef = useRef<number | null>(null);
+  const prevErrorRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (error && error !== prevErrorRef.current && pendingFoundationRef.current !== null) {
+      setCollidedFoundationIdx(pendingFoundationRef.current);
+      setCollisionTick((n) => n + 1);
+      pendingFoundationRef.current = null;
+    }
+    prevErrorRef.current = error;
+  }, [error]);
+
+  useEffect(() => {
+    // `collisionTick` ensures repeated collisions on the same foundation reset the timer.
+    if (collidedFoundationIdx === null) return;
+    void collisionTick;
+    const id = window.setTimeout(() => setCollidedFoundationIdx(null), NERTZ_COLLISION_FEEDBACK_MS);
+    return () => window.clearTimeout(id);
+  }, [collidedFoundationIdx, collisionTick]);
+
   const dispatchMove = useCallback(
     (to: NertzMoveZone) => {
       if (!selection) return;
@@ -141,6 +168,9 @@ function NertzPageContent() {
         selection.kind === 'tableau'
           ? { zone: 'tableau', col: selection.col, cardIndex: selection.cardIndex }
           : { zone: selection.kind };
+      if (to.zone === 'foundation') {
+        pendingFoundationRef.current = to.idx;
+      }
       void apiCall('m', { playerIdx: 0, from, to });
       setSelection(null);
     },
@@ -204,8 +234,6 @@ function NertzPageContent() {
     return t('phase.playing');
   }, [isGameEnd, isRoundEnd, t]);
 
-  if (error) return <ErrorAlert message={error} onRetry={retry} />;
-
   if (!state || !human) {
     return (
       <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.nertz.bg}`}>
@@ -255,6 +283,8 @@ function NertzPageContent() {
               messageParams={state.messageParams}
             />
 
+            {error && collidedFoundationIdx === null && <ErrorAlert message={error} onRetry={retry} />}
+
             <div data-tutorial="nertz-foundations" className="bg-black/30 text-ds-text-primary p-3 rounded">
               <div className="text-xs uppercase tracking-wide text-ds-text-muted mb-2">{t('labels.foundation')}</div>
               <div className="flex flex-wrap gap-2">
@@ -267,6 +297,7 @@ function NertzPageContent() {
                     onClick={() => handleFoundationClick(idx)}
                     disabled={!isHumanTurn || !selection}
                     ariaLabel={t('labels.foundationN', { n: idx, defaultValue: `Foundation ${idx}` })}
+                    collided={collidedFoundationIdx === idx}
                   />
                 ))}
               </div>
@@ -398,19 +429,24 @@ interface FoundationCellProps {
   onClick: () => void;
   disabled: boolean;
   ariaLabel: string;
+  /** Apply collision feedback (shake + red ring) when a move to this foundation was just rejected. */
+  collided?: boolean;
 }
 
-function FoundationCell({ idx, top, size, onClick, disabled, ariaLabel }: FoundationCellProps) {
+function FoundationCell({ idx, top, size, onClick, disabled, ariaLabel, collided = false }: FoundationCellProps) {
   const cls = disabled
     ? 'bg-ds-surface text-ds-text-muted border-ds-border-subtle'
     : 'bg-ds-surface-elevated text-ds-text-primary border-ds-border-subtle hover:bg-ds-surface-elevated-hover';
+  const collisionCls = collided ? 'animate-shake ring-2 ring-ds-error' : '';
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`min-w-[3rem] px-2 py-2 rounded border text-sm ${cls}`}
+      className={`min-w-[3rem] px-2 py-2 rounded border text-sm ${cls} ${collisionCls}`}
       aria-label={ariaLabel}
+      data-testid={`nertz-foundation-${idx}`}
+      data-collided={collided || undefined}
     >
       <span className="block text-xs leading-none">F{idx}</span>
       <span className="block text-base font-bold">{top ? `${suitSymbol(top.design)}${top.value}` : '—'}</span>
