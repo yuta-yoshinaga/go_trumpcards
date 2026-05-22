@@ -142,4 +142,21 @@ describe('GapsPage', () => {
     renderWithProviders(<GapsPage />);
     await waitFor(() => expect(screen.queryByRole('button', { name: 'ギブアップ' })).not.toBeInTheDocument());
   });
+
+  it('renders a lock badge for each card that forms the row prefix starting from 2', async () => {
+    // makeGrid seeds every row with 2..13 of the same suit ⇒ the first 12 cells of each row are locked.
+    renderWithProviders(<GapsPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.getByTestId('gaps-locked-0-0')).toBeInTheDocument();
+    expect(screen.getByTestId('gaps-locked-0-11')).toBeInTheDocument();
+  });
+
+  it('does not lock a row whose leftmost card is not a 2', async () => {
+    const grid = makeGrid();
+    grid[0] = [card('HEART', 5), card('HEART', 6), ...Array.from({ length: 11 }, () => null)];
+    mockedRun.mockResolvedValue({ ...playingState, grid });
+    renderWithProviders(<GapsPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('gaps-locked-0-0')).not.toBeInTheDocument();
+  });
 });

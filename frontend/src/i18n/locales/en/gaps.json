@@ -12,6 +12,8 @@
   "giveup": "Give Up",
   "hint": "Hint",
   "gap": "Gap",
+  "lockedAria": "locked card (survives redeal)",
+  "lockedTooltip": "Locked (will survive the next redeal)",
   "playing": "Playing",
   "stalemate": "Stalemate",
   "gameClear": "Game Clear! Moves: {{moveCount}}",

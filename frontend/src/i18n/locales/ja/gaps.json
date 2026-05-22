@@ -12,6 +12,8 @@
   "giveup": "ギブアップ",
   "hint": "ヒント",
   "gap": "空き",
+  "lockedAria": "ロック済み",
+  "lockedTooltip": "ロック済み (次のリディール後も残ります)",
   "playing": "プレイ中",
   "stalemate": "手詰まりです",
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
