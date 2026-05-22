@@ -18,6 +18,12 @@ describe('gapsLockedPrefixLengths', () => {
     expect(gapsLockedPrefixLengths([row])).toEqual([3]);
   });
 
+  it('stops the lock at the first suit mismatch even if the value sequence is correct', () => {
+    // The 3 is sequential (2 + 1) but the suit changes — must break.
+    const row = [card('SPADE', 2), card('HEART', 3), card('HEART', 4)];
+    expect(gapsLockedPrefixLengths([row])).toEqual([1]);
+  });
+
   it('stops the lock at the first gap', () => {
     const row = [card('HEART', 2), card('HEART', 3), null, card('HEART', 4)];
     expect(gapsLockedPrefixLengths([row])).toEqual([2]);

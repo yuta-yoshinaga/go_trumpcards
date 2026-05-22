@@ -29,8 +29,9 @@ function lockedPrefixLengthForRow(row: readonly (Card | null)[]): number {
       locked++;
       continue;
     }
-    const prev = row[c - 1];
-    if (prev == null) break;
+    // `row[c-1]` is guaranteed non-null: the previous iteration either set
+    // `cur` and continued (so this cell was non-null) or broke out of the loop.
+    const prev = row[c - 1] as Card;
     if (cur.design !== prev.design || cur.value !== prev.value + 1) break;
     locked++;
   }

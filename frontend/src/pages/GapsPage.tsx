@@ -172,19 +172,21 @@ function GapsPageContent() {
                     );
                   }
                   const isLocked = cIdx < lockedCount;
+                  // Locked cards survive redeal — make them visually fixed by
+                  // dropping the draggable affordance, so users don't try to
+                  // move them and end up with a no-op drop.
+                  const ringClass = isHintFrom ? 'ring-2 ring-ds-warning' : isLocked ? 'ring-2 ring-ds-success' : '';
                   return (
                     <button
                       type="button"
                       key={`cell-${rIdx.toString()}-${cIdx.toString()}`}
-                      draggable={isPlaying && !loading}
+                      draggable={isPlaying && !loading && !isLocked}
                       onDragStart={dnd.handleDragStart(zone)}
                       onDragEnd={dnd.handleDragEnd}
                       aria-label={isLocked ? `${cardAlt(cell)} ${t('lockedAria')}` : cardAlt(cell)}
                       disabled={!isPlaying || loading}
                       data-testid={isLocked ? `gaps-locked-${rIdx}-${cIdx}` : undefined}
-                      className={`relative p-0 border-0 bg-transparent rounded ${focusRingWhite} ${
-                        isHintFrom ? 'ring-2 ring-ds-warning' : ''
-                      } ${dnd.isDragSource(zone) ? 'opacity-50' : ''} ${isLocked ? 'ring-2 ring-ds-success' : ''}`}
+                      className={`relative p-0 border-0 bg-transparent rounded ${focusRingWhite} ${ringClass} ${dnd.isDragSource(zone) ? 'opacity-50' : ''}`}
                     >
                       <AnimatedCard card={cell} width={cardWidth} />
                       {isLocked && (
