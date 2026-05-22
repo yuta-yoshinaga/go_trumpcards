@@ -14,7 +14,7 @@ export const DEFAULT_SPEED_CONFIG: SpeedConfig = {
 };
 
 /** Delay in milliseconds before an automatic flip fires while stuck. */
-export const AUTO_FLIP_DELAY_MS = 2500;
+export const AUTO_FLIP_DELAY_MS = 1500;
 
 /** CPU difficulty options for Speed settings. */
 export const CPU_DIFFICULTY_OPTIONS = [
