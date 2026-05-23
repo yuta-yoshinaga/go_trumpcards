@@ -253,27 +253,52 @@ function DurakPageContent() {
                   {state.tablePairs.length === 0 ? (
                     <div className="text-game-text-muted text-sm">{t('tableEmpty')}</div>
                   ) : (
-                    <div className="flex flex-wrap gap-2">
-                      {state.tablePairs.map((pair, i) => (
-                        <button
-                          type="button"
-                          key={`pair-${pair.attack.design}-${pair.attack.value}-${i}`}
-                          className={`flex flex-col items-center gap-0.5 p-1 rounded cursor-pointer ${
-                            selectedAttackIdx === i ? 'ring-2 ring-ds-warning' : ''
-                          }`}
-                          onClick={() => setSelectedAttackIdx(selectedAttackIdx === i ? null : i)}
-                        >
-                          <AnimatedCard card={pair.attack} width={cardWidth * 0.8} />
-                          {pair.defense ? (
-                            <AnimatedCard card={pair.defense} width={cardWidth * 0.8} />
-                          ) : (
+                    <div className="flex flex-wrap gap-3">
+                      {state.tablePairs.map((pair, i) => {
+                        const pairCardWidth = cardWidth * 0.8;
+                        const offset = pairCardWidth * 0.3;
+                        const undefended = pair.defense === null;
+                        const shouldPulse = undefended && isDefender;
+                        return (
+                          <button
+                            type="button"
+                            key={`pair-${pair.attack.design}-${pair.attack.value}-${i}`}
+                            className={`relative p-1 rounded cursor-pointer ${
+                              selectedAttackIdx === i ? 'ring-2 ring-ds-warning' : ''
+                            }`}
+                            style={{
+                              width: pairCardWidth + offset + 8,
+                              height: pairCardWidth * 1.4 + offset + 8,
+                            }}
+                            onClick={() => setSelectedAttackIdx(selectedAttackIdx === i ? null : i)}
+                            data-testid={`dk-pair-${i}`}
+                            aria-label={
+                              undefended
+                                ? t('pair.undefendedAria', { rank: pair.attack.value })
+                                : t('pair.defendedAria')
+                            }
+                          >
                             <div
-                              className="border border-dashed border-white/30 rounded"
-                              style={{ width: cardWidth * 0.8, height: cardWidth * 0.8 * 1.4 }}
-                            />
-                          )}
-                        </button>
-                      ))}
+                              className={`absolute top-0 left-0 rounded ${
+                                shouldPulse ? 'motion-safe:animate-pulse ring-2 ring-ds-error' : ''
+                              }`}
+                              data-testid={`dk-attack-${i}`}
+                              data-undefended={undefended ? 'true' : 'false'}
+                            >
+                              <AnimatedCard card={pair.attack} width={pairCardWidth} />
+                            </div>
+                            {pair.defense ? (
+                              <div
+                                className="absolute rounded shadow-md"
+                                style={{ top: offset, left: offset }}
+                                data-testid={`dk-defense-${i}`}
+                              >
+                                <AnimatedCard card={pair.defense} width={pairCardWidth} />
+                              </div>
+                            ) : null}
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
                 </div>

@@ -234,6 +234,30 @@ describe('DurakPage', () => {
     await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
   });
 
+  it('marks an undefended attack and pulses when human is defender', async () => {
+    mockExec.mockResolvedValue(defendPhaseState);
+    renderWithProviders(<DurakPage />);
+    await waitFor(() => expect(screen.getByTestId('dk-pair-0')).toBeInTheDocument());
+    const attack = screen.getByTestId('dk-attack-0');
+    expect(attack).toHaveAttribute('data-undefended', 'true');
+    expect(attack.className).toContain('animate-pulse');
+    expect(screen.queryByTestId('dk-defense-0')).not.toBeInTheDocument();
+  });
+
+  it('renders a stacked defense card and no pulse when the pair is defended', async () => {
+    mockExec.mockResolvedValue({
+      ...defendPhaseState,
+      defenderIdx: 1,
+      tablePairs: [{ attack: { design: 'CLOVER', value: 7 }, defense: { design: 'HEART', value: 9 } }],
+    });
+    renderWithProviders(<DurakPage />);
+    await waitFor(() => expect(screen.getByTestId('dk-pair-0')).toBeInTheDocument());
+    expect(screen.getByTestId('dk-defense-0')).toBeInTheDocument();
+    const attack = screen.getByTestId('dk-attack-0');
+    expect(attack).toHaveAttribute('data-undefended', 'false');
+    expect(attack.className).not.toContain('animate-pulse');
+  });
+
   it('shows 次のゲーム at game-end and fires reset directly (no confirm)', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<DurakPage />);
