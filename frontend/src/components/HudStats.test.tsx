@@ -97,12 +97,17 @@ describe('HudStats component', () => {
     expect(screen.getByTestId('hud-stats')).toBeInTheDocument();
   });
 
-  it('renders an overall poker style badge derived from VPIP + PFR', () => {
-    // Loose + Aggressive → LAG.
-    render(<HudStats vpip={45} pfr={30} threeBet={12} af="3.5" />);
+  it.each([
+    ['lag', 45, 30, 'LAG'], // Loose + Aggressive
+    ['tag', 15, 30, 'TAG'], // Tight + Aggressive
+    ['tp', 15, 5, 'TP'], // Tight + Passive
+    ['lp', 45, 5, 'LP'], // Loose + Passive
+    ['balanced', 25, 15, 'BAL'], // Normal on either axis → Balanced
+  ])('renders the %s style badge for vpip=%d pfr=%d', (expectedStyle, vpip, pfr, expectedLabel) => {
+    render(<HudStats vpip={vpip} pfr={pfr} threeBet={6} af="2.0" />);
     const badge = screen.getByTestId('hud-overall-style');
-    expect(badge).toHaveAttribute('data-style', 'lag');
-    expect(badge.textContent).toContain('LAG');
+    expect(badge).toHaveAttribute('data-style', expectedStyle);
+    expect(badge.textContent).toContain(expectedLabel);
   });
 });
 
@@ -113,11 +118,11 @@ describe('overallStyle', () => {
   it('returns LAG for loose + aggressive players', () => {
     expect(overallStyle(45, 30)).toBe('lag');
   });
-  it('returns TAP for tight + passive players', () => {
-    expect(overallStyle(15, 5)).toBe('tap');
+  it('returns TP for tight + passive players', () => {
+    expect(overallStyle(15, 5)).toBe('tp');
   });
-  it('returns LAP for loose + passive players', () => {
-    expect(overallStyle(45, 5)).toBe('lap');
+  it('returns LP for loose + passive players', () => {
+    expect(overallStyle(45, 5)).toBe('lp');
   });
   it('returns balanced when either dimension is normal', () => {
     expect(overallStyle(25, 15)).toBe('balanced');
