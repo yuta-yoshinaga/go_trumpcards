@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Card, CardDesign } from '../types/card';
-import { evaluateFiveCardHand, PokerHand, pokerSquaresRankToScore } from './pokerSquaresUtils';
+import { evaluateFiveCardHand, PokerHand, pokerHandKey, pokerSquaresRankToScore } from './pokerSquaresUtils';
 
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
@@ -160,5 +160,20 @@ describe('pokerSquaresRankToScore', () => {
     expect(pokerSquaresRankToScore(PokerHand.FourOfAKind)).toBe(50);
     expect(pokerSquaresRankToScore(PokerHand.StraightFlush)).toBe(75);
     expect(pokerSquaresRankToScore(PokerHand.RoyalFlush)).toBe(100);
+  });
+});
+
+describe('pokerHandKey', () => {
+  it('returns the i18n key suffix for each rank', () => {
+    expect(pokerHandKey(PokerHand.HighCard)).toBe('highCard');
+    expect(pokerHandKey(PokerHand.OnePair)).toBe('onePair');
+    expect(pokerHandKey(PokerHand.TwoPair)).toBe('twoPair');
+    expect(pokerHandKey(PokerHand.ThreeOfAKind)).toBe('threeOfAKind');
+    expect(pokerHandKey(PokerHand.Straight)).toBe('straight');
+    expect(pokerHandKey(PokerHand.Flush)).toBe('flush');
+    expect(pokerHandKey(PokerHand.FullHouse)).toBe('fullHouse');
+    expect(pokerHandKey(PokerHand.FourOfAKind)).toBe('fourOfAKind');
+    expect(pokerHandKey(PokerHand.StraightFlush)).toBe('straightFlush');
+    expect(pokerHandKey(PokerHand.RoyalFlush)).toBe('royalFlush');
   });
 });

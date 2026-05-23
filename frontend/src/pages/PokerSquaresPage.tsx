@@ -283,14 +283,13 @@ function PokerSquaresPageContent() {
                             >
                               <span>{s}</span>
                               {rowPreview && rowPreview.score - s !== 0 && (
-                                <span
+                                <div
                                   data-testid={`row-score-preview-${i}`}
                                   className="text-[10px] text-ds-success leading-none mt-0.5"
                                 >
-                                  {`+${rowPreview.score - s}`}
-                                  <br />
-                                  {t(`hand.${pokerHandKey(rowPreview.rank)}`)}
-                                </span>
+                                  +{rowPreview.score - s}
+                                  <div>{t(`hand.${pokerHandKey(rowPreview.rank)}`)}</div>
+                                </div>
                               )}
                             </div>
                           );

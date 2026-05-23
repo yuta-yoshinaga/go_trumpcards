@@ -32,24 +32,26 @@ const SCORE_TABLE: Record<PokerHandRank, number> = {
 
 /** Return the Poker Squares score for a hand rank. */
 export function pokerSquaresRankToScore(rank: PokerHandRank): number {
-  return SCORE_TABLE[rank] ?? 0;
+  return SCORE_TABLE[rank];
 }
+
+/** i18n key suffix for each hand rank, indexed by `PokerHandRank` value. */
+const POKER_HAND_KEYS = [
+  'highCard',
+  'onePair',
+  'twoPair',
+  'threeOfAKind',
+  'straight',
+  'flush',
+  'fullHouse',
+  'fourOfAKind',
+  'straightFlush',
+  'royalFlush',
+] as const;
 
 /** i18n key suffix for a hand rank. */
 export function pokerHandKey(rank: PokerHandRank): string {
-  const names = [
-    'highCard',
-    'onePair',
-    'twoPair',
-    'threeOfAKind',
-    'straight',
-    'flush',
-    'fullHouse',
-    'fourOfAKind',
-    'straightFlush',
-    'royalFlush',
-  ] as const;
-  return names[rank];
+  return POKER_HAND_KEYS[rank];
 }
 
 /**
