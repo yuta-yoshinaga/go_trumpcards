@@ -39,6 +39,34 @@ describe('SevensBoard', () => {
     expect(grid.style.gridTemplateColumns).toBe('auto repeat(13, 1fr)');
   });
 
+  it('expands grid with portal columns when tunnelEnabled', () => {
+    render(<SevensBoard {...defaultProps} tunnelEnabled={true} />);
+    const grid = screen.getByTestId('sevens-grid') as HTMLElement;
+    expect(grid.style.gridTemplateColumns).toBe('auto 16px repeat(13, 1fr) 16px');
+  });
+
+  it('uses a monochrome CSS-colorable glyph for portals (not a multi-color emoji)', () => {
+    render(<SevensBoard {...defaultProps} tunnelEnabled={true} />);
+    // ◉ is a text-presentation symbol; OS multi-color emoji like 🌀 ignore CSS color.
+    const left = screen.getAllByTestId('tunnel-portal-left')[0];
+    expect(left.textContent).toBe('◉');
+    expect(left.className).not.toContain('text-ds-warning');
+    // Inline color is set per-suit; first suit (SPADE) is white-ish per SUITS.
+    expect(left.style.color).not.toBe('');
+  });
+
+  it('renders portal markers on both ends of each suit row when tunnelEnabled', () => {
+    render(<SevensBoard {...defaultProps} tunnelEnabled={true} />);
+    expect(screen.getAllByTestId('tunnel-portal-left')).toHaveLength(4);
+    expect(screen.getAllByTestId('tunnel-portal-right')).toHaveLength(4);
+  });
+
+  it('does not render portal markers when tunnelEnabled is false', () => {
+    render(<SevensBoard {...defaultProps} tunnelEnabled={false} />);
+    expect(screen.queryAllByTestId('tunnel-portal-left')).toHaveLength(0);
+    expect(screen.queryAllByTestId('tunnel-portal-right')).toHaveLength(0);
+  });
+
   it('shows tunnel tag when tunnelEnabled', () => {
     render(<SevensBoard {...defaultProps} tunnelEnabled={true} />);
     expect(screen.getByText('[トンネル]')).toBeInTheDocument();
