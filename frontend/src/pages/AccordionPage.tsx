@@ -29,6 +29,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { AccordionResponse } from '../types/card';
 import { AccordionPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { accordionLegalTargets } from '../utils/accordionUtils';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 
@@ -123,6 +124,10 @@ function AccordionPageContent() {
   useMountReset(apiCall);
 
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+  // Tracks the pile under cursor/focus so we can paint legal -1/-3 targets
+  // (same suit OR same rank) without waiting for click. Reset by mouseleave/blur
+  // and on every state change (handled implicitly because piles re-key on size).
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
   const {
     hint: frontendHint,
@@ -309,40 +314,50 @@ function AccordionPageContent() {
 
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
             <div className="flex flex-wrap gap-1 sm:gap-2 justify-center" data-tutorial="ac-piles">
-              {state.piles.map((pile, idx) => {
-                const top = pile.cards[0];
-                const isSelected = selectedIdx === idx;
-                const hintFrom = state.hint?.fromIdx === idx;
-                const hintTo = state.hint?.toIdx === idx;
-                // Keying by the top card's identity lets React preserve
-                // per-pile state (ring/selection class transitions, AnimatedCard
-                // instances) when piles shift left after a merge.
-                const pileKey = top ? `${top.design}-${top.value}-${pile.size}` : `empty-${idx}`;
-                return (
-                  <button
-                    key={pileKey}
-                    type="button"
-                    className={`relative ${focusRingWhite} rounded-lg transition-transform ${
-                      isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
-                    } ${hintFrom ? 'ring-2 ring-ds-info animate-pulse' : ''} ${
-                      hintTo ? 'ring-2 ring-ds-success animate-pulse' : ''
-                    }`}
-                    onClick={() => handlePileClick(idx)}
-                    disabled={!isPlaying}
-                    aria-label={top ? `${idx}: ${cardAlt(top)}` : `${idx}: empty`}
-                  >
-                    {top && <AnimatedCard card={top} width={cardWidth} />}
-                    <span className="absolute top-0 left-0 text-[10px] bg-black/40 text-ds-text-primary rounded-br px-1">
-                      {idx}
-                    </span>
-                    {pile.size > 1 && (
-                      <span className="absolute bottom-0 right-0 text-[10px] bg-black/60 text-ds-text-primary rounded-tl px-1">
-                        +{pile.size - 1}
+              {(() => {
+                const hoverTargets =
+                  isPlaying && hoveredIdx !== null ? new Set(accordionLegalTargets(state.piles, hoveredIdx)) : null;
+                return state.piles.map((pile, idx) => {
+                  const top = pile.cards[0];
+                  const isSelected = selectedIdx === idx;
+                  const hintFrom = state.hint?.fromIdx === idx;
+                  const hintTo = state.hint?.toIdx === idx;
+                  const isHoverTarget = hoverTargets?.has(idx) ?? false;
+                  // Keying by the top card's identity lets React preserve
+                  // per-pile state (ring/selection class transitions, AnimatedCard
+                  // instances) when piles shift left after a merge.
+                  const pileKey = top ? `${top.design}-${top.value}-${pile.size}` : `empty-${idx}`;
+                  return (
+                    <button
+                      key={pileKey}
+                      type="button"
+                      className={`relative ${focusRingWhite} rounded-lg transition-transform ${
+                        isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
+                      } ${hintFrom ? 'ring-2 ring-ds-info animate-pulse' : ''} ${
+                        hintTo ? 'ring-2 ring-ds-success animate-pulse' : ''
+                      } ${isHoverTarget && !isSelected && !hintTo && !hintFrom ? 'ring-2 ring-ds-success' : ''}`}
+                      onClick={() => handlePileClick(idx)}
+                      onMouseEnter={isPlaying ? () => setHoveredIdx(idx) : undefined}
+                      onMouseLeave={() => setHoveredIdx((cur) => (cur === idx ? null : cur))}
+                      onFocus={isPlaying ? () => setHoveredIdx(idx) : undefined}
+                      onBlur={() => setHoveredIdx((cur) => (cur === idx ? null : cur))}
+                      disabled={!isPlaying}
+                      data-hover-target={isHoverTarget ? 'true' : 'false'}
+                      aria-label={top ? `${idx}: ${cardAlt(top)}` : `${idx}: empty`}
+                    >
+                      {top && <AnimatedCard card={top} width={cardWidth} />}
+                      <span className="absolute top-0 left-0 text-[10px] bg-black/40 text-ds-text-primary rounded-br px-1">
+                        {idx}
                       </span>
-                    )}
-                  </button>
-                );
-              })}
+                      {pile.size > 1 && (
+                        <span className="absolute bottom-0 right-0 text-[10px] bg-black/60 text-ds-text-primary rounded-tl px-1">
+                          +{pile.size - 1}
+                        </span>
+                      )}
+                    </button>
+                  );
+                });
+              })()}
             </div>
           </div>
 
