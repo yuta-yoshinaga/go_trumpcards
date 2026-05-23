@@ -109,6 +109,47 @@ describe('AccordionPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
   });
 
+  it('hovering a pile lights up legal -1/-3 merge targets', async () => {
+    const hoverState: AccordionResponse = {
+      ...playingState,
+      piles: [
+        { cards: [card('SPADE', 7)], size: 1 },
+        { cards: [card('HEART', 2)], size: 1 },
+        { cards: [card('CLOVER', 3)], size: 1 },
+        { cards: [card('SPADE', 9)], size: 1 },
+      ],
+      pileCount: 4,
+    };
+    mockExec.mockResolvedValue(hoverState);
+    renderWithProviders(<AccordionPage />);
+    const pile3 = await screen.findByRole('button', { name: /3:/ });
+    fireEvent.mouseEnter(pile3);
+    const pile0 = screen.getByRole('button', { name: /0:/ });
+    expect(pile0.dataset.hoverTarget).toBe('true');
+    expect(pile0.className).toContain('ring-ds-success');
+    // Adjacent pile (index 2) shares neither suit nor rank with SPADE 9.
+    expect(screen.getByRole('button', { name: /2:/ }).dataset.hoverTarget).toBe('false');
+  });
+
+  it('mouseleave clears the hover highlight', async () => {
+    const hoverState: AccordionResponse = {
+      ...playingState,
+      piles: [
+        { cards: [card('SPADE', 7)], size: 1 },
+        { cards: [card('HEART', 2)], size: 1 },
+        { cards: [card('CLOVER', 3)], size: 1 },
+        { cards: [card('SPADE', 9)], size: 1 },
+      ],
+      pileCount: 4,
+    };
+    mockExec.mockResolvedValue(hoverState);
+    renderWithProviders(<AccordionPage />);
+    const pile3 = await screen.findByRole('button', { name: /3:/ });
+    fireEvent.mouseEnter(pile3);
+    fireEvent.mouseLeave(pile3);
+    expect(screen.getByRole('button', { name: /0:/ }).dataset.hoverTarget).toBe('false');
+  });
+
   it('shows error alert when API fails on mount', async () => {
     mockExec.mockRejectedValue(new Error('network error'));
     renderWithProviders(<AccordionPage />);
