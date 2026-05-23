@@ -257,10 +257,13 @@ describe('HighCardFlushPage', () => {
     await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
     await waitFor(() => expect(screen.getByRole('button', { name: 'レイズ x2' })).toBeInTheDocument());
-    // The dealer's hand wrapper carries data-flush-card="false" but should NOT have the dim/highlight classes during action phase.
-    const dealerSection = document.querySelectorAll('[data-flush-card]');
-    const dealerWrapper = Array.from(dealerSection).find((el) => el.querySelector('img[alt*="2"]'));
-    expect(dealerWrapper?.className).not.toContain('drop-shadow');
-    expect(dealerWrapper?.className).not.toContain('opacity-50');
+    // Scope by data-card-section so we don't rely on alt-text matching (which
+    // would silently start testing the wrong element if AnimatedCard's alt
+    // format ever changes).
+    const dealerWrappers = document.querySelectorAll('[data-card-section="dealer"]');
+    expect(dealerWrappers.length).toBe(1);
+    const dealerWrapper = dealerWrappers[0] as HTMLElement;
+    expect(dealerWrapper.className).not.toContain('drop-shadow');
+    expect(dealerWrapper.className).not.toContain('opacity-50');
   });
 });

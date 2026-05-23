@@ -31,6 +31,17 @@ describe('longestFlushSuit', () => {
     expect(longestFlushSuit([card('SPADE', 1), card('SPADE', 5), card('HEART', 13), card('HEART', 9)])).toBe('HEART');
   });
 
+  it('compares second card when count and highest card both tie (showdown rule)', () => {
+    // SPADE: [K, 2], HEART: [K, 5] → same count, same top, HEART wins on 2nd card.
+    expect(longestFlushSuit([card('SPADE', 13), card('SPADE', 2), card('HEART', 13), card('HEART', 5)])).toBe('HEART');
+  });
+
+  it('stays deterministic when every position ties — first-inserted suit wins', () => {
+    // Identical [K, 5] for both suits: the first inserted (SPADE) wins, not a
+    // random Map iteration. Documents the deterministic fall-through.
+    expect(longestFlushSuit([card('SPADE', 13), card('SPADE', 5), card('HEART', 13), card('HEART', 5)])).toBe('SPADE');
+  });
+
   it('handles a 7-card hand with a 4-card flush', () => {
     const hand = [
       card('SPADE', 14),

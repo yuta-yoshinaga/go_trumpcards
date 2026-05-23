@@ -71,6 +71,15 @@ function HighCardFlushPageContent() {
   const isEndPhase = state?.phase === HighCardFlushPhase.END;
   const maxMultiplier = state?.maxRaiseMultiplier ?? 1;
 
+  // Memoize the longest-flush computation per hand so it doesn't run on every
+  // unrelated re-render (e.g. bet-input changes). Dealer flush also gates on
+  // isEndPhase to avoid spoilers during the action phase.
+  const playerFlushSuit = useMemo(() => longestFlushSuit(state?.playerHand ?? []), [state?.playerHand]);
+  const dealerFlushSuit = useMemo(
+    () => (isEndPhase ? longestFlushSuit(state?.dealerHand ?? []) : null),
+    [isEndPhase, state?.dealerHand],
+  );
+
   const actionBindings = useMemo(
     () => [
       {
@@ -198,23 +207,21 @@ function HighCardFlushPageContent() {
               )}
             </div>
             <div className="flex justify-center flex-wrap gap-2">
-              {(() => {
-                const flushSuit = longestFlushSuit(state.playerHand);
-                return state.playerHand.map((card, i) => {
-                  const inFlush = card.design === flushSuit;
-                  return (
-                    <div
-                      key={`p-${card.design}-${card.value}-${i}`}
-                      className={`transition-all ${
-                        inFlush ? 'drop-shadow-[0_0_8px_var(--color-ds-warning)] -translate-y-1' : 'opacity-50'
-                      }`}
-                      data-flush-card={inFlush ? 'true' : 'false'}
-                    >
-                      <AnimatedCard card={card} width={cardWidth} />
-                    </div>
-                  );
-                });
-              })()}
+              {state.playerHand.map((card, i) => {
+                const inFlush = card.design === playerFlushSuit;
+                return (
+                  <div
+                    key={`p-${card.design}-${card.value}-${i}`}
+                    className={`transition-all ${
+                      inFlush ? 'drop-shadow-[0_0_8px_var(--color-ds-warning)] -translate-y-1' : 'opacity-50'
+                    }`}
+                    data-card-section="player"
+                    data-flush-card={inFlush ? 'true' : 'false'}
+                  >
+                    <AnimatedCard card={card} width={cardWidth} />
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -234,29 +241,26 @@ function HighCardFlushPageContent() {
               )}
             </div>
             <div className="flex justify-center flex-wrap gap-2">
-              {(() => {
-                // Only highlight the dealer's flush at end-phase (showdown). Before that
-                // we don't want to spoil any partial dealer information.
-                const flushSuit = isEndPhase ? longestFlushSuit(state.dealerHand) : null;
-                return state.dealerHand.map((card, i) => {
-                  const inFlush = flushSuit !== null && card.design === flushSuit;
-                  return (
-                    <div
-                      key={`d-${card.design}-${card.value}-${i}`}
-                      className={`transition-all ${
-                        flushSuit === null
-                          ? ''
-                          : inFlush
-                            ? 'drop-shadow-[0_0_8px_var(--color-ds-error)] -translate-y-1'
-                            : 'opacity-50'
-                      }`}
-                      data-flush-card={inFlush ? 'true' : 'false'}
-                    >
-                      <AnimatedCard card={card} width={cardWidth} />
-                    </div>
-                  );
-                });
-              })()}
+              {state.dealerHand.map((card, i) => {
+                // dealerFlushSuit is null during the action phase (no spoilers).
+                const inFlush = dealerFlushSuit !== null && card.design === dealerFlushSuit;
+                return (
+                  <div
+                    key={`d-${card.design}-${card.value}-${i}`}
+                    className={`transition-all ${
+                      dealerFlushSuit === null
+                        ? ''
+                        : inFlush
+                          ? 'drop-shadow-[0_0_8px_var(--color-ds-error)] -translate-y-1'
+                          : 'opacity-50'
+                    }`}
+                    data-card-section="dealer"
+                    data-flush-card={inFlush ? 'true' : 'false'}
+                  >
+                    <AnimatedCard card={card} width={cardWidth} />
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
