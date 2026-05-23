@@ -42,7 +42,17 @@ describe('SevensBoard', () => {
   it('expands grid with portal columns when tunnelEnabled', () => {
     render(<SevensBoard {...defaultProps} tunnelEnabled={true} />);
     const grid = screen.getByTestId('sevens-grid') as HTMLElement;
-    expect(grid.style.gridTemplateColumns).toBe('auto 14px repeat(13, 1fr) 14px');
+    expect(grid.style.gridTemplateColumns).toBe('auto 16px repeat(13, 1fr) 16px');
+  });
+
+  it('uses a monochrome CSS-colorable glyph for portals (not a multi-color emoji)', () => {
+    render(<SevensBoard {...defaultProps} tunnelEnabled={true} />);
+    // ◉ is a text-presentation symbol; OS multi-color emoji like 🌀 ignore CSS color.
+    const left = screen.getAllByTestId('tunnel-portal-left')[0];
+    expect(left.textContent).toBe('◉');
+    expect(left.className).not.toContain('text-ds-warning');
+    // Inline color is set per-suit; first suit (SPADE) is white-ish per SUITS.
+    expect(left.style.color).not.toBe('');
   });
 
   it('renders portal markers on both ends of each suit row when tunnelEnabled', () => {

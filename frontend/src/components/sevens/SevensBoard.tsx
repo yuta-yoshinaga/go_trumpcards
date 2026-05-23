@@ -33,7 +33,7 @@ function Board({
 }: BoardProps) {
   const { t } = useTranslation('sevens');
   const isMobile = useIsMobile();
-  const gridTemplateColumns = tunnelEnabled ? 'auto 14px repeat(13, 1fr) 14px' : 'auto repeat(13, 1fr)';
+  const gridTemplateColumns = tunnelEnabled ? 'auto 16px repeat(13, 1fr) 16px' : 'auto repeat(13, 1fr)';
   return (
     <div className="bg-black/30 rounded-[10px] py-2 px-2 sm:px-3.5 my-2">
       <div className="text-ds-text-primary font-bold mb-1.5 text-sm">
@@ -57,7 +57,7 @@ function Board({
                 >
                   {label}
                   {tunnelEnabled && (
-                    <span role="img" className="text-ds-warning text-[8px] ml-0.5" aria-label={t('tunnelConnection')}>
+                    <span role="img" className="text-[8px] ml-0.5" style={{ color }} aria-label={t('tunnelConnection')}>
                       ↔
                     </span>
                   )}
@@ -66,11 +66,11 @@ function Board({
                   <span
                     role="img"
                     aria-label={t('tunnelPortalLeft')}
-                    className="flex items-center justify-center text-ds-warning text-xs motion-safe:animate-pulse"
+                    className="flex items-center justify-center text-xs motion-safe:animate-pulse"
                     data-testid="tunnel-portal-left"
                     style={{ color }}
                   >
-                    🌀
+                    ◉
                   </span>
                 )}
                 {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => {
@@ -125,11 +125,11 @@ function Board({
                   <span
                     role="img"
                     aria-label={t('tunnelPortalRight')}
-                    className="flex items-center justify-center text-ds-warning text-xs motion-safe:animate-pulse"
+                    className="flex items-center justify-center text-xs motion-safe:animate-pulse"
                     data-testid="tunnel-portal-right"
                     style={{ color }}
                   >
-                    🌀
+                    ◉
                   </span>
                 )}
               </div>
