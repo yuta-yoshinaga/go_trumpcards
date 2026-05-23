@@ -329,7 +329,7 @@ function OldMaidPageContent() {
             )}
 
             {/* Draw History Timeline */}
-            <OldMaidDrawHistory entries={state.drawHistory ?? []} players={state.players} />
+            <OldMaidDrawHistory entries={state.drawHistory ?? []} players={state.players} suspectPins={suspectPins} />
 
             {/* Result */}
             <GameMessageBox
