@@ -205,6 +205,31 @@ describe('ShitheadPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /ブラインドで出す/ })).toBeInTheDocument());
   });
 
+  it('renders magic-card badges for enabled magic ranks in the human hand', async () => {
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/shithead']}>
+        <ShitheadPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => expect(screen.getByTestId('sh-magic-badge-2-2')).toBeInTheDocument());
+    expect(screen.queryByTestId('sh-magic-badge-5-0')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('sh-magic-badge-9-1')).not.toBeInTheDocument();
+  });
+
+  it('omits the magic badge when the rule is disabled in config', async () => {
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      config: { ...baseConfig, magicTwo: false },
+    });
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/shithead']}>
+        <ShitheadPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => expect(screen.getByText('5')).toBeInTheDocument());
+    expect(screen.queryByTestId('sh-magic-badge-2-2')).not.toBeInTheDocument();
+  });
+
   it('shows ? for joker design in discard pile description', async () => {
     mockExec.mockResolvedValue({
       ...humanTurnState,

@@ -18,7 +18,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useShitheadGame } from '../hooks/useShitheadGame';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { Card, CardDesign, ShitheadResponse } from '../types/card';
+import type { Card, CardDesign, ShitheadConfig, ShitheadResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { parseShitheadCommand, SHITHEAD_HELP } from '../utils/cli/commands/shitheadCommands';
 import { formatShitheadState } from '../utils/cli/formatters/shitheadFormatter';
@@ -97,6 +97,7 @@ function ShitheadPageContent() {
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isHumanTurn = state.players[state.currentTurn]?.isHuman === true && !isGameEnd;
   const phaseName = isGameEnd ? t('phase.gameEnd') : t('phase.play');
+  const magicLookup = buildMagicLookup(state.config, t);
 
   return (
     <GamePageShell
@@ -174,6 +175,7 @@ function ShitheadPageContent() {
                     selectable={isHumanTurn && state.currentSource === SOURCE_HAND}
                     selected={selectedCardIndices}
                     onToggle={toggleCard}
+                    magic={magicLookup}
                   />
                 )}
                 {humanPlayer.faceUpCards.length > 0 && (
@@ -183,6 +185,7 @@ function ShitheadPageContent() {
                     selectable={isHumanTurn && state.currentSource === SOURCE_FACE_UP}
                     selected={selectedCardIndices}
                     onToggle={toggleCard}
+                    magic={magicLookup}
                   />
                 )}
                 {humanPlayer.faceDownCount > 0 && (
@@ -277,10 +280,33 @@ interface CardRowProps {
   selectable: boolean;
   selected: number[];
   onToggle: (index: number) => void;
+  magic: MagicLookup;
+}
+
+/** Lookup helpers for Shithead magic-card affordances. */
+interface MagicLookup {
+  /** Returns the emoji badge for the rank, or empty string if the card is not magic. */
+  badgeFor: (value: number) => string;
+  /** Returns the localized tooltip describing the card's effect, or empty string if none. */
+  titleFor: (value: number) => string;
+}
+
+/** Build a magic-card lookup from the active Shithead config. */
+function buildMagicLookup(config: ShitheadConfig, t: (key: string) => string): MagicLookup {
+  const map: Record<number, { enabled: boolean; emoji: string; key: string }> = {
+    2: { enabled: config.magicTwo, emoji: '🔄', key: 'magicEffect.two' },
+    7: { enabled: config.magicSeven, emoji: '⬇️', key: 'magicEffect.seven' },
+    8: { enabled: config.magicEight, emoji: '⏭️', key: 'magicEffect.eight' },
+    10: { enabled: config.magicTen, emoji: '🔥', key: 'magicEffect.ten' },
+  };
+  return {
+    badgeFor: (v) => (map[v]?.enabled ? map[v].emoji : ''),
+    titleFor: (v) => (map[v]?.enabled ? t(map[v].key) : ''),
+  };
 }
 
 /** Row of selectable cards with index labels. */
-function CardRow({ label, cards, selectable, selected, onToggle }: CardRowProps) {
+function CardRow({ label, cards, selectable, selected, onToggle, magic }: CardRowProps) {
   return (
     <div className="space-y-1">
       <div className="text-xs uppercase tracking-wide text-ds-text-muted">{label}</div>
@@ -292,16 +318,29 @@ function CardRow({ label, cards, selectable, selected, onToggle }: CardRowProps)
             : selectable
               ? 'bg-ds-surface-elevated text-ds-text-primary border-ds-border-subtle hover:bg-ds-surface-elevated-hover'
               : 'bg-ds-surface text-ds-text-muted border-ds-border-subtle';
+          const badge = magic.badgeFor(c.value);
+          const title = magic.titleFor(c.value);
           return (
             <button
               key={`hand-${i}`}
               type="button"
               disabled={!selectable}
               onClick={() => onToggle(i)}
-              className={`min-w-[3rem] px-2 py-2 rounded border text-sm ${cls}`}
+              title={title || undefined}
+              data-magic-rank={badge ? c.value : undefined}
+              className={`relative min-w-[3rem] px-2 py-2 rounded border text-sm ${cls}`}
             >
               <span className="block leading-none">{suitSymbol(c.design)}</span>
               <span className="block text-base font-bold">{c.value}</span>
+              {badge && (
+                <span
+                  aria-hidden="true"
+                  className="absolute -top-1 -right-1 text-xs leading-none drop-shadow"
+                  data-testid={`sh-magic-badge-${c.value}-${i}`}
+                >
+                  {badge}
+                </span>
+              )}
             </button>
           );
         })}
