@@ -238,6 +238,47 @@ describe('ContractRummyPage', () => {
     expect(screen.getByRole('button', { name: /Lay off|レイオフ/ })).toBeInTheDocument();
   });
 
+  it('shows per-slot progress and only enables Submit when both slots satisfy their contract', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<ContractRummyPage />);
+    await waitFor(() => expect(screen.getByTestId('cr-slot-progress')).toBeInTheDocument());
+    // Both slots start empty.
+    expect(screen.getByTestId('cr-slot-progress-0')).toHaveAttribute('data-state', 'empty');
+    expect(screen.getByTestId('cr-slot-progress-1')).toHaveAttribute('data-state', 'empty');
+    expect(screen.getByTestId('cr-submit-contract')).toBeDisabled();
+
+    // Fill slot 0 with the three 5s — valid set.
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.querySelector('img'));
+    fireEvent.click(cardButtons[0]);
+    fireEvent.click(cardButtons[1]);
+    fireEvent.click(cardButtons[2]);
+    fireEvent.click(screen.getByRole('button', { name: /Add to slot|スロットに追加/ }));
+    await waitFor(() => expect(screen.getByTestId('cr-slot-progress-0')).toHaveAttribute('data-state', 'satisfied'));
+    expect(screen.getByTestId('cr-submit-contract')).toBeDisabled();
+
+    // Fill slot 1 with the three Ks — valid set.
+    fireEvent.click(cardButtons[3]);
+    fireEvent.click(cardButtons[4]);
+    fireEvent.click(cardButtons[5]);
+    fireEvent.click(screen.getByRole('button', { name: /Add to slot|スロットに追加/ }));
+    await waitFor(() => expect(screen.getByTestId('cr-slot-progress-1')).toHaveAttribute('data-state', 'satisfied'));
+    expect(screen.getByTestId('cr-submit-contract')).not.toBeDisabled();
+  });
+
+  it('flags an invalid set as invalid in the slot progress chip', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<ContractRummyPage />);
+    await waitFor(() => expect(screen.getByTestId('cr-slot-progress-0')).toBeInTheDocument());
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.querySelector('img'));
+    // Three mismatched ranks (5, K, 2) — not a valid set.
+    fireEvent.click(cardButtons[0]);
+    fireEvent.click(cardButtons[3]);
+    fireEvent.click(cardButtons[6]);
+    fireEvent.click(screen.getByRole('button', { name: /Add to slot|スロットに追加/ }));
+    await waitFor(() => expect(screen.getByTestId('cr-slot-progress-0')).toHaveAttribute('data-state', 'invalid'));
+    expect(screen.getByTestId('cr-submit-contract')).toBeDisabled();
+  });
+
   it('shows winner banner at game end', async () => {
     const endState: ContractRummyResponse = {
       ...drawState,
