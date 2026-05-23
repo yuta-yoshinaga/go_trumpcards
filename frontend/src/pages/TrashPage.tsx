@@ -190,6 +190,14 @@ function TrashPageContent() {
         ? t('phase.awaitWild')
         : t('phase.playerTurn');
 
+  // Slot index where the pending non-wild card should land. Wild cards (K/Joker)
+  // route through AWAIT_WILD's existing highlightFaceDown path, so this stays
+  // null whenever isAwaitWild is true or the value is outside 1..10.
+  const pendingTargetIdx =
+    isHumanTurn && !isAwaitWild && state.pending && state.pending.value >= 1 && state.pending.value <= 10
+      ? state.pending.value - 1
+      : null;
+
   return (
     <GamePageShell
       title={tc('nav.trash')}
@@ -225,6 +233,7 @@ function TrashPageContent() {
               highlightFaceDown={false}
               onSlotClick={undefined}
               dataTutorial="tr-opponent"
+              pendingTargetIdx={null}
             />
 
             <div className="flex items-center justify-center gap-6" data-tutorial="tr-stock">
@@ -254,6 +263,7 @@ function TrashPageContent() {
               highlightFaceDown={isAwaitWild && isHumanTurn}
               onSlotClick={isAwaitWild && isHumanTurn ? handleSlotClick : undefined}
               dataTutorial="tr-player"
+              pendingTargetIdx={pendingTargetIdx}
             />
           </div>
 
@@ -305,6 +315,7 @@ function PlayerRow({
   highlightFaceDown,
   onSlotClick,
   dataTutorial,
+  pendingTargetIdx,
 }: {
   label: string;
   slots: TrashSlot[];
@@ -312,6 +323,8 @@ function PlayerRow({
   highlightFaceDown: boolean;
   onSlotClick: ((idx: number) => void) | undefined;
   dataTutorial: string;
+  /** Slot index (0..9) where a freshly drawn non-wild card should land, or null. */
+  pendingTargetIdx: number | null;
 }) {
   return (
     <div className="flex flex-col items-center" data-tutorial={dataTutorial}>
@@ -320,15 +333,25 @@ function PlayerRow({
         {slots.map((slot, idx) => {
           const key = `${idx}-${slot.faceUp ? `${slot.card?.design}-${slot.card?.value}` : 'face-down'}`;
           const interactive = !slot.faceUp && onSlotClick !== undefined;
+          const wildHighlight = highlightFaceDown && !slot.faceUp;
+          const pendingHighlight = pendingTargetIdx === idx && !slot.faceUp;
+          // Wild highlight (info ring on every face-down slot) wins over the
+          // single-slot pending highlight so the broader affordance reads first.
+          const ringClass = wildHighlight
+            ? 'ring-2 ring-ds-info hover:-translate-y-0.5'
+            : pendingHighlight
+              ? 'ring-2 ring-ds-warning motion-safe:animate-pulse'
+              : '';
           return (
             <button
               key={key}
               type="button"
-              className={`relative ${focusRingWhite} rounded-lg transition-transform ${
-                highlightFaceDown && !slot.faceUp ? 'ring-2 ring-ds-info hover:-translate-y-0.5' : ''
-              } ${interactive ? 'cursor-pointer' : 'cursor-default'}`}
+              className={`relative ${focusRingWhite} rounded-lg transition-transform ${ringClass} ${
+                interactive ? 'cursor-pointer' : 'cursor-default'
+              }`}
               onClick={() => onSlotClick?.(idx)}
               disabled={!interactive}
+              data-pending-target={pendingHighlight ? 'true' : 'false'}
               aria-label={slot.faceUp && slot.card ? `${idx + 1}: ${cardAlt(slot.card)}` : `${idx + 1}: face-down`}
             >
               {slot.faceUp && slot.card ? (
