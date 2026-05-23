@@ -183,6 +183,63 @@ describe('CanastaPage', () => {
     expect(screen.queryByRole('button', { name: '確認' })).not.toBeInTheDocument();
   });
 
+  it('shows the disabled reason for draw-from-discard when no cards are selected', async () => {
+    renderWithProviders(<CanastaPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument());
+    const reason = screen.getByTestId('ca-draw-discard-reason');
+    expect(reason).toHaveTextContent('手札からトップカードと同ランクの2枚を選択してください');
+  });
+
+  it('renders the frozen badge and reason when the discard pile is frozen', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, isFrozen: true });
+    renderWithProviders(<CanastaPage />);
+    await waitFor(() => expect(screen.getByTestId('ca-frozen-badge')).toBeInTheDocument());
+    expect(screen.getByTestId('ca-draw-discard-reason')).toHaveTextContent(
+      'フリーズ中はワイルドカードでの代用ができません',
+    );
+  });
+
+  it('switches the reason to selectOneMore once the player selects one card', async () => {
+    renderWithProviders(<CanastaPage />);
+    await waitFor(() => expect(screen.getByTestId('ca-draw-discard-reason')).toBeInTheDocument());
+    const handCards = screen.getAllByRole('button', { pressed: false }).filter((b) => b.hasAttribute('aria-pressed'));
+    fireEvent.click(handCards[0]);
+    expect(screen.getByTestId('ca-draw-discard-reason')).toHaveTextContent('もう1枚選択してください');
+  });
+
+  it('clears the reason and enables the draw button when exactly 2 cards are selected', async () => {
+    renderWithProviders(<CanastaPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument());
+    const handCards = screen.getAllByRole('button', { pressed: false }).filter((b) => b.hasAttribute('aria-pressed'));
+    fireEvent.click(handCards[0]);
+    fireEvent.click(handCards[1]);
+    expect(screen.queryByTestId('ca-draw-discard-reason')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '捨て札を取る' })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: '捨て札を取る' })).not.toHaveAttribute('aria-describedby');
+  });
+
+  it('warns when more than 2 cards are selected', async () => {
+    renderWithProviders(<CanastaPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument());
+    const handCards = screen.getAllByRole('button', { pressed: false }).filter((b) => b.hasAttribute('aria-pressed'));
+    fireEvent.click(handCards[0]);
+    fireEvent.click(handCards[1]);
+    fireEvent.click(handCards[2]);
+    expect(screen.getByTestId('ca-draw-discard-reason')).toHaveTextContent('選択は2枚までです');
+    expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeDisabled();
+  });
+
+  it('keeps the frozen warning visible while the player has only picked one card', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, isFrozen: true });
+    renderWithProviders(<CanastaPage />);
+    await waitFor(() => expect(screen.getByTestId('ca-frozen-badge')).toBeInTheDocument());
+    const handCards = screen.getAllByRole('button', { pressed: false }).filter((b) => b.hasAttribute('aria-pressed'));
+    fireEvent.click(handCards[0]);
+    expect(screen.getByTestId('ca-draw-discard-reason')).toHaveTextContent(
+      'フリーズ中はワイルドカードでの代用ができません',
+    );
+  });
+
   afterEach(() => {
     localStorage.clear();
   });
