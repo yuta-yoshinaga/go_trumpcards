@@ -189,7 +189,7 @@ function NertzPageContent() {
         selection.kind === 'tableau'
           ? { zone: 'tableau', col: selection.col, cardIndex: selection.cardIndex }
           : { zone: selection.kind };
-      if (to.zone === 'foundation') {
+      if (to.zone === 'foundation' && to.idx !== undefined) {
         pendingFoundationRef.current = to.idx;
       }
       void apiCall('m', { playerIdx: 0, from, to });
