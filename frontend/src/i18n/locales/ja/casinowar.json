@@ -16,7 +16,8 @@
     "bet": "ベット",
     "surrender": "サレンダー",
     "war": "ウォー",
-    "reset": "リセット"
+    "reset": "リセット",
+    "rebet": "再ベット ({{amount}})"
   },
   "phase": {
     "bet": "ベット",

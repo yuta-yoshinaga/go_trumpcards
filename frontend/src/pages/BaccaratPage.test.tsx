@@ -454,6 +454,24 @@ describe('BaccaratPage', () => {
     expect(mockSetHintEnabled).toHaveBeenCalledWith(true);
   });
 
+  it('shows a Rebet button at end-phase after a bet has been placed, replaying with the same amount', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(endPhasePlayerWins);
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(screen.getByTestId('bac-rebet-button')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValueOnce(betPhaseState);
+    mockExec.mockResolvedValueOnce(endPhasePlayerWins);
+    fireEvent.click(screen.getByTestId('bac-rebet-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 100, 0, 0, 0));
+  });
+
   it('payout table is rendered as a collapsible details element in bet phase', async () => {
     mockExec.mockResolvedValue(betPhaseState);
     const { container } = renderWithProviders(<BaccaratPage />);

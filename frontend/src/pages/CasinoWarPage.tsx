@@ -56,6 +56,7 @@ function CasinoWarPageContent() {
     useGamePageSetup('casinowar');
 
   const [betAmount, setBetAmount] = useState(100);
+  const [lastBetAmount, setLastBetAmount] = useState<number | null>(null);
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
   const { state, loading, error, exec: execApi, retry } = useGameApi(casinowarApi.exec);
@@ -99,10 +100,19 @@ function CasinoWarPageContent() {
     );
   }
 
-  const handleBet = () => execApi('bet', betAmount);
+  const handleBet = () => {
+    setLastBetAmount(betAmount);
+    execApi('bet', betAmount);
+  };
   const handleSurrender = () => execApi('surrender');
   const handleWar = () => execApi('war');
   const handleReset = () => execApi('reset');
+  const canRebet = lastBetAmount !== null && lastBetAmount > 0 && lastBetAmount <= state.chips;
+  const handleRebet = async () => {
+    if (lastBetAmount === null) return;
+    await execApi('reset');
+    await execApi('bet', lastBetAmount);
+  };
 
   const phaseName = isBetPhase
     ? t('phase.bet')
@@ -264,6 +274,17 @@ function CasinoWarPageContent() {
             )}
             {isEndPhase && (
               <div className="flex justify-center gap-2 pb-2">
+                {canRebet && (
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleRebet}
+                    disabled={loading}
+                    data-testid="cw-rebet-button"
+                  >
+                    {t('button.rebet', { amount: lastBetAmount })}
+                  </button>
+                )}
                 <GameResetButton
                   isGameEnd={isEndPhase}
                   onReset={handleReset}

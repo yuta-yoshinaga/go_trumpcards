@@ -187,6 +187,13 @@ function BaccaratPageContent() {
   const [betType, setBetType] = useState<number>(BaccaratBetType.PLAYER);
   const [playerPairBet, setPlayerPairBet] = useState(0);
   const [bankerPairBet, setBankerPairBet] = useState(0);
+  // Snapshot of the last accepted bet, used to power the one-click Rebet button at end-phase.
+  const [lastBet, setLastBet] = useState<{
+    amount: number;
+    type: number;
+    pp: number;
+    bp: number;
+  } | null>(null);
 
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(baccaratApi.exec);
@@ -231,11 +238,21 @@ function BaccaratPageContent() {
   if (!state) return <GameSkeleton gameKey="baccarat" layout={{ kind: 'casino-table', sections: [2, 2] }} />;
 
   const handleBet = () => {
+    setLastBet({ amount: betAmount, type: betType, pp: playerPairBet, bp: bankerPairBet });
     execApi('bet', betAmount, betType, playerPairBet, bankerPairBet);
   };
 
   const handleReset = () => {
     execApi('reset');
+  };
+
+  const totalLastBet = lastBet ? lastBet.amount + lastBet.pp + lastBet.bp : 0;
+  const canRebet = lastBet !== null && totalLastBet > 0 && totalLastBet <= state.chips;
+
+  const handleRebet = async () => {
+    if (!lastBet) return;
+    await execApi('reset');
+    await execApi('bet', lastBet.amount, lastBet.type, lastBet.pp, lastBet.bp);
   };
 
   const handleClearHistory = () => {
@@ -424,6 +441,17 @@ function BaccaratPageContent() {
             )}
             {isEndPhase && (
               <div className="flex justify-center gap-2 pb-2">
+                {canRebet && (
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleRebet}
+                    disabled={loading}
+                    data-testid="bac-rebet-button"
+                  >
+                    {t('button.rebet', { amount: totalLastBet })}
+                  </button>
+                )}
                 <GameResetButton
                   isGameEnd={isEndPhase}
                   onReset={handleReset}

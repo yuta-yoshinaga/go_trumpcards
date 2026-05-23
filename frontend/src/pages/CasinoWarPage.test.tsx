@@ -183,6 +183,23 @@ describe('CasinoWarPage', () => {
     await waitFor(() => expect(screen.queryAllByRole('button', { name: /ベット/ })).toHaveLength(0));
   });
 
+  it('shows a Rebet button at end-phase after a bet has been placed', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<CasinoWarPage />);
+    const betBtn = await screen.findByRole('button', { name: /ベット/ });
+    mockApi.mockClear();
+    mockApi.mockResolvedValue(winState);
+    fireEvent.click(betBtn);
+    await waitFor(() => expect(screen.getByTestId('cw-rebet-button')).toBeInTheDocument());
+
+    mockApi.mockClear();
+    mockApi.mockResolvedValueOnce(betState);
+    mockApi.mockResolvedValueOnce(winState);
+    fireEvent.click(screen.getByTestId('cw-rebet-button'));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 100));
+  });
+
   it('disables War button when chips < ante', async () => {
     const broke: CasinoWarResponse = { ...tieState, chips: 50 };
     mockApi.mockResolvedValue(broke);
