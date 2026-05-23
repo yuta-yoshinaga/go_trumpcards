@@ -12,6 +12,8 @@ export interface TrickDisplayCard {
 export interface TrickDisplayPlayer {
   id: number;
   isHuman: boolean;
+  /** Team identifier (0/1) for partner-based games. Omitted for free-for-all games. */
+  team?: number;
 }
 
 /** Props for {@link TrickDisplay}. */
@@ -33,26 +35,52 @@ export interface TrickDisplayProps {
  * Napoleon, OhHell, TwoTenJack, Whist). Renders each played card with the player's
  * name underneath, or nothing when the trick is empty. AnimatedCard plays the
  * default deal SFX itself, so callers no longer need to thread a sound callback.
+ *
+ * Partner-aware games (Bridge, Euchre, Whist, Tarneeb, ...) pass a `team` field
+ * on each TrickDisplayPlayer and the card is bordered + labeled in the human
+ * team's color (blue) or the opposing team's color (red) to make ally/opponent
+ * relationships scannable at a glance.
  */
 export function TrickDisplay({ currentTrick, players, cardWidth, label, dataTutorial }: TrickDisplayProps) {
   if (currentTrick.length === 0) {
     return null;
   }
+
+  const human = players.find((p) => p.isHuman);
+  const humanTeam = human?.team;
+  const hasTeams = humanTeam !== undefined && players.some((p) => p.team !== undefined && p.team !== humanTeam);
+
   return (
     <div className="my-3 p-3 rounded bg-black/40" data-tutorial={dataTutorial}>
       <div className="text-ds-text-muted text-sm mb-1">{label}</div>
       <div className="flex gap-2">
-        {currentTrick.map((trickCard) => (
-          <div key={`trick-${trickCard.playerIdx}`} className="text-center">
-            <AnimatedCard card={trickCard.card} width={cardWidth} />
-            <div className="text-game-text-muted text-xs mt-1">
-              {playerName(
-                players[trickCard.playerIdx]?.id ?? trickCard.playerIdx,
-                players[trickCard.playerIdx]?.isHuman ?? false,
-              )}
+        {currentTrick.map((trickCard) => {
+          const player = players[trickCard.playerIdx];
+          const team = player?.team;
+          const isAlly = hasTeams && team !== undefined && team === humanTeam;
+          const isFoe = hasTeams && team !== undefined && team !== humanTeam;
+          const wrapperClass = isAlly ? 'ring-2 ring-ds-info rounded' : isFoe ? 'ring-2 ring-ds-error rounded' : '';
+          const labelClass = isAlly
+            ? 'text-ds-info font-semibold'
+            : isFoe
+              ? 'text-ds-error font-semibold'
+              : 'text-game-text-muted';
+          return (
+            <div
+              key={`trick-${trickCard.playerIdx}`}
+              className="text-center"
+              data-team={team ?? undefined}
+              data-team-role={isAlly ? 'ally' : isFoe ? 'foe' : undefined}
+            >
+              <div className={wrapperClass}>
+                <AnimatedCard card={trickCard.card} width={cardWidth} />
+              </div>
+              <div className={`text-xs mt-1 ${labelClass}`}>
+                {playerName(player?.id ?? trickCard.playerIdx, player?.isHuman ?? false)}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
