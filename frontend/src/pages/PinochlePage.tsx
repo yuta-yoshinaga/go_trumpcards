@@ -178,6 +178,34 @@ function PinochlePageContent() {
     return new Set<string>(meld.cards.map((c) => `${c.design}-${c.value}`));
   }, [state, highlightedMeldIdx]);
 
+  // Precompute the localized meld-list tooltip per card key so the badge render doesn't
+  // re-translate + join on every parent re-render (e.g., bid-amount edits).
+  const cardKeyToMeldTitle = useMemo(() => {
+    const out = new Map<string, string>();
+    const players = state?.players;
+    const playerMelds = state?.playerMelds;
+    if (!players || !playerMelds) return out;
+    const humanIdxLocal = players.findIndex((p) => p.isHuman);
+    const myMelds = humanIdxLocal >= 0 ? playerMelds[humanIdxLocal] : null;
+    if (!myMelds) return out;
+    const cardKeyToTypes = new Map<string, number[]>();
+    for (const m of myMelds) {
+      for (const c of m.cards) {
+        const key = `${c.design}-${c.value}`;
+        const existing = cardKeyToTypes.get(key);
+        if (existing) {
+          if (!existing.includes(m.type)) existing.push(m.type);
+        } else {
+          cardKeyToTypes.set(key, [m.type]);
+        }
+      }
+    }
+    for (const [key, types] of cardKeyToTypes) {
+      out.set(key, types.map((mt) => t(`meldTypes.${mt}`)).join(', '));
+    }
+    return out;
+  }, [state?.players, state?.playerMelds, t]);
+
   if (!state) {
     return (
       <div className="p-4 text-center text-ds-text-primary">
@@ -362,7 +390,10 @@ function PinochlePageContent() {
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="pn-player-hand">
                 {humanPlayer.cards.map((card, idx) => {
                   const isValid = state.validPlayIndices?.includes(idx);
-                  const inHighlightedMeld = highlightedCardKeys.has(`${card.design}-${card.value}`);
+                  const cardKey = `${card.design}-${card.value}`;
+                  const inHighlightedMeld = highlightedCardKeys.has(cardKey);
+                  const meldTitle = cardKeyToMeldTitle.get(cardKey);
+                  const isInMeld = meldTitle !== undefined;
                   return (
                     <button
                       type="button"
@@ -371,7 +402,9 @@ function PinochlePageContent() {
                       disabled={loading || !isPlayTurn || !isValid}
                       aria-label={cardAlt(card)}
                       data-meld-highlighted={inHighlightedMeld ? 'true' : undefined}
-                      className={`transition${inHighlightedMeld ? ' ring-4 ring-ds-accent' : ''}`}
+                      data-in-meld={isInMeld ? 'true' : undefined}
+                      title={meldTitle}
+                      className={`relative transition${inHighlightedMeld ? ' ring-4 ring-ds-accent' : ''}`}
                       style={{
                         background: 'none',
                         padding: 0,
@@ -381,6 +414,15 @@ function PinochlePageContent() {
                       }}
                     >
                       <AnimatedCard card={card} width={cardWidth} />
+                      {isInMeld && (
+                        <span
+                          aria-hidden="true"
+                          className="absolute top-0.5 right-0.5 px-1 rounded-full bg-ds-accent text-ds-text-on-accent text-[10px] font-bold shadow-sm pointer-events-none"
+                          data-testid={`pn-meld-card-badge-${idx}`}
+                        >
+                          M
+                        </span>
+                      )}
                     </button>
                   );
                 })}
