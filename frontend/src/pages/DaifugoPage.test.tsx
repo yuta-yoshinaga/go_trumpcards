@@ -423,6 +423,21 @@ describe('DaifugoPage', () => {
     await waitFor(() => expect(screen.getByText('11バック', { selector: 'button' })).toBeInTheDocument());
   });
 
+  it('switches the page background to the revolution palette when revolution is active', async () => {
+    mockExec.mockResolvedValue({ ...humanTurnState, revolutionActive: true });
+    const { container } = renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText('革命中')).toBeInTheDocument());
+    expect(container.querySelector('.bg-game-bg-revolution')).toBeInTheDocument();
+    expect(container.querySelector('.bg-game-bg-green')).not.toBeInTheDocument();
+  });
+
+  it('keeps the default green background when neither inversion is active', async () => {
+    mockExec.mockResolvedValue(humanTurnState);
+    const { container } = renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(container.querySelector('.bg-game-bg-green')).toBeInTheDocument());
+    expect(container.querySelector('.bg-game-bg-revolution')).not.toBeInTheDocument();
+  });
+
   it('shows suit lock badge when suitLocked is true', async () => {
     const suitLockedState: DaifugoResponse = {
       ...humanTurnState,
