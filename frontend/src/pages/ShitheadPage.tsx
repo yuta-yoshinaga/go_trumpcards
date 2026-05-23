@@ -83,6 +83,10 @@ function ShitheadPageContent() {
     window.location.reload();
   }, [hideActionLog]);
 
+  // Hook order must stay stable across renders — compute the lookup above the
+  // skeleton guard. buildMagicLookup safely handles a null config.
+  const magicLookup = useMemo(() => (state ? buildMagicLookup(state.config, t) : EMPTY_MAGIC_LOOKUP), [state, t]);
+
   if (!state) {
     return (
       <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.shithead.bg}`}>
@@ -97,7 +101,6 @@ function ShitheadPageContent() {
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isHumanTurn = state.players[state.currentTurn]?.isHuman === true && !isGameEnd;
   const phaseName = isGameEnd ? t('phase.gameEnd') : t('phase.play');
-  const magicLookup = buildMagicLookup(state.config, t);
 
   return (
     <GamePageShell
@@ -176,6 +179,7 @@ function ShitheadPageContent() {
                     selected={selectedCardIndices}
                     onToggle={toggleCard}
                     magic={magicLookup}
+                    rowKey="hand"
                   />
                 )}
                 {humanPlayer.faceUpCards.length > 0 && (
@@ -186,6 +190,7 @@ function ShitheadPageContent() {
                     selected={selectedCardIndices}
                     onToggle={toggleCard}
                     magic={magicLookup}
+                    rowKey="faceUp"
                   />
                 )}
                 {humanPlayer.faceDownCount > 0 && (
@@ -281,6 +286,8 @@ interface CardRowProps {
   selected: number[];
   onToggle: (index: number) => void;
   magic: MagicLookup;
+  /** Stable prefix for React keys so hand and face-up rows don't share semantics. */
+  rowKey: string;
 }
 
 /** Lookup helpers for Shithead magic-card affordances. */
@@ -290,6 +297,12 @@ interface MagicLookup {
   /** Returns the localized tooltip describing the card's effect, or empty string if none. */
   titleFor: (value: number) => string;
 }
+
+/** Lookup that exposes no magic affordances — used while state is loading. */
+const EMPTY_MAGIC_LOOKUP: MagicLookup = {
+  badgeFor: () => '',
+  titleFor: () => '',
+};
 
 /** Build a magic-card lookup from the active Shithead config. */
 function buildMagicLookup(config: ShitheadConfig, t: (key: string) => string): MagicLookup {
@@ -306,7 +319,7 @@ function buildMagicLookup(config: ShitheadConfig, t: (key: string) => string): M
 }
 
 /** Row of selectable cards with index labels. */
-function CardRow({ label, cards, selectable, selected, onToggle, magic }: CardRowProps) {
+function CardRow({ label, cards, selectable, selected, onToggle, magic, rowKey }: CardRowProps) {
   return (
     <div className="space-y-1">
       <div className="text-xs uppercase tracking-wide text-ds-text-muted">{label}</div>
@@ -322,7 +335,7 @@ function CardRow({ label, cards, selectable, selected, onToggle, magic }: CardRo
           const title = magic.titleFor(c.value);
           return (
             <button
-              key={`hand-${i}`}
+              key={`${rowKey}-${i}`}
               type="button"
               disabled={!selectable}
               onClick={() => onToggle(i)}
@@ -333,13 +346,16 @@ function CardRow({ label, cards, selectable, selected, onToggle, magic }: CardRo
               <span className="block leading-none">{suitSymbol(c.design)}</span>
               <span className="block text-base font-bold">{c.value}</span>
               {badge && (
-                <span
-                  aria-hidden="true"
-                  className="absolute -top-1 -right-1 text-xs leading-none drop-shadow"
-                  data-testid={`sh-magic-badge-${c.value}-${i}`}
-                >
-                  {badge}
-                </span>
+                <>
+                  <span
+                    aria-hidden="true"
+                    className="absolute -top-1 -right-1 text-xs leading-none drop-shadow"
+                    data-testid={`sh-magic-badge-${c.value}-${i}`}
+                  >
+                    {badge}
+                  </span>
+                  {title && <span className="sr-only">{title}</span>}
+                </>
               )}
             </button>
           );

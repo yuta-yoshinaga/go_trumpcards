@@ -230,6 +230,42 @@ describe('ShitheadPage', () => {
     expect(screen.queryByTestId('sh-magic-badge-2-2')).not.toBeInTheDocument();
   });
 
+  it('renders magic-card badges on face-up cards too', async () => {
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      players: [
+        {
+          ...humanTurnState.players[0],
+          faceUpCards: [
+            { design: 'HEART', value: 10 }, // burn — magic
+            { design: 'CLOVER', value: 11 }, // J — not magic
+            { design: 'CLOVER', value: 12 }, // Q — not magic
+          ],
+        },
+        humanTurnState.players[1],
+      ],
+    });
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/shithead']}>
+        <ShitheadPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => expect(screen.getByTestId('sh-magic-badge-10-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('sh-magic-badge-11-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('sh-magic-badge-12-2')).not.toBeInTheDocument();
+  });
+
+  it('exposes the magic-card effect to assistive tech via an sr-only span', async () => {
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/shithead']}>
+        <ShitheadPage />
+      </MemoryRouter>,
+    );
+    // humanTurnState.handCards[2] is the 2 of diamonds; its sr-only text describes the reset effect.
+    await waitFor(() => expect(screen.getByTestId('sh-magic-badge-2-2')).toBeInTheDocument());
+    expect(screen.getByText('リセット: 次のプレイヤーは何でも出せます')).toBeInTheDocument();
+  });
+
   it('shows ? for joker design in discard pile description', async () => {
     mockExec.mockResolvedValue({
       ...humanTurnState,
