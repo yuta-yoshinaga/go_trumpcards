@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { baccaratApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -187,6 +187,13 @@ function BaccaratPageContent() {
   const [betType, setBetType] = useState<number>(BaccaratBetType.PLAYER);
   const [playerPairBet, setPlayerPairBet] = useState(0);
   const [bankerPairBet, setBankerPairBet] = useState(0);
+  // Snapshot of the last accepted bet, used to power the one-click Rebet button at end-phase.
+  const [lastBet, setLastBet] = useState<{
+    amount: number;
+    type: number;
+    pp: number;
+    bp: number;
+  } | null>(null);
 
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(baccaratApi.exec);
@@ -211,16 +218,32 @@ function BaccaratPageContent() {
   const isBetPhase = state?.phase === BaccaratPhase.BET;
   const isEndPhase = state?.phase === BaccaratPhase.END;
 
+  const handleBet = useCallback(() => {
+    setLastBet({ amount: betAmount, type: betType, pp: playerPairBet, bp: bankerPairBet });
+    execApi('bet', betAmount, betType, playerPairBet, bankerPairBet);
+  }, [execApi, betAmount, betType, playerPairBet, bankerPairBet]);
+
+  const handleReset = useCallback(() => {
+    execApi('reset');
+  }, [execApi]);
+
+  const totalLastBet = lastBet ? lastBet.amount + lastBet.pp + lastBet.bp : 0;
+  const canRebet = lastBet !== null && totalLastBet > 0 && state !== null && totalLastBet <= state.chips;
+
+  const handleRebet = useCallback(async () => {
+    if (!lastBet) return;
+    await execApi('reset');
+    await execApi('bet', lastBet.amount, lastBet.type, lastBet.pp, lastBet.bp);
+  }, [execApi, lastBet]);
+
   const actionBindings = useMemo(
     () => [
-      {
-        key: 'b',
-        action: () => execApi('bet', betAmount, betType, playerPairBet, bankerPairBet),
-        enabled: isBetPhase,
-      },
-      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
+      { key: 'b', action: handleBet, enabled: isBetPhase },
+      { key: 'r', action: handleReset, enabled: isEndPhase },
+      // Power-user shortcut: 'e' replays the last bet at end phase (consistent with the 'r' reset binding).
+      { key: 'e', action: handleRebet, enabled: isEndPhase && canRebet },
     ],
-    [execApi, betAmount, betType, playerPairBet, bankerPairBet, isBetPhase, isEndPhase],
+    [handleBet, handleReset, handleRebet, isBetPhase, isEndPhase, canRebet],
   );
 
   useActionKeyboardNav({
@@ -229,14 +252,6 @@ function BaccaratPageContent() {
   });
 
   if (!state) return <GameSkeleton gameKey="baccarat" layout={{ kind: 'casino-table', sections: [2, 2] }} />;
-
-  const handleBet = () => {
-    execApi('bet', betAmount, betType, playerPairBet, bankerPairBet);
-  };
-
-  const handleReset = () => {
-    execApi('reset');
-  };
 
   const handleClearHistory = () => {
     execApi('clearhistory');
@@ -424,6 +439,17 @@ function BaccaratPageContent() {
             )}
             {isEndPhase && (
               <div className="flex justify-center gap-2 pb-2">
+                {canRebet && (
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleRebet}
+                    disabled={loading}
+                    data-testid="bac-rebet-button"
+                  >
+                    {t('button.rebet', { amount: totalLastBet })}
+                  </button>
+                )}
                 <GameResetButton
                   isGameEnd={isEndPhase}
                   onReset={handleReset}

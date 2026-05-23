@@ -15,7 +15,8 @@
   },
   "button": {
     "bet": "ベット",
-    "reset": "リセット"
+    "reset": "リセット",
+    "rebet": "再ベット ({{amount}})"
   },
   "phase": {
     "bet": "ベットフェーズ",

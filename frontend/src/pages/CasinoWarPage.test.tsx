@@ -183,11 +183,65 @@ describe('CasinoWarPage', () => {
     await waitFor(() => expect(screen.queryAllByRole('button', { name: /ベット/ })).toHaveLength(0));
   });
 
+  it('shows a Rebet button at end-phase after a bet has been placed', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<CasinoWarPage />);
+    const betBtn = await screen.findByRole('button', { name: /ベット/ });
+    mockApi.mockClear();
+    mockApi.mockResolvedValue(winState);
+    fireEvent.click(betBtn);
+    await waitFor(() => expect(screen.getByTestId('cw-rebet-button')).toBeInTheDocument());
+
+    mockApi.mockClear();
+    mockApi.mockResolvedValueOnce(betState);
+    mockApi.mockResolvedValueOnce(winState);
+    fireEvent.click(screen.getByTestId('cw-rebet-button'));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 100));
+  });
+
   it('disables War button when chips < ante', async () => {
     const broke: CasinoWarResponse = { ...tieState, chips: 50 };
     mockApi.mockResolvedValue(broke);
     renderWithProviders(<CasinoWarPage />);
     const warBtn = await screen.findByRole('button', { name: /ウォー/ });
     expect(warBtn).toBeDisabled();
+  });
+
+  it('does not show the Rebet button when chips are insufficient to replay', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<CasinoWarPage />);
+    const betBtn = await screen.findByRole('button', { name: /ベット/ });
+    mockApi.mockResolvedValue({ ...winState, chips: 50 });
+    fireEvent.click(betBtn);
+    await waitFor(() => expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument());
+    expect(screen.queryByTestId('cw-rebet-button')).not.toBeInTheDocument();
+  });
+
+  it("snapshots the bet when the 'b' keyboard shortcut is used so Rebet is available at end phase", async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<CasinoWarPage />);
+    await screen.findByRole('button', { name: /ベット/ });
+    mockApi.mockClear();
+    mockApi.mockResolvedValue(winState);
+    fireEvent.keyDown(document, { key: 'b' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 100));
+    await waitFor(() => expect(screen.getByTestId('cw-rebet-button')).toBeInTheDocument());
+  });
+
+  it("the 'e' keyboard shortcut fires Rebet at end phase", async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<CasinoWarPage />);
+    const betBtn = await screen.findByRole('button', { name: /ベット/ });
+    mockApi.mockResolvedValue(winState);
+    fireEvent.click(betBtn);
+    await waitFor(() => expect(screen.getByTestId('cw-rebet-button')).toBeInTheDocument());
+
+    mockApi.mockClear();
+    mockApi.mockResolvedValueOnce(betState);
+    mockApi.mockResolvedValueOnce(winState);
+    fireEvent.keyDown(document, { key: 'e' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 100));
   });
 });

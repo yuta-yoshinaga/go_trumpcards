@@ -15,7 +15,8 @@
   },
   "button": {
     "bet": "Bet",
-    "reset": "Reset"
+    "reset": "Reset",
+    "rebet": "Rebet ({{amount}})"
   },
   "phase": {
     "bet": "Bet Phase",

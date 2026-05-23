@@ -16,7 +16,8 @@
     "bet": "Bet",
     "surrender": "Surrender",
     "war": "Go to war",
-    "reset": "Reset"
+    "reset": "Reset",
+    "rebet": "Rebet ({{amount}})"
   },
   "phase": {
     "bet": "Bet",
