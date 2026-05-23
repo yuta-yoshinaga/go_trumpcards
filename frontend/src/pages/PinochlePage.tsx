@@ -178,28 +178,33 @@ function PinochlePageContent() {
     return new Set<string>(meld.cards.map((c) => `${c.design}-${c.value}`));
   }, [state, highlightedMeldIdx]);
 
-  // Map from card key to the meld type numbers it participates in (for the human player).
-  // Used to render a persistent "M" badge across MELD and PLAY phases so the user remembers
-  // which cards are scored.
-  const cardKeyToMeldTypes = useMemo(() => {
-    const out = new Map<string, number[]>();
-    if (!state) return out;
-    const humanIdxLocal = state.players.findIndex((p) => p.isHuman);
-    const myMelds = humanIdxLocal >= 0 ? state.playerMelds?.[humanIdxLocal] : null;
+  // Precompute the localized meld-list tooltip per card key so the badge render doesn't
+  // re-translate + join on every parent re-render (e.g., bid-amount edits).
+  const cardKeyToMeldTitle = useMemo(() => {
+    const out = new Map<string, string>();
+    const players = state?.players;
+    const playerMelds = state?.playerMelds;
+    if (!players || !playerMelds) return out;
+    const humanIdxLocal = players.findIndex((p) => p.isHuman);
+    const myMelds = humanIdxLocal >= 0 ? playerMelds[humanIdxLocal] : null;
     if (!myMelds) return out;
+    const cardKeyToTypes = new Map<string, number[]>();
     for (const m of myMelds) {
       for (const c of m.cards) {
         const key = `${c.design}-${c.value}`;
-        const existing = out.get(key);
+        const existing = cardKeyToTypes.get(key);
         if (existing) {
           if (!existing.includes(m.type)) existing.push(m.type);
         } else {
-          out.set(key, [m.type]);
+          cardKeyToTypes.set(key, [m.type]);
         }
       }
     }
+    for (const [key, types] of cardKeyToTypes) {
+      out.set(key, types.map((mt) => t(`meldTypes.${mt}`)).join(', '));
+    }
     return out;
-  }, [state]);
+  }, [state?.players, state?.playerMelds, t]);
 
   if (!state) {
     return (
@@ -387,9 +392,8 @@ function PinochlePageContent() {
                   const isValid = state.validPlayIndices?.includes(idx);
                   const cardKey = `${card.design}-${card.value}`;
                   const inHighlightedMeld = highlightedCardKeys.has(cardKey);
-                  const meldTypes = cardKeyToMeldTypes.get(cardKey);
-                  const isInMeld = meldTypes !== undefined && meldTypes.length > 0;
-                  const meldTitle = isInMeld ? meldTypes.map((mt) => t(`meldTypes.${mt}`)).join(', ') : undefined;
+                  const meldTitle = cardKeyToMeldTitle.get(cardKey);
+                  const isInMeld = meldTitle !== undefined;
                   return (
                     <button
                       type="button"
