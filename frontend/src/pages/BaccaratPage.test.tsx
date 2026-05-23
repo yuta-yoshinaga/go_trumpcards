@@ -148,7 +148,8 @@ describe('BaccaratPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
     await waitFor(() => expect(screen.getByText('プレイヤーの勝ち！')).toBeInTheDocument());
-    expect(screen.getByText('配当: 200')).toBeInTheDocument();
+    // Payout is gated behind the staged-reveal final step (#1892).
+    await waitFor(() => expect(screen.getByText('配当: 200')).toBeInTheDocument());
     expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument();
   });
 
@@ -168,7 +169,8 @@ describe('BaccaratPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
     await waitFor(() => expect(screen.getByText('引き分け！')).toBeInTheDocument());
-    expect(screen.getByText('配当: 900')).toBeInTheDocument();
+    // Payout is gated behind the staged-reveal final step (#1892).
+    await waitFor(() => expect(screen.getByText('配当: 900')).toBeInTheDocument());
   });
 
   it('can change bet amount and bet type', async () => {
@@ -511,6 +513,56 @@ describe('BaccaratPage', () => {
     fireEvent.keyDown(document, { key: 'e' });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 100, 0, 0, 0));
+  });
+
+  it('staggers the third-card reveal: 3rd card hidden until its timer fires, payout gated until last step', async () => {
+    vi.useFakeTimers();
+    try {
+      const endWithThirdCards: BaccaratResponse = {
+        ...endPhasePlayerWins,
+        playerHand: [card('SPADE', 9), card('HEART', 3), card('CLOVER', 2)],
+        bankerHand: [card('DIAMOND', 4), card('SPADE', 2), card('HEART', 6)],
+        playerHandValue: 4,
+        bankerHandValue: 2,
+      };
+      mockExec.mockResolvedValue(endWithThirdCards);
+      renderWithProviders(<BaccaratPage />);
+      // Step 1: initial 2 + 2 cards.
+      await vi.waitFor(() => {
+        expect(screen.getByTestId('bac-player-cards').childElementCount).toBe(2);
+      });
+      expect(screen.getByTestId('bac-banker-cards').childElementCount).toBe(2);
+      expect(screen.queryByTestId('bac-payout')).not.toBeInTheDocument();
+      // Step 2: player's third card lands.
+      await vi.advanceTimersByTimeAsync(600);
+      expect(screen.getByTestId('bac-player-cards').childElementCount).toBe(3);
+      expect(screen.getByTestId('bac-banker-cards').childElementCount).toBe(2);
+      // Step 3: banker's third card lands.
+      await vi.advanceTimersByTimeAsync(600);
+      expect(screen.getByTestId('bac-banker-cards').childElementCount).toBe(3);
+      expect(screen.queryByTestId('bac-payout')).not.toBeInTheDocument();
+      // Step 4: payout appears.
+      await vi.advanceTimersByTimeAsync(600);
+      expect(screen.getByTestId('bac-payout')).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('no third-card stagger when both hands stand on 2 cards (skips straight to payout)', async () => {
+    vi.useFakeTimers();
+    try {
+      mockExec.mockResolvedValue(endPhasePlayerWins);
+      renderWithProviders(<BaccaratPage />);
+      await vi.waitFor(() => {
+        expect(screen.getByTestId('bac-player-cards').childElementCount).toBe(2);
+      });
+      // No third-card delays; only the final payout reveal at +600ms.
+      await vi.advanceTimersByTimeAsync(600);
+      expect(screen.getByTestId('bac-payout')).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('payout table is rendered as a collapsible details element in bet phase', async () => {
