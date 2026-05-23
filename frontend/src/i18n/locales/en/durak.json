@@ -16,8 +16,8 @@
   "table": "Table",
   "tableEmpty": "(empty)",
   "pair": {
-    "undefendedAria": "Undefended attack card ({{rank}})",
-    "defendedAria": "Defended pair"
+    "undefendedAria": "Undefended attack: {{card}}",
+    "defendedAria": "Defended pair: {{attack}} defended by {{defense}}"
   },
   "attackButton": "Attack",
   "defendButton": "Defend",

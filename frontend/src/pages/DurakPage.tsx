@@ -24,6 +24,7 @@ import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { DurakResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 
@@ -31,6 +32,8 @@ import { playerName } from '../utils/playerUtils';
 const PHASE_ATTACK = 0;
 const PHASE_DEFEND = 1;
 const PHASE_BOUT_END = 2;
+/** Total horizontal/vertical padding on each pair button (p-1 = 4px × 2 sides). */
+const DK_PAIR_PADDING = 8;
 
 const theme = gameTheme.durak;
 
@@ -259,6 +262,12 @@ function DurakPageContent() {
                         const offset = pairCardWidth * 0.3;
                         const undefended = pair.defense === null;
                         const shouldPulse = undefended && isDefender;
+                        const ariaLabel = undefended
+                          ? t('pair.undefendedAria', { card: cardAlt(pair.attack) })
+                          : t('pair.defendedAria', {
+                              attack: cardAlt(pair.attack),
+                              defense: pair.defense ? cardAlt(pair.defense) : '',
+                            });
                         return (
                           <button
                             type="button"
@@ -267,16 +276,12 @@ function DurakPageContent() {
                               selectedAttackIdx === i ? 'ring-2 ring-ds-warning' : ''
                             }`}
                             style={{
-                              width: pairCardWidth + offset + 8,
-                              height: pairCardWidth * 1.4 + offset + 8,
+                              width: pairCardWidth + offset + DK_PAIR_PADDING,
+                              height: pairCardWidth * 1.4 + offset + DK_PAIR_PADDING,
                             }}
                             onClick={() => setSelectedAttackIdx(selectedAttackIdx === i ? null : i)}
                             data-testid={`dk-pair-${i}`}
-                            aria-label={
-                              undefended
-                                ? t('pair.undefendedAria', { rank: pair.attack.value })
-                                : t('pair.defendedAria')
-                            }
+                            aria-label={ariaLabel}
                           >
                             <div
                               className={`absolute top-0 left-0 rounded ${
