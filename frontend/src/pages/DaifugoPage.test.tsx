@@ -423,6 +423,32 @@ describe('DaifugoPage', () => {
     await waitFor(() => expect(screen.getByText('11バック', { selector: 'button' })).toBeInTheDocument());
   });
 
+  it('switches the page background to the revolution palette when revolution is active', async () => {
+    mockExec.mockResolvedValue({ ...humanTurnState, revolutionActive: true });
+    const { container } = renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText('革命中')).toBeInTheDocument());
+    expect(container.querySelector('.bg-game-bg-revolution')).toBeInTheDocument();
+    expect(container.querySelector('.bg-game-bg-green')).not.toBeInTheDocument();
+    // The footer should track the body palette so the page doesn't read as a green/crimson split.
+    expect(container.querySelector('.bg-game-bg-revolution-dark')).toBeInTheDocument();
+  });
+
+  it('switches the page background to the revolution palette when 11-back is active', async () => {
+    mockExec.mockResolvedValue({ ...humanTurnState, elevenBackActive: true });
+    const { container } = renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(container.querySelector('.bg-game-bg-revolution')).toBeInTheDocument());
+    expect(container.querySelector('.bg-game-bg-revolution-dark')).toBeInTheDocument();
+    expect(container.querySelector('.bg-game-bg-green')).not.toBeInTheDocument();
+  });
+
+  it('keeps the default green background when neither inversion is active', async () => {
+    mockExec.mockResolvedValue(humanTurnState);
+    const { container } = renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(container.querySelector('.bg-game-bg-green')).toBeInTheDocument());
+    expect(container.querySelector('.bg-game-bg-revolution')).not.toBeInTheDocument();
+    expect(container.querySelector('.bg-game-bg-revolution-dark')).not.toBeInTheDocument();
+  });
+
   it('shows suit lock badge when suitLocked is true', async () => {
     const suitLockedState: DaifugoResponse = {
       ...humanTurnState,
