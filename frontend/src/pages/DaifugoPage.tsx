@@ -187,6 +187,7 @@ function DaifugoPageContent() {
   // background so the player sees the rule change at a glance instead of reading the badge.
   const inversionActive = state.revolutionActive || state.elevenBackActive;
   const bgClass = inversionActive ? 'bg-game-bg-revolution' : gameTheme.daifugo.bg;
+  const footerClass = inversionActive ? 'bg-game-bg-revolution-dark border-white/20' : gameTheme.daifugo.footer;
 
   let playButtonLabel = t('playButton');
   let pendingBanner: string | null = null;
@@ -355,7 +356,7 @@ function DaifugoPageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.daifugo.footer} px-4 py-2.5`}>
+          <GameFooter className={`${footerClass} px-4 py-2.5 motion-safe:transition-colors motion-safe:duration-500`}>
             <div className="text-center mb-1" data-tutorial="df-sort-buttons">
               {sortModes.map(({ mode, label }) => (
                 <button
