@@ -23,6 +23,7 @@ import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { HighCardFlushPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { longestFlushSuit } from '../utils/highCardFlushUtils';
 
 /** High Card Flush tutorial step definitions. */
 const HCF_TUTORIAL_STEPS: TutorialStep[] = [
@@ -197,9 +198,23 @@ function HighCardFlushPageContent() {
               )}
             </div>
             <div className="flex justify-center flex-wrap gap-2">
-              {state.playerHand.map((card, i) => (
-                <AnimatedCard key={`p-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
-              ))}
+              {(() => {
+                const flushSuit = longestFlushSuit(state.playerHand);
+                return state.playerHand.map((card, i) => {
+                  const inFlush = card.design === flushSuit;
+                  return (
+                    <div
+                      key={`p-${card.design}-${card.value}-${i}`}
+                      className={`transition-all ${
+                        inFlush ? 'drop-shadow-[0_0_8px_var(--color-ds-warning)] -translate-y-1' : 'opacity-50'
+                      }`}
+                      data-flush-card={inFlush ? 'true' : 'false'}
+                    >
+                      <AnimatedCard card={card} width={cardWidth} />
+                    </div>
+                  );
+                });
+              })()}
             </div>
           </div>
         )}
@@ -219,9 +234,29 @@ function HighCardFlushPageContent() {
               )}
             </div>
             <div className="flex justify-center flex-wrap gap-2">
-              {state.dealerHand.map((card, i) => (
-                <AnimatedCard key={`d-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
-              ))}
+              {(() => {
+                // Only highlight the dealer's flush at end-phase (showdown). Before that
+                // we don't want to spoil any partial dealer information.
+                const flushSuit = isEndPhase ? longestFlushSuit(state.dealerHand) : null;
+                return state.dealerHand.map((card, i) => {
+                  const inFlush = flushSuit !== null && card.design === flushSuit;
+                  return (
+                    <div
+                      key={`d-${card.design}-${card.value}-${i}`}
+                      className={`transition-all ${
+                        flushSuit === null
+                          ? ''
+                          : inFlush
+                            ? 'drop-shadow-[0_0_8px_var(--color-ds-error)] -translate-y-1'
+                            : 'opacity-50'
+                      }`}
+                      data-flush-card={inFlush ? 'true' : 'false'}
+                    >
+                      <AnimatedCard card={card} width={cardWidth} />
+                    </div>
+                  );
+                });
+              })()}
             </div>
           </div>
         )}
