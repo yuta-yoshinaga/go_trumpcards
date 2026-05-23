@@ -33,6 +33,7 @@ function Board({
 }: BoardProps) {
   const { t } = useTranslation('sevens');
   const isMobile = useIsMobile();
+  const gridTemplateColumns = tunnelEnabled ? 'auto 14px repeat(13, 1fr) 14px' : 'auto repeat(13, 1fr)';
   return (
     <div className="bg-black/30 rounded-[10px] py-2 px-2 sm:px-3.5 my-2">
       <div className="text-ds-text-primary font-bold mb-1.5 text-sm">
@@ -44,7 +45,7 @@ function Board({
         <div className="overflow-x-auto">
           <div
             className="grid gap-y-1 gap-x-0.5"
-            style={{ minWidth: '480px', gridTemplateColumns: 'auto repeat(13, 1fr)' }}
+            style={{ minWidth: '480px', gridTemplateColumns }}
             data-testid="sevens-grid"
           >
             {SUITS.map(({ idx, name, label, color }) => (
@@ -61,6 +62,17 @@ function Board({
                     </span>
                   )}
                 </span>
+                {tunnelEnabled && (
+                  <span
+                    role="img"
+                    aria-label={t('tunnelPortalLeft')}
+                    className="flex items-center justify-center text-ds-warning text-xs motion-safe:animate-pulse"
+                    data-testid="tunnel-portal-left"
+                    style={{ color }}
+                  >
+                    🌀
+                  </span>
+                )}
                 {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => {
                   const placed = isPositionPlaced(tablePlaced, idx, v);
                   const isCenter = v === 7;
@@ -109,6 +121,17 @@ function Board({
                     </span>
                   );
                 })}
+                {tunnelEnabled && (
+                  <span
+                    role="img"
+                    aria-label={t('tunnelPortalRight')}
+                    className="flex items-center justify-center text-ds-warning text-xs motion-safe:animate-pulse"
+                    data-testid="tunnel-portal-right"
+                    style={{ color }}
+                  >
+                    🌀
+                  </span>
+                )}
               </div>
             ))}
           </div>

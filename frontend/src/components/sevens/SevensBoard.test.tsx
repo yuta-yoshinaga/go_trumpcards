@@ -39,6 +39,24 @@ describe('SevensBoard', () => {
     expect(grid.style.gridTemplateColumns).toBe('auto repeat(13, 1fr)');
   });
 
+  it('expands grid with portal columns when tunnelEnabled', () => {
+    render(<SevensBoard {...defaultProps} tunnelEnabled={true} />);
+    const grid = screen.getByTestId('sevens-grid') as HTMLElement;
+    expect(grid.style.gridTemplateColumns).toBe('auto 14px repeat(13, 1fr) 14px');
+  });
+
+  it('renders portal markers on both ends of each suit row when tunnelEnabled', () => {
+    render(<SevensBoard {...defaultProps} tunnelEnabled={true} />);
+    expect(screen.getAllByTestId('tunnel-portal-left')).toHaveLength(4);
+    expect(screen.getAllByTestId('tunnel-portal-right')).toHaveLength(4);
+  });
+
+  it('does not render portal markers when tunnelEnabled is false', () => {
+    render(<SevensBoard {...defaultProps} tunnelEnabled={false} />);
+    expect(screen.queryAllByTestId('tunnel-portal-left')).toHaveLength(0);
+    expect(screen.queryAllByTestId('tunnel-portal-right')).toHaveLength(0);
+  });
+
   it('shows tunnel tag when tunnelEnabled', () => {
     render(<SevensBoard {...defaultProps} tunnelEnabled={true} />);
     expect(screen.getByText('[トンネル]')).toBeInTheDocument();

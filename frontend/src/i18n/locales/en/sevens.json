@@ -11,6 +11,8 @@
   "rankLabel": "#{{rank}}",
   "placeAriaLabel": "Place at {{suit}} {{value}}",
   "tunnelConnection": "Tunnel connection",
+  "tunnelPortalLeft": "Tunnel portal (loops from K)",
+  "tunnelPortalRight": "Tunnel portal (loops to A)",
   "actionPlayed": "{{name}} played: {{design}} {{value}}",
   "actionPlayedJoker": "{{name}} played: {{design}} {{value}} → {{targetSuit}} {{targetValue}}",
   "actionPassed": "{{name}} passed",
