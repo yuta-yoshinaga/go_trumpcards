@@ -274,7 +274,7 @@ describe('CassinoPage', () => {
     fireEvent.click(screen.getByTestId('hand-card-0'));
     fireEvent.click(screen.getByTestId('table-card-0'));
     fireEvent.click(screen.getByTestId('table-card-1'));
-    expect(screen.getByTestId('cs-suggest-button')).toHaveTextContent('Take (9)');
+    expect(screen.getByTestId('cs-suggest-button')).toHaveTextContent('取る (9)');
 
     mockExec.mockClear();
     fireEvent.click(screen.getByTestId('cs-suggest-button'));
@@ -311,7 +311,7 @@ describe('CassinoPage', () => {
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
     fireEvent.click(screen.getByTestId('hand-card-0'));
     fireEvent.click(screen.getByTestId('table-card-0'));
-    expect(screen.getByTestId('cs-suggest-button')).toHaveTextContent('Build (9)');
+    expect(screen.getByTestId('cs-suggest-button')).toHaveTextContent('ビルド (9)');
 
     mockExec.mockClear();
     fireEvent.click(screen.getByTestId('cs-suggest-button'));

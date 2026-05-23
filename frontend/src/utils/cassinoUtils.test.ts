@@ -136,6 +136,17 @@ describe('suggestCassinoAction', () => {
     expect(result).toBeNull();
   });
 
+  it('returns null when a build-match selection mixes a face card on the table', () => {
+    const result = suggestCassinoAction({
+      handCard: card(8),
+      hand: [card(8)],
+      handIndex: 0,
+      selectedTableCards: [card(8), card(11)],
+      selectedBuilds: [build(8)],
+    });
+    expect(result).toBeNull();
+  });
+
   it('returns null when no table or builds are selected', () => {
     const result = suggestCassinoAction({
       handCard: card(8),

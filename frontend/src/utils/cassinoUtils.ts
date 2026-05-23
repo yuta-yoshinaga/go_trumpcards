@@ -39,6 +39,10 @@ export function suggestCassinoAction(args: {
     return null;
   }
 
+  // Numeric hand cards cannot capture face cards — guard before every numeric path
+  // (including build-match) so a mixed table selection never silently passes the sum check.
+  if (selectedTableCards.some(isCassinoFaceCard)) return null;
+
   // Build-match take: selected builds all share the played card's value.
   if (selectedBuilds.length > 0) {
     const allMatch = selectedBuilds.every((b) => b.value === handCard.value);
@@ -51,7 +55,6 @@ export function suggestCassinoAction(args: {
   }
 
   if (selectedTableCards.length === 0) return null;
-  if (selectedTableCards.some(isCassinoFaceCard)) return null;
 
   const tableSum = sumNonFace(selectedTableCards);
   if (tableSum === handCard.value) {

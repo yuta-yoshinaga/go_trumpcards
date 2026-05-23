@@ -123,35 +123,27 @@ function CassinoPageContent() {
 
   const onReset = useCallback(() => handleResetWithConfig(), [handleResetWithConfig]);
 
-  if (!state || state.players.length < 4) {
-    return (
-      <div className={`flex-1 flex items-center justify-center ${gameTheme.cassino.bg} text-ds-text-muted`} aria-busy>
-        {tc('skeleton.loading')}
-      </div>
-    );
-  }
+  // Hooks below must run unconditionally — they're computed before the early-return
+  // skeleton guard so the hook order stays stable on the first render when `state`
+  // is still null.
+  const human = state && state.players.length >= 4 ? state.players[0] : null;
+  const isHumanTurn = !!state && state.currentTurn === 0 && !state.gameEndFlag;
 
-  const isGameEnd = state.gameEndFlag;
-  const humanWon = isGameEnd && state.roundWinners.includes(0);
-  const isHumanTurn = state.currentTurn === 0 && !isGameEnd;
-  const human = state.players[0];
-  const canTake = isHumanTurn && handIndex !== null && (tableIndices.length > 0 || buildIndices.length > 0);
-  const canBuild = isHumanTurn && handIndex !== null && tableIndices.length > 0;
-  const canTrail = isHumanTurn && handIndex !== null;
-  const phaseName = isGameEnd ? t('phase.end') : t(`phase.${state.phase}`, t('phase.play'));
+  const suggestion = useMemo(
+    () =>
+      state && human && isHumanTurn && handIndex !== null
+        ? suggestCassinoAction({
+            handCard: human.cards[handIndex],
+            hand: human.cards,
+            handIndex,
+            selectedTableCards: tableIndices.map((i) => state.tableCards[i]).filter(Boolean),
+            selectedBuilds: buildIndices.map((i) => state.builds[i]).filter(Boolean),
+          })
+        : null,
+    [state, human, isHumanTurn, handIndex, tableIndices, buildIndices],
+  );
 
-  const suggestion =
-    isHumanTurn && handIndex !== null
-      ? suggestCassinoAction({
-          handCard: human.cards[handIndex],
-          hand: human.cards,
-          handIndex,
-          selectedTableCards: tableIndices.map((i) => state.tableCards[i]).filter(Boolean),
-          selectedBuilds: buildIndices.map((i) => state.builds[i]).filter(Boolean),
-        })
-      : null;
-
-  const onSuggest = () => {
+  const onSuggest = useCallback(() => {
     if (!suggestion || handIndex === null) return;
     if (suggestion.type === 'take') {
       playTake();
@@ -163,7 +155,22 @@ function CassinoPageContent() {
       tableIndices: [...tableIndices].sort((a, b) => a - b),
       declaredValue: suggestion.declaredValue,
     });
-  };
+  }, [suggestion, handIndex, playTake, setDeclaredValue, callApi, tableIndices]);
+
+  if (!state || !human) {
+    return (
+      <div className={`flex-1 flex items-center justify-center ${gameTheme.cassino.bg} text-ds-text-muted`} aria-busy>
+        {tc('skeleton.loading')}
+      </div>
+    );
+  }
+
+  const isGameEnd = state.gameEndFlag;
+  const humanWon = isGameEnd && state.roundWinners.includes(0);
+  const canTake = isHumanTurn && handIndex !== null && (tableIndices.length > 0 || buildIndices.length > 0);
+  const canBuild = isHumanTurn && handIndex !== null && tableIndices.length > 0;
+  const canTrail = isHumanTurn && handIndex !== null;
+  const phaseName = isGameEnd ? t('phase.end') : t(`phase.${state.phase}`, t('phase.play'));
   const suggestionLabel =
     suggestion?.type === 'take'
       ? t('button.suggestTake', { value: suggestion.value })
