@@ -133,6 +133,16 @@ describe('PitchPage', () => {
     expect(badge.textContent).toMatch(/Game値: 0/);
   });
 
+  it('Game-pip badge tooltip has no trailing newline when pips = 0', async () => {
+    // SPADE 5 (0) + HEART 9 (0) → no breakdown line should be appended
+    mockApi.mockResolvedValue(bidState);
+    renderWithProviders(<PitchPage />);
+    const badge = await screen.findByTestId('pitch-game-pips-badge');
+    const title = badge.getAttribute('title') ?? '';
+    expect(title).not.toMatch(/\n$/);
+    expect(title).not.toContain('\n');
+  });
+
   it('Game-pip badge sums A, K, Q, J, 10 correctly', async () => {
     const pipHand: PitchResponse = {
       ...bidState,

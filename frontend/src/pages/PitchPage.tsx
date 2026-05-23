@@ -298,10 +298,16 @@ function PitchPageContent() {
                   <span
                     data-testid="pitch-game-pips-badge"
                     className="normal-case inline-flex items-center rounded-full bg-ds-accent/20 text-ds-accent px-2 py-0.5 text-[11px] font-bold cursor-help"
-                    title={`${t('gamePipsTooltip')}\n${pitchHandPipBreakdown(human.cards)
-                      .filter((b) => b.pips > 0)
-                      .map((b) => `${valueLabel(b.value)}(${b.pips})`)
-                      .join(' + ')}`}
+                    title={
+                      t('gamePipsTooltip') +
+                      (pitchHandPips(human.cards) > 0
+                        ? '\n' +
+                          pitchHandPipBreakdown(human.cards)
+                            .filter((b) => b.pips > 0)
+                            .map((b) => `${valueLabel(b.value)}(${b.pips})`)
+                            .join(' + ')
+                        : '')
+                    }
                   >
                     {t('gamePips', { pips: pitchHandPips(human.cards) })}
                   </span>
