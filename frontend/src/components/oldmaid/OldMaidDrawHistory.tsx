@@ -3,11 +3,20 @@ import { useTranslation } from 'react-i18next';
 import type { DrawHistoryEntry, OldMaidPlayerData } from '../../types/card';
 import { findPlayerName } from '../../utils/playerUtils';
 
+// Tailwind classes (NOT a template literal) so the JIT compiler can pick them up.
+// Hoisted to module scope so the array is not re-allocated on every chip render.
+const PLAYER_PALETTE = [
+  'bg-blue-600',
+  'bg-emerald-600',
+  'bg-amber-600',
+  'bg-purple-600',
+  'bg-pink-600',
+  'bg-cyan-600',
+] as const;
+
 /** Colored chip used as a player icon in the timeline. Deterministic by index. */
 function PlayerChip({ name, idx }: { name: string; idx: number }) {
-  // Tailwind classes (NOT a template literal) so the JIT compiler can pick them up.
-  const palette = ['bg-blue-600', 'bg-emerald-600', 'bg-amber-600', 'bg-purple-600', 'bg-pink-600', 'bg-cyan-600'];
-  const colorClass = palette[idx % palette.length];
+  const colorClass = PLAYER_PALETTE[idx % PLAYER_PALETTE.length];
   return (
     <span
       className={`inline-flex items-center justify-center rounded-full text-white text-[10px] font-bold px-1.5 py-0.5 min-w-[2.25rem] ${colorClass}`}

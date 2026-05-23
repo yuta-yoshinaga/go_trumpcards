@@ -4,9 +4,9 @@ import type { DrawHistoryEntry, OldMaidPlayerData } from '../../types/card';
 import { OldMaidDrawHistory } from './OldMaidDrawHistory';
 
 const players: OldMaidPlayerData[] = [
-  { id: 0, isHuman: true, cardCount: 5, cards: [], displayName: 'YOU' },
-  { id: 1, isHuman: false, cardCount: 5, cards: [], displayName: 'CPU1' },
-  { id: 2, isHuman: false, cardCount: 5, cards: [], displayName: 'CPU2' },
+  { id: 0, isHuman: true, isFinished: false, cardCount: 5, cards: [] },
+  { id: 1, isHuman: false, isFinished: false, cardCount: 5, cards: [] },
+  { id: 2, isHuman: false, isFinished: false, cardCount: 5, cards: [] },
 ];
 
 const baseEntry = (overrides: Partial<DrawHistoryEntry> = {}): DrawHistoryEntry => ({
@@ -61,5 +61,24 @@ describe('OldMaidDrawHistory (graphical timeline)', () => {
   it('falls back gracefully when suspectPins is undefined', () => {
     render(<OldMaidDrawHistory entries={[baseEntry()]} players={players} />);
     expect(screen.getByTestId('draw-history-entry').dataset.suspectTarget).toBe('false');
+  });
+
+  it('shows a finished tag for the drawer when drawerFinished is true', () => {
+    render(<OldMaidDrawHistory entries={[baseEntry({ drawerFinished: true })]} players={players} />);
+    // i18n: "history.finished" → "[{{name}}上がり]"; ja init in test/setup.
+    expect(screen.getByText(/あなた.*上がり/)).toBeInTheDocument();
+  });
+
+  it('shows a finished tag for the target when targetFinished is true', () => {
+    render(<OldMaidDrawHistory entries={[baseEntry({ targetFinished: true })]} players={players} />);
+    expect(screen.getByText(/CPU\s?1.*上がり/)).toBeInTheDocument();
+  });
+
+  it('shows both finished tags when drawer and target finished on the same draw', () => {
+    render(
+      <OldMaidDrawHistory entries={[baseEntry({ drawerFinished: true, targetFinished: true })]} players={players} />,
+    );
+    expect(screen.getByText(/あなた.*上がり/)).toBeInTheDocument();
+    expect(screen.getByText(/CPU\s?1.*上がり/)).toBeInTheDocument();
   });
 });
