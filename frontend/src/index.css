@@ -230,6 +230,23 @@ input:not([type]):focus-visible {
   animation: flipIn 0.3s ease-out;
 }
 
+/* Brief "lock-in" pulse used when a Video Poker card is held. The scale dip
+   gives the card a tactile "click" the moment the HOLD ring appears. */
+@keyframes card-lock {
+  0% {
+    transform: translateY(-0.5rem) scale(1);
+  }
+  35% {
+    transform: translateY(-0.5rem) scale(0.94);
+  }
+  100% {
+    transform: translateY(-0.5rem) scale(1);
+  }
+}
+.animate-card-lock {
+  animation: card-lock 0.18s ease-out;
+}
+
 @keyframes sweat-drop {
   0% {
     opacity: 0.6;
