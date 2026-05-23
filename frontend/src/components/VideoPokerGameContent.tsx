@@ -231,13 +231,24 @@ export function VideoPokerGameContent({
                         type="button"
                         onClick={() => toggleHold(i)}
                         disabled={!isDrawPhase}
-                        className={`rounded transition-transform ${displayHeld[i] ? 'ring-2 ring-ds-warning -translate-y-2' : ''}`}
+                        className={`relative rounded transition-transform ${
+                          displayHeld[i] ? 'ring-4 ring-ds-warning -translate-y-2 motion-safe:animate-card-lock' : ''
+                        }`}
                         aria-label={displayHeld[i] ? `${tNs('hold')} ${i}` : tNs('card', { index: i })}
                         aria-pressed={displayHeld[i] ?? false}
+                        data-held={displayHeld[i] ? 'true' : undefined}
                       >
                         <AnimatedCard card={card} width={cardWidth} />
+                        {displayHeld[i] && (
+                          <span
+                            aria-hidden="true"
+                            className="absolute inset-x-0 bottom-1 mx-auto w-fit px-2 py-0.5 rounded bg-ds-warning text-ds-text-on-accent text-[10px] font-extrabold tracking-wider shadow-md pointer-events-none"
+                            data-testid={`vp-hold-badge-${i}`}
+                          >
+                            {tNs('hold')}
+                          </span>
+                        )}
                       </button>
-                      {displayHeld[i] && <span className="text-ds-warning text-xs font-bold mt-1">{tNs('hold')}</span>}
                     </div>
                   ))}
                 </div>

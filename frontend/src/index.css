@@ -232,6 +232,24 @@ input:not([type]):focus-visible {
   animation: flipIn 0.3s ease-out;
 }
 
+/* Brief "lock-in" pulse used when a Video Poker card is held. The scale dip
+   gives the card a tactile "click" the moment the HOLD ring appears.
+   Uses standalone `scale` (not transform: scale()) so the animation is additive:
+   Tailwind's -translate-y-2 transition still slides the card up smoothly while
+   this keyframe only controls the scale dip. */
+@keyframes card-lock {
+  0%,
+  100% {
+    scale: 1;
+  }
+  35% {
+    scale: 0.94;
+  }
+}
+.animate-card-lock {
+  animation: card-lock 0.18s ease-out;
+}
+
 @keyframes sweat-drop {
   0% {
     opacity: 0.6;
