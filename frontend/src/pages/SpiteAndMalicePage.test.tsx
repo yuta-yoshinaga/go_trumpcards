@@ -126,6 +126,59 @@ describe('SpiteAndMalicePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
 
+  it('marks the human goal pile as playable when goalTop fits a foundation', async () => {
+    const playableGoalState: SpiteAndMaliceResponse = {
+      ...baseState,
+      players: [{ ...baseState.players[0], goalTop: card('SPADE', 1) }, baseState.players[1]],
+    };
+    mockExec.mockResolvedValue(playableGoalState);
+    renderWithProviders(<SpiteAndMalicePage />);
+    const goalBtn = await screen.findByRole('button', { name: /ゴール|Goal/ });
+    expect(goalBtn.dataset.goalPlayable).toBe('true');
+    expect(goalBtn.className).toContain('ring-ds-warning');
+    expect(goalBtn.className).toContain('motion-safe:animate-pulse');
+  });
+
+  it('does not pulse the goal pile when goalTop cannot be played', async () => {
+    const idleGoalState: SpiteAndMaliceResponse = {
+      ...baseState,
+      players: [{ ...baseState.players[0], goalTop: card('SPADE', 5) }, baseState.players[1]],
+      foundationTops: [0, 0, 0, 0],
+    };
+    mockExec.mockResolvedValue(idleGoalState);
+    renderWithProviders(<SpiteAndMalicePage />);
+    const goalBtn = await screen.findByRole('button', { name: /ゴール|Goal/ });
+    expect(goalBtn.dataset.goalPlayable).toBe('false');
+    expect(goalBtn.className).not.toContain('ring-ds-warning');
+  });
+
+  it('does not pulse the goal pile on CPU turn even if it would be playable', async () => {
+    const playableButCpu: SpiteAndMaliceResponse = {
+      ...cpuTurnState,
+      players: [{ ...cpuTurnState.players[0], goalTop: card('SPADE', 1) }, cpuTurnState.players[1]],
+    };
+    mockExec.mockResolvedValue(playableButCpu);
+    renderWithProviders(<SpiteAndMalicePage />);
+    const goalBtn = await screen.findByRole('button', { name: /ゴール|Goal/ });
+    expect(goalBtn.dataset.goalPlayable).toBe('false');
+  });
+
+  it('does not pulse the goal pile at game over even if goalTop is playable', async () => {
+    // winState has phase=GAME_OVER but current=0 (still the human's turn),
+    // so a winning hand with a playable goalTop must not keep pulsing on the
+    // game-over screen.
+    const gameOverPlayable: SpiteAndMaliceResponse = {
+      ...winState,
+      players: [{ ...winState.players[0], goalTop: card('SPADE', 1) }, winState.players[1]],
+      foundationTops: [0, 0, 0, 0],
+    };
+    mockExec.mockResolvedValue(gameOverPlayable);
+    renderWithProviders(<SpiteAndMalicePage />);
+    const goalBtn = await screen.findByRole('button', { name: /ゴール|Goal/ });
+    expect(goalBtn.dataset.goalPlayable).toBe('false');
+    expect(goalBtn.className).not.toContain('ring-ds-warning');
+  });
+
   it('hides the autocomplete button on CPU turn and at game over', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
     const { unmount } = renderWithProviders(<SpiteAndMalicePage />);
