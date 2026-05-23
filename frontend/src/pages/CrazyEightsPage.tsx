@@ -247,7 +247,11 @@ function CrazyEightsPageContent() {
                         {SUIT_SYMBOLS[state.chosenSuit] ?? '?'}
                       </span>
                     )}
-                    <AnimatedCard card={state.discardTop} width={cardWidth} />
+                    {/* Wrap in a positioned div so DOM order — not "positioned beats static" —
+                        decides stacking: the card must paint on top of the absolute watermark span above. */}
+                    <div className="relative">
+                      <AnimatedCard card={state.discardTop} width={cardWidth} />
+                    </div>
                     <div className="text-ds-text-muted text-sm relative">
                       <div>{t('discardTop')}</div>
                       {state.chosenSuit > 0 && (

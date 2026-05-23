@@ -342,7 +342,10 @@ describe('CrazyEightsPage', () => {
       const watermark = screen.getByTestId('chosen-suit-watermark');
       expect(watermark).toBeInTheDocument();
       expect(watermark.textContent).toBe('♠');
-      expect(watermark.className).toContain('animate-suit-watermark');
+      // motion-safe: prefix is load-bearing — it pins the keyframe to users who haven't
+      // enabled prefers-reduced-motion. Substring on 'animate-suit-watermark' alone would
+      // silently pass even if the prefix were dropped.
+      expect(watermark.className).toContain('motion-safe:animate-suit-watermark');
       expect(watermark.className).toContain('opacity-15');
     });
   });

@@ -269,19 +269,22 @@ input:not([type]):focus-visible {
 }
 
 /* Suit watermark "settle" animation — used by Crazy Eights when chosenSuit
-   becomes active. Starts slightly larger and fades to its resting opacity so
-   the suit change registers in peripheral vision (#1885). */
+   becomes active. Starts slightly larger and settles to the resting opacity
+   so the suit change registers in peripheral vision (#1885). The 100% opacity
+   must match the element's resting Tailwind opacity (`opacity-15` = 0.15);
+   otherwise the computed value snaps when the animation ends, producing a
+   visible flash. */
 @keyframes suit-watermark {
   0% {
     opacity: 0;
     transform: scale(1.6);
   }
   60% {
-    opacity: 0.3;
+    opacity: 0.08;
     transform: scale(1.05);
   }
   100% {
-    opacity: 1;
+    opacity: 0.15;
     transform: scale(1);
   }
 }
