@@ -693,4 +693,48 @@ describe('CribbagePage', () => {
     renderWithProviders(<CribbagePage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
+
+  it('marks a peg card aria-disabled when its value would push the count over 31', async () => {
+    const nearLimitState: CribbageResponse = { ...peggingPhaseState, pegCount: 28 };
+    mockExec.mockResolvedValue(nearLimitState);
+    renderWithProviders(<CribbagePage />);
+    // Hand is [♠A, ♥J→10, ♦5, ♣8]. With pegCount=28: A=1→29 (OK); J=10→38, 5→33, 8→36 all exceed 31.
+    // Verify the Jack of Hearts is the restricted one we test against.
+    const restrictedJack = await screen.findByTestId('cb-card-restricted-HEART-11');
+    // Use aria-disabled (not native `disabled`) so the card stays focusable for the tooltip.
+    expect(restrictedJack).toHaveAttribute('aria-disabled', 'true');
+    expect(restrictedJack).not.toBeDisabled();
+  });
+
+  it('highlights the Go button when the human has no playable card', async () => {
+    const allRestrictedState: CribbageResponse = {
+      ...peggingPhaseState,
+      pegCount: 30,
+      players: [
+        {
+          ...peggingPhaseState.players[0],
+          cardCount: 2,
+          cards: [
+            { design: 'SPADE', value: 5 },
+            { design: 'HEART', value: 7 },
+          ],
+        },
+        peggingPhaseState.players[1],
+      ],
+    };
+    mockExec.mockResolvedValue(allRestrictedState);
+    renderWithProviders(<CribbagePage />);
+    await waitFor(() => expect(screen.getByTestId('cb-go-button')).toBeInTheDocument());
+    expect(screen.getByTestId('cb-go-button')).toHaveClass('animate-pulse');
+  });
+
+  it('shows the hover preview when hovering an eligible peg card', async () => {
+    mockExec.mockResolvedValue({ ...peggingPhaseState, pegCount: 4 });
+    renderWithProviders(<CribbagePage />);
+    await waitFor(() => expect(screen.getByLabelText('♥ J')).toBeInTheDocument());
+    fireEvent.pointerEnter(screen.getByLabelText('♥ J'));
+    const preview = await screen.findByTestId('cb-peg-hover-preview');
+    expect(preview.textContent).toContain('4');
+    expect(preview.textContent).toContain('14');
+  });
 });
