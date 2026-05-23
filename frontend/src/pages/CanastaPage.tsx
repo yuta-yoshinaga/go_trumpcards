@@ -114,10 +114,13 @@ function CanastaPageContent() {
   const drawDiscardReason = useMemo(() => {
     if (!isDrawPhase) return '';
     const n = selectedCardIndices.length;
-    if (n === 0) return state?.isFrozen ? t('drawDiscardReason.frozen') : t('drawDiscardReason.selectTwo');
-    if (n === 1) return t('drawDiscardReason.selectOneMore');
     if (n > 2) return t('drawDiscardReason.tooMany');
-    return '';
+    if (n === 2) return '';
+    // Frozen takes priority while the player is still picking — the wildcard restriction
+    // is the load-bearing rule players forget; surface it whether they've picked 0 or 1 cards.
+    if (state?.isFrozen) return t('drawDiscardReason.frozen');
+    if (n === 1) return t('drawDiscardReason.selectOneMore');
+    return t('drawDiscardReason.selectTwo');
   }, [isDrawPhase, selectedCardIndices.length, state?.isFrozen, t]);
 
   const handleManualReset = useCallback(() => {
@@ -233,7 +236,8 @@ function CanastaPageContent() {
                       <span
                         className="absolute top-1 right-2 text-ds-info text-xs font-bold"
                         data-testid="ca-frozen-badge"
-                        role="status"
+                        role="img"
+                        aria-label={t('frozenIndicator')}
                       >
                         {t('frozenIndicator')}
                       </span>
@@ -389,8 +393,8 @@ function CanastaPageContent() {
                       className={btnPrimary}
                       onClick={handleDrawDiscard}
                       disabled={loading || selectedCardIndices.length !== 2}
-                      title={drawDiscardReason}
-                      aria-describedby="ca-draw-discard-reason"
+                      title={drawDiscardReason || undefined}
+                      aria-describedby={drawDiscardReason ? 'ca-draw-discard-reason' : undefined}
                     >
                       {t('drawDiscardButton')}
                     </button>
