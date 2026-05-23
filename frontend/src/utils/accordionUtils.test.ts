@@ -38,4 +38,9 @@ describe('accordionLegalTargets', () => {
     const piles = [pile(card('SPADE', 2)), pile(card('HEART', 9))];
     expect(accordionLegalTargets(piles, 1)).toEqual([]);
   });
+
+  it('skips empty target pile at valid offset', () => {
+    // fromIdx=1 (SPADE 9), toIdx=0 exists but is empty → no match
+    expect(accordionLegalTargets([pile(undefined), pile(card('SPADE', 9))], 1)).toEqual([]);
+  });
 });

@@ -335,11 +335,11 @@ function AccordionPageContent() {
                         isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
                       } ${hintFrom ? 'ring-2 ring-ds-info animate-pulse' : ''} ${
                         hintTo ? 'ring-2 ring-ds-success animate-pulse' : ''
-                      } ${isHoverTarget && !isSelected && !hintTo ? 'ring-2 ring-ds-success' : ''}`}
+                      } ${isHoverTarget && !isSelected && !hintTo && !hintFrom ? 'ring-2 ring-ds-success' : ''}`}
                       onClick={() => handlePileClick(idx)}
-                      onMouseEnter={() => setHoveredIdx(idx)}
+                      onMouseEnter={isPlaying ? () => setHoveredIdx(idx) : undefined}
                       onMouseLeave={() => setHoveredIdx((cur) => (cur === idx ? null : cur))}
-                      onFocus={() => setHoveredIdx(idx)}
+                      onFocus={isPlaying ? () => setHoveredIdx(idx) : undefined}
                       onBlur={() => setHoveredIdx((cur) => (cur === idx ? null : cur))}
                       disabled={!isPlaying}
                       data-hover-target={isHoverTarget ? 'true' : 'false'}

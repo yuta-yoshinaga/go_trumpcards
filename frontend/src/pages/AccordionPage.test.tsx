@@ -131,6 +131,47 @@ describe('AccordionPage', () => {
     expect(screen.getByRole('button', { name: /2:/ }).dataset.hoverTarget).toBe('false');
   });
 
+  it('hover ring is suppressed on hintFrom pile even when it is a legal target', async () => {
+    // pile 0 (SPADE 7) is both hintFrom AND a legal hover-target for pile 3 (SPADE 9, same suit)
+    const hintFromHoverState: AccordionResponse = {
+      ...playingState,
+      piles: [
+        { cards: [card('SPADE', 7)], size: 1 },
+        { cards: [card('HEART', 2)], size: 1 },
+        { cards: [card('CLOVER', 3)], size: 1 },
+        { cards: [card('SPADE', 9)], size: 1 },
+      ],
+      pileCount: 4,
+      hint: { fromIdx: 0, toIdx: 3 },
+    };
+    mockExec.mockResolvedValue(hintFromHoverState);
+    renderWithProviders(<AccordionPage />);
+    const pile3 = await screen.findByRole('button', { name: /3:/ });
+    fireEvent.mouseEnter(pile3);
+    const pile0 = screen.getByRole('button', { name: /0:/ });
+    // pile 0 is a legal target (SPADE match) but hintFrom wins; no success ring
+    expect(pile0.className).not.toContain('ring-ds-success');
+    // hintFrom ring is still present
+    expect(pile0.className).toContain('ring-ds-info');
+  });
+
+  it('hover does not highlight targets when game is over', async () => {
+    const twoSpadePiles = {
+      ...gameOverState,
+      piles: [
+        { cards: [card('SPADE', 7)], size: 1 },
+        { cards: [card('SPADE', 9)], size: 1 },
+      ],
+      pileCount: 2,
+    };
+    mockExec.mockResolvedValue(twoSpadePiles);
+    renderWithProviders(<AccordionPage />);
+    const pile1 = await screen.findByRole('button', { name: /1:/ });
+    fireEvent.mouseEnter(pile1);
+    // pile 0 shares suit but isPlaying=false → no hover targets
+    expect(screen.getByRole('button', { name: /0:/ }).dataset.hoverTarget).toBe('false');
+  });
+
   it('mouseleave clears the hover highlight', async () => {
     const hoverState: AccordionResponse = {
       ...playingState,
