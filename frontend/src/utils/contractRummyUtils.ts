@@ -12,13 +12,13 @@ export interface ContractSlotEvaluation {
   placed: number;
   /** True only when the count matches and the cards form a valid set/run. */
   satisfied: boolean;
-  /** True when the count is correct but the combination is invalid (e.g. 3 cards but not the same rank). */
+  /** True when the cards do not form a valid set/run (wrong combination or too many cards). */
   invalid: boolean;
 }
 
-/** Returns true iff every card has the same rank. */
+/** Returns true iff cards share the same rank. Contract Rummy requires at least 3 cards. */
 export function isContractSet(cards: Card[]): boolean {
-  if (cards.length < 2) return false;
+  if (cards.length < 3) return false;
   const first = cards[0].value;
   return cards.every((c) => c.value === first);
 }
@@ -38,7 +38,9 @@ export function isContractRun(cards: Card[]): boolean {
   const sortedLow = [...values].sort((a, b) => a - b);
   if (isStrictlyConsecutive(sortedLow)) return true;
   if (sortedLow[0] === 1) {
-    const high = [...sortedLow.slice(1), 14].sort((a, b) => a - b);
+    // sortedLow without the leading Ace is already ascending, and 14 is the max possible
+    // value, so concatenating preserves order — no resort needed.
+    const high = [...sortedLow.slice(1), 14];
     if (isStrictlyConsecutive(high)) return true;
   }
   return false;

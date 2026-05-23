@@ -180,10 +180,11 @@ function ContractRummyPageContent() {
     });
   }, [state, humanPlayer, contractSlots]);
 
+  // humanPlayer gates slotEvaluations population, so checking it here keeps the
+  // intent obvious; the length>0 guard prevents `[].every(...)` from vacuously
+  // enabling submit on a contract with zero slots.
   const allSlotsSatisfied =
-    state !== null &&
-    slotEvaluations.length === state.contractSlots.length &&
-    slotEvaluations.every((ev) => ev.satisfied);
+    humanPlayer != null && slotEvaluations.length > 0 && slotEvaluations.every((ev) => ev.satisfied);
 
   if (!state) {
     return (

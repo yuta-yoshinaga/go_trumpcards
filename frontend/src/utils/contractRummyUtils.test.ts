@@ -22,6 +22,10 @@ describe('isContractSet', () => {
   it('returns false for a single card', () => {
     expect(isContractSet([card('SPADE', 7)])).toBe(false);
   });
+
+  it('returns false for a 2-card pair (Contract Rummy sets require ≥3)', () => {
+    expect(isContractSet([card('SPADE', 7), card('HEART', 7)])).toBe(false);
+  });
 });
 
 describe('isContractRun', () => {
