@@ -20,6 +20,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { gameTheme } from '../styles/gameTheme';
 import type { CassinoResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { suggestCassinoAction } from '../utils/cassinoUtils';
 import {
   CASSINO_HELP,
   type CassinoCliArgs,
@@ -139,6 +140,37 @@ function CassinoPageContent() {
   const canTrail = isHumanTurn && handIndex !== null;
   const phaseName = isGameEnd ? t('phase.end') : t(`phase.${state.phase}`, t('phase.play'));
 
+  const suggestion =
+    isHumanTurn && handIndex !== null
+      ? suggestCassinoAction({
+          handCard: human.cards[handIndex],
+          hand: human.cards,
+          handIndex,
+          selectedTableCards: tableIndices.map((i) => state.tableCards[i]).filter(Boolean),
+          selectedBuilds: buildIndices.map((i) => state.builds[i]).filter(Boolean),
+        })
+      : null;
+
+  const onSuggest = () => {
+    if (!suggestion || handIndex === null) return;
+    if (suggestion.type === 'take') {
+      playTake();
+      return;
+    }
+    setDeclaredValue(suggestion.declaredValue);
+    callApi('build', {
+      handIndex,
+      tableIndices: [...tableIndices].sort((a, b) => a - b),
+      declaredValue: suggestion.declaredValue,
+    });
+  };
+  const suggestionLabel =
+    suggestion?.type === 'take'
+      ? t('button.suggestTake', { value: suggestion.value })
+      : suggestion?.type === 'build'
+        ? t('button.suggestBuild', { value: suggestion.declaredValue })
+        : '';
+
   return (
     <GamePageShell
       title={tc('nav.cassino')}
@@ -257,6 +289,21 @@ function CassinoPageContent() {
                 ))}
               </div>
             </div>
+
+            {suggestion && (
+              <div className="flex justify-center" data-testid="cs-suggest-area">
+                <button
+                  type="button"
+                  onClick={onSuggest}
+                  disabled={loading}
+                  className="px-5 py-2.5 rounded-full bg-ds-accent text-ds-text-on-accent font-semibold shadow-lg motion-safe:animate-pulse disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                  data-testid="cs-suggest-button"
+                  aria-label={suggestionLabel}
+                >
+                  {suggestionLabel}
+                </button>
+              </div>
+            )}
 
             <GameMessageBox
               message={state.message}

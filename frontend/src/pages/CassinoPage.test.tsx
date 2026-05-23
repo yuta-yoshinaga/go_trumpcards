@@ -249,6 +249,88 @@ describe('CassinoPage', () => {
     await waitFor(() => expect(sweep).not.toBeChecked());
   });
 
+  it('shows a Take suggestion when hand value equals table sum', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 2,
+            cards: [card('SPADE', 9), card('CLOVER', 2)],
+            capturedCount: 0,
+            sweepCount: 0,
+            totalScore: 0,
+          },
+          { id: 1, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, sweepCount: 0, totalScore: 0 },
+          { id: 2, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, sweepCount: 0, totalScore: 0 },
+          { id: 3, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, sweepCount: 0, totalScore: 0 },
+        ],
+        tableCards: [card('SPADE', 4), card('HEART', 5)],
+      }),
+    );
+    renderWithProviders(<CassinoPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('table-card-0'));
+    fireEvent.click(screen.getByTestId('table-card-1'));
+    expect(screen.getByTestId('cs-suggest-button')).toHaveTextContent('Take (9)');
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('cs-suggest-button'));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('take', {
+        handIndex: 0,
+        tableIndices: [0, 1],
+        buildIndices: [],
+      }),
+    );
+  });
+
+  it('shows a Build suggestion and dispatches build with the declared value', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 2,
+            cards: [card('SPADE', 4), card('CLOVER', 9)],
+            capturedCount: 0,
+            sweepCount: 0,
+            totalScore: 0,
+          },
+          { id: 1, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, sweepCount: 0, totalScore: 0 },
+          { id: 2, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, sweepCount: 0, totalScore: 0 },
+          { id: 3, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, sweepCount: 0, totalScore: 0 },
+        ],
+        tableCards: [card('SPADE', 5)],
+      }),
+    );
+    renderWithProviders(<CassinoPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('table-card-0'));
+    expect(screen.getByTestId('cs-suggest-button')).toHaveTextContent('Build (9)');
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('cs-suggest-button'));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('build', {
+        handIndex: 0,
+        tableIndices: [0],
+        declaredValue: 9,
+      }),
+    );
+  });
+
+  it('does not render a suggestion when there is no inferred action', async () => {
+    renderWithProviders(<CassinoPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    expect(screen.queryByTestId('cs-suggest-button')).not.toBeInTheDocument();
+  });
+
   it('renders CLI terminal when CLI mode is enabled via localStorage', async () => {
     localStorage.setItem('cli-mode-cassino', 'true');
     renderWithProviders(<CassinoPage />);
