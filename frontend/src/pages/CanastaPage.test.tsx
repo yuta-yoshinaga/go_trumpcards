@@ -183,6 +183,22 @@ describe('CanastaPage', () => {
     expect(screen.queryByRole('button', { name: '確認' })).not.toBeInTheDocument();
   });
 
+  it('shows the disabled reason for draw-from-discard when no cards are selected', async () => {
+    renderWithProviders(<CanastaPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument());
+    const reason = screen.getByTestId('ca-draw-discard-reason');
+    expect(reason).toHaveTextContent('手札からトップカードと同ランクの2枚を選択してください');
+  });
+
+  it('renders the frozen badge and reason when the discard pile is frozen', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, isFrozen: true });
+    renderWithProviders(<CanastaPage />);
+    await waitFor(() => expect(screen.getByTestId('ca-frozen-badge')).toBeInTheDocument());
+    expect(screen.getByTestId('ca-draw-discard-reason')).toHaveTextContent(
+      'フリーズ中はワイルドカードでの代用ができません',
+    );
+  });
+
   afterEach(() => {
     localStorage.clear();
   });

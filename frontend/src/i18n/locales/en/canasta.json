@@ -35,6 +35,13 @@
   "goOutButton": "Go out",
   "nextRound": "Next round",
   "selectPair": "Select a pair (2 natural cards matching the top discard)",
+  "drawDiscardReason": {
+    "selectTwo": "Select 2 natural cards from your hand matching the top discard",
+    "frozen": "Frozen: wild cards cannot substitute for naturals",
+    "selectOneMore": "Select one more card",
+    "tooMany": "Select at most 2 cards"
+  },
+  "frozenIndicator": "❄️ Frozen",
   "selectMeld": "Select cards to meld",
   "result": {
     "humanWin": "You win!",
