@@ -72,9 +72,7 @@ export function TrickDisplay({ currentTrick, players, cardWidth, label, dataTuto
               data-team={team ?? undefined}
               data-team-role={isAlly ? 'ally' : isFoe ? 'foe' : undefined}
             >
-              <div className={wrapperClass}>
-                <AnimatedCard card={trickCard.card} width={cardWidth} />
-              </div>
+              <AnimatedCard card={trickCard.card} width={cardWidth} wrapperClassName={wrapperClass || undefined} />
               <div className={`text-xs mt-1 ${labelClass}`}>
                 {playerName(player?.id ?? trickCard.playerIdx, player?.isHuman ?? false)}
               </div>
