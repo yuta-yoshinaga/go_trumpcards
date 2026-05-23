@@ -234,6 +234,47 @@ describe('DurakPage', () => {
     await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
   });
 
+  it('marks an undefended attack and pulses when human is defender', async () => {
+    mockExec.mockResolvedValue(defendPhaseState);
+    renderWithProviders(<DurakPage />);
+    await waitFor(() => expect(screen.getByTestId('dk-pair-0')).toBeInTheDocument());
+    const attack = screen.getByTestId('dk-attack-0');
+    expect(attack).toHaveAttribute('data-undefended', 'true');
+    expect(attack.className).toContain('animate-pulse');
+    expect(screen.queryByTestId('dk-defense-0')).not.toBeInTheDocument();
+    // ARIA label includes suit + rank so screen readers convey "Undefended attack: ♣ 7".
+    expect(screen.getByTestId('dk-pair-0')).toHaveAttribute('aria-label', '未防御の攻撃: ♣ 7');
+  });
+
+  it('does not pulse an undefended attack when the human is not the defender', async () => {
+    // baseState: human is attacker (defenderIdx=1), so undefended attacks should NOT pulse.
+    mockExec.mockResolvedValue({
+      ...baseState,
+      tablePairs: [{ attack: { design: 'CLOVER', value: 7 }, defense: null }],
+    });
+    renderWithProviders(<DurakPage />);
+    await waitFor(() => expect(screen.getByTestId('dk-attack-0')).toBeInTheDocument());
+    const attack = screen.getByTestId('dk-attack-0');
+    expect(attack).toHaveAttribute('data-undefended', 'true');
+    expect(attack.className).not.toContain('animate-pulse');
+  });
+
+  it('renders a stacked defense card and no pulse when the pair is defended', async () => {
+    mockExec.mockResolvedValue({
+      ...defendPhaseState,
+      defenderIdx: 1,
+      tablePairs: [{ attack: { design: 'CLOVER', value: 7 }, defense: { design: 'HEART', value: 9 } }],
+    });
+    renderWithProviders(<DurakPage />);
+    await waitFor(() => expect(screen.getByTestId('dk-pair-0')).toBeInTheDocument());
+    expect(screen.getByTestId('dk-defense-0')).toBeInTheDocument();
+    const attack = screen.getByTestId('dk-attack-0');
+    expect(attack).toHaveAttribute('data-undefended', 'false');
+    expect(attack.className).not.toContain('animate-pulse');
+    // Defended ARIA label names both attack and defense cards.
+    expect(screen.getByTestId('dk-pair-0')).toHaveAttribute('aria-label', '防御済みペア: ♣ 7 を ♥ 9 で防御');
+  });
+
   it('shows 次のゲーム at game-end and fires reset directly (no confirm)', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<DurakPage />);

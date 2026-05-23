@@ -15,6 +15,10 @@
   "stock": "Stock",
   "table": "Table",
   "tableEmpty": "(empty)",
+  "pair": {
+    "undefendedAria": "Undefended attack: {{card}}",
+    "defendedAria": "Defended pair: {{attack}} defended by {{defense}}"
+  },
   "attackButton": "Attack",
   "defendButton": "Defend",
   "passButton": "Pass",
