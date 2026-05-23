@@ -190,6 +190,14 @@ function TrashPageContent() {
         ? t('phase.awaitWild')
         : t('phase.playerTurn');
 
+  // Slot index where the pending non-wild card should land. Wild cards (K/Joker)
+  // route through AWAIT_WILD's existing highlightFaceDown path, so this stays
+  // null whenever isAwaitWild is true or the value is outside 1..10.
+  const pendingTargetIdx =
+    isHumanTurn && !isAwaitWild && state.pending && state.pending.value >= 1 && state.pending.value <= 10
+      ? state.pending.value - 1
+      : null;
+
   return (
     <GamePageShell
       title={tc('nav.trash')}
@@ -255,11 +263,7 @@ function TrashPageContent() {
               highlightFaceDown={isAwaitWild && isHumanTurn}
               onSlotClick={isAwaitWild && isHumanTurn ? handleSlotClick : undefined}
               dataTutorial="tr-player"
-              pendingTargetIdx={
-                isHumanTurn && !isAwaitWild && state.pending && state.pending.value >= 1 && state.pending.value <= 10
-                  ? state.pending.value - 1
-                  : null
-              }
+              pendingTargetIdx={pendingTargetIdx}
             />
           </div>
 

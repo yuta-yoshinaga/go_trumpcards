@@ -212,6 +212,24 @@ describe('TrashPage', () => {
     expect(slot4s[0].dataset.pendingTarget).toBe('false');
   });
 
+  it('highlights slot 0 (Ace boundary) when pending value is 1', async () => {
+    const pendingAce: TrashResponse = { ...playerTurnState, pending: card('SPADE', 1) };
+    mockExec.mockResolvedValue(pendingAce);
+    renderWithProviders(<TrashPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const slot1s = screen.getAllByRole('button', { name: '1: face-down' });
+    expect(slot1s[1].dataset.pendingTarget).toBe('true');
+  });
+
+  it('highlights slot 9 (10 boundary) when pending value is 10', async () => {
+    const pendingTen: TrashResponse = { ...playerTurnState, pending: card('SPADE', 10) };
+    mockExec.mockResolvedValue(pendingTen);
+    renderWithProviders(<TrashPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const slot10s = screen.getAllByRole('button', { name: '10: face-down' });
+    expect(slot10s[1].dataset.pendingTarget).toBe('true');
+  });
+
   it('does not highlight when pending card value is outside 1..10 (wild flow handles K/Joker separately)', async () => {
     // K (13) drawn but still in play phase (not yet AWAIT_WILD) — no pending highlight.
     const pendingK: TrashResponse = { ...playerTurnState, pending: card('DIAMOND', 13) };
