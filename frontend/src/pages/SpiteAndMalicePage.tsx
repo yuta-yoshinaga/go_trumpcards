@@ -313,7 +313,9 @@ function SpiteAndMalicePageContent() {
                 selected={selection?.kind === 'goal'}
                 onClick={handleSelectGoal}
                 label={t('label.goal')}
-                playable={isHumanTurn && isGoalTopPlayableToFoundation(human.goalTop, state.foundationTops)}
+                playable={
+                  isHumanTurn && !isGameOver && isGoalTopPlayableToFoundation(human.goalTop, state.foundationTops)
+                }
               />
             </div>
 
