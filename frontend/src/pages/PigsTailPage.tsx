@@ -152,7 +152,6 @@ function PigsTailPageContent() {
                 onDrawCard={handleDraw}
                 disabled={loading || isGameEnd || !isHumanTurn}
                 drawAriaLabel={t('button.draw')}
-                dataTutorial="pt-circle-deck"
               />
               <div className="text-center" data-tutorial="pt-center-area">
                 <div className="text-xs text-ds-text-muted mb-1">

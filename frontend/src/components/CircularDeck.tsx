@@ -20,6 +20,10 @@ export interface CircularDeckProps {
 
 const MIN_DIAMETER = 120;
 const MAX_VISIBLE_CARDS = 26;
+/** Card aspect ratio (height / width). Matches `CARD_NATURAL_HEIGHT / CARD_NATURAL_WIDTH` in `CardImage.tsx`. */
+const CARD_ASPECT = 1.5;
+/** WCAG 2.5.5 AAA minimum tap-target dimension (px). Per `frontend/CLAUDE.md`. */
+const MIN_TAP_TARGET_PX = 44;
 
 /**
  * Lays out `count` face-down cards in a ring so the player can tap any of them
@@ -41,7 +45,7 @@ export function CircularDeck({
 }: CircularDeckProps) {
   const visible = Math.max(0, Math.min(count, MAX_VISIBLE_CARDS));
   const ringDiameter = Math.max(diameter, MIN_DIAMETER);
-  const cardHeight = Math.round(cardWidth * 1.4);
+  const cardHeight = Math.round(cardWidth * CARD_ASPECT);
 
   if (visible === 0) {
     return (
@@ -64,8 +68,11 @@ export function CircularDeck({
     >
       {Array.from({ length: visible }, (_, i) => {
         const angle = (i / visible) * 2 * Math.PI - Math.PI / 2;
-        const cx = ringDiameter / 2 + (ringDiameter / 2) * Math.cos(angle);
-        const cy = ringDiameter / 2 + (ringDiameter / 2) * Math.sin(angle);
+        // Shift the ring centre by half a card so cards at every cardinal
+        // direction stay fully inside the container (the original calc placed
+        // the centre at `ringDiameter/2` which clipped the left and top cards).
+        const cx = cardWidth / 2 + (ringDiameter / 2) * (1 + Math.cos(angle));
+        const cy = cardHeight / 2 + (ringDiameter / 2) * (1 + Math.sin(angle));
         return (
           <button
             type="button"
@@ -74,10 +81,14 @@ export function CircularDeck({
             disabled={disabled}
             aria-label={`${drawAriaLabel} #${i + 1}`}
             data-testid={`circular-deck-card-${i}`}
-            className="absolute p-0 m-0 border-0 bg-transparent disabled:opacity-40 disabled:cursor-not-allowed transition-transform hover:scale-110"
+            className="absolute p-0 m-0 border-0 bg-transparent disabled:opacity-40 disabled:cursor-not-allowed transition-transform hover:scale-110 flex items-center justify-center"
             style={{
               left: cx,
               top: cy,
+              // Pad the interactive area to meet WCAG 2.5.5 AAA (44×44 minimum)
+              // even when the visible card art is smaller.
+              minWidth: MIN_TAP_TARGET_PX,
+              minHeight: MIN_TAP_TARGET_PX,
               transform: `translate(-50%, -50%) rotate(${(angle * 180) / Math.PI + 90}deg)`,
             }}
           >

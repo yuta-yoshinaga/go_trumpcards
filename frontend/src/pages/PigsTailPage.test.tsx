@@ -68,6 +68,17 @@ const humanLoseState: PigsTailResponse = {
 
 beforeEach(() => {
   mockExec.mockResolvedValue(baseState);
+  // Reset CLI mode to the default so tests that toggle it on (e.g. the
+  // CLI-terminal case) don't leak state into the next test in source order.
+  mockUseCliMode.mockReturnValue({
+    cliEnabled: false,
+    toggleCli: vi.fn(),
+    logEntries: [],
+    addInput: vi.fn(),
+    addOutput: vi.fn(),
+    addError: vi.fn(),
+    clearLog: vi.fn(),
+  });
 });
 
 describe('PigsTailPage', () => {
@@ -181,16 +192,6 @@ describe('PigsTailPage', () => {
   });
 
   it('renders the circular deck and dispatches draw when a ring card is tapped', async () => {
-    // The previous test enables CLI mode globally on the mock; reset so the page renders the standard UI.
-    mockUseCliMode.mockReturnValue({
-      cliEnabled: false,
-      toggleCli: vi.fn(),
-      logEntries: [],
-      addInput: vi.fn(),
-      addOutput: vi.fn(),
-      addError: vi.fn(),
-      clearLog: vi.fn(),
-    });
     renderWithProviders(<PigsTailPage />);
     await waitFor(() => expect(screen.getByTestId('circular-deck')).toBeInTheDocument());
 
