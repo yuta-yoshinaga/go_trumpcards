@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { casinowarApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -80,14 +80,30 @@ function CasinoWarPageContent() {
   const isTieDecision = state?.phase === CasinoWarPhase.TIE_DECISION;
   const isEndPhase = state?.phase === CasinoWarPhase.END;
 
+  const handleBet = useCallback(() => {
+    setLastBetAmount(betAmount);
+    execApi('bet', betAmount);
+  }, [execApi, betAmount]);
+  const handleSurrender = useCallback(() => execApi('surrender'), [execApi]);
+  const handleWar = useCallback(() => execApi('war'), [execApi]);
+  const handleReset = useCallback(() => execApi('reset'), [execApi]);
+  const canRebet = lastBetAmount !== null && lastBetAmount > 0 && state !== null && lastBetAmount <= state.chips;
+  const handleRebet = useCallback(async () => {
+    if (lastBetAmount === null) return;
+    await execApi('reset');
+    await execApi('bet', lastBetAmount);
+  }, [execApi, lastBetAmount]);
+
   const actionBindings = useMemo(
     () => [
-      { key: 'b', action: () => execApi('bet', betAmount), enabled: isBetPhase },
-      { key: 's', action: () => execApi('surrender'), enabled: isTieDecision },
-      { key: 'w', action: () => execApi('war'), enabled: isTieDecision },
-      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
+      { key: 'b', action: handleBet, enabled: isBetPhase },
+      { key: 's', action: handleSurrender, enabled: isTieDecision },
+      { key: 'w', action: handleWar, enabled: isTieDecision },
+      { key: 'r', action: handleReset, enabled: isEndPhase },
+      // Power-user shortcut: 'e' replays the last bet at end phase.
+      { key: 'e', action: handleRebet, enabled: isEndPhase && canRebet },
     ],
-    [execApi, betAmount, isBetPhase, isTieDecision, isEndPhase],
+    [handleBet, handleSurrender, handleWar, handleReset, handleRebet, isBetPhase, isTieDecision, isEndPhase, canRebet],
   );
 
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
@@ -99,20 +115,6 @@ function CasinoWarPageContent() {
       </div>
     );
   }
-
-  const handleBet = () => {
-    setLastBetAmount(betAmount);
-    execApi('bet', betAmount);
-  };
-  const handleSurrender = () => execApi('surrender');
-  const handleWar = () => execApi('war');
-  const handleReset = () => execApi('reset');
-  const canRebet = lastBetAmount !== null && lastBetAmount > 0 && lastBetAmount <= state.chips;
-  const handleRebet = async () => {
-    if (lastBetAmount === null) return;
-    await execApi('reset');
-    await execApi('bet', lastBetAmount);
-  };
 
   const phaseName = isBetPhase
     ? t('phase.bet')

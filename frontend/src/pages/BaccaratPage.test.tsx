@@ -472,6 +472,47 @@ describe('BaccaratPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 100, 0, 0, 0));
   });
 
+  it('does not show the Rebet button at end-phase when chips are insufficient to replay', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...endPhasePlayerWins, chips: 50 });
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    expect(screen.queryByTestId('bac-rebet-button')).not.toBeInTheDocument();
+  });
+
+  it("snapshots the bet when the 'b' keyboard shortcut is used so Rebet is available at end phase", async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(endPhasePlayerWins);
+    fireEvent.keyDown(document, { key: 'b' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 100, 0, 0, 0));
+    await waitFor(() => expect(screen.getByTestId('bac-rebet-button')).toBeInTheDocument());
+  });
+
+  it("the 'e' keyboard shortcut fires Rebet at end phase", async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValue(endPhasePlayerWins);
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(screen.getByTestId('bac-rebet-button')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValueOnce(betPhaseState);
+    mockExec.mockResolvedValueOnce(endPhasePlayerWins);
+    fireEvent.keyDown(document, { key: 'e' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 100, 0, 0, 0));
+  });
+
   it('payout table is rendered as a collapsible details element in bet phase', async () => {
     mockExec.mockResolvedValue(betPhaseState);
     const { container } = renderWithProviders(<BaccaratPage />);
