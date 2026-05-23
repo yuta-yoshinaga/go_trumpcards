@@ -694,13 +694,16 @@ describe('CribbagePage', () => {
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
 
-  it('disables a peg card whose value would push the count over 31', async () => {
+  it('marks a peg card aria-disabled when its value would push the count over 31', async () => {
     const nearLimitState: CribbageResponse = { ...peggingPhaseState, pegCount: 28 };
     mockExec.mockResolvedValue(nearLimitState);
     renderWithProviders(<CribbagePage />);
-    // Hand has [A, J(11→10), 5, 8]. With pegCount=28, only A and 8 would exceed? A=1 ⇒ 29 OK; J→10 ⇒ 38 too big; 5 ⇒ 33 too big; 8 ⇒ 36 too big.
-    await waitFor(() => expect(screen.getByTestId('cb-card-restricted-1')).toBeInTheDocument());
-    expect(screen.getByTestId('cb-card-restricted-1')).toBeDisabled();
+    // Hand is [♠A, ♥J→10, ♦5, ♣8]. With pegCount=28: A=1→29 (OK); J=10→38, 5→33, 8→36 all exceed 31.
+    // Verify the Jack of Hearts is the restricted one we test against.
+    const restrictedJack = await screen.findByTestId('cb-card-restricted-HEART-11');
+    // Use aria-disabled (not native `disabled`) so the card stays focusable for the tooltip.
+    expect(restrictedJack).toHaveAttribute('aria-disabled', 'true');
+    expect(restrictedJack).not.toBeDisabled();
   });
 
   it('highlights the Go button when the human has no playable card', async () => {
@@ -722,7 +725,7 @@ describe('CribbagePage', () => {
     mockExec.mockResolvedValue(allRestrictedState);
     renderWithProviders(<CribbagePage />);
     await waitFor(() => expect(screen.getByTestId('cb-go-button')).toBeInTheDocument());
-    expect(screen.getByTestId('cb-go-button').className).toMatch(/animate-pulse/);
+    expect(screen.getByTestId('cb-go-button')).toHaveClass('animate-pulse');
   });
 
   it('shows the hover preview when hovering an eligible peg card', async () => {

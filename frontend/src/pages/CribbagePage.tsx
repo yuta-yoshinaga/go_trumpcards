@@ -197,6 +197,17 @@ function CribbagePageContent() {
     !loading;
   const [autoGoNoticeVisible, setAutoGoNoticeVisible] = useState(false);
   const [hoveredPegValue, setHoveredPegValue] = useState<number | null>(null);
+  // Reset the hover preview whenever the turn / phase rotates or an API call is in
+  // flight — the hovered card may have just been removed from the DOM (onPointerLeave
+  // doesn't fire in that case) and the preview values would otherwise stay stale.
+  const peggingTurnKey = `${state?.phase ?? -1}-${state?.currentPlayerIdx ?? -1}`;
+  useEffect(() => {
+    // Both deps are reset triggers, not used in the body — reference them so biome's
+    // useExhaustiveDependencies rule accepts the deps list as intentional.
+    void peggingTurnKey;
+    void loading;
+    setHoveredPegValue(null);
+  }, [peggingTurnKey, loading]);
   useEffect(() => {
     if (!shouldAutoGo) {
       setAutoGoNoticeVisible(false);
@@ -466,11 +477,17 @@ function CribbagePageContent() {
           <GameFooter className={`${gameTheme.cribbage.footer} px-4 py-2.5`}>
             {humanPlayer && (
               <>
-                {isPeggingPhase && hoveredPegValue !== null && (
-                  <div className="text-ds-info text-xs mb-1" data-testid="cb-peg-hover-preview">
-                    {t('pegPreview', { from: state.pegCount, to: state.pegCount + hoveredPegValue })}
-                  </div>
-                )}
+                {/* Fixed-height wrapper reserves space for the preview line even when it is
+                    empty, so the hand below does not jump up and down as the pointer moves
+                    in/out of cards — the pointerleave / pointerenter ping-pong would otherwise
+                    flicker the hand position. */}
+                <div className="h-5">
+                  {isPeggingPhase && hoveredPegValue !== null && (
+                    <div className="text-ds-info text-xs" data-testid="cb-peg-hover-preview">
+                      {t('pegPreview', { from: state.pegCount, to: state.pegCount + hoveredPegValue })}
+                    </div>
+                  )}
+                </div>
                 <div className="flex flex-wrap gap-1 mb-2" data-tutorial="cb-player-hand">
                   {humanPlayer.cards.map((card, idx) => {
                     const cardValue = card.value >= 10 ? 10 : card.value;
@@ -489,10 +506,13 @@ function CribbagePageContent() {
                         onBlur={() => setHoveredPegValue(null)}
                         aria-label={pegRestricted ? `${cardAlt(card)} (${t('pegRestrictedAria')})` : cardAlt(card)}
                         aria-pressed={selectedCardIndices.includes(idx)}
+                        // Use aria-disabled only (not the HTML `disabled` attribute) so
+                        // restricted cards remain focusable for keyboard / screen-reader
+                        // users — they need to reach the tooltip explaining the 31-cap
+                        // rule. Mirrors the Call Break must-trump-spade pattern (#1865).
                         aria-disabled={pegRestricted || undefined}
-                        disabled={pegRestricted}
                         title={restrictedTitle}
-                        data-testid={pegRestricted ? `cb-card-restricted-${idx}` : undefined}
+                        data-testid={pegRestricted ? `cb-card-restricted-${card.design}-${card.value}` : undefined}
                         className={`transition-transform ${focusRingCard} ${pegRestricted ? 'opacity-50 cursor-not-allowed' : ''}`}
                         style={{
                           background: 'none',
