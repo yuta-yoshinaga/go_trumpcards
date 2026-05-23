@@ -325,7 +325,7 @@ describe('CrazyEightsPage', () => {
     renderWithProviders(<CrazyEightsPage />);
     await waitFor(() => {
       expect(screen.getByText(/指定スート/)).toBeInTheDocument();
-      expect(screen.getByText(/♠/)).toBeInTheDocument();
+      expect(screen.getByText(/指定スート: ♠/)).toBeInTheDocument();
     });
   });
 
@@ -333,6 +333,24 @@ describe('CrazyEightsPage', () => {
     renderWithProviders(<CrazyEightsPage />);
     await waitFor(() => expect(screen.getByText('捨て札')).toBeInTheDocument());
     expect(screen.queryByText('指定スート')).not.toBeInTheDocument();
+  });
+
+  it('renders large suit watermark behind discard pile when chosenSuit > 0', async () => {
+    mockExec.mockResolvedValue(chosenSuitState);
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => {
+      const watermark = screen.getByTestId('chosen-suit-watermark');
+      expect(watermark).toBeInTheDocument();
+      expect(watermark.textContent).toBe('♠');
+      expect(watermark.className).toContain('animate-suit-watermark');
+      expect(watermark.className).toContain('opacity-15');
+    });
+  });
+
+  it('does not render watermark when chosenSuit is 0', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByText('捨て札')).toBeInTheDocument());
+    expect(screen.queryByTestId('chosen-suit-watermark')).not.toBeInTheDocument();
   });
 
   it('shows fallback ? for unknown suit value', async () => {

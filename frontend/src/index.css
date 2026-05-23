@@ -268,6 +268,27 @@ input:not([type]):focus-visible {
   animation: sweat-drop 1.5s ease-in-out infinite;
 }
 
+/* Suit watermark "settle" animation — used by Crazy Eights when chosenSuit
+   becomes active. Starts slightly larger and fades to its resting opacity so
+   the suit change registers in peripheral vision (#1885). */
+@keyframes suit-watermark {
+  0% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+  60% {
+    opacity: 0.3;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-suit-watermark {
+  animation: suit-watermark 0.4s ease-out;
+}
+
 /* Rotate chevron when sidebar category is open */
 .sidebar-category[open] .sidebar-category-chevron {
   transform: rotate(90deg);

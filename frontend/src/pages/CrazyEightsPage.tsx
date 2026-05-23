@@ -234,9 +234,21 @@ function CrazyEightsPageContent() {
               <div>
                 {/* Discard pile top */}
                 {state.discardTop && (
-                  <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3" data-tutorial="ce-discard-pile">
+                  <div
+                    className="my-3 p-3 rounded bg-black/40 flex items-center gap-3 relative overflow-hidden"
+                    data-tutorial="ce-discard-pile"
+                  >
+                    {state.chosenSuit > 0 && (
+                      <span
+                        aria-hidden="true"
+                        data-testid="chosen-suit-watermark"
+                        className="pointer-events-none absolute inset-0 flex items-center justify-end pr-4 text-[6rem] leading-none opacity-15 text-ds-warning motion-safe:animate-suit-watermark"
+                      >
+                        {SUIT_SYMBOLS[state.chosenSuit] ?? '?'}
+                      </span>
+                    )}
                     <AnimatedCard card={state.discardTop} width={cardWidth} />
-                    <div className="text-ds-text-muted text-sm">
+                    <div className="text-ds-text-muted text-sm relative">
                       <div>{t('discardTop')}</div>
                       {state.chosenSuit > 0 && (
                         <div className="text-ds-warning">
