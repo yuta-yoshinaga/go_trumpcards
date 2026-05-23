@@ -124,4 +124,42 @@ describe('PitchPage', () => {
     renderWithProviders(<PitchPage />);
     await waitFor(() => expect(screen.getByText(/あなたの勝利/)).toBeInTheDocument());
   });
+
+  it('renders the Game-pip badge with the human hand total', async () => {
+    // SPADE 5 (0 pips) + HEART 9 (0 pips) = 0
+    mockApi.mockResolvedValue(bidState);
+    renderWithProviders(<PitchPage />);
+    const badge = await screen.findByTestId('pitch-game-pips-badge');
+    expect(badge.textContent).toMatch(/Game値: 0/);
+  });
+
+  it('Game-pip badge sums A, K, Q, J, 10 correctly', async () => {
+    const pipHand: PitchResponse = {
+      ...bidState,
+      players: [
+        {
+          ...bidState.players[0],
+          // A(4) + 10(10) + J(1) + K(3) + Q(2) + 7(0) = 20
+          cards: [
+            makeCard('SPADE', 1),
+            makeCard('SPADE', 10),
+            makeCard('SPADE', 11),
+            makeCard('SPADE', 13),
+            makeCard('SPADE', 12),
+            makeCard('HEART', 7),
+          ],
+          cardCount: 6,
+        },
+        ...bidState.players.slice(1),
+      ],
+    };
+    mockApi.mockResolvedValue(pipHand);
+    renderWithProviders(<PitchPage />);
+    const badge = await screen.findByTestId('pitch-game-pips-badge');
+    expect(badge.textContent).toMatch(/Game値: 20/);
+    // Tooltip contains the breakdown of contributing cards only.
+    expect(badge.getAttribute('title')).toContain('A(4)');
+    expect(badge.getAttribute('title')).toContain('10(10)');
+    expect(badge.getAttribute('title')).not.toContain('7(');
+  });
 });
