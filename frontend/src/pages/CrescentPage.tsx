@@ -17,6 +17,7 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
+import { useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useCrescentGame } from '../hooks/useCrescentGame';
@@ -118,6 +119,10 @@ function CrescentPageContent() {
   } = useGameHint('crescent', state);
 
   const tableauDim = useResponsiveTableau(8);
+  // Mobile renders the tableau as a 4-column grid, which makes the per-column arc translate Y
+  // create a zigzag instead of a crescent silhouette. Skip the offset there. We read the breakpoint
+  // from useIsMobile because ResponsiveTableauDimensions doesn't expose it on its public type.
+  const isMobile = useIsMobile();
 
   const isPlayingForKbd = state?.phase === CrescentPhase.PLAYING;
 
@@ -256,12 +261,24 @@ function CrescentPageContent() {
               })}
             </div>
 
-            {/* Tableau (16 piles, 4-col mobile / 8-col desktop) */}
+            {/* Tableau (16 piles, 4-col mobile / 8-col desktop).
+                Desktop adds a translateY arch per column to suggest the crescent shape (#1937).
+                Mobile keeps a flat grid because the 4-col layout would turn the arch into a zigzag. */}
             <div className="grid grid-cols-4 sm:grid-cols-8 gap-1 sm:gap-2 mb-3" data-tutorial="crescent-tableau">
               {state.tableau.map((col, colIdx) => {
+                // Distance from the center of an 8-column row: yields 0..3 then back to 0.
+                const centerDist = Math.abs((colIdx % 8) - 3.5);
+                // Top half (cols 0..7) curves up away from the foundation; bottom half curves down.
+                const arcDirection = colIdx < 8 ? -1 : 1;
+                const arcOffset = isMobile ? 0 : Math.round(centerDist * arcDirection * 6);
                 const tableauColZone: CrescentMoveZone = { zone: 'tableau', col: colIdx };
                 return (
-                  <div key={`col-${colIdx.toString()}`} className="min-w-0">
+                  <div
+                    key={`col-${colIdx.toString()}`}
+                    className="min-w-0"
+                    data-crescent-arc={arcOffset}
+                    style={arcOffset === 0 ? undefined : { transform: `translateY(${arcOffset}px)` }}
+                  >
                     <DropZone
                       isDropTarget={dnd.isDropTarget(tableauColZone)}
                       onDragOver={dnd.handleDragOver(tableauColZone)}
