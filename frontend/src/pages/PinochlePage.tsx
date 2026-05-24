@@ -326,6 +326,7 @@ function PinochlePageContent() {
 
             {/* Melds */}
             {(phase === PinochlePhase.MELD || phase === PinochlePhase.ROUND_END) && state.playerMelds && (
+              // biome-ignore lint/a11y/noStaticElementInteractions: panel acts as a hover-out reset for the per-badge highlight; not interactive on its own.
               <div
                 className="mb-3 p-2 rounded bg-ds-accent/15"
                 data-tutorial="pn-meld-area"
