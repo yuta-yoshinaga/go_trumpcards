@@ -232,4 +232,38 @@ describe('HighCardFlushPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'レイズ x3' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'レイズ x2' })).toBeInTheDocument();
   });
+
+  it('lifts and glows the cards in the longest flush, dims off-suit cards', async () => {
+    mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(actionPhase5Flush);
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'レイズ x2' })).toBeInTheDocument());
+    // actionPhase5Flush has 5 SPADE + 1 HEART + 1 CLOVER → SPADE is the longest flush.
+    const flushCards = document.querySelectorAll('[data-flush-card="true"]');
+    const offCards = document.querySelectorAll('[data-flush-card="false"]');
+    expect(flushCards.length).toBe(5);
+    expect(offCards.length).toBe(2);
+    expect((flushCards[0] as HTMLElement).className).toContain('drop-shadow-[0_0_8px_var(--color-ds-warning)]');
+    expect((offCards[0] as HTMLElement).className).toContain('opacity-50');
+  });
+
+  it('does not dim or highlight the dealer hand until end phase (no spoilers)', async () => {
+    mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce({
+      ...actionPhase5Flush,
+      dealerHand: [card('SPADE', 2)],
+    });
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'レイズ x2' })).toBeInTheDocument());
+    // Scope by data-card-section so we don't rely on alt-text matching (which
+    // would silently start testing the wrong element if AnimatedCard's alt
+    // format ever changes).
+    const dealerWrappers = document.querySelectorAll('[data-card-section="dealer"]');
+    expect(dealerWrappers.length).toBe(1);
+    const dealerWrapper = dealerWrappers[0] as HTMLElement;
+    expect(dealerWrapper.className).not.toContain('drop-shadow');
+    expect(dealerWrapper.className).not.toContain('opacity-50');
+  });
 });
