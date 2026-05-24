@@ -139,6 +139,11 @@ function NertzPageContent() {
 
   const [collidedFoundationIdx, setCollidedFoundationIdx] = useState<number | null>(null);
   const [collisionTick, setCollisionTick] = useState(0);
+  // Tracks which foundation last received a placement so we can flash a brief
+  // success ring. `placedBy` is 'human' when the pendingFoundationRef matched
+  // (the latest in-flight move was ours and it succeeded), otherwise 'cpu'.
+  const [placedFlash, setPlacedFlash] = useState<{ idx: number; placedBy: 'human' | 'cpu'; key: number } | null>(null);
+  const prevFoundationSizesRef = useRef<number[]>([]);
   // `isCollisionError` flags that the current `error` from useGameApi was
   // attributed to a foundation collision (already conveyed via the shake
   // animation). The global ErrorAlert is suppressed for the lifetime of that
@@ -155,8 +160,29 @@ function NertzPageContent() {
   // error (a tick that fails) would attribute itself to the previous foundation
   // and flash the wrong cell.
   useEffect(() => {
-    if (state) pendingFoundationRef.current = null;
+    if (!state) return;
+    // Detect foundation growth → flash success ring on the foundation that grew.
+    // Attribute to 'human' if the latest in-flight move targeted that foundation
+    // (the success cleared pendingFoundationRef before this effect ran).
+    const prev = prevFoundationSizesRef.current;
+    for (let idx = 0; idx < state.foundations.length; idx += 1) {
+      const newSize = state.foundations[idx].size;
+      const oldSize = prev[idx] ?? 0;
+      if (newSize > oldSize) {
+        const placedBy: 'human' | 'cpu' = pendingFoundationRef.current === idx ? 'human' : 'cpu';
+        setPlacedFlash({ idx, placedBy, key: Date.now() });
+        break;
+      }
+    }
+    prevFoundationSizesRef.current = state.foundations.map((f) => f.size);
+    pendingFoundationRef.current = null;
   }, [state]);
+
+  useEffect(() => {
+    if (!placedFlash) return;
+    const id = window.setTimeout(() => setPlacedFlash(null), NERTZ_COLLISION_FEEDBACK_MS);
+    return () => window.clearTimeout(id);
+  }, [placedFlash]);
 
   useEffect(() => {
     if (error && error !== prevErrorRef.current) {
@@ -319,6 +345,8 @@ function NertzPageContent() {
                     disabled={!isHumanTurn || !selection}
                     ariaLabel={t('labels.foundationN', { n: idx, defaultValue: `Foundation ${idx}` })}
                     collided={collidedFoundationIdx === idx}
+                    placedBy={placedFlash?.idx === idx ? placedFlash.placedBy : null}
+                    placedFlashKey={placedFlash?.idx === idx ? placedFlash.key : 0}
                   />
                 ))}
               </div>
@@ -452,22 +480,45 @@ interface FoundationCellProps {
   ariaLabel: string;
   /** Apply collision feedback (shake + red ring) when a move to this foundation was just rejected. */
   collided?: boolean;
+  /** Which side just placed a card on this foundation, for a brief success flash. */
+  placedBy?: 'human' | 'cpu' | null;
+  /** Re-applies the placed flash even when `placedBy` stays the same (e.g., two human placements in a row). */
+  placedFlashKey?: number;
 }
 
-function FoundationCell({ idx, top, size, onClick, disabled, ariaLabel, collided = false }: FoundationCellProps) {
+function FoundationCell({
+  idx,
+  top,
+  size,
+  onClick,
+  disabled,
+  ariaLabel,
+  collided = false,
+  placedBy = null,
+  placedFlashKey = 0,
+}: FoundationCellProps) {
   const cls = disabled
     ? 'bg-ds-surface text-ds-text-muted border-ds-border-subtle'
     : 'bg-ds-surface-elevated text-ds-text-primary border-ds-border-subtle hover:bg-ds-surface-elevated-hover';
   const collisionCls = collided ? 'animate-shake ring-2 ring-ds-error' : '';
+  const placedCls =
+    placedBy === 'human'
+      ? 'ring-2 ring-ds-success motion-safe:animate-pulse-once'
+      : placedBy === 'cpu'
+        ? 'ring-2 ring-ds-info motion-safe:animate-pulse-once'
+        : '';
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`min-w-[3rem] px-2 py-2 rounded border text-sm ${cls} ${collisionCls}`}
+      // Key on placedFlashKey forces a remount so the pulse re-fires for back-to-back placements.
+      key={`f-cell-${idx}-${placedFlashKey}`}
+      className={`min-w-[3rem] rounded border px-2 py-2 text-sm ${cls} ${collisionCls} ${placedCls}`}
       aria-label={ariaLabel}
       data-testid={`nertz-foundation-${idx}`}
       data-collided={collided || undefined}
+      data-placed-by={placedBy ?? undefined}
     >
       <span className="block text-xs leading-none">F{idx}</span>
       <span className="block text-base font-bold">{top ? `${suitSymbol(top.design)}${top.value}` : '—'}</span>
