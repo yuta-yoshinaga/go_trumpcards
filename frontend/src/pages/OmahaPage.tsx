@@ -360,7 +360,7 @@ function OmahaPageContent() {
                 <div
                   className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-ds-info/20 px-2 py-0.5 text-[11px] font-semibold text-ds-info"
                   data-testid="omaha-rule-badge"
-                  aria-label={t('mandatoryRuleAria')}
+                  title={t('mandatoryRuleAria')}
                 >
                   <span aria-hidden="true">🎯</span>
                   {t('mandatoryRule')}
