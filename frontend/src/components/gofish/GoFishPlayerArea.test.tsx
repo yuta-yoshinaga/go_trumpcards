@@ -85,4 +85,54 @@ describe('GoFishPlayerArea', () => {
     expect(bubble.textContent).toMatch(/J/);
     expect(bubble.textContent).toMatch(/Go Fish/);
   });
+
+  it('omits the known-ranks chip row when knownRanks is absent or empty', () => {
+    const { rerender } = renderWithProviders(
+      <GoFishPlayerArea player={cpuPlayer} isSelected={false} onSelect={vi.fn()} disabled={false} />,
+    );
+    expect(screen.queryByTestId('known-ranks-1')).not.toBeInTheDocument();
+
+    rerender(
+      <GoFishPlayerArea player={cpuPlayer} isSelected={false} onSelect={vi.fn()} disabled={false} knownRanks={[]} />,
+    );
+    expect(screen.queryByTestId('known-ranks-1')).not.toBeInTheDocument();
+  });
+
+  it('renders one chip per known rank with the localized rank label', () => {
+    renderWithProviders(
+      <GoFishPlayerArea
+        player={cpuPlayer}
+        isSelected={false}
+        onSelect={vi.fn()}
+        disabled={false}
+        knownRanks={[7, 12]}
+      />,
+    );
+    const row = screen.getByTestId('known-ranks-1');
+    const chips = row.querySelectorAll('[data-rank]');
+    expect(chips).toHaveLength(2);
+    // valueName(7) → '7', valueName(12) → 'Q'
+    expect(row.textContent).toContain('7');
+    expect(row.textContent).toContain('Q');
+  });
+
+  it('flags matched ranks with data-matched while leaving unmatched chips plain', () => {
+    renderWithProviders(
+      <GoFishPlayerArea
+        player={cpuPlayer}
+        isSelected={false}
+        onSelect={vi.fn()}
+        disabled={false}
+        knownRanks={[7, 12]}
+        matchedRanks={[7]}
+      />,
+    );
+    const row = screen.getByTestId('known-ranks-1');
+    const seven = row.querySelector('[data-rank="7"]');
+    const queen = row.querySelector('[data-rank="12"]');
+    expect(seven).toHaveAttribute('data-matched', 'true');
+    expect(seven?.className).toContain('bg-ds-warning');
+    expect(queen).not.toHaveAttribute('data-matched');
+    expect(queen?.className).not.toContain('bg-ds-warning');
+  });
 });
