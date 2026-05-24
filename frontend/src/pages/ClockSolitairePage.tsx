@@ -174,58 +174,63 @@ function ClockSolitairePageContent() {
               className="relative mx-auto"
               style={{ width: radius * 2 + cardWidth + 16, height: radius * 2 + cardHeight + 16 }}
             >
-              {/* 12 clock positions */}
-              {CLOCK_POSITIONS.map((pos, i) => {
-                const pile = state.piles[i];
-                const faceUpCount = state.faceUpCount[i];
-                const isComplete = faceUpCount >= 4;
-                const topCard = pile?.[pile.length - 1]?.card ?? null;
-                const cx = radius + cardWidth / 2 + 8 + pos.x * radius;
-                const cy = radius + cardHeight / 2 + 8 + pos.y * radius;
+              {/* Map the waiting card to its destination pile index once per render:
+                  values 1..12 land on the matching hour (index 0..11) and a King (13) lands
+                  on the center pile (index 12). When no card is waiting we use -1 so no pile
+                  matches. */}
+              {(() => {
                 const currentValue = state.currentCard?.value ?? 0;
                 const targetIdx =
                   currentValue >= 1 && currentValue <= 12 ? currentValue - 1 : currentValue === 13 ? 12 : -1;
-                const isFlightTarget = targetIdx === i;
+                return CLOCK_POSITIONS.map((pos, i) => {
+                  const pile = state.piles[i];
+                  const faceUpCount = state.faceUpCount[i];
+                  const isComplete = faceUpCount >= 4;
+                  const topCard = pile?.[pile.length - 1]?.card ?? null;
+                  const cx = radius + cardWidth / 2 + 8 + pos.x * radius;
+                  const cy = radius + cardHeight / 2 + 8 + pos.y * radius;
+                  const isFlightTarget = targetIdx === i;
 
-                return (
-                  <div
-                    key={i}
-                    className="absolute flex flex-col items-center"
-                    style={{
-                      left: cx - cardWidth / 2,
-                      top: cy - cardHeight / 2,
-                      width: cardWidth,
-                    }}
-                  >
-                    <span className="mb-0.5 text-xs font-bold text-ds-text-muted">{CLOCK_LABELS[i]}</span>
-                    {pile && pile.length > 0 ? (
-                      <div
-                        className={`relative rounded ${isFlightTarget ? 'ring-2 ring-ds-warning animate-pulse' : ''}`}
-                        data-flight-target={isFlightTarget ? 'true' : undefined}
-                        style={{ width: cardWidth }}
-                      >
-                        {isComplete && topCard ? (
-                          <AnimatedCard
-                            card={topCard}
-                            width={cardWidth}
-                            className="rounded border-2 border-ds-success"
-                          />
-                        ) : (
-                          <AnimatedCardBack width={cardWidth} />
-                        )}
-                        <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-[10px] text-ds-text-muted">
-                          {faceUpCount}/4
-                        </span>
-                      </div>
-                    ) : (
-                      <div
-                        className="rounded border border-dashed border-white/30"
-                        style={{ width: cardWidth, height: cardHeight }}
-                      />
-                    )}
-                  </div>
-                );
-              })}
+                  return (
+                    <div
+                      key={i}
+                      className="absolute flex flex-col items-center"
+                      style={{
+                        left: cx - cardWidth / 2,
+                        top: cy - cardHeight / 2,
+                        width: cardWidth,
+                      }}
+                    >
+                      <span className="mb-0.5 text-xs font-bold text-ds-text-muted">{CLOCK_LABELS[i]}</span>
+                      {pile && pile.length > 0 ? (
+                        <div
+                          className={`relative rounded ${isFlightTarget ? 'ring-2 ring-ds-warning animate-pulse' : ''}`}
+                          data-flight-target={isFlightTarget ? 'true' : undefined}
+                          style={{ width: cardWidth }}
+                        >
+                          {isComplete && topCard ? (
+                            <AnimatedCard
+                              card={topCard}
+                              width={cardWidth}
+                              className="rounded border-2 border-ds-success"
+                            />
+                          ) : (
+                            <AnimatedCardBack width={cardWidth} />
+                          )}
+                          <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-[10px] text-ds-text-muted">
+                            {faceUpCount}/4
+                          </span>
+                        </div>
+                      ) : (
+                        <div
+                          className="rounded border border-dashed border-white/30"
+                          style={{ width: cardWidth, height: cardHeight }}
+                        />
+                      )}
+                    </div>
+                  );
+                });
+              })()}
 
               {/* Center pile (K) */}
               <div
