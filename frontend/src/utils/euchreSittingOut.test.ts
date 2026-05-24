@@ -6,7 +6,9 @@ function p(id: number, team: number): EuchrePlayerData {
   return { id, isHuman: id === 0, cardCount: 5, cards: [], team, trickCount: 0 };
 }
 
-function s(overrides: Partial<EuchreResponse> = {}): Pick<EuchreResponse, 'players' | 'goingAlone' | 'goingAlonePlayerIdx'> {
+function s(
+  overrides: Partial<EuchreResponse> = {},
+): Pick<EuchreResponse, 'players' | 'goingAlone' | 'goingAlonePlayerIdx'> {
   return {
     players: [p(0, 0), p(1, 1), p(2, 0), p(3, 1)],
     goingAlone: false,
