@@ -25,12 +25,25 @@ interface GoFishPlayerAreaProps {
    * hide the bubble.
    */
   askAnnotation?: GoFishAskAnnotation;
+  /** Ranks this player has publicly asked for and not yet booked. */
+  knownRanks?: number[];
+  /** Ranks in `knownRanks` that the human can satisfy — rendered with extra emphasis. */
+  matchedRanks?: number[];
 }
 
 /** Renders an opponent's card count and book count, clickable to select as ask target. */
-export function GoFishPlayerArea({ player, isSelected, onSelect, disabled, askAnnotation }: GoFishPlayerAreaProps) {
+export function GoFishPlayerArea({
+  player,
+  isSelected,
+  onSelect,
+  disabled,
+  askAnnotation,
+  knownRanks,
+  matchedRanks,
+}: GoFishPlayerAreaProps) {
   const { t } = useTranslation('gofish');
   const name = playerName(player.id, player.isHuman);
+  const matchedSet = new Set(matchedRanks ?? []);
 
   const bubbleMessage = askAnnotation
     ? askAnnotation.receivedCount > 0
@@ -61,6 +74,30 @@ export function GoFishPlayerArea({ player, isSelected, onSelect, disabled, askAn
         <div className="text-ds-text-muted text-sm">
           {name}: {t('deck', { count: player.cardCount })} | {t('books', { count: player.bookCount })}
         </div>
+        {knownRanks && knownRanks.length > 0 && (
+          <div
+            data-testid={`known-ranks-${player.id}`}
+            className="mt-1 text-xs text-ds-text-muted flex flex-wrap gap-1 items-center"
+          >
+            <span aria-hidden="true">👀</span>
+            <span className="sr-only">{t('knownRanksLabel')}</span>
+            {knownRanks.map((r) => {
+              const matched = matchedSet.has(r);
+              return (
+                <span
+                  key={r}
+                  data-rank={r}
+                  data-matched={matched ? 'true' : undefined}
+                  className={`px-1.5 py-0.5 rounded font-medium ${
+                    matched ? 'bg-ds-warning text-ds-text-on-accent animate-pulse' : 'bg-white/10 text-ds-text-primary'
+                  }`}
+                >
+                  {valueName(r)}
+                </span>
+              );
+            })}
+          </div>
+        )}
       </button>
     </div>
   );
