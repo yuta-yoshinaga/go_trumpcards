@@ -99,6 +99,22 @@ describe('CruelPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('shift'));
   });
 
+  it('pulses the shift button and shows a banner on stalemate', async () => {
+    mockExec.mockResolvedValue({ ...playingState, isStalemate: true });
+    renderWithProviders(<CruelPage />);
+    const shiftBtn = await screen.findByTestId('shift-button');
+    expect(shiftBtn.className).toContain('animate-pulse');
+    expect(shiftBtn).toHaveAttribute('aria-label', '手詰まりです。シフトで再構築できます');
+    expect(screen.getByTestId('cruel-stalemate-banner')).toBeInTheDocument();
+  });
+
+  it('does not pulse the shift button when not stalemate', async () => {
+    renderWithProviders(<CruelPage />);
+    const shiftBtn = await screen.findByTestId('shift-button');
+    expect(shiftBtn.className).not.toContain('animate-pulse');
+    expect(screen.queryByTestId('cruel-stalemate-banner')).not.toBeInTheDocument();
+  });
+
   it('hint button fires hint command', async () => {
     renderWithProviders(<CruelPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
