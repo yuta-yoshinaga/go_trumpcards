@@ -29,7 +29,21 @@ export function BidProgressBar({ bid, tricksWon, testId, ariaLabel }: BidProgres
   const totalSegments = isNil ? 1 : bid;
   const overTricks = isNil ? tricksWon : Math.max(0, tricksWon - bid);
   const isMet = !isNil && tricksWon >= bid;
-  const segmentClass = nilBroken ? 'bg-ds-error' : isMet ? 'bg-ds-success motion-safe:animate-pulse' : 'bg-ds-warning';
+  // aria-valuenow tracks the *broken* nil-bid bar (which fills its single
+  // segment red) as fully advanced — otherwise screen readers would read 0/1
+  // while the eye sees a full red bar.
+  const ariaValueMax = bid > 0 ? bid : 1;
+  const ariaValueNow = nilBroken ? 1 : Math.min(filledSegments, ariaValueMax);
+
+  // Conditional segment color: full class strings per branch to keep Tailwind
+  // class-string parsers happy and the per-state classes greppable.
+  const getSegmentClass = (idx: number): string => {
+    const filled = idx < filledSegments || nilBroken;
+    if (!filled) return 'h-1.5 flex-1 rounded-sm bg-white/15';
+    if (nilBroken) return 'h-1.5 flex-1 rounded-sm bg-ds-error';
+    if (isMet) return 'h-1.5 flex-1 rounded-sm bg-ds-success motion-safe:animate-pulse';
+    return 'h-1.5 flex-1 rounded-sm bg-ds-warning';
+  };
 
   return (
     <div
@@ -38,15 +52,12 @@ export function BidProgressBar({ bid, tricksWon, testId, ariaLabel }: BidProgres
       role="progressbar"
       aria-label={ariaLabel}
       aria-valuemin={0}
-      aria-valuemax={bid > 0 ? bid : 1}
-      aria-valuenow={Math.min(filledSegments, bid > 0 ? bid : 1)}
+      aria-valuemax={ariaValueMax}
+      aria-valuenow={ariaValueNow}
     >
       <div className="flex flex-1 gap-0.5">
         {Array.from({ length: totalSegments }, (_, idx) => (
-          <div
-            key={`bid-seg-${idx.toString()}`}
-            className={`h-1.5 flex-1 rounded-sm ${idx < filledSegments || nilBroken ? segmentClass : 'bg-white/15'}`}
-          />
+          <div key={`bid-seg-${idx.toString()}`} className={getSegmentClass(idx)} />
         ))}
       </div>
       {overTricks > 0 && !nilBroken && (

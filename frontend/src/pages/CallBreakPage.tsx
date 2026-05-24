@@ -283,7 +283,9 @@ function CallBreakPageContent() {
                               {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                               {t('cumulativeScore', { score: fmtScore(p.cumulativeScore) })} |{' '}
                               {t('roundScore', { score: fmtScore(p.roundScore) })} |{' '}
-                              {p.bid >= 0 ? t('bid', { n: p.bid }) : t('bidNone')}
+                              {p.bid >= 0
+                                ? `${t('bid', { n: p.bid })} / ${t('tricksWon', { n: p.trickCount })}`
+                                : t('bidNone')}
                             </div>
                             <BidProgressBar
                               bid={p.bid}
@@ -304,7 +306,9 @@ function CallBreakPageContent() {
                           {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                           {t('cumulativeScore', { score: fmtScore(p.cumulativeScore) })} |{' '}
                           {t('roundScore', { score: fmtScore(p.roundScore) })} |{' '}
-                          {p.bid >= 0 ? t('bid', { n: p.bid }) : t('bidNone')}
+                          {p.bid >= 0
+                            ? `${t('bid', { n: p.bid })} / ${t('tricksWon', { n: p.trickCount })}`
+                            : t('bidNone')}
                         </div>
                         <BidProgressBar
                           bid={p.bid}

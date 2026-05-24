@@ -35,6 +35,10 @@ describe('BidProgressBar', () => {
     expect(segments.length).toBe(1);
     expect(segments[0].className).toContain('bg-ds-error');
     expect(screen.queryByText(/^\+/)).not.toBeInTheDocument();
+    // aria-valuenow must match the visually-full red bar so screen readers
+    // don't report 0/1 while the eye sees a complete bar.
+    expect(bar).toHaveAttribute('aria-valuemax', '1');
+    expect(bar).toHaveAttribute('aria-valuenow', '1');
   });
 
   it('renders a blank single segment for an unbroken nil bid', () => {
