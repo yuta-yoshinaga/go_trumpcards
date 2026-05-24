@@ -538,11 +538,11 @@ function CruelPageContent() {
                 <>
                   <button
                     type="button"
-                    className={`${btnPrimary} ${
+                    className={
                       state.isStalemate
-                        ? 'ring-2 ring-ds-warning ring-offset-1 ring-offset-transparent motion-safe:animate-pulse'
-                        : ''
-                    }`}
+                        ? `${btnPrimary} ring-2 ring-ds-warning ring-offset-1 ring-offset-transparent motion-safe:animate-pulse`
+                        : btnPrimary
+                    }
                     onClick={handleShift}
                     disabled={loading}
                     data-tutorial="cruel-shift"
