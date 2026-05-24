@@ -48,6 +48,12 @@
     "heart": "Heart",
     "diamond": "Diamond"
   },
+  "specialRole": {
+    "mighty": "Mighty (strongest card)",
+    "jokerCall": "Joker Call",
+    "joker": "Joker",
+    "partner": "Partner card"
+  },
   "scores": "Score",
   "scoresPlayer": "Player",
   "scoresBid": "Bid",

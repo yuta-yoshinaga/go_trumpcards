@@ -38,6 +38,7 @@ import { valueName } from '../utils/cardUtils';
 import { MIGHTY_HELP, parseMightyCommand } from '../utils/cli/commands/mightyCommands';
 import { formatMightyState } from '../utils/cli/formatters/mightyFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { mightyRoleGlyph, mightySpecialRole } from '../utils/mightySpecialRole';
 import { playerName } from '../utils/playerUtils';
 
 /** Mighty tutorial step definitions. */
@@ -531,37 +532,60 @@ function MightyPageContent() {
           <GameFooter className={`${gameTheme.mighty.footer} px-4 py-2.5`}>
             {/* Human cards */}
             {humanPlayer &&
-              (isMobile ? (
-                <MobileHandGrid
-                  cards={humanPlayer.cards}
-                  selectedIndices={selectedCardIndices}
-                  onToggle={toggleCard}
-                  cardWidth={cardWidth}
-                  dataTutorial="mighty-player-hand"
-                />
-              ) : (
-                <div className="flex flex-wrap gap-1 mb-2" data-tutorial="mighty-player-hand">
-                  {humanPlayer.cards.map((card, idx) => (
-                    <button
-                      type="button"
-                      key={`${card.design}-${card.value}-${idx}`}
-                      onClick={() => toggleCard(idx)}
-                      aria-label={cardAlt(card)}
-                      aria-pressed={selectedCardIndices.includes(idx)}
-                      className={`transition-transform ${focusRingCard}`}
-                      style={{
-                        background: 'none',
-                        padding: 0,
-                        borderRadius: 8,
-                        ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      <AnimatedCard card={card} width={cardWidth} />
-                    </button>
-                  ))}
-                </div>
-              ))}
+              (() => {
+                const partnerCard = state.partnerCard ?? null;
+                const roleBadgeFor = (idx: number) => {
+                  const card = humanPlayer.cards[idx];
+                  if (!card) return null;
+                  const role = mightySpecialRole(card, state.trumpSuit, partnerCard);
+                  if (!role) return null;
+                  return { glyph: mightyRoleGlyph(role), title: t(`specialRole.${role}`) };
+                };
+                return isMobile ? (
+                  <MobileHandGrid
+                    cards={humanPlayer.cards}
+                    selectedIndices={selectedCardIndices}
+                    onToggle={toggleCard}
+                    cardWidth={cardWidth}
+                    dataTutorial="mighty-player-hand"
+                    cardBadgeFor={roleBadgeFor}
+                  />
+                ) : (
+                  <div className="flex flex-wrap gap-1 mb-2" data-tutorial="mighty-player-hand">
+                    {humanPlayer.cards.map((card, idx) => {
+                      const badge = roleBadgeFor(idx);
+                      return (
+                        <button
+                          type="button"
+                          key={`${card.design}-${card.value}-${idx}`}
+                          onClick={() => toggleCard(idx)}
+                          aria-label={cardAlt(card)}
+                          aria-pressed={selectedCardIndices.includes(idx)}
+                          className={`transition-transform ${focusRingCard} relative`}
+                          style={{
+                            background: 'none',
+                            padding: 0,
+                            borderRadius: 8,
+                            ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                            boxSizing: 'border-box',
+                          }}
+                        >
+                          <AnimatedCard card={card} width={cardWidth} />
+                          {badge && (
+                            <span
+                              data-testid={`card-role-badge-${idx}`}
+                              title={badge.title}
+                              className="absolute top-0 left-0 bg-black/70 text-white rounded-br rounded-tl px-1 text-[10px] leading-tight pointer-events-none"
+                            >
+                              {badge.glyph}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
 
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
 

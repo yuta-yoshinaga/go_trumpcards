@@ -39,6 +39,8 @@ interface MobileHandGridProps {
   validIndices?: number[];
   /** Tooltip surfaced on cards that are present but disabled by `validIndices`. */
   restrictedTooltip?: string;
+  /** Optional badge to render in the top-left corner of a card (e.g. game-specific role marker). */
+  cardBadgeFor?: (idx: number) => { glyph: string; title: string } | null;
 }
 
 /**
@@ -54,6 +56,7 @@ export function MobileHandGrid({
   dataTutorial,
   validIndices,
   restrictedTooltip,
+  cardBadgeFor,
 }: MobileHandGridProps) {
   const viewportWidth = useWindowWidth();
   const reduced = useReducedMotion();
@@ -126,6 +129,19 @@ export function MobileHandGrid({
                       ✓
                     </span>
                   )}
+                  {(() => {
+                    const badge = cardBadgeFor?.(globalIdx);
+                    if (!badge) return null;
+                    return (
+                      <span
+                        data-testid={`card-role-badge-${globalIdx}`}
+                        title={badge.title}
+                        className="absolute top-0 left-0 bg-black/70 text-white rounded-br rounded-tl px-1 text-[10px] leading-tight pointer-events-none"
+                      >
+                        {badge.glyph}
+                      </span>
+                    );
+                  })()}
                 </button>
               );
             })}
