@@ -23,8 +23,9 @@ export function utHoldemPreflopStrength(hand: Card[]): UTHPreflopStrength {
   if (hi === 14) return 'strong'; // any ace
   if (hi === 13 && suited) return 'strong'; // suited king
   if (hi === 13 && lo >= 11) return 'strong'; // K-Q/J offsuit
-  if (hi === 12 && lo >= 11) return 'strong'; // Q-J either way
+  if (hi === 12 && lo === 11 && suited) return 'strong'; // Q-J suited (offsuit drops to moderate per UTH basic strategy)
   if (hi === 13) return 'moderate'; // K-anything offsuit
+  if (hi === 12 && lo === 11) return 'moderate'; // Q-J offsuit
   if (suited && hi - lo <= 2 && lo >= 6) return 'moderate'; // suited connector mid+
   if (suited && hi >= 12) return 'moderate'; // Q-x suited
   return 'weak';

@@ -340,4 +340,28 @@ describe('UltimateTexasHoldemPage', () => {
     // Math.floor(100 / 2) === 50, so the input cannot stay at 100.
     expect(Number(anteInput.value)).toBeLessThanOrEqual(50);
   });
+
+  it('pulses the 3x button and not the 4x when the pre-flop hand is moderate', async () => {
+    // K-7 offsuit → moderate per utHoldemPreflopStrength.
+    mockApi.mockResolvedValue({ ...preFlopState, playerHand: [card('SPADE', 13), card('HEART', 7)] });
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    await waitFor(() => expect(screen.getByTestId('play-3x')).toBeInTheDocument());
+
+    const container = screen.getByTestId('play-4x').closest('[data-preflop-strength]') as HTMLElement;
+    expect(container).toHaveAttribute('data-preflop-strength', 'moderate');
+    expect(screen.getByTestId('play-3x').className).toContain('animate-pulse');
+    expect(screen.getByTestId('play-4x').className).not.toContain('animate-pulse');
+  });
+
+  it('does not pulse any button when the pre-flop hand is weak', async () => {
+    // 7-2 offsuit → weak per utHoldemPreflopStrength.
+    mockApi.mockResolvedValue({ ...preFlopState, playerHand: [card('SPADE', 7), card('HEART', 2)] });
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    await waitFor(() => expect(screen.getByTestId('play-4x')).toBeInTheDocument());
+
+    const container = screen.getByTestId('play-4x').closest('[data-preflop-strength]') as HTMLElement;
+    expect(container).toHaveAttribute('data-preflop-strength', 'weak');
+    expect(screen.getByTestId('play-4x').className).not.toContain('animate-pulse');
+    expect(screen.getByTestId('play-3x').className).not.toContain('animate-pulse');
+  });
 });
