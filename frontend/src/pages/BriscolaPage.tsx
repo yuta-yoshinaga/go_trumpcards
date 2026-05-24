@@ -118,11 +118,7 @@ function BriscolaPageContent() {
           <div className="p-2 rounded bg-black/30 text-ds-text-muted text-sm">
             {t('header.cpu')}: {cpu?.cardCount ?? 0} / {t('header.tricks')}: {cpu?.trickCount ?? 0}
           </div>
-          <div
-            className="flex items-center gap-2 rounded bg-black/30 p-2"
-            data-testid="briscola-stock"
-            aria-label={state.trumpCard ? t('header.trump') : t('header.trumpNone')}
-          >
+          <div className="flex items-center gap-2 rounded bg-black/30 p-2" data-testid="briscola-stock">
             <span className="text-ds-text-muted text-sm">
               {state.trumpCard ? t('header.trump') : t('header.trumpNone')}
             </span>
@@ -152,7 +148,6 @@ function BriscolaPageContent() {
                     className="absolute left-1/2 top-1/2 -translate-y-1/2"
                     style={{ transform: 'translate(0,-50%)' }}
                     data-testid="briscola-stock-deck"
-                    aria-label={t('header.stock')}
                   >
                     <div className="relative">
                       {Array.from({ length: Math.min(state.stockRemaining, 4) }, (_, i) => (
