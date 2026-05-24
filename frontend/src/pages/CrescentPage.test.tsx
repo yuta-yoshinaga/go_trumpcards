@@ -229,4 +229,26 @@ describe('CrescentPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '棋譜を見る' }));
     await waitFor(() => expect(screen.getByText('棋譜')).toBeInTheDocument());
   });
+
+  it('assigns the crescent arc offsets symmetrically across the 16 tableau columns (desktop)', async () => {
+    // Force a desktop viewport so the arc is not zeroed out by the mobile guard.
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      mockExec.mockResolvedValue(playingState);
+      renderWithProviders(<CrescentPage />);
+      await waitFor(() => expect(document.querySelectorAll('[data-crescent-arc]').length).toBeGreaterThanOrEqual(16));
+      const arcs = document.querySelectorAll('[data-crescent-arc]');
+      // Top half curves up (negative), bottom half mirrors it down (positive).
+      expect(arcs[0]).toHaveAttribute('data-crescent-arc', '-21'); // col 0
+      expect(arcs[3]).toHaveAttribute('data-crescent-arc', '-3'); // col 3 (closest to center)
+      expect(arcs[7]).toHaveAttribute('data-crescent-arc', '-21'); // col 7 (symmetric to col 0)
+      expect(arcs[8]).toHaveAttribute('data-crescent-arc', '21'); // col 8, mirrored
+      expect(arcs[15]).toHaveAttribute('data-crescent-arc', '21'); // col 15
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
 });

@@ -118,6 +118,9 @@ function CrescentPageContent() {
   } = useGameHint('crescent', state);
 
   const tableauDim = useResponsiveTableau(8);
+  // Mobile renders the tableau as a 4-column grid, which makes the per-column arc translate Y
+  // create a zigzag instead of a crescent silhouette. Skip the offset there.
+  const isMobile = tableauDim.isMobile;
 
   const isPlayingForKbd = state?.phase === CrescentPhase.PLAYING;
 
@@ -257,21 +260,22 @@ function CrescentPageContent() {
             </div>
 
             {/* Tableau (16 piles, 4-col mobile / 8-col desktop).
-                Desktop adds a translateY arch per column to suggest the crescent shape (#1937). */}
+                Desktop adds a translateY arch per column to suggest the crescent shape (#1937).
+                Mobile keeps a flat grid because the 4-col layout would turn the arch into a zigzag. */}
             <div className="grid grid-cols-4 sm:grid-cols-8 gap-1 sm:gap-2 mb-3" data-tutorial="crescent-tableau">
               {state.tableau.map((col, colIdx) => {
                 // Distance from the center of an 8-column row: yields 0..3 then back to 0.
                 const centerDist = Math.abs((colIdx % 8) - 3.5);
                 // Top half (cols 0..7) curves up away from the foundation; bottom half curves down.
                 const arcDirection = colIdx < 8 ? -1 : 1;
-                const arcOffset = Math.round(centerDist * arcDirection * 6);
+                const arcOffset = isMobile ? 0 : Math.round(centerDist * arcDirection * 6);
                 const tableauColZone: CrescentMoveZone = { zone: 'tableau', col: colIdx };
                 return (
                   <div
                     key={`col-${colIdx.toString()}`}
-                    className="min-w-0 transition-transform"
+                    className="min-w-0"
                     data-crescent-arc={arcOffset}
-                    style={{ transform: `translateY(${arcOffset}px)` }}
+                    style={arcOffset === 0 ? undefined : { transform: `translateY(${arcOffset}px)` }}
                   >
                     <DropZone
                       isDropTarget={dnd.isDropTarget(tableauColZone)}
