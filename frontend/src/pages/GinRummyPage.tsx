@@ -33,6 +33,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { GINRUMMY_HELP, parseGinrummyCommand } from '../utils/cli/commands/ginrummyCommands';
 import { formatGinrummyState } from '../utils/cli/formatters/ginrummyFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { bestDeadwoodValue, GIN_RUMMY_KNOCK_THRESHOLD } from '../utils/ginRummyDeadwood';
 import { playerName } from '../utils/playerUtils';
 
 const GINRUMMY_PHASE_KEYS: Readonly<Record<number, string>> = {
@@ -171,6 +172,8 @@ function GinRummyPageContent() {
   const isGameEnd = state.phase === GinRummyPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn =
     (isDrawPhase || isDiscardPhase || isLayoffPhase) && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const liveDeadwood = humanPlayer && isDiscardPhase ? bestDeadwoodValue(humanPlayer.cards) : null;
+  const canKnockNow = liveDeadwood != null && liveDeadwood <= GIN_RUMMY_KNOCK_THRESHOLD;
 
   return (
     <GamePageShell
@@ -334,6 +337,14 @@ function GinRummyPageContent() {
           </div>
 
           <GameFooter className={`${gameTheme.ginrummy.footer} px-4 py-2.5`}>
+            {liveDeadwood != null && (
+              <div
+                data-testid="ginrummy-deadwood-indicator"
+                className={`text-xs font-bold mb-1 ${canKnockNow ? 'text-ds-success' : 'text-ds-text-muted'}`}
+              >
+                {t('deadwoodLabel', { score: liveDeadwood, threshold: GIN_RUMMY_KNOCK_THRESHOLD })}
+              </div>
+            )}
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="gr-player-hand">
                 {humanPlayer.cards.map((card, idx) => (
@@ -393,10 +404,11 @@ function GinRummyPageContent() {
                   </button>
                   <button
                     type="button"
-                    className={btnPrimary}
+                    className={`${btnPrimary} ${canKnockNow ? 'motion-safe:animate-pulse ring-2 ring-ds-success' : ''}`}
                     onClick={handleKnock}
                     disabled={loading || selectedCardIndices.length !== 1}
                     data-tutorial="gr-knock-button"
+                    data-testid="ginrummy-knock-button"
                   >
                     {t('knockButton')}
                   </button>

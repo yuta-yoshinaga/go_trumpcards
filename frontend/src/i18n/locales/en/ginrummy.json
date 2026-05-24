@@ -28,6 +28,7 @@
   "drawDiscardButton": "Draw Discard",
   "discardButton": "Discard",
   "knockButton": "Knock",
+  "deadwoodLabel": "Deadwood: {{score}} pts (knock ≤ {{threshold}})",
   "layoffButton": "Lay Off",
   "skipLayoffButton": "Skip",
   "nextRound": "Next Round",

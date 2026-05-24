@@ -156,6 +156,40 @@ describe('GinRummyPage', () => {
     );
   });
 
+  it('shows live deadwood indicator during discard phase', async () => {
+    mockExec.mockResolvedValue(discardPhaseState);
+    renderWithProviders(<GinRummyPage />);
+    await waitFor(() => expect(screen.getByTestId('ginrummy-deadwood-indicator')).toBeInTheDocument());
+  });
+
+  it('does not show deadwood indicator outside discard phase', async () => {
+    renderWithProviders(<GinRummyPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    expect(screen.queryByTestId('ginrummy-deadwood-indicator')).not.toBeInTheDocument();
+  });
+
+  it('pulses the knock button when deadwood ≤10 during discard phase', async () => {
+    const lowDeadwoodHand: GinRummyResponse = {
+      ...discardPhaseState,
+      players: [
+        {
+          ...discardPhaseState.players[0],
+          cards: [
+            { design: 'SPADE', value: 5 },
+            { design: 'SPADE', value: 6 },
+            { design: 'SPADE', value: 7 },
+            { design: 'HEART', value: 3 },
+          ],
+        },
+        ...discardPhaseState.players.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(lowDeadwoodHand);
+    renderWithProviders(<GinRummyPage />);
+    const knockBtn = await screen.findByTestId('ginrummy-knock-button');
+    expect(knockBtn.className).toContain('animate-pulse');
+  });
+
   it('renders draw phase with human cards', async () => {
     renderWithProviders(<GinRummyPage />);
     await waitFor(() => {
