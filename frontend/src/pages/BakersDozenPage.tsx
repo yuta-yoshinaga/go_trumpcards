@@ -290,6 +290,8 @@ function BakersDozenPageContent() {
                               cardIndex: cardIdx,
                             };
                             const isTop = cardIdx === col.length - 1;
+                            const isLastInCol = isTop && col.length === 1;
+                            const lastWarnSelected = isLastInCol && isSourceSelected('tableau', colIdx, cardIdx);
                             return (
                               <div
                                 key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
@@ -299,6 +301,7 @@ function BakersDozenPageContent() {
                                 {tc.card ? (
                                   <button
                                     type="button"
+                                    data-testid={isLastInCol ? `bd-last-card-${colIdx}` : undefined}
                                     onClick={() => {
                                       if (selectedSource) {
                                         handleSelectTarget(tableauColZone);
@@ -312,7 +315,8 @@ function BakersDozenPageContent() {
                                     draggable={isPlaying && !loading && isTop}
                                     onDragStart={dnd.handleDragStart(cardZone)}
                                     onDragEnd={dnd.handleDragEnd}
-                                    className={`p-0 border-0 bg-transparent w-full rounded ${focusRingWhite} ${isTop ? 'cursor-pointer' : 'cursor-default'} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                                    className={`p-0 border-0 bg-transparent w-full rounded ${focusRingWhite} ${isTop ? 'cursor-pointer' : 'cursor-default'} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : ''} ${isLastInCol ? 'ring-2 ring-ds-warning/60 ring-offset-0 ring-dashed' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                                    title={isLastInCol ? t('lastCardWarning') : undefined}
                                   >
                                     <AnimatedCard
                                       card={tc.card}
@@ -323,6 +327,15 @@ function BakersDozenPageContent() {
                                     />
                                   </button>
                                 ) : null}
+                                {lastWarnSelected && (
+                                  <div
+                                    data-testid={`bd-empty-column-warn-${colIdx}`}
+                                    role="alert"
+                                    className="absolute inset-0 flex items-center justify-center pointer-events-none text-xs text-ds-error font-bold text-center px-1 motion-safe:animate-pulse"
+                                  >
+                                    🚫 {t('lastCardWarning')}
+                                  </div>
+                                )}
                               </div>
                             );
                           })
