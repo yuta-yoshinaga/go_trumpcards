@@ -31,6 +31,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { PAIGOW_HELP, parsePaigowCommand } from '../utils/cli/commands/paigowCommands';
 import { formatPaigowState } from '../utils/cli/formatters/paigowFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { paiGowFoulCheck } from '../utils/paiGowFoul';
 
 /** High hand rank display name lookup. */
 const HIGH_HAND_RANK_KEYS: Record<number, string> = {
@@ -114,6 +115,14 @@ function PaiGowPageContent() {
   const isSetHandsPhase = state?.phase === PaiGowPhase.SET_HANDS;
   const isEndPhase = state?.phase === PaiGowPhase.END;
 
+  const foul = useMemo(
+    () =>
+      isSetHandsPhase && state && selectedIndices.length === 2
+        ? paiGowFoulCheck(state.playerCards, selectedIndices)
+        : { isFoul: false },
+    [isSetHandsPhase, state, selectedIndices],
+  );
+
   const toggleCardSelection = useCallback((index: number) => {
     setSelectedIndices((prev) => {
       if (prev.includes(index)) {
@@ -134,15 +143,15 @@ function PaiGowPageContent() {
       {
         key: 's',
         action: () => {
-          if (selectedIndices.length === 2) {
+          if (selectedIndices.length === 2 && !foul.isFoul) {
             execApi('set', undefined, selectedIndices[0], selectedIndices[1]);
           }
         },
-        enabled: isSetHandsPhase && selectedIndices.length === 2,
+        enabled: isSetHandsPhase && selectedIndices.length === 2 && !foul.isFoul,
       },
       { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
     ],
-    [execApi, betAmount, selectedIndices, isBetPhase, isSetHandsPhase, isEndPhase],
+    [execApi, betAmount, selectedIndices, isBetPhase, isSetHandsPhase, isEndPhase, foul.isFoul],
   );
 
   useActionKeyboardNav({
@@ -157,7 +166,7 @@ function PaiGowPageContent() {
   };
 
   const handleSet = () => {
-    if (selectedIndices.length === 2) {
+    if (selectedIndices.length === 2 && !foul.isFoul) {
       execApi('set', undefined, selectedIndices[0], selectedIndices[1]);
     }
   };
@@ -368,12 +377,18 @@ function PaiGowPageContent() {
               </div>
             )}
             {isSetHandsPhase && (
-              <div className="flex justify-center gap-2 pb-2">
+              <div className="flex flex-col items-center gap-1 pb-2">
+                {foul.isFoul && (
+                  <p data-testid="foul-warning" className="text-ds-error text-sm font-medium">
+                    {t('foulWarning')}
+                  </p>
+                )}
                 <button
                   type="button"
                   className={btnSuccess}
                   onClick={handleSet}
-                  disabled={loading || selectedIndices.length !== 2}
+                  disabled={loading || selectedIndices.length !== 2 || foul.isFoul}
+                  data-testid="set-hands-button"
                 >
                   {t('button.set')}
                 </button>

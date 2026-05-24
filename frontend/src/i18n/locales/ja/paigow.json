@@ -56,6 +56,7 @@
   "betGuide": "ベット額を設定してベット",
   "selectLowHand": "2枚選択してローハンドをセット",
   "selectedCount": "{{count}} / 2 選択中",
+  "foulWarning": "反則：ローハンドがハイハンドより強くなっています",
   "tutorial": {
     "betControls": "ベット額を設定し、ベットを押してください。",
     "setHands": "7枚のカードから2枚を選択してローハンドを作り、セットを押してください。",
