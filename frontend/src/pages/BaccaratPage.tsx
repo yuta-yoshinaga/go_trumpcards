@@ -12,6 +12,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { RoadmapTrendBar } from '../components/RoadmapTrendBar';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -410,6 +411,14 @@ function BaccaratPageContent() {
               {state.history.length > 0 && (
                 <div className="text-ds-text-primary text-sm font-bold mb-1">{t('road.title')}</div>
               )}
+              <RoadmapTrendBar
+                history={state.history}
+                leftCode={ROAD_PLAYER}
+                rightCode={ROAD_BANKER}
+                leftLabel={t('betType.player')}
+                rightLabel={t('betType.banker')}
+                testId="baccarat-trend-bar"
+              />
               <BigRoadGrid history={state.history} />
               {state.history.length > 0 && (
                 <button

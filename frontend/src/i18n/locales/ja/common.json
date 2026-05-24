@@ -546,5 +546,9 @@
     "requestedPath": "要求されたパス",
     "actionDiscover": "おすすめを探す",
     "actionHome": "ホームに戻る"
+  },
+  "roadmapTrend": {
+    "streak": "{{count}}連勝中",
+    "lookback": "直近 {{count}} 戦"
   }
 }
