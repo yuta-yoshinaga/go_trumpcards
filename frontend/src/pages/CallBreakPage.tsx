@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { callBreakApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { BidProgressBar } from '../components/BidProgressBar';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -277,11 +278,21 @@ function CallBreakPageContent() {
                       {state.players
                         .filter((p) => !p.isHuman)
                         .map((p) => (
-                          <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                            {t('cumulativeScore', { score: fmtScore(p.cumulativeScore) })} |{' '}
-                            {t('roundScore', { score: fmtScore(p.roundScore) })} |{' '}
-                            {p.bid >= 0 ? t('bid', { n: p.bid }) : t('bidNone')}
+                          <div key={p.id} className="py-0.5 text-ds-text-muted text-sm">
+                            <div>
+                              {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                              {t('cumulativeScore', { score: fmtScore(p.cumulativeScore) })} |{' '}
+                              {t('roundScore', { score: fmtScore(p.roundScore) })} |{' '}
+                              {p.bid >= 0
+                                ? `${t('bid', { n: p.bid })} / ${t('tricksWon', { n: p.trickCount })}`
+                                : t('bidNone')}
+                            </div>
+                            <BidProgressBar
+                              bid={p.bid}
+                              tricksWon={p.trickCount}
+                              ariaLabel={t('bidProgressAria', { name: playerName(p.id, p.isHuman) })}
+                              testId={`bid-progress-${p.id.toString()}`}
+                            />
                           </div>
                         ))}
                     </div>
@@ -295,8 +306,16 @@ function CallBreakPageContent() {
                           {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                           {t('cumulativeScore', { score: fmtScore(p.cumulativeScore) })} |{' '}
                           {t('roundScore', { score: fmtScore(p.roundScore) })} |{' '}
-                          {p.bid >= 0 ? t('bid', { n: p.bid }) : t('bidNone')}
+                          {p.bid >= 0
+                            ? `${t('bid', { n: p.bid })} / ${t('tricksWon', { n: p.trickCount })}`
+                            : t('bidNone')}
                         </div>
+                        <BidProgressBar
+                          bid={p.bid}
+                          tricksWon={p.trickCount}
+                          ariaLabel={t('bidProgressAria', { name: playerName(p.id, p.isHuman) })}
+                          testId={`bid-progress-${p.id.toString()}`}
+                        />
                       </div>
                     ))
                 )}
@@ -396,16 +415,31 @@ function CallBreakPageContent() {
 
           <GameFooter className={`${gameTheme.callbreak.footer} px-4 py-2.5`}>
             {humanPlayer && (
-              <PlayerHandSection
-                humanPlayer={humanPlayer}
-                selectedCardIndices={selectedCardIndices}
-                toggleCard={toggleCard}
-                cardWidth={cardWidth}
-                isMobile={isMobile}
-                dataTutorialPrefix="cb"
-                validIndices={isHumanTurn ? state.validPlayIndices : undefined}
-                restrictedTooltip={t('mustTrumpSpadeTooltip')}
-              />
+              <>
+                {humanPlayer.bid >= 0 && (
+                  <div className="mb-1 text-ds-text-muted text-xs">
+                    <div>
+                      {t('bid', { n: humanPlayer.bid })} / {t('tricksWon', { n: humanPlayer.trickCount })}
+                    </div>
+                    <BidProgressBar
+                      bid={humanPlayer.bid}
+                      tricksWon={humanPlayer.trickCount}
+                      ariaLabel={t('bidProgressAria', { name: playerName(humanPlayer.id, true) })}
+                      testId={`bid-progress-${humanPlayer.id.toString()}`}
+                    />
+                  </div>
+                )}
+                <PlayerHandSection
+                  humanPlayer={humanPlayer}
+                  selectedCardIndices={selectedCardIndices}
+                  toggleCard={toggleCard}
+                  cardWidth={cardWidth}
+                  isMobile={isMobile}
+                  dataTutorialPrefix="cb"
+                  validIndices={isHumanTurn ? state.validPlayIndices : undefined}
+                  restrictedTooltip={t('mustTrumpSpadeTooltip')}
+                />
+              </>
             )}
 
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
