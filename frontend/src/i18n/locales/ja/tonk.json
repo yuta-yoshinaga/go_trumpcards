@@ -27,6 +27,7 @@
   "drawDiscardButton": "捨て札から引く",
   "discardButton": "捨てる",
   "knockButton": "ノック",
+  "knockUndercutWarning": "相手の手札が少ないため、アンダーカットのリスクがあります",
   "nextRound": "次のラウンド",
   "drawPhase": "山札または捨て札から1枚引いてください",
   "discardPhase": "手札から1枚捨てるか、ノック (デッドウッド5点以下) してください",

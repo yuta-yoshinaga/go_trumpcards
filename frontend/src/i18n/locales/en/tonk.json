@@ -27,6 +27,7 @@
   "drawDiscardButton": "Draw Discard",
   "discardButton": "Discard",
   "knockButton": "Knock",
+  "knockUndercutWarning": "Opponent's hand is low — undercut risk is high",
   "nextRound": "Next Round",
   "drawPhase": "Draw a card from the stock or discard pile",
   "discardPhase": "Discard a card or knock (deadwood <= 5)",

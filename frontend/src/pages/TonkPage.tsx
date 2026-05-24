@@ -162,6 +162,15 @@ function TonkPageContent() {
   const isRoundEnd = state.phase === TonkPhase.ROUND_END;
   const isGameEnd = state.phase === TonkPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = (isDrawPhase || isDiscardPhase) && state.players[state.currentPlayerIdx]?.isHuman === true;
+  // Undercut early-warning: if any opponent has 2 or fewer cards, calling Knock is
+  // disproportionately risky (they're likely about to go out themselves, flipping the
+  // result). We add a warning ring + ⚠️ glyph + tooltip so the player notices the
+  // trap before committing. See issue #1939.
+  const minOpponentCards = state.players
+    .filter((p) => !p.isHuman)
+    .reduce((m, p) => Math.min(m, p.cardCount), Number.POSITIVE_INFINITY);
+  const undercutRisk = Number.isFinite(minOpponentCards) && minOpponentCards <= 2;
+  const knockBtnClass = undercutRisk ? `${btnPrimary} ring-2 ring-ds-warning motion-safe:animate-pulse` : btnPrimary;
 
   return (
     <GamePageShell
@@ -377,12 +386,19 @@ function TonkPageContent() {
                   </button>
                   <button
                     type="button"
-                    className={btnPrimary}
+                    className={knockBtnClass}
                     onClick={handleKnock}
                     disabled={loading || selectedCardIndices.length !== 1}
                     data-tutorial="tonk-knock-button"
+                    data-undercut-risk={undercutRisk ? 'true' : undefined}
+                    title={undercutRisk ? t('knockUndercutWarning') : undefined}
                   >
                     {t('knockButton')}
+                    {undercutRisk && (
+                      <span className="ml-1" aria-hidden="true">
+                        ⚠️
+                      </span>
+                    )}
                   </button>
                 </>
               )}
