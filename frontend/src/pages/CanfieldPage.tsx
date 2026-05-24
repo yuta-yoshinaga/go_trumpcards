@@ -502,14 +502,16 @@ function ReserveStack({
   isDragSource,
 }: ReserveStackProps) {
   const layers = Math.max(0, Math.min(count - 1, RESERVE_STACK_MAX_LAYERS));
-  const stackPadX = layers * RESERVE_STACK_OFFSET_PX;
-  const stackPadY = layers * RESERVE_STACK_OFFSET_PX;
+  // Container is sized for the maximum stack so the top card sits at a
+  // fixed offset regardless of `count` — prevents items-center from
+  // jittering the pile as cards are consumed.
+  const maxPad = RESERVE_STACK_MAX_LAYERS * RESERVE_STACK_OFFSET_PX;
   return (
     <div
       data-testid="canfield-reserve-stack"
       data-reserve-layers={layers}
       className="relative"
-      style={{ width: cardWidth + stackPadX, height: cardHeight + stackPadY }}
+      style={{ width: cardWidth + maxPad, height: cardHeight + maxPad }}
     >
       {Array.from({ length: layers }, (_, i) => (
         <div
@@ -517,14 +519,14 @@ function ReserveStack({
           aria-hidden="true"
           className="absolute rounded bg-ds-info/70 border border-white/20"
           style={{
-            top: (layers - 1 - i) * RESERVE_STACK_OFFSET_PX,
-            left: (layers - 1 - i) * RESERVE_STACK_OFFSET_PX,
+            top: maxPad - (i + 1) * RESERVE_STACK_OFFSET_PX,
+            left: maxPad - (i + 1) * RESERVE_STACK_OFFSET_PX,
             width: cardWidth,
             height: cardHeight,
           }}
         />
       ))}
-      <div className="absolute" style={{ top: stackPadY, left: stackPadX, width: cardWidth, height: cardHeight }}>
+      <div className="absolute" style={{ top: maxPad, left: maxPad, width: cardWidth, height: cardHeight }}>
         {topCard ? (
           <button
             type="button"
