@@ -56,6 +56,7 @@
   "betGuide": "Place an Ante and an optional Jackpot side bet",
   "exchangeGuide": "Tap cards to select them, then press Exchange or Stand",
   "exchangeFeeInfo": "Fee: ante × {{ante}} per card = {{fee}}",
+  "exchangeFeeHighRisk": "High-cost warning",
   "exchangeSelected": "Selected: {{count}}",
   "payoutRef": {
     "title": "Payouts",
