@@ -76,6 +76,46 @@ describe('HeartsPage', () => {
     });
   });
 
+  it('shows shoot-the-moon alert when one CPU monopolises ≥13 round points', async () => {
+    const moonState = makeHeartsState({
+      players: [
+        { id: 0, isHuman: true, cardCount: 13, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+        { id: 1, isHuman: false, cardCount: 13, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+        { id: 2, isHuman: false, cardCount: 13, cards: [], roundScore: 14, cumulativeScore: 14, trickCount: 5 },
+        { id: 3, isHuman: false, cardCount: 13, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+      ],
+    });
+    mockExec.mockResolvedValue(moonState);
+    renderWithProviders(<HeartsPage />);
+    await waitFor(() => expect(screen.getAllByTestId('hearts-shoot-the-moon-badge').length).toBeGreaterThan(0));
+  });
+
+  it('does not show shoot-the-moon alert when points are split between players', async () => {
+    const splitState = makeHeartsState({
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 13,
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 11 },
+          ],
+          roundScore: 0,
+          cumulativeScore: 0,
+          trickCount: 0,
+        },
+        { id: 1, isHuman: false, cardCount: 13, cards: [], roundScore: 8, cumulativeScore: 8, trickCount: 3 },
+        { id: 2, isHuman: false, cardCount: 13, cards: [], roundScore: 8, cumulativeScore: 8, trickCount: 3 },
+        { id: 3, isHuman: false, cardCount: 13, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+      ],
+    });
+    mockExec.mockResolvedValue(splitState);
+    renderWithProviders(<HeartsPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    expect(screen.queryByTestId('hearts-shoot-the-moon-badge')).not.toBeInTheDocument();
+  });
+
   it('renders pass phase with pass button', async () => {
     mockExec.mockResolvedValue(passPhaseState);
     renderWithProviders(<HeartsPage />);
