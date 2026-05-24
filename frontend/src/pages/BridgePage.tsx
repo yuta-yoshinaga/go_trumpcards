@@ -348,7 +348,7 @@ function BridgePageContent() {
                   >
                     <span
                       aria-hidden="true"
-                      className="pointer-events-none absolute inset-0 flex items-center justify-center select-none text-5xl font-extrabold tracking-widest text-white/5"
+                      className="pointer-events-none absolute inset-0 flex items-center justify-center select-none text-5xl font-extrabold tracking-widest text-ds-text-muted opacity-10"
                     >
                       DUMMY
                     </span>
