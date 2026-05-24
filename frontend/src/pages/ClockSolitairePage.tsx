@@ -182,6 +182,10 @@ function ClockSolitairePageContent() {
                 const topCard = pile?.[pile.length - 1]?.card ?? null;
                 const cx = radius + cardWidth / 2 + 8 + pos.x * radius;
                 const cy = radius + cardHeight / 2 + 8 + pos.y * radius;
+                const currentValue = state.currentCard?.value ?? 0;
+                const targetIdx =
+                  currentValue >= 1 && currentValue <= 12 ? currentValue - 1 : currentValue === 13 ? 12 : -1;
+                const isFlightTarget = targetIdx === i;
 
                 return (
                   <div
@@ -195,7 +199,11 @@ function ClockSolitairePageContent() {
                   >
                     <span className="mb-0.5 text-xs font-bold text-ds-text-muted">{CLOCK_LABELS[i]}</span>
                     {pile && pile.length > 0 ? (
-                      <div className="relative" style={{ width: cardWidth }}>
+                      <div
+                        className={`relative rounded ${isFlightTarget ? 'ring-2 ring-ds-warning animate-pulse' : ''}`}
+                        data-flight-target={isFlightTarget ? 'true' : undefined}
+                        style={{ width: cardWidth }}
+                      >
                         {isComplete && topCard ? (
                           <AnimatedCard
                             card={topCard}
@@ -233,8 +241,13 @@ function ClockSolitairePageContent() {
                 {(() => {
                   const centerPile = state.piles[12];
                   const centerTopCard = centerPile?.[centerPile.length - 1]?.card ?? null;
+                  const isCenterFlightTarget = state.currentCard?.value === 13;
                   return centerPile && centerPile.length > 0 ? (
-                    <div className="relative" style={{ width: cardWidth }}>
+                    <div
+                      className={`relative rounded ${isCenterFlightTarget ? 'ring-2 ring-ds-warning animate-pulse' : ''}`}
+                      data-flight-target={isCenterFlightTarget ? 'true' : undefined}
+                      style={{ width: cardWidth }}
+                    >
                       {state.faceUpCount[12] >= 4 && centerTopCard ? (
                         <AnimatedCard
                           card={centerTopCard}
