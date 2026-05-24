@@ -157,4 +157,51 @@ describe('ClockSolitairePage', () => {
     });
     expect(screen.queryByText('手持ちカード')).not.toBeInTheDocument();
   });
+
+  // Helper: the CLI-mode test above leaves `mockUseCliMode` returning `cliEnabled: true`
+  // because vi.clearAllMocks() only clears call history, not the implementation. Restore
+  // the default cliEnabled: false at the top of each remaining test so the clock face renders.
+  const restoreCliModeDefault = (): void => {
+    mockUseCliMode.mockReturnValue({
+      cliEnabled: false,
+      toggleCli: vi.fn(),
+      logEntries: [],
+      addInput: vi.fn(),
+      addOutput: vi.fn(),
+      addError: vi.fn(),
+      clearLog: vi.fn(),
+    });
+  };
+
+  it('marks the matching hour pile as the flight target while a 1-12 card is waiting', async () => {
+    restoreCliModeDefault();
+    // playingState already has currentCard = ♠5, so the 5 o'clock pile (index 4) should be the
+    // single flight target. Other piles must not carry the data attribute.
+    renderWithProviders(<ClockSolitairePage />);
+    await waitFor(() => expect(screen.getByText(/ステップ数/)).toBeInTheDocument());
+    const targets = document.querySelectorAll('[data-flight-target="true"]');
+    expect(targets).toHaveLength(1);
+    const target = targets[0] as HTMLElement;
+    expect(target.className).toContain('ring-ds-warning');
+    expect(target.className).toContain('animate-pulse');
+  });
+
+  it('marks the center K pile as the flight target when a King is waiting', async () => {
+    restoreCliModeDefault();
+    mockExec.mockResolvedValue({ ...playingState, currentCard: card('SPADE', 13) });
+    renderWithProviders(<ClockSolitairePage />);
+    await waitFor(() => expect(screen.getByText(/ステップ数/)).toBeInTheDocument());
+    const targets = document.querySelectorAll('[data-flight-target="true"]');
+    // Only the center K pile should match for value=13.
+    expect(targets).toHaveLength(1);
+    expect((targets[0] as HTMLElement).className).toContain('ring-ds-warning');
+  });
+
+  it('renders no flight target when there is no card awaiting placement', async () => {
+    restoreCliModeDefault();
+    mockExec.mockResolvedValue({ ...playingState, currentCard: undefined });
+    renderWithProviders(<ClockSolitairePage />);
+    await waitFor(() => expect(screen.getByText(/ステップ数/)).toBeInTheDocument());
+    expect(document.querySelectorAll('[data-flight-target="true"]')).toHaveLength(0);
+  });
 });
