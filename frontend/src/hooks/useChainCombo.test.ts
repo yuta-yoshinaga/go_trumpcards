@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { useChainCombo } from './useChainCombo';
 
@@ -47,9 +47,20 @@ describe('useChainCombo', () => {
     });
     rerender({ m: 1, s: 24 });
     expect(result.current).toBe(1);
-    act(() => {
-      rerender({ m: 1, s: 24 });
+    rerender({ m: 1, s: 24 });
+    expect(result.current).toBe(1);
+  });
+
+  it('resets when moveCount decreases (undo)', () => {
+    const { result, rerender } = renderHook(({ m, s }) => useChainCombo(m, s), {
+      initialProps: { m: 0, s: 24 },
     });
+    rerender({ m: 1, s: 24 });
+    rerender({ m: 2, s: 24 });
+    expect(result.current).toBe(2);
+    rerender({ m: 1, s: 24 }); // undo
+    expect(result.current).toBe(0);
+    rerender({ m: 2, s: 24 }); // redo would otherwise inflate; combo starts fresh
     expect(result.current).toBe(1);
   });
 });

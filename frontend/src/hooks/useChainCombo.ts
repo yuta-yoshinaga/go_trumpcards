@@ -5,8 +5,11 @@ import { useEffect, useRef, useState } from 'react';
  *
  * The hook watches `moveCount` and `stockCount` from the server response and
  * increments an internal counter whenever `moveCount` rises while `stockCount`
- * stays the same. Any change to `stockCount` (i.e. the player drew from the
- * stock) resets the chain back to zero.
+ * stays the same. The chain resets to zero on any of:
+ * - the player draws from the stock (`stockCount` changes),
+ * - the player undoes a move (`moveCount` decreases) — otherwise undo + redo
+ *   would inflate the combo,
+ * - the game restarts (`moveCount` returns to zero).
  *
  * Used by TriPeaks and Golf to surface a streak/Combo badge.
  */
@@ -32,6 +35,9 @@ export function useChainCombo(moveCount: number | undefined, stockCount: number 
     if (moveCount === 0) {
       setCombo(0);
     } else if (stockCount !== lastStock) {
+      setCombo(0);
+    } else if (moveCount < lastMove) {
+      // Undo breaks the streak — otherwise an undo + redo would fake a longer combo.
       setCombo(0);
     } else if (moveCount > lastMove) {
       setCombo((c) => c + 1);

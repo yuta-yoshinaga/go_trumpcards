@@ -15,7 +15,14 @@ vi.mock('../hooks/useGameHint', () => ({
   useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
 }));
 
+vi.mock('../hooks/useChainCombo', () => ({
+  useChainCombo: vi.fn().mockReturnValue(0),
+}));
+
+import { useChainCombo } from '../hooks/useChainCombo';
+
 const mockExec = vi.mocked(tripeaksApi.exec);
+const mockCombo = vi.mocked(useChainCombo);
 
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
@@ -71,6 +78,7 @@ const gameOverState: TriPeaksResponse = {
 beforeEach(() => {
   mockExec.mockResolvedValue(playingState);
   vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+  mockCombo.mockReturnValue(0);
 });
 
 describe('TriPeaksPage', () => {
@@ -250,5 +258,33 @@ describe('TriPeaksPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.queryByRole('button', { name: '確認' })).not.toBeInTheDocument();
+  });
+
+  it('does not render the combo badge when combo < 2', async () => {
+    mockCombo.mockReturnValue(1);
+    renderWithProviders(<TriPeaksPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('combo-badge')).not.toBeInTheDocument();
+  });
+
+  it('renders the combo badge with blue styling when combo is 2', async () => {
+    mockCombo.mockReturnValue(2);
+    renderWithProviders(<TriPeaksPage />);
+    const badge = await screen.findByTestId('combo-badge');
+    expect(badge.className).toContain('bg-ds-info');
+  });
+
+  it('renders the combo badge with warning styling when combo is between 3 and 4', async () => {
+    mockCombo.mockReturnValue(3);
+    renderWithProviders(<TriPeaksPage />);
+    const badge = await screen.findByTestId('combo-badge');
+    expect(badge.className).toContain('bg-ds-warning');
+  });
+
+  it('renders the combo badge with error styling when combo >= 5', async () => {
+    mockCombo.mockReturnValue(5);
+    renderWithProviders(<TriPeaksPage />);
+    const badge = await screen.findByTestId('combo-badge');
+    expect(badge.className).toContain('bg-ds-error');
   });
 });
