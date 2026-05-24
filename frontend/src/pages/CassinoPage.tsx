@@ -20,6 +20,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { gameTheme } from '../styles/gameTheme';
 import type { CassinoResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { cassinoTakeCandidates } from '../utils/cassinoTakeCandidates';
 import { suggestCassinoAction } from '../utils/cassinoUtils';
 import {
   CASSINO_HELP,
@@ -167,6 +168,10 @@ function CassinoPageContent() {
 
   const isGameEnd = state.gameEndFlag;
   const humanWon = isGameEnd && state.roundWinners.includes(0);
+  const takeCandidateIndices =
+    handIndex !== null && isHumanTurn
+      ? cassinoTakeCandidates(state.tableCards, human.cards[handIndex]?.value ?? 0).indices
+      : new Set<number>();
   const canTake = isHumanTurn && handIndex !== null && (tableIndices.length > 0 || buildIndices.length > 0);
   const canBuild = isHumanTurn && handIndex !== null && tableIndices.length > 0;
   const canTrail = isHumanTurn && handIndex !== null;
@@ -229,20 +234,28 @@ function CassinoPageContent() {
                 {state.tableCards.length === 0 ? (
                   <span className="text-ds-text-muted text-sm self-center">{t('label.tableEmpty')}</span>
                 ) : (
-                  state.tableCards.map((c, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => isHumanTurn && toggleTable(i)}
-                      disabled={!isHumanTurn}
-                      className={`rounded transition-all ${
-                        tableIndices.includes(i) ? 'ring-2 ring-ds-warning -translate-y-1' : ''
-                      } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
-                      data-testid={`table-card-${i}`}
-                    >
-                      <AnimatedCard card={c} width={cardWidth * 0.9} />
-                    </button>
-                  ))
+                  state.tableCards.map((c, i) => {
+                    const isCandidate = takeCandidateIndices.has(i);
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => isHumanTurn && toggleTable(i)}
+                        disabled={!isHumanTurn}
+                        className={`rounded transition-all ${
+                          tableIndices.includes(i)
+                            ? 'ring-2 ring-ds-warning -translate-y-1'
+                            : isCandidate
+                              ? 'ring-2 ring-ds-success motion-safe:animate-pulse'
+                              : ''
+                        } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
+                        data-testid={`table-card-${i}`}
+                        data-take-candidate={isCandidate || undefined}
+                      >
+                        <AnimatedCard card={c} width={cardWidth * 0.9} />
+                      </button>
+                    );
+                  })
                 )}
               </div>
             </div>
