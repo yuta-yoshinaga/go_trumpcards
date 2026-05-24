@@ -190,6 +190,39 @@ describe('GinRummyPage', () => {
     expect(knockBtn.className).toContain('animate-pulse');
   });
 
+  it('considers post-discard deadwood, not the full 11-card hand', async () => {
+    // 11-card hand whose full deadwood is 11 (K + A = 11) but drops to
+    // 0 once the King is discarded (♠5-6-7 run + 7♥-7♣-7♦ set + ace).
+    // The knock button must pulse because a single discard makes it ≤ 10.
+    const eleven: GinRummyResponse = {
+      ...discardPhaseState,
+      players: [
+        {
+          ...discardPhaseState.players[0],
+          cardCount: 11,
+          cards: [
+            { design: 'SPADE', value: 5 },
+            { design: 'SPADE', value: 6 },
+            { design: 'SPADE', value: 7 },
+            { design: 'HEART', value: 7 },
+            { design: 'CLOVER', value: 7 },
+            { design: 'DIAMOND', value: 7 },
+            { design: 'HEART', value: 8 },
+            { design: 'HEART', value: 9 },
+            { design: 'HEART', value: 10 },
+            { design: 'CLOVER', value: 1 },
+            { design: 'SPADE', value: 13 },
+          ],
+        },
+        ...discardPhaseState.players.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(eleven);
+    renderWithProviders(<GinRummyPage />);
+    const knockBtn = await screen.findByTestId('ginrummy-knock-button');
+    expect(knockBtn.className).toContain('animate-pulse');
+  });
+
   it('renders draw phase with human cards', async () => {
     renderWithProviders(<GinRummyPage />);
     await waitFor(() => {

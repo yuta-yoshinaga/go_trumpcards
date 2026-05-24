@@ -156,6 +156,30 @@ function GinRummyPageContent() {
     });
   }, [gameExec, hideActionLog, ginRummyConfig.cpuDifficulty, ginRummyConfig.pointLimit]);
 
+  // Knock requires the *post-discard* hand to be ≤ 10. When the user has a
+  // card selected we project that discard; otherwise show the best-case
+  // deadwood across all possible single discards (a knockability hint).
+  const liveDeadwood = useMemo<number | null>(() => {
+    if (!state) return null;
+    if (state.phase !== GinRummyPhase.DISCARD) return null;
+    const human = state.players.find((p) => p.isHuman);
+    if (!human) return null;
+    const cards = human.cards;
+    if (cards.length === 0) return null;
+    if (selectedCardIndices.length === 1) {
+      const drop = selectedCardIndices[0];
+      return bestDeadwoodValue(cards.filter((_, i) => i !== drop));
+    }
+    let best = Number.POSITIVE_INFINITY;
+    for (let i = 0; i < cards.length; i++) {
+      const dv = bestDeadwoodValue(cards.filter((_, j) => j !== i));
+      if (dv < best) best = dv;
+      if (best === 0) break;
+    }
+    return Number.isFinite(best) ? best : null;
+  }, [state, selectedCardIndices]);
+  const canKnockNow = liveDeadwood != null && liveDeadwood <= GIN_RUMMY_KNOCK_THRESHOLD;
+
   if (!state)
     return (
       <GameSkeleton
@@ -172,8 +196,6 @@ function GinRummyPageContent() {
   const isGameEnd = state.phase === GinRummyPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn =
     (isDrawPhase || isDiscardPhase || isLayoffPhase) && state.players[state.currentPlayerIdx]?.isHuman === true;
-  const liveDeadwood = humanPlayer && isDiscardPhase ? bestDeadwoodValue(humanPlayer.cards) : null;
-  const canKnockNow = liveDeadwood != null && liveDeadwood <= GIN_RUMMY_KNOCK_THRESHOLD;
 
   return (
     <GamePageShell
