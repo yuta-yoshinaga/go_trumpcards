@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { baccaratApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -26,7 +26,7 @@ import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { BaccaratResponse, BaccaratSideBetResult } from '../types/card';
+import type { BaccaratResponse, BaccaratSideBetResult, Card } from '../types/card';
 import { BaccaratBetType, BaccaratPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { BACCARAT_HELP, parseBaccaratCommand } from '../utils/cli/commands/baccaratCommands';
@@ -70,6 +70,18 @@ const BAC_TUTORIAL_STEPS: TutorialStep[] = [
 const ROAD_PLAYER = 0;
 const ROAD_BANKER = 1;
 const ROAD_MAX_ROWS = 6;
+
+/**
+ * Baccarat hand value for the visible card slice. Aces=1, 2-9=face, 10/J/Q/K=0,
+ * total mod 10. Mirrors the server's scoring rule and lets us paint an
+ * intermediate header total during the staged reveal (#1892) without spoiling
+ * the third card.
+ */
+function baccaratHandValue(cards: readonly Card[]): number {
+  let total = 0;
+  for (const c of cards) total += c.value >= 10 ? 0 : c.value;
+  return total % 10;
+}
 
 function BigRoadGrid({ history }: { history: number[] }) {
   if (history.length === 0) return null;
@@ -218,6 +230,50 @@ function BaccaratPageContent() {
   const isBetPhase = state?.phase === BaccaratPhase.BET;
   const isEndPhase = state?.phase === BaccaratPhase.END;
 
+  // Staged reveal for the showdown so the third-card rule isn't a black box (#1892).
+  // Steps: 1 = initial 2+2 cards, 2 = player's 3rd, 3 = banker's 3rd, 4 = payout/result.
+  // The hand "signature" string keys the effect so each new round restarts the animation
+  // without flicker mid-render.
+  const playerHand = state?.playerHand ?? [];
+  const bankerHand = state?.bankerHand ?? [];
+  const handSignature = isEndPhase ? `${playerHand.length}:${bankerHand.length}:${state?.payout ?? 0}` : 'bet';
+  const [revealStep, setRevealStep] = useState(0);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: handSignature already encodes playerHand.length and bankerHand.length — listing them would re-fire the effect for the same hand.
+  useEffect(() => {
+    if (!isEndPhase) {
+      setRevealStep(0);
+      return;
+    }
+    setRevealStep(1);
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    let delay = 600;
+    if (playerHand.length === 3) {
+      const d = delay;
+      timers.push(setTimeout(() => setRevealStep((s) => Math.max(s, 2)), d));
+      delay += 600;
+    }
+    if (bankerHand.length === 3) {
+      const d = delay;
+      timers.push(setTimeout(() => setRevealStep((s) => Math.max(s, 3)), d));
+      delay += 600;
+    }
+    timers.push(setTimeout(() => setRevealStep((s) => Math.max(s, 4)), delay));
+    return () => {
+      for (const timer of timers) clearTimeout(timer);
+    };
+  }, [isEndPhase, handSignature]);
+  const playerCardsShown = revealStep >= 2 ? playerHand.length : Math.min(playerHand.length, 2);
+  const bankerCardsShown = revealStep >= 3 ? bankerHand.length : Math.min(bankerHand.length, 2);
+  // showResultDetails is only consumed under `isEndPhase && ...`, so the !isEndPhase branch
+  // was unreachable; collapse to the meaningful condition.
+  const showResultDetails = revealStep >= 4;
+
+  // Visible baccarat hand value for the currently revealed slice, so the header
+  // total doesn't spoil the third card before it animates in. A=1, 2-9=face,
+  // 10/J/Q/K=0, total mod 10.
+  const visiblePlayerValue = isEndPhase ? baccaratHandValue(playerHand.slice(0, playerCardsShown)) : 0;
+  const visibleBankerValue = isEndPhase ? baccaratHandValue(bankerHand.slice(0, bankerCardsShown)) : 0;
+
   const handleBet = useCallback(() => {
     setLastBet({ amount: betAmount, type: betType, pp: playerPairBet, bp: bankerPairBet });
     execApi('bet', betAmount, betType, playerPairBet, bankerPairBet);
@@ -307,43 +363,45 @@ function BaccaratPageContent() {
               messageParams={state.messageParams}
             />
 
-            {/* Player Hand */}
+            {/* Player Hand — staged reveal hides the 3rd card until step 2 */}
             {state.playerHand.length > 0 && (
               <div className="mb-4" data-tutorial="bac-player-hand">
                 <div className="text-ds-warning font-bold text-center mb-1">
-                  <span aria-hidden="true">🟡</span> {t('player')} {t('label.value', { value: state.playerHandValue })}
+                  <span aria-hidden="true">🟡</span> {t('player')}{' '}
+                  {t('label.value', { value: isEndPhase ? visiblePlayerValue : state.playerHandValue })}
                 </div>
-                <div className="flex justify-center gap-2">
-                  {state.playerHand.map((card, i) => (
+                <div className="flex justify-center gap-2" data-testid="bac-player-cards">
+                  {state.playerHand.slice(0, playerCardsShown).map((card, i) => (
                     <AnimatedCard key={`p-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Banker Hand */}
+            {/* Banker Hand — staged reveal hides the 3rd card until step 3 */}
             {state.bankerHand.length > 0 && (
               <div className="mb-4" data-tutorial="bac-banker-hand">
                 <div className="text-ds-error font-bold text-center mb-1">
-                  <span aria-hidden="true">🔴</span> {t('banker')} {t('label.value', { value: state.bankerHandValue })}
+                  <span aria-hidden="true">🔴</span> {t('banker')}{' '}
+                  {t('label.value', { value: isEndPhase ? visibleBankerValue : state.bankerHandValue })}
                 </div>
-                <div className="flex justify-center gap-2">
-                  {state.bankerHand.map((card, i) => (
+                <div className="flex justify-center gap-2" data-testid="bac-banker-cards">
+                  {state.bankerHand.slice(0, bankerCardsShown).map((card, i) => (
                     <AnimatedCard key={`b-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Payout info */}
-            {isEndPhase && (
-              <div className="text-ds-text-primary text-center font-bold mb-2">
+            {/* Payout info — gated behind the final reveal step */}
+            {isEndPhase && showResultDetails && (
+              <div className="text-ds-text-primary text-center font-bold mb-2" data-testid="bac-payout">
                 {t('label.payout', { payout: state.payout })}
               </div>
             )}
 
-            {/* Side bet results */}
-            {isEndPhase && state.sideBetResults.length > 0 && (
+            {/* Side bet results — gated behind the final reveal step */}
+            {isEndPhase && showResultDetails && state.sideBetResults.length > 0 && (
               <SideBetResultsDisplay results={state.sideBetResults} t={t} />
             )}
 
