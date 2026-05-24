@@ -358,6 +358,14 @@ function OmahaHiLoPageContent() {
                     </span>
                   )}
                 </div>
+                <div
+                  className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-ds-info/20 px-2 py-0.5 text-[11px] font-semibold text-ds-info"
+                  data-testid="omahahilo-rule-badge"
+                  aria-label={t('mandatoryRuleAria')}
+                >
+                  <span aria-hidden="true">🎯</span>
+                  {t('mandatoryRule')}
+                </div>
                 <div className="flex flex-wrap gap-1.5 mb-2" data-tutorial="ohl-combination-rule">
                   {humanPlayer.cards?.length
                     ? humanPlayer.cards.map((card) => (
