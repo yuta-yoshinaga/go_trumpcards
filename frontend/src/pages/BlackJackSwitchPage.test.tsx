@@ -177,6 +177,19 @@ describe('BlackJackSwitchPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('switch'));
   });
 
+  it('hovering Switch shows post-swap score previews on each hand', async () => {
+    mockApi.mockResolvedValue(switchState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    const btn = await screen.findByTestId('switch-button');
+    expect(screen.queryByTestId('hand-0-preview')).not.toBeInTheDocument();
+    fireEvent.mouseEnter(btn);
+    // Hand 0 = [S10, C5]=15 -> swap -> [S10, D11]=20; Hand 1 = [H6, D11]=16 -> swap -> [H6, C5]=11
+    expect(screen.getByTestId('hand-0-preview')).toHaveTextContent('20');
+    expect(screen.getByTestId('hand-1-preview')).toHaveTextContent('11');
+    fireEvent.mouseLeave(btn);
+    expect(screen.queryByTestId('hand-0-preview')).not.toBeInTheDocument();
+  });
+
   it('clicks Keep and posts the keep command', async () => {
     mockApi.mockResolvedValue(switchState);
     renderWithProviders(<BlackJackSwitchPage />);
