@@ -94,7 +94,7 @@ function RankStamp({ rank, label }: { rank: number; label: string }) {
       initial={{ scale: 2, opacity: 0, rotate: -20 }}
       animate={{ scale: 1, opacity: 1, rotate: -8 }}
       transition={{ type: 'spring', stiffness: 260, damping: 14 }}
-      className={`inline-block px-2 py-0.5 rounded-md font-bold text-xs border-2 border-current ${PRESIDENT_RANK_BG[rank] ?? 'bg-ds-surface text-ds-text'}`}
+      className={`inline-block px-2 py-0.5 rounded-md font-bold text-xs border-2 border-current ${PRESIDENT_RANK_BG[rank] ?? 'bg-ds-surface text-ds-text-primary'}`}
     >
       {PRESIDENT_RANK_ICON[rank] ?? ''} {label}
     </motion.span>
