@@ -31,6 +31,15 @@
   "play": "Play card",
   "nextTrick": "Next trick",
   "nextRound": "Next round",
+  "bidEstimate": "Hand-estimated max: {{value}} ({{type}})",
+  "bidExceedsHand": "Current bid may not be justifiable from this hand",
+  "gameTypeLabel": {
+    "clover": "♣ Clubs",
+    "spade": "♠ Spades",
+    "heart": "♥ Hearts",
+    "diamond": "♦ Diamonds",
+    "grand": "Grand"
+  },
   "phase": {
     "bid": "Bidding",
     "skatPickup": "Skat pickup",

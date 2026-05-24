@@ -27,6 +27,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseSkatCommand, SKAT_HELP } from '../utils/cli/commands/skatCommands';
 import { formatSkatState } from '../utils/cli/formatters/skatFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { skatBestBidEstimate } from '../utils/skatBidEstimate';
 
 /** Suit identifiers matching internal/domain/Card.go (1=Spade, 2=Clover, 3=Heart, 4=Diamond). */
 const SUIT_SPADE = 1;
@@ -168,6 +169,22 @@ function SkatPageContent() {
                 {t('round')}: {state.roundNumber} | {t('dealer')}: CPU {state.dealerIdx} | {t('currentBid')}:{' '}
                 {state.currentBid}
               </div>
+              {isBid &&
+                humanPlayer &&
+                (() => {
+                  const est = skatBestBidEstimate(humanPlayer.cards ?? []);
+                  const exceeds = state.currentBid > est.value;
+                  return (
+                    <div
+                      data-testid="bid-estimate"
+                      data-exceeds={exceeds ? 'true' : undefined}
+                      className={`text-xs ${exceeds ? 'text-ds-error' : 'text-ds-text-muted'}`}
+                    >
+                      {t('bidEstimate', { value: est.value, type: t(`gameTypeLabel.${est.gameType.toLowerCase()}`) })}
+                      {exceeds && <span className="ml-2">⚠️ {t('bidExceedsHand')}</span>}
+                    </div>
+                  );
+                })()}
               {state.declarerIdx >= 0 && (
                 <div data-tutorial="sk-declarer-info">
                   {t('declarer')}: {state.players[state.declarerIdx]?.isHuman ? t('you') : `CPU ${state.declarerIdx}`}
