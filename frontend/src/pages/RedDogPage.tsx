@@ -25,12 +25,13 @@ import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { RedDogResponse } from '../types/card';
+import type { Card, RedDogResponse } from '../types/card';
 import { RedDogPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { parseReddogCommand, REDDOG_HELP } from '../utils/cli/commands/reddogCommands';
 import { formatReddogState } from '../utils/cli/formatters/reddogFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { rankLabel, redDogRank, reddogWinningRanks } from '../utils/reddogWinningRanks';
 
 /** Minimum bet amount matching backend RedDogMinBet. */
 const REDDOG_MIN_BET = 10;
@@ -191,9 +192,16 @@ function RedDogPageContent() {
                   ))}
                 </div>
                 {state.spread > 0 && (isSpreadDecision || isEndPhase) && (
-                  <div className="text-ds-text-primary text-center text-sm mt-2">
-                    {t('label.spread')}: {state.spread}
-                  </div>
+                  <>
+                    <div className="text-ds-text-primary text-center text-sm mt-2">
+                      {t('label.spread')}: {state.spread}
+                    </div>
+                    <WinningRankGhosts
+                      initial={state.initialCards}
+                      thirdRank={isEndPhase && state.thirdCard ? redDogRank(state.thirdCard) : null}
+                      label={t('label.winners')}
+                    />
+                  </>
                 )}
               </div>
             )}
@@ -276,5 +284,44 @@ function RedDogPageContent() {
         </>
       )}
     </GamePageShell>
+  );
+}
+
+interface WinningRankGhostsProps {
+  initial: Card[];
+  thirdRank: number | null;
+  label: string;
+}
+
+/** Translucent rank chips shown between the two initial cards: each chip is
+ * a rank the third card needs to hit to win. On END phase the matching chip
+ * is filled green (hit) and others fade to muted (miss). */
+function WinningRankGhosts({ initial, thirdRank, label }: WinningRankGhostsProps) {
+  const ranks = reddogWinningRanks(initial);
+  if (ranks.length === 0) return null;
+  return (
+    <div className="mt-2 flex flex-col items-center gap-1" data-testid="reddog-ghost-ranks">
+      <div className="text-ds-text-muted text-xs">{label}</div>
+      <div className="flex flex-wrap justify-center gap-1">
+        {ranks.map((r) => {
+          const isHit = thirdRank === r;
+          const isResolved = thirdRank != null;
+          const cls = isHit
+            ? 'bg-ds-success/70 text-white border-ds-success'
+            : isResolved
+              ? 'bg-white/5 text-ds-text-muted border-white/10 opacity-50'
+              : 'bg-white/15 text-ds-text-primary border-white/30';
+          return (
+            <span
+              key={`ghost-${r}`}
+              data-testid={`reddog-ghost-${r}`}
+              className={`rounded border px-2 py-0.5 text-xs font-mono ${cls}`}
+            >
+              {rankLabel(r)}
+            </span>
+          );
+        })}
+      </div>
+    </div>
   );
 }
