@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { mightyApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardRoleBadge } from '../components/CardRoleBadge';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -208,6 +209,15 @@ function MightyPageContent() {
     );
 
   const humanPlayer = state.players.find((p) => p.isHuman);
+  const partnerCard = state.partnerCard ?? null;
+  const trumpSuit = state.trumpSuit;
+  /** Returns the role badge for the human hand card at `idx`, or null. */
+  const roleBadgeFor = (idx: number): { glyph: string; title: string } | null => {
+    const card = humanPlayer?.cards[idx];
+    if (!card) return null;
+    const role = mightySpecialRole(card, trumpSuit, partnerCard);
+    return role ? { glyph: mightyRoleGlyph(role), title: t(`specialRole.${role}`) } : null;
+  };
   const isBidPhase = state.phase === MightyPhase.BID;
   const isTrumpAndFriend = state.phase === MightyPhase.TRUMP_AND_FRIEND;
   const isKittyExchange = state.phase === MightyPhase.KITTY_EXCHANGE;
@@ -532,60 +542,42 @@ function MightyPageContent() {
           <GameFooter className={`${gameTheme.mighty.footer} px-4 py-2.5`}>
             {/* Human cards */}
             {humanPlayer &&
-              (() => {
-                const partnerCard = state.partnerCard ?? null;
-                const roleBadgeFor = (idx: number) => {
-                  const card = humanPlayer.cards[idx];
-                  if (!card) return null;
-                  const role = mightySpecialRole(card, state.trumpSuit, partnerCard);
-                  if (!role) return null;
-                  return { glyph: mightyRoleGlyph(role), title: t(`specialRole.${role}`) };
-                };
-                return isMobile ? (
-                  <MobileHandGrid
-                    cards={humanPlayer.cards}
-                    selectedIndices={selectedCardIndices}
-                    onToggle={toggleCard}
-                    cardWidth={cardWidth}
-                    dataTutorial="mighty-player-hand"
-                    cardBadgeFor={roleBadgeFor}
-                  />
-                ) : (
-                  <div className="flex flex-wrap gap-1 mb-2" data-tutorial="mighty-player-hand">
-                    {humanPlayer.cards.map((card, idx) => {
-                      const badge = roleBadgeFor(idx);
-                      return (
-                        <button
-                          type="button"
-                          key={`${card.design}-${card.value}-${idx}`}
-                          onClick={() => toggleCard(idx)}
-                          aria-label={cardAlt(card)}
-                          aria-pressed={selectedCardIndices.includes(idx)}
-                          className={`transition-transform ${focusRingCard} relative`}
-                          style={{
-                            background: 'none',
-                            padding: 0,
-                            borderRadius: 8,
-                            ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                            boxSizing: 'border-box',
-                          }}
-                        >
-                          <AnimatedCard card={card} width={cardWidth} />
-                          {badge && (
-                            <span
-                              data-testid={`card-role-badge-${idx}`}
-                              title={badge.title}
-                              className="absolute top-0 left-0 bg-black/70 text-white rounded-br rounded-tl px-1 text-[10px] leading-tight pointer-events-none"
-                            >
-                              {badge.glyph}
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
+              (isMobile ? (
+                <MobileHandGrid
+                  cards={humanPlayer.cards}
+                  selectedIndices={selectedCardIndices}
+                  onToggle={toggleCard}
+                  cardWidth={cardWidth}
+                  dataTutorial="mighty-player-hand"
+                  cardBadgeFor={roleBadgeFor}
+                />
+              ) : (
+                <div className="flex flex-wrap gap-1 mb-2" data-tutorial="mighty-player-hand">
+                  {humanPlayer.cards.map((card, idx) => {
+                    const badge = roleBadgeFor(idx);
+                    return (
+                      <button
+                        type="button"
+                        key={`${card.design}-${card.value}-${idx}`}
+                        onClick={() => toggleCard(idx)}
+                        aria-label={cardAlt(card)}
+                        aria-pressed={selectedCardIndices.includes(idx)}
+                        className={`transition-transform ${focusRingCard} relative`}
+                        style={{
+                          background: 'none',
+                          padding: 0,
+                          borderRadius: 8,
+                          ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        <AnimatedCard card={card} width={cardWidth} />
+                        {badge && <CardRoleBadge idx={idx} glyph={badge.glyph} title={badge.title} />}
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
 
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
 

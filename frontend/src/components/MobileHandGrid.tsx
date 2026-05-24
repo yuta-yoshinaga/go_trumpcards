@@ -4,6 +4,7 @@ import { expansionMargin, focusRingCard, selectedCardStyle } from '../styles/car
 import type { Card } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
 import { CardImage } from './CardImage';
+import { CardRoleBadge } from './CardRoleBadge';
 
 /** Minimum number of cards before splitting into 2 rows. */
 const TWO_ROW_THRESHOLD = 4;
@@ -131,16 +132,7 @@ export function MobileHandGrid({
                   )}
                   {(() => {
                     const badge = cardBadgeFor?.(globalIdx);
-                    if (!badge) return null;
-                    return (
-                      <span
-                        data-testid={`card-role-badge-${globalIdx}`}
-                        title={badge.title}
-                        className="absolute top-0 left-0 bg-black/70 text-white rounded-br rounded-tl px-1 text-[10px] leading-tight pointer-events-none"
-                      >
-                        {badge.glyph}
-                      </span>
-                    );
+                    return badge ? <CardRoleBadge idx={globalIdx} glyph={badge.glyph} title={badge.title} /> : null;
                   })()}
                 </button>
               );
