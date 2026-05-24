@@ -32,4 +32,11 @@ describe('shootTheMoonAlertIdx', () => {
   it('returns the leader index in extreme scenarios (Q♠ + many hearts)', () => {
     expect(shootTheMoonAlertIdx([player(0, 0), player(1, 0), player(2, 20), player(3, 0)])).toBe(2);
   });
+
+  it('returns null when any player has a negative round score (Omnibus J♦)', () => {
+    // Omnibus: a player with J♦ (-10) + 1 heart = -9. Even if another
+    // player appears to hold all positive points, we cannot tell from
+    // roundScore alone whether penalty cards are split, so we bail.
+    expect(shootTheMoonAlertIdx([player(0, -9), player(1, 18), player(2, 0), player(3, 0)])).toBeNull();
+  });
 });

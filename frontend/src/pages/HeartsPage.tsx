@@ -171,11 +171,12 @@ function HeartsPageContent() {
     });
   }, [exec, hideActionLog, heartsConfig.cpuDifficulty, heartsConfig.pointLimit, heartsConfig.omnibusJD]);
 
+  const moonAlertIdx = useMemo(() => (state ? shootTheMoonAlertIdx(state.players) : null), [state]);
+
   if (!state)
     return <GameSkeleton gameKey="hearts" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
-  const moonAlertIdx = shootTheMoonAlertIdx(state.players);
   const isPassPhase = state.phase === HeartsPhase.PASS;
   const isPlayPhase = state.phase === HeartsPhase.PLAY;
   const isTrickEnd = state.phase === HeartsPhase.TRICK_END;
