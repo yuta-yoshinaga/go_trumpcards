@@ -730,6 +730,34 @@ describe('FreeCellPage', () => {
       expect(topButton).toHaveAttribute('data-supermove-blocked', 'true');
     });
 
+    it('highlights the in-limit block under the cursor', async () => {
+      const looseState: FreeCellResponse = {
+        ...playingState,
+        tableau: [
+          [card('SPADE', 13), card('HEART', 12), card('CLOVER', 11)],
+          [card('DIAMOND', 1)],
+          [card('SPADE', 2)],
+          [card('HEART', 3)],
+          [card('DIAMOND', 4)],
+          [card('CLOVER', 5)],
+          [card('SPADE', 6)],
+          [card('HEART', 7)],
+        ],
+        freeCells: [card('DIAMOND', 8), card('CLOVER', 9), null, null],
+      };
+      mockExec.mockResolvedValue(looseState);
+      renderWithProviders(<FreeCellPage />);
+      await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
+
+      const middleButton = screen.getByAltText('♥ Q').closest('button') as HTMLButtonElement;
+      const bottomButton = screen.getByAltText('♣ J').closest('button') as HTMLButtonElement;
+      fireEvent.mouseEnter(middleButton);
+      expect(middleButton).toHaveAttribute('data-supermove-block', 'true');
+      expect(bottomButton).toHaveAttribute('data-supermove-block', 'true');
+      fireEvent.mouseLeave(middleButton);
+      expect(middleButton).not.toHaveAttribute('data-supermove-block');
+    });
+
     it('lets the entire stack drag when free cells + empty cols allow it', async () => {
       // 3-card stack, 2 empty free cells, 0 empty cols → limit = (1+2)*2^0 = 3 → all 3 movable.
       const looseState: FreeCellResponse = {

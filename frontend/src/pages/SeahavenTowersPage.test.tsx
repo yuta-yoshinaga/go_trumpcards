@@ -163,4 +163,35 @@ describe('SeahavenTowersPage', () => {
     renderWithProviders(<SeahavenTowersPage />);
     await waitFor(() => expect(screen.getAllByText(/ゲームオーバー/).length).toBeGreaterThan(0));
   });
+
+  it('highlights the in-limit supermove block under the cursor', async () => {
+    // Both reserved cells empty → limit = 1 + 2 = 3, so the bottom 3 cards form the movable block.
+    const looseState: SeahavenTowersResponse = {
+      ...playingState,
+      tableau: [
+        [card('SPADE', 13), card('HEART', 12), card('CLOVER', 11)],
+        [card('DIAMOND', 1)],
+        [card('SPADE', 2)],
+        [card('HEART', 3)],
+        [card('DIAMOND', 4)],
+        [card('CLOVER', 5)],
+        [card('SPADE', 6)],
+        [card('HEART', 7)],
+        [card('CLOVER', 8)],
+        [card('DIAMOND', 9)],
+      ],
+      reservedCells: [null, null],
+    };
+    mockExec.mockResolvedValue(looseState);
+    renderWithProviders(<SeahavenTowersPage />);
+    await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
+
+    const middleButton = screen.getByAltText('♥ Q').closest('button') as HTMLButtonElement;
+    const bottomButton = screen.getByAltText('♣ J').closest('button') as HTMLButtonElement;
+    fireEvent.mouseEnter(middleButton);
+    expect(middleButton).toHaveAttribute('data-supermove-block', 'true');
+    expect(bottomButton).toHaveAttribute('data-supermove-block', 'true');
+    fireEvent.mouseLeave(middleButton);
+    expect(middleButton).not.toHaveAttribute('data-supermove-block');
+  });
 });
