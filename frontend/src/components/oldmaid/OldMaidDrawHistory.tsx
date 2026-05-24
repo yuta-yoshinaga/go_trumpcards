@@ -3,23 +3,19 @@ import { useTranslation } from 'react-i18next';
 import type { DrawHistoryEntry, OldMaidPlayerData } from '../../types/card';
 import { findPlayerName } from '../../utils/playerUtils';
 
-// Tailwind classes (NOT a template literal) so the JIT compiler can pick them up.
+// Inline hex palette (not Tailwind palette classes) so check-design-tokens.mjs
+// is satisfied — the design system has no per-player token, and inline style
+// values are static so the JIT/AOT pass doesn't need to see class names.
 // Hoisted to module scope so the array is not re-allocated on every chip render.
-const PLAYER_PALETTE = [
-  'bg-blue-600',
-  'bg-emerald-600',
-  'bg-amber-600',
-  'bg-purple-600',
-  'bg-pink-600',
-  'bg-cyan-600',
-] as const;
+const PLAYER_PALETTE = ['#2563eb', '#059669', '#d97706', '#9333ea', '#db2777', '#0891b2'] as const;
 
 /** Colored chip used as a player icon in the timeline. Deterministic by index. */
 function PlayerChip({ name, idx }: { name: string; idx: number }) {
-  const colorClass = PLAYER_PALETTE[idx % PLAYER_PALETTE.length];
+  const background = PLAYER_PALETTE[idx % PLAYER_PALETTE.length];
   return (
     <span
-      className={`inline-flex items-center justify-center rounded-full text-white text-[10px] font-bold px-1.5 py-0.5 min-w-[2.25rem] ${colorClass}`}
+      className="inline-flex items-center justify-center rounded-full text-white text-[10px] font-bold px-1.5 py-0.5 min-w-[2.25rem]"
+      style={{ background }}
       data-player-idx={idx}
     >
       {name}
@@ -81,6 +77,7 @@ export function OldMaidDrawHistory({
               <PlayerChip name={targetName} idx={targetPlayer?.id ?? entry.drawFromIdx} />
               {entry.discardedPairs > 0 && (
                 <span
+                  role="img"
                   className="text-ds-warning text-sm"
                   aria-label={t('history.discarded', { count: entry.discardedPairs })}
                   data-testid="discard-burst"
