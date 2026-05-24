@@ -61,7 +61,6 @@ export function RoadmapTrendBar({
   }
   const sideOnly = recent.length;
   const leftWins = recent.filter((r) => r === leftCode).length;
-  const rightWins = sideOnly - leftWins;
   const leftPct = sideOnly === 0 ? 50 : Math.round((leftWins / sideOnly) * 100);
   const rightPct = 100 - leftPct;
   const streakLabel = streakSide === leftCode ? leftLabel : streakSide === rightCode ? rightLabel : null;
