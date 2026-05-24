@@ -349,7 +349,6 @@ function EightOffPageContent() {
                                 hoveredStack !== null &&
                                 hoveredStack.col === colIdx &&
                                 cardIdx >= hoveredStack.cardIdx &&
-                                !exceedsSupermove &&
                                 col.length - hoveredStack.cardIdx <= supermoveLimit;
                               return (
                                 <div
