@@ -11,6 +11,8 @@
   },
   "communityCards": "コミュニティカード",
   "yourHand": "あなたの手札",
+  "mandatoryRule": "ルール: 手札から2枚 + 場札から3枚 (Hi/Lo別に組合せ可)",
+  "mandatoryRuleAria": "Hi-Loルール: ハイとローそれぞれで手札2枚と場札3枚を使います",
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
   "rebuy": {
     "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",
