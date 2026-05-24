@@ -139,11 +139,17 @@ function NertzPageContent() {
 
   const [collidedFoundationIdx, setCollidedFoundationIdx] = useState<number | null>(null);
   const [collisionTick, setCollisionTick] = useState(0);
-  // Tracks which foundation last received a placement so we can flash a brief
-  // success ring. `placedBy` is 'human' when the pendingFoundationRef matched
-  // (the latest in-flight move was ours and it succeeded), otherwise 'cpu'.
-  const [placedFlash, setPlacedFlash] = useState<{ idx: number; placedBy: 'human' | 'cpu'; key: number } | null>(null);
+  /**
+   * Map of foundation index → active placement flash. Multiple CPUs (or a CPU
+   * + the human) can all place on different foundations within a single tick;
+   * tracking flashes per-foundation lets every placement light up rather than
+   * just the first one we detect.
+   */
+  const [placedFlashes, setPlacedFlashes] = useState<Map<number, { placedBy: 'human' | 'cpu'; key: number }>>(
+    () => new Map(),
+  );
   const prevFoundationSizesRef = useRef<number[]>([]);
+  const flashKeyRef = useRef(0);
   // `isCollisionError` flags that the current `error` from useGameApi was
   // attributed to a foundation collision (already conveyed via the shake
   // animation). The global ErrorAlert is suppressed for the lifetime of that
@@ -161,28 +167,43 @@ function NertzPageContent() {
   // and flash the wrong cell.
   useEffect(() => {
     if (!state) return;
-    // Detect foundation growth → flash success ring on the foundation that grew.
-    // Attribute to 'human' if the latest in-flight move targeted that foundation
-    // (the success cleared pendingFoundationRef before this effect ran).
+    // Detect foundation growth → flash success ring on *every* foundation that
+    // grew. Nertz ticks can drop multiple cards across multiple foundations in
+    // a single state update; the previous single-flash early-break only lit
+    // the first one we saw.
     const prev = prevFoundationSizesRef.current;
+    const grown: number[] = [];
     for (let idx = 0; idx < state.foundations.length; idx += 1) {
       const newSize = state.foundations[idx].size;
       const oldSize = prev[idx] ?? 0;
-      if (newSize > oldSize) {
-        const placedBy: 'human' | 'cpu' = pendingFoundationRef.current === idx ? 'human' : 'cpu';
-        setPlacedFlash({ idx, placedBy, key: Date.now() });
-        break;
+      if (newSize > oldSize) grown.push(idx);
+    }
+    if (grown.length > 0) {
+      const humanIdx = pendingFoundationRef.current;
+      setPlacedFlashes((current) => {
+        const next = new Map(current);
+        for (const idx of grown) {
+          flashKeyRef.current += 1;
+          next.set(idx, { placedBy: humanIdx === idx ? 'human' : 'cpu', key: flashKeyRef.current });
+        }
+        return next;
+      });
+      // Schedule a removal for each idx independently so the visible flash
+      // duration is constant regardless of when sibling flashes start.
+      for (const idx of grown) {
+        window.setTimeout(() => {
+          setPlacedFlashes((current) => {
+            if (!current.has(idx)) return current;
+            const next = new Map(current);
+            next.delete(idx);
+            return next;
+          });
+        }, NERTZ_COLLISION_FEEDBACK_MS);
       }
     }
     prevFoundationSizesRef.current = state.foundations.map((f) => f.size);
     pendingFoundationRef.current = null;
   }, [state]);
-
-  useEffect(() => {
-    if (!placedFlash) return;
-    const id = window.setTimeout(() => setPlacedFlash(null), NERTZ_COLLISION_FEEDBACK_MS);
-    return () => window.clearTimeout(id);
-  }, [placedFlash]);
 
   useEffect(() => {
     if (error && error !== prevErrorRef.current) {
@@ -335,20 +356,23 @@ function NertzPageContent() {
             <div data-tutorial="nertz-foundations" className="bg-black/30 text-ds-text-primary p-3 rounded">
               <div className="text-xs uppercase tracking-wide text-ds-text-muted mb-2">{t('labels.foundation')}</div>
               <div className="flex flex-wrap gap-2">
-                {state.foundations.map((f, idx) => (
-                  <FoundationCell
-                    key={`f-${idx}`}
-                    idx={idx}
-                    top={f.top}
-                    size={f.size}
-                    onClick={() => handleFoundationClick(idx)}
-                    disabled={!isHumanTurn || !selection}
-                    ariaLabel={t('labels.foundationN', { n: idx, defaultValue: `Foundation ${idx}` })}
-                    collided={collidedFoundationIdx === idx}
-                    placedBy={placedFlash?.idx === idx ? placedFlash.placedBy : null}
-                    placedFlashKey={placedFlash?.idx === idx ? placedFlash.key : 0}
-                  />
-                ))}
+                {state.foundations.map((f, idx) => {
+                  const flash = placedFlashes.get(idx);
+                  return (
+                    <FoundationCell
+                      key={`f-${idx}`}
+                      idx={idx}
+                      top={f.top}
+                      size={f.size}
+                      onClick={() => handleFoundationClick(idx)}
+                      disabled={!isHumanTurn || !selection}
+                      ariaLabel={t('labels.foundationN', { n: idx, defaultValue: `Foundation ${idx}` })}
+                      collided={collidedFoundationIdx === idx}
+                      placedBy={flash?.placedBy ?? null}
+                      placedFlashKey={flash?.key ?? 0}
+                    />
+                  );
+                })}
               </div>
             </div>
 
@@ -501,29 +525,42 @@ function FoundationCell({
     ? 'bg-ds-surface text-ds-text-muted border-ds-border-subtle'
     : 'bg-ds-surface-elevated text-ds-text-primary border-ds-border-subtle hover:bg-ds-surface-elevated-hover';
   const collisionCls = collided ? 'animate-shake ring-2 ring-ds-error' : '';
-  const placedCls =
+  // The placement flash is a sibling overlay so we can remount *it* (via key)
+  // to re-fire animate-pulse-once on back-to-back placements without
+  // unmounting the underlying <button> and breaking keyboard focus.
+  const flashOverlayClass =
     placedBy === 'human'
-      ? 'ring-2 ring-ds-success motion-safe:animate-pulse-once'
+      ? 'pointer-events-none absolute inset-0 rounded ring-2 ring-ds-success motion-safe:animate-pulse-once'
       : placedBy === 'cpu'
-        ? 'ring-2 ring-ds-info motion-safe:animate-pulse-once'
-        : '';
+        ? 'pointer-events-none absolute inset-0 rounded ring-2 ring-ds-info motion-safe:animate-pulse-once'
+        : null;
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      // Key on placedFlashKey forces a remount so the pulse re-fires for back-to-back placements.
-      key={`f-cell-${idx}-${placedFlashKey}`}
-      className={`min-w-[3rem] rounded border px-2 py-2 text-sm ${cls} ${collisionCls} ${placedCls}`}
-      aria-label={ariaLabel}
-      data-testid={`nertz-foundation-${idx}`}
-      data-collided={collided || undefined}
-      data-placed-by={placedBy ?? undefined}
-    >
-      <span className="block text-xs leading-none">F{idx}</span>
-      <span className="block text-base font-bold">{top ? `${suitSymbol(top.design)}${top.value}` : '—'}</span>
-      <span className="block text-xs">({size})</span>
-    </button>
+    <div className="relative inline-block">
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        className={`min-w-[3rem] rounded border px-2 py-2 text-sm ${cls} ${collisionCls}`}
+        aria-label={ariaLabel}
+        data-testid={`nertz-foundation-${idx}`}
+        data-collided={collided || undefined}
+        data-placed-by={placedBy ?? undefined}
+      >
+        <span className="block text-xs leading-none">F{idx}</span>
+        <span className="block text-base font-bold">{top ? `${suitSymbol(top.design)}${top.value}` : '—'}</span>
+        <span className="block text-xs">({size})</span>
+      </button>
+      {flashOverlayClass && (
+        // Remount the overlay (via key) on each new placement so the
+        // animate-pulse-once keyframe re-fires for back-to-back placements.
+        <span
+          aria-hidden="true"
+          key={`f-flash-${idx}-${placedFlashKey}`}
+          className={flashOverlayClass}
+          data-testid={`nertz-foundation-flash-${idx}`}
+        />
+      )}
+    </div>
   );
 }
 
