@@ -291,7 +291,15 @@ function BakersDozenPageContent() {
                             };
                             const isTop = cardIdx === col.length - 1;
                             const isLastInCol = isTop && col.length === 1;
-                            const lastWarnSelected = isLastInCol && isSourceSelected('tableau', colIdx, cardIdx);
+                            const isSelected = isSourceSelected('tableau', colIdx, cardIdx);
+                            const showEmptyColumnWarning = isLastInCol && isSelected;
+                            // Selection ring wins over the dashed empty-column ring when both
+                            // would apply — avoids stacking two rings that look like a bug.
+                            const ringClass = isSelected
+                              ? 'ring-2 ring-ds-warning'
+                              : isLastInCol
+                                ? 'ring-2 ring-ds-warning/60 ring-dashed'
+                                : '';
                             return (
                               <div
                                 key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
@@ -311,11 +319,11 @@ function BakersDozenPageContent() {
                                     }}
                                     disabled={!isPlaying || loading || (!isTop && !selectedSource)}
                                     aria-label={cardAlt(tc.card)}
-                                    aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
+                                    aria-pressed={isSelected}
                                     draggable={isPlaying && !loading && isTop}
                                     onDragStart={dnd.handleDragStart(cardZone)}
                                     onDragEnd={dnd.handleDragEnd}
-                                    className={`p-0 border-0 bg-transparent w-full rounded ${focusRingWhite} ${isTop ? 'cursor-pointer' : 'cursor-default'} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : ''} ${isLastInCol ? 'ring-2 ring-ds-warning/60 ring-offset-0 ring-dashed' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                                    className={`p-0 border-0 bg-transparent w-full rounded ${focusRingWhite} ${isTop ? 'cursor-pointer' : 'cursor-default'} ${ringClass} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
                                     title={isLastInCol ? t('lastCardWarning') : undefined}
                                   >
                                     <AnimatedCard
@@ -327,7 +335,7 @@ function BakersDozenPageContent() {
                                     />
                                   </button>
                                 ) : null}
-                                {lastWarnSelected && (
+                                {showEmptyColumnWarning && (
                                   <div
                                     data-testid={`bd-empty-column-warn-${colIdx}`}
                                     role="alert"
