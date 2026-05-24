@@ -183,7 +183,8 @@
     "hint": "Hint",
     "retry": "Retry",
     "dismiss": "Dismiss",
-    "score": "Score"
+    "score": "Score",
+    "autoCompleteReady": "Auto-complete ready!"
   },
   "roundScoreAnnouncement": {
     "message": "Round complete. {{details}}",
