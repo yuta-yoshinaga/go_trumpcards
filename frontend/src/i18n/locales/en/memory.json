@@ -20,6 +20,7 @@
   },
   "scores": "Scores",
   "cardFaceDown": "Card {{position}} (face down)",
+  "visitedMark": "Already seen",
   "scoreLine": "{{name}}: {{count}}",
   "nextButton": "Next",
   "flipPrompt1": "Flip the first card",
