@@ -251,6 +251,7 @@ function Rummy500PageContent() {
               title={t('handPenaltyHint')}
             >
               {t('handPenalty', { points: rummy500HandPenalty(humanPlayer.cards) })}
+              <span className="sr-only"> — {t('handPenaltyHint')}</span>
             </span>
           </div>
         )}
