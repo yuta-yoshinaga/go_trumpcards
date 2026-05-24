@@ -50,12 +50,12 @@ export function PartnerRevealFlash({ revealed, partnerName, headline, testId }: 
       data-testid={testId ?? 'partner-reveal-flash'}
       className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-black/55 motion-safe:animate-[fadeIn_0.2s_ease-out]"
     >
-      <div className="rounded-lg border-2 border-yellow-300 bg-yellow-500/20 px-6 py-4 text-center shadow-2xl motion-safe:animate-pulse">
+      <div className="rounded-lg border-2 border-ds-accent bg-ds-accent/20 px-6 py-4 text-center shadow-2xl motion-safe:animate-pulse">
         <div className="mb-1 text-2xl" aria-hidden="true">
           🛡️
         </div>
-        <div className="text-sm font-semibold text-yellow-100">{headline}</div>
-        <div className="mt-1 text-xl font-bold text-yellow-50">{partnerName}</div>
+        <div className="text-sm font-semibold text-ds-text-primary">{headline}</div>
+        <div className="mt-1 text-xl font-bold text-ds-accent">{partnerName}</div>
       </div>
     </div>
   );
