@@ -126,11 +126,6 @@ function MemoryPageContent() {
 
   useEffect(() => {
     if (!state) return;
-    const freshBoard = state.board.length > 0 && state.board.every((bc) => !bc.faceUp && !bc.taken);
-    if (freshBoard) {
-      setVisited((prev) => (prev.size === 0 ? prev : new Set()));
-      return;
-    }
     setVisited((prev) => {
       let changed = false;
       const next = new Set(prev);
@@ -267,7 +262,13 @@ function MemoryPageContent() {
                       type="button"
                       key={`board-${idx.toString()}`}
                       data-testid={`board-${idx.toString()}`}
-                      aria-label={bc.faceUp && bc.card ? cardAlt(bc.card) : t('cardFaceDown', { position: idx + 1 })}
+                      aria-label={
+                        bc.faceUp && bc.card
+                          ? cardAlt(bc.card)
+                          : wasVisited
+                            ? `${t('cardFaceDown', { position: idx + 1 })} (${t('visitedMark')})`
+                            : t('cardFaceDown', { position: idx + 1 })
+                      }
                       disabled={loading || !isHumanTurn || bc.taken || bc.faceUp}
                       onClick={() => handleFlip(idx)}
                       className={`memory-card relative aspect-[2/3] min-h-[44px] min-w-[44px] lg:aspect-auto rounded ${focusRingWhite} ${

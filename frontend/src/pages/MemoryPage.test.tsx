@@ -218,7 +218,11 @@ describe('MemoryPage', () => {
   });
 
   it('marks a previously face-up card with the visited overlay after it turns down', async () => {
-    // Start with a RESULT-phase state showing card 5 face-up: visited set records 5.
+    // Regression: an early version reset `visited` whenever the board was
+    // fully face-down + nothing-taken, which is the normal between-turn
+    // state before the first pair is taken. After Next, the board flips
+    // face-down with no `taken` cards — the badge for the previously
+    // face-up positions must still appear.
     const seenState: MemoryResponse = {
       ...flip1State,
       phase: 2,
@@ -232,10 +236,10 @@ describe('MemoryPage', () => {
     mockExec.mockResolvedValueOnce(seenState);
     renderWithProviders(<MemoryPage />);
     await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
-    // After Next the board flips face-down; the visited overlay should appear.
     mockExec.mockResolvedValue(flip1State);
     fireEvent.click(screen.getByRole('button', { name: '次へ' }));
     await waitFor(() => expect(screen.getByTestId('board-visited-5')).toBeInTheDocument());
+    expect(screen.getByTestId('board-visited-10')).toBeInTheDocument();
   });
 
   it('face-down cards show card back image instead of position number', async () => {
