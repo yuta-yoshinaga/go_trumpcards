@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { memoryApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -122,8 +122,26 @@ function MemoryPageContent() {
 
   const phaseNames = usePhaseNames('memory', MEMORY_PHASE_KEYS);
 
+  const [visited, setVisited] = useState<Set<number>>(() => new Set());
+
+  useEffect(() => {
+    if (!state) return;
+    setVisited((prev) => {
+      let changed = false;
+      const next = new Set(prev);
+      state.board.forEach((bc, idx) => {
+        if (bc.faceUp && !next.has(idx)) {
+          next.add(idx);
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [state]);
+
   const handleManualReset = useCallback(() => {
     hideActionLog();
+    setVisited(new Set());
     void exec('reset', undefined, { cpuDifficulty: memoryConfig.cpuDifficulty });
   }, [exec, hideActionLog, memoryConfig.cpuDifficulty]);
 
@@ -237,32 +255,52 @@ function MemoryPageContent() {
               data-tutorial="mem-board"
             >
               <div className="grid grid-cols-7 gap-0.5 sm:gap-1 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-13 lg:grid-rows-4 lg:h-full">
-                {state.board.map((bc, idx) => (
-                  <button
-                    type="button"
-                    key={`board-${idx.toString()}`}
-                    data-testid={`board-${idx.toString()}`}
-                    aria-label={bc.faceUp && bc.card ? cardAlt(bc.card) : t('cardFaceDown', { position: idx + 1 })}
-                    disabled={loading || !isHumanTurn || bc.taken || bc.faceUp}
-                    onClick={() => handleFlip(idx)}
-                    className={`memory-card relative aspect-[2/3] min-h-[44px] min-w-[44px] lg:aspect-auto rounded ${focusRingWhite} ${
-                      bc.taken
-                        ? 'hidden'
-                        : bc.faceUp
-                          ? 'bg-white ring-2 ring-ds-warning shadow-lg shadow-ds-warning/30'
-                          : 'bg-ds-info border border-white/10 hover:ring-1 hover:ring-ds-warning'
-                    } transition-all`}
-                  >
-                    <div className={`memory-card-inner${bc.faceUp ? ' flipped' : ''}`}>
-                      <div className="memory-card-back">
-                        <img src="/images/z01.png" alt="" className="w-full h-full object-contain rounded" />
+                {state.board.map((bc, idx) => {
+                  const wasVisited = !bc.faceUp && !bc.taken && visited.has(idx);
+                  return (
+                    <button
+                      type="button"
+                      key={`board-${idx.toString()}`}
+                      data-testid={`board-${idx.toString()}`}
+                      aria-label={
+                        bc.faceUp && bc.card
+                          ? cardAlt(bc.card)
+                          : wasVisited
+                            ? `${t('cardFaceDown', { position: idx + 1 })} (${t('visitedMark')})`
+                            : t('cardFaceDown', { position: idx + 1 })
+                      }
+                      disabled={loading || !isHumanTurn || bc.taken || bc.faceUp}
+                      onClick={() => handleFlip(idx)}
+                      className={`memory-card relative aspect-[2/3] min-h-[44px] min-w-[44px] lg:aspect-auto rounded ${focusRingWhite} ${
+                        bc.taken
+                          ? 'hidden'
+                          : bc.faceUp
+                            ? 'bg-white ring-2 ring-ds-warning shadow-lg shadow-ds-warning/30'
+                            : 'bg-ds-info border border-white/10 hover:ring-1 hover:ring-ds-warning'
+                      } transition-all`}
+                    >
+                      <div className={`memory-card-inner${bc.faceUp ? ' flipped' : ''}`}>
+                        <div className="memory-card-back">
+                          <img src="/images/z01.png" alt="" className="w-full h-full object-contain rounded" />
+                          {wasVisited && (
+                            <span
+                              data-testid={`board-visited-${idx.toString()}`}
+                              aria-hidden="true"
+                              className="absolute inset-0 rounded bg-black/25 pointer-events-none flex items-start justify-end p-0.5"
+                            >
+                              <span className="text-[10px] leading-none" title={t('visitedMark')}>
+                                {'\u{1F441}'}
+                              </span>
+                            </span>
+                          )}
+                        </div>
+                        <div className="memory-card-front">
+                          {bc.card && <AnimatedCard card={bc.card} width={cardWidth} />}
+                        </div>
                       </div>
-                      <div className="memory-card-front">
-                        {bc.card && <AnimatedCard card={bc.card} width={cardWidth} />}
-                      </div>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
