@@ -7,11 +7,15 @@ function bjCardBase(value: number): number {
   return value;
 }
 
-/** Blackjack hand score with the best (highest non-busting) Ace treatment. */
-export function blackjackScore(cards: Card[]): number {
+/**
+ * Blackjack hand score with the best (highest non-busting) Ace treatment. Null entries
+ * (face-down cards in the server's `(Card | null)[]` payload) are skipped.
+ */
+export function blackjackScore(cards: ReadonlyArray<Card | null>): number {
   let total = 0;
   let aces = 0;
   for (const c of cards) {
+    if (c === null) continue;
     total += bjCardBase(c.value);
     if (c.value === 1) aces += 1;
   }
@@ -22,10 +26,19 @@ export function blackjackScore(cards: Card[]): number {
   return total;
 }
 
-/** Preview the two hand totals after swapping the 2nd card between two Blackjack Switch hands. */
-export function blackjackSwitchPreviewScores(handA: Card[], handB: Card[]): { a: number; b: number } | null {
+/**
+ * Preview the two hand totals after swapping the 2nd card between two Blackjack Switch hands.
+ * Returns `null` when either hand has fewer than 2 cards or the swap slot is face-down.
+ */
+export function blackjackSwitchPreviewScores(
+  handA: ReadonlyArray<Card | null>,
+  handB: ReadonlyArray<Card | null>,
+): { a: number; b: number } | null {
   if (handA.length < 2 || handB.length < 2) return null;
-  const swappedA = [handA[0], handB[1], ...handA.slice(2)];
-  const swappedB = [handB[0], handA[1], ...handB.slice(2)];
+  const a1 = handA[1];
+  const b1 = handB[1];
+  if (a1 === null || b1 === null) return null;
+  const swappedA: Array<Card | null> = [handA[0], b1, ...handA.slice(2)];
+  const swappedB: Array<Card | null> = [handB[0], a1, ...handB.slice(2)];
   return { a: blackjackScore(swappedA), b: blackjackScore(swappedB) };
 }

@@ -190,6 +190,77 @@ describe('BlackJackSwitchPage', () => {
     expect(screen.queryByTestId('hand-0-preview')).not.toBeInTheDocument();
   });
 
+  it('focusing Switch shows the preview for keyboard parity', async () => {
+    mockApi.mockResolvedValue(switchState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    const btn = await screen.findByTestId('switch-button');
+    fireEvent.focus(btn);
+    expect(screen.getByTestId('hand-0-preview')).toBeInTheDocument();
+    fireEvent.blur(btn);
+    expect(screen.queryByTestId('hand-0-preview')).not.toBeInTheDocument();
+  });
+
+  it('paints the bust path in red when the post-swap score exceeds 21', async () => {
+    // Hand 0 = [S10, D11]=20; Hand 1 = [H10, S10]=20. After swap: hand0 = [S10, S10] = 20; hand1 = [H10, D11] = 20.
+    // Bust requires score > 21. Use [S10, S10] and [H10, S2]: swapped → [S10, S2]=12 and [H10, S10]=20.
+    // For a real bust path: Hand 0 = [S10, D11]=20; Hand 1 = [H10, S5]=15 → swap → hand0 [S10,S5]=15; hand1 [H10,D11]=20.
+    // Use Hand 0 = [S10, S10, S5]=25 (already busts); Hand 1 = [H10, D11]=20 → swap → hand0 [S10,D11,S5]=25 (still bust).
+    const bustState: BlackJackSwitchResponse = {
+      ...switchState,
+      hands: [
+        {
+          ...switchState.hands[0],
+          cards: [
+            { design: 'SPADE', value: 10 },
+            { design: 'SPADE', value: 10 },
+            { design: 'SPADE', value: 5 },
+          ],
+          score: 25,
+        },
+        switchState.hands[1],
+      ],
+    };
+    mockApi.mockResolvedValue(bustState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    const btn = await screen.findByTestId('switch-button');
+    fireEvent.mouseEnter(btn);
+    const preview = screen.getByTestId('hand-0-preview');
+    expect(preview).toHaveTextContent('25');
+    expect(preview.className).toContain('text-ds-error');
+  });
+
+  it('paints the neutral path when the post-swap score is unchanged', async () => {
+    // Symmetric swap: hand0 [S5, C5]=10; hand1 [H5, D5]=10 → swap → hand0 [S5, D5]=10; hand1 [H5, C5]=10.
+    const flatState: BlackJackSwitchResponse = {
+      ...switchState,
+      hands: [
+        {
+          ...switchState.hands[0],
+          cards: [
+            { design: 'SPADE', value: 5 },
+            { design: 'CLOVER', value: 5 },
+          ],
+          score: 10,
+        },
+        {
+          ...switchState.hands[1],
+          cards: [
+            { design: 'HEART', value: 5 },
+            { design: 'DIAMOND', value: 5 },
+          ],
+          score: 10,
+        },
+      ],
+    };
+    mockApi.mockResolvedValue(flatState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    const btn = await screen.findByTestId('switch-button');
+    fireEvent.mouseEnter(btn);
+    const preview = screen.getByTestId('hand-0-preview');
+    expect(preview).toHaveTextContent('10');
+    expect(preview.className).toContain('text-ds-text-muted');
+  });
+
   it('clicks Keep and posts the keep command', async () => {
     mockApi.mockResolvedValue(switchState);
     renderWithProviders(<BlackJackSwitchPage />);
