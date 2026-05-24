@@ -183,7 +183,8 @@
     "hint": "ヒント",
     "retry": "再試行",
     "dismiss": "閉じる",
-    "score": "スコア"
+    "score": "スコア",
+    "autoCompleteReady": "オートコンプリート可能！"
   },
   "roundScoreAnnouncement": {
     "message": "ラウンド終了。{{details}}",
