@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { type DragEvent, useCallback, useMemo } from 'react';
 import { type CanfieldMoveZone, canfieldApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -281,24 +281,17 @@ function CanfieldPageContent() {
               </div>
 
               <div className="flex flex-col items-center" data-tutorial="cf-reserve">
-                <div style={{ width: cardWidth, height: cardHeight }}>
-                  {topReserve ? (
-                    <button
-                      type="button"
-                      draggable={isPlaying && !loading}
-                      onDragStart={dnd.handleDragStart({ zone: 'reserve' })}
-                      onDragEnd={dnd.handleDragEnd}
-                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${dnd.isDragSource({ zone: 'reserve' }) ? 'opacity-50' : ''}`}
-                    >
-                      <AnimatedCard card={topReserve} width={cardWidth} draggable={false} />
-                    </button>
-                  ) : (
-                    <div
-                      className="rounded border border-dashed border-white/30"
-                      style={{ width: cardWidth, height: cardHeight }}
-                    />
-                  )}
-                </div>
+                <ReserveStack
+                  count={state.reserve.length}
+                  topCard={topReserve}
+                  cardWidth={cardWidth}
+                  cardHeight={cardHeight}
+                  isPlaying={isPlaying}
+                  loading={loading}
+                  handleDragStart={dnd.handleDragStart({ zone: 'reserve' })}
+                  handleDragEnd={dnd.handleDragEnd}
+                  isDragSource={dnd.isDragSource({ zone: 'reserve' })}
+                />
                 <span className="mt-1 text-xs text-ds-text-muted">
                   {t('reserve')}: {state.reserve.length}
                 </span>
@@ -474,5 +467,83 @@ function CanfieldPageContent() {
         </>
       )}
     </GamePageShell>
+  );
+}
+
+/** Maximum visible stack-edge layers behind the top reserve card. */
+const RESERVE_STACK_MAX_LAYERS = 5;
+/** Per-layer offset in px (mirrors physical card thickness). */
+const RESERVE_STACK_OFFSET_PX = 2;
+
+interface ReserveStackProps {
+  count: number;
+  topCard: NonNullable<CanfieldResponse['reserve']>[number] | null;
+  cardWidth: number;
+  cardHeight: number;
+  isPlaying: boolean;
+  loading: boolean;
+  handleDragStart: (e: DragEvent<HTMLElement>) => void;
+  handleDragEnd: () => void;
+  isDragSource: boolean;
+}
+
+/** Reserve pile with visible stack-edge layers behind the top card.
+ * The number of edges reflects the remaining count (capped at
+ * `RESERVE_STACK_MAX_LAYERS`) so players can sense progress at a glance. */
+function ReserveStack({
+  count,
+  topCard,
+  cardWidth,
+  cardHeight,
+  isPlaying,
+  loading,
+  handleDragStart,
+  handleDragEnd,
+  isDragSource,
+}: ReserveStackProps) {
+  const layers = Math.max(0, Math.min(count - 1, RESERVE_STACK_MAX_LAYERS));
+  // Container is sized for the maximum stack so the top card sits at a
+  // fixed offset regardless of `count` — prevents items-center from
+  // jittering the pile as cards are consumed.
+  const maxPad = RESERVE_STACK_MAX_LAYERS * RESERVE_STACK_OFFSET_PX;
+  return (
+    <div
+      data-testid="canfield-reserve-stack"
+      data-reserve-layers={layers}
+      className="relative"
+      style={{ width: cardWidth + maxPad, height: cardHeight + maxPad }}
+    >
+      {Array.from({ length: layers }, (_, i) => (
+        <div
+          key={`layer-${i}`}
+          aria-hidden="true"
+          className="absolute rounded bg-ds-info/70 border border-white/20"
+          style={{
+            top: maxPad - (i + 1) * RESERVE_STACK_OFFSET_PX,
+            left: maxPad - (i + 1) * RESERVE_STACK_OFFSET_PX,
+            width: cardWidth,
+            height: cardHeight,
+          }}
+        />
+      ))}
+      <div className="absolute" style={{ top: maxPad, left: maxPad, width: cardWidth, height: cardHeight }}>
+        {topCard ? (
+          <button
+            type="button"
+            draggable={isPlaying && !loading}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isDragSource ? 'opacity-50' : ''}`}
+          >
+            <AnimatedCard card={topCard} width={cardWidth} draggable={false} />
+          </button>
+        ) : (
+          <div
+            className="rounded border border-dashed border-white/30"
+            style={{ width: cardWidth, height: cardHeight }}
+          />
+        )}
+      </div>
+    </div>
   );
 }

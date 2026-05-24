@@ -68,6 +68,23 @@ describe('CanfieldPage', () => {
     await waitFor(() => expect(screen.getByText(/ベースランク/)).toBeInTheDocument());
   });
 
+  it('reserve stack reflects remaining count via data-reserve-layers', async () => {
+    const fullReserveState: CanfieldResponse = {
+      ...playingState,
+      reserve: Array.from({ length: 13 }, (_, i) => card('SPADE', (i % 13) + 1)),
+    };
+    mockExec.mockResolvedValue(fullReserveState);
+    renderWithProviders(<CanfieldPage />);
+    const stack = await screen.findByTestId('canfield-reserve-stack');
+    expect(stack.getAttribute('data-reserve-layers')).toBe('5');
+  });
+
+  it('reserve stack shows zero layers when only one card remains', async () => {
+    renderWithProviders(<CanfieldPage />);
+    const stack = await screen.findByTestId('canfield-reserve-stack');
+    expect(stack.getAttribute('data-reserve-layers')).toBe('0');
+  });
+
   it('shows game clear phase', async () => {
     mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<CanfieldPage />);
