@@ -145,6 +145,15 @@ describe('BelotePage', () => {
     await waitFor(() => expect(screen.getByTestId('belote-rebelote-badge')).toHaveAttribute('data-active', 'true'));
   });
 
+  it('activates the belote/rebelote badge when the defender team earns the bonus too', async () => {
+    // Backend awards the bonus to whichever team plays K+Q of trump, not the maker.
+    mockExec.mockResolvedValue(
+      makeState({ phase: BelotePhase.PLAY, trumpSuit: 1, trickNumber: 5, makerTeam: 0, roundBeloteBonus: [0, 20] }),
+    );
+    renderWithProviders(<BelotePage />);
+    await waitFor(() => expect(screen.getByTestId('belote-rebelote-badge')).toHaveAttribute('data-active', 'true'));
+  });
+
   it('shows 次のゲーム at game end with no confirm', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<BelotePage />);
