@@ -410,9 +410,23 @@ function OasisPokerPageContent() {
                 data-tutorial="oasis-exchange-controls"
               >
                 <p>{t('exchangeGuide')}</p>
-                <p>
+                <p
+                  data-testid="oasis-exchange-fee-line"
+                  className={
+                    selectedIndices.length >= 4
+                      ? 'font-semibold text-ds-error'
+                      : selectedIndices.length >= 2
+                        ? 'font-semibold text-ds-warning'
+                        : 'text-ds-text-primary'
+                  }
+                >
                   {t('exchangeSelected', { count: selectedIndices.length })} —{' '}
                   {t('exchangeFeeInfo', { ante: state.anteBet, fee: exchangePreviewFee })}
+                  {selectedIndices.length >= 4 && (
+                    <span className="ml-2 inline-block rounded-full bg-ds-error/30 px-2 py-0.5 text-xs font-bold">
+                      ⚠ {t('exchangeFeeHighRisk')}
+                    </span>
+                  )}
                 </p>
                 <div className="flex gap-2">
                   <button
