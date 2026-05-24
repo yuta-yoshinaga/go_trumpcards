@@ -156,6 +156,12 @@ function YukonPageContent() {
   useMountReset(apiExec);
 
   const [selectedSource, setSelectedSource] = useState<YukonMoveZone | null>(null);
+  /**
+   * Yukon allows grabbing any face-up card and dragging it together with every
+   * card sitting above it (regardless of suit/rank order). On hover we glow
+   * the entire moving block so the player can see what they're about to lift.
+   */
+  const [hoveredBlock, setHoveredBlock] = useState<{ col: number; cardIdx: number } | null>(null);
 
   const {
     hint: frontendHint,
@@ -434,32 +440,44 @@ function YukonPageContent() {
                               isDropTarget={isLast && dnd.isDropTarget({ zone: 'tableau', col: colIdx })}
                             >
                               {tc.faceUp ? (
-                                <button
-                                  type="button"
-                                  draggable={isPlaying}
-                                  onDragStart={dnd.handleDragStart(zone)}
-                                  onDragEnd={dnd.handleDragEnd}
-                                  className={`${focusRingWhite} rounded-lg transition-all ${
-                                    isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
-                                  } ${isDragSrc ? 'opacity-50' : ''} ${
-                                    hintFrom ? 'ring-2 ring-ds-info motion-safe:animate-pulse' : ''
-                                  } ${hintTo ? 'ring-2 ring-ds-success motion-safe:animate-pulse' : ''}`}
-                                  onClick={() => {
-                                    if (selectedSource) {
-                                      if (isLast) {
-                                        handleSelectTarget('tableau', colIdx);
-                                      } else {
-                                        handleSelectSource('tableau', colIdx, cardIdx);
-                                      }
-                                    } else {
-                                      handleSelectSource('tableau', colIdx, cardIdx);
-                                    }
-                                  }}
-                                  disabled={!isPlaying}
-                                  aria-label={tc.card ? cardAlt(tc.card) : ''}
-                                >
-                                  {tc.card && <AnimatedCard card={tc.card} width={yk.cw} />}
-                                </button>
+                                (() => {
+                                  const inHoverBlock = hoveredBlock?.col === colIdx && cardIdx >= hoveredBlock.cardIdx;
+                                  return (
+                                    <button
+                                      type="button"
+                                      draggable={isPlaying}
+                                      onDragStart={dnd.handleDragStart(zone)}
+                                      onDragEnd={dnd.handleDragEnd}
+                                      onMouseEnter={() => setHoveredBlock({ col: colIdx, cardIdx })}
+                                      onMouseLeave={() => setHoveredBlock(null)}
+                                      onFocus={() => setHoveredBlock({ col: colIdx, cardIdx })}
+                                      onBlur={() => setHoveredBlock(null)}
+                                      data-block-member={inHoverBlock || undefined}
+                                      className={`${focusRingWhite} rounded-lg transition-all ${
+                                        isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
+                                      } ${isDragSrc ? 'opacity-50' : ''} ${
+                                        hintFrom ? 'ring-2 ring-ds-info motion-safe:animate-pulse' : ''
+                                      } ${hintTo ? 'ring-2 ring-ds-success motion-safe:animate-pulse' : ''} ${
+                                        inHoverBlock && !isSelected ? 'ring-2 ring-ds-accent/70' : ''
+                                      }`}
+                                      onClick={() => {
+                                        if (selectedSource) {
+                                          if (isLast) {
+                                            handleSelectTarget('tableau', colIdx);
+                                          } else {
+                                            handleSelectSource('tableau', colIdx, cardIdx);
+                                          }
+                                        } else {
+                                          handleSelectSource('tableau', colIdx, cardIdx);
+                                        }
+                                      }}
+                                      disabled={!isPlaying}
+                                      aria-label={tc.card ? cardAlt(tc.card) : ''}
+                                    >
+                                      {tc.card && <AnimatedCard card={tc.card} width={yk.cw} />}
+                                    </button>
+                                  );
+                                })()
                               ) : (
                                 <AnimatedCardBack width={yk.cw} />
                               )}
