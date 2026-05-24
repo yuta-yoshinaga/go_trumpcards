@@ -105,8 +105,38 @@ describe('PiquetPage', () => {
   });
 
   it('renders reset button', async () => {
-    mockExec.mockResolvedValue(makeState());
+    mockExec.mockResolvedValue(makeState({ phase: PiquetPhase.DECLARATION }));
     renderWithProviders(<PiquetPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /リセット|Reset/i })).toBeInTheDocument());
+  });
+
+  it('highlights human meld badge when a new declaration result arrives', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: PiquetPhase.DECLARATION,
+        declStage: PiquetDeclarationKind.SEQUENCE,
+        declResults: [
+          {
+            kind: PiquetDeclarationKind.POINT,
+            elderClaim: {
+              length: 2,
+              topRank: 13,
+              pipTotal: 21,
+              suit: 0,
+              cards: [
+                { design: 'SPADE', value: 13 },
+                { design: 'HEART', value: 1 },
+              ],
+            },
+            youngerClaim: { length: 0, topRank: 0, pipTotal: 0, suit: 0, cards: [] },
+            winner: 0,
+            scoredBy: 0,
+            score: 2,
+          },
+        ],
+      }),
+    );
+    renderWithProviders(<PiquetPage />);
+    await waitFor(() => expect(screen.getByTestId('piquet-meld-badge')).toBeInTheDocument());
   });
 });
