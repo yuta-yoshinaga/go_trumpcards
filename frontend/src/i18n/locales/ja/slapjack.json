@@ -25,7 +25,11 @@
   },
   "slapjack": {
     "slap": "スラップ！",
-    "jackOnTop": "Jだ！叩け！"
+    "jackOnTop": "Jだ！叩け！",
+    "burst": {
+      "jack": "ジャック！",
+      "miss": "ミス！"
+    }
   },
   "hint": {
     "flipCard": "あなたのターンです。s でカードをめくりましょう",

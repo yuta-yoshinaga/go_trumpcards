@@ -7,8 +7,9 @@ export type SlapOutcome = 'correct' | 'wrong';
 export interface SlapBurstProps {
   /**
    * Monotonically-increasing trigger key. Whenever this value changes (and is
-   * non-zero), the burst re-fires. Pass `Date.now()` from the parent when a
-   * new SLAP event is detected.
+   * non-zero), the burst re-fires. Pass an incrementing counter from the
+   * parent: counters survive back-to-back events within a single
+   * millisecond, which `Date.now()` does not.
    */
   triggerKey: number;
   /** Slap outcome — drives the badge tint. */

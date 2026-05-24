@@ -32,6 +32,11 @@
     "slapReason": {
       "pair": "ペア",
       "sandwich": "サンドイッチ"
+    },
+    "burst": {
+      "pair": "ペア！",
+      "sandwich": "サンドイッチ！",
+      "miss": "ミス！"
     }
   },
   "hint": {

@@ -24,7 +24,12 @@ import { useMountReset } from '../hooks/useMountReset';
 import { useReflexShortcuts } from '../hooks/useReflexShortcuts';
 import { gameTheme } from '../styles/gameTheme';
 import type { EgyptianRatscrewResponse } from '../types/card';
-import { EgyptianRatscrewEventKind, EgyptianRatscrewPendingKind, EgyptianRatscrewPhase } from '../types/phases';
+import {
+  EgyptianRatscrewEventKind,
+  EgyptianRatscrewPendingKind,
+  EgyptianRatscrewPhase,
+  EgyptianRatscrewSlapReason,
+} from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { formatEgyptianRatscrewState } from '../utils/cli/formatters/egyptianratscrewFormatter';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
@@ -95,14 +100,16 @@ function EgyptianRatscrewPageContent() {
       const outcome: SlapOutcome = kind === EgyptianRatscrewEventKind.SLAP_CORRECT ? 'correct' : 'wrong';
       const label =
         outcome === 'wrong'
-          ? 'MISS!'
-          : state.lastSlapReason === 2 // SANDWICH
-            ? 'SANDWICH!'
-            : 'PAIR!';
-      setSlapBurst({ key: Date.now(), outcome, label });
+          ? t('egyptianratscrew.burst.miss')
+          : state.lastSlapReason === EgyptianRatscrewSlapReason.SANDWICH
+            ? t('egyptianratscrew.burst.sandwich')
+            : t('egyptianratscrew.burst.pair');
+      // Incrementing counter is more robust than Date.now() for trigger keys:
+      // back-to-back events within the same ms still register as distinct.
+      setSlapBurst((prevBurst) => ({ key: prevBurst.key + 1, outcome, label }));
       prevSlapEventRef.current = { kind, player };
     }
-  }, [state]);
+  }, [state, t]);
 
   useMountReset(execApi);
 

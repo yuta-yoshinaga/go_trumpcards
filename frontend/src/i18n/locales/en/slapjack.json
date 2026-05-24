@@ -25,7 +25,11 @@
   },
   "slapjack": {
     "slap": "Slap!",
-    "jackOnTop": "JACK! Slap fast!"
+    "jackOnTop": "JACK! Slap fast!",
+    "burst": {
+      "jack": "JACK!",
+      "miss": "MISS!"
+    }
   },
   "hint": {
     "flipCard": "Your turn. Press s to flip the next card",

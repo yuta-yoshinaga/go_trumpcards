@@ -92,10 +92,13 @@ function SlapjackPageContent() {
       (kind !== prev.kind || player !== prev.player)
     ) {
       const outcome: SlapOutcome = kind === SlapjackEventKind.SLAP_CORRECT ? 'correct' : 'wrong';
-      setSlapBurst({ key: Date.now(), outcome, label: outcome === 'wrong' ? 'MISS!' : 'JACK!' });
+      const label = outcome === 'wrong' ? t('slapjack.burst.miss') : t('slapjack.burst.jack');
+      // Counter (not Date.now()) keeps repeated slap events distinct even
+      // when they happen within the same millisecond.
+      setSlapBurst((prevBurst) => ({ key: prevBurst.key + 1, outcome, label }));
       prevSlapEventRef.current = { kind, player };
     }
-  }, [state]);
+  }, [state, t]);
 
   useMountReset(execApi);
 
