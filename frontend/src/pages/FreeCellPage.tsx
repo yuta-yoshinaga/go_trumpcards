@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { FreeCellMoveZone, freecellApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -149,6 +149,8 @@ function FreeCellPageContent() {
     bindings: actionBindings,
     enabled: !!isPlayingForKbd && !loading,
   });
+
+  const [hoveredStack, setHoveredStack] = useState<{ col: number; cardIdx: number } | null>(null);
 
   if (!state) return <GameSkeleton gameKey="freecell" layout={{ kind: 'tableau', topRow: 8, tableau: 8 }} />;
 
@@ -343,6 +345,12 @@ function FreeCellPageContent() {
                               };
                               const stackSize = col.length - cardIdx;
                               const exceedsSupermove = stackSize > supermoveLimit;
+                              const isInHoveredBlock =
+                                hoveredStack !== null &&
+                                hoveredStack.col === colIdx &&
+                                cardIdx >= hoveredStack.cardIdx &&
+                                !exceedsSupermove &&
+                                col.length - hoveredStack.cardIdx <= supermoveLimit;
                               return (
                                 <div
                                   key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
@@ -365,12 +373,17 @@ function FreeCellPageContent() {
                                       draggable={isPlaying && !loading && !exceedsSupermove}
                                       onDragStart={dnd.handleDragStart(cardZone)}
                                       onDragEnd={dnd.handleDragEnd}
+                                      onMouseEnter={() => setHoveredStack({ col: colIdx, cardIdx })}
+                                      onMouseLeave={() => setHoveredStack(null)}
+                                      onFocus={() => setHoveredStack({ col: colIdx, cardIdx })}
+                                      onBlur={() => setHoveredStack(null)}
                                       title={
                                         exceedsSupermove
                                           ? t('supermoveLimitTooltip', { limit: supermoveLimit })
                                           : undefined
                                       }
                                       data-supermove-blocked={exceedsSupermove ? 'true' : undefined}
+                                      data-supermove-block={isInHoveredBlock ? 'true' : undefined}
                                       className={[
                                         'p-0 border-0 bg-transparent cursor-pointer w-full rounded',
                                         focusRingWhite,
@@ -378,6 +391,7 @@ function FreeCellPageContent() {
                                           'ring-2 ring-ds-warning',
                                         dnd.isDragSource(cardZone) && 'opacity-50',
                                         exceedsSupermove && 'opacity-60 ring-1 ring-ds-error',
+                                        isInHoveredBlock && 'ring-2 ring-ds-success',
                                       ]
                                         .filter(Boolean)
                                         .join(' ')}
