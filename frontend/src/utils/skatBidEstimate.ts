@@ -1,6 +1,10 @@
 import type { Card } from '../types/card';
 
-/** Skat base values per game type. */
+/**
+ * Skat base values per game type. Null games (base 23) are intentionally omitted: their value is
+ * fixed by the contract type alone and does not scale with the matador run, so they don't belong
+ * in a matador-based hand estimate.
+ */
 const BASE = { CLOVER: 12, SPADE: 11, HEART: 10, DIAMOND: 9, GRAND: 24 } as const;
 
 type SuitKey = 'CLOVER' | 'SPADE' | 'HEART' | 'DIAMOND';
@@ -44,19 +48,25 @@ function matadors(hand: Card[], trump: SuitKey | 'GRAND'): { with: number; witho
   return { with: withN, without: withoutN };
 }
 
-/** Per-game-type estimate of the cheapest game value the hand can justify. */
+/** Per-game-type estimate of the hand value reachable from the matador run alone. */
 export interface SkatGameValueEstimate {
   gameType: 'CLOVER' | 'SPADE' | 'HEART' | 'DIAMOND' | 'GRAND';
   base: number;
   matadors: number;
   multiplier: number;
-  /** Minimum game value: (matadors + 1 game) × base. */
+  /**
+   * Highest bid the hand can safely accept without announcing extra multipliers
+   * (no Hand / Schneider / Schwarz / Ouvert). Equals `(matadors + 1 game) × base`.
+   * Accepting a bid above this risks an over-bid loss.
+   */
   value: number;
 }
 
 /**
- * Compute the minimum game value the player can justify for each game type using just the matador run
- * (with/without — whichever is larger) plus the +1 multiplier the "game" itself always adds.
+ * Compute the safe-bid ceiling per game type using just the matador run (with/without —
+ * whichever is larger) plus the +1 multiplier the "game" itself always adds. The returned
+ * value is the highest bid the hand can justify without invoking the optional Hand /
+ * Schneider / Schwarz / Ouvert multipliers.
  */
 export function skatBidEstimates(hand: Card[]): SkatGameValueEstimate[] {
   const types: Array<'CLOVER' | 'SPADE' | 'HEART' | 'DIAMOND' | 'GRAND'> = [
