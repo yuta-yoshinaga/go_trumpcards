@@ -23,6 +23,8 @@
   "roundScore": "ラウンド: {{score}}",
   "bid": "ビッド {{n}}",
   "bidNone": "未ビッド",
+  "tricksWon": "獲得 {{n}}",
+  "bidProgressAria": "{{name}} のビッド達成状況",
   "currentTrick": "現在のトリック",
   "scores": "スコア",
   "scoresPlayer": "プレイヤー",
