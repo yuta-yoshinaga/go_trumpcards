@@ -13,6 +13,7 @@
   "selectPile": "台札をクリックして出す",
   "playButton": "出す",
   "flipButton": "めくる",
+  "flipCenterPile": "台札{{n}}をめくる",
   "stuckMessage": "膠着状態です。めくるボタンを押してください。",
   "autoFlipInline": "自動でめくる",
   "autoFlipCountdownAria": "自動めくりカウントダウン",

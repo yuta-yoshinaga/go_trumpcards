@@ -197,22 +197,28 @@ function SpeedPageContent() {
                   onClick={isStuck ? handleFlip : () => handlePlay(pi)}
                   disabled={isStuck ? loading : !isPlayPhase || selectedCardIndices.length !== 1 || loading}
                   className={`transition-transform hover:scale-105 disabled:opacity-50 ${focusRingCard}${isStuck && !loading ? ' animate-pulse cursor-pointer' : ''}`}
-                  aria-label={isStuck ? t('flipButton') : `${t('centerPile')} ${pi}`}
+                  aria-label={isStuck ? t('flipCenterPile', { n: pi + 1 }) : `${t('centerPile')} ${pi}`}
                 >
                   {card && <AnimatedCard card={card} width={cardWidth * 1.2} />}
                 </button>
               ))}
               {isStuck && (
-                <button
-                  type="button"
-                  onClick={handleFlip}
-                  disabled={loading}
-                  data-testid="speed-stuck-flip-popup"
-                  className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-full bg-ds-accent px-5 py-3 text-base font-bold text-ds-text-on-accent shadow-2xl ring-4 ring-ds-accent/40 motion-safe:animate-bounce disabled:opacity-50 ${focusRingCard}`}
-                  aria-label={t('flipButton')}
-                >
-                  ↻ {t('flipButton')}
-                </button>
+                // Centering container: keeps the popup glued to the center
+                // even while animate-bounce drives its own transform on the
+                // button. Pointer-events-none on the wrapper + auto on the
+                // button so the wrapper doesn't intercept clicks on siblings.
+                <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+                  <button
+                    type="button"
+                    onClick={handleFlip}
+                    disabled={loading}
+                    data-testid="speed-stuck-flip-popup"
+                    className="pointer-events-auto rounded-full bg-ds-accent px-5 py-3 text-base font-bold text-ds-text-on-accent shadow-2xl ring-4 ring-ds-accent/40 motion-safe:animate-bounce disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent focus-visible:ring-offset-1 focus-visible:ring-offset-transparent"
+                    aria-label={t('flipButton')}
+                  >
+                    ↻ {t('flipButton')}
+                  </button>
+                </div>
               )}
             </div>
 

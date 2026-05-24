@@ -13,6 +13,7 @@
   "selectPile": "Click a center pile to play",
   "playButton": "Play",
   "flipButton": "Flip",
+  "flipCenterPile": "Flip center pile {{n}}",
   "stuckMessage": "Stuck! Press flip to turn over new center cards.",
   "autoFlipInline": "Auto-flip",
   "autoFlipCountdownAria": "Auto-flip countdown",
