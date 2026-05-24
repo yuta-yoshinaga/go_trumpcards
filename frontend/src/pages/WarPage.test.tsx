@@ -142,4 +142,31 @@ describe('WarPage', () => {
     renderWithProviders(<WarPage />);
     await waitFor(() => expect(screen.queryByTestId('step-button')).not.toBeInTheDocument());
   });
+
+  it('does not render the pot stack when warPotSize is 2 or fewer', async () => {
+    // warPhaseState carries warPotSize: 2 — the visual stack only appears when burial cards push
+    // the pot past the initial tied pair (> 2).
+    mockExec.mockResolvedValueOnce(warPhaseState);
+    renderWithProviders(<WarPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    expect(screen.queryByTestId('war-pot-stack')).not.toBeInTheDocument();
+  });
+
+  it('renders the pot stack with data-pot-size matching warPotSize when > 2', async () => {
+    mockExec.mockResolvedValueOnce({ ...warPhaseState, warPotSize: 4 });
+    renderWithProviders(<WarPage />);
+    const stack = await screen.findByTestId('war-pot-stack');
+    expect(stack).toHaveAttribute('data-pot-size', '4');
+    // 4 cards → 4 face-down placeholders inside the stack.
+    expect(stack.querySelectorAll('[data-testid="animated-card-back"]')).toHaveLength(4);
+  });
+
+  it('caps the visual pot stack at 10 cards even when warPotSize is larger', async () => {
+    mockExec.mockResolvedValueOnce({ ...warPhaseState, warPotSize: 15 });
+    renderWithProviders(<WarPage />);
+    const stack = await screen.findByTestId('war-pot-stack');
+    expect(stack).toHaveAttribute('data-pot-size', '15');
+    // The render cap keeps the layout stable on long war chains.
+    expect(stack.querySelectorAll('[data-testid="animated-card-back"]')).toHaveLength(10);
+  });
 });
