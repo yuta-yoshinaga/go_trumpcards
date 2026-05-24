@@ -189,7 +189,7 @@ function SpeedPageContent() {
             </div>
 
             {/* Center piles — clickable for play (normal) or flip (stuck) */}
-            <div className="flex items-center justify-center gap-6" data-tutorial="sp-center-piles">
+            <div className="relative flex items-center justify-center gap-6" data-tutorial="sp-center-piles">
               {state.centerPiles.map((card, pi) => (
                 <button
                   type="button"
@@ -202,6 +202,18 @@ function SpeedPageContent() {
                   {card && <AnimatedCard card={card} width={cardWidth * 1.2} />}
                 </button>
               ))}
+              {isStuck && (
+                <button
+                  type="button"
+                  onClick={handleFlip}
+                  disabled={loading}
+                  data-testid="speed-stuck-flip-popup"
+                  className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-full bg-ds-accent px-5 py-3 text-base font-bold text-ds-text-on-accent shadow-2xl ring-4 ring-ds-accent/40 motion-safe:animate-bounce disabled:opacity-50 ${focusRingCard}`}
+                  aria-label={t('flipButton')}
+                >
+                  ↻ {t('flipButton')}
+                </button>
+              )}
             </div>
 
             {/* Human hand */}
