@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { slapjackApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -12,6 +12,7 @@ import { HintTooltip } from '../components/hint/HintTooltip';
 import { KbdBadge } from '../components/KbdBadge';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
+import { SlapBurst, type SlapOutcome } from '../components/SlapBurst';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -73,6 +74,28 @@ function SlapjackPageContent() {
   const handleStep = useCallback(() => execApi('step'), [execApi]);
   const handleSlap = useCallback(() => execApi('slap'), [execApi]);
   const handleReset = useCallback(() => execApi('reset'), [execApi]);
+
+  // SlapBurst trigger: refire whenever a new SLAP_CORRECT or SLAP_WRONG event arrives.
+  const [slapBurst, setSlapBurst] = useState<{ key: number; outcome: SlapOutcome; label: string }>({
+    key: 0,
+    outcome: 'correct',
+    label: '',
+  });
+  const prevSlapEventRef = useRef<{ kind: number; player: number }>({ kind: -1, player: -1 });
+  useEffect(() => {
+    if (!state) return;
+    const kind = state.lastEventKind;
+    const player = state.lastEventPlayerIdx;
+    const prev = prevSlapEventRef.current;
+    if (
+      (kind === SlapjackEventKind.SLAP_CORRECT || kind === SlapjackEventKind.SLAP_WRONG) &&
+      (kind !== prev.kind || player !== prev.player)
+    ) {
+      const outcome: SlapOutcome = kind === SlapjackEventKind.SLAP_CORRECT ? 'correct' : 'wrong';
+      setSlapBurst({ key: Date.now(), outcome, label: outcome === 'wrong' ? 'MISS!' : 'JACK!' });
+      prevSlapEventRef.current = { kind, player };
+    }
+  }, [state]);
 
   useMountReset(execApi);
 
@@ -199,11 +222,12 @@ function SlapjackPageContent() {
 
             {/* Center pile / arena */}
             <div
-              className={`flex items-center justify-center gap-8 py-3 rounded-lg transition-colors ${
+              className={`relative flex items-center justify-center gap-8 py-3 rounded-lg transition-colors ${
                 state.isTopJack ? 'bg-ds-warning/30' : 'bg-black/20'
               } ${lastEvent === SlapjackEventKind.SLAP_WRONG ? 'ring-2 ring-ds-error' : ''}`}
               data-tutorial="sj-arena"
             >
+              <SlapBurst triggerKey={slapBurst.key} outcome={slapBurst.outcome} label={slapBurst.label} />
               <div className="text-center">
                 <div className="text-sm text-ds-text-primary font-semibold">
                   {t('label.pileCount', { count: state.centerPileSize })}
