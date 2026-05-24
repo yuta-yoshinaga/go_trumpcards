@@ -152,4 +152,34 @@ describe('MonteCarloPage', () => {
     renderWithProviders(<MonteCarloPage />);
     await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
   });
+
+  it('flags adjacent same-rank cell with pulsing success ring after selecting', async () => {
+    // boardWithPair: [0][0] = ♠7, [0][1] = ♥7 — clicking [0][0] should mark [0][1] as a pair match.
+    renderWithProviders(<MonteCarloPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    fireEvent.click(screen.getByTestId('mc-cell-0-0'));
+
+    const partner = screen.getByTestId('mc-cell-0-1');
+    expect(partner).toHaveAttribute('data-pair-match', 'true');
+    expect(partner.className).toContain('ring-ds-success');
+    expect(partner.className).toContain('animate-pulse');
+  });
+
+  it('falls back to warning ring on adjacent cells with a different rank', async () => {
+    // Build a board where two adjacent cells (0,0) and (1,0) hold different ranks.
+    const board = emptyBoard();
+    board[0][0] = { card: card('SPADE', 7) };
+    board[1][0] = { card: card('HEART', 9) };
+    mockExec.mockResolvedValue({ ...playingState, board });
+    renderWithProviders(<MonteCarloPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    fireEvent.click(screen.getByTestId('mc-cell-0-0'));
+
+    const neighbor = screen.getByTestId('mc-cell-1-0');
+    expect(neighbor).not.toHaveAttribute('data-pair-match');
+    expect(neighbor.className).toContain('ring-ds-warning');
+    expect(neighbor.className).not.toContain('animate-pulse');
+  });
 });
