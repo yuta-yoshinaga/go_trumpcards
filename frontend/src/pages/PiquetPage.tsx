@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
@@ -12,6 +12,9 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card, PiquetDeclaration, PiquetPlayerData, PiquetResponse } from '../types/card';
 import { PiquetDeclarationKind, PiquetExchangeTurn, PiquetPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { type DeclarationHighlight, declarationHighlight } from '../utils/piquetDeclarationHighlight';
+
+const HIGHLIGHT_MS = 1500;
 
 const PIQUET_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -80,6 +83,25 @@ function PiquetPageContent() {
   const game = usePiquetGame();
   const { state, loading, error, retry } = game;
   const [selectedDiscards, setSelectedDiscards] = useState<number[]>([]);
+  const [activeHighlight, setActiveHighlight] = useState<DeclarationHighlight | null>(null);
+  const prevDeclLenRef = useRef(0);
+
+  const human = state?.players.find((p) => p.isHuman);
+  const elderIdx = state?.elderIdx ?? 0;
+  const declResultsLen = state?.declResults.length ?? 0;
+
+  useEffect(() => {
+    const prev = prevDeclLenRef.current;
+    prevDeclLenRef.current = declResultsLen;
+    if (declResultsLen <= prev || !state || !human) return;
+    const latest = state.declResults[declResultsLen - 1];
+    if (!latest) return;
+    const next = declarationHighlight(latest, human.id, elderIdx, human.cards);
+    if (!next) return;
+    setActiveHighlight(next);
+    const timer = window.setTimeout(() => setActiveHighlight(null), HIGHLIGHT_MS);
+    return () => window.clearTimeout(timer);
+  }, [declResultsLen, state, human, elderIdx]);
 
   const toggleDiscard = useCallback((idx: number) => {
     setSelectedDiscards((prev) => (prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]));
@@ -104,8 +126,6 @@ function PiquetPageContent() {
     );
   }
 
-  const elderIdx = state.elderIdx;
-  const human = state.players.find((p) => p.isHuman);
   const isHumanElder = human?.id === elderIdx;
   const inExchangePhase = state.phase === PiquetPhase.EXCHANGE;
   const inDeclarationPhase = state.phase === PiquetPhase.DECLARATION;
@@ -150,19 +170,39 @@ function PiquetPageContent() {
 
       {human ? (
         <div data-tutorial="piquet-hand" className="rounded border border-white/20 p-2 mx-2">
-          <div className="mb-1 text-xs opacity-70">{t('yourHand')}</div>
+          <div className="mb-1 flex items-center justify-between text-xs">
+            <span className="opacity-70">{t('yourHand')}</span>
+            {activeHighlight ? (
+              <span
+                data-testid="piquet-meld-badge"
+                className={`rounded px-2 py-0.5 text-xs font-bold ${
+                  activeHighlight.won ? 'bg-ds-success/30 text-ds-success' : 'bg-ds-error/30 text-ds-error'
+                }`}
+              >
+                {t(activeHighlight.won ? 'meldWonBadge' : 'meldLostBadge', {
+                  label: t(activeHighlight.labelKey, { count: activeHighlight.count }),
+                })}
+              </span>
+            ) : null}
+          </div>
           <div className="flex flex-wrap gap-1">
             {human.cards.map((c, i) => {
               const selected = selectedDiscards.includes(i);
+              const highlighted = activeHighlight?.cardIndices.includes(i) ?? false;
+              const ringClass = highlighted
+                ? activeHighlight?.won
+                  ? 'ring-2 ring-ds-success -translate-y-1'
+                  : 'ring-2 ring-ds-error'
+                : '';
               const handlePlay = () => game.handlePlay(i);
               const handleClick = humanCanExchange ? () => toggleDiscard(i) : humanCanPlay ? handlePlay : undefined;
               return (
                 <button
                   key={`hand-${i}-${c.design}-${c.value}`}
                   type="button"
-                  className={`rounded border px-2 py-1 text-sm font-mono min-h-[44px] min-w-[44px] ${
+                  className={`rounded border px-2 py-1 text-sm font-mono min-h-[44px] min-w-[44px] transition-transform ${
                     selected ? 'bg-ds-warning/40 border-ds-warning' : 'bg-white/10 border-white/30'
-                  }`}
+                  } ${ringClass}`}
                   onClick={handleClick}
                   disabled={handleClick == null}
                 >
