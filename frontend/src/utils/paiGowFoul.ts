@@ -21,22 +21,42 @@ function isStraightValues(vals: number[]): boolean {
   return true;
 }
 
-/** True if the 5-card high hand is at least one pair OR a straight/flush (which beats any 2-card low). */
-function highHandAtLeastPair(highHand: Card[]): boolean {
-  if (highHand.length !== 5) return false;
+interface HighHandStrength {
+  /** True if rank is two pair, trips, straight, flush, or better — always beats any 2-card low hand. */
+  isRank2Plus: boolean;
+  /** The value of the single pair, or 0 if the high hand is not exactly one pair. */
+  pairValue: number;
+  /** High hand values sorted descending, used for high-card comparison. */
+  highVals: number[];
+}
+
+/** Compute the strength category of a 5-card high hand for foul detection. */
+function getHighHandStrength(highHand: Card[]): HighHandStrength {
   const counts = new Map<number, number>();
-  for (const c of highHand) {
-    const v = paiGowValue(c);
-    counts.set(v, (counts.get(v) ?? 0) + 1);
+  let pairs = 0;
+  let highPairVal = 0;
+  let hasTripsOrBetter = false;
+
+  for (const card of highHand) {
+    const v = paiGowValue(card);
+    const count = (counts.get(v) ?? 0) + 1;
+    counts.set(v, count);
+    if (count === 2) {
+      pairs++;
+      if (v > highPairVal) highPairVal = v;
+    }
+    if (count >= 3) hasTripsOrBetter = true;
   }
-  for (const c of counts.values()) {
-    if (c >= 2) return true;
-  }
-  const vals = highHand.map(paiGowValue);
-  if (isStraightValues(vals)) return true;
-  const firstDesign = highHand[0].design;
-  if (highHand.every((c) => c.design === firstDesign)) return true;
-  return false;
+
+  const highVals = highHand.map(paiGowValue).sort((a, b) => b - a);
+  const isStraightOrFlush =
+    isStraightValues(highVals) || highHand.every((c) => c.design === highHand[0].design);
+
+  return {
+    isRank2Plus: isStraightOrFlush || hasTripsOrBetter || pairs >= 2,
+    pairValue: pairs === 1 ? highPairVal : 0,
+    highVals,
+  };
 }
 
 /** Computed foul state for a Pai Gow split. */
@@ -56,9 +76,22 @@ export function paiGowFoulCheck(playerCards: Card[], lowIndices: readonly number
 
   const lowVals = lowHand.map(paiGowValue).sort((a, b) => b - a);
   const isLowPair = lowVals[0] === lowVals[1];
+  const highInfo = getHighHandStrength(highHand);
 
-  if (highHandAtLeastPair(highHand)) return { isFoul: false };
-  if (isLowPair) return { isFoul: true };
-  const highVals = highHand.map(paiGowValue).sort((a, b) => b - a);
-  return { isFoul: highVals[0] < lowVals[0] };
+  // Rank 2+ (two pair, trips, straight, flush, or better) always beats any 2-card hand.
+  if (highInfo.isRank2Plus) return { isFoul: false };
+
+  if (isLowPair) {
+    // Low pair vs high card: foul (pair beats any high card hand).
+    if (highInfo.pairValue === 0) return { isFoul: true };
+    // Low pair vs high pair: foul only when the low pair outranks the high pair.
+    return { isFoul: lowVals[0] > highInfo.pairValue };
+  }
+
+  // Low is high card. High hand has a pair (beats any high card): not a foul.
+  if (highInfo.pairValue > 0) return { isFoul: false };
+
+  // Both are high card: compare top card, then second card.
+  if (lowVals[0] !== highInfo.highVals[0]) return { isFoul: lowVals[0] > highInfo.highVals[0] };
+  return { isFoul: lowVals[1] > highInfo.highVals[1] };
 }
