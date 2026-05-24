@@ -25,5 +25,8 @@
     "opponentsStrong": "Opponents show strong cards — your card may be weak",
     "opponentsWeak": "Opponents show weak cards — your card may be strong",
     "uncertain": "Mixed opponent cards — call recommended"
+  },
+  "equity": {
+    "label": "Win Rate (Equity)"
   }
 }

@@ -37,6 +37,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { INDIANPOKER_HELP, parseIndianpokerCommand } from '../utils/cli/commands/indianpokerCommands';
 import { formatIndianpokerState } from '../utils/cli/formatters/indianpokerFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { computeIndianPokerEquity } from '../utils/indianPokerEquity';
 
 /** Indian Poker tutorial step definitions. */
 const IP_TUTORIAL_STEPS: TutorialStep[] = [
@@ -138,6 +139,13 @@ function IndianPokerPageContent() {
   const humanPlayer = state?.players?.find((p) => p.isHuman);
   const humanFolded = humanPlayer?.folded ?? false;
   const humanAllIn = humanPlayer?.allIn ?? false;
+  const equity = useMemo(() => {
+    if (!state || isShowdown) return null;
+    const opponentRanks = state.players.filter((p) => !p.isHuman && !p.folded && p.cardRank > 0).map((p) => p.cardRank);
+    if (opponentRanks.length === 0) return null;
+    return computeIndianPokerEquity(opponentRanks);
+  }, [state, isShowdown]);
+  const equityPct = equity === null ? null : Math.round(equity * 100);
   const canAct = isBetting && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
   const minRaise = state?.minRaise ?? 0;
@@ -287,6 +295,31 @@ function IndianPokerPageContent() {
                     <AnimatedCardBack width={cardWidth} />
                   ) : null}
                 </div>
+                {hintEnabled && equityPct !== null && !humanFolded && (
+                  <div
+                    className="mt-1 text-xs text-ds-text-primary"
+                    data-testid="indianpoker-equity-meter"
+                    aria-live="polite"
+                  >
+                    <div className="mb-0.5 flex items-center justify-between">
+                      <span>{t('equity.label')}</span>
+                      <span className="font-semibold tabular-nums">{equityPct}%</span>
+                    </div>
+                    <div
+                      className="h-1.5 w-full overflow-hidden rounded bg-black/30"
+                      role="progressbar"
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-valuenow={equityPct}
+                      aria-label={t('equity.label')}
+                    >
+                      <div
+                        className={`h-full transition-all ${equityPct >= 60 ? 'bg-ds-success' : equityPct >= 35 ? 'bg-ds-warning' : 'bg-ds-error'}`}
+                        style={{ width: `${equityPct}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
