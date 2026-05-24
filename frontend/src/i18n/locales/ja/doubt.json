@@ -31,6 +31,7 @@
   "claimRangeWarning": "1〜13の範囲に調整されました",
   "playButton": "出す",
   "tell": "テル",
+  "tellBadge": "怪しい",
   "settings": {
     "title": "設定",
     "doubtTime": "ダウト時間:",
