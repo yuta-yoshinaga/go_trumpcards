@@ -547,5 +547,9 @@
     "requestedPath": "Requested path",
     "actionDiscover": "Find a game",
     "actionHome": "Back to home"
+  },
+  "roadmapTrend": {
+    "streak": "{{count}} in a row",
+    "lookback": "Last {{count}}"
   }
 }
