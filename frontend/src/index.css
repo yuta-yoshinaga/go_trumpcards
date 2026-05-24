@@ -268,6 +268,22 @@ input:not([type]):focus-visible {
   animation: sweat-drop 1.5s ease-in-out infinite;
 }
 
+@keyframes eye-dart {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-2px);
+  }
+  75% {
+    transform: translateX(2px);
+  }
+}
+.animate-eye-dart {
+  animation: eye-dart 0.9s ease-in-out infinite;
+}
+
 /* Suit watermark "settle" animation — used by Crazy Eights when chosenSuit
    becomes active. Starts slightly larger and settles to the resting opacity
    so the suit change registers in peripheral vision (#1885). The 100% opacity
@@ -392,6 +408,7 @@ input:not([type]):focus-visible {
   .animate-shake,
   .animate-flipIn,
   .animate-sweat-drop,
+  .animate-eye-dart,
   .animate-card-deal-in {
     animation: none;
   }

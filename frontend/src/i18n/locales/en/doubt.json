@@ -31,6 +31,7 @@
   "claimRangeWarning": "Adjusted to range 1-13",
   "playButton": "Play",
   "tell": "Tell",
+  "tellBadge": "Suspicious",
   "settings": {
     "title": "Settings",
     "doubtTime": "Doubt Time:",
