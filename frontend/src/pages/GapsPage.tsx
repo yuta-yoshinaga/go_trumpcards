@@ -184,7 +184,7 @@ function GapsPageContent() {
                           <span
                             aria-hidden="true"
                             data-testid={`gaps-ghost-${rIdx}-${cIdx}`}
-                            className={`text-base font-semibold opacity-30 ${RED_DESIGNS.has(ghost.design) ? 'text-red-400' : 'text-white'}`}
+                            className={`text-base font-semibold opacity-30 ${RED_DESIGNS.has(ghost.design) ? 'text-ds-error' : 'text-ds-text-primary'}`}
                           >
                             {SUIT_SYMBOLS[ghost.design]}
                             {valueName(ghost.value)}
