@@ -326,7 +326,12 @@ function PinochlePageContent() {
 
             {/* Melds */}
             {(phase === PinochlePhase.MELD || phase === PinochlePhase.ROUND_END) && state.playerMelds && (
-              <div className="mb-3 p-2 rounded bg-ds-accent/15" data-tutorial="pn-meld-area">
+              // biome-ignore lint/a11y/noStaticElementInteractions: panel acts as a hover-out reset for the per-badge highlight; not interactive on its own.
+              <div
+                className="mb-3 p-2 rounded bg-ds-accent/15"
+                data-tutorial="pn-meld-area"
+                onMouseLeave={() => setHighlightedMeldIdx(null)}
+              >
                 <div className="text-ds-text-primary font-bold mb-1">{t('meldScore')}:</div>
                 {state.playerMelds.map((melds: PinochleMeldData[], pIdx: number) =>
                   melds.length > 0 ? (
@@ -347,6 +352,8 @@ function PinochlePageContent() {
                             key={mIdx}
                             type="button"
                             onClick={() => setHighlightedMeldIdx((prev) => (prev === mIdx ? null : mIdx))}
+                            onMouseEnter={() => setHighlightedMeldIdx(mIdx)}
+                            onFocus={() => setHighlightedMeldIdx(mIdx)}
                             data-testid={`pn-meld-badge-${mIdx}`}
                             data-active={isActive ? 'true' : undefined}
                             className={`mr-2 inline-block px-2 py-0.5 rounded text-xs ${
@@ -394,6 +401,7 @@ function PinochlePageContent() {
                   const inHighlightedMeld = highlightedCardKeys.has(cardKey);
                   const meldTitle = cardKeyToMeldTitle.get(cardKey);
                   const isInMeld = meldTitle !== undefined;
+                  const dimmedByMeldFocus = highlightedMeldIdx !== null && !inHighlightedMeld;
                   return (
                     <button
                       type="button"
@@ -404,12 +412,12 @@ function PinochlePageContent() {
                       data-meld-highlighted={inHighlightedMeld ? 'true' : undefined}
                       data-in-meld={isInMeld ? 'true' : undefined}
                       title={meldTitle}
-                      className={`relative transition${inHighlightedMeld ? ' ring-4 ring-ds-accent' : ''}`}
+                      className={`relative transition-all${inHighlightedMeld ? ' -translate-y-2 ring-4 ring-ds-accent' : ''}${dimmedByMeldFocus ? ' opacity-40' : ''}`}
                       style={{
                         background: 'none',
                         padding: 0,
                         borderRadius: 8,
-                        opacity: isPlayTurn && !isValid ? 0.5 : 1,
+                        opacity: dimmedByMeldFocus ? undefined : isPlayTurn && !isValid ? 0.5 : 1,
                         boxSizing: 'border-box',
                       }}
                     >
