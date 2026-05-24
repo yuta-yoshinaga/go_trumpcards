@@ -31,6 +31,15 @@
   "play": "カードを出す",
   "nextTrick": "次のトリック",
   "nextRound": "次のラウンド",
+  "bidEstimate": "手札推定上限: {{value}} ({{type}})",
+  "bidExceedsHand": "現在のビッドは手札では正当化できない可能性があります",
+  "gameTypeLabel": {
+    "clover": "♣ クラブ",
+    "spade": "♠ スペード",
+    "heart": "♥ ハート",
+    "diamond": "♦ ダイヤ",
+    "grand": "グランド"
+  },
   "phase": {
     "bid": "ビッドフェーズ",
     "skatPickup": "スカート拾い",
