@@ -32,6 +32,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
+import { badgeWarning } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { placeholderCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
@@ -248,7 +249,20 @@ function ShortDeckPageContent() {
             {(() => {
               const communityCardsContent = (
                 <>
-                  <div className="text-ds-text-primary text-lg mb-1.5">{t('communityCards')}</div>
+                  <div className="text-ds-text-primary text-lg mb-1.5 flex items-center gap-2 flex-wrap">
+                    <span>{t('communityCards')}</span>
+                    {/* Use the project's badgeWarning state-token style so the contrast ratios
+                        in DESIGN.md hold on the green poker felt — mixing the warning token with
+                        Tailwind opacity suffixes silently breaks WCAG AA. The size overrides shadow
+                        the default px/py/text-size for a compact in-line chip. */}
+                    <span
+                      data-testid="shortdeck-rank-watermark"
+                      className={`${badgeWarning} px-2 py-0.5 text-[11px] uppercase tracking-wider`}
+                      title={t('rankOverrideReminder')}
+                    >
+                      ♣♠♥♦ Flush &gt; Full House
+                    </span>
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
                       ? state.communityCards.map((card) => (
