@@ -364,28 +364,40 @@ function TonkPageContent() {
                   </button>
                 </div>
               )}
-              {isDiscardPhase && isHumanTurn && (
-                <>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDiscard}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                    data-tutorial="tonk-discard-button"
-                  >
-                    {t('discardButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleKnock}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                    data-tutorial="tonk-knock-button"
-                  >
-                    {t('knockButton')}
-                  </button>
-                </>
-              )}
+              {isDiscardPhase &&
+                isHumanTurn &&
+                (() => {
+                  const minOpponentCards = state.players
+                    .filter((p) => !p.isHuman)
+                    .reduce((m, p) => Math.min(m, p.cardCount), Number.POSITIVE_INFINITY);
+                  const undercutRisk = Number.isFinite(minOpponentCards) && minOpponentCards <= 2;
+                  const knockBtnClass = undercutRisk ? `${btnPrimary} ring-2 ring-ds-warning` : btnPrimary;
+                  return (
+                    <>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleDiscard}
+                        disabled={loading || selectedCardIndices.length !== 1}
+                        data-tutorial="tonk-discard-button"
+                      >
+                        {t('discardButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={knockBtnClass}
+                        onClick={handleKnock}
+                        disabled={loading || selectedCardIndices.length !== 1}
+                        data-tutorial="tonk-knock-button"
+                        data-undercut-risk={undercutRisk ? 'true' : undefined}
+                        title={undercutRisk ? t('knockUndercutWarning') : undefined}
+                      >
+                        {t('knockButton')}
+                        {undercutRisk && <span className="ml-1">⚠️</span>}
+                      </button>
+                    </>
+                  );
+                })()}
               {isRoundEnd && (
                 <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
                   {t('nextRound')}
