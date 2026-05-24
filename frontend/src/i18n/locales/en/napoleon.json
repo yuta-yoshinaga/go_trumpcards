@@ -33,7 +33,8 @@
   "adjutantNone": "None",
   "role": {
     "napoleon": "Napoleon",
-    "adjutant": "Adjutant"
+    "adjutant": "Adjutant",
+    "adjutantRevealed": "Adjutant Revealed!"
   },
   "suitName": {
     "spade": "Spades",

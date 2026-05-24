@@ -12,6 +12,7 @@ import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { MobileHandGrid } from '../components/MobileHandGrid';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { PartnerRevealFlash } from '../components/PartnerRevealFlash';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -238,6 +239,15 @@ function NapoleonPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
+          <PartnerRevealFlash
+            revealed={state.adjutantRevealed}
+            partnerName={
+              state.adjutantIdx >= 0 && state.players[state.adjutantIdx]
+                ? playerName(state.adjutantIdx, state.players[state.adjutantIdx].isHuman)
+                : ''
+            }
+            headline={t('role.adjutantRevealed')}
+          />
           {/* Settings */}
           <SettingsPanel
             title={t('settings.title')}

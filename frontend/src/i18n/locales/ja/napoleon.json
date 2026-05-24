@@ -33,7 +33,8 @@
   "adjutantNone": "なし",
   "role": {
     "napoleon": "ナポレオン",
-    "adjutant": "副官"
+    "adjutant": "副官",
+    "adjutantRevealed": "副官判明！"
   },
   "suitName": {
     "spade": "スペード",

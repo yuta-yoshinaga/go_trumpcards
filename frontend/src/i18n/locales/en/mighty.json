@@ -40,7 +40,8 @@
   "role": {
     "declarer": "declarer",
     "partner": "partner",
-    "opposition": "opposition"
+    "opposition": "opposition",
+    "partnerRevealed": "Partner Revealed!"
   },
   "suitName": {
     "spade": "Spade",
