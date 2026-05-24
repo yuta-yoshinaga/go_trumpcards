@@ -424,7 +424,7 @@ function OasisPokerPageContent() {
                   {t('exchangeFeeInfo', { ante: state.anteBet, fee: exchangePreviewFee })}
                   {selectedIndices.length >= 4 && (
                     <span className="ml-2 inline-block rounded-full bg-ds-error/30 px-2 py-0.5 text-xs font-bold">
-                      ⚠ {t('exchangeFeeHighRisk')}
+                      <span aria-hidden="true">⚠</span> {t('exchangeFeeHighRisk')}
                     </span>
                   )}
                 </p>
