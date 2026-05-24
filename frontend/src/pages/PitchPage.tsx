@@ -29,6 +29,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { PITCH_HELP, parsePitchCommand } from '../utils/cli/commands/pitchCommands';
 import { formatPitchState } from '../utils/cli/formatters/pitchFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { pitchHandPipBreakdown, pitchHandPips } from '../utils/pitchUtils';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 
 const PT_TUTORIAL_STEPS: TutorialStep[] = [
@@ -103,6 +104,10 @@ const VALUE_LABELS: Readonly<Record<number, string>> = {
 function cardLabel(c: { design: string; value: number }): string {
   const v = VALUE_LABELS[c.value] ?? String(c.value);
   return `${SUIT_DESIGNS[c.design] ?? c.design}${v}`;
+}
+
+function valueLabel(value: number): string {
+  return VALUE_LABELS[value] ?? String(value);
 }
 
 /** Pitch (Setback) game page. */
@@ -286,8 +291,26 @@ function PitchPageContent() {
             {/* Player hand (always visible) */}
             {human && human.cards.length > 0 && (
               <div data-tutorial="pt-player-hand" className="flex flex-col gap-2 mb-3 text-ds-text-primary">
-                <div className="text-xs uppercase opacity-60">
-                  {findPlayerName(state.players, humanIdx)} ({t('cards', { count: human.cards.length })})
+                <div className="text-xs uppercase opacity-60 flex items-center gap-2 flex-wrap">
+                  <span>
+                    {findPlayerName(state.players, humanIdx)} ({t('cards', { count: human.cards.length })})
+                  </span>
+                  <span
+                    data-testid="pitch-game-pips-badge"
+                    className="normal-case inline-flex items-center rounded-full bg-ds-accent/20 text-ds-accent px-2 py-0.5 text-[11px] font-bold cursor-help"
+                    title={
+                      t('gamePipsTooltip') +
+                      (pitchHandPips(human.cards) > 0
+                        ? '\n' +
+                          pitchHandPipBreakdown(human.cards)
+                            .filter((b) => b.pips > 0)
+                            .map((b) => `${valueLabel(b.value)}(${b.pips})`)
+                            .join(' + ')
+                        : '')
+                    }
+                  >
+                    {t('gamePips', { pips: pitchHandPips(human.cards) })}
+                  </span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {human.cards.map((c, idx) => {
