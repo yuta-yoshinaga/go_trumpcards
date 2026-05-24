@@ -549,6 +549,43 @@ describe('BaccaratPage', () => {
     }
   });
 
+  it('header hand value tracks the visible slice, not the final server value (no spoilers)', async () => {
+    vi.useFakeTimers();
+    try {
+      // Player: [9,3,2] → final 4. Two-card total: 9+3 = 12 % 10 = 2.
+      // Banker: [4,2,6] → final 2. Two-card total: 4+2 = 6.
+      const endWithThirdCards: BaccaratResponse = {
+        ...endPhasePlayerWins,
+        playerHand: [card('SPADE', 9), card('HEART', 3), card('CLOVER', 2)],
+        bankerHand: [card('DIAMOND', 4), card('SPADE', 2), card('HEART', 6)],
+        playerHandValue: 4,
+        bankerHandValue: 2,
+      };
+      mockExec.mockResolvedValue(endWithThirdCards);
+      renderWithProviders(<BaccaratPage />);
+      await vi.waitFor(() => {
+        expect(screen.getByTestId('bac-player-cards').childElementCount).toBe(2);
+      });
+      // Header values are split across sibling text nodes ("プレイヤー" + space + "値: N"),
+      // so query the row by data-testid and assert on its full textContent instead.
+      const playerHeader = screen.getByTestId('bac-player-cards').previousElementSibling as HTMLElement;
+      const bankerHeader = screen.getByTestId('bac-banker-cards').previousElementSibling as HTMLElement;
+      // Step 1: two-card totals (not the final server values 4 / 2).
+      expect(playerHeader.textContent).toContain('値: 2');
+      expect(bankerHeader.textContent).toContain('値: 6');
+      // Step 2: player's third card lands → 9+3+2 = 14 % 10 = 4. Banker still at 6.
+      await vi.advanceTimersByTimeAsync(600);
+      expect(playerHeader.textContent).toContain('値: 4');
+      expect(bankerHeader.textContent).toContain('値: 6');
+      // Step 3: banker's third card lands → 4+2+6 = 12 % 10 = 2. Player stays at 4.
+      await vi.advanceTimersByTimeAsync(600);
+      expect(playerHeader.textContent).toContain('値: 4');
+      expect(bankerHeader.textContent).toContain('値: 2');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('no third-card stagger when both hands stand on 2 cards (skips straight to payout)', async () => {
     vi.useFakeTimers();
     try {
