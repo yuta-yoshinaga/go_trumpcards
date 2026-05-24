@@ -9,6 +9,7 @@
   "moveCount": "Moves",
   "giveup": "Give Up",
   "empty": "Empty",
+  "lastCardWarning": "This column will be lost for good",
   "foundationAriaLabel": "{{suit}} foundation {{count}} cards",
   "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
   "landscapeBanner": "Landscape mode recommended",
