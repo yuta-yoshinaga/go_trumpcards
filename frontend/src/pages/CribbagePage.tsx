@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { cribbageApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -80,12 +80,25 @@ const CB_TUTORIAL_STEPS: TutorialStep[] = [
 
 /** Renders the Cribbage game page with discard, pegging, show, and round phases. */
 export const CribbagePage = withTutorial(CribbagePageContent, 'cribbage', CB_TUTORIAL_STEPS);
-/** Inline peg board showing score progress as a simple bar. */
+/** Inline peg board showing score progress, with front + rear pegs to surface the most recent jump. */
 function PegBoard({ scores, pointLimit }: { scores: { name: string; score: number }[]; pointLimit: number }) {
+  const prevScoresRef = useRef<number[]>(scores.map((s) => s.score));
+  // Read the previous score for the rear-peg position before we overwrite the ref.
+  const prevScores = prevScoresRef.current;
+  useEffect(() => {
+    prevScoresRef.current = scores.map((s) => s.score);
+  }, [scores]);
+  // Quarter-board tick marks (every 30 on a 121 board, every 15 on 61).
+  const step = pointLimit >= 100 ? 30 : 15;
+  const ticks: number[] = [];
+  for (let v = step; v < pointLimit; v += step) ticks.push(v);
   return (
-    <section className="my-2 p-2 rounded bg-black/30" aria-label="peg-board">
+    <section className="my-2 p-2 rounded bg-black/30" aria-label="peg-board" data-testid="peg-board">
       {scores.map((p, idx) => {
         const pct = Math.min((p.score / pointLimit) * 100, 100);
+        const prev = prevScores[idx] ?? p.score;
+        const prevPct = Math.min((prev / pointLimit) * 100, 100);
+        const tone = idx === 0 ? 'bg-ds-warning' : 'bg-ds-info';
         return (
           <div key={idx} className="mb-1">
             <div className="flex justify-between text-ds-text-muted text-xs mb-0.5">
@@ -94,10 +107,32 @@ function PegBoard({ scores, pointLimit }: { scores: { name: string; score: numbe
                 {p.score}/{pointLimit}
               </span>
             </div>
-            <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden">
+            <div className="relative w-full h-3 bg-white/10 rounded-full overflow-visible">
+              {ticks.map((v) => (
+                <div
+                  key={v}
+                  aria-hidden="true"
+                  className="absolute top-0 bottom-0 w-px bg-white/20"
+                  style={{ left: `${(v / pointLimit) * 100}%` }}
+                />
+              ))}
               <div
-                className={`h-full rounded-full transition-all ${idx === 0 ? 'bg-ds-warning' : 'bg-ds-info'}`}
+                className={`absolute inset-y-0 left-0 rounded-full transition-all ${tone}`}
                 style={{ width: `${pct}%` }}
+              />
+              {prev !== p.score && (
+                <div
+                  data-testid={`rear-peg-${idx}`}
+                  aria-hidden="true"
+                  className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-white/50"
+                  style={{ left: `${prevPct}%` }}
+                />
+              )}
+              <div
+                data-testid={`front-peg-${idx}`}
+                aria-hidden="true"
+                className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border border-white/70 transition-all ${tone}`}
+                style={{ left: `${pct}%` }}
               />
             </div>
           </div>
