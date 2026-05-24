@@ -549,6 +549,39 @@ describe('CribbagePage', () => {
     });
   });
 
+  it('renders the rear-peg trail after the player score jumps', async () => {
+    const startState: CribbageResponse = {
+      ...discardPhaseState,
+      players: [{ ...discardPhaseState.players[0], cumulativeScore: 10 }, { ...discardPhaseState.players[1] }],
+    };
+    mockExec.mockResolvedValue(startState);
+    renderWithProviders(<CribbagePage />);
+    await waitFor(() => expect(screen.getByTestId('front-peg-0')).toBeInTheDocument());
+    // First render captures 10 into prevScoresRef → no rear peg yet.
+    expect(screen.queryByTestId('rear-peg-0')).not.toBeInTheDocument();
+
+    // Trigger a re-render with a higher score.
+    mockExec.mockResolvedValueOnce({
+      ...startState,
+      players: [{ ...startState.players[0], cumulativeScore: 22 }, { ...startState.players[1] }],
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() => expect(screen.getByTestId('rear-peg-0')).toBeInTheDocument());
+  });
+
+  it('uses 15-point ticks on a 61-point board', async () => {
+    mockExec.mockResolvedValue({
+      ...discardPhaseState,
+      config: { cpuDifficulty: 1, pointLimit: 61 },
+    });
+    renderWithProviders(<CribbagePage />);
+    await screen.findByTestId('peg-board');
+    // 2 tracks × 4 ticks each (15, 30, 45, 60 — strictly < pointLimit 61) = 8 tick elements.
+    expect(screen.getAllByTestId('peg-tick')).toHaveLength(8);
+  });
+
   it('shows loading state', async () => {
     renderWithProviders(<CribbagePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());

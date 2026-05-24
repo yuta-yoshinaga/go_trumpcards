@@ -80,6 +80,16 @@ const CB_TUTORIAL_STEPS: TutorialStep[] = [
 
 /** Renders the Cribbage game page with discard, pegging, show, and round phases. */
 export const CribbagePage = withTutorial(CribbagePageContent, 'cribbage', CB_TUTORIAL_STEPS);
+/**
+ * Front peg's center expressed as a CSS calc that keeps the peg fully inside the
+ * track even at the extremes (0% / 100%). The peg is 12 px wide so we shift its
+ * center inward by 6 px at 0% and -6 px at 100%, blending linearly between.
+ */
+function pegCenter(pct: number): string {
+  const inset = 6 - (pct / 100) * 12;
+  return `calc(${pct}% + ${inset}px)`;
+}
+
 /** Inline peg board showing score progress, with front + rear pegs to surface the most recent jump. */
 function PegBoard({ scores, pointLimit }: { scores: { name: string; score: number }[]; pointLimit: number }) {
   const prevScoresRef = useRef<number[]>(scores.map((s) => s.score));
@@ -88,10 +98,15 @@ function PegBoard({ scores, pointLimit }: { scores: { name: string; score: numbe
   useEffect(() => {
     prevScoresRef.current = scores.map((s) => s.score);
   }, [scores]);
-  // Quarter-board tick marks (every 30 on a 121 board, every 15 on 61).
-  const step = pointLimit >= 100 ? 30 : 15;
-  const ticks: number[] = [];
-  for (let v = step; v < pointLimit; v += step) ticks.push(v);
+  // Quarter-board tick marks (every 30 on a 121 board, every 15 on 61). Memoised so the
+  // array isn't reallocated on each render — pointLimit only changes when the user opens
+  // the settings panel and switches the target score.
+  const ticks = useMemo(() => {
+    const step = pointLimit >= 100 ? 30 : 15;
+    const out: number[] = [];
+    for (let v = step; v < pointLimit; v += step) out.push(v);
+    return out;
+  }, [pointLimit]);
   return (
     <section className="my-2 p-2 rounded bg-black/30" aria-label="peg-board" data-testid="peg-board">
       {scores.map((p, idx) => {
@@ -111,6 +126,7 @@ function PegBoard({ scores, pointLimit }: { scores: { name: string; score: numbe
               {ticks.map((v) => (
                 <div
                   key={v}
+                  data-testid="peg-tick"
                   aria-hidden="true"
                   className="absolute top-0 bottom-0 w-px bg-white/20"
                   style={{ left: `${(v / pointLimit) * 100}%` }}
@@ -125,14 +141,14 @@ function PegBoard({ scores, pointLimit }: { scores: { name: string; score: numbe
                   data-testid={`rear-peg-${idx}`}
                   aria-hidden="true"
                   className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-white/50"
-                  style={{ left: `${prevPct}%` }}
+                  style={{ left: pegCenter(prevPct) }}
                 />
               )}
               <div
                 data-testid={`front-peg-${idx}`}
                 aria-hidden="true"
                 className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border border-white/70 transition-all ${tone}`}
-                style={{ left: `${pct}%` }}
+                style={{ left: pegCenter(pct) }}
               />
             </div>
           </div>
