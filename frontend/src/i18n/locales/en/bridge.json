@@ -46,6 +46,7 @@
   "bidLevel": "Level",
   "bidSuit": "Suit",
   "dummyHand": "Dummy's Hand",
+  "yourTurnDummy": "Your move — playing dummy",
   "gamesWon": "Games Won",
   "belowLine": "Below the Line",
   "suitSpade": "♠",
