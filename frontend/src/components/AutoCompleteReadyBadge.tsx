@@ -39,7 +39,6 @@ export function AutoCompleteReadyBadge({ ready, testId }: AutoCompleteReadyBadge
 
   return (
     <output
-      role="status"
       aria-live="polite"
       data-testid={testId ?? 'autocomplete-ready-badge'}
       className="inline-flex items-center gap-1 rounded-full bg-ds-success/20 px-2 py-0.5 text-xs font-semibold text-ds-success animate-pulse"
