@@ -192,7 +192,7 @@ function PiquetPageContent() {
               const ringClass = highlighted
                 ? activeHighlight?.won
                   ? 'ring-2 ring-ds-success -translate-y-1'
-                  : 'ring-2 ring-ds-error -translate-y-1'
+                  : 'ring-2 ring-ds-error'
                 : '';
               const handlePlay = () => game.handlePlay(i);
               const handleClick = humanCanExchange ? () => toggleDiscard(i) : humanCanPlay ? handlePlay : undefined;
