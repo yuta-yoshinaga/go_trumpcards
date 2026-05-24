@@ -151,8 +151,31 @@ function ShitheadPageContent() {
             {/* Discard pile and stock */}
             <div data-tutorial="sh-discard" className="bg-black/30 text-ds-text-primary p-3 rounded">
               <div className="flex flex-wrap items-center gap-3 text-sm">
-                <span>
-                  {t('labels.discardPile')}: {state.discardPile.length === 0 ? '—' : describeTopCard(state.discardPile)}
+                <span className="inline-flex items-center gap-1">
+                  {t('labels.discardPile')}:{' '}
+                  {state.discardPile.length === 0 ? (
+                    '—'
+                  ) : (
+                    <>
+                      <span>{describeTopCard(state.discardPile)}</span>
+                      {(() => {
+                        const topValue = state.discardPile[state.discardPile.length - 1]?.value ?? 0;
+                        const badge = magicLookup.badgeFor(topValue);
+                        const title = magicLookup.titleFor(topValue);
+                        if (!badge) return null;
+                        return (
+                          <span
+                            data-testid="sh-discard-magic-badge"
+                            data-magic-rank={topValue}
+                            title={title || undefined}
+                            className="inline-flex items-center rounded-full bg-ds-warning/30 px-1.5 py-0 text-xs leading-tight text-ds-warning motion-safe:animate-pulse"
+                          >
+                            {badge}
+                          </span>
+                        );
+                      })()}
+                    </>
+                  )}
                 </span>
                 <span>
                   {t('labels.stock')}: {state.stockSize}
