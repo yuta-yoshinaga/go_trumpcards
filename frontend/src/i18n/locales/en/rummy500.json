@@ -32,6 +32,8 @@
   "playPhase": "Meld, lay off, then discard",
   "roundEnd": "Round complete",
   "drawDiscardHint": "Click any discard card to take it plus all cards above it",
+  "handPenalty": "Hand penalty: -{{points}} pts",
+  "handPenaltyHint": "If anyone else goes out, this is how many points you lose",
   "winner": {
     "human": "You win!",
     "cpu": "CPU {{idx}} wins"
