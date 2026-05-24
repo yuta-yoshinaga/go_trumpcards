@@ -9,9 +9,7 @@ export function reddogWinningRanks(initial: Card[]): number[] {
   const r2 = redDogRank(initial[1]);
   const lo = Math.min(r1, r2);
   const hi = Math.max(r1, r2);
-  const out: number[] = [];
-  for (let r = lo + 1; r < hi; r++) out.push(r);
-  return out;
+  return Array.from({ length: Math.max(0, hi - lo - 1) }, (_, i) => lo + 1 + i);
 }
 
 /** Maps a card value to Red Dog rank space (A=14, K=13, … 2=2). */

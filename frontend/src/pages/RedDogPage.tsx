@@ -297,7 +297,7 @@ interface WinningRankGhostsProps {
  * a rank the third card needs to hit to win. On END phase the matching chip
  * is filled green (hit) and others fade to muted (miss). */
 function WinningRankGhosts({ initial, thirdRank, label }: WinningRankGhostsProps) {
-  const ranks = reddogWinningRanks(initial);
+  const ranks = useMemo(() => reddogWinningRanks(initial), [initial]);
   if (ranks.length === 0) return null;
   return (
     <div className="mt-2 flex flex-col items-center gap-1" data-testid="reddog-ghost-ranks">
