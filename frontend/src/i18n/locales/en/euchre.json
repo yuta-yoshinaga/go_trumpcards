@@ -27,6 +27,7 @@
   "dealer": "Dealer",
   "maker": "Maker: Team {{team}}",
   "goingAlone": "Going Alone",
+  "sittingOut": "Sitting out",
   "faceUpCard": "Face-up Card",
   "currentTrick": "Current Trick",
   "partnership": "Partner: {{partner}}",

@@ -27,6 +27,7 @@
   "dealer": "ディーラー",
   "maker": "メイカー: チーム {{team}}",
   "goingAlone": "一人で勝負中",
+  "sittingOut": "休み",
   "faceUpCard": "めくり札",
   "currentTrick": "現在のトリック",
   "partnership": "パートナー: {{partner}}",

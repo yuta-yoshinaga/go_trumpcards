@@ -34,6 +34,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { EUCHRE_HELP, parseEuchreCommand } from '../utils/cli/commands/euchreCommands';
 import { formatEuchreState } from '../utils/cli/formatters/euchreFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { euchreSittingOutIdx } from '../utils/euchreSittingOut';
 import { playerName } from '../utils/playerUtils';
 
 const SUIT_NAMES: Readonly<Record<number, string>> = {
@@ -187,6 +188,7 @@ function EuchrePageContent() {
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const humanTeam = humanPlayer?.team ?? 0;
+  const sittingOutIdx = euchreSittingOutIdx(state);
   const isPickUpPhase = state.phase === EuchrePhase.PICK_UP;
   const isCallTrumpPhase = state.phase === EuchrePhase.CALL_TRUMP;
   const isDiscardPhase = state.phase === EuchrePhase.DISCARD;
@@ -336,27 +338,51 @@ function EuchrePageContent() {
                     <div className="mt-1">
                       {state.players
                         .filter((p) => !p.isHuman)
-                        .map((p) => (
-                          <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                            {t('team', { n: p.team })} | {t('trickCount', { count: p.trickCount })}
-                            {state.dealerIdx === p.id ? ` | ${t('dealer')}` : ''}
-                          </div>
-                        ))}
+                        .map((p) => {
+                          const sittingOut = sittingOutIdx === p.id;
+                          return (
+                            <div
+                              key={p.id}
+                              data-testid={`eu-player-row-${p.id}`}
+                              className={`text-ds-text-muted text-sm py-0.5 ${sittingOut ? 'opacity-40 grayscale' : ''}`}
+                            >
+                              {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                              {t('team', { n: p.team })} | {t('trickCount', { count: p.trickCount })}
+                              {state.dealerIdx === p.id ? ` | ${t('dealer')}` : ''}
+                              {sittingOut && (
+                                <span data-testid={`eu-sitting-out-${p.id}`} className="ml-2 text-ds-warning">
+                                  💤 {t('sittingOut')}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
                     </div>
                   </details>
                 ) : (
                   state.players
                     .filter((p) => !p.isHuman)
-                    .map((p) => (
-                      <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                        <div className="text-ds-text-muted text-sm">
-                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                          {t('team', { n: p.team })} | {t('trickCount', { count: p.trickCount })}
-                          {state.dealerIdx === p.id ? ` | ${t('dealer')}` : ''}
+                    .map((p) => {
+                      const sittingOut = sittingOutIdx === p.id;
+                      return (
+                        <div
+                          key={p.id}
+                          data-testid={`eu-player-row-${p.id}`}
+                          className={`mb-2 p-2 rounded bg-black/30 ${sittingOut ? 'opacity-40 grayscale' : ''}`}
+                        >
+                          <div className="text-ds-text-muted text-sm">
+                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                            {t('team', { n: p.team })} | {t('trickCount', { count: p.trickCount })}
+                            {state.dealerIdx === p.id ? ` | ${t('dealer')}` : ''}
+                            {sittingOut && (
+                              <span data-testid={`eu-sitting-out-${p.id}`} className="ml-2 text-ds-warning">
+                                💤 {t('sittingOut')}
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))
+                      );
+                    })
                 )}
 
                 {/* Team scores */}
