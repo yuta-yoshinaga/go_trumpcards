@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { useCallback, useMemo } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -70,6 +71,35 @@ const PRESIDENT_RANK_KEYS: Readonly<Record<number, string>> = {
   3: 'rank.viceScum',
   4: 'rank.scum',
 };
+
+const PRESIDENT_RANK_ICON: Readonly<Record<number, string>> = {
+  1: '👑',
+  2: '🥈',
+  3: '🥉',
+  4: '🗑️',
+};
+
+const PRESIDENT_RANK_BG: Readonly<Record<number, string>> = {
+  1: 'bg-ds-warning text-ds-text-on-accent',
+  2: 'bg-ds-info text-ds-text-on-accent',
+  3: 'bg-ds-surface text-ds-text-muted',
+  4: 'bg-ds-error text-ds-text-on-accent',
+};
+
+/** Stamp-style rank badge that springs in when a player finishes. */
+function RankStamp({ rank, label }: { rank: number; label: string }) {
+  return (
+    <motion.span
+      data-testid={`rank-stamp-${rank}`}
+      initial={{ scale: 2, opacity: 0, rotate: -20 }}
+      animate={{ scale: 1, opacity: 1, rotate: -8 }}
+      transition={{ type: 'spring', stiffness: 260, damping: 14 }}
+      className={`inline-block px-2 py-0.5 rounded-md font-bold text-xs border-2 border-current ${PRESIDENT_RANK_BG[rank] ?? 'bg-ds-surface text-ds-text'}`}
+    >
+      {PRESIDENT_RANK_ICON[rank] ?? ''} {label}
+    </motion.span>
+  );
+}
 
 /** Renders the President (プレジデント) game page. */
 export const PresidentPage = withTutorial(PresidentPageContent, 'president', PR_TUTORIAL_STEPS);
@@ -163,10 +193,10 @@ function PresidentPageContent() {
                 .filter((p) => !p.isHuman)
                 .map((p) => (
                   <div key={p.id} className="text-center">
-                    <div className="text-xs text-ds-text-muted mb-1">
-                      {tc('player.cpu', { id: p.id })}{' '}
+                    <div className="text-xs text-ds-text-muted mb-1 flex items-center justify-center gap-1">
+                      <span>{tc('player.cpu', { id: p.id })}</span>
                       {p.isFinished ? (
-                        <span className="text-ds-success">({t(PRESIDENT_RANK_KEYS[p.rank] ?? 'rank.unknown')})</span>
+                        <RankStamp rank={p.rank} label={t(PRESIDENT_RANK_KEYS[p.rank] ?? 'rank.unknown')} />
                       ) : (
                         <span>— {p.cardCount}</span>
                       )}
@@ -194,9 +224,11 @@ function PresidentPageContent() {
 
             {/* Human hand */}
             <div className="text-center" data-tutorial="pr-player-hand">
-              <div className="text-xs text-ds-text-muted mb-1">
-                {tc('player.you')}
-                {human.isFinished && <> — {t(PRESIDENT_RANK_KEYS[human.rank] ?? 'rank.unknown')}</>}
+              <div className="text-xs text-ds-text-muted mb-1 flex items-center justify-center gap-1">
+                <span>{tc('player.you')}</span>
+                {human.isFinished && (
+                  <RankStamp rank={human.rank} label={t(PRESIDENT_RANK_KEYS[human.rank] ?? 'rank.unknown')} />
+                )}
               </div>
               <div className="flex flex-wrap justify-center gap-2">
                 {human.cards.map((c, i) => (
