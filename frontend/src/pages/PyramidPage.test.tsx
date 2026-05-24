@@ -227,6 +227,16 @@ describe('PyramidPage', () => {
     );
   });
 
+  it('flags exposed pair candidates after the first selection', async () => {
+    renderWithProviders(<PyramidPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+    const card3 = screen.getByAltText('♦ 3').closest('button') as HTMLButtonElement;
+    fireEvent.click(card3);
+    const card10 = screen.getByAltText('♠ 10').closest('button') as HTMLButtonElement;
+    await waitFor(() => expect(card10).toHaveAttribute('data-pair-candidate', 'true'));
+    expect(card3).not.toHaveAttribute('data-pair-candidate');
+  });
+
   it('clicking same card twice deselects it', async () => {
     renderWithProviders(<PyramidPage />);
     await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
