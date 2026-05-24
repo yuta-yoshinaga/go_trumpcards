@@ -15,7 +15,8 @@
     "selectCard": "カードを選択",
     "stopCalled": "ストップ宣言済み",
     "yourTurn": "あなたのターン",
-    "cpuTurn": "CPU{{id}}のターン"
+    "cpuTurn": "CPU{{id}}のターン",
+    "suitScores": "スート別合計"
   },
   "settings": {
     "cpuDifficulty": "CPU難易度"

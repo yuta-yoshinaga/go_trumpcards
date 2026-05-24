@@ -25,6 +25,7 @@ import type { FiftyOneResponse } from '../types/card';
 import { FiftyOnePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { fiftyOneBestSuit, fiftyOneSuitScores } from '../utils/fiftyOneSuitScores';
 
 type FiftyOneArgs = Parameters<typeof fiftyoneApi.exec>;
 
@@ -143,6 +144,10 @@ function FiftyOnePageContent() {
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
+  const humanCards = state?.players[0]?.cards;
+  const suitTotals = useMemo(() => fiftyOneSuitScores(humanCards ?? []), [humanCards]);
+  const bestSuit = useMemo(() => fiftyOneBestSuit(suitTotals), [suitTotals]);
+
   if (!state || state.players.length < 4)
     return <GameSkeleton gameKey="fiftyone" layout={{ kind: 'centered', rows: [5, 5] }} />;
 
@@ -229,6 +234,30 @@ function FiftyOnePageContent() {
               <div className="text-xs text-ds-text-muted mb-1">
                 {tc('player.you')} — {t('label.score')}: {human.score}
               </div>
+              <ul
+                className="flex justify-center gap-1.5 mb-1.5 text-xs flex-wrap list-none p-0 m-0"
+                aria-label={t('label.suitScores')}
+                data-testid="suit-score-badges"
+              >
+                {(['SPADE', 'CLOVER', 'HEART', 'DIAMOND'] as const).map((d) => {
+                  const isLeader = d === bestSuit && suitTotals[d] > 0;
+                  const symbol = d === 'SPADE' ? '♠' : d === 'CLOVER' ? '♣' : d === 'HEART' ? '♥' : '♦';
+                  const isRed = d === 'HEART' || d === 'DIAMOND';
+                  const classes = isLeader
+                    ? 'bg-ds-accent text-ds-text-on-accent border-ds-accent'
+                    : 'bg-ds-surface text-ds-text border-ds-border';
+                  return (
+                    <li
+                      key={d}
+                      data-testid={`suit-badge-${d}`}
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border font-medium ${classes}`}
+                    >
+                      <span className={isLeader ? '' : isRed ? 'text-ds-error' : ''}>{symbol}</span>
+                      <span className="tabular-nums">{suitTotals[d]}</span>
+                    </li>
+                  );
+                })}
+              </ul>
               <div className="flex justify-center gap-2">
                 {human.cards.map((c, i) => (
                   <button
