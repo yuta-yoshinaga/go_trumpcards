@@ -33,6 +33,12 @@
   "trickCount": "獲得トリック: {{count}}",
   "roundPoints": "ラウンド: {{points}}点",
   "beloteRebelote": "ベロート/レベロート +20",
+  "tracker": {
+    "dixDeDer": "最終トリック +10",
+    "beloteKing": "切り札 K",
+    "beloteQueen": "切り札 Q",
+    "beloteBonus": "+20"
+  },
   "orderUpButton": "取る",
   "passButton": "パス",
   "callTrumpButton": "コール",

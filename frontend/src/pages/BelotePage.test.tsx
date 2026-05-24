@@ -123,6 +123,28 @@ describe('BelotePage', () => {
     expect(screen.getByRole('alertdialog')).toBeInTheDocument();
   });
 
+  it('renders bonus trackers (dim by default) during play after trump is set', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: BelotePhase.PLAY, trumpSuit: 1, trickNumber: 3, makerTeam: 0 }));
+    renderWithProviders(<BelotePage />);
+    await waitFor(() => expect(screen.getByTestId('belote-bonus-trackers')).toBeInTheDocument());
+    expect(screen.getByTestId('dix-de-der-badge')).not.toHaveAttribute('data-active');
+    expect(screen.getByTestId('belote-rebelote-badge')).not.toHaveAttribute('data-active');
+  });
+
+  it('activates the dix-de-der badge on the 8th trick', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: BelotePhase.PLAY, trumpSuit: 1, trickNumber: 8, makerTeam: 0 }));
+    renderWithProviders(<BelotePage />);
+    await waitFor(() => expect(screen.getByTestId('dix-de-der-badge')).toHaveAttribute('data-active', 'true'));
+  });
+
+  it('activates the belote/rebelote badge once the maker team earns the bonus', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: BelotePhase.PLAY, trumpSuit: 1, trickNumber: 5, makerTeam: 0, roundBeloteBonus: [20, 0] }),
+    );
+    renderWithProviders(<BelotePage />);
+    await waitFor(() => expect(screen.getByTestId('belote-rebelote-badge')).toHaveAttribute('data-active', 'true'));
+  });
+
   it('shows 次のゲーム at game end with no confirm', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<BelotePage />);

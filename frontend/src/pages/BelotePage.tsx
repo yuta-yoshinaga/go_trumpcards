@@ -217,6 +217,42 @@ function BelotePageContent() {
             {state.trumpSuit > 0 ? t('trumpSuit', { suit: t(SUIT_LABEL_KEYS[state.trumpSuit]) }) : t('noTrump')}
           </span>
         </div>
+        {/* Bonus trackers — Dix de Der lights up on trick 8; Belote/Rebelote
+            lights up after K & Q of trump are played by the maker team. */}
+        {state.trumpSuit > 0 && (
+          <div
+            className="text-center mb-2 flex justify-center gap-2 flex-wrap text-xs"
+            data-testid="belote-bonus-trackers"
+          >
+            {state.config.dixDeDer > 0 && (
+              <span
+                data-testid="dix-de-der-badge"
+                data-active={state.trickNumber === 8 ? 'true' : undefined}
+                className={`px-2 py-0.5 rounded-full font-medium border ${
+                  state.trickNumber === 8
+                    ? 'bg-ds-accent text-ds-text-on-accent border-ds-accent animate-pulse'
+                    : 'bg-ds-surface text-ds-text-muted border-ds-border'
+                }`}
+              >
+                👑 {t('tracker.dixDeDer')}
+              </span>
+            )}
+            {state.config.enableBeloteRebelote && (
+              <span
+                data-testid="belote-rebelote-badge"
+                data-active={state.roundBeloteBonus[state.makerTeam] > 0 ? 'true' : undefined}
+                className={`px-2 py-0.5 rounded-full font-medium border ${
+                  state.roundBeloteBonus[state.makerTeam] > 0
+                    ? 'bg-ds-success text-ds-text-on-accent border-ds-success'
+                    : 'bg-ds-surface text-ds-text-muted border-ds-border'
+                }`}
+              >
+                {t('tracker.beloteKing')} · {t('tracker.beloteQueen')}{' '}
+                {state.roundBeloteBonus[state.makerTeam] > 0 ? t('tracker.beloteBonus') : ''}
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Face-up card (during bidding) */}
         {state.faceUpCard && (isBidPickUp || isBidCallTrump) && (
