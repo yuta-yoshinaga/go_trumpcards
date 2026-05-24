@@ -23,6 +23,7 @@
   "empty": "Empty",
   "nextRankBadge": "Next: {{rank}}",
   "nextRankAria": "Next required card {{rank}}",
+  "upcomingRanksTooltip": "Upcoming cards: {{sequence}}",
   "foundationCompleteAria": "Complete",
   "gameClear": "Game Clear! Moves: {{moveCount}}",
   "gameOver": "Game Over",

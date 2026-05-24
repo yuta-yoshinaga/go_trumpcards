@@ -55,6 +55,30 @@ export function calculationNextRank(
   return next > FOUNDATION_PILE_FULL ? next - FOUNDATION_PILE_FULL : next;
 }
 
+/**
+ * Return the upcoming ranks for the given foundation, starting from the next
+ * required rank and including up to `maxLookAhead` (or until the pile would
+ * be complete). Used for the "next cards" preview tooltip.
+ */
+export function calculationUpcomingRanks(
+  foundationIdx: number,
+  topValue: number | undefined,
+  pileLength: number,
+  maxLookAhead = 6,
+): number[] {
+  const out: number[] = [];
+  let v = topValue;
+  let len = pileLength;
+  for (let i = 0; i < maxLookAhead; i += 1) {
+    const next = calculationNextRank(foundationIdx, v, len);
+    if (next === null) break;
+    out.push(next);
+    v = next;
+    len += 1;
+  }
+  return out;
+}
+
 const CA_TUTORIAL_STEPS: TutorialStep[] = [
   {
     target: '[data-tutorial="ca-foundations"]',
@@ -353,6 +377,8 @@ function CalculationPageContent() {
                 const isHint = hintFoundation === idx;
                 const nextRank = calculationNextRank(idx, top?.value, pile.length);
                 const nextRankLabel = nextRank !== null ? valueName(nextRank) : null;
+                const upcomingRanks = calculationUpcomingRanks(idx, top?.value, pile.length);
+                const upcomingLabel = upcomingRanks.map(valueName).join(' → ');
                 return (
                   <button
                     key={`f-${idx.toString()}`}
@@ -360,6 +386,7 @@ function CalculationPageContent() {
                     className={`flex flex-col items-center p-1 rounded ${focusRingWhite} ${isHint ? 'ring-2 ring-ds-success animate-pulse' : ''} ${source ? 'cursor-pointer' : 'cursor-default'}`}
                     onClick={() => playToFoundation(idx)}
                     disabled={!isPlaying || loading || source === null}
+                    title={upcomingLabel ? t('upcomingRanksTooltip', { sequence: upcomingLabel }) : undefined}
                     aria-label={
                       nextRankLabel
                         ? `${t('foundation')} ${idx} ${STEP_LABELS[idx]} ${t('nextRankAria', { rank: nextRankLabel })}`
@@ -391,6 +418,15 @@ function CalculationPageContent() {
                       )}
                     </div>
                     <span className="text-[11px] text-ds-text-muted mt-0.5">{pile.length}/13</span>
+                    {upcomingRanks.length > 1 && (
+                      <span
+                        data-testid={`calc-foundation-upcoming-${idx}`}
+                        aria-hidden="true"
+                        className="mt-0.5 text-[10px] leading-none text-ds-text-muted opacity-60"
+                      >
+                        {upcomingRanks.slice(1, 5).map(valueName).join('·')}
+                      </span>
+                    )}
                   </button>
                 );
               })}
