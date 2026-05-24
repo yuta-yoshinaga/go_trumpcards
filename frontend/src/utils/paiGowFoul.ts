@@ -49,8 +49,7 @@ function getHighHandStrength(highHand: Card[]): HighHandStrength {
   }
 
   const highVals = highHand.map(paiGowValue).sort((a, b) => b - a);
-  const isStraightOrFlush =
-    isStraightValues(highVals) || highHand.every((c) => c.design === highHand[0].design);
+  const isStraightOrFlush = isStraightValues(highVals) || highHand.every((c) => c.design === highHand[0].design);
 
   return {
     isRank2Plus: isStraightOrFlush || hasTripsOrBetter || pairs >= 2,
