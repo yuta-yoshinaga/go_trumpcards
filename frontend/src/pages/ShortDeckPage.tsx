@@ -248,7 +248,16 @@ function ShortDeckPageContent() {
             {(() => {
               const communityCardsContent = (
                 <>
-                  <div className="text-ds-text-primary text-lg mb-1.5">{t('communityCards')}</div>
+                  <div className="text-ds-text-primary text-lg mb-1.5 flex items-center gap-2 flex-wrap">
+                    <span>{t('communityCards')}</span>
+                    <span
+                      data-testid="shortdeck-rank-watermark"
+                      className="px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wider bg-ds-warning/20 text-ds-warning border border-ds-warning/60"
+                      title={t('rankOverrideReminder')}
+                    >
+                      ♣♠♥♦ Flush &gt; Full House
+                    </span>
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
                       ? state.communityCards.map((card) => (

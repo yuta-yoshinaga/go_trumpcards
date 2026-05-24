@@ -10,6 +10,7 @@
     "rebuy": "Rebuy/Addon"
   },
   "communityCards": "Community Cards",
+  "rankOverrideReminder": "Short Deck special rule: Flush beats Full House",
   "yourHand": "Your Hand",
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
   "rebuy": {
