@@ -1,12 +1,9 @@
 import type { Card } from '../types/card';
 
-/** Numeric Badugi rank used for lowball comparison (A=1, then 2..K). */
-function badugiRank(value: number): number {
-  if (value === 1) return 1;
-  return value;
-}
-
-/** Indices of the cards in the best Badugi subset (largest size, then lowest sum). */
+/**
+ * Indices of the cards in the best Badugi subset: largest size first, ties broken by lowest rank
+ * sum (lowball). Ace is encoded as `value === 1` in the project's deck and stays as 1 here.
+ */
 export function badugiBestSubsetIndices(cards: Card[]): number[] {
   if (cards.length === 0) return [];
   const n = cards.length;
@@ -22,15 +19,14 @@ export function badugiBestSubsetIndices(cards: Card[]): number[] {
     for (let i = 0; i < n; i++) {
       if (!(mask & (1 << i))) continue;
       const c = cards[i];
-      const r = badugiRank(c.value);
-      if (ranks.has(r) || suits.has(c.design)) {
+      if (ranks.has(c.value) || suits.has(c.design)) {
         ok = false;
         break;
       }
-      ranks.add(r);
+      ranks.add(c.value);
       suits.add(c.design);
       idxs.push(i);
-      sum += r;
+      sum += c.value;
     }
     if (!ok) continue;
     if (idxs.length > bestSize || (idxs.length === bestSize && sum < bestSum)) {

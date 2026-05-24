@@ -164,6 +164,14 @@ function BadugiPageContent() {
     [canExchange, humanPlayer?.cards],
   );
 
+  // Set of card indices belonging to the current best Badugi subset. Only computed during the draw
+  // phase — outside of that window the lift / dim visuals would distract more than help, since the
+  // player can't act on "dead weight" until the next exchange opens.
+  const subsetIndices = useMemo(
+    () => (canExchange ? new Set(badugiBestSubsetIndices(humanPlayer?.cards ?? [])) : null),
+    [canExchange, humanPlayer?.cards],
+  );
+
   useCardKeyboardNav({
     cardCount,
     onToggle: toggleCard,
@@ -295,37 +303,39 @@ function BadugiPageContent() {
                 </div>
                 {canExchange && <div className="text-game-text-highlight text-xs mb-1">{t('exchangeInstruction')}</div>}
                 <div className="flex flex-wrap gap-1.5 mb-2">
-                  {(() => {
-                    const cards = humanPlayer.cards ?? [];
-                    const subset = new Set(badugiBestSubsetIndices(cards));
-                    return cards.map((card, i) => {
-                      const isSelected = selected.includes(i);
-                      const inSubset = subset.has(i);
-                      return (
-                        <button
-                          key={`${card.design}-${card.value}`}
-                          type="button"
-                          aria-label={`${cardAlt(card)}${isSelected ? ` ${t('cardSelected')}` : ''}`}
-                          aria-pressed={isSelected}
-                          onClick={() => toggleCard(i)}
-                          data-badugi-subset={inSubset ? 'true' : undefined}
-                          className={`${focusRingAccent} rounded transition-transform ${
-                            inSubset ? '-translate-y-1' : 'opacity-50'
-                          }`}
-                          style={{
-                            background: 'none',
-                            padding: 0,
-                            cursor: canExchange ? 'pointer' : 'default',
-                            borderRadius: 8,
-                            ...selectedCardStyle(isSelected),
-                            boxSizing: 'border-box',
-                          }}
-                        >
-                          <AnimatedCard card={card} width={cardWidth} />
-                        </button>
-                      );
-                    });
-                  })()}
+                  {(humanPlayer.cards ?? []).map((card, i) => {
+                    const isSelected = selected.includes(i);
+                    // Only annotate cards during the draw phase; outside of it we don't want to
+                    // distract the player with a "dead weight" hint they can't act on.
+                    const inSubset = subsetIndices?.has(i) ?? false;
+                    const showSubsetHint = subsetIndices !== null;
+                    let liftOrDim = '';
+                    if (showSubsetHint) {
+                      if (inSubset) liftOrDim = '-translate-y-1';
+                      else if (!isSelected) liftOrDim = 'opacity-50';
+                    }
+                    return (
+                      <button
+                        key={`${card.design}-${card.value}`}
+                        type="button"
+                        aria-label={`${cardAlt(card)}${isSelected ? ` ${t('cardSelected')}` : ''}`}
+                        aria-pressed={isSelected}
+                        onClick={() => toggleCard(i)}
+                        data-badugi-subset={showSubsetHint && inSubset ? 'true' : undefined}
+                        className={`${focusRingAccent} rounded transition-transform ${liftOrDim}`}
+                        style={{
+                          background: 'none',
+                          padding: 0,
+                          cursor: canExchange ? 'pointer' : 'default',
+                          borderRadius: 8,
+                          ...selectedCardStyle(isSelected),
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        <AnimatedCard card={card} width={cardWidth} />
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}

@@ -24,4 +24,13 @@ describe('badugiBestSubsetIndices', () => {
   it('returns empty for empty hand', () => {
     expect(badugiBestSubsetIndices([])).toEqual([]);
   });
+
+  it('breaks ties on lowest rank sum (lowball)', () => {
+    // Two valid 3-card subsets are possible:
+    //   {0,1,2} = A♠, 2♥, 3♦ → ranks {1,2,3}, suits {S,H,D}, sum 6
+    //   {0,1,3} = A♠, 2♥, 10♦ → ranks {1,2,10}, suits {S,H,D}, sum 13
+    // Lowball: the lower-sum subset must win.
+    const hand: Card[] = [c('SPADE', 1), c('HEART', 2), c('DIAMOND', 3), c('DIAMOND', 10)];
+    expect(badugiBestSubsetIndices(hand).sort()).toEqual([0, 1, 2]);
+  });
 });
