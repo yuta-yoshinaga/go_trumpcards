@@ -266,6 +266,32 @@ describe('MightyPage', () => {
     });
   });
 
+  it('badges Mighty and partner cards in the human hand', async () => {
+    // With trumpSuit=3 (HEART) the Mighty card is ♠A.
+    const heartTrump: MightyResponse = {
+      ...playPhaseState,
+      trumpSuit: 3,
+      partnerCard: { design: 'HEART', value: 11 },
+      players: playPhaseState.players.map((p, i) =>
+        i === 0
+          ? {
+              ...p,
+              cards: [
+                { design: 'SPADE', value: 1 },
+                { design: 'HEART', value: 11 },
+                { design: 'DIAMOND', value: 8 },
+              ],
+            }
+          : p,
+      ),
+    };
+    mockCall.mockResolvedValue(heartTrump);
+    renderWithProviders(<MightyPage />);
+    await waitFor(() => expect(screen.getByTestId('card-role-badge-0')).toBeInTheDocument());
+    expect(screen.getByTestId('card-role-badge-1')).toBeInTheDocument();
+    expect(screen.queryByTestId('card-role-badge-2')).not.toBeInTheDocument();
+  });
+
   it('renders bid phase with bid button and input', async () => {
     mockCall.mockResolvedValue(bidPhaseState);
     renderWithProviders(<MightyPage />);

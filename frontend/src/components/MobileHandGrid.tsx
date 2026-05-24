@@ -4,6 +4,7 @@ import { expansionMargin, focusRingCard, selectedCardStyle } from '../styles/car
 import type { Card } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
 import { CardImage } from './CardImage';
+import { CardRoleBadge } from './CardRoleBadge';
 
 /** Minimum number of cards before splitting into 2 rows. */
 const TWO_ROW_THRESHOLD = 4;
@@ -39,6 +40,8 @@ interface MobileHandGridProps {
   validIndices?: number[];
   /** Tooltip surfaced on cards that are present but disabled by `validIndices`. */
   restrictedTooltip?: string;
+  /** Optional badge to render in the top-left corner of a card (e.g. game-specific role marker). */
+  cardBadgeFor?: (idx: number) => { glyph: string; title: string } | null;
 }
 
 /**
@@ -54,6 +57,7 @@ export function MobileHandGrid({
   dataTutorial,
   validIndices,
   restrictedTooltip,
+  cardBadgeFor,
 }: MobileHandGridProps) {
   const viewportWidth = useWindowWidth();
   const reduced = useReducedMotion();
@@ -126,6 +130,10 @@ export function MobileHandGrid({
                       ✓
                     </span>
                   )}
+                  {(() => {
+                    const badge = cardBadgeFor?.(globalIdx);
+                    return badge ? <CardRoleBadge idx={globalIdx} glyph={badge.glyph} title={badge.title} /> : null;
+                  })()}
                 </button>
               );
             })}

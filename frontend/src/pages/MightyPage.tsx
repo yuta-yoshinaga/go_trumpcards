@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { mightyApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardRoleBadge } from '../components/CardRoleBadge';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -38,6 +39,7 @@ import { valueName } from '../utils/cardUtils';
 import { MIGHTY_HELP, parseMightyCommand } from '../utils/cli/commands/mightyCommands';
 import { formatMightyState } from '../utils/cli/formatters/mightyFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { mightyRoleGlyph, mightySpecialRole } from '../utils/mightySpecialRole';
 import { playerName } from '../utils/playerUtils';
 
 /** Mighty tutorial step definitions. */
@@ -207,6 +209,15 @@ function MightyPageContent() {
     );
 
   const humanPlayer = state.players.find((p) => p.isHuman);
+  const partnerCard = state.partnerCard ?? null;
+  const trumpSuit = state.trumpSuit;
+  /** Returns the role badge for the human hand card at `idx`, or null. */
+  const roleBadgeFor = (idx: number): { glyph: string; title: string } | null => {
+    const card = humanPlayer?.cards[idx];
+    if (!card) return null;
+    const role = mightySpecialRole(card, trumpSuit, partnerCard);
+    return role ? { glyph: mightyRoleGlyph(role), title: t(`specialRole.${role}`) } : null;
+  };
   const isBidPhase = state.phase === MightyPhase.BID;
   const isTrumpAndFriend = state.phase === MightyPhase.TRUMP_AND_FRIEND;
   const isKittyExchange = state.phase === MightyPhase.KITTY_EXCHANGE;
@@ -538,28 +549,33 @@ function MightyPageContent() {
                   onToggle={toggleCard}
                   cardWidth={cardWidth}
                   dataTutorial="mighty-player-hand"
+                  cardBadgeFor={roleBadgeFor}
                 />
               ) : (
                 <div className="flex flex-wrap gap-1 mb-2" data-tutorial="mighty-player-hand">
-                  {humanPlayer.cards.map((card, idx) => (
-                    <button
-                      type="button"
-                      key={`${card.design}-${card.value}-${idx}`}
-                      onClick={() => toggleCard(idx)}
-                      aria-label={cardAlt(card)}
-                      aria-pressed={selectedCardIndices.includes(idx)}
-                      className={`transition-transform ${focusRingCard}`}
-                      style={{
-                        background: 'none',
-                        padding: 0,
-                        borderRadius: 8,
-                        ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      <AnimatedCard card={card} width={cardWidth} />
-                    </button>
-                  ))}
+                  {humanPlayer.cards.map((card, idx) => {
+                    const badge = roleBadgeFor(idx);
+                    return (
+                      <button
+                        type="button"
+                        key={`${card.design}-${card.value}-${idx}`}
+                        onClick={() => toggleCard(idx)}
+                        aria-label={cardAlt(card)}
+                        aria-pressed={selectedCardIndices.includes(idx)}
+                        className={`transition-transform ${focusRingCard} relative`}
+                        style={{
+                          background: 'none',
+                          padding: 0,
+                          borderRadius: 8,
+                          ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        <AnimatedCard card={card} width={cardWidth} />
+                        {badge && <CardRoleBadge idx={idx} glyph={badge.glyph} title={badge.title} />}
+                      </button>
+                    );
+                  })}
                 </div>
               ))}
 

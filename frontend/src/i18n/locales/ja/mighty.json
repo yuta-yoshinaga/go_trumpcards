@@ -48,6 +48,12 @@
     "heart": "ハート",
     "diamond": "ダイヤ"
   },
+  "specialRole": {
+    "mighty": "マイティ (最強カード)",
+    "jokerCall": "ジョーカーコール",
+    "joker": "ジョーカー",
+    "partner": "副官カード"
+  },
   "scores": "スコア",
   "scoresPlayer": "プレイヤー",
   "scoresBid": "ビッド",
