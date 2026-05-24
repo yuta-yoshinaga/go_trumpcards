@@ -22,7 +22,17 @@ import { gameTheme } from '../styles/gameTheme';
 import { GapsPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { valueName } from '../utils/cardUtils';
+import { computeGapsGhostHint } from '../utils/gapsGhostHint';
 import { gapsLockedPrefixLengths } from '../utils/gapsUtils';
+
+const SUIT_SYMBOLS: Record<string, string> = {
+  SPADE: '♠',
+  HEART: '♥',
+  DIAMOND: '♦',
+  CLOVER: '♣',
+};
+const RED_DESIGNS = new Set(['HEART', 'DIAMOND']);
 
 const GAPS_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -153,6 +163,7 @@ function GapsPageContent() {
                   const isHintFrom = state.hint && state.hint.fromRow === rIdx && state.hint.fromCol === cIdx;
                   const isHintTo = state.hint && state.hint.toRow === rIdx && state.hint.toCol === cIdx;
                   if (cell === null) {
+                    const ghost = computeGapsGhostHint(row, cIdx);
                     return (
                       <button
                         type="button"
@@ -161,14 +172,43 @@ function GapsPageContent() {
                         onDragLeave={dnd.handleDragLeave}
                         onDrop={dnd.handleDrop(zone)}
                         aria-label={t('gap')}
-                        className={`rounded border-2 ${
+                        className={`relative flex items-center justify-center rounded border-2 ${
                           dnd.isDropTarget(zone)
                             ? 'border-ds-warning bg-ds-warning/20'
                             : 'border-dashed border-white/30'
                         } ${isHintTo ? 'ring-2 ring-ds-warning' : ''} ${focusRingWhite}`}
                         style={{ width: cardWidth, height: cardHeight }}
                         disabled={!isPlaying || loading}
-                      />
+                      >
+                        {ghost?.kind === 'needed' && (
+                          <span
+                            aria-hidden="true"
+                            data-testid={`gaps-ghost-${rIdx}-${cIdx}`}
+                            className={`text-base font-semibold opacity-30 ${RED_DESIGNS.has(ghost.design) ? 'text-ds-error' : 'text-ds-text-primary'}`}
+                          >
+                            {SUIT_SYMBOLS[ghost.design]}
+                            {valueName(ghost.value)}
+                          </span>
+                        )}
+                        {ghost?.kind === 'anySuit' && (
+                          <span
+                            aria-hidden="true"
+                            data-testid={`gaps-ghost-${rIdx}-${cIdx}`}
+                            className="text-base font-semibold text-white opacity-30"
+                          >
+                            {valueName(ghost.value)}
+                          </span>
+                        )}
+                        {ghost?.kind === 'blocked' && (
+                          <span
+                            aria-hidden="true"
+                            data-testid={`gaps-ghost-${rIdx}-${cIdx}-blocked`}
+                            className="text-xl opacity-40"
+                          >
+                            🚫
+                          </span>
+                        )}
+                      </button>
                     );
                   }
                   const isLocked = cIdx < lockedCount;
