@@ -196,6 +196,12 @@ function MonteCarloPageContent() {
                     const isSelected = selected?.row === rowIdx && selected?.col === colIdx;
                     const isAdjOfSelected =
                       filled && selected !== null && isAdjacent(selected, { row: rowIdx, col: colIdx });
+                    const selectedValue = selected ? state.board[selected.row]?.[selected.col]?.card?.value : undefined;
+                    const isMatchingPair =
+                      isAdjOfSelected &&
+                      cell.card !== null &&
+                      selectedValue !== undefined &&
+                      cell.card.value === selectedValue;
                     const cellAction = `remove-${selected?.row ?? -1}-${selected?.col ?? -1}-${rowIdx}-${colIdx}`;
                     const isHintTarget =
                       frontendHintEnabled &&
@@ -220,10 +226,15 @@ function MonteCarloPageContent() {
                         }
                         onClick={() => handleCellClick(rowIdx, colIdx)}
                         disabled={!isPlaying || loading || !filled}
+                        data-pair-match={isMatchingPair ? 'true' : undefined}
                         className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${
                           filled ? 'cursor-pointer' : ''
                         } ${isSelected ? 'ring-2 ring-ds-accent' : ''} ${
-                          isAdjOfSelected ? 'ring-1 ring-ds-warning' : ''
+                          isMatchingPair
+                            ? 'ring-2 ring-ds-success animate-pulse'
+                            : isAdjOfSelected
+                              ? 'ring-1 ring-ds-warning'
+                              : ''
                         } ${isHintTarget ? 'ring-2 ring-ds-warning' : ''}`}
                       >
                         {cell.card ? (
