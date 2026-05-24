@@ -34,6 +34,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BadugiResponse } from '../types/card';
 import { BadugiPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { badugiBestSubsetIndices } from '../utils/badugiBestSubset';
 import { isCompleteBadugiHand } from '../utils/badugiUtils';
 import { cardAlt } from '../utils/cardAlt';
 import { BADUGI_HELP, parseBadugiCommand } from '../utils/cli/commands/badugiCommands';
@@ -294,29 +295,37 @@ function BadugiPageContent() {
                 </div>
                 {canExchange && <div className="text-game-text-highlight text-xs mb-1">{t('exchangeInstruction')}</div>}
                 <div className="flex flex-wrap gap-1.5 mb-2">
-                  {humanPlayer.cards?.map((card, i) => {
-                    const isSelected = selected.includes(i);
-                    return (
-                      <button
-                        key={`${card.design}-${card.value}`}
-                        type="button"
-                        aria-label={`${cardAlt(card)}${isSelected ? ` ${t('cardSelected')}` : ''}`}
-                        aria-pressed={isSelected}
-                        onClick={() => toggleCard(i)}
-                        className={`${focusRingAccent} rounded`}
-                        style={{
-                          background: 'none',
-                          padding: 0,
-                          cursor: canExchange ? 'pointer' : 'default',
-                          borderRadius: 8,
-                          ...selectedCardStyle(isSelected),
-                          boxSizing: 'border-box',
-                        }}
-                      >
-                        <AnimatedCard card={card} width={cardWidth} />
-                      </button>
-                    );
-                  })}
+                  {(() => {
+                    const cards = humanPlayer.cards ?? [];
+                    const subset = new Set(badugiBestSubsetIndices(cards));
+                    return cards.map((card, i) => {
+                      const isSelected = selected.includes(i);
+                      const inSubset = subset.has(i);
+                      return (
+                        <button
+                          key={`${card.design}-${card.value}`}
+                          type="button"
+                          aria-label={`${cardAlt(card)}${isSelected ? ` ${t('cardSelected')}` : ''}`}
+                          aria-pressed={isSelected}
+                          onClick={() => toggleCard(i)}
+                          data-badugi-subset={inSubset ? 'true' : undefined}
+                          className={`${focusRingAccent} rounded transition-transform ${
+                            inSubset ? '-translate-y-1' : 'opacity-50'
+                          }`}
+                          style={{
+                            background: 'none',
+                            padding: 0,
+                            cursor: canExchange ? 'pointer' : 'default',
+                            borderRadius: 8,
+                            ...selectedCardStyle(isSelected),
+                            boxSizing: 'border-box',
+                          }}
+                        >
+                          <AnimatedCard card={card} width={cardWidth} />
+                        </button>
+                      );
+                    });
+                  })()}
                 </div>
               </div>
             )}
