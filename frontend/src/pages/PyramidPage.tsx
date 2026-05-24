@@ -152,10 +152,14 @@ function PyramidPageContent() {
     if (selectedCard.zone === 'waste') {
       return state.waste.length > 0 ? state.waste[state.waste.length - 1].value : null;
     }
-    const pc = state.pyramid[selectedCard.row ?? -1]?.[selectedCard.col ?? -1];
+    if (selectedCard.row === undefined || selectedCard.col === undefined) return null;
+    const pc = state.pyramid[selectedCard.row]?.[selectedCard.col];
     return pc?.card?.value ?? null;
   })();
   const partnerValue = selectedValue !== null && selectedValue < 13 ? 13 - selectedValue : null;
+  const wasteTopCard = state.waste.length > 0 ? state.waste[state.waste.length - 1] : null;
+  const isWastePairCandidate =
+    partnerValue !== null && !isSelected('waste') && wasteTopCard !== null && wasteTopCard.value === partnerValue;
 
   // Calculate pyramid layout dimensions
   const maxCols = 7; // bottom row has 7 cards
@@ -285,34 +289,19 @@ function PyramidPageContent() {
               {/* Waste */}
               <div className="text-center">
                 <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
-                {state.waste.length > 0 ? (
+                {wasteTopCard ? (
                   <button
                     type="button"
-                    onClick={() => {
-                      const topCard = state.waste[state.waste.length - 1];
-                      handleSelectCard({ zone: 'waste' }, topCard.value);
-                    }}
+                    onClick={() => handleSelectCard({ zone: 'waste' }, wasteTopCard.value)}
                     disabled={!isPlaying || loading}
-                    aria-label={cardAlt(state.waste[state.waste.length - 1])}
+                    aria-label={cardAlt(wasteTopCard)}
                     aria-pressed={isSelected('waste')}
-                    data-pair-candidate={
-                      partnerValue !== null &&
-                      !isSelected('waste') &&
-                      state.waste[state.waste.length - 1].value === partnerValue
-                        ? 'true'
-                        : undefined
-                    }
+                    data-pair-candidate={isWastePairCandidate ? 'true' : undefined}
                     className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
                       isSelected('waste') ? 'ring-2 ring-ds-warning' : ''
-                    } ${
-                      partnerValue !== null &&
-                      !isSelected('waste') &&
-                      state.waste[state.waste.length - 1].value === partnerValue
-                        ? 'ring-2 ring-ds-success animate-pulse'
-                        : ''
-                    }`}
+                    } ${isWastePairCandidate ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
                   >
-                    <AnimatedCard card={state.waste[state.waste.length - 1]} width={effectiveCardWidth} />
+                    <AnimatedCard card={wasteTopCard} width={effectiveCardWidth} />
                   </button>
                 ) : (
                   <div
