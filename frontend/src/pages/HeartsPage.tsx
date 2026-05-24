@@ -32,6 +32,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { HEARTS_HELP, parseHeartsCommand } from '../utils/cli/commands/heartsCommands';
 import { formatHeartsState } from '../utils/cli/formatters/heartsFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { shootTheMoonAlertIdx } from '../utils/heartsShootMoonAlert';
 import { playerName } from '../utils/playerUtils';
 
 /** Hearts tutorial step definitions. */
@@ -170,6 +171,8 @@ function HeartsPageContent() {
     });
   }, [exec, hideActionLog, heartsConfig.cpuDifficulty, heartsConfig.pointLimit, heartsConfig.omnibusJD]);
 
+  const moonAlertIdx = useMemo(() => (state ? shootTheMoonAlertIdx(state.players) : null), [state]);
+
   if (!state)
     return <GameSkeleton gameKey="hearts" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
 
@@ -288,6 +291,7 @@ function HeartsPageContent() {
                             {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                             {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
                             {t('roundScore', { score: p.roundScore })}
+                            {moonAlertIdx === p.id && <ShootTheMoonBadge label={t('shootTheMoonAlert')} />}
                           </div>
                         ))}
                     </div>
@@ -301,6 +305,7 @@ function HeartsPageContent() {
                           {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                           {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
                           {t('roundScore', { score: p.roundScore })}
+                          {moonAlertIdx === p.id && <ShootTheMoonBadge label={t('shootTheMoonAlert')} />}
                         </div>
                       </div>
                     ))
@@ -467,5 +472,20 @@ function HeartsPageContent() {
         </>
       )}
     </GamePageShell>
+  );
+}
+
+/** Small pulsing badge indicating a player appears to be shooting the moon. */
+function ShootTheMoonBadge({ label }: { label: string }) {
+  return (
+    <span
+      data-testid="hearts-shoot-the-moon-badge"
+      role="status"
+      aria-live="polite"
+      className="ml-2 inline-flex items-center gap-1 rounded-full bg-ds-error/30 px-2 py-0.5 text-xs font-bold text-ds-error motion-safe:animate-pulse"
+    >
+      <span aria-hidden="true">🌕</span>
+      {label}
+    </span>
   );
 }
