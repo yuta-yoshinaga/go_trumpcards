@@ -5,6 +5,7 @@ import { CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
+import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -117,11 +118,55 @@ function BriscolaPageContent() {
           <div className="p-2 rounded bg-black/30 text-ds-text-muted text-sm">
             {t('header.cpu')}: {cpu?.cardCount ?? 0} / {t('header.tricks')}: {cpu?.trickCount ?? 0}
           </div>
-          <div className="p-2 rounded bg-black/30 flex items-center gap-2">
+          <div className="flex items-center gap-2 rounded bg-black/30 p-2" data-testid="briscola-stock">
             <span className="text-ds-text-muted text-sm">
               {state.trumpCard ? t('header.trump') : t('header.trumpNone')}
             </span>
-            {state.trumpCard && <CardImage card={state.trumpCard} width={Math.round(cardWidth * 0.7)} />}
+            {state.trumpCard ? (
+              <div
+                className="relative"
+                style={{
+                  width: Math.round(cardWidth * 1.1),
+                  height: Math.round(cardWidth * 0.95),
+                }}
+              >
+                {/* Face-up trump card rotated 90° — sits at the bottom of the stock,
+                    half visible to the right of the deck. */}
+                <div
+                  className="absolute left-0 top-1/2"
+                  style={{
+                    transform: 'translateY(-50%) rotate(90deg)',
+                    transformOrigin: 'left center',
+                  }}
+                >
+                  <CardImage card={state.trumpCard} width={Math.round(cardWidth * 0.7)} />
+                </div>
+                {/* Card-back stack — width tapers down as cards are drawn so the
+                    physical "thinning deck" reads at a glance. */}
+                {state.stockRemaining > 0 && (
+                  <div
+                    className="absolute left-1/2 top-1/2 -translate-y-1/2"
+                    style={{ transform: 'translate(0,-50%)' }}
+                    data-testid="briscola-stock-deck"
+                  >
+                    <div className="relative">
+                      {Array.from({ length: Math.min(state.stockRemaining, 4) }, (_, i) => (
+                        <div
+                          key={`back-${i.toString()}`}
+                          className="absolute"
+                          style={{
+                            top: i * -1.5,
+                            left: i * 1.5,
+                          }}
+                        >
+                          <AnimatedCardBack width={Math.round(cardWidth * 0.7)} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : null}
           </div>
         </div>
 
