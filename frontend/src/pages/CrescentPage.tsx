@@ -17,6 +17,7 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
+import { useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useCrescentGame } from '../hooks/useCrescentGame';
@@ -119,8 +120,9 @@ function CrescentPageContent() {
 
   const tableauDim = useResponsiveTableau(8);
   // Mobile renders the tableau as a 4-column grid, which makes the per-column arc translate Y
-  // create a zigzag instead of a crescent silhouette. Skip the offset there.
-  const isMobile = tableauDim.isMobile;
+  // create a zigzag instead of a crescent silhouette. Skip the offset there. We read the breakpoint
+  // from useIsMobile because ResponsiveTableauDimensions doesn't expose it on its public type.
+  const isMobile = useIsMobile();
 
   const isPlayingForKbd = state?.phase === CrescentPhase.PLAYING;
 
