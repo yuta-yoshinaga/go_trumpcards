@@ -610,6 +610,46 @@ func TestRussianPoker_PlayMultiplier(t *testing.T) {
 			multiplier: domain.RussianPokerPayFourOfAKind,
 		},
 		{
+			name: "FullHouse",
+			player: makeHand(
+				cd{domain.CardDesignSpade, 10}, cd{domain.CardDesignClover, 10},
+				cd{domain.CardDesignHeart, 10}, cd{domain.CardDesignDiamond, 5},
+				cd{domain.CardDesignSpade, 5}),
+			multiplier: domain.RussianPokerPayFullHouse,
+		},
+		{
+			name: "Flush",
+			player: makeHand(
+				cd{domain.CardDesignSpade, 1}, cd{domain.CardDesignSpade, 10},
+				cd{domain.CardDesignSpade, 7}, cd{domain.CardDesignSpade, 5},
+				cd{domain.CardDesignSpade, 3}),
+			multiplier: domain.RussianPokerPayFlush,
+		},
+		{
+			name: "Straight",
+			player: makeHand(
+				cd{domain.CardDesignSpade, 9}, cd{domain.CardDesignClover, 8},
+				cd{domain.CardDesignHeart, 7}, cd{domain.CardDesignDiamond, 6},
+				cd{domain.CardDesignSpade, 5}),
+			multiplier: domain.RussianPokerPayStraight,
+		},
+		{
+			name: "ThreeOfAKind",
+			player: makeHand(
+				cd{domain.CardDesignSpade, 8}, cd{domain.CardDesignClover, 8},
+				cd{domain.CardDesignHeart, 8}, cd{domain.CardDesignDiamond, 5},
+				cd{domain.CardDesignSpade, 3}),
+			multiplier: domain.RussianPokerPayThreeOfAKind,
+		},
+		{
+			name: "TwoPair",
+			player: makeHand(
+				cd{domain.CardDesignSpade, 10}, cd{domain.CardDesignClover, 10},
+				cd{domain.CardDesignHeart, 5}, cd{domain.CardDesignDiamond, 5},
+				cd{domain.CardDesignSpade, 3}),
+			multiplier: domain.RussianPokerPayTwoPair,
+		},
+		{
 			name: "Pair",
 			player: makeHand(
 				cd{domain.CardDesignSpade, 1}, cd{domain.CardDesignClover, 1},

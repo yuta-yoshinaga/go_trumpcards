@@ -194,7 +194,9 @@ func (rp *RussianPoker) Select(discardIndex int) error {
 	if discardIndex < 0 || discardIndex >= len(rp.playerHand) {
 		return NewDomainError(ErrInvalidAmount, "Discard index out of range.")
 	}
-	rp.playerHand = append(rp.playerHand[:discardIndex], rp.playerHand[discardIndex+1:]...)
+	copy(rp.playerHand[discardIndex:], rp.playerHand[discardIndex+1:])
+	rp.playerHand[len(rp.playerHand)-1] = nil
+	rp.playerHand = rp.playerHand[:len(rp.playerHand)-1]
 	rp.appendLog(0, "select", fmt.Sprintf("discard index=%d", discardIndex), nil)
 	rp.phase = RussianPokerPhasePostAction
 	return nil
@@ -260,6 +262,7 @@ func (rp *RussianPoker) Decline() error {
 		return NewDomainError(ErrWrongPhase, "Decline is only allowed during the force qualify phase.")
 	}
 	rp.appendLog(0, "decline", "declined force exchange", nil)
+	rp.result = GameResultWin
 	rp.antePayout = rp.anteBet * 2
 	rp.playPayout = rp.playBet
 	totalPayout := rp.antePayout + rp.playPayout
@@ -304,6 +307,7 @@ func (rp *RussianPoker) resolveAfterForce() {
 	rp.dealerQualified = rp.checkDealerQualifies()
 
 	if !rp.dealerQualified {
+		rp.result = GameResultWin
 		rp.antePayout = rp.anteBet * 2
 		rp.playPayout = rp.playBet
 		totalPayout := rp.antePayout + rp.playPayout
@@ -594,8 +598,11 @@ func (rp *RussianPoker) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// russianPokerMaxSliceLen caps slice sizes during deserialisation.
-const russianPokerMaxSliceLen = 1000
+// russianPokerMaxHandLen caps hand sizes during deserialisation (max 6 = 5 + buy6th).
+const russianPokerMaxHandLen = 10
+
+// russianPokerMaxLogLen caps action log size during deserialisation.
+const russianPokerMaxLogLen = 200
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (rp *RussianPoker) UnmarshalJSON(data []byte) error {
@@ -603,8 +610,8 @@ func (rp *RussianPoker) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if len(j.PlayerHand) > russianPokerMaxSliceLen || len(j.DealerHand) > russianPokerMaxSliceLen ||
-		len(j.ActionLog) > russianPokerMaxSliceLen {
+	if len(j.PlayerHand) > russianPokerMaxHandLen || len(j.DealerHand) > russianPokerMaxHandLen ||
+		len(j.ActionLog) > russianPokerMaxLogLen {
 		return fmt.Errorf("russianpoker: input array exceeds maximum allowed size")
 	}
 

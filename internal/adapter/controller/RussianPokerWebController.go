@@ -64,7 +64,11 @@ func russianPokerDispatch(bc *baseController, w http.ResponseWriter, ri usecase.
 	case "buy6th", "6":
 		bc.writePresenterResponse(w, ri.Buy6th())
 	case "select", "sel":
-		bc.writePresenterResponse(w, ri.Select(deref(param.DiscardIndex)))
+		if param.DiscardIndex == nil {
+			bc.writePresenterResponse(w, ri.Select(-1))
+			return true
+		}
+		bc.writePresenterResponse(w, ri.Select(*param.DiscardIndex))
 	case "p", "play":
 		bc.writePresenterResponse(w, ri.Play())
 	case "f", "fold":

@@ -1,5 +1,6 @@
 import type { Card, MaskedCard, RussianPokerResponse } from '../../../types/card';
 import { isMaskedCard } from '../../../types/card';
+import { RussianPokerPhase } from '../../../types/phases';
 import { formatCard, formatCardList, formatHeader, formatIndexedCards, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES: Record<number, string> = {
@@ -28,7 +29,7 @@ export function formatRussianpokerState(state: RussianPokerResponse): string {
     lines.push(`Your hand: ${formatIndexedCards(state.playerHand)}`);
   }
 
-  if (state.phase === 6 && state.dealerHand.length > 0) {
+  if (state.phase === RussianPokerPhase.END && state.dealerHand.length > 0) {
     lines.push(`Dealer: ${formatCardList(state.dealerHand as Card[])}`);
     lines.push(`Dealer qualified: ${state.dealerQualified ? 'yes' : 'no'}`);
   } else if (state.dealerHand.length > 0) {
@@ -42,7 +43,7 @@ export function formatRussianpokerState(state: RussianPokerResponse): string {
   if (state.playBet > 0) lines.push(`play bet: ${state.playBet}`);
   if (state.forceExchanged) lines.push(`force exchange (fee: ${state.forceExchangeFee})`);
 
-  if (state.phase === 6) {
+  if (state.phase === RussianPokerPhase.END) {
     lines.push(`payout: ante=${state.antePayout} play=${state.playPayout}`);
     lines.push(`total: ${state.totalPayout}`);
   }
