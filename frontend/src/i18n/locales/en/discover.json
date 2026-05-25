@@ -186,7 +186,8 @@
     "cribbage": "An English Rummy played on a peg board. Fifteens and 31s for the brain.",
     "sevenbridge": "Japan's household Rummy. Simple rules, surprisingly tense.",
     "contractrummy": "A different contract (meld) each round. More rules — more depth.",
-    "rummy500": "Race to 500. American household Rummy in its mid-form classic shape."
+    "rummy500": "Race to 500. American household Rummy in its mid-form classic shape.",
+    "bigtwo": "Hong Kong's signature shedding game. Poker-hand combos meet climbing mechanics."
   },
   "stretch_blurb": {
     "blackjack": "The 21 instinct may be obvious — but the betting decisions surprise.",
@@ -289,6 +290,7 @@
     "cribbage": "English peg-board Rummy — brain workout.",
     "sevenbridge": "Japanese household Rummy — light tension.",
     "contractrummy": "Different contracts per round — learn deeper.",
-    "rummy500": "American household Rummy in mid-length form."
+    "rummy500": "American household Rummy in mid-length form.",
+    "bigtwo": "Poker-hand climbing from Hong Kong — a fresh angle on shedding games."
   }
 }

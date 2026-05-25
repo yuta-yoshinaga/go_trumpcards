@@ -1,0 +1,50 @@
+{
+  "rank": {
+    "1": "1st",
+    "2": "2nd",
+    "3": "3rd",
+    "4": "4th"
+  },
+  "cardCount": "{{count}} cards",
+  "selectToPlay": "Click cards to select",
+  "tableCards": "Table",
+  "tableEmpty": "(empty)",
+  "playButton": "Play Selected",
+  "passButton": "Pass",
+  "phase": {
+    "play": "Play",
+    "end": "End"
+  },
+  "settings": {
+    "title": "Game Settings",
+    "cpuDifficulty": "CPU Difficulty:",
+    "difficultyNormal": "Normal",
+    "difficultyEasy": "Easy",
+    "difficultyHard": "Hard"
+  },
+  "tutorial": {
+    "tableCards": "Cards on the table. Play the same number of cards with higher rank.",
+    "playerHand": "Your hand. Click cards to select them.",
+    "playPass": "Play selected cards or pass your turn.",
+    "cpuArea": "CPU players' remaining card counts.",
+    "resetButton": "Reset the game."
+  },
+  "hint": {
+    "canPlay": "You have playable cards",
+    "shouldPass": "Consider passing",
+    "playLow": "Play your weaker cards first"
+  },
+  "result": {
+    "rankings": "Game Over! {{rankings}}"
+  },
+  "playType": {
+    "single": "Single",
+    "pair": "Pair",
+    "triple": "Triple",
+    "straight": "Straight",
+    "flush": "Flush",
+    "fullHouse": "Full House",
+    "fourOfAKind": "Four of a Kind",
+    "straightFlush": "Straight Flush"
+  }
+}

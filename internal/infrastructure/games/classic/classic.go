@@ -31,6 +31,14 @@ func init() {
 			return usecase.RestoreDaifugoInteractor(data, new(presenter.DaifugoWebPresenter))
 		},
 		controller.NewDaifugoWebControllerWithProvider)
+	games.RegisterKVGame("bigtwo", games.CategoryClassic,
+		func() usecase.BigTwoInteractorIF {
+			return usecase.NewBigTwoInteractor(domain.NewDefaultBigTwo(), new(presenter.BigTwoWebPresenter))
+		},
+		func(data []byte) (usecase.BigTwoInteractorIF, error) {
+			return usecase.RestoreBigTwoInteractor(data, new(presenter.BigTwoWebPresenter))
+		},
+		controller.NewBigTwoWebControllerWithProvider)
 	games.RegisterKVGame("sevens", games.CategoryClassic,
 		func() usecase.SevensInteractorIF {
 			return usecase.NewSevensInteractor(domain.NewDefaultSevens(), new(presenter.SevensWebPresenter))

@@ -139,6 +139,16 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"daifugo.helpSetDifficulty", "daifugo.helpSetJoker", "daifugo.helpSetRule"},
 			})
 	}},
+	{Name: "bigtwo", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBigTwoCuiController(usecase.NewBigTwoInteractor(
+				domain.NewDefaultBigTwo(), new(presenter.BigTwoCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:    "bigtwo.helpTitle",
+				CommandKeys: []string{"bigtwo.helpPlay"},
+				SettingKeys: []string{"bigtwo.helpSetDifficulty"},
+			})
+	}},
 	{Name: "sevens", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewSevensCuiController(usecase.NewSevensInteractor(

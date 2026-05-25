@@ -9,6 +9,7 @@ import badugi from '../../../docs/manual/cui/badugi.md?raw';
 import bakersdozen from '../../../docs/manual/cui/bakersdozen.md?raw';
 import beleagueredcastle from '../../../docs/manual/cui/beleagueredcastle.md?raw';
 import belote from '../../../docs/manual/cui/belote.md?raw';
+import bigtwo from '../../../docs/manual/cui/bigtwo.md?raw';
 import blackjack from '../../../docs/manual/cui/blackjack.md?raw';
 import blackjackswitch from '../../../docs/manual/cui/blackjackswitch.md?raw';
 import bridge from '../../../docs/manual/cui/bridge.md?raw';
@@ -202,6 +203,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/tarneeb': tarneeb,
   '/highcardflush': highcardflush,
   '/briscola': briscola,
+  '/bigtwo': bigtwo,
 };
 
 /** Returns true when CLI mode is enabled for the game at the given path. */
