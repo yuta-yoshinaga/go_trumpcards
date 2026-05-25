@@ -34,6 +34,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BadugiResponse } from '../types/card';
 import { BadugiPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { badugiBestSubsetIndices } from '../utils/badugiBestSubset';
 import { isCompleteBadugiHand } from '../utils/badugiUtils';
 import { cardAlt } from '../utils/cardAlt';
 import { BADUGI_HELP, parseBadugiCommand } from '../utils/cli/commands/badugiCommands';
@@ -160,6 +161,14 @@ function BadugiPageContent() {
   // Memoised so the Set allocations only run when the hand actually changes.
   const humanHasCompleteBadugi = useMemo(
     () => (canExchange ? isCompleteBadugiHand(humanPlayer?.cards ?? []) : false),
+    [canExchange, humanPlayer?.cards],
+  );
+
+  // Set of card indices belonging to the current best Badugi subset. Only computed during the draw
+  // phase — outside of that window the lift / dim visuals would distract more than help, since the
+  // player can't act on "dead weight" until the next exchange opens.
+  const subsetIndices = useMemo(
+    () => (canExchange ? new Set(badugiBestSubsetIndices(humanPlayer?.cards ?? [])) : null),
     [canExchange, humanPlayer?.cards],
   );
 
@@ -294,8 +303,17 @@ function BadugiPageContent() {
                 </div>
                 {canExchange && <div className="text-game-text-highlight text-xs mb-1">{t('exchangeInstruction')}</div>}
                 <div className="flex flex-wrap gap-1.5 mb-2">
-                  {humanPlayer.cards?.map((card, i) => {
+                  {(humanPlayer.cards ?? []).map((card, i) => {
                     const isSelected = selected.includes(i);
+                    // Only annotate cards during the draw phase; outside of it we don't want to
+                    // distract the player with a "dead weight" hint they can't act on.
+                    const inSubset = subsetIndices?.has(i) ?? false;
+                    const showSubsetHint = subsetIndices !== null;
+                    let liftOrDim = '';
+                    if (showSubsetHint) {
+                      if (inSubset) liftOrDim = '-translate-y-1';
+                      else if (!isSelected) liftOrDim = 'opacity-50';
+                    }
                     return (
                       <button
                         key={`${card.design}-${card.value}`}
@@ -303,7 +321,8 @@ function BadugiPageContent() {
                         aria-label={`${cardAlt(card)}${isSelected ? ` ${t('cardSelected')}` : ''}`}
                         aria-pressed={isSelected}
                         onClick={() => toggleCard(i)}
-                        className={`${focusRingAccent} rounded`}
+                        data-badugi-subset={showSubsetHint && inSubset ? 'true' : undefined}
+                        className={`${focusRingAccent} rounded transition-transform ${liftOrDim}`}
                         style={{
                           background: 'none',
                           padding: 0,
@@ -313,11 +332,7 @@ function BadugiPageContent() {
                           boxSizing: 'border-box',
                         }}
                       >
-                        <AnimatedCard
-                          card={card}
-                          width={cardWidth}
-                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                        />
+                        <AnimatedCard card={card} width={cardWidth} />
                       </button>
                     );
                   })}

@@ -158,4 +158,26 @@ describe('Rummy500Page', () => {
       expect(mockExec).toHaveBeenCalledWith('drawstock');
     });
   });
+
+  it('renders the hand-penalty badge with the summed value when the player holds cards', async () => {
+    // drawPhaseState has [♠7, ♥7] in hand → penalty = 7 + 7 = 14.
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<Rummy500Page />);
+    await waitFor(() => {
+      const badge = screen.getByTestId('hand-penalty-badge');
+      expect(badge).toBeInTheDocument();
+      expect(badge).toHaveTextContent('14');
+    });
+  });
+
+  it('hides the hand-penalty badge when the player has no cards', async () => {
+    const emptyHandState: Rummy500Response = {
+      ...drawPhaseState,
+      players: [{ ...drawPhaseState.players[0], cardCount: 0, cards: [] }, drawPhaseState.players[1]],
+    };
+    mockExec.mockResolvedValue(emptyHandState);
+    renderWithProviders(<Rummy500Page />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, expect.any(Object)));
+    expect(screen.queryByTestId('hand-penalty-badge')).not.toBeInTheDocument();
+  });
 });

@@ -18,6 +18,7 @@ import { btnDanger, btnOutline, btnPrimary, focusRingWhite } from '../styles/but
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, ContractRummyContractSlot, ContractRummyResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { evaluateContractSlot } from '../utils/contractRummyUtils';
 
 /** Phase identifiers for Contract Rummy. */
 const CR_PHASE = {
@@ -167,6 +168,24 @@ function ContractRummyPageContent() {
     return phaseNames[state.phase] ?? '';
   }, [phaseNames, state]);
 
+  // Per-slot evaluation against the required contract — drives the in-progress feedback
+  // (placed / required, color, satisfied?) and gates the submit button so the player
+  // can't fire an obviously invalid request.
+  const slotEvaluations = useMemo(() => {
+    if (!state || !humanPlayer) return [];
+    return state.contractSlots.map((slot, slotIdx) => {
+      const cardIdxs = contractSlots[slotIdx] ?? [];
+      const cards = cardIdxs.map((i) => humanPlayer.cards[i]).filter(Boolean);
+      return evaluateContractSlot(slot, cards);
+    });
+  }, [state, humanPlayer, contractSlots]);
+
+  // humanPlayer gates slotEvaluations population, so checking it here keeps the
+  // intent obvious; the length>0 guard prevents `[].every(...)` from vacuously
+  // enabling submit on a contract with zero slots.
+  const allSlotsSatisfied =
+    humanPlayer != null && slotEvaluations.length > 0 && slotEvaluations.every((ev) => ev.satisfied);
+
   if (!state) {
     return (
       <GameSkeleton
@@ -207,6 +226,31 @@ function ContractRummyPageContent() {
           </span>
         )}
       </section>
+
+      {isPlayPhase && humanPlayer && !humanPlayer.contractMet && state.contractSlots.length > 0 && (
+        <section className="px-4 py-2 flex flex-wrap gap-2 text-sm" data-testid="cr-slot-progress">
+          {state.contractSlots.map((slot, slotIdx) => {
+            const ev = slotEvaluations[slotIdx] ?? { placed: 0, required: slot.size, satisfied: false, invalid: false };
+            const color = ev.satisfied
+              ? 'bg-ds-success/20 border-ds-success text-ds-success'
+              : ev.invalid
+                ? 'bg-ds-error/20 border-ds-error text-ds-error'
+                : ev.placed === 0
+                  ? 'bg-black/20 border-white/30 text-ds-text-muted'
+                  : 'bg-ds-warning/20 border-ds-warning text-ds-warning';
+            return (
+              <span
+                key={`slot-${slotIdx}`}
+                className={`px-2 py-1 rounded border ${color}`}
+                data-testid={`cr-slot-progress-${slotIdx}`}
+                data-state={ev.satisfied ? 'satisfied' : ev.invalid ? 'invalid' : ev.placed === 0 ? 'empty' : 'partial'}
+              >
+                {formatSlot(slot, t)} ({ev.placed}/{ev.required}){ev.satisfied ? ' ✓' : ''}
+              </span>
+            );
+          })}
+        </section>
+      )}
 
       <section className="px-4 py-2 grid gap-2 md:grid-cols-3">
         {state.players.map((p) => (
@@ -315,8 +359,9 @@ function ContractRummyPageContent() {
             <button
               type="button"
               onClick={handleSubmitContract}
-              disabled={contractSlots.length !== state.contractSlots.length}
-              className={btnPrimary}
+              disabled={!allSlotsSatisfied}
+              className={`${btnPrimary} ${allSlotsSatisfied ? 'motion-safe:animate-pulse' : ''}`}
+              data-testid="cr-submit-contract"
             >
               {t('submitContract')}
             </button>

@@ -8,6 +8,7 @@
   "stock": "Stock",
   "waste": "Waste",
   "moveCount": "Moves",
+  "combo": "Combo ×{{count}}",
   "draw": "Draw",
   "giveup": "Give Up",
   "hint": "Hint",

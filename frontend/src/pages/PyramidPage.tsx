@@ -145,6 +145,22 @@ function PyramidPageContent() {
   const isSelected = (zone: 'pyramid' | 'waste', row?: number, col?: number) =>
     selectedCard !== null && selectedCard.zone === zone && selectedCard.row === row && selectedCard.col === col;
 
+  // When the player has selected the first card, compute the partner value (13 - value).
+  // Kings (13) need no partner; ace (1) wants Q (12), etc.
+  const selectedValue = (() => {
+    if (!selectedCard) return null;
+    if (selectedCard.zone === 'waste') {
+      return state.waste.length > 0 ? state.waste[state.waste.length - 1].value : null;
+    }
+    if (selectedCard.row === undefined || selectedCard.col === undefined) return null;
+    const pc = state.pyramid[selectedCard.row]?.[selectedCard.col];
+    return pc?.card?.value ?? null;
+  })();
+  const partnerValue = selectedValue !== null && selectedValue < 13 ? 13 - selectedValue : null;
+  const wasteTopCard = state.waste.length > 0 ? state.waste[state.waste.length - 1] : null;
+  const isWastePairCandidate =
+    partnerValue !== null && !isSelected('waste') && wasteTopCard !== null && wasteTopCard.value === partnerValue;
+
   // Calculate pyramid layout dimensions
   const maxCols = 7; // bottom row has 7 cards
   const cardGap = 4;
@@ -216,6 +232,11 @@ function PyramidPageContent() {
                       }
                       if (!pc.card) return null;
                       const exposed = pc.exposed;
+                      const isPairCandidate =
+                        partnerValue !== null &&
+                        exposed &&
+                        pc.card.value === partnerValue &&
+                        !isSelected('pyramid', rowIdx, colIdx);
                       return (
                         <div key={`pc-${rowIdx.toString()}-${colIdx.toString()}`} className="absolute" style={{ left }}>
                           <button
@@ -227,15 +248,12 @@ function PyramidPageContent() {
                             disabled={!isPlaying || loading || !exposed}
                             aria-label={cardAlt(pc.card)}
                             aria-pressed={isSelected('pyramid', rowIdx, colIdx)}
+                            data-pair-candidate={isPairCandidate ? 'true' : undefined}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
                               isSelected('pyramid', rowIdx, colIdx) ? 'ring-2 ring-ds-warning' : ''
-                            } ${!exposed ? 'opacity-60' : ''}`}
+                            } ${isPairCandidate ? 'ring-2 ring-ds-success animate-pulse' : ''} ${!exposed ? 'opacity-60' : ''}`}
                           >
-                            <AnimatedCard
-                              card={pc.card}
-                              width={effectiveCardWidth}
-                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                            />
+                            <AnimatedCard card={pc.card} width={effectiveCardWidth} />
                           </button>
                         </div>
                       );
@@ -257,7 +275,6 @@ function PyramidPageContent() {
                     width={effectiveCardWidth}
                     onClick={isPlaying ? handleDraw : undefined}
                     ariaLabel={t('draw')}
-                    onFlipComplete={() => playSound('cardFlip')}
                   />
                 ) : (
                   <div
@@ -272,25 +289,19 @@ function PyramidPageContent() {
               {/* Waste */}
               <div className="text-center">
                 <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
-                {state.waste.length > 0 ? (
+                {wasteTopCard ? (
                   <button
                     type="button"
-                    onClick={() => {
-                      const topCard = state.waste[state.waste.length - 1];
-                      handleSelectCard({ zone: 'waste' }, topCard.value);
-                    }}
+                    onClick={() => handleSelectCard({ zone: 'waste' }, wasteTopCard.value)}
                     disabled={!isPlaying || loading}
-                    aria-label={cardAlt(state.waste[state.waste.length - 1])}
+                    aria-label={cardAlt(wasteTopCard)}
                     aria-pressed={isSelected('waste')}
+                    data-pair-candidate={isWastePairCandidate ? 'true' : undefined}
                     className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
                       isSelected('waste') ? 'ring-2 ring-ds-warning' : ''
-                    }`}
+                    } ${isWastePairCandidate ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
                   >
-                    <AnimatedCard
-                      card={state.waste[state.waste.length - 1]}
-                      width={effectiveCardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard card={wasteTopCard} width={effectiveCardWidth} />
                   </button>
                 ) : (
                   <div

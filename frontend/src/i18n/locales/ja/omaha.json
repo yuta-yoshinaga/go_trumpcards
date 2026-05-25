@@ -11,6 +11,8 @@
   },
   "communityCards": "コミュニティカード",
   "yourHand": "あなたの手札",
+  "mandatoryRule": "ルール: 手札から2枚 + 場札から3枚",
+  "mandatoryRuleAria": "オマハのルール: 手札ちょうど2枚と場札ちょうど3枚を使います",
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
   "rebuy": {
     "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",
@@ -36,6 +38,18 @@
     "threeBetTooltip": "3Bet（スリーベット）: 相手のレイズに対して再レイズした割合",
     "af": "AF",
     "afTooltip": "AF（アグレッションファクター）: ベット・レイズのコールに対する比率"
+  },
+  "style": {
+    "tag": "TAG",
+    "tagTooltip": "Tight Aggressive：参加少なめだが入ったら強気",
+    "lag": "LAG",
+    "lagTooltip": "Loose Aggressive：参加多くかつ攻め志向",
+    "tp": "TP",
+    "tpTooltip": "Tight Passive：参加少なめでコール中心",
+    "lp": "LP",
+    "lpTooltip": "Loose Passive：参加多めだがコール中心",
+    "balanced": "BAL",
+    "balancedTooltip": "バランス型のスタイル"
   },
   "learning": {
     "title": "ラーニングモード",

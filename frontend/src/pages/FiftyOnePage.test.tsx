@@ -83,7 +83,7 @@ describe('FiftyOnePage', () => {
   it('renders player score after load', async () => {
     const { FiftyOnePage } = await import('./FiftyOnePage');
     renderWithProviders(<FiftyOnePage />);
-    await waitFor(() => expect(screen.getByText(/21/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/スコア: 21/)).toBeInTheDocument());
   });
 
   it('exchange all button calls exchangeall', async () => {
@@ -121,5 +121,18 @@ describe('FiftyOnePage', () => {
 
     const exchangeBtn = screen.getByTestId('exchange-button');
     expect(exchangeBtn).toBeDisabled();
+  });
+
+  it('renders suit score badges and highlights the leading suit', async () => {
+    const { FiftyOnePage } = await import('./FiftyOnePage');
+    renderWithProviders(<FiftyOnePage />);
+    await waitFor(() => expect(screen.getByTestId('suit-score-badges')).toBeInTheDocument());
+    // SPADE=11+10=21, CLOVER=2, HEART=5, DIAMOND=3 → SPADE leads.
+    const spade = screen.getByTestId('suit-badge-SPADE');
+    expect(spade).toHaveTextContent('21');
+    expect(spade.className).toContain('bg-ds-accent');
+    const heart = screen.getByTestId('suit-badge-HEART');
+    expect(heart).toHaveTextContent('5');
+    expect(heart.className).not.toContain('bg-ds-accent');
   });
 });

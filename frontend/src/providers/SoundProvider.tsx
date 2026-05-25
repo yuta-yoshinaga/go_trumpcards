@@ -143,3 +143,14 @@ export function useSound(): SoundContextValue {
   }
   return context;
 }
+
+/**
+ * Variant of `useSound` that returns `null` when called outside a
+ * `SoundProvider` instead of throwing. Used by leaf presentational
+ * components (e.g., `AnimatedCard`) that should play their default SFX
+ * when wired into the real app but degrade gracefully in unit tests
+ * that render them in isolation without a provider.
+ */
+export function useOptionalSound(): SoundContextValue | null {
+  return useContext(SoundContext);
+}

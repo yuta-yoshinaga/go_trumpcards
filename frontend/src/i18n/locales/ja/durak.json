@@ -15,6 +15,10 @@
   "stock": "山札",
   "table": "テーブル",
   "tableEmpty": "（空）",
+  "pair": {
+    "undefendedAria": "未防御の攻撃: {{card}}",
+    "defendedAria": "防御済みペア: {{attack}} を {{defense}} で防御"
+  },
   "attackButton": "攻撃",
   "defendButton": "防御",
   "passButton": "パス",

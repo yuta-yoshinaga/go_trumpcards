@@ -21,6 +21,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGoFishGame } from '../hooks/useGoFishGame';
+import { useGoFishKnownRanks } from '../hooks/useGoFishKnownRanks';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary } from '../styles/buttonStyles';
@@ -117,6 +118,8 @@ function GoFishPageContent() {
     void exec('reset', undefined, undefined, { cpuDifficulty: goFishConfig.cpuDifficulty });
   }, [exec, hideActionLog, goFishConfig.cpuDifficulty]);
 
+  const knownRanks = useGoFishKnownRanks(state);
+
   if (!state) return <GameSkeleton gameKey="gofish" layout={{ kind: 'trick-taking', footerHandSize: 5 }} />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
@@ -129,6 +132,7 @@ function GoFishPageContent() {
 
   // Get unique ranks from human hand for rank selection
   const humanRanks = humanPlayer ? [...new Set(humanPlayer.cards.map((c) => c.value))].sort((a, b) => a - b) : [];
+  const humanRankSet = new Set(humanRanks);
 
   return (
     <GamePageShell
@@ -192,6 +196,8 @@ function GoFishPageContent() {
                         triggerKey: `${state.turnNumber}-${lastAsk.playerIdx}-${lastAsk.targetIdx}-${lastAsk.rank}`,
                       }
                     : undefined;
+                const playerKnown = knownRanks[p.id] ?? [];
+                const matched = playerKnown.filter((r) => humanRankSet.has(r));
                 return (
                   <GoFishPlayerArea
                     key={p.id}
@@ -200,6 +206,8 @@ function GoFishPageContent() {
                     onSelect={handleSelectTarget}
                     disabled={!isHumanTurn || loading}
                     askAnnotation={askAnnotation}
+                    knownRanks={playerKnown}
+                    matchedRanks={matched}
                   />
                 );
               })}
@@ -273,11 +281,7 @@ function GoFishPageContent() {
                       boxSizing: 'border-box',
                     }}
                   >
-                    <AnimatedCard
-                      card={card}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard card={card} width={cardWidth} />
                   </button>
                 ))}
               </div>

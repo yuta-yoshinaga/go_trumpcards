@@ -37,6 +37,8 @@
   --color-game-bg-casino-dark: #0a3a10;
   --color-game-bg-blue: #1a2c5c;
   --color-game-bg-blue-dark: #101c3a;
+  --color-game-bg-revolution: #5a1717;
+  --color-game-bg-revolution-dark: #3c0f0f;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;
@@ -230,6 +232,24 @@ input:not([type]):focus-visible {
   animation: flipIn 0.3s ease-out;
 }
 
+/* Brief "lock-in" pulse used when a Video Poker card is held. The scale dip
+   gives the card a tactile "click" the moment the HOLD ring appears.
+   Uses standalone `scale` (not transform: scale()) so the animation is additive:
+   Tailwind's -translate-y-2 transition still slides the card up smoothly while
+   this keyframe only controls the scale dip. */
+@keyframes card-lock {
+  0%,
+  100% {
+    scale: 1;
+  }
+  35% {
+    scale: 0.94;
+  }
+}
+.animate-card-lock {
+  animation: card-lock 0.18s ease-out;
+}
+
 @keyframes sweat-drop {
   0% {
     opacity: 0.6;
@@ -246,6 +266,46 @@ input:not([type]):focus-visible {
 }
 .animate-sweat-drop {
   animation: sweat-drop 1.5s ease-in-out infinite;
+}
+
+@keyframes eye-dart {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-2px);
+  }
+  75% {
+    transform: translateX(2px);
+  }
+}
+.animate-eye-dart {
+  animation: eye-dart 0.9s ease-in-out infinite;
+}
+
+/* Suit watermark "settle" animation — used by Crazy Eights when chosenSuit
+   becomes active. Starts slightly larger and settles to the resting opacity
+   so the suit change registers in peripheral vision (#1885). The 100% opacity
+   must match the element's resting Tailwind opacity (`opacity-15` = 0.15);
+   otherwise the computed value snaps when the animation ends, producing a
+   visible flash. */
+@keyframes suit-watermark {
+  0% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+  60% {
+    opacity: 0.08;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 0.15;
+    transform: scale(1);
+  }
+}
+.animate-suit-watermark {
+  animation: suit-watermark 0.4s ease-out;
 }
 
 /* Rotate chevron when sidebar category is open */
@@ -348,6 +408,7 @@ input:not([type]):focus-visible {
   .animate-shake,
   .animate-flipIn,
   .animate-sweat-drop,
+  .animate-eye-dart,
   .animate-card-deal-in {
     animation: none;
   }

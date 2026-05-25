@@ -252,6 +252,87 @@ describe('PinochlePage', () => {
     expect(screen.getByLabelText('♥ K')).not.toHaveAttribute('data-meld-highlighted');
   });
 
+  it('renders a persistent meld-card badge ("M") on every card that scored in a meld', async () => {
+    const meldStateWithHumanMeld: PinochleResponse = {
+      ...meldPhaseState,
+      players: makePlayers([
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 3,
+          cards: [
+            { design: 'HEART', value: 13 },
+            { design: 'HEART', value: 12 },
+            { design: 'SPADE', value: 1 },
+          ],
+        },
+      ]),
+      playerMelds: [
+        [
+          {
+            type: 1,
+            points: 20,
+            cards: [
+              { design: 'HEART', value: 13 },
+              { design: 'HEART', value: 12 },
+            ],
+          },
+        ],
+        [],
+        [],
+        [],
+      ],
+    };
+    mockExec.mockResolvedValue(meldStateWithHumanMeld);
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByTestId('pn-meld-card-badge-0')).toBeInTheDocument());
+    expect(screen.getByTestId('pn-meld-card-badge-1')).toBeInTheDocument();
+    expect(screen.queryByTestId('pn-meld-card-badge-2')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('♥ K')).toHaveAttribute('data-in-meld', 'true');
+    expect(screen.getByLabelText('♠ A')).not.toHaveAttribute('data-in-meld');
+  });
+
+  it('keeps the meld-card badge visible in PLAY phase so users do not discard meld components', async () => {
+    const playStateWithHumanMeld: PinochleResponse = {
+      ...playPhaseState,
+      players: makePlayers([
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 3,
+          cards: [
+            { design: 'HEART', value: 13 },
+            { design: 'HEART', value: 12 },
+            { design: 'SPADE', value: 1 },
+          ],
+        },
+      ]),
+      validPlayIndices: [0, 1, 2],
+      playerMelds: [
+        [
+          {
+            type: 1,
+            points: 20,
+            cards: [
+              { design: 'HEART', value: 13 },
+              { design: 'HEART', value: 12 },
+            ],
+          },
+        ],
+        [],
+        [],
+        [],
+      ],
+    };
+    mockExec.mockResolvedValue(playStateWithHumanMeld);
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByTestId('pn-meld-card-badge-0')).toBeInTheDocument());
+    expect(screen.getByTestId('pn-meld-card-badge-1')).toBeInTheDocument();
+    expect(screen.queryByTestId('pn-meld-card-badge-2')).not.toBeInTheDocument();
+    // Tooltip carries the localized meld type for the components.
+    expect(screen.getByLabelText('♥ K')).toHaveAttribute('title', 'コモンマリッジ');
+  });
+
   it('renders play phase with human cards', async () => {
     mockExec.mockResolvedValue(playPhaseState);
     renderWithProviders(<PinochlePage />);

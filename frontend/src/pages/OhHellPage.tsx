@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import type { ohHellApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -126,7 +126,6 @@ function OhHellPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('ohhell', state);
   const { cardWidth, isMobile } = useCardDimensions();
-  const [bidValue, setBidValue] = useState(0);
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('ohhell');
   const cliConfig: CliGameConfig<OhHellResponse, Parameters<typeof ohHellApi.exec>> = useMemo(
@@ -301,11 +300,7 @@ function OhHellPageContent() {
                 {state.trumpCard && (
                   <div className="my-2 flex justify-center">
                     <div className="text-center">
-                      <AnimatedCard
-                        card={state.trumpCard}
-                        width={cardWidth}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={state.trumpCard} width={cardWidth} />
                     </div>
                   </div>
                 )}
@@ -317,7 +312,6 @@ function OhHellPageContent() {
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="oh-trick-display"
-                  onCardDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                 />
               </div>
 
@@ -483,11 +477,7 @@ function OhHellPageContent() {
                         boxSizing: 'border-box',
                       }}
                     >
-                      <AnimatedCard
-                        card={card}
-                        width={cardWidth}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={card} width={cardWidth} />
                     </button>
                   ))}
                 </div>
@@ -512,20 +502,24 @@ function OhHellPageContent() {
                 </button>
               )}
               {isHumanBidTurn && (
-                <>
-                  <input
-                    type="number"
-                    min={0}
-                    max={state.handSize}
-                    value={bidValue}
-                    onChange={(e) => setBidValue(Number(e.target.value))}
-                    className="w-16 px-2 py-1 rounded bg-white/20 text-ds-text-primary text-center"
-                    aria-label="bid-input"
-                  />
-                  <button type="button" className={btnPrimary} onClick={() => handleBid(bidValue)} disabled={loading}>
-                    {t('bidButton')}
-                  </button>
-                </>
+                <div className="flex flex-wrap gap-1.5">
+                  {Array.from({ length: state.handSize + 1 }, (_, i) => i).map((i) => {
+                    const isRestricted = state.restrictedBid === i;
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        className={btnPrimary}
+                        onClick={() => handleBid(i)}
+                        disabled={loading || isRestricted}
+                        title={isRestricted ? t('restrictedBidTooltip') : undefined}
+                        aria-label={t('bid', { n: i })}
+                      >
+                        {i}
+                      </button>
+                    );
+                  })}
+                </div>
               )}
               {isHumanTurn && (
                 <button

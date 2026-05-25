@@ -11,6 +11,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { RoadmapTrendBar } from '../components/RoadmapTrendBar';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -146,21 +147,13 @@ function DragonTigerPageContent() {
                   {state.dragonCard && (
                     <div className="flex flex-col items-center">
                       <div className="text-ds-warning text-sm font-bold mb-1">{t('label.dragon')}</div>
-                      <AnimatedCard
-                        card={state.dragonCard}
-                        width={cardWidth}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={state.dragonCard} width={cardWidth} />
                     </div>
                   )}
                   {state.tigerCard && (
                     <div className="flex flex-col items-center">
                       <div className="text-ds-info text-sm font-bold mb-1">{t('label.tiger')}</div>
-                      <AnimatedCard
-                        card={state.tigerCard}
-                        width={cardWidth}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={state.tigerCard} width={cardWidth} />
                     </div>
                   )}
                 </div>
@@ -170,6 +163,16 @@ function DragonTigerPageContent() {
             {state.history.length > 0 && (
               <div className="mb-4" data-testid="bigroad">
                 <div className="text-ds-text-primary text-center text-sm font-bold mb-1">{t('label.bigRoad')}</div>
+                <div className="mx-auto max-w-3xl">
+                  <RoadmapTrendBar
+                    history={state.history}
+                    leftCode={DragonTigerHistoryResult.DRAGON}
+                    rightCode={DragonTigerHistoryResult.TIGER}
+                    leftLabel={t('label.dragon')}
+                    rightLabel={t('label.tiger')}
+                    testId="dragontiger-trend-bar"
+                  />
+                </div>
                 <div className="flex justify-center gap-1 flex-wrap max-w-3xl mx-auto">
                   {state.history.map((r, i) => {
                     const label =

@@ -196,6 +196,27 @@ function WarPageContent() {
                 <div className="text-sm text-ds-text-primary font-semibold">
                   {t('label.potCount', { count: state.warPotSize })}
                 </div>
+                {state.warPotSize > 2 && (
+                  <div
+                    className="relative mx-auto mt-1"
+                    data-testid="war-pot-stack"
+                    data-pot-size={state.warPotSize}
+                    style={{
+                      width: cardWidth * 0.6,
+                      height: cardWidth * 0.6 * 1.4 + Math.min(state.warPotSize, 10) * 2,
+                    }}
+                  >
+                    {Array.from({ length: Math.min(state.warPotSize, 10) }, (_, i) => (
+                      <div
+                        key={i}
+                        className="absolute left-0 top-0"
+                        style={{ transform: `translate(${i * 1.5}px, ${i * 2}px)` }}
+                      >
+                        <AnimatedCardBack width={cardWidth * 0.6} />
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <div className="text-xs text-ds-text-muted mt-1">
                   {t('label.rounds')}: {state.roundsPlayed} / {state.config.maxRounds}
                 </div>

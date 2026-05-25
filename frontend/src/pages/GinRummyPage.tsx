@@ -33,6 +33,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { GINRUMMY_HELP, parseGinrummyCommand } from '../utils/cli/commands/ginrummyCommands';
 import { formatGinrummyState } from '../utils/cli/formatters/ginrummyFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { bestDeadwoodValue, GIN_RUMMY_KNOCK_THRESHOLD } from '../utils/ginRummyDeadwood';
 import { playerName } from '../utils/playerUtils';
 
 const GINRUMMY_PHASE_KEYS: Readonly<Record<number, string>> = {
@@ -155,6 +156,30 @@ function GinRummyPageContent() {
     });
   }, [gameExec, hideActionLog, ginRummyConfig.cpuDifficulty, ginRummyConfig.pointLimit]);
 
+  // Knock requires the *post-discard* hand to be ≤ 10. When the user has a
+  // card selected we project that discard; otherwise show the best-case
+  // deadwood across all possible single discards (a knockability hint).
+  const liveDeadwood = useMemo<number | null>(() => {
+    if (!state) return null;
+    if (state.phase !== GinRummyPhase.DISCARD) return null;
+    const human = state.players.find((p) => p.isHuman);
+    if (!human) return null;
+    const cards = human.cards;
+    if (cards.length === 0) return null;
+    if (selectedCardIndices.length === 1) {
+      const drop = selectedCardIndices[0];
+      return bestDeadwoodValue(cards.filter((_, i) => i !== drop));
+    }
+    let best = Number.POSITIVE_INFINITY;
+    for (let i = 0; i < cards.length; i++) {
+      const dv = bestDeadwoodValue(cards.filter((_, j) => j !== i));
+      if (dv < best) best = dv;
+      if (best === 0) break;
+    }
+    return Number.isFinite(best) ? best : null;
+  }, [state, selectedCardIndices]);
+  const canKnockNow = liveDeadwood != null && liveDeadwood <= GIN_RUMMY_KNOCK_THRESHOLD;
+
   if (!state)
     return (
       <GameSkeleton
@@ -239,11 +264,7 @@ function GinRummyPageContent() {
                 {/* Discard pile top */}
                 {state.discardTop && (
                   <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3">
-                    <AnimatedCard
-                      card={state.discardTop}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard card={state.discardTop} width={cardWidth} />
                     <div className="text-ds-text-muted text-sm">
                       <div>{t('discardTop')}</div>
                     </div>
@@ -261,7 +282,6 @@ function GinRummyPageContent() {
                             key={`meld-${meldIdx}-${card.design}-${card.value}-${cardIdx}`}
                             card={card}
                             width={cardWidth * 0.7}
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                           />
                         ))}
                       </div>
@@ -290,7 +310,6 @@ function GinRummyPageContent() {
                               key={`cpu-${card.design}-${card.value}-${idx}`}
                               card={card}
                               width={cardWidth * 0.8}
-                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                             />
                           ))}
                         </div>
@@ -340,6 +359,14 @@ function GinRummyPageContent() {
           </div>
 
           <GameFooter className={`${gameTheme.ginrummy.footer} px-4 py-2.5`}>
+            {liveDeadwood != null && (
+              <div
+                data-testid="ginrummy-deadwood-indicator"
+                className={`text-xs font-bold mb-1 ${canKnockNow ? 'text-ds-success' : 'text-ds-text-muted'}`}
+              >
+                {t('deadwoodLabel', { score: liveDeadwood, threshold: GIN_RUMMY_KNOCK_THRESHOLD })}
+              </div>
+            )}
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="gr-player-hand">
                 {humanPlayer.cards.map((card, idx) => (
@@ -358,11 +385,7 @@ function GinRummyPageContent() {
                       boxSizing: 'border-box',
                     }}
                   >
-                    <AnimatedCard
-                      card={card}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard card={card} width={cardWidth} />
                   </button>
                 ))}
               </div>
@@ -403,10 +426,11 @@ function GinRummyPageContent() {
                   </button>
                   <button
                     type="button"
-                    className={btnPrimary}
+                    className={`${btnPrimary} ${canKnockNow ? 'motion-safe:animate-pulse ring-2 ring-ds-success' : ''}`}
                     onClick={handleKnock}
                     disabled={loading || selectedCardIndices.length !== 1}
                     data-tutorial="gr-knock-button"
+                    data-testid="ginrummy-knock-button"
                   >
                     {t('knockButton')}
                   </button>

@@ -40,13 +40,20 @@
   "role": {
     "declarer": "宣言者",
     "partner": "パートナー",
-    "opposition": "野党"
+    "opposition": "野党",
+    "partnerRevealed": "パートナー判明！"
   },
   "suitName": {
     "spade": "スペード",
     "club": "クラブ",
     "heart": "ハート",
     "diamond": "ダイヤ"
+  },
+  "specialRole": {
+    "mighty": "マイティ (最強カード)",
+    "jokerCall": "ジョーカーコール",
+    "joker": "ジョーカー",
+    "partner": "副官カード"
   },
   "scores": "スコア",
   "scoresPlayer": "プレイヤー",

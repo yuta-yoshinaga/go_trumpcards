@@ -8,6 +8,15 @@ export const focusRingCard =
 /** Tailwind classes for hover feedback on clickable cards (non-AnimatedCard). */
 export const hoverCardClass = 'cursor-pointer transition-[transform,box-shadow] duration-150';
 
+/**
+ * Transparent placeholder border for cards that are never selectable but
+ * sit next to selectable ones. Keeps their box-model width identical to a
+ * `selectedCardStyle(false)` card so the layout doesn't jump when selection
+ * toggles in adjacent rows. Single source of truth for the unselectable
+ * "no visual feedback" state.
+ */
+export const placeholderCardStyle: React.CSSProperties = { border: '3px solid transparent' };
+
 /** Return inline styles for a card with selection highlight and lift effect. */
 export function selectedCardStyle(isSelected: boolean): React.CSSProperties {
   return {

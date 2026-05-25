@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { SeahavenTowersMoveZone, seahaventowersApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -17,11 +17,11 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useResponsiveTableau } from '../hooks/useResponsiveTableau';
 import { useSeahavenTowersGame } from '../hooks/useSeahavenTowersGame';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSound } from '../providers/SoundProvider';
@@ -103,7 +103,23 @@ function SeahavenTowersPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('seahaventowers', state);
-  const { cardHeight, cardOverlap, cardWidth } = useCardDimensions();
+  // Live longest-column length: shrinks the per-card vertical step on mobile so the tallest
+  // tableau column fits within 375×667 without scrolling (#1861).
+  const maxColCards = useMemo(
+    () => state?.tableau.reduce((m, col) => (col.length > m ? col.length : m), 0) ?? 0,
+    [state?.tableau],
+  );
+  // Container uses `pt-3 px-4 lg:px-8` (padX=32 on mobile) and `gap-0.5` between tableau
+  // columns (gapPx=2). Matches Spider's layout knobs so 10 columns fit a 375 px viewport.
+  const {
+    cw: cardWidth,
+    ch: cardHeight,
+    co: cardOverlap,
+  } = useResponsiveTableau(10, {
+    padX: 32,
+    gapPx: 2,
+    maxColCards,
+  });
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('seahaventowers');
   const cliConfig: CliGameConfig<SeahavenTowersResponse, Parameters<typeof seahaventowersApi.exec>> = useMemo(
@@ -150,6 +166,8 @@ function SeahavenTowersPageContent() {
     bindings: actionBindings,
     enabled: !!isPlayingForKbd && !loading,
   });
+
+  const [hoveredStack, setHoveredStack] = useState<{ col: number; cardIdx: number } | null>(null);
 
   if (!state) return <GameSkeleton gameKey="seahaventowers" layout={{ kind: 'tableau', topRow: 10, tableau: 10 }} />;
 
@@ -235,12 +253,7 @@ function SeahavenTowersPageContent() {
                             onDragEnd={dnd.handleDragEnd}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('reserved', undefined, idx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(reservedZone) ? 'opacity-50' : ''}`}
                           >
-                            <AnimatedCard
-                              card={card}
-                              width={cardWidth}
-                              draggable={false}
-                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                            />
+                            <AnimatedCard card={card} width={cardWidth} draggable={false} />
                           </button>
                         ) : (
                           <button
@@ -291,7 +304,6 @@ function SeahavenTowersPageContent() {
                               width={cardWidth}
                               draggable={false}
                               dealDelay={isAutoCompleting ? idx * 0.15 : 0}
-                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                             />
                           </button>
                         ) : (
@@ -347,6 +359,11 @@ function SeahavenTowersPageContent() {
                               };
                               const stackSize = col.length - cardIdx;
                               const exceedsSupermove = stackSize > supermoveLimit;
+                              const isInHoveredBlock =
+                                hoveredStack !== null &&
+                                hoveredStack.col === colIdx &&
+                                cardIdx >= hoveredStack.cardIdx &&
+                                col.length - hoveredStack.cardIdx <= supermoveLimit;
                               return (
                                 <div
                                   key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
@@ -369,12 +386,17 @@ function SeahavenTowersPageContent() {
                                       draggable={isPlaying && !loading && !exceedsSupermove}
                                       onDragStart={dnd.handleDragStart(cardZone)}
                                       onDragEnd={dnd.handleDragEnd}
+                                      onMouseEnter={() => setHoveredStack({ col: colIdx, cardIdx })}
+                                      onMouseLeave={() => setHoveredStack(null)}
+                                      onFocus={() => setHoveredStack({ col: colIdx, cardIdx })}
+                                      onBlur={() => setHoveredStack(null)}
                                       title={
                                         exceedsSupermove
                                           ? t('supermoveLimitTooltip', { limit: supermoveLimit })
                                           : undefined
                                       }
                                       data-supermove-blocked={exceedsSupermove ? 'true' : undefined}
+                                      data-supermove-block={isInHoveredBlock ? 'true' : undefined}
                                       className={[
                                         'p-0 border-0 bg-transparent cursor-pointer w-full rounded',
                                         focusRingWhite,
@@ -382,6 +404,7 @@ function SeahavenTowersPageContent() {
                                           'ring-2 ring-ds-warning',
                                         dnd.isDragSource(cardZone) && 'opacity-50',
                                         exceedsSupermove && 'opacity-60 ring-1 ring-ds-error',
+                                        isInHoveredBlock && 'ring-2 ring-ds-success',
                                       ]
                                         .filter(Boolean)
                                         .join(' ')}
@@ -391,7 +414,6 @@ function SeahavenTowersPageContent() {
                                         width={cardWidth}
                                         draggable={false}
                                         style={{ width: '100%' }}
-                                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                                       />
                                     </button>
                                   ) : (

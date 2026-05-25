@@ -23,7 +23,10 @@ test.describe('Cribbage E2E', () => {
     const goButton = page.getByRole('button', { name: 'Go' });
     const showNextButton = page.getByRole('button', { name: '次を表示' });
     const nextRoundButton = page.getByRole('button', { name: '次のラウンド' });
-    const handCards = page.locator('button[aria-pressed]:has(img)');
+    // Exclude cards marked aria-disabled (the 31-cap restriction added in #1872) so
+    // `handCards.first()` always picks a playable card, otherwise the .click() can
+    // hang on a restricted card during the pegging loop.
+    const handCards = page.locator('button[aria-pressed]:has(img):not([aria-disabled="true"])');
     const anyResetButton = page.getByRole('button', { name: /リセット|次のゲーム/ });
 
     // Play through several interactions to verify phase transitions

@@ -266,6 +266,18 @@ describe('VideoPokerGameContent', () => {
     expect(cardButtons.every((b) => b.getAttribute('aria-pressed') === 'false')).toBe(true);
   });
 
+  it('renders the HOLD badge overlay only on held cards', async () => {
+    mockExec.mockResolvedValue(resultPhaseWin);
+    renderContent();
+    await waitFor(() => expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument());
+    // resultPhaseWin holds card indices 0 and 1; 2-4 are not held.
+    expect(screen.getByTestId('vp-hold-badge-0')).toBeInTheDocument();
+    expect(screen.getByTestId('vp-hold-badge-1')).toBeInTheDocument();
+    expect(screen.queryByTestId('vp-hold-badge-2')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('vp-hold-badge-3')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('vp-hold-badge-4')).not.toBeInTheDocument();
+  });
+
   it('renders accessible h1 heading', async () => {
     mockExec.mockResolvedValue(betPhaseState);
     renderContent();

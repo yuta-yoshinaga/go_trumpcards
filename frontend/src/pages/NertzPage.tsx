@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type NertzMoveZone, nertzApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -28,6 +28,9 @@ import type { CliGameConfig } from '../utils/cli/types';
 
 /** CPU tick interval in milliseconds while the round is active. */
 const NERTZ_TICK_INTERVAL_MS = 700;
+
+/** Duration to leave the collision shake/red-ring on a rejected foundation. */
+const NERTZ_COLLISION_FEEDBACK_MS = 500;
 
 /** Tutorial step definitions for the Nertz / Pounce page. */
 const NERTZ_TUTORIAL_STEPS: TutorialStep[] = [
@@ -134,6 +137,98 @@ function NertzPageContent() {
     [isHumanTurn],
   );
 
+  const [collidedFoundationIdx, setCollidedFoundationIdx] = useState<number | null>(null);
+  const [collisionTick, setCollisionTick] = useState(0);
+  /**
+   * Map of foundation index → active placement flash. Multiple CPUs (or a CPU
+   * + the human) can all place on different foundations within a single tick;
+   * tracking flashes per-foundation lets every placement light up rather than
+   * just the first one we detect.
+   */
+  const [placedFlashes, setPlacedFlashes] = useState<Map<number, { placedBy: 'human' | 'cpu'; key: number }>>(
+    () => new Map(),
+  );
+  const prevFoundationSizesRef = useRef<number[]>([]);
+  const flashKeyRef = useRef(0);
+  // `isCollisionError` flags that the current `error` from useGameApi was
+  // attributed to a foundation collision (already conveyed via the shake
+  // animation). The global ErrorAlert is suppressed for the lifetime of that
+  // error so it does not pop in once the shake animation expires.
+  const [isCollisionError, setIsCollisionError] = useState(false);
+  // Tracks the target foundation of the most recent player-initiated move so we
+  // can attribute the next error from `useGameApi` to a specific cell.
+  const pendingFoundationRef = useRef<number | null>(null);
+  const prevErrorRef = useRef<string | null>(null);
+
+  // Successful moves call `setState(res)` on the useGameApi side; whenever a new
+  // state arrives we know the in-flight move resolved without error, so the
+  // stale foundation pointer must be cleared. Without this, a later unrelated
+  // error (a tick that fails) would attribute itself to the previous foundation
+  // and flash the wrong cell.
+  useEffect(() => {
+    if (!state) return;
+    // Detect foundation growth → flash success ring on *every* foundation that
+    // grew. Nertz ticks can drop multiple cards across multiple foundations in
+    // a single state update; the previous single-flash early-break only lit
+    // the first one we saw.
+    const prev = prevFoundationSizesRef.current;
+    const grown: number[] = [];
+    for (let idx = 0; idx < state.foundations.length; idx += 1) {
+      const newSize = state.foundations[idx].size;
+      const oldSize = prev[idx] ?? 0;
+      if (newSize > oldSize) grown.push(idx);
+    }
+    if (grown.length > 0) {
+      const humanIdx = pendingFoundationRef.current;
+      setPlacedFlashes((current) => {
+        const next = new Map(current);
+        for (const idx of grown) {
+          flashKeyRef.current += 1;
+          next.set(idx, { placedBy: humanIdx === idx ? 'human' : 'cpu', key: flashKeyRef.current });
+        }
+        return next;
+      });
+      // Schedule a removal for each idx independently so the visible flash
+      // duration is constant regardless of when sibling flashes start.
+      for (const idx of grown) {
+        window.setTimeout(() => {
+          setPlacedFlashes((current) => {
+            if (!current.has(idx)) return current;
+            const next = new Map(current);
+            next.delete(idx);
+            return next;
+          });
+        }, NERTZ_COLLISION_FEEDBACK_MS);
+      }
+    }
+    prevFoundationSizesRef.current = state.foundations.map((f) => f.size);
+    pendingFoundationRef.current = null;
+  }, [state]);
+
+  useEffect(() => {
+    if (error && error !== prevErrorRef.current) {
+      if (pendingFoundationRef.current !== null) {
+        setCollidedFoundationIdx(pendingFoundationRef.current);
+        setCollisionTick((n) => n + 1);
+        setIsCollisionError(true);
+        pendingFoundationRef.current = null;
+      } else {
+        setIsCollisionError(false);
+      }
+    } else if (!error) {
+      setIsCollisionError(false);
+    }
+    prevErrorRef.current = error;
+  }, [error]);
+
+  useEffect(() => {
+    // `collisionTick` ensures repeated collisions on the same foundation reset the timer.
+    if (collidedFoundationIdx === null) return;
+    void collisionTick;
+    const id = window.setTimeout(() => setCollidedFoundationIdx(null), NERTZ_COLLISION_FEEDBACK_MS);
+    return () => window.clearTimeout(id);
+  }, [collidedFoundationIdx, collisionTick]);
+
   const dispatchMove = useCallback(
     (to: NertzMoveZone) => {
       if (!selection) return;
@@ -141,6 +236,9 @@ function NertzPageContent() {
         selection.kind === 'tableau'
           ? { zone: 'tableau', col: selection.col, cardIndex: selection.cardIndex }
           : { zone: selection.kind };
+      if (to.zone === 'foundation' && to.idx !== undefined) {
+        pendingFoundationRef.current = to.idx;
+      }
       void apiCall('m', { playerIdx: 0, from, to });
       setSelection(null);
     },
@@ -204,13 +302,11 @@ function NertzPageContent() {
     return t('phase.playing');
   }, [isGameEnd, isRoundEnd, t]);
 
-  if (error) return <ErrorAlert message={error} onRetry={retry} />;
-
   if (!state || !human) {
     return (
       <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.nertz.bg}`}>
         <div className="flex-1 flex items-center justify-center text-ds-text-primary">
-          <p>{tc('common.loading')}</p>
+          <p>{tc('skeleton.loading')}</p>
         </div>
       </div>
     );
@@ -255,20 +351,28 @@ function NertzPageContent() {
               messageParams={state.messageParams}
             />
 
+            {error && !isCollisionError && <ErrorAlert message={error} onRetry={retry} />}
+
             <div data-tutorial="nertz-foundations" className="bg-black/30 text-ds-text-primary p-3 rounded">
               <div className="text-xs uppercase tracking-wide text-ds-text-muted mb-2">{t('labels.foundation')}</div>
               <div className="flex flex-wrap gap-2">
-                {state.foundations.map((f, idx) => (
-                  <FoundationCell
-                    key={`f-${idx}`}
-                    idx={idx}
-                    top={f.top}
-                    size={f.size}
-                    onClick={() => handleFoundationClick(idx)}
-                    disabled={!isHumanTurn || !selection}
-                    ariaLabel={t('labels.foundationN', { n: idx, defaultValue: `Foundation ${idx}` })}
-                  />
-                ))}
+                {state.foundations.map((f, idx) => {
+                  const flash = placedFlashes.get(idx);
+                  return (
+                    <FoundationCell
+                      key={`f-${idx}`}
+                      idx={idx}
+                      top={f.top}
+                      size={f.size}
+                      onClick={() => handleFoundationClick(idx)}
+                      disabled={!isHumanTurn || !selection}
+                      ariaLabel={t('labels.foundationN', { n: idx, defaultValue: `Foundation ${idx}` })}
+                      collided={collidedFoundationIdx === idx}
+                      placedBy={flash?.placedBy ?? null}
+                      placedFlashKey={flash?.key ?? 0}
+                    />
+                  );
+                })}
               </div>
             </div>
 
@@ -398,24 +502,65 @@ interface FoundationCellProps {
   onClick: () => void;
   disabled: boolean;
   ariaLabel: string;
+  /** Apply collision feedback (shake + red ring) when a move to this foundation was just rejected. */
+  collided?: boolean;
+  /** Which side just placed a card on this foundation, for a brief success flash. */
+  placedBy?: 'human' | 'cpu' | null;
+  /** Re-applies the placed flash even when `placedBy` stays the same (e.g., two human placements in a row). */
+  placedFlashKey?: number;
 }
 
-function FoundationCell({ idx, top, size, onClick, disabled, ariaLabel }: FoundationCellProps) {
+function FoundationCell({
+  idx,
+  top,
+  size,
+  onClick,
+  disabled,
+  ariaLabel,
+  collided = false,
+  placedBy = null,
+  placedFlashKey = 0,
+}: FoundationCellProps) {
   const cls = disabled
     ? 'bg-ds-surface text-ds-text-muted border-ds-border-subtle'
     : 'bg-ds-surface-elevated text-ds-text-primary border-ds-border-subtle hover:bg-ds-surface-elevated-hover';
+  const collisionCls = collided ? 'animate-shake ring-2 ring-ds-error' : '';
+  // The placement flash is a sibling overlay so we can remount *it* (via key)
+  // to re-fire animate-pulse-once on back-to-back placements without
+  // unmounting the underlying <button> and breaking keyboard focus.
+  const flashOverlayClass =
+    placedBy === 'human'
+      ? 'pointer-events-none absolute inset-0 rounded ring-2 ring-ds-success motion-safe:animate-pulse-once'
+      : placedBy === 'cpu'
+        ? 'pointer-events-none absolute inset-0 rounded ring-2 ring-ds-info motion-safe:animate-pulse-once'
+        : null;
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className={`min-w-[3rem] px-2 py-2 rounded border text-sm ${cls}`}
-      aria-label={ariaLabel}
-    >
-      <span className="block text-xs leading-none">F{idx}</span>
-      <span className="block text-base font-bold">{top ? `${suitSymbol(top.design)}${top.value}` : '—'}</span>
-      <span className="block text-xs">({size})</span>
-    </button>
+    <div className="relative inline-block">
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        className={`min-w-[3rem] rounded border px-2 py-2 text-sm ${cls} ${collisionCls}`}
+        aria-label={ariaLabel}
+        data-testid={`nertz-foundation-${idx}`}
+        data-collided={collided || undefined}
+        data-placed-by={placedBy ?? undefined}
+      >
+        <span className="block text-xs leading-none">F{idx}</span>
+        <span className="block text-base font-bold">{top ? `${suitSymbol(top.design)}${top.value}` : '—'}</span>
+        <span className="block text-xs">({size})</span>
+      </button>
+      {flashOverlayClass && (
+        // Remount the overlay (via key) on each new placement so the
+        // animate-pulse-once keyframe re-fires for back-to-back placements.
+        <span
+          aria-hidden="true"
+          key={`f-flash-${idx}-${placedFlashKey}`}
+          className={flashOverlayClass}
+          data-testid={`nertz-foundation-flash-${idx}`}
+        />
+      )}
+    </div>
   );
 }
 

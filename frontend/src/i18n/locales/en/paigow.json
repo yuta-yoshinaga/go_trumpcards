@@ -56,6 +56,7 @@
   "betGuide": "Set your bet amount",
   "selectLowHand": "Select 2 cards for your low hand",
   "selectedCount": "{{count}} / 2 selected",
+  "foulWarning": "Foul: the low hand outranks the high hand",
   "tutorial": {
     "betControls": "Set your bet amount and press Bet.",
     "setHands": "Select 2 cards from your 7 to form the low hand, then press Set.",

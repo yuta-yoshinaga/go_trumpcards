@@ -13,8 +13,11 @@
   "selectPile": "台札をクリックして出す",
   "playButton": "出す",
   "flipButton": "めくる",
+  "flipCenterPile": "台札{{n}}をめくる",
   "stuckMessage": "膠着状態です。めくるボタンを押してください。",
   "autoFlipInline": "自動でめくる",
+  "autoFlipCountdownAria": "自動めくりカウントダウン",
+  "autoFlipCountdownRemaining": "あと {{n}} 秒で自動めくり",
   "settings": {
     "title": "設定",
     "cpuDifficulty": "CPU難易度",

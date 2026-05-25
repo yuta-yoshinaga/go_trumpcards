@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { cribbageApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -80,12 +80,40 @@ const CB_TUTORIAL_STEPS: TutorialStep[] = [
 
 /** Renders the Cribbage game page with discard, pegging, show, and round phases. */
 export const CribbagePage = withTutorial(CribbagePageContent, 'cribbage', CB_TUTORIAL_STEPS);
-/** Inline peg board showing score progress as a simple bar. */
+/**
+ * Front peg's center expressed as a CSS calc that keeps the peg fully inside the
+ * track even at the extremes (0% / 100%). The peg is 12 px wide so we shift its
+ * center inward by 6 px at 0% and -6 px at 100%, blending linearly between.
+ */
+function pegCenter(pct: number): string {
+  const inset = 6 - (pct / 100) * 12;
+  return `calc(${pct}% + ${inset}px)`;
+}
+
+/** Inline peg board showing score progress, with front + rear pegs to surface the most recent jump. */
 function PegBoard({ scores, pointLimit }: { scores: { name: string; score: number }[]; pointLimit: number }) {
+  const prevScoresRef = useRef<number[]>(scores.map((s) => s.score));
+  // Read the previous score for the rear-peg position before we overwrite the ref.
+  const prevScores = prevScoresRef.current;
+  useEffect(() => {
+    prevScoresRef.current = scores.map((s) => s.score);
+  }, [scores]);
+  // Quarter-board tick marks (every 30 on a 121 board, every 15 on 61). Memoised so the
+  // array isn't reallocated on each render — pointLimit only changes when the user opens
+  // the settings panel and switches the target score.
+  const ticks = useMemo(() => {
+    const step = pointLimit >= 100 ? 30 : 15;
+    const out: number[] = [];
+    for (let v = step; v < pointLimit; v += step) out.push(v);
+    return out;
+  }, [pointLimit]);
   return (
-    <section className="my-2 p-2 rounded bg-black/30" aria-label="peg-board">
+    <section className="my-2 p-2 rounded bg-black/30" aria-label="peg-board" data-testid="peg-board">
       {scores.map((p, idx) => {
         const pct = Math.min((p.score / pointLimit) * 100, 100);
+        const prev = prevScores[idx] ?? p.score;
+        const prevPct = Math.min((prev / pointLimit) * 100, 100);
+        const tone = idx === 0 ? 'bg-ds-warning' : 'bg-ds-info';
         return (
           <div key={idx} className="mb-1">
             <div className="flex justify-between text-ds-text-muted text-xs mb-0.5">
@@ -94,10 +122,33 @@ function PegBoard({ scores, pointLimit }: { scores: { name: string; score: numbe
                 {p.score}/{pointLimit}
               </span>
             </div>
-            <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden">
+            <div className="relative w-full h-3 bg-white/10 rounded-full overflow-visible">
+              {ticks.map((v) => (
+                <div
+                  key={v}
+                  data-testid="peg-tick"
+                  aria-hidden="true"
+                  className="absolute top-0 bottom-0 w-px bg-white/20"
+                  style={{ left: `${(v / pointLimit) * 100}%` }}
+                />
+              ))}
               <div
-                className={`h-full rounded-full transition-all ${idx === 0 ? 'bg-ds-warning' : 'bg-ds-info'}`}
+                className={`absolute inset-y-0 left-0 rounded-full transition-all ${tone}`}
                 style={{ width: `${pct}%` }}
+              />
+              {prev !== p.score && (
+                <div
+                  data-testid={`rear-peg-${idx}`}
+                  aria-hidden="true"
+                  className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-white/50"
+                  style={{ left: pegCenter(prevPct) }}
+                />
+              )}
+              <div
+                data-testid={`front-peg-${idx}`}
+                aria-hidden="true"
+                className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border border-white/70 transition-all ${tone}`}
+                style={{ left: pegCenter(pct) }}
               />
             </div>
           </div>
@@ -196,6 +247,18 @@ function CribbagePageContent() {
     }) &&
     !loading;
   const [autoGoNoticeVisible, setAutoGoNoticeVisible] = useState(false);
+  const [hoveredPegValue, setHoveredPegValue] = useState<number | null>(null);
+  // Reset the hover preview whenever the turn / phase rotates or an API call is in
+  // flight — the hovered card may have just been removed from the DOM (onPointerLeave
+  // doesn't fire in that case) and the preview values would otherwise stay stale.
+  const peggingTurnKey = `${state?.phase ?? -1}-${state?.currentPlayerIdx ?? -1}`;
+  useEffect(() => {
+    // Both deps are reset triggers, not used in the body — reference them so biome's
+    // useExhaustiveDependencies rule accepts the deps list as intentional.
+    void peggingTurnKey;
+    void loading;
+    setHoveredPegValue(null);
+  }, [peggingTurnKey, loading]);
   useEffect(() => {
     if (!shouldAutoGo) {
       setAutoGoNoticeVisible(false);
@@ -306,11 +369,7 @@ function CribbagePageContent() {
                 {/* Starter card */}
                 {state.starter && (
                   <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3">
-                    <AnimatedCard
-                      card={state.starter}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard card={state.starter} width={cardWidth} />
                     <div className="text-ds-text-muted text-sm">
                       <div>{t('starter')}</div>
                     </div>
@@ -329,7 +388,6 @@ function CribbagePageContent() {
                           key={`peg-${card.design}-${card.value}-${idx}`}
                           card={card}
                           width={cardWidth * 0.8}
-                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                         />
                       ))}
                     </div>
@@ -346,7 +404,6 @@ function CribbagePageContent() {
                           key={`crib-${card.design}-${card.value}-${idx}`}
                           card={card}
                           width={cardWidth * 0.8}
-                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                         />
                       ))}
                     </div>
@@ -409,7 +466,6 @@ function CribbagePageContent() {
                               key={`cpu-${card.design}-${card.value}-${idx}`}
                               card={card}
                               width={cardWidth * 0.8}
-                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                             />
                           ))}
                         </div>
@@ -471,31 +527,58 @@ function CribbagePageContent() {
 
           <GameFooter className={`${gameTheme.cribbage.footer} px-4 py-2.5`}>
             {humanPlayer && (
-              <div className="flex flex-wrap gap-1 mb-2" data-tutorial="cb-player-hand">
-                {humanPlayer.cards.map((card, idx) => (
-                  <button
-                    type="button"
-                    key={`${card.design}-${card.value}-${idx}`}
-                    onClick={() => toggleCard(idx)}
-                    aria-label={cardAlt(card)}
-                    aria-pressed={selectedCardIndices.includes(idx)}
-                    className={`transition-transform ${focusRingCard}`}
-                    style={{
-                      background: 'none',
-                      padding: 0,
-                      borderRadius: 8,
-                      ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                      boxSizing: 'border-box',
-                    }}
-                  >
-                    <AnimatedCard
-                      card={card}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
-                  </button>
-                ))}
-              </div>
+              <>
+                {/* Fixed-height wrapper reserves space for the preview line even when it is
+                    empty, so the hand below does not jump up and down as the pointer moves
+                    in/out of cards — the pointerleave / pointerenter ping-pong would otherwise
+                    flicker the hand position. */}
+                <div className="h-5">
+                  {isPeggingPhase && hoveredPegValue !== null && (
+                    <div className="text-ds-info text-xs" data-testid="cb-peg-hover-preview">
+                      {t('pegPreview', { from: state.pegCount, to: state.pegCount + hoveredPegValue })}
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-1 mb-2" data-tutorial="cb-player-hand">
+                  {humanPlayer.cards.map((card, idx) => {
+                    const cardValue = card.value >= 10 ? 10 : card.value;
+                    const pegRestricted = isPeggingPhase && isHumanTurn && state.pegCount + cardValue > 31;
+                    const restrictedTitle = pegRestricted ? t('pegRestrictedTooltip') : undefined;
+                    return (
+                      <button
+                        type="button"
+                        key={`${card.design}-${card.value}-${idx}`}
+                        onClick={() => {
+                          if (!pegRestricted) toggleCard(idx);
+                        }}
+                        onPointerEnter={() => isPeggingPhase && !pegRestricted && setHoveredPegValue(cardValue)}
+                        onPointerLeave={() => setHoveredPegValue(null)}
+                        onFocus={() => isPeggingPhase && !pegRestricted && setHoveredPegValue(cardValue)}
+                        onBlur={() => setHoveredPegValue(null)}
+                        aria-label={pegRestricted ? `${cardAlt(card)} (${t('pegRestrictedAria')})` : cardAlt(card)}
+                        aria-pressed={selectedCardIndices.includes(idx)}
+                        // Use aria-disabled only (not the HTML `disabled` attribute) so
+                        // restricted cards remain focusable for keyboard / screen-reader
+                        // users — they need to reach the tooltip explaining the 31-cap
+                        // rule. Mirrors the Call Break must-trump-spade pattern (#1865).
+                        aria-disabled={pegRestricted || undefined}
+                        title={restrictedTitle}
+                        data-testid={pegRestricted ? `cb-card-restricted-${card.design}-${card.value}` : undefined}
+                        className={`transition-transform ${focusRingCard} ${pegRestricted ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        style={{
+                          background: 'none',
+                          padding: 0,
+                          borderRadius: 8,
+                          ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        <AnimatedCard card={card} width={cardWidth} />
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
             )}
 
             <ErrorAlert message={error} onRetry={retry} />
@@ -536,7 +619,13 @@ function CribbagePageContent() {
                   >
                     {t('pegButton')}
                   </button>
-                  <button type="button" className={btnPrimary} onClick={handleGo} disabled={loading || !!canHumanPeg}>
+                  <button
+                    type="button"
+                    className={`${btnPrimary} ${!canHumanPeg && !loading ? 'animate-pulse ring-2 ring-ds-warning' : ''}`}
+                    onClick={handleGo}
+                    disabled={loading || !!canHumanPeg}
+                    data-testid="cb-go-button"
+                  >
                     {t('goButton')}
                   </button>
                 </>

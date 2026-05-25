@@ -18,6 +18,7 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { useChainCombo } from '../hooks/useChainCombo';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -141,6 +142,8 @@ function TriPeaksPageContent() {
     handleReset();
   }, [handleReset, hideActionLog]);
 
+  const combo = useChainCombo(state?.moveCount, state?.stockCount);
+
   if (!state)
     return <GameSkeleton gameKey="tripeaks" layout={{ kind: 'tiered-rows', rows: [3, 6, 9, 10], stockWaste: true }} />;
 
@@ -178,6 +181,20 @@ function TriPeaksPageContent() {
           <span>
             {t('moveCount')}: {state.moveCount}
           </span>
+          {combo >= 2 && (
+            <span
+              data-testid="combo-badge"
+              className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                combo >= 5
+                  ? 'bg-ds-error text-ds-text-on-accent'
+                  : combo >= 3
+                    ? 'bg-ds-warning text-ds-text-on-accent'
+                    : 'bg-ds-info text-ds-text-on-accent'
+              }`}
+            >
+              {t('combo', { count: combo })}
+            </span>
+          )}
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
       }
@@ -231,11 +248,7 @@ function TriPeaksPageContent() {
                               isHinted ? 'ring-2 ring-ds-warning' : ''
                             } ${!exposed ? 'opacity-60' : ''}`}
                           >
-                            <AnimatedCard
-                              card={tc2.card}
-                              width={effectiveCardWidth}
-                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                            />
+                            <AnimatedCard card={tc2.card} width={effectiveCardWidth} />
                           </button>
                         </div>
                       );
@@ -256,7 +269,6 @@ function TriPeaksPageContent() {
                     width={effectiveCardWidth}
                     onClick={isPlaying ? handleDraw : undefined}
                     ariaLabel={t('draw')}
-                    onFlipComplete={() => playSound('cardFlip')}
                   />
                 ) : (
                   <div
@@ -271,11 +283,7 @@ function TriPeaksPageContent() {
               <div className="text-center">
                 <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
                 {state.waste.length > 0 ? (
-                  <AnimatedCard
-                    card={state.waste[state.waste.length - 1]}
-                    width={effectiveCardWidth}
-                    onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                  />
+                  <AnimatedCard card={state.waste[state.waste.length - 1]} width={effectiveCardWidth} />
                 ) : (
                   <div
                     style={{ width: effectiveCardWidth, height: cardHeight }}

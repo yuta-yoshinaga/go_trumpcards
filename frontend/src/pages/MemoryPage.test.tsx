@@ -211,6 +211,37 @@ describe('MemoryPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1 }));
   });
 
+  it('does not show visited badge on a freshly dealt board', async () => {
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
+    expect(screen.queryByTestId('board-visited-5')).not.toBeInTheDocument();
+  });
+
+  it('marks a previously face-up card with the visited overlay after it turns down', async () => {
+    // Regression: an early version reset `visited` whenever the board was
+    // fully face-down + nothing-taken, which is the normal between-turn
+    // state before the first pair is taken. After Next, the board flips
+    // face-down with no `taken` cards — the badge for the previously
+    // face-up positions must still appear.
+    const seenState: MemoryResponse = {
+      ...flip1State,
+      phase: 2,
+      firstFlipPos: 5,
+      secondFlipPos: 10,
+      board: makeBoard({
+        5: { faceUp: true, card: { design: 'SPADE' as const, value: 3 } },
+        10: { faceUp: true, card: { design: 'HEART' as const, value: 7 } },
+      }),
+    };
+    mockExec.mockResolvedValueOnce(seenState);
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
+    mockExec.mockResolvedValue(flip1State);
+    fireEvent.click(screen.getByRole('button', { name: '次へ' }));
+    await waitFor(() => expect(screen.getByTestId('board-visited-5')).toBeInTheDocument());
+    expect(screen.getByTestId('board-visited-10')).toBeInTheDocument();
+  });
+
   it('face-down cards show card back image instead of position number', async () => {
     renderWithProviders(<MemoryPage />);
     await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());

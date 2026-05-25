@@ -32,7 +32,9 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
+import { badgeWarning } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
+import { placeholderCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -247,7 +249,20 @@ function ShortDeckPageContent() {
             {(() => {
               const communityCardsContent = (
                 <>
-                  <div className="text-ds-text-primary text-lg mb-1.5">{t('communityCards')}</div>
+                  <div className="text-ds-text-primary text-lg mb-1.5 flex items-center gap-2 flex-wrap">
+                    <span>{t('communityCards')}</span>
+                    {/* Use the project's badgeWarning state-token style so the contrast ratios
+                        in DESIGN.md hold on the green poker felt — mixing the warning token with
+                        Tailwind opacity suffixes silently breaks WCAG AA. The size overrides shadow
+                        the default px/py/text-size for a compact in-line chip. */}
+                    <span
+                      data-testid="shortdeck-rank-watermark"
+                      className={`${badgeWarning} px-2 py-0.5 text-[11px] uppercase tracking-wider`}
+                      title={t('rankOverrideReminder')}
+                    >
+                      ♣♠♥♦ Flush &gt; Full House
+                    </span>
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
                       ? state.communityCards.map((card) => (
@@ -255,13 +270,10 @@ function ShortDeckPageContent() {
                             key={`${card.design}-${card.value}`}
                             card={card}
                             width={cardWidth}
-                            style={{ border: '3px solid transparent' }}
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                            style={placeholderCardStyle}
                           />
                         ))
-                      : Array.from({ length: 5 }).map((_, i) => (
-                          <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
-                        ))}
+                      : Array.from({ length: 5 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                   </div>
                 </>
               );
@@ -360,14 +372,11 @@ function ShortDeckPageContent() {
                           key={`${card.design}-${card.value}`}
                           card={card}
                           width={cardWidth}
-                          style={{ border: '3px solid transparent' }}
-                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                          style={placeholderCardStyle}
                         />
                       ))
                     : !humanPlayer.folded &&
-                      Array.from({ length: 2 }).map((_, i) => (
-                        <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
-                      ))}
+                      Array.from({ length: 2 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                 </div>
               </div>
             )}

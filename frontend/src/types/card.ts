@@ -932,6 +932,11 @@ export interface CallBreakResponse {
   messageParams?: Record<string, string>;
   config: CallBreakConfig;
   hint?: CallBreakHint;
+  /**
+   * Indices in the human player's hand that are legal to play this turn.
+   * Empty array outside the play phase / when it is not the human's turn.
+   */
+  validPlayIndices: number[];
 }
 
 // --- Pitch (Setback / Auction Pitch) ---

@@ -17,10 +17,11 @@ import (
 
 func mustCallBreakOutputJSON(msg string) string {
 	out := &controller.CallBreakWebOutput{
-		Players:       []*controller.CallBreakWebOutputPlayer{},
-		CurrentTrick:  []*controller.CallBreakWebOutputTrickCard{},
-		WinnerIdx:     -1,
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		Players:          []*controller.CallBreakWebOutputPlayer{},
+		CurrentTrick:     []*controller.CallBreakWebOutputTrickCard{},
+		ValidPlayIndices: []int{},
+		WinnerIdx:        -1,
+		WebOutputBase:    controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

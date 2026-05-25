@@ -129,4 +129,21 @@ describe('RedDogPage', () => {
     renderWithProviders(<RedDogPage />);
     await waitFor(() => expect(mockUseCliMode).toHaveBeenCalledWith('reddog'));
   });
+
+  it('shows ghost rank chips for winning ranks during spread decision', async () => {
+    mockApi.mockResolvedValue(spreadState);
+    renderWithProviders(<RedDogPage />);
+    await waitFor(() => expect(screen.getByTestId('reddog-ghost-ranks')).toBeInTheDocument());
+    for (const r of [6, 7, 8, 9]) {
+      expect(screen.getByTestId(`reddog-ghost-${r}`)).toBeInTheDocument();
+    }
+  });
+
+  it('marks the hit ghost chip in end phase', async () => {
+    mockApi.mockResolvedValue(winState);
+    renderWithProviders(<RedDogPage />);
+    await waitFor(() => expect(screen.getByTestId('reddog-ghost-7')).toBeInTheDocument());
+    const hitChip = screen.getByTestId('reddog-ghost-7');
+    expect(hitChip.className).toContain('bg-ds-success');
+  });
 });

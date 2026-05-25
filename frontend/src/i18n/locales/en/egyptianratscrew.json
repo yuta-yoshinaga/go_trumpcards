@@ -2,6 +2,10 @@
   "button": {
     "step": "Flip"
   },
+  "kbd": {
+    "step": "Enter / S",
+    "slap": "Space"
+  },
   "phase": {
     "play": "Playing",
     "slap": "PAIR/SANDWICH!",
@@ -28,6 +32,11 @@
     "slapReason": {
       "pair": "Pair",
       "sandwich": "Sandwich"
+    },
+    "burst": {
+      "pair": "PAIR!",
+      "sandwich": "SANDWICH!",
+      "miss": "MISS!"
     }
   },
   "hint": {

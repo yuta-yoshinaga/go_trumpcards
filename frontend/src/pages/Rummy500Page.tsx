@@ -28,6 +28,7 @@ import { Rummy500Phase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { playerName } from '../utils/playerUtils';
+import { rummy500HandPenalty } from '../utils/rummy500HandPenalty';
 
 const RUMMY500_PHASE_KEYS: Readonly<Record<number, string>> = {
   [Rummy500Phase.DRAW]: 'draw',
@@ -193,11 +194,7 @@ function Rummy500PageContent() {
                       className={`transition-transform ${focusRingCard}`}
                       style={{ background: 'none', padding: 0, borderRadius: 8 }}
                     >
-                      <AnimatedCard
-                        card={card}
-                        width={cardWidth * 0.7}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={card} width={cardWidth * 0.7} />
                     </button>
                   ))}
                 </div>
@@ -224,7 +221,6 @@ function Rummy500PageContent() {
                             key={`meld-${p.id}-${mIdx}-${card.design}-${card.value}-${ci}`}
                             card={card}
                             width={cardWidth * 0.6}
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                           />
                         ))}
                       </div>
@@ -247,6 +243,18 @@ function Rummy500PageContent() {
       </div>
 
       <GameFooter className={`${gameTheme.rummy500.footer} px-4 py-2.5`}>
+        {humanPlayer && humanPlayer.cards.length > 0 && (
+          <div className="flex justify-end mb-1 text-xs">
+            <span
+              data-testid="hand-penalty-badge"
+              className="px-2 py-0.5 rounded-full bg-ds-error/20 text-ds-error border border-ds-error font-medium"
+              title={t('handPenaltyHint')}
+            >
+              {t('handPenalty', { points: rummy500HandPenalty(humanPlayer.cards) })}
+              <span className="sr-only"> — {t('handPenaltyHint')}</span>
+            </span>
+          </div>
+        )}
         {humanPlayer && (
           <div className="flex flex-wrap gap-1 mb-2" data-tutorial="r5-player-hand">
             {humanPlayer.cards.map((card, idx) => (
@@ -265,11 +273,7 @@ function Rummy500PageContent() {
                   boxSizing: 'border-box',
                 }}
               >
-                <AnimatedCard
-                  card={card}
-                  width={cardWidth}
-                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                />
+                <AnimatedCard card={card} width={cardWidth} />
               </button>
             ))}
           </div>

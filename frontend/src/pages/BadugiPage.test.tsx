@@ -235,4 +235,65 @@ describe('BadugiPage', () => {
     fireEvent.click(cardButtons[0]);
     await waitFor(() => expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'true'));
   });
+
+  it('marks every card with data-badugi-subset during the draw phase when the hand is a perfect Badugi', async () => {
+    mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.DRAW, drawIndex: 1, currentTurn: 0 }));
+    renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
+
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+    expect(cardButtons.length).toBe(4);
+    for (const btn of cardButtons) {
+      expect(btn).toHaveAttribute('data-badugi-subset', 'true');
+      expect(btn.className).toContain('-translate-y-1');
+      expect(btn.className).not.toContain('opacity-50');
+    }
+  });
+
+  it('dims duplicate-suit cards in the draw phase and omits data-badugi-subset on them', async () => {
+    // Force a duplicate suit so one card falls out of the best subset (lowball: keep the lower ♠).
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: BadugiPhase.DRAW,
+        drawIndex: 1,
+        currentTurn: 0,
+        players: [
+          humanPlayer({
+            cards: [
+              { design: 'SPADE', value: 1 },
+              { design: 'SPADE', value: 9 },
+              { design: 'HEART', value: 3 },
+              { design: 'DIAMOND', value: 6 },
+            ],
+          }),
+          cpuPlayer(1),
+          cpuPlayer(2),
+          cpuPlayer(3),
+        ],
+      }),
+    );
+    renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
+
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+    // Subset = {SPADE 1, HEART 3, DIAMOND 6} = indices [0, 2, 3]; duplicate SPADE 9 = index 1.
+    expect(cardButtons[0]).toHaveAttribute('data-badugi-subset', 'true');
+    expect(cardButtons[1]).not.toHaveAttribute('data-badugi-subset');
+    expect(cardButtons[1].className).toContain('opacity-50');
+    expect(cardButtons[2]).toHaveAttribute('data-badugi-subset', 'true');
+    expect(cardButtons[3]).toHaveAttribute('data-badugi-subset', 'true');
+  });
+
+  it('does not annotate subset cards outside the draw phase', async () => {
+    // BET phase: subset hint should not appear (player cannot act on the dim/lift cue here).
+    mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.BET, currentTurn: 0, lastBet: 20 }));
+    renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(screen.getAllByText(/ベット/).length).toBeGreaterThan(0));
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+    for (const btn of cardButtons) {
+      expect(btn).not.toHaveAttribute('data-badugi-subset');
+      expect(btn.className).not.toContain('opacity-50');
+      expect(btn.className).not.toContain('-translate-y-1');
+    }
+  });
 });

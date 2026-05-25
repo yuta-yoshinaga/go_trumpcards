@@ -177,4 +177,28 @@ describe('EgyptianRatscrewPage', () => {
     fireEvent.change(select, { target: { value: '2' } });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 2 } }));
   });
+
+  it('renders Enter and Space keyboard badges on step/slap buttons', async () => {
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    expect(screen.getByTestId('step-button').textContent).toContain('Enter');
+    expect(screen.getByTestId('slap-button').textContent).toContain('Space');
+  });
+
+  it('Space keypress triggers slap during play', async () => {
+    mockExec.mockResolvedValueOnce(slappableState);
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('slap-button')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(window, { key: ' ' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('slap'));
+  });
+
+  it('Enter keypress triggers step during play', async () => {
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(window, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('step'));
+  });
 });

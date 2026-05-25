@@ -1241,7 +1241,8 @@ func TestApplyTrailingGlobalFlags(t *testing.T) {
 			color.SetStderrColor(true)
 
 			var stderr bytes.Buffer
-			got := applyTrailingGlobalFlags(tt.args, tt.quiet, &stderr)
+			q := tt.quiet
+			got := applyTrailingGlobalFlags(tt.args, &q, &stderr)
 
 			if !slices.Equal(got, tt.wantRest) {
 				t.Errorf("rest = %#v, want %#v", got, tt.wantRest)
@@ -1259,6 +1260,96 @@ func TestApplyTrailingGlobalFlags(t *testing.T) {
 				}
 			} else if !strings.Contains(stderr.String(), tt.wantWarn) {
 				t.Errorf("stderr missing %q: %q", tt.wantWarn, stderr.String())
+			}
+		})
+	}
+}
+
+// TestApplyTrailingGlobalFlags_TrailingQuietPropagates verifies issue #1840:
+// a trailing -q / --quiet must update the caller's quiet flag (not silently
+// no-op) so the rest of run() — most importantly the cliUnsupportedLang
+// warning emitted inside applyTrailingGlobalFlags itself — actually respects
+// it, matching --lang / --color which already apply in trailing position.
+func TestApplyTrailingGlobalFlags_TrailingQuietPropagates(t *testing.T) {
+	origLang := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(origLang) })
+
+	cases := []struct {
+		name     string
+		args     []string
+		startQ   bool
+		wantQ    bool
+		wantWarn string // substring expected on stderr; empty = none
+		wantRest []string
+	}{
+		{
+			name:     "-q sets quiet from false to true",
+			args:     []string{"-q"},
+			wantQ:    true,
+			wantRest: []string{},
+		},
+		{
+			name:     "--quiet sets quiet from false to true",
+			args:     []string{"--quiet"},
+			wantQ:    true,
+			wantRest: []string{},
+		},
+		{
+			name:     "--quiet=true sets quiet from false to true",
+			args:     []string{"--quiet=true"},
+			wantQ:    true,
+			wantRest: []string{},
+		},
+		{
+			name:     "--quiet=false unsets a pre-existing quiet",
+			args:     []string{"--quiet=false"},
+			startQ:   true,
+			wantQ:    false,
+			wantRest: []string{},
+		},
+		{
+			name:     "trailing -q suppresses unsupported-lang warning",
+			args:     []string{"-q", "--lang", "klingon"},
+			wantQ:    true,
+			wantWarn: "", // -q already true by the time the lang warning runs
+			wantRest: []string{},
+		},
+		{
+			// Order-independence: -q must suppress even when it appears
+			// after the offending --lang. Resolved via pre-pass in
+			// resolveTrailingQuiet; without that this case would still warn.
+			name:     "reverse order: --lang xyz -q also suppresses",
+			args:     []string{"--lang", "klingon", "-q"},
+			wantQ:    true,
+			wantWarn: "",
+			wantRest: []string{},
+		},
+		{
+			name:     "without -q the unsupported-lang warning fires",
+			args:     []string{"--lang", "klingon"},
+			wantQ:    false,
+			wantWarn: "klingon",
+			wantRest: []string{},
+		},
+	}
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			i18n.SetLang("ja")
+			var stderr bytes.Buffer
+			q := tt.startQ
+			rest := applyTrailingGlobalFlags(tt.args, &q, &stderr)
+			if q != tt.wantQ {
+				t.Errorf("quiet = %v, want %v", q, tt.wantQ)
+			}
+			if !slices.Equal(rest, tt.wantRest) {
+				t.Errorf("rest = %#v, want %#v", rest, tt.wantRest)
+			}
+			if tt.wantWarn == "" {
+				if stderr.Len() != 0 {
+					t.Errorf("expected no stderr; got %q", stderr.String())
+				}
+			} else if !strings.Contains(stderr.String(), tt.wantWarn) {
+				t.Errorf("stderr missing %q: got %q", tt.wantWarn, stderr.String())
 			}
 		})
 	}
@@ -1466,7 +1557,8 @@ func TestApplyTrailingColorFlag(t *testing.T) {
 			t.Cleanup(func() { _ = os.Unsetenv("NO_COLOR") })
 
 			var stderr bytes.Buffer
-			rest := applyTrailingGlobalFlags(tt.args, tt.quiet, &stderr)
+			q := tt.quiet
+			rest := applyTrailingGlobalFlags(tt.args, &q, &stderr)
 			if len(rest) != 0 {
 				t.Errorf("trailing color flag should be consumed; got rest=%v", rest)
 			}

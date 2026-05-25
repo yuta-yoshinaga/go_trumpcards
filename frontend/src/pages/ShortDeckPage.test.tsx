@@ -1120,4 +1120,18 @@ describe('ShortDeckPage', () => {
     const settingsSummary = Array.from(allSummaries).find((s) => s.textContent?.includes('設定'));
     expect(settingsSummary).toBeTruthy();
   });
+
+  it('renders the Flush > Full House rule reminder chip near the community cards', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<ShortDeckPage />);
+    const chip = await screen.findByTestId('shortdeck-rank-watermark');
+    expect(chip).toBeInTheDocument();
+    expect(chip.textContent).toContain('Flush');
+    expect(chip.textContent).toContain('Full House');
+    // Uses the design-system warning state-badge tokens, not opacity-modified ones.
+    expect(chip.className).toContain('border-ds-warning');
+    expect(chip.className).toContain('text-ds-warning');
+    expect(chip.className).not.toContain('bg-ds-warning/');
+    expect(chip.className).not.toContain('border-ds-warning/');
+  });
 });

@@ -5,7 +5,11 @@ import { DesktopSidebar } from './components/DesktopSidebar';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { NavBar } from './components/NavBar';
 import { SkipNavLink } from './components/SkipNavLink';
+import { SkeletonBar } from './components/skeleton/SkeletonBar';
 import { gameRoutes } from './constants/gameRoutes';
+import { DiscoverPage } from './pages/DiscoverPage';
+import { DiscoverResultPage } from './pages/DiscoverResultPage';
+import { NotFoundPage } from './pages/NotFoundPage';
 import { resolvePageComponent } from './utils/resolvePageComponent';
 
 // Vite resolves this glob at build time; each match becomes its own chunk
@@ -20,9 +24,22 @@ const lazyPages = new Map<string, ComponentType>(
   gameRoutes.map(({ path, page }) => [path, resolvePageComponent(pageModules, path, page)]),
 );
 
-/** Minimal `aria-busy` placeholder shown while a lazy game-page chunk loads. */
-function RouteSuspenseFallback() {
-  return <div role="status" aria-busy="true" className="flex-1" />;
+/**
+ * Placeholder rendered while a lazy game-page chunk downloads. Shows a
+ * `SkeletonBar` so the user sees structure forming on cold-cache /
+ * slow-network first paints, bridging visually to the page-specific
+ * skeleton that mounts once the chunk resolves. Preserves the existing
+ * `role="status"` / `aria-busy` contract for assistive tech and adds an
+ * `sr-only` loading label mirroring `SkeletonShell`.
+ */
+export function RouteSuspenseFallback() {
+  const { t } = useTranslation('common');
+  return (
+    <div role="status" aria-busy="true" className="flex-1 flex flex-col min-h-0">
+      <SkeletonBar />
+      <span className="sr-only">{t('skeleton.loading')}</span>
+    </div>
+  );
 }
 
 /** Root application component with router and game page routes. */
@@ -53,11 +70,14 @@ export default function App() {
                     />
                   );
                 })}
+                {/* AI Game Concierge — survey + recommendation result. */}
+                <Route path="/discover" element={<DiscoverPage />} />
+                <Route path="/discover/result" element={<DiscoverResultPage />} />
                 {/* BlackJack lives at "/", but external links may use "/blackjack". */}
                 <Route path="/blackjack" element={<Navigate to="/" replace />} />
-                {/* Unknown hash routes (e.g., "#/notagame") fall back to home
-                    instead of rendering an empty <main>. */}
-                <Route path="*" element={<Navigate to="/" replace />} />
+                {/* Unknown hash routes (e.g., "#/notagame") render the 404
+                    surface instead of silently redirecting home — #1902. */}
+                <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </main>
           </div>

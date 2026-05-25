@@ -196,6 +196,62 @@ describe('TrashPage', () => {
     });
   });
 
+  it('highlights the rank-matching slot when a normal pending card is held', async () => {
+    // Drew the 4 of HEART → slot index 3 should pulse-warn on the human row.
+    // CPU row is rendered first, so the player's slot is the second match.
+    const pendingFour: TrashResponse = { ...playerTurnState, pending: card('HEART', 4) };
+    mockExec.mockResolvedValue(pendingFour);
+    renderWithProviders(<TrashPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const slot4s = screen.getAllByRole('button', { name: '4: face-down' });
+    const playerSlot4 = slot4s[1];
+    expect(playerSlot4.dataset.pendingTarget).toBe('true');
+    expect(playerSlot4.className).toContain('ring-ds-warning');
+    expect(playerSlot4.className).toContain('motion-safe:animate-pulse');
+    // CPU row never highlights.
+    expect(slot4s[0].dataset.pendingTarget).toBe('false');
+  });
+
+  it('highlights slot 0 (Ace boundary) when pending value is 1', async () => {
+    const pendingAce: TrashResponse = { ...playerTurnState, pending: card('SPADE', 1) };
+    mockExec.mockResolvedValue(pendingAce);
+    renderWithProviders(<TrashPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const slot1s = screen.getAllByRole('button', { name: '1: face-down' });
+    expect(slot1s[1].dataset.pendingTarget).toBe('true');
+  });
+
+  it('highlights slot 9 (10 boundary) when pending value is 10', async () => {
+    const pendingTen: TrashResponse = { ...playerTurnState, pending: card('SPADE', 10) };
+    mockExec.mockResolvedValue(pendingTen);
+    renderWithProviders(<TrashPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const slot10s = screen.getAllByRole('button', { name: '10: face-down' });
+    expect(slot10s[1].dataset.pendingTarget).toBe('true');
+  });
+
+  it('does not highlight when pending card value is outside 1..10 (wild flow handles K/Joker separately)', async () => {
+    // K (13) drawn but still in play phase (not yet AWAIT_WILD) — no pending highlight.
+    const pendingK: TrashResponse = { ...playerTurnState, pending: card('DIAMOND', 13) };
+    mockExec.mockResolvedValue(pendingK);
+    renderWithProviders(<TrashPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const allSlots = screen.getAllByRole('button', { name: /face-down/ });
+    for (const slot of allSlots) {
+      expect(slot.dataset.pendingTarget).toBe('false');
+    }
+  });
+
+  it('does not highlight on CPU turn', async () => {
+    const cpuPending: TrashResponse = { ...cpuTurnState, pending: card('HEART', 4) };
+    mockExec.mockImplementation(async () => cpuPending);
+    renderWithProviders(<TrashPage />);
+    await waitFor(() => expect(screen.getAllByText(/CPUのターン/).length).toBeGreaterThan(0));
+    for (const slot of screen.getAllByRole('button', { name: /face-down/ })) {
+      expect(slot.dataset.pendingTarget).toBe('false');
+    }
+  });
+
   it('surfaces an error alert when the API fails on mount', async () => {
     mockExec.mockRejectedValue(new Error('network error'));
     renderWithProviders(<TrashPage />);

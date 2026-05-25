@@ -33,6 +33,7 @@ import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
+import { placeholderCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -42,6 +43,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { HOLDEM_HELP, parseHoldemCommand } from '../utils/cli/commands/holdemCommands';
 import { formatHoldemState } from '../utils/cli/formatters/holdemFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { holdemBestFive } from '../utils/holdemBestFive';
 
 /** Texas Hold'em tutorial step definitions. */
 const HE_TUTORIAL_STEPS: TutorialStep[] = [
@@ -162,6 +164,28 @@ function HoldemPageContent() {
   const isActive = phase >= HoldemPhase.PRE_FLOP && phase <= HoldemPhase.RIVER;
   const isShowdown = phase === HoldemPhase.SHOWDOWN || phase === HoldemPhase.END;
   const humanPlayer = state?.players?.find((p) => p.isHuman);
+  // Best-5 highlight at showdown: enumerate hole + community → mark which of
+  // the 7 visible cards contribute to the winning 5-card hand. Indices 0..1
+  // map to the hole cards, 2..6 to the community board.
+  const showdownBest5 = useMemo(() => {
+    if (!isShowdown || !humanPlayer || humanPlayer.folded) {
+      return { holeSet: new Set<number>(), boardSet: new Set<number>() };
+    }
+    const hole = humanPlayer?.cards ?? [];
+    const board = state?.communityCards ?? [];
+    if (hole.length !== 2 || board.length < 5) {
+      return { holeSet: new Set<number>(), boardSet: new Set<number>() };
+    }
+    const combined = [...hole, ...board.slice(0, 5)];
+    const picked = holdemBestFive(combined) ?? [];
+    const holeSet = new Set<number>();
+    const boardSet = new Set<number>();
+    for (const i of picked) {
+      if (i < hole.length) holeSet.add(i);
+      else boardSet.add(i - hole.length);
+    }
+    return { holeSet, boardSet };
+  }, [isShowdown, humanPlayer, state?.communityCards]);
   const humanFolded = humanPlayer?.folded ?? false;
   const humanAllIn = humanPlayer?.allIn ?? false;
   const canAct = isActive && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
@@ -251,18 +275,22 @@ function HoldemPageContent() {
                   <div className="text-ds-text-primary text-lg mb-1.5">{t('communityCards')}</div>
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
-                      ? state.communityCards.map((card) => (
-                          <AnimatedCard
-                            key={`${card.design}-${card.value}`}
-                            card={card}
-                            width={cardWidth}
-                            style={{ border: '3px solid transparent' }}
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                          />
-                        ))
-                      : Array.from({ length: 5 }).map((_, i) => (
-                          <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
-                        ))}
+                      ? state.communityCards.map((card, idx) => {
+                          const inBest = showdownBest5.boardSet.has(idx);
+                          const dim = isShowdown && showdownBest5.boardSet.size > 0 && !inBest;
+                          return (
+                            <div
+                              key={`${card.design}-${card.value}`}
+                              className={`transition-all ${
+                                inBest ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse' : ''
+                              } ${dim ? 'opacity-50' : ''}`}
+                              data-best5-board={inBest || undefined}
+                            >
+                              <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                            </div>
+                          );
+                        })
+                      : Array.from({ length: 5 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                   </div>
                 </>
               );
@@ -355,19 +383,23 @@ function HoldemPageContent() {
                 </div>
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {humanPlayer.cards?.length
-                    ? humanPlayer.cards.map((card) => (
-                        <AnimatedCard
-                          key={`${card.design}-${card.value}`}
-                          card={card}
-                          width={cardWidth}
-                          style={{ border: '3px solid transparent' }}
-                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                        />
-                      ))
+                    ? humanPlayer.cards.map((card, idx) => {
+                        const inBest = showdownBest5.holeSet.has(idx);
+                        const dim = isShowdown && showdownBest5.holeSet.size > 0 && !inBest;
+                        return (
+                          <div
+                            key={`${card.design}-${card.value}`}
+                            className={`transition-all ${
+                              inBest ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse' : ''
+                            } ${dim ? 'opacity-50' : ''}`}
+                            data-best5-hole={inBest || undefined}
+                          >
+                            <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                          </div>
+                        );
+                      })
                     : !humanPlayer.folded &&
-                      Array.from({ length: 2 }).map((_, i) => (
-                        <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
-                      ))}
+                      Array.from({ length: 2 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                 </div>
               </div>
             )}

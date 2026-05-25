@@ -158,6 +158,9 @@ func (g *Tonk) NextRound() {
 
 // dealInitialCards 初期配布: 各プレイヤーにTonkHandSize枚、1枚を捨て札に
 func (g *Tonk) dealInitialCards() {
+	// Refill draw counter so a 2nd deal isn't empty; Replenish (not Shuffle) keeps g.rng determinism.
+	g.trumpCards.Replenish()
+
 	g.drawPile = make([]*Card, 0, g.trumpCards.GetTotalCount())
 	for {
 		card := g.trumpCards.DrawCard()

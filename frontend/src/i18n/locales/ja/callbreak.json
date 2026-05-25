@@ -23,6 +23,8 @@
   "roundScore": "ラウンド: {{score}}",
   "bid": "ビッド {{n}}",
   "bidNone": "未ビッド",
+  "tricksWon": "獲得 {{n}}",
+  "bidProgressAria": "{{name}} のビッド達成状況",
   "currentTrick": "現在のトリック",
   "scores": "スコア",
   "scoresPlayer": "プレイヤー",
@@ -35,6 +37,7 @@
   "nextTrick": "次のトリック",
   "nextRound": "次のラウンド",
   "bidPhase": "ビッド宣言 (1-13)",
+  "mustTrumpSpadeTooltip": "このカードは出せません (リードスートに従うか、ボイドならスペードで切ってください)",
   "playPhase": {
     "lead": "リードしてください",
     "follow": "カードを出してください (ボイドならスペードで切る)"

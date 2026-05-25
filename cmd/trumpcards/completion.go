@@ -67,6 +67,7 @@ func runCompletion(args []string, stdoutIsTTY, noHint bool) int {
 func runCompletionTo(args []string, stdout, stderr io.Writer, stdoutIsTTY, noHint bool) int {
 	if len(args) != 1 {
 		_, _ = fmt.Fprintln(stderr, i18n.T("cliCompletionUsage"))
+		_, _ = fmt.Fprintln(stderr, i18n.Tf("cliTryHelp", "cmd", "completion"))
 		return 2
 	}
 	shell := args[0]

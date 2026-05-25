@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { SpiderMoveZone, spiderApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { AutoCompleteReadyBadge } from '../components/AutoCompleteReadyBadge';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -110,10 +111,17 @@ function SpiderPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('spider', state);
+  // Live longest-column length: shrinks the per-card vertical step on mobile so the tallest
+  // tableau column fits within 375×667 without scrolling (#1861). Spider columns grow long
+  // (initial deal up to 6, +5 stock deals = ~11 minimum, plus accumulated sequences).
+  const maxColCards = useMemo(
+    () => state?.tableau.reduce((m, col) => (col.length > m ? col.length : m), 0) ?? 0,
+    [state?.tableau],
+  );
   // Responsive 10-column dimensions matching this page's `px-4` scroll container and `gap-0.5`
   // tableau so a 375 px viewport doesn't crush each card below 28 px (#1648). Stock uses the
   // same dimensions so cards don't visibly pop when the deal animation moves them to the tableau.
-  const tableau = useResponsiveTableau(10, { padX: 32, gapPx: 2 });
+  const tableau = useResponsiveTableau(10, { padX: 32, gapPx: 2, maxColCards });
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('spider');
   const cliConfig: CliGameConfig<SpiderResponse, Parameters<typeof spiderApi.exec>> = useMemo(
@@ -244,7 +252,6 @@ function SpiderPageContent() {
                     width={tableau.cw}
                     onClick={isPlaying ? handleDealGuarded : undefined}
                     ariaLabel={t('deal')}
-                    onFlipComplete={() => playSound('cardFlip')}
                   />
                 ) : (
                   <div
@@ -331,15 +338,10 @@ function SpiderPageContent() {
                                         width={tableau.cw}
                                         draggable={false}
                                         style={{ width: '100%' }}
-                                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                                       />
                                     </button>
                                   ) : (
-                                    <AnimatedCardBack
-                                      width={tableau.cw}
-                                      style={{ width: '100%' }}
-                                      onFlipComplete={() => playSound('cardFlip')}
-                                    />
+                                    <AnimatedCardBack width={tableau.cw} style={{ width: '100%' }} />
                                   )}
                                 </div>
                               );
@@ -448,6 +450,7 @@ function SpiderPageContent() {
                   >
                     {t('autoComplete')}
                   </button>
+                  <AutoCompleteReadyBadge ready={autoCompleteReady} />
                   <button
                     type="button"
                     className={btnDanger}

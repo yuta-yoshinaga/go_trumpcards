@@ -38,6 +38,7 @@ func setupCallBreakWebMockWithPlayers() (*interfaces.MockCallBreakGame, []*domai
 	m.On("GetPlayer", 1).Return(players[1])
 	m.On("GetPlayer", 2).Return(players[2])
 	m.On("GetPlayer", 3).Return(players[3])
+	m.On("GetValidPlayIndices", 0).Return([]int{})
 	return m, players
 }
 
@@ -127,6 +128,25 @@ func TestCallBreakWebPresenter_Output(t *testing.T) {
 		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &resObj))
 		assert.Equal(t, "callbreak.result.cpuWin", resObj.MessageCode)
 		assert.Equal(t, "2", resObj.MessageParams["cpuId"])
+	})
+
+	t.Run("valid play indices reflect human player", func(t *testing.T) {
+		m, _ := setupCallBreakWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetValidPlayIndices", 0).Return([]int{0, 2, 4})
+		var resObj controller.CallBreakWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &resObj))
+		assert.Equal(t, []int{0, 2, 4}, resObj.ValidPlayIndices)
+	})
+
+	t.Run("valid play indices default to empty slice when nil", func(t *testing.T) {
+		m, _ := setupCallBreakWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetValidPlayIndices", 0).Return(([]int)(nil))
+		var resObj controller.CallBreakWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &resObj))
+		assert.NotNil(t, resObj.ValidPlayIndices)
+		assert.Equal(t, 0, len(resObj.ValidPlayIndices))
 	})
 }
 

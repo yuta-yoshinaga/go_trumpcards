@@ -56,6 +56,19 @@ export function useWindowWidth(): number {
   return width;
 }
 
+/** Shared hook that tracks viewport height with resize listener. */
+export function useWindowHeight(): number {
+  const [height, setHeight] = useState(() => window.innerHeight);
+
+  useEffect(() => {
+    const handleResize = () => setHeight(window.innerHeight);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return height;
+}
+
 /**
  * Hook that tracks viewport breakpoint category, only triggering re-renders
  * when the viewport crosses SM_BREAKPOINT (640px) or LG_BREAKPOINT (1024px).

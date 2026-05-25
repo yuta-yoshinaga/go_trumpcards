@@ -7,6 +7,12 @@
     "magicTen": "10: Burn the discard pile (same player goes again)",
     "fourBurn": "Four cards of the same rank in a row burn the pile"
   },
+  "magicEffect": {
+    "two": "Reset: next player may play anything",
+    "seven": "Forced down: next play must be 7 or lower",
+    "eight": "Skip: skip the next player's turn",
+    "ten": "Burn: clear the discard pile and play again"
+  },
   "labels": {
     "hand": "Hand",
     "faceUp": "Face-up cards",

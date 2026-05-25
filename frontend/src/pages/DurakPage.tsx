@@ -24,6 +24,7 @@ import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { DurakResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 
@@ -31,6 +32,8 @@ import { playerName } from '../utils/playerUtils';
 const PHASE_ATTACK = 0;
 const PHASE_DEFEND = 1;
 const PHASE_BOUT_END = 2;
+/** Total horizontal/vertical padding on each pair button (p-1 = 4px × 2 sides). */
+const DK_PAIR_PADDING = 8;
 
 const theme = gameTheme.durak;
 
@@ -253,31 +256,54 @@ function DurakPageContent() {
                   {state.tablePairs.length === 0 ? (
                     <div className="text-game-text-muted text-sm">{t('tableEmpty')}</div>
                   ) : (
-                    <div className="flex flex-wrap gap-2">
-                      {state.tablePairs.map((pair, i) => (
-                        <button
-                          type="button"
-                          key={`pair-${pair.attack.design}-${pair.attack.value}-${i}`}
-                          className={`flex flex-col items-center gap-0.5 p-1 rounded cursor-pointer ${
-                            selectedAttackIdx === i ? 'ring-2 ring-ds-warning' : ''
-                          }`}
-                          onClick={() => setSelectedAttackIdx(selectedAttackIdx === i ? null : i)}
-                        >
-                          <AnimatedCard
-                            card={pair.attack}
-                            width={cardWidth * 0.8}
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                          />
-                          {pair.defense ? (
-                            <AnimatedCard card={pair.defense} width={cardWidth * 0.8} />
-                          ) : (
+                    <div className="flex flex-wrap gap-3">
+                      {state.tablePairs.map((pair, i) => {
+                        const pairCardWidth = cardWidth * 0.8;
+                        const offset = pairCardWidth * 0.3;
+                        const undefended = pair.defense === null;
+                        const shouldPulse = undefended && isDefender;
+                        const ariaLabel = undefended
+                          ? t('pair.undefendedAria', { card: cardAlt(pair.attack) })
+                          : t('pair.defendedAria', {
+                              attack: cardAlt(pair.attack),
+                              defense: pair.defense ? cardAlt(pair.defense) : '',
+                            });
+                        return (
+                          <button
+                            type="button"
+                            key={`pair-${pair.attack.design}-${pair.attack.value}-${i}`}
+                            className={`relative p-1 rounded cursor-pointer ${
+                              selectedAttackIdx === i ? 'ring-2 ring-ds-warning' : ''
+                            }`}
+                            style={{
+                              width: pairCardWidth + offset + DK_PAIR_PADDING,
+                              height: pairCardWidth * 1.4 + offset + DK_PAIR_PADDING,
+                            }}
+                            onClick={() => setSelectedAttackIdx(selectedAttackIdx === i ? null : i)}
+                            data-testid={`dk-pair-${i}`}
+                            aria-label={ariaLabel}
+                          >
                             <div
-                              className="border border-dashed border-white/30 rounded"
-                              style={{ width: cardWidth * 0.8, height: cardWidth * 0.8 * 1.4 }}
-                            />
-                          )}
-                        </button>
-                      ))}
+                              className={`absolute top-0 left-0 rounded ${
+                                shouldPulse ? 'motion-safe:animate-pulse ring-2 ring-ds-error' : ''
+                              }`}
+                              data-testid={`dk-attack-${i}`}
+                              data-undefended={undefended ? 'true' : 'false'}
+                            >
+                              <AnimatedCard card={pair.attack} width={pairCardWidth} />
+                            </div>
+                            {pair.defense ? (
+                              <div
+                                className="absolute rounded shadow-md"
+                                style={{ top: offset, left: offset }}
+                                data-testid={`dk-defense-${i}`}
+                              >
+                                <AnimatedCard card={pair.defense} width={pairCardWidth} />
+                              </div>
+                            ) : null}
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -360,12 +386,7 @@ function DurakPageContent() {
                       className={`cursor-pointer transition-transform ${selectedCardIdx === i ? '-translate-y-2' : ''}`}
                       onClick={() => setSelectedCardIdx(selectedCardIdx === i ? null : i)}
                     >
-                      <AnimatedCard
-                        card={card}
-                        width={cardWidth}
-                        isSelected={selectedCardIdx === i}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={card} width={cardWidth} isSelected={selectedCardIdx === i} />
                     </button>
                   ))}
                 </div>

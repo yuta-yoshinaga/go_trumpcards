@@ -25,6 +25,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BlackJackSwitchResponse, Card } from '../types/card';
 import { BlackJackSwitchPhase, BlackJackSwitchResult } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { blackjackSwitchPreviewScores } from '../utils/blackjackSwitchPreview';
 import type { CliGameConfig } from '../utils/cli/types';
 
 const BJSWITCH_TUTORIAL_STEPS: TutorialStep[] = [];
@@ -51,6 +52,7 @@ function BlackJackSwitchPageContent() {
     useGamePageSetup('blackjackswitch');
 
   const [betAmount, setBetAmount] = useState(100);
+  const [switchPreview, setSwitchPreview] = useState(false);
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
   const { state, loading, error, exec: execApi, retry } = useGameApi(blackjackswitchApi.exec);
@@ -101,6 +103,11 @@ function BlackJackSwitchPageContent() {
   const currentHand = state.hands[state.currentHandIdx];
   const canDoubleDown = isActionPhase && currentHand && currentHand.cards.length === 2;
 
+  const previewScores =
+    isSwitchPhase && switchPreview && state.hands.length >= 2
+      ? blackjackSwitchPreviewScores(state.hands[0].cards, state.hands[1].cards)
+      : null;
+
   return (
     <GamePageShell
       title={tc('nav.blackjackswitch')}
@@ -149,12 +156,7 @@ function BlackJackSwitchPageContent() {
                 </div>
                 <div className="flex justify-center gap-2 flex-wrap">
                   {state.dealerCards.map((c, i) => (
-                    <CardSlot
-                      key={`dealer-${i}`}
-                      card={c}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <CardSlot key={`dealer-${i}`} card={c} width={cardWidth} />
                   ))}
                 </div>
               </div>
@@ -165,6 +167,18 @@ function BlackJackSwitchPageContent() {
                 {state.hands.map((hand, idx) => {
                   const isCurrent = isActionPhase && idx === state.currentHandIdx;
                   const tone = isCurrent ? 'border-ds-accent' : 'border-white/20';
+                  const previewScore = previewScores ? (idx === 0 ? previewScores.a : previewScores.b) : null;
+                  const previewDelta = previewScore !== null ? previewScore - hand.score : 0;
+                  const previewColor =
+                    previewScore === null
+                      ? ''
+                      : previewScore > 21
+                        ? 'text-ds-error'
+                        : previewDelta > 0
+                          ? 'text-ds-success'
+                          : previewDelta < 0
+                            ? 'text-ds-error'
+                            : 'text-ds-text-muted';
                   return (
                     <div
                       key={`hand-${idx}`}
@@ -172,18 +186,19 @@ function BlackJackSwitchPageContent() {
                       className={`border rounded-lg p-2 ${tone} bg-black/20`}
                     >
                       <div className="text-ds-text-primary text-center text-xs font-bold mb-1">
-                        {t('label.hand')} {idx} ({hand.score}) — {t('label.bet')}: {hand.bet}
+                        {t('label.hand')} {idx} ({hand.score}
+                        {previewScore !== null && (
+                          <span data-testid={`hand-${idx}-preview`} className={`ml-1 font-bold ${previewColor}`}>
+                            → {previewScore}
+                          </span>
+                        )}
+                        ) — {t('label.bet')}: {hand.bet}
                         {hand.busted ? ' BUST' : ''}
                         {hand.isBJ ? ' BJ' : ''}
                       </div>
                       <div className="flex justify-center gap-1 flex-wrap">
                         {hand.cards.map((c, j) => (
-                          <CardSlot
-                            key={`hand-${idx}-${j}`}
-                            card={c}
-                            width={cardWidth}
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                          />
+                          <CardSlot key={`hand-${idx}-${j}`} card={c} width={cardWidth} />
                         ))}
                       </div>
                       {isEndPhase && (
@@ -236,7 +251,17 @@ function BlackJackSwitchPageContent() {
             )}
             {isSwitchPhase && (
               <div className="flex justify-center gap-2 pb-2 flex-wrap">
-                <button type="button" className={btnWarning} onClick={handleSwitch} disabled={loading}>
+                <button
+                  type="button"
+                  className={btnWarning}
+                  onClick={handleSwitch}
+                  onMouseEnter={() => setSwitchPreview(true)}
+                  onMouseLeave={() => setSwitchPreview(false)}
+                  onFocus={() => setSwitchPreview(true)}
+                  onBlur={() => setSwitchPreview(false)}
+                  data-testid="switch-button"
+                  disabled={loading}
+                >
                   {t('button.switch')}
                 </button>
                 <button type="button" className={btnSecondary} onClick={handleKeep} disabled={loading}>
@@ -283,7 +308,7 @@ function BlackJackSwitchPageContent() {
 }
 
 /** Renders a face-up card or a face-down placeholder when card is null. */
-function CardSlot({ card, width, onDealComplete }: { card: Card | null; width: number; onDealComplete: () => void }) {
+function CardSlot({ card, width }: { card: Card | null; width: number }) {
   if (!card) {
     return (
       <div
@@ -293,7 +318,7 @@ function CardSlot({ card, width, onDealComplete }: { card: Card | null; width: n
       />
     );
   }
-  return <AnimatedCard card={card} width={width} onDealComplete={onDealComplete} />;
+  return <AnimatedCard card={card} width={width} />;
 }
 
 function handResultKey(result: number): string {

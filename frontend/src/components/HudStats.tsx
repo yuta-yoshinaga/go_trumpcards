@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -19,14 +20,24 @@ type Tendency = 'tight' | 'normal' | 'loose' | 'passive' | 'balanced' | 'aggress
  * each instance gets a unique DOM id even when multiple HudStats rows
  * are rendered (one per CPU player). See issue #1564.
  */
-function StatTooltip({ label, tooltipText }: { label: string; tooltipText: string }) {
+/** Optional className override so callers can re-style the trigger button. */
+interface StatTooltipProps {
+  /** Visible trigger content — string, icon + label, or any ReactNode. */
+  label: ReactNode;
+  /** Tooltip text revealed on hover / keyboard focus. */
+  tooltipText: string;
+  /** Trigger className. Override sparingly — defaults preserve inline layout. */
+  className?: string;
+}
+
+function StatTooltip({
+  label,
+  tooltipText,
+  className = 'group relative cursor-help bg-transparent border-none p-0 font-inherit text-inherit inline',
+}: StatTooltipProps) {
   const id = useId();
   return (
-    <button
-      type="button"
-      className="group relative cursor-help bg-transparent border-none p-0 font-inherit text-inherit inline"
-      aria-describedby={id}
-    >
+    <button type="button" className={className} aria-describedby={id}>
       {label}
       <span
         id={id}
@@ -86,6 +97,40 @@ export function afTendency(af: string): Tendency {
 }
 
 /**
+ * Combined VPIP+PFR profile that summarises a CPU's overall poker style.
+ * Keys match the standard poker abbreviations rendered to the user
+ * (TAG / LAG / TP / LP / BAL) to keep type and display in sync.
+ */
+export type PokerStyle = 'tag' | 'lag' | 'tp' | 'lp' | 'balanced';
+
+/**
+ * overallStyle classifies a player into one of the canonical poker styles
+ * from the combination of VPIP (looseness) and PFR (aggression), so the
+ * UI can surface a single "TAG / LAG / TP / LP" tag instead of forcing
+ * the player to read four percentages and combine them themselves.
+ * See issue #1873.
+ */
+export function overallStyle(vpip: number, pfr: number): PokerStyle {
+  // Cache each classifier once; both axes are queried twice below and the
+  // functions are pure so the duplicates were pointless work + harder to read.
+  const vpipT = vpipTendency(vpip);
+  const pfrT = pfrTendency(pfr);
+  if (vpipT === 'tight' && pfrT === 'aggressive') return 'tag';
+  if (vpipT === 'loose' && pfrT === 'aggressive') return 'lag';
+  if (vpipT === 'tight' && pfrT === 'passive') return 'tp';
+  if (vpipT === 'loose' && pfrT === 'passive') return 'lp';
+  return 'balanced';
+}
+
+const STYLE_ICONS: Record<PokerStyle, string> = {
+  tag: '🛡️',
+  lag: '⚔️',
+  tp: '🐢',
+  lp: '🐠',
+  balanced: '⚖️',
+};
+
+/**
  * tendencyClass maps a tendency to the design-system color class used for
  * the badge text. Loose / Aggressive surface as `text-ds-error` (warm
  * warning red — high engagement), Tight / Passive as `text-ds-info` (cool
@@ -136,8 +181,21 @@ export function HudStats({ vpip, pfr, threeBet, af, namespace = 'holdem' }: HudS
   const pfrT = pfrTendency(pfr);
   const threeBetT = threeBetTendency(threeBet);
   const afT = afTendency(af);
+  const style = overallStyle(vpip, pfr);
   return (
     <span className="ml-2 text-ds-info text-[0.8em] hidden md:inline" data-testid="hud-stats">
+      {/* Use StatTooltip for keyboard-accessible / touch-friendly tooltip rather
+          than a native `title=` — matches the VPIP/PFR/3Bet/AF triggers below. */}
+      <StatTooltip
+        label={
+          <span data-testid="hud-overall-style" data-style={style}>
+            <span aria-hidden="true">{STYLE_ICONS[style]}</span>{' '}
+            <span className="font-bold uppercase">{t(`style.${style}`)}</span>
+          </span>
+        }
+        tooltipText={t(`style.${style}Tooltip`)}
+        className="group relative cursor-help mr-1 inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-black/30 text-ds-text-primary border-none font-inherit"
+      />
       <StatTooltip label={t('stats.vpip')} tooltipText={t('stats.vpipTooltip')} />:
       <span className={tendencyClass(vpipT)} data-testid="hud-vpip-tendency" data-tendency={vpipT}>
         {vpip}%

@@ -241,13 +241,22 @@ describe('SpeedPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('flip'));
   });
 
+  it('shows the auto-flip countdown when stuck with auto-flip enabled', async () => {
+    mockExec.mockResolvedValue(stuckState);
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByTestId('auto-flip-countdown')).toBeInTheDocument());
+    expect(screen.getByRole('timer', { name: '自動めくりカウントダウン' })).toBeInTheDocument();
+  });
+
   it('center piles have pulse animation when stuck', async () => {
     mockExec.mockResolvedValue(stuckState);
     renderWithProviders(<SpeedPage />);
     await waitFor(() => expect(screen.getByText('めくる')).toBeInTheDocument());
-    const flipPileBtns = screen.getAllByRole('button', { name: 'めくる' });
-    // Center pile buttons (first two) should have animate-pulse
-    expect(flipPileBtns[0]).toHaveClass('animate-pulse');
+    // Each center pile gets a unique "台札N をめくる" aria-label while stuck,
+    // distinct from the central "めくる" popup, so SR users hear three
+    // discrete affordances instead of three duplicates.
+    const firstPileBtn = screen.getByRole('button', { name: '台札1をめくる' });
+    expect(firstPileBtn).toHaveClass('animate-pulse');
   });
 
   it('keyboard shortcut: Space triggers flip when stuck', async () => {

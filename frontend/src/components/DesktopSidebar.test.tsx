@@ -51,6 +51,24 @@ describe('DesktopSidebar', () => {
     expect(brandLink).toHaveAttribute('href', '/');
   });
 
+  it('renders the AI Game Concierge CTA pointing to /discover', () => {
+    renderSidebar();
+    const cta = screen.getByRole('link', { name: /おすすめを探す/ });
+    expect(cta).toHaveAttribute('href', '/discover');
+  });
+
+  it('marks the AI Game Concierge CTA as current page when on /discover', () => {
+    renderSidebar('/discover');
+    const cta = screen.getByRole('link', { name: /おすすめを探す/ });
+    expect(cta).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('marks the AI Game Concierge CTA as current page on /discover/result too', () => {
+    renderSidebar('/discover/result?m=0,0&s=0,0&so=0,0&t=0,0');
+    const cta = screen.getByRole('link', { name: /おすすめを探す/ });
+    expect(cta).toHaveAttribute('aria-current', 'page');
+  });
+
   it('renders all game links', () => {
     renderSidebar();
     for (const { labelKey } of gameRoutes) {

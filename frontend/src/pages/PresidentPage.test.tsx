@@ -182,6 +182,38 @@ describe('PresidentPage', () => {
     );
     renderWithProviders(<PresidentPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    // Each finished player gets a uniquely-identified rank stamp badge.
+    expect(screen.getByTestId('rank-stamp-1')).toBeInTheDocument();
+    expect(screen.getByTestId('rank-stamp-2')).toBeInTheDocument();
+    expect(screen.getByTestId('rank-stamp-3')).toBeInTheDocument();
+    expect(screen.getByTestId('rank-stamp-4')).toBeInTheDocument();
+    // Crown icon for rank 1 (president).
+    expect(screen.getByTestId('rank-stamp-1').textContent).toContain('👑');
+    // Trash icon for rank 4 (scum).
+    expect(screen.getByTestId('rank-stamp-4').textContent).toContain('🗑️');
+  });
+
+  it('falls back to neutral styling and an empty icon for an unknown rank value', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        gameEndFlag: true,
+        players: [
+          // Out-of-range rank exercises the ?? fallbacks in PRESIDENT_RANK_BG / ICON / KEYS.
+          { id: 0, isHuman: true, isFinished: true, rank: 99, cardCount: 0, cards: [] },
+          { id: 1, isHuman: false, isFinished: true, rank: 2, cardCount: 0, cards: [] },
+          { id: 2, isHuman: false, isFinished: true, rank: 3, cardCount: 0, cards: [] },
+          { id: 3, isHuman: false, isFinished: true, rank: 4, cardCount: 0, cards: [] },
+        ],
+      }),
+    );
+    renderWithProviders(<PresidentPage />);
+    const fallback = await screen.findByTestId('rank-stamp-99');
+    // Fallback uses the neutral design tokens (no warning/info/error background).
+    expect(fallback.className).toContain('bg-ds-surface');
+    expect(fallback.className).toContain('text-ds-text-primary');
+    // No matching icon for rank 99 → the emoji prefix is absent, leaving only a space + label text.
+    expect(fallback.textContent?.trim().startsWith('👑')).toBe(false);
+    expect(fallback.textContent?.trim().startsWith('🗑️')).toBe(false);
   });
 
   it('shows loading state when state has fewer than 4 players', async () => {

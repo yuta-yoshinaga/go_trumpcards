@@ -1,4 +1,5 @@
 {
+  "moveCount": "Moves",
   "title": "Trash",
   "phase.playerTurn": "Your turn",
   "phase.awaitWild": "Place wild",

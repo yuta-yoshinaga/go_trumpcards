@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { mightyApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardRoleBadge } from '../components/CardRoleBadge';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -12,6 +13,7 @@ import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { MobileHandGrid } from '../components/MobileHandGrid';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { PartnerRevealFlash } from '../components/PartnerRevealFlash';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -38,6 +40,7 @@ import { valueName } from '../utils/cardUtils';
 import { MIGHTY_HELP, parseMightyCommand } from '../utils/cli/commands/mightyCommands';
 import { formatMightyState } from '../utils/cli/formatters/mightyFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { mightyRoleGlyph, mightySpecialRole } from '../utils/mightySpecialRole';
 import { playerName } from '../utils/playerUtils';
 
 /** Mighty tutorial step definitions. */
@@ -207,6 +210,15 @@ function MightyPageContent() {
     );
 
   const humanPlayer = state.players.find((p) => p.isHuman);
+  const partnerCard = state.partnerCard ?? null;
+  const trumpSuit = state.trumpSuit;
+  /** Returns the role badge for the human hand card at `idx`, or null. */
+  const roleBadgeFor = (idx: number): { glyph: string; title: string } | null => {
+    const card = humanPlayer?.cards[idx];
+    if (!card) return null;
+    const role = mightySpecialRole(card, trumpSuit, partnerCard);
+    return role ? { glyph: mightyRoleGlyph(role), title: t(`specialRole.${role}`) } : null;
+  };
   const isBidPhase = state.phase === MightyPhase.BID;
   const isTrumpAndFriend = state.phase === MightyPhase.TRUMP_AND_FRIEND;
   const isKittyExchange = state.phase === MightyPhase.KITTY_EXCHANGE;
@@ -255,6 +267,15 @@ function MightyPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
+          <PartnerRevealFlash
+            revealed={state.partnerRevealed}
+            partnerName={
+              state.partnerIdx >= 0 && state.players[state.partnerIdx]
+                ? playerName(state.partnerIdx, state.players[state.partnerIdx].isHuman)
+                : ''
+            }
+            headline={t('role.partnerRevealed')}
+          />
           {/* Settings */}
           <SettingsPanel
             title={t('settings.title')}
@@ -319,12 +340,7 @@ function MightyPageContent() {
                 {/* Partner card info */}
                 {state.partnerCard && (
                   <div className="text-ds-text-muted text-center text-sm mb-2" data-tutorial="mighty-partner-info">
-                    {t('partnerCard')}:{' '}
-                    <AnimatedCard
-                      card={state.partnerCard}
-                      width={cardWidth * 0.6}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    {t('partnerCard')}: <AnimatedCard card={state.partnerCard} width={cardWidth * 0.6} />
                     <span className="ml-2 text-xs">
                       {state.partnerRevealed ? t('partnerRevealed') : t('partnerHidden')}
                     </span>
@@ -362,12 +378,7 @@ function MightyPageContent() {
                     <div className="text-ds-text-muted text-sm mb-1">{t('kittyLabel')}</div>
                     <div className="flex gap-2">
                       {state.kitty.map((card, idx) => (
-                        <AnimatedCard
-                          key={`kitty-${card.design}-${card.value}-${idx}`}
-                          card={card}
-                          width={cardWidth}
-                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                        />
+                        <AnimatedCard key={`kitty-${card.design}-${card.value}-${idx}`} card={card} width={cardWidth} />
                       ))}
                     </div>
                   </div>
@@ -380,7 +391,6 @@ function MightyPageContent() {
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="mighty-trick-display"
-                  onCardDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                 />
               </div>
 
@@ -549,32 +559,33 @@ function MightyPageContent() {
                   onToggle={toggleCard}
                   cardWidth={cardWidth}
                   dataTutorial="mighty-player-hand"
+                  cardBadgeFor={roleBadgeFor}
                 />
               ) : (
                 <div className="flex flex-wrap gap-1 mb-2" data-tutorial="mighty-player-hand">
-                  {humanPlayer.cards.map((card, idx) => (
-                    <button
-                      type="button"
-                      key={`${card.design}-${card.value}-${idx}`}
-                      onClick={() => toggleCard(idx)}
-                      aria-label={cardAlt(card)}
-                      aria-pressed={selectedCardIndices.includes(idx)}
-                      className={`transition-transform ${focusRingCard}`}
-                      style={{
-                        background: 'none',
-                        padding: 0,
-                        borderRadius: 8,
-                        ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      <AnimatedCard
-                        card={card}
-                        width={cardWidth}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
-                    </button>
-                  ))}
+                  {humanPlayer.cards.map((card, idx) => {
+                    const badge = roleBadgeFor(idx);
+                    return (
+                      <button
+                        type="button"
+                        key={`${card.design}-${card.value}-${idx}`}
+                        onClick={() => toggleCard(idx)}
+                        aria-label={cardAlt(card)}
+                        aria-pressed={selectedCardIndices.includes(idx)}
+                        className={`transition-transform ${focusRingCard} relative`}
+                        style={{
+                          background: 'none',
+                          padding: 0,
+                          borderRadius: 8,
+                          ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        <AnimatedCard card={card} width={cardWidth} />
+                        {badge && <CardRoleBadge idx={idx} glyph={badge.glyph} title={badge.title} />}
+                      </button>
+                    );
+                  })}
                 </div>
               ))}
 

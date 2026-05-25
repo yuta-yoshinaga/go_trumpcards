@@ -111,22 +111,25 @@ func writeRealtimeOutput(w io.Writer, out string) {
 // stdio), it falls back to the standard line-mode loop so non-interactive
 // scripts keep working.
 //
+// Returns 0 on normal exit and the line-mode loop's code (0 normally, 1 on
+// non-EOF stdin error — issue #1839) when it falls back. The realtime loop
+// itself only exits on user quit / signal / stdin EOF, all of which are
+// clean shutdowns.
+//
 // Signal handling is local rather than via the package-level
 // setupSignalHandler — the latter calls os.Exit on SIGINT/SIGTERM, which
 // bypasses the deferred term.Restore and leaves the user's terminal in
 // raw mode. Here we close a quit channel instead, letting the loop return
 // normally and the deferred restore run.
-func RunRealtimeCuiLoop(gameName string, controller CuiExecer, helpLines []string) {
+func RunRealtimeCuiLoop(gameName string, controller CuiExecer, helpLines []string) int {
 	stdinFd := int(os.Stdin.Fd())
 	if !term.IsTerminal(stdinFd) {
-		RunCuiLoop(gameName, controller, helpLines)
-		return
+		return RunCuiLoop(gameName, controller, helpLines)
 	}
 	state, err := term.MakeRaw(stdinFd)
 	if err != nil {
 		// Raw mode failed (rare — e.g., unusual shells); degrade to line mode.
-		RunCuiLoop(gameName, controller, helpLines)
-		return
+		return RunCuiLoop(gameName, controller, helpLines)
 	}
 	defer func() { _ = term.Restore(stdinFd, state) }()
 
@@ -146,7 +149,10 @@ func RunRealtimeCuiLoop(gameName string, controller CuiExecer, helpLines []strin
 	}()
 
 	keys := make(chan rune)
-	go readRealtimeKeys(os.Stdin, keys)
+	// Buffered so the reader goroutine never blocks waiting for us to
+	// consume the final error after we've already returned from the core.
+	errCh := make(chan error, 1)
+	go readRealtimeKeys(os.Stdin, keys, errCh)
 
 	ticker := time.NewTicker(SlapjackRealtimeTickInterval)
 	defer ticker.Stop()
@@ -173,19 +179,40 @@ func RunRealtimeCuiLoop(gameName string, controller CuiExecer, helpLines []strin
 
 	realtimeCuiCore(controller, keys, ticks, quit, os.Stdout, SlapjackRealtimeKeyMap)
 	close(done)
+	// Pick up any non-EOF stdin error the reader recorded before the keys
+	// channel closed. Non-blocking: EOF / signal exits leave errCh empty.
+	select {
+	case err := <-errCh:
+		if err != nil {
+			fmt.Fprintln(os.Stderr, i18n.Tf("inputReadError", "error", err.Error()))
+			return 1
+		}
+	default:
+	}
 	fmt.Println(i18n.T("bye"))
+	return 0
 }
 
 // readRealtimeKeys reads single bytes from r and forwards them as runes.
-// Closes keys on EOF or unrecoverable error so the core loop exits.
-func readRealtimeKeys(r io.Reader, keys chan<- rune) {
+// Closes keys on EOF or unrecoverable error so the core loop exits, and
+// sends the error on errCh for non-EOF failures so the caller can surface
+// them as exit 1 instead of swallowing them. EOF sends nothing — it is a
+// clean shutdown.
+func readRealtimeKeys(r io.Reader, keys chan<- rune, errCh chan<- error) {
 	defer close(keys)
 	br := bufio.NewReader(r)
 	for {
 		b, err := br.ReadByte()
 		if err != nil {
-			if errors.Is(err, io.EOF) {
-				return
+			if !errors.Is(err, io.EOF) {
+				// Non-blocking: errCh is buffered with cap 1 and is only
+				// ever sent to here, so this select cannot block; the
+				// default branch guards against any future redesign that
+				// might bypass that invariant.
+				select {
+				case errCh <- err:
+				default:
+				}
 			}
 			return
 		}

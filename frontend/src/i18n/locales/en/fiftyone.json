@@ -15,7 +15,8 @@
     "selectCard": "Select a card",
     "stopCalled": "Stop called",
     "yourTurn": "Your turn",
-    "cpuTurn": "CPU {{id}}'s turn"
+    "cpuTurn": "CPU {{id}}'s turn",
+    "suitScores": "Suit totals"
   },
   "settings": {
     "cpuDifficulty": "CPU Difficulty"

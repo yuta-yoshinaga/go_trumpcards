@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { Card } from '../types/card';
 import { TrickDisplay, type TrickDisplayCard, type TrickDisplayPlayer } from './TrickDisplay';
 
@@ -54,11 +54,37 @@ describe('TrickDisplay', () => {
     expect(screen.getByText('CPU 7')).toBeInTheDocument();
   });
 
-  it('renders correctly when onCardDealComplete is provided', () => {
-    const onDeal = vi.fn();
-    render(
-      <TrickDisplay currentTrick={trick} players={players} cardWidth={40} label="label" onCardDealComplete={onDeal} />,
-    );
+  it('renders one AnimatedCard per trick entry', () => {
+    render(<TrickDisplay currentTrick={trick} players={players} cardWidth={40} label="label" />);
     expect(screen.getAllByTestId('animated-card')).toHaveLength(2);
+  });
+
+  it('marks ally vs foe when partner-team data is supplied', () => {
+    const teamedPlayers: TrickDisplayPlayer[] = [
+      { id: 0, isHuman: true, team: 0 },
+      { id: 1, isHuman: false, team: 1 },
+      { id: 2, isHuman: false, team: 0 },
+      { id: 3, isHuman: false, team: 1 },
+    ];
+    const teamedTrick: TrickDisplayCard[] = [
+      { playerIdx: 0, card }, // human, team 0 → ally
+      { playerIdx: 1, card: { design: 'HEART', value: 10 } }, // CPU 1, team 1 → foe
+      { playerIdx: 2, card: { design: 'CLOVER', value: 7 } }, // partner, team 0 → ally
+    ];
+    const { container } = render(
+      <TrickDisplay currentTrick={teamedTrick} players={teamedPlayers} cardWidth={40} label="現在のトリック" />,
+    );
+    const allies = container.querySelectorAll('[data-team-role="ally"]');
+    const foes = container.querySelectorAll('[data-team-role="foe"]');
+    expect(allies).toHaveLength(2);
+    expect(foes).toHaveLength(1);
+  });
+
+  it('omits team coloring when only one team appears in the players list', () => {
+    const singleTeamPlayers: TrickDisplayPlayer[] = players.map((p) => ({ ...p, team: 0 }));
+    const { container } = render(
+      <TrickDisplay currentTrick={trick} players={singleTeamPlayers} cardWidth={40} label="label" />,
+    );
+    expect(container.querySelector('[data-team-role]')).not.toBeInTheDocument();
   });
 });

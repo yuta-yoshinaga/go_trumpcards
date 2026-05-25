@@ -10,6 +10,7 @@
     "rebuy": "Rebuy/Addon"
   },
   "communityCards": "Community Cards",
+  "rankOverrideReminder": "Short Deck special rule: Flush beats Full House",
   "yourHand": "Your Hand",
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
   "rebuy": {
@@ -36,6 +37,18 @@
     "threeBetTooltip": "3Bet: % of hands where player re-raised an opponent's raise",
     "af": "AF",
     "afTooltip": "AF (Aggression Factor): ratio of aggressive actions (bet/raise) to passive actions (call)"
+  },
+  "style": {
+    "tag": "TAG",
+    "tagTooltip": "Tight Aggressive: plays few hands but bets strongly when in",
+    "lag": "LAG",
+    "lagTooltip": "Loose Aggressive: plays many hands and bets strongly",
+    "tp": "TP",
+    "tpTooltip": "Tight Passive: plays few hands, mostly calls",
+    "lp": "LP",
+    "lpTooltip": "Loose Passive: plays many hands but rarely raises",
+    "balanced": "BAL",
+    "balancedTooltip": "Balanced style"
   },
   "learning": {
     "title": "Learning Mode",

@@ -29,6 +29,7 @@ import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
+import { placeholderCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -316,14 +317,11 @@ function SevenCardStudPageContent() {
                             key={`${card.design}-${card.value}`}
                             card={card}
                             width={cardWidth}
-                            style={{ border: '3px solid transparent' }}
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                            style={placeholderCardStyle}
                           />
                         ))
                       : !p.folded &&
-                        Array.from({ length: 4 }).map((_, i) => (
-                          <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
-                        ))}
+                        Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                   </div>
                   {/* Hole cards (face-down unless showdown) */}
                   <div className="text-ds-text-muted text-xs mb-0.5">{t('holeCards')}</div>
@@ -334,16 +332,13 @@ function SevenCardStudPageContent() {
                             key={`${card.design}-${card.value}`}
                             card={card}
                             width={cardWidth}
-                            style={{ border: '3px solid transparent' }}
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                            style={placeholderCardStyle}
                           />
                         ))
                       : !p.folded &&
                         Array.from({
                           length: (state?.phase ?? 0) >= SevenCardStudPhase.SEVENTH_STREET ? 3 : 2,
-                        }).map((_, i) => (
-                          <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
-                        ))}
+                        }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                   </div>
                 </div>
               ))}
@@ -396,14 +391,11 @@ function SevenCardStudPageContent() {
                           key={`${card.design}-${card.value}`}
                           card={card}
                           width={cardWidth}
-                          style={{ border: '3px solid transparent' }}
-                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                          style={placeholderCardStyle}
                         />
                       ))
                     : !humanPlayer.folded &&
-                      Array.from({ length: 4 }).map((_, i) => (
-                        <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
-                      ))}
+                      Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                 </div>
                 {/* Hole cards */}
                 <div className="text-ds-text-muted text-xs mb-0.5">{t('holeCards')}</div>
@@ -414,14 +406,11 @@ function SevenCardStudPageContent() {
                           key={`${card.design}-${card.value}`}
                           card={card}
                           width={cardWidth}
-                          style={{ border: '3px solid transparent' }}
-                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                          style={placeholderCardStyle}
                         />
                       ))
                     : !humanPlayer.folded &&
-                      Array.from({ length: 3 }).map((_, i) => (
-                        <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
-                      ))}
+                      Array.from({ length: 3 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                 </div>
               </div>
             )}

@@ -20,6 +20,8 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { gameTheme } from '../styles/gameTheme';
 import type { CassinoResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { cassinoTakeCandidates } from '../utils/cassinoTakeCandidates';
+import { suggestCassinoAction } from '../utils/cassinoUtils';
 import {
   CASSINO_HELP,
   type CassinoCliArgs,
@@ -122,22 +124,64 @@ function CassinoPageContent() {
 
   const onReset = useCallback(() => handleResetWithConfig(), [handleResetWithConfig]);
 
-  if (!state || state.players.length < 4) {
+  // Hooks below must run unconditionally — they're computed before the early-return
+  // skeleton guard so the hook order stays stable on the first render when `state`
+  // is still null.
+  const human = state && state.players.length >= 4 ? state.players[0] : null;
+  const isHumanTurn = !!state && state.currentTurn === 0 && !state.gameEndFlag;
+
+  const suggestion = useMemo(
+    () =>
+      state && human && isHumanTurn && handIndex !== null
+        ? suggestCassinoAction({
+            handCard: human.cards[handIndex],
+            hand: human.cards,
+            handIndex,
+            selectedTableCards: tableIndices.map((i) => state.tableCards[i]).filter(Boolean),
+            selectedBuilds: buildIndices.map((i) => state.builds[i]).filter(Boolean),
+          })
+        : null,
+    [state, human, isHumanTurn, handIndex, tableIndices, buildIndices],
+  );
+
+  const onSuggest = useCallback(() => {
+    if (!suggestion || handIndex === null) return;
+    if (suggestion.type === 'take') {
+      playTake();
+      return;
+    }
+    setDeclaredValue(suggestion.declaredValue);
+    callApi('build', {
+      handIndex,
+      tableIndices: [...tableIndices].sort((a, b) => a - b),
+      declaredValue: suggestion.declaredValue,
+    });
+  }, [suggestion, handIndex, playTake, setDeclaredValue, callApi, tableIndices]);
+
+  if (!state || !human) {
     return (
       <div className={`flex-1 flex items-center justify-center ${gameTheme.cassino.bg} text-ds-text-muted`} aria-busy>
-        {tc('common.loading')}
+        {tc('skeleton.loading')}
       </div>
     );
   }
 
   const isGameEnd = state.gameEndFlag;
   const humanWon = isGameEnd && state.roundWinners.includes(0);
-  const isHumanTurn = state.currentTurn === 0 && !isGameEnd;
-  const human = state.players[0];
+  const takeCandidateIndices =
+    handIndex !== null && isHumanTurn
+      ? cassinoTakeCandidates(state.tableCards, human.cards[handIndex]?.value ?? 0).indices
+      : new Set<number>();
   const canTake = isHumanTurn && handIndex !== null && (tableIndices.length > 0 || buildIndices.length > 0);
   const canBuild = isHumanTurn && handIndex !== null && tableIndices.length > 0;
   const canTrail = isHumanTurn && handIndex !== null;
   const phaseName = isGameEnd ? t('phase.end') : t(`phase.${state.phase}`, t('phase.play'));
+  const suggestionLabel =
+    suggestion?.type === 'take'
+      ? t('button.suggestTake', { value: suggestion.value })
+      : suggestion?.type === 'build'
+        ? t('button.suggestBuild', { value: suggestion.declaredValue })
+        : '';
 
   return (
     <GamePageShell
@@ -190,20 +234,28 @@ function CassinoPageContent() {
                 {state.tableCards.length === 0 ? (
                   <span className="text-ds-text-muted text-sm self-center">{t('label.tableEmpty')}</span>
                 ) : (
-                  state.tableCards.map((c, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => isHumanTurn && toggleTable(i)}
-                      disabled={!isHumanTurn}
-                      className={`rounded transition-all ${
-                        tableIndices.includes(i) ? 'ring-2 ring-ds-warning -translate-y-1' : ''
-                      } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
-                      data-testid={`table-card-${i}`}
-                    >
-                      <AnimatedCard card={c} width={cardWidth * 0.9} />
-                    </button>
-                  ))
+                  state.tableCards.map((c, i) => {
+                    const isCandidate = takeCandidateIndices.has(i);
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => isHumanTurn && toggleTable(i)}
+                        disabled={!isHumanTurn}
+                        className={`rounded transition-all ${
+                          tableIndices.includes(i)
+                            ? 'ring-2 ring-ds-warning -translate-y-1'
+                            : isCandidate
+                              ? 'ring-2 ring-ds-success motion-safe:animate-pulse'
+                              : ''
+                        } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
+                        data-testid={`table-card-${i}`}
+                        data-take-candidate={isCandidate || undefined}
+                      >
+                        <AnimatedCard card={c} width={cardWidth * 0.9} />
+                      </button>
+                    );
+                  })
                 )}
               </div>
             </div>
@@ -257,6 +309,21 @@ function CassinoPageContent() {
                 ))}
               </div>
             </div>
+
+            {suggestion && (
+              <div className="flex justify-center" data-testid="cs-suggest-area">
+                <button
+                  type="button"
+                  onClick={onSuggest}
+                  disabled={loading}
+                  className="px-5 py-2.5 rounded-full bg-ds-accent text-ds-text-on-accent font-semibold shadow-lg motion-safe:animate-pulse disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                  data-testid="cs-suggest-button"
+                  aria-label={suggestionLabel}
+                >
+                  {suggestionLabel}
+                </button>
+              </div>
+            )}
 
             <GameMessageBox
               message={state.message}

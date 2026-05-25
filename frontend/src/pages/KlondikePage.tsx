@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { KlondikeMoveZone, klondikeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { AutoCompleteReadyBadge } from '../components/AutoCompleteReadyBadge';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -273,7 +274,6 @@ function KlondikePageContent() {
                       width={kl.cw}
                       onClick={isPlaying ? handleDraw : undefined}
                       ariaLabel={t('draw')}
-                      onFlipComplete={() => playSound('cardFlip')}
                     />
                   ) : (
                     <button
@@ -316,19 +316,10 @@ function KlondikePageContent() {
                                 onDragEnd={dnd.handleDragEnd}
                                 className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste') ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource({ zone: 'waste' }) ? 'opacity-50' : ''}`}
                               >
-                                <AnimatedCard
-                                  card={card}
-                                  width={kl.cw}
-                                  draggable={false}
-                                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                                />
+                                <AnimatedCard card={card} width={kl.cw} draggable={false} />
                               </button>
                             ) : (
-                              <AnimatedCard
-                                card={card}
-                                width={kl.cw}
-                                onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                              />
+                              <AnimatedCard card={card} width={kl.cw} />
                             )}
                           </div>
                         );
@@ -377,7 +368,6 @@ function KlondikePageContent() {
                               width={kl.cw}
                               draggable={false}
                               dealDelay={isAutoCompleting ? idx * 0.15 : 0}
-                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                             />
                           </button>
                         ) : (
@@ -460,15 +450,10 @@ function KlondikePageContent() {
                                       draggable={false}
                                       style={{ width: '100%' }}
                                       wrapperClassName="block w-full"
-                                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                                     />
                                   </button>
                                 ) : (
-                                  <AnimatedCardBack
-                                    width={kl.cw}
-                                    className="w-full"
-                                    onFlipComplete={() => playSound('cardFlip')}
-                                  />
+                                  <AnimatedCardBack width={kl.cw} className="w-full" />
                                 )}
                               </div>
                             );
@@ -586,6 +571,7 @@ function KlondikePageContent() {
                   >
                     {t('autoComplete')}
                   </button>
+                  <AutoCompleteReadyBadge ready={autoCompleteReady} />
                   <button
                     type="button"
                     className={btnDanger}

@@ -190,55 +190,67 @@ function MonteCarloPageContent() {
                 style={{ gridTemplateColumns: `repeat(${SIZE}, minmax(0, 1fr))` }}
                 data-testid="mc-board"
               >
-                {state.board.map((row, rowIdx) =>
-                  row.map((cell, colIdx) => {
-                    const filled = !!cell.card;
-                    const isSelected = selected?.row === rowIdx && selected?.col === colIdx;
-                    const isAdjOfSelected =
-                      filled && selected !== null && isAdjacent(selected, { row: rowIdx, col: colIdx });
-                    const cellAction = `remove-${selected?.row ?? -1}-${selected?.col ?? -1}-${rowIdx}-${colIdx}`;
-                    const isHintTarget =
-                      frontendHintEnabled &&
-                      frontendHint?.targetAction.startsWith('remove-') &&
-                      (frontendHint.targetAction === cellAction ||
-                        frontendHint.targetAction ===
-                          `remove-${rowIdx}-${colIdx}-${selected?.row ?? -1}-${selected?.col ?? -1}` ||
-                        // Highlight the suggested first cell when nothing is selected yet.
-                        (selected === null &&
-                          (frontendHint.targetAction.split('-').slice(1, 3).join('-') === `${rowIdx}-${colIdx}` ||
-                            frontendHint.targetAction.split('-').slice(3, 5).join('-') === `${rowIdx}-${colIdx}`)));
-                    return (
-                      <button
-                        type="button"
-                        key={`mc-${rowIdx}-${colIdx}`}
-                        data-testid={`mc-cell-${rowIdx}-${colIdx}`}
-                        data-hint-action={`mc-cell-${rowIdx}-${colIdx}`}
-                        aria-label={
-                          cell.card
-                            ? cardAlt(cell.card)
-                            : `${t('label.empty', { ns: 'common' })} ${rowIdx + 1}-${colIdx + 1}`
-                        }
-                        onClick={() => handleCellClick(rowIdx, colIdx)}
-                        disabled={!isPlaying || loading || !filled}
-                        className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${
-                          filled ? 'cursor-pointer' : ''
-                        } ${isSelected ? 'ring-2 ring-ds-accent' : ''} ${
-                          isAdjOfSelected ? 'ring-1 ring-ds-warning' : ''
-                        } ${isHintTarget ? 'ring-2 ring-ds-warning' : ''}`}
-                      >
-                        {cell.card ? (
-                          <AnimatedCard card={cell.card} width={cardWidth} />
-                        ) : (
-                          <div
-                            style={{ width: cardWidth, height: Math.round(cardWidth * 1.4) }}
-                            className="rounded border-2 border-dashed border-white/30"
-                            aria-hidden="true"
-                          />
-                        )}
-                      </button>
-                    );
-                  }),
-                )}
+                {(() => {
+                  // Compute once per render — depends only on `selected`, not on (rowIdx, colIdx).
+                  const selectedValue = selected ? state.board[selected.row]?.[selected.col]?.card?.value : undefined;
+                  return state.board.map((row, rowIdx) =>
+                    row.map((cell, colIdx) => {
+                      const filled = !!cell.card;
+                      const isSelected = selected?.row === rowIdx && selected?.col === colIdx;
+                      const isAdjOfSelected =
+                        filled && selected !== null && isAdjacent(selected, { row: rowIdx, col: colIdx });
+                      // `isAdjOfSelected` already requires `filled`, so `cell.card` is non-null here.
+                      const isMatchingPair =
+                        isAdjOfSelected && selectedValue !== undefined && cell.card?.value === selectedValue;
+                      const cellAction = `remove-${selected?.row ?? -1}-${selected?.col ?? -1}-${rowIdx}-${colIdx}`;
+                      const isHintTarget =
+                        frontendHintEnabled &&
+                        frontendHint?.targetAction.startsWith('remove-') &&
+                        (frontendHint.targetAction === cellAction ||
+                          frontendHint.targetAction ===
+                            `remove-${rowIdx}-${colIdx}-${selected?.row ?? -1}-${selected?.col ?? -1}` ||
+                          // Highlight the suggested first cell when nothing is selected yet.
+                          (selected === null &&
+                            (frontendHint.targetAction.split('-').slice(1, 3).join('-') === `${rowIdx}-${colIdx}` ||
+                              frontendHint.targetAction.split('-').slice(3, 5).join('-') === `${rowIdx}-${colIdx}`)));
+                      return (
+                        <button
+                          type="button"
+                          key={`mc-${rowIdx}-${colIdx}`}
+                          data-testid={`mc-cell-${rowIdx}-${colIdx}`}
+                          data-hint-action={`mc-cell-${rowIdx}-${colIdx}`}
+                          aria-label={
+                            cell.card
+                              ? cardAlt(cell.card)
+                              : `${t('label.empty', { ns: 'common' })} ${rowIdx + 1}-${colIdx + 1}`
+                          }
+                          onClick={() => handleCellClick(rowIdx, colIdx)}
+                          disabled={!isPlaying || loading || !filled}
+                          data-pair-match={isMatchingPair ? 'true' : undefined}
+                          className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${
+                            filled ? 'cursor-pointer' : ''
+                          } ${isSelected ? 'ring-2 ring-ds-accent' : ''} ${
+                            isMatchingPair
+                              ? 'ring-2 ring-ds-success animate-pulse'
+                              : isAdjOfSelected
+                                ? 'ring-1 ring-ds-warning'
+                                : ''
+                          } ${isHintTarget ? 'ring-2 ring-ds-warning' : ''}`}
+                        >
+                          {cell.card ? (
+                            <AnimatedCard card={cell.card} width={cardWidth} />
+                          ) : (
+                            <div
+                              style={{ width: cardWidth, height: Math.round(cardWidth * 1.4) }}
+                              className="rounded border-2 border-dashed border-white/30"
+                              aria-hidden="true"
+                            />
+                          )}
+                        </button>
+                      );
+                    }),
+                  );
+                })()}
               </div>
             </div>
 

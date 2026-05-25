@@ -220,11 +220,7 @@ function PageOnePageContent() {
               <div>
                 {state.discardTop && (
                   <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3" data-tutorial="po-discard-pile">
-                    <AnimatedCard
-                      card={state.discardTop}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard card={state.discardTop} width={cardWidth} />
                     <div className="text-ds-text-muted text-sm">
                       <div>{t('discardTop')}</div>
                     </div>
@@ -337,11 +333,7 @@ function PageOnePageContent() {
                       boxSizing: 'border-box',
                     }}
                   >
-                    <AnimatedCard
-                      card={card}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard card={card} width={cardWidth} />
                   </button>
                 ))}
               </div>

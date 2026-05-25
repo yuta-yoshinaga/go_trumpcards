@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { casinowarApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -56,6 +56,7 @@ function CasinoWarPageContent() {
     useGamePageSetup('casinowar');
 
   const [betAmount, setBetAmount] = useState(100);
+  const [lastBetAmount, setLastBetAmount] = useState<number | null>(null);
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
   const { state, loading, error, exec: execApi, retry } = useGameApi(casinowarApi.exec);
@@ -79,14 +80,30 @@ function CasinoWarPageContent() {
   const isTieDecision = state?.phase === CasinoWarPhase.TIE_DECISION;
   const isEndPhase = state?.phase === CasinoWarPhase.END;
 
+  const handleBet = useCallback(() => {
+    setLastBetAmount(betAmount);
+    execApi('bet', betAmount);
+  }, [execApi, betAmount]);
+  const handleSurrender = useCallback(() => execApi('surrender'), [execApi]);
+  const handleWar = useCallback(() => execApi('war'), [execApi]);
+  const handleReset = useCallback(() => execApi('reset'), [execApi]);
+  const canRebet = lastBetAmount !== null && lastBetAmount > 0 && state !== null && lastBetAmount <= state.chips;
+  const handleRebet = useCallback(async () => {
+    if (lastBetAmount === null) return;
+    await execApi('reset');
+    await execApi('bet', lastBetAmount);
+  }, [execApi, lastBetAmount]);
+
   const actionBindings = useMemo(
     () => [
-      { key: 'b', action: () => execApi('bet', betAmount), enabled: isBetPhase },
-      { key: 's', action: () => execApi('surrender'), enabled: isTieDecision },
-      { key: 'w', action: () => execApi('war'), enabled: isTieDecision },
-      { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
+      { key: 'b', action: handleBet, enabled: isBetPhase },
+      { key: 's', action: handleSurrender, enabled: isTieDecision },
+      { key: 'w', action: handleWar, enabled: isTieDecision },
+      { key: 'r', action: handleReset, enabled: isEndPhase },
+      // Power-user shortcut: 'e' replays the last bet at end phase.
+      { key: 'e', action: handleRebet, enabled: isEndPhase && canRebet },
     ],
-    [execApi, betAmount, isBetPhase, isTieDecision, isEndPhase],
+    [handleBet, handleSurrender, handleWar, handleReset, handleRebet, isBetPhase, isTieDecision, isEndPhase, canRebet],
   );
 
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
@@ -98,11 +115,6 @@ function CasinoWarPageContent() {
       </div>
     );
   }
-
-  const handleBet = () => execApi('bet', betAmount);
-  const handleSurrender = () => execApi('surrender');
-  const handleWar = () => execApi('war');
-  const handleReset = () => execApi('reset');
 
   const phaseName = isBetPhase
     ? t('phase.bet')
@@ -172,21 +184,13 @@ function CasinoWarPageContent() {
                   {state.playerCard && (
                     <div className="flex flex-col items-center">
                       <div className="text-ds-text-primary text-sm mb-1">{t('label.playerCard')}</div>
-                      <AnimatedCard
-                        card={state.playerCard}
-                        width={cardWidth}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={state.playerCard} width={cardWidth} />
                     </div>
                   )}
                   {state.dealerCard && (
                     <div className="flex flex-col items-center">
                       <div className="text-ds-text-primary text-sm mb-1">{t('label.dealerCard')}</div>
-                      <AnimatedCard
-                        card={state.dealerCard}
-                        width={cardWidth}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={state.dealerCard} width={cardWidth} />
                     </div>
                   )}
                 </div>
@@ -211,21 +215,13 @@ function CasinoWarPageContent() {
                   {state.playerWarCard && (
                     <div className="flex flex-col items-center">
                       <div className="text-ds-text-primary text-sm mb-1">{t('label.playerCard')}</div>
-                      <AnimatedCard
-                        card={state.playerWarCard}
-                        width={cardWidth}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={state.playerWarCard} width={cardWidth} />
                     </div>
                   )}
                   {state.dealerWarCard && (
                     <div className="flex flex-col items-center">
                       <div className="text-ds-text-primary text-sm mb-1">{t('label.dealerCard')}</div>
-                      <AnimatedCard
-                        card={state.dealerWarCard}
-                        width={cardWidth}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={state.dealerWarCard} width={cardWidth} />
                     </div>
                   )}
                 </div>
@@ -280,6 +276,17 @@ function CasinoWarPageContent() {
             )}
             {isEndPhase && (
               <div className="flex justify-center gap-2 pb-2">
+                {canRebet && (
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleRebet}
+                    disabled={loading}
+                    data-testid="cw-rebet-button"
+                  >
+                    {t('button.rebet', { amount: lastBetAmount })}
+                  </button>
+                )}
                 <GameResetButton
                   isGameEnd={isEndPhase}
                   onReset={handleReset}

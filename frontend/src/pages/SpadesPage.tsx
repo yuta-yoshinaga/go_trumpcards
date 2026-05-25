@@ -24,7 +24,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useSpadesGame } from '../hooks/useSpadesGame';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -96,7 +95,6 @@ export const SpadesPage = withTutorial(SpadesPageContent, 'spades', SP_TUTORIAL_
 function SpadesPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('spades');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -266,7 +264,6 @@ function SpadesPageContent() {
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="sp-trick-display"
-                  onCardDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                 />
               </div>
 

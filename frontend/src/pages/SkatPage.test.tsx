@@ -499,4 +499,42 @@ describe('SkatPage', () => {
     await waitFor(() => expect(screen.getAllByText(/ラウンド/i).length).toBeGreaterThan(0));
     expect(screen.queryByRole('button', { name: '次のラウンド' })).not.toBeInTheDocument();
   });
+
+  it('renders bid-estimate during bid phase without an exceeds warning when the current bid is 0', async () => {
+    mockExec.mockResolvedValue({
+      ...bidPhaseHumanTurn,
+      players: [
+        {
+          ...basePlayer(0, true),
+          cards: [{ design: 'CLOVER', value: 11 } as Card],
+        },
+        basePlayer(1, false),
+        basePlayer(2, false),
+      ],
+    });
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/skat']}>
+        <SkatPage />
+      </MemoryRouter>,
+    );
+    const estimate = await screen.findByTestId('bid-estimate');
+    expect(estimate).not.toHaveAttribute('data-exceeds');
+    // J♣ alone → Grand "with 1" → value 48; the label should mention that number.
+    expect(estimate.textContent).toContain('48');
+  });
+
+  it('flags the bid-estimate as exceeded when the current bid is above the hand ceiling', async () => {
+    mockExec.mockResolvedValue({
+      ...bidPhaseHumanTurn,
+      currentBid: 999,
+    });
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/skat']}>
+        <SkatPage />
+      </MemoryRouter>,
+    );
+    const estimate = await screen.findByTestId('bid-estimate');
+    expect(estimate).toHaveAttribute('data-exceeds', 'true');
+    expect(estimate.textContent).toContain('⚠️');
+  });
 });

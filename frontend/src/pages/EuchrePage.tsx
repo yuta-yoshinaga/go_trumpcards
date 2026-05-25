@@ -27,13 +27,14 @@ import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { EuchreResponse } from '../types/card';
+import type { EuchrePlayerData, EuchreResponse } from '../types/card';
 import { EuchrePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { EUCHRE_HELP, parseEuchreCommand } from '../utils/cli/commands/euchreCommands';
 import { formatEuchreState } from '../utils/cli/formatters/euchreFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { euchreSittingOutIdx } from '../utils/euchreSittingOut';
 import { playerName } from '../utils/playerUtils';
 
 const SUIT_NAMES: Readonly<Record<number, string>> = {
@@ -187,6 +188,7 @@ function EuchrePageContent() {
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const humanTeam = humanPlayer?.team ?? 0;
+  const sittingOutIdx = euchreSittingOutIdx(state);
   const isPickUpPhase = state.phase === EuchrePhase.PICK_UP;
   const isCallTrumpPhase = state.phase === EuchrePhase.CALL_TRUMP;
   const isDiscardPhase = state.phase === EuchrePhase.DISCARD;
@@ -297,11 +299,7 @@ function EuchrePageContent() {
                   <div className="my-2 text-center">
                     <div className="text-ds-text-muted text-sm mb-1">{t('faceUpCard')}</div>
                     <div className="inline-block">
-                      <AnimatedCard
-                        card={state.faceUpCard}
-                        width={cardWidth}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={state.faceUpCard} width={cardWidth} />
                     </div>
                   </div>
                 )}
@@ -313,7 +311,6 @@ function EuchrePageContent() {
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="eu-trick-display"
-                  onCardDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                 />
 
                 {/* Partnership info */}
@@ -341,27 +338,37 @@ function EuchrePageContent() {
                     <div className="mt-1">
                       {state.players
                         .filter((p) => !p.isHuman)
-                        .map((p) => (
-                          <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                            {t('team', { n: p.team })} | {t('trickCount', { count: p.trickCount })}
-                            {state.dealerIdx === p.id ? ` | ${t('dealer')}` : ''}
-                          </div>
-                        ))}
+                        .map((p) => {
+                          const sittingOut = sittingOutIdx === p.id;
+                          return (
+                            <div
+                              key={p.id}
+                              data-testid={`eu-player-row-${p.id}`}
+                              className={`text-ds-text-muted text-sm py-0.5 ${sittingOut ? 'opacity-40 grayscale' : ''}`}
+                            >
+                              <CpuPlayerLine player={p} dealerIdx={state.dealerIdx} sittingOut={sittingOut} t={t} />
+                            </div>
+                          );
+                        })}
                     </div>
                   </details>
                 ) : (
                   state.players
                     .filter((p) => !p.isHuman)
-                    .map((p) => (
-                      <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                        <div className="text-ds-text-muted text-sm">
-                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                          {t('team', { n: p.team })} | {t('trickCount', { count: p.trickCount })}
-                          {state.dealerIdx === p.id ? ` | ${t('dealer')}` : ''}
+                    .map((p) => {
+                      const sittingOut = sittingOutIdx === p.id;
+                      return (
+                        <div
+                          key={p.id}
+                          data-testid={`eu-player-row-${p.id}`}
+                          className={`mb-2 p-2 rounded bg-black/30 ${sittingOut ? 'opacity-40 grayscale' : ''}`}
+                        >
+                          <div className="text-ds-text-muted text-sm">
+                            <CpuPlayerLine player={p} dealerIdx={state.dealerIdx} sittingOut={sittingOut} t={t} />
+                          </div>
                         </div>
-                      </div>
-                    ))
+                      );
+                    })
                 )}
 
                 {/* Team scores */}
@@ -380,7 +387,7 @@ function EuchrePageContent() {
                           <th scope="col" className="text-left">
                             {t('team', { n: '' })}
                           </th>
-                          <th scope="col">{tc('button.score', { defaultValue: 'Score' })}</th>
+                          <th scope="col">{tc('button.score')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -402,7 +409,7 @@ function EuchrePageContent() {
                           <th scope="col" className="text-left">
                             {t('team', { n: '' })}
                           </th>
-                          <th scope="col">{tc('button.score', { defaultValue: 'Score' })}</th>
+                          <th scope="col">{tc('button.score')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -460,11 +467,7 @@ function EuchrePageContent() {
                       ...(isMobile ? { minWidth: solitaireMinColWidth, flexShrink: 0 } : {}),
                     }}
                   >
-                    <AnimatedCard
-                      card={card}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard card={card} width={cardWidth} />
                   </button>
                 ))}
               </div>
@@ -589,5 +592,32 @@ function EuchrePageContent() {
         </>
       )}
     </GamePageShell>
+  );
+}
+
+/** Translated row line + sitting-out badge for a single CPU player, shared
+ * between the mobile collapsed-details and desktop card layouts. */
+function CpuPlayerLine({
+  player,
+  dealerIdx,
+  sittingOut,
+  t,
+}: {
+  player: EuchrePlayerData;
+  dealerIdx: number;
+  sittingOut: boolean;
+  t: (key: string, opts?: Record<string, unknown>) => string;
+}) {
+  return (
+    <>
+      {playerName(player.id, player.isHuman)}: {t('cards', { count: player.cardCount })} |{' '}
+      {t('team', { n: player.team })} | {t('trickCount', { count: player.trickCount })}
+      {dealerIdx === player.id ? ` | ${t('dealer')}` : ''}
+      {sittingOut && (
+        <span data-testid={`eu-sitting-out-${player.id}`} className="ml-2 text-ds-warning">
+          💤 {t('sittingOut')}
+        </span>
+      )}
+    </>
   );
 }

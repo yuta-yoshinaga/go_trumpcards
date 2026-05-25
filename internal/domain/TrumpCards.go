@@ -78,6 +78,14 @@ func (t *TrumpCards) Shuffle() {
 	t.deckInit()
 }
 
+// Replenish makes every card available to DrawCard again without changing
+// the underlying deck order. Call this when re-dealing on the same deck
+// (e.g. on a 2nd Reset) and randomization is handled separately by the
+// caller (typically a seeded `rand.Rand` shuffling the drawn pile).
+func (t *TrumpCards) Replenish() {
+	t.deckInit()
+}
+
 // GetRemainingCount 山札の残り枚数
 func (t *TrumpCards) GetRemainingCount() int {
 	return t.deckCnt - t.deckDrawCnt

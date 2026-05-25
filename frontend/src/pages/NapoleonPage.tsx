@@ -12,6 +12,7 @@ import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { MobileHandGrid } from '../components/MobileHandGrid';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { PartnerRevealFlash } from '../components/PartnerRevealFlash';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -238,6 +239,15 @@ function NapoleonPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
+          <PartnerRevealFlash
+            revealed={state.adjutantRevealed}
+            partnerName={
+              state.adjutantIdx >= 0 && state.players[state.adjutantIdx]
+                ? playerName(state.adjutantIdx, state.players[state.adjutantIdx].isHuman)
+                : ''
+            }
+            headline={t('role.adjutantRevealed')}
+          />
           {/* Settings */}
           <SettingsPanel
             title={t('settings.title')}
@@ -302,12 +312,7 @@ function NapoleonPageContent() {
                 {/* Adjutant card info */}
                 {state.adjutantCard && (
                   <div className="text-ds-text-muted text-center text-sm mb-2" data-tutorial="np-adjutant-info">
-                    {t('adjutantCard')}:{' '}
-                    <AnimatedCard
-                      card={state.adjutantCard}
-                      width={cardWidth * 0.6}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    {t('adjutantCard')}: <AnimatedCard card={state.adjutantCard} width={cardWidth * 0.6} />
                   </div>
                 )}
 
@@ -341,12 +346,7 @@ function NapoleonPageContent() {
                     <div className="text-ds-text-muted text-sm mb-1">{t('kittyLabel')}</div>
                     <div className="flex gap-2">
                       {state.kitty.map((card, idx) => (
-                        <AnimatedCard
-                          key={`kitty-${card.design}-${card.value}-${idx}`}
-                          card={card}
-                          width={cardWidth}
-                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                        />
+                        <AnimatedCard key={`kitty-${card.design}-${card.value}-${idx}`} card={card} width={cardWidth} />
                       ))}
                     </div>
                   </div>
@@ -359,7 +359,6 @@ function NapoleonPageContent() {
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="np-trick-display"
-                  onCardDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                 />
               </div>
 
@@ -547,11 +546,7 @@ function NapoleonPageContent() {
                         boxSizing: 'border-box',
                       }}
                     >
-                      <AnimatedCard
-                        card={card}
-                        width={cardWidth}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={card} width={cardWidth} />
                     </button>
                   ))}
                 </div>

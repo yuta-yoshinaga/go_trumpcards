@@ -178,6 +178,34 @@ function PinochlePageContent() {
     return new Set<string>(meld.cards.map((c) => `${c.design}-${c.value}`));
   }, [state, highlightedMeldIdx]);
 
+  // Precompute the localized meld-list tooltip per card key so the badge render doesn't
+  // re-translate + join on every parent re-render (e.g., bid-amount edits).
+  const cardKeyToMeldTitle = useMemo(() => {
+    const out = new Map<string, string>();
+    const players = state?.players;
+    const playerMelds = state?.playerMelds;
+    if (!players || !playerMelds) return out;
+    const humanIdxLocal = players.findIndex((p) => p.isHuman);
+    const myMelds = humanIdxLocal >= 0 ? playerMelds[humanIdxLocal] : null;
+    if (!myMelds) return out;
+    const cardKeyToTypes = new Map<string, number[]>();
+    for (const m of myMelds) {
+      for (const c of m.cards) {
+        const key = `${c.design}-${c.value}`;
+        const existing = cardKeyToTypes.get(key);
+        if (existing) {
+          if (!existing.includes(m.type)) existing.push(m.type);
+        } else {
+          cardKeyToTypes.set(key, [m.type]);
+        }
+      }
+    }
+    for (const [key, types] of cardKeyToTypes) {
+      out.set(key, types.map((mt) => t(`meldTypes.${mt}`)).join(', '));
+    }
+    return out;
+  }, [state?.players, state?.playerMelds, t]);
+
   if (!state) {
     return (
       <div className="p-4 text-center text-ds-text-primary">
@@ -284,15 +312,11 @@ function PinochlePageContent() {
             {/* Current Trick */}
             {state.currentTrick?.length > 0 && (
               <div className="mb-3 p-2 rounded bg-black/40" data-tutorial="pn-trick-display">
-                <div className="text-ds-text-muted text-sm mb-1">{tc('common:table', { defaultValue: 'Table' })}:</div>
+                <div className="text-ds-text-muted text-sm mb-1">{t('table')}:</div>
                 <div className="flex gap-2 justify-center">
                   {state.currentTrick.map((tc, i) => (
                     <div key={i} className="text-center">
-                      <AnimatedCard
-                        card={tc.card}
-                        width={cardWidth * 0.8}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={tc.card} width={cardWidth * 0.8} />
                       <div className="text-xs text-ds-text-muted mt-1">P{tc.playerIdx}</div>
                     </div>
                   ))}
@@ -302,7 +326,12 @@ function PinochlePageContent() {
 
             {/* Melds */}
             {(phase === PinochlePhase.MELD || phase === PinochlePhase.ROUND_END) && state.playerMelds && (
-              <div className="mb-3 p-2 rounded bg-ds-accent/15" data-tutorial="pn-meld-area">
+              // biome-ignore lint/a11y/noStaticElementInteractions: panel acts as a hover-out reset for the per-badge highlight; not interactive on its own.
+              <div
+                className="mb-3 p-2 rounded bg-ds-accent/15"
+                data-tutorial="pn-meld-area"
+                onMouseLeave={() => setHighlightedMeldIdx(null)}
+              >
                 <div className="text-ds-text-primary font-bold mb-1">{t('meldScore')}:</div>
                 {state.playerMelds.map((melds: PinochleMeldData[], pIdx: number) =>
                   melds.length > 0 ? (
@@ -323,6 +352,8 @@ function PinochlePageContent() {
                             key={mIdx}
                             type="button"
                             onClick={() => setHighlightedMeldIdx((prev) => (prev === mIdx ? null : mIdx))}
+                            onMouseEnter={() => setHighlightedMeldIdx(mIdx)}
+                            onFocus={() => setHighlightedMeldIdx(mIdx)}
                             data-testid={`pn-meld-badge-${mIdx}`}
                             data-active={isActive ? 'true' : undefined}
                             className={`mr-2 inline-block px-2 py-0.5 rounded text-xs ${
@@ -366,7 +397,11 @@ function PinochlePageContent() {
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="pn-player-hand">
                 {humanPlayer.cards.map((card, idx) => {
                   const isValid = state.validPlayIndices?.includes(idx);
-                  const inHighlightedMeld = highlightedCardKeys.has(`${card.design}-${card.value}`);
+                  const cardKey = `${card.design}-${card.value}`;
+                  const inHighlightedMeld = highlightedCardKeys.has(cardKey);
+                  const meldTitle = cardKeyToMeldTitle.get(cardKey);
+                  const isInMeld = meldTitle !== undefined;
+                  const dimmedByMeldFocus = highlightedMeldIdx !== null && !inHighlightedMeld;
                   return (
                     <button
                       type="button"
@@ -375,20 +410,27 @@ function PinochlePageContent() {
                       disabled={loading || !isPlayTurn || !isValid}
                       aria-label={cardAlt(card)}
                       data-meld-highlighted={inHighlightedMeld ? 'true' : undefined}
-                      className={`transition${inHighlightedMeld ? ' ring-4 ring-ds-accent' : ''}`}
+                      data-in-meld={isInMeld ? 'true' : undefined}
+                      title={meldTitle}
+                      className={`relative transition-all${inHighlightedMeld ? ' -translate-y-2 ring-4 ring-ds-accent' : ''}${dimmedByMeldFocus ? ' opacity-40' : ''}`}
                       style={{
                         background: 'none',
                         padding: 0,
                         borderRadius: 8,
-                        opacity: isPlayTurn && !isValid ? 0.5 : 1,
+                        opacity: dimmedByMeldFocus ? undefined : isPlayTurn && !isValid ? 0.5 : 1,
                         boxSizing: 'border-box',
                       }}
                     >
-                      <AnimatedCard
-                        card={card}
-                        width={cardWidth}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={card} width={cardWidth} />
+                      {isInMeld && (
+                        <span
+                          aria-hidden="true"
+                          className="absolute top-0.5 right-0.5 px-1 rounded-full bg-ds-accent text-ds-text-on-accent text-[10px] font-bold shadow-sm pointer-events-none"
+                          data-testid={`pn-meld-card-badge-${idx}`}
+                        >
+                          M
+                        </span>
+                      )}
                     </button>
                   );
                 })}

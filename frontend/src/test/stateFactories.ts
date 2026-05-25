@@ -188,6 +188,7 @@ const baseCallBreakState: CallBreakResponse = {
   leadPlayerIdx: 0,
   message: '',
   config: { cpuDifficulty: 1, maxRounds: 5 },
+  validPlayIndices: [],
 };
 
 /**

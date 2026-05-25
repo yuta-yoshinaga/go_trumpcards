@@ -1,4 +1,5 @@
 {
+  "moveCount": "手数",
   "title": "Trash (トラッシュ)",
   "phase.playerTurn": "あなたのターン",
   "phase.awaitWild": "ワイルド配置",

@@ -4,6 +4,7 @@ import { expansionMargin, focusRingCard, selectedCardStyle } from '../styles/car
 import type { Card } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
 import { CardImage } from './CardImage';
+import { CardRoleBadge } from './CardRoleBadge';
 
 /** Minimum number of cards before splitting into 2 rows. */
 const TWO_ROW_THRESHOLD = 4;
@@ -32,6 +33,15 @@ interface MobileHandGridProps {
   cardWidth: number;
   /** Optional data-tutorial attribute for tutorial system. */
   dataTutorial?: string;
+  /**
+   * Optional whitelist of card indices legal to play this turn.
+   * Indices outside this list render dimmed and ignore taps.
+   */
+  validIndices?: number[];
+  /** Tooltip surfaced on cards that are present but disabled by `validIndices`. */
+  restrictedTooltip?: string;
+  /** Optional badge to render in the top-left corner of a card (e.g. game-specific role marker). */
+  cardBadgeFor?: (idx: number) => { glyph: string; title: string } | null;
 }
 
 /**
@@ -39,10 +49,20 @@ interface MobileHandGridProps {
  * Dynamically calculates negative overlap so all cards fit within the viewport.
  * Falls back to a single row when 3 or fewer cards are present.
  */
-export function MobileHandGrid({ cards, selectedIndices, onToggle, cardWidth, dataTutorial }: MobileHandGridProps) {
+export function MobileHandGrid({
+  cards,
+  selectedIndices,
+  onToggle,
+  cardWidth,
+  dataTutorial,
+  validIndices,
+  restrictedTooltip,
+  cardBadgeFor,
+}: MobileHandGridProps) {
   const viewportWidth = useWindowWidth();
   const reduced = useReducedMotion();
   const buttonWidth = cardWidth + BUTTON_EXTRA;
+  const isRestricted = (idx: number): boolean => validIndices != null && !validIndices.includes(idx);
 
   const useTwoRows = cards.length >= TWO_ROW_THRESHOLD;
   const splitAt = useTwoRows ? Math.ceil(cards.length / 2) : cards.length;
@@ -67,14 +87,22 @@ export function MobileHandGrid({ cards, selectedIndices, onToggle, cardWidth, da
               const isExpanded =
                 selectedIndices.includes(globalIdx) || (i > 0 && selectedIndices.includes(globalIdx - 1));
               const ml = i === 0 ? 0 : isExpanded ? expansionMargin(true, overlap) : overlap;
+              const restricted = isRestricted(globalIdx);
               return (
                 <button
                   type="button"
                   key={`${card.design}-${card.value}-${globalIdx}`}
-                  onClick={() => onToggle(globalIdx)}
+                  onClick={() => {
+                    if (!restricted) onToggle(globalIdx);
+                  }}
                   aria-label={cardAlt(card)}
                   aria-pressed={isSelected}
-                  className={focusRingCard}
+                  // Use aria-disabled (not the HTML `disabled` attribute) so restricted
+                  // cards remain focusable for keyboard / screen-reader users — they
+                  // need to reach the tooltip that explains why the card is illegal.
+                  aria-disabled={restricted || undefined}
+                  title={restricted ? restrictedTooltip : undefined}
+                  className={`${focusRingCard} ${restricted ? 'opacity-50 cursor-not-allowed' : ''}`}
                   style={{
                     background: 'none',
                     padding: 0,
@@ -102,6 +130,10 @@ export function MobileHandGrid({ cards, selectedIndices, onToggle, cardWidth, da
                       ✓
                     </span>
                   )}
+                  {(() => {
+                    const badge = cardBadgeFor?.(globalIdx);
+                    return badge ? <CardRoleBadge idx={globalIdx} glyph={badge.glyph} title={badge.title} /> : null;
+                  })()}
                 </button>
               );
             })}

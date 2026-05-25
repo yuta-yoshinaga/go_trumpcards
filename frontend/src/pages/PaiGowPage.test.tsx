@@ -160,12 +160,27 @@ describe('PaiGowPage', () => {
     renderWithProviders(<PaiGowPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'セット' })).toBeInTheDocument());
 
+    // Pick a non-foul split: low = [C5, S3] keeps the 13 in the high hand.
+    const cardButtons = screen.getAllByRole('button', { name: /Card \d/ });
+    fireEvent.click(cardButtons[3]);
+    fireEvent.click(cardButtons[5]);
+
+    fireEvent.click(screen.getByRole('button', { name: 'セット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('set', undefined, 3, 5));
+  });
+
+  it('blocks Set and shows a foul warning when the low hand outranks the high hand', async () => {
+    mockExec.mockResolvedValue(setHandsPhaseState);
+    renderWithProviders(<PaiGowPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'セット' })).toBeInTheDocument());
+
+    // Low = [D13, S3] (top 13); high = [S10, H11, C5, H7, D9] (top 11) → foul.
     const cardButtons = screen.getAllByRole('button', { name: /Card \d/ });
     fireEvent.click(cardButtons[2]);
     fireEvent.click(cardButtons[5]);
 
-    fireEvent.click(screen.getByRole('button', { name: 'セット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('set', undefined, 2, 5));
+    expect(screen.getByTestId('foul-warning')).toBeInTheDocument();
+    expect(screen.getByTestId('set-hands-button')).toBeDisabled();
   });
 
   it('deselects a card when clicked again', async () => {

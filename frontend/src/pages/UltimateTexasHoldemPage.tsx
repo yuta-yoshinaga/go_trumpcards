@@ -24,6 +24,7 @@ import { gameTheme } from '../styles/gameTheme';
 import { isMaskedCard } from '../types/card';
 import { UltimateTexasHoldemPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { utHoldemPreflopStrength } from '../utils/utHoldemPreflop';
 
 /** Ultimate Texas Hold'em tutorial step definitions. */
 const UTH_TUTORIAL_STEPS: TutorialStep[] = [
@@ -254,12 +255,7 @@ function UltimateTexasHoldemPageContent() {
             </div>
             <div className="flex justify-center gap-2 flex-wrap">
               {state.community.map((card, i) => (
-                <AnimatedCard
-                  key={`c-${card.design}-${card.value}-${i}`}
-                  card={card}
-                  width={cardWidth}
-                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                />
+                <AnimatedCard key={`c-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
               ))}
             </div>
           </div>
@@ -278,12 +274,7 @@ function UltimateTexasHoldemPageContent() {
                 isMaskedCard(card) ? (
                   <AnimatedCardBack key={`d-back-${i}`} width={cardWidth} />
                 ) : (
-                  <AnimatedCard
-                    key={`d-${card.design}-${card.value}-${i}`}
-                    card={card}
-                    width={cardWidth}
-                    onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                  />
+                  <AnimatedCard key={`d-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
                 ),
               )}
             </div>
@@ -300,12 +291,7 @@ function UltimateTexasHoldemPageContent() {
             </div>
             <div className="flex justify-center gap-2 flex-wrap">
               {state.playerHand.map((card, i) => (
-                <AnimatedCard
-                  key={`p-${card.design}-${card.value}-${i}`}
-                  card={card}
-                  width={cardWidth}
-                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                />
+                <AnimatedCard key={`p-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
               ))}
             </div>
           </div>
@@ -383,19 +369,41 @@ function UltimateTexasHoldemPageContent() {
             </button>
           </div>
         )}
-        {isPreFlopPhase && (
-          <div className="flex justify-center gap-2 pb-2" data-tutorial="uth-pre-flop-buttons">
-            <button type="button" className={btnSuccess} onClick={() => handlePlay(4)} disabled={loading}>
-              {t('button.play4x')}
-            </button>
-            <button type="button" className={btnSuccess} onClick={() => handlePlay(3)} disabled={loading}>
-              {t('button.play3x')}
-            </button>
-            <button type="button" className={btnSecondary} onClick={handleCheck} disabled={loading}>
-              {t('button.check')}
-            </button>
-          </div>
-        )}
+        {isPreFlopPhase &&
+          (() => {
+            const strength = utHoldemPreflopStrength(state.playerHand);
+            const strong = strength === 'strong';
+            const moderate = strength === 'moderate';
+            return (
+              <div
+                className="flex justify-center gap-2 pb-2"
+                data-tutorial="uth-pre-flop-buttons"
+                data-preflop-strength={strength}
+              >
+                <button
+                  type="button"
+                  className={`${btnSuccess} ${strong ? 'ring-2 ring-ds-warning animate-pulse' : ''}`}
+                  onClick={() => handlePlay(4)}
+                  disabled={loading}
+                  data-testid="play-4x"
+                >
+                  {t('button.play4x')}
+                </button>
+                <button
+                  type="button"
+                  className={`${btnSuccess} ${moderate ? 'ring-2 ring-ds-warning animate-pulse' : ''}`}
+                  onClick={() => handlePlay(3)}
+                  disabled={loading}
+                  data-testid="play-3x"
+                >
+                  {t('button.play3x')}
+                </button>
+                <button type="button" className={btnSecondary} onClick={handleCheck} disabled={loading}>
+                  {t('button.check')}
+                </button>
+              </div>
+            );
+          })()}
         {isFlopPhase && (
           <div className="flex justify-center gap-2 pb-2" data-tutorial="uth-flop-buttons">
             <button type="button" className={btnWarning} onClick={() => handlePlay(2)} disabled={loading}>

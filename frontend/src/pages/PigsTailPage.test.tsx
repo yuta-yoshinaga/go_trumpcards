@@ -68,6 +68,17 @@ const humanLoseState: PigsTailResponse = {
 
 beforeEach(() => {
   mockExec.mockResolvedValue(baseState);
+  // Reset CLI mode to the default so tests that toggle it on (e.g. the
+  // CLI-terminal case) don't leak state into the next test in source order.
+  mockUseCliMode.mockReturnValue({
+    cliEnabled: false,
+    toggleCli: vi.fn(),
+    logEntries: [],
+    addInput: vi.fn(),
+    addOutput: vi.fn(),
+    addError: vi.fn(),
+    clearLog: vi.fn(),
+  });
 });
 
 describe('PigsTailPage', () => {
@@ -88,7 +99,7 @@ describe('PigsTailPage', () => {
   it('renders game state with circle and center info', async () => {
     renderWithProviders(<PigsTailPage />);
     await waitFor(() => {
-      expect(screen.getByText('52')).toBeInTheDocument();
+      expect(screen.getByText(/52/)).toBeInTheDocument();
     });
   });
 
@@ -178,5 +189,14 @@ describe('PigsTailPage', () => {
       expect(screen.getByRole('textbox')).toBeInTheDocument();
     });
     expect(screen.queryByRole('button', { name: '山札から引く' })).not.toBeInTheDocument();
+  });
+
+  it('renders the circular deck and dispatches draw when a ring card is tapped', async () => {
+    renderWithProviders(<PigsTailPage />);
+    await waitFor(() => expect(screen.getByTestId('circular-deck')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('circular-deck-card-0'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
   });
 });

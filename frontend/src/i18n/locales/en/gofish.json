@@ -32,6 +32,7 @@
   },
   "deck": "Deck: {{count}} cards",
   "books": "Books: {{count}}",
+  "knownRanksLabel": "Ranks they asked for",
   "tutorial": {
     "cpuArea": "Opponent's card count and books. Click to select them as your target.",
     "playerHand": "Your hand. Click a card to select the rank you want to ask for.",

@@ -21,13 +21,14 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSound } from '../providers/SoundProvider';
-import { btnOutline, btnPrimary, focusRingWhite } from '../styles/buttonStyles';
+import { btnPrimary, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, SpiteAndMaliceResponse } from '../types/card';
 import { SpiteAndMalicePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { isGoalTopPlayableToFoundation } from '../utils/spiteAndMaliceUtils';
 
 const samRunner = spiteAndMaliceApi;
 
@@ -253,7 +254,7 @@ function SpiteAndMalicePageContent() {
       headerExtra={
         <>
           <span>
-            {tc('moveCount', { defaultValue: 'Moves' })}: {state.moveCount}
+            {t('moveCount')}: {state.moveCount}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
@@ -312,6 +313,9 @@ function SpiteAndMalicePageContent() {
                 selected={selection?.kind === 'goal'}
                 onClick={handleSelectGoal}
                 label={t('label.goal')}
+                playable={
+                  isHumanTurn && !isGameOver && isGoalTopPlayableToFoundation(human.goalTop, state.foundationTops)
+                }
               />
             </div>
 
@@ -371,12 +375,6 @@ function SpiteAndMalicePageContent() {
                   data-testid="sam-autocomplete-btn"
                 >
                   {t('autoComplete')}
-                </button>
-              )}
-
-              {isGameOver && (
-                <button type="button" className={btnOutline} onClick={() => showActionLog()} disabled={loading}>
-                  {tc('showActionLog', { defaultValue: 'Show action log' })}
                 </button>
               )}
             </GameFooter>
@@ -476,6 +474,7 @@ function GoalPile({
   selected,
   onClick,
   label,
+  playable,
 }: {
   top?: Card;
   size: number;
@@ -483,12 +482,22 @@ function GoalPile({
   selected: boolean;
   onClick: () => void;
   label: string;
+  playable: boolean;
 }) {
+  // Selection ring wins (the user explicitly chose this pile); otherwise the
+  // playable affordance pulses a warning-colored glow so the strategically
+  // most important pile attracts the eye first (#1886).
+  const accentClass = selected
+    ? 'ring-2 ring-ds-accent -translate-y-0.5'
+    : playable
+      ? 'ring-2 ring-ds-warning shadow-[0_0_15px_var(--color-ds-warning)] motion-safe:animate-pulse'
+      : '';
   return (
     <button
       type="button"
       data-hint-action="goal-to-f0"
-      className={`${focusRingWhite} flex flex-col items-center rounded-lg transition-transform ${selected ? 'ring-2 ring-ds-accent -translate-y-0.5' : ''}`}
+      data-goal-playable={playable ? 'true' : 'false'}
+      className={`${focusRingWhite} flex flex-col items-center rounded-lg transition-transform ${accentClass}`}
       onClick={onClick}
       disabled={size === 0}
       aria-label={top ? `${label} top: ${cardAlt(top)} (${size} left)` : `${label}: empty`}

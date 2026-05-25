@@ -33,6 +33,7 @@ import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
+import { placeholderCardStyle, selectedCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -285,13 +286,10 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                             key={`${card.design}-${card.value}`}
                             card={card}
                             width={cardWidth}
-                            style={{ border: '3px solid transparent' }}
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                            style={placeholderCardStyle}
                           />
                         ))
-                      : Array.from({ length: 5 }).map((_, i) => (
-                          <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
-                        ))}
+                      : Array.from({ length: 5 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                   </div>
                 </>
               );
@@ -393,22 +391,13 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                           aria-pressed={canDiscard ? selectedDiscard === idx : undefined}
                           className={canDiscard ? 'cursor-pointer' : 'cursor-default'}
                           disabled={!canDiscard}
+                          style={selectedCardStyle(canDiscard && selectedDiscard === idx)}
                         >
-                          <AnimatedCard
-                            card={card}
-                            width={cardWidth}
-                            style={{
-                              border:
-                                canDiscard && selectedDiscard === idx ? '3px solid #f59e0b' : '3px solid transparent',
-                            }}
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                          />
+                          <AnimatedCard card={card} width={cardWidth} />
                         </button>
                       ))
                     : !humanPlayer.folded &&
-                      Array.from({ length: 3 }).map((_, i) => (
-                        <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
-                      ))}
+                      Array.from({ length: 3 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                 </div>
               </div>
             )}

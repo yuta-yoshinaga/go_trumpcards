@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { EightOffMoveZone, eightoffApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -150,6 +150,8 @@ function EightOffPageContent() {
     enabled: !!isPlayingForKbd && !loading,
   });
 
+  const [hoveredStack, setHoveredStack] = useState<{ col: number; cardIdx: number } | null>(null);
+
   if (!state) return <GameSkeleton gameKey="eightoff" layout={{ kind: 'tableau', topRow: 8, tableau: 8 }} />;
 
   const isPlaying = state.phase === EightOffPhase.PLAYING;
@@ -237,12 +239,7 @@ function EightOffPageContent() {
                             onDragEnd={dnd.handleDragEnd}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('freecell', undefined, idx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(freeCellZone) ? 'opacity-50' : ''}`}
                           >
-                            <AnimatedCard
-                              card={card}
-                              width={cardWidth}
-                              draggable={false}
-                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                            />
+                            <AnimatedCard card={card} width={cardWidth} draggable={false} />
                           </button>
                         ) : (
                           <button
@@ -293,7 +290,6 @@ function EightOffPageContent() {
                               width={cardWidth}
                               draggable={false}
                               dealDelay={isAutoCompleting ? idx * 0.15 : 0}
-                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                             />
                           </button>
                         ) : (
@@ -349,6 +345,11 @@ function EightOffPageContent() {
                               };
                               const stackSize = col.length - cardIdx;
                               const exceedsSupermove = stackSize > supermoveLimit;
+                              const isInHoveredBlock =
+                                hoveredStack !== null &&
+                                hoveredStack.col === colIdx &&
+                                cardIdx >= hoveredStack.cardIdx &&
+                                col.length - hoveredStack.cardIdx <= supermoveLimit;
                               return (
                                 <div
                                   key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
@@ -371,12 +372,17 @@ function EightOffPageContent() {
                                       draggable={isPlaying && !loading && !exceedsSupermove}
                                       onDragStart={dnd.handleDragStart(cardZone)}
                                       onDragEnd={dnd.handleDragEnd}
+                                      onMouseEnter={() => setHoveredStack({ col: colIdx, cardIdx })}
+                                      onMouseLeave={() => setHoveredStack(null)}
+                                      onFocus={() => setHoveredStack({ col: colIdx, cardIdx })}
+                                      onBlur={() => setHoveredStack(null)}
                                       title={
                                         exceedsSupermove
                                           ? t('supermoveLimitTooltip', { limit: supermoveLimit })
                                           : undefined
                                       }
                                       data-supermove-blocked={exceedsSupermove ? 'true' : undefined}
+                                      data-supermove-block={isInHoveredBlock ? 'true' : undefined}
                                       className={[
                                         'p-0 border-0 bg-transparent cursor-pointer w-full rounded',
                                         focusRingWhite,
@@ -384,6 +390,7 @@ function EightOffPageContent() {
                                           'ring-2 ring-ds-warning',
                                         dnd.isDragSource(cardZone) && 'opacity-50',
                                         exceedsSupermove && 'opacity-60 ring-1 ring-ds-error',
+                                        isInHoveredBlock && 'ring-2 ring-ds-success',
                                       ]
                                         .filter(Boolean)
                                         .join(' ')}
@@ -393,7 +400,6 @@ function EightOffPageContent() {
                                         width={cardWidth}
                                         draggable={false}
                                         style={{ width: '100%' }}
-                                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                                       />
                                     </button>
                                   ) : (

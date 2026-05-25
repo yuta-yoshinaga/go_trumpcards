@@ -257,12 +257,7 @@ function CaribbeanStudPageContent() {
                 </div>
                 <div className="flex justify-center gap-2 flex-wrap">
                   {state.playerHand.map((card, i) => (
-                    <AnimatedCard
-                      key={`p-${card.design}-${card.value}-${i}`}
-                      card={card}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard key={`p-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
                   ))}
                 </div>
               </div>
@@ -286,12 +281,7 @@ function CaribbeanStudPageContent() {
                     isMaskedCard(card) ? (
                       <AnimatedCardBack key={`d-back-${i}`} width={cardWidth} />
                     ) : (
-                      <AnimatedCard
-                        key={`d-${card.design}-${card.value}-${i}`}
-                        card={card}
-                        width={cardWidth}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard key={`d-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
                     ),
                   )}
                 </div>

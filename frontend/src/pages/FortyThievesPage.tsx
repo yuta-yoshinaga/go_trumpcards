@@ -117,7 +117,16 @@ function FortyThievesPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('fortythieves', state);
-  const ft = useResponsiveTableau(10);
+  // Live longest-column length: shrinks the per-card vertical step on mobile so the tallest
+  // tableau column fits within 375×667 without scrolling (#1861). Forty Thieves columns start
+  // at 4 cards but accumulate quickly as descending same-suit sequences are built.
+  const maxColCards = useMemo(
+    () => state?.tableau.reduce((m, col) => (col.length > m ? col.length : m), 0) ?? 0,
+    [state?.tableau],
+  );
+  // Forty Thieves uses `px-2 sm:px-4 lg:px-8` (padX=16 on mobile) and `gap-1 sm:gap-2`
+  // (gapPx=4 on mobile), which matches the hook's defaults — no overrides needed.
+  const ft = useResponsiveTableau(10, { maxColCards });
 
   const isPlayingForKbd = state?.phase === FortyThievesPhase.PLAYING;
 
@@ -214,7 +223,6 @@ function FortyThievesPageContent() {
                       width={ft.cw}
                       onClick={isPlaying ? handleDraw : undefined}
                       ariaLabel={t('draw')}
-                      onFlipComplete={() => playSound('cardFlip')}
                     />
                   ) : (
                     <div
@@ -244,12 +252,7 @@ function FortyThievesPageContent() {
                       onDragEnd={dnd.handleDragEnd}
                       className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste') ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource({ zone: 'waste' }) ? 'opacity-50' : ''}`}
                     >
-                      <AnimatedCard
-                        card={wasteDisplay[0]}
-                        width={ft.cw}
-                        draggable={false}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
+                      <AnimatedCard card={wasteDisplay[0]} width={ft.cw} draggable={false} />
                     </button>
                   ) : (
                     <div
@@ -293,7 +296,6 @@ function FortyThievesPageContent() {
                               width={ft.cw}
                               draggable={false}
                               dealDelay={isAutoCompleting ? idx * 0.15 : 0}
-                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                             />
                           </button>
                         ) : (
@@ -376,15 +378,10 @@ function FortyThievesPageContent() {
                                       draggable={false}
                                       style={{ width: '100%' }}
                                       wrapperClassName="block w-full"
-                                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                                     />
                                   </button>
                                 ) : (
-                                  <AnimatedCardBack
-                                    width={ft.cw}
-                                    className="w-full"
-                                    onFlipComplete={() => playSound('cardFlip')}
-                                  />
+                                  <AnimatedCardBack width={ft.cw} className="w-full" />
                                 )}
                               </div>
                             );

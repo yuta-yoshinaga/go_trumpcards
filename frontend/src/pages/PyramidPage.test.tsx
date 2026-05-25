@@ -227,6 +227,49 @@ describe('PyramidPage', () => {
     );
   });
 
+  it('flags exposed pair candidates after the first selection', async () => {
+    renderWithProviders(<PyramidPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+    const card3 = screen.getByAltText('♦ 3').closest('button') as HTMLButtonElement;
+    fireEvent.click(card3);
+    const card10 = screen.getByAltText('♠ 10').closest('button') as HTMLButtonElement;
+    await waitFor(() => expect(card10).toHaveAttribute('data-pair-candidate', 'true'));
+    expect(card3).not.toHaveAttribute('data-pair-candidate');
+  });
+
+  it('selecting the waste card highlights matching pyramid partners', async () => {
+    // playingState.waste = [♣ 3]; partner value 10 should match the exposed ♠ 10 in the pyramid.
+    renderWithProviders(<PyramidPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+    const wasteButton = screen.getByRole('button', { name: '♣ 3' });
+    fireEvent.click(wasteButton);
+    const card10 = screen.getByAltText('♠ 10').closest('button') as HTMLButtonElement;
+    await waitFor(() => expect(card10).toHaveAttribute('data-pair-candidate', 'true'));
+  });
+
+  it('selecting a pyramid card whose partner is the waste top flags the waste card', async () => {
+    // waste top is ♣ 3 (value 3); the exposed ♠ 10 (value 10) is its partner.
+    renderWithProviders(<PyramidPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+    const card10 = screen.getByAltText('♠ 10').closest('button') as HTMLButtonElement;
+    fireEvent.click(card10);
+    const wasteButton = screen.getByRole('button', { name: '♣ 3' });
+    await waitFor(() => expect(wasteButton).toHaveAttribute('data-pair-candidate', 'true'));
+  });
+
+  it('selecting a King (value 13) does not flag any pair candidates', async () => {
+    renderWithProviders(<PyramidPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+    const kingButton = screen.getByAltText('♥ K').closest('button') as HTMLButtonElement;
+    fireEvent.click(kingButton);
+    // King auto-removes via handleSelectCard, so the API is called immediately.
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('remove', expect.objectContaining({ zone: 'pyramid', row: 2, col: 2 })),
+    );
+    // No pair-candidate attribute should appear anywhere because partnerValue stays null for Kings.
+    expect(document.querySelectorAll('[data-pair-candidate="true"]')).toHaveLength(0);
+  });
+
   it('clicking same card twice deselects it', async () => {
     renderWithProviders(<PyramidPage />);
     await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());

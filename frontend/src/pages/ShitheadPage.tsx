@@ -18,7 +18,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useShitheadGame } from '../hooks/useShitheadGame';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { Card, CardDesign, ShitheadResponse } from '../types/card';
+import type { Card, CardDesign, ShitheadConfig, ShitheadResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { parseShitheadCommand, SHITHEAD_HELP } from '../utils/cli/commands/shitheadCommands';
 import { formatShitheadState } from '../utils/cli/formatters/shitheadFormatter';
@@ -83,11 +83,15 @@ function ShitheadPageContent() {
     window.location.reload();
   }, [hideActionLog]);
 
+  // Hook order must stay stable across renders — compute the lookup above the
+  // skeleton guard. buildMagicLookup safely handles a null config.
+  const magicLookup = useMemo(() => (state ? buildMagicLookup(state.config, t) : EMPTY_MAGIC_LOOKUP), [state, t]);
+
   if (!state) {
     return (
       <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.shithead.bg}`}>
         <div className="flex-1 flex items-center justify-center text-ds-text-primary">
-          <p>{tc('common.loading')}</p>
+          <p>{tc('skeleton.loading')}</p>
         </div>
       </div>
     );
@@ -147,8 +151,31 @@ function ShitheadPageContent() {
             {/* Discard pile and stock */}
             <div data-tutorial="sh-discard" className="bg-black/30 text-ds-text-primary p-3 rounded">
               <div className="flex flex-wrap items-center gap-3 text-sm">
-                <span>
-                  {t('labels.discardPile')}: {state.discardPile.length === 0 ? '—' : describeTopCard(state.discardPile)}
+                <span className="inline-flex items-center gap-1">
+                  {t('labels.discardPile')}:{' '}
+                  {state.discardPile.length === 0 ? (
+                    '—'
+                  ) : (
+                    <>
+                      <span>{describeTopCard(state.discardPile)}</span>
+                      {(() => {
+                        const topValue = state.discardPile[state.discardPile.length - 1]?.value ?? 0;
+                        const badge = magicLookup.badgeFor(topValue);
+                        const title = magicLookup.titleFor(topValue);
+                        if (!badge) return null;
+                        return (
+                          <span
+                            data-testid="sh-discard-magic-badge"
+                            data-magic-rank={topValue}
+                            title={title || undefined}
+                            className="inline-flex items-center rounded-full bg-ds-warning/30 px-1.5 py-0 text-xs leading-tight text-ds-warning motion-safe:animate-pulse"
+                          >
+                            {badge}
+                          </span>
+                        );
+                      })()}
+                    </>
+                  )}
                 </span>
                 <span>
                   {t('labels.stock')}: {state.stockSize}
@@ -174,6 +201,8 @@ function ShitheadPageContent() {
                     selectable={isHumanTurn && state.currentSource === SOURCE_HAND}
                     selected={selectedCardIndices}
                     onToggle={toggleCard}
+                    magic={magicLookup}
+                    rowKey="hand"
                   />
                 )}
                 {humanPlayer.faceUpCards.length > 0 && (
@@ -183,6 +212,8 @@ function ShitheadPageContent() {
                     selectable={isHumanTurn && state.currentSource === SOURCE_FACE_UP}
                     selected={selectedCardIndices}
                     onToggle={toggleCard}
+                    magic={magicLookup}
+                    rowKey="faceUp"
                   />
                 )}
                 {humanPlayer.faceDownCount > 0 && (
@@ -277,10 +308,41 @@ interface CardRowProps {
   selectable: boolean;
   selected: number[];
   onToggle: (index: number) => void;
+  magic: MagicLookup;
+  /** Stable prefix for React keys so hand and face-up rows don't share semantics. */
+  rowKey: string;
+}
+
+/** Lookup helpers for Shithead magic-card affordances. */
+interface MagicLookup {
+  /** Returns the emoji badge for the rank, or empty string if the card is not magic. */
+  badgeFor: (value: number) => string;
+  /** Returns the localized tooltip describing the card's effect, or empty string if none. */
+  titleFor: (value: number) => string;
+}
+
+/** Lookup that exposes no magic affordances — used while state is loading. */
+const EMPTY_MAGIC_LOOKUP: MagicLookup = {
+  badgeFor: () => '',
+  titleFor: () => '',
+};
+
+/** Build a magic-card lookup from the active Shithead config. */
+function buildMagicLookup(config: ShitheadConfig, t: (key: string) => string): MagicLookup {
+  const map: Record<number, { enabled: boolean; emoji: string; key: string }> = {
+    2: { enabled: config.magicTwo, emoji: '🔄', key: 'magicEffect.two' },
+    7: { enabled: config.magicSeven, emoji: '⬇️', key: 'magicEffect.seven' },
+    8: { enabled: config.magicEight, emoji: '⏭️', key: 'magicEffect.eight' },
+    10: { enabled: config.magicTen, emoji: '🔥', key: 'magicEffect.ten' },
+  };
+  return {
+    badgeFor: (v) => (map[v]?.enabled ? map[v].emoji : ''),
+    titleFor: (v) => (map[v]?.enabled ? t(map[v].key) : ''),
+  };
 }
 
 /** Row of selectable cards with index labels. */
-function CardRow({ label, cards, selectable, selected, onToggle }: CardRowProps) {
+function CardRow({ label, cards, selectable, selected, onToggle, magic, rowKey }: CardRowProps) {
   return (
     <div className="space-y-1">
       <div className="text-xs uppercase tracking-wide text-ds-text-muted">{label}</div>
@@ -292,16 +354,32 @@ function CardRow({ label, cards, selectable, selected, onToggle }: CardRowProps)
             : selectable
               ? 'bg-ds-surface-elevated text-ds-text-primary border-ds-border-subtle hover:bg-ds-surface-elevated-hover'
               : 'bg-ds-surface text-ds-text-muted border-ds-border-subtle';
+          const badge = magic.badgeFor(c.value);
+          const title = magic.titleFor(c.value);
           return (
             <button
-              key={`hand-${i}`}
+              key={`${rowKey}-${i}`}
               type="button"
               disabled={!selectable}
               onClick={() => onToggle(i)}
-              className={`min-w-[3rem] px-2 py-2 rounded border text-sm ${cls}`}
+              title={title || undefined}
+              data-magic-rank={badge ? c.value : undefined}
+              className={`relative min-w-[3rem] px-2 py-2 rounded border text-sm ${cls}`}
             >
               <span className="block leading-none">{suitSymbol(c.design)}</span>
               <span className="block text-base font-bold">{c.value}</span>
+              {badge && (
+                <>
+                  <span
+                    aria-hidden="true"
+                    className="absolute -top-1 -right-1 text-xs leading-none drop-shadow"
+                    data-testid={`sh-magic-badge-${c.value}-${i}`}
+                  >
+                    {badge}
+                  </span>
+                  {title && <span className="sr-only">{title}</span>}
+                </>
+              )}
             </button>
           );
         })}

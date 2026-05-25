@@ -1,4 +1,5 @@
 {
+  "discardTop": "捨て札",
   "phase": {
     "draw": "ドロー",
     "meld": "メルド",
@@ -34,6 +35,13 @@
   "goOutButton": "上がる",
   "nextRound": "次のラウンド",
   "selectPair": "ペアを選択してください（トップカードと同ランクの2枚）",
+  "drawDiscardReason": {
+    "selectTwo": "手札からトップカードと同ランクの2枚を選択してください",
+    "frozen": "フリーズ中はワイルドカードでの代用ができません",
+    "selectOneMore": "もう1枚選択してください",
+    "tooMany": "選択は2枚までです"
+  },
+  "frozenIndicator": "❄️ フリーズ",
   "selectMeld": "メルドするカードを選択してください",
   "result": {
     "humanWin": "あなたの勝利！",

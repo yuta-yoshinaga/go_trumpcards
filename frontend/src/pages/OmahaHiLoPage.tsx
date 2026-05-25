@@ -33,6 +33,7 @@ import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
+import { placeholderCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -256,13 +257,10 @@ function OmahaHiLoPageContent() {
                             key={`${card.design}-${card.value}`}
                             card={card}
                             width={cardWidth}
-                            style={{ border: '3px solid transparent' }}
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                            style={placeholderCardStyle}
                           />
                         ))
-                      : Array.from({ length: 5 }).map((_, i) => (
-                          <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
-                        ))}
+                      : Array.from({ length: 5 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                   </div>
                 </>
               );
@@ -360,6 +358,14 @@ function OmahaHiLoPageContent() {
                     </span>
                   )}
                 </div>
+                <div
+                  className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-ds-info/20 px-2 py-0.5 text-[11px] font-semibold text-ds-info"
+                  data-testid="omahahilo-rule-badge"
+                  title={t('mandatoryRuleAria')}
+                >
+                  <span aria-hidden="true">🎯</span>
+                  {t('mandatoryRule')}
+                </div>
                 <div className="flex flex-wrap gap-1.5 mb-2" data-tutorial="ohl-combination-rule">
                   {humanPlayer.cards?.length
                     ? humanPlayer.cards.map((card) => (
@@ -367,14 +373,11 @@ function OmahaHiLoPageContent() {
                           key={`${card.design}-${card.value}`}
                           card={card}
                           width={cardWidth}
-                          style={{ border: '3px solid transparent' }}
-                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                          style={placeholderCardStyle}
                         />
                       ))
                     : !humanPlayer.folded &&
-                      Array.from({ length: 4 }).map((_, i) => (
-                        <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
-                      ))}
+                      Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                 </div>
               </div>
             )}

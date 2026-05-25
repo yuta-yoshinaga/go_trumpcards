@@ -225,7 +225,6 @@ function BeleagueredCastlePageContent() {
                           draggable={false}
                           style={{ width: '100%' }}
                           wrapperClassName="block w-full"
-                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                         />
                       </button>
                     ) : null}
@@ -302,7 +301,6 @@ function BeleagueredCastlePageContent() {
                               width={dims.cw}
                               draggable={false}
                               dealDelay={isAutoCompleting ? idx * 0.15 : 0}
-                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                             />
                           </button>
                         ) : (

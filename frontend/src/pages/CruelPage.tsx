@@ -494,6 +494,17 @@ function CruelPageContent() {
 
             {error && <ErrorAlert message={error} onRetry={retry} />}
 
+            {isPlaying && state.isStalemate && (
+              <div
+                data-testid="cruel-stalemate-banner"
+                className="text-sm text-ds-warning bg-ds-surface/90 border border-ds-warning rounded px-3 py-1.5 mt-1"
+                role="status"
+                aria-live="polite"
+              >
+                {t('stalemate')}
+              </div>
+            )}
+
             {state.hint && (
               <div
                 className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1"
@@ -527,11 +538,16 @@ function CruelPageContent() {
                 <>
                   <button
                     type="button"
-                    className={btnPrimary}
+                    className={
+                      state.isStalemate
+                        ? `${btnPrimary} ring-2 ring-ds-warning ring-offset-1 ring-offset-transparent motion-safe:animate-pulse`
+                        : btnPrimary
+                    }
                     onClick={handleShift}
                     disabled={loading}
                     data-tutorial="cruel-shift"
                     data-testid="shift-button"
+                    aria-label={state.isStalemate ? t('stalemate') : undefined}
                   >
                     {t('shift')}
                   </button>
@@ -566,12 +582,6 @@ function CruelPageContent() {
                     />
                   )}
                 </>
-              )}
-
-              {isEnded && (
-                <button type="button" className={btnOutline} onClick={() => showActionLog()} disabled={loading}>
-                  {t('common:showActionLog')}
-                </button>
               )}
             </GameFooter>
           </div>

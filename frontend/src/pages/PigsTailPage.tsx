@@ -1,6 +1,7 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { pigtailApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CircularDeck } from '../components/CircularDeck';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { GameFooter } from '../components/GameFooter';
@@ -112,6 +113,25 @@ function PigsTailPageContent() {
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
+  // Penalty screen-flash: fire whenever lastPenalty transitions to true on a
+  // new lastDrawCard. We key on centerCount+circleCount to detect fresh draws,
+  // not just spurious re-renders.
+  const [penaltyFlash, setPenaltyFlash] = useState(0);
+  const prevDrawSigRef = useRef<string>('');
+  useEffect(() => {
+    if (!state) return;
+    const sig = `${state.circleCount}-${state.centerCount}-${state.lastDrawCard ? `${state.lastDrawCard.design}${state.lastDrawCard.value}` : 'none'}`;
+    if (sig !== prevDrawSigRef.current && state.lastPenalty) {
+      setPenaltyFlash(Date.now());
+    }
+    prevDrawSigRef.current = sig;
+  }, [state]);
+  useEffect(() => {
+    if (penaltyFlash === 0) return;
+    const id = window.setTimeout(() => setPenaltyFlash(0), 600);
+    return () => window.clearTimeout(id);
+  }, [penaltyFlash]);
+
   if (!state)
     return <GameSkeleton gameKey="pigtail" layout={{ kind: 'centered', rows: [2], shape: 'circle', bars: 4 }} />;
 
@@ -138,15 +158,27 @@ function PigsTailPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
+          {penaltyFlash > 0 && (
+            <div
+              aria-hidden="true"
+              data-testid="pigtail-penalty-flash"
+              className="pointer-events-none fixed inset-0 z-40 bg-ds-error/40 motion-safe:animate-[pulse-once_0.6s_ease-out]"
+            />
+          )}
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
             {/* Circle & Center area */}
-            <div className="flex justify-center gap-8 items-center" data-tutorial="pt-circle-area">
-              <div className="text-center">
-                <div className="text-xs text-ds-text-muted mb-1">{t('label.circle')}</div>
-                <div className="w-16 h-16 rounded-full bg-ds-info/60 border-2 border-ds-info/40 flex items-center justify-center text-2xl font-bold text-white">
-                  {state.circleCount}
-                </div>
+            <div className="flex flex-col items-center gap-3" data-tutorial="pt-circle-area">
+              <div className="text-xs text-ds-text-muted">
+                {t('label.circle')}: {state.circleCount}
               </div>
+              <CircularDeck
+                count={state.circleCount}
+                cardWidth={32}
+                diameter={160}
+                onDrawCard={handleDraw}
+                disabled={loading || isGameEnd || !isHumanTurn}
+                drawAriaLabel={t('button.draw')}
+              />
               <div className="text-center" data-tutorial="pt-center-area">
                 <div className="text-xs text-ds-text-muted mb-1">
                   {t('label.center')} ({state.centerCount})

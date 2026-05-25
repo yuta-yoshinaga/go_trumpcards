@@ -5,11 +5,17 @@ import { useResponsiveTableau } from './useResponsiveTableau';
 
 const setWidth = (w: number) =>
   Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: w });
+const setHeight = (h: number) =>
+  Object.defineProperty(window, 'innerHeight', { writable: true, configurable: true, value: h });
 
 describe('useResponsiveTableau', () => {
   const originalInnerWidth = window.innerWidth;
+  const originalInnerHeight = window.innerHeight;
 
-  afterEach(() => setWidth(originalInnerWidth));
+  afterEach(() => {
+    setWidth(originalInnerWidth);
+    setHeight(originalInnerHeight);
+  });
 
   it('returns desktop preset when viewport is at desktop breakpoint', () => {
     setWidth(800);
@@ -92,5 +98,61 @@ describe('useResponsiveTableau', () => {
     setWidth(800);
     const { result } = renderHook(() => useResponsiveTableau(10));
     expect(result.current.wasteFan).toBe(15);
+  });
+
+  describe('dynamic Y-offset (maxColCards)', () => {
+    it('leaves co at the natural ratio when tallest column fits in the viewport', () => {
+      setWidth(375);
+      setHeight(667);
+      const natural = renderHook(() => useResponsiveTableau(10)).result.current;
+      const fitting = renderHook(() => useResponsiveTableau(10, { maxColCards: 4 })).result.current;
+      // 4 short cards × natural overlap (~18px) + ch (~48px) ≈ 102 px — easily fits.
+      expect(fitting.co).toBe(natural.co);
+    });
+
+    it('compresses co so the tallest column fits the available vertical space', () => {
+      setWidth(375);
+      setHeight(667);
+      // 25 cards stacked at natural overlap (~18 px) would consume 25*18+ch = ~498 px,
+      // overflowing the ~367 px tableau budget (667 - 300 reserved chrome). Hook must shrink co.
+      const { result } = renderHook(() => useResponsiveTableau(10, { maxColCards: 25 }));
+      const ch = result.current.ch;
+      const co = result.current.co;
+      const tallestCol = (25 - 1) * co + ch;
+      expect(tallestCol).toBeLessThanOrEqual(667 - 300);
+    });
+
+    it('does not trigger compression when maxColCards is 1 (single-card column)', () => {
+      setWidth(375);
+      setHeight(667);
+      const natural = renderHook(() => useResponsiveTableau(10)).result.current;
+      const single = renderHook(() => useResponsiveTableau(10, { maxColCards: 1 })).result.current;
+      expect(single.co).toBe(natural.co);
+    });
+
+    it('never compresses below the minimum overlap so cards always have a tap strip', () => {
+      setWidth(375);
+      setHeight(300); // pathologically short viewport
+      const { result } = renderHook(() => useResponsiveTableau(10, { maxColCards: 30 }));
+      expect(result.current.co).toBeGreaterThanOrEqual(8);
+    });
+
+    it('respects a caller-supplied reservedHeightPx', () => {
+      setWidth(375);
+      setHeight(667);
+      // Looser reservation (200 px) → more room → larger co.
+      const tight = renderHook(() => useResponsiveTableau(10, { maxColCards: 20, reservedHeightPx: 400 })).result
+        .current;
+      const loose = renderHook(() => useResponsiveTableau(10, { maxColCards: 20, reservedHeightPx: 200 })).result
+        .current;
+      expect(loose.co).toBeGreaterThan(tight.co);
+    });
+
+    it('does not affect desktop dimensions', () => {
+      setWidth(1280);
+      setHeight(800);
+      const { result } = renderHook(() => useResponsiveTableau(10, { maxColCards: 30 }));
+      expect(result.current.co).toBe(CARD_DIMENSIONS.largeDesktop.cardOverlap);
+    });
   });
 });

@@ -188,6 +188,21 @@ describe('EuchrePage', () => {
     });
   });
 
+  it('greys out the going-alone partner row with a sitting-out badge', async () => {
+    mockExec.mockResolvedValue(goingAloneState);
+    renderWithProviders(<EuchrePage />);
+    const partnerRow = await screen.findByTestId('eu-player-row-2');
+    expect(partnerRow.className).toContain('grayscale');
+    expect(screen.getByTestId('eu-sitting-out-2')).toBeInTheDocument();
+    expect(screen.queryByTestId('eu-sitting-out-1')).not.toBeInTheDocument();
+  });
+
+  it('does not show sitting-out badge when no one is going alone', async () => {
+    renderWithProviders(<EuchrePage />);
+    await waitFor(() => expect(screen.getByAltText('\u2660 A')).toBeInTheDocument());
+    expect(screen.queryByTestId('eu-sitting-out-2')).not.toBeInTheDocument();
+  });
+
   it('renders pick-up phase with order up and pass buttons', async () => {
     mockExec.mockResolvedValue(pickUpPhaseState);
     renderWithProviders(<EuchrePage />);

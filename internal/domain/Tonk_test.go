@@ -103,6 +103,37 @@ func TestTonk_Reset_NormalDeal(t *testing.T) {
 	// but the test should not fail spuriously
 }
 
+// TestTonk_ResetTwice guards against a regression where calling Reset() a
+// second time on the same Game instance left the underlying deck drained,
+// producing an empty deal (totalCards=0, drawPileCount=0). See bug repro
+// where the user clicks "次のゲーム" on Render dev / Cloudflare workers
+// and the next round arrives with no cards.
+//
+// Seed 1 is the first int64 where both the 1st and 2nd consecutive Reset
+// produce a normal (non-Tonk-on-deal) hand, so the assertions exercise the
+// regression path directly — no retry loop / probabilistic guard needed.
+func TestTonk_ResetTwice(t *testing.T) {
+	g := newTestTonk()
+	g.SetRand(rand.New(rand.NewSource(1)))
+
+	g.Reset()
+	require.Equal(t, domain.TonkPhaseDraw, g.GetPhase(),
+		"seed 1 should produce a non-Tonk deal on 1st Reset")
+
+	// 2nd Reset on the SAME Game instance — the failure mode.
+	g.Reset()
+	require.Equal(t, domain.TonkPhaseDraw, g.GetPhase(),
+		"seed 1 should produce a non-Tonk deal on 2nd Reset")
+
+	for i := 0; i < 2; i++ {
+		assert.Equal(t, 5, g.GetPlayer(i).GetCardsSize(),
+			"player %d hand should be 5 cards after 2nd Reset", i)
+	}
+	assert.Len(t, g.GetDiscardPile(), 1, "discard pile should hold 1 card after 2nd Reset")
+	assert.Equal(t, 41, g.GetDrawPileCount(),
+		"draw pile should hold 41 cards after 2nd Reset (52 - 10 hand - 1 discard)")
+}
+
 func TestTonk_Getters(t *testing.T) {
 	g := newTestTonk()
 	g.Reset()

@@ -111,6 +111,18 @@ function CanastaPageContent() {
   const isRoundEnd = state?.phase === CanastaPhase.ROUND_END;
   const isGameEnd = state?.phase === CanastaPhase.GAME_END || !!state?.gameEndFlag;
 
+  const drawDiscardReason = useMemo(() => {
+    if (!isDrawPhase) return '';
+    const n = selectedCardIndices.length;
+    if (n > 2) return t('drawDiscardReason.tooMany');
+    if (n === 2) return '';
+    // Frozen takes priority while the player is still picking — the wildcard restriction
+    // is the load-bearing rule players forget; surface it whether they've picked 0 or 1 cards.
+    if (state?.isFrozen) return t('drawDiscardReason.frozen');
+    if (n === 1) return t('drawDiscardReason.selectOneMore');
+    return t('drawDiscardReason.selectTwo');
+  }, [isDrawPhase, selectedCardIndices.length, state?.isFrozen, t]);
+
   const handleManualReset = useCallback(() => {
     hideActionLog();
     void gameExec('reset', undefined, {
@@ -211,15 +223,25 @@ function CanastaPageContent() {
               <div>
                 {/* Discard pile top */}
                 {state.discardTop && (
-                  <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3" data-tutorial="ca-draw-area">
-                    <AnimatedCard
-                      card={state.discardTop}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
-                    <div className="text-ds-text-muted text-sm">
-                      {tc('common:discardTop', { defaultValue: 'Discard' })}
-                    </div>
+                  <div
+                    className={`my-3 p-3 rounded flex items-center gap-3 relative ${
+                      state.isFrozen ? 'bg-ds-info/20 ring-2 ring-ds-info' : 'bg-black/40'
+                    }`}
+                    data-tutorial="ca-draw-area"
+                    data-testid="ca-discard-pile"
+                  >
+                    <AnimatedCard card={state.discardTop} width={cardWidth} />
+                    <div className="text-ds-text-muted text-sm">{t('discardTop')}</div>
+                    {state.isFrozen && (
+                      <span
+                        className="absolute top-1 right-2 text-ds-info text-xs font-bold"
+                        data-testid="ca-frozen-badge"
+                        role="img"
+                        aria-label={t('frozenIndicator')}
+                      >
+                        {t('frozenIndicator')}
+                      </span>
+                    )}
                   </div>
                 )}
 
@@ -246,12 +268,7 @@ function CanastaPageContent() {
                               : `(${m.cards.length})`}
                           </span>
                           {m.cards.map((card, ci) => (
-                            <AnimatedCard
-                              key={`meld-${pi}-${mi}-${ci}`}
-                              card={card}
-                              width={cardWidth * 0.6}
-                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                            />
+                            <AnimatedCard key={`meld-${pi}-${mi}-${ci}`} card={card} width={cardWidth * 0.6} />
                           ))}
                         </div>
                       ))}
@@ -259,12 +276,7 @@ function CanastaPageContent() {
                         <div className="flex flex-wrap gap-1 mt-1">
                           <span className="text-xs text-ds-error self-center mr-1">{t('red3s')}</span>
                           {p.red3s.map((card, ri) => (
-                            <AnimatedCard
-                              key={`red3-${pi}-${ri}`}
-                              card={card}
-                              width={cardWidth * 0.6}
-                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                            />
+                            <AnimatedCard key={`red3-${pi}-${ri}`} card={card} width={cardWidth * 0.6} />
                           ))}
                         </div>
                       )}
@@ -315,7 +327,6 @@ function CanastaPageContent() {
                                 key={`cpu-${card.design}-${card.value}-${idx}`}
                                 card={card}
                                 width={cardWidth * 0.7}
-                                onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                               />
                             ))}
                           </div>
@@ -362,11 +373,7 @@ function CanastaPageContent() {
                       boxSizing: 'border-box',
                     }}
                   >
-                    <AnimatedCard
-                      card={card}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard card={card} width={cardWidth} />
                   </button>
                 ))}
               </div>
@@ -376,18 +383,31 @@ function CanastaPageContent() {
 
             <div className="flex gap-2 items-center flex-wrap" data-tutorial="ca-actions">
               {isDrawPhase && isHumanTurn && (
-                <div className="flex gap-2">
-                  <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
-                    {t('drawStockButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDrawDiscard}
-                    disabled={loading || selectedCardIndices.length !== 2}
-                  >
-                    {t('drawDiscardButton')}
-                  </button>
+                <div className="flex gap-2 flex-col">
+                  <div className="flex gap-2">
+                    <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                      {t('drawStockButton')}
+                    </button>
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleDrawDiscard}
+                      disabled={loading || selectedCardIndices.length !== 2}
+                      title={drawDiscardReason || undefined}
+                      aria-describedby={drawDiscardReason ? 'ca-draw-discard-reason' : undefined}
+                    >
+                      {t('drawDiscardButton')}
+                    </button>
+                  </div>
+                  {drawDiscardReason && (
+                    <div
+                      id="ca-draw-discard-reason"
+                      data-testid="ca-draw-discard-reason"
+                      className="text-xs text-ds-text-muted"
+                    >
+                      {drawDiscardReason}
+                    </div>
+                  )}
                 </div>
               )}
               {isMeldPhase && isHumanTurn && (

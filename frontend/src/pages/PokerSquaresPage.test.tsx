@@ -281,4 +281,25 @@ describe('PokerSquaresPage', () => {
     await waitFor(() => expect(screen.getByRole('log')).toBeInTheDocument());
     expect(screen.queryByTestId('ps-board')).not.toBeInTheDocument();
   });
+
+  it('shows the projected row score when hovering a cell that would complete a row', async () => {
+    // Row 0 has four 9's of different suits — placing a 5 at (0,4) completes a four-of-a-kind (50 pts).
+    const board = emptyBoard();
+    board[0][0] = { card: card('SPADE', 9) };
+    board[0][1] = { card: card('CLOVER', 9) };
+    board[0][2] = { card: card('HEART', 9) };
+    board[0][3] = { card: card('DIAMOND', 9) };
+    mockApi.mockResolvedValue({
+      ...playingState,
+      board,
+      currentCard: card('SPADE', 5),
+      placedCount: 4,
+    });
+    renderWithProviders(<PokerSquaresPage />);
+    const cell = await screen.findByTestId('cell-0-4');
+    fireEvent.pointerEnter(cell);
+    await waitFor(() => expect(screen.getByTestId('cell-0-4')).toHaveAttribute('data-cross-hover', 'true'));
+    const preview = await screen.findByTestId('row-score-preview-0');
+    expect(preview.textContent).toContain('+50');
+  });
 });

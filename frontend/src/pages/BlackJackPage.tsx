@@ -291,8 +291,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
       headerEnd={
         <>
           <span>
-            {t('deck')} {state.deckCount}
-            {t('deckUnit')}
+            {t('deck')} {t('deckUnit', { count: state.deckCount })}
           </span>
           {countingEnabled && (
             <span>
@@ -363,12 +362,9 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
                       card={card}
                       width={cardWidth}
                       dealDelay={idx * 0.2}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                     />
                   ))}
-                  {!state.dealer.score && (
-                    <AnimatedCardBack width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
-                  )}
+                  {!state.dealer.score && <AnimatedCardBack width={cardWidth} />}
                 </div>
               </div>
             )}
@@ -444,7 +440,6 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
                           card={card}
                           width={cardWidth}
                           dealDelay={cardIdx * 0.12}
-                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                         />
                       ))}
                     </div>

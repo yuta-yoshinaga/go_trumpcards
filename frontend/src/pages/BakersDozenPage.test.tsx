@@ -82,6 +82,36 @@ describe('BakersDozenPage', () => {
     expect(mockExec.mock.calls[0]?.[0]).toBe('reset');
   });
 
+  it('marks the last card in a column with a dashed warning ring', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BakersDozenPage />);
+    const lastCardBtn = await screen.findByTestId('bd-last-card-1');
+    expect(lastCardBtn.className).toContain('ring-dashed');
+    // Column 0 has 2 cards so it's NOT the last-card scenario
+    expect(screen.queryByTestId('bd-last-card-0')).not.toBeInTheDocument();
+  });
+
+  it('does not flag any card on a fresh deal with multi-card columns only', async () => {
+    const fullState: BakersDozenResponse = {
+      ...playingState,
+      tableau: makeTableau([
+        [
+          { card: card('SPADE', 13), faceUp: true },
+          { card: card('SPADE', 5), faceUp: true },
+        ],
+        [
+          { card: card('HEART', 6), faceUp: true },
+          { card: card('HEART', 7), faceUp: true },
+        ],
+      ]),
+    };
+    mockExec.mockResolvedValue(fullState);
+    renderWithProviders(<BakersDozenPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ 5')).toBeInTheDocument());
+    expect(screen.queryByTestId('bd-last-card-0')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('bd-last-card-1')).not.toBeInTheDocument();
+  });
+
   it('renders heading and move count', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BakersDozenPage />);

@@ -460,11 +460,14 @@ func run() int {
 	}
 	if handler, ok := commands[arg]; ok {
 		if !subFlagCommands[arg] {
-			// Apply --lang / --no-color when they land after the game name so
-			// `trumpcards <game> --lang en` matches the prepositional form.
-			// Done before the help short-circuit so `<game> --lang en --help`
-			// renders help in the requested locale.
-			extras := applyTrailingGlobalFlags(flag.Args()[1:], quiet, os.Stderr)
+			// Apply --lang / --no-color / -q when they land after the game name
+			// so `trumpcards <game> --lang en` and `trumpcards <game> -q`
+			// match the prepositional form. Done before the help short-circuit
+			// so `<game> --lang en --help` renders help in the requested locale.
+			// quiet is passed by pointer because a trailing -q must update the
+			// caller's value (otherwise the extras warning below would still
+			// fire after the user asked for silence).
+			extras := applyTrailingGlobalFlags(flag.Args()[1:], &quiet, os.Stderr)
 			// `<game> --help` / `<game> -h`: Go's flag package stops parsing at
 			// the first non-flag argument, so these trailing flags land in Args().
 			// Intercept them and print that game's help instead of launching the
@@ -473,7 +476,7 @@ func run() int {
 			if hasHelpFlag(extras) {
 				return runHelpCommand([]string{arg}, helpText, os.Stdout, os.Stderr)
 			}
-			if len(extras) > 0 {
+			if len(extras) > 0 && !quiet {
 				fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(extras, " ")))
 			}
 		}
@@ -511,8 +514,7 @@ func run() int {
 		fmt.Fprintln(os.Stderr, i18n.Tf("cliStartupGame", "game", startGame))
 	}
 	manager := ui.NewGameManager(startGame)
-	ui.RunInteractiveCuiLoop(manager)
-	return 0
+	return ui.RunInteractiveCuiLoop(manager)
 }
 
 // resolveStartGame resolves the --start flag value into a canonical game
@@ -882,11 +884,19 @@ func updateExitCode(err error) int {
 // that's about to run; applyColorMode's exit code is therefore
 // intentionally discarded here.
 //
-// `--quiet`/`-q` is a silent no-op here — its value was already resolved
-// before subcommand dispatch in run() — but we recognize the form so
-// users typing `trumpcards <game> -q` don't get a confusing "extra
-// arguments ignored" warning about a documented flag (PR #1582 review).
-func applyTrailingGlobalFlags(args []string, quiet bool, stderr io.Writer) []string {
+// `--quiet`/`-q` writes through quietPtr so trailing position has the same
+// effect as the leading position — Go's `flag` package stops parsing at the
+// first positional, so the global pass missed any -q after the game name.
+// Writing through a pointer keeps --lang/--color/-q symmetric in their
+// "trailing flags also apply" contract without forcing a struct return.
+//
+// quiet is resolved in a pre-pass so warning suppression is order-independent:
+// `<game> --lang xyz -q` and `<game> -q --lang xyz` both suppress the
+// cliUnsupportedLang warning. Without the pre-pass, the single-pass
+// implementation would only suppress when -q appeared first.
+func applyTrailingGlobalFlags(args []string, quietPtr *bool, stderr io.Writer) []string {
+	quiet := resolveTrailingQuiet(args, *quietPtr)
+	*quietPtr = quiet
 	rest := make([]string, 0, len(args))
 	// Accumulate color flags across the entire scan so precedence matches
 	// applyColorMode's documented order rather than depending on which
@@ -938,9 +948,7 @@ func applyTrailingGlobalFlags(args []string, quiet bool, stderr io.Writer) []str
 			colorVal = strings.TrimPrefix(a, "-color=")
 			haveColor, consumed = true, true
 		case a == "--quiet" || a == "-quiet" || a == "-q" || a == "--q":
-			// Silent no-op — the global pass already applied the value.
-			// Recognized here only so the trailing-args warning does not
-			// fire for a documented global flag.
+			// Consumed; value already resolved by resolveTrailingQuiet.
 			consumed = true
 		case strings.HasPrefix(a, "--quiet=") || strings.HasPrefix(a, "-quiet=") ||
 			strings.HasPrefix(a, "--q=") || strings.HasPrefix(a, "-q="):
@@ -986,6 +994,31 @@ func applyTrailingGlobalFlags(args []string, quiet bool, stderr io.Writer) []str
 		_, _ = applyColorMode(mode, trailingNoColor, os.Getenv("NO_COLOR"), os.Stdout.Fd(), os.Stderr.Fd(), errSink)
 	}
 	return rest
+}
+
+// resolveTrailingQuiet pre-scans args for -q / --quiet (and their =BOOL forms)
+// and folds them into the starting quiet value. Used so warning suppression
+// inside applyTrailingGlobalFlags is order-independent — `--lang xyz -q` must
+// suppress just like `-q --lang xyz`. Stops at the first "--" the same way
+// the main scan does.
+func resolveTrailingQuiet(args []string, start bool) bool {
+	quiet := start
+	for _, a := range args {
+		if a == "--" {
+			break
+		}
+		switch {
+		case a == "--quiet" || a == "-quiet" || a == "-q" || a == "--q":
+			quiet = true
+		case strings.HasPrefix(a, "--quiet=") || strings.HasPrefix(a, "-quiet=") ||
+			strings.HasPrefix(a, "--q=") || strings.HasPrefix(a, "-q="):
+			val := a[strings.Index(a, "=")+1:]
+			if b, err := strconv.ParseBool(val); err == nil {
+				quiet = b
+			}
+		}
+	}
+	return quiet
 }
 
 // hasHelpFlag reports whether args contains a help flag. It accepts all four
@@ -1121,7 +1154,7 @@ ENVIRONMENT VARIABLES:
 
 EXIT CODES:
    0  Success (normal exit, EOF, or 'exit' command)
-   1  General error (e.g., web server failed to start)
+   1  General error (e.g., web server failed to start, interactive input read error)
    2  Usage error (invalid flags, unknown category, missing required argument)
   10  'update --check': a newer version is available (non-error signal for scripts)
   75  'update': user declined the confirmation prompt
@@ -1315,11 +1348,9 @@ func buildGameCommands() map[string]func() int {
 		commands[e.Name] = func() int {
 			g := e.NewCui()
 			if realtimeGames[e.Name] {
-				ui.RunRealtimeCuiLoop(e.Name, g.Controller(), g.HelpLines())
-			} else {
-				ui.RunCuiLoop(e.Name, g.Controller(), g.HelpLines())
+				return ui.RunRealtimeCuiLoop(e.Name, g.Controller(), g.HelpLines())
 			}
-			return 0
+			return ui.RunCuiLoop(e.Name, g.Controller(), g.HelpLines())
 		}
 	}
 	return commands

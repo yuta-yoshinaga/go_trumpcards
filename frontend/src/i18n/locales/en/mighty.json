@@ -40,13 +40,20 @@
   "role": {
     "declarer": "declarer",
     "partner": "partner",
-    "opposition": "opposition"
+    "opposition": "opposition",
+    "partnerRevealed": "Partner Revealed!"
   },
   "suitName": {
     "spade": "Spade",
     "club": "Club",
     "heart": "Heart",
     "diamond": "Diamond"
+  },
+  "specialRole": {
+    "mighty": "Mighty (strongest card)",
+    "jokerCall": "Joker Call",
+    "joker": "Joker",
+    "partner": "Partner card"
   },
   "scores": "Score",
   "scoresPlayer": "Player",

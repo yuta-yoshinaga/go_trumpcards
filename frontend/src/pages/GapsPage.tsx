@@ -22,6 +22,17 @@ import { gameTheme } from '../styles/gameTheme';
 import { GapsPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { valueName } from '../utils/cardUtils';
+import { computeGapsGhostHint } from '../utils/gapsGhostHint';
+import { gapsLockedPrefixLengths } from '../utils/gapsUtils';
+
+const SUIT_SYMBOLS: Record<string, string> = {
+  SPADE: '♠',
+  HEART: '♥',
+  DIAMOND: '♦',
+  CLOVER: '♣',
+};
+const RED_DESIGNS = new Set(['HEART', 'DIAMOND']);
 
 const GAPS_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -114,6 +125,7 @@ function GapsPageContent() {
   const isGameClear = state.phase === GapsPhase.GAME_CLEAR;
   const isGameOver = state.phase === GapsPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
+  const lockedPrefixLengths = gapsLockedPrefixLengths(state.grid);
 
   return (
     <GamePageShell
@@ -142,48 +154,96 @@ function GapsPageContent() {
 
       <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
         <div data-tutorial="gaps-grid" className="flex flex-col items-center gap-1 mb-3">
-          {state.grid.map((row, rIdx) => (
-            <div key={`row-${rIdx.toString()}`} className="flex gap-1">
-              {row.map((cell, cIdx) => {
-                const zone: GapsMoveZone = { zone: 'grid', row: rIdx, col: cIdx };
-                const isHintFrom = state.hint && state.hint.fromRow === rIdx && state.hint.fromCol === cIdx;
-                const isHintTo = state.hint && state.hint.toRow === rIdx && state.hint.toCol === cIdx;
-                if (cell === null) {
+          {state.grid.map((row, rIdx) => {
+            const lockedCount = lockedPrefixLengths[rIdx] ?? 0;
+            return (
+              <div key={`row-${rIdx.toString()}`} className="flex gap-1">
+                {row.map((cell, cIdx) => {
+                  const zone: GapsMoveZone = { zone: 'grid', row: rIdx, col: cIdx };
+                  const isHintFrom = state.hint && state.hint.fromRow === rIdx && state.hint.fromCol === cIdx;
+                  const isHintTo = state.hint && state.hint.toRow === rIdx && state.hint.toCol === cIdx;
+                  if (cell === null) {
+                    const ghost = computeGapsGhostHint(row, cIdx);
+                    return (
+                      <button
+                        type="button"
+                        key={`cell-${rIdx.toString()}-${cIdx.toString()}`}
+                        onDragOver={dnd.handleDragOver(zone)}
+                        onDragLeave={dnd.handleDragLeave}
+                        onDrop={dnd.handleDrop(zone)}
+                        aria-label={t('gap')}
+                        className={`relative flex items-center justify-center rounded border-2 ${
+                          dnd.isDropTarget(zone)
+                            ? 'border-ds-warning bg-ds-warning/20'
+                            : 'border-dashed border-white/30'
+                        } ${isHintTo ? 'ring-2 ring-ds-warning' : ''} ${focusRingWhite}`}
+                        style={{ width: cardWidth, height: cardHeight }}
+                        disabled={!isPlaying || loading}
+                      >
+                        {ghost?.kind === 'needed' && (
+                          <span
+                            aria-hidden="true"
+                            data-testid={`gaps-ghost-${rIdx}-${cIdx}`}
+                            className={`text-base font-semibold opacity-30 ${RED_DESIGNS.has(ghost.design) ? 'text-ds-error' : 'text-ds-text-primary'}`}
+                          >
+                            {SUIT_SYMBOLS[ghost.design]}
+                            {valueName(ghost.value)}
+                          </span>
+                        )}
+                        {ghost?.kind === 'anySuit' && (
+                          <span
+                            aria-hidden="true"
+                            data-testid={`gaps-ghost-${rIdx}-${cIdx}`}
+                            className="text-base font-semibold text-white opacity-30"
+                          >
+                            {valueName(ghost.value)}
+                          </span>
+                        )}
+                        {ghost?.kind === 'blocked' && (
+                          <span
+                            aria-hidden="true"
+                            data-testid={`gaps-ghost-${rIdx}-${cIdx}-blocked`}
+                            className="text-xl opacity-40"
+                          >
+                            🚫
+                          </span>
+                        )}
+                      </button>
+                    );
+                  }
+                  const isLocked = cIdx < lockedCount;
+                  // Locked cards survive redeal — make them visually fixed by
+                  // dropping the draggable affordance, so users don't try to
+                  // move them and end up with a no-op drop.
+                  const ringClass = isHintFrom ? 'ring-2 ring-ds-warning' : isLocked ? 'ring-2 ring-ds-success' : '';
                   return (
                     <button
                       type="button"
                       key={`cell-${rIdx.toString()}-${cIdx.toString()}`}
-                      onDragOver={dnd.handleDragOver(zone)}
-                      onDragLeave={dnd.handleDragLeave}
-                      onDrop={dnd.handleDrop(zone)}
-                      aria-label={t('gap')}
-                      className={`rounded border-2 ${
-                        dnd.isDropTarget(zone) ? 'border-ds-warning bg-ds-warning/20' : 'border-dashed border-white/30'
-                      } ${isHintTo ? 'ring-2 ring-ds-warning' : ''} ${focusRingWhite}`}
-                      style={{ width: cardWidth, height: cardHeight }}
+                      draggable={isPlaying && !loading && !isLocked}
+                      onDragStart={dnd.handleDragStart(zone)}
+                      onDragEnd={dnd.handleDragEnd}
+                      aria-label={isLocked ? `${cardAlt(cell)} ${t('lockedAria')}` : cardAlt(cell)}
                       disabled={!isPlaying || loading}
-                    />
+                      data-testid={isLocked ? `gaps-locked-${rIdx}-${cIdx}` : undefined}
+                      className={`relative p-0 border-0 bg-transparent rounded ${focusRingWhite} ${ringClass} ${dnd.isDragSource(zone) ? 'opacity-50' : ''}`}
+                    >
+                      <AnimatedCard card={cell} width={cardWidth} />
+                      {isLocked && (
+                        <span
+                          aria-hidden="true"
+                          title={t('lockedTooltip')}
+                          className="absolute top-0.5 right-0.5 text-[10px] leading-none bg-ds-success/80 text-ds-text-on-accent rounded-sm px-1 py-0.5 shadow"
+                        >
+                          🔒
+                        </span>
+                      )}
+                    </button>
                   );
-                }
-                return (
-                  <button
-                    type="button"
-                    key={`cell-${rIdx.toString()}-${cIdx.toString()}`}
-                    draggable={isPlaying && !loading}
-                    onDragStart={dnd.handleDragStart(zone)}
-                    onDragEnd={dnd.handleDragEnd}
-                    aria-label={cardAlt(cell)}
-                    disabled={!isPlaying || loading}
-                    className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${
-                      isHintFrom ? 'ring-2 ring-ds-warning' : ''
-                    } ${dnd.isDragSource(zone) ? 'opacity-50' : ''}`}
-                  >
-                    <AnimatedCard card={cell} width={cardWidth} />
-                  </button>
-                );
-              })}
-            </div>
-          ))}
+                })}
+              </div>
+            );
+          })}
         </div>
 
         <div data-tutorial="gaps-hint-display">

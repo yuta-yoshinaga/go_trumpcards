@@ -46,6 +46,7 @@
   "bidLevel": "レベル",
   "bidSuit": "スート",
   "dummyHand": "ダミーの手札",
+  "yourTurnDummy": "あなたが操作する番です",
   "gamesWon": "ゲーム勝利数",
   "belowLine": "ビロウ・ザ・ライン",
   "suitSpade": "♠",

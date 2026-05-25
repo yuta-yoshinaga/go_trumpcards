@@ -17,7 +17,6 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -87,7 +86,6 @@ export const BelotePage = withTutorial(BelotePageContent, 'belote', BELOTE_TUTOR
 function BelotePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('belote');
-  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -219,6 +217,49 @@ function BelotePageContent() {
             {state.trumpSuit > 0 ? t('trumpSuit', { suit: t(SUIT_LABEL_KEYS[state.trumpSuit]) }) : t('noTrump')}
           </span>
         </div>
+        {/* Bonus trackers — Dix de Der lights up on trick 8; Belote/Rebelote
+            lights up as soon as ANY team finishes playing K + Q of trump
+            (the bonus is awarded to whichever team holds those cards, not
+            specifically the maker — see internal/domain/Belote.go #864). */}
+        {state.trumpSuit > 0 &&
+          (() => {
+            const isLastTrick = state.trickNumber === 8;
+            const hasBeloteBonus = state.roundBeloteBonus.some((b) => b > 0);
+            return (
+              <div
+                className="text-center mb-2 flex justify-center gap-2 flex-wrap text-xs"
+                data-testid="belote-bonus-trackers"
+              >
+                {state.config.dixDeDer > 0 && (
+                  <span
+                    data-testid="dix-de-der-badge"
+                    data-active={isLastTrick ? 'true' : undefined}
+                    className={
+                      isLastTrick
+                        ? 'px-2 py-0.5 rounded-full font-medium border bg-ds-accent text-ds-text-on-accent border-ds-accent animate-pulse'
+                        : 'px-2 py-0.5 rounded-full font-medium border bg-ds-surface text-ds-text-muted border-ds-border'
+                    }
+                  >
+                    👑 {t('tracker.dixDeDer')}
+                  </span>
+                )}
+                {state.config.enableBeloteRebelote && (
+                  <span
+                    data-testid="belote-rebelote-badge"
+                    data-active={hasBeloteBonus ? 'true' : undefined}
+                    className={
+                      hasBeloteBonus
+                        ? 'px-2 py-0.5 rounded-full font-medium border bg-ds-success text-ds-text-on-accent border-ds-success'
+                        : 'px-2 py-0.5 rounded-full font-medium border bg-ds-surface text-ds-text-muted border-ds-border'
+                    }
+                  >
+                    {t('tracker.beloteKing')} · {t('tracker.beloteQueen')}
+                    {hasBeloteBonus ? ` ${t('tracker.beloteBonus')}` : ''}
+                  </span>
+                )}
+              </div>
+            );
+          })()}
 
         {/* Face-up card (during bidding) */}
         {state.faceUpCard && (isBidPickUp || isBidCallTrump) && (
@@ -246,7 +287,6 @@ function BelotePageContent() {
           cardWidth={cardWidth}
           label={t('currentTrick')}
           dataTutorial="be-trick-display"
-          onCardDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
         />
 
         {/* Team scores */}

@@ -328,23 +328,41 @@ function BridgePageContent() {
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="br-trick-display"
-                  onCardDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                 />
 
                 {/* Dummy hand */}
                 {state.openingLeadDone && state.dummyHand && state.dummyHand.length > 0 && (
-                  <div className="my-3 p-3 rounded bg-black/40" data-tutorial="br-dummy-hand">
+                  <div
+                    className={`relative my-3 overflow-hidden rounded p-3 bg-black/40 transition-shadow ${
+                      humanPlayer?.id === state.declarerIdx && state.currentPlayerIdx === state.dummyIdx
+                        ? 'ring-2 ring-ds-info shadow-[0_0_18px_rgba(91,143,185,0.55)] motion-safe:animate-pulse'
+                        : ''
+                    }`}
+                    data-tutorial="br-dummy-hand"
+                    data-testid="bridge-dummy-area"
+                    data-dummy-active={
+                      humanPlayer?.id === state.declarerIdx && state.currentPlayerIdx === state.dummyIdx
+                        ? 'true'
+                        : undefined
+                    }
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 flex items-center justify-center select-none text-5xl font-extrabold tracking-widest text-ds-text-muted opacity-10"
+                    >
+                      DUMMY
+                    </span>
                     <div className="text-ds-text-muted text-sm mb-1">{t('dummyHand')}</div>
                     <div className="flex gap-1 flex-wrap">
                       {state.dummyHand.map((card, idx) => (
-                        <AnimatedCard
-                          key={`dummy-${card.design}-${card.value}-${idx}`}
-                          card={card}
-                          width={cardWidth}
-                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                        />
+                        <AnimatedCard key={`dummy-${card.design}-${card.value}-${idx}`} card={card} width={cardWidth} />
                       ))}
                     </div>
+                    {humanPlayer?.id === state.declarerIdx && state.currentPlayerIdx === state.dummyIdx && (
+                      <div className="relative mt-1 text-center text-xs font-semibold text-ds-info">
+                        {t('yourTurnDummy')}
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -504,11 +522,7 @@ function BridgePageContent() {
                       ...(isMobile ? { minWidth: solitaireMinColWidth, flexShrink: 0 } : {}),
                     }}
                   >
-                    <AnimatedCard
-                      card={card}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
+                    <AnimatedCard card={card} width={cardWidth} />
                   </button>
                 ))}
               </div>
