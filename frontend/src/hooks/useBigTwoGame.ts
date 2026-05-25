@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { type BigTwoConfigInput, bigtwoApi } from '../api/gameApi';
-import type { BigTwoAction, BigTwoResponse, Card } from '../types/card';
+import { bigtwoApi } from '../api/gameApi';
+import type { BigTwoAction, BigTwoConfigInput, BigTwoResponse, Card } from '../types/card';
 import { buildHumanActionState, buildReplayStates } from '../utils/replayBuilder';
 import { runReplay, shouldSkipReplay } from './gameReplay';
 import { useCardSelection } from './useCardSelection';

@@ -1,6 +1,9 @@
 package domain
 
-import "sort"
+import (
+	"slices"
+	"sort"
+)
 
 // Big Two card value strength: 3 < 4 < ... < K < A < 2
 // Suit strength: ♦(4) < ♣(2) < ♥(3) < ♠(1)
@@ -124,10 +127,8 @@ func bigTwoClassify5Cards(cards []*Card) BigTwoPlayType {
 // Valid straights: 3-4-5-6-7 through 10-J-Q-K-A, plus A-2-3-4-5 is NOT valid.
 func bigTwoCheckStraight(sortedValues []int) bool {
 	// 2 cannot be in a straight in standard Big Two
-	for _, v := range sortedValues {
-		if v == 2 {
-			return false
-		}
+	if slices.Contains(sortedValues, 2) {
+		return false
 	}
 	// 10-J-Q-K-A (A acts as high)
 	if sortedValues[0] == 1 && sortedValues[1] == 10 &&
