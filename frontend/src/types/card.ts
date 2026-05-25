@@ -4150,6 +4150,34 @@ export interface OasisPokerResponse {
   messageParams?: Record<string, string>;
 }
 
+// --- Russian Poker (ロシアンポーカー) ---
+
+/** Russian Poker game state from the /russianpoker/exec endpoint. */
+export interface RussianPokerResponse {
+  playerHand: Card[];
+  dealerHand: (Card | MaskedCard)[];
+  phase: number;
+  chips: number;
+  anteBet: number;
+  exchangeCount: number;
+  exchangeFee: number;
+  bought6th: boolean;
+  buy6thFee: number;
+  forceExchanged: boolean;
+  forceExchangeFee: number;
+  playBet: number;
+  result: number;
+  antePayout: number;
+  playPayout: number;
+  totalPayout: number;
+  dealerQualified: boolean;
+  playerHandRank: number;
+  dealerHandRank: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
 // --- Beleaguered Castle (包囲された城) ---
 
 /** A single tableau card in Beleaguered Castle. */

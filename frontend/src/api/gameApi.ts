@@ -82,6 +82,7 @@ import type {
   PyramidResponse,
   RedDogResponse,
   Rummy500Response,
+  RussianPokerResponse,
   RussianSolitaireResponse,
   ScorpionResponse,
   SeahavenTowersResponse,
@@ -218,6 +219,7 @@ const workerUrl: Record<string, string> = {
   spiderette: WORKER_SOLO,
   mighty: WORKER_CLASSIC,
   oasispoker: WORKER_CASINO,
+  russianpoker: WORKER_CASINO,
   beleagueredcastle: WORKER_SOLO,
   piquet: WORKER_CLASSIC,
   callbreak: WORKER_CLASSIC,
@@ -1127,6 +1129,16 @@ export const oasispokerApi = {
   ) => gameExec<OasisPokerResponse>('oasispoker', { command, amount, jackpotBet, indices }),
 };
 
+/** API client for the Russian Poker /russianpoker/exec endpoint. */
+export const russianpokerApi = {
+  exec: (
+    command: 'reset' | 'bet' | 'exchange' | 'buy6th' | 'select' | 'play' | 'fold' | 'force' | 'decline' | 'log',
+    amount?: number,
+    indices?: number[],
+    discardIndex?: number,
+  ) => gameExec<RussianPokerResponse>('russianpoker', { command, amount, indices, discardIndex }),
+};
+
 /** API client for the Texas Hold'em Bonus Poker /texasholdembonus/exec endpoint. */
 export const texasholdembonusApi = {
   exec: (command: 'reset' | 'bet' | 'play' | 'fold' | 'check' | 'raise' | 'log', amount?: number, bonusBet?: number) =>
@@ -2019,6 +2031,7 @@ const games = [
   'fourcardpoker',
   'rummy500',
   'eightoff',
+  'russianpoker',
 ] as const;
 type Game = (typeof games)[number];
 

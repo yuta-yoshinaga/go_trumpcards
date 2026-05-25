@@ -816,6 +816,16 @@ export const OasisPokerPhase = {
   END: 4,
 } as const;
 
+/** Russian Poker phase constants (sync: internal/domain/RussianPoker.go). */
+export const RussianPokerPhase = {
+  BET: 1,
+  ACTION: 2,
+  SELECT: 3,
+  POST_ACTION: 4,
+  FORCE_QUALIFY: 5,
+  END: 6,
+} as const;
+
 /** Beleaguered Castle phase constants (sync: internal/domain/BeleagueredCastle.go). */
 export const BeleagueredCastlePhase = {
   PLAYING: 0,

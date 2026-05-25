@@ -108,6 +108,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 3, 4, 3], skill: [3, 4, 4, 3], social: [3, 5, 2, 3, 4], theme: [5, 1, 1, 1, 4, 1] },
       },
       {
+        path: '/russianpoker',
+        labelKey: 'nav.russianpoker',
+        icon: '🪆',
+        page: 'RussianPoker',
+        profile: { mood: [2, 3, 5, 3], skill: [3, 5, 5, 3], social: [3, 5, 2, 3, 4], theme: [5, 1, 1, 1, 4, 1] },
+      },
+      {
         path: '/texasholdembonus',
         labelKey: 'nav.texasholdembonus',
         icon: '🤠',

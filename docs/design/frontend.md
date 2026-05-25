@@ -1934,7 +1934,7 @@ classDiagram
     }
 
     class gameCategories {
-        +table: [BlackJack, Spanish21, Baccarat, ThreeCard, CaribbeanStud, OasisPoker, TexasHoldemBonus, CasinoHoldem, UltimateTexasHoldem, PaiGow, LetItRide, RedDog, CasinoWar, DragonTiger, BlackJackSwitch, MississippiStud, HighCardFlush, FourCardPoker]
+        +table: [BlackJack, Spanish21, Baccarat, ThreeCard, CaribbeanStud, OasisPoker, RussianPoker, TexasHoldemBonus, CasinoHoldem, UltimateTexasHoldem, PaiGow, LetItRide, RedDog, CasinoWar, DragonTiger, BlackJackSwitch, MississippiStud, HighCardFlush, FourCardPoker]
         +poker: [Poker, Holdem, Omaha, OmahaHiLo, ShortDeck, Pineapple, CrazyPineapple, SevenCardStud, Razz, Badugi, IndianPoker, VideoPoker, DeucesWild, JokerPoker]
         +trickTaking: [Hearts, Spades, Pitch, TwoTenJack, OhHell, Euchre, Bridge, Napoleon, Whist, Belote, Mighty, Piquet, CallBreak, Tarneeb, Briscola]
         +matching: [OldMaid, Doubt, Durak, Daifugo, President, Cassino, Sevens, CrazyEights, PageOne, Speed, GoFish, Pinochle, PigsTail, War, FiftyOne, Trash, SpiteAndMalice, Skat, Shithead, Nertz, Slapjack, EgyptianRatscrew]
