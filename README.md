@@ -23,6 +23,7 @@ Go + Clean Architecture で実装した94種類のトランプゲーム。CLI �
 | ポーカー (5-card Draw) | `poker` | [CUI](docs/manual/cui/poker.md) / [Web](docs/manual/web/poker.md) |
 | ババ抜き (Old Maid) | `oldmaid` | [CUI](docs/manual/cui/oldmaid.md) / [Web](docs/manual/web/oldmaid.md) |
 | 大富豪 (Daifugo) | `daifugo` | [CUI](docs/manual/cui/daifugo.md) / [Web](docs/manual/web/daifugo.md) |
+| 大老二 (Big Two) | `bigtwo` | [CUI](docs/manual/cui/bigtwo.md) / [Web](docs/manual/web/bigtwo.md) |
 | 7並べ (Sevens) | `sevens` | [CUI](docs/manual/cui/sevens.md) / [Web](docs/manual/web/sevens.md) |
 | ダウト (Doubt) | `doubt` | [CUI](docs/manual/cui/doubt.md) / [Web](docs/manual/web/doubt.md) |
 | テキサスホールデム (Texas Hold'em) | `holdem` | [CUI](docs/manual/cui/holdem.md) / [Web](docs/manual/web/holdem.md) |

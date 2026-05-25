@@ -90,6 +90,7 @@ var registry = []*Game{
 	{Name: "poker", Category: CategoryCasino, Description: "5-card Draw Poker (ポーカー)"},
 	{Name: "oldmaid", Category: CategoryClassic, Description: "Old Maid (ババ抜き)"},
 	{Name: "daifugo", Category: CategoryClassic, Description: "Daifugo / Great Fool (大富豪)"},
+	{Name: "bigtwo", Category: CategoryClassic, Description: "Big Two (大老二)"},
 	{Name: "sevens", Category: CategoryClassic, Description: "Sevens (7並べ)"},
 	{Name: "doubt", Category: CategoryClassic, Description: "Doubt (ダウト)"},
 	{Name: "holdem", Category: CategoryCasino, Description: "Texas Hold'em (テキサスホールデム)"},

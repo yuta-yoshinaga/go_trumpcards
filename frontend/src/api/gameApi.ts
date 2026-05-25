@@ -8,6 +8,8 @@ import type {
   BeleagueredCastleMoveZone,
   BeleagueredCastleResponse,
   BeloteResponse,
+  BigTwoConfigInput,
+  BigTwoResponse,
   BlackJackResponse,
   BlackJackSwitchResponse,
   BridgeResponse,
@@ -158,6 +160,7 @@ const workerUrl: Record<string, string> = {
   doubt: WORKER_CLASSIC,
   durak: WORKER_CLASSIC,
   daifugo: WORKER_CLASSIC,
+  bigtwo: WORKER_CLASSIC,
   sevens: WORKER_CLASSIC,
   crazyeights: WORKER_CLASSIC,
   pageone: WORKER_CLASSIC,
@@ -379,6 +382,12 @@ export const oldmaidApi = {
 export const daifugoApi = {
   exec: (command: 'reset' | 'play' | 'sort', indices?: number[], config?: DaifugoConfigInput, sortMode?: number) =>
     gameExec<DaifugoResponse>('daifugo', { command, indices, config, sortMode }),
+};
+
+/** API client for the Big Two /bigtwo/exec endpoint. */
+export const bigtwoApi = {
+  exec: (command: 'reset' | 'play', indices?: number[], config?: BigTwoConfigInput) =>
+    gameExec<BigTwoResponse>('bigtwo', { command, indices, config }),
 };
 
 /** API client for the Durak /durak/exec endpoint. */
@@ -1912,6 +1921,7 @@ const games = [
   'poker',
   'oldmaid',
   'daifugo',
+  'bigtwo',
   'sevens',
   'doubt',
   'durak',
