@@ -74,6 +74,7 @@ import pyramid from '../../../docs/manual/cui/pyramid.md?raw';
 import razz from '../../../docs/manual/cui/razz.md?raw';
 import reddog from '../../../docs/manual/cui/reddog.md?raw';
 import rummy500 from '../../../docs/manual/cui/rummy500.md?raw';
+import russianpoker from '../../../docs/manual/cui/russianpoker.md?raw';
 import russiansolitaire from '../../../docs/manual/cui/russiansolitaire.md?raw';
 import scorpion from '../../../docs/manual/cui/scorpion.md?raw';
 import seahaventowers from '../../../docs/manual/cui/seahaventowers.md?raw';
@@ -187,6 +188,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/war': war,
   '/whist': whist,
   '/yukon': yukon,
+  '/russianpoker': russianpoker,
   '/russiansolitaire': russiansolitaire,
   '/cruel': cruel,
   '/scorpion': scorpion,

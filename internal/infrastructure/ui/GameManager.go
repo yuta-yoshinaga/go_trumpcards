@@ -1627,6 +1627,25 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "russianpoker", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewRussianPokerCuiController(usecase.NewRussianPokerInteractor(
+				domain.NewDefaultRussianPoker(), new(presenter.RussianPokerCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "russianpoker.helpTitle",
+				CommandKeys: []string{
+					"russianpoker.helpBet",
+					"russianpoker.helpExchange",
+					"russianpoker.helpBuy6th",
+					"russianpoker.helpSelect",
+					"russianpoker.helpPlay",
+					"russianpoker.helpFold",
+					"russianpoker.helpForce",
+					"russianpoker.helpDecline",
+				},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

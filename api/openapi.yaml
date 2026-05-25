@@ -191,6 +191,8 @@ tags:
     description: Mighty (マイティ) game - Korean 5-player trick-taking card game with bidding for point cards (10/J/Q/K/A, 20 max) and a separate No-Trump axis; declarer names a trump suit and a secret partner card; special cards Mighty (♠A normally; ♦A under spade trump), Joker (second-highest when not led, with a Joker-lead demand-suit rule and a Joker Call card ♣3/♠3 forcing the Joker)
   - name: oasispoker
     description: Oasis Poker (オアシスポーカー) game - Caribbean Stud variant adding a card-exchange phase between Bet and Action; exchange 1..5 cards for a fee equal to ante per card, then Call or Fold against the dealer
+  - name: russianpoker
+    description: Russian Poker (ロシアンポーカー) game - Oasis Poker evolution with 6th card purchase and force-qualify options; exchange cards, buy a 6th card, or force dealer's highest card exchange when dealer doesn't qualify
   - name: beleagueredcastle
     description: Beleaguered Castle (包囲された城) game - single-player open-information solitaire with 8 tableau columns of 6 cards each and 4 aces pre-seeded on the foundations; empty columns accept any card
   - name: piquet
@@ -9330,6 +9332,110 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OasisPokerResponse'
+
+  /russianpoker/exec:
+    post:
+      tags:
+        - russianpoker
+      summary: Execute a Russian Poker game command
+      description: |
+        Send a command to advance the Russian Poker (ロシアンポーカー) game session
+        identified by `sessionId`. Russian Poker is an Oasis Poker evolution popular
+        in Eastern European casinos. It offers four player options after the deal:
+        Play, Fold, Exchange cards (fee = ante × count), or Buy a 6th card (fee = ante).
+        When the dealer doesn't qualify, the player can pay ante to force exchange
+        the dealer's highest card. No jackpot side bet.
+
+        | Phase        | Value | Description |
+        |--------------|-------|-------------|
+        | Bet          | `1`   | Place Ante |
+        | Action       | `2`   | Fold / Play / Exchange / Buy 6th |
+        | Select       | `3`   | Discard 1 from 6 cards (after Buy 6th) |
+        | PostAction   | `4`   | Fold / Play (after Exchange or Buy 6th) |
+        | ForceQualify | `5`   | Force dealer exchange or decline |
+        | End          | `6`   | Round complete |
+
+        | Command   | Aliases | Description |
+        |-----------|---------|-------------|
+        | `reset`   | `r`     | Start / restart a game |
+        | `bet`     | `b`     | Place Ante bet (requires `amount`) |
+        | `exchange`| `e`     | Exchange cards at `indices` (0..4); fee = ante × len |
+        | `buy6th`  | `6`     | Buy 6th card (fee = ante) |
+        | `select`  | `sel`   | Discard card at `discardIndex` from 6-card hand |
+        | `play`    | `p`     | Call: place Play bet (2x Ante) |
+        | `fold`    | `f`     | Forfeit Ante and fees |
+        | `force`   | `fe`    | Force exchange dealer's highest card (fee = ante) |
+        | `decline` | `d`     | Decline force exchange |
+        | `log`     | `l`     | View action log |
+      operationId: russianpokerExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RussianPokerRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 100 Ante
+                value:
+                  command: bet
+                  amount: 100
+                  sessionId: my-session-001
+              exchange:
+                summary: Exchange cards at indices 0 and 2
+                value:
+                  command: exchange
+                  indices: [0, 2]
+                  sessionId: my-session-001
+              buy6th:
+                summary: Buy 6th card
+                value:
+                  command: buy6th
+                  sessionId: my-session-001
+              select:
+                summary: Discard card at index 3
+                value:
+                  command: select
+                  discardIndex: 3
+                  sessionId: my-session-001
+              play:
+                summary: Call (place Play bet)
+                value:
+                  command: play
+                  sessionId: my-session-001
+              fold:
+                summary: Fold hand
+                value:
+                  command: fold
+                  sessionId: my-session-001
+              force:
+                summary: Force dealer exchange
+                value:
+                  command: force
+                  sessionId: my-session-001
+              decline:
+                summary: Decline force exchange
+                value:
+                  command: decline
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RussianPokerResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RussianPokerResponse'
 
   /callbreak/exec:
     post:
@@ -21593,6 +21699,126 @@ components:
           additionalProperties:
             type: string
           description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # RussianPoker
+    # -------------------------------------------------------------------------
+    RussianPokerRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `bet` (`b`),
+            `exchange` (`e`), `buy6th` (`6`), `select` (`sel`), `play` (`p`),
+            `fold` (`f`), `force` (`fe`), `decline` (`d`), `log` (`l`).
+          enum: [r, reset, b, bet, e, exchange, '6', buy6th, sel, select, p, play, f, fold, force, fe, d, decline, log, l]
+          example: bet
+        amount:
+          type: integer
+          description: Ante bet amount. Required for `bet` command.
+          minimum: 10
+          example: 100
+        indices:
+          type: array
+          description: Card indices to exchange (0..4).
+          items:
+            type: integer
+            minimum: 0
+            maximum: 4
+          example: [0, 2]
+        discardIndex:
+          type: integer
+          description: Index of the card to discard from a 6-card hand (0..5). Used with `select`.
+          minimum: 0
+          maximum: 5
+          example: 3
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    RussianPokerResponse:
+      type: object
+      description: Current state of the Russian Poker game
+      required:
+        - playerHand
+        - dealerHand
+        - phase
+        - chips
+        - anteBet
+        - exchangeCount
+        - exchangeFee
+        - bought6th
+        - buy6thFee
+        - forceExchanged
+        - forceExchangeFee
+        - playBet
+        - result
+        - antePayout
+        - playPayout
+        - totalPayout
+        - dealerQualified
+        - playerHandRank
+        - dealerHandRank
+        - message
+      properties:
+        playerHand:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        dealerHand:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 1=Bet, 2=Action, 3=Select, 4=PostAction, 5=ForceQualify, 6=End"
+          enum: [1, 2, 3, 4, 5, 6]
+        chips:
+          type: integer
+        anteBet:
+          type: integer
+        exchangeCount:
+          type: integer
+        exchangeFee:
+          type: integer
+        bought6th:
+          type: boolean
+        buy6thFee:
+          type: integer
+        forceExchanged:
+          type: boolean
+        forceExchangeFee:
+          type: integer
+        playBet:
+          type: integer
+        result:
+          type: integer
+          enum: [-1, 0, 1]
+        antePayout:
+          type: integer
+        playPayout:
+          type: integer
+        totalPayout:
+          type: integer
+        dealerQualified:
+          type: boolean
+        playerHandRank:
+          type: integer
+        dealerHandRank:
+          type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
 
     # -------------------------------------------------------------------------
     # HighCardFlush

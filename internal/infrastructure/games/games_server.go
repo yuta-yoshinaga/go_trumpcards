@@ -523,4 +523,9 @@ func init() {
 			return usecase.NewEightOffInteractor(domain.NewDefaultEightOff(), new(presenter.EightOffWebPresenter))
 		},
 		controller.NewEightOffWebController)
+	BindWebControllerFor("russianpoker",
+		func() usecase.RussianPokerInteractorIF {
+			return usecase.NewRussianPokerInteractor(domain.NewDefaultRussianPoker(), new(presenter.RussianPokerWebPresenter))
+		},
+		controller.NewRussianPokerWebController)
 }

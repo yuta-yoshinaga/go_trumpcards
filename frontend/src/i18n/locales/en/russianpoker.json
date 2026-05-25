@@ -1,0 +1,97 @@
+{
+  "title": "Russian Poker",
+  "player": "Player",
+  "dealer": "Dealer",
+  "label": {
+    "chips": "Chips",
+    "ante": "Ante",
+    "play": "Play Bet",
+    "exchangeFee": "Exchange Fee",
+    "handRank": "Hand"
+  },
+  "button": {
+    "bet": "Bet",
+    "exchange": "Exchange",
+    "buy6th": "Buy 6th Card",
+    "select": "Discard",
+    "play": "Call",
+    "fold": "Fold",
+    "force": "Force Exchange",
+    "decline": "Decline",
+    "reset": "Reset"
+  },
+  "phase": {
+    "bet": "Bet",
+    "action": "Action",
+    "select": "Select Card",
+    "postAction": "Call / Fold",
+    "forceQualify": "Force Qualify",
+    "end": "Result"
+  },
+  "result": {
+    "playerWins": "You win!",
+    "dealerWins": "Dealer wins!",
+    "push": "Push!",
+    "fold": "Folded",
+    "dealerNotQualified": "Dealer does not qualify!"
+  },
+  "payout": {
+    "ante": "Ante",
+    "play": "Play",
+    "exchange": "Exchange fee",
+    "buy6th": "6th card fee",
+    "forceExchange": "Force exchange fee",
+    "total": "Total"
+  },
+  "handRank": {
+    "0": "High Card",
+    "1": "One Pair",
+    "2": "Two Pair",
+    "3": "Three of a Kind",
+    "4": "Straight",
+    "5": "Flush",
+    "6": "Full House",
+    "7": "Four of a Kind",
+    "8": "Straight Flush",
+    "9": "Royal Flush"
+  },
+  "settings": {
+    "title": "Settings"
+  },
+  "betGuide": "Place your Ante bet",
+  "actionGuide": "Fold, Call, Exchange cards, or Buy a 6th card",
+  "exchangeGuide": "Tap cards to select them, then press Exchange",
+  "exchangeFeeInfo": "Fee: ante × {{ante}} per card = {{fee}}",
+  "exchangeFeeHighRisk": "High-cost warning",
+  "exchangeSelected": "Selected: {{count}}",
+  "selectGuide": "Choose one card to discard from your 6 cards",
+  "forceQualifyGuide": "Dealer does not qualify. Pay ante to force exchange dealer's highest card?",
+  "forceQualifyCost": "Cost: {{cost}}",
+  "payoutRef": {
+    "title": "Payouts",
+    "playHeader": "Play payouts (on call)",
+    "payRoyalFlush": "Royal Flush: 100:1",
+    "payStraightFlush": "Straight Flush: 50:1",
+    "payFourOfAKind": "Four of a Kind: 20:1",
+    "payFullHouse": "Full House: 7:1",
+    "payFlush": "Flush: 5:1",
+    "payStraight": "Straight: 4:1",
+    "payThreeOfAKind": "Three of a Kind: 3:1",
+    "payTwoPair": "Two Pair: 2:1",
+    "payPair": "Pair or less: 1:1",
+    "specialHeader": "Russian Poker special rules",
+    "exchangeFee": "Card exchange: 1x ante per card",
+    "buy6th": "Buy 6th card: 1x ante",
+    "forceExchange": "Force qualify: 1x ante"
+  },
+  "dealerQualified": "Qualified",
+  "dealerNotQualified": "Not qualified",
+  "tutorial": {
+    "betControls": "Set your ante and press Bet.",
+    "actionButtons": "Choose Fold, Call, Exchange cards, or Buy a 6th card.",
+    "exchangeControls": "Tap cards to mark them for exchange, then press Exchange. Each exchanged card costs 1x ante.",
+    "selectControls": "Tap the card you want to discard from your 6 cards.",
+    "forceQualify": "When the dealer doesn't qualify, you can pay 1x ante to force exchange the dealer's highest card.",
+    "results": "Review your result and payouts."
+  }
+}
