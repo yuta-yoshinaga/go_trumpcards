@@ -45,11 +45,11 @@ describe('getRussianPokerHint', () => {
     const state = makeState({
       phase: RussianPokerPhase.ACTION,
       playerHand: [
-        { design: 'spade', value: 2 },
-        { design: 'clover', value: 2 },
-        { design: 'heart', value: 5 },
-        { design: 'diamond', value: 7 },
-        { design: 'spade', value: 9 },
+        { design: 'SPADE', value: 2 },
+        { design: 'CLOVER', value: 2 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 7 },
+        { design: 'SPADE', value: 9 },
       ],
       playerHandRank: 1,
     });
@@ -63,11 +63,11 @@ describe('getRussianPokerHint', () => {
     const state = makeState({
       phase: RussianPokerPhase.ACTION,
       playerHand: [
-        { design: 'spade', value: 1 },
-        { design: 'clover', value: 13 },
-        { design: 'heart', value: 5 },
-        { design: 'diamond', value: 7 },
-        { design: 'spade', value: 9 },
+        { design: 'SPADE', value: 1 },
+        { design: 'CLOVER', value: 13 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 7 },
+        { design: 'SPADE', value: 9 },
       ],
       playerHandRank: 0,
     });
@@ -81,11 +81,11 @@ describe('getRussianPokerHint', () => {
     const state = makeState({
       phase: RussianPokerPhase.ACTION,
       playerHand: [
-        { design: 'spade', value: 2 },
-        { design: 'clover', value: 5 },
-        { design: 'heart', value: 7 },
-        { design: 'diamond', value: 9 },
-        { design: 'spade', value: 11 },
+        { design: 'SPADE', value: 2 },
+        { design: 'CLOVER', value: 5 },
+        { design: 'HEART', value: 7 },
+        { design: 'DIAMOND', value: 9 },
+        { design: 'SPADE', value: 11 },
       ],
       playerHandRank: 0,
     });
@@ -98,11 +98,11 @@ describe('getRussianPokerHint', () => {
     const state = makeState({
       phase: RussianPokerPhase.POST_ACTION,
       playerHand: [
-        { design: 'spade', value: 2 },
-        { design: 'clover', value: 2 },
-        { design: 'heart', value: 5 },
-        { design: 'diamond', value: 7 },
-        { design: 'spade', value: 9 },
+        { design: 'SPADE', value: 2 },
+        { design: 'CLOVER', value: 2 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 7 },
+        { design: 'SPADE', value: 9 },
       ],
       playerHandRank: 1,
     });
