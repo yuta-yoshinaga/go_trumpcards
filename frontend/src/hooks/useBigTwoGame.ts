@@ -109,8 +109,8 @@ export function useBigTwoGame() {
     callApi('reset');
   }, [callApi]);
 
-  const handleConfigChange = useCallback((key: keyof BigTwoConfigInput, value: boolean | number) => {
-    setConfigInput((prev: BigTwoConfigInput) => ({ ...prev, [key]: value }));
+  const handleConfigChange = useCallback((key: keyof BigTwoConfigInput, value: number) => {
+    setConfigInput((prev) => ({ ...prev, [key]: value }));
   }, []);
 
   const handlePlay = useCallback(() => {
