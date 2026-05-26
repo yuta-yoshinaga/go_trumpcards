@@ -1,6 +1,6 @@
 import type { chinesepokerApi } from '../../../api/gameApi';
+import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
-import { parseIntArg, splitCommand, suggestCommand } from './helpers';
 
 type ChinesePokerArgs = Parameters<typeof chinesepokerApi.exec>;
 
