@@ -1493,6 +1493,34 @@ export interface EightOffResponse {
   hint?: EightOffHint;
 }
 
+// --- Penguin (ペンギン) ---
+
+/** A suggested move hint in Penguin. */
+export interface PenguinHint {
+  fromZone: string;
+  fromCol: number;
+  cardIndex: number;
+  toZone: string;
+  toCol: number;
+}
+
+/** Full Penguin game state returned from the API. */
+export interface PenguinResponse {
+  tableau: (Card | null)[][];
+  freeCells: (Card | null)[];
+  foundation: Card[][];
+  baseRank: number;
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: PenguinHint;
+}
+
 // --- Seahaven Towers (シーヘイブンタワーズ) ---
 
 /** A suggested move hint in Seahaven Towers. */

@@ -608,6 +608,18 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [5, 1, 5, 2], skill: [2, 4, 5, 1], social: [5, 1, 0, 2, 4], theme: [3, 3, 3, 1, 3, 3] },
       },
       {
+        path: '/penguin',
+        labelKey: 'nav.penguin',
+        icon: '🐧',
+        page: 'Penguin',
+        profile: {
+          mood: [5, 1, 5, 2],
+          skill: [2, 4, 5, 1],
+          social: [5, 1, 0, 2, 4],
+          theme: [3, 3, 3, 1, 3, 3],
+        },
+      },
+      {
         path: '/seahaventowers',
         labelKey: 'nav.seahaventowers',
         icon: '🏖️',

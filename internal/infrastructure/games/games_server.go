@@ -528,4 +528,9 @@ func init() {
 			return usecase.NewRussianPokerInteractor(domain.NewDefaultRussianPoker(), new(presenter.RussianPokerWebPresenter))
 		},
 		controller.NewRussianPokerWebController)
+	BindWebControllerFor("penguin",
+		func() usecase.PenguinInteractorIF {
+			return usecase.NewPenguinInteractor(domain.NewDefaultPenguin(), new(presenter.PenguinWebPresenter))
+		},
+		controller.NewPenguinWebController)
 }

@@ -70,6 +70,7 @@ import type {
   OmahaResponse,
   PageOneResponse,
   PaiGowResponse,
+  PenguinResponse,
   PigsTailResponse,
   PineappleResponse,
   PinochleResponse,
@@ -230,6 +231,7 @@ const workerUrl: Record<string, string> = {
   fourcardpoker: WORKER_CASINO,
   rummy500: WORKER_SOLO,
   eightoff: WORKER_SOLO,
+  penguin: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -836,6 +838,21 @@ export const eightoffApi = createSolitaireMoveApi<
   EightOffMoveZone,
   'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('eightoff');
+
+/** Source or target zone for a Penguin card move. */
+export interface PenguinMoveZone {
+  zone: string;
+  col?: number;
+  cell?: number;
+  cardIndex?: number;
+}
+
+/** API client for the Penguin /penguin/exec endpoint. */
+export const penguinApi = createSolitaireMoveApi<
+  PenguinResponse,
+  PenguinMoveZone,
+  'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('penguin');
 
 /** Source or target zone for a Seahaven Towers card move. */
 export interface SeahavenTowersMoveZone {
@@ -2031,6 +2048,7 @@ const games = [
   'fourcardpoker',
   'rummy500',
   'eightoff',
+  'penguin',
   'russianpoker',
 ] as const;
 type Game = (typeof games)[number];

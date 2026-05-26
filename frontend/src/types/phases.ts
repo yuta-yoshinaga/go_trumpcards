@@ -172,6 +172,13 @@ export const EightOffPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Penguin phase constants (sync: internal/domain/Penguin.go). */
+export const PenguinPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Seahaven Towers phase constants (sync: internal/domain/SeahavenTowers.go). */
 export const SeahavenTowersPhase = {
   PLAYING: 0,

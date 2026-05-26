@@ -64,6 +64,7 @@ import omaha from '../../../docs/manual/web/omaha.md?raw';
 import omahahilo from '../../../docs/manual/web/omahahilo.md?raw';
 import pageone from '../../../docs/manual/web/pageone.md?raw';
 import paigow from '../../../docs/manual/web/paigow.md?raw';
+import penguin from '../../../docs/manual/web/penguin.md?raw';
 import pigtail from '../../../docs/manual/web/pigtail.md?raw';
 import pineapple from '../../../docs/manual/web/pineapple.md?raw';
 import pinochle from '../../../docs/manual/web/pinochle.md?raw';
@@ -137,6 +138,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/euchre': euchre,
   '/freecell': freecell,
   '/eightoff': eightoff,
+  '/penguin': penguin,
   '/seahaventowers': seahaventowers,
   '/ginrummy': ginrummy,
   '/gofish': gofish,

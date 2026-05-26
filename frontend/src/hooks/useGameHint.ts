@@ -50,6 +50,7 @@ import type {
   OldMaidResponse,
   OmahaResponse,
   PageOneResponse,
+  PenguinResponse,
   PigsTailResponse,
   PineappleResponse,
   PinochleResponse,
@@ -143,6 +144,7 @@ import { getOldMaidHint } from '../utils/hints/oldmaidHint';
 import { getOmahaHiLoHint } from '../utils/hints/omahaHiLoHint';
 import { getOmahaHint } from '../utils/hints/omahaHint';
 import { getPageOneHint } from '../utils/hints/pageoneHint';
+import { getPenguinHint } from '../utils/hints/penguinHint';
 import { getPigstailHint } from '../utils/hints/pigstailHint';
 import { getPineappleHint } from '../utils/hints/pineappleHint';
 import { getPinochleHint } from '../utils/hints/pinochleHint';
@@ -224,6 +226,7 @@ const hintFactories = {
   klondike: (s) => getKlondikeHint(s as KlondikeResponse),
   freecell: (s) => getFreeCellHint(s as FreeCellResponse),
   eightoff: (s) => getEightOffHint(s as EightOffResponse),
+  penguin: (s) => getPenguinHint(s as PenguinResponse),
   seahaventowers: (s) => getSeahavenTowersHint(s as SeahavenTowersResponse),
   spider: (s) => getSpiderHint(s as SpiderResponse),
   pyramid: (s) => getPyramidHint(s as PyramidResponse),

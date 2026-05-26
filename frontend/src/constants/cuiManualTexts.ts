@@ -63,6 +63,7 @@ import omaha from '../../../docs/manual/cui/omaha.md?raw';
 import omahahilo from '../../../docs/manual/cui/omahahilo.md?raw';
 import pageone from '../../../docs/manual/cui/pageone.md?raw';
 import paigow from '../../../docs/manual/cui/paigow.md?raw';
+import penguin from '../../../docs/manual/cui/penguin.md?raw';
 import pigtail from '../../../docs/manual/cui/pigtail.md?raw';
 import pineapple from '../../../docs/manual/cui/pineapple.md?raw';
 import pinochle from '../../../docs/manual/cui/pinochle.md?raw';
@@ -140,6 +141,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/euchre': euchre,
   '/freecell': freecell,
   '/eightoff': eightoff,
+  '/penguin': penguin,
   '/seahaventowers': seahaventowers,
   '/ginrummy': ginrummy,
   '/rummy500': rummy500,

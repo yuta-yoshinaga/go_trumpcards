@@ -215,6 +215,8 @@ tags:
     description: Rummy 500 (500ラム / ラミー500) - 2-player rummy where the discard pile is an ordered stack and a player can draw any card from it (taking all cards above the chosen index). Sets (3+ same rank) and runs (3+ same-suit consecutive; Aces low or high but no K-A-2 wrap) are melded and may be extended by layoff. Scoring per round = laid-meld points (positive) minus remaining hand points (negative); A=1 (or 15 in a Q-K-A run), J/Q/K=10, others face value. First to the configured point limit (default 500) wins.
   - name: eightoff
     description: Eight Off (エイトオフ) - single-player open-information solitaire and a stricter FreeCell variant. 8 tableau columns x 6 face-up cards (48 cards) plus the remaining 4 cards pre-placed in the first 4 of 8 free cells. 4 foundations build up by suit Ace to King. Tableau builds same-suit descending only; empty columns accept only Kings. Supermove limit (1 + emptyFreeCells) x 2^(emptyTableauCols). A* solver gates stalemate detection and auto-complete.
+  - name: penguin
+    description: Penguin (ペンギン) - single-player FreeCell variant solitaire. 7 tableau columns x 7 face-up cards (49 cards) plus 3 cards of the same rank as the first dealt card (baseRank) pre-placed in 3 of 7 free cells. 4 foundations build up by suit from baseRank with K-A wraparound. Tableau builds same-suit descending with K-A wraparound; empty columns accept only prevRank(baseRank) cards. Supermove supported.
 
 paths:
   /blackjack/exec:
@@ -3431,6 +3433,59 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/EightOffResponse'
+
+  /penguin/exec:
+    post:
+      tags:
+        - penguin
+      summary: Execute a Penguin solitaire command
+      description: |
+        Send a command to advance the Penguin (ペンギン) game session
+        identified by `sessionId`. Penguin is a FreeCell variant:
+        the 52-card deck is dealt into **7 tableau columns of 7 face-up cards
+        (49 cards)** plus the remaining 3 cards of the same rank as the first
+        dealt card (baseRank) in 3 of **7 free cells**. Foundations build up
+        by suit from baseRank with K-A wraparound. The tableau builds
+        **same-suit descending** with K-A wraparound; **only prevRank(baseRank)
+        cards may be placed on an empty column**. Supermove uses the FreeCell
+        formula `(1 + emptyFreeCells) x 2^(emptyTableauCols)`.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | `0`   | Game in progress |
+        | GameClear | `1`   | All foundations are complete |
+        | GameOver  | `2`   | Player gave up |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `move`         | `m`     | Move card(s) between tableau / freecell / foundation |
+        | `giveup`       | `g`     | Forfeit the round |
+        | `hint`         | `h`     | Suggest the next move |
+        | `autocomplete` | `ac`    | Auto-move every safely-promotable card to foundations |
+        | `undo`         | `u`     | Undo the previous action |
+        | `undo_n`       |         | Undo `n` actions in a row |
+        | `log`          | `l`     | View action log |
+      operationId: penguinExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PenguinRequest'
+      responses:
+        '200':
+          description: Game state after the command was executed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PenguinResponse'
+        '400':
+          description: Invalid request body or missing required parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PenguinResponse'
 
   /caribbeanstud/exec:
     post:
@@ -22034,3 +22089,145 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Card'
+
+    # -------------------------------------------------------------------------
+    # Penguin
+    # -------------------------------------------------------------------------
+    PenguinZone:
+      type: object
+      description: Specifies a zone on the Penguin board for move commands
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: "Zone name: tableau, freecell, or foundation"
+          enum: [tableau, freecell, foundation]
+          example: tableau
+        col:
+          type: integer
+          description: Column index (0-based, used for tableau and foundation zones)
+          example: 3
+        cell:
+          type: integer
+          description: Free cell index (0-based, 0..6)
+          example: 4
+        cardIndex:
+          type: integer
+          description: Index of the card within the column (for moving multiple cards from tableau)
+          example: 0
+
+    PenguinRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `move` (`m`),
+            `giveup` (`g`), `hint` (`h`), `autocomplete` (`ac`),
+            `undo` (`u`), `undo_n`, `log` (`l`).
+          enum: [reset, r, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+          example: move
+        from:
+          description: Source zone for a move command
+          $ref: '#/components/schemas/PenguinZone'
+        to:
+          description: Destination zone for a move command
+          $ref: '#/components/schemas/PenguinZone'
+        n:
+          type: integer
+          description: Number of undos to perform (required when command is undo_n)
+          example: 3
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    PenguinResponse:
+      type: object
+      description: Current state of the Penguin game
+      required:
+        - tableau
+        - freeCells
+        - foundation
+        - baseRank
+        - phase
+        - moveCount
+        - canUndo
+        - isStalemate
+        - message
+      properties:
+        tableau:
+          type: array
+          description: The 7 tableau columns, each containing an array of face-up cards
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        freeCells:
+          type: array
+          description: The 7 free cells (null or a Card)
+          items:
+            nullable: true
+            $ref: '#/components/schemas/Card'
+        foundation:
+          type: array
+          description: The 4 foundation piles (one per suit), each containing an array of cards
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        baseRank:
+          type: integer
+          description: The base rank for foundations (1-13, determined by the first dealt card)
+          example: 5
+        phase:
+          type: integer
+          description: "Game phase: 0 = Playing, 1 = GameClear, 2 = GameOver"
+          enum: [0, 1, 2]
+          example: 0
+        moveCount:
+          type: integer
+          description: Total number of moves made in the current game
+          example: 0
+        canUndo:
+          type: boolean
+          description: Whether the undo action is available
+          example: false
+        isStalemate:
+          type: boolean
+          description: Whether the game is in a stalemate (no moves can lead to a win)
+          example: false
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to reach a non-stalemate state (0 if not stalemate, -1 if no escape)
+          example: 0
+        hint:
+          type: object
+          description: Hint for the next available move (only present when hint command is used)
+          properties:
+            fromZone:
+              type: string
+            fromCol:
+              type: integer
+            cardIndex:
+              type: integer
+            toZone:
+              type: string
+            toCol:
+              type: integer
+        message:
+          type: string
+          description: Game result or status message. Empty while the game is in progress.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.

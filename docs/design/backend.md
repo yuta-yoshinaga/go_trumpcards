@@ -3447,4 +3447,22 @@ stateDiagram-v2
     note right of RoundEnd : MightyPhaseRoundEnd = 5\nスコア = (|得点-ビッド|+1)×倍率\nNoTrump 倍率 = 2, セルフフレンド ×2
 ```
 
+### 3.52 Penguin フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Playing : Reset()
+    Playing --> Playing : Move() / Undo() / Hint() / AutoComplete()
+    Playing --> GameClear : 組札4スート全完成
+    Playing --> GameOver : GiveUp()
+    GameClear --> [*]
+    GameOver --> [*]
+
+    note right of Playing : PenguinPhasePlaying = 0\n7列×7枚 + フリーセル3枚(baseRank)\n組札はbaseRankからK→Aラップ\nタブローは同スート降順(K→Aラップ)\n空列にはprevRank(baseRank)のみ
+    note right of GameClear : PenguinPhaseGameClear = 1
+    note right of GameOver : PenguinPhaseGameOver = 2
+```
+
+Penguin は FreeCell のバリアントで、最初に配られたカードのランク (baseRank) が組札の開始ランクとなる。baseRank と同じランクの残り3枚は自動的にフリーセルに配置される。EightOff と同様にスーパームーブ `(1 + emptyFreeCells) × 2^(emptyTableauCols)` を使用するが、空列に入れるカードが prevRank(baseRank) に限定される点が異なる。
+
 **注:** OldMaid・Daifugo・Sevens・President はターン制で進行する手札削り系のため、明示的なフェーズ定数を持ちません (currentTurn が巡回し、全プレイヤーの手札が 0 枚またはランクが確定するまで進行)。
