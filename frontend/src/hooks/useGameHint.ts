@@ -6,6 +6,7 @@ import type {
   BakersDozenResponse,
   BeleagueredCastleResponse,
   BeloteResponse,
+  BigTwoResponse,
   BlackJackResponse,
   BlackJackSwitchResponse,
   CalculationResponse,
@@ -49,6 +50,7 @@ import type {
   OldMaidResponse,
   OmahaResponse,
   PageOneResponse,
+  PenguinResponse,
   PigsTailResponse,
   PineappleResponse,
   PinochleResponse,
@@ -59,6 +61,7 @@ import type {
   PyramidResponse,
   RedDogResponse,
   Rummy500Response,
+  RussianPokerResponse,
   RussianSolitaireResponse,
   ScorpionResponse,
   SeahavenTowersResponse,
@@ -93,6 +96,7 @@ import { getBadugiHint } from '../utils/hints/badugiHint';
 import { getBakersdozenHint } from '../utils/hints/bakersdozenHint';
 import { getBeleagueredcastleHint } from '../utils/hints/beleagueredcastleHint';
 import { getBeloteHint } from '../utils/hints/beloteHint';
+import { getBigTwoHint } from '../utils/hints/bigtwoHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getBlackjackswitchHint } from '../utils/hints/blackjackswitchHint';
 import { getCalculationHint } from '../utils/hints/calculationHint';
@@ -140,6 +144,7 @@ import { getOldMaidHint } from '../utils/hints/oldmaidHint';
 import { getOmahaHiLoHint } from '../utils/hints/omahaHiLoHint';
 import { getOmahaHint } from '../utils/hints/omahaHint';
 import { getPageOneHint } from '../utils/hints/pageoneHint';
+import { getPenguinHint } from '../utils/hints/penguinHint';
 import { getPigstailHint } from '../utils/hints/pigstailHint';
 import { getPineappleHint } from '../utils/hints/pineappleHint';
 import { getPinochleHint } from '../utils/hints/pinochleHint';
@@ -151,6 +156,7 @@ import { getPyramidHint } from '../utils/hints/pyramidHint';
 import { getRazzHint } from '../utils/hints/razzHint';
 import { getReddogHint } from '../utils/hints/reddogHint';
 import { getRummy500Hint } from '../utils/hints/rummy500Hint';
+import { getRussianPokerHint } from '../utils/hints/russianpokerHint';
 import { getRussianSolitaireHint } from '../utils/hints/russianSolitaireHint';
 import { getScorpionHint } from '../utils/hints/scorpionHint';
 import { getSeahavenTowersHint } from '../utils/hints/seahavenTowersHint';
@@ -206,6 +212,7 @@ const hintFactories = {
   highcardflush: (s) => getHighCardFlushHint(s as HighCardFlushResponse),
   euchre: (s) => getEuchreHint(s as EuchreResponse),
   belote: (s) => getBeloteHint(s as BeloteResponse),
+  bigtwo: (s) => getBigTwoHint(s as BigTwoResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
   mighty: (s) => getMightyHint(s as MightyResponse),
@@ -219,6 +226,7 @@ const hintFactories = {
   klondike: (s) => getKlondikeHint(s as KlondikeResponse),
   freecell: (s) => getFreeCellHint(s as FreeCellResponse),
   eightoff: (s) => getEightOffHint(s as EightOffResponse),
+  penguin: (s) => getPenguinHint(s as PenguinResponse),
   seahaventowers: (s) => getSeahavenTowersHint(s as SeahavenTowersResponse),
   spider: (s) => getSpiderHint(s as SpiderResponse),
   pyramid: (s) => getPyramidHint(s as PyramidResponse),
@@ -279,6 +287,7 @@ const hintFactories = {
   gaps: (s) => getGapsHint(s as GapsResponse),
   fourcardpoker: (s) => getFourCardPokerHint(s as FourCardPokerResponse),
   rummy500: (s) => getRummy500Hint(s as Rummy500Response),
+  russianpoker: (s) => getRussianPokerHint(s as RussianPokerResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

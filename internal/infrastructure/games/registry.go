@@ -5,7 +5,7 @@
 // binaries (TinyGo / WASM) stay under the 1 MB gzipped free-tier limit:
 //
 //   - registry.go (this file, no tag)  — types and bare metadata (Name +
-//     Category) for all 96 games. Cheap; no references to game code.
+//     Category) for all 104 games. Cheap; no references to game code.
 //   - games_server.go (!js || !wasm)   — installs Web-server factories for
 //     every game via BindWebController. Imported by TrumpCardsWeb.
 //   - casino/, classic/, solo/ (js && wasm) — per-category worker bindings.
@@ -90,6 +90,7 @@ var registry = []*Game{
 	{Name: "poker", Category: CategoryCasino, Description: "5-card Draw Poker (ポーカー)"},
 	{Name: "oldmaid", Category: CategoryClassic, Description: "Old Maid (ババ抜き)"},
 	{Name: "daifugo", Category: CategoryClassic, Description: "Daifugo / Great Fool (大富豪)"},
+	{Name: "bigtwo", Category: CategoryClassic, Description: "Big Two (大老二)"},
 	{Name: "sevens", Category: CategoryClassic, Description: "Sevens (7並べ)"},
 	{Name: "doubt", Category: CategoryClassic, Description: "Doubt (ダウト)"},
 	{Name: "holdem", Category: CategoryCasino, Description: "Texas Hold'em (テキサスホールデム)"},
@@ -187,6 +188,8 @@ var registry = []*Game{
 	{Name: "fourcardpoker", Category: CategoryCasino, Description: "Four Card Poker (フォーカードポーカー)"},
 	{Name: "rummy500", Category: CategorySolo, Description: "Rummy 500 (500ラム)"},
 	{Name: "eightoff", Category: CategorySolo, Description: "Eight Off (エイトオフ)"},
+	{Name: "russianpoker", Category: CategoryCasino, Description: "Russian Poker (ロシアンポーカー)"},
+	{Name: "penguin", Category: CategorySolo, Description: "Penguin (ペンギン)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

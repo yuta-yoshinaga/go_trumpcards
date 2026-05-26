@@ -22,6 +22,8 @@ tags:
     description: Old Maid (Babanuki) game
   - name: daifugo
     description: Daifugo (大富豪) game
+  - name: bigtwo
+    description: Big Two (大老二) game
   - name: sevens
     description: Sevens (7並べ) game
   - name: doubt
@@ -189,6 +191,8 @@ tags:
     description: Mighty (マイティ) game - Korean 5-player trick-taking card game with bidding for point cards (10/J/Q/K/A, 20 max) and a separate No-Trump axis; declarer names a trump suit and a secret partner card; special cards Mighty (♠A normally; ♦A under spade trump), Joker (second-highest when not led, with a Joker-lead demand-suit rule and a Joker Call card ♣3/♠3 forcing the Joker)
   - name: oasispoker
     description: Oasis Poker (オアシスポーカー) game - Caribbean Stud variant adding a card-exchange phase between Bet and Action; exchange 1..5 cards for a fee equal to ante per card, then Call or Fold against the dealer
+  - name: russianpoker
+    description: Russian Poker (ロシアンポーカー) game - Oasis Poker evolution with 6th card purchase and force-qualify options; exchange cards, buy a 6th card, or force dealer's highest card exchange when dealer doesn't qualify
   - name: beleagueredcastle
     description: Beleaguered Castle (包囲された城) game - single-player open-information solitaire with 8 tableau columns of 6 cards each and 4 aces pre-seeded on the foundations; empty columns accept any card
   - name: piquet
@@ -211,6 +215,8 @@ tags:
     description: Rummy 500 (500ラム / ラミー500) - 2-player rummy where the discard pile is an ordered stack and a player can draw any card from it (taking all cards above the chosen index). Sets (3+ same rank) and runs (3+ same-suit consecutive; Aces low or high but no K-A-2 wrap) are melded and may be extended by layoff. Scoring per round = laid-meld points (positive) minus remaining hand points (negative); A=1 (or 15 in a Q-K-A run), J/Q/K=10, others face value. First to the configured point limit (default 500) wins.
   - name: eightoff
     description: Eight Off (エイトオフ) - single-player open-information solitaire and a stricter FreeCell variant. 8 tableau columns x 6 face-up cards (48 cards) plus the remaining 4 cards pre-placed in the first 4 of 8 free cells. 4 foundations build up by suit Ace to King. Tableau builds same-suit descending only; empty columns accept only Kings. Supermove limit (1 + emptyFreeCells) x 2^(emptyTableauCols). A* solver gates stalemate detection and auto-complete.
+  - name: penguin
+    description: Penguin (ペンギン) - single-player FreeCell variant solitaire. 7 tableau columns x 7 face-up cards (49 cards) plus 3 cards of the same rank as the first dealt card (baseRank) pre-placed in 3 of 7 free cells. 4 foundations build up by suit from baseRank with K-A wraparound. Tableau builds same-suit descending with K-A wraparound; empty columns accept only prevRank(baseRank) cards. Supermove supported.
 
 paths:
   /blackjack/exec:
@@ -775,6 +781,59 @@ paths:
                     cpuActions: []
                     humanAction: null
                     message: param error.
+
+  /bigtwo/exec:
+    post:
+      tags:
+        - bigtwo
+      summary: Execute a Big Two (大老二) game command
+      description: |
+        Send a command to advance the Big Two game session identified by
+        `sessionId`.  The game has 4 players (player 0 = human, players 1–3 =
+        CPU).
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `play`  | `p`     | Play cards specified by `indices`; pass with an empty array |
+      operationId: bigtwoExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BigTwoRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play cards at indices 0 and 1
+                value:
+                  command: play
+                  indices: [0, 1]
+                  sessionId: my-session-001
+              pass:
+                summary: Pass (empty indices)
+                value:
+                  command: play
+                  indices: []
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BigTwoResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BigTwoResponse'
 
   /sevens/exec:
     post:
@@ -3374,6 +3433,59 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/EightOffResponse'
+
+  /penguin/exec:
+    post:
+      tags:
+        - penguin
+      summary: Execute a Penguin solitaire command
+      description: |
+        Send a command to advance the Penguin (ペンギン) game session
+        identified by `sessionId`. Penguin is a FreeCell variant:
+        the 52-card deck is dealt into **7 tableau columns of 7 face-up cards
+        (49 cards)** plus the remaining 3 cards of the same rank as the first
+        dealt card (baseRank) in 3 of **7 free cells**. Foundations build up
+        by suit from baseRank with K-A wraparound. The tableau builds
+        **same-suit descending** with K-A wraparound; **only prevRank(baseRank)
+        cards may be placed on an empty column**. Supermove uses the FreeCell
+        formula `(1 + emptyFreeCells) x 2^(emptyTableauCols)`.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | `0`   | Game in progress |
+        | GameClear | `1`   | All foundations are complete |
+        | GameOver  | `2`   | Player gave up |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `move`         | `m`     | Move card(s) between tableau / freecell / foundation |
+        | `giveup`       | `g`     | Forfeit the round |
+        | `hint`         | `h`     | Suggest the next move |
+        | `autocomplete` | `ac`    | Auto-move every safely-promotable card to foundations |
+        | `undo`         | `u`     | Undo the previous action |
+        | `undo_n`       |         | Undo `n` actions in a row |
+        | `log`          | `l`     | View action log |
+      operationId: penguinExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PenguinRequest'
+      responses:
+        '200':
+          description: Game state after the command was executed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PenguinResponse'
+        '400':
+          description: Invalid request body or missing required parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PenguinResponse'
 
   /caribbeanstud/exec:
     post:
@@ -9276,6 +9388,110 @@ paths:
               schema:
                 $ref: '#/components/schemas/OasisPokerResponse'
 
+  /russianpoker/exec:
+    post:
+      tags:
+        - russianpoker
+      summary: Execute a Russian Poker game command
+      description: |
+        Send a command to advance the Russian Poker (ロシアンポーカー) game session
+        identified by `sessionId`. Russian Poker is an Oasis Poker evolution popular
+        in Eastern European casinos. It offers four player options after the deal:
+        Play, Fold, Exchange cards (fee = ante × count), or Buy a 6th card (fee = ante).
+        When the dealer doesn't qualify, the player can pay ante to force exchange
+        the dealer's highest card. No jackpot side bet.
+
+        | Phase        | Value | Description |
+        |--------------|-------|-------------|
+        | Bet          | `1`   | Place Ante |
+        | Action       | `2`   | Fold / Play / Exchange / Buy 6th |
+        | Select       | `3`   | Discard 1 from 6 cards (after Buy 6th) |
+        | PostAction   | `4`   | Fold / Play (after Exchange or Buy 6th) |
+        | ForceQualify | `5`   | Force dealer exchange or decline |
+        | End          | `6`   | Round complete |
+
+        | Command   | Aliases | Description |
+        |-----------|---------|-------------|
+        | `reset`   | `r`     | Start / restart a game |
+        | `bet`     | `b`     | Place Ante bet (requires `amount`) |
+        | `exchange`| `e`     | Exchange cards at `indices` (0..4); fee = ante × len |
+        | `buy6th`  | `6`     | Buy 6th card (fee = ante) |
+        | `select`  | `sel`   | Discard card at `discardIndex` from 6-card hand |
+        | `play`    | `p`     | Call: place Play bet (2x Ante) |
+        | `fold`    | `f`     | Forfeit Ante and fees |
+        | `force`   | `fe`    | Force exchange dealer's highest card (fee = ante) |
+        | `decline` | `d`     | Decline force exchange |
+        | `log`     | `l`     | View action log |
+      operationId: russianpokerExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RussianPokerRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 100 Ante
+                value:
+                  command: bet
+                  amount: 100
+                  sessionId: my-session-001
+              exchange:
+                summary: Exchange cards at indices 0 and 2
+                value:
+                  command: exchange
+                  indices: [0, 2]
+                  sessionId: my-session-001
+              buy6th:
+                summary: Buy 6th card
+                value:
+                  command: buy6th
+                  sessionId: my-session-001
+              select:
+                summary: Discard card at index 3
+                value:
+                  command: select
+                  discardIndex: 3
+                  sessionId: my-session-001
+              play:
+                summary: Call (place Play bet)
+                value:
+                  command: play
+                  sessionId: my-session-001
+              fold:
+                summary: Fold hand
+                value:
+                  command: fold
+                  sessionId: my-session-001
+              force:
+                summary: Force dealer exchange
+                value:
+                  command: force
+                  sessionId: my-session-001
+              decline:
+                summary: Decline force exchange
+                value:
+                  command: decline
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RussianPokerResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RussianPokerResponse'
+
   /callbreak/exec:
     post:
       tags:
@@ -11224,6 +11440,94 @@ components:
             Current sort mode for the human player's hand.
             0 = by strength, 1 = by suit, 2 = by number.
           example: 0
+
+    # -------------------------------------------------------------------------
+    # Big Two
+    # -------------------------------------------------------------------------
+    BigTwoRequest:
+      type: object
+      required:
+        - command
+      properties:
+        command:
+          type: string
+          enum: [reset, r, play, p]
+        indices:
+          type: array
+          items:
+            type: integer
+        config:
+          $ref: '#/components/schemas/BigTwoConfig'
+        sessionId:
+          type: string
+    BigTwoConfig:
+      type: object
+      properties:
+        cpuDifficulty:
+          type: integer
+          enum: [0, 1, 2]
+    BigTwoResponse:
+      type: object
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/BigTwoPlayer'
+        currentTurn:
+          type: integer
+        tableCards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        tablePlayType:
+          type: integer
+        lastPlayPlayerIdx:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        cpuActions:
+          type: array
+          items:
+            $ref: '#/components/schemas/BigTwoAction'
+        humanAction:
+          $ref: '#/components/schemas/BigTwoAction'
+        config:
+          $ref: '#/components/schemas/BigTwoConfig'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    BigTwoPlayer:
+      type: object
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        isFinished:
+          type: boolean
+        rank:
+          type: integer
+        cardCount:
+          type: integer
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+    BigTwoAction:
+      type: object
+      properties:
+        playerIdx:
+          type: integer
+        playedCards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+          nullable: true
 
     # -------------------------------------------------------------------------
     # Sevens
@@ -21452,6 +21756,126 @@ components:
           description: Interpolation parameters for the message template keyed by placeholder name.
 
     # -------------------------------------------------------------------------
+    # RussianPoker
+    # -------------------------------------------------------------------------
+    RussianPokerRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `bet` (`b`),
+            `exchange` (`e`), `buy6th` (`6`), `select` (`sel`), `play` (`p`),
+            `fold` (`f`), `force` (`fe`), `decline` (`d`), `log` (`l`).
+          enum: [r, reset, b, bet, e, exchange, '6', buy6th, sel, select, p, play, f, fold, force, fe, d, decline, log, l]
+          example: bet
+        amount:
+          type: integer
+          description: Ante bet amount. Required for `bet` command.
+          minimum: 10
+          example: 100
+        indices:
+          type: array
+          description: Card indices to exchange (0..4).
+          items:
+            type: integer
+            minimum: 0
+            maximum: 4
+          example: [0, 2]
+        discardIndex:
+          type: integer
+          description: Index of the card to discard from a 6-card hand (0..5). Used with `select`.
+          minimum: 0
+          maximum: 5
+          example: 3
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    RussianPokerResponse:
+      type: object
+      description: Current state of the Russian Poker game
+      required:
+        - playerHand
+        - dealerHand
+        - phase
+        - chips
+        - anteBet
+        - exchangeCount
+        - exchangeFee
+        - bought6th
+        - buy6thFee
+        - forceExchanged
+        - forceExchangeFee
+        - playBet
+        - result
+        - antePayout
+        - playPayout
+        - totalPayout
+        - dealerQualified
+        - playerHandRank
+        - dealerHandRank
+        - message
+      properties:
+        playerHand:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        dealerHand:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 1=Bet, 2=Action, 3=Select, 4=PostAction, 5=ForceQualify, 6=End"
+          enum: [1, 2, 3, 4, 5, 6]
+        chips:
+          type: integer
+        anteBet:
+          type: integer
+        exchangeCount:
+          type: integer
+        exchangeFee:
+          type: integer
+        bought6th:
+          type: boolean
+        buy6thFee:
+          type: integer
+        forceExchanged:
+          type: boolean
+        forceExchangeFee:
+          type: integer
+        playBet:
+          type: integer
+        result:
+          type: integer
+          enum: [-1, 0, 1]
+        antePayout:
+          type: integer
+        playPayout:
+          type: integer
+        totalPayout:
+          type: integer
+        dealerQualified:
+          type: boolean
+        playerHandRank:
+          type: integer
+        dealerHandRank:
+          type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    # -------------------------------------------------------------------------
     # HighCardFlush
     # -------------------------------------------------------------------------
     HighCardFlushResponse:
@@ -21665,3 +22089,145 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Card'
+
+    # -------------------------------------------------------------------------
+    # Penguin
+    # -------------------------------------------------------------------------
+    PenguinZone:
+      type: object
+      description: Specifies a zone on the Penguin board for move commands
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: "Zone name: tableau, freecell, or foundation"
+          enum: [tableau, freecell, foundation]
+          example: tableau
+        col:
+          type: integer
+          description: Column index (0-based, used for tableau and foundation zones)
+          example: 3
+        cell:
+          type: integer
+          description: Free cell index (0-based, 0..6)
+          example: 4
+        cardIndex:
+          type: integer
+          description: Index of the card within the column (for moving multiple cards from tableau)
+          example: 0
+
+    PenguinRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `move` (`m`),
+            `giveup` (`g`), `hint` (`h`), `autocomplete` (`ac`),
+            `undo` (`u`), `undo_n`, `log` (`l`).
+          enum: [reset, r, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+          example: move
+        from:
+          description: Source zone for a move command
+          $ref: '#/components/schemas/PenguinZone'
+        to:
+          description: Destination zone for a move command
+          $ref: '#/components/schemas/PenguinZone'
+        n:
+          type: integer
+          description: Number of undos to perform (required when command is undo_n)
+          example: 3
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    PenguinResponse:
+      type: object
+      description: Current state of the Penguin game
+      required:
+        - tableau
+        - freeCells
+        - foundation
+        - baseRank
+        - phase
+        - moveCount
+        - canUndo
+        - isStalemate
+        - message
+      properties:
+        tableau:
+          type: array
+          description: The 7 tableau columns, each containing an array of face-up cards
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        freeCells:
+          type: array
+          description: The 7 free cells (null or a Card)
+          items:
+            nullable: true
+            $ref: '#/components/schemas/Card'
+        foundation:
+          type: array
+          description: The 4 foundation piles (one per suit), each containing an array of cards
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        baseRank:
+          type: integer
+          description: The base rank for foundations (1-13, determined by the first dealt card)
+          example: 5
+        phase:
+          type: integer
+          description: "Game phase: 0 = Playing, 1 = GameClear, 2 = GameOver"
+          enum: [0, 1, 2]
+          example: 0
+        moveCount:
+          type: integer
+          description: Total number of moves made in the current game
+          example: 0
+        canUndo:
+          type: boolean
+          description: Whether the undo action is available
+          example: false
+        isStalemate:
+          type: boolean
+          description: Whether the game is in a stalemate (no moves can lead to a win)
+          example: false
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to reach a non-stalemate state (0 if not stalemate, -1 if no escape)
+          example: 0
+        hint:
+          type: object
+          description: Hint for the next available move (only present when hint command is used)
+          properties:
+            fromZone:
+              type: string
+            fromCol:
+              type: integer
+            cardIndex:
+              type: integer
+            toZone:
+              type: string
+            toCol:
+              type: integer
+        message:
+          type: string
+          description: Game result or status message. Empty while the game is in progress.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.

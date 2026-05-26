@@ -38,6 +38,7 @@
     "klondike": "クロンダイク",
     "freecell": "フリーセル",
     "eightoff": "エイトオフ",
+    "penguin": "ペンギン",
     "seahaventowers": "シーヘイブンタワーズ",
     "baccarat": "バカラ",
     "crazyeights": "クレイジーエイト",
@@ -79,6 +80,7 @@
     "paigow": "パイゴウポーカー",
     "caribbeanstud": "カリビアンスタッドポーカー",
     "oasispoker": "オアシスポーカー",
+    "russianpoker": "ロシアンポーカー",
     "texasholdembonus": "テキサスホールデムボーナスポーカー",
     "casinoholdem": "カジノホールデム",
     "war": "戦争",
@@ -120,7 +122,8 @@
     "crescent": "クレセント・ソリティア",
     "mississippistud": "ミシシッピ・スタッド",
     "belote": "ベロート",
-    "rummy500": "ラミー 500"
+    "rummy500": "ラミー 500",
+    "bigtwo": "大老二"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -398,6 +401,12 @@
     "oasispoker.result.push": "引き分け！",
     "oasispoker.result.fold": "フォールド",
     "oasispoker.result.dealerNotQualified": "ディーラー未クオリファイ！",
+    "russianpoker.result.playerWins": "勝利！",
+    "russianpoker.result.dealerWins": "ディーラー勝利！",
+    "russianpoker.result.push": "引き分け！",
+    "russianpoker.result.fold": "フォールド",
+    "russianpoker.result.dealerNotQualified": "ディーラー未クオリファイ！",
+    "russianpoker.forceQualifyGuide": "ディーラーが未クオリファイです。アンテ同額を払って最高カードを交換させますか？",
     "texasholdembonus.result.playerWins": "勝利！",
     "texasholdembonus.result.dealerWins": "ディーラー勝利！",
     "texasholdembonus.result.push": "引き分け！",

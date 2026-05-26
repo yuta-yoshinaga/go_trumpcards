@@ -1,0 +1,14 @@
+{
+  "helpTitle": "Big Two (大老二)",
+  "helpPlay": "  p [idx ...]          カードを出す (指定なし = パス)",
+  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Normal, 1=Easy, 2=Hard)",
+  "playerFinished": ": 上がり ({{rank}}位)",
+  "playerCardCount": ": {{count}}枚",
+  "tableCards": "場",
+  "tableEmpty": "場: なし (自由に出せます)",
+  "gameEnd": "ゲーム終了！",
+  "rankN": "{{rank}}位",
+  "playerYou": "あなた",
+  "yourTurn": "あなたのターンです",
+  "actionPass": "パス"
+}

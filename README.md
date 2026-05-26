@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した94種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した95種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -23,6 +23,7 @@ Go + Clean Architecture で実装した94種類のトランプゲーム。CLI �
 | ポーカー (5-card Draw) | `poker` | [CUI](docs/manual/cui/poker.md) / [Web](docs/manual/web/poker.md) |
 | ババ抜き (Old Maid) | `oldmaid` | [CUI](docs/manual/cui/oldmaid.md) / [Web](docs/manual/web/oldmaid.md) |
 | 大富豪 (Daifugo) | `daifugo` | [CUI](docs/manual/cui/daifugo.md) / [Web](docs/manual/web/daifugo.md) |
+| 大老二 (Big Two) | `bigtwo` | [CUI](docs/manual/cui/bigtwo.md) / [Web](docs/manual/web/bigtwo.md) |
 | 7並べ (Sevens) | `sevens` | [CUI](docs/manual/cui/sevens.md) / [Web](docs/manual/web/sevens.md) |
 | ダウト (Doubt) | `doubt` | [CUI](docs/manual/cui/doubt.md) / [Web](docs/manual/web/doubt.md) |
 | テキサスホールデム (Texas Hold'em) | `holdem` | [CUI](docs/manual/cui/holdem.md) / [Web](docs/manual/web/holdem.md) |
@@ -58,6 +59,7 @@ Go + Clean Architecture で実装した94種類のトランプゲーム。CLI �
 | スリーカードポーカー (Three Card Poker) | `threecard` | [CUI](docs/manual/cui/threecard.md) / [Web](docs/manual/web/threecard.md) |
 | カリビアンスタッドポーカー (Caribbean Stud Poker) | `caribbeanstud` | [CUI](docs/manual/cui/caribbeanstud.md) / [Web](docs/manual/web/caribbeanstud.md) |
 | オアシスポーカー (Oasis Poker) | `oasispoker` | [CUI](docs/manual/cui/oasispoker.md) / [Web](docs/manual/web/oasispoker.md) |
+| ロシアンポーカー (Russian Poker) | `russianpoker` | [CUI](docs/manual/cui/russianpoker.md) / [Web](docs/manual/web/russianpoker.md) |
 | テキサスホールデムボーナスポーカー (Texas Hold'em Bonus Poker) | `texasholdembonus` | [CUI](docs/manual/cui/texasholdembonus.md) / [Web](docs/manual/web/texasholdembonus.md) |
 | オー・ヘル (Oh Hell) | `ohhell` | [CUI](docs/manual/cui/ohhell.md) / [Web](docs/manual/web/ohhell.md) |
 | コントラクトブリッジ (Contract Bridge) | `bridge` | [CUI](docs/manual/cui/bridge.md) / [Web](docs/manual/web/bridge.md) |
@@ -119,6 +121,7 @@ Go + Clean Architecture で実装した94種類のトランプゲーム。CLI �
 | フォーカードポーカー (Four Card Poker) | `fourcardpoker` | [CUI](docs/manual/cui/fourcardpoker.md) / [Web](docs/manual/web/fourcardpoker.md) |
 | ラミー 500 (Rummy 500) | `rummy500` | [CUI](docs/manual/cui/rummy500.md) / [Web](docs/manual/web/rummy500.md) |
 | エイトオフ (Eight Off) | `eightoff` | [CUI](docs/manual/cui/eightoff.md) / [Web](docs/manual/web/eightoff.md) |
+| ペンギン (Penguin) | `penguin` | [CUI](docs/manual/cui/penguin.md) / [Web](docs/manual/web/penguin.md) |
 
 ## Demo
 

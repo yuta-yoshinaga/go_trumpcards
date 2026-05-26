@@ -92,6 +92,7 @@
     "threecard": "Three-card high-speed poker. A hand takes seconds; bet variations add depth. A favorite for short-attention nights.",
     "caribbeanstud": "Stud poker against the dealer, with a progressive jackpot — the casino's classic shot at glory.",
     "oasispoker": "Caribbean Stud plus one card-swap. The extra decision opens it up for strategy-minded players.",
+    "russianpoker": "Oasis Poker evolved. Buy a 6th card, force dealer exchanges — the most decision-rich casino poker variant.",
     "texasholdembonus": "Hold'em decisions, casino tempo. Bonus bets give it a little extra spice.",
     "casinoholdem": "Hold'em against the dealer. Community-card reads still apply — without any human-opponent stress.",
     "ultimatetexasholdem": "All about when to raise. Hold'em veterans love the timing-of-courage decisions.",
@@ -158,6 +159,7 @@
     "klondike": "The Windows solitaire we all know. The long road to completion is good for the soul.",
     "freecell": "Every card visible — pure strategy. Solve rate scales with skill.",
     "eightoff": "FreeCell with eight free cells. A gentler cousin; dead ends still possible.",
+    "penguin": "Dynamic base rank FreeCell variant. Same-suit descending with wraparound.",
     "seahaventowers": "Towers-family. Suit-only stacking — stricter than FreeCell, more austere.",
     "spider": "A two-deck epic. For nights you want a long, focused sit-down.",
     "spiderette": "Single-deck Spider. The right length for a mid-session focus break.",
@@ -186,7 +188,8 @@
     "cribbage": "An English Rummy played on a peg board. Fifteens and 31s for the brain.",
     "sevenbridge": "Japan's household Rummy. Simple rules, surprisingly tense.",
     "contractrummy": "A different contract (meld) each round. More rules — more depth.",
-    "rummy500": "Race to 500. American household Rummy in its mid-form classic shape."
+    "rummy500": "Race to 500. American household Rummy in its mid-form classic shape.",
+    "bigtwo": "Hong Kong's signature shedding game. Poker-hand combos meet climbing mechanics."
   },
   "stretch_blurb": {
     "blackjack": "The 21 instinct may be obvious — but the betting decisions surprise.",
@@ -195,6 +198,7 @@
     "threecard": "An onramp for the poker-shy. Thirty seconds per hand.",
     "caribbeanstud": "Chase the jackpot dream against the CPU.",
     "oasispoker": "Once Caribbean Stud feels too tame, slide here.",
+    "russianpoker": "For the day you want maximum decisions per hand.",
     "texasholdembonus": "Hold'em-curious without the table-stress version.",
     "casinoholdem": "Hold'em texture for those wary of opponents.",
     "ultimatetexasholdem": "Hold'em veterans wince and grin at the raise-timing.",
@@ -261,6 +265,7 @@
     "klondike": "The reigning solitaire — comforting and reliable.",
     "freecell": "Solve-it-with-thought; great for tsumeshogi fans.",
     "eightoff": "Once FreeCell is familiar, step here.",
+    "penguin": "FreeCell family, base rank changes each deal.",
     "seahaventowers": "A stricter Towers ascetic.",
     "spider": "For long focused evenings.",
     "spiderette": "Compact Spider — the right size for a break.",
@@ -289,6 +294,7 @@
     "cribbage": "English peg-board Rummy — brain workout.",
     "sevenbridge": "Japanese household Rummy — light tension.",
     "contractrummy": "Different contracts per round — learn deeper.",
-    "rummy500": "American household Rummy in mid-length form."
+    "rummy500": "American household Rummy in mid-length form.",
+    "bigtwo": "Poker-hand climbing from Hong Kong — a fresh angle on shedding games."
   }
 }

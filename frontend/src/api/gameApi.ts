@@ -8,6 +8,8 @@ import type {
   BeleagueredCastleMoveZone,
   BeleagueredCastleResponse,
   BeloteResponse,
+  BigTwoConfigInput,
+  BigTwoResponse,
   BlackJackResponse,
   BlackJackSwitchResponse,
   BridgeResponse,
@@ -68,6 +70,7 @@ import type {
   OmahaResponse,
   PageOneResponse,
   PaiGowResponse,
+  PenguinResponse,
   PigsTailResponse,
   PineappleResponse,
   PinochleResponse,
@@ -80,6 +83,7 @@ import type {
   PyramidResponse,
   RedDogResponse,
   Rummy500Response,
+  RussianPokerResponse,
   RussianSolitaireResponse,
   ScorpionResponse,
   SeahavenTowersResponse,
@@ -158,6 +162,7 @@ const workerUrl: Record<string, string> = {
   doubt: WORKER_CLASSIC,
   durak: WORKER_CLASSIC,
   daifugo: WORKER_CLASSIC,
+  bigtwo: WORKER_CLASSIC,
   sevens: WORKER_CLASSIC,
   crazyeights: WORKER_CLASSIC,
   pageone: WORKER_CLASSIC,
@@ -215,6 +220,7 @@ const workerUrl: Record<string, string> = {
   spiderette: WORKER_SOLO,
   mighty: WORKER_CLASSIC,
   oasispoker: WORKER_CASINO,
+  russianpoker: WORKER_CASINO,
   beleagueredcastle: WORKER_SOLO,
   piquet: WORKER_CLASSIC,
   callbreak: WORKER_CLASSIC,
@@ -225,6 +231,7 @@ const workerUrl: Record<string, string> = {
   fourcardpoker: WORKER_CASINO,
   rummy500: WORKER_SOLO,
   eightoff: WORKER_SOLO,
+  penguin: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -379,6 +386,12 @@ export const oldmaidApi = {
 export const daifugoApi = {
   exec: (command: 'reset' | 'play' | 'sort', indices?: number[], config?: DaifugoConfigInput, sortMode?: number) =>
     gameExec<DaifugoResponse>('daifugo', { command, indices, config, sortMode }),
+};
+
+/** API client for the Big Two /bigtwo/exec endpoint. */
+export const bigtwoApi = {
+  exec: (command: 'reset' | 'play', indices?: number[], config?: BigTwoConfigInput) =>
+    gameExec<BigTwoResponse>('bigtwo', { command, indices, config }),
 };
 
 /** API client for the Durak /durak/exec endpoint. */
@@ -826,6 +839,21 @@ export const eightoffApi = createSolitaireMoveApi<
   'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('eightoff');
 
+/** Source or target zone for a Penguin card move. */
+export interface PenguinMoveZone {
+  zone: string;
+  col?: number;
+  cell?: number;
+  cardIndex?: number;
+}
+
+/** API client for the Penguin /penguin/exec endpoint. */
+export const penguinApi = createSolitaireMoveApi<
+  PenguinResponse,
+  PenguinMoveZone,
+  'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('penguin');
+
 /** Source or target zone for a Seahaven Towers card move. */
 export interface SeahavenTowersMoveZone {
   zone: string;
@@ -1116,6 +1144,16 @@ export const oasispokerApi = {
     jackpotBet?: number,
     indices?: number[],
   ) => gameExec<OasisPokerResponse>('oasispoker', { command, amount, jackpotBet, indices }),
+};
+
+/** API client for the Russian Poker /russianpoker/exec endpoint. */
+export const russianpokerApi = {
+  exec: (
+    command: 'reset' | 'bet' | 'exchange' | 'buy6th' | 'select' | 'play' | 'fold' | 'force' | 'decline' | 'log',
+    amount?: number,
+    indices?: number[],
+    discardIndex?: number,
+  ) => gameExec<RussianPokerResponse>('russianpoker', { command, amount, indices, discardIndex }),
 };
 
 /** API client for the Texas Hold'em Bonus Poker /texasholdembonus/exec endpoint. */
@@ -1912,6 +1950,7 @@ const games = [
   'poker',
   'oldmaid',
   'daifugo',
+  'bigtwo',
   'sevens',
   'doubt',
   'durak',
@@ -2009,6 +2048,8 @@ const games = [
   'fourcardpoker',
   'rummy500',
   'eightoff',
+  'penguin',
+  'russianpoker',
 ] as const;
 type Game = (typeof games)[number];
 

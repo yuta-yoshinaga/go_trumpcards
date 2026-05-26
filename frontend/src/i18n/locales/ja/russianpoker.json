@@ -1,0 +1,97 @@
+{
+  "title": "ロシアンポーカー",
+  "player": "プレイヤー",
+  "dealer": "ディーラー",
+  "label": {
+    "chips": "チップ",
+    "ante": "アンテ",
+    "play": "プレイベット",
+    "exchangeFee": "交換手数料",
+    "handRank": "役"
+  },
+  "button": {
+    "bet": "ベット",
+    "exchange": "交換",
+    "buy6th": "6枚目を購入",
+    "select": "捨てる",
+    "play": "コール",
+    "fold": "フォールド",
+    "force": "カード交換させる",
+    "decline": "辞退",
+    "reset": "リセット"
+  },
+  "phase": {
+    "bet": "ベット",
+    "action": "アクション",
+    "select": "カード選択",
+    "postAction": "コール/フォールド",
+    "forceQualify": "強制クオリファイ",
+    "end": "結果"
+  },
+  "result": {
+    "playerWins": "勝利！",
+    "dealerWins": "ディーラー勝利！",
+    "push": "引き分け！",
+    "fold": "フォールド",
+    "dealerNotQualified": "ディーラー未クオリファイ！"
+  },
+  "payout": {
+    "ante": "アンテ",
+    "play": "プレイ",
+    "exchange": "交換手数料",
+    "buy6th": "6枚目手数料",
+    "forceExchange": "強制交換手数料",
+    "total": "合計"
+  },
+  "handRank": {
+    "0": "ハイカード",
+    "1": "ワンペア",
+    "2": "ツーペア",
+    "3": "スリーカード",
+    "4": "ストレート",
+    "5": "フラッシュ",
+    "6": "フルハウス",
+    "7": "フォーカード",
+    "8": "ストレートフラッシュ",
+    "9": "ロイヤルフラッシュ"
+  },
+  "settings": {
+    "title": "設定"
+  },
+  "betGuide": "アンテを設定してベット",
+  "actionGuide": "フォールド、コール、カード交換、または6枚目購入を選択",
+  "exchangeGuide": "交換したいカードをタップで選択し、「交換」を押してください",
+  "exchangeFeeInfo": "手数料: 1枚あたりアンテ × {{ante}} = {{fee}}",
+  "exchangeFeeHighRisk": "高コスト警告",
+  "exchangeSelected": "選択中: {{count}}枚",
+  "selectGuide": "6枚のカードから1枚を選んで捨ててください",
+  "forceQualifyGuide": "ディーラーが未クオリファイです。アンテ同額を払って最高カードを交換させますか？",
+  "forceQualifyCost": "コスト: {{cost}}",
+  "payoutRef": {
+    "title": "配当表",
+    "playHeader": "プレイ配当（コール時）",
+    "payRoyalFlush": "ロイヤルフラッシュ: 100:1",
+    "payStraightFlush": "ストレートフラッシュ: 50:1",
+    "payFourOfAKind": "フォーカード: 20:1",
+    "payFullHouse": "フルハウス: 7:1",
+    "payFlush": "フラッシュ: 5:1",
+    "payStraight": "ストレート: 4:1",
+    "payThreeOfAKind": "スリーカード: 3:1",
+    "payTwoPair": "ツーペア: 2:1",
+    "payPair": "ペア以下: 1:1",
+    "specialHeader": "ロシアンポーカー特有ルール",
+    "exchangeFee": "カード交換: 1枚あたりアンテ同額",
+    "buy6th": "6枚目の購入: アンテ同額",
+    "forceExchange": "強制クオリファイ: アンテ同額"
+  },
+  "dealerQualified": "クオリファイ",
+  "dealerNotQualified": "未クオリファイ",
+  "tutorial": {
+    "betControls": "アンテを設定し、ベットを押してください。",
+    "actionButtons": "フォールド、コール、カード交換、6枚目購入から選択してください。",
+    "exchangeControls": "交換したいカードをタップで選択し、交換を押してください。1枚交換するごとにアンテと同額の手数料が必要です。",
+    "selectControls": "6枚のカードから捨てる1枚をタップして選択してください。",
+    "forceQualify": "ディーラーが未クオリファイの場合、アンテ同額を払って最高カードの交換を強制できます。",
+    "results": "結果と配当を確認してください。"
+  }
+}

@@ -108,6 +108,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 3, 4, 3], skill: [3, 4, 4, 3], social: [3, 5, 2, 3, 4], theme: [5, 1, 1, 1, 4, 1] },
       },
       {
+        path: '/russianpoker',
+        labelKey: 'nav.russianpoker',
+        icon: '🪆',
+        page: 'RussianPoker',
+        profile: { mood: [2, 3, 5, 3], skill: [3, 5, 5, 3], social: [3, 5, 2, 3, 4], theme: [5, 1, 1, 1, 4, 1] },
+      },
+      {
         path: '/texasholdembonus',
         labelKey: 'nav.texasholdembonus',
         icon: '🤠',
@@ -441,6 +448,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 5, 3, 3], skill: [3, 5, 4, 2], social: [0, 2, 5, 3, 3], theme: [2, 1, 1, 5, 2, 3] },
       },
       {
+        path: '/bigtwo',
+        labelKey: 'nav.bigtwo',
+        icon: '🃏',
+        page: 'BigTwo',
+        profile: { mood: [2, 5, 3, 3], skill: [3, 4, 4, 2], social: [0, 2, 5, 3, 4], theme: [2, 2, 2, 4, 2, 3] },
+      },
+      {
         path: '/president',
         labelKey: 'nav.president',
         icon: '🎩',
@@ -592,6 +606,18 @@ export const gameCategories: readonly GameCategory[] = [
         icon: '🎱',
         page: 'EightOff',
         profile: { mood: [5, 1, 5, 2], skill: [2, 4, 5, 1], social: [5, 1, 0, 2, 4], theme: [3, 3, 3, 1, 3, 3] },
+      },
+      {
+        path: '/penguin',
+        labelKey: 'nav.penguin',
+        icon: '🐧',
+        page: 'Penguin',
+        profile: {
+          mood: [5, 1, 5, 2],
+          skill: [2, 4, 5, 1],
+          social: [5, 1, 0, 2, 4],
+          theme: [3, 3, 3, 1, 3, 3],
+        },
       },
       {
         path: '/seahaventowers',

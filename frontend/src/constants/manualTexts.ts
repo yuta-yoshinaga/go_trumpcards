@@ -8,6 +8,7 @@ import badugi from '../../../docs/manual/web/badugi.md?raw';
 import bakersdozen from '../../../docs/manual/web/bakersdozen.md?raw';
 import beleagueredcastle from '../../../docs/manual/web/beleagueredcastle.md?raw';
 import belote from '../../../docs/manual/web/belote.md?raw';
+import bigtwo from '../../../docs/manual/web/bigtwo.md?raw';
 import blackjack from '../../../docs/manual/web/blackjack.md?raw';
 import blackjackswitch from '../../../docs/manual/web/blackjackswitch.md?raw';
 import bridge from '../../../docs/manual/web/bridge.md?raw';
@@ -63,6 +64,7 @@ import omaha from '../../../docs/manual/web/omaha.md?raw';
 import omahahilo from '../../../docs/manual/web/omahahilo.md?raw';
 import pageone from '../../../docs/manual/web/pageone.md?raw';
 import paigow from '../../../docs/manual/web/paigow.md?raw';
+import penguin from '../../../docs/manual/web/penguin.md?raw';
 import pigtail from '../../../docs/manual/web/pigtail.md?raw';
 import pineapple from '../../../docs/manual/web/pineapple.md?raw';
 import pinochle from '../../../docs/manual/web/pinochle.md?raw';
@@ -75,6 +77,7 @@ import pyramid from '../../../docs/manual/web/pyramid.md?raw';
 import razz from '../../../docs/manual/web/razz.md?raw';
 import reddog from '../../../docs/manual/web/reddog.md?raw';
 import rummy500 from '../../../docs/manual/web/rummy500.md?raw';
+import russianpoker from '../../../docs/manual/web/russianpoker.md?raw';
 import russiansolitaire from '../../../docs/manual/web/russiansolitaire.md?raw';
 import scorpion from '../../../docs/manual/web/scorpion.md?raw';
 import seahaventowers from '../../../docs/manual/web/seahaventowers.md?raw';
@@ -135,6 +138,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/euchre': euchre,
   '/freecell': freecell,
   '/eightoff': eightoff,
+  '/penguin': penguin,
   '/seahaventowers': seahaventowers,
   '/ginrummy': ginrummy,
   '/gofish': gofish,
@@ -149,6 +153,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/mighty': mighty,
   '/napoleon': napoleon,
   '/oasispoker': oasispoker,
+  '/russianpoker': russianpoker,
   '/ohhell': ohhell,
   '/oldmaid': oldmaid,
   '/omaha': omaha,
@@ -207,4 +212,5 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/tarneeb': tarneeb,
   '/highcardflush': highcardflush,
   '/briscola': briscola,
+  '/bigtwo': bigtwo,
 };

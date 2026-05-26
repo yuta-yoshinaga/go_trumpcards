@@ -262,4 +262,12 @@ func init() {
 			return usecase.RestoreEightOffInteractor(data, new(presenter.EightOffWebPresenter))
 		},
 		controller.NewEightOffWebControllerWithProvider)
+	games.RegisterKVGame("penguin", games.CategorySolo,
+		func() usecase.PenguinInteractorIF {
+			return usecase.NewPenguinInteractor(domain.NewDefaultPenguin(), new(presenter.PenguinWebPresenter))
+		},
+		func(data []byte) (usecase.PenguinInteractorIF, error) {
+			return usecase.RestorePenguinInteractor(data, new(presenter.PenguinWebPresenter))
+		},
+		controller.NewPenguinWebControllerWithProvider)
 }

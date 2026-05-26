@@ -16,6 +16,7 @@ export type GameKey =
   | 'threecard'
   | 'caribbeanstud'
   | 'oasispoker'
+  | 'russianpoker'
   | 'texasholdembonus'
   | 'casinoholdem'
   | 'ultimatetexasholdem'
@@ -66,6 +67,7 @@ export type GameKey =
   | 'doubt'
   | 'durak'
   | 'daifugo'
+  | 'bigtwo'
   | 'president'
   | 'cassino'
   | 'sevens'
@@ -86,6 +88,7 @@ export type GameKey =
   | 'klondike'
   | 'freecell'
   | 'eightoff'
+  | 'penguin'
   | 'seahaventowers'
   | 'spider'
   | 'spiderette'
@@ -142,6 +145,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   threecard: CASINO,
   caribbeanstud: CASINO,
   oasispoker: CASINO,
+  russianpoker: CASINO,
   texasholdembonus: POKER,
   casinoholdem: POKER,
   ultimatetexasholdem: POKER,
@@ -192,6 +196,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   doubt: GREEN,
   durak: GREEN,
   daifugo: GREEN,
+  bigtwo: GREEN,
   president: GREEN,
   cassino: GREEN,
   sevens: GREEN,
@@ -212,6 +217,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   klondike: CASINO,
   freecell: CASINO,
   eightoff: CASINO,
+  penguin: CASINO,
   seahaventowers: CASINO,
   spider: CASINO,
   spiderette: CASINO,

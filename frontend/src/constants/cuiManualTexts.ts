@@ -9,6 +9,7 @@ import badugi from '../../../docs/manual/cui/badugi.md?raw';
 import bakersdozen from '../../../docs/manual/cui/bakersdozen.md?raw';
 import beleagueredcastle from '../../../docs/manual/cui/beleagueredcastle.md?raw';
 import belote from '../../../docs/manual/cui/belote.md?raw';
+import bigtwo from '../../../docs/manual/cui/bigtwo.md?raw';
 import blackjack from '../../../docs/manual/cui/blackjack.md?raw';
 import blackjackswitch from '../../../docs/manual/cui/blackjackswitch.md?raw';
 import bridge from '../../../docs/manual/cui/bridge.md?raw';
@@ -62,6 +63,7 @@ import omaha from '../../../docs/manual/cui/omaha.md?raw';
 import omahahilo from '../../../docs/manual/cui/omahahilo.md?raw';
 import pageone from '../../../docs/manual/cui/pageone.md?raw';
 import paigow from '../../../docs/manual/cui/paigow.md?raw';
+import penguin from '../../../docs/manual/cui/penguin.md?raw';
 import pigtail from '../../../docs/manual/cui/pigtail.md?raw';
 import pineapple from '../../../docs/manual/cui/pineapple.md?raw';
 import pinochle from '../../../docs/manual/cui/pinochle.md?raw';
@@ -73,6 +75,7 @@ import pyramid from '../../../docs/manual/cui/pyramid.md?raw';
 import razz from '../../../docs/manual/cui/razz.md?raw';
 import reddog from '../../../docs/manual/cui/reddog.md?raw';
 import rummy500 from '../../../docs/manual/cui/rummy500.md?raw';
+import russianpoker from '../../../docs/manual/cui/russianpoker.md?raw';
 import russiansolitaire from '../../../docs/manual/cui/russiansolitaire.md?raw';
 import scorpion from '../../../docs/manual/cui/scorpion.md?raw';
 import seahaventowers from '../../../docs/manual/cui/seahaventowers.md?raw';
@@ -138,6 +141,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/euchre': euchre,
   '/freecell': freecell,
   '/eightoff': eightoff,
+  '/penguin': penguin,
   '/seahaventowers': seahaventowers,
   '/ginrummy': ginrummy,
   '/rummy500': rummy500,
@@ -186,6 +190,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/war': war,
   '/whist': whist,
   '/yukon': yukon,
+  '/russianpoker': russianpoker,
   '/russiansolitaire': russiansolitaire,
   '/cruel': cruel,
   '/scorpion': scorpion,
@@ -202,6 +207,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/tarneeb': tarneeb,
   '/highcardflush': highcardflush,
   '/briscola': briscola,
+  '/bigtwo': bigtwo,
 };
 
 /** Returns true when CLI mode is enabled for the game at the given path. */

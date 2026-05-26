@@ -172,6 +172,13 @@ export const EightOffPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Penguin phase constants (sync: internal/domain/Penguin.go). */
+export const PenguinPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Seahaven Towers phase constants (sync: internal/domain/SeahavenTowers.go). */
 export const SeahavenTowersPhase = {
   PLAYING: 0,
@@ -814,6 +821,16 @@ export const OasisPokerPhase = {
   EXCHANGE: 2,
   ACTION: 3,
   END: 4,
+} as const;
+
+/** Russian Poker phase constants (sync: internal/domain/RussianPoker.go). */
+export const RussianPokerPhase = {
+  BET: 1,
+  ACTION: 2,
+  SELECT: 3,
+  POST_ACTION: 4,
+  FORCE_QUALIFY: 5,
+  END: 6,
 } as const;
 
 /** Beleaguered Castle phase constants (sync: internal/domain/BeleagueredCastle.go). */

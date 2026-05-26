@@ -33,6 +33,11 @@ func init() {
 			return usecase.NewDaifugoInteractor(domain.NewDefaultDaifugo(), new(presenter.DaifugoWebPresenter))
 		},
 		controller.NewDaifugoWebController)
+	BindWebControllerFor("bigtwo",
+		func() usecase.BigTwoInteractorIF {
+			return usecase.NewBigTwoInteractor(domain.NewDefaultBigTwo(), new(presenter.BigTwoWebPresenter))
+		},
+		controller.NewBigTwoWebController)
 	BindWebControllerFor("sevens",
 		func() usecase.SevensInteractorIF {
 			return usecase.NewSevensInteractor(domain.NewDefaultSevens(), new(presenter.SevensWebPresenter))
@@ -518,4 +523,14 @@ func init() {
 			return usecase.NewEightOffInteractor(domain.NewDefaultEightOff(), new(presenter.EightOffWebPresenter))
 		},
 		controller.NewEightOffWebController)
+	BindWebControllerFor("russianpoker",
+		func() usecase.RussianPokerInteractorIF {
+			return usecase.NewRussianPokerInteractor(domain.NewDefaultRussianPoker(), new(presenter.RussianPokerWebPresenter))
+		},
+		controller.NewRussianPokerWebController)
+	BindWebControllerFor("penguin",
+		func() usecase.PenguinInteractorIF {
+			return usecase.NewPenguinInteractor(domain.NewDefaultPenguin(), new(presenter.PenguinWebPresenter))
+		},
+		controller.NewPenguinWebController)
 }

@@ -139,6 +139,16 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"daifugo.helpSetDifficulty", "daifugo.helpSetJoker", "daifugo.helpSetRule"},
 			})
 	}},
+	{Name: "bigtwo", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBigTwoCuiController(usecase.NewBigTwoInteractor(
+				domain.NewDefaultBigTwo(), new(presenter.BigTwoCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:    "bigtwo.helpTitle",
+				CommandKeys: []string{"bigtwo.helpPlay"},
+				SettingKeys: []string{"bigtwo.helpSetDifficulty"},
+			})
+	}},
 	{Name: "sevens", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewSevensCuiController(usecase.NewSevensInteractor(
@@ -1613,6 +1623,45 @@ var gameRegistry = []GameRegistryEntry{
 					"eightoff.helpGiveUp",
 					"eightoff.helpHint",
 					"eightoff.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
+	{Name: "russianpoker", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewRussianPokerCuiController(usecase.NewRussianPokerInteractor(
+				domain.NewDefaultRussianPoker(), new(presenter.RussianPokerCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "russianpoker.helpTitle",
+				CommandKeys: []string{
+					"russianpoker.helpBet",
+					"russianpoker.helpExchange",
+					"russianpoker.helpBuy6th",
+					"russianpoker.helpSelect",
+					"russianpoker.helpPlay",
+					"russianpoker.helpFold",
+					"russianpoker.helpForce",
+					"russianpoker.helpDecline",
+				},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
+	{Name: "penguin", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPenguinCuiController(usecase.NewPenguinInteractor(
+				domain.NewDefaultPenguin(), new(presenter.PenguinCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "penguin.helpTitle",
+				CommandKeys: []string{
+					"penguin.helpMove",
+					"penguin.helpMoveTF",
+					"penguin.helpMoveTT",
+					"penguin.helpMoveTC",
+					"penguin.helpMoveCT",
+					"penguin.helpMoveCF",
+					"penguin.helpGiveUp",
+					"penguin.helpHint",
+					"penguin.helpAutoComplete",
 				},
 				ExtraCommandLines: []string{"  l                        action log"},
 			})

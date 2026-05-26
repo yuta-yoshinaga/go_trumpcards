@@ -495,6 +495,46 @@ export interface DaifugoResponse {
   sortMode: number;
 }
 
+/** Big Two player data. */
+export interface BigTwoPlayerData {
+  id: number;
+  isHuman: boolean;
+  isFinished: boolean;
+  rank: number;
+  cardCount: number;
+  cards: Card[];
+}
+
+/** A play or pass action in Big Two. */
+export interface BigTwoAction {
+  playerIdx: number;
+  playedCards: Card[] | null;
+}
+
+/** Big Two game rule configuration. */
+export interface BigTwoConfig {
+  cpuDifficulty: number;
+}
+
+/** Input type alias for Big Two configuration. */
+export type BigTwoConfigInput = BigTwoConfig;
+
+/** Full Big Two game state returned from the API. */
+export interface BigTwoResponse {
+  players: BigTwoPlayerData[];
+  currentTurn: number;
+  tableCards: Card[];
+  tablePlayType: number;
+  lastPlayPlayerIdx: number;
+  gameEndFlag: boolean;
+  cpuActions: BigTwoAction[];
+  humanAction: BigTwoAction | null;
+  config: BigTwoConfig;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
 /** Sevens player data with pass count and card info. */
 export interface SevensPlayerData {
   id: number;
@@ -1451,6 +1491,34 @@ export interface EightOffResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
   hint?: EightOffHint;
+}
+
+// --- Penguin (ペンギン) ---
+
+/** A suggested move hint in Penguin. */
+export interface PenguinHint {
+  fromZone: string;
+  fromCol: number;
+  cardIndex: number;
+  toZone: string;
+  toCol: number;
+}
+
+/** Full Penguin game state returned from the API. */
+export interface PenguinResponse {
+  tableau: (Card | null)[][];
+  freeCells: (Card | null)[];
+  foundation: Card[][];
+  baseRank: number;
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: PenguinHint;
 }
 
 // --- Seahaven Towers (シーヘイブンタワーズ) ---
@@ -4101,6 +4169,34 @@ export interface OasisPokerResponse {
   antePayout: number;
   playPayout: number;
   jackpotPayout: number;
+  totalPayout: number;
+  dealerQualified: boolean;
+  playerHandRank: number;
+  dealerHandRank: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
+// --- Russian Poker (ロシアンポーカー) ---
+
+/** Russian Poker game state from the /russianpoker/exec endpoint. */
+export interface RussianPokerResponse {
+  playerHand: Card[];
+  dealerHand: (Card | MaskedCard)[];
+  phase: number;
+  chips: number;
+  anteBet: number;
+  exchangeCount: number;
+  exchangeFee: number;
+  bought6th: boolean;
+  buy6thFee: number;
+  forceExchanged: boolean;
+  forceExchangeFee: number;
+  playBet: number;
+  result: number;
+  antePayout: number;
+  playPayout: number;
   totalPayout: number;
   dealerQualified: boolean;
   playerHandRank: number;

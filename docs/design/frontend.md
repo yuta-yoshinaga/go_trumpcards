@@ -436,7 +436,7 @@ classDiagram
         +object messageParams
     }
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全101ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全104ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -867,7 +867,7 @@ classDiagram
     class actionLogApi {
         +blackjack() Promise~ActionLogResponse~
         +poker() Promise~ActionLogResponse~
-        ...全101ゲーム()
+        ...全104ゲーム()
     }
 
     BlackJackApi --> gameApi : uses postJson/gameExec
@@ -929,7 +929,7 @@ classDiagram
 
     RedDogApi --> gameApi : uses postJson/gameExec
 
-    note for BlackJackApi "全101ゲーム分のAPI Objectが存在\n(blackjack, spanish21, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, omahahilo, shortdeck,\npineapple, crazypineapple, hearts, memory, klondike, freecell,\nseahaventowers, cruel, baccarat, spades, twotenjack, crazyeights,\nginrummy, canasta, spider, spiderette, napoleon, mighty,\nindianpoker, videopoker, deuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, caribbeanstud, texasholdembonus,\nultimatetexasholdem, mississippistud, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow, war, canfield, fiftyone, yukon, russiansolitaire, scorpion, accordion, whist,\nletitride, pokersquares, pageone, reddog, razz, badugi, trash,\nsevenbridge, president, cassino, calculation, crescent, spiteandmalice,\nskat, shithead, nertz, slapjack, egyptianratscrew, bakersdozen, tonk,\ncasinowar, pitch, dragontiger, blackjackswitch, montecarlo, contractrummy, belote,\noasispoker, beleagueredcastle, piquet, casinoholdem, callbreak,\nhighcardflush, fourcardpoker, briscola, tarneeb, gaps, rummy500, eightoff)"
+    note for BlackJackApi "全104ゲーム分のAPI Objectが存在\n(blackjack, spanish21, poker, oldmaid, daifugo,\nsevens, doubt, bigtwo, holdem, omaha, omahahilo, shortdeck,\npineapple, crazypineapple, hearts, memory, klondike, freecell,\nseahaventowers, cruel, baccarat, spades, twotenjack, crazyeights,\nginrummy, canasta, spider, spiderette, napoleon, mighty,\nindianpoker, videopoker, deuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, caribbeanstud, texasholdembonus,\nultimatetexasholdem, mississippistud, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow, war, canfield, fiftyone, yukon, russiansolitaire, scorpion, accordion, whist,\nletitride, pokersquares, pageone, reddog, razz, badugi, trash,\nsevenbridge, president, cassino, calculation, crescent, spiteandmalice,\nskat, shithead, nertz, slapjack, egyptianratscrew, bakersdozen, tonk,\ncasinowar, pitch, dragontiger, blackjackswitch, montecarlo, contractrummy, belote,\noasispoker, beleagueredcastle, piquet, casinoholdem, callbreak,\nhighcardflush, fourcardpoker, russianpoker, briscola, tarneeb, gaps, rummy500, eightoff, penguin)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -1308,7 +1308,7 @@ classDiagram
 
     useCanastaGame --> useGameApi : uses
 
-    note for useBlackJackGame "全101ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    note for useBlackJackGame "全104ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -1907,7 +1907,7 @@ classDiagram
     GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck/Pineapple/SevenCardStud/Razz)
     PokerTableLayout --> CpuPlayerCard : wraps
 
-    note for GamePage "全101ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全104ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -1930,15 +1930,15 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (101ゲーム)
+        +Routes (104ゲーム)
     }
 
     class gameCategories {
-        +table: [BlackJack, Spanish21, Baccarat, ThreeCard, CaribbeanStud, OasisPoker, TexasHoldemBonus, CasinoHoldem, UltimateTexasHoldem, PaiGow, LetItRide, RedDog, CasinoWar, DragonTiger, BlackJackSwitch, MississippiStud, HighCardFlush, FourCardPoker]
+        +table: [BlackJack, Spanish21, Baccarat, ThreeCard, CaribbeanStud, OasisPoker, RussianPoker, TexasHoldemBonus, CasinoHoldem, UltimateTexasHoldem, PaiGow, LetItRide, RedDog, CasinoWar, DragonTiger, BlackJackSwitch, MississippiStud, HighCardFlush, FourCardPoker]
         +poker: [Poker, Holdem, Omaha, OmahaHiLo, ShortDeck, Pineapple, CrazyPineapple, SevenCardStud, Razz, Badugi, IndianPoker, VideoPoker, DeucesWild, JokerPoker]
         +trickTaking: [Hearts, Spades, Pitch, TwoTenJack, OhHell, Euchre, Bridge, Napoleon, Whist, Belote, Mighty, Piquet, CallBreak, Tarneeb, Briscola]
         +matching: [OldMaid, Doubt, Durak, Daifugo, President, Cassino, Sevens, CrazyEights, PageOne, Speed, GoFish, Pinochle, PigsTail, War, FiftyOne, Trash, SpiteAndMalice, Skat, Shithead, Nertz, Slapjack, EgyptianRatscrew]
-        +solitaire: [Klondike, FreeCell, EightOff, SeahavenTowers, Spider, Spiderette, Pyramid, Gaps, TriPeaks, Golf, Memory, ClockSolitaire, FortyThieves, BakersDozen, BeleagueredCastle, Canfield, Yukon, RussianSolitaire, Cruel, Scorpion, Accordion, PokerSquares, MonteCarlo, Calculation, Crescent]
+        +solitaire: [Klondike, FreeCell, EightOff, Penguin, SeahavenTowers, Spider, Spiderette, Pyramid, Gaps, TriPeaks, Golf, Memory, ClockSolitaire, FortyThieves, BakersDozen, BeleagueredCastle, Canfield, Yukon, RussianSolitaire, Cruel, Scorpion, Accordion, PokerSquares, MonteCarlo, Calculation, Crescent]
         +rummy: [GinRummy, Tonk, Canasta, Cribbage, SevenBridge, ContractRummy, Rummy500]
     }
 
@@ -1953,11 +1953,11 @@ classDiagram
     App --> i18n : initializes
     App --> gameCategories : routes from
     App --> NavBar : renders
-    App --> GamePage : routes to 101 pages
+    App --> GamePage : routes to 104 pages
     GamePage --> TutorialProvider : wraps (per-game)
     TutorialProvider --> TutorialOverlay : renders when active
 
-    note for i18n "103名前空間: common + 101ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
+    note for i18n "106名前空間: common + 104ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
 ```
 
 ### 1.8 AI Game Concierge (/discover)
@@ -3041,7 +3041,55 @@ sequenceDiagram
     Hook-->>Page: 再レンダリング → 次ラウンドUI or ゲーム終了UI
 ```
 
-### 2.26 AI Game Concierge サーベイ → 結果フロー
+### 2.26 PenguinPage フェーズ別レンダリングフロー
+
+EightOff の派生。baseRank に応じた組札開始ランクの表示と、7列×7枚タブロー + 7フリーセル (初期3つ使用済み) のレイアウト。空列には prevRank(baseRank) のカードのみ配置可能。
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Page as PenguinPage
+    participant Hook as useGameApi
+    participant API as penguinApi
+
+    Note over Page: mount then reset
+    Page->>Hook: run("reset")
+    Hook->>API: POST /penguin/run {command="reset"}
+    API-->>Hook: PenguinResponse (phase=0, baseRank=N)
+    Hook-->>Page: state update - Playing UI
+
+    rect rgb(230,245,255)
+    Note over User,Page: Playing (phase=0)
+    User->>Page: card click (select source)
+    Page->>Page: highlight selection
+    User->>Page: target click
+    Page->>Hook: run("move", from, to)
+    Hook->>API: POST /penguin/run {command="move", from, to}
+    API-->>Hook: PenguinResponse (moveCount++, phase=0 or 1)
+    Hook-->>Page: re-render
+    end
+
+    rect rgb(230,255,230)
+    Note over User,Page: GameClear (phase=1)
+    Page->>Page: WinCelebration display
+    User->>Page: reset button
+    Page->>Hook: run("reset")
+    Hook->>API: POST /penguin/run {command="reset"}
+    API-->>Hook: PenguinResponse (phase=0)
+    Hook-->>Page: new game start
+    end
+
+    rect rgb(255,230,230)
+    Note over User,Page: GameOver (phase=2)
+    User->>Page: next game or reset
+    Page->>Hook: run("reset")
+    Hook->>API: POST /penguin/run {command="reset"}
+    API-->>Hook: PenguinResponse (phase=0)
+    Hook-->>Page: new game start
+    end
+```
+
+### 2.27 AI Game Concierge サーベイ → 結果フロー
 
 ユーザーが Sidebar/NavBar CTA から `/discover` を開き、8問のアンケートを進めて `/discover/result` で推薦結果を見るまで。i18n bundle は `/discover` mount 時に遅延ロードされ、その間 `DiscoverSkeleton` が表示されます。
 
