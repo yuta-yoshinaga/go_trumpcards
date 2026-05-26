@@ -1,9 +1,21 @@
-import type { Card, PenguinResponse } from '../../types/card';
+import type { Card, CardDesign, PenguinResponse } from '../../types/card';
 import type { HintResult } from '../../types/hint';
 import { PenguinPhase } from '../../types/phases';
 
 /** Number of suits. */
 const SUIT_COUNT = 4;
+
+/** Total number of free cells in Penguin. */
+const PENGUIN_CELL_COUNT = 7;
+
+/** Maps card design string to foundation pile index (matches backend logic). */
+const DESIGN_TO_PILE: Record<CardDesign, number> = {
+  SPADE: 0,
+  CLOVER: 1,
+  HEART: 2,
+  DIAMOND: 3,
+  JOKER: -1,
+};
 
 /** Threshold for warning about nearly-full free cells (5 of 7). */
 const FREE_CELL_WARNING_THRESHOLD = 5;
@@ -30,7 +42,7 @@ export function getPenguinHint(state: PenguinResponse): HintResult | null {
   }
 
   // Priority 4: Use free cells while available
-  if (usedFreeCells < PenguinPhase.PLAYING + SUIT_COUNT + 3) {
+  if (usedFreeCells < PENGUIN_CELL_COUNT) {
     return { targetAction: 'move', reason: 'frontendHint.useFreeCells', confidence: 'moderate' };
   }
 
@@ -51,19 +63,17 @@ function hasFoundationMove(state: PenguinResponse): boolean {
   return false;
 }
 
-/** Check if a card can be placed on any foundation pile (starts at baseRank, wraps). */
+/** Check if a card can be placed on its matching foundation pile (starts at baseRank, wraps). */
 function canMoveToFoundation(card: Card, foundation: Card[][], baseRank: number): boolean {
-  for (let i = 0; i < SUIT_COUNT; i++) {
-    const pile = foundation[i];
-    if (pile.length === 0) {
-      if (card.value === baseRank) return true;
-    } else {
-      const top = pile[pile.length - 1];
-      const nextValue = top.value === 13 ? 1 : top.value + 1;
-      if (top.design === card.design && card.value === nextValue) return true;
-    }
+  const fIdx = DESIGN_TO_PILE[card.design] ?? -1;
+  if (fIdx < 0 || fIdx >= SUIT_COUNT) return false;
+  const pile = foundation[fIdx];
+  if (pile.length === 0) {
+    return card.value === baseRank;
   }
-  return false;
+  const top = pile[pile.length - 1];
+  const nextValue = top.value === 13 ? 1 : top.value + 1;
+  return top.design === card.design && card.value === nextValue;
 }
 
 /** True if there is a prevRank(baseRank) card available to move into an empty column. */

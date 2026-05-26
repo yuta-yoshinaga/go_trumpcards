@@ -277,7 +277,7 @@ func penguinStateKey(st *penguinState) [52]uint16 {
 	var key [52]uint16
 	for col := range PenguinTableauCnt {
 		for pos, card := range st.tableau[col] {
-			if card.GetDesign() < 1 || card.GetValue() < 1 {
+			if card == nil || card.GetDesign() < 1 || card.GetValue() < 1 {
 				continue
 			}
 			idx := (card.GetDesign()-1)*CardValueMax + card.GetValue() - 1

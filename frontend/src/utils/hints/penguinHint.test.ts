@@ -24,7 +24,7 @@ function makeState(overrides: Partial<PenguinResponse> = {}): PenguinResponse {
       [card(D, 6)],
     ],
     freeCells: [card(S, 5), card(H, 5), card(D, 5), null, null, null, null],
-    foundation: [[card(C, 5)], [], [], []],
+    foundation: [[], [card(C, 5)], [], []],
     baseRank: 5,
     phase: PenguinPhase.PLAYING,
     moveCount: 0,
@@ -48,7 +48,7 @@ describe('getPenguinHint', () => {
     const state = makeState({
       tableau: [[card(S, 5)], [card(D, 10)], [card(H, 3)], [card(C, 8)], [card(S, 4)], [card(H, 7)], [card(D, 6)]],
       freeCells: [card(H, 5), card(D, 5), null, null, null, null, null],
-      foundation: [[card(C, 5)], [], [], []],
+      foundation: [[], [card(C, 5)], [], []],
       baseRank: 5,
     });
     const hint = getPenguinHint(state);
@@ -68,8 +68,9 @@ describe('getPenguinHint', () => {
 
   it('suggests moving next card to foundation (wrap K->A)', () => {
     const state = makeState({
-      tableau: [[card(S, 1)], [card(D, 10)], [card(H, 3)], [card(C, 8)], [card(S, 4)], [card(H, 7)], [card(D, 6)]],
+      tableau: [[card(C, 1)], [card(D, 10)], [card(H, 3)], [card(S, 8)], [card(S, 4)], [card(H, 7)], [card(D, 6)]],
       foundation: [
+        [card(S, 5)],
         [
           card(C, 5),
           card(C, 6),
@@ -81,7 +82,6 @@ describe('getPenguinHint', () => {
           card(C, 12),
           card(C, 13),
         ],
-        [card(S, 5)],
         [],
         [],
       ],
@@ -96,7 +96,7 @@ describe('getPenguinHint', () => {
     const state = makeState({
       tableau: [[card(S, 7)], [card(D, 10)], [card(H, 3)], [card(C, 8)], [card(S, 4)], [card(H, 7)], [card(D, 2)]],
       freeCells: [card(S, 8), card(H, 9), card(D, 10), card(C, 11), card(S, 12), null, null],
-      foundation: [[card(C, 5)], [card(S, 5)], [card(H, 5)], [card(D, 5)]],
+      foundation: [[card(S, 5)], [card(C, 5)], [card(H, 5)], [card(D, 5)]],
       baseRank: 5,
     });
     const hint = getPenguinHint(state);
@@ -108,7 +108,7 @@ describe('getPenguinHint', () => {
     const state = makeState({
       tableau: [[card(S, 7), card(S, 4)], [], [card(H, 3)], [card(C, 8)], [card(S, 12)], [card(H, 7)], [card(D, 2)]],
       freeCells: [card(S, 9), card(H, 10), null, null, null, null, null],
-      foundation: [[card(C, 5)], [card(S, 5)], [card(H, 5)], [card(D, 5)]],
+      foundation: [[card(S, 5)], [card(C, 5)], [card(H, 5)], [card(D, 5)]],
       baseRank: 5,
     });
     const hint = getPenguinHint(state);
@@ -120,7 +120,7 @@ describe('getPenguinHint', () => {
     const state = makeState({
       tableau: [[card(S, 7)], [card(H, 8)], [card(D, 9)], [card(C, 10)], [card(S, 11)], [card(H, 12)], [card(D, 3)]],
       freeCells: [card(S, 2), card(H, 13), null, null, null, null, null],
-      foundation: [[card(C, 5)], [card(S, 5)], [card(H, 5)], [card(D, 5)]],
+      foundation: [[card(S, 5)], [card(C, 5)], [card(H, 5)], [card(D, 5)]],
       baseRank: 5,
     });
     const hint = getPenguinHint(state);

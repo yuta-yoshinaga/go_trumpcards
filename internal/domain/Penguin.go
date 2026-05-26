@@ -102,6 +102,10 @@ func (p *Penguin) Reset() {
 		deck = append(deck, p.trumpCards.DrawCard())
 	}
 
+	if len(deck) == 0 {
+		return
+	}
+
 	// 1枚目のカードでベースランクを決定
 	p.baseRank = deck[0].GetValue()
 
@@ -123,7 +127,9 @@ func (p *Penguin) Reset() {
 		p.tableau[i] = make([]*Card, 0, PenguinTableauColCards)
 		for j := 0; j < PenguinTableauColCards; j++ {
 			idx := i*PenguinTableauColCards + j
-			p.tableau[i] = append(p.tableau[i], tableauDeck[idx])
+			if idx < len(tableauDeck) {
+				p.tableau[i] = append(p.tableau[i], tableauDeck[idx])
+			}
 		}
 	}
 }
