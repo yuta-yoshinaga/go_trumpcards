@@ -25,9 +25,10 @@ import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { ChinesePokerResponse } from '../types/card';
+import type { Card, ChinesePokerResponse } from '../types/card';
 import { ChinesePokerPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { CHINESEPOKER_HELP, parseChinesepokerCommand } from '../utils/cli/commands/chinesepokerCommands';
 import type { CliGameConfig } from '../utils/cli/types';
 
 const FRONT_RANK_KEYS: Record<number, string> = {
@@ -96,27 +97,9 @@ function ChinesePokerPageContent() {
   const cliConfig: CliGameConfig<ChinesePokerResponse, Parameters<typeof chinesepokerApi.exec>> = useMemo(
     () => ({
       gameName: 'chinesepoker',
-      parseCommand: (cmd: string) => {
-        const parts = cmd.trim().split(/\s+/);
-        const c = parts[0]?.toLowerCase();
-        if (c === 'r' || c === 'reset') return { args: ['reset'] as Parameters<typeof chinesepokerApi.exec> };
-        if (c === 'l' || c === 'log') return { args: ['log'] as Parameters<typeof chinesepokerApi.exec> };
-        if (c === 'b' || c === 'bet') {
-          const amt = Number.parseInt(parts[1] ?? '', 10);
-          if (Number.isNaN(amt)) return { error: 'Usage: b <amount>' };
-          return { args: ['bet', amt] as Parameters<typeof chinesepokerApi.exec> };
-        }
-        if (c === 's' || c === 'set') {
-          if (parts.length < 9) return { error: 'Usage: s <f0 f1 f2 m0 m1 m2 m3 m4>' };
-          const fi = parts.slice(1, 4).map(Number);
-          const mi = parts.slice(4, 9).map(Number);
-          if (fi.some(Number.isNaN) || mi.some(Number.isNaN)) return { error: 'Invalid indices' };
-          return { args: ['set', undefined, fi, mi] as Parameters<typeof chinesepokerApi.exec> };
-        }
-        return { error: `Unknown command: ${c}` };
-      },
+      parseCommand: parseChinesepokerCommand,
       formatResponse: () => '',
-      helpText: 'b <amount>  Bet\ns <f0 f1 f2 m0 m1 m2 m3 m4>  Set hands\nr  Reset\nl  Action log',
+      helpText: CHINESEPOKER_HELP,
     }),
     [],
   );
@@ -447,7 +430,7 @@ function HandSection({
   isPlayer,
 }: {
   label: string;
-  cards: { design: number; value: number }[];
+  cards: Card[];
   rankKey: string | undefined;
   result: number;
   cardWidth: number;
