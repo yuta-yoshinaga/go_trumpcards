@@ -1,7 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { renderWithProviders } from '../test/renderWithProviders';
-import type { ChinesePokerResponse } from '../types/card';
+import type { Card, CardDesign, ChinesePokerResponse } from '../types/card';
 import { ChinesePokerPhase } from '../types/phases';
 
 vi.mock('../api/gameApi', () => ({
@@ -16,7 +16,8 @@ import { ChinesePokerPage } from './ChinesePokerPage';
 
 const mockExec = vi.mocked(chinesepokerApi.exec);
 
-const card = (design: number, value: number) => ({ design, value, faceDown: false });
+const DESIGNS: CardDesign[] = ['SPADE', 'HEART', 'CLOVER', 'DIAMOND'];
+const card = (designIdx: number, value: number): Card => ({ design: DESIGNS[designIdx % 4], value });
 
 const betPhaseState: ChinesePokerResponse = {
   playerCards: [],

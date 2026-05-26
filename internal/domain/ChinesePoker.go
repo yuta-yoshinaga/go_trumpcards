@@ -327,11 +327,7 @@ func cpValidateHands(front, middle, back []*Card) bool {
 	}
 
 	frontRank := evalThreeCardHand(front)
-	if !cpFrontNotStrongerThanMiddle(frontRank, front, middleRank, middle) {
-		return false
-	}
-
-	return true
+	return cpFrontNotStrongerThanMiddle(frontRank, front, middleRank, middle)
 }
 
 // cpFrontNotStrongerThanMiddle フロント（3枚）がミドル（5枚）より強くないか検証する

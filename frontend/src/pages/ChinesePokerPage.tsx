@@ -345,8 +345,7 @@ function ChinesePokerPageContent() {
                 <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="payout-breakdown">
                   {state.payout !== 0 && (
                     <div>
-                      {t('label.bet')}: {state.bet} | {tc('common:label.payout', { defaultValue: 'Payout' })}:{' '}
-                      {state.payout}
+                      {t('label.bet')}: {state.bet} | {t('label.payout')}: {state.payout}
                     </div>
                   )}
                   {(state.playerRoyalty > 0 || state.dealerRoyalty > 0) && (

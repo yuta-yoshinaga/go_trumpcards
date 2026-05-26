@@ -8,7 +8,8 @@
     "back": "バック (5枚)",
     "playerRoyalty": "プレイヤーロイヤリティ",
     "dealerRoyalty": "ディーラーロイヤリティ",
-    "scoop": "スクープ"
+    "scoop": "スクープ",
+    "payout": "払戻し"
   },
   "button": {
     "bet": "ベット",

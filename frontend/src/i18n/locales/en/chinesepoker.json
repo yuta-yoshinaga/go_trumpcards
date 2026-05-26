@@ -8,7 +8,8 @@
     "back": "Back (5 cards)",
     "playerRoyalty": "Player Royalty",
     "dealerRoyalty": "Dealer Royalty",
-    "scoop": "Scoop"
+    "scoop": "Scoop",
+    "payout": "Payout"
   },
   "button": {
     "bet": "Bet",
