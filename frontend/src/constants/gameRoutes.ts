@@ -143,6 +143,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [4, 2, 5, 1], skill: [2, 4, 5, 1], social: [3, 5, 2, 2, 4], theme: [4, 1, 1, 3, 3, 2] },
       },
       {
+        path: '/chinesepoker',
+        labelKey: 'nav.chinesepoker',
+        icon: '🐉',
+        page: 'ChinesePoker',
+        profile: { mood: [4, 2, 5, 1], skill: [1, 5, 5, 1], social: [3, 5, 2, 2, 4], theme: [4, 1, 1, 3, 4, 2] },
+      },
+      {
         path: '/letitride',
         labelKey: 'nav.letitride',
         icon: '🎰',

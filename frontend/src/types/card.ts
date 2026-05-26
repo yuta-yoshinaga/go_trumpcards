@@ -2559,6 +2559,38 @@ export interface PaiGowResponse {
   messageParams?: Record<string, string>;
 }
 
+/** Chinese Poker game state response. */
+export interface ChinesePokerResponse {
+  playerCards: Card[];
+  dealerCards: Card[];
+  playerFront: Card[];
+  playerMiddle: Card[];
+  playerBack: Card[];
+  dealerFront: Card[];
+  dealerMiddle: Card[];
+  dealerBack: Card[];
+  phase: number;
+  chips: number;
+  bet: number;
+  result: number;
+  frontResult: number;
+  middleResult: number;
+  backResult: number;
+  payout: number;
+  playerFrontRank: number;
+  playerMiddleRank: number;
+  playerBackRank: number;
+  dealerFrontRank: number;
+  dealerMiddleRank: number;
+  dealerBackRank: number;
+  playerRoyalty: number;
+  dealerRoyalty: number;
+  scoop: boolean;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
 /** Speed player data with hand and draw pile info. */
 export interface SpeedPlayerData {
   id: number;

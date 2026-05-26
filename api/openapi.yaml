@@ -122,6 +122,8 @@ tags:
     description: Forty Thieves (フォーティシーブス) game
   - name: paigow
     description: Pai Gow Poker (パイゴウポーカー) game
+  - name: chinesepoker
+    description: Chinese Poker (チャイニーズポーカー) game
   - name: war
     description: War (戦争) game
   - name: fiftyone
@@ -5268,6 +5270,74 @@ paths:
                     bet: 0
                     result: 0
                     message: "unsupported command"
+
+  /chinesepoker/exec:
+    post:
+      tags:
+        - chinesepoker
+      summary: Execute a Chinese Poker game command
+      description: |
+        Send a command to advance the Chinese Poker (チャイニーズポーカー) game session
+        identified by `sessionId`.  Chinese Poker is a single-player casino card game
+        using a standard 52-card deck (no joker).  Player and dealer each receive
+        13 cards.  Player splits cards into Front (3), Middle (5), and Back (5) hands.
+        Hands must satisfy Back ≧ Middle ≧ Front or the arrangement is a foul.
+
+        Front hand uses 3-card poker ranking; Middle and Back use standard 5-card poker
+        ranking.  Each hand is compared separately; ties go to the dealer.  Win 2+ hands
+        for a standard win (1:1), all 3 for a scoop (3:1).  Royalty bonuses apply to
+        premium hands.
+
+        The game proceeds through these phases:
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Bet      | `1`   | Place a bet |
+        | SetHands | `2`   | Split 13 cards into Front (3), Middle (5), Back (5) |
+        | End      | `3`   | Round complete; shows result and payout |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `bet`   | `b`     | Place bet (requires `amount`) |
+        | `set`   | `s`     | Set hands (requires `frontIndices` [3] and `middleIndices` [5]) |
+        | `log`   | `l`     | View action log |
+      operationId: chinesepokerExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [command, sessionId]
+              properties:
+                command:
+                  type: string
+                sessionId:
+                  type: string
+                amount:
+                  type: integer
+                frontIndices:
+                  type: array
+                  items:
+                    type: integer
+                middleIndices:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
 
   /slapjack/exec:
     post:

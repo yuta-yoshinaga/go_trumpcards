@@ -253,6 +253,7 @@ const hintFactories = {
   beleagueredcastle: (s) => getBeleagueredcastleHint(s as BeleagueredCastleResponse),
   tonk: () => null,
   paigow: () => null,
+  chinesepoker: () => null,
   pageone: (s) => getPageOneHint(s as PageOneResponse),
   pigtail: (s) => getPigstailHint(s as PigsTailResponse),
   pokersquares: (s) => getPokersquaresHint(s as PokerSquaresResponse),

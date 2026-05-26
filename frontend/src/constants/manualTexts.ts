@@ -21,6 +21,7 @@ import caribbeanstud from '../../../docs/manual/web/caribbeanstud.md?raw';
 import casinoholdem from '../../../docs/manual/web/casinoholdem.md?raw';
 import casinowar from '../../../docs/manual/web/casinowar.md?raw';
 import cassino from '../../../docs/manual/web/cassino.md?raw';
+import chinesepoker from '../../../docs/manual/web/chinesepoker.md?raw';
 import clocksolitaire from '../../../docs/manual/web/clocksolitaire.md?raw';
 import contractrummy from '../../../docs/manual/web/contractrummy.md?raw';
 import crazyeights from '../../../docs/manual/web/crazyeights.md?raw';
@@ -160,6 +161,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/omahahilo': omahahilo,
   '/pageone': pageone,
   '/paigow': paigow,
+  '/chinesepoker': chinesepoker,
   '/pineapple': pineapple,
   '/crazypineapple': crazypineapple,
   '/pigtail': pigtail,

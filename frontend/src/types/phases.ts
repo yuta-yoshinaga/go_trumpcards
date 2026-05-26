@@ -586,6 +586,13 @@ export const PaiGowPhase = {
   END: 3,
 } as const;
 
+/** Chinese Poker phase constants (sync: internal/domain/ChinesePoker.go). */
+export const ChinesePokerPhase = {
+  BET: 1,
+  SET_HANDS: 2,
+  END: 3,
+} as const;
+
 /** Forty Thieves phase constants (sync: internal/domain/FortyThieves.go). */
 export const FortyThievesPhase = {
   PLAYING: 0,
