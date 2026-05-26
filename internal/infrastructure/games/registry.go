@@ -5,7 +5,7 @@
 // binaries (TinyGo / WASM) stay under the 1 MB gzipped free-tier limit:
 //
 //   - registry.go (this file, no tag)  — types and bare metadata (Name +
-//     Category) for all 104 games. Cheap; no references to game code.
+//     Category) for all 105 games. Cheap; no references to game code.
 //   - games_server.go (!js || !wasm)   — installs Web-server factories for
 //     every game via BindWebController. Imported by TrumpCardsWeb.
 //   - casino/, classic/, solo/ (js && wasm) — per-category worker bindings.
@@ -190,6 +190,7 @@ var registry = []*Game{
 	{Name: "eightoff", Category: CategorySolo, Description: "Eight Off (エイトオフ)"},
 	{Name: "russianpoker", Category: CategoryCasino, Description: "Russian Poker (ロシアンポーカー)"},
 	{Name: "penguin", Category: CategorySolo, Description: "Penguin (ペンギン)"},
+	{Name: "chinesepoker", Category: CategoryCasino, Description: "Chinese Poker (チャイニーズポーカー)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

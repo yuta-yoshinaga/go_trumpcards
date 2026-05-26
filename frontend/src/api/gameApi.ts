@@ -24,6 +24,7 @@ import type {
   CasinoHoldemResponse,
   CasinoWarResponse,
   CassinoResponse,
+  ChinesePokerResponse,
   ClockSolitaireResponse,
   ContractRummyResponse,
   CrazyEightsResponse,
@@ -232,6 +233,7 @@ const workerUrl: Record<string, string> = {
   rummy500: WORKER_SOLO,
   eightoff: WORKER_SOLO,
   penguin: WORKER_SOLO,
+  chinesepoker: WORKER_CASINO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1184,6 +1186,16 @@ export const paigowApi = {
     gameExec<PaiGowResponse>('paigow', { command, amount, low0, low1 }),
 };
 
+/** API client for the Chinese Poker /chinesepoker/exec endpoint. */
+export const chinesepokerApi = {
+  exec: (
+    command: 'reset' | 'bet' | 'set' | 'log',
+    amount?: number,
+    frontIndices?: number[],
+    middleIndices?: number[],
+  ) => gameExec<ChinesePokerResponse>('chinesepoker', { command, amount, frontIndices, middleIndices }),
+};
+
 /** Source or target zone for a Spider card move. */
 export interface SpiderMoveZone {
   zone: string;
@@ -2050,6 +2062,7 @@ const games = [
   'eightoff',
   'penguin',
   'russianpoker',
+  'chinesepoker',
 ] as const;
 type Game = (typeof games)[number];
 

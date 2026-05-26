@@ -23,6 +23,7 @@ export type GameKey =
   | 'mississippistud'
   | 'highcardflush'
   | 'paigow'
+  | 'chinesepoker'
   | 'letitride'
   | 'reddog'
   | 'casinowar'
@@ -152,6 +153,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   mississippistud: POKER,
   highcardflush: CASINO,
   paigow: CASINO,
+  chinesepoker: CASINO,
   letitride: CASINO,
   reddog: CASINO,
   casinowar: CASINO,

@@ -1666,6 +1666,16 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "chinesepoker", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewChinesePokerCuiController(usecase.NewChinesePokerInteractor(
+				domain.NewDefaultChinesePoker(), new(presenter.ChinesePokerCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "chinesepoker.helpTitle",
+				CommandKeys:       []string{"chinesepoker.helpBet", "chinesepoker.helpSet"},
+				ExtraCommandLines: []string{"  l                                            action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
@@ -1729,6 +1739,8 @@ var GameAliases = map[string]string{
 	"rummy":   "rummy500",
 	"500":     "rummy500",
 	"r500":    "rummy500",
+	"cpk":     "chinesepoker",
+	"cpkr":    "chinesepoker",
 }
 
 // cuiGame is implemented by each *Cui struct to expose its controller and help lines.

@@ -278,4 +278,12 @@ func init() {
 			return usecase.RestoreRussianPokerInteractor(data, new(presenter.RussianPokerWebPresenter))
 		},
 		controller.NewRussianPokerWebControllerWithProvider)
+	games.RegisterKVGame("chinesepoker", games.CategoryCasino,
+		func() usecase.ChinesePokerInteractorIF {
+			return usecase.NewChinesePokerInteractor(domain.NewDefaultChinesePoker(), new(presenter.ChinesePokerWebPresenter))
+		},
+		func(data []byte) (usecase.ChinesePokerInteractorIF, error) {
+			return usecase.RestoreChinesePokerInteractor(data, new(presenter.ChinesePokerWebPresenter))
+		},
+		controller.NewChinesePokerWebControllerWithProvider)
 }
