@@ -1646,6 +1646,26 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},
+	{Name: "penguin", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPenguinCuiController(usecase.NewPenguinInteractor(
+				domain.NewDefaultPenguin(), new(presenter.PenguinCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "penguin.helpTitle",
+				CommandKeys: []string{
+					"penguin.helpMove",
+					"penguin.helpMoveTF",
+					"penguin.helpMoveTT",
+					"penguin.helpMoveTC",
+					"penguin.helpMoveCT",
+					"penguin.helpMoveCF",
+					"penguin.helpGiveUp",
+					"penguin.helpHint",
+					"penguin.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

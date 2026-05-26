@@ -1,0 +1,548 @@
+import { useCallback, useMemo, useState } from 'react';
+import type { PenguinMoveZone, penguinApi } from '../api/gameApi';
+import { ActionLogSection } from '../components/ActionLogSection';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
+import { SettingsPanel } from '../components/common/SettingsPanel';
+import { DropZone } from '../components/DropZone';
+import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
+import { GameMessageBox } from '../components/GameMessageBox';
+import { GamePageShell } from '../components/GamePageShell';
+import { GameResetButton } from '../components/GameResetButton';
+import { HintTooltip } from '../components/hint/HintTooltip';
+import { LandscapeBanner } from '../components/LandscapeBanner';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
+import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
+import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
+import { useGameHint } from '../hooks/useGameHint';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { usePenguinGame } from '../hooks/usePenguinGame';
+import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
+import { useSound } from '../providers/SoundProvider';
+import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { gameTheme } from '../styles/gameTheme';
+import type { Card, PenguinResponse } from '../types/card';
+import { PenguinPhase } from '../types/phases';
+import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
+import { PENGUIN_HELP, parsePenguinCommand } from '../utils/cli/commands/penguinCommands';
+import { formatPenguinState } from '../utils/cli/formatters/penguinFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
+
+const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
+
+/** Convert a card value (1-13) to display label. */
+function baseRankLabel(rank: number): string {
+  switch (rank) {
+    case 1:
+      return 'A';
+    case 11:
+      return 'J';
+    case 12:
+      return 'Q';
+    case 13:
+      return 'K';
+    default:
+      return String(rank);
+  }
+}
+
+/** Compute the rank label that precedes baseRank with wraparound (1→K, 2→A). */
+function prevRankLabel(baseRank: number): string {
+  const prev = baseRank === 1 ? 13 : baseRank - 1;
+  return baseRankLabel(prev);
+}
+
+/** Penguin tutorial step definitions. */
+const PG_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="pg-free-cells"]',
+    messageKey: 'tutorial.freeCells',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="pg-foundation"]',
+    messageKey: 'tutorial.foundation',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="pg-tableau"]',
+    messageKey: 'tutorial.tableau',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="pg-controls"]',
+    messageKey: 'tutorial.controls',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="pg-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
+/** Renders the Penguin solitaire game page with 7 free cells, 7-column tableau, and foundation. */
+export const PenguinPage = withTutorial(PenguinPageContent, 'penguin', PG_TUTORIAL_STEPS);
+/** Inner content of the Penguin page, wrapped by TutorialProvider. */
+function PenguinPageContent() {
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('penguin');
+  const { playSound } = useSound();
+  const {
+    state,
+    loading,
+    error,
+    exec: apiExec,
+    retry,
+    hintError,
+    selectedSource,
+    hint,
+    handleReset,
+    handleGiveUp,
+    handleHint,
+    handleAutoComplete,
+    handleUndo,
+    handleUndoEscape,
+    handleSelectSource,
+    handleSelectTarget,
+    isAutoCompleting,
+  } = usePenguinGame();
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('penguin', state);
+  const { cardHeight, cardOverlap, cardWidth } = useCardDimensions();
+  // CLI mode
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('penguin');
+  const cliConfig: CliGameConfig<PenguinResponse, Parameters<typeof penguinApi.exec>> = useMemo(
+    () => ({
+      gameName: 'penguin',
+      parseCommand: parsePenguinCommand,
+      formatResponse: formatPenguinState,
+      helpText: PENGUIN_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(apiExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
+
+  const isPlayingForKbd = state?.phase === PenguinPhase.PLAYING;
+
+  const dispatchMove = useCallback(
+    (source: PenguinMoveZone, target: PenguinMoveZone) => {
+      void apiExec('move', source, target);
+    },
+    [apiExec],
+  );
+  const dnd = useSolitaireDragDrop<PenguinMoveZone>({
+    onMove: dispatchMove,
+    isPlaying: !!isPlayingForKbd,
+    disabled: loading,
+  });
+
+  const handleManualReset = useCallback(() => {
+    hideActionLog();
+    handleReset();
+  }, [handleReset, hideActionLog]);
+
+  const actionBindings = useMemo(
+    () => [
+      { key: 'h', action: handleHint },
+      { key: 'a', action: handleAutoComplete },
+      { key: 'g', action: handleGiveUp },
+      { key: 'z', action: handleUndo },
+    ],
+    [handleHint, handleAutoComplete, handleGiveUp, handleUndo],
+  );
+
+  useActionKeyboardNav({
+    bindings: actionBindings,
+    enabled: !!isPlayingForKbd && !loading,
+  });
+
+  const [hoveredStack, setHoveredStack] = useState<{ col: number; cardIdx: number } | null>(null);
+
+  if (!state) return <GameSkeleton gameKey="penguin" layout={{ kind: 'tableau', topRow: 7, tableau: 7 }} />;
+
+  const isPlaying = state.phase === PenguinPhase.PLAYING;
+  const isGameClear = state.phase === PenguinPhase.GAME_CLEAR;
+  const isGameOver = state.phase === PenguinPhase.GAME_OVER;
+  const isEnded = isGameClear || isGameOver;
+
+  const emptyFreeCells = state.freeCells.filter((c) => c === null).length;
+  const emptyTableauCols = state.tableau.filter((col: (Card | null)[]) => col.length === 0).length;
+  const supermoveLimit = (1 + emptyFreeCells) * 2 ** emptyTableauCols;
+
+  const emptyColPlaceholder = prevRankLabel(state.baseRank);
+
+  const isSourceSelected = (zone: string, col?: number, cell?: number, cardIndex?: number) =>
+    selectedSource !== null &&
+    selectedSource.zone === zone &&
+    selectedSource.col === col &&
+    selectedSource.cell === cell &&
+    selectedSource.cardIndex === cardIndex;
+
+  return (
+    <GamePageShell
+      title={tc('nav.penguin')}
+      gameThemeBg={gameTheme.penguin.bg}
+      phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
+      gamePath="/penguin"
+      gameEndFlag={isEnded}
+      winShow={isGameClear}
+      onCelebrate={() => playSound('winFanfare')}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={
+        <>
+          <span>
+            {t('moveCount')}: {state.moveCount}
+          </span>
+          <span>
+            {t('baseRank')}: {baseRankLabel(state.baseRank)}
+          </span>
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        </>
+      }
+    >
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <LandscapeBanner message={t('landscapeBanner')} />
+
+          <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+            {/* Free cells + Foundation row */}
+            <div className="flex gap-2 mb-3 items-start flex-wrap">
+              {/* Free cells */}
+              <div className="flex gap-2" data-tutorial="pg-free-cells">
+                {state.freeCells.map((card: Card | null, idx: number) => {
+                  const freeCellZone: PenguinMoveZone = { zone: 'freecell', cell: idx };
+                  return (
+                    <div key={`fc-${idx.toString()}`} className="text-center">
+                      <div className="text-game-text-muted text-xs mb-1">
+                        <span className="hidden sm:inline">
+                          {t('freecell')} {idx}
+                        </span>
+                        <span className="sm:hidden">
+                          {t('freecellShort')}
+                          {idx}
+                        </span>
+                      </div>
+                      <DropZone
+                        isDropTarget={dnd.isDropTarget(freeCellZone)}
+                        onDragOver={dnd.handleDragOver(freeCellZone)}
+                        onDrop={dnd.handleDrop(freeCellZone)}
+                        onDragLeave={dnd.handleDragLeave}
+                      >
+                        {card ? (
+                          <button
+                            type="button"
+                            onClick={() => handleSelectSource(freeCellZone)}
+                            disabled={!isPlaying || loading}
+                            aria-label={cardAlt(card)}
+                            aria-pressed={isSourceSelected('freecell', undefined, idx)}
+                            draggable={isPlaying && !loading}
+                            onDragStart={dnd.handleDragStart(freeCellZone)}
+                            onDragEnd={dnd.handleDragEnd}
+                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('freecell', undefined, idx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(freeCellZone) ? 'opacity-50' : ''}`}
+                          >
+                            <AnimatedCard card={card} width={cardWidth} draggable={false} />
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleSelectTarget(freeCellZone)}
+                            disabled={!isPlaying || loading || !selectedSource}
+                            aria-label={t('emptyFreecellAriaLabel', { idx: String(idx) })}
+                            style={{ width: cardWidth, height: cardHeight }}
+                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                          >
+                            {t('empty')}
+                          </button>
+                        )}
+                      </DropZone>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="w-4" />
+
+              {/* Foundation piles */}
+              <div className="flex gap-2" data-tutorial="pg-foundation">
+                {state.foundation.map((pile: Card[], idx: number) => {
+                  const foundationZone: PenguinMoveZone = { zone: 'foundation', col: idx };
+                  return (
+                    <div key={`f-${idx.toString()}`} className="text-center">
+                      <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
+                      <DropZone
+                        isDropTarget={dnd.isDropTarget(foundationZone)}
+                        onDragOver={dnd.handleDragOver(foundationZone)}
+                        onDrop={dnd.handleDrop(foundationZone)}
+                        onDragLeave={dnd.handleDragLeave}
+                      >
+                        {pile.length > 0 ? (
+                          <button
+                            type="button"
+                            onClick={() => handleSelectTarget(foundationZone)}
+                            disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                            aria-label={t('foundationAriaLabel', {
+                              suit: FOUNDATION_SUITS[idx],
+                              cardCount: String(pile.length),
+                            })}
+                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
+                          >
+                            <AnimatedCard
+                              card={pile[pile.length - 1]}
+                              width={cardWidth}
+                              draggable={false}
+                              dealDelay={isAutoCompleting ? idx * 0.15 : 0}
+                            />
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleSelectTarget(foundationZone)}
+                            disabled={!isPlaying || loading || !selectedSource}
+                            aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
+                            style={{ width: cardWidth, height: cardHeight }}
+                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                          >
+                            {baseRankLabel(state.baseRank)}
+                          </button>
+                        )}
+                      </DropZone>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Tableau */}
+            <div className="relative">
+              <div className="flex gap-0.5 sm:gap-2 mb-3" data-tutorial="pg-tableau">
+                {state.tableau.map((col: (Card | null)[], colIdx: number) => {
+                  const tableauColZone: PenguinMoveZone = { zone: 'tableau', col: colIdx };
+                  return (
+                    <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
+                      <DropZone
+                        isDropTarget={dnd.isDropTarget(tableauColZone)}
+                        onDragOver={dnd.handleDragOver(tableauColZone)}
+                        onDrop={dnd.handleDrop(tableauColZone)}
+                        onDragLeave={dnd.handleDragLeave}
+                        className="relative block"
+                      >
+                        <div className="relative" style={{ minHeight: cardHeight }}>
+                          {col.length === 0 ? (
+                            <button
+                              type="button"
+                              onClick={() => handleSelectTarget(tableauColZone)}
+                              disabled={!isPlaying || loading || !selectedSource}
+                              style={{ height: cardHeight }}
+                              className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                            >
+                              {emptyColPlaceholder}
+                            </button>
+                          ) : (
+                            col.map((card: Card | null, cardIdx: number) => {
+                              const cardZone: PenguinMoveZone = {
+                                zone: 'tableau',
+                                col: colIdx,
+                                cardIndex: cardIdx,
+                              };
+                              const stackSize = col.length - cardIdx;
+                              const exceedsSupermove = stackSize > supermoveLimit;
+                              const isInHoveredBlock =
+                                hoveredStack !== null &&
+                                hoveredStack.col === colIdx &&
+                                cardIdx >= hoveredStack.cardIdx &&
+                                col.length - hoveredStack.cardIdx <= supermoveLimit;
+                              return (
+                                <div
+                                  key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
+                                  className="absolute left-0 right-0"
+                                  style={{ top: cardIdx * cardOverlap }}
+                                >
+                                  {card ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        if (selectedSource) {
+                                          handleSelectTarget(tableauColZone);
+                                        } else {
+                                          handleSelectSource(cardZone);
+                                        }
+                                      }}
+                                      disabled={!isPlaying || loading}
+                                      aria-label={cardAlt(card)}
+                                      aria-pressed={isSourceSelected('tableau', colIdx, undefined, cardIdx)}
+                                      draggable={isPlaying && !loading && !exceedsSupermove}
+                                      onDragStart={dnd.handleDragStart(cardZone)}
+                                      onDragEnd={dnd.handleDragEnd}
+                                      onMouseEnter={() => setHoveredStack({ col: colIdx, cardIdx })}
+                                      onMouseLeave={() => setHoveredStack(null)}
+                                      onFocus={() => setHoveredStack({ col: colIdx, cardIdx })}
+                                      onBlur={() => setHoveredStack(null)}
+                                      title={
+                                        exceedsSupermove
+                                          ? t('supermoveLimitTooltip', { limit: supermoveLimit })
+                                          : undefined
+                                      }
+                                      data-supermove-blocked={exceedsSupermove ? 'true' : undefined}
+                                      data-supermove-block={isInHoveredBlock ? 'true' : undefined}
+                                      className={[
+                                        'p-0 border-0 bg-transparent cursor-pointer w-full rounded',
+                                        focusRingWhite,
+                                        isSourceSelected('tableau', colIdx, undefined, cardIdx) &&
+                                          'ring-2 ring-ds-warning',
+                                        dnd.isDragSource(cardZone) && 'opacity-50',
+                                        exceedsSupermove && 'opacity-60 ring-1 ring-ds-error',
+                                        isInHoveredBlock && 'ring-2 ring-ds-success',
+                                      ]
+                                        .filter(Boolean)
+                                        .join(' ')}
+                                    >
+                                      <AnimatedCard
+                                        card={card}
+                                        width={cardWidth}
+                                        draggable={false}
+                                        style={{ width: '100%' }}
+                                      />
+                                    </button>
+                                  ) : (
+                                    <div style={{ width: cardWidth, height: cardHeight }} />
+                                  )}
+                                </div>
+                              );
+                            })
+                          )}
+                          {col.length > 0 && <div style={{ height: (col.length - 1) * cardOverlap + cardHeight }} />}
+                        </div>
+                      </DropZone>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Hint display */}
+            {hint && (
+              <div className="text-ds-warning text-sm mb-2">
+                {t('hintAvailable')}: {hint.fromZone}
+                {hint.fromCol >= 0 ? ` ${hint.fromCol}` : ''} → {hint.toZone}
+                {hint.toCol >= 0 ? ` ${hint.toCol}` : ''}
+              </div>
+            )}
+            {frontendHintEnabled && frontendHint && (
+              <div className="flex justify-center">
+                <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+              </div>
+            )}
+
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+
+            <ActionLogSection
+              isEndPhase={isEnded}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+          </div>
+
+          {/* Settings */}
+          <SettingsPanel
+            title={tc('settings.title')}
+            groups={[
+              {
+                items: [
+                  {
+                    type: 'checkbox' as const,
+                    id: 'frontendHint',
+                    label: tc('hint.toggle', { ns: 'tutorial' }),
+                    checked: frontendHintEnabled,
+                    onToggle: setFrontendHintEnabled,
+                  },
+                ],
+              },
+            ]}
+          />
+
+          <GameFooter className={`${gameTheme.penguin.footer} px-4 py-2.5`}>
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
+            <div className="flex gap-2 items-center flex-wrap">
+              {isPlaying && (
+                <div data-tutorial="pg-controls">
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleUndo}
+                    disabled={loading || isAutoCompleting || !state.canUndo}
+                  >
+                    {t('undo')}
+                  </button>
+                  {state.isStalemate && (
+                    <StalemateEscapeButton
+                      undoToEscape={state.undoToEscape ?? 0}
+                      onEscape={handleUndoEscape}
+                      disabled={loading || isAutoCompleting}
+                    />
+                  )}
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={handleHint}
+                    disabled={loading || isAutoCompleting}
+                  >
+                    {t('hint')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={handleAutoComplete}
+                    disabled={loading || isAutoCompleting}
+                  >
+                    {t('autoComplete')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnDanger}
+                    onClick={handleGiveUp}
+                    disabled={loading || isAutoCompleting}
+                  >
+                    {t('giveup')}
+                  </button>
+                </div>
+              )}
+              <GameResetButton
+                isGameEnd={isEnded}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="pg-reset-button"
+              />
+            </div>
+          </GameFooter>
+        </>
+      )}
+    </GamePageShell>
+  );
+}

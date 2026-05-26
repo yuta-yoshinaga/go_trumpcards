@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した94種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した95種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -121,6 +121,7 @@ Go + Clean Architecture で実装した94種類のトランプゲーム。CLI �
 | フォーカードポーカー (Four Card Poker) | `fourcardpoker` | [CUI](docs/manual/cui/fourcardpoker.md) / [Web](docs/manual/web/fourcardpoker.md) |
 | ラミー 500 (Rummy 500) | `rummy500` | [CUI](docs/manual/cui/rummy500.md) / [Web](docs/manual/web/rummy500.md) |
 | エイトオフ (Eight Off) | `eightoff` | [CUI](docs/manual/cui/eightoff.md) / [Web](docs/manual/web/eightoff.md) |
+| ペンギン (Penguin) | `penguin` | [CUI](docs/manual/cui/penguin.md) / [Web](docs/manual/web/penguin.md) |
 
 ## Demo
 
