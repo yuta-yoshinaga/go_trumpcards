@@ -135,8 +135,11 @@ func (cp *ChinesePoker) SetHands(frontIndices []int, middleIndices []int) error 
 	if len(middleIndices) != ChinesePokerMiddleSize {
 		return NewDomainError(ErrInvalidCard, "Middle hand must have exactly 5 cards.")
 	}
+	if len(cp.playerCards) < ChinesePokerHandSize {
+		return NewDomainError(ErrInvalidPlay, "Insufficient player cards.")
+	}
 
-	used := make(map[int]bool)
+	var used [ChinesePokerHandSize]bool
 	for _, idx := range frontIndices {
 		if idx < 0 || idx >= ChinesePokerHandSize {
 			return NewDomainError(ErrInvalidCard, "Card index out of range.")
@@ -353,6 +356,9 @@ func cpFrontNotStrongerThanMiddle(frontRank int, front []*Card, middleRank int, 
 }
 
 // cpMapThreeCardToFiveCardRank 3枚ランクを5枚ランク空間にマッピング
+// Chinese Poker foul check: front must not be stronger than middle.
+// 3-card straights/flushes are real hands — mapping them to HighCard
+// would let a front straight-flush bypass the foul check.
 func cpMapThreeCardToFiveCardRank(threeCardRank int) int {
 	switch threeCardRank {
 	case ThreeCardHandHighCard:
@@ -360,13 +366,13 @@ func cpMapThreeCardToFiveCardRank(threeCardRank int) int {
 	case ThreeCardHandPair:
 		return PokerHandOnePair
 	case ThreeCardHandFlush:
-		return PokerHandHighCard
+		return PokerHandTwoPair
 	case ThreeCardHandStraight:
-		return PokerHandHighCard
+		return PokerHandTwoPair
 	case ThreeCardHandThreeOfAKind:
 		return PokerHandThreeOfAKind
 	case ThreeCardHandStraightFlush:
-		return PokerHandHighCard
+		return PokerHandStraight
 	default:
 		return PokerHandHighCard
 	}
@@ -462,7 +468,7 @@ func cpFrontRoyalty(rank int, front []*Card) int {
 
 // cpPairValue 3枚からペア値を抽出する（A=14）
 func cpPairValue(cards []*Card) int {
-	freq := make(map[int]int)
+	var freq [15]int
 	for _, c := range cards {
 		v := c.GetValue()
 		if v == 1 {
@@ -470,8 +476,8 @@ func cpPairValue(cards []*Card) int {
 		}
 		freq[v]++
 	}
-	for v, cnt := range freq {
-		if cnt == 2 {
+	for v := 14; v >= 2; v-- {
+		if freq[v] == 2 {
 			return v
 		}
 	}
@@ -489,21 +495,22 @@ func cpHouseWay(cards []*Card) (front, middle, back []*Card) {
 	var bestFront, bestMiddle, bestBack []*Card
 	bestScore := -1
 
-	indices := make([]int, ChinesePokerHandSize)
-	for i := range indices {
-		indices[i] = i
-	}
+	var frontBuf [3]*Card
+	var middleBuf [5]*Card
+	var backBuf [5]*Card
+	var remaining [10]int
 
 	for i := 0; i < ChinesePokerHandSize-2; i++ {
 		for j := i + 1; j < ChinesePokerHandSize-1; j++ {
 			for k := j + 1; k < ChinesePokerHandSize; k++ {
-				frontCandidate := []*Card{cards[i], cards[j], cards[k]}
-				frontUsed := map[int]bool{i: true, j: true, k: true}
+				frontBuf[0], frontBuf[1], frontBuf[2] = cards[i], cards[j], cards[k]
+				frontSlice := frontBuf[:]
 
-				remaining := make([]int, 0, 10)
+				ri := 0
 				for idx := range ChinesePokerHandSize {
-					if !frontUsed[idx] {
-						remaining = append(remaining, idx)
+					if idx != i && idx != j && idx != k {
+						remaining[ri] = idx
+						ri++
 					}
 				}
 
@@ -512,34 +519,41 @@ func cpHouseWay(cards []*Card) (front, middle, back []*Card) {
 						for mi2 := mi1 + 1; mi2 < 8; mi2++ {
 							for mi3 := mi2 + 1; mi3 < 9; mi3++ {
 								for mi4 := mi3 + 1; mi4 < 10; mi4++ {
-									middleCandidate := []*Card{
-										cards[remaining[mi0]],
-										cards[remaining[mi1]],
-										cards[remaining[mi2]],
-										cards[remaining[mi3]],
-										cards[remaining[mi4]],
-									}
-									middleUsed := map[int]bool{mi0: true, mi1: true, mi2: true, mi3: true, mi4: true}
-									backCandidate := make([]*Card, 0, ChinesePokerBackSize)
-									for ri, ridx := range remaining {
-										if !middleUsed[ri] {
-											backCandidate = append(backCandidate, cards[ridx])
+									middleBuf[0] = cards[remaining[mi0]]
+									middleBuf[1] = cards[remaining[mi1]]
+									middleBuf[2] = cards[remaining[mi2]]
+									middleBuf[3] = cards[remaining[mi3]]
+									middleBuf[4] = cards[remaining[mi4]]
+									middleSlice := middleBuf[:]
+
+									var bi int
+									var midSet [10]bool
+									midSet[mi0] = true
+									midSet[mi1] = true
+									midSet[mi2] = true
+									midSet[mi3] = true
+									midSet[mi4] = true
+									for ri2 := range 10 {
+										if !midSet[ri2] {
+											backBuf[bi] = cards[remaining[ri2]]
+											bi++
 										}
 									}
+									backSlice := backBuf[:]
 
-									if !cpValidateHands(frontCandidate, middleCandidate, backCandidate) {
+									if !cpValidateHands(frontSlice, middleSlice, backSlice) {
 										continue
 									}
 
-									score := cpHouseWayScore(frontCandidate, middleCandidate, backCandidate)
+									score := cpHouseWayScore(frontSlice, middleSlice, backSlice)
 									if score > bestScore {
 										bestScore = score
 										bestFront = make([]*Card, 3)
-										copy(bestFront, frontCandidate)
+										copy(bestFront, frontSlice)
 										bestMiddle = make([]*Card, 5)
-										copy(bestMiddle, middleCandidate)
+										copy(bestMiddle, middleSlice)
 										bestBack = make([]*Card, 5)
-										copy(bestBack, backCandidate)
+										copy(bestBack, backSlice)
 									}
 								}
 							}

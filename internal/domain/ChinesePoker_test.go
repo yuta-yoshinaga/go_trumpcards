@@ -137,6 +137,43 @@ func TestChinesePoker_SetHands_NegativeIndex(t *testing.T) {
 	assert.True(t, errors.Is(err, ErrInvalidCard))
 }
 
+func TestChinesePoker_SetHands_InsufficientPlayerCards(t *testing.T) {
+	cp := NewDefaultChinesePoker()
+	cp.SetPhase(ChinesePokerPhaseSetHands)
+	cp.SetPlayerCards(make([]*Card, 5))
+	err := cp.SetHands([]int{0, 1, 2}, []int{3, 4, 5, 6, 7})
+	assert.Error(t, err)
+	assert.True(t, errors.Is(err, ErrInvalidPlay))
+}
+
+func TestChinesePoker_SetHands_FoulStraightFront(t *testing.T) {
+	cp := NewDefaultChinesePoker()
+	cp.SetPhase(ChinesePokerPhaseSetHands)
+	cp.SetBet(100)
+	// Front: A-2-3 (straight), Middle: 4-5-6-7-8 (straight), but front straight should be foul if middle is only pair
+	cp.SetPlayerCards([]*Card{
+		NewCard(CardDesignSpade, 1, false),    // 0: A
+		NewCard(CardDesignHeart, 2, false),    // 1: 2
+		NewCard(CardDesignClover, 3, false),   // 2: 3
+		NewCard(CardDesignDiamond, 5, false),  // 3
+		NewCard(CardDesignSpade, 5, false),    // 4: pair of 5s
+		NewCard(CardDesignHeart, 7, false),    // 5
+		NewCard(CardDesignClover, 9, false),   // 6
+		NewCard(CardDesignDiamond, 11, false), // 7
+		NewCard(CardDesignSpade, 13, false),   // 8
+		NewCard(CardDesignHeart, 13, false),   // 9
+		NewCard(CardDesignClover, 12, false),  // 10
+		NewCard(CardDesignDiamond, 12, false), // 11
+		NewCard(CardDesignSpade, 11, false),   // 12
+	})
+	cp.SetDealerCards(make([]*Card, 13))
+	// Front: [0,1,2]=A,2,3 (straight), Middle: [3,4,5,6,7]=5,5,7,9,J (one pair)
+	// Straight > Pair → foul
+	err := cp.SetHands([]int{0, 1, 2}, []int{3, 4, 5, 6, 7})
+	assert.Error(t, err)
+	assert.True(t, errors.Is(err, ErrInvalidPlay))
+}
+
 func TestChinesePoker_SetHands_Foul(t *testing.T) {
 	cp := NewDefaultChinesePoker()
 	cp.SetPhase(ChinesePokerPhaseSetHands)
@@ -509,10 +546,10 @@ func TestCpCompareFiveCardHands(t *testing.T) {
 func TestCpMapThreeCardToFiveCardRank(t *testing.T) {
 	assert.Equal(t, PokerHandHighCard, cpMapThreeCardToFiveCardRank(ThreeCardHandHighCard))
 	assert.Equal(t, PokerHandOnePair, cpMapThreeCardToFiveCardRank(ThreeCardHandPair))
-	assert.Equal(t, PokerHandHighCard, cpMapThreeCardToFiveCardRank(ThreeCardHandFlush))
-	assert.Equal(t, PokerHandHighCard, cpMapThreeCardToFiveCardRank(ThreeCardHandStraight))
+	assert.Equal(t, PokerHandTwoPair, cpMapThreeCardToFiveCardRank(ThreeCardHandFlush))
+	assert.Equal(t, PokerHandTwoPair, cpMapThreeCardToFiveCardRank(ThreeCardHandStraight))
 	assert.Equal(t, PokerHandThreeOfAKind, cpMapThreeCardToFiveCardRank(ThreeCardHandThreeOfAKind))
-	assert.Equal(t, PokerHandHighCard, cpMapThreeCardToFiveCardRank(ThreeCardHandStraightFlush))
+	assert.Equal(t, PokerHandStraight, cpMapThreeCardToFiveCardRank(ThreeCardHandStraightFlush))
 	assert.Equal(t, PokerHandHighCard, cpMapThreeCardToFiveCardRank(99))
 }
 
