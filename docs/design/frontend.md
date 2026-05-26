@@ -436,7 +436,7 @@ classDiagram
         +object messageParams
     }
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全101ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全104ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -867,7 +867,7 @@ classDiagram
     class actionLogApi {
         +blackjack() Promise~ActionLogResponse~
         +poker() Promise~ActionLogResponse~
-        ...全101ゲーム()
+        ...全104ゲーム()
     }
 
     BlackJackApi --> gameApi : uses postJson/gameExec
@@ -929,7 +929,7 @@ classDiagram
 
     RedDogApi --> gameApi : uses postJson/gameExec
 
-    note for BlackJackApi "全102ゲーム分のAPI Objectが存在\n(blackjack, spanish21, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, omahahilo, shortdeck,\npineapple, crazypineapple, hearts, memory, klondike, freecell,\nseahaventowers, cruel, baccarat, spades, twotenjack, crazyeights,\nginrummy, canasta, spider, spiderette, napoleon, mighty,\nindianpoker, videopoker, deuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, caribbeanstud, texasholdembonus,\nultimatetexasholdem, mississippistud, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow, war, canfield, fiftyone, yukon, russiansolitaire, scorpion, accordion, whist,\nletitride, pokersquares, pageone, reddog, razz, badugi, trash,\nsevenbridge, president, cassino, calculation, crescent, spiteandmalice,\nskat, shithead, nertz, slapjack, egyptianratscrew, bakersdozen, tonk,\ncasinowar, pitch, dragontiger, blackjackswitch, montecarlo, contractrummy, belote,\noasispoker, beleagueredcastle, piquet, casinoholdem, callbreak,\nhighcardflush, fourcardpoker, briscola, tarneeb, gaps, rummy500, eightoff, penguin)"
+    note for BlackJackApi "全104ゲーム分のAPI Objectが存在\n(blackjack, spanish21, poker, oldmaid, daifugo,\nsevens, doubt, bigtwo, holdem, omaha, omahahilo, shortdeck,\npineapple, crazypineapple, hearts, memory, klondike, freecell,\nseahaventowers, cruel, baccarat, spades, twotenjack, crazyeights,\nginrummy, canasta, spider, spiderette, napoleon, mighty,\nindianpoker, videopoker, deuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, caribbeanstud, texasholdembonus,\nultimatetexasholdem, mississippistud, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow, war, canfield, fiftyone, yukon, russiansolitaire, scorpion, accordion, whist,\nletitride, pokersquares, pageone, reddog, razz, badugi, trash,\nsevenbridge, president, cassino, calculation, crescent, spiteandmalice,\nskat, shithead, nertz, slapjack, egyptianratscrew, bakersdozen, tonk,\ncasinowar, pitch, dragontiger, blackjackswitch, montecarlo, contractrummy, belote,\noasispoker, beleagueredcastle, piquet, casinoholdem, callbreak,\nhighcardflush, fourcardpoker, russianpoker, briscola, tarneeb, gaps, rummy500, eightoff, penguin)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -1308,7 +1308,7 @@ classDiagram
 
     useCanastaGame --> useGameApi : uses
 
-    note for useBlackJackGame "全101ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    note for useBlackJackGame "全104ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -1907,7 +1907,7 @@ classDiagram
     GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck/Pineapple/SevenCardStud/Razz)
     PokerTableLayout --> CpuPlayerCard : wraps
 
-    note for GamePage "全101ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全104ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -1930,7 +1930,7 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (101ゲーム)
+        +Routes (104ゲーム)
     }
 
     class gameCategories {
@@ -1953,11 +1953,11 @@ classDiagram
     App --> i18n : initializes
     App --> gameCategories : routes from
     App --> NavBar : renders
-    App --> GamePage : routes to 101 pages
+    App --> GamePage : routes to 104 pages
     GamePage --> TutorialProvider : wraps (per-game)
     TutorialProvider --> TutorialOverlay : renders when active
 
-    note for i18n "103名前空間: common + 101ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
+    note for i18n "106名前空間: common + 104ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
 ```
 
 ### 1.8 AI Game Concierge (/discover)

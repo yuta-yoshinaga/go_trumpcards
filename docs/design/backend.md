@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全101ゲーム)](#12-ゲームドメイン-全101ゲーム)
+  - [1.2 ゲームドメイン (全104ゲーム)](#12-ゲームドメイン-全104ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -151,7 +151,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全101ゲーム)
+### 1.2 ゲームドメイン (全104ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -405,6 +405,32 @@ classDiagram
 
     CasinoWar --> "1" TrumpCards
     CasinoWar --> "1" ChipHolder
+
+    class RussianPoker {
+        -trumpCards *TrumpCards
+        -chipHolder *ChipHolder
+        -playerHand []*Card
+        -dealerHand []*Card
+        -phase int
+        -anteBet int
+        -playBet int
+        -exchangeCount int
+        -bought6th bool
+        +Reset()
+        +Bet(ante int) error
+        +Exchange(indices []int) error
+        +Buy6th() error
+        +Select(discardIndex int) error
+        +Play() error
+        +Fold() error
+        +ForceExchange() error
+        +Decline() error
+        +GetPhase() int
+        +GetActionLog() []*ActionLogEntry
+    }
+
+    RussianPoker --> "1" TrumpCards
+    RussianPoker --> "1" ChipHolder
 
     note for VideoPokerVariantConfig "DeucesWild・JokerPoker は独立したドメインクラスを持たず\nVideoPokerVariantConfig のファクトリ関数\n(DeucesWildConfig / JokerPokerConfig) として実装"
 ```
@@ -1552,11 +1578,58 @@ classDiagram
         +GetPhase() WhistPhase
     }
 
+    class EightOff {
+        -trumpCards *TrumpCards
+        -tableau [8][]*Card
+        -foundation [4][]*Card
+        -freeCells [8]*Card
+        -phase EightOffPhase
+        -history []*eightOffSnapshot
+        +Reset()
+        +MoveTableauToTableau(fromCol, cardIndex, toCol int) error
+        +MoveTableauToFoundation(col int) error
+        +MoveTableauToFreeCell(col, cell int) error
+        +MoveFreeCellToTableau(cell, col int) error
+        +MoveFreeCellToFoundation(cell int) error
+        +GiveUp()
+        +GetHint() *EightOffHint
+        +AutoComplete() error
+        +Undo() error
+        +UndoN(n int) error
+        +UndoToEscape() int
+        +GetPhase() EightOffPhase
+    }
+
+    class Penguin {
+        -trumpCards *TrumpCards
+        -tableau [7][]*Card
+        -foundation [4][]*Card
+        -freeCells [3]*Card
+        -baseRank int
+        -phase PenguinPhase
+        -history []*penguinSnapshot
+        +Reset()
+        +MoveTableauToTableau(fromCol, cardIndex, toCol int) error
+        +MoveTableauToFoundation(col int) error
+        +MoveTableauToFreeCell(col, cell int) error
+        +MoveFreeCellToTableau(cell, col int) error
+        +MoveFreeCellToFoundation(cell int) error
+        +GiveUp()
+        +GetHint() *PenguinHint
+        +AutoComplete() error
+        +Undo() error
+        +UndoN(n int) error
+        +UndoToEscape() int
+        +GetPhase() PenguinPhase
+    }
+
     Canfield --> "1" TrumpCards
     War --> "1" TrumpCards
     War --> "2" WarPlayer
     Whist --> "1" TrumpCards
     Whist --> "4" WhistPlayer
+    EightOff --> "1" TrumpCards
+    Penguin --> "1" TrumpCards
 ```
 
 ### 1.3 ユースケース層 (Interactor・Presenter)
@@ -1610,7 +1683,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全101ゲーム共通)**
+**Interactor パターン (全104ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -1682,8 +1755,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "101ゲーム × CUI/Web = 202 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
-    note for GameCuiPresenter "101ゲーム × CUI/Web = 202 Presenter 実装"
+    note for GameCuiController "104ゲーム × CUI/Web = 208 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
+    note for GameCuiPresenter "104ゲーム × CUI/Web = 208 Presenter 実装"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -3464,5 +3537,49 @@ stateDiagram-v2
 ```
 
 Penguin は FreeCell のバリアントで、最初に配られたカードのランク (baseRank) が組札の開始ランクとなる。baseRank と同じランクの残り3枚は自動的にフリーセルに配置される。EightOff と同様にスーパームーブ `(1 + emptyFreeCells) × 2^(emptyTableauCols)` を使用するが、空列に入れるカードが prevRank(baseRank) に限定される点が異なる。
+
+### 3.53 EightOff フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Playing : Reset()
+    Playing --> Playing : Move() / Undo() / Hint() / AutoComplete()
+    Playing --> GameClear : 組札4スート全完成
+    Playing --> GameOver : GiveUp()
+    GameClear --> [*]
+    GameOver --> [*]
+
+    note right of Playing : EightOffPhasePlaying = 0\n8列×6枚 + フリーセル8個(4枚初期配置)\n同スート降順のタブロー構築\nスーパームーブ = (1 + emptyFreeCells) × 2^(emptyTableauCols)
+    note right of GameClear : EightOffPhaseGameClear = 1
+    note right of GameOver : EightOffPhaseGameOver = 2
+```
+
+EightOff は FreeCell のバリアントで、8列×6枚(計48枚)のタブローと8個のフリーセル(残り4枚が初期配置)を持つ。タブローは同スート降順で構築し、空列には King のみ配置可能。FreeCell と同じスーパームーブ計算式を使用する。
+
+### 3.54 RussianPoker フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Bet : Reset()
+    Bet --> Action : Bet(ante)
+    Action --> End : Fold()
+    Action --> End : Play() (ディーラー非クオリファイ or 決着)
+    Action --> ForceQualify : Play() (ディーラー非クオリファイ + プレイヤー勝ち)
+    Action --> PostAction : Exchange(indices)
+    Action --> Select : Buy6th()
+    Select --> PostAction : Select(discardIndex)
+    PostAction --> End : Fold()
+    PostAction --> End : Play()
+    PostAction --> ForceQualify : Play() (ディーラー非クオリファイ + プレイヤー勝ち)
+    ForceQualify --> End : ForceExchange() / Decline()
+    End --> [*]
+
+    note right of Bet : RussianPokerPhaseBet = 1\nアンティベット
+    note right of Action : RussianPokerPhaseAction = 2\nFold / Play / Exchange(最大2回) / Buy6th
+    note right of Select : RussianPokerPhaseSelect = 3\n6枚から5枚を選ぶ
+    note right of PostAction : RussianPokerPhasePostAction = 4\n交換・購入後の Fold / Play 選択
+    note right of ForceQualify : RussianPokerPhaseForceQualify = 5\nアンティ追加でディーラー強制クオリファイ
+    note right of End : RussianPokerPhaseEnd = 6\n配当計算・結果表示
+```
 
 **注:** OldMaid・Daifugo・Sevens・President はターン制で進行する手札削り系のため、明示的なフェーズ定数を持ちません (currentTurn が巡回し、全プレイヤーの手札が 0 枚またはランクが確定するまで進行)。
