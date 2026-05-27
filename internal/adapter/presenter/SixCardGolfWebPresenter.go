@@ -53,6 +53,9 @@ func (p *SixCardGolfWebPresenter) buildPlayersOutput(g interfaces.SixCardGolfGam
 	out := make([]*controller.SixCardGolfWebOutputPlayer, 0, g.GetPlayerCnt())
 	for i := 0; i < g.GetPlayerCnt(); i++ {
 		player := g.GetPlayer(i)
+		if player == nil {
+			continue
+		}
 		grid := make([]*controller.SixCardGolfWebOutputSlot, domain.SixCardGolfGridSize)
 		for j := 0; j < domain.SixCardGolfGridSize; j++ {
 			slot := player.Grid[j]

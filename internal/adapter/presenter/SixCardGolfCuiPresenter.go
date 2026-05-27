@@ -69,6 +69,9 @@ func (p *SixCardGolfCuiPresenter) Output(g interfaces.SixCardGolfGame, lastErr e
 
 // sixCardGolfPlayerStr プレイヤー表示文字列
 func sixCardGolfPlayerStr(player *domain.SixCardGolfPlayer, idx int, isCurrent, revealAll bool, g interfaces.SixCardGolfGame) string {
+	if player == nil {
+		return ""
+	}
 	var b strings.Builder
 	name := scgPlayerName(player, idx)
 	marker := ""

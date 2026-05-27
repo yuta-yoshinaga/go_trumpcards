@@ -563,13 +563,19 @@ func (g *SixCardGolf) cpuFlipAfterDiscard() {
 
 // wouldColumnMatch 指定位置にカードを置いた場合に列一致するか
 func (g *SixCardGolf) wouldColumnMatch(playerIdx, pos int, card *Card) bool {
+	if card == nil {
+		return false
+	}
 	col := pos % 3
 	pairPos := col
 	if pos < 3 {
 		pairPos = col + 3
 	}
 	p := g.players[playerIdx]
-	if !p.Grid[pairPos].FaceUp {
+	if p == nil {
+		return false
+	}
+	if !p.Grid[pairPos].FaceUp || p.Grid[pairPos].Card == nil {
 		return false
 	}
 	return p.Grid[pairPos].Card.GetValue() == card.GetValue()
@@ -648,6 +654,7 @@ func (g *SixCardGolf) ScorePlayer(playerIdx int) int {
 		top := col
 		bot := col + 3
 		if p.Grid[top].FaceUp && p.Grid[bot].FaceUp &&
+			p.Grid[top].Card != nil && p.Grid[bot].Card != nil &&
 			p.Grid[top].Card.GetValue() == p.Grid[bot].Card.GetValue() {
 			scored[top] = true
 			scored[bot] = true
@@ -939,7 +946,7 @@ func (g *SixCardGolf) UnmarshalJSON(data []byte) error {
 	g.roundNumber = j.RoundNumber
 	g.finalTurnTrigger = j.FinalTurnTrigger
 	g.finalTurnDone = j.FinalTurnDone
-	if g.finalTurnDone == nil {
+	if g.finalTurnDone == nil || len(g.finalTurnDone) != len(j.Players) {
 		g.finalTurnDone = make([]bool, len(j.Players))
 	}
 	g.gameEndFlag = j.GameEndFlag
@@ -954,6 +961,9 @@ func (g *SixCardGolf) UnmarshalJSON(data []byte) error {
 
 	g.players = make([]*SixCardGolfPlayer, len(j.Players))
 	for i, pj := range j.Players {
+		if pj == nil {
+			return fmt.Errorf("sixcardgolf: player data cannot be null")
+		}
 		p := &SixCardGolfPlayer{
 			IsCpu:           pj.IsCpu,
 			RoundScore:      pj.RoundScore,
