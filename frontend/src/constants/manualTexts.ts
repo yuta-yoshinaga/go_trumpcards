@@ -49,6 +49,7 @@ import hearts from '../../../docs/manual/web/hearts.md?raw';
 import highcardflush from '../../../docs/manual/web/highcardflush.md?raw';
 import holdem from '../../../docs/manual/web/holdem.md?raw';
 import indianpoker from '../../../docs/manual/web/indianpoker.md?raw';
+import irishpoker from '../../../docs/manual/web/irishpoker.md?raw';
 import jokerpoker from '../../../docs/manual/web/jokerpoker.md?raw';
 import klondike from '../../../docs/manual/web/klondike.md?raw';
 import letitride from '../../../docs/manual/web/letitride.md?raw';
@@ -165,6 +166,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/chinesepoker': chinesepoker,
   '/pineapple': pineapple,
   '/crazypineapple': crazypineapple,
+  '/irishpoker': irishpoker,
   '/pigtail': pigtail,
   '/pinochle': pinochle,
   '/piquet': piquet,

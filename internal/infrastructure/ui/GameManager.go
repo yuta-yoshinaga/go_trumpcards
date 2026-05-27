@@ -58,7 +58,7 @@ var (
 		"tournament.helpSkipAddOn",
 	}
 	// holdemBlindKeys are the blind / level-up / table-size settings shared
-	// by holdem, omaha, shortdeck, pineapple, crazypineapple.
+	// by holdem, omaha, shortdeck, pineapple, crazypineapple, irishpoker.
 	holdemBlindKeys = []string{
 		"tournament.helpSmallBlind",
 		"tournament.helpBigBlind",
@@ -271,6 +271,25 @@ var gameRegistry = []GameRegistryEntry{
 				}, pineappleRebuyAddOnKeys...),
 				SettingKeys: append([]string{
 					"crazypineapple.helpBettingLimit", "crazypineapple.helpTournament",
+				}, holdemBlindKeys...),
+			})
+	}},
+	{Name: "irishpoker", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPineappleCuiController(usecase.NewPineappleInteractor(
+				domain.NewDefaultIrishPoker(), new(presenter.PineappleCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "irishpoker.helpTitle",
+				CommandKeys: append([]string{
+					"irishpoker.helpFold",
+					"irishpoker.helpCheck",
+					"irishpoker.helpCall",
+					"irishpoker.helpBet",
+					"irishpoker.helpRaise",
+					"irishpoker.helpAllIn",
+				}, pineappleRebuyAddOnKeys...),
+				SettingKeys: append([]string{
+					"irishpoker.helpBettingLimit", "irishpoker.helpTournament",
 				}, holdemBlindKeys...),
 			})
 	}},

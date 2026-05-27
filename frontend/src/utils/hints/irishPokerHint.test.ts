@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { PineappleResponse } from '../../types/card';
 import { HoldemPhase, PineapplePhase } from '../../types/phases';
-import { getCrazyPineappleHint } from './crazyPineappleHint';
+import { getIrishPokerHint } from './irishPokerHint';
 
 function makeState(overrides: Partial<PineappleResponse> = {}): PineappleResponse {
   return {
@@ -62,19 +62,19 @@ function makeState(overrides: Partial<PineappleResponse> = {}): PineappleRespons
     muckAvailable: false,
     isDiscardPhase: false,
     discardDone: [false],
-    initialDealCount: 3,
+    initialDealCount: 4,
     ...overrides,
   };
 }
 
-describe('getCrazyPineappleHint', () => {
+describe('getIrishPokerHint', () => {
   it('returns discardWeakest hint during the discard phase', () => {
     const state = makeState({
       phase: PineapplePhase.DISCARD,
       isDiscardPhase: true,
       discardDone: [false],
     });
-    const hint = getCrazyPineappleHint(state);
+    const hint = getIrishPokerHint(state);
     expect(hint?.targetAction).toBe('discard');
     expect(hint?.reason).toBe('hint.discardWeakest');
   });
@@ -85,14 +85,11 @@ describe('getCrazyPineappleHint', () => {
       isDiscardPhase: true,
       discardDone: [true],
     });
-    expect(getCrazyPineappleHint(state)).toBeNull();
+    expect(getIrishPokerHint(state)).toBeNull();
   });
 
   it('delegates to the holdem base hint outside discard phase', () => {
     const state = makeState({ phase: HoldemPhase.FLOP, isDiscardPhase: false });
-    // HoldemBaseHint falls back based on hand rank / pot odds; we just verify
-    // the call returns a non-throwing result — logic itself is covered by
-    // getHoldemBaseHint's own tests.
-    expect(() => getCrazyPineappleHint(state)).not.toThrow();
+    expect(() => getIrishPokerHint(state)).not.toThrow();
   });
 });

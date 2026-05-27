@@ -191,6 +191,12 @@ func (_m *MockPineappleGame) GetDiscardDone() []bool {
 	return nil
 }
 
+// GetInitialDealCount モック
+func (_m *MockPineappleGame) GetInitialDealCount() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
 // Rebuy モック
 func (_m *MockPineappleGame) Rebuy() error {
 	ret := _m.Called()

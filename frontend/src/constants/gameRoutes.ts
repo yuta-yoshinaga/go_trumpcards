@@ -261,6 +261,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [1, 5, 3, 3], skill: [2, 4, 4, 2], social: [1, 3, 5, 3, 3], theme: [3, 1, 2, 1, 3, 1] },
       },
       {
+        path: '/irishpoker',
+        labelKey: 'nav.irishpoker',
+        icon: '🍀',
+        page: 'IrishPoker',
+        profile: { mood: [1, 5, 4, 3], skill: [2, 4, 5, 2], social: [1, 3, 5, 3, 4], theme: [3, 1, 2, 1, 3, 1] },
+      },
+      {
         path: '/sevencardstud',
         labelKey: 'nav.sevencardstud',
         icon: '7️⃣',

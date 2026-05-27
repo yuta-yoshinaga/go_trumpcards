@@ -779,7 +779,11 @@ export interface HoldemHandOdds {
 export interface PineappleResponse extends HoldemResponse {
   isDiscardPhase: boolean;
   discardDone: boolean[];
+  initialDealCount: number;
 }
+
+/** Irish Poker shares the same response shape as Pineapple. */
+export type IrishPokerResponse = PineappleResponse;
 
 // --- Omaha Hold'em ---
 // Omaha shares identical response/player structures with Holdem

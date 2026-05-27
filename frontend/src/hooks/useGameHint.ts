@@ -131,6 +131,7 @@ import { getHeartsHint } from '../utils/hints/heartsHint';
 import { getHighCardFlushHint } from '../utils/hints/highcardflushHint';
 import { getHoldemHint } from '../utils/hints/holdemHint';
 import { getIndianPokerHint } from '../utils/hints/indianpokerHint';
+import { getIrishPokerHint } from '../utils/hints/irishPokerHint';
 import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
 import { getKlondikeHint } from '../utils/hints/klondikeHint';
 import { getLetitrideHint } from '../utils/hints/letitrideHint';
@@ -206,6 +207,7 @@ const hintFactories = {
   shortdeck: (s) => getShortDeckHint(s as ShortDeckResponse),
   pineapple: (s) => getPineappleHint(s as PineappleResponse),
   crazypineapple: (s) => getCrazyPineappleHint(s as PineappleResponse),
+  irishpoker: (s) => getIrishPokerHint(s as PineappleResponse),
   videopoker: (s) => getVideoPokerHint(s as VideoPokerResponse),
   deuceswild: (s) => getDeucesWildHint(s as VideoPokerResponse),
   jokerpoker: (s) => getJokerPokerHint(s as VideoPokerResponse),
