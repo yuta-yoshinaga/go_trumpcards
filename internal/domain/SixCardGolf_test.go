@@ -332,8 +332,8 @@ func TestSixCardGolf_FlipCard(t *testing.T) {
 	require.NoError(t, g.DiscardDrawn())
 	assert.True(t, g.GetCanFlip())
 
-	require.NoError(t, g.FlipCard(1))
-	assert.True(t, g.GetPlayer(0).Grid[1].FaceUp)
+	require.NoError(t, g.FlipCard(2))
+	assert.True(t, g.GetPlayer(0).Grid[2].FaceUp)
 	assert.False(t, g.GetCanFlip())
 }
 
