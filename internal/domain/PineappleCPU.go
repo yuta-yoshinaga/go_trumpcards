@@ -314,7 +314,7 @@ func (p *Pineapple) evalPreFlopStrength(idx int) int {
 		}
 	}
 
-	bonus := n - 2 + 3
+	bonus := n + 2
 	return clamp(bestScore+bonus, 0, 100)
 }
 
@@ -375,7 +375,7 @@ func evalTwoCardStrength(c1, c2 *Card) int {
 }
 
 // cpuDiscard CPUプレイヤーのディスカード意思決定
-// ホールカードからコミュニティカードを考慮して最も弱い1枚を選ぶ
+// C(N,2)通りの2枚ペアを全評価し、最適な2枚を残すように1枚を捨てる。
 func (p *Pineapple) cpuDiscard(idx int) int {
 	pl := p.players[idx]
 	n := pl.GetCardsSize()
@@ -383,41 +383,37 @@ func (p *Pineapple) cpuDiscard(idx int) int {
 		return 0
 	}
 
-	bestDiscardIdx := 0
+	bestKeepI, bestKeepJ := 0, 1
 	bestRank := -1
 
-	for drop := 0; drop < n; drop++ {
-		remaining := make([]*Card, 0, n-1)
-		for i := 0; i < n; i++ {
-			if i != drop {
-				remaining = append(remaining, pl.GetCard(i))
-			}
-		}
+	for i := 0; i < n; i++ {
+		for j := i + 1; j < n; j++ {
+			all := make([]*Card, 0, 2+len(p.communityCards))
+			all = append(all, pl.GetCard(i), pl.GetCard(j))
+			all = append(all, p.communityCards...)
 
-		// 残り2枚 + コミュニティカードで評価
-		all := make([]*Card, 0, 2+len(p.communityCards))
-		all = append(all, remaining...)
-		all = append(all, p.communityCards...)
-
-		rank := -1
-		if len(all) >= 5 {
-			combos := combinations(all, 5)
-			for _, combo := range combos {
-				r := evalFiveCardHand(combo)
-				if r > rank {
-					rank = r
+			rank := -1
+			if len(all) >= 5 {
+				for _, combo := range combinations(all, 5) {
+					if r := evalFiveCardHand(combo); r > rank {
+						rank = r
+					}
 				}
+			} else {
+				rank = evalTwoCardStrength(pl.GetCard(i), pl.GetCard(j))
 			}
-		} else {
-			// コミュニティカードが少ない場合 (通常は3枚あるはず)、2枚の強度で判断
-			rank = evalTwoCardStrength(remaining[0], remaining[1])
-		}
 
-		if rank > bestRank {
-			bestRank = rank
-			bestDiscardIdx = drop
+			if rank > bestRank {
+				bestRank = rank
+				bestKeepI, bestKeepJ = i, j
+			}
 		}
 	}
 
-	return bestDiscardIdx
+	for k := 0; k < n; k++ {
+		if k != bestKeepI && k != bestKeepJ {
+			return k
+		}
+	}
+	return 0
 }
