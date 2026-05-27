@@ -19,7 +19,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useMountReset } from '../hooks/useMountReset';
 import { useSound } from '../providers/SoundProvider';
 import { focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -107,25 +106,52 @@ function parseSCGCommand(input: string): CliParseResult<ApiArgs> {
   }
 }
 
-const cliConfig: CliGameConfig<ApiArgs, SixCardGolfResponse> = {
+function formatSCGState(s: SixCardGolfResponse): string {
+  return `Round ${s.roundNumber}/${s.totalRounds} | Phase ${s.phase}`;
+}
+
+const cliConfig: CliGameConfig<SixCardGolfResponse, ApiArgs> = {
+  gameName: 'sixcardgolf',
   parseCommand: parseSCGCommand,
-  formatState: (s) => `Round ${s.roundNumber}/${s.totalRounds} | Phase ${s.phase}`,
+  formatResponse: formatSCGState,
+  helpText: [
+    'fi <pos>       Flip initial card at position',
+    'ds             Draw from stock',
+    'dd             Draw from discard',
+    'sw <pos>       Swap drawn card with grid position',
+    'di             Discard drawn card',
+    'fl <pos>       Flip face-down card at position',
+    'sf             Skip flip',
+    'nr             Next round',
+    'r              Reset',
+    'l              Action log',
+  ],
 };
 
 /** Six Card Golf game page content. */
 function SixCardGolfPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm } =
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('sixcardgolf');
-  const { state, loading, error, exec, retry } = useGameApi<SixCardGolfResponse, ApiArgs>((...args) =>
-    runner.exec(...args),
-  );
+  const {
+    state,
+    loading,
+    error,
+    exec: apiCall,
+    retry,
+  } = useGameApi<SixCardGolfResponse, ApiArgs>((...args) => runner.exec(...args));
   const { hint, hintEnabled, setHintEnabled } = useGameHint('sixcardgolf', state);
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, clearLog } = useCliMode('sixcardgolf');
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('sixcardgolf');
   const { cardWidth } = useCardDimensions();
-  const { playWin } = useSound();
+  const { playSound } = useSound();
 
-  useMountReset(useCallback(() => exec({ command: 'reset' }), [exec]));
-  useCliGame(runner.exec, cliConfig, state, { logEntries, addInput, addOutput, clearLog }, cliEnabled);
+  // Mount-time reset: useMountReset expects (...args: ['reset']) => unknown
+  // but our API takes an object param, so use a direct useEffect instead.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: mount-only reset
+  useEffect(() => {
+    void apiCall({ command: 'reset' });
+  }, []);
+
+  const { handleCommand } = useCliGame(apiCall, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const phase = state?.phase ?? -1;
   const isGameEnd = state?.gameEndFlag ?? false;
@@ -134,20 +160,20 @@ function SixCardGolfPageContent() {
   const humanWon = isGameEnd && state?.winnerIdx === humanIdx;
 
   useEffect(() => {
-    if (humanWon) playWin();
-  }, [humanWon, playWin]);
+    if (humanWon) playSound('winFanfare');
+  }, [humanWon, playSound]);
 
-  const handleFlipInitial = useCallback((pos: number) => exec({ command: 'flipinitial', position: pos }), [exec]);
-  const handleDrawStock = useCallback(() => exec({ command: 'drawstock' }), [exec]);
-  const handleDrawDiscard = useCallback(() => exec({ command: 'drawdiscard' }), [exec]);
-  const handleSwap = useCallback((pos: number) => exec({ command: 'swap', position: pos }), [exec]);
-  const handleDiscard = useCallback(() => exec({ command: 'discard' }), [exec]);
-  const handleFlip = useCallback((pos: number) => exec({ command: 'flip', position: pos }), [exec]);
-  const handleSkipFlip = useCallback(() => exec({ command: 'skipflip' }), [exec]);
-  const handleNextRound = useCallback(() => exec({ command: 'nextround' }), [exec]);
-  const handleReset = useCallback(() => exec({ command: 'reset' }), [exec]);
+  const handleFlipInitial = useCallback((pos: number) => apiCall({ command: 'flipinitial', position: pos }), [apiCall]);
+  const handleDrawStock = useCallback(() => apiCall({ command: 'drawstock' }), [apiCall]);
+  const handleDrawDiscard = useCallback(() => apiCall({ command: 'drawdiscard' }), [apiCall]);
+  const handleSwap = useCallback((pos: number) => apiCall({ command: 'swap', position: pos }), [apiCall]);
+  const handleDiscard = useCallback(() => apiCall({ command: 'discard' }), [apiCall]);
+  const handleFlip = useCallback((pos: number) => apiCall({ command: 'flip', position: pos }), [apiCall]);
+  const handleSkipFlip = useCallback(() => apiCall({ command: 'skipflip' }), [apiCall]);
+  const handleNextRound = useCallback(() => apiCall({ command: 'nextround' }), [apiCall]);
+  const handleReset = useCallback(() => apiCall({ command: 'reset' }), [apiCall]);
 
-  const phaseLabel = useMemo(() => {
+  const phaseName = useMemo(() => {
     if (!state) return '';
     if (isGameEnd) return t('phase.gameOver');
     switch (phase) {
@@ -164,19 +190,20 @@ function SixCardGolfPageContent() {
     }
   }, [state, phase, isGameEnd, t]);
 
-  if (!state) return <GameSkeleton />;
+  if (!state)
+    return <GameSkeleton gameKey="sixcardgolf" layout={{ kind: 'card-grid', count: 6, cols: 'grid-cols-3' }} />;
 
   return (
     <GamePageShell
       title={tc('nav.sixcardgolf')}
       gameThemeBg={gameTheme.sixcardgolf.bg}
-      gameThemeFooter={gameTheme.sixcardgolf.footer}
-      phaseLabel={phaseLabel}
+      phaseName={phaseName}
+      gamePath="/sixcardgolf"
       isHumanTurn={isHumanTurn && !isGameEnd}
       loading={loading}
       confirmOpen={confirmOpen}
-      onConfirmReset={handleReset}
-      requestConfirm={requestConfirm}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
       gameEndFlag={isGameEnd}
       winShow={humanWon}
       headerExtra={
@@ -184,15 +211,15 @@ function SixCardGolfPageContent() {
           <span className="text-xs opacity-75">
             {t('label.round')}: {state.roundNumber}/{state.totalRounds}
           </span>
-          <CliToggle enabled={cliEnabled} onToggle={toggleCli} />
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </div>
       }
     >
       {cliEnabled ? (
-        <CliTerminal entries={logEntries} />
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <div className="flex flex-col gap-3 p-3 overflow-y-auto">
-          <LandscapeBanner />
+          <LandscapeBanner message={t('landscapeBanner', { defaultValue: '' })} />
           {error && <ErrorAlert message={error} onRetry={retry} />}
           <GameMessageBox messageCode={state.messageCode} messageParams={state.messageParams} message={state.message} />
           {hint && hintEnabled && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
@@ -218,7 +245,7 @@ function SixCardGolfPageContent() {
             >
               <div className="text-sm font-bold mb-1">
                 {player.isHuman ? t('label.human') : t('label.cpu', { id: String(pIdx) })}
-                {player.allFaceUp && <span className="ml-1 text-ds-warning">★</span>}
+                {player.allFaceUp && <span className="ml-1 text-ds-warning">&#9733;</span>}
               </div>
               <div className="grid grid-cols-3 gap-1" data-tutorial={pIdx === humanIdx ? 'scg-grid' : undefined}>
                 {player.grid.map((slot: SixCardGolfSlot, sIdx: number) => (
@@ -322,11 +349,11 @@ function SixCardGolfPageContent() {
       )}
       <GameFooter className={gameTheme.sixcardgolf.footer}>
         <GameResetButton
+          isGameEnd={isGameEnd}
           onReset={handleReset}
           requestConfirm={requestConfirm}
           loading={loading}
-          gameEndFlag={isGameEnd}
-          data-tutorial="scg-reset"
+          dataTutorial="scg-reset"
         />
         <label className="flex items-center gap-1 text-ds-text-primary text-xs">
           <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
