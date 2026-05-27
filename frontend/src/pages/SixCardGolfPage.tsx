@@ -34,7 +34,6 @@ const SCG_PHASE_SETUP = 0;
 const SCG_PHASE_PLAYER_TURN = 1;
 const SCG_PHASE_DRAW_PENDING = 2;
 const SCG_PHASE_ROUND_OVER = 3;
-const SCG_PHASE_GAME_OVER = 4;
 
 const TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -115,11 +114,14 @@ const cliConfig: CliGameConfig<ApiArgs, SixCardGolfResponse> = {
 
 /** Six Card Golf game page content. */
 function SixCardGolfPageContent() {
-  const { t, tc, actionLog, showActionLog, confirmOpen, requestConfirm } = useGamePageSetup('sixcardgolf');
-  const { state, loading, error, exec, retry } = useGameApi<ApiArgs, SixCardGolfResponse>(runner.exec);
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm } =
+    useGamePageSetup('sixcardgolf');
+  const { state, loading, error, exec, retry } = useGameApi<SixCardGolfResponse, ApiArgs>((...args) =>
+    runner.exec(...args),
+  );
   const { hint, hintEnabled, setHintEnabled } = useGameHint('sixcardgolf', state);
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, clearLog } = useCliMode('sixcardgolf');
-  const { cw, ch } = useCardDimensions();
+  const { cardWidth } = useCardDimensions();
   const { playWin } = useSound();
 
   useMountReset(useCallback(() => exec({ command: 'reset' }), [exec]));
@@ -192,13 +194,8 @@ function SixCardGolfPageContent() {
         <div className="flex flex-col gap-3 p-3 overflow-y-auto">
           <LandscapeBanner />
           {error && <ErrorAlert message={error} onRetry={retry} />}
-          <GameMessageBox
-            messageCode={state.messageCode}
-            messageParams={state.messageParams}
-            message={state.message}
-            ns="sixcardgolf"
-          />
-          {hint && hintEnabled && <HintTooltip hint={hint} ns="sixcardgolf" />}
+          <GameMessageBox messageCode={state.messageCode} messageParams={state.messageParams} message={state.message} />
+          {hint && hintEnabled && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
 
           {/* Score Table */}
           <div className="flex gap-2 flex-wrap" data-tutorial="scg-score">
@@ -229,8 +226,7 @@ function SixCardGolfPageContent() {
                     key={`${player.id}-${sIdx}`}
                     slot={slot}
                     pos={sIdx}
-                    cw={cw}
-                    ch={ch}
+                    cardWidth={cardWidth}
                     isHumanGrid={player.isHuman}
                     phase={phase}
                     canFlip={state.canFlip}
@@ -263,7 +259,7 @@ function SixCardGolfPageContent() {
             {state.discardTop && (
               <div className="text-center">
                 <div className="text-xs mb-1">{t('label.discard')}</div>
-                <AnimatedCard card={state.discardTop} width={cw} height={ch} faceUp />
+                <AnimatedCard card={state.discardTop} width={cardWidth} />
                 {phase === SCG_PHASE_PLAYER_TURN && isHumanTurn && !state.canFlip && (
                   <button
                     type="button"
@@ -278,7 +274,7 @@ function SixCardGolfPageContent() {
             {state.drawnCard && phase === SCG_PHASE_DRAW_PENDING && (
               <div className="text-center">
                 <div className="text-xs mb-1">{t('label.drawnCard')}</div>
-                <AnimatedCard card={state.drawnCard} width={cw} height={ch} faceUp />
+                <AnimatedCard card={state.drawnCard} width={cardWidth} />
                 <button
                   type="button"
                   className={`mt-1 px-3 py-1 rounded bg-ds-error hover:bg-ds-error-hover text-white text-sm ${focusRingWhite}`}
@@ -316,12 +312,26 @@ function SixCardGolfPageContent() {
             </div>
           )}
 
-          <ActionLogSection state={state} showActionLog={showActionLog} game="sixcardgolf" />
+          <ActionLogSection
+            isEndPhase={isGameEnd}
+            actionLog={actionLog}
+            showActionLog={showActionLog}
+            hideActionLog={hideActionLog}
+          />
         </div>
       )}
       <GameFooter className={gameTheme.sixcardgolf.footer}>
-        <GameResetButton onReset={requestConfirm} loading={loading} data-tutorial="scg-reset" />
-        <HintTooltip.Toggle enabled={hintEnabled} onToggle={setHintEnabled} />
+        <GameResetButton
+          onReset={handleReset}
+          requestConfirm={requestConfirm}
+          loading={loading}
+          gameEndFlag={isGameEnd}
+          data-tutorial="scg-reset"
+        />
+        <label className="flex items-center gap-1 text-ds-text-primary text-xs">
+          <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
+          {tc('hint')}
+        </label>
       </GameFooter>
     </GamePageShell>
   );
@@ -331,8 +341,7 @@ function SixCardGolfPageContent() {
 function GridSlotButton({
   slot,
   pos,
-  cw,
-  ch,
+  cardWidth,
   isHumanGrid,
   phase,
   canFlip,
@@ -343,8 +352,7 @@ function GridSlotButton({
 }: {
   slot: SixCardGolfSlot;
   pos: number;
-  cw: number;
-  ch: number;
+  cardWidth: number;
   isHumanGrid: boolean;
   phase: number;
   canFlip: boolean;
@@ -377,12 +385,21 @@ function GridSlotButton({
           ? `cursor-pointer ring-2 ring-ds-warning hover:ring-ds-warning-hover ${focusRingWhite}`
           : 'cursor-default'
       }`}
-      style={{ width: cw + 8, height: ch + 8 }}
+      style={{ width: cardWidth + 8 }}
       onClick={handleClick}
       disabled={!clickable}
       aria-label={slot.faceUp && slot.card ? cardAlt(slot.card) : `Position ${pos} (face down)`}
     >
-      <AnimatedCard card={slot.card} width={cw} height={ch} faceUp={slot.faceUp} />
+      {slot.faceUp && slot.card ? (
+        <AnimatedCard card={slot.card} width={cardWidth} />
+      ) : (
+        <div
+          className="flex items-center justify-center bg-ds-surface/70 border border-dashed border-ds-secondary rounded-md text-ds-secondary text-sm"
+          style={{ width: cardWidth, height: cardWidth * 1.5 }}
+        >
+          ?
+        </div>
+      )}
       <span className="absolute bottom-0 right-0.5 text-[10px] opacity-50">{pos}</span>
     </button>
   );

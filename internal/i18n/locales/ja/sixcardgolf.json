@@ -19,5 +19,7 @@
   "drawnCard": "引いたカード: {{card}}",
   "promptSwapOrDiscard": "交換 (sw <pos>) または捨てる (di) を選択してください",
   "promptFlip": "伏せ札をめくれます (fl <pos>) またはスキップ (sf)",
-  "promptNextRound": "ラウンド終了 (nr で次のラウンドへ)"
+  "promptNextRound": "ラウンド終了 (nr で次のラウンドへ)",
+  "playerLine": "{{name}} (累計={{cum}}, R={{round}}){{marker}}",
+  "scoreLine": "  Score: {{score}}"
 }

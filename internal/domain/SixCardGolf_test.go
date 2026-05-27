@@ -610,8 +610,8 @@ func TestSixCardGolf_CpuPlay_Setup(t *testing.T) {
 	g := newTestSixCardGolf()
 	g.Reset()
 
-	g.FlipInitial(0)
-	g.FlipInitial(3)
+	require.NoError(t, g.FlipInitial(0))
+	require.NoError(t, g.FlipInitial(3))
 
 	assert.Equal(t, 1, g.GetCurrentPlayerIdx())
 	g.CpuPlay()
@@ -805,7 +805,7 @@ func TestSixCardGolf_SetPlayerGrid(t *testing.T) {
 func TestSixCardGolf_ActionLog(t *testing.T) {
 	g := newTestSixCardGolf()
 	g.Reset()
-	g.FlipInitial(0)
+	require.NoError(t, g.FlipInitial(0))
 	assert.True(t, len(g.GetActionLog()) > 0)
 }
 

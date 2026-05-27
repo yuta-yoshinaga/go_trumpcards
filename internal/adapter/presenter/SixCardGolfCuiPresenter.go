@@ -75,7 +75,11 @@ func sixCardGolfPlayerStr(player *domain.SixCardGolfPlayer, idx int, isCurrent, 
 	if isCurrent {
 		marker = " <<"
 	}
-	b.WriteString(fmt.Sprintf("%s (累計=%d, R=%d)%s\n", name, player.CumulativeScore, player.RoundScore, marker))
+	b.WriteString(i18n.Tf("sixcardgolf.playerLine",
+		"name", name,
+		"cum", strconv.Itoa(player.CumulativeScore),
+		"round", strconv.Itoa(player.RoundScore),
+		"marker", marker) + "\n")
 
 	for row := 0; row < 2; row++ {
 		b.WriteString("  ")
@@ -85,7 +89,7 @@ func sixCardGolfPlayerStr(player *domain.SixCardGolfPlayer, idx int, isCurrent, 
 			if col > 0 {
 				b.WriteString(" ")
 			}
-			b.WriteString(fmt.Sprintf("[%d]", pos))
+			fmt.Fprintf(&b, "[%d]", pos)
 			if slot.FaceUp || revealAll {
 				b.WriteString(cuiCardStr(slot.Card))
 			} else {
@@ -97,7 +101,7 @@ func sixCardGolfPlayerStr(player *domain.SixCardGolfPlayer, idx int, isCurrent, 
 
 	if revealAll {
 		score := g.ScorePlayer(idx)
-		b.WriteString(fmt.Sprintf("  Score: %d\n", score))
+		b.WriteString(i18n.Tf("sixcardgolf.scoreLine", "score", strconv.Itoa(score)) + "\n")
 	}
 	return b.String()
 }

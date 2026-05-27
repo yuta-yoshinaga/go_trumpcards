@@ -898,7 +898,7 @@ func (g *SixCardGolf) MarshalJSON() ([]byte, error) {
 			CumulativeScore: p.CumulativeScore,
 		}
 		for k, s := range p.Grid {
-			pj.Grid[k] = sixCardGolfSlotJS{Card: s.Card, FaceUp: s.FaceUp}
+			pj.Grid[k] = sixCardGolfSlotJS(s)
 		}
 		j.Players[i] = pj
 	}
@@ -960,7 +960,7 @@ func (g *SixCardGolf) UnmarshalJSON(data []byte) error {
 			CumulativeScore: pj.CumulativeScore,
 		}
 		for k, s := range pj.Grid {
-			p.Grid[k] = SixCardGolfSlot{Card: s.Card, FaceUp: s.FaceUp}
+			p.Grid[k] = SixCardGolfSlot(s)
 		}
 		g.players[i] = p
 	}
