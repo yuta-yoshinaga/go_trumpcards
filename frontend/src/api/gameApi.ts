@@ -94,6 +94,7 @@ import type {
   ShitheadConfig as ShitheadConfigType,
   ShitheadResponse,
   ShortDeckResponse,
+  SixCardGolfResponse,
   SkatConfig as SkatConfigType,
   SkatResponse,
   SlapjackResponse,
@@ -234,6 +235,7 @@ const workerUrl: Record<string, string> = {
   eightoff: WORKER_SOLO,
   penguin: WORKER_SOLO,
   chinesepoker: WORKER_CASINO,
+  sixcardgolf: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1196,6 +1198,15 @@ export const chinesepokerApi = {
   ) => gameExec<ChinesePokerResponse>('chinesepoker', { command, amount, frontIndices, middleIndices }),
 };
 
+/** API client for the Six Card Golf /sixcardgolf/exec endpoint. */
+export const sixcardgolfApi = {
+  exec: (params: {
+    command: string;
+    position?: number;
+    config?: { playerCount?: number; cpuDifficulty?: number; rounds?: number };
+  }) => gameExec<SixCardGolfResponse>('sixcardgolf', params),
+};
+
 /** Source or target zone for a Spider card move. */
 export interface SpiderMoveZone {
   zone: string;
@@ -2063,6 +2074,7 @@ const games = [
   'penguin',
   'russianpoker',
   'chinesepoker',
+  'sixcardgolf',
 ] as const;
 type Game = (typeof games)[number];
 

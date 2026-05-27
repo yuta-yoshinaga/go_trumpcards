@@ -14,7 +14,7 @@ import (
 // wrong worker in production).
 const (
 	expectedCasino  = 34
-	expectedClassic = 39
+	expectedClassic = 40
 	expectedSolo    = 32
 	expectedTotal   = expectedCasino + expectedClassic + expectedSolo
 )

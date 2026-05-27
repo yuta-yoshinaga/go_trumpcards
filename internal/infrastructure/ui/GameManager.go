@@ -1676,6 +1676,16 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                                            action log"},
 			})
 	}},
+	{Name: "sixcardgolf", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSixCardGolfCuiController(usecase.NewSixCardGolfInteractor(
+				domain.NewDefaultSixCardGolf(), new(presenter.SixCardGolfCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:    "sixcardgolf.helpTitle",
+				CommandKeys: []string{"sixcardgolf.helpFlipInitial", "sixcardgolf.helpDrawStock", "sixcardgolf.helpDrawDiscard", "sixcardgolf.helpSwap", "sixcardgolf.helpDiscard", "sixcardgolf.helpFlip", "sixcardgolf.helpSkipFlip", "sixcardgolf.helpNextRound"},
+				SettingKeys: []string{"sixcardgolf.helpSetDifficulty", "sixcardgolf.helpSetPlayers", "sixcardgolf.helpSetRounds"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
@@ -1741,6 +1751,8 @@ var GameAliases = map[string]string{
 	"r500":    "rummy500",
 	"cpk":     "chinesepoker",
 	"cpkr":    "chinesepoker",
+	"scg":     "sixcardgolf",
+	"6golf":   "sixcardgolf",
 }
 
 // cuiGame is implemented by each *Cui struct to expose its controller and help lines.

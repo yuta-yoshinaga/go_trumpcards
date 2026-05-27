@@ -1,0 +1,23 @@
+{
+  "helpTitle": "Six Card Golf (シックスカードゴルフ)",
+  "helpFlipInitial": "  fi <pos>             セットアップ時にカードをめくる (0-5)",
+  "helpDrawStock": "  ds                   山札から引く",
+  "helpDrawDiscard": "  dd                   捨て札から引く",
+  "helpSwap": "  sw <pos>             引いたカードとグリッド位置を交換 (0-5)",
+  "helpDiscard": "  di                   引いたカードを捨てる",
+  "helpFlip": "  fl <pos>             捨て後に伏せ札をめくる (0-5)",
+  "helpSkipFlip": "  sf                   めくりをスキップ",
+  "helpNextRound": "  nr                   次のラウンドへ",
+  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "helpSetPlayers": "  sp [2-4]             プレイヤー数",
+  "helpSetRounds": "  sr [1-18]            ラウンド数",
+  "header": "ラウンド: {{round}}/{{total}}  山札: {{stock}}枚",
+  "discardLine": "捨て札: {{card}}",
+  "gameEnd": "ゲーム終了！ {{name}}の勝利です！",
+  "promptSetup": "初期カード2枚をめくってください (fi <pos>)",
+  "promptDraw": "山札 (ds) または捨て札 (dd) から引いてください",
+  "drawnCard": "引いたカード: {{card}}",
+  "promptSwapOrDiscard": "交換 (sw <pos>) または捨てる (di) を選択してください",
+  "promptFlip": "伏せ札をめくれます (fl <pos>) またはスキップ (sf)",
+  "promptNextRound": "ラウンド終了 (nr で次のラウンドへ)"
+}

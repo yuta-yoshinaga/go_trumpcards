@@ -1,0 +1,71 @@
+{
+  "title": "Six Card Golf (シックスカードゴルフ)",
+  "label": {
+    "round": "ラウンド",
+    "stock": "山札",
+    "discard": "捨て札",
+    "score": "スコア",
+    "cumulative": "累計",
+    "drawnCard": "引いたカード",
+    "grid": "グリッド",
+    "player": "プレイヤー{{id}}",
+    "human": "あなた",
+    "cpu": "CPU{{id}}",
+    "faceDown": "伏せ札",
+    "finalTurn": "最終ターン"
+  },
+  "button": {
+    "flipInitial": "めくる",
+    "drawStock": "山札から引く",
+    "drawDiscard": "捨て札から引く",
+    "swap": "交換",
+    "discard": "捨てる",
+    "flip": "めくる",
+    "skipFlip": "スキップ",
+    "nextRound": "次のラウンドへ"
+  },
+  "phase": {
+    "setup": "初期カードを2枚めくってください",
+    "playerTurn": "カードを引いてください",
+    "drawPending": "交換するか捨ててください",
+    "canFlip": "伏せ札をめくるかスキップしてください",
+    "roundOver": "ラウンド終了",
+    "gameOver": "ゲーム終了"
+  },
+  "message": {
+    "cpuTurn": "CPUのターンです",
+    "finalTurnTriggered": "プレイヤー{{id}}が全カードを公開！最終ターンです"
+  },
+  "result": {
+    "humanWin": "ゲーム終了！ あなたの勝ち！",
+    "cpuWin": "ゲーム終了！ CPU{{cpuId}}の勝ち！"
+  },
+  "settings": {
+    "title": "設定",
+    "playerCount": "プレイヤー数",
+    "cpuDifficulty": "CPU難易度",
+    "rounds": "ラウンド数",
+    "difficultyOptions": {
+      "easy": "かんたん",
+      "normal": "ふつう",
+      "hard": "むずかしい"
+    }
+  },
+  "tutorial": {
+    "intro": "Six Card Golfへようこそ！6枚のカードで最低スコアを目指すゲームです。",
+    "grid": "あなたの6枚のカード（3列×2段）です。最初に2枚をめくります。",
+    "draw": "山札か捨て札からカードを引きます。",
+    "swap": "引いたカードでグリッドのカードと交換するか、そのまま捨てます。",
+    "column": "同じ列（上下）に同じ数字が揃うと0点になります！",
+    "score": "K=0点、A=1点、2-10=額面通り、J/Q=10点。低いスコアが有利です。"
+  },
+  "hintReason": {
+    "drawDiscardLow": "捨て札のカードは低いので引きましょう",
+    "drawStock": "山札から引きましょう",
+    "swapHigh": "高いカードと交換しましょう",
+    "swapFaceDown": "伏せ札と交換しましょう",
+    "discardHigh": "引いたカードは高いので捨てましょう",
+    "columnMatch": "列一致を狙えます！",
+    "flipCard": "伏せ札をめくりましょう"
+  }
+}

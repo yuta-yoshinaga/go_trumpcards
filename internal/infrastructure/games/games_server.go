@@ -538,4 +538,9 @@ func init() {
 			return usecase.NewChinesePokerInteractor(domain.NewDefaultChinesePoker(), new(presenter.ChinesePokerWebPresenter))
 		},
 		controller.NewChinesePokerWebController)
+	BindWebControllerFor("sixcardgolf",
+		func() usecase.SixCardGolfInteractorIF {
+			return usecase.NewSixCardGolfInteractor(domain.NewDefaultSixCardGolf(), new(presenter.SixCardGolfWebPresenter))
+		},
+		controller.NewSixCardGolfWebController)
 }

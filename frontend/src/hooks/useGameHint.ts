@@ -70,6 +70,7 @@ import type {
   SevensResponse,
   ShitheadResponse,
   ShortDeckResponse,
+  SixCardGolfResponse,
   SkatResponse,
   SlapjackResponse,
   SpadesResponse,
@@ -164,6 +165,7 @@ import { getSevenbridgeHint } from '../utils/hints/sevenbridgeHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
 import { getShitheadHint } from '../utils/hints/shitheadHint';
 import { getShortDeckHint } from '../utils/hints/shortdeckHint';
+import { getSixcardgolfHint } from '../utils/hints/sixcardgolfHint';
 import { getSkatHint } from '../utils/hints/skatHint';
 import { getSlapjackHint } from '../utils/hints/slapjackHint';
 import { getSpadesHint } from '../utils/hints/spadesHint';
@@ -289,6 +291,7 @@ const hintFactories = {
   fourcardpoker: (s) => getFourCardPokerHint(s as FourCardPokerResponse),
   rummy500: (s) => getRummy500Hint(s as Rummy500Response),
   russianpoker: (s) => getRussianPokerHint(s as RussianPokerResponse),
+  sixcardgolf: (s) => getSixcardgolfHint(s as SixCardGolfResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */
