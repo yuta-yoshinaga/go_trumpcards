@@ -99,6 +99,7 @@ var registry = []*Game{
 	{Name: "shortdeck", Category: CategoryCasino, Description: "Short Deck (6+ Hold'em) (ショートデック)"},
 	{Name: "pineapple", Category: CategoryCasino, Description: "Pineapple Poker (パイナップルポーカー)"},
 	{Name: "crazypineapple", Category: CategoryCasino, Description: "Crazy Pineapple Poker (クレイジーパイナップル)"},
+	{Name: "irishpoker", Category: CategoryCasino, Description: "Irish Poker (アイリッシュポーカー)"},
 	{Name: "hearts", Category: CategoryClassic, Description: "Hearts (ハーツ)"},
 	{Name: "memory", Category: CategorySolo, Description: "Memory / Concentration (神経衰弱)"},
 	{Name: "klondike", Category: CategorySolo, Description: "Klondike Solitaire (ソリティア)"},

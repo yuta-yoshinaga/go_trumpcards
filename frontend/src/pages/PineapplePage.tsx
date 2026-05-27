@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { crazyPineappleApi, pineappleApi } from '../api/gameApi';
+import { crazyPineappleApi, irishPokerApi, pineappleApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { BettingControls } from '../components/BettingControls';
 import { CpuAccordion } from '../components/CpuAccordion';
@@ -109,7 +109,7 @@ const PINEAPPLE_PHASE_KEYS: Readonly<Record<number, string>> = {
 
 /** Variant of the Pineapple page: standard "pineapple" or the Crazy Pineapple
  * variant (discard happens after the flop betting round instead of before). */
-export type PineappleVariant = 'pineapple' | 'crazypineapple';
+export type PineappleVariant = 'pineapple' | 'crazypineapple' | 'irishpoker';
 
 /** Renders the Pineapple Poker game page with community cards, discard phase, betting, and showdown. */
 export function PineapplePage({ variant = 'pineapple' }: { variant?: PineappleVariant } = {}) {
@@ -122,7 +122,8 @@ export function PineapplePage({ variant = 'pineapple' }: { variant?: PineappleVa
 
 /** Inner content of the Pineapple Poker page, wrapped by TutorialProvider. */
 function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
-  const apiClient = variant === 'crazypineapple' ? crazyPineappleApi : pineappleApi;
+  const apiClient =
+    variant === 'irishpoker' ? irishPokerApi : variant === 'crazypineapple' ? crazyPineappleApi : pineappleApi;
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup(variant);
   const phaseNames = usePhaseNames(variant, PINEAPPLE_PHASE_KEYS);
@@ -397,7 +398,9 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                         </button>
                       ))
                     : !humanPlayer.folded &&
-                      Array.from({ length: 3 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
+                      Array.from({ length: state?.initialDealCount ?? 3 }).map((_, i) => (
+                        <AnimatedCardBack key={i} width={cardWidth} />
+                      ))}
                 </div>
               </div>
             )}

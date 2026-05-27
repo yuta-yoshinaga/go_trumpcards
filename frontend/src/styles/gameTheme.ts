@@ -38,6 +38,7 @@ export type GameKey =
   | 'shortdeck'
   | 'pineapple'
   | 'crazypineapple'
+  | 'irishpoker'
   | 'sevencardstud'
   | 'razz'
   | 'badugi'
@@ -169,6 +170,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   shortdeck: POKER,
   pineapple: POKER,
   crazypineapple: POKER,
+  irishpoker: POKER,
   sevencardstud: POKER,
   razz: POKER,
   badugi: POKER,

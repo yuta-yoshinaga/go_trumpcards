@@ -106,6 +106,8 @@ tags:
     description: Pineapple Poker (パイナップルポーカー) game
   - name: crazypineapple
     description: Crazy Pineapple Poker (クレイジーパイナップル) game — Pineapple variant where the discard happens after the flop betting round
+  - name: irishpoker
+    description: Irish Poker (アイリッシュポーカー) game — 4 hole cards dealt, discard 2 after flop betting, play with 2
   - name: speed
     description: Speed (スピード) game
   - name: gofish
@@ -4061,6 +4063,59 @@ paths:
                 value:
                   command: discard
                   cardIdx: 1
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PineappleResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PineappleResponse'
+
+  /irishpoker/exec:
+    post:
+      tags:
+        - irishpoker
+      summary: Execute an Irish Poker game command
+      description: |
+        Send a command to advance the Irish Poker (アイリッシュポーカー)
+        game session identified by `sessionId`.
+        Irish Poker is a Pineapple variant that shares the same request
+        and response schemas (`PineappleRequest` / `PineappleResponse`) and
+        the same command set (fold/check/call/bet/raise/allin/discard/
+        rebuy/skiprebuy/addon/skipaddon/quit).
+
+        4 hole cards are dealt (instead of 3). After the flop betting round,
+        players discard 2 cards (instead of 1), then continue with 2 hole
+        cards like standard Hold'em.
+
+        Phase, command and field semantics are otherwise identical to
+        `/pineapple/exec` — see that endpoint's description for the full
+        phase table and field reference.
+      operationId: irishPokerExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PineappleRequest'
+            examples:
+              reset:
+                summary: Start a new Irish Poker game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              discardAfterFlopBetting:
+                summary: Discard hole card at index 2 (called twice to discard 2 cards)
+                value:
+                  command: discard
+                  cardIdx: 2
                   sessionId: my-session-001
       responses:
         '200':

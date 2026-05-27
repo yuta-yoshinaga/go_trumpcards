@@ -149,6 +149,7 @@ const workerUrl: Record<string, string> = {
   paigow: WORKER_CASINO,
   pineapple: WORKER_CASINO,
   crazypineapple: WORKER_CASINO,
+  irishpoker: WORKER_CASINO,
   sevencardstud: WORKER_CASINO,
   razz: WORKER_CASINO,
   badugi: WORKER_CASINO,
@@ -584,6 +585,24 @@ export const crazyPineappleApi = {
     profile?: unknown,
   ) =>
     gameExec<PineappleResponse>('crazypineapple', {
+      command,
+      amount,
+      humanPlayMs,
+      profile,
+      ...config,
+    }),
+};
+
+/** API client for the Irish Poker /irishpoker/exec endpoint. */
+export const irishPokerApi = {
+  exec: (
+    command: HoldemLikeCommand | 'discard',
+    amount?: number,
+    config?: PineappleConfigInput,
+    humanPlayMs?: number,
+    profile?: unknown,
+  ) =>
+    gameExec<PineappleResponse>('irishpoker', {
       command,
       amount,
       humanPlayMs,
@@ -1983,6 +2002,7 @@ const games = [
   'shortdeck',
   'pineapple',
   'crazypineapple',
+  'irishpoker',
   'sevencardstud',
   'razz',
   'badugi',

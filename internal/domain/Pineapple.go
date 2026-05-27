@@ -35,8 +35,8 @@ const (
 	PineappleRebuyPhaseAddon = HoldemRebuyPhaseAddon
 )
 
-// Pineapple パイナップルポーカー (Crazy Pineapple) クラス
-// ホールカード3枚を配り、フロップ後に1枚をディスカードする
+// Pineapple パイナップルポーカー (Crazy Pineapple / Irish Poker) クラス
+// ホールカードを initialDealCount 枚配り、フロップ後に 2 枚になるまでディスカードする
 type Pineapple struct {
 	communityCardBettingBase
 	trumpCards      *TrumpCards
@@ -60,9 +60,10 @@ type Pineapple struct {
 	humanProfile    *BettingHumanProfile
 	lastHumanPlayMs int
 	discardDone     []bool // ディスカード済みフラグ
-	// discardAfterFlopBetting true にすると「Crazy Pineapple」モードとなり、
+	// discardAfterFlopBetting true にすると「Crazy Pineapple / Irish Poker」モードとなり、
 	// ディスカードのタイミングがフロップ公開直後ではなくフロップベッティング終了後になる。
 	discardAfterFlopBetting bool
+	initialDealCount        int // 初期配布枚数 (Pineapple/CrazyPineapple=3, IrishPoker=4)
 }
 
 // NewPineapple コンストラクタ
@@ -71,19 +72,20 @@ func NewPineapple(trumpCards *TrumpCards, players []*PineapplePlayer, config Pin
 		communityCardBettingBase: communityCardBettingBase{
 			actedFlags: make([]bool, len(players)),
 		},
-		trumpCards:      trumpCards,
-		players:         players,
-		communityCards:  make([]*Card, 0),
-		sidePots:        make([]SidePot, 0),
-		roundResults:    make([]HoldemResult, 0),
-		cpuActions:      make([]HoldemCpuAction, 0),
-		startingChips:   make([]int, len(players)),
-		vpipTracked:     make([]bool, len(players)),
-		pfrTracked:      make([]bool, len(players)),
-		threeBetTracked: make([]bool, len(players)),
-		discardDone:     make([]bool, len(players)),
-		config:          config,
-		phase:           PineapplePhaseInit,
+		trumpCards:       trumpCards,
+		players:          players,
+		communityCards:   make([]*Card, 0),
+		sidePots:         make([]SidePot, 0),
+		roundResults:     make([]HoldemResult, 0),
+		cpuActions:       make([]HoldemCpuAction, 0),
+		startingChips:    make([]int, len(players)),
+		vpipTracked:      make([]bool, len(players)),
+		pfrTracked:       make([]bool, len(players)),
+		threeBetTracked:  make([]bool, len(players)),
+		discardDone:      make([]bool, len(players)),
+		config:           config,
+		phase:            PineapplePhaseInit,
+		initialDealCount: 3,
 	}
 	p.initTournamentState(len(players))
 	return p
@@ -113,10 +115,34 @@ func NewDefaultCrazyPineapple() *Pineapple {
 	return NewCrazyPineapple(NewTrumpCards(0), NewPineapplePlayersForTable(cfg.TableSize), cfg)
 }
 
+// NewIrishPoker コンストラクタ (Irish Poker モード)。
+// ホールカードを 4 枚配り、フロップベッティング終了後に 2 枚をディスカードする。
+func NewIrishPoker(trumpCards *TrumpCards, players []*PineapplePlayer, config PineappleConfig) *Pineapple {
+	p := NewPineapple(trumpCards, players, config)
+	p.discardAfterFlopBetting = true
+	p.initialDealCount = 4
+	return p
+}
+
+// NewDefaultIrishPoker returns an Irish Poker game with the default table size
+// and DefaultPineappleConfig.
+func NewDefaultIrishPoker() *Pineapple {
+	cfg := DefaultPineappleConfig()
+	return NewIrishPoker(NewTrumpCards(0), NewPineapplePlayersForTable(cfg.TableSize), cfg)
+}
+
 // IsDiscardAfterFlopBetting reports whether this instance is running in
-// Crazy Pineapple mode (discard after flop betting round).
+// Crazy Pineapple or Irish Poker mode (discard after flop betting round).
 func (p *Pineapple) IsDiscardAfterFlopBetting() bool {
 	return p.discardAfterFlopBetting
+}
+
+// GetInitialDealCount returns the number of hole cards dealt at the start.
+func (p *Pineapple) GetInitialDealCount() int {
+	if p.initialDealCount == 0 {
+		return 3
+	}
+	return p.initialDealCount
 }
 
 // Reset ゲーム初期化
@@ -217,8 +243,8 @@ func (p *Pineapple) continueReset() error {
 	// ブラインド投入
 	p.postBlinds()
 
-	// ホールカード配布 (3枚)
-	for i := 0; i < 3; i++ {
+	// ホールカード配布
+	for i := 0; i < p.initialDealCount; i++ {
 		for j := 0; j < len(p.players); j++ {
 			idx := (p.dealerIdx + 1 + j) % len(p.players)
 			card := p.trumpCards.DrawCard()
@@ -335,11 +361,14 @@ func (p *Pineapple) DiscardCard(cardIdx int) error {
 	}
 
 	p.removeCard(humanIdx, cardIdx)
-	p.discardDone[humanIdx] = true
 	p.appendLog(humanIdx, "discard", "discard", nil)
 
+	if pl.GetCardsSize() <= 2 {
+		p.discardDone[humanIdx] = true
+	}
+
 	// 全員ディスカード済みならディスカード後のベッティングへ
-	// (通常 Pineapple = フロップベッティング、Crazy Pineapple = ターンベッティング)
+	// (通常 Pineapple = フロップベッティング、Crazy Pineapple/Irish Poker = ターンベッティング)
 	if p.allDiscardDone() {
 		p.startBettingAfterDiscard()
 	}
@@ -584,15 +613,14 @@ func (p *Pineapple) enterDiscardPhase() {
 	p.phase = PineapplePhaseDiscard
 	p.discardDone = make([]bool, len(p.players))
 
-	// フォールド済み・オールイン済みプレイヤーは自動ディスカード (最初のカードを捨てる)
+	// フォールド済み・オールイン済みプレイヤーは自動ディスカード
 	for i, pl := range p.players {
 		if pl.GetFolded() {
 			p.discardDone[i] = true
 			continue
 		}
 		if pl.GetAllIn() {
-			// オールインプレイヤーはCPUと同様に自動ディスカード
-			if pl.GetCardsSize() == 3 {
+			for pl.GetCardsSize() > 2 {
 				discardIdx := p.cpuDiscard(i)
 				p.removeCard(i, discardIdx)
 			}
@@ -605,10 +633,12 @@ func (p *Pineapple) enterDiscardPhase() {
 		if p.discardDone[i] || pl.GetIsHuman() {
 			continue
 		}
-		discardIdx := p.cpuDiscard(i)
-		p.removeCard(i, discardIdx)
+		for pl.GetCardsSize() > 2 {
+			discardIdx := p.cpuDiscard(i)
+			p.removeCard(i, discardIdx)
+			p.appendLog(i, "discard", "discard", nil)
+		}
 		p.discardDone[i] = true
-		p.appendLog(i, "discard", "discard", nil)
 	}
 
 	// 全員ディスカード済み (人間なし or 人間がフォールド/オールイン) なら
@@ -1128,6 +1158,7 @@ type pineappleJSON struct {
 	LastHumanPlayMs         int                      `json:"hm"`
 	DiscardDone             []bool                   `json:"dd"`
 	DiscardAfterFlopBetting bool                     `json:"cz,omitempty"`
+	InitialDealCount        int                      `json:"idc,omitempty"`
 }
 
 // pineappleMaxSliceLen caps slice sizes during deserialisation.
@@ -1164,6 +1195,7 @@ func (p *Pineapple) MarshalJSON() ([]byte, error) {
 		LastHumanPlayMs:         p.lastHumanPlayMs,
 		DiscardDone:             p.discardDone,
 		DiscardAfterFlopBetting: p.discardAfterFlopBetting,
+		InitialDealCount:        p.initialDealCount,
 	}
 	if p.humanProfile != nil {
 		d := p.humanProfile.Export()
@@ -1257,6 +1289,10 @@ func (p *Pineapple) UnmarshalJSON(data []byte) error {
 		p.discardDone = make([]bool, 0)
 	}
 	p.discardAfterFlopBetting = j.DiscardAfterFlopBetting
+	p.initialDealCount = j.InitialDealCount
+	if p.initialDealCount == 0 {
+		p.initialDealCount = 3
+	}
 	if j.Profile != nil {
 		p.humanProfile = &BettingHumanProfile{}
 		p.humanProfile.Import(*j.Profile)

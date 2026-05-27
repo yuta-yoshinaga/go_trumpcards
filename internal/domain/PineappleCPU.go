@@ -291,35 +291,30 @@ func (p *Pineapple) cpuDecidePostFlopGTO(idx, callAmount int) (int, int) {
 	}
 }
 
-// evalPreFlopStrength プリフロップハンド強度評価 (0-100) for 3-card Pineapple hands
-// 3枚のホールカードから最も強い2枚ペアの強度を評価
+// evalPreFlopStrength プリフロップハンド強度評価 (0-100)
+// N枚のホールカードから最も強い2枚ペアの強度を評価
 func (p *Pineapple) evalPreFlopStrength(idx int) int {
 	pl := p.players[idx]
-	if pl.GetCardsSize() < 3 {
-		// ディスカード後は2枚なので、Holdem式評価
-		if pl.GetCardsSize() < 2 {
-			return 0
-		}
+	n := pl.GetCardsSize()
+	if n < 2 {
+		return 0
+	}
+	if n == 2 {
 		return evalTwoCardStrength(pl.GetCard(0), pl.GetCard(1))
 	}
 
-	// 3枚からC(3,2)=3通りの2枚ペアを評価し、最高スコアを返す
+	// N枚からC(N,2)通りの2枚ペアを評価し、最高スコアを返す
 	bestScore := 0
-	for drop := 0; drop < 3; drop++ {
-		cards := make([]*Card, 0, 2)
-		for i := 0; i < 3; i++ {
-			if i != drop {
-				cards = append(cards, pl.GetCard(i))
+	for i := 0; i < n; i++ {
+		for j := i + 1; j < n; j++ {
+			score := evalTwoCardStrength(pl.GetCard(i), pl.GetCard(j))
+			if score > bestScore {
+				bestScore = score
 			}
-		}
-		score := evalTwoCardStrength(cards[0], cards[1])
-		if score > bestScore {
-			bestScore = score
 		}
 	}
 
-	// 3枚あるボーナス (追加のドロー可能性)
-	bonus := 5
+	bonus := n - 2 + 3
 	return clamp(bestScore+bonus, 0, 100)
 }
 
@@ -380,20 +375,20 @@ func evalTwoCardStrength(c1, c2 *Card) int {
 }
 
 // cpuDiscard CPUプレイヤーのディスカード意思決定
-// 3枚のホールカードからコミュニティカードを考慮して最も弱い1枚を選ぶ
+// ホールカードからコミュニティカードを考慮して最も弱い1枚を選ぶ
 func (p *Pineapple) cpuDiscard(idx int) int {
 	pl := p.players[idx]
-	if pl.GetCardsSize() != 3 {
+	n := pl.GetCardsSize()
+	if n <= 2 {
 		return 0
 	}
 
 	bestDiscardIdx := 0
 	bestRank := -1
 
-	// 3通りのディスカードを試し、残り2枚 + コミュニティカードで最高ハンドランクを得るものを選ぶ
-	for drop := 0; drop < 3; drop++ {
-		remaining := make([]*Card, 0, 2)
-		for i := 0; i < 3; i++ {
+	for drop := 0; drop < n; drop++ {
+		remaining := make([]*Card, 0, n-1)
+		for i := 0; i < n; i++ {
 			if i != drop {
 				remaining = append(remaining, pl.GetCard(i))
 			}
