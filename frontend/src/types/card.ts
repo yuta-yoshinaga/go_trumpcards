@@ -4394,6 +4394,50 @@ export interface GapsResponse {
 
 // --- Four Card Poker (フォーカードポーカー) ---
 
+/** Six Card Golf grid slot. */
+export interface SixCardGolfSlot {
+  card: Card | null;
+  faceUp: boolean;
+}
+
+/** Six Card Golf player data. */
+export interface SixCardGolfPlayerData {
+  id: number;
+  isHuman: boolean;
+  grid: SixCardGolfSlot[];
+  roundScore: number;
+  cumulativeScore: number;
+  allFaceUp: boolean;
+}
+
+/** Six Card Golf game config. */
+export interface SixCardGolfConfig {
+  playerCount: number;
+  cpuDifficulty: number;
+  rounds: number;
+}
+
+/** Six Card Golf API response. */
+export interface SixCardGolfResponse {
+  players: SixCardGolfPlayerData[];
+  phase: number;
+  roundNumber: number;
+  totalRounds: number;
+  currentPlayerIdx: number;
+  discardTop: Card | null;
+  drawPileCount: number;
+  drawnCard: Card | null;
+  drawnFromDiscard: boolean;
+  canFlip: boolean;
+  finalTurnTrigger: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: SixCardGolfConfig;
+}
+
 /** Four Card Poker API response. */
 export interface FourCardPokerResponse {
   /** Player's 5-card hand. */

@@ -1,0 +1,71 @@
+{
+  "title": "Six Card Golf",
+  "label": {
+    "round": "Round",
+    "stock": "Stock",
+    "discard": "Discard",
+    "score": "Score",
+    "cumulative": "Total",
+    "drawnCard": "Drawn Card",
+    "grid": "Grid",
+    "player": "Player {{id}}",
+    "human": "You",
+    "cpu": "CPU {{id}}",
+    "faceDown": "Face Down",
+    "finalTurn": "Final Turn"
+  },
+  "button": {
+    "flipInitial": "Flip",
+    "drawStock": "Draw Stock",
+    "drawDiscard": "Draw Discard",
+    "swap": "Swap",
+    "discard": "Discard",
+    "flip": "Flip",
+    "skipFlip": "Skip",
+    "nextRound": "Next Round"
+  },
+  "phase": {
+    "setup": "Flip 2 initial cards",
+    "playerTurn": "Draw a card",
+    "drawPending": "Swap or discard",
+    "canFlip": "Flip a card or skip",
+    "roundOver": "Round Over",
+    "gameOver": "Game Over"
+  },
+  "message": {
+    "cpuTurn": "CPU's turn",
+    "finalTurnTriggered": "Player {{id}} revealed all cards! Final turn!"
+  },
+  "result": {
+    "humanWin": "Game over! You win!",
+    "cpuWin": "Game over! CPU {{cpuId}} wins!"
+  },
+  "settings": {
+    "title": "Settings",
+    "playerCount": "Players",
+    "cpuDifficulty": "CPU Difficulty",
+    "rounds": "Rounds",
+    "difficultyOptions": {
+      "easy": "Easy",
+      "normal": "Normal",
+      "hard": "Hard"
+    }
+  },
+  "tutorial": {
+    "intro": "Welcome to Six Card Golf! Try to get the lowest score with 6 cards.",
+    "grid": "Your 6 cards (3 columns × 2 rows). Start by flipping 2 cards.",
+    "draw": "Draw a card from the stock pile or discard pile.",
+    "swap": "Swap the drawn card with a grid card, or discard it.",
+    "column": "Matching ranks in a column (top + bottom) score 0 points!",
+    "score": "K=0, A=1, 2-10=face value, J/Q=10. Lower score wins."
+  },
+  "hintReason": {
+    "drawDiscardLow": "Discard pile has a low card, draw it",
+    "drawStock": "Draw from stock",
+    "swapHigh": "Swap with a high-value card",
+    "swapFaceDown": "Swap with a face-down card",
+    "discardHigh": "Drawn card is high, discard it",
+    "columnMatch": "Column match opportunity!",
+    "flipCard": "Flip a face-down card"
+  }
+}

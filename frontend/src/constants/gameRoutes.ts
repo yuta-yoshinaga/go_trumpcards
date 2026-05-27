@@ -546,6 +546,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [3, 4, 2, 4], skill: [5, 2, 1, 5], social: [0, 2, 5, 4, 2], theme: [2, 2, 3, 3, 3, 3] },
       },
       {
+        path: '/sixcardgolf',
+        labelKey: 'nav.sixcardgolf',
+        icon: '⛳',
+        page: 'SixCardGolf',
+        profile: { mood: [3, 3, 4, 3], skill: [3, 4, 4, 3], social: [0, 3, 5, 4, 3], theme: [2, 2, 3, 3, 2, 3] },
+      },
+      {
         path: '/spiteandmalice',
         labelKey: 'nav.spiteandmalice',
         icon: '😈',

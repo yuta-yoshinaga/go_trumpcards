@@ -85,6 +85,7 @@ import sevencardstud from '../../../docs/manual/cui/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/cui/sevens.md?raw';
 import shithead from '../../../docs/manual/cui/shithead.md?raw';
 import shortdeck from '../../../docs/manual/cui/shortdeck.md?raw';
+import sixcardgolf from '../../../docs/manual/cui/sixcardgolf.md?raw';
 import skat from '../../../docs/manual/cui/skat.md?raw';
 import slapjack from '../../../docs/manual/cui/slapjack.md?raw';
 import spades from '../../../docs/manual/cui/spades.md?raw';
@@ -204,6 +205,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/spiteandmalice': spiteandmalice,
   '/skat': skat,
   '/shithead': shithead,
+  '/sixcardgolf': sixcardgolf,
   '/nertz': nertz,
   '/slapjack': slapjack,
   '/tarneeb': tarneeb,

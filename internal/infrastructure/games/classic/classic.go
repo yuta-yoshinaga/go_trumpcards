@@ -327,4 +327,12 @@ func init() {
 			return usecase.RestoreBriscolaInteractor(data, new(presenter.BriscolaWebPresenter))
 		},
 		controller.NewBriscolaWebControllerWithProvider)
+	games.RegisterKVGame("sixcardgolf", games.CategoryClassic,
+		func() usecase.SixCardGolfInteractorIF {
+			return usecase.NewSixCardGolfInteractor(domain.NewDefaultSixCardGolf(), new(presenter.SixCardGolfWebPresenter))
+		},
+		func(data []byte) (usecase.SixCardGolfInteractorIF, error) {
+			return usecase.RestoreSixCardGolfInteractor(data, new(presenter.SixCardGolfWebPresenter))
+		},
+		controller.NewSixCardGolfWebControllerWithProvider)
 }
