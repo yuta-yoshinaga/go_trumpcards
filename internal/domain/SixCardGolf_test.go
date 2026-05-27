@@ -549,7 +549,10 @@ func TestSixCardGolf_FinalTurnFlow(t *testing.T) {
 	require.NoError(t, g.SwapCard(5))
 
 	assert.Equal(t, 0, g.GetFinalTurnTrigger())
+	assert.Equal(t, SixCardGolfPhasePlayerTurn, g.GetPhase())
+	assert.Equal(t, 1, g.GetCurrentPlayerIdx())
 
+	g.CpuPlay()
 	assert.Equal(t, SixCardGolfPhaseRoundOver, g.GetPhase())
 }
 
@@ -592,6 +595,9 @@ func TestSixCardGolf_GameOver_AfterLastRound(t *testing.T) {
 	g.SetPhase(SixCardGolfPhaseDrawPending)
 
 	require.NoError(t, g.SwapCard(5))
+	assert.Equal(t, 0, g.GetFinalTurnTrigger())
+
+	g.CpuPlay()
 
 	assert.Equal(t, SixCardGolfPhaseGameOver, g.GetPhase())
 	assert.True(t, g.GetGameEndFlag())

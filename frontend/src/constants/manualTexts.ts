@@ -87,6 +87,7 @@ import sevencardstud from '../../../docs/manual/web/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/web/sevens.md?raw';
 import shithead from '../../../docs/manual/web/shithead.md?raw';
 import shortdeck from '../../../docs/manual/web/shortdeck.md?raw';
+import sixcardgolf from '../../../docs/manual/web/sixcardgolf.md?raw';
 import skat from '../../../docs/manual/web/skat.md?raw';
 import slapjack from '../../../docs/manual/web/slapjack.md?raw';
 import spades from '../../../docs/manual/web/spades.md?raw';
@@ -209,6 +210,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/spiteandmalice': spiteandmalice,
   '/skat': skat,
   '/shithead': shithead,
+  '/sixcardgolf': sixcardgolf,
   '/nertz': nertz,
   '/slapjack': slapjack,
   '/tarneeb': tarneeb,

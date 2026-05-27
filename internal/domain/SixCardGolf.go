@@ -448,9 +448,13 @@ func (g *SixCardGolf) CpuPlay() {
 // cpuSetup CPUのセットアップフェーズ処理
 func (g *SixCardGolf) cpuSetup() {
 	p := g.players[g.currentPlayerIdx]
+	needed := SixCardGolfInitialFlips - p.FaceUpCount()
 	flipped := 0
 	for i := range p.Grid {
-		if !p.Grid[i].FaceUp && flipped < SixCardGolfInitialFlips-p.FaceUpCount() {
+		if flipped >= needed {
+			break
+		}
+		if !p.Grid[i].FaceUp {
 			p.Grid[i].FaceUp = true
 			g.appendLog("flipInitial", fmt.Sprintf("CPU%dが位置%dをめくった", g.currentPlayerIdx, i), []*Card{p.Grid[i].Card})
 			flipped++
