@@ -1705,6 +1705,16 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"sixcardgolf.helpSetDifficulty", "sixcardgolf.helpSetPlayers", "sixcardgolf.helpSetRounds"},
 			})
 	}},
+	{Name: "doudizhu", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewDoudizhuCuiController(usecase.NewDoudizhuInteractor(
+				domain.NewDefaultDoudizhu(), new(presenter.DoudizhuCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:    "doudizhu.helpTitle",
+				CommandKeys: []string{"doudizhu.helpPlay", "doudizhu.helpBid"},
+				SettingKeys: []string{"doudizhu.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
@@ -1772,6 +1782,7 @@ var GameAliases = map[string]string{
 	"cpkr":    "chinesepoker",
 	"scg":     "sixcardgolf",
 	"6golf":   "sixcardgolf",
+	"ddz":     "doudizhu",
 }
 
 // cuiGame is implemented by each *Cui struct to expose its controller and help lines.

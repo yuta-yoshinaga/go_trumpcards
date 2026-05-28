@@ -3582,4 +3582,21 @@ stateDiagram-v2
     note right of End : RussianPokerPhaseEnd = 6\n配当計算・結果表示
 ```
 
+### 3.55 Doudizhu フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Bid : Reset()
+    Bid --> Bid : PlayerBid/CpuBid (継続)
+    Bid --> Play : 地主決定 (底牌獲得)
+    Bid --> Bid : 全員パス (再配布)
+    Play --> Play : PlayerPlay/CpuPlay
+    Play --> End : 手札を出し切る
+    End --> [*]
+
+    note right of Bid : DoudizhuPhaseBid = 0\n0=パス 1-3=ビッド 最高入札者が地主に
+    note right of Play : DoudizhuPhasePlay = 1\n役を出す/パス ボム・ロケットは何でも倒せる
+    note right of End : DoudizhuPhaseEnd = 2\nスコア計算 (baseBid x 2^bombCount)
+```
+
 **注:** OldMaid・Daifugo・Sevens・President はターン制で進行する手札削り系のため、明示的なフェーズ定数を持ちません (currentTurn が巡回し、全プレイヤーの手札が 0 枚またはランクが確定するまで進行)。

@@ -1,0 +1,55 @@
+{
+  "title": "Dou Dizhu",
+  "label": {
+    "landlord": "Landlord",
+    "peasant": "Peasant",
+    "kitty": "Kitty Cards",
+    "table": "Table",
+    "bid": "Bid",
+    "pass": "Pass",
+    "play": "Play",
+    "score": "Score",
+    "bombs": "Bombs"
+  },
+  "button": {
+    "bid1": "Bid 1",
+    "bid2": "Bid 2",
+    "bid3": "Bid 3",
+    "pass": "Pass",
+    "play": "Play",
+    "reset": "New Game"
+  },
+  "phase": {
+    "bid": "Bidding",
+    "play": "Play",
+    "end": "Result"
+  },
+  "message": {
+    "yourTurnBid": "Your turn to bid",
+    "yourTurnPlay": "Your turn to play",
+    "mustPlay": "You must play (leading)",
+    "waiting": "Waiting..."
+  },
+  "result": {
+    "landlordWins": "Landlord wins!",
+    "peasantsWin": "Peasants win!",
+    "summary": "{{summary}}"
+  },
+  "settings": {
+    "difficulty": "CPU Difficulty",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "tutorial": {
+    "intro": "Welcome to Dou Dizhu! One player becomes the Landlord and fights against two Peasants.",
+    "bidPhase": "Bid 1-3 to become the Landlord, or pass. The highest bidder gets the kitty cards.",
+    "playPhase": "Play card combinations to empty your hand first. Bombs and rockets beat everything!",
+    "combos": "Singles, pairs, trios, straights, consecutive pairs, airplanes — learn the combos to win!"
+  },
+  "hintReason": {
+    "playLowest": "Play your lowest card to conserve strong cards",
+    "bomb": "Use a bomb to take control",
+    "pass": "Pass — save your strong cards"
+  }
+}

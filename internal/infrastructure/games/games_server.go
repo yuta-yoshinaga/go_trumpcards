@@ -548,4 +548,9 @@ func init() {
 			return usecase.NewSixCardGolfInteractor(domain.NewDefaultSixCardGolf(), new(presenter.SixCardGolfWebPresenter))
 		},
 		controller.NewSixCardGolfWebController)
+	BindWebControllerFor("doudizhu",
+		func() usecase.DoudizhuInteractorIF {
+			return usecase.NewDoudizhuInteractor(domain.NewDefaultDoudizhu(), new(presenter.DoudizhuWebPresenter))
+		},
+		controller.NewDoudizhuWebController)
 }

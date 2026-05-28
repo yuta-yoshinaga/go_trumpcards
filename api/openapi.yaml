@@ -221,6 +221,8 @@ tags:
     description: Eight Off (エイトオフ) - single-player open-information solitaire and a stricter FreeCell variant. 8 tableau columns x 6 face-up cards (48 cards) plus the remaining 4 cards pre-placed in the first 4 of 8 free cells. 4 foundations build up by suit Ace to King. Tableau builds same-suit descending only; empty columns accept only Kings. Supermove limit (1 + emptyFreeCells) x 2^(emptyTableauCols). A* solver gates stalemate detection and auto-complete.
   - name: penguin
     description: Penguin (ペンギン) - single-player FreeCell variant solitaire. 7 tableau columns x 7 face-up cards (49 cards) plus 3 cards of the same rank as the first dealt card (baseRank) pre-placed in 3 of 7 free cells. 4 foundations build up by suit from baseRank with K-A wraparound. Tableau builds same-suit descending with K-A wraparound; empty columns accept only prevRank(baseRank) cards. Supermove supported.
+  - name: doudizhu
+    description: Dou Dizhu (斗地主) - 3-player asymmetric shedding game with a 54-card deck (52 + 2 jokers). 17 cards each plus a 3-card kitty. Players bid 1-3 to become the Landlord (takes the kitty, 20 cards) vs two cooperating Peasants. Card strength 3<...<2<SmallJoker<BigJoker. Combos include singles, pairs, trios, straights, consecutive pairs, airplanes, bombs (4-of-a-kind), and rockets (both jokers). Bombs/rockets beat any non-bomb play. Score = baseBid x 2^bombCount.
 
 paths:
   /blackjack/exec:
@@ -10088,6 +10090,61 @@ paths:
               schema:
                 $ref: '#/components/schemas/HighCardFlushResponse'
 
+  /doudizhu/exec:
+    post:
+      tags:
+        - doudizhu
+      summary: Execute a Dou Dizhu (斗地主) game command
+      description: |
+        Send a command to advance the Dou Dizhu game session identified by
+        `sessionId`. The game has 3 players (1 human + 2 CPU). One player
+        becomes the Landlord via bidding and plays against two Peasants.
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `bid`   |         | Bid 0-3 (0 = pass) during the bidding phase |
+        | `play`  | `p`     | Play cards specified by `indices`; pass with an empty array |
+        | `log`   | `l`     | Return the action log |
+      operationId: doudizhuExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DoudizhuRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Bid 2 to become the Landlord
+                value:
+                  command: bid
+                  bidValue: 2
+                  sessionId: my-session-001
+              play:
+                summary: Play cards at hand positions 0 and 1
+                value:
+                  command: play
+                  indices: [0, 1]
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DoudizhuResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DoudizhuResponse'
+
 components:
   schemas:
     # -------------------------------------------------------------------------
@@ -11565,6 +11622,186 @@ components:
             Current sort mode for the human player's hand.
             0 = by strength, 1 = by suit, 2 = by number.
           example: 0
+
+    # -------------------------------------------------------------------------
+    # Dou Dizhu (斗地主)
+    # -------------------------------------------------------------------------
+    DoudizhuConfig:
+      type: object
+      required:
+        - cpuDifficulty
+      properties:
+        cpuDifficulty:
+          type: integer
+          description: CPU difficulty (0=Normal, 1=Easy, 2=Hard)
+          enum: [0, 1, 2]
+          example: 0
+
+    DoudizhuRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `bid`, `play` (`p`),
+            `log` (`l`).
+          enum: [r, reset, bid, p, play, l, log]
+          example: play
+        indices:
+          type: array
+          description: |
+            Zero-based indices of cards to play (for the `play` command).
+            Send an empty array to pass.
+          items:
+            type: integer
+            minimum: 0
+          maxItems: 20
+          example: [0, 1]
+        bidValue:
+          type: integer
+          nullable: true
+          description: |
+            Bid value for the `bid` command. 0 = pass, 1-3 = bid amount.
+          enum: [0, 1, 2, 3]
+          example: 2
+        sessionId:
+          type: string
+          description: Unique session identifier (max 256 characters)
+          maxLength: 256
+          example: my-session-001
+        config:
+          allOf:
+            - $ref: '#/components/schemas/DoudizhuConfig'
+          nullable: true
+          description: |
+            Optional configuration for the `reset` command.
+            Omit (or set to null) to reuse the previous configuration.
+
+    DoudizhuPlayer:
+      type: object
+      required:
+        - id
+        - isHuman
+        - isFinished
+        - isLandlord
+        - cardCount
+        - cards
+      properties:
+        id:
+          type: integer
+          example: 0
+        isHuman:
+          type: boolean
+        isFinished:
+          type: boolean
+        isLandlord:
+          type: boolean
+        cardCount:
+          type: integer
+          example: 17
+        cards:
+          type: array
+          description: Visible cards (only populated for the human player)
+          items:
+            $ref: '#/components/schemas/Card'
+
+    DoudizhuAction:
+      type: object
+      required:
+        - playerIdx
+        - playedCards
+        - bidValue
+      properties:
+        playerIdx:
+          type: integer
+        playedCards:
+          type: array
+          nullable: true
+          description: Cards played (null = pass)
+          items:
+            $ref: '#/components/schemas/Card'
+        bidValue:
+          type: integer
+          description: Bid value (bidding phase only)
+
+    DoudizhuResponse:
+      type: object
+      required:
+        - players
+        - phase
+        - currentTurn
+        - tableCards
+        - tableCombo
+        - kittyCards
+        - landlordIdx
+        - baseBid
+        - highestBid
+        - bombCount
+        - scores
+        - gameEndFlag
+        - config
+        - cpuActions
+        - humanAction
+        - message
+      properties:
+        players:
+          type: array
+          description: State of all 3 players
+          items:
+            $ref: '#/components/schemas/DoudizhuPlayer'
+        phase:
+          type: string
+          description: Current phase
+          enum: [bid, play, end]
+        currentTurn:
+          type: integer
+        tableCards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        tableCombo:
+          type: string
+          description: Combination type on the table
+        kittyCards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        landlordIdx:
+          type: integer
+          description: Landlord player index (-1 if not yet decided)
+        baseBid:
+          type: integer
+        highestBid:
+          type: integer
+        bombCount:
+          type: integer
+        scores:
+          type: array
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        config:
+          $ref: '#/components/schemas/DoudizhuConfig'
+        cpuActions:
+          type: array
+          items:
+            $ref: '#/components/schemas/DoudizhuAction'
+        humanAction:
+          allOf:
+            - $ref: '#/components/schemas/DoudizhuAction'
+          nullable: true
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
 
     # -------------------------------------------------------------------------
     # Big Two

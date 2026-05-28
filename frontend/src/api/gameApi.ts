@@ -36,6 +36,7 @@ import type {
   DaifugoResponse,
   DoubtConfig,
   DoubtResponse,
+  DoudizhuResponse,
   DragonTigerResponse,
   DurakConfigInput,
   DurakResponse,
@@ -237,6 +238,7 @@ const workerUrl: Record<string, string> = {
   penguin: WORKER_SOLO,
   chinesepoker: WORKER_CASINO,
   sixcardgolf: WORKER_CLASSIC,
+  doudizhu: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1224,6 +1226,12 @@ export const sixcardgolfApi = {
     position?: number;
     config?: { playerCount?: number; cpuDifficulty?: number; rounds?: number };
   }) => gameExec<SixCardGolfResponse>('sixcardgolf', params),
+};
+
+/** API client for the Dou Dizhu /doudizhu/exec endpoint. */
+export const doudizhuApi = {
+  exec: (params: { command: string; indices?: number[]; bidValue?: number; config?: { cpuDifficulty?: number } }) =>
+    gameExec<DoudizhuResponse>('doudizhu', params),
 };
 
 /** Source or target zone for a Spider card move. */

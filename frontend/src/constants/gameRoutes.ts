@@ -560,6 +560,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [3, 3, 4, 3], skill: [3, 4, 4, 3], social: [0, 3, 5, 4, 3], theme: [2, 2, 3, 3, 2, 3] },
       },
       {
+        path: '/doudizhu',
+        labelKey: 'nav.doudizhu',
+        icon: '🏠',
+        page: 'Doudizhu',
+        profile: { mood: [2, 5, 3, 3], skill: [3, 5, 4, 2], social: [0, 2, 5, 3, 4], theme: [2, 2, 2, 5, 2, 3] },
+      },
+      {
         path: '/spiteandmalice',
         labelKey: 'nav.spiteandmalice',
         icon: '😈',

@@ -82,6 +82,7 @@ export type GameKey =
   | 'fiftyone'
   | 'trash'
   | 'sixcardgolf'
+  | 'doudizhu'
   | 'spiteandmalice'
   | 'shithead'
   | 'nertz'
@@ -214,6 +215,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   fiftyone: GREEN,
   trash: GREEN,
   sixcardgolf: GREEN,
+  doudizhu: CASINO,
   spiteandmalice: GREEN,
   shithead: GREEN,
   nertz: GREEN,
