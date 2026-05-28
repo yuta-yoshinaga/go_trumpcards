@@ -1,0 +1,17 @@
+{
+  "helpTitle": "Dou Dizhu (Fight the Landlord)",
+  "helpPlay": "  p [idx...]           Play cards (empty = pass)",
+  "helpBid": "  b [0-3]              Bid (0=pass, 1-3=bid)",
+  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Normal, 1=Easy, 2=Hard)",
+  "phaseBid": "Bidding Phase",
+  "phasePlay": "Play Phase",
+  "gameEnd": "Game Over",
+  "landlord": "Landlord",
+  "peasant": "Peasant",
+  "you": "You",
+  "highestBid": "Highest Bid",
+  "kittyCards": "Kitty Cards",
+  "tableCards": "Table",
+  "playerFinished": " (finished)",
+  "playerCardCount": " ({{count}} cards)"
+}

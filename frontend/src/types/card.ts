@@ -4471,3 +4471,47 @@ export interface FourCardPokerResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
 }
+
+/** Dou Dizhu player action record. */
+export interface DoudizhuAction {
+  playerIdx: number;
+  playedCards: Card[] | null;
+  bidValue: number;
+}
+
+/** Dou Dizhu player data. */
+export interface DoudizhuPlayerData {
+  id: number;
+  isHuman: boolean;
+  isFinished: boolean;
+  isLandlord: boolean;
+  cardCount: number;
+  cards: Card[];
+}
+
+/** Dou Dizhu config. */
+export interface DoudizhuConfig {
+  cpuDifficulty: number;
+}
+
+/** Dou Dizhu API response. */
+export interface DoudizhuResponse {
+  players: DoudizhuPlayerData[];
+  phase: string;
+  currentTurn: number;
+  tableCards: Card[];
+  tableCombo: string;
+  kittyCards: Card[];
+  landlordIdx: number;
+  baseBid: number;
+  highestBid: number;
+  bombCount: number;
+  scores: number[];
+  gameEndFlag: boolean;
+  config: DoudizhuConfig;
+  cpuActions: DoudizhuAction[];
+  humanAction: DoudizhuAction | null;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}

@@ -3314,6 +3314,24 @@ stateDiagram-v2
     note right of ROUND_END : MightyPhase.ROUND_END = 5\nスコア = (|points-bid|+1)×倍率\nNoTrump 倍率 = 2, セルフフレンド ×2
 ```
 
+### 3.8.1 Doudizhu フェーズ遷移 (DoudizhuPage)
+
+`DoudizhuPage` はサーバーから返る `phase` 文字列 (`bid` / `play` / `end`) に応じて表示を切り替えます。ビッドフェーズではビッドボタン群、プレイフェーズでは手札選択 + 出す/パス、終了フェーズではスコア表示を描画します。
+
+```mermaid
+stateDiagram-v2
+    [*] --> Bid : reset() (mount)
+    Bid --> Bid : bid (継続)
+    Bid --> Play : 地主決定
+    Play --> Play : play / pass
+    Play --> End : 手札を出し切る
+    End --> [*]
+
+    note right of Bid : phase = "bid"\nビッドボタン (1-3/パス)\n最高入札超過分のみ活性
+    note right of Play : phase = "play"\nカード複数選択 → 出す\n場にカードあり時のみパス可
+    note right of End : phase = "end"\n地主/農民勝敗 + スコア表示
+```
+
 ### 3.9 Discover サーベイステップ遷移 (SurveyState)
 
 `DiscoverPage` の `useReducer` が管理する step pointer (`0..TOTAL_QUESTIONS`) の遷移。マウント時に `firstUnansweredStep(restoredAxes)` で localStorage から再開位置を計算し、advance/back で 1 ステップずつ移動、`TOTAL_QUESTIONS` 到達で submit effect が発火して `/discover/result` へ遷移します。

@@ -335,4 +335,12 @@ func init() {
 			return usecase.RestoreSixCardGolfInteractor(data, new(presenter.SixCardGolfWebPresenter))
 		},
 		controller.NewSixCardGolfWebControllerWithProvider)
+	games.RegisterKVGame("doudizhu", games.CategoryClassic,
+		func() usecase.DoudizhuInteractorIF {
+			return usecase.NewDoudizhuInteractor(domain.NewDefaultDoudizhu(), new(presenter.DoudizhuWebPresenter))
+		},
+		func(data []byte) (usecase.DoudizhuInteractorIF, error) {
+			return usecase.RestoreDoudizhuInteractor(data, new(presenter.DoudizhuWebPresenter))
+		},
+		controller.NewDoudizhuWebControllerWithProvider)
 }

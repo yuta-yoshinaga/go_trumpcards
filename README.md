@@ -125,6 +125,7 @@ Go + Clean Architecture で実装した106種類のトランプゲーム。CLI �
 | ラミー 500 (Rummy 500) | `rummy500` | [CUI](docs/manual/cui/rummy500.md) / [Web](docs/manual/web/rummy500.md) |
 | エイトオフ (Eight Off) | `eightoff` | [CUI](docs/manual/cui/eightoff.md) / [Web](docs/manual/web/eightoff.md) |
 | ペンギン (Penguin) | `penguin` | [CUI](docs/manual/cui/penguin.md) / [Web](docs/manual/web/penguin.md) |
+| 斗地主 (Dou Dizhu) | `doudizhu` | [CUI](docs/manual/cui/doudizhu.md) / [Web](docs/manual/web/doudizhu.md) |
 
 ## Demo
 

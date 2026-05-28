@@ -23,6 +23,7 @@ import type {
   CruelResponse,
   DaifugoResponse,
   DoubtResponse,
+  DoudizhuResponse,
   DragonTigerResponse,
   DurakResponse,
   EgyptianRatscrewResponse,
@@ -116,6 +117,7 @@ import { getCruelHint } from '../utils/hints/cruelHint';
 import { getDaifugoHint } from '../utils/hints/daifugoHint';
 import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
 import { getDoubtHint } from '../utils/hints/doubtHint';
+import { getDoudizhuHint } from '../utils/hints/doudizhuHint';
 import { getDragontigerHint } from '../utils/hints/dragontigerHint';
 import { getDurakHint } from '../utils/hints/durakHint';
 import { getEgyptianRatscrewHint } from '../utils/hints/egyptianratscrewHint';
@@ -294,6 +296,7 @@ const hintFactories = {
   rummy500: (s) => getRummy500Hint(s as Rummy500Response),
   russianpoker: (s) => getRussianPokerHint(s as RussianPokerResponse),
   sixcardgolf: (s) => getSixcardgolfHint(s as SixCardGolfResponse),
+  doudizhu: (s) => getDoudizhuHint(s as DoudizhuResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */
