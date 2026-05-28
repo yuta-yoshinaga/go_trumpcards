@@ -2103,6 +2103,7 @@ const games = [
   'russianpoker',
   'chinesepoker',
   'sixcardgolf',
+  'doudizhu',
 ] as const;
 type Game = (typeof games)[number];
 

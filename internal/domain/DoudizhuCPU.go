@@ -49,9 +49,10 @@ func (d *Doudizhu) handQuality(player *DoudizhuPlayer) int {
 		freq[s]++
 	}
 
-	if jokerCount == 2 {
+	switch jokerCount {
+	case 2:
 		score += 4
-	} else if jokerCount == 1 {
+	case 1:
 		score += 2
 	}
 
