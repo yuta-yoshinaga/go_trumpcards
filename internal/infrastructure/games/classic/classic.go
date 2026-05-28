@@ -343,4 +343,12 @@ func init() {
 			return usecase.RestoreDoudizhuInteractor(data, new(presenter.DoudizhuWebPresenter))
 		},
 		controller.NewDoudizhuWebControllerWithProvider)
+	games.RegisterKVGame("truco", games.CategoryClassic,
+		func() usecase.TrucoInteractorIF {
+			return usecase.NewTrucoInteractor(domain.NewDefaultTruco(), new(presenter.TrucoWebPresenter))
+		},
+		func(data []byte) (usecase.TrucoInteractorIF, error) {
+			return usecase.RestoreTrucoInteractor(data, new(presenter.TrucoWebPresenter))
+		},
+		controller.NewTrucoWebControllerWithProvider)
 }

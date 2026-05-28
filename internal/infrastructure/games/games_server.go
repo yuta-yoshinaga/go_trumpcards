@@ -553,4 +553,9 @@ func init() {
 			return usecase.NewDoudizhuInteractor(domain.NewDefaultDoudizhu(), new(presenter.DoudizhuWebPresenter))
 		},
 		controller.NewDoudizhuWebController)
+	BindWebControllerFor("truco",
+		func() usecase.TrucoInteractorIF {
+			return usecase.NewTrucoInteractor(domain.NewDefaultTruco(), new(presenter.TrucoWebPresenter))
+		},
+		controller.NewTrucoWebController)
 }

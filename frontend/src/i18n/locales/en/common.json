@@ -104,6 +104,7 @@
     "trash": "Trash",
     "sixcardgolf": "Six Card Golf",
     "doudizhu": "Dou Dizhu",
+    "truco": "Truco",
     "president": "President",
     "cassino": "Cassino",
     "spanish21": "Spanish 21",
@@ -255,6 +256,14 @@
     "errorBoundaryDetails": "Show error details"
   },
   "messageCode": {
+    "truco.result.p0Win": "Match over! You win ({{p0}}-{{p1}})!",
+    "truco.result.p1Win": "Match over! CPU wins ({{p0}}-{{p1}}).",
+    "truco.playPhase.lead": "Your turn — pick a card to lead.",
+    "truco.playPhase.follow": "Your turn — pick a card to follow.",
+    "truco.respondPhase": "Respond to the Truco call.",
+    "truco.trickEnd": "Baza over — continue.",
+    "truco.handEnd.p0": "Hand over — you win {{stake}} pt.",
+    "truco.handEnd.p1": "Hand over — CPU wins {{stake}} pt.",
     "blackjack.result.draw": "It is a draw.",
     "blackjack.result.win": "You are the winner.",
     "blackjack.result.lose": "It is your loss.",

@@ -112,6 +112,8 @@ import type {
   TonkResponse,
   TrashResponse,
   TriPeaksResponse,
+  TrucoConfig,
+  TrucoResponse,
   TwoTenJackResponse,
   UltimateTexasHoldemResponse,
   VideoPokerResponse,
@@ -239,6 +241,7 @@ const workerUrl: Record<string, string> = {
   chinesepoker: WORKER_CASINO,
   sixcardgolf: WORKER_CLASSIC,
   doudizhu: WORKER_CLASSIC,
+  truco: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1898,6 +1901,15 @@ export const briscolaApi = {
     gameExec<BriscolaResponse>('briscola', { command, cardIndex, config }),
 };
 
+/** API client for the Truco /truco/exec endpoint. */
+export const trucoApi = {
+  exec: (
+    command: 'reset' | 'play' | 'truco' | 'accept' | 'decline' | 'next' | 'hint' | 'log',
+    cardIndex?: number,
+    config?: Partial<TrucoConfig>,
+  ) => gameExec<TrucoResponse>('truco', { command, cardIndex, config }),
+};
+
 /** Source or target zone for a Gaps card move. */
 export interface GapsMoveZone {
   zone: 'grid';
@@ -2104,6 +2116,7 @@ const games = [
   'chinesepoker',
   'sixcardgolf',
   'doudizhu',
+  'truco',
 ] as const;
 type Game = (typeof games)[number];
 

@@ -102,6 +102,7 @@ import threecard from '../../../docs/manual/cui/threecard.md?raw';
 import tonk from '../../../docs/manual/cui/tonk.md?raw';
 import trash from '../../../docs/manual/cui/trash.md?raw';
 import tripeaks from '../../../docs/manual/cui/tripeaks.md?raw';
+import truco from '../../../docs/manual/cui/truco.md?raw';
 import twotenjack from '../../../docs/manual/cui/twotenjack.md?raw';
 import ultimatetexasholdem from '../../../docs/manual/cui/ultimatetexasholdem.md?raw';
 import videopoker from '../../../docs/manual/cui/videopoker.md?raw';
@@ -216,6 +217,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/briscola': briscola,
   '/bigtwo': bigtwo,
   '/doudizhu': doudizhu,
+  '/truco': truco,
 };
 
 /** Returns true when CLI mode is enabled for the game at the given path. */

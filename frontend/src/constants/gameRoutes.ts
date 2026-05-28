@@ -567,6 +567,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 5, 3, 3], skill: [3, 5, 4, 2], social: [0, 2, 5, 3, 4], theme: [2, 2, 2, 5, 2, 3] },
       },
       {
+        path: '/truco',
+        labelKey: 'nav.truco',
+        icon: '🃏',
+        page: 'Truco',
+        profile: { mood: [2, 5, 4, 3], skill: [2, 4, 4, 2], social: [0, 4, 4, 3, 4], theme: [4, 4, 2, 1, 4, 2] },
+      },
+      {
         path: '/spiteandmalice',
         labelKey: 'nav.spiteandmalice',
         icon: '😈',
