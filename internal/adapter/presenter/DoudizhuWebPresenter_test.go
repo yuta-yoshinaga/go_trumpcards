@@ -99,3 +99,41 @@ func TestDoudizhuWebPresenter_ActionLogOutput(t *testing.T) {
 	out := p.ActionLogOutput(dg)
 	assert.NotEmpty(t, out)
 }
+
+func TestDoudizhuWebPresenter_ComboNames(t *testing.T) {
+	cases := []struct {
+		comboType domain.DoudizhuComboType
+		want      string
+	}{
+		{domain.DoudizhuComboSingle, "single"},
+		{domain.DoudizhuComboPair, "pair"},
+		{domain.DoudizhuComboTrio, "trio"},
+		{domain.DoudizhuComboTrioSingle, "trioSingle"},
+		{domain.DoudizhuComboTrioPair, "trioPair"},
+		{domain.DoudizhuComboStraight, "straight"},
+		{domain.DoudizhuComboConsecutivePair, "consecutivePair"},
+		{domain.DoudizhuComboAirplane, "airplane"},
+		{domain.DoudizhuComboAirplaneSingle, "airplaneSingle"},
+		{domain.DoudizhuComboAirplanePair, "airplanePair"},
+		{domain.DoudizhuComboBomb, "bomb"},
+		{domain.DoudizhuComboRocket, "rocket"},
+		{domain.DoudizhuComboPass, "pass"},
+	}
+	p := new(presenter.DoudizhuWebPresenter)
+	for _, tc := range cases {
+		dg := newDoudizhuForPresenter()
+		dg.SetPhase(domain.DoudizhuPhasePlay)
+		dg.SetLandlordIdx(0)
+		dg.SetCurrentTurn(0)
+		dg.SetTableCombo(&domain.DoudizhuCombo{
+			Type:   tc.comboType,
+			Rank:   5,
+			Length: 1,
+			Cards:  []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)},
+		})
+
+		var resp controller.DoudizhuWebOutput
+		require.NoError(t, json.Unmarshal([]byte(p.Output(dg, nil)), &resp))
+		assert.Equal(t, tc.want, resp.TableCombo, "combo type %d", tc.comboType)
+	}
+}

@@ -1,12 +1,8 @@
 package domain
 
-// cpuBid CPUのビッド処理
+// cpuBid CPUのビッド処理 (executeBid が cpuActions に行動記録を追加する)
 func (d *Doudizhu) cpuBid() {
-	playerIdx := d.round.currentTurn
-	value := d.evaluateBid(d.players[playerIdx])
-
-	action := &DoudizhuCpuAction{PlayerIdx: playerIdx, BidValue: value}
-	d.round.cpuActions = append(d.round.cpuActions, action)
+	value := d.evaluateBid(d.players[d.round.currentTurn])
 	_ = d.executeBid(value)
 }
 

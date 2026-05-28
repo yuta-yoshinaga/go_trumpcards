@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { doudizhuApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -71,6 +71,65 @@ describe('DoudizhuPage', () => {
     renderWithProviders(<DoudizhuPage />);
     await waitFor(() => {
       expect(screen.getByText('地主の勝利！')).toBeInTheDocument();
+    });
+  });
+
+  it('renders peasant-win message when landlord loses', async () => {
+    mockExec.mockResolvedValue({
+      ...defaultState,
+      phase: 'end',
+      gameEndFlag: true,
+      scores: [-2, 1, 1],
+    });
+    renderWithProviders(<DoudizhuPage />);
+    await waitFor(() => {
+      expect(screen.getByText('農民の勝利！')).toBeInTheDocument();
+    });
+  });
+
+  it('renders bid buttons above the highest bid during bid phase', async () => {
+    mockExec.mockResolvedValue({
+      ...defaultState,
+      phase: 'bid',
+      landlordIdx: -1,
+      highestBid: 1,
+      currentTurn: 0,
+    });
+    renderWithProviders(<DoudizhuPage />);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /2/ })).toBeInTheDocument();
+    });
+    // Bid 1 is not offered because highestBid is already 1.
+    expect(screen.queryByRole('button', { name: '1で叫ぶ' })).not.toBeInTheDocument();
+  });
+
+  it('disables play until a card is selected, then plays on click', async () => {
+    mockExec.mockResolvedValue({
+      ...defaultState,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          isFinished: false,
+          isLandlord: true,
+          cardCount: 1,
+          cards: [{ design: 'SPADE', value: 5 }],
+        },
+        { id: 1, isHuman: false, isFinished: false, isLandlord: false, cardCount: 17, cards: [] },
+        { id: 2, isHuman: false, isFinished: false, isLandlord: false, cardCount: 17, cards: [] },
+      ],
+    });
+    renderWithProviders(<DoudizhuPage />);
+
+    const playButton = await screen.findByRole('button', { name: '出す' });
+    expect(playButton).toBeDisabled();
+
+    fireEvent.click(screen.getByAltText(/5/));
+    expect(playButton).toBeEnabled();
+
+    fireEvent.click(playButton);
+    await waitFor(() => {
+      expect(mockExec).toHaveBeenCalledWith(expect.objectContaining({ command: 'p', indices: [0] }));
     });
   });
 });

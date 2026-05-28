@@ -280,12 +280,9 @@ func classifyConsecutivePair(ranks []rankCount, cards []*Card, n int) *DoudizhuC
 
 func classifyAirplane(ranks []rankCount, cards []*Card, n int) *DoudizhuCombo {
 	trios := make([]int, 0)
-	others := make([]rankCount, 0)
 	for _, r := range ranks {
 		if r.count == 3 && isChainable(r.strength) {
 			trios = append(trios, r.strength)
-		} else {
-			others = append(others, r)
 		}
 	}
 	if len(trios) < 2 {
@@ -299,52 +296,38 @@ func classifyAirplane(ranks []rankCount, cards []*Card, n int) *DoudizhuCombo {
 	}
 	chainLen := len(chain)
 
-	remaining := n - chainLen*3
-	if remaining == 0 {
+	// Pure airplane: exactly chainLen consecutive trios, no wings.
+	if n == chainLen*3 {
 		return &DoudizhuCombo{Type: DoudizhuComboAirplane, Cards: cards, Rank: chain[0], Length: chainLen}
 	}
 
-	nonChainTrios := 0
-	for _, t := range trios {
-		found := false
-		for _, c := range chain {
-			if t == c {
-				found = true
-				break
-			}
-		}
-		if !found {
-			nonChainTrios++
-		}
-	}
-	otherCards := remaining - nonChainTrios*3
-
-	if otherCards == chainLen {
+	// Airplane + single wings: chainLen trios + chainLen single kickers.
+	if n == chainLen*4 {
 		return &DoudizhuCombo{Type: DoudizhuComboAirplaneSingle, Cards: cards, Rank: chain[0], Length: chainLen}
 	}
 
-	if otherCards == chainLen*2 {
-		pairCount := 0
-		for _, r := range others {
-			if r.count >= 2 {
-				pairCount += r.count / 2
-			}
-		}
-		for _, t := range trios {
-			found := false
+	// Airplane + pair wings: chainLen trios + chainLen pair kickers. Every
+	// rank's leftover count (after removing the chain trios) must be even so
+	// the kickers partition cleanly into pairs.
+	if n == chainLen*5 {
+		inChain := func(strength int) bool {
 			for _, c := range chain {
-				if t == c {
-					found = true
-					break
+				if strength == c {
+					return true
 				}
 			}
-			if !found {
-				pairCount++
+			return false
+		}
+		for _, r := range ranks {
+			remCount := r.count
+			if inChain(r.strength) {
+				remCount -= 3
+			}
+			if remCount%2 != 0 {
+				return nil
 			}
 		}
-		if pairCount >= chainLen {
-			return &DoudizhuCombo{Type: DoudizhuComboAirplanePair, Cards: cards, Rank: chain[0], Length: chainLen}
-		}
+		return &DoudizhuCombo{Type: DoudizhuComboAirplanePair, Cards: cards, Rank: chain[0], Length: chainLen}
 	}
 
 	return nil

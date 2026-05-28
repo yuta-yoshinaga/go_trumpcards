@@ -235,8 +235,8 @@ function DoudizhuPageContent() {
           {state.kittyCards.length > 0 && (
             <div className="flex justify-center gap-1 items-center" data-tutorial="ddz-kitty">
               <span className="text-ds-text-primary text-xs mr-1">{t('label.kitty')}:</span>
-              {state.kittyCards.map((c, i) => (
-                <AnimatedCard key={`kitty-${i}`} card={c} width={cardWidth * 0.6} />
+              {state.kittyCards.map((c) => (
+                <AnimatedCard key={`kitty-${c.design}-${c.value}`} card={c} width={cardWidth * 0.6} />
               ))}
             </div>
           )}
@@ -245,8 +245,8 @@ function DoudizhuPageContent() {
           <div className="flex justify-center items-center min-h-[80px] gap-1" data-tutorial="ddz-table">
             {state.tableCards.length > 0 ? (
               <>
-                {state.tableCards.map((c, i) => (
-                  <AnimatedCard key={`table-${i}`} card={c} width={cardWidth * 0.8} />
+                {state.tableCards.map((c) => (
+                  <AnimatedCard key={`table-${c.design}-${c.value}`} card={c} width={cardWidth * 0.8} />
                 ))}
                 <span className="text-ds-text-primary text-xs ml-2">{state.tableCombo}</span>
               </>
@@ -277,9 +277,13 @@ function DoudizhuPageContent() {
               <div className="flex flex-wrap justify-center gap-1">
                 {humanPlayer.cards.map((c, i) => (
                   <button
-                    key={`hand-${i}`}
+                    key={`hand-${c.design}-${c.value}`}
                     type="button"
-                    className={`transition-transform ${selectedCards.has(i) ? '-translate-y-2 ring-2 ring-ds-warning rounded' : ''}`}
+                    className={
+                      selectedCards.has(i)
+                        ? 'transition-transform -translate-y-2 ring-2 ring-ds-warning rounded'
+                        : 'transition-transform'
+                    }
                     onClick={() => toggleCard(i)}
                   >
                     <AnimatedCard card={c} width={cardWidth * 0.9} />

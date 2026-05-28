@@ -208,6 +208,31 @@ func TestClassifyCombo_AirplaneInvalid_Contains2(t *testing.T) {
 	assert.Nil(t, combo)
 }
 
+func TestClassifyCombo_AirplaneSingle_InvalidWithNonChainTrio(t *testing.T) {
+	// [5,5,5, 6,6,6] airplane (chainLen=2) + [3,3,3, 7, 8] = 11 cards.
+	// The two chain trios need exactly 2 single wings, but this hand has 5
+	// leftover cards — it must NOT be classified as a valid AirplaneSingle.
+	combo := DoudizhuClassifyCombo([]*Card{
+		dzSpade(5), dzHeart(5), dzDiamond(5),
+		dzClover(6), dzSpade(6), dzHeart(6),
+		dzSpade(3), dzHeart(3), dzDiamond(3),
+		dzClover(7), dzSpade(8),
+	})
+	assert.Nil(t, combo)
+}
+
+func TestClassifyCombo_AirplanePair_InvalidOddRemainder(t *testing.T) {
+	// [5,5,5, 6,6,6] airplane (chainLen=2) + [3,3, 7, 9] = 10 cards = chainLen*5,
+	// so the pair-wing branch runs, but rank 7 and 9 have odd counts and cannot
+	// partition into pairs — must NOT classify as AirplanePair.
+	combo := DoudizhuClassifyCombo([]*Card{
+		dzSpade(5), dzHeart(5), dzDiamond(5),
+		dzClover(6), dzSpade(6), dzHeart(6),
+		dzSpade(3), dzHeart(3), dzClover(7), dzSpade(9),
+	})
+	assert.Nil(t, combo)
+}
+
 func TestClassifyCombo_Empty(t *testing.T) {
 	assert.Nil(t, DoudizhuClassifyCombo([]*Card{}))
 }
