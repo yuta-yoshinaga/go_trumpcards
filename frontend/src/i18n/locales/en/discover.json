@@ -193,7 +193,8 @@
     "rummy500": "Race to 500. American household Rummy in its mid-form classic shape.",
     "bigtwo": "Hong Kong's signature shedding game. Poker-hand combos meet climbing mechanics.",
     "sixcardgolf": "A memory & exchange game where you swap face-down cards to get the lowest score",
-    "doudizhu": "China's #1 card game. Bid to become the Landlord and shed your 20 cards before the Peasants team up against you."
+    "doudizhu": "China's #1 card game. Bid to become the Landlord and shed your 20 cards before the Peasants team up against you.",
+    "truco": "A South American / Spanish mind game. Raise the stakes mid-trick and test your opponent's nerve with bluffs."
   },
   "stretch_blurb": {
     "blackjack": "The 21 instinct may be obvious — but the betting decisions surprise.",
@@ -303,6 +304,7 @@
     "rummy500": "American household Rummy in mid-length form.",
     "bigtwo": "Poker-hand climbing from Hong Kong — a fresh angle on shedding games.",
     "sixcardgolf": "Match ranks in a column for 0 points! Compete over 9 rounds",
-    "doudizhu": "One Landlord vs two Peasants — bombs, rockets, and strategic cooperation make every hand explosive."
+    "doudizhu": "One Landlord vs two Peasants — bombs, rockets, and strategic cooperation make every hand explosive.",
+    "truco": "Strong hand or weak, one call sends the points soaring. Read and bluff your way to 15."
   }
 }

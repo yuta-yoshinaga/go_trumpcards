@@ -3332,6 +3332,31 @@ stateDiagram-v2
     note right of End : phase = "end"\n地主/農民勝敗 + スコア表示
 ```
 
+### 3.8.2 Truco フェーズ遷移 (TrucoPage)
+
+`TrucoPage` はサーバーから返る数値 `phase` (`TrucoPhase` enum) に応じて表示を切り替えます。プレイフェーズでは手札の play ボタン + `canDeclareTruco` のとき「Truco を宣言」ボタン、応答フェーズでは受諾/拒否/引き上げボタン、バサ・マノ終了では「次へ」ボタンを描画します。マッチ得点と現在の賭け点 (level) は常時ヘッダーに表示します。
+
+```mermaid
+stateDiagram-v2
+    [*] --> Play : reset() (mount)
+    Play --> Respond : truco
+    Play --> TrickEnd : バサ完了
+    Respond --> Play : accept
+    Respond --> Respond : truco (再引き上げ)
+    Respond --> HandEnd : decline
+    TrickEnd --> Play : next
+    TrickEnd --> HandEnd : next (マノ決着)
+    HandEnd --> Play : next (次マノ)
+    HandEnd --> GameEnd : next (設定点到達)
+    GameEnd --> [*]
+
+    note right of Play : phase = 0\n手札クリックで出す + Truco 宣言ボタン
+    note right of Respond : phase = 1\n受諾(Quiero)/拒否(No Quiero)/引き上げ
+    note right of TrickEnd : phase = 2\n次へボタン
+    note right of HandEnd : phase = 3\n賭け点加算 + 次へボタン
+    note right of GameEnd : phase = 4\nマッチ勝敗バナー
+```
+
 ### 3.9 Discover サーベイステップ遷移 (SurveyState)
 
 `DiscoverPage` の `useReducer` が管理する step pointer (`0..TOTAL_QUESTIONS`) の遷移。マウント時に `firstUnansweredStep(restoredAxes)` で localStorage から再開位置を計算し、advance/back で 1 ステップずつ移動、`TOTAL_QUESTIONS` 到達で submit effect が発火して `/discover/result` へ遷移します。

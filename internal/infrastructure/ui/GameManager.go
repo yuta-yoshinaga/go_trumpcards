@@ -1715,6 +1715,15 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"doudizhu.helpSetDifficulty"},
 			})
 	}},
+	{Name: "truco", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewTrucoCuiController(usecase.NewTrucoInteractor(
+				domain.NewDefaultTruco(), new(presenter.TrucoCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:    "truco.helpTitle",
+				CommandKeys: []string{"truco.helpPlay", "truco.helpTruco", "truco.helpRespond", "truco.helpNext"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

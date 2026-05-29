@@ -683,6 +683,15 @@ export const BriscolaPhase = {
   GAME_END: 2,
 } as const;
 
+/** Truco phase constants (sync: internal/domain/Truco.go). */
+export const TrucoPhase = {
+  PLAY: 0,
+  RESPOND: 1,
+  TRICK_END: 2,
+  HAND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Let It Ride phase constants (sync: internal/domain/LetItRide.go). */
 /** Poker Squares phase constants (sync: internal/domain/PokerSquares.go). */
 export const PokerSquaresPhase = {

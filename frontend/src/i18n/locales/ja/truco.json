@@ -1,0 +1,48 @@
+{
+  "currentTrick": "現在のバサ",
+  "title": "Truco (トゥルコ)",
+  "subtitle": "南米・スペインの心理戦トリックテイキング — 賭け点を釣り上げるブラフ",
+  "header": {
+    "hand": "マノ",
+    "baza": "バサ",
+    "target": "目標",
+    "match": "マッチ得点",
+    "you": "あなた",
+    "cpu": "CPU",
+    "stake": "賭け点",
+    "level": "宣言",
+    "tricks": "獲得バサ",
+    "cards": "手札"
+  },
+  "level": {
+    "none": "通常",
+    "truco": "Truco",
+    "retruco": "Retruco",
+    "valecuatro": "Vale Cuatro"
+  },
+  "phase": {
+    "play": "プレイ",
+    "respond": "応答",
+    "trickEnd": "バサ終了",
+    "handEnd": "マノ終了",
+    "gameEnd": "マッチ終了"
+  },
+  "actions": {
+    "play": "出す",
+    "truco": "Truco を宣言",
+    "accept": "受諾 (Quiero)",
+    "decline": "拒否 (No Quiero)",
+    "raise": "引き上げる",
+    "next": "次へ",
+    "reset": "リセット"
+  },
+  "result": {
+    "youWin": "あなたの勝ち！ ({{p0}}-{{p1}})",
+    "cpuWin": "CPUの勝ち ({{p0}}-{{p1}})"
+  },
+  "respondPrompt": "{{name}} が {{level}} を宣言しました。応答してください。",
+  "caller": {
+    "you": "あなた",
+    "cpu": "CPU"
+  }
+}

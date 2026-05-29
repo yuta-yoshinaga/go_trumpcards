@@ -104,6 +104,7 @@
     "trash": "トラッシュ",
     "sixcardgolf": "シックスカードゴルフ",
     "doudizhu": "斗地主",
+    "truco": "トゥルコ",
     "president": "プレジデント",
     "cassino": "カッシーノ",
     "spanish21": "スパニッシュ21",
@@ -255,6 +256,14 @@
     "errorBoundaryDetails": "エラーの詳細を表示"
   },
   "messageCode": {
+    "truco.result.p0Win": "マッチ終了！ あなたの勝利です ({{p0}}-{{p1}})！",
+    "truco.result.p1Win": "マッチ終了！ CPUの勝利です ({{p0}}-{{p1}})。",
+    "truco.playPhase.lead": "あなたの番です — リードするカードを選んでください。",
+    "truco.playPhase.follow": "あなたの番です — フォローするカードを選んでください。",
+    "truco.respondPhase": "Truco 宣言への応答を選んでください。",
+    "truco.trickEnd": "バサ終了 — 次へ進んでください。",
+    "truco.handEnd.p0": "マノ終了 — あなたが {{stake}}点 獲得。",
+    "truco.handEnd.p1": "マノ終了 — CPUが {{stake}}点 獲得。",
     "blackjack.result.draw": "引き分けです。",
     "blackjack.result.win": "あなたの勝ちです。",
     "blackjack.result.lose": "あなたの負けです。",

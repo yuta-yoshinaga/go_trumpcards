@@ -3600,3 +3600,28 @@ stateDiagram-v2
 ```
 
 **注:** OldMaid・Daifugo・Sevens・President はターン制で進行する手札削り系のため、明示的なフェーズ定数を持ちません (currentTurn が巡回し、全プレイヤーの手札が 0 枚またはランクが確定するまで進行)。
+
+### 3.56 Truco フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Play : Reset() / dealHand()
+    Play --> Respond : DeclareTruco()
+    Play --> TrickEnd : バサ完了 (2枚出揃う)
+    Respond --> Play : RespondTruco(accept)
+    Respond --> Respond : DeclareTruco() (再引き上げ)
+    Respond --> HandEnd : RespondTruco(decline)
+    TrickEnd --> Play : Next() (次のバサ)
+    TrickEnd --> HandEnd : Next() (マノ決着)
+    HandEnd --> Play : Next() (次マノ配布)
+    HandEnd --> GameEnd : Next() (設定点到達)
+    GameEnd --> [*]
+
+    note right of Play : TrucoPhasePlay = 0\nカードを出すか Truco を宣言
+    note right of Respond : TrucoPhaseRespond = 1\n受諾(Quiero)/拒否(No Quiero)/再引き上げ
+    note right of TrickEnd : TrucoPhaseTrickEnd = 2\nバサ勝者を記録 (同強は parda)
+    note right of HandEnd : TrucoPhaseHandEnd = 3\n賭け点を加算 (Truco=2 Retruco=3 ValeCuatro=4)
+    note right of GameEnd : TrucoPhaseGameEnd = 4\n設定点 (既定15) 先取で勝利
+```
+
+**注:** Truco は 1 マノ = 最大 3 バサの best-of-2、`resolveMano` がパルダ (引き分け) を含む勝者判定を行う。マッチは複数マノにまたがり、`playerMatchPoints` に賭け点を累積する。`Truco.go` のドメインは Briscola のトリック進行を流用しつつ、Respond フェーズ (ベッティング割り込み) を追加している。
