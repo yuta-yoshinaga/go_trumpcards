@@ -78,16 +78,16 @@ func TestTrucoCardStrength(t *testing.T) {
 
 func TestTrucoCardStrengthTotalOrder(t *testing.T) {
 	// matadores はスート固有: 1♠ > 1♣ > 7♠ > 7♦ で、偽のエース/7 より強い。
-	if !(TrucoCardStrength(NewCard(CardDesignSpade, 1, false)) >
-		TrucoCardStrength(NewCard(CardDesignClover, 1, false))) {
+	if TrucoCardStrength(NewCard(CardDesignSpade, 1, false)) <=
+		TrucoCardStrength(NewCard(CardDesignClover, 1, false)) {
 		t.Error("1 espadas should beat 1 bastos")
 	}
-	if !(TrucoCardStrength(NewCard(CardDesignSpade, 7, false)) >
-		TrucoCardStrength(NewCard(CardDesignDiamond, 7, false))) {
+	if TrucoCardStrength(NewCard(CardDesignSpade, 7, false)) <=
+		TrucoCardStrength(NewCard(CardDesignDiamond, 7, false)) {
 		t.Error("7 espadas should beat 7 oros")
 	}
-	if !(TrucoCardStrength(NewCard(CardDesignDiamond, 7, false)) >
-		TrucoCardStrength(NewCard(CardDesignHeart, 7, false))) {
+	if TrucoCardStrength(NewCard(CardDesignDiamond, 7, false)) <=
+		TrucoCardStrength(NewCard(CardDesignHeart, 7, false)) {
 		t.Error("7 oros (matador) should beat false 7")
 	}
 }
@@ -554,8 +554,10 @@ func TestTrucoHint(t *testing.T) {
 func TestTrucoCpuSelectPlayCard(t *testing.T) {
 	g := twoHumanTruco()
 	setupBaza(g, 1)
-	// leading -> weakest card
-	trucoSetHand(g.GetPlayer(1), NewCard(CardDesignSpade, 1, false), NewCard(CardDesignHeart, 4, false), NewCard(CardDesignHeart, 13, false))
+	// leading -> weakest card.
+	// Hand: 3 espadas (str 10), false 4 (str 1), rey (str 7). Deliberately no
+	// matador, so the 1 bastos played below is genuinely unbeatable by this hand.
+	trucoSetHand(g.GetPlayer(1), NewCard(CardDesignSpade, 3, false), NewCard(CardDesignHeart, 4, false), NewCard(CardDesignHeart, 13, false))
 	g.SetCurrentTrick(nil)
 	if idx := g.cpuSelectPlayCard(1); g.GetPlayer(1).GetCard(idx).GetValue() != 4 {
 		t.Errorf("lead pick value = %d, want 4 (weakest)", g.GetPlayer(1).GetCard(idx).GetValue())
