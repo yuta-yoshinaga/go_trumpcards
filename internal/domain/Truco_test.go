@@ -703,10 +703,16 @@ func TestTrucoJSONRoundTrip(t *testing.T) {
 
 func TestTrucoUnmarshalValidation(t *testing.T) {
 	bad := []string{
-		`{"ps":[{}]}`,                    // wrong player count
-		`{"ps":[{},{}],"ct":[{},{},{}]}`, // too many trick cards
-		`{"ps":[{},{}],"tr":[0,1,0,1]}`,  // too many trick results
-		`{"ps":[{},{}],"pp":[1,2,3]}`,    // wrong match-points length
+		`{"ps":[{}]}`,                           // wrong player count
+		`{"ps":[{},{}],"ct":[{},{},{}]}`,        // too many trick cards
+		`{"ps":[{},{}],"tr":[0,1,0,1]}`,         // too many trick results
+		`{"ps":[{},{}],"pp":[1,2,3]}`,           // wrong match-points length
+		`{"ps":[null,{}]}`,                      // nil player
+		`{"ps":[{},{}],"ct":[{"pi":0}]}`,        // nil trick card payload
+		`{"ps":[{},{}],"ct":[{"pi":5,"c":{}}]}`, // trick playerIdx out of bounds
+		`{"ps":[{},{}],"ci":99}`,                // currentPlayerIdx out of bounds
+		`{"ps":[{},{}],"ri":-2}`,                // responderIdx below sentinel
+		`{"ps":[{},{}],"wi":2}`,                 // winnerIdx out of bounds
 	}
 	for _, s := range bad {
 		var g Truco
@@ -724,5 +730,23 @@ func TestTrucoUnmarshalValidation(t *testing.T) {
 	}
 	if g.GetActionLog() == nil {
 		t.Error("action log should default to non-nil")
+	}
+
+	// out-of-range value fields are clamped (not rejected) to their invariants
+	var c Truco
+	if err := json.Unmarshal([]byte(`{"ps":[{},{}],"mt":999,"hs":99,"al":-5,"pl":42}`), &c); err != nil {
+		t.Fatalf("unmarshal clampable payload: %v", err)
+	}
+	if c.GetMatchTarget() != TrucoDefaultMatchTarget {
+		t.Errorf("matchTarget clamp = %d, want %d", c.GetMatchTarget(), TrucoDefaultMatchTarget)
+	}
+	if c.GetHandStake() != 1 {
+		t.Errorf("handStake clamp = %d, want 1", c.GetHandStake())
+	}
+	if c.GetAcceptedLevel() != TrucoLevelNone {
+		t.Errorf("acceptedLevel clamp = %d, want %d", c.GetAcceptedLevel(), TrucoLevelNone)
+	}
+	if c.GetPendingLevel() != TrucoLevelNone {
+		t.Errorf("pendingLevel clamp = %d, want %d", c.GetPendingLevel(), TrucoLevelNone)
 	}
 }

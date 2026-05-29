@@ -1005,6 +1005,48 @@ func (t *Truco) UnmarshalJSON(data []byte) error {
 	if len(j.ActionLog) > trucoMaxSliceLen {
 		return fmt.Errorf("truco: action log exceeds maximum allowed size")
 	}
+	// Nil entries restored from untrusted JSON would panic on first
+	// dereference (sortAllHands, trucoBazaWinner, finishBaza, ...).
+	for i, p := range j.Players {
+		if p == nil {
+			return fmt.Errorf("truco: player at index %d is nil", i)
+		}
+	}
+	for i, tc := range j.CurrentTrick {
+		if tc == nil || tc.Card == nil {
+			return fmt.Errorf("truco: trick card at index %d is nil", i)
+		}
+		if tc.PlayerIdx < 0 || tc.PlayerIdx >= TrucoPlayerCnt {
+			return fmt.Errorf("truco: trick card player index %d out of bounds", tc.PlayerIdx)
+		}
+	}
+	for i, e := range j.ActionLog {
+		if e == nil {
+			return fmt.Errorf("truco: action log entry at index %d is nil", i)
+		}
+	}
+	// Index fields drive slice accesses (t.players[...]); out-of-range values
+	// from a crafted payload would panic during play. -1 is the valid
+	// "unset" sentinel for the responder/caller/winner indices.
+	indexBounds := []struct {
+		name string
+		val  int
+		min  int
+	}{
+		{"currentPlayerIdx", j.CurrentPlayerIdx, 0},
+		{"leadPlayerIdx", j.LeadPlayerIdx, 0},
+		{"manoIdx", j.ManoIdx, 0},
+		{"dealerIdx", j.DealerIdx, 0},
+		{"responderIdx", j.ResponderIdx, -1},
+		{"trucoCallerIdx", j.TrucoCallerIdx, -1},
+		{"handWinnerIdx", j.HandWinnerIdx, -1},
+		{"winnerIdx", j.WinnerIdx, -1},
+	}
+	for _, b := range indexBounds {
+		if b.val < b.min || b.val >= TrucoPlayerCnt {
+			return fmt.Errorf("truco: %s %d out of bounds", b.name, b.val)
+		}
+	}
 	t.trumpCards = j.TrumpCards
 	if t.trumpCards == nil {
 		t.trumpCards = NewTrumpCardsBriscola()
@@ -1024,12 +1066,24 @@ func (t *Truco) UnmarshalJSON(data []byte) error {
 	t.leadPlayerIdx = j.LeadPlayerIdx
 	t.manoIdx = j.ManoIdx
 	t.dealerIdx = j.DealerIdx
+	// Stake/level fields are clamped (not rejected) to the same invariants as
+	// TrucoConfig.normalized(): a zero-value handStake from a minimal payload
+	// is normalised to the base stake rather than treated as corrupt.
 	t.handStake = j.HandStake
+	if t.handStake < 1 || t.handStake > TrucoMaxLevel+1 {
+		t.handStake = 1
+	}
 	t.acceptedLevel = j.AcceptedLevel
+	if t.acceptedLevel < 0 || t.acceptedLevel > TrucoMaxLevel {
+		t.acceptedLevel = TrucoLevelNone
+	}
 	t.pendingLevel = j.PendingLevel
+	if t.pendingLevel < 0 || t.pendingLevel > TrucoMaxLevel {
+		t.pendingLevel = TrucoLevelNone
+	}
 	t.trucoCallerIdx = j.TrucoCallerIdx
 	t.matchTarget = j.MatchTarget
-	if t.matchTarget <= 0 {
+	if t.matchTarget < TrucoMinMatchTarget || t.matchTarget > TrucoMaxMatchTarget {
 		t.matchTarget = TrucoDefaultMatchTarget
 	}
 	t.playerMatchPoints = j.PlayerMatchPoints
