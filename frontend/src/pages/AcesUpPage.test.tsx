@@ -102,7 +102,9 @@ describe('AcesUpPage', () => {
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(playingState);
-    fireEvent.click(screen.getByRole('button', { name: '配る' }));
+    // Both the stock card-back and the footer button expose the "配る" label.
+    const dealButtons = screen.getAllByRole('button', { name: '配る' });
+    fireEvent.click(dealButtons[dealButtons.length - 1]);
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
   });
