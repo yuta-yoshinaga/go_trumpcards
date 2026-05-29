@@ -1,5 +1,6 @@
 import type {
   AccordionResponse,
+  AcesUpResponse,
   ActionLogResponse,
   BaccaratResponse,
   BadugiResponse,
@@ -192,6 +193,7 @@ const workerUrl: Record<string, string> = {
   canasta: WORKER_SOLO,
   cribbage: WORKER_SOLO,
   golf: WORKER_SOLO,
+  acesup: WORKER_SOLO,
   clocksolitaire: WORKER_SOLO,
   fortythieves: WORKER_SOLO,
   canfield: WORKER_SOLO,
@@ -1785,6 +1787,15 @@ export const golfApi = {
   ) => gameExec<GolfResponse>('golf', { command, col, n }),
 };
 
+/** API client for the Aces Up /acesup/exec endpoint. */
+export const acesupApi = {
+  exec: (
+    command: 'reset' | 'draw' | 'remove' | 'move' | 'giveup' | 'hint' | 'log' | 'undo' | 'undo_n',
+    col?: number,
+    n?: number,
+  ) => gameExec<AcesUpResponse>('acesup', { command, col, n }),
+};
+
 /** Pig's Tail game API client. */
 export const pigtailApi = {
   exec: (command: 'reset' | 'draw', cpuHesitationEnabled?: boolean) =>
@@ -2117,6 +2128,7 @@ const games = [
   'sixcardgolf',
   'doudizhu',
   'truco',
+  'acesup',
 ] as const;
 type Game = (typeof games)[number];
 

@@ -127,6 +127,7 @@ Go + Clean Architecture で実装した106種類のトランプゲーム。CLI �
 | ペンギン (Penguin) | `penguin` | [CUI](docs/manual/cui/penguin.md) / [Web](docs/manual/web/penguin.md) |
 | 斗地主 (Dou Dizhu) | `doudizhu` | [CUI](docs/manual/cui/doudizhu.md) / [Web](docs/manual/web/doudizhu.md) |
 | トゥルコ (Truco) | `truco` | [CUI](docs/manual/cui/truco.md) / [Web](docs/manual/web/truco.md) |
+| 四つ葉のクローバー (Aces Up) | `acesup` | [CUI](docs/manual/cui/acesup.md) / [Web](docs/manual/web/acesup.md) |
 
 ## Demo
 

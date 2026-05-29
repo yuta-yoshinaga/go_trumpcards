@@ -558,4 +558,9 @@ func init() {
 			return usecase.NewTrucoInteractor(domain.NewDefaultTruco(), new(presenter.TrucoWebPresenter))
 		},
 		controller.NewTrucoWebController)
+	BindWebControllerFor("acesup",
+		func() usecase.AcesUpInteractorIF {
+			return usecase.NewAcesUpInteractor(domain.NewDefaultAcesUp(), new(presenter.AcesUpWebPresenter))
+		},
+		controller.NewAcesUpWebController)
 }

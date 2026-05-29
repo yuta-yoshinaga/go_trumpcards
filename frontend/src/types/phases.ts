@@ -552,6 +552,13 @@ export const GolfPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Aces Up phase constants (sync: internal/domain/AcesUp.go). */
+export const AcesUpPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Seven Card Stud phase constants (sync: internal/domain/SevenCardStud.go). */
 export const SevenCardStudPhase = {
   INIT: 0,

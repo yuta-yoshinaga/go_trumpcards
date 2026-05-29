@@ -101,6 +101,7 @@ export type GameKey =
   | 'gaps'
   | 'tripeaks'
   | 'golf'
+  | 'acesup'
   | 'memory'
   | 'clocksolitaire'
   | 'fortythieves'
@@ -235,6 +236,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   gaps: CASINO,
   tripeaks: CASINO,
   golf: CASINO,
+  acesup: GREEN,
   memory: CASINO,
   clocksolitaire: CASINO,
   fortythieves: CASINO,
