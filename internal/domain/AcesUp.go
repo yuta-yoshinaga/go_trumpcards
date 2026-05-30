@@ -364,31 +364,107 @@ func (a *AcesUp) firstEmptyColumn() int {
 }
 
 // firstProductiveMoveCol 有効な移動が可能な最初の列を返す (-1 = なし)。
-// 空き列があり、かつ2枚以上ある列の上から2枚目を露出させることで
-// 除去可能なカードが生まれる場合に「有効な移動」とみなす。
+// 2枚以上ある列の一番上を空き列へ動かすと下のカードが露出する。空き列は
+// すべて等価なので、各列について「最初の空き列へ動かした盤面」から除去可能
+// な状態へ到達できるかを深さ優先で探索する。空き列が複数あれば連続して移動
+// できるため、1手だけ先読みする実装では「偽の手詰まり」を起こす（#2092 review）。
 func (a *AcesUp) firstProductiveMoveCol() int {
 	if a.firstEmptyColumn() < 0 {
 		return -1
 	}
-	// 現在の一番上カードのスート集合
 	for c := range AcesUpColCnt {
 		if len(a.columns[c]) < 2 {
+			// 1枚だけの列を動かしても露出するカードがなく無意味。
 			continue
 		}
-		below := a.columns[c][len(a.columns[c])-2]
-		// below が他のいずれかの一番上カードと同じスートなら、
-		// 移動後にどちらか低い方が除去可能になる。
-		for d := range AcesUpColCnt {
-			other := a.topCard(d)
-			if other == nil {
-				continue
-			}
-			if other.GetDesign() == below.GetDesign() && acesUpRank(other) != acesUpRank(below) {
-				return c
-			}
+		next := cloneColumns(a.columns)
+		e := firstEmptyColumnOf(next)
+		top := next[c][len(next[c])-1]
+		next[c] = next[c][:len(next[c])-1]
+		next[e] = append(next[e], top)
+		if acesUpReachableRemoval(next) {
+			return c
 		}
 	}
 	return -1
+}
+
+// cloneColumns は列スライス配列のディープコピーを返す。
+func cloneColumns(cols [AcesUpColCnt][]*Card) [AcesUpColCnt][]*Card {
+	var out [AcesUpColCnt][]*Card
+	for c := range AcesUpColCnt {
+		out[c] = cloneCards(cols[c])
+	}
+	return out
+}
+
+// firstEmptyColumnOf は任意の盤面に対する最初の空き列を返す (-1 = なし)。
+func firstEmptyColumnOf(cols [AcesUpColCnt][]*Card) int {
+	for c := range AcesUpColCnt {
+		if len(cols[c]) == 0 {
+			return c
+		}
+	}
+	return -1
+}
+
+// acesUpHasRemovable は盤面に除去可能な一番上カードが存在するか判定する。
+// 2枚の一番上カードが同じスートなら、ランクの低い方を除去できる。
+func acesUpHasRemovable(cols [AcesUpColCnt][]*Card) bool {
+	for i := range AcesUpColCnt {
+		ti := topOf(cols[i])
+		if ti == nil {
+			continue
+		}
+		for j := range AcesUpColCnt {
+			if i == j {
+				continue
+			}
+			tj := topOf(cols[j])
+			if tj == nil {
+				continue
+			}
+			if ti.GetDesign() == tj.GetDesign() && acesUpRank(tj) > acesUpRank(ti) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// topOf は列の一番上のカードを返す (空なら nil)。
+func topOf(col []*Card) *Card {
+	if len(col) == 0 {
+		return nil
+	}
+	return col[len(col)-1]
+}
+
+// acesUpReachableRemoval は「移動のみ」で除去可能な状態へ到達できるか判定する。
+// 各再帰では2枚以上ある列の一番上を最初の空き列へ動かす。移動するたびに空き列
+// が1つ減るため、再帰の深さは空き列数で上限が決まり（盤面は4列なので状態数は
+// ごく小さい）必ず停止する。
+func acesUpReachableRemoval(cols [AcesUpColCnt][]*Card) bool {
+	if acesUpHasRemovable(cols) {
+		return true
+	}
+	e := firstEmptyColumnOf(cols)
+	if e < 0 {
+		return false
+	}
+	for c := range AcesUpColCnt {
+		if len(cols[c]) < 2 {
+			continue
+		}
+		next := cloneColumns(cols)
+		top := next[c][len(next[c])-1]
+		next[c] = next[c][:len(next[c])-1]
+		next[e] = append(next[e], top)
+		if acesUpReachableRemoval(next) {
+			return true
+		}
+	}
+	return false
 }
 
 // isWon 4枚のエースだけが残っているか判定する。

@@ -270,6 +270,27 @@ func TestAcesUp_GetHint_Move(t *testing.T) {
 	assert.Equal(t, 2, hint.Col)
 }
 
+// TestAcesUp_GetHint_Move_MultiEmptyChain reproduces the false-stalemate
+// reported in the PR #2092 review: with two empty columns a two-step move
+// sequence exposes a removable card, so the board is NOT a stalemate.
+// col0=[3♣,7♦,5♥] col1=[4♣] col2,col3 empty: move 5♥→col2, 7♦→col3 exposes
+// 3♣ which is removable against 4♣.
+func TestAcesUp_GetHint_Move_MultiEmptyChain(t *testing.T) {
+	a := setupAcesUpPlaying(t, [AcesUpColCnt][]*Card{
+		{auCard(CardDesignClover, 3), auCard(CardDesignDiamond, 7), auCard(CardDesignHeart, 5)},
+		{auCard(CardDesignClover, 4)},
+		{},
+		{},
+	})
+	hint := a.GetHint()
+	require.NotNil(t, hint)
+	assert.Equal(t, "move", hint.Type)
+	assert.Equal(t, 0, hint.Col)
+
+	a.checkStalemate()
+	assert.False(t, a.IsStalemate(), "two empty columns allow a productive move chain")
+}
+
 func TestAcesUp_GetHint_None(t *testing.T) {
 	a := setupAcesUpPlaying(t, [AcesUpColCnt][]*Card{
 		{auCard(CardDesignSpade, 9)},
@@ -278,6 +299,21 @@ func TestAcesUp_GetHint_None(t *testing.T) {
 		{auCard(CardDesignDiamond, 6)},
 	})
 	assert.Nil(t, a.GetHint())
+}
+
+// TestAcesUp_Stalemate_EmptyButNoReachableRemoval covers the case where an
+// empty column and a ≥2-card column exist, but no sequence of moves can
+// expose a removable card — a genuine stalemate (DFS returns false).
+func TestAcesUp_Stalemate_EmptyButNoReachableRemoval(t *testing.T) {
+	a := setupAcesUpPlaying(t, [AcesUpColCnt][]*Card{
+		{auCard(CardDesignSpade, 2), auCard(CardDesignHeart, 9)},
+		{},
+		{},
+		{auCard(CardDesignDiamond, 5)},
+	})
+	assert.Nil(t, a.GetHint())
+	a.checkStalemate()
+	assert.True(t, a.IsStalemate())
 }
 
 func TestAcesUp_GetHint_NotPlaying(t *testing.T) {

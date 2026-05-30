@@ -2975,7 +2975,7 @@ export interface AcesUpCard {
 
 /** A suggested hint in Aces Up. */
 export interface AcesUpHint {
-  type: string;
+  type: 'remove' | 'move' | 'draw';
   col: number;
 }
 
