@@ -205,7 +205,9 @@ function KlondikePageContent() {
 
   useActionKeyboardNav({
     bindings: actionBindings,
-    enabled: !!isPlayingForKbd && !loading,
+    // Mirror the give-up button's disabled condition (loading || isAutoCompleting):
+    // a `g` keypress mid-auto-complete must not open the confirm dialog (#2099 review).
+    enabled: !!isPlayingForKbd && !loading && !isAutoCompleting,
   });
 
   if (!state) return <GameSkeleton gameKey="klondike" layout={{ kind: 'tableau', topRow: 6, tableau: 7 }} />;

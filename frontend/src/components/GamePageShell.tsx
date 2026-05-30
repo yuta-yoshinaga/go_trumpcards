@@ -8,8 +8,8 @@ import { WinCelebration } from './motion/WinCelebration';
 import { PhaseIndicator } from './PhaseIndicator';
 import { TutorialButton } from './tutorial/TutorialButton';
 
-/** Props for the GamePageShell component. */
-export interface GamePageShellProps {
+/** Base props for the GamePageShell component (everything except the give-up trio). */
+interface GamePageShellBaseProps {
   /** Page title rendered as a visually-hidden h1 heading. */
   title: string;
   /** Tailwind background class for the outer container (e.g., gameTheme.hearts.bg). */
@@ -42,17 +42,6 @@ export interface GamePageShellProps {
   confirmReset: () => void;
   /** Callback to cancel the reset action. */
   cancelReset: () => void;
-  /**
-   * Whether the give-up confirmation dialog is open. Optional — pages without
-   * a give-up action (most non-solitaire games) omit it and no dialog renders.
-   * Solitaire pages pass this (plus confirmGiveUp/cancelGiveUp) so give-up gets
-   * the same confirm guard as reset (issue #2099).
-   */
-  giveUpConfirmOpen?: boolean;
-  /** Callback to confirm the give-up action. Required when giveUpConfirmOpen is set. */
-  confirmGiveUp?: () => void;
-  /** Callback to cancel the give-up action. Required when giveUpConfirmOpen is set. */
-  cancelGiveUp?: () => void;
   /**
    * Optional `key` applied to the outer container. Use for animations that must
    * restart on demand by remounting the subtree (e.g., Old Maid's shake-key
