@@ -85,8 +85,21 @@ const KL_TUTORIAL_STEPS: TutorialStep[] = [
 export const KlondikePage = withTutorial(KlondikePageContent, 'klondike', KL_TUTORIAL_STEPS);
 /** Inner content of the Klondike page, wrapped by TutorialProvider. */
 function KlondikePageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('klondike');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('klondike');
   const { playSound } = useSound();
   const {
     state,
@@ -172,15 +185,22 @@ function KlondikePageContent() {
     handleReset();
   }, [handleReset, hideActionLog, resetTimer]);
 
+  // Give-up is irreversible, so route both the button and the `g` key through
+  // the confirm dialog — matching reset's guard (issue #2099).
+  const confirmGiveUpAction = useCallback(
+    () => requestGiveUpConfirm(handleGiveUp),
+    [requestGiveUpConfirm, handleGiveUp],
+  );
+
   const actionBindings = useMemo(
     () => [
       { key: 'd', action: handleDraw },
       { key: 'h', action: handleHint },
       { key: 'a', action: handleAutoComplete },
-      { key: 'g', action: handleGiveUp },
+      { key: 'g', action: confirmGiveUpAction },
       { key: 'z', action: handleUndo },
     ],
-    [handleDraw, handleHint, handleAutoComplete, handleGiveUp, handleUndo],
+    [handleDraw, handleHint, handleAutoComplete, confirmGiveUpAction, handleUndo],
   );
 
   useActionKeyboardNav({
@@ -227,6 +247,9 @@ function KlondikePageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
           <span>
@@ -575,7 +598,7 @@ function KlondikePageContent() {
                   <button
                     type="button"
                     className={btnDanger}
-                    onClick={handleGiveUp}
+                    onClick={confirmGiveUpAction}
                     disabled={loading || isAutoCompleting}
                   >
                     {t('giveup')}

@@ -285,15 +285,30 @@ describe('KlondikePage', () => {
     expect(btn.className).toContain('animate-pulse');
   });
 
-  it('clicking give up button dispatches giveup', async () => {
+  it('give up button opens a confirm dialog and only dispatches giveup after confirm', async () => {
     renderWithProviders(<KlondikePage />);
     await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(gameOverState);
+    // Clicking give-up must NOT dispatch immediately — it opens a confirm dialog (#2099).
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    expect(mockExec).not.toHaveBeenCalledWith('giveup');
+    expect(screen.getByText('投了確認')).toBeInTheDocument();
 
+    // Confirming dispatches giveup.
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
+  });
+
+  it('cancelling the give up dialog does not dispatch giveup', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    expect(mockExec).not.toHaveBeenCalledWith('giveup');
   });
 
   it('clicking reset button dispatches reset', async () => {
