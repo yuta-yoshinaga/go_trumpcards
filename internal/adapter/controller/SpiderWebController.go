@@ -91,8 +91,7 @@ func spiderDispatch(bc *baseController, w http.ResponseWriter, si usecase.Spider
 	case "u", "undo":
 		bc.writePresenterResponse(w, si.Undo())
 	case "undo_n":
-		if param.N == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: n is required."))
+		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, si.UndoN(*param.N))
@@ -103,16 +102,14 @@ func spiderDispatch(bc *baseController, w http.ResponseWriter, si usecase.Spider
 }
 
 func spiderMoveDispatch(bc *baseController, w http.ResponseWriter, si usecase.SpiderInteractorIF, param SpiderWebInput, newDefault func(string) *SpiderWebOutput) bool {
-	if param.From == nil || param.To == nil {
-		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from and to are required."))
+	if !requireParam(bc, w, newDefault, param.From == nil || param.To == nil, "param error: from and to are required.") {
 		return true
 	}
 	fromZone := param.From.Zone
 	toZone := param.To.Zone
 
 	if fromZone == "tableau" && toZone == "tableau" {
-		if param.From.Col == nil || param.From.CardIndex == nil || param.To.Col == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from.col, from.cardIndex, to.col are required."))
+		if !requireParam(bc, w, newDefault, param.From.Col == nil || param.From.CardIndex == nil || param.To.Col == nil, "param error: from.col, from.cardIndex, to.col are required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, si.MoveTableauToTableau(*param.From.Col, *param.From.CardIndex, *param.To.Col))

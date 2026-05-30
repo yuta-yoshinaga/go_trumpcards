@@ -124,16 +124,14 @@ func beloteDispatch(bc *baseController, w http.ResponseWriter, bi usecase.Belote
 	case "o", "orderup":
 		bc.writePresenterResponse(w, bi.PickUp(true))
 	case "c", "calltrump":
-		if param.Suit == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: suit is required."))
+		if !requireParam(bc, w, newDefault, param.Suit == nil, "param error: suit is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, bi.CallTrump(*param.Suit))
 	case "pa", "pass":
 		bc.writePresenterResponse(w, bi.Pass())
 	case "p", "play":
-		if param.CardIndex == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: cardIndex is required."))
+		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, bi.Play(*param.CardIndex))

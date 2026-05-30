@@ -104,14 +104,12 @@ func sevenBridgeDispatch(bc *baseController, w http.ResponseWriter, ci usecase.S
 	case "m", "meld":
 		bc.writePresenterResponse(w, ci.Meld(param.CardIndices))
 	case "lo", "layoff":
-		if param.TargetPlayerIdx == nil || param.MeldIdx == nil || param.CardIndex == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: targetPlayerIdx, meldIdx, cardIndex are required."))
+		if !requireParam(bc, w, newDefault, param.TargetPlayerIdx == nil || param.MeldIdx == nil || param.CardIndex == nil, "param error: targetPlayerIdx, meldIdx, cardIndex are required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ci.Layoff(*param.TargetPlayerIdx, *param.MeldIdx, *param.CardIndex))
 	case "d", "discard":
-		if param.CardIndex == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: cardIndex is required."))
+		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ci.Discard(*param.CardIndex))

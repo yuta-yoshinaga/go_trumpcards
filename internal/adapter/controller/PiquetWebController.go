@@ -147,22 +147,19 @@ func piquetDispatch(bc *baseController, w http.ResponseWriter, pi usecase.Piquet
 	case "r", "reset":
 		bc.writePresenterResponse(w, pi.ResetWithConfig(param.ToConfig()))
 	case "e", "elder":
-		if param.DiscardIndices == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: discardIndices is required."))
+		if !requireParam(bc, w, newDefault, param.DiscardIndices == nil, "param error: discardIndices is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, pi.ExchangeElder(param.DiscardIndices))
 	case "y", "younger":
-		if param.DiscardIndices == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: discardIndices is required."))
+		if !requireParam(bc, w, newDefault, param.DiscardIndices == nil, "param error: discardIndices is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, pi.ExchangeYounger(param.DiscardIndices))
 	case "d", "declare":
 		bc.writePresenterResponse(w, pi.ResolveDeclaration())
 	case "p", "play":
-		if param.CardIndex == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: cardIndex is required."))
+		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, pi.Play(*param.CardIndex))

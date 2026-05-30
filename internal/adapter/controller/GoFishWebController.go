@@ -105,8 +105,7 @@ func goFishDispatch(bc *baseController, w http.ResponseWriter, gi usecase.GoFish
 		cfg := buildGoFishConfig(gi.GetConfig(), param.Config)
 		bc.writePresenterResponse(w, gi.Reset(cfg))
 	case "ask":
-		if param.TargetIdx == nil || param.Rank == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: targetIdx and rank are required."))
+		if !requireParam(bc, w, newDefault, param.TargetIdx == nil || param.Rank == nil, "param error: targetIdx and rank are required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, gi.Ask(*param.TargetIdx, *param.Rank))

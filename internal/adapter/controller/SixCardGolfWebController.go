@@ -101,8 +101,7 @@ func sixCardGolfDispatch(bc *baseController, w http.ResponseWriter, ci usecase.S
 	case "r", "reset":
 		bc.writePresenterResponse(w, ci.ResetWithConfig(param.ToConfig()))
 	case "fi", "flipinitial":
-		if param.Position == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: position is required."))
+		if !requireParam(bc, w, newDefault, param.Position == nil, "param error: position is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ci.FlipInitial(*param.Position))
@@ -111,16 +110,14 @@ func sixCardGolfDispatch(bc *baseController, w http.ResponseWriter, ci usecase.S
 	case "dd", "drawdiscard":
 		bc.writePresenterResponse(w, ci.DrawDiscard())
 	case "sw", "swap":
-		if param.Position == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: position is required."))
+		if !requireParam(bc, w, newDefault, param.Position == nil, "param error: position is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ci.SwapCard(*param.Position))
 	case "di", "discard":
 		bc.writePresenterResponse(w, ci.DiscardDrawn())
 	case "fl", "flip":
-		if param.Position == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: position is required."))
+		if !requireParam(bc, w, newDefault, param.Position == nil, "param error: position is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ci.FlipCard(*param.Position))

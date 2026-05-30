@@ -132,26 +132,22 @@ func napoleonDispatch(bc *baseController, w http.ResponseWriter, ni usecase.Napo
 	case "r", "reset":
 		bc.writePresenterResponse(w, ni.ResetWithConfig(param.ToConfig()))
 	case "b", "bid":
-		if param.Bid == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: bid is required."))
+		if !requireParam(bc, w, newDefault, param.Bid == nil, "param error: bid is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ni.Bid(*param.Bid))
 	case "t", "trump":
-		if param.TrumpSuit == nil || param.AdjutantSuit == nil || param.AdjutantValue == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: trumpSuit, adjutantSuit, adjutantValue are required."))
+		if !requireParam(bc, w, newDefault, param.TrumpSuit == nil || param.AdjutantSuit == nil || param.AdjutantValue == nil, "param error: trumpSuit, adjutantSuit, adjutantValue are required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ni.DeclareTrump(*param.TrumpSuit, *param.AdjutantSuit, *param.AdjutantValue))
 	case "e", "exchange":
-		if param.DiscardIndex == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: discardIndex is required."))
+		if !requireParam(bc, w, newDefault, param.DiscardIndex == nil, "param error: discardIndex is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ni.ExchangeKitty(*param.DiscardIndex))
 	case "p", "play":
-		if param.CardIndex == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: cardIndex is required."))
+		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ni.Play(*param.CardIndex))

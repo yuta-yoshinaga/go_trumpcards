@@ -52,8 +52,7 @@ func newPokerSquaresDefaultOutput(msg string) *PokerSquaresWebOutput {
 func pokerSquaresDispatch(bc *baseController, w http.ResponseWriter, pi usecase.PokerSquaresInteractorIF, param PokerSquaresWebInput, newDefault func(string) *PokerSquaresWebOutput) bool {
 	switch param.Command {
 	case "p", "place":
-		if param.Row == nil || param.Col == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: row and col are required."))
+		if !requireParam(bc, w, newDefault, param.Row == nil || param.Col == nil, "param error: row and col are required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, pi.Place(*param.Row, *param.Col))

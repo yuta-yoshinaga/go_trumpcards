@@ -74,8 +74,7 @@ func pyramidDispatch(bc *baseController, w http.ResponseWriter, pi usecase.Pyram
 	case "u", "undo":
 		bc.writePresenterResponse(w, pi.Undo())
 	case "undo_n":
-		if param.N == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: n is required."))
+		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, pi.UndoN(*param.N))
@@ -86,8 +85,7 @@ func pyramidDispatch(bc *baseController, w http.ResponseWriter, pi usecase.Pyram
 }
 
 func pyramidRemoveDispatch(bc *baseController, w http.ResponseWriter, pi usecase.PyramidInteractorIF, param PyramidWebInput, newDefault func(string) *PyramidWebOutput) bool {
-	if param.Card1 == nil {
-		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: card1 is required."))
+	if !requireParam(bc, w, newDefault, param.Card1 == nil, "param error: card1 is required.") {
 		return true
 	}
 
@@ -97,29 +95,25 @@ func pyramidRemoveDispatch(bc *baseController, w http.ResponseWriter, pi usecase
 	switch {
 	case c1.Zone == "pyramid" && c2 != nil && c2.Zone == "pyramid":
 		// ピラミッド同士のペア除去
-		if c1.Row == nil || c1.Col == nil || c2.Row == nil || c2.Col == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: row and col are required for pyramid cards."))
+		if !requireParam(bc, w, newDefault, c1.Row == nil || c1.Col == nil || c2.Row == nil || c2.Col == nil, "param error: row and col are required for pyramid cards.") {
 			return true
 		}
 		bc.writePresenterResponse(w, pi.RemovePair(*c1.Row, *c1.Col, *c2.Row, *c2.Col))
 	case c1.Zone == "pyramid" && c2 == nil:
 		// ピラミッドのキング除去
-		if c1.Row == nil || c1.Col == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: row and col are required."))
+		if !requireParam(bc, w, newDefault, c1.Row == nil || c1.Col == nil, "param error: row and col are required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, pi.RemoveKing(*c1.Row, *c1.Col))
 	case c1.Zone == "waste" && c2 != nil && c2.Zone == "pyramid":
 		// ウェイスト+ピラミッドのペア除去
-		if c2.Row == nil || c2.Col == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: row and col are required for pyramid card."))
+		if !requireParam(bc, w, newDefault, c2.Row == nil || c2.Col == nil, "param error: row and col are required for pyramid card.") {
 			return true
 		}
 		bc.writePresenterResponse(w, pi.RemoveWithWaste(*c2.Row, *c2.Col))
 	case c1.Zone == "pyramid" && c2 != nil && c2.Zone == "waste":
 		// ピラミッド+ウェイストのペア除去 (逆順もサポート)
-		if c1.Row == nil || c1.Col == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: row and col are required for pyramid card."))
+		if !requireParam(bc, w, newDefault, c1.Row == nil || c1.Col == nil, "param error: row and col are required for pyramid card.") {
 			return true
 		}
 		bc.writePresenterResponse(w, pi.RemoveWithWaste(*c1.Row, *c1.Col))

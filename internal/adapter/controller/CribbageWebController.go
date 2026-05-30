@@ -106,8 +106,7 @@ func cribbageDispatch(bc *baseController, w http.ResponseWriter, ci usecase.Crib
 	case "d", "discard":
 		bc.writePresenterResponse(w, ci.Discard(param.CardIndices))
 	case "p", "peg":
-		if param.CardIndex == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: cardIndex is required."))
+		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ci.Peg(*param.CardIndex))

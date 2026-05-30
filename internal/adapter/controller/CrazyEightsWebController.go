@@ -88,16 +88,14 @@ func crazyEightsDispatch(bc *baseController, w http.ResponseWriter, ci usecase.C
 	case "r", "reset":
 		bc.writePresenterResponse(w, ci.ResetWithConfig(param.ToConfig()))
 	case "p", "play":
-		if param.CardIndex == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: cardIndex is required."))
+		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ci.Play(*param.CardIndex))
 	case "d", "draw":
 		bc.writePresenterResponse(w, ci.Draw())
 	case "s", "suit":
-		if param.Suit == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: suit is required."))
+		if !requireParam(bc, w, newDefault, param.Suit == nil, "param error: suit is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ci.ChooseSuit(*param.Suit))
