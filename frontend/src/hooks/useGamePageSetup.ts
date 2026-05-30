@@ -5,12 +5,21 @@ import { SITE_NAME } from '../constants/site';
 import { useActionLog } from './useActionLog';
 import { useConfirmDialog } from './useConfirmDialog';
 
-/** Hook that provides common page setup: translations, action log, confirm dialog, and document title. */
+/** Hook that provides common page setup: translations, action log, confirm dialogs, and document title. */
 export function useGamePageSetup(gameName: keyof typeof actionLogApi) {
   const { t } = useTranslation(gameName);
   const { t: tc } = useTranslation('common');
   const { actionLog, showActionLog, hideActionLog } = useActionLog(gameName);
   const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
+  // Separate confirm instance for give-up so its dialog state never collides
+  // with reset's. Give-up abandons an in-progress game and is irreversible,
+  // so — like reset — it must be confirmed before firing (issue #2099).
+  const {
+    isOpen: giveUpConfirmOpen,
+    requestConfirm: requestGiveUpConfirm,
+    confirm: confirmGiveUp,
+    cancel: cancelGiveUp,
+  } = useConfirmDialog();
 
   const pageTitle = tc(`nav.${gameName}`);
   useEffect(() => {
@@ -20,5 +29,19 @@ export function useGamePageSetup(gameName: keyof typeof actionLogApi) {
     };
   }, [pageTitle]);
 
-  return { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset };
+  return {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  };
 }

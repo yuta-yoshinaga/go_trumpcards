@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { GameGiveUpDialog } from './GameGiveUpDialog';
 import { GamePageHeading } from './GamePageHeading';
 import { GameResetDialog } from './GameResetDialog';
 import { ManualButton } from './ManualButton';
@@ -42,6 +43,17 @@ export interface GamePageShellProps {
   /** Callback to cancel the reset action. */
   cancelReset: () => void;
   /**
+   * Whether the give-up confirmation dialog is open. Optional — pages without
+   * a give-up action (most non-solitaire games) omit it and no dialog renders.
+   * Solitaire pages pass this (plus confirmGiveUp/cancelGiveUp) so give-up gets
+   * the same confirm guard as reset (issue #2099).
+   */
+  giveUpConfirmOpen?: boolean;
+  /** Callback to confirm the give-up action. Required when giveUpConfirmOpen is set. */
+  confirmGiveUp?: () => void;
+  /** Callback to cancel the give-up action. Required when giveUpConfirmOpen is set. */
+  cancelGiveUp?: () => void;
+  /**
    * Optional `key` applied to the outer container. Use for animations that must
    * restart on demand by remounting the subtree (e.g., Old Maid's shake-key
    * pattern, where the wrapper needs to re-mount every time an invalid action
@@ -82,6 +94,9 @@ export function GamePageShell({
   confirmOpen,
   confirmReset,
   cancelReset,
+  giveUpConfirmOpen,
+  confirmGiveUp,
+  cancelGiveUp,
   outerKey,
   headerExtra,
   headerEnd,
@@ -101,6 +116,13 @@ export function GamePageShell({
       {children}
       <WinCelebration show={winShow ?? gameEndFlag} onCelebrate={onCelebrate} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
+      {giveUpConfirmOpen !== undefined && confirmGiveUp && cancelGiveUp && (
+        <GameGiveUpDialog
+          giveUpConfirmOpen={giveUpConfirmOpen}
+          confirmGiveUp={confirmGiveUp}
+          cancelGiveUp={cancelGiveUp}
+        />
+      )}
     </div>
   );
 }
