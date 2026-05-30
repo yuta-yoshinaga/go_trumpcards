@@ -65,6 +65,27 @@ interface GamePageShellBaseProps {
 }
 
 /**
+ * Give-up confirmation props. Modeled as a discriminated union so the three
+ * fields are all-or-nothing: a page either opts out entirely (most non-solitaire
+ * games) or supplies the open flag *and* both callbacks. This makes incomplete
+ * wiring a compile error rather than a silently no-op dialog (issue #2099,
+ * PR #2108 review).
+ */
+type GiveUpConfirmProps =
+  | { giveUpConfirmOpen?: undefined; confirmGiveUp?: undefined; cancelGiveUp?: undefined }
+  | {
+      /** Whether the give-up confirmation dialog is open. */
+      giveUpConfirmOpen: boolean;
+      /** Callback to confirm the give-up action. */
+      confirmGiveUp: () => void;
+      /** Callback to cancel the give-up action. */
+      cancelGiveUp: () => void;
+    };
+
+/** Props for the GamePageShell component. */
+export type GamePageShellProps = GamePageShellBaseProps & GiveUpConfirmProps;
+
+/**
  * Renders the shared outer shell of a game page.
  * Includes the background container, visually-hidden heading, PhaseIndicator with
  * TutorialButton and ManualButton, and end-game overlays (WinCelebration, GameResetDialog).
