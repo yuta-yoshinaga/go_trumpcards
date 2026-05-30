@@ -46,27 +46,9 @@ function makeState(overrides: Partial<DeuceToSevenResponse> = {}): DeuceToSevenR
   };
 }
 
-const NUT_LOW = [
-  card('SPADE', 7),
-  card('HEART', 5),
-  card('DIAMOND', 4),
-  card('CLOVER', 3),
-  card('SPADE', 2),
-];
-const TEN_HIGH = [
-  card('SPADE', 10),
-  card('HEART', 6),
-  card('DIAMOND', 4),
-  card('CLOVER', 3),
-  card('SPADE', 2),
-];
-const PAIR_KINGS = [
-  card('SPADE', 13),
-  card('HEART', 13),
-  card('DIAMOND', 4),
-  card('CLOVER', 3),
-  card('SPADE', 2),
-];
+const NUT_LOW = [card('SPADE', 7), card('HEART', 5), card('DIAMOND', 4), card('CLOVER', 3), card('SPADE', 2)];
+const TEN_HIGH = [card('SPADE', 10), card('HEART', 6), card('DIAMOND', 4), card('CLOVER', 3), card('SPADE', 2)];
+const PAIR_KINGS = [card('SPADE', 13), card('HEART', 13), card('DIAMOND', 4), card('CLOVER', 3), card('SPADE', 2)];
 
 describe('getDeuceToSevenHint', () => {
   it('returns null when the human folded', () => {
