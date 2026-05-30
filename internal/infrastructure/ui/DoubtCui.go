@@ -72,7 +72,10 @@ func (cui *DoubtCui) drainInput() {
 
 // Exec ゲームメインループ
 func (cui *DoubtCui) Exec() {
-	setupSignalHandler()
+	// The Doubt loop reads plain (cooked) stdin and holds no terminal raw
+	// mode or history file, so there is nothing to clean up on signal — but
+	// it still needs a handler to exit on SIGINT/SIGTERM (issue #2096).
+	defer runSignalWatcher(nil)()
 	go cui.inputReader()
 	fmt.Println(cui.dc.Exec("r"))
 	fmt.Println(i18n.T("typeHelp"))
