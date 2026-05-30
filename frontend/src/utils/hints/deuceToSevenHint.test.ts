@@ -49,6 +49,10 @@ function makeState(overrides: Partial<DeuceToSevenResponse> = {}): DeuceToSevenR
 const NUT_LOW = [card('SPADE', 7), card('HEART', 5), card('DIAMOND', 4), card('CLOVER', 3), card('SPADE', 2)];
 const TEN_HIGH = [card('SPADE', 10), card('HEART', 6), card('DIAMOND', 4), card('CLOVER', 3), card('SPADE', 2)];
 const PAIR_KINGS = [card('SPADE', 13), card('HEART', 13), card('DIAMOND', 4), card('CLOVER', 3), card('SPADE', 2)];
+// Straight: 2-3-4-5-6 across different suits (straight counts against you in 2-7)
+const STRAIGHT = [card('SPADE', 2), card('HEART', 3), card('DIAMOND', 4), card('CLOVER', 5), card('SPADE', 6)];
+// Flush: all spades (flush counts against you in 2-7)
+const FLUSH = [card('SPADE', 2), card('SPADE', 5), card('SPADE', 7), card('SPADE', 9), card('SPADE', 3)];
 
 describe('getDeuceToSevenHint', () => {
   it('returns null when the human folded', () => {
@@ -109,5 +113,26 @@ describe('getDeuceToSevenHint', () => {
     const hint = getDeuceToSevenHint(s);
     expect(hint?.targetAction).toBe('check');
     expect(hint?.reason).toBe('hint.checkWeak');
+  });
+
+  it('treats a straight as a weak hand (strength 1) in betting phase', () => {
+    const s = makeState({ phase: DeuceToSevenPhase.BET, lastBet: 20 });
+    s.players[0].cards = STRAIGHT;
+    const hint = getDeuceToSevenHint(s);
+    expect(hint?.targetAction).toBe('fold');
+  });
+
+  it('treats a flush as a weak hand (strength 1) in betting phase', () => {
+    const s = makeState({ phase: DeuceToSevenPhase.BET, lastBet: 20 });
+    s.players[0].cards = FLUSH;
+    const hint = getDeuceToSevenHint(s);
+    expect(hint?.targetAction).toBe('fold');
+  });
+
+  it('recommends exchange on a straight in draw phase', () => {
+    const s = makeState({ phase: DeuceToSevenPhase.DRAW });
+    s.players[0].cards = STRAIGHT;
+    const hint = getDeuceToSevenHint(s);
+    expect(hint?.targetAction).toBe('exchange');
   });
 });

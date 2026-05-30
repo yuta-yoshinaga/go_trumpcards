@@ -1033,10 +1033,10 @@ func (d *DeuceToSeven) UnmarshalJSON(data []byte) error {
 	// otherwise ExecuteBettingAction's direct ActedFlags[playerIdx] access
 	// would panic on restored state.
 	if n := len(j.Players); n > 0 {
-		if got := len(j.Round.ActedFlags); got != 0 && got != n {
+		if got := len(j.Round.ActedFlags); got != n {
 			return fmt.Errorf("deucetoseven: ActedFlags length %d != Players length %d", got, n)
 		}
-		if got := len(j.Round.StartingChips); got != 0 && got != n {
+		if got := len(j.Round.StartingChips); got != n {
 			return fmt.Errorf("deucetoseven: StartingChips length %d != Players length %d", got, n)
 		}
 	}

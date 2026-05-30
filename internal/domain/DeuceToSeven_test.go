@@ -412,6 +412,20 @@ func TestDeuceToSeven_JSON_TooManyPlayersRejected(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestDeuceToSeven_JSON_ActedFlagsMismatchRejected(t *testing.T) {
+	// 1 player but 0 acted flags → should be rejected to prevent index-out-of-bounds.
+	payload := []byte(`{"pl":[{}],"rd":{"af":[],"sc":[1000]}}`)
+	err := json.Unmarshal(payload, &DeuceToSeven{})
+	assert.Error(t, err, "mismatched ActedFlags length should be rejected")
+}
+
+func TestDeuceToSeven_JSON_StartingChipsMismatchRejected(t *testing.T) {
+	// 1 player but 0 starting chips → should be rejected.
+	payload := []byte(`{"pl":[{}],"rd":{"af":[false],"sc":[]}}`)
+	err := json.Unmarshal(payload, &DeuceToSeven{})
+	assert.Error(t, err, "mismatched StartingChips length should be rejected")
+}
+
 // ---------------------------------------------------------------------------
 // Helpers / getters
 // ---------------------------------------------------------------------------

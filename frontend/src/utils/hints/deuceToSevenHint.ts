@@ -15,14 +15,29 @@ function highValue(c: Card): number {
  */
 function deuceLowStrength(cards: readonly Card[]): number {
   if (cards.length !== 5) return 1;
-  // Any pair → strength 1 (rough proxy for "made hand / drawing").
   const ranks = new Set<number>();
+  const suits = new Set<string>();
+  const highs: number[] = [];
   for (const c of cards) {
     if (ranks.has(c.value)) return 1;
     ranks.add(c.value);
+    suits.add(c.design);
+    highs.push(highValue(c));
   }
+  // Flush counts against you in 2-7 lowball.
+  if (suits.size === 1) return 1;
+  // Straight counts against you in 2-7 lowball.
+  highs.sort((a, b) => a - b);
+  let isStraight = true;
+  for (let i = 1; i < highs.length; i++) {
+    if (highs[i] !== highs[i - 1] + 1) {
+      isStraight = false;
+      break;
+    }
+  }
+  if (isStraight) return 1;
   if (isMadePatLow(cards)) return 4;
-  const high = Math.max(...cards.map(highValue));
+  const high = highs[highs.length - 1];
   if (high <= 11) return 3;
   return 2;
 }

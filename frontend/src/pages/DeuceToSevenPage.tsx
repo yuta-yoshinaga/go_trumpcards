@@ -388,7 +388,7 @@ function DeuceToSevenPageContent() {
                 </button>
                 <button
                   type="button"
-                  className={`${btnSuccess} min-w-[90px]${humanHasMadeLow ? ' ring-2 ring-ds-accent animate-pulse' : ''}`}
+                  className={humanHasMadeLow ? `${btnSuccess} min-w-[90px] ring-2 ring-ds-accent animate-pulse` : `${btnSuccess} min-w-[90px]`}
                   disabled={loading}
                   onClick={() => execAction('stand')}
                   data-testid="d7-stand-btn"
