@@ -1,0 +1,17 @@
+{
+  "helpTitle": "Aces Up (四つ葉のクローバー)",
+  "helpDraw": "  d                        各列にカードを配る",
+  "helpRemove": "  rm <col>                  カードを除去",
+  "helpMove": "  mv <col>                  空き列へ移動",
+  "helpGiveUp": "  g                        ギブアップ",
+  "helpHint": "  h                        ヒント",
+  "columnLabel": "列{{col}}: ",
+  "columnEmpty": "[空]",
+  "topCard": "[{{card}}]",
+  "stockLine": "Stock: {{count}}枚",
+  "discardLine": " | Discard: {{count}}枚",
+  "hintRemove": "ヒント: カード除去: 列{{col}}",
+  "hintMove": "ヒント: 列{{col}}を空き列へ移動",
+  "hintDraw": "ヒント: 各列にカードを配ってください",
+  "hintUnknown": "ヒント: 不明"
+}

@@ -2963,6 +2963,38 @@ export interface GolfResponse {
   hint?: GolfHint;
 }
 
+// --- Aces Up (四つ葉のクローバー) ---
+
+/** A card in an Aces Up column with action availability flags. */
+export interface AcesUpCard {
+  card: Card;
+  top: boolean;
+  removable: boolean;
+  movable: boolean;
+}
+
+/** A suggested hint in Aces Up. */
+export interface AcesUpHint {
+  type: 'remove' | 'move' | 'draw';
+  col: number;
+}
+
+/** Full Aces Up game state returned from the API. */
+export interface AcesUpResponse {
+  columns: AcesUpCard[][];
+  stockCount: number;
+  discardCount: number;
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: AcesUpHint;
+}
+
 // --- Pig's Tail ---
 
 /** Pig's Tail player output from the server. */

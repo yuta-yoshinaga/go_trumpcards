@@ -270,4 +270,12 @@ func init() {
 			return usecase.RestorePenguinInteractor(data, new(presenter.PenguinWebPresenter))
 		},
 		controller.NewPenguinWebControllerWithProvider)
+	games.RegisterKVGame("acesup", games.CategorySolo,
+		func() usecase.AcesUpInteractorIF {
+			return usecase.NewAcesUpInteractor(domain.NewDefaultAcesUp(), new(presenter.AcesUpWebPresenter))
+		},
+		func(data []byte) (usecase.AcesUpInteractorIF, error) {
+			return usecase.RestoreAcesUpInteractor(data, new(presenter.AcesUpWebPresenter))
+		},
+		controller.NewAcesUpWebControllerWithProvider)
 }

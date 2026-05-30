@@ -704,6 +704,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [5, 2, 2, 5], skill: [5, 3, 2, 5], social: [5, 1, 0, 5, 2], theme: [3, 2, 3, 2, 3, 3] },
       },
       {
+        path: '/acesup',
+        labelKey: 'nav.acesup',
+        icon: '🍀',
+        page: 'AcesUp',
+        profile: { mood: [5, 2, 2, 5], skill: [5, 2, 1, 5], social: [5, 1, 0, 5, 2], theme: [3, 2, 3, 2, 3, 3] },
+      },
+      {
         path: '/memory',
         labelKey: 'nav.memory',
         icon: '🧠',

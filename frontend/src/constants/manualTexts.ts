@@ -3,6 +3,7 @@
  * Keyed by game route path for direct lookup from the current URL.
  */
 import accordion from '../../../docs/manual/web/accordion.md?raw';
+import acesup from '../../../docs/manual/web/acesup.md?raw';
 import baccarat from '../../../docs/manual/web/baccarat.md?raw';
 import badugi from '../../../docs/manual/web/badugi.md?raw';
 import bakersdozen from '../../../docs/manual/web/bakersdozen.md?raw';
@@ -148,6 +149,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/ginrummy': ginrummy,
   '/gofish': gofish,
   '/golf': golf,
+  '/acesup': acesup,
   '/hearts': hearts,
   '/holdem': holdem,
   '/indianpoker': indianpoker,

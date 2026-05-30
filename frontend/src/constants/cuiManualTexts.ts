@@ -4,6 +4,7 @@
  * Used when the page has CLI mode enabled so the manual matches the terminal UI.
  */
 import accordion from '../../../docs/manual/cui/accordion.md?raw';
+import acesup from '../../../docs/manual/cui/acesup.md?raw';
 import baccarat from '../../../docs/manual/cui/baccarat.md?raw';
 import badugi from '../../../docs/manual/cui/badugi.md?raw';
 import bakersdozen from '../../../docs/manual/cui/bakersdozen.md?raw';
@@ -152,6 +153,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/rummy500': rummy500,
   '/gofish': gofish,
   '/golf': golf,
+  '/acesup': acesup,
   '/hearts': hearts,
   '/holdem': holdem,
   '/indianpoker': indianpoker,

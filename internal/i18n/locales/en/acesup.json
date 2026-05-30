@@ -1,0 +1,17 @@
+{
+  "helpTitle": "Aces Up",
+  "helpDraw": "  d                        deal a card to each column",
+  "helpRemove": "  rm <col>                  remove card",
+  "helpMove": "  mv <col>                  move to empty column",
+  "helpGiveUp": "  g                        give up",
+  "helpHint": "  h                        hint",
+  "columnLabel": "Col{{col}}: ",
+  "columnEmpty": "[empty]",
+  "topCard": "[{{card}}]",
+  "stockLine": "Stock: {{count}}",
+  "discardLine": " | Discard: {{count}}",
+  "hintRemove": "Hint: remove column {{col}}",
+  "hintMove": "Hint: move column {{col}} to an empty column",
+  "hintDraw": "Hint: deal a card to each column",
+  "hintUnknown": "Hint: unknown"
+}

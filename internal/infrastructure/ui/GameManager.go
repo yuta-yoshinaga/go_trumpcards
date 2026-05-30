@@ -1724,6 +1724,16 @@ var gameRegistry = []GameRegistryEntry{
 				CommandKeys: []string{"truco.helpPlay", "truco.helpTruco", "truco.helpRespond", "truco.helpNext"},
 			})
 	}},
+	{Name: "acesup", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewAcesUpCuiController(usecase.NewAcesUpInteractor(
+				domain.NewDefaultAcesUp(), new(presenter.AcesUpCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "acesup.helpTitle",
+				CommandKeys:       []string{"acesup.helpDraw", "acesup.helpRemove", "acesup.helpMove", "acesup.helpGiveUp", "acesup.helpHint"},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

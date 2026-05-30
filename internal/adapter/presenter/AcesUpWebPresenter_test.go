@@ -1,0 +1,187 @@
+//go:build test
+
+package presenter
+
+import (
+	"encoding/json"
+	"errors"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+)
+
+func sampleAcesUpColumns() [domain.AcesUpColCnt][]*domain.Card {
+	var cols [domain.AcesUpColCnt][]*domain.Card
+	cols[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)}
+	cols[1] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 9, false)}
+	cols[2] = nil
+	cols[3] = []*domain.Card{
+		domain.NewCard(domain.CardDesignHeart, 2, false),
+		domain.NewCard(domain.CardDesignDiamond, 6, false),
+	}
+	return cols
+}
+
+func setupAcesUpWebMockDefaults(g *interfaces.MockAcesUpGame) {
+	g.On("GetPhase").Return(domain.AcesUpPhasePlaying).Maybe()
+	g.On("GetMoveCount").Return(0).Maybe()
+	g.On("GetStockCount").Return(44).Maybe()
+	g.On("GetDiscardCount").Return(4).Maybe()
+	g.On("CanUndo").Return(false).Maybe()
+	g.On("IsStalemate").Return(false).Maybe()
+	g.On("UndoToEscape").Return(0).Maybe()
+	g.On("GetColumns").Return(sampleAcesUpColumns()).Maybe()
+	for c := range domain.AcesUpColCnt {
+		g.On("CanRemove", c).Return(c == 0).Maybe()
+		g.On("CanMove", c).Return(true).Maybe()
+	}
+}
+
+func parseAcesUpOutput(t *testing.T, jsonStr string) *controller.AcesUpWebOutput {
+	t.Helper()
+	var out controller.AcesUpWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(jsonStr), &out))
+	return &out
+}
+
+func TestAcesUpWebPresenterOutput_Playing(t *testing.T) {
+	g := new(interfaces.MockAcesUpGame)
+	setupAcesUpWebMockDefaults(g)
+	p := &AcesUpWebPresenter{}
+
+	out := parseAcesUpOutput(t, p.Output(g, nil))
+	assert.Equal(t, 0, out.Phase)
+	assert.Equal(t, 44, out.StockCount)
+	assert.Equal(t, 4, out.DiscardCount)
+	assert.Equal(t, "acesup.playing", out.MessageCode)
+	assert.Len(t, out.Columns, domain.AcesUpColCnt)
+	// col0 top is removable
+	assert.True(t, out.Columns[0][0].Top)
+	assert.True(t, out.Columns[0][0].Removable)
+	// empty column
+	assert.Len(t, out.Columns[2], 0)
+	// col3 has two cards, only the last is top
+	assert.False(t, out.Columns[3][0].Top)
+	assert.True(t, out.Columns[3][1].Top)
+}
+
+func TestAcesUpWebPresenterOutput_Error(t *testing.T) {
+	g := new(interfaces.MockAcesUpGame)
+	setupAcesUpWebMockDefaults(g)
+	p := &AcesUpWebPresenter{}
+
+	out := parseAcesUpOutput(t, p.Output(g, errors.New("test error")))
+	assert.Equal(t, "test error", out.Message)
+}
+
+func TestAcesUpWebPresenterOutput_Stalemate(t *testing.T) {
+	g := new(interfaces.MockAcesUpGame)
+	g.On("GetPhase").Return(domain.AcesUpPhasePlaying).Maybe()
+	g.On("GetMoveCount").Return(5).Maybe()
+	g.On("GetStockCount").Return(0).Maybe()
+	g.On("GetDiscardCount").Return(10).Maybe()
+	g.On("CanUndo").Return(true).Maybe()
+	g.On("IsStalemate").Return(true).Maybe()
+	g.On("UndoToEscape").Return(-1).Maybe()
+	var cols [domain.AcesUpColCnt][]*domain.Card
+	g.On("GetColumns").Return(cols).Maybe()
+	p := &AcesUpWebPresenter{}
+
+	out := parseAcesUpOutput(t, p.Output(g, nil))
+	assert.Equal(t, "acesup.stalemate", out.MessageCode)
+}
+
+func TestAcesUpWebPresenterOutput_GameClear(t *testing.T) {
+	g := new(interfaces.MockAcesUpGame)
+	g.On("GetPhase").Return(domain.AcesUpPhaseGameClear).Maybe()
+	g.On("GetMoveCount").Return(20).Maybe()
+	g.On("GetStockCount").Return(0).Maybe()
+	g.On("GetDiscardCount").Return(48).Maybe()
+	g.On("CanUndo").Return(false).Maybe()
+	g.On("IsStalemate").Return(false).Maybe()
+	g.On("UndoToEscape").Return(0).Maybe()
+	var cols [domain.AcesUpColCnt][]*domain.Card
+	g.On("GetColumns").Return(cols).Maybe()
+	p := &AcesUpWebPresenter{}
+
+	out := parseAcesUpOutput(t, p.Output(g, nil))
+	assert.Equal(t, "acesup.gameClear", out.MessageCode)
+	assert.Contains(t, out.Message, "20")
+}
+
+func TestAcesUpWebPresenterOutput_GameOver(t *testing.T) {
+	g := new(interfaces.MockAcesUpGame)
+	g.On("GetPhase").Return(domain.AcesUpPhaseGameOver).Maybe()
+	g.On("GetMoveCount").Return(5).Maybe()
+	g.On("GetStockCount").Return(0).Maybe()
+	g.On("GetDiscardCount").Return(2).Maybe()
+	g.On("CanUndo").Return(false).Maybe()
+	g.On("IsStalemate").Return(false).Maybe()
+	g.On("UndoToEscape").Return(0).Maybe()
+	var cols [domain.AcesUpColCnt][]*domain.Card
+	g.On("GetColumns").Return(cols).Maybe()
+	p := &AcesUpWebPresenter{}
+
+	out := parseAcesUpOutput(t, p.Output(g, nil))
+	assert.Equal(t, "acesup.gameOver", out.MessageCode)
+}
+
+func TestAcesUpWebPresenterHintOutput(t *testing.T) {
+	t.Run("with hint", func(t *testing.T) {
+		g := new(interfaces.MockAcesUpGame)
+		g.On("GetHint").Return(&domain.AcesUpHint{Type: "move", Col: 2})
+		g.On("GetPhase").Return(domain.AcesUpPhasePlaying)
+		g.On("GetMoveCount").Return(0)
+		g.On("GetStockCount").Return(0)
+		g.On("GetDiscardCount").Return(4)
+		g.On("CanUndo").Return(false)
+		g.On("IsStalemate").Return(false)
+		g.On("UndoToEscape").Return(0)
+
+		p := &AcesUpWebPresenter{}
+		out := parseAcesUpOutput(t, p.HintOutput(g))
+		assert.NotNil(t, out.Hint)
+		assert.Equal(t, "move", out.Hint.Type)
+		assert.Equal(t, "acesup.hintAvailable", out.MessageCode)
+	})
+
+	t.Run("no hint", func(t *testing.T) {
+		g := new(interfaces.MockAcesUpGame)
+		g.On("GetHint").Return((*domain.AcesUpHint)(nil))
+		g.On("GetPhase").Return(domain.AcesUpPhasePlaying)
+		g.On("GetMoveCount").Return(0)
+		g.On("GetStockCount").Return(0)
+		g.On("GetDiscardCount").Return(4)
+		g.On("CanUndo").Return(false)
+		g.On("IsStalemate").Return(false)
+		g.On("UndoToEscape").Return(0)
+
+		p := &AcesUpWebPresenter{}
+		out := parseAcesUpOutput(t, p.HintOutput(g))
+		assert.Nil(t, out.Hint)
+		assert.Equal(t, "acesup.noHint", out.MessageCode)
+	})
+}
+
+func TestAcesUpWebPresenterActionLogOutput(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		g := new(interfaces.MockAcesUpGame)
+		g.On("GetPhase").Return(domain.AcesUpPhasePlaying)
+		g.On("GetGameEndFlag").Return(false)
+		p := &AcesUpWebPresenter{}
+		assert.Contains(t, p.ActionLogOutput(g), "entries")
+	})
+
+	t.Run("game over", func(t *testing.T) {
+		g := new(interfaces.MockAcesUpGame)
+		g.On("GetPhase").Return(domain.AcesUpPhaseGameOver)
+		g.On("GetGameEndFlag").Return(true)
+		g.On("GetActionLog").Return([]*domain.ActionLogEntry{})
+		p := &AcesUpWebPresenter{}
+		assert.Contains(t, p.ActionLogOutput(g), "entries")
+	})
+}
