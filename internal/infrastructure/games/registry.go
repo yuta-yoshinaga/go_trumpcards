@@ -148,6 +148,7 @@ var registry = []*Game{
 	{Name: "pageone", Category: CategoryClassic, Description: "Page One (ページワン)"},
 	{Name: "reddog", Category: CategoryCasino, Description: "Red Dog (レッドドッグ)"},
 	{Name: "badugi", Category: CategoryCasino, Description: "Badugi (バドゥーギ)"},
+	{Name: "deucetoseven", Category: CategoryCasino, Description: "2-7 Triple Draw (デューストゥセブン)"},
 	{Name: "razz", Category: CategoryCasino, Description: "Razz (ラズ)"},
 	{Name: "scorpion", Category: CategorySolo, Description: "Scorpion (スコーピオン)"},
 	{Name: "accordion", Category: CategorySolo, Description: "Accordion (アコーディオン)"},

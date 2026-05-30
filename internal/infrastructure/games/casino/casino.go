@@ -198,6 +198,14 @@ func init() {
 			return usecase.RestoreBadugiInteractor(data, new(presenter.BadugiWebPresenter))
 		},
 		controller.NewBadugiWebControllerWithProvider)
+	games.RegisterKVGame("deucetoseven", games.CategoryCasino,
+		func() usecase.DeuceToSevenInteractorIF {
+			return usecase.NewDeuceToSevenInteractor(domain.NewDefaultDeuceToSeven(), new(presenter.DeuceToSevenWebPresenter))
+		},
+		func(data []byte) (usecase.DeuceToSevenInteractorIF, error) {
+			return usecase.RestoreDeuceToSevenInteractor(data, new(presenter.DeuceToSevenWebPresenter))
+		},
+		controller.NewDeuceToSevenWebControllerWithProvider)
 	games.RegisterKVGame("spanish21", games.CategoryCasino,
 		func() usecase.BlackJackInteractorIF {
 			return usecase.NewBlackJackInteractor(domain.NewSpanish21BlackJack(), new(presenter.BlackJackWebPresenter))

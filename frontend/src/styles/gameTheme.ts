@@ -42,6 +42,7 @@ export type GameKey =
   | 'sevencardstud'
   | 'razz'
   | 'badugi'
+  | 'deucetoseven'
   | 'indianpoker'
   | 'videopoker'
   | 'deuceswild'
@@ -177,6 +178,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   sevencardstud: POKER,
   razz: POKER,
   badugi: POKER,
+  deucetoseven: POKER,
   indianpoker: POKER,
   videopoker: CASINO,
   deuceswild: CASINO,

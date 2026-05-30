@@ -35,6 +35,7 @@ import type {
   CruelResponse,
   DaifugoConfigInput,
   DaifugoResponse,
+  DeuceToSevenResponse,
   DoubtConfig,
   DoubtResponse,
   DoudizhuResponse,
@@ -157,6 +158,7 @@ const workerUrl: Record<string, string> = {
   sevencardstud: WORKER_CASINO,
   razz: WORKER_CASINO,
   badugi: WORKER_CASINO,
+  deucetoseven: WORKER_CASINO,
   calculation: WORKER_SOLO,
   hearts: WORKER_CLASSIC,
   spades: WORKER_CLASSIC,
@@ -366,6 +368,33 @@ export const badugiApi = {
     humanPlayMs?: number,
     profile?: unknown,
   ) => gameExec<BadugiResponse>('badugi', { command, indices, amount, humanPlayMs, profile, ...config }),
+};
+
+/** Configuration options for 2-7 Triple Draw game settings. */
+export interface DeuceToSevenConfigInput {
+  cpuCount?: number;
+  bettingLimit?: number;
+  cpuMetaAI?: boolean;
+}
+
+/** API client for the 2-7 Triple Draw /deucetoseven/exec endpoint. */
+export const deuceToSevenApi = {
+  exec: (
+    command: 'reset' | 'exchange' | 'stand' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allin',
+    indices?: number[],
+    amount?: number,
+    config?: DeuceToSevenConfigInput,
+    humanPlayMs?: number,
+    profile?: unknown,
+  ) =>
+    gameExec<DeuceToSevenResponse>('deucetoseven', {
+      command,
+      indices,
+      amount,
+      humanPlayMs,
+      profile,
+      ...config,
+    }),
 };
 
 /** API client for the Old Maid /oldmaid/exec endpoint. */
@@ -2037,6 +2066,7 @@ const games = [
   'sevencardstud',
   'razz',
   'badugi',
+  'deucetoseven',
   'hearts',
   'spades',
   'twotenjack',

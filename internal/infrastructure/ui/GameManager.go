@@ -1000,6 +1000,25 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"badugi.helpBettingLimit", "badugi.helpCpuCount"},
 			})
 	}},
+	{Name: "deucetoseven", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewDeuceToSevenCuiController(usecase.NewDeuceToSevenInteractor(
+				domain.NewDefaultDeuceToSeven(), new(presenter.DeuceToSevenCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "deucetoseven.helpTitle",
+				CommandKeys: []string{
+					"deucetoseven.helpBet",
+					"deucetoseven.helpCall",
+					"deucetoseven.helpRaise",
+					"deucetoseven.helpCheck",
+					"deucetoseven.helpFold",
+					"deucetoseven.helpAllIn",
+					"deucetoseven.helpExchange",
+					"deucetoseven.helpStand",
+				},
+				SettingKeys: []string{"deucetoseven.helpBettingLimit", "deucetoseven.helpCpuCount"},
+			})
+	}},
 	{Name: "razz", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewSevenCardStudCuiController(usecase.NewSevenCardStudInteractor(
