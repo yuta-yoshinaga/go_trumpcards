@@ -1,6 +1,18 @@
 /** Card suit design identifier. */
 export type CardDesign = 'SPADE' | 'CLOVER' | 'HEART' | 'DIAMOND' | 'JOKER';
 
+/**
+ * Server response i18n fields common to every game's `*Response` type.
+ * Mirrors the Go backend's `WebOutputBase` (internal/adapter/controller/
+ * web_output_base.go): every game's WebOutput embeds it, so every game's
+ * frontend Response extends this. See issue #2098.
+ */
+export interface BaseGameResponse {
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
 /** A playing card with suit design and numeric value. */
 export interface Card {
   design: CardDesign;
@@ -152,7 +164,7 @@ export interface BlackJackSideBetResult {
 }
 
 /** Full BlackJack game state returned from the API. */
-export interface BlackJackResponse {
+export interface BlackJackResponse extends BaseGameResponse {
   dealer: BlackJackPlayer;
   player: BlackJackPlayer;
   hands?: BlackJackHand[];
@@ -160,9 +172,6 @@ export interface BlackJackResponse {
   phase: BlackJackPhase;
   insuranceBet: number;
   insuranceAvailable: boolean;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   hintEnabled: boolean;
   suggestedAction: number;
   deckCount: number;
@@ -238,7 +247,7 @@ export interface PokerOdds {
 export type PokerPhase = 0 | 1 | 2 | 3 | 4;
 
 /** Full Poker game state returned from the API. */
-export interface PokerResponse {
+export interface PokerResponse extends BaseGameResponse {
   players: PokerPlayerData[];
   pot: number;
   sidePots: PokerSidePot[];
@@ -258,9 +267,6 @@ export interface PokerResponse {
   cpuExchanges: PokerCpuExchange[];
   odds?: PokerOdds[];
   isLowball: boolean;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   metaAI?: BettingMetaAI;
   profile?: BettingHumanProfileData;
 }
@@ -329,7 +335,7 @@ export interface BadugiMetaAI {
 export type BadugiPhaseId = 0 | 1 | 2 | 3 | 4 | 5;
 
 /** Full Badugi game state returned by the API. */
-export interface BadugiResponse {
+export interface BadugiResponse extends BaseGameResponse {
   players: BadugiPlayerData[];
   pot: number;
   sidePots: BadugiSidePot[];
@@ -347,9 +353,6 @@ export interface BadugiResponse {
   roundResults: BadugiResult[];
   cpuActions: BadugiCpuAction[];
   cpuExchanges: BadugiCpuExchange[];
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   metaAI?: BadugiMetaAI;
   profile?: BettingHumanProfileData;
 }
@@ -390,7 +393,7 @@ export interface OldMaidMetaAI {
 }
 
 /** Full Old Maid game state returned from the API. */
-export interface OldMaidResponse {
+export interface OldMaidResponse extends BaseGameResponse {
   players: OldMaidPlayerData[];
   currentTurn: number;
   nextDrawTargetIdx: number;
@@ -407,9 +410,6 @@ export interface OldMaidResponse {
   cpuHighlightedCardIdx: number;
   removedCard: Card | null;
   mode: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   metaAI?: OldMaidMetaAI;
   profile?: OldMaidHumanProfileData;
 }
@@ -469,7 +469,7 @@ export interface DaifugoExchangeAction {
 }
 
 /** Full Daifugo game state returned from the API. */
-export interface DaifugoResponse {
+export interface DaifugoResponse extends BaseGameResponse {
   players: DaifugoPlayerData[];
   currentTurn: number;
   tableCards: Card[];
@@ -484,9 +484,6 @@ export interface DaifugoResponse {
   exchangeActions: DaifugoExchangeAction[];
   cpuActions: DaifugoAction[];
   humanAction: DaifugoAction | null;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   pendingAction: 'none' | 'sevenPass' | 'tenDiscard' | 'queenBomber';
   pendingActionTarget: number;
   reverseDirection: boolean;
@@ -520,7 +517,7 @@ export interface BigTwoConfig {
 export type BigTwoConfigInput = BigTwoConfig;
 
 /** Full Big Two game state returned from the API. */
-export interface BigTwoResponse {
+export interface BigTwoResponse extends BaseGameResponse {
   players: BigTwoPlayerData[];
   currentTurn: number;
   tableCards: Card[];
@@ -530,9 +527,6 @@ export interface BigTwoResponse {
   cpuActions: BigTwoAction[];
   humanAction: BigTwoAction | null;
   config: BigTwoConfig;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 /** Sevens player data with pass count and card info. */
@@ -571,7 +565,7 @@ export interface SevensConfig {
 }
 
 /** Full Sevens game state returned from the API. */
-export interface SevensResponse {
+export interface SevensResponse extends BaseGameResponse {
   players: SevensPlayerData[];
   currentTurn: number;
   tableMinVals: number[]; // index 0 unused; 1=SPADE, 2=CLOVER, 3=HEART, 4=DIAMOND
@@ -581,9 +575,6 @@ export interface SevensResponse {
   gameEndFlag: boolean;
   cpuActions: SevensAction[];
   humanAction: SevensAction | null;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 /** Doubt player data with card count and finish status. */
@@ -626,7 +617,7 @@ export interface DoubtConfig {
 }
 
 /** Full Doubt game state returned from the API. */
-export interface DoubtResponse {
+export interface DoubtResponse extends BaseGameResponse {
   players: DoubtPlayerData[];
   currentTurn: number;
   phase: 0 | 1 | 2; // 0=Play, 1=Doubt, 2=End
@@ -638,9 +629,6 @@ export interface DoubtResponse {
   lastDoubtResult: DoubtDoubtResult | null;
   gameEndFlag: boolean;
   winnerIdx: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   doubtWindowSec: number;
   penaltyDrawLimit: number;
   metaAI?: DoubtMetaAI;
@@ -713,7 +701,7 @@ export interface HoldemSidePot {
 }
 
 /** Full Texas Hold'em game state returned from the API. */
-export interface HoldemResponse {
+export interface HoldemResponse extends BaseGameResponse {
   players: HoldemPlayerData[];
   communityCards: Card[];
   pot: number;
@@ -729,9 +717,6 @@ export interface HoldemResponse {
   maxBetAmount: number;
   roundResults: HoldemResult[];
   cpuActions: HoldemCpuAction[];
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   handCount: number;
   smallBlind: number;
   bigBlind: number;
@@ -848,7 +833,7 @@ export interface HeartsHint {
 }
 
 /** Full Hearts game state returned from the API. */
-export interface HeartsResponse {
+export interface HeartsResponse extends BaseGameResponse {
   players: HeartsPlayerData[];
   phase: number;
   roundNumber: number;
@@ -860,9 +845,6 @@ export interface HeartsResponse {
   gameEndFlag: boolean;
   winnerIdx: number;
   leadPlayerIdx: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: HeartsConfig;
   hint?: HeartsHint;
 }
@@ -904,7 +886,7 @@ export interface SpadesHint {
 }
 
 /** Full Spades game state returned from the API. */
-export interface SpadesResponse {
+export interface SpadesResponse extends BaseGameResponse {
   players: SpadesPlayerData[];
   phase: number;
   roundNumber: number;
@@ -916,9 +898,6 @@ export interface SpadesResponse {
   gameEndFlag: boolean;
   winnerIdx: number;
   leadPlayerIdx: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: SpadesConfig;
   hint?: SpadesHint;
 }
@@ -959,7 +938,7 @@ export interface CallBreakHint {
 }
 
 /** Full Call Break game state returned from the API. */
-export interface CallBreakResponse {
+export interface CallBreakResponse extends BaseGameResponse {
   players: CallBreakPlayerData[];
   phase: number;
   roundNumber: number;
@@ -971,9 +950,6 @@ export interface CallBreakResponse {
   gameEndFlag: boolean;
   winnerIdx: number;
   leadPlayerIdx: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: CallBreakConfig;
   hint?: CallBreakHint;
   /**
@@ -1017,7 +993,7 @@ export interface PitchHint {
 }
 
 /** Full Pitch game state returned from the API. */
-export interface PitchResponse {
+export interface PitchResponse extends BaseGameResponse {
   players: PitchPlayerData[];
   phase: number;
   roundNumber: number;
@@ -1033,9 +1009,6 @@ export interface PitchResponse {
   winnerIdx: number;
   leadPlayerIdx: number;
   validPlayIndices: number[];
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: PitchConfig;
   hint?: PitchHint;
 }
@@ -1074,7 +1047,7 @@ export interface TwoTenJackHint {
 }
 
 /** Full Two Ten Jack game state returned from the API. */
-export interface TwoTenJackResponse {
+export interface TwoTenJackResponse extends BaseGameResponse {
   players: TwoTenJackPlayerData[];
   phase: number;
   roundNumber: number;
@@ -1086,9 +1059,6 @@ export interface TwoTenJackResponse {
   gameEndFlag: boolean;
   winnerTeam: number;
   leadPlayerIdx: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: TwoTenJackConfig;
   hint?: TwoTenJackHint;
 }
@@ -1112,7 +1082,7 @@ export interface CrazyEightsConfig {
 }
 
 /** Full Crazy Eights game state returned from the API. */
-export interface CrazyEightsResponse {
+export interface CrazyEightsResponse extends BaseGameResponse {
   players: CrazyEightsPlayerData[];
   phase: number;
   roundNumber: number;
@@ -1122,9 +1092,6 @@ export interface CrazyEightsResponse {
   chosenSuit: number;
   gameEndFlag: boolean;
   winnerIdx: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: CrazyEightsConfig;
 }
 
@@ -1148,7 +1115,7 @@ export interface PageOneConfig {
 }
 
 /** Full Page One game state returned from the API. */
-export interface PageOneResponse {
+export interface PageOneResponse extends BaseGameResponse {
   players: PageOnePlayerData[];
   phase: number;
   roundNumber: number;
@@ -1157,9 +1124,6 @@ export interface PageOneResponse {
   drawPileCount: number;
   gameEndFlag: boolean;
   winnerIdx: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: PageOneConfig;
 }
 
@@ -1210,7 +1174,7 @@ export interface TonkConfig {
 }
 
 /** Full Tonk game state returned from the API. */
-export interface TonkResponse {
+export interface TonkResponse extends BaseGameResponse {
   players: TonkPlayerData[];
   phase: number;
   roundNumber: number;
@@ -1226,9 +1190,6 @@ export interface TonkResponse {
   opponentDeadwood: Card[];
   isTonk: boolean;
   isUndercut: boolean;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: TonkConfig;
 }
 
@@ -1257,7 +1218,7 @@ export interface SevenBridgeConfig {
 }
 
 /** Full Seven Bridge game state returned from the API. */
-export interface SevenBridgeResponse {
+export interface SevenBridgeResponse extends BaseGameResponse {
   players: SevenBridgePlayerData[];
   phase: number;
   roundNumber: number;
@@ -1267,9 +1228,6 @@ export interface SevenBridgeResponse {
   gameEndFlag: boolean;
   winnerIdx: number;
   roundWinnerIdx: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: SevenBridgeConfig;
 }
 
@@ -1298,7 +1256,7 @@ export interface Rummy500Config {
 }
 
 /** Full Rummy 500 game state returned from the API. */
-export interface Rummy500Response {
+export interface Rummy500Response extends BaseGameResponse {
   players: Rummy500PlayerData[];
   phase: number;
   roundNumber: number;
@@ -1308,14 +1266,11 @@ export interface Rummy500Response {
   gameEndFlag: boolean;
   winnerIdx: number;
   roundEnderIdx: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: Rummy500Config;
 }
 
 /** Full Gin Rummy game state returned from the API. */
-export interface GinRummyResponse {
+export interface GinRummyResponse extends BaseGameResponse {
   players: GinRummyPlayerData[];
   phase: number;
   roundNumber: number;
@@ -1328,9 +1283,6 @@ export interface GinRummyResponse {
   knockerMelds: GinRummyMeld[];
   knockerDeadwood: Card[];
   isGin: boolean;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: GinRummyConfig;
 }
 
@@ -1356,7 +1308,7 @@ export interface MemoryConfig {
 }
 
 /** Full Memory game state returned from the API. */
-export interface MemoryResponse {
+export interface MemoryResponse extends BaseGameResponse {
   players: MemoryPlayerData[];
   board: MemoryBoardCard[];
   phase: number;
@@ -1367,9 +1319,6 @@ export interface MemoryResponse {
   gameEndFlag: boolean;
   winnerIdx: number;
   turnNumber: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: MemoryConfig;
 }
 
@@ -1391,7 +1340,7 @@ export interface KlondikeHint {
 }
 
 /** Full Klondike game state returned from the API. */
-export interface KlondikeResponse {
+export interface KlondikeResponse extends BaseGameResponse {
   tableau: KlondikeTableauCard[][];
   stockCount: number;
   waste: Card[];
@@ -1404,9 +1353,6 @@ export interface KlondikeResponse {
   undoToEscape?: number;
   score: number;
   scoringMode: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   hint?: KlondikeHint;
 }
 
@@ -1427,7 +1373,7 @@ export interface CanfieldHint {
 }
 
 /** Full Canfield game state returned from the API. */
-export interface CanfieldResponse {
+export interface CanfieldResponse extends BaseGameResponse {
   tableau: CanfieldTableauCard[][];
   reserve: Card[];
   stockCount: number;
@@ -1437,9 +1383,6 @@ export interface CanfieldResponse {
   phase: number;
   moveCount: number;
   canUndo: boolean;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   hint?: CanfieldHint;
 }
 
@@ -1455,7 +1398,7 @@ export interface FreeCellHint {
 }
 
 /** Full FreeCell game state returned from the API. */
-export interface FreeCellResponse {
+export interface FreeCellResponse extends BaseGameResponse {
   tableau: (Card | null)[][];
   freeCells: (Card | null)[];
   foundation: Card[][];
@@ -1464,9 +1407,6 @@ export interface FreeCellResponse {
   canUndo: boolean;
   isStalemate: boolean;
   undoToEscape?: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   hint?: FreeCellHint;
 }
 
@@ -1482,7 +1422,7 @@ export interface EightOffHint {
 }
 
 /** Full Eight Off game state returned from the API. */
-export interface EightOffResponse {
+export interface EightOffResponse extends BaseGameResponse {
   tableau: (Card | null)[][];
   freeCells: (Card | null)[];
   foundation: Card[][];
@@ -1491,9 +1431,6 @@ export interface EightOffResponse {
   canUndo: boolean;
   isStalemate: boolean;
   undoToEscape?: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   hint?: EightOffHint;
 }
 
@@ -1509,7 +1446,7 @@ export interface PenguinHint {
 }
 
 /** Full Penguin game state returned from the API. */
-export interface PenguinResponse {
+export interface PenguinResponse extends BaseGameResponse {
   tableau: (Card | null)[][];
   freeCells: (Card | null)[];
   foundation: Card[][];
@@ -1519,9 +1456,6 @@ export interface PenguinResponse {
   canUndo: boolean;
   isStalemate: boolean;
   undoToEscape?: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   hint?: PenguinHint;
 }
 
@@ -1537,7 +1471,7 @@ export interface SeahavenTowersHint {
 }
 
 /** Full Seahaven Towers game state returned from the API. */
-export interface SeahavenTowersResponse {
+export interface SeahavenTowersResponse extends BaseGameResponse {
   tableau: (Card | null)[][];
   reservedCells: (Card | null)[];
   foundation: Card[][];
@@ -1546,9 +1480,6 @@ export interface SeahavenTowersResponse {
   canUndo: boolean;
   isStalemate: boolean;
   undoToEscape?: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   hint?: SeahavenTowersHint;
 }
 
@@ -1562,7 +1493,7 @@ export interface BaccaratSideBetResult {
 }
 
 /** Full Baccarat game state returned from the API. */
-export interface BaccaratResponse {
+export interface BaccaratResponse extends BaseGameResponse {
   playerHand: Card[];
   bankerHand: Card[];
   playerHandValue: number;
@@ -1577,9 +1508,6 @@ export interface BaccaratResponse {
   playerPairBet: number;
   bankerPairBet: number;
   sideBetResults: BaccaratSideBetResult[];
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 // --- Napoleon (ナポレオン) ---
@@ -1625,7 +1553,7 @@ export interface NapoleonHint {
 }
 
 /** Full Napoleon game state returned from the API. */
-export interface NapoleonResponse {
+export interface NapoleonResponse extends BaseGameResponse {
   players: NapoleonPlayerData[];
   phase: number;
   roundNumber: number;
@@ -1643,9 +1571,6 @@ export interface NapoleonResponse {
   kitty: Card[];
   gameEndFlag: boolean;
   winnerTeam: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: NapoleonConfig;
   hint?: NapoleonHint;
 }
@@ -1699,7 +1624,7 @@ export interface MightyHint {
 }
 
 /** Full Mighty game state returned from the API. */
-export interface MightyResponse {
+export interface MightyResponse extends BaseGameResponse {
   players: MightyPlayerData[];
   phase: number;
   roundNumber: number;
@@ -1719,9 +1644,6 @@ export interface MightyResponse {
   gameEndFlag: boolean;
   winnerTeam: number;
   leadPlayerIdx: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: MightyConfig;
   hint?: MightyHint;
 }
@@ -1768,7 +1690,7 @@ export interface SkatHint {
 }
 
 /** Full Skat game state returned from the API. */
-export interface SkatResponse {
+export interface SkatResponse extends BaseGameResponse {
   players: SkatPlayerData[];
   phase: number;
   roundNumber: number;
@@ -1793,9 +1715,6 @@ export interface SkatResponse {
   gameValue: number;
   gameEndFlag: boolean;
   leadPlayerIdx: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: SkatConfig;
   hint?: SkatHint;
 }
@@ -1835,7 +1754,7 @@ export interface ShitheadConfig {
 }
 
 /** Full Shithead game state returned from the API. */
-export interface ShitheadResponse {
+export interface ShitheadResponse extends BaseGameResponse {
   players: ShitheadPlayerData[];
   currentTurn: number;
   currentSource: string;
@@ -1847,9 +1766,6 @@ export interface ShitheadResponse {
   config: ShitheadConfig;
   cpuActions: ShitheadAction[];
   humanAction?: ShitheadAction;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 // --- Spider Solitaire (スパイダーソリティア) ---
@@ -1868,7 +1784,7 @@ export interface SpiderTableauCard {
 }
 
 /** Full Spider Solitaire game state returned from the API. */
-export interface SpiderResponse {
+export interface SpiderResponse extends BaseGameResponse {
   tableau: SpiderTableauCard[][];
   stockCount: number;
   completedSuits: number;
@@ -1879,9 +1795,6 @@ export interface SpiderResponse {
   undoToEscape?: number;
   score: number;
   difficulty: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   hint?: SpiderHint;
 }
 
@@ -1901,7 +1814,7 @@ export interface SpideretteTableauCard {
 }
 
 /** Full Spiderette Solitaire game state returned from the API. */
-export interface SpideretteResponse {
+export interface SpideretteResponse extends BaseGameResponse {
   tableau: SpideretteTableauCard[][];
   stockCount: number;
   completedSuits: number;
@@ -1911,9 +1824,6 @@ export interface SpideretteResponse {
   canUndo: boolean;
   isStalemate: boolean;
   undoToEscape?: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   hint?: SpideretteHint;
 }
 
@@ -1954,7 +1864,7 @@ export interface IndianPokerSidePot {
 }
 
 /** Full Indian Poker game state returned from the API. */
-export interface IndianPokerResponse {
+export interface IndianPokerResponse extends BaseGameResponse {
   players: IndianPokerPlayerOutput[];
   pot: number;
   sidePots: IndianPokerSidePot[];
@@ -1971,9 +1881,6 @@ export interface IndianPokerResponse {
   cpuActions: IndianPokerCpuActionOutput[];
   handCount: number;
   ante: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   actionLog?: ActionLogEntry[];
   metaAI?: IndianPokerMetaAI;
   profile?: IndianPokerHumanProfileData;
@@ -2013,7 +1920,7 @@ export interface EuchreHint {
 }
 
 /** Full Euchre game state returned from the API. */
-export interface EuchreResponse {
+export interface EuchreResponse extends BaseGameResponse {
   players: EuchrePlayerData[];
   phase: number;
   roundNumber: number;
@@ -2031,9 +1938,6 @@ export interface EuchreResponse {
   gameEndFlag: boolean;
   winnerTeam: number;
   leadPlayerIdx: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: EuchreConfig;
   hint?: EuchreHint;
 }
@@ -2073,7 +1977,7 @@ export interface BeloteHint {
 }
 
 /** Full Belote game state returned from the API. */
-export interface BeloteResponse {
+export interface BeloteResponse extends BaseGameResponse {
   players: BelotePlayerData[];
   phase: number;
   roundNumber: number;
@@ -2092,9 +1996,6 @@ export interface BeloteResponse {
   gameEndFlag: boolean;
   winnerTeam: number;
   leadPlayerIdx: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: BeloteConfig;
   hint?: BeloteHint;
 }
@@ -2140,7 +2041,7 @@ export interface BridgeHint {
 }
 
 /** Full Bridge game state returned from the API. */
-export interface BridgeResponse {
+export interface BridgeResponse extends BaseGameResponse {
   players: BridgePlayerData[];
   phase: number;
   roundNumber: number;
@@ -2165,9 +2066,6 @@ export interface BridgeResponse {
   leadPlayerIdx: number;
   openingLeadDone: boolean;
   dummyHand: Card[] | null;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: BridgeConfig;
   hint?: BridgeHint;
 }
@@ -2191,7 +2089,7 @@ export interface PyramidHint {
 }
 
 /** Full Pyramid game state returned from the API. */
-export interface PyramidResponse {
+export interface PyramidResponse extends BaseGameResponse {
   pyramid: PyramidCard[][];
   stockCount: number;
   waste: Card[];
@@ -2200,9 +2098,6 @@ export interface PyramidResponse {
   canUndo: boolean;
   isStalemate: boolean;
   undoToEscape?: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   hint?: PyramidHint;
 }
 
@@ -2223,7 +2118,7 @@ export interface TriPeaksHint {
 }
 
 /** Full TriPeaks game state returned from the API. */
-export interface TriPeaksResponse {
+export interface TriPeaksResponse extends BaseGameResponse {
   layout: TriPeaksCard[][];
   stockCount: number;
   waste: Card[];
@@ -2232,14 +2127,11 @@ export interface TriPeaksResponse {
   canUndo: boolean;
   isStalemate: boolean;
   undoToEscape?: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   hint?: TriPeaksHint;
 }
 
 /** Full Video Poker game state returned from the API. */
-export interface VideoPokerResponse {
+export interface VideoPokerResponse extends BaseGameResponse {
   hand: Card[];
   phase: number;
   chips: number;
@@ -2250,9 +2142,6 @@ export interface VideoPokerResponse {
   handName: string;
   heldIndices: boolean[];
   variantName: string;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 // --- Cribbage (クリベッジ) ---
@@ -2284,7 +2173,7 @@ export interface CribbageConfig {
 }
 
 /** Full Cribbage game state returned from the API. */
-export interface CribbageResponse {
+export interface CribbageResponse extends BaseGameResponse {
   players: CribbagePlayerData[];
   phase: number;
   roundNumber: number;
@@ -2298,9 +2187,6 @@ export interface CribbageResponse {
   handScoreDetails: (CribbageScoreDetail | null)[];
   gameEndFlag: boolean;
   winnerIdx: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: CribbageConfig;
 }
 
@@ -2340,7 +2226,7 @@ export interface OhHellHint {
 }
 
 /** Full Oh Hell game state returned from the API. */
-export interface OhHellResponse {
+export interface OhHellResponse extends BaseGameResponse {
   players: OhHellPlayerData[];
   phase: number;
   roundNumber: number;
@@ -2359,15 +2245,12 @@ export interface OhHellResponse {
   leadPlayerIdx: number;
   hint?: OhHellHint;
   config: OhHellConfig;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 // --- Three Card Poker (スリーカードポーカー) ---
 
 /** Three Card Poker API response. */
-export interface ThreeCardResponse {
+export interface ThreeCardResponse extends BaseGameResponse {
   playerHand: Card[];
   dealerHand: Card[];
   phase: number;
@@ -2384,15 +2267,12 @@ export interface ThreeCardResponse {
   dealerQualified: boolean;
   playerHandRank: number;
   dealerHandRank: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 // --- Caribbean Stud Poker (カリビアンスタッドポーカー) ---
 
 /** Caribbean Stud Poker API response. */
-export interface CaribbeanStudResponse {
+export interface CaribbeanStudResponse extends BaseGameResponse {
   playerHand: Card[];
   /** Dealer hand: during the action phase only the first card is revealed and
    * the remaining slots are `MaskedCard`. After the end phase all 5 are real `Card`s. */
@@ -2410,15 +2290,12 @@ export interface CaribbeanStudResponse {
   dealerQualified: boolean;
   playerHandRank: number;
   dealerHandRank: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 // --- Casino Hold'em (カジノホールデム) ---
 
 /** Casino Hold'em API response. */
-export interface CasinoHoldemResponse {
+export interface CasinoHoldemResponse extends BaseGameResponse {
   /** Player's two hole cards. */
   playerHand: Card[];
   /** Dealer's hole cards: masked as `MaskedCard` until the showdown (only after a call). */
@@ -2441,15 +2318,12 @@ export interface CasinoHoldemResponse {
   totalPayout: number;
   playerHandRank: number;
   dealerHandRank: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 // --- Texas Hold'em Bonus Poker (テキサスホールデムボーナスポーカー) ---
 
 /** Texas Hold'em Bonus Poker API response. */
-export interface TexasHoldemBonusResponse {
+export interface TexasHoldemBonusResponse extends BaseGameResponse {
   /** Player's two hole cards. */
   playerHand: Card[];
   /** Dealer's hole cards: masked as `MaskedCard` until the showdown. */
@@ -2471,15 +2345,12 @@ export interface TexasHoldemBonusResponse {
   totalPayout: number;
   playerHandRank: number;
   dealerHandRank: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 // --- Ultimate Texas Hold'em (アルティメット・テキサスホールデム) ---
 
 /** Ultimate Texas Hold'em API response. */
-export interface UltimateTexasHoldemResponse {
+export interface UltimateTexasHoldemResponse extends BaseGameResponse {
   /** Player's two hole cards. */
   playerHand: Card[];
   /** Dealer's hole cards: masked as `MaskedCard` until the showdown. */
@@ -2502,15 +2373,12 @@ export interface UltimateTexasHoldemResponse {
   totalPayout: number;
   playerHandRank: number;
   dealerHandRank: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 // --- Mississippi Stud (ミシシッピ・スタッド) ---
 
 /** Mississippi Stud API response. */
-export interface MississippiStudResponse {
+export interface MississippiStudResponse extends BaseGameResponse {
   /** Player's two hole cards (revealed once the round starts). */
   playerHand: Card[];
   /** Community cards: masked as `MaskedCard` until the matching street is revealed. */
@@ -2531,15 +2399,12 @@ export interface MississippiStudResponse {
   antePayout: number;
   streetPayouts: number[];
   totalPayout: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 // --- Pai Gow Poker (パイゴウポーカー) ---
 
 /** Pai Gow Poker API response. */
-export interface PaiGowResponse {
+export interface PaiGowResponse extends BaseGameResponse {
   playerCards: Card[];
   dealerCards: Card[];
   playerHighHand: Card[];
@@ -2558,13 +2423,10 @@ export interface PaiGowResponse {
   playerLowRank: number;
   dealerHighRank: number;
   dealerLowRank: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 /** Chinese Poker game state response. */
-export interface ChinesePokerResponse {
+export interface ChinesePokerResponse extends BaseGameResponse {
   playerCards: Card[];
   dealerCards: Card[];
   playerFront: Card[];
@@ -2590,9 +2452,6 @@ export interface ChinesePokerResponse {
   playerRoyalty: number;
   dealerRoyalty: number;
   scoop: boolean;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 /** Speed player data with hand and draw pile info. */
@@ -2638,7 +2497,7 @@ export interface WarConfig {
 }
 
 /** Full War game state returned from the API. */
-export interface WarResponse {
+export interface WarResponse extends BaseGameResponse {
   players: WarPlayerData[];
   phase: number;
   gameEndFlag: boolean;
@@ -2650,13 +2509,10 @@ export interface WarResponse {
   lastBurialCount: number;
   roundsPlayed: number;
   config: WarConfig;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 /** Full Speed game state returned from the API. */
-export interface SpeedResponse {
+export interface SpeedResponse extends BaseGameResponse {
   players: SpeedPlayerData[];
   centerPiles: Card[];
   phase: number;
@@ -2665,9 +2521,6 @@ export interface SpeedResponse {
   cpuActions?: SpeedCpuAction[];
   hint?: SpeedHint;
   config: SpeedConfig;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 /** Go Fish player data with hand, book count, and completed books. */
@@ -2716,7 +2569,7 @@ export interface GoFishConfig {
 }
 
 /** Full Go Fish game state returned from the API. */
-export interface GoFishResponse {
+export interface GoFishResponse extends BaseGameResponse {
   players: GoFishPlayerData[];
   phase: number;
   currentTurn: number;
@@ -2727,9 +2580,6 @@ export interface GoFishResponse {
   lastAsk: GoFishLastAsk | null;
   cpuActions: GoFishCpuAction[];
   humanAction: GoFishCpuAction | null;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: GoFishConfig;
 }
 
@@ -2765,7 +2615,7 @@ export interface CanastaPlayerData {
 }
 
 /** Full Canasta game state returned from the API. */
-export interface CanastaResponse {
+export interface CanastaResponse extends BaseGameResponse {
   players: CanastaPlayerData[];
   phase: number;
   roundNumber: number;
@@ -2776,9 +2626,6 @@ export interface CanastaResponse {
   isFrozen: boolean;
   gameEndFlag: boolean;
   winnerIdx: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: CanastaConfig;
 }
 
@@ -2816,7 +2663,7 @@ export interface PinochlePlayerData {
 }
 
 /** Full Pinochle game state returned from the API. */
-export interface PinochleResponse {
+export interface PinochleResponse extends BaseGameResponse {
   players: PinochlePlayerData[];
   phase: number;
   roundNumber: number;
@@ -2841,9 +2688,6 @@ export interface PinochleResponse {
     suit?: number;
     reason: string;
   };
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: PinochleConfig;
 }
 
@@ -2896,7 +2740,7 @@ export interface PiquetDeclaration {
 }
 
 /** Full Piquet game state returned from the API. */
-export interface PiquetResponse {
+export interface PiquetResponse extends BaseGameResponse {
   players: PiquetPlayerData[];
   phase: number;
   dealNumber: number;
@@ -2926,9 +2770,6 @@ export interface PiquetResponse {
     discardIndices?: number[];
     reason: string;
   };
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: PiquetConfig;
 }
 
@@ -2948,7 +2789,7 @@ export interface GolfHint {
 }
 
 /** Full Golf Solitaire game state returned from the API. */
-export interface GolfResponse {
+export interface GolfResponse extends BaseGameResponse {
   layout: GolfCard[][];
   stockCount: number;
   waste: Card[];
@@ -2957,9 +2798,6 @@ export interface GolfResponse {
   canUndo: boolean;
   isStalemate: boolean;
   undoToEscape?: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   hint?: GolfHint;
 }
 
@@ -2980,7 +2818,7 @@ export interface AcesUpHint {
 }
 
 /** Full Aces Up game state returned from the API. */
-export interface AcesUpResponse {
+export interface AcesUpResponse extends BaseGameResponse {
   columns: AcesUpCard[][];
   stockCount: number;
   discardCount: number;
@@ -2989,9 +2827,6 @@ export interface AcesUpResponse {
   canUndo: boolean;
   isStalemate: boolean;
   undoToEscape?: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   hint?: AcesUpHint;
 }
 
@@ -3015,7 +2850,7 @@ export interface PigsTailCpuAction {
 }
 
 /** Pig's Tail game state response. */
-export interface PigsTailResponse {
+export interface PigsTailResponse extends BaseGameResponse {
   players: PigsTailPlayer[];
   circleCount: number;
   centerTop: Card | null;
@@ -3027,9 +2862,6 @@ export interface PigsTailResponse {
   lastPenalty: boolean;
   cpuActions: PigsTailCpuAction[];
   humanAction: PigsTailCpuAction | null;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 // --- Seven Card Stud ---
@@ -3080,7 +2912,7 @@ export interface SevenCardStudSidePot {
 }
 
 /** Full Seven Card Stud game state returned from the API. */
-export interface SevenCardStudResponse {
+export interface SevenCardStudResponse extends BaseGameResponse {
   players: SevenCardStudPlayerData[];
   communityCard: Card | null;
   pot: number;
@@ -3121,9 +2953,6 @@ export interface SevenCardStudResponse {
   muckAvailable: boolean;
   metaAI?: BettingMetaAI;
   profile?: BettingHumanProfileData;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 // --- Clock Solitaire (クロックソリティア) ---
@@ -3135,15 +2964,12 @@ export interface ClockSolitaireCard {
 }
 
 /** Full Clock Solitaire game state returned from the API. */
-export interface ClockSolitaireResponse {
+export interface ClockSolitaireResponse extends BaseGameResponse {
   piles: ClockSolitaireCard[][];
   faceUpCount: number[];
   phase: number;
   stepCount: number;
   currentCard?: Card;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 /** Durak player data. */
@@ -3180,7 +3006,7 @@ export interface DurakConfig {
 export type DurakConfigInput = DurakConfig;
 
 /** Full Durak game state returned from the API. */
-export interface DurakResponse {
+export interface DurakResponse extends BaseGameResponse {
   players: DurakPlayerData[];
   currentTurn: number;
   phase: number;
@@ -3197,9 +3023,6 @@ export interface DurakResponse {
   humanAction: DurakAction | null;
   boutNumber: number;
   sortMode: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 // --- Forty Thieves (フォーティシーブス) ---
@@ -3220,7 +3043,7 @@ export interface FortyThievesHint {
 }
 
 /** Full Forty Thieves game state returned from the API. */
-export interface FortyThievesResponse {
+export interface FortyThievesResponse extends BaseGameResponse {
   tableau: FortyThievesTableauCard[][];
   stockCount: number;
   waste: Card[];
@@ -3230,9 +3053,6 @@ export interface FortyThievesResponse {
   canUndo: boolean;
   isStalemate: boolean;
   undoToEscape?: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   hint?: FortyThievesHint;
 }
 
@@ -3260,7 +3080,7 @@ export interface CrescentHint {
 }
 
 /** Full Crescent game state returned from the API. */
-export interface CrescentResponse {
+export interface CrescentResponse extends BaseGameResponse {
   tableau: CrescentTableauCard[][];
   foundation: Card[][];
   redealsRemaining: number;
@@ -3269,9 +3089,6 @@ export interface CrescentResponse {
   canUndo: boolean;
   isStalemate: boolean;
   undoToEscape?: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   hint?: CrescentHint;
 }
 
@@ -3298,7 +3115,7 @@ export interface BakersDozenHint {
 }
 
 /** Full Baker's Dozen game state returned from the API. */
-export interface BakersDozenResponse {
+export interface BakersDozenResponse extends BaseGameResponse {
   tableau: BakersDozenTableauCard[][];
   foundation: Card[][];
   phase: number;
@@ -3306,9 +3123,6 @@ export interface BakersDozenResponse {
   canUndo: boolean;
   isStalemate: boolean;
   undoToEscape?: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   hint?: BakersDozenHint;
 }
 
@@ -3327,7 +3141,7 @@ export interface CalculationHint {
 }
 
 /** Full Calculation game state returned from the API. */
-export interface CalculationResponse {
+export interface CalculationResponse extends BaseGameResponse {
   foundations: Card[][];
   wastes: Card[][];
   stockCount: number;
@@ -3337,9 +3151,6 @@ export interface CalculationResponse {
   canUndo: boolean;
   isStalemate: boolean;
   undoToEscape?: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   hint?: CalculationHint;
 }
 
@@ -3364,7 +3175,7 @@ export interface FiftyOneConfig {
 }
 
 /** Full Fifty-one game state returned from the API. */
-export interface FiftyOneResponse {
+export interface FiftyOneResponse extends BaseGameResponse {
   players: FiftyOnePlayerData[];
   tableCards: Card[];
   phase: number;
@@ -3376,9 +3187,6 @@ export interface FiftyOneResponse {
   lastAction: string;
   lastHandIdx: number;
   lastTableIdx: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: FiftyOneConfig;
 }
 
@@ -3393,7 +3201,7 @@ export interface YukonHint {
 }
 
 /** API response shape for a Yukon game. */
-export interface YukonResponse {
+export interface YukonResponse extends BaseGameResponse {
   tableau: KlondikeTableauCard[][];
   foundation: Card[][];
   phase: number;
@@ -3401,9 +3209,6 @@ export interface YukonResponse {
   canUndo: boolean;
   isStalemate: boolean;
   undoToEscape?: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   hint?: YukonHint;
 }
 
@@ -3418,7 +3223,7 @@ export interface RussianSolitaireHint {
 }
 
 /** API response shape for a Russian Solitaire game. */
-export interface RussianSolitaireResponse {
+export interface RussianSolitaireResponse extends BaseGameResponse {
   tableau: KlondikeTableauCard[][];
   foundation: Card[][];
   phase: number;
@@ -3426,9 +3231,6 @@ export interface RussianSolitaireResponse {
   canUndo: boolean;
   isStalemate: boolean;
   undoToEscape?: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   hint?: RussianSolitaireHint;
 }
 
@@ -3443,7 +3245,7 @@ export interface CruelHint {
 }
 
 /** API response shape for a Cruel game. */
-export interface CruelResponse {
+export interface CruelResponse extends BaseGameResponse {
   tableau: KlondikeTableauCard[][];
   foundation: Card[][];
   phase: number;
@@ -3451,9 +3253,6 @@ export interface CruelResponse {
   canUndo: boolean;
   isStalemate: boolean;
   undoToEscape?: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   hint?: CruelHint;
 }
 
@@ -3467,7 +3266,7 @@ export interface ScorpionHint {
 }
 
 /** API response shape for a Scorpion game. */
-export interface ScorpionResponse {
+export interface ScorpionResponse extends BaseGameResponse {
   tableau: KlondikeTableauCard[][];
   stockCount: number;
   completedSuits: number;
@@ -3476,9 +3275,6 @@ export interface ScorpionResponse {
   canUndo: boolean;
   isStalemate: boolean;
   undoToEscape?: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   hint?: ScorpionHint;
 }
 
@@ -3497,7 +3293,7 @@ export interface AccordionHint {
 }
 
 /** API response shape for an Accordion game. */
-export interface AccordionResponse {
+export interface AccordionResponse extends BaseGameResponse {
   piles: AccordionPile[];
   pileCount: number;
   phase: number;
@@ -3505,9 +3301,6 @@ export interface AccordionResponse {
   canUndo: boolean;
   isStalemate: boolean;
   undoToEscape?: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   hint?: AccordionHint;
 }
 
@@ -3527,7 +3320,7 @@ export interface TrashPlayerState {
 }
 
 /** API response shape for a Trash game. */
-export interface TrashResponse {
+export interface TrashResponse extends BaseGameResponse {
   phase: number;
   current: number;
   players: [TrashPlayerState, TrashPlayerState];
@@ -3537,9 +3330,6 @@ export interface TrashResponse {
   pending?: Card;
   moveCount: number;
   winner: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 // --- Whist (ホイスト) ---
@@ -3575,7 +3365,7 @@ export interface WhistHint {
 }
 
 /** Full Whist game state returned from the API. */
-export interface WhistResponse {
+export interface WhistResponse extends BaseGameResponse {
   players: WhistPlayerData[];
   phase: number;
   roundNumber: number;
@@ -3588,9 +3378,6 @@ export interface WhistResponse {
   gameEndFlag: boolean;
   winnerTeam: number;
   leadPlayerIdx: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: WhistConfig;
   hint?: WhistHint;
 }
@@ -3625,7 +3412,7 @@ export interface BriscolaHint {
 }
 
 /** Full Briscola game state returned from the API. */
-export interface BriscolaResponse {
+export interface BriscolaResponse extends BaseGameResponse {
   players: BriscolaPlayerData[];
   phase: number;
   trickNumber: number;
@@ -3644,9 +3431,6 @@ export interface BriscolaResponse {
   gameEndFlag: boolean;
   /** -1 = tie or unfinished. */
   winnerIdx: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: BriscolaConfig;
   hint?: BriscolaHint;
 }
@@ -3682,7 +3466,7 @@ export interface TrucoHint {
 }
 
 /** Full Truco game state returned from the API. */
-export interface TrucoResponse {
+export interface TrucoResponse extends BaseGameResponse {
   players: TrucoPlayerData[];
   phase: number;
   handNumber: number;
@@ -3715,9 +3499,6 @@ export interface TrucoResponse {
   gameEndFlag: boolean;
   /** -1 = unfinished. */
   winnerIdx: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: TrucoConfig;
   hint?: TrucoHint;
 }
@@ -3731,7 +3512,7 @@ export interface PokerSquaresBoardCell {
 }
 
 /** Poker Squares API response. */
-export interface PokerSquaresResponse {
+export interface PokerSquaresResponse extends BaseGameResponse {
   /** 5x5 board. Empty cells have `card === null`. */
   board: PokerSquaresBoardCell[][];
   /** Next card to place, or `null` once all 25 cards have been placed. */
@@ -3748,9 +3529,6 @@ export interface PokerSquaresResponse {
   colScores: number[];
   /** Sum of all row and column scores. */
   totalScore: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 // --- Monte Carlo Solitaire (モンテカルロ・ソリティア) ---
@@ -3774,7 +3552,7 @@ export interface MonteCarloHint {
 }
 
 /** Monte Carlo Solitaire API response. */
-export interface MonteCarloResponse {
+export interface MonteCarloResponse extends BaseGameResponse {
   /** 5x5 board. Empty cells (post-removal, pre-deal) have `card === null`. */
   board: MonteCarloBoardCell[][];
   /** 0 = playing, 1 = game clear, 2 = game over. */
@@ -3791,15 +3569,12 @@ export interface MonteCarloResponse {
   isStalemate: boolean;
   /** Server-generated hint, present only on `/montecarlo/exec` with `command: "hint"`. */
   hint?: MonteCarloHint;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 // --- Let It Ride (レット・イット・ライド) ---
 
 /** Let It Ride API response. */
-export interface LetItRideResponse {
+export interface LetItRideResponse extends BaseGameResponse {
   playerHand: Card[];
   /** Community cards: masked as `MaskedCard` until revealed by phase progression. */
   communityCards: (Card | MaskedCard)[];
@@ -3815,15 +3590,12 @@ export interface LetItRideResponse {
   bet2Payout: number;
   bet3Payout: number;
   totalPayout: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 // --- Red Dog (レッドドッグ) ---
 
 /** Red Dog API response. */
-export interface RedDogResponse {
+export interface RedDogResponse extends BaseGameResponse {
   /** Initial 2 cards. */
   initialCards: Card[];
   /** Third card revealed at end (or after raise/stay). */
@@ -3836,15 +3608,12 @@ export interface RedDogResponse {
   spread: number;
   result: number;
   totalPayout: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 // --- Casino War (カジノウォー) ---
 
 /** Casino War API response. */
-export interface CasinoWarResponse {
+export interface CasinoWarResponse extends BaseGameResponse {
   /** Player's initial card. */
   playerCard?: Card;
   /** Dealer's initial card. */
@@ -3862,13 +3631,10 @@ export interface CasinoWarResponse {
   warBet: number;
   result: number;
   totalPayout: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 /** Dragon Tiger game state response. Bet types: 0=Dragon, 1=Tiger, 2=Tie. */
-export interface DragonTigerResponse {
+export interface DragonTigerResponse extends BaseGameResponse {
   /** Card dealt to the Dragon slot. */
   dragonCard?: Card;
   /** Card dealt to the Tiger slot. */
@@ -3883,9 +3649,6 @@ export interface DragonTigerResponse {
   payout: number;
   /** Big Road history. 0=Dragon, 1=Tiger, 2=Tie. */
   history: number[];
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 /** A single hand within a Blackjack Switch round. */
@@ -3906,7 +3669,7 @@ export interface BlackJackSwitchHand {
 }
 
 /** Blackjack Switch game state response. */
-export interface BlackJackSwitchResponse {
+export interface BlackJackSwitchResponse extends BaseGameResponse {
   /** Two player hands; the player may switch the second card between them. */
   hands: BlackJackSwitchHand[];
   /** Dealer's cards. The hole card is null until the round ends. */
@@ -3926,9 +3689,6 @@ export interface BlackJackSwitchResponse {
   overallResult: number;
   /** Sum of per-hand payouts. */
   totalPayout: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 /** President player data. */
@@ -3963,7 +3723,7 @@ export interface PresidentConfig {
 }
 
 /** Full President game state returned from the API. */
-export interface PresidentResponse {
+export interface PresidentResponse extends BaseGameResponse {
   players: PresidentPlayerData[];
   currentTurn: number;
   tableCards: Card[];
@@ -3974,9 +3734,6 @@ export interface PresidentResponse {
   exchangeActions: PresidentExchangeAction[];
   cpuActions: PresidentAction[];
   humanAction: PresidentAction | null;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 /** Cassino player data. */
@@ -4028,7 +3785,7 @@ export interface CassinoConfig {
 }
 
 /** Full Cassino game state returned from the API. */
-export interface CassinoResponse {
+export interface CassinoResponse extends BaseGameResponse {
   players: CassinoPlayerData[];
   currentTurn: number;
   tableCards: Card[];
@@ -4043,9 +3800,6 @@ export interface CassinoResponse {
   packsDealt: number;
   roundWinners: number[];
   lastRoundDetail: CassinoScoreDetail | null;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 // --- Spite and Malice (スパイト・アンド・マリス) ---
@@ -4069,7 +3823,7 @@ export interface SpiteAndMaliceHint {
 }
 
 /** API response shape for a Spite & Malice game. */
-export interface SpiteAndMaliceResponse {
+export interface SpiteAndMaliceResponse extends BaseGameResponse {
   phase: number;
   current: number;
   players: [SpiteAndMalicePlayerState, SpiteAndMalicePlayerState];
@@ -4084,9 +3838,6 @@ export interface SpiteAndMaliceResponse {
   /** True when the human can auto-complete at least one foundation move on their turn. */
   canAutoComplete: boolean;
   hint?: SpiteAndMaliceHint;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 /** Source or target zone for a Spite & Malice move. */
@@ -4151,7 +3902,7 @@ export interface NertzMoveZone {
 }
 
 /** Full Nertz game state returned from the API. */
-export interface NertzResponse {
+export interface NertzResponse extends BaseGameResponse {
   phase: number;
   roundNumber: number;
   winnerIdx: number;
@@ -4167,9 +3918,6 @@ export interface NertzResponse {
   players: NertzPlayerData[];
   foundations: NertzFoundationData[];
   hint?: NertzHint;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 /** Player snapshot for Slapjack. */
@@ -4180,7 +3928,7 @@ export interface SlapjackPlayerData {
 }
 
 /** Full Slapjack game state returned from the API. */
-export interface SlapjackResponse {
+export interface SlapjackResponse extends BaseGameResponse {
   phase: number;
   gameEndFlag: boolean;
   winnerIdx: number;
@@ -4195,9 +3943,6 @@ export interface SlapjackResponse {
   pendingDeadlineMs: number;
   lastEventKind: number;
   lastEventPlayerIdx: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 /** Player snapshot for Egyptian Ratscrew. */
@@ -4208,7 +3953,7 @@ export interface EgyptianRatscrewPlayerData {
 }
 
 /** Full Egyptian Ratscrew game state returned from the API. */
-export interface EgyptianRatscrewResponse {
+export interface EgyptianRatscrewResponse extends BaseGameResponse {
   phase: number;
   gameEndFlag: boolean;
   winnerIdx: number;
@@ -4227,9 +3972,6 @@ export interface EgyptianRatscrewResponse {
   lastEventKind: number;
   lastEventPlayerIdx: number;
   lastSlapReason: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 // --- Contract Rummy (コントラクトラミー) ---
@@ -4267,7 +4009,7 @@ export interface ContractRummyConfig {
 }
 
 /** Contract Rummy API response. */
-export interface ContractRummyResponse {
+export interface ContractRummyResponse extends BaseGameResponse {
   players: ContractRummyPlayer[];
   /** 0 = draw, 1 = play, 2 = round end, 3 = game end. */
   phase: number;
@@ -4282,15 +4024,12 @@ export interface ContractRummyResponse {
   /** The current round's contract (sequence of slots to satisfy). */
   contractSlots: ContractRummyContractSlot[];
   config: ContractRummyConfig;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 // --- Oasis Poker (オアシスポーカー) ---
 
 /** Oasis Poker API response. */
-export interface OasisPokerResponse {
+export interface OasisPokerResponse extends BaseGameResponse {
   playerHand: Card[];
   /** Dealer hand: during bet/exchange/action phases only the first card is revealed and
    * the remaining slots are `MaskedCard`. After the end phase all 5 are real `Card`s. */
@@ -4312,15 +4051,12 @@ export interface OasisPokerResponse {
   dealerQualified: boolean;
   playerHandRank: number;
   dealerHandRank: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 // --- Russian Poker (ロシアンポーカー) ---
 
 /** Russian Poker game state from the /russianpoker/exec endpoint. */
-export interface RussianPokerResponse {
+export interface RussianPokerResponse extends BaseGameResponse {
   playerHand: Card[];
   dealerHand: (Card | MaskedCard)[];
   phase: number;
@@ -4340,9 +4076,6 @@ export interface RussianPokerResponse {
   dealerQualified: boolean;
   playerHandRank: number;
   dealerHandRank: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 // --- Beleaguered Castle (包囲された城) ---
@@ -4362,7 +4095,7 @@ export interface BeleagueredCastleHint {
 }
 
 /** Full Beleaguered Castle game state returned from the API. */
-export interface BeleagueredCastleResponse {
+export interface BeleagueredCastleResponse extends BaseGameResponse {
   tableau: BeleagueredCastleTableauCard[][];
   foundation: Card[][];
   phase: number;
@@ -4370,9 +4103,6 @@ export interface BeleagueredCastleResponse {
   canUndo: boolean;
   isStalemate: boolean;
   undoToEscape?: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   hint?: BeleagueredCastleHint;
 }
 
@@ -4420,7 +4150,7 @@ export interface TarneebHint {
 }
 
 /** Full Tarneeb game state returned from the API. */
-export interface TarneebResponse {
+export interface TarneebResponse extends BaseGameResponse {
   players: TarneebPlayerData[];
   teamScores: number[];
   phase: number;
@@ -4437,9 +4167,6 @@ export interface TarneebResponse {
   gameEndFlag: boolean;
   winnerTeam: number;
   leadPlayerIdx: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: TarneebConfig;
   hint?: TarneebHint;
 }
@@ -4447,7 +4174,7 @@ export interface TarneebResponse {
 // --- High Card Flush (ハイカードフラッシュ) ---
 
 /** High Card Flush API response. */
-export interface HighCardFlushResponse {
+export interface HighCardFlushResponse extends BaseGameResponse {
   playerHand: Card[];
   dealerHand: Card[];
   phase: number;
@@ -4467,9 +4194,6 @@ export interface HighCardFlushResponse {
   dealerFlushLen: number;
   playerStraightFlushLen: number;
   maxRaiseMultiplier: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 // --- Gaps / Montana (ギャップス) ---
@@ -4483,7 +4207,7 @@ export interface GapsHint {
 }
 
 /** Full Gaps game state returned from the API. */
-export interface GapsResponse {
+export interface GapsResponse extends BaseGameResponse {
   /** 4-row x 13-col grid. `null` cells are gaps. */
   grid: (Card | null)[][];
   redealsUsed: number;
@@ -4493,9 +4217,6 @@ export interface GapsResponse {
   canUndo: boolean;
   isStalemate: boolean;
   undoToEscape?: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   hint?: GapsHint;
 }
 
@@ -4525,7 +4246,7 @@ export interface SixCardGolfConfig {
 }
 
 /** Six Card Golf API response. */
-export interface SixCardGolfResponse {
+export interface SixCardGolfResponse extends BaseGameResponse {
   players: SixCardGolfPlayerData[];
   phase: number;
   roundNumber: number;
@@ -4539,14 +4260,11 @@ export interface SixCardGolfResponse {
   finalTurnTrigger: number;
   gameEndFlag: boolean;
   winnerIdx: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
   config: SixCardGolfConfig;
 }
 
 /** Four Card Poker API response. */
-export interface FourCardPokerResponse {
+export interface FourCardPokerResponse extends BaseGameResponse {
   /** Player's 5-card hand. */
   playerHand: Card[];
   /** Dealer hand: during the action phase only the upcard is revealed
@@ -4570,9 +4288,6 @@ export interface FourCardPokerResponse {
   totalPayout: number;
   playerHandRank: number;
   dealerHandRank: number;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
 
 /** Dou Dizhu player action record. */
@@ -4598,7 +4313,7 @@ export interface DoudizhuConfig {
 }
 
 /** Dou Dizhu API response. */
-export interface DoudizhuResponse {
+export interface DoudizhuResponse extends BaseGameResponse {
   players: DoudizhuPlayerData[];
   phase: string;
   currentTurn: number;
@@ -4614,7 +4329,4 @@ export interface DoudizhuResponse {
   config: DoudizhuConfig;
   cpuActions: DoudizhuAction[];
   humanAction: DoudizhuAction | null;
-  message: string;
-  messageCode?: string;
-  messageParams?: Record<string, string>;
 }
