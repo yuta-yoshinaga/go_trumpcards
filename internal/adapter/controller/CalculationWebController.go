@@ -65,8 +65,7 @@ func calculationDispatch(bc *baseController, w http.ResponseWriter, ci usecase.C
 	case "u", "undo":
 		bc.writePresenterResponse(w, ci.Undo())
 	case "undo_n":
-		if param.N == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: n is required."))
+		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ci.UndoN(*param.N))
@@ -77,8 +76,7 @@ func calculationDispatch(bc *baseController, w http.ResponseWriter, ci usecase.C
 }
 
 func calculationMoveDispatch(bc *baseController, w http.ResponseWriter, ci usecase.CalculationInteractorIF, param CalculationWebInput, newDefault func(string) *CalculationWebOutput) bool {
-	if param.From == nil || param.To == nil {
-		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from and to are required."))
+	if !requireParam(bc, w, newDefault, param.From == nil || param.To == nil, "param error: from and to are required.") {
 		return true
 	}
 	fromZone := param.From.Zone
@@ -86,20 +84,17 @@ func calculationMoveDispatch(bc *baseController, w http.ResponseWriter, ci useca
 
 	switch {
 	case fromZone == "stock" && toZone == "foundation":
-		if param.To.Idx == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: to.idx is required."))
+		if !requireParam(bc, w, newDefault, param.To.Idx == nil, "param error: to.idx is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ci.PlayStockToFoundation(*param.To.Idx))
 	case fromZone == "stock" && toZone == "waste":
-		if param.To.Idx == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: to.idx is required."))
+		if !requireParam(bc, w, newDefault, param.To.Idx == nil, "param error: to.idx is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ci.PlayStockToWaste(*param.To.Idx))
 	case fromZone == "waste" && toZone == "foundation":
-		if param.From.Idx == nil || param.To.Idx == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from.idx and to.idx are required."))
+		if !requireParam(bc, w, newDefault, param.From.Idx == nil || param.To.Idx == nil, "param error: from.idx and to.idx are required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ci.PlayWasteToFoundation(*param.From.Idx, *param.To.Idx))

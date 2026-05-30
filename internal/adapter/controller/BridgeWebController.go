@@ -145,8 +145,7 @@ func bridgeDispatch(bc *baseController, w http.ResponseWriter, bi usecase.Bridge
 		}
 		bc.writePresenterResponse(w, bi.Bid(bidType, bidLevel, bidSuit))
 	case "p", "play":
-		if param.CardIndex == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: cardIndex is required."))
+		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, bi.Play(*param.CardIndex))

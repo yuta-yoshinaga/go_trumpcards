@@ -143,33 +143,28 @@ func mightyDispatch(bc *baseController, w http.ResponseWriter, mi usecase.Mighty
 	case "r", "reset":
 		bc.writePresenterResponse(w, mi.ResetWithConfig(param.ToConfig()))
 	case "b", "bid":
-		if param.Bid == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: bid is required."))
+		if !requireParam(bc, w, newDefault, param.Bid == nil, "param error: bid is required.") {
 			return true
 		}
 		noTrump := param.NoTrump != nil && *param.NoTrump
 		bc.writePresenterResponse(w, mi.Bid(*param.Bid, noTrump))
 	case "t", "trump":
-		if param.TrumpSuit == nil || param.PartnerSuit == nil || param.PartnerValue == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: trumpSuit, partnerSuit, partnerValue are required."))
+		if !requireParam(bc, w, newDefault, param.TrumpSuit == nil || param.PartnerSuit == nil || param.PartnerValue == nil, "param error: trumpSuit, partnerSuit, partnerValue are required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, mi.DeclareTrumpAndFriend(*param.TrumpSuit, *param.PartnerSuit, *param.PartnerValue))
 	case "e", "exchange":
-		if len(param.DiscardIndices) == 0 {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: discardIndices are required."))
+		if !requireParam(bc, w, newDefault, len(param.DiscardIndices) == 0, "param error: discardIndices are required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, mi.ExchangeKitty(param.DiscardIndices))
 	case "p", "play":
-		if param.CardIndex == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: cardIndex is required."))
+		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, mi.Play(*param.CardIndex))
 	case "jl", "jokerlead":
-		if param.CardIndex == nil || param.JokerLeadSuit == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: cardIndex and jokerLeadSuit are required."))
+		if !requireParam(bc, w, newDefault, param.CardIndex == nil || param.JokerLeadSuit == nil, "param error: cardIndex and jokerLeadSuit are required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, mi.PlayJokerLead(*param.CardIndex, *param.JokerLeadSuit))

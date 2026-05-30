@@ -118,8 +118,7 @@ func euchreDispatch(bc *baseController, w http.ResponseWriter, ei usecase.Euchre
 		goAlone := param.GoAlone != nil && *param.GoAlone
 		bc.writePresenterResponse(w, ei.PickUp(true, goAlone))
 	case "c", "calltrump":
-		if param.Suit == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: suit is required."))
+		if !requireParam(bc, w, newDefault, param.Suit == nil, "param error: suit is required.") {
 			return true
 		}
 		goAlone := param.GoAlone != nil && *param.GoAlone
@@ -127,14 +126,12 @@ func euchreDispatch(bc *baseController, w http.ResponseWriter, ei usecase.Euchre
 	case "pa", "pass":
 		bc.writePresenterResponse(w, ei.Pass())
 	case "d", "discard":
-		if param.CardIndex == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: cardIndex is required."))
+		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ei.Discard(*param.CardIndex))
 	case "p", "play":
-		if param.CardIndex == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: cardIndex is required."))
+		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ei.Play(*param.CardIndex))

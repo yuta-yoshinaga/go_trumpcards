@@ -125,24 +125,21 @@ func pinochleDispatch(bc *baseController, w http.ResponseWriter, pi usecase.Pino
 	case "r", "reset":
 		bc.writePresenterResponse(w, pi.ResetWithConfig(param.ToConfig()))
 	case "b", "bid":
-		if param.BidAmount == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: bidAmount is required."))
+		if !requireParam(bc, w, newDefault, param.BidAmount == nil, "param error: bidAmount is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, pi.Bid(*param.BidAmount))
 	case "pa", "pass":
 		bc.writePresenterResponse(w, pi.Pass())
 	case "t", "trump":
-		if param.Suit == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: suit is required."))
+		if !requireParam(bc, w, newDefault, param.Suit == nil, "param error: suit is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, pi.CallTrump(*param.Suit))
 	case "m", "meld":
 		bc.writePresenterResponse(w, pi.ConfirmMelds())
 	case "p", "play":
-		if param.CardIndex == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: cardIndex is required."))
+		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, pi.Play(*param.CardIndex))

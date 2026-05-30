@@ -60,8 +60,7 @@ func trashDispatch(bc *baseController, w http.ResponseWriter, ti usecase.TrashIn
 	case "d", "draw":
 		bc.writePresenterResponse(w, ti.Draw())
 	case "p", "place", "placeWild":
-		if param.Position == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: position is required."))
+		if !requireParam(bc, w, newDefault, param.Position == nil, "param error: position is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ti.PlaceWild(*param.Position))

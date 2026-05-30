@@ -108,14 +108,12 @@ func heartsDispatch(bc *baseController, w http.ResponseWriter, hi usecase.Hearts
 	case "r", "reset":
 		bc.writePresenterResponse(w, hi.ResetWithConfig(param.ToConfig()))
 	case "pass":
-		if len(param.CardIndices) != 3 {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: pass requires exactly 3 card indices."))
+		if !requireParam(bc, w, newDefault, len(param.CardIndices) != 3, "param error: pass requires exactly 3 card indices.") {
 			return true
 		}
 		bc.writePresenterResponse(w, hi.Pass(param.CardIndices))
 	case "p", "play":
-		if param.CardIndex == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: cardIndex is required."))
+		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, hi.Play(*param.CardIndex))

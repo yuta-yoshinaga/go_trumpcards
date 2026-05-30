@@ -90,8 +90,7 @@ func memoryDispatch(bc *baseController, w http.ResponseWriter, mi usecase.Memory
 	case "r", "reset":
 		bc.writePresenterResponse(w, mi.ResetWithConfig(param.ToConfig()))
 	case "f", "flip":
-		if param.Position == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: position is required."))
+		if !requireParam(bc, w, newDefault, param.Position == nil, "param error: position is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, mi.Flip(*param.Position))

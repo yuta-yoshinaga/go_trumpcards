@@ -61,6 +61,32 @@ func (bc *baseController) writeJsonResponse(w http.ResponseWriter, status int, b
 	}
 }
 
+// requireParam guards a dispatch case against a missing required parameter.
+// When missing is true it writes a 400 Bad Request carrying msg (built via the
+// game-specific newDefault so the response keeps that game's output shape) and
+// returns false; otherwise it returns true and the caller proceeds.
+//
+// This collapses the "if param.X == nil { writeJsonResponse(400, newDefault(
+// msg)); return true }" block that was duplicated across ~240 dispatch cases in
+// 64 *WebController.go files (issue #2102). The condition is passed verbatim as
+// `missing` (no negation at the call site), so multi-field checks like
+// `param.From == nil || param.To == nil` carry over unchanged. The generic O
+// absorbs each game's distinct *WebOutput type. Canonical usage:
+//
+//	if !requireParam(bc, w, newDefault, param.Col == nil, msgColRequired) {
+//		return true
+//	}
+//
+// Returning true from the dispatch case (command was recognized but invalid)
+// matches the previous behavior: the 400 has already been written here.
+func requireParam[O any](bc *baseController, w http.ResponseWriter, newDefault func(string) O, missing bool, msg string) bool {
+	if missing {
+		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault(msg))
+		return false
+	}
+	return true
+}
+
 // execWithSession handles common web controller boilerplate.
 // handler returns true if command was recognized, false for unsupported.
 func execWithSession[P WebInput, T any](

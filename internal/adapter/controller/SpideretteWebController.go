@@ -75,8 +75,7 @@ func spideretteDispatch(bc *baseController, w http.ResponseWriter, si usecase.Sp
 	case "u", "undo":
 		bc.writePresenterResponse(w, si.Undo())
 	case "undo_n":
-		if param.N == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: n is required."))
+		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, si.UndoN(*param.N))
@@ -87,16 +86,13 @@ func spideretteDispatch(bc *baseController, w http.ResponseWriter, si usecase.Sp
 }
 
 func spideretteMoveDispatch(bc *baseController, w http.ResponseWriter, si usecase.SpideretteInteractorIF, param SpideretteWebInput, newDefault func(string) *SpideretteWebOutput) bool {
-	if param.From == nil || param.To == nil {
-		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from and to are required."))
+	if !requireParam(bc, w, newDefault, param.From == nil || param.To == nil, "param error: from and to are required.") {
 		return true
 	}
-	if param.From.Zone != "tableau" || param.To.Zone != "tableau" {
-		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: invalid move zones. Only tableau to tableau is supported."))
+	if !requireParam(bc, w, newDefault, param.From.Zone != "tableau" || param.To.Zone != "tableau", "param error: invalid move zones. Only tableau to tableau is supported.") {
 		return true
 	}
-	if param.From.Col == nil || param.From.CardIndex == nil || param.To.Col == nil {
-		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from.col, from.cardIndex, to.col are required."))
+	if !requireParam(bc, w, newDefault, param.From.Col == nil || param.From.CardIndex == nil || param.To.Col == nil, "param error: from.col, from.cardIndex, to.col are required.") {
 		return true
 	}
 	bc.writePresenterResponse(w, si.MoveTableauToTableau(*param.From.Col, *param.From.CardIndex, *param.To.Col))

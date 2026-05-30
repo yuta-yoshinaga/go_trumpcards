@@ -61,8 +61,7 @@ func newMonteCarloDefaultOutput(msg string) *MonteCarloWebOutput {
 func monteCarloDispatch(bc *baseController, w http.ResponseWriter, mi usecase.MonteCarloInteractorIF, param MonteCarloWebInput, newDefault func(string) *MonteCarloWebOutput) bool {
 	switch param.Command {
 	case "m", "move", "remove":
-		if param.FromR == nil || param.FromC == nil || param.ToR == nil || param.ToC == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: fromR, fromC, toR, toC are required."))
+		if !requireParam(bc, w, newDefault, param.FromR == nil || param.FromC == nil || param.ToR == nil || param.ToC == nil, "param error: fromR, fromC, toR, toC are required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, mi.Remove(*param.FromR, *param.FromC, *param.ToR, *param.ToC))

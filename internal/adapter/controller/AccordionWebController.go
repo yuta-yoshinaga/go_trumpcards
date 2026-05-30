@@ -67,8 +67,7 @@ func accordionDispatch(bc *baseController, w http.ResponseWriter, ai usecase.Acc
 	case "u", "undo":
 		bc.writePresenterResponse(w, ai.Undo())
 	case "undo_n":
-		if param.N == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: n is required."))
+		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ai.UndoN(*param.N))
@@ -79,16 +78,13 @@ func accordionDispatch(bc *baseController, w http.ResponseWriter, ai usecase.Acc
 }
 
 func accordionMoveDispatch(bc *baseController, w http.ResponseWriter, ai usecase.AccordionInteractorIF, param AccordionWebInput, newDefault func(string) *AccordionWebOutput) bool {
-	if param.From == nil || param.To == nil {
-		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from and to are required."))
+	if !requireParam(bc, w, newDefault, param.From == nil || param.To == nil, "param error: from and to are required.") {
 		return true
 	}
-	if param.From.Zone != "pile" || param.To.Zone != "pile" {
-		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: invalid move zones. Only pile to pile is supported."))
+	if !requireParam(bc, w, newDefault, param.From.Zone != "pile" || param.To.Zone != "pile", "param error: invalid move zones. Only pile to pile is supported.") {
 		return true
 	}
-	if param.From.Index == nil || param.To.Index == nil {
-		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from.index and to.index are required."))
+	if !requireParam(bc, w, newDefault, param.From.Index == nil || param.To.Index == nil, "param error: from.index and to.index are required.") {
 		return true
 	}
 	bc.writePresenterResponse(w, ai.Move(*param.From.Index, *param.To.Index))

@@ -75,8 +75,7 @@ func crescentDispatch(bc *baseController, w http.ResponseWriter, ci usecase.Cres
 	case "u", "undo":
 		bc.writePresenterResponse(w, ci.Undo())
 	case "undo_n":
-		if param.N == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: n is required."))
+		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ci.UndoN(*param.N))
@@ -87,8 +86,7 @@ func crescentDispatch(bc *baseController, w http.ResponseWriter, ci usecase.Cres
 }
 
 func crescentMoveDispatch(bc *baseController, w http.ResponseWriter, ci usecase.CrescentInteractorIF, param CrescentWebInput, newDefault func(string) *CrescentWebOutput) bool {
-	if param.From == nil || param.To == nil {
-		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from and to are required."))
+	if !requireParam(bc, w, newDefault, param.From == nil || param.To == nil, "param error: from and to are required.") {
 		return true
 	}
 	fromZone := param.From.Zone
@@ -96,14 +94,12 @@ func crescentMoveDispatch(bc *baseController, w http.ResponseWriter, ci usecase.
 
 	switch {
 	case fromZone == "tableau" && toZone == "tableau":
-		if param.From.Col == nil || param.To.Col == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from.col and to.col are required."))
+		if !requireParam(bc, w, newDefault, param.From.Col == nil || param.To.Col == nil, "param error: from.col and to.col are required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ci.MoveTableauToTableau(*param.From.Col, *param.To.Col))
 	case fromZone == "tableau" && toZone == "foundation":
-		if param.From.Col == nil || param.To.Col == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from.col and to.col are required."))
+		if !requireParam(bc, w, newDefault, param.From.Col == nil || param.To.Col == nil, "param error: from.col and to.col are required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ci.MoveTableauToFoundation(*param.From.Col, *param.To.Col))
