@@ -1,7 +1,6 @@
 /** Card suit design identifier. */
 export type CardDesign = 'SPADE' | 'CLOVER' | 'HEART' | 'DIAMOND' | 'JOKER';
 
-/** A playing card with suit design and numeric value. */
 /**
  * Server response i18n fields common to every game's `*Response` type.
  * Mirrors the Go backend's `WebOutputBase` (internal/adapter/controller/
@@ -14,6 +13,7 @@ export interface BaseGameResponse {
   messageParams?: Record<string, string>;
 }
 
+/** A playing card with suit design and numeric value. */
 export interface Card {
   design: CardDesign;
   value: number;
