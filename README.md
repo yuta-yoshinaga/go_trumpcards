@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した106種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した110種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -119,6 +119,7 @@ Go + Clean Architecture で実装した106種類のトランプゲーム。CLI �
 | カジノホールデム (Casino Hold'em) | `casinoholdem` | [CUI](docs/manual/cui/casinoholdem.md) / [Web](docs/manual/web/casinoholdem.md) |
 | コールブレイク (Call Break) | `callbreak` | [CUI](docs/manual/cui/callbreak.md) / [Web](docs/manual/web/callbreak.md) |
 | ターニーブ (Tarneeb) | `tarneeb` | [CUI](docs/manual/cui/tarneeb.md) / [Web](docs/manual/web/tarneeb.md) |
+| ハイカードフラッシュ (High Card Flush) | `highcardflush` | [CUI](docs/manual/cui/highcardflush.md) / [Web](docs/manual/web/highcardflush.md) |
 | ブリスコラ (Briscola) | `briscola` | [CUI](docs/manual/cui/briscola.md) / [Web](docs/manual/web/briscola.md) |
 | ギャップス (Gaps / Montana) | `gaps` | [CUI](docs/manual/cui/gaps.md) / [Web](docs/manual/web/gaps.md) |
 | フォーカードポーカー (Four Card Poker) | `fourcardpoker` | [CUI](docs/manual/cui/fourcardpoker.md) / [Web](docs/manual/web/fourcardpoker.md) |

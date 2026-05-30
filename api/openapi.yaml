@@ -10094,6 +10094,177 @@ paths:
               schema:
                 $ref: '#/components/schemas/HighCardFlushResponse'
 
+  /sixcardgolf/exec:
+    post:
+      tags:
+        - sixcardgolf
+      summary: Execute a Six Card Golf game command
+      description: |
+        Send a command to advance the Six Card Golf (シックスカードゴルフ) game session
+        identified by `sessionId`. Six Card Golf is a multi-player card game (1 human plus
+        CPU opponents) using a standard 52-card deck. Each player owns a 2x3 grid of six
+        cards and aims for the lowest score over a configurable number of rounds. Aces
+        count 1, 2 counts -2, number cards face value, J/Q count 10, K counts 0, and a
+        matched vertical pair cancels to 0.
+
+        The game proceeds through these phases:
+
+        | Phase       | Value | Description |
+        |-------------|-------|-------------|
+        | Setup       | `0`   | Flip two initial cards in your grid |
+        | PlayerTurn  | `1`   | Choose to draw from the stock or the discard pile |
+        | DrawPending | `2`   | Swap the drawn card into the grid or discard it |
+        | RoundOver   | `3`   | Round complete; scores shown |
+        | GameOver    | `4`   | Match complete; final winner decided |
+
+        | Command       | Aliases | Description |
+        |---------------|---------|-------------|
+        | `reset`       | `r`     | Start / restart a game (accepts optional `config`) |
+        | `flipinitial` | `fi`    | Flip one of the two initial cards (requires `position`) |
+        | `drawstock`   | `ds`    | Draw the top card from the stock pile |
+        | `drawdiscard` | `dd`    | Draw the top card from the discard pile |
+        | `swap`        | `sw`    | Swap the drawn card into a grid slot (requires `position`) |
+        | `discard`     | `di`    | Discard the drawn stock card without swapping |
+        | `flip`        | `fl`    | Flip a face-down grid card (requires `position`) |
+        | `skipflip`    | `sf`    | Skip the optional flip |
+        | `nextround`   | `nr`    | Advance to the next round |
+        | `log`         | `l`     | View action log |
+      operationId: sixcardgolfExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, flipinitial, fi, drawstock, ds, drawdiscard, dd, swap, sw, discard, di, flip, fl, skipflip, sf, nextround, nr, log, l]
+                position:
+                  type: integer
+                  description: Grid slot index (0-5) for flipinitial, swap, and flip commands
+                config:
+                  type: object
+                  description: Optional game configuration (used with reset)
+                  properties:
+                    playerCount:
+                      type: integer
+                      description: Number of players (2-4)
+                    cpuDifficulty:
+                      type: integer
+                      description: CPU difficulty (0=Easy, 1=Normal, 2=Hard)
+                    rounds:
+                      type: integer
+                      description: Number of rounds to play (1-18)
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              flipinitial:
+                summary: Flip an initial card
+                value:
+                  command: flipinitial
+                  position: 0
+                  sessionId: my-session-001
+              drawstock:
+                summary: Draw from the stock pile
+                value:
+                  command: drawstock
+                  sessionId: my-session-001
+              swap:
+                summary: Swap the drawn card into the grid
+                value:
+                  command: swap
+                  position: 3
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        isHuman:
+                          type: boolean
+                        grid:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              card:
+                                $ref: '#/components/schemas/Card'
+                              faceUp:
+                                type: boolean
+                        roundScore:
+                          type: integer
+                        cumulativeScore:
+                          type: integer
+                        allFaceUp:
+                          type: boolean
+                  phase:
+                    type: integer
+                  roundNumber:
+                    type: integer
+                  totalRounds:
+                    type: integer
+                  currentPlayerIdx:
+                    type: integer
+                  discardTop:
+                    $ref: '#/components/schemas/Card'
+                  drawPileCount:
+                    type: integer
+                  drawnCard:
+                    $ref: '#/components/schemas/Card'
+                  drawnFromDiscard:
+                    type: boolean
+                  canFlip:
+                    type: boolean
+                  finalTurnTrigger:
+                    type: integer
+                  gameEndFlag:
+                    type: boolean
+                  winnerIdx:
+                    type: integer
+                  config:
+                    type: object
+                    properties:
+                      playerCount:
+                        type: integer
+                      cpuDifficulty:
+                        type: integer
+                      rounds:
+                        type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
   /doudizhu/exec:
     post:
       tags:
