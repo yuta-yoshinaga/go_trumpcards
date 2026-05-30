@@ -78,6 +78,14 @@ func init() {
 			return usecase.RestorePineappleInteractor(data, new(presenter.PineappleWebPresenter))
 		},
 		controller.NewPineappleWebControllerWithProvider)
+	games.RegisterKVGame("irishpoker", games.CategoryCasino,
+		func() usecase.PineappleInteractorIF {
+			return usecase.NewPineappleInteractor(domain.NewDefaultIrishPoker(), new(presenter.PineappleWebPresenter))
+		},
+		func(data []byte) (usecase.PineappleInteractorIF, error) {
+			return usecase.RestorePineappleInteractor(data, new(presenter.PineappleWebPresenter))
+		},
+		controller.NewPineappleWebControllerWithProvider)
 	games.RegisterKVGame("baccarat", games.CategoryCasino,
 		func() usecase.BaccaratInteractorIF {
 			return usecase.NewBaccaratInteractor(domain.NewDefaultBaccarat(), new(presenter.BaccaratWebPresenter))
@@ -278,4 +286,12 @@ func init() {
 			return usecase.RestoreRussianPokerInteractor(data, new(presenter.RussianPokerWebPresenter))
 		},
 		controller.NewRussianPokerWebControllerWithProvider)
+	games.RegisterKVGame("chinesepoker", games.CategoryCasino,
+		func() usecase.ChinesePokerInteractorIF {
+			return usecase.NewChinesePokerInteractor(domain.NewDefaultChinesePoker(), new(presenter.ChinesePokerWebPresenter))
+		},
+		func(data []byte) (usecase.ChinesePokerInteractorIF, error) {
+			return usecase.RestoreChinesePokerInteractor(data, new(presenter.ChinesePokerWebPresenter))
+		},
+		controller.NewChinesePokerWebControllerWithProvider)
 }

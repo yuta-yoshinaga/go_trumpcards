@@ -779,7 +779,11 @@ export interface HoldemHandOdds {
 export interface PineappleResponse extends HoldemResponse {
   isDiscardPhase: boolean;
   discardDone: boolean[];
+  initialDealCount: number;
 }
+
+/** Irish Poker shares the same response shape as Pineapple. */
+export type IrishPokerResponse = PineappleResponse;
 
 // --- Omaha Hold'em ---
 // Omaha shares identical response/player structures with Holdem
@@ -2559,6 +2563,38 @@ export interface PaiGowResponse {
   messageParams?: Record<string, string>;
 }
 
+/** Chinese Poker game state response. */
+export interface ChinesePokerResponse {
+  playerCards: Card[];
+  dealerCards: Card[];
+  playerFront: Card[];
+  playerMiddle: Card[];
+  playerBack: Card[];
+  dealerFront: Card[];
+  dealerMiddle: Card[];
+  dealerBack: Card[];
+  phase: number;
+  chips: number;
+  bet: number;
+  result: number;
+  frontResult: number;
+  middleResult: number;
+  backResult: number;
+  payout: number;
+  playerFrontRank: number;
+  playerMiddleRank: number;
+  playerBackRank: number;
+  dealerFrontRank: number;
+  dealerMiddleRank: number;
+  dealerBackRank: number;
+  playerRoyalty: number;
+  dealerRoyalty: number;
+  scoop: boolean;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
 /** Speed player data with hand and draw pile info. */
 export interface SpeedPlayerData {
   id: number;
@@ -2925,6 +2961,38 @@ export interface GolfResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
   hint?: GolfHint;
+}
+
+// --- Aces Up (四つ葉のクローバー) ---
+
+/** A card in an Aces Up column with action availability flags. */
+export interface AcesUpCard {
+  card: Card;
+  top: boolean;
+  removable: boolean;
+  movable: boolean;
+}
+
+/** A suggested hint in Aces Up. */
+export interface AcesUpHint {
+  type: 'remove' | 'move' | 'draw';
+  col: number;
+}
+
+/** Full Aces Up game state returned from the API. */
+export interface AcesUpResponse {
+  columns: AcesUpCard[][];
+  stockCount: number;
+  discardCount: number;
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: AcesUpHint;
 }
 
 // --- Pig's Tail ---
@@ -3581,6 +3649,77 @@ export interface BriscolaResponse {
   messageParams?: Record<string, string>;
   config: BriscolaConfig;
   hint?: BriscolaHint;
+}
+
+// --- Truco (トゥルコ) ---
+
+/** Truco player data with per-hand baza (trick) count. */
+export interface TrucoPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  trickCount: number;
+}
+
+/** A card played in a Truco baza (trick). */
+export interface TrucoTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Truco game configuration. */
+export interface TrucoConfig {
+  cpuDifficulty: number;
+  matchTarget: number;
+}
+
+/** A suggested hint for Truco (action is play / call / accept / decline). */
+export interface TrucoHint {
+  action: string;
+  cardIndex?: number;
+  reason: string;
+}
+
+/** Full Truco game state returned from the API. */
+export interface TrucoResponse {
+  players: TrucoPlayerData[];
+  phase: number;
+  handNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  /** Player who must respond to a pending Truco call; -1 when not awaiting a response. */
+  responderIdx: number;
+  currentTrick: TrucoTrickCard[];
+  /** Outcome of each completed baza this hand: 0/1 = winner, -1 = parda (tie). */
+  trickResults: number[];
+  leadPlayerIdx: number;
+  manoIdx: number;
+  dealerIdx: number;
+  /** Current agreed stake for the hand (1..4). */
+  handStake: number;
+  /** Accepted betting level (0=none, 1=Truco, 2=Retruco, 3=Vale Cuatro). */
+  acceptedLevel: number;
+  /** Proposed level while awaiting a response (0 otherwise). */
+  pendingLevel: number;
+  /** Index of the player whose Truco call is pending (-1 otherwise). */
+  trucoCallerIdx: number;
+  /** Whether the human may declare / raise Truco right now. */
+  canDeclareTruco: boolean;
+  /** Points needed to win the match. */
+  matchTarget: number;
+  /** Cumulative match points [p0, p1]. */
+  matchPoints: number[];
+  /** Winner of the most recent hand (-1 = unresolved). */
+  handWinnerIdx: number;
+  gameEndFlag: boolean;
+  /** -1 = unfinished. */
+  winnerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: TrucoConfig;
+  hint?: TrucoHint;
 }
 
 // --- Poker Squares (ポーカー・スクエア) ---
@@ -4362,6 +4501,50 @@ export interface GapsResponse {
 
 // --- Four Card Poker (フォーカードポーカー) ---
 
+/** Six Card Golf grid slot. */
+export interface SixCardGolfSlot {
+  card: Card | null;
+  faceUp: boolean;
+}
+
+/** Six Card Golf player data. */
+export interface SixCardGolfPlayerData {
+  id: number;
+  isHuman: boolean;
+  grid: SixCardGolfSlot[];
+  roundScore: number;
+  cumulativeScore: number;
+  allFaceUp: boolean;
+}
+
+/** Six Card Golf game config. */
+export interface SixCardGolfConfig {
+  playerCount: number;
+  cpuDifficulty: number;
+  rounds: number;
+}
+
+/** Six Card Golf API response. */
+export interface SixCardGolfResponse {
+  players: SixCardGolfPlayerData[];
+  phase: number;
+  roundNumber: number;
+  totalRounds: number;
+  currentPlayerIdx: number;
+  discardTop: Card | null;
+  drawPileCount: number;
+  drawnCard: Card | null;
+  drawnFromDiscard: boolean;
+  canFlip: boolean;
+  finalTurnTrigger: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: SixCardGolfConfig;
+}
+
 /** Four Card Poker API response. */
 export interface FourCardPokerResponse {
   /** Player's 5-card hand. */
@@ -4387,6 +4570,50 @@ export interface FourCardPokerResponse {
   totalPayout: number;
   playerHandRank: number;
   dealerHandRank: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
+/** Dou Dizhu player action record. */
+export interface DoudizhuAction {
+  playerIdx: number;
+  playedCards: Card[] | null;
+  bidValue: number;
+}
+
+/** Dou Dizhu player data. */
+export interface DoudizhuPlayerData {
+  id: number;
+  isHuman: boolean;
+  isFinished: boolean;
+  isLandlord: boolean;
+  cardCount: number;
+  cards: Card[];
+}
+
+/** Dou Dizhu config. */
+export interface DoudizhuConfig {
+  cpuDifficulty: number;
+}
+
+/** Dou Dizhu API response. */
+export interface DoudizhuResponse {
+  players: DoudizhuPlayerData[];
+  phase: string;
+  currentTurn: number;
+  tableCards: Card[];
+  tableCombo: string;
+  kittyCards: Card[];
+  landlordIdx: number;
+  baseBid: number;
+  highestBid: number;
+  bombCount: number;
+  scores: number[];
+  gameEndFlag: boolean;
+  config: DoudizhuConfig;
+  cpuActions: DoudizhuAction[];
+  humanAction: DoudizhuAction | null;
   message: string;
   messageCode?: string;
   messageParams?: Record<string, string>;

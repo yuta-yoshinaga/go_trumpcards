@@ -327,4 +327,28 @@ func init() {
 			return usecase.RestoreBriscolaInteractor(data, new(presenter.BriscolaWebPresenter))
 		},
 		controller.NewBriscolaWebControllerWithProvider)
+	games.RegisterKVGame("sixcardgolf", games.CategoryClassic,
+		func() usecase.SixCardGolfInteractorIF {
+			return usecase.NewSixCardGolfInteractor(domain.NewDefaultSixCardGolf(), new(presenter.SixCardGolfWebPresenter))
+		},
+		func(data []byte) (usecase.SixCardGolfInteractorIF, error) {
+			return usecase.RestoreSixCardGolfInteractor(data, new(presenter.SixCardGolfWebPresenter))
+		},
+		controller.NewSixCardGolfWebControllerWithProvider)
+	games.RegisterKVGame("doudizhu", games.CategoryClassic,
+		func() usecase.DoudizhuInteractorIF {
+			return usecase.NewDoudizhuInteractor(domain.NewDefaultDoudizhu(), new(presenter.DoudizhuWebPresenter))
+		},
+		func(data []byte) (usecase.DoudizhuInteractorIF, error) {
+			return usecase.RestoreDoudizhuInteractor(data, new(presenter.DoudizhuWebPresenter))
+		},
+		controller.NewDoudizhuWebControllerWithProvider)
+	games.RegisterKVGame("truco", games.CategoryClassic,
+		func() usecase.TrucoInteractorIF {
+			return usecase.NewTrucoInteractor(domain.NewDefaultTruco(), new(presenter.TrucoWebPresenter))
+		},
+		func(data []byte) (usecase.TrucoInteractorIF, error) {
+			return usecase.RestoreTrucoInteractor(data, new(presenter.TrucoWebPresenter))
+		},
+		controller.NewTrucoWebControllerWithProvider)
 }

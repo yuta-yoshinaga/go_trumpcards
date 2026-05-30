@@ -1,0 +1,17 @@
+{
+  "helpTitle": "斗地主",
+  "helpPlay": "  p [idx...]           カードを出す (空=パス)",
+  "helpBid": "  b [0-3]              ビッド (0=パス, 1-3=ビッド値)",
+  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=通常, 1=簡単, 2=難しい)",
+  "phaseBid": "ビッドフェーズ",
+  "phasePlay": "プレイフェーズ",
+  "gameEnd": "ゲーム終了",
+  "landlord": "地主",
+  "peasant": "農民",
+  "you": "あなた",
+  "highestBid": "最高ビッド",
+  "kittyCards": "底牌",
+  "tableCards": "場",
+  "playerFinished": " (上がり)",
+  "playerCardCount": " ({{count}}枚)"
+}

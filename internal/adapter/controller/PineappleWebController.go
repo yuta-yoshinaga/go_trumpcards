@@ -24,8 +24,9 @@ type PineappleWebInput struct {
 // HoldemWebOutput を埋め込み、Pineapple 固有フィールドのみ追加する。
 type PineappleWebOutput struct {
 	HoldemWebOutput
-	IsDiscardPhase bool   `json:"isDiscardPhase"`
-	DiscardDone    []bool `json:"discardDone"`
+	IsDiscardPhase   bool   `json:"isDiscardPhase"`
+	DiscardDone      []bool `json:"discardDone"`
+	InitialDealCount int    `json:"initialDealCount"`
 }
 
 // ToConfig builds a PineappleConfig from the web input.

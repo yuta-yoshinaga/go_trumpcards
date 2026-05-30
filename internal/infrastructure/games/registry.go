@@ -5,7 +5,7 @@
 // binaries (TinyGo / WASM) stay under the 1 MB gzipped free-tier limit:
 //
 //   - registry.go (this file, no tag)  — types and bare metadata (Name +
-//     Category) for all 104 games. Cheap; no references to game code.
+//     Category) for all 106 games. Cheap; no references to game code.
 //   - games_server.go (!js || !wasm)   — installs Web-server factories for
 //     every game via BindWebController. Imported by TrumpCardsWeb.
 //   - casino/, classic/, solo/ (js && wasm) — per-category worker bindings.
@@ -99,6 +99,7 @@ var registry = []*Game{
 	{Name: "shortdeck", Category: CategoryCasino, Description: "Short Deck (6+ Hold'em) (ショートデック)"},
 	{Name: "pineapple", Category: CategoryCasino, Description: "Pineapple Poker (パイナップルポーカー)"},
 	{Name: "crazypineapple", Category: CategoryCasino, Description: "Crazy Pineapple Poker (クレイジーパイナップル)"},
+	{Name: "irishpoker", Category: CategoryCasino, Description: "Irish Poker (アイリッシュポーカー)"},
 	{Name: "hearts", Category: CategoryClassic, Description: "Hearts (ハーツ)"},
 	{Name: "memory", Category: CategorySolo, Description: "Memory / Concentration (神経衰弱)"},
 	{Name: "klondike", Category: CategorySolo, Description: "Klondike Solitaire (ソリティア)"},
@@ -190,6 +191,11 @@ var registry = []*Game{
 	{Name: "eightoff", Category: CategorySolo, Description: "Eight Off (エイトオフ)"},
 	{Name: "russianpoker", Category: CategoryCasino, Description: "Russian Poker (ロシアンポーカー)"},
 	{Name: "penguin", Category: CategorySolo, Description: "Penguin (ペンギン)"},
+	{Name: "chinesepoker", Category: CategoryCasino, Description: "Chinese Poker (チャイニーズポーカー)"},
+	{Name: "sixcardgolf", Category: CategoryClassic, Description: "Six Card Golf (シックスカードゴルフ)"},
+	{Name: "doudizhu", Category: CategoryClassic, Description: "Dou Dizhu / Fight the Landlord (斗地主)"},
+	{Name: "truco", Category: CategoryClassic, Description: "Truco (トゥルコ)"},
+	{Name: "acesup", Category: CategorySolo, Description: "Aces Up (四つ葉のクローバー)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

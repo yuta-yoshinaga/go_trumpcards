@@ -1,0 +1,55 @@
+{
+  "title": "斗地主",
+  "label": {
+    "landlord": "地主",
+    "peasant": "農民",
+    "kitty": "底牌",
+    "table": "場",
+    "bid": "ビッド",
+    "pass": "パス",
+    "play": "プレイ",
+    "score": "スコア",
+    "bombs": "爆弾"
+  },
+  "button": {
+    "bid1": "1で叫ぶ",
+    "bid2": "2で叫ぶ",
+    "bid3": "3で叫ぶ",
+    "pass": "パス",
+    "play": "出す",
+    "reset": "新しいゲーム"
+  },
+  "phase": {
+    "bid": "ビッド",
+    "play": "プレイ",
+    "end": "結果"
+  },
+  "message": {
+    "yourTurnBid": "あなたのビッド番です",
+    "yourTurnPlay": "あなたのプレイ番です",
+    "mustPlay": "リードなのでカードを出してください",
+    "waiting": "待機中..."
+  },
+  "result": {
+    "landlordWins": "地主の勝利！",
+    "peasantsWin": "農民の勝利！",
+    "summary": "{{summary}}"
+  },
+  "settings": {
+    "difficulty": "CPU難易度",
+    "easy": "簡単",
+    "normal": "通常",
+    "hard": "難しい"
+  },
+  "tutorial": {
+    "intro": "斗地主へようこそ！1人が地主となり、2人の農民と対戦します。",
+    "bidPhase": "1〜3でビッドして地主になるか、パスします。最高入札者が底牌を獲得します。",
+    "playPhase": "役を出して手札を先になくしましょう。爆弾とロケットは何でも倒せます！",
+    "combos": "単張、対子、三条、順子、連対、飛機 — 役を覚えて勝利を掴もう！"
+  },
+  "hintReason": {
+    "playLowest": "弱いカードから出して強いカードを温存",
+    "bomb": "爆弾で場を制する",
+    "pass": "パス — 強いカードを温存"
+  }
+}

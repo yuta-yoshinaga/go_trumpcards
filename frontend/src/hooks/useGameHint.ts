@@ -23,6 +23,7 @@ import type {
   CruelResponse,
   DaifugoResponse,
   DoubtResponse,
+  DoudizhuResponse,
   DragonTigerResponse,
   DurakResponse,
   EgyptianRatscrewResponse,
@@ -70,6 +71,7 @@ import type {
   SevensResponse,
   ShitheadResponse,
   ShortDeckResponse,
+  SixCardGolfResponse,
   SkatResponse,
   SlapjackResponse,
   SpadesResponse,
@@ -115,6 +117,7 @@ import { getCruelHint } from '../utils/hints/cruelHint';
 import { getDaifugoHint } from '../utils/hints/daifugoHint';
 import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
 import { getDoubtHint } from '../utils/hints/doubtHint';
+import { getDoudizhuHint } from '../utils/hints/doudizhuHint';
 import { getDragontigerHint } from '../utils/hints/dragontigerHint';
 import { getDurakHint } from '../utils/hints/durakHint';
 import { getEgyptianRatscrewHint } from '../utils/hints/egyptianratscrewHint';
@@ -130,6 +133,7 @@ import { getHeartsHint } from '../utils/hints/heartsHint';
 import { getHighCardFlushHint } from '../utils/hints/highcardflushHint';
 import { getHoldemHint } from '../utils/hints/holdemHint';
 import { getIndianPokerHint } from '../utils/hints/indianpokerHint';
+import { getIrishPokerHint } from '../utils/hints/irishPokerHint';
 import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
 import { getKlondikeHint } from '../utils/hints/klondikeHint';
 import { getLetitrideHint } from '../utils/hints/letitrideHint';
@@ -164,6 +168,7 @@ import { getSevenbridgeHint } from '../utils/hints/sevenbridgeHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
 import { getShitheadHint } from '../utils/hints/shitheadHint';
 import { getShortDeckHint } from '../utils/hints/shortdeckHint';
+import { getSixcardgolfHint } from '../utils/hints/sixcardgolfHint';
 import { getSkatHint } from '../utils/hints/skatHint';
 import { getSlapjackHint } from '../utils/hints/slapjackHint';
 import { getSpadesHint } from '../utils/hints/spadesHint';
@@ -204,6 +209,7 @@ const hintFactories = {
   shortdeck: (s) => getShortDeckHint(s as ShortDeckResponse),
   pineapple: (s) => getPineappleHint(s as PineappleResponse),
   crazypineapple: (s) => getCrazyPineappleHint(s as PineappleResponse),
+  irishpoker: (s) => getIrishPokerHint(s as PineappleResponse),
   videopoker: (s) => getVideoPokerHint(s as VideoPokerResponse),
   deuceswild: (s) => getDeucesWildHint(s as VideoPokerResponse),
   jokerpoker: (s) => getJokerPokerHint(s as VideoPokerResponse),
@@ -253,6 +259,7 @@ const hintFactories = {
   beleagueredcastle: (s) => getBeleagueredcastleHint(s as BeleagueredCastleResponse),
   tonk: () => null,
   paigow: () => null,
+  chinesepoker: () => null,
   pageone: (s) => getPageOneHint(s as PageOneResponse),
   pigtail: (s) => getPigstailHint(s as PigsTailResponse),
   pokersquares: (s) => getPokersquaresHint(s as PokerSquaresResponse),
@@ -288,6 +295,8 @@ const hintFactories = {
   fourcardpoker: (s) => getFourCardPokerHint(s as FourCardPokerResponse),
   rummy500: (s) => getRummy500Hint(s as Rummy500Response),
   russianpoker: (s) => getRussianPokerHint(s as RussianPokerResponse),
+  sixcardgolf: (s) => getSixcardgolfHint(s as SixCardGolfResponse),
+  doudizhu: (s) => getDoudizhuHint(s as DoudizhuResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

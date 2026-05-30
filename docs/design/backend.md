@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全104ゲーム)](#12-ゲームドメイン-全104ゲーム)
+  - [1.2 ゲームドメイン (全110ゲーム)](#12-ゲームドメイン-全110ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -151,7 +151,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全104ゲーム)
+### 1.2 ゲームドメイン (全110ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -1683,7 +1683,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全104ゲーム共通)**
+**Interactor パターン (全110ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -1755,8 +1755,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "104ゲーム × CUI/Web = 208 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
-    note for GameCuiPresenter "104ゲーム × CUI/Web = 208 Presenter 実装"
+    note for GameCuiController "110ゲーム × CUI/Web = 220 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
+    note for GameCuiPresenter "110ゲーム × CUI/Web = 220 Presenter 実装"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -3582,4 +3582,46 @@ stateDiagram-v2
     note right of End : RussianPokerPhaseEnd = 6\n配当計算・結果表示
 ```
 
+### 3.55 Doudizhu フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Bid : Reset()
+    Bid --> Bid : PlayerBid/CpuBid (継続)
+    Bid --> Play : 地主決定 (底牌獲得)
+    Bid --> Bid : 全員パス (再配布)
+    Play --> Play : PlayerPlay/CpuPlay
+    Play --> End : 手札を出し切る
+    End --> [*]
+
+    note right of Bid : DoudizhuPhaseBid = 0\n0=パス 1-3=ビッド 最高入札者が地主に
+    note right of Play : DoudizhuPhasePlay = 1\n役を出す/パス ボム・ロケットは何でも倒せる
+    note right of End : DoudizhuPhaseEnd = 2\nスコア計算 (baseBid x 2^bombCount)
+```
+
 **注:** OldMaid・Daifugo・Sevens・President はターン制で進行する手札削り系のため、明示的なフェーズ定数を持ちません (currentTurn が巡回し、全プレイヤーの手札が 0 枚またはランクが確定するまで進行)。
+
+### 3.56 Truco フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Play : Reset() / dealHand()
+    Play --> Respond : DeclareTruco()
+    Play --> TrickEnd : バサ完了 (2枚出揃う)
+    Respond --> Play : RespondTruco(accept)
+    Respond --> Respond : DeclareTruco() (再引き上げ)
+    Respond --> HandEnd : RespondTruco(decline)
+    TrickEnd --> Play : Next() (次のバサ)
+    TrickEnd --> HandEnd : Next() (マノ決着)
+    HandEnd --> Play : Next() (次マノ配布)
+    HandEnd --> GameEnd : Next() (設定点到達)
+    GameEnd --> [*]
+
+    note right of Play : TrucoPhasePlay = 0\nカードを出すか Truco を宣言
+    note right of Respond : TrucoPhaseRespond = 1\n受諾(Quiero)/拒否(No Quiero)/再引き上げ
+    note right of TrickEnd : TrucoPhaseTrickEnd = 2\nバサ勝者を記録 (同強は parda)
+    note right of HandEnd : TrucoPhaseHandEnd = 3\n賭け点を加算 (Truco=2 Retruco=3 ValeCuatro=4)
+    note right of GameEnd : TrucoPhaseGameEnd = 4\n設定点 (既定15) 先取で勝利
+```
+
+**注:** Truco は 1 マノ = 最大 3 バサの best-of-2、`resolveMano` がパルダ (引き分け) を含む勝者判定を行う。マッチは複数マノにまたがり、`playerMatchPoints` に賭け点を累積する。`Truco.go` のドメインは Briscola のトリック進行を流用しつつ、Respond フェーズ (ベッティング割り込み) を追加している。

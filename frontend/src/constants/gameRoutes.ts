@@ -143,6 +143,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [4, 2, 5, 1], skill: [2, 4, 5, 1], social: [3, 5, 2, 2, 4], theme: [4, 1, 1, 3, 3, 2] },
       },
       {
+        path: '/chinesepoker',
+        labelKey: 'nav.chinesepoker',
+        icon: '🐉',
+        page: 'ChinesePoker',
+        profile: { mood: [4, 2, 5, 1], skill: [1, 5, 5, 1], social: [3, 5, 2, 2, 4], theme: [4, 1, 1, 3, 4, 2] },
+      },
+      {
         path: '/letitride',
         labelKey: 'nav.letitride',
         icon: '🎰',
@@ -252,6 +259,13 @@ export const gameCategories: readonly GameCategory[] = [
         icon: '🤪',
         page: 'CrazyPineapple',
         profile: { mood: [1, 5, 3, 3], skill: [2, 4, 4, 2], social: [1, 3, 5, 3, 3], theme: [3, 1, 2, 1, 3, 1] },
+      },
+      {
+        path: '/irishpoker',
+        labelKey: 'nav.irishpoker',
+        icon: '🍀',
+        page: 'IrishPoker',
+        profile: { mood: [1, 5, 4, 3], skill: [2, 4, 5, 2], social: [1, 3, 5, 3, 4], theme: [3, 1, 2, 1, 3, 1] },
       },
       {
         path: '/sevencardstud',
@@ -539,6 +553,27 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [3, 4, 2, 4], skill: [5, 2, 1, 5], social: [0, 2, 5, 4, 2], theme: [2, 2, 3, 3, 3, 3] },
       },
       {
+        path: '/sixcardgolf',
+        labelKey: 'nav.sixcardgolf',
+        icon: '⛳',
+        page: 'SixCardGolf',
+        profile: { mood: [3, 3, 4, 3], skill: [3, 4, 4, 3], social: [0, 3, 5, 4, 3], theme: [2, 2, 3, 3, 2, 3] },
+      },
+      {
+        path: '/doudizhu',
+        labelKey: 'nav.doudizhu',
+        icon: '🏠',
+        page: 'Doudizhu',
+        profile: { mood: [2, 5, 3, 3], skill: [3, 5, 4, 2], social: [0, 2, 5, 3, 4], theme: [2, 2, 2, 5, 2, 3] },
+      },
+      {
+        path: '/truco',
+        labelKey: 'nav.truco',
+        icon: '🃏',
+        page: 'Truco',
+        profile: { mood: [2, 5, 4, 3], skill: [2, 4, 4, 2], social: [0, 4, 4, 3, 4], theme: [4, 4, 2, 1, 4, 2] },
+      },
+      {
         path: '/spiteandmalice',
         labelKey: 'nav.spiteandmalice',
         icon: '😈',
@@ -667,6 +702,13 @@ export const gameCategories: readonly GameCategory[] = [
         icon: '⛳',
         page: 'Golf',
         profile: { mood: [5, 2, 2, 5], skill: [5, 3, 2, 5], social: [5, 1, 0, 5, 2], theme: [3, 2, 3, 2, 3, 3] },
+      },
+      {
+        path: '/acesup',
+        labelKey: 'nav.acesup',
+        icon: '🍀',
+        page: 'AcesUp',
+        profile: { mood: [5, 2, 2, 5], skill: [5, 2, 1, 5], social: [5, 1, 0, 5, 2], theme: [3, 2, 3, 2, 3, 3] },
       },
       {
         path: '/memory',

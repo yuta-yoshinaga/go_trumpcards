@@ -552,6 +552,13 @@ export const GolfPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Aces Up phase constants (sync: internal/domain/AcesUp.go). */
+export const AcesUpPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Seven Card Stud phase constants (sync: internal/domain/SevenCardStud.go). */
 export const SevenCardStudPhase = {
   INIT: 0,
@@ -581,6 +588,13 @@ export const ClockSolitairePhase = {
 
 /** Pai Gow Poker phase constants (sync: internal/domain/PaiGow.go). */
 export const PaiGowPhase = {
+  BET: 1,
+  SET_HANDS: 2,
+  END: 3,
+} as const;
+
+/** Chinese Poker phase constants (sync: internal/domain/ChinesePoker.go). */
+export const ChinesePokerPhase = {
   BET: 1,
   SET_HANDS: 2,
   END: 3,
@@ -674,6 +688,15 @@ export const BriscolaPhase = {
   PLAY: 0,
   TRICK_END: 1,
   GAME_END: 2,
+} as const;
+
+/** Truco phase constants (sync: internal/domain/Truco.go). */
+export const TrucoPhase = {
+  PLAY: 0,
+  RESPOND: 1,
+  TRICK_END: 2,
+  HAND_END: 3,
+  GAME_END: 4,
 } as const;
 
 /** Let It Ride phase constants (sync: internal/domain/LetItRide.go). */

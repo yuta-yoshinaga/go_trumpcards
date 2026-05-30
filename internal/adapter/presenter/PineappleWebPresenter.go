@@ -21,9 +21,10 @@ func (pp *PineappleWebPresenter) buildOutput(p interfaces.PineappleGame, lastErr
 	base.Players = buildPokerPlayersOutput(p.GetPhase(), p.GetPlayerCnt(), func(i int) communityCardPresenterPlayer { return p.GetPlayer(i) }, domain.PineapplePhaseShowdown, domain.PineapplePhaseEnd, pokerHandName)
 	base.Message, base.MessageCode, base.MessageParams = pp.buildMessage(p, lastErr)
 	return &controller.PineappleWebOutput{
-		HoldemWebOutput: *base,
-		IsDiscardPhase:  p.IsDiscardPhase(),
-		DiscardDone:     p.GetDiscardDone(),
+		HoldemWebOutput:  *base,
+		IsDiscardPhase:   p.IsDiscardPhase(),
+		DiscardDone:      p.GetDiscardDone(),
+		InitialDealCount: p.GetInitialDealCount(),
 	}
 }
 

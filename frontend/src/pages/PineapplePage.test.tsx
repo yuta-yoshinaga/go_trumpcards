@@ -101,6 +101,7 @@ const initState: PineappleResponse = {
   muckAvailable: false,
   isDiscardPhase: false,
   discardDone: [],
+  initialDealCount: 3,
 };
 
 /** PRE_FLOP (phase 1): human's turn, no outstanding bet */

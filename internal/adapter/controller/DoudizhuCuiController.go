@@ -1,0 +1,58 @@
+package controller
+
+import (
+	"strconv"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
+)
+
+// DoudizhuCuiController 斗地主CUIコントローラークラス
+type DoudizhuCuiController struct {
+	dgi usecase.DoudizhuInteractorIF
+}
+
+// NewDoudizhuCuiController コンストラクタ
+func NewDoudizhuCuiController(dgi usecase.DoudizhuInteractorIF) *DoudizhuCuiController {
+	return &DoudizhuCuiController{dgi: dgi}
+}
+
+// Exec CUIコマンドを実行する
+func (c *DoudizhuCuiController) Exec(command string) string {
+	return execCuiCommand(
+		command,
+		func(_ []string) string {
+			cfg := c.dgi.GetConfig()
+			return c.dgi.ResetWithConfig(cfg)
+		},
+		[]string{
+			"p", "play", "b", "bid", "sd", "setdifficulty",
+			"log", "l",
+		},
+		func(cmd string, args []string) (string, bool) {
+			switch cmd {
+			case "p", "play":
+				indices, skipped := cuiutil.ParseIntSlice(args)
+				return cuiutil.PrependSkippedWarning(c.dgi.Play(indices), skipped), true
+			case "b", "bid":
+				if len(args) == 0 {
+					return c.dgi.Bid(0), true
+				}
+				v, err := strconv.Atoi(args[0])
+				if err != nil || v < 0 || v > domain.DoudizhuMaxBid {
+					return "Invalid bid value. Please enter 0-3 (0=pass).", true
+				}
+				return c.dgi.Bid(v), true
+			case "sd", "setdifficulty":
+				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Normal, 1=Easy, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+					cfg := c.dgi.GetConfig()
+					cfg.CpuDifficulty = domain.DoudizhuCpuDifficulty(v)
+					return c.dgi.ResetWithConfig(cfg)
+				})
+			default:
+				return handleCuiLog(cmd, c.dgi.ActionLog)
+			}
+		},
+	)
+}

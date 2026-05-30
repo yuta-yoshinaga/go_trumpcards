@@ -1,0 +1,66 @@
+{
+  "title": "Chinese Poker",
+  "label": {
+    "chips": "Chips",
+    "bet": "Bet",
+    "front": "Front (3 cards)",
+    "middle": "Middle (5 cards)",
+    "back": "Back (5 cards)",
+    "playerRoyalty": "Player Royalty",
+    "dealerRoyalty": "Dealer Royalty",
+    "scoop": "Scoop",
+    "payout": "Payout"
+  },
+  "button": {
+    "bet": "Bet",
+    "set": "Set",
+    "reset": "Next Game"
+  },
+  "phase": {
+    "bet": "Bet",
+    "setHands": "Set Hands",
+    "end": "Result"
+  },
+  "result": {
+    "playerWins": "Player wins!",
+    "playerScoop": "Player scoop!",
+    "dealerWins": "Dealer wins!",
+    "dealerScoop": "Dealer scoop!"
+  },
+  "frontRank": {
+    "0": "",
+    "1": "High Card",
+    "2": "Pair",
+    "3": "Flush",
+    "4": "Straight",
+    "5": "Three of a Kind",
+    "6": "Straight Flush"
+  },
+  "fiveCardRank": {
+    "0": "High Card",
+    "1": "One Pair",
+    "2": "Two Pair",
+    "3": "Three of a Kind",
+    "4": "Straight",
+    "5": "Flush",
+    "6": "Full House",
+    "7": "Four of a Kind",
+    "8": "Straight Flush",
+    "9": "Royal Flush"
+  },
+  "hintReason": {},
+  "settings": {
+    "title": "Settings"
+  },
+  "betGuide": "Enter your bet amount",
+  "selectCards": "Select 3 cards for Front and 5 cards for Middle",
+  "selectedFront": "Front: {{count}} / 3",
+  "selectedMiddle": "Middle: {{count}} / 5",
+  "foulWarning": "Foul: Hands must be arranged so that Back ≧ Middle ≧ Front",
+  "royalty": "Royalty: +{{points}}",
+  "tutorial": {
+    "betControls": "Select your bet amount to start the game",
+    "setHands": "Divide your 13 cards into Front (3), Middle (5), and Back (5). Hands must be arranged so that Back ≧ Middle ≧ Front in strength",
+    "results": "Each hand (Front, Middle, Back) is compared against the dealer. Win 2+ hands to win. Winning all 3 earns a scoop bonus"
+  }
+}

@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した95種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した110種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -32,6 +32,7 @@ Go + Clean Architecture で実装した95種類のトランプゲーム。CLI �
 | ショートデック (Short Deck / 6+ Hold'em) | `shortdeck` | [CUI](docs/manual/cui/shortdeck.md) / [Web](docs/manual/web/shortdeck.md) |
 | パイナップルポーカー (Pineapple Poker) | `pineapple` | [CUI](docs/manual/cui/pineapple.md) / [Web](docs/manual/web/pineapple.md) |
 | クレイジーパイナップル (Crazy Pineapple Poker) | `crazypineapple` | [CUI](docs/manual/cui/crazypineapple.md) / [Web](docs/manual/web/crazypineapple.md) |
+| アイリッシュポーカー (Irish Poker) | `irishpoker` | [CUI](docs/manual/cui/irishpoker.md) / [Web](docs/manual/web/irishpoker.md) |
 | ハーツ (Hearts) | `hearts` | [CUI](docs/manual/cui/hearts.md) / [Web](docs/manual/web/hearts.md) |
 | 神経衰弱 (Memory) | `memory` | [CUI](docs/manual/cui/memory.md) / [Web](docs/manual/web/memory.md) |
 | クロンダイク (Klondike) | `klondike` | [CUI](docs/manual/cui/klondike.md) / [Web](docs/manual/web/klondike.md) |
@@ -73,6 +74,7 @@ Go + Clean Architecture で実装した95種類のトランプゲーム。CLI �
 | ドゥラーク (Durak) | `durak` | [CUI](docs/manual/cui/durak.md) / [Web](docs/manual/web/durak.md) |
 | フォーティシーブス (Forty Thieves) | `fortythieves` | [CUI](docs/manual/cui/fortythieves.md) / [Web](docs/manual/web/fortythieves.md) |
 | パイゴウポーカー (Pai Gow Poker) | `paigow` | [CUI](docs/manual/cui/paigow.md) / [Web](docs/manual/web/paigow.md) |
+| チャイニーズポーカー (Chinese Poker) | `chinesepoker` | [CUI](docs/manual/cui/chinesepoker.md) / [Web](docs/manual/web/chinesepoker.md) |
 | 戦争 (War) | `war` | [CUI](docs/manual/cui/war.md) / [Web](docs/manual/web/war.md) |
 | キャンフィールド (Canfield) | `canfield` | [CUI](docs/manual/cui/canfield.md) / [Web](docs/manual/web/canfield.md) |
 | フィフティワン (Fifty-one) | `fiftyone` | [CUI](docs/manual/cui/fiftyone.md) / [Web](docs/manual/web/fiftyone.md) |
@@ -103,6 +105,7 @@ Go + Clean Architecture で実装した95種類のトランプゲーム。CLI �
 | 包囲された城 (Beleaguered Castle) | `beleagueredcastle` | [CUI](docs/manual/cui/beleagueredcastle.md) / [Web](docs/manual/web/beleagueredcastle.md) |
 | ピケ (Piquet) | `piquet` | [CUI](docs/manual/cui/piquet.md) / [Web](docs/manual/web/piquet.md) |
 | トンク (Tonk) | `tonk` | [CUI](docs/manual/cui/tonk.md) / [Web](docs/manual/web/tonk.md) |
+| シックスカードゴルフ (Six Card Golf) | `sixcardgolf` | [CUI](docs/manual/cui/sixcardgolf.md) / [Web](docs/manual/web/sixcardgolf.md) |
 | カジノウォー (Casino War) | `casinowar` | [CUI](docs/manual/cui/casinowar.md) / [Web](docs/manual/web/casinowar.md) |
 | ピッチ / セットバック (Pitch / Setback) | `pitch` | [CUI](docs/manual/cui/pitch.md) / [Web](docs/manual/web/pitch.md) |
 | ドラゴンタイガー (Dragon Tiger) | `dragontiger` | [CUI](docs/manual/cui/dragontiger.md) / [Web](docs/manual/web/dragontiger.md) |
@@ -116,12 +119,16 @@ Go + Clean Architecture で実装した95種類のトランプゲーム。CLI �
 | カジノホールデム (Casino Hold'em) | `casinoholdem` | [CUI](docs/manual/cui/casinoholdem.md) / [Web](docs/manual/web/casinoholdem.md) |
 | コールブレイク (Call Break) | `callbreak` | [CUI](docs/manual/cui/callbreak.md) / [Web](docs/manual/web/callbreak.md) |
 | ターニーブ (Tarneeb) | `tarneeb` | [CUI](docs/manual/cui/tarneeb.md) / [Web](docs/manual/web/tarneeb.md) |
+| ハイカードフラッシュ (High Card Flush) | `highcardflush` | [CUI](docs/manual/cui/highcardflush.md) / [Web](docs/manual/web/highcardflush.md) |
 | ブリスコラ (Briscola) | `briscola` | [CUI](docs/manual/cui/briscola.md) / [Web](docs/manual/web/briscola.md) |
 | ギャップス (Gaps / Montana) | `gaps` | [CUI](docs/manual/cui/gaps.md) / [Web](docs/manual/web/gaps.md) |
 | フォーカードポーカー (Four Card Poker) | `fourcardpoker` | [CUI](docs/manual/cui/fourcardpoker.md) / [Web](docs/manual/web/fourcardpoker.md) |
 | ラミー 500 (Rummy 500) | `rummy500` | [CUI](docs/manual/cui/rummy500.md) / [Web](docs/manual/web/rummy500.md) |
 | エイトオフ (Eight Off) | `eightoff` | [CUI](docs/manual/cui/eightoff.md) / [Web](docs/manual/web/eightoff.md) |
 | ペンギン (Penguin) | `penguin` | [CUI](docs/manual/cui/penguin.md) / [Web](docs/manual/web/penguin.md) |
+| 斗地主 (Dou Dizhu) | `doudizhu` | [CUI](docs/manual/cui/doudizhu.md) / [Web](docs/manual/web/doudizhu.md) |
+| トゥルコ (Truco) | `truco` | [CUI](docs/manual/cui/truco.md) / [Web](docs/manual/web/truco.md) |
+| 四つ葉のクローバー (Aces Up) | `acesup` | [CUI](docs/manual/cui/acesup.md) / [Web](docs/manual/web/acesup.md) |
 
 ## Demo
 

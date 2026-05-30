@@ -58,7 +58,7 @@ var (
 		"tournament.helpSkipAddOn",
 	}
 	// holdemBlindKeys are the blind / level-up / table-size settings shared
-	// by holdem, omaha, shortdeck, pineapple, crazypineapple.
+	// by holdem, omaha, shortdeck, pineapple, crazypineapple, irishpoker.
 	holdemBlindKeys = []string{
 		"tournament.helpSmallBlind",
 		"tournament.helpBigBlind",
@@ -271,6 +271,25 @@ var gameRegistry = []GameRegistryEntry{
 				}, pineappleRebuyAddOnKeys...),
 				SettingKeys: append([]string{
 					"crazypineapple.helpBettingLimit", "crazypineapple.helpTournament",
+				}, holdemBlindKeys...),
+			})
+	}},
+	{Name: "irishpoker", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPineappleCuiController(usecase.NewPineappleInteractor(
+				domain.NewDefaultIrishPoker(), new(presenter.PineappleCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "irishpoker.helpTitle",
+				CommandKeys: append([]string{
+					"irishpoker.helpFold",
+					"irishpoker.helpCheck",
+					"irishpoker.helpCall",
+					"irishpoker.helpBet",
+					"irishpoker.helpRaise",
+					"irishpoker.helpAllIn",
+				}, pineappleRebuyAddOnKeys...),
+				SettingKeys: append([]string{
+					"irishpoker.helpBettingLimit", "irishpoker.helpTournament",
 				}, holdemBlindKeys...),
 			})
 	}},
@@ -1666,6 +1685,55 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "chinesepoker", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewChinesePokerCuiController(usecase.NewChinesePokerInteractor(
+				domain.NewDefaultChinesePoker(), new(presenter.ChinesePokerCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "chinesepoker.helpTitle",
+				CommandKeys:       []string{"chinesepoker.helpBet", "chinesepoker.helpSet"},
+				ExtraCommandLines: []string{"  l                                            action log"},
+			})
+	}},
+	{Name: "sixcardgolf", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSixCardGolfCuiController(usecase.NewSixCardGolfInteractor(
+				domain.NewDefaultSixCardGolf(), new(presenter.SixCardGolfCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:    "sixcardgolf.helpTitle",
+				CommandKeys: []string{"sixcardgolf.helpFlipInitial", "sixcardgolf.helpDrawStock", "sixcardgolf.helpDrawDiscard", "sixcardgolf.helpSwap", "sixcardgolf.helpDiscard", "sixcardgolf.helpFlip", "sixcardgolf.helpSkipFlip", "sixcardgolf.helpNextRound"},
+				SettingKeys: []string{"sixcardgolf.helpSetDifficulty", "sixcardgolf.helpSetPlayers", "sixcardgolf.helpSetRounds"},
+			})
+	}},
+	{Name: "doudizhu", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewDoudizhuCuiController(usecase.NewDoudizhuInteractor(
+				domain.NewDefaultDoudizhu(), new(presenter.DoudizhuCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:    "doudizhu.helpTitle",
+				CommandKeys: []string{"doudizhu.helpPlay", "doudizhu.helpBid"},
+				SettingKeys: []string{"doudizhu.helpSetDifficulty"},
+			})
+	}},
+	{Name: "truco", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewTrucoCuiController(usecase.NewTrucoInteractor(
+				domain.NewDefaultTruco(), new(presenter.TrucoCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:    "truco.helpTitle",
+				CommandKeys: []string{"truco.helpPlay", "truco.helpTruco", "truco.helpRespond", "truco.helpNext"},
+			})
+	}},
+	{Name: "acesup", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewAcesUpCuiController(usecase.NewAcesUpInteractor(
+				domain.NewDefaultAcesUp(), new(presenter.AcesUpCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "acesup.helpTitle",
+				CommandKeys:       []string{"acesup.helpDraw", "acesup.helpRemove", "acesup.helpMove", "acesup.helpGiveUp", "acesup.helpHint"},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
@@ -1729,6 +1797,11 @@ var GameAliases = map[string]string{
 	"rummy":   "rummy500",
 	"500":     "rummy500",
 	"r500":    "rummy500",
+	"cpk":     "chinesepoker",
+	"cpkr":    "chinesepoker",
+	"scg":     "sixcardgolf",
+	"6golf":   "sixcardgolf",
+	"ddz":     "doudizhu",
 }
 
 // cuiGame is implemented by each *Cui struct to expose its controller and help lines.

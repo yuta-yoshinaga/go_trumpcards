@@ -1,0 +1,137 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+import { renderWithProviders } from '../test/renderWithProviders';
+import type { Card, CardDesign, ChinesePokerResponse } from '../types/card';
+import { ChinesePokerPhase } from '../types/phases';
+
+vi.mock('../api/gameApi', () => ({
+  chinesepokerApi: { exec: vi.fn() },
+}));
+vi.mock('../hooks/useGameHint', () => ({
+  useGameHint: () => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() }),
+}));
+
+import { chinesepokerApi } from '../api/gameApi';
+import { ChinesePokerPage } from './ChinesePokerPage';
+
+const mockExec = vi.mocked(chinesepokerApi.exec);
+
+const DESIGNS: CardDesign[] = ['SPADE', 'HEART', 'CLOVER', 'DIAMOND'];
+const card = (designIdx: number, value: number): Card => ({ design: DESIGNS[designIdx % 4], value });
+
+const betPhaseState: ChinesePokerResponse = {
+  playerCards: [],
+  dealerCards: [],
+  playerFront: [],
+  playerMiddle: [],
+  playerBack: [],
+  dealerFront: [],
+  dealerMiddle: [],
+  dealerBack: [],
+  phase: ChinesePokerPhase.BET,
+  chips: 1000,
+  bet: 0,
+  result: 0,
+  frontResult: 0,
+  middleResult: 0,
+  backResult: 0,
+  payout: 0,
+  playerFrontRank: 0,
+  playerMiddleRank: 0,
+  playerBackRank: 0,
+  dealerFrontRank: 0,
+  dealerMiddleRank: 0,
+  dealerBackRank: 0,
+  playerRoyalty: 0,
+  dealerRoyalty: 0,
+  scoop: false,
+  message: '',
+};
+
+const setHandsState: ChinesePokerResponse = {
+  ...betPhaseState,
+  phase: ChinesePokerPhase.SET_HANDS,
+  bet: 100,
+  chips: 900,
+  playerCards: Array.from({ length: 13 }, (_, i) => card(1 + (i % 4), 1 + i)),
+};
+
+const endPhaseState: ChinesePokerResponse = {
+  ...betPhaseState,
+  phase: ChinesePokerPhase.END,
+  bet: 100,
+  chips: 1100,
+  result: 1,
+  frontResult: 1,
+  middleResult: 1,
+  backResult: -1,
+  payout: 200,
+  playerFront: [card(1, 2), card(2, 3), card(3, 4)],
+  playerMiddle: [card(1, 5), card(2, 6), card(3, 7), card(4, 8), card(1, 9)],
+  playerBack: [card(2, 10), card(3, 11), card(4, 12), card(1, 13), card(2, 1)],
+  dealerFront: [card(3, 2), card(4, 3), card(1, 4)],
+  dealerMiddle: [card(2, 5), card(3, 6), card(4, 7), card(1, 8), card(2, 9)],
+  dealerBack: [card(3, 10), card(4, 11), card(1, 12), card(2, 13), card(3, 1)],
+  playerFrontRank: 1,
+  playerMiddleRank: 4,
+  playerBackRank: 4,
+  dealerFrontRank: 1,
+  dealerMiddleRank: 4,
+  dealerBackRank: 4,
+  message: 'Player wins!',
+  messageCode: 'chinesepoker.result.playerWins',
+};
+
+describe('ChinesePokerPage', () => {
+  it('renders bet phase with bet button', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<ChinesePokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+  });
+
+  it('calls bet API on bet button click', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<ChinesePokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 100));
+  });
+
+  it('renders set hands phase with 13 cards', async () => {
+    mockExec.mockResolvedValue(setHandsState);
+    renderWithProviders(<ChinesePokerPage />);
+    await waitFor(() => expect(screen.getByTestId('set-hands-button')).toBeInTheDocument());
+    const cardButtons = screen.getAllByRole('button', { name: /Card \d+/ });
+    expect(cardButtons.length).toBe(13);
+  });
+
+  it('set button disabled when not enough cards selected', async () => {
+    mockExec.mockResolvedValue(setHandsState);
+    renderWithProviders(<ChinesePokerPage />);
+    await waitFor(() => expect(screen.getByTestId('set-hands-button')).toBeInTheDocument());
+    expect(screen.getByTestId('set-hands-button')).toBeDisabled();
+  });
+
+  it('renders end phase with results', async () => {
+    mockExec.mockResolvedValue(endPhaseState);
+    renderWithProviders(<ChinesePokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument();
+  });
+
+  it('calls reset on next game click', async () => {
+    mockExec.mockResolvedValue(endPhaseState);
+    renderWithProviders(<ChinesePokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    expect(mockExec).toHaveBeenCalledWith('reset');
+  });
+
+  it('responds to keyboard shortcut b in bet phase', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<ChinesePokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    fireEvent.keyDown(document, { key: 'b' });
+    expect(mockExec).toHaveBeenCalledWith('bet', 100);
+  });
+});

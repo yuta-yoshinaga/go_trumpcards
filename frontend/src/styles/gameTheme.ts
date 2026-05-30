@@ -23,6 +23,7 @@ export type GameKey =
   | 'mississippistud'
   | 'highcardflush'
   | 'paigow'
+  | 'chinesepoker'
   | 'letitride'
   | 'reddog'
   | 'casinowar'
@@ -37,6 +38,7 @@ export type GameKey =
   | 'shortdeck'
   | 'pineapple'
   | 'crazypineapple'
+  | 'irishpoker'
   | 'sevencardstud'
   | 'razz'
   | 'badugi'
@@ -79,6 +81,9 @@ export type GameKey =
   | 'war'
   | 'fiftyone'
   | 'trash'
+  | 'sixcardgolf'
+  | 'doudizhu'
+  | 'truco'
   | 'spiteandmalice'
   | 'shithead'
   | 'nertz'
@@ -96,6 +101,7 @@ export type GameKey =
   | 'gaps'
   | 'tripeaks'
   | 'golf'
+  | 'acesup'
   | 'memory'
   | 'clocksolitaire'
   | 'fortythieves'
@@ -152,6 +158,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   mississippistud: POKER,
   highcardflush: CASINO,
   paigow: CASINO,
+  chinesepoker: CASINO,
   letitride: CASINO,
   reddog: CASINO,
   casinowar: CASINO,
@@ -166,6 +173,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   shortdeck: POKER,
   pineapple: POKER,
   crazypineapple: POKER,
+  irishpoker: POKER,
   sevencardstud: POKER,
   razz: POKER,
   badugi: POKER,
@@ -208,6 +216,9 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   war: GREEN,
   fiftyone: GREEN,
   trash: GREEN,
+  sixcardgolf: GREEN,
+  doudizhu: CASINO,
+  truco: CASINO,
   spiteandmalice: GREEN,
   shithead: GREEN,
   nertz: GREEN,
@@ -225,6 +236,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   gaps: CASINO,
   tripeaks: CASINO,
   golf: CASINO,
+  acesup: GREEN,
   memory: CASINO,
   clocksolitaire: CASINO,
   fortythieves: CASINO,

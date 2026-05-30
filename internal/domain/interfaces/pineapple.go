@@ -58,6 +58,8 @@ type PineappleGame interface {
 	Resize(players []*domain.PineapplePlayer)
 	// GetDiscardDone ディスカード済みフラグ取得
 	GetDiscardDone() []bool
+	// GetInitialDealCount 初期配布枚数を取得する
+	GetInitialDealCount() int
 	TournamentActionGame
 	// GetHumanProfile メタAIプロファイルを取得する
 	GetHumanProfile() *domain.BettingHumanProfile

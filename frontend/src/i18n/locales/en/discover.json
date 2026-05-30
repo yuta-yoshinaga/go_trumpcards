@@ -97,6 +97,7 @@
     "casinoholdem": "Hold'em against the dealer. Community-card reads still apply — without any human-opponent stress.",
     "ultimatetexasholdem": "All about when to raise. Hold'em veterans love the timing-of-courage decisions.",
     "paigow": "Seven cards, two hands — Asian-flavored casino. Plenty of time to think. For nights where thought beats tempo.",
+    "chinesepoker": "Thirteen cards split into three hands — a puzzle-heavy casino poker. Chase scoops and royalties.",
     "letitride": "One decision: pull back your bet or let it ride. The simplest rules, the purest tension.",
     "reddog": "Will a third card fall between two? The fastest cycle on the floor.",
     "casinowar": "Hi-card wins, dealer-style War. Three seconds of rules, zero strategy, pure luck.",
@@ -112,6 +113,7 @@
     "shortdeck": "Short deck (no 2-5). Flushes and straights flip in strength; the tempo lifts.",
     "pineapple": "Hold'em with three hole cards (discard one). Extra reading material per hand.",
     "crazypineapple": "Pineapple with a post-flop discard. One more strategic curveball.",
+    "irishpoker": "Four hole cards, discard two after the flop. A volatile Hold'em hybrid.",
     "sevencardstud": "No community cards — pure classic stud. Read what you can see; love the basics.",
     "razz": "Seven-card lowball. The low hand wins — a mental flip that connoisseurs adore.",
     "badugi": "Four off-suit lows. Short and deep. The kind people become obsessed with.",
@@ -167,6 +169,7 @@
     "gaps": "Slide gaps into order. The structural-puzzle feel is unique among solitaires.",
     "tripeaks": "Three peaks to dismantle. The pick-up rhythm is delicious.",
     "golf": "Golf solitaire. Strip the layout one card at a time — TriPeaks' twin classic.",
+    "acesup": "Four piles, one rule: ditch the lower same-suit card. Pure luck, lightning-fast rounds.",
     "memory": "The matching game. Memory training across generations.",
     "clocksolitaire": "Lay cards on a clock face. Pure luck; pure brief diversion.",
     "fortythieves": "Two-deck Forty Thieves. Low completion rate — the austere classic.",
@@ -189,7 +192,10 @@
     "sevenbridge": "Japan's household Rummy. Simple rules, surprisingly tense.",
     "contractrummy": "A different contract (meld) each round. More rules — more depth.",
     "rummy500": "Race to 500. American household Rummy in its mid-form classic shape.",
-    "bigtwo": "Hong Kong's signature shedding game. Poker-hand combos meet climbing mechanics."
+    "bigtwo": "Hong Kong's signature shedding game. Poker-hand combos meet climbing mechanics.",
+    "sixcardgolf": "A memory & exchange game where you swap face-down cards to get the lowest score",
+    "doudizhu": "China's #1 card game. Bid to become the Landlord and shed your 20 cards before the Peasants team up against you.",
+    "truco": "A South American / Spanish mind game. Raise the stakes mid-trick and test your opponent's nerve with bluffs."
   },
   "stretch_blurb": {
     "blackjack": "The 21 instinct may be obvious — but the betting decisions surprise.",
@@ -203,6 +209,7 @@
     "casinoholdem": "Hold'em texture for those wary of opponents.",
     "ultimatetexasholdem": "Hold'em veterans wince and grin at the raise-timing.",
     "paigow": "For when you want time at the table to think.",
+    "chinesepoker": "Puzzle lovers will adore splitting 13 cards optimally. Brainy casino.",
     "letitride": "One decision — yet weirdly deep.",
     "reddog": "Under five minutes per round. A pure micro-snack.",
     "casinowar": "Total luck. Nothing to second-guess.",
@@ -218,6 +225,7 @@
     "shortdeck": "Bored of Hold'em? Try inverted hand strengths.",
     "pineapple": "Where Hold'em vets play with discard decisions.",
     "crazypineapple": "An onramp into 'variant Hold'em' culture.",
+    "irishpoker": "Bridges Omaha's four-card power with Hold'em's two-card showdown.",
     "sevencardstud": "Touch poker's roots — the classic seven-card form.",
     "razz": "Winning with weak hands — a useful mental flip.",
     "badugi": "Short and deep — a lowball-curious onramp.",
@@ -273,6 +281,7 @@
     "gaps": "Shuffle-based structure — for puzzle hoppers.",
     "tripeaks": "The rhythm-strip joy of pickup solitaires.",
     "golf": "If TriPeaks works, this completes the set.",
+    "acesup": "When you want a fast, brainless palate cleanser between heavier games.",
     "memory": "Memory drill — generations get along here.",
     "clocksolitaire": "Pure luck — pure deferral of thought.",
     "fortythieves": "Sometimes you can't win — the austere classic.",
@@ -295,6 +304,9 @@
     "sevenbridge": "Japanese household Rummy — light tension.",
     "contractrummy": "Different contracts per round — learn deeper.",
     "rummy500": "American household Rummy in mid-length form.",
-    "bigtwo": "Poker-hand climbing from Hong Kong — a fresh angle on shedding games."
+    "bigtwo": "Poker-hand climbing from Hong Kong — a fresh angle on shedding games.",
+    "sixcardgolf": "Match ranks in a column for 0 points! Compete over 9 rounds",
+    "doudizhu": "One Landlord vs two Peasants — bombs, rockets, and strategic cooperation make every hand explosive.",
+    "truco": "Strong hand or weak, one call sends the points soaring. Read and bluff your way to 15."
   }
 }

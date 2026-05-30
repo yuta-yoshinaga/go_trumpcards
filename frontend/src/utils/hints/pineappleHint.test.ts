@@ -62,6 +62,7 @@ function makeState(overrides: Partial<PineappleResponse> = {}): PineappleRespons
     muckAvailable: false,
     isDiscardPhase: false,
     discardDone: [false],
+    initialDealCount: 3,
     ...overrides,
   };
 }

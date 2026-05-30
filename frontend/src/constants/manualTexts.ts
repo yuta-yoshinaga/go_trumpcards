@@ -3,6 +3,7 @@
  * Keyed by game route path for direct lookup from the current URL.
  */
 import accordion from '../../../docs/manual/web/accordion.md?raw';
+import acesup from '../../../docs/manual/web/acesup.md?raw';
 import baccarat from '../../../docs/manual/web/baccarat.md?raw';
 import badugi from '../../../docs/manual/web/badugi.md?raw';
 import bakersdozen from '../../../docs/manual/web/bakersdozen.md?raw';
@@ -21,6 +22,7 @@ import caribbeanstud from '../../../docs/manual/web/caribbeanstud.md?raw';
 import casinoholdem from '../../../docs/manual/web/casinoholdem.md?raw';
 import casinowar from '../../../docs/manual/web/casinowar.md?raw';
 import cassino from '../../../docs/manual/web/cassino.md?raw';
+import chinesepoker from '../../../docs/manual/web/chinesepoker.md?raw';
 import clocksolitaire from '../../../docs/manual/web/clocksolitaire.md?raw';
 import contractrummy from '../../../docs/manual/web/contractrummy.md?raw';
 import crazyeights from '../../../docs/manual/web/crazyeights.md?raw';
@@ -31,6 +33,7 @@ import cruel from '../../../docs/manual/web/cruel.md?raw';
 import daifugo from '../../../docs/manual/web/daifugo.md?raw';
 import deuceswild from '../../../docs/manual/web/deuceswild.md?raw';
 import doubt from '../../../docs/manual/web/doubt.md?raw';
+import doudizhu from '../../../docs/manual/web/doudizhu.md?raw';
 import dragontiger from '../../../docs/manual/web/dragontiger.md?raw';
 import durak from '../../../docs/manual/web/durak.md?raw';
 import egyptianratscrew from '../../../docs/manual/web/egyptianratscrew.md?raw';
@@ -48,6 +51,7 @@ import hearts from '../../../docs/manual/web/hearts.md?raw';
 import highcardflush from '../../../docs/manual/web/highcardflush.md?raw';
 import holdem from '../../../docs/manual/web/holdem.md?raw';
 import indianpoker from '../../../docs/manual/web/indianpoker.md?raw';
+import irishpoker from '../../../docs/manual/web/irishpoker.md?raw';
 import jokerpoker from '../../../docs/manual/web/jokerpoker.md?raw';
 import klondike from '../../../docs/manual/web/klondike.md?raw';
 import letitride from '../../../docs/manual/web/letitride.md?raw';
@@ -86,6 +90,7 @@ import sevencardstud from '../../../docs/manual/web/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/web/sevens.md?raw';
 import shithead from '../../../docs/manual/web/shithead.md?raw';
 import shortdeck from '../../../docs/manual/web/shortdeck.md?raw';
+import sixcardgolf from '../../../docs/manual/web/sixcardgolf.md?raw';
 import skat from '../../../docs/manual/web/skat.md?raw';
 import slapjack from '../../../docs/manual/web/slapjack.md?raw';
 import spades from '../../../docs/manual/web/spades.md?raw';
@@ -100,6 +105,7 @@ import threecard from '../../../docs/manual/web/threecard.md?raw';
 import tonk from '../../../docs/manual/web/tonk.md?raw';
 import trash from '../../../docs/manual/web/trash.md?raw';
 import tripeaks from '../../../docs/manual/web/tripeaks.md?raw';
+import truco from '../../../docs/manual/web/truco.md?raw';
 import twotenjack from '../../../docs/manual/web/twotenjack.md?raw';
 import ultimatetexasholdem from '../../../docs/manual/web/ultimatetexasholdem.md?raw';
 import videopoker from '../../../docs/manual/web/videopoker.md?raw';
@@ -143,6 +149,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/ginrummy': ginrummy,
   '/gofish': gofish,
   '/golf': golf,
+  '/acesup': acesup,
   '/hearts': hearts,
   '/holdem': holdem,
   '/indianpoker': indianpoker,
@@ -160,8 +167,10 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/omahahilo': omahahilo,
   '/pageone': pageone,
   '/paigow': paigow,
+  '/chinesepoker': chinesepoker,
   '/pineapple': pineapple,
   '/crazypineapple': crazypineapple,
+  '/irishpoker': irishpoker,
   '/pigtail': pigtail,
   '/pinochle': pinochle,
   '/piquet': piquet,
@@ -207,10 +216,13 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/spiteandmalice': spiteandmalice,
   '/skat': skat,
   '/shithead': shithead,
+  '/sixcardgolf': sixcardgolf,
   '/nertz': nertz,
   '/slapjack': slapjack,
   '/tarneeb': tarneeb,
   '/highcardflush': highcardflush,
   '/briscola': briscola,
   '/bigtwo': bigtwo,
+  '/doudizhu': doudizhu,
+  '/truco': truco,
 };

@@ -436,7 +436,7 @@ classDiagram
         +object messageParams
     }
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全104ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全110ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -867,7 +867,7 @@ classDiagram
     class actionLogApi {
         +blackjack() Promise~ActionLogResponse~
         +poker() Promise~ActionLogResponse~
-        ...全104ゲーム()
+        ...全110ゲーム()
     }
 
     BlackJackApi --> gameApi : uses postJson/gameExec
@@ -929,7 +929,7 @@ classDiagram
 
     RedDogApi --> gameApi : uses postJson/gameExec
 
-    note for BlackJackApi "全104ゲーム分のAPI Objectが存在\n(blackjack, spanish21, poker, oldmaid, daifugo,\nsevens, doubt, bigtwo, holdem, omaha, omahahilo, shortdeck,\npineapple, crazypineapple, hearts, memory, klondike, freecell,\nseahaventowers, cruel, baccarat, spades, twotenjack, crazyeights,\nginrummy, canasta, spider, spiderette, napoleon, mighty,\nindianpoker, videopoker, deuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, caribbeanstud, texasholdembonus,\nultimatetexasholdem, mississippistud, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow, war, canfield, fiftyone, yukon, russiansolitaire, scorpion, accordion, whist,\nletitride, pokersquares, pageone, reddog, razz, badugi, trash,\nsevenbridge, president, cassino, calculation, crescent, spiteandmalice,\nskat, shithead, nertz, slapjack, egyptianratscrew, bakersdozen, tonk,\ncasinowar, pitch, dragontiger, blackjackswitch, montecarlo, contractrummy, belote,\noasispoker, beleagueredcastle, piquet, casinoholdem, callbreak,\nhighcardflush, fourcardpoker, russianpoker, briscola, tarneeb, gaps, rummy500, eightoff, penguin)"
+    note for BlackJackApi "全110ゲーム分のAPI Objectが存在\n(blackjack, spanish21, poker, oldmaid, daifugo,\nsevens, doubt, bigtwo, holdem, omaha, omahahilo, shortdeck,\npineapple, crazypineapple, hearts, memory, klondike, freecell,\nseahaventowers, cruel, baccarat, spades, twotenjack, crazyeights,\nginrummy, canasta, spider, spiderette, napoleon, mighty,\nindianpoker, videopoker, deuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, caribbeanstud, texasholdembonus,\nultimatetexasholdem, mississippistud, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow, war, canfield, fiftyone, yukon, russiansolitaire, scorpion, accordion, whist,\nletitride, pokersquares, pageone, reddog, razz, badugi, trash,\nsevenbridge, president, cassino, calculation, crescent, spiteandmalice,\nskat, shithead, nertz, slapjack, egyptianratscrew, bakersdozen, tonk,\ncasinowar, pitch, dragontiger, blackjackswitch, montecarlo, contractrummy, belote,\noasispoker, beleagueredcastle, piquet, casinoholdem, callbreak,\nhighcardflush, fourcardpoker, russianpoker, briscola, tarneeb, gaps, rummy500, eightoff, penguin,\nirishpoker, chinesepoker, sixcardgolf, doudizhu, truco, acesup)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -1308,7 +1308,7 @@ classDiagram
 
     useCanastaGame --> useGameApi : uses
 
-    note for useBlackJackGame "全104ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    note for useBlackJackGame "全110ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -1907,7 +1907,7 @@ classDiagram
     GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck/Pineapple/SevenCardStud/Razz)
     PokerTableLayout --> CpuPlayerCard : wraps
 
-    note for GamePage "全104ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全110ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -1930,7 +1930,7 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (104ゲーム)
+        +Routes (110ゲーム)
     }
 
     class gameCategories {
@@ -1953,11 +1953,11 @@ classDiagram
     App --> i18n : initializes
     App --> gameCategories : routes from
     App --> NavBar : renders
-    App --> GamePage : routes to 104 pages
+    App --> GamePage : routes to 110 pages
     GamePage --> TutorialProvider : wraps (per-game)
     TutorialProvider --> TutorialOverlay : renders when active
 
-    note for i18n "106名前空間: common + 104ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
+    note for i18n "113名前空間: common + 110ゲーム固有 + tutorial + discover\n翻訳ファイル: locales/{ja,en}/game.json"
 ```
 
 ### 1.8 AI Game Concierge (/discover)
@@ -3312,6 +3312,49 @@ stateDiagram-v2
     note right of KITTY_EXCHANGE : MightyPhase.KITTY_EXCHANGE = 2\n宣言者のみ手札 10+3=13\n3枚ディスカードで 10 に戻る
     note right of PLAY : MightyPhase.PLAY = 3\n通常 play(cardIndex)\nまたは jokerlead(cardIndex,jokerLeadSuit)
     note right of ROUND_END : MightyPhase.ROUND_END = 5\nスコア = (|points-bid|+1)×倍率\nNoTrump 倍率 = 2, セルフフレンド ×2
+```
+
+### 3.8.1 Doudizhu フェーズ遷移 (DoudizhuPage)
+
+`DoudizhuPage` はサーバーから返る `phase` 文字列 (`bid` / `play` / `end`) に応じて表示を切り替えます。ビッドフェーズではビッドボタン群、プレイフェーズでは手札選択 + 出す/パス、終了フェーズではスコア表示を描画します。
+
+```mermaid
+stateDiagram-v2
+    [*] --> Bid : reset() (mount)
+    Bid --> Bid : bid (継続)
+    Bid --> Play : 地主決定
+    Play --> Play : play / pass
+    Play --> End : 手札を出し切る
+    End --> [*]
+
+    note right of Bid : phase = "bid"\nビッドボタン (1-3/パス)\n最高入札超過分のみ活性
+    note right of Play : phase = "play"\nカード複数選択 → 出す\n場にカードあり時のみパス可
+    note right of End : phase = "end"\n地主/農民勝敗 + スコア表示
+```
+
+### 3.8.2 Truco フェーズ遷移 (TrucoPage)
+
+`TrucoPage` はサーバーから返る数値 `phase` (`TrucoPhase` enum) に応じて表示を切り替えます。プレイフェーズでは手札の play ボタン + `canDeclareTruco` のとき「Truco を宣言」ボタン、応答フェーズでは受諾/拒否/引き上げボタン、バサ・マノ終了では「次へ」ボタンを描画します。マッチ得点と現在の賭け点 (level) は常時ヘッダーに表示します。
+
+```mermaid
+stateDiagram-v2
+    [*] --> Play : reset() (mount)
+    Play --> Respond : truco
+    Play --> TrickEnd : バサ完了
+    Respond --> Play : accept
+    Respond --> Respond : truco (再引き上げ)
+    Respond --> HandEnd : decline
+    TrickEnd --> Play : next
+    TrickEnd --> HandEnd : next (マノ決着)
+    HandEnd --> Play : next (次マノ)
+    HandEnd --> GameEnd : next (設定点到達)
+    GameEnd --> [*]
+
+    note right of Play : phase = 0\n手札クリックで出す + Truco 宣言ボタン
+    note right of Respond : phase = 1\n受諾(Quiero)/拒否(No Quiero)/引き上げ
+    note right of TrickEnd : phase = 2\n次へボタン
+    note right of HandEnd : phase = 3\n賭け点加算 + 次へボタン
+    note right of GameEnd : phase = 4\nマッチ勝敗バナー
 ```
 
 ### 3.9 Discover サーベイステップ遷移 (SurveyState)

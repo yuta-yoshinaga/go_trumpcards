@@ -100,6 +100,7 @@ const initState: PineappleResponse = {
   tableSize: 4,
   isDiscardPhase: false,
   discardDone: [],
+  initialDealCount: 3,
 };
 
 /** Discard phase state — set after the flop betting round in Crazy Pineapple. */

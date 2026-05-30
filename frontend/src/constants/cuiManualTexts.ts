@@ -4,6 +4,7 @@
  * Used when the page has CLI mode enabled so the manual matches the terminal UI.
  */
 import accordion from '../../../docs/manual/cui/accordion.md?raw';
+import acesup from '../../../docs/manual/cui/acesup.md?raw';
 import baccarat from '../../../docs/manual/cui/baccarat.md?raw';
 import badugi from '../../../docs/manual/cui/badugi.md?raw';
 import bakersdozen from '../../../docs/manual/cui/bakersdozen.md?raw';
@@ -22,6 +23,7 @@ import caribbeanstud from '../../../docs/manual/cui/caribbeanstud.md?raw';
 import casinoholdem from '../../../docs/manual/cui/casinoholdem.md?raw';
 import casinowar from '../../../docs/manual/cui/casinowar.md?raw';
 import cassino from '../../../docs/manual/cui/cassino.md?raw';
+import chinesepoker from '../../../docs/manual/cui/chinesepoker.md?raw';
 import clocksolitaire from '../../../docs/manual/cui/clocksolitaire.md?raw';
 import contractrummy from '../../../docs/manual/cui/contractrummy.md?raw';
 import crazyeights from '../../../docs/manual/cui/crazyeights.md?raw';
@@ -32,6 +34,7 @@ import cruel from '../../../docs/manual/cui/cruel.md?raw';
 import daifugo from '../../../docs/manual/cui/daifugo.md?raw';
 import deuceswild from '../../../docs/manual/cui/deuceswild.md?raw';
 import doubt from '../../../docs/manual/cui/doubt.md?raw';
+import doudizhu from '../../../docs/manual/cui/doudizhu.md?raw';
 import dragontiger from '../../../docs/manual/cui/dragontiger.md?raw';
 import durak from '../../../docs/manual/cui/durak.md?raw';
 import egyptianratscrew from '../../../docs/manual/cui/egyptianratscrew.md?raw';
@@ -49,6 +52,7 @@ import hearts from '../../../docs/manual/cui/hearts.md?raw';
 import highcardflush from '../../../docs/manual/cui/highcardflush.md?raw';
 import holdem from '../../../docs/manual/cui/holdem.md?raw';
 import indianpoker from '../../../docs/manual/cui/indianpoker.md?raw';
+import irishpoker from '../../../docs/manual/cui/irishpoker.md?raw';
 import jokerpoker from '../../../docs/manual/cui/jokerpoker.md?raw';
 import klondike from '../../../docs/manual/cui/klondike.md?raw';
 import letitride from '../../../docs/manual/cui/letitride.md?raw';
@@ -84,6 +88,7 @@ import sevencardstud from '../../../docs/manual/cui/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/cui/sevens.md?raw';
 import shithead from '../../../docs/manual/cui/shithead.md?raw';
 import shortdeck from '../../../docs/manual/cui/shortdeck.md?raw';
+import sixcardgolf from '../../../docs/manual/cui/sixcardgolf.md?raw';
 import skat from '../../../docs/manual/cui/skat.md?raw';
 import slapjack from '../../../docs/manual/cui/slapjack.md?raw';
 import spades from '../../../docs/manual/cui/spades.md?raw';
@@ -98,6 +103,7 @@ import threecard from '../../../docs/manual/cui/threecard.md?raw';
 import tonk from '../../../docs/manual/cui/tonk.md?raw';
 import trash from '../../../docs/manual/cui/trash.md?raw';
 import tripeaks from '../../../docs/manual/cui/tripeaks.md?raw';
+import truco from '../../../docs/manual/cui/truco.md?raw';
 import twotenjack from '../../../docs/manual/cui/twotenjack.md?raw';
 import ultimatetexasholdem from '../../../docs/manual/cui/ultimatetexasholdem.md?raw';
 import videopoker from '../../../docs/manual/cui/videopoker.md?raw';
@@ -147,6 +153,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/rummy500': rummy500,
   '/gofish': gofish,
   '/golf': golf,
+  '/acesup': acesup,
   '/hearts': hearts,
   '/holdem': holdem,
   '/indianpoker': indianpoker,
@@ -162,8 +169,10 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/omahahilo': omahahilo,
   '/pageone': pageone,
   '/paigow': paigow,
+  '/chinesepoker': chinesepoker,
   '/pineapple': pineapple,
   '/crazypineapple': crazypineapple,
+  '/irishpoker': irishpoker,
   '/pigtail': pigtail,
   '/pinochle': pinochle,
   '/poker': poker,
@@ -202,12 +211,15 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/spiteandmalice': spiteandmalice,
   '/skat': skat,
   '/shithead': shithead,
+  '/sixcardgolf': sixcardgolf,
   '/nertz': nertz,
   '/slapjack': slapjack,
   '/tarneeb': tarneeb,
   '/highcardflush': highcardflush,
   '/briscola': briscola,
   '/bigtwo': bigtwo,
+  '/doudizhu': doudizhu,
+  '/truco': truco,
 };
 
 /** Returns true when CLI mode is enabled for the game at the given path. */

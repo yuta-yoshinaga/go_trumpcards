@@ -1,0 +1,38 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "Aces Up",
+  "stock": "Stock",
+  "discard": "Removed",
+  "moveCount": "Moves",
+  "combo": "Combo ×{{count}}",
+  "draw": "Deal",
+  "remove": "Remove",
+  "move": "Move",
+  "giveup": "Give Up",
+  "hint": "Hint",
+  "undo": "Undo",
+  "empty": "Empty",
+  "playing": "Playing",
+  "stalemate": "No moves available",
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "noHint": "No hint available",
+  "hintAvailable": "Hint available",
+  "hintType": {
+    "remove": "You can remove a card",
+    "move": "You can move a card to an empty column",
+    "draw": "Deal a card to each column"
+  },
+  "tutorial": {
+    "columns": "Four tableau columns. You can act on the top card of each column.",
+    "rules": "Discard the lower of two same-suit top cards (Ace is highest).",
+    "stock": "Press Deal to deal one card onto each column.",
+    "controls": "Action buttons: remove, move, and deal.",
+    "resetButton": "Use the reset button to start a new game."
+  },
+  "landscapeBanner": "Rotate to landscape for easier play"
+}

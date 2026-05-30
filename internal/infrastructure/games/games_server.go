@@ -78,6 +78,11 @@ func init() {
 			return usecase.NewPineappleInteractor(domain.NewDefaultCrazyPineapple(), new(presenter.PineappleWebPresenter))
 		},
 		controller.NewPineappleWebController)
+	BindWebControllerFor("irishpoker",
+		func() usecase.PineappleInteractorIF {
+			return usecase.NewPineappleInteractor(domain.NewDefaultIrishPoker(), new(presenter.PineappleWebPresenter))
+		},
+		controller.NewPineappleWebController)
 	BindWebControllerFor("hearts",
 		func() usecase.HeartsInteractorIF {
 			return usecase.NewHeartsInteractor(domain.NewDefaultHearts(), new(presenter.HeartsWebPresenter))
@@ -533,4 +538,29 @@ func init() {
 			return usecase.NewPenguinInteractor(domain.NewDefaultPenguin(), new(presenter.PenguinWebPresenter))
 		},
 		controller.NewPenguinWebController)
+	BindWebControllerFor("chinesepoker",
+		func() usecase.ChinesePokerInteractorIF {
+			return usecase.NewChinesePokerInteractor(domain.NewDefaultChinesePoker(), new(presenter.ChinesePokerWebPresenter))
+		},
+		controller.NewChinesePokerWebController)
+	BindWebControllerFor("sixcardgolf",
+		func() usecase.SixCardGolfInteractorIF {
+			return usecase.NewSixCardGolfInteractor(domain.NewDefaultSixCardGolf(), new(presenter.SixCardGolfWebPresenter))
+		},
+		controller.NewSixCardGolfWebController)
+	BindWebControllerFor("doudizhu",
+		func() usecase.DoudizhuInteractorIF {
+			return usecase.NewDoudizhuInteractor(domain.NewDefaultDoudizhu(), new(presenter.DoudizhuWebPresenter))
+		},
+		controller.NewDoudizhuWebController)
+	BindWebControllerFor("truco",
+		func() usecase.TrucoInteractorIF {
+			return usecase.NewTrucoInteractor(domain.NewDefaultTruco(), new(presenter.TrucoWebPresenter))
+		},
+		controller.NewTrucoWebController)
+	BindWebControllerFor("acesup",
+		func() usecase.AcesUpInteractorIF {
+			return usecase.NewAcesUpInteractor(domain.NewDefaultAcesUp(), new(presenter.AcesUpWebPresenter))
+		},
+		controller.NewAcesUpWebController)
 }

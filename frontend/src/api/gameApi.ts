@@ -1,5 +1,6 @@
 import type {
   AccordionResponse,
+  AcesUpResponse,
   ActionLogResponse,
   BaccaratResponse,
   BadugiResponse,
@@ -24,6 +25,7 @@ import type {
   CasinoHoldemResponse,
   CasinoWarResponse,
   CassinoResponse,
+  ChinesePokerResponse,
   ClockSolitaireResponse,
   ContractRummyResponse,
   CrazyEightsResponse,
@@ -35,6 +37,7 @@ import type {
   DaifugoResponse,
   DoubtConfig,
   DoubtResponse,
+  DoudizhuResponse,
   DragonTigerResponse,
   DurakConfigInput,
   DurakResponse,
@@ -93,6 +96,7 @@ import type {
   ShitheadConfig as ShitheadConfigType,
   ShitheadResponse,
   ShortDeckResponse,
+  SixCardGolfResponse,
   SkatConfig as SkatConfigType,
   SkatResponse,
   SlapjackResponse,
@@ -109,6 +113,8 @@ import type {
   TonkResponse,
   TrashResponse,
   TriPeaksResponse,
+  TrucoConfig,
+  TrucoResponse,
   TwoTenJackResponse,
   UltimateTexasHoldemResponse,
   VideoPokerResponse,
@@ -147,6 +153,7 @@ const workerUrl: Record<string, string> = {
   paigow: WORKER_CASINO,
   pineapple: WORKER_CASINO,
   crazypineapple: WORKER_CASINO,
+  irishpoker: WORKER_CASINO,
   sevencardstud: WORKER_CASINO,
   razz: WORKER_CASINO,
   badugi: WORKER_CASINO,
@@ -186,6 +193,7 @@ const workerUrl: Record<string, string> = {
   canasta: WORKER_SOLO,
   cribbage: WORKER_SOLO,
   golf: WORKER_SOLO,
+  acesup: WORKER_SOLO,
   clocksolitaire: WORKER_SOLO,
   fortythieves: WORKER_SOLO,
   canfield: WORKER_SOLO,
@@ -232,6 +240,10 @@ const workerUrl: Record<string, string> = {
   rummy500: WORKER_SOLO,
   eightoff: WORKER_SOLO,
   penguin: WORKER_SOLO,
+  chinesepoker: WORKER_CASINO,
+  sixcardgolf: WORKER_CLASSIC,
+  doudizhu: WORKER_CLASSIC,
+  truco: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -580,6 +592,24 @@ export const crazyPineappleApi = {
     profile?: unknown,
   ) =>
     gameExec<PineappleResponse>('crazypineapple', {
+      command,
+      amount,
+      humanPlayMs,
+      profile,
+      ...config,
+    }),
+};
+
+/** API client for the Irish Poker /irishpoker/exec endpoint. */
+export const irishPokerApi = {
+  exec: (
+    command: HoldemLikeCommand | 'discard',
+    amount?: number,
+    config?: PineappleConfigInput,
+    humanPlayMs?: number,
+    profile?: unknown,
+  ) =>
+    gameExec<PineappleResponse>('irishpoker', {
       command,
       amount,
       humanPlayMs,
@@ -1184,6 +1214,31 @@ export const paigowApi = {
     gameExec<PaiGowResponse>('paigow', { command, amount, low0, low1 }),
 };
 
+/** API client for the Chinese Poker /chinesepoker/exec endpoint. */
+export const chinesepokerApi = {
+  exec: (
+    command: 'reset' | 'bet' | 'set' | 'log',
+    amount?: number,
+    frontIndices?: number[],
+    middleIndices?: number[],
+  ) => gameExec<ChinesePokerResponse>('chinesepoker', { command, amount, frontIndices, middleIndices }),
+};
+
+/** API client for the Six Card Golf /sixcardgolf/exec endpoint. */
+export const sixcardgolfApi = {
+  exec: (params: {
+    command: string;
+    position?: number;
+    config?: { playerCount?: number; cpuDifficulty?: number; rounds?: number };
+  }) => gameExec<SixCardGolfResponse>('sixcardgolf', params),
+};
+
+/** API client for the Dou Dizhu /doudizhu/exec endpoint. */
+export const doudizhuApi = {
+  exec: (params: { command: string; indices?: number[]; bidValue?: number; config?: { cpuDifficulty?: number } }) =>
+    gameExec<DoudizhuResponse>('doudizhu', params),
+};
+
 /** Source or target zone for a Spider card move. */
 export interface SpiderMoveZone {
   zone: string;
@@ -1732,6 +1787,15 @@ export const golfApi = {
   ) => gameExec<GolfResponse>('golf', { command, col, n }),
 };
 
+/** API client for the Aces Up /acesup/exec endpoint. */
+export const acesupApi = {
+  exec: (
+    command: 'reset' | 'draw' | 'remove' | 'move' | 'giveup' | 'hint' | 'log' | 'undo' | 'undo_n',
+    col?: number,
+    n?: number,
+  ) => gameExec<AcesUpResponse>('acesup', { command, col, n }),
+};
+
 /** Pig's Tail game API client. */
 export const pigtailApi = {
   exec: (command: 'reset' | 'draw', cpuHesitationEnabled?: boolean) =>
@@ -1848,6 +1912,15 @@ export const briscolaApi = {
     gameExec<BriscolaResponse>('briscola', { command, cardIndex, config }),
 };
 
+/** API client for the Truco /truco/exec endpoint. */
+export const trucoApi = {
+  exec: (
+    command: 'reset' | 'play' | 'truco' | 'accept' | 'decline' | 'next' | 'hint' | 'log',
+    cardIndex?: number,
+    config?: Partial<TrucoConfig>,
+  ) => gameExec<TrucoResponse>('truco', { command, cardIndex, config }),
+};
+
 /** Source or target zone for a Gaps card move. */
 export interface GapsMoveZone {
   zone: 'grid';
@@ -1960,6 +2033,7 @@ const games = [
   'shortdeck',
   'pineapple',
   'crazypineapple',
+  'irishpoker',
   'sevencardstud',
   'razz',
   'badugi',
@@ -2050,6 +2124,11 @@ const games = [
   'eightoff',
   'penguin',
   'russianpoker',
+  'chinesepoker',
+  'sixcardgolf',
+  'doudizhu',
+  'truco',
+  'acesup',
 ] as const;
 type Game = (typeof games)[number];
 
