@@ -3,7 +3,6 @@ package ui
 import (
 	"syscall"
 	"testing"
-	"time"
 )
 
 // closeSpyReader is a LineReader whose Close records that it ran, so tests can
@@ -55,9 +54,8 @@ func TestRunSignalWatcher_NormalExitDoesNotRunCleanup(t *testing.T) {
 	reader := &closeSpyReader{}
 	stop := runSignalWatcher(func() { _ = reader.Close() })
 	// Simulate a normal loop return: stop the watcher without a signal.
+	// stop() now blocks until the goroutine exits, so no sleep needed.
 	stop()
-	// Give the watcher goroutine a moment to observe the done channel.
-	time.Sleep(20 * time.Millisecond)
 	if reader.closed != 0 {
 		t.Errorf("cleanup ran on normal exit (%d times); it should only run on a signal", reader.closed)
 	}

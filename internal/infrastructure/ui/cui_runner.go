@@ -51,7 +51,9 @@ func runSignalWatcher(cleanup func()) (stop func()) {
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
 	done := make(chan struct{})
+	stopped := make(chan struct{})
 	go func() {
+		defer close(stopped)
 		select {
 		case sig := <-sigCh:
 			signal.Stop(sigCh)
@@ -60,7 +62,10 @@ func runSignalWatcher(cleanup func()) (stop func()) {
 			signal.Stop(sigCh)
 		}
 	}()
-	return func() { close(done) }
+	return func() {
+		close(done)
+		<-stopped
+	}
 }
 
 // CuiExecer CUIコントローラの共通インタフェース
