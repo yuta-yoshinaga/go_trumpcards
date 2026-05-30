@@ -1,7 +1,21 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import type { DrawHistoryEntry, OldMaidPlayerData } from '../../types/card';
-import { OldMaidDrawHistory } from './OldMaidDrawHistory';
+import { OldMaidDrawHistory, PLAYER_PALETTE } from './OldMaidDrawHistory';
+
+/** sRGB relative luminance of a `#rrggbb` color (WCAG 2.1 formula). */
+function relativeLuminance(hex: string): number {
+  const channels = [hex.slice(1, 3), hex.slice(3, 5), hex.slice(5, 7)].map((h) => {
+    const c = Number.parseInt(h, 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+}
+
+/** Contrast ratio between a `#rrggbb` color and pure white (`#ffffff`). */
+function contrastWithWhite(hex: string): number {
+  return 1.05 / (relativeLuminance(hex) + 0.05);
+}
 
 const players: OldMaidPlayerData[] = [
   { id: 0, isHuman: true, isFinished: false, cardCount: 5, cards: [] },
@@ -80,5 +94,11 @@ describe('OldMaidDrawHistory (graphical timeline)', () => {
     );
     expect(screen.getByText(/あなた.*上がり/)).toBeInTheDocument();
     expect(screen.getByText(/CPU\s?1.*上がり/)).toBeInTheDocument();
+  });
+
+  it('every chip palette color meets WCAG AA contrast (>=4.5:1) against white text', () => {
+    for (const color of PLAYER_PALETTE) {
+      expect(contrastWithWhite(color)).toBeGreaterThanOrEqual(4.5);
+    }
   });
 });

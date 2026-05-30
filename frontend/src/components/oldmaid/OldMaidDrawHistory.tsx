@@ -7,7 +7,11 @@ import { findPlayerName } from '../../utils/playerUtils';
 // is satisfied — the design system has no per-player token, and inline style
 // values are static so the JIT/AOT pass doesn't need to see class names.
 // Hoisted to module scope so the array is not re-allocated on every chip render.
-const PLAYER_PALETTE = ['#2563eb', '#059669', '#d97706', '#9333ea', '#db2777', '#0891b2'] as const;
+// Every color meets WCAG 2.1 AA contrast (>=4.5:1) against the white chip text:
+// the emerald/amber/cyan entries use the Tailwind -700 shades (the -600 shades
+// previously used fell to 3.2–3.8:1, below AA); blue/purple/pink already passed
+// and are unchanged. See #2097.
+export const PLAYER_PALETTE = ['#2563eb', '#047857', '#b45309', '#9333ea', '#db2777', '#0e7490'] as const;
 
 /** Colored chip used as a player icon in the timeline. Deterministic by index. */
 function PlayerChip({ name, idx }: { name: string; idx: number }) {
