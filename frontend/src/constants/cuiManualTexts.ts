@@ -33,6 +33,7 @@ import cribbage from '../../../docs/manual/cui/cribbage.md?raw';
 import cruel from '../../../docs/manual/cui/cruel.md?raw';
 import daifugo from '../../../docs/manual/cui/daifugo.md?raw';
 import deuceswild from '../../../docs/manual/cui/deuceswild.md?raw';
+import deucetoseven from '../../../docs/manual/cui/deucetoseven.md?raw';
 import doubt from '../../../docs/manual/cui/doubt.md?raw';
 import doudizhu from '../../../docs/manual/cui/doudizhu.md?raw';
 import dragontiger from '../../../docs/manual/cui/dragontiger.md?raw';
@@ -181,6 +182,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/gaps': gaps,
   '/razz': razz,
   '/badugi': badugi,
+  '/deucetoseven': deucetoseven,
   '/reddog': reddog,
   '/sevencardstud': sevencardstud,
   '/sevens': sevens,

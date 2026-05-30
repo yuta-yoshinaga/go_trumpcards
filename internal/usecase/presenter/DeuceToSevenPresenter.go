@@ -1,0 +1,10 @@
+package presenter
+
+import (
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+)
+
+// DeuceToSevenPresenter is the 2-7 Triple Draw presenter alias over the generic
+// GamePresenter. Adapter-side implementations satisfy this via Output +
+// ActionLogOutput.
+type DeuceToSevenPresenter = GamePresenter[interfaces.DeuceToSevenGame]

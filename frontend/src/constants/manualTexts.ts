@@ -32,6 +32,7 @@ import cribbage from '../../../docs/manual/web/cribbage.md?raw';
 import cruel from '../../../docs/manual/web/cruel.md?raw';
 import daifugo from '../../../docs/manual/web/daifugo.md?raw';
 import deuceswild from '../../../docs/manual/web/deuceswild.md?raw';
+import deucetoseven from '../../../docs/manual/web/deucetoseven.md?raw';
 import doubt from '../../../docs/manual/web/doubt.md?raw';
 import doudizhu from '../../../docs/manual/web/doudizhu.md?raw';
 import dragontiger from '../../../docs/manual/web/dragontiger.md?raw';
@@ -185,6 +186,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/gaps': gaps,
   '/razz': razz,
   '/badugi': badugi,
+  '/deucetoseven': deucetoseven,
   '/reddog': reddog,
   '/rummy500': rummy500,
   '/sevencardstud': sevencardstud,

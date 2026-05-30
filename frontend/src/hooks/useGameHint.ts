@@ -22,6 +22,7 @@ import type {
   CribbageResponse,
   CruelResponse,
   DaifugoResponse,
+  DeuceToSevenResponse,
   DoubtResponse,
   DoudizhuResponse,
   DragonTigerResponse,
@@ -116,6 +117,7 @@ import { getCribbageHint } from '../utils/hints/cribbageHint';
 import { getCruelHint } from '../utils/hints/cruelHint';
 import { getDaifugoHint } from '../utils/hints/daifugoHint';
 import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
+import { getDeuceToSevenHint } from '../utils/hints/deuceToSevenHint';
 import { getDoubtHint } from '../utils/hints/doubtHint';
 import { getDoudizhuHint } from '../utils/hints/doudizhuHint';
 import { getDragontigerHint } from '../utils/hints/dragontigerHint';
@@ -254,6 +256,7 @@ const hintFactories = {
   sevencardstud: () => null,
   razz: (s) => getRazzHint(s as SevenCardStudResponse),
   badugi: (s) => getBadugiHint(s as BadugiResponse),
+  deucetoseven: (s) => getDeuceToSevenHint(s as DeuceToSevenResponse),
   fortythieves: () => null,
   bakersdozen: (s) => getBakersdozenHint(s as BakersDozenResponse),
   beleagueredcastle: (s) => getBeleagueredcastleHint(s as BeleagueredCastleResponse),

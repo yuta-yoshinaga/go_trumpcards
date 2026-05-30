@@ -84,6 +84,26 @@ export const BadugiAction = {
   ALL_IN: 5,
 } as const;
 
+/** 2-7 Triple Draw phase constants (sync: internal/domain/DeuceToSeven.go). */
+export const DeuceToSevenPhase = {
+  INIT: 0,
+  DEAL: 1,
+  BET: 2,
+  DRAW: 3,
+  SHOWDOWN: 4,
+  END: 5,
+} as const;
+
+/** 2-7 Triple Draw betting action constants (sync: internal/domain/DeuceToSeven.go). */
+export const DeuceToSevenAction = {
+  FOLD: 0,
+  CHECK: 1,
+  CALL: 2,
+  BET: 3,
+  RAISE: 4,
+  ALL_IN: 5,
+} as const;
+
 /** Texas Hold'em phase constants (sync: internal/domain/Holdem.go). */
 export const HoldemPhase = {
   INIT: 0,
