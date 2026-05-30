@@ -3,13 +3,18 @@ import { describe, expect, it } from 'vitest';
 import type { DrawHistoryEntry, OldMaidPlayerData } from '../../types/card';
 import { OldMaidDrawHistory, PLAYER_PALETTE } from './OldMaidDrawHistory';
 
+/** Linearizes one `rr`/`gg`/`bb` hex channel per the WCAG 2.1 sRGB formula. */
+function parseChannel(hex: string): number {
+  const c = Number.parseInt(hex, 16) / 255;
+  return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+}
+
 /** sRGB relative luminance of a `#rrggbb` color (WCAG 2.1 formula). */
 function relativeLuminance(hex: string): number {
-  const channels = [hex.slice(1, 3), hex.slice(3, 5), hex.slice(5, 7)].map((h) => {
-    const c = Number.parseInt(h, 16) / 255;
-    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-  });
-  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+  const r = parseChannel(hex.slice(1, 3));
+  const g = parseChannel(hex.slice(3, 5));
+  const b = parseChannel(hex.slice(5, 7));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
 /** Contrast ratio between a `#rrggbb` color and pure white (`#ffffff`). */
@@ -98,7 +103,8 @@ describe('OldMaidDrawHistory (graphical timeline)', () => {
 
   it('every chip palette color meets WCAG AA contrast (>=4.5:1) against white text', () => {
     for (const color of PLAYER_PALETTE) {
-      expect(contrastWithWhite(color)).toBeGreaterThanOrEqual(4.5);
+      // Pass the color as the assertion message so a future failure names the offending hex.
+      expect(contrastWithWhite(color), color).toBeGreaterThanOrEqual(4.5);
     }
   });
 });
