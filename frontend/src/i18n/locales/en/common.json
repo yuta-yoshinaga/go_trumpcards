@@ -187,6 +187,8 @@
     "cancel": "Cancel",
     "confirmReset": "Confirm Reset",
     "confirmResetMessage": "Are you sure you want to reset the game?",
+    "confirmGiveUp": "Confirm Give Up",
+    "confirmGiveUpMessage": "Giving up will end the current game. Are you sure?",
     "confirmLeaveRoundMessage": "Leaving this page will discard the current round. Continue?",
     "confirm": "Confirm",
     "hint": "Hint",

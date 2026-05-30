@@ -187,6 +187,8 @@
     "cancel": "キャンセル",
     "confirmReset": "リセット確認",
     "confirmResetMessage": "本当にゲームをリセットしますか？",
+    "confirmGiveUp": "投了確認",
+    "confirmGiveUpMessage": "投了すると現在のゲームは終了します。よろしいですか？",
     "confirmLeaveRoundMessage": "ページを離れると現在のラウンドが破棄されます。続けますか？",
     "confirm": "確認",
     "hint": "ヒント",
