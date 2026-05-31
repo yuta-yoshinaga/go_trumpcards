@@ -82,6 +82,7 @@ import reddog from '../../../docs/manual/cui/reddog.md?raw';
 import rummy500 from '../../../docs/manual/cui/rummy500.md?raw';
 import russianpoker from '../../../docs/manual/cui/russianpoker.md?raw';
 import russiansolitaire from '../../../docs/manual/cui/russiansolitaire.md?raw';
+import scopa from '../../../docs/manual/cui/scopa.md?raw';
 import scorpion from '../../../docs/manual/cui/scorpion.md?raw';
 import seahaventowers from '../../../docs/manual/cui/seahaventowers.md?raw';
 import sevenbridge from '../../../docs/manual/cui/sevenbridge.md?raw';
@@ -210,6 +211,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/trash': trash,
   '/president': president,
   '/cassino': cassino,
+  '/scopa': scopa,
   '/spiteandmalice': spiteandmalice,
   '/skat': skat,
   '/shithead': shithead,

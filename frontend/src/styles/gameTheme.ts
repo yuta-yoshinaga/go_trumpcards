@@ -73,6 +73,7 @@ export type GameKey =
   | 'bigtwo'
   | 'president'
   | 'cassino'
+  | 'scopa'
   | 'sevens'
   | 'crazyeights'
   | 'pageone'
@@ -209,6 +210,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   bigtwo: GREEN,
   president: GREEN,
   cassino: GREEN,
+  scopa: GREEN,
   sevens: GREEN,
   crazyeights: GREEN,
   pageone: GREEN,

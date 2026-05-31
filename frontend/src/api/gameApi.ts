@@ -89,6 +89,7 @@ import type {
   Rummy500Response,
   RussianPokerResponse,
   RussianSolitaireResponse,
+  ScopaResponse,
   ScorpionResponse,
   SeahavenTowersResponse,
   SevenBridgeResponse,
@@ -1924,6 +1925,28 @@ export const cassinoApi = {
     gameExec<CassinoResponse>('cassino', { command, ...(params ?? {}) }),
 };
 
+/** Configuration options for Scopa game settings. */
+export interface ScopaConfigInput {
+  targetScore?: number;
+  cpuDifficulty?: number;
+}
+
+/** Command verbs accepted by the Scopa /scopa/exec endpoint (short forms). */
+export type ScopaCommand = 'r' | 'n' | 'p' | 'log';
+
+/** Extra payload fields for the Scopa /scopa/exec endpoint. */
+export interface ScopaExecParams {
+  handIndex?: number;
+  tableIndices?: number[];
+  config?: ScopaConfigInput;
+}
+
+/** API client for the Scopa /scopa/exec endpoint. */
+export const scopaApi = {
+  exec: (command: ScopaCommand, params?: ScopaExecParams) =>
+    gameExec<ScopaResponse>('scopa', { command, ...(params ?? {}) }),
+};
+
 export type { BakersDozenMoveZone, BeleagueredCastleMoveZone, CrescentMoveZone, FortyThievesMoveZone };
 
 /** API client for the Whist /whist/exec endpoint. */
@@ -2119,6 +2142,7 @@ const games = [
   'reddog',
   'president',
   'cassino',
+  'scopa',
   'spanish21',
   'spiteandmalice',
   'skat',

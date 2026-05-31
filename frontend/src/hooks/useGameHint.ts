@@ -65,6 +65,7 @@ import type {
   Rummy500Response,
   RussianPokerResponse,
   RussianSolitaireResponse,
+  ScopaResponse,
   ScorpionResponse,
   SeahavenTowersResponse,
   SevenBridgeResponse,
@@ -164,6 +165,7 @@ import { getReddogHint } from '../utils/hints/reddogHint';
 import { getRummy500Hint } from '../utils/hints/rummy500Hint';
 import { getRussianPokerHint } from '../utils/hints/russianpokerHint';
 import { getRussianSolitaireHint } from '../utils/hints/russianSolitaireHint';
+import { getScopaHint } from '../utils/hints/scopaHint';
 import { getScorpionHint } from '../utils/hints/scorpionHint';
 import { getSeahavenTowersHint } from '../utils/hints/seahavenTowersHint';
 import { getSevenbridgeHint } from '../utils/hints/sevenbridgeHint';
@@ -284,6 +286,7 @@ const hintFactories = {
   trash: (s) => getTrashHint(s as TrashResponse),
   president: (s) => getPresidentHint(s as PresidentResponse),
   cassino: (s) => getCassinoHint(s as CassinoResponse),
+  scopa: (s) => getScopaHint(s as ScopaResponse),
   clocksolitaire: (s) => getClocksolitaireHint(s as ClockSolitaireResponse),
   spiteandmalice: (s) => getSpiteAndMaliceHint(s as SpiteAndMaliceResponse),
   skat: (s) => getSkatHint(s as SkatResponse),
