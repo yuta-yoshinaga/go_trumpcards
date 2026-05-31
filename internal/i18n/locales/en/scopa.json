@@ -1,0 +1,19 @@
+{
+  "helpTitle": "Scopa",
+  "helpPlay": "  p <h> [t...]             play hand h (capture table cards t..., or lay if none given)",
+  "helpNext": "  n                        start the next round",
+  "helpSetDifficulty": "  sd [0-2]                 CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "playerLine": "{{name}}: hand {{hand}} / captured {{captured}} / scopa {{scopa}} / total {{total}}pt",
+  "tableLine": "Table: {{cards}}",
+  "tableEmpty": "Table: empty",
+  "humanActionLine": "Your move: {{text}}",
+  "cpuActionsHeader": "[CPU moves]",
+  "cpuActionLine": "  {{name}}: {{text}}",
+  "actionCapture": "captured {{count}} card(s) with {{played}}{{suffix}}",
+  "actionScopaSuffix": " (Scopa!)",
+  "actionLay": "laid {{played}} on the table",
+  "gameEnd": "Game over!",
+  "scoreEntry": "  {{name}}: {{score}}pt",
+  "promptCurrentTurn": "Current turn: {{name}}",
+  "promptHelp": "p <hand> [table...] to capture or lay / n for the next round"
+}

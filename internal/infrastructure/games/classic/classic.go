@@ -351,4 +351,12 @@ func init() {
 			return usecase.RestoreTrucoInteractor(data, new(presenter.TrucoWebPresenter))
 		},
 		controller.NewTrucoWebControllerWithProvider)
+	games.RegisterKVGame("scopa", games.CategoryClassic,
+		func() usecase.ScopaInteractorIF {
+			return usecase.NewScopaInteractor(domain.NewDefaultScopa(), new(presenter.ScopaWebPresenter))
+		},
+		func(data []byte) (usecase.ScopaInteractorIF, error) {
+			return usecase.RestoreScopaInteractor(data, new(presenter.ScopaWebPresenter))
+		},
+		controller.NewScopaWebControllerWithProvider)
 }

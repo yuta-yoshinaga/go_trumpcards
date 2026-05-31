@@ -1743,6 +1743,16 @@ var gameRegistry = []GameRegistryEntry{
 				CommandKeys: []string{"truco.helpPlay", "truco.helpTruco", "truco.helpRespond", "truco.helpNext"},
 			})
 	}},
+	{Name: "scopa", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewScopaCuiController(usecase.NewScopaInteractor(
+				domain.NewDefaultScopa(), new(presenter.ScopaCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:    "scopa.helpTitle",
+				CommandKeys: []string{"scopa.helpPlay", "scopa.helpNext"},
+				SettingKeys: []string{"scopa.helpSetDifficulty"},
+			})
+	}},
 	{Name: "acesup", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewAcesUpCuiController(usecase.NewAcesUpInteractor(

@@ -6,6 +6,44 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
+func TestNewTrumpCardsScopa(t *testing.T) {
+	deck := domain.NewTrumpCardsScopa()
+	if got := deck.GetTotalCount(); got != 40 {
+		t.Fatalf("GetTotalCount() = %d, want 40", got)
+	}
+
+	valid := map[int]bool{1: true, 2: true, 3: true, 4: true, 5: true, 6: true, 7: true, 11: true, 12: true, 13: true}
+	suits := map[int]int{}
+	values := map[int]int{}
+	for i := range 40 {
+		c := deck.DrawCard()
+		if c == nil {
+			t.Fatalf("expected card at index %d but got nil", i)
+		}
+		if !valid[c.GetValue()] {
+			t.Errorf("unexpected value %d at index %d", c.GetValue(), i)
+		}
+		if c.GetDesign() < domain.CardDesignSpade || c.GetDesign() > domain.CardDesignDiamond {
+			t.Errorf("unexpected design %d at index %d", c.GetDesign(), i)
+		}
+		suits[c.GetDesign()]++
+		values[c.GetValue()]++
+	}
+	for s := domain.CardDesignSpade; s <= domain.CardDesignDiamond; s++ {
+		if suits[s] != 10 {
+			t.Errorf("suit %d count = %d, want 10", s, suits[s])
+		}
+	}
+	for v := range valid {
+		if values[v] != 4 {
+			t.Errorf("value %d count = %d, want 4", v, values[v])
+		}
+	}
+	if extra := deck.DrawCard(); extra != nil {
+		t.Errorf("expected nil after 40 draws, got %+v", extra)
+	}
+}
+
 func TestNewTrumpCardsBriscola(t *testing.T) {
 	deck := domain.NewTrumpCardsBriscola()
 	if got := deck.GetTotalCount(); got != 40 {
