@@ -573,4 +573,9 @@ func init() {
 			return usecase.NewAcesUpInteractor(domain.NewDefaultAcesUp(), new(presenter.AcesUpWebPresenter))
 		},
 		controller.NewAcesUpWebController)
+	BindWebControllerFor("barbu",
+		func() usecase.BarbuInteractorIF {
+			return usecase.NewBarbuInteractor(domain.NewDefaultBarbu(), new(presenter.BarbuWebPresenter))
+		},
+		controller.NewBarbuWebController)
 }

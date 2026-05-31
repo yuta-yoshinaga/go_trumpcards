@@ -198,6 +198,10 @@ var registry = []*Game{
 	{Name: "truco", Category: CategoryClassic, Description: "Truco (トゥルコ)"},
 	{Name: "scopa", Category: CategoryCasino, Description: "Scopa (スコパ)"},
 	{Name: "acesup", Category: CategorySolo, Description: "Aces Up (四つ葉のクローバー)"},
+	// Barbu is a classic compendium trick-taking game, but it is bucketed into
+	// the solo worker because the classic worker is at the 1 MB gzip free-tier
+	// limit. Category here is purely a binary-size bucket (see package doc).
+	{Name: "barbu", Category: CategorySolo, Description: "Barbu (バルブ)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

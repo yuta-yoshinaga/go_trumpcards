@@ -278,4 +278,14 @@ func init() {
 			return usecase.RestoreAcesUpInteractor(data, new(presenter.AcesUpWebPresenter))
 		},
 		controller.NewAcesUpWebControllerWithProvider)
+	// Barbu is bucketed here (solo worker) for binary-size reasons; the classic
+	// worker is at the 1 MB gzip free-tier limit. See registry.go.
+	games.RegisterKVGame("barbu", games.CategorySolo,
+		func() usecase.BarbuInteractorIF {
+			return usecase.NewBarbuInteractor(domain.NewDefaultBarbu(), new(presenter.BarbuWebPresenter))
+		},
+		func(data []byte) (usecase.BarbuInteractorIF, error) {
+			return usecase.RestoreBarbuInteractor(data, new(presenter.BarbuWebPresenter))
+		},
+		controller.NewBarbuWebControllerWithProvider)
 }
