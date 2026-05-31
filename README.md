@@ -131,6 +131,7 @@ Go + Clean Architecture で実装した111種類のトランプゲーム。CLI �
 | トゥルコ (Truco) | `truco` | [CUI](docs/manual/cui/truco.md) / [Web](docs/manual/web/truco.md) |
 | 四つ葉のクローバー (Aces Up) | `acesup` | [CUI](docs/manual/cui/acesup.md) / [Web](docs/manual/web/acesup.md) |
 | スコパ (Scopa) | `scopa` | [CUI](docs/manual/cui/scopa.md) / [Web](docs/manual/web/scopa.md) |
+| バルブ (Barbu) | `barbu` | [CUI](docs/manual/cui/barbu.md) / [Web](docs/manual/web/barbu.md) |
 
 ## Demo
 

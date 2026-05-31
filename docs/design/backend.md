@@ -85,6 +85,7 @@
   - [3.50 CasinoWar フェーズ遷移](#350-casinowar-フェーズ遷移)
   - [3.51 Mighty フェーズ遷移](#351-mighty-フェーズ遷移)
   - [3.57 Scopa フェーズ遷移](#357-scopa-フェーズ遷移)
+  - [3.58 Barbu フェーズ遷移](#358-barbu-フェーズ遷移)
 
 ---
 
@@ -3648,3 +3649,23 @@ stateDiagram-v2
 ```
 
 **注:** Scopa は Cassino と同じくフェーズ定数を文字列 (string) で保持する。40 枚デッキ (8/9/10 を除外) で 1 人 vs 1 CPU。`Play(handIdx, [tableIdxs])` で手札 1 枚を出し、値が一致する単札があれば必ずその単札を取る (強制)。一致がなければ合計一致の場札を取るか場に置く。場札を払い切ると **scopa** ボーナス。ラウンド終了時に最多カード (carte)・最多ダイヤ (denari)・7♦ (settebello)・最多 7 (簡易 primiera)・各 scopa で得点し、TargetScore (既定 11) 到達でゲーム終了。
+
+### 3.58 Barbu フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> SelectContract : Reset() / NextDeal() (52 枚を 13 枚ずつ配布)
+    SelectContract --> Play : SelectContract(c, trump) (ディーラーが選択)
+    Play --> Play : Play(handIdx) / CpuStep() (トリック or 7 並べ)
+    Play --> DealEnd : ディール終了 (得点計算)
+    DealEnd --> SelectContract : NextDeal() (継続)
+    DealEnd --> GameEnd : 28 ディール完了
+    GameEnd --> [*]
+
+    note right of SelectContract : BarbuPhaseSelectContract = "selectContract"
+    note right of Play : BarbuPhasePlay = "play"
+    note right of DealEnd : BarbuPhaseDealEnd = "dealEnd"
+    note right of GameEnd : BarbuPhaseGameEnd = "gameEnd"
+```
+
+**注:** Barbu は 4 人・52 枚デッキのコンペンディウム型トリックテイキング。フェーズ定数は文字列で保持する。各プレイヤーがディーラーを 7 回務め計 28 ディール。ディーラーは 7 コントラクト (No Tricks / No Hearts / No Queens / Barbu(K♥) / No Last Trick / Trumps / Dominoes) を 1 回ずつ選択する。得点は `BarbuContracts.go` の Strategy テーブルで切り替える。6 つのトリック系コントラクトは共通のフォロースート処理 (Hearts/Whist と同型) を、Dominoes は Sevens 同型の bitmask レイアウト (`BarbuDominoes.go`) を再利用する。28 ディール後の累計最高得点が勝者。
