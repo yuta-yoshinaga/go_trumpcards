@@ -1,0 +1,108 @@
+package presenter
+
+import (
+	"strconv"
+	"strings"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
+)
+
+// ScopaCuiPresenter renders the Scopa CUI view.
+type ScopaCuiPresenter struct{}
+
+// Output renders the current game state for the active locale.
+func (p *ScopaCuiPresenter) Output(sg interfaces.ScopaGame, lastErr error) string {
+	return buildCuiOutput(i18n.T("scopa.helpTitle"), func(b *strings.Builder) {
+		for i := 0; i < sg.GetPlayerCnt(); i++ {
+			b.WriteString(scopaPlayerStr(sg.GetPlayer(i), i))
+		}
+		b.WriteString("----------\n")
+
+		if tableCards := sg.GetTableCards(); len(tableCards) > 0 {
+			b.WriteString(i18n.Tf("scopa.tableLine", "cards", cuiCardSliceStr(tableCards)) + "\n")
+		} else {
+			b.WriteString(i18n.T("scopa.tableEmpty") + "\n")
+		}
+
+		if ha := sg.GetHumanAction(); ha != nil {
+			b.WriteString(i18n.Tf("scopa.humanActionLine", "text", scopaActionStr(ha)) + "\n")
+		}
+		if cpu := sg.GetCpuActions(); len(cpu) > 0 {
+			b.WriteString(color.Bold(i18n.T("scopa.cpuActionsHeader")) + "\n")
+			for _, a := range cpu {
+				b.WriteString(i18n.Tf("scopa.cpuActionLine",
+					"name", cuiPlayerName(sg.GetPlayer(a.PlayerIdx), a.PlayerIdx),
+					"text", scopaActionStr(a)) + "\n")
+			}
+		}
+
+		cuiErrorBlock(b, lastErr)
+
+		if sg.GetGameEndFlag() {
+			b.WriteString(i18n.T("scopa.gameEnd") + "\n")
+			for i := 0; i < sg.GetPlayerCnt(); i++ {
+				pl := sg.GetPlayer(i)
+				if pl == nil {
+					continue
+				}
+				b.WriteString(i18n.Tf("scopa.scoreEntry",
+					"name", cuiPlayerName(pl, i),
+					"score", strconv.Itoa(pl.GetTotalScore())) + "\n")
+			}
+			return
+		}
+		currentTurn := sg.GetCurrentTurn()
+		b.WriteString(i18n.Tf("scopa.promptCurrentTurn",
+			"name", cuiPlayerName(sg.GetPlayer(currentTurn), currentTurn)) + "\n")
+		b.WriteString(i18n.T("scopa.promptHelp") + "\n")
+	})
+}
+
+// scopaPlayerStr returns the display string for a single Scopa player.
+func scopaPlayerStr(player *domain.ScopaPlayer, i int) string {
+	var b strings.Builder
+	b.WriteString(i18n.Tf("scopa.playerLine",
+		"name", cuiPlayerName(player, i),
+		"hand", strconv.Itoa(player.GetCardsSize()),
+		"captured", strconv.Itoa(player.CapturedCount()),
+		"scopa", strconv.Itoa(player.GetScopaCount()),
+		"total", strconv.Itoa(player.GetTotalScore())) + "\n")
+	if player.GetIsHuman() {
+		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+	}
+	return b.String()
+}
+
+// scopaActionStr renders an action as a short readable line.
+func scopaActionStr(a *domain.ScopaAction) string {
+	if a == nil {
+		return ""
+	}
+	if len(a.CapturedCards) > 0 {
+		suffix := ""
+		if a.IsScopa {
+			suffix = i18n.T("scopa.actionScopaSuffix")
+		}
+		return i18n.Tf("scopa.actionCapture",
+			"played", scopaCardShort(a.PlayedCard),
+			"count", strconv.Itoa(len(a.CapturedCards)),
+			"suffix", suffix)
+	}
+	return i18n.Tf("scopa.actionLay", "played", scopaCardShort(a.PlayedCard))
+}
+
+// scopaCardShort renders a single card as a short text representation.
+func scopaCardShort(c *domain.Card) string {
+	if c == nil {
+		return "-"
+	}
+	return cuiCardSliceStr([]*domain.Card{c})
+}
+
+// ActionLogOutput emits the action-log transcript as plain text.
+func (p *ScopaCuiPresenter) ActionLogOutput(sg interfaces.ScopaGame) string {
+	return actionLogOutputText(sg)
+}

@@ -84,6 +84,7 @@
   - [3.49 RussianSolitaire フェーズ遷移](#349-russiansolitaire-フェーズ遷移)
   - [3.50 CasinoWar フェーズ遷移](#350-casinowar-フェーズ遷移)
   - [3.51 Mighty フェーズ遷移](#351-mighty-フェーズ遷移)
+  - [3.57 Scopa フェーズ遷移](#357-scopa-フェーズ遷移)
 
 ---
 
@@ -3625,3 +3626,25 @@ stateDiagram-v2
 ```
 
 **注:** Truco は 1 マノ = 最大 3 バサの best-of-2、`resolveMano` がパルダ (引き分け) を含む勝者判定を行う。マッチは複数マノにまたがり、`playerMatchPoints` に賭け点を累積する。`Truco.go` のドメインは Briscola のトリック進行を流用しつつ、Respond フェーズ (ベッティング割り込み) を追加している。
+
+### 3.57 Scopa フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Dealing : Reset() / NewRound() (3 枚ハンド + 4 枚テーブル配布)
+    Dealing --> PlayerTurn : 配札完了
+    PlayerTurn --> PlayerTurn : Play(handIdx, [tableIdxs]) (取る/場に置く ターン交代)
+    PlayerTurn --> PlayerTurn : CpuStep() (CPU ターン)
+    PlayerTurn --> Dealing : 全員手札 0 → 再配布 (山札残あり)
+    PlayerTurn --> RoundEnd : 山札・手札ともに尽きた
+    RoundEnd --> Dealing : NewRound() (継続)
+    RoundEnd --> GameEnd : TargetScore 到達
+    GameEnd --> [*]
+
+    note right of Dealing : ScopaPhaseDealing = "dealing"
+    note right of PlayerTurn : ScopaPhasePlayerTurn = "playerTurn"
+    note right of RoundEnd : ScopaPhaseRoundEnd = "roundEnd"
+    note right of GameEnd : ScopaPhaseGameEnd = "gameEnd"
+```
+
+**注:** Scopa は Cassino と同じくフェーズ定数を文字列 (string) で保持する。40 枚デッキ (8/9/10 を除外) で 1 人 vs 1 CPU。`Play(handIdx, [tableIdxs])` で手札 1 枚を出し、値が一致する単札があれば必ずその単札を取る (強制)。一致がなければ合計一致の場札を取るか場に置く。場札を払い切ると **scopa** ボーナス。ラウンド終了時に最多カード (carte)・最多ダイヤ (denari)・7♦ (settebello)・最多 7 (簡易 primiera)・各 scopa で得点し、TargetScore (既定 11) 到達でゲーム終了。

@@ -1,0 +1,53 @@
+{
+  "nav": {
+    "scopa": "Scopa"
+  },
+  "skeleton": {
+    "loading": "Loading..."
+  },
+  "phase": {
+    "play": "Playing",
+    "playerTurn": "Your Turn",
+    "cpuTurn": "CPU's Turn",
+    "roundEnd": "Round End",
+    "end": "Game Over"
+  },
+  "label": {
+    "tableCards": "Table",
+    "tableEmpty": "No table cards",
+    "yourCaptures": "Captures"
+  },
+  "button": {
+    "take": "Take",
+    "lay": "Lay",
+    "nextRound": "Next Round",
+    "reset": "Reset"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetScore": "Target Score"
+  },
+  "result": {
+    "win": "Win",
+    "lose": "Lose",
+    "draw": "Draw"
+  },
+  "hint": {
+    "take": {
+      "settebello": "You can capture the settebello (7♦). Grab it for a sure point.",
+      "diamonds": "You can capture diamonds — good for the primiera.",
+      "capture": "You have a hand card that can capture table cards."
+    },
+    "lay": {
+      "safe": "No capture is possible. Lay your card on the table."
+    }
+  },
+  "tutorial": {
+    "cpuArea": "CPU's card count and score.",
+    "tableCards": "Table cards. Capture a single matching card or a subset summing to your hand card.",
+    "playerHand": "Your hand. Select a card to act.",
+    "actions": "Choose Take (with table cards selected) or Lay (with none selected).",
+    "resetButton": "Reset the game."
+  }
+}

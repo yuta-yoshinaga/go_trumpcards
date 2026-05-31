@@ -1,0 +1,19 @@
+{
+  "helpTitle": "Scopa (スコパ)",
+  "helpPlay": "  p <h> [t...]             手札hを出す (場札t...を捕獲、無指定で場に置く)",
+  "helpNext": "  n                        次のラウンドを開始する",
+  "helpSetDifficulty": "  sd [0-2]                 CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "playerLine": "{{name}}: 手札{{hand}}枚 / 捕獲{{captured}}枚 / スコパ{{scopa}} / 累計{{total}}点",
+  "tableLine": "場: {{cards}}",
+  "tableEmpty": "場: なし",
+  "humanActionLine": "あなたの行動: {{text}}",
+  "cpuActionsHeader": "[CPUの行動]",
+  "cpuActionLine": "  {{name}}: {{text}}",
+  "actionCapture": "捕獲 played={{played}} captured={{count}}枚{{suffix}}",
+  "actionScopaSuffix": " (スコパ!)",
+  "actionLay": "場に置く {{played}}",
+  "gameEnd": "ゲーム終了！",
+  "scoreEntry": "  {{name}}: {{score}}点",
+  "promptCurrentTurn": "手番: {{name}}",
+  "promptHelp": "p <hand> [table...] で捕獲または場に置く / n で次のラウンド"
+}

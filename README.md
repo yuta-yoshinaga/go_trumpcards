@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した110種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した111種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -130,6 +130,7 @@ Go + Clean Architecture で実装した110種類のトランプゲーム。CLI �
 | 斗地主 (Dou Dizhu) | `doudizhu` | [CUI](docs/manual/cui/doudizhu.md) / [Web](docs/manual/web/doudizhu.md) |
 | トゥルコ (Truco) | `truco` | [CUI](docs/manual/cui/truco.md) / [Web](docs/manual/web/truco.md) |
 | 四つ葉のクローバー (Aces Up) | `acesup` | [CUI](docs/manual/cui/acesup.md) / [Web](docs/manual/web/acesup.md) |
+| スコパ (Scopa) | `scopa` | [CUI](docs/manual/cui/scopa.md) / [Web](docs/manual/web/scopa.md) |
 
 ## Demo
 

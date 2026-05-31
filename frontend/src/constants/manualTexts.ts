@@ -84,6 +84,7 @@ import reddog from '../../../docs/manual/web/reddog.md?raw';
 import rummy500 from '../../../docs/manual/web/rummy500.md?raw';
 import russianpoker from '../../../docs/manual/web/russianpoker.md?raw';
 import russiansolitaire from '../../../docs/manual/web/russiansolitaire.md?raw';
+import scopa from '../../../docs/manual/web/scopa.md?raw';
 import scorpion from '../../../docs/manual/web/scorpion.md?raw';
 import seahaventowers from '../../../docs/manual/web/seahaventowers.md?raw';
 import sevenbridge from '../../../docs/manual/web/sevenbridge.md?raw';
@@ -215,6 +216,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/trash': trash,
   '/president': president,
   '/cassino': cassino,
+  '/scopa': scopa,
   '/spiteandmalice': spiteandmalice,
   '/skat': skat,
   '/shithead': shithead,

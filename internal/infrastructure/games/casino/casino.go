@@ -302,4 +302,15 @@ func init() {
 			return usecase.RestoreChinesePokerInteractor(data, new(presenter.ChinesePokerWebPresenter))
 		},
 		controller.NewChinesePokerWebControllerWithProvider)
+	// Scopa is a classic fishing game, but it is bucketed into the casino
+	// worker because the classic worker is at the 1 MB gzip free-tier limit.
+	// Workers are pure binary-size partitions with no user-facing meaning.
+	games.RegisterKVGame("scopa", games.CategoryCasino,
+		func() usecase.ScopaInteractorIF {
+			return usecase.NewScopaInteractor(domain.NewDefaultScopa(), new(presenter.ScopaWebPresenter))
+		},
+		func(data []byte) (usecase.ScopaInteractorIF, error) {
+			return usecase.RestoreScopaInteractor(data, new(presenter.ScopaWebPresenter))
+		},
+		controller.NewScopaWebControllerWithProvider)
 }
