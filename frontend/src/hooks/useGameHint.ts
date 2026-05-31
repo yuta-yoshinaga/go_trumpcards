@@ -4,6 +4,7 @@ import type {
   BaccaratResponse,
   BadugiResponse,
   BakersDozenResponse,
+  BarbuResponse,
   BeleagueredCastleResponse,
   BeloteResponse,
   BigTwoResponse,
@@ -98,6 +99,7 @@ import { getAccordionHint } from '../utils/hints/accordionHint';
 import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBadugiHint } from '../utils/hints/badugiHint';
 import { getBakersdozenHint } from '../utils/hints/bakersdozenHint';
+import { getBarbuHint } from '../utils/hints/barbuHint';
 import { getBeleagueredcastleHint } from '../utils/hints/beleagueredcastleHint';
 import { getBeloteHint } from '../utils/hints/beloteHint';
 import { getBigTwoHint } from '../utils/hints/bigtwoHint';
@@ -287,6 +289,7 @@ const hintFactories = {
   president: (s) => getPresidentHint(s as PresidentResponse),
   cassino: (s) => getCassinoHint(s as CassinoResponse),
   scopa: (s) => getScopaHint(s as ScopaResponse),
+  barbu: (s) => getBarbuHint(s as BarbuResponse),
   clocksolitaire: (s) => getClocksolitaireHint(s as ClockSolitaireResponse),
   spiteandmalice: (s) => getSpiteAndMaliceHint(s as SpiteAndMaliceResponse),
   skat: (s) => getSkatHint(s as SkatResponse),
