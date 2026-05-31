@@ -247,6 +247,7 @@ const workerUrl: Record<string, string> = {
   sixcardgolf: WORKER_CLASSIC,
   doudizhu: WORKER_CLASSIC,
   truco: WORKER_CLASSIC,
+  scopa: WORKER_CASINO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
