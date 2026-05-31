@@ -81,6 +81,12 @@ func TestIrishPoker_CPUAutoDiscard(t *testing.T) {
 
 	for _, pl := range p.players {
 		pl.Reset()
+		// pl.Reset() does not clear folded/all-in (the game's Reset sets them
+		// explicitly). A CPU may have folded during the preflop actions run by
+		// p.Reset(), which would skip its auto-discard and keep 4 cards. Clear
+		// both flags so every CPU is an active discarder for this test.
+		pl.SetFolded(false)
+		pl.SetAllIn(false)
 		pl.AddCard(NewCard(CardDesignHeart, 5, false))
 		pl.AddCard(NewCard(CardDesignHeart, 6, false))
 		pl.AddCard(NewCard(CardDesignHeart, 7, false))
