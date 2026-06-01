@@ -588,4 +588,9 @@ func init() {
 			return usecase.NewBarbuInteractor(domain.NewDefaultBarbu(), new(presenter.BarbuWebPresenter))
 		},
 		controller.NewBarbuWebController)
+	BindWebControllerFor("macau",
+		func() usecase.MacauInteractorIF {
+			return usecase.NewMacauInteractor(domain.NewDefaultMacau(), new(presenter.MacauWebPresenter))
+		},
+		controller.NewMacauWebController)
 }

@@ -1811,6 +1811,17 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"barbu.helpSetDifficulty"},
 			})
 	}},
+	{Name: "macau", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewMacauCuiController(usecase.NewMacauInteractor(
+				domain.NewDefaultMacau(), new(presenter.MacauCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "macau.helpTitle",
+				CommandKeys:       []string{"macau.helpPlay", "macau.helpDraw", "macau.helpSuit", "macau.helpDeclare", "macau.helpSkipDeclare", "macau.helpNextRound"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"macau.helpSetDifficulty", "macau.helpSetLimit"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

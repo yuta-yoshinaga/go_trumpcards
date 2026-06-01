@@ -275,6 +275,15 @@ export const CrazyEightsSuit = {
   DIAMOND: 4,
 } as const;
 
+/** Macau phase constants (sync: internal/domain/Macau.go). */
+export const MacauPhase = {
+  PLAY: 0,
+  CHOOSE_SUIT: 1,
+  MUST_DECLARE: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Gin Rummy phase constants (sync: internal/domain/GinRummy.go). */
 export const GinRummyPhase = {
   DRAW: 0,

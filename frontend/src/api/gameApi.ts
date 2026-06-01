@@ -61,6 +61,7 @@ import type {
   IndianPokerResponse,
   KlondikeResponse,
   LetItRideResponse,
+  MacauResponse,
   MemoryResponse,
   MightyResponse,
   MississippiStudResponse,
@@ -252,6 +253,7 @@ const workerUrl: Record<string, string> = {
   truco: WORKER_CLASSIC,
   scopa: WORKER_CASINO,
   barbu: WORKER_SOLO,
+  macau: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1983,6 +1985,28 @@ export const barbuApi = {
     gameExec<BarbuResponse>('barbu', { command, ...(params ?? {}) }),
 };
 
+/** Configuration options for Macau game settings. */
+export interface MacauConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Macau /macau/exec endpoint. */
+export const macauApi = {
+  exec: (
+    command: 'reset' | 'play' | 'draw' | 'suit' | 'declare' | 'skipdeclare' | 'nextround',
+    cardIndex?: number,
+    suit?: number,
+    config?: MacauConfigInput,
+  ) =>
+    gameExec<MacauResponse>('macau', {
+      command,
+      cardIndex,
+      suit,
+      config,
+    }),
+};
+
 export type { BakersDozenMoveZone, BeleagueredCastleMoveZone, CrescentMoveZone, FortyThievesMoveZone };
 
 /** API client for the Whist /whist/exec endpoint. */
@@ -2182,6 +2206,7 @@ const games = [
   'cassino',
   'scopa',
   'barbu',
+  'macau',
   'spanish21',
   'spiteandmalice',
   'skat',

@@ -72,6 +72,8 @@ tags:
     description: Scopa (スコパ) game
   - name: barbu
     description: Barbu (バルブ) — French compendium trick-taking game (7 contracts, 28 deals)
+  - name: macau
+    description: Macau (マカオ) — European Crazy Eights variant with magic cards (2/7/8/J) and "Macau!" declaration
   - name: spanish21
     description: Spanish 21 (スパニッシュ21) — BlackJack variant with 48-card deck and bonus payouts
   - name: canasta
@@ -2088,6 +2090,90 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CrazyEightsResponse'
+
+  /macau/exec:
+    post:
+      tags:
+        - macau
+      summary: Execute a Macau game command
+      description: |
+        Send a command to advance the Macau (マカオ) game session identified by
+        `sessionId`.  Macau is a 4-player European Crazy Eights variant on a
+        standard 52-card deck with "magic cards" and a last-card declaration.
+        Match the top discard by suit or rank.  Magic cards: **2** forces the
+        next player to draw two (stackable — play another 2 to pass on the
+        accumulated penalty), **7** skips the next player, **8** is wild (choose
+        the next suit), **J** reverses the play direction.  On reaching 1 card a
+        player must `declare` "Macau!" or `skipdeclare` to take a 2-card penalty.
+        Round ends when a player empties their hand; scoring: 8=50, J/Q/K=10,
+        A=1, others=face value.  Match ends at the point limit (default 200).
+
+        | Phase        | Value | Description |
+        |--------------|-------|-------------|
+        | Play         | `0`   | Play a card, draw, or take the penalty stack |
+        | ChooseSuit   | `1`   | Choose suit after playing an 8 |
+        | MustDeclare  | `2`   | Declare "Macau!" or take the penalty |
+        | RoundEnd     | `3`   | A player emptied their hand; advance with `nextround` |
+        | GameEnd      | `4`   | A player reached the point limit |
+
+        | Command       | Aliases | Description |
+        |---------------|---------|-------------|
+        | `reset`       | `r`     | Start / restart a game |
+        | `play`        | `p`     | Play a card (requires `cardIndex`) |
+        | `draw`        | `d`     | Draw a card / take the penalty stack |
+        | `suit`        | `s`     | Choose next suit after playing 8 (requires `suit`: 1-4) |
+        | `declare`     | `dc`    | Declare "Macau!" (one card left) |
+        | `skipdeclare` | `sk`    | Skip the declaration and take the penalty |
+        | `nextround`   | `nr`    | Score the round and start the next |
+        | `log`         | `l`     | View action log |
+      operationId: macauExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MacauRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play card at index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+              draw:
+                summary: Draw a card or take the penalty stack
+                value:
+                  command: draw
+                  sessionId: my-session-001
+              suit:
+                summary: Choose hearts as next suit
+                value:
+                  command: suit
+                  suit: 3
+                  sessionId: my-session-001
+              declare:
+                summary: Declare "Macau!"
+                value:
+                  command: declare
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MacauResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MacauResponse'
 
   /pageone/exec:
     post:
@@ -15975,6 +16061,129 @@ components:
         chosenSuit:
           type: integer
           description: "Suit chosen after playing an 8 (0 if not applicable; 1=♠, 2=♣, 3=♥, 4=♦)"
+        gameEndFlag:
+          type: boolean
+          description: Whether the match has ended
+        winnerIdx:
+          type: integer
+          description: Index of the match winner (-1 if not ended)
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+        message:
+          type: string
+          description: Game status message
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Macau
+    # -------------------------------------------------------------------------
+    MacauRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `play` (`p`),
+            `draw` (`d`), `suit` (`s`), `declare` (`dc`), `skipdeclare` (`sk`),
+            `nextround` (`nr`), `log` (`l`).
+          enum: [reset, r, play, p, draw, d, suit, s, declare, dc, skipdeclare, sk, nextround, nr, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Index of the card to play.  Required for `play` command.
+          example: 2
+        suit:
+          type: integer
+          description: "Suit choice after playing an 8 (1=♠, 2=♣, 3=♥, 4=♦).  Required for `suit` command."
+          minimum: 1
+          maximum: 4
+          example: 3
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            pointLimit:
+              type: integer
+              minimum: 1
+              maximum: 1000
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    MacauResponse:
+      type: object
+      description: Current state of the Macau game
+      properties:
+        players:
+          type: array
+          description: Array of player objects
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+              hasDeclared:
+                type: boolean
+                description: Whether the player has declared "Macau!" this turn
+        phase:
+          type: integer
+          description: "Game phase: 0 = Play, 1 = ChooseSuit, 2 = MustDeclare, 3 = RoundEnd, 4 = GameEnd"
+          enum: [0, 1, 2, 3, 4]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Current round number
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        discardTop:
+          description: The top card of the discard pile
+          $ref: '#/components/schemas/Card'
+        drawPileCount:
+          type: integer
+          description: Number of cards remaining in the draw pile
+        chosenSuit:
+          type: integer
+          description: "Suit chosen after playing an 8 (0 if not applicable; 1=♠, 2=♣, 3=♥, 4=♦)"
+        penaltyDrawCount:
+          type: integer
+          description: Accumulated draw-two penalty (0 when no penalty is active)
+        direction:
+          type: integer
+          description: "Play direction: 1 = clockwise, -1 = counter-clockwise (reversed by Jacks)"
         gameEndFlag:
           type: boolean
           description: Whether the match has ended
