@@ -27,6 +27,7 @@ import type {
   ThreeCardResponse,
   TrashResponse,
   TwoTenJackResponse,
+  WaspResponse,
 } from '../types/card';
 import { CanastaPhase, CaribbeanStudPhase, GoFishPhase } from '../types/phases';
 import { useGameHint } from './useGameHint';
@@ -753,6 +754,41 @@ describe('useGameHint', () => {
       hint: { fromCol: -1, cardIndex: -1, toCol: -1 },
     };
     const { result } = renderHook(() => useGameHint('scorpion', state));
+    expect(result.current.hint?.reason).toBe('frontendHint.dealStock');
+  });
+
+  it('routes wasp through getWaspHint (tableau move)', () => {
+    localStorage.setItem('hint_enabled_wasp', 'true');
+    const state: WaspResponse = {
+      tableau: [],
+      stockCount: 0,
+      completedSuits: 0,
+      phase: 0,
+      moveCount: 0,
+      canUndo: false,
+      isStalemate: false,
+      message: '',
+      hint: { fromCol: 1, cardIndex: 2, toCol: 3 },
+    };
+    const { result } = renderHook(() => useGameHint('wasp', state));
+    expect(result.current.hint).not.toBeNull();
+    expect(result.current.hint?.reason).toBe('frontendHint.moveToTableau');
+  });
+
+  it('routes wasp through getWaspHint (deal stock)', () => {
+    localStorage.setItem('hint_enabled_wasp', 'true');
+    const state: WaspResponse = {
+      tableau: [],
+      stockCount: 3,
+      completedSuits: 0,
+      phase: 0,
+      moveCount: 0,
+      canUndo: false,
+      isStalemate: false,
+      message: '',
+      hint: { fromCol: -1, cardIndex: -1, toCol: -1 },
+    };
+    const { result } = renderHook(() => useGameHint('wasp', state));
     expect(result.current.hint?.reason).toBe('frontendHint.dealStock');
   });
 

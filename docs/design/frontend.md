@@ -36,6 +36,7 @@
   - [2.20 CLIモード コマンド実行フロー](#220-cliモード-コマンド実行フロー)
   - [2.21 RedDogPage フェーズ別レンダリングフロー](#221-reddogpage-フェーズ別レンダリングフロー)
   - [2.22 ScorpionPage フェーズ別レンダリングフロー](#222-scorpionpage-フェーズ別レンダリングフロー)
+  - [2.22b WaspPage フェーズ別レンダリングフロー](#222b-wasppage-フェーズ別レンダリングフロー)
   - [2.23 TrashPage フェーズ別レンダリングフロー](#223-trashpage-フェーズ別レンダリングフロー)
   - [2.24 RussianSolitairePage フェーズ別レンダリングフロー](#224-russiansolitairepage-フェーズ別レンダリングフロー)
   - [2.25 MightyPage フェーズ別レンダリングフロー](#225-mightypage-フェーズ別レンダリングフロー)
@@ -929,7 +930,7 @@ classDiagram
 
     RedDogApi --> gameApi : uses postJson/gameExec
 
-    note for BlackJackApi "全113ゲーム分のAPI Objectが存在\n(blackjack, spanish21, poker, oldmaid, daifugo,\nsevens, doubt, bigtwo, holdem, omaha, omahahilo, bigo, bigohilo, shortdeck,\npineapple, crazypineapple, hearts, memory, klondike, freecell,\nseahaventowers, cruel, baccarat, spades, twotenjack, crazyeights,\nginrummy, canasta, spider, spiderette, napoleon, mighty,\nindianpoker, videopoker, deuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, caribbeanstud, texasholdembonus,\nultimatetexasholdem, mississippistud, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow, war, canfield, fiftyone, yukon, russiansolitaire, scorpion, accordion, whist,\nletitride, pokersquares, pageone, reddog, razz, badugi, trash,\nsevenbridge, president, cassino, calculation, crescent, spiteandmalice,\nskat, shithead, nertz, slapjack, egyptianratscrew, bakersdozen, tonk,\ncasinowar, pitch, dragontiger, blackjackswitch, montecarlo, contractrummy, belote,\noasispoker, beleagueredcastle, piquet, casinoholdem, callbreak,\nhighcardflush, fourcardpoker, russianpoker, briscola, tarneeb, gaps, rummy500, eightoff, penguin,\nirishpoker, chinesepoker, sixcardgolf, doudizhu, truco, acesup, scopa, barbu)"
+    note for BlackJackApi "全113ゲーム分のAPI Objectが存在\n(blackjack, spanish21, poker, oldmaid, daifugo,\nsevens, doubt, bigtwo, holdem, omaha, omahahilo, bigo, bigohilo, shortdeck,\npineapple, crazypineapple, hearts, memory, klondike, freecell,\nseahaventowers, cruel, baccarat, spades, twotenjack, crazyeights,\nginrummy, canasta, spider, spiderette, napoleon, mighty,\nindianpoker, videopoker, deuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, caribbeanstud, texasholdembonus,\nultimatetexasholdem, mississippistud, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow, war, canfield, fiftyone, yukon, russiansolitaire, scorpion, wasp, accordion, whist,\nletitride, pokersquares, pageone, reddog, razz, badugi, trash,\nsevenbridge, president, cassino, calculation, crescent, spiteandmalice,\nskat, shithead, nertz, slapjack, egyptianratscrew, bakersdozen, tonk,\ncasinowar, pitch, dragontiger, blackjackswitch, montecarlo, contractrummy, belote,\noasispoker, beleagueredcastle, piquet, casinoholdem, callbreak,\nhighcardflush, fourcardpoker, russianpoker, briscola, tarneeb, gaps, rummy500, eightoff, penguin,\nirishpoker, chinesepoker, sixcardgolf, doudizhu, truco, acesup, scopa, barbu)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -1938,7 +1939,7 @@ classDiagram
         +poker: [Poker, Holdem, Omaha, OmahaHiLo, BigO, BigOHiLo, ShortDeck, Pineapple, CrazyPineapple, SevenCardStud, Razz, Badugi, IndianPoker, VideoPoker, DeucesWild, JokerPoker]
         +trickTaking: [Hearts, Spades, Pitch, TwoTenJack, OhHell, Euchre, Bridge, Napoleon, Whist, Belote, Mighty, Piquet, CallBreak, Tarneeb, Briscola]
         +matching: [OldMaid, Doubt, Durak, Daifugo, President, Cassino, Scopa, Barbu, Sevens, CrazyEights, PageOne, Speed, GoFish, Pinochle, PigsTail, War, FiftyOne, Trash, SpiteAndMalice, Skat, Shithead, Nertz, Slapjack, EgyptianRatscrew]
-        +solitaire: [Klondike, FreeCell, EightOff, Penguin, SeahavenTowers, Spider, Spiderette, Pyramid, Gaps, TriPeaks, Golf, Memory, ClockSolitaire, FortyThieves, BakersDozen, BeleagueredCastle, Canfield, Yukon, RussianSolitaire, Cruel, Scorpion, Accordion, PokerSquares, MonteCarlo, Calculation, Crescent]
+        +solitaire: [Klondike, FreeCell, EightOff, Penguin, SeahavenTowers, Spider, Spiderette, Pyramid, Gaps, TriPeaks, Golf, Memory, ClockSolitaire, FortyThieves, BakersDozen, BeleagueredCastle, Canfield, Yukon, RussianSolitaire, Cruel, Scorpion, Wasp, Accordion, PokerSquares, MonteCarlo, Calculation, Crescent]
         +rummy: [GinRummy, Tonk, Canasta, Cribbage, SevenBridge, ContractRummy, Rummy500]
     }
 
@@ -2891,6 +2892,36 @@ sequenceDiagram
     User->>Page: 元に戻す (Z キー)
     Page->>Hook: dispatch undo
     API-->>Hook: ScorpionResponse (前の状態に復元)
+
+    Note over User,API: ゲームクリア (phase=1)
+    Page-->>User: クリアメッセージ + 完成スート数表示
+
+    Note over User,API: ゲームオーバー (phase=2)
+    Page-->>User: 手詰まり / ギブアップメッセージ表示
+```
+
+### 2.22b WaspPage フェーズ別レンダリングフロー
+
+WaspPage は ScorpionPage と同一のレンダリングフロー（`waspApi` 経由で `/wasp/exec` を呼び出す）。唯一の差は、空の列に任意のカードをドロップできる点で、UI 操作のシーケンスは Scorpion とまったく同じ。
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Page as WaspPage
+    participant Hook as useGameApi
+    participant API as waspApi
+
+    Note over User,API: プレイフェーズ (phase=0)
+    User->>Page: タブローカード選択 → 移動先列クリック (空列には任意カード可)
+    Page->>Hook: dispatch move {fromCol, cardIndex, toCol}
+    Hook->>API: POST /wasp/exec cmd=move
+    API-->>Hook: WaspResponse (phase=0)
+    Hook-->>Page: 再レンダリング → タブロー更新
+
+    User->>Page: ディール (D キー) / ディールボタン
+    Page->>Hook: dispatch deal
+    Hook->>API: POST /wasp/exec cmd=deal
+    API-->>Hook: WaspResponse (ストック3枚が各列末尾へ)
 
     Note over User,API: ゲームクリア (phase=1)
     Page-->>User: クリアメッセージ + 完成スート数表示

@@ -73,6 +73,7 @@
   - [3.38 PokerSquares フェーズ遷移](#338-pokersquares-フェーズ遷移)
   - [3.39 RedDog フェーズ遷移](#339-reddog-フェーズ遷移)
   - [3.40 Scorpion フェーズ遷移](#340-scorpion-フェーズ遷移)
+  - [3.40b Wasp フェーズ遷移](#340b-wasp-フェーズ遷移)
   - [3.41 Trash フェーズ遷移](#341-trash-フェーズ遷移)
   - [3.42 SpiteAndMalice フェーズ遷移](#342-spiteandmalice-フェーズ遷移)
   - [3.43 Accordion フェーズ遷移](#343-accordion-フェーズ遷移)
@@ -1486,6 +1487,32 @@ classDiagram
 
     Scorpion --> "*" KlondikeTableauCard
     Scorpion --> "1" TrumpCards
+
+    class Wasp {
+        -trumpCards *TrumpCards
+        -tableau [7][]*KlondikeTableauCard
+        -stock []*Card
+        -completedSuits int
+        -phase WaspPhase
+        -moveCount int
+        -actionLog []*ActionLogEntry
+        -history []*waspSnapshot
+        -isStalemate bool
+        +Reset()
+        +Deal() error
+        +MoveTableauToTableau(fromCol int, cardIndex int, toCol int) error
+        +GetHint() *WaspHint
+        +AutoComplete() error
+        +AllFaceUp() bool
+        +Undo() error
+        +UndoN(n int) error
+        +UndoToEscape() int
+        +GiveUp()
+        +GetPhase() WaspPhase
+    }
+
+    Wasp --> "*" KlondikeTableauCard
+    Wasp --> "1" TrumpCards
 
     class RussianSolitaire {
         -trumpCards *TrumpCards
@@ -3284,6 +3311,28 @@ stateDiagram-v2
 ```
 
 Scorpion 固有のアクション: `MoveTableauToTableau(fromCol, cardIndex, toCol)` / `Deal` / `Undo` / `UndoN` / `GiveUp`。Yukon 的な「任意カード以降を一括で移動」ルールと Spider 的な「同スート13枚で自動除去」ルールを組み合わせた 52 枚 1 デッキのソリティア。ストック 3 枚は各列の末尾に追加され、4 スート全完成でゲームクリア。
+
+### 3.40b Wasp フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Playing : Reset()
+    Playing --> Playing : MoveTableauToTableau()
+    Playing --> Playing : Deal() (ストック3枚配布)
+    Playing --> Playing : Undo() / UndoN() / GetHint()
+    Playing --> GameClear : 4スートが完成した
+    Playing --> GameClear : AutoComplete()
+    Playing --> GameOver : GiveUp()
+    Playing --> GameOver : 手詰まり検出 (isStalemate)
+    GameClear --> [*]
+    GameOver --> [*]
+
+    note right of Playing : WaspPhasePlaying = 0
+    note right of GameClear : WaspPhaseGameClear = 1
+    note right of GameOver : WaspPhaseGameOver = 2
+```
+
+Wasp は Scorpion の易しいバリアント。状態遷移・アクションは Scorpion と完全に同一で、唯一の違いは `canPlaceOnTableau` における「空の列には任意のカードを置ける（Scorpion は K のみ）」点。この緩和により手詰まり (isStalemate) が起きにくい。
 
 ### 3.41 Trash フェーズ遷移
 

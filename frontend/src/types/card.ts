@@ -3397,6 +3397,28 @@ export interface ScorpionResponse extends BaseGameResponse {
   hint?: ScorpionHint;
 }
 
+// --- Wasp (ワスプ) ---
+
+/** A suggested move hint in Wasp. */
+export interface WaspHint {
+  fromCol: number;
+  cardIndex: number;
+  toCol: number;
+}
+
+/** API response shape for a Wasp game. */
+export interface WaspResponse extends BaseGameResponse {
+  tableau: KlondikeTableauCard[][];
+  stockCount: number;
+  completedSuits: number;
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  hint?: WaspHint;
+}
+
 // --- Accordion (アコーディオン) ---
 
 /** A single pile in Accordion. Only the top card is revealed; size tracks stacked depth. */

@@ -123,6 +123,7 @@ import type {
   UltimateTexasHoldemResponse,
   VideoPokerResponse,
   WarResponse,
+  WaspResponse,
   WhistConfig,
   WhistResponse,
   YukonResponse,
@@ -207,6 +208,7 @@ const workerUrl: Record<string, string> = {
   yukon: WORKER_SOLO,
   russiansolitaire: WORKER_SOLO,
   scorpion: WORKER_SOLO,
+  wasp: WORKER_SOLO,
   accordion: WORKER_SOLO,
   sevenbridge: WORKER_SOLO,
   trash: WORKER_CLASSIC,
@@ -1743,6 +1745,20 @@ export const scorpionApi = createSolitaireMoveApi<
   'reset' | 'deal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('scorpion');
 
+/** Source or target zone for a Wasp card move. */
+export interface WaspMoveZone {
+  zone: string;
+  col?: number;
+  cardIndex?: number;
+}
+
+/** API client for the Wasp /wasp/exec endpoint. */
+export const waspApi = createSolitaireMoveApi<
+  WaspResponse,
+  WaspMoveZone,
+  'reset' | 'deal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('wasp');
+
 /** Source or target pile for an Accordion move. */
 export interface AccordionMoveZone {
   zone: 'pile';
@@ -2194,6 +2210,7 @@ const games = [
   'yukon',
   'russiansolitaire',
   'scorpion',
+  'wasp',
   'accordion',
   'sevenbridge',
   'trash',

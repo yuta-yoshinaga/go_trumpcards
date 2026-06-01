@@ -228,6 +228,10 @@ func TestNewDefaultScorpion(t *testing.T) {
 	assert.NotNil(t, domain.NewDefaultScorpion())
 }
 
+func TestNewDefaultWasp(t *testing.T) {
+	assert.NotNil(t, domain.NewDefaultWasp())
+}
+
 func TestNewDefaultPokerSquares(t *testing.T) {
 	assert.NotNil(t, domain.NewDefaultPokerSquares())
 }

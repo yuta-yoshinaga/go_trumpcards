@@ -684,6 +684,13 @@ export const ScorpionPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Wasp phase constants (sync: internal/domain/Wasp.go). */
+export const WaspPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Accordion phase constants (sync: internal/domain/Accordion.go). */
 export const AccordionPhase = {
   PLAYING: 0,
