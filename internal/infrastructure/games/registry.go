@@ -209,6 +209,10 @@ var registry = []*Game{
 	// worker because the classic worker is at the 1 MB gzip free-tier limit.
 	// Category here is purely a binary-size bucket (see package doc).
 	{Name: "macau", Category: CategorySolo, Description: "Macau (マカオ)"},
+	// Thirty-One (Scat) is a classic draw-and-discard pub game, but it is
+	// bucketed into the solo worker because the classic worker is at the 1 MB
+	// gzip free-tier limit. Category here is purely a binary-size bucket.
+	{Name: "thirtyone", Category: CategorySolo, Description: "Thirty-One (サーティワン)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

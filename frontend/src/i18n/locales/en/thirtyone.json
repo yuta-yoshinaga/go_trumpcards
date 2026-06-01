@@ -1,0 +1,42 @@
+{
+  "button": {
+    "drawStock": "Draw (Stock)",
+    "drawDiscard": "Draw (Discard)",
+    "knock": "Knock",
+    "discard": "Discard",
+    "nextRound": "Next Round"
+  },
+  "phase": {
+    "draw": "Draw",
+    "discard": "Discard",
+    "roundEnd": "Round End",
+    "end": "End"
+  },
+  "label": {
+    "stock": "Stock",
+    "discardPile": "Discard",
+    "lives": "Lives",
+    "score": "Best Suit",
+    "round": "Round",
+    "knocked": "Knocked!",
+    "out": "OUT",
+    "suitScores": "Suit totals",
+    "selectCard": "Select a card to discard"
+  },
+  "settings": {
+    "cpuDifficulty": "CPU Difficulty",
+    "initialLives": "Initial Lives"
+  },
+  "hint": {
+    "knockHigh": "Your hand is strong — consider knocking",
+    "drawDiscard": "Taking the discard improves your best suit",
+    "drawStock": "Draw from the stock to improve your hand"
+  },
+  "tutorial": {
+    "cpuArea": "CPU players. Their lives are shown; cards are revealed at round end.",
+    "discardArea": "The stock and the discard pile. Draw from either on your turn.",
+    "playerHand": "Your hand. Build the highest total in a single suit (aim for 31!).",
+    "actionButtons": "Draw from stock or discard, then discard a card — or knock to stand pat.",
+    "resetButton": "Start a new game."
+  }
+}

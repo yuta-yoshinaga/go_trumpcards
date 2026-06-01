@@ -113,6 +113,7 @@ import type {
   SpiteAndMaliceResponse,
   TarneebResponse,
   TexasHoldemBonusResponse,
+  ThirtyOneResponse,
   ThreeCardResponse,
   TonkResponse,
   TrashResponse,
@@ -225,6 +226,7 @@ const workerUrl: Record<string, string> = {
   slapjack: WORKER_CLASSIC,
   egyptianratscrew: WORKER_CLASSIC,
   bakersdozen: WORKER_SOLO,
+  thirtyone: WORKER_SOLO,
   tonk: WORKER_CLASSIC,
   dragontiger: WORKER_CASINO,
   blackjackswitch: WORKER_CASINO,
@@ -1058,6 +1060,26 @@ export const tonkApi = {
     config?: TonkConfigInput,
   ) =>
     gameExec<TonkResponse>('tonk', {
+      command,
+      cardIndex,
+      config,
+    }),
+};
+
+/** Configuration options for Thirty-One game settings. */
+export interface ThirtyOneConfigInput {
+  cpuDifficulty?: number;
+  initialLives?: number;
+}
+
+/** API client for the Thirty-One /thirtyone/exec endpoint. */
+export const thirtyoneApi = {
+  exec: (
+    command: 'reset' | 'drawstock' | 'drawdiscard' | 'discard' | 'knock' | 'nextround' | 'log',
+    cardIndex?: number,
+    config?: ThirtyOneConfigInput,
+  ) =>
+    gameExec<ThirtyOneResponse>('thirtyone', {
       command,
       cardIndex,
       config,
@@ -2232,6 +2254,7 @@ const games = [
   'slapjack',
   'egyptianratscrew',
   'bakersdozen',
+  'thirtyone',
   'tonk',
   'casinowar',
   'pitch',

@@ -107,6 +107,7 @@ import spiderette from '../../../docs/manual/web/spiderette.md?raw';
 import spiteandmalice from '../../../docs/manual/web/spiteandmalice.md?raw';
 import tarneeb from '../../../docs/manual/web/tarneeb.md?raw';
 import texasholdembonus from '../../../docs/manual/web/texasholdembonus.md?raw';
+import thirtyone from '../../../docs/manual/web/thirtyone.md?raw';
 import threecard from '../../../docs/manual/web/threecard.md?raw';
 import tonk from '../../../docs/manual/web/tonk.md?raw';
 import trash from '../../../docs/manual/web/trash.md?raw';
@@ -207,6 +208,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/speed': speed,
   '/spider': spider,
   '/spiderette': spiderette,
+  '/thirtyone': thirtyone,
   '/threecard': threecard,
   '/tonk': tonk,
   '/tripeaks': tripeaks,

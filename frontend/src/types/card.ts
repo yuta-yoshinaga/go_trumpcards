@@ -1312,6 +1312,42 @@ export interface TonkResponse extends BaseGameResponse {
   config: TonkConfig;
 }
 
+// --- Thirty-One (サーティワン / Scat) ---
+
+/** Thirty-One player data with lives and best-suit score. */
+export interface ThirtyOnePlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  lives: number;
+  score: number;
+  isEliminated: boolean;
+}
+
+/** Thirty-One game configuration. */
+export interface ThirtyOneConfig {
+  cpuDifficulty: number;
+  initialLives: number;
+}
+
+/** Full Thirty-One game state returned from the API. */
+export interface ThirtyOneResponse extends BaseGameResponse {
+  players: ThirtyOnePlayerData[];
+  phase: number;
+  roundNumber: number;
+  currentPlayerIdx: number;
+  discardTop: Card | null;
+  drawPileCount: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  knockerIdx: number;
+  thirtyOneIdx: number;
+  roundWinnerIdx: number;
+  roundLosers: number[];
+  config: ThirtyOneConfig;
+}
+
 // --- Seven Bridge (セブンブリッジ) ---
 
 /** A meld (set or run) shared across players in Seven Bridge. */
