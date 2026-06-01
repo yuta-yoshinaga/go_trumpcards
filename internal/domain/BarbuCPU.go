@@ -186,8 +186,8 @@ func (b *Barbu) cpuTrickWin(playerIdx int, valid []int) int {
 	bestWin, bestWinVal := -1, 999
 	for _, idx := range valid {
 		c := p.GetCard(idx)
-		if b.cardBeats(c, winning, leadSuit) && c.GetValue() < bestWinVal {
-			bestWin, bestWinVal = idx, c.GetValue()
+		if b.cardBeats(c, winning, leadSuit) && barbuCardStrength(c) < bestWinVal {
+			bestWin, bestWinVal = idx, barbuCardStrength(c)
 		}
 	}
 	if bestWin >= 0 {
@@ -216,8 +216,8 @@ func (b *Barbu) cpuTrickAvoid(playerIdx int, valid []int) int {
 		bestDuck, bestDuckVal := -1, -1
 		for _, idx := range valid {
 			c := p.GetCard(idx)
-			if !b.cardBeats(c, winning, leadSuit) && c.GetValue() > bestDuckVal {
-				bestDuck, bestDuckVal = idx, c.GetValue()
+			if !b.cardBeats(c, winning, leadSuit) && barbuCardStrength(c) > bestDuckVal {
+				bestDuck, bestDuckVal = idx, barbuCardStrength(c)
 			}
 		}
 		if bestDuck >= 0 {
@@ -238,7 +238,7 @@ func (b *Barbu) cpuTrickAvoid(playerIdx int, valid []int) int {
 
 // discardDanger はコントラクトに応じたカードの危険度を返す (高いほど捨てたい)。
 func (b *Barbu) discardDanger(c *Card) int {
-	danger := c.GetValue()
+	danger := barbuCardStrength(c)
 	switch b.currentContract {
 	case BarbuContractNoHearts:
 		if c.GetDesign() == CardDesignHeart {
@@ -260,7 +260,7 @@ func (b *Barbu) discardDanger(c *Card) int {
 func (b *Barbu) highestIndex(p *BarbuPlayer, valid []int) int {
 	best, bestVal := valid[0], -1
 	for _, idx := range valid {
-		if v := p.GetCard(idx).GetValue(); v > bestVal {
+		if v := barbuCardStrength(p.GetCard(idx)); v > bestVal {
 			best, bestVal = idx, v
 		}
 	}
@@ -271,7 +271,7 @@ func (b *Barbu) highestIndex(p *BarbuPlayer, valid []int) int {
 func (b *Barbu) lowestIndex(p *BarbuPlayer, valid []int) int {
 	best, bestVal := valid[0], 999
 	for _, idx := range valid {
-		if v := p.GetCard(idx).GetValue(); v < bestVal {
+		if v := barbuCardStrength(p.GetCard(idx)); v < bestVal {
 			best, bestVal = idx, v
 		}
 	}

@@ -349,6 +349,14 @@ func (b *Barbu) trickWinner() int {
 	return winnerIdx
 }
 
+// barbuCardStrength はトリック比較用の強さを返す。A(1) → 14、それ以外は値そのまま。
+func barbuCardStrength(c *Card) int {
+	if c.GetValue() == 1 {
+		return 14
+	}
+	return c.GetValue()
+}
+
 // cardBeats は candidate が current より強いかを判定する。
 func (b *Barbu) cardBeats(candidate, current *Card, leadSuit int) bool {
 	isTrump := b.trumpSuit >= CardDesignSpade
@@ -360,7 +368,7 @@ func (b *Barbu) cardBeats(candidate, current *Card, leadSuit int) bool {
 	case !candTrump && curTrump:
 		return false
 	case candTrump && curTrump:
-		return candidate.GetValue() > current.GetValue()
+		return barbuCardStrength(candidate) > barbuCardStrength(current)
 	default:
 		// どちらも切り札でない: リードスートのみ勝負に絡む。
 		if candidate.GetDesign() != leadSuit {
@@ -369,7 +377,7 @@ func (b *Barbu) cardBeats(candidate, current *Card, leadSuit int) bool {
 		if current.GetDesign() != leadSuit {
 			return true
 		}
-		return candidate.GetValue() > current.GetValue()
+		return barbuCardStrength(candidate) > barbuCardStrength(current)
 	}
 }
 
@@ -626,6 +634,9 @@ func (b *Barbu) UnmarshalJSON(data []byte) error {
 	b.players = j.Players
 	if b.players == nil {
 		b.players = make([]*BarbuPlayer, 0)
+	}
+	if len(b.players) != BarbuPlayerCnt {
+		return fmt.Errorf("barbu: invalid player count %d, expected %d", len(b.players), BarbuPlayerCnt)
 	}
 	b.config = j.Config
 	b.phase = j.Phase
