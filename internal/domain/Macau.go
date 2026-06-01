@@ -291,6 +291,7 @@ func (g *Macau) CpuPlay() {
 		played := player.RemoveCard(cardIdx)
 		g.playCard(g.currentPlayerIdx, played)
 	} else {
+		// drawCard always returns nil today; the error is ignored intentionally.
 		_ = g.drawCard(g.currentPlayerIdx)
 	}
 }
@@ -562,9 +563,12 @@ func (g *Macau) advanceTurn() {
 	}
 }
 
-// wrapIdx プレイヤーインデックスを 0..MacauPlayerCnt-1 に正規化する (負の方向にも対応)
+// wrapIdx プレイヤーインデックスを 0..len(players)-1 に正規化する (負の方向にも対応)
 func (g *Macau) wrapIdx(i int) int {
-	n := MacauPlayerCnt
+	n := len(g.players)
+	if n == 0 {
+		return 0
+	}
 	return ((i % n) + n) % n
 }
 
@@ -939,6 +943,18 @@ func (g *Macau) UnmarshalJSON(data []byte) error {
 		len(j.DrawPile) > macauMaxSliceLen || len(j.ActionLog) > macauMaxSliceLen {
 		return fmt.Errorf("macau: input array exceeds maximum allowed size")
 	}
+	// Macau is strictly a 4-player game; reject malformed states that would
+	// otherwise cause out-of-bounds panics during play (many methods iterate
+	// with the MacauPlayerCnt bound or index g.players[g.currentPlayerIdx]).
+	if len(j.Players) != MacauPlayerCnt {
+		return fmt.Errorf("macau: invalid player count: expected %d, got %d", MacauPlayerCnt, len(j.Players))
+	}
+	if j.CurrentPlayerIdx < 0 || j.CurrentPlayerIdx >= MacauPlayerCnt {
+		return fmt.Errorf("macau: currentPlayerIdx %d out of range [0, %d)", j.CurrentPlayerIdx, MacauPlayerCnt)
+	}
+	if j.Phase < MacauPhasePlay || j.Phase > MacauPhaseGameEnd {
+		return fmt.Errorf("macau: invalid phase: %d", j.Phase)
+	}
 
 	g.trumpCards = j.TrumpCards
 	if g.trumpCards == nil {
@@ -961,8 +977,13 @@ func (g *Macau) UnmarshalJSON(data []byte) error {
 	}
 	g.chosenSuit = j.ChosenSuit
 	g.penaltyDrawCount = j.PenaltyDrawCount
+	if g.penaltyDrawCount < 0 {
+		g.penaltyDrawCount = 0
+	} else if g.penaltyDrawCount > macauMaxSliceLen {
+		g.penaltyDrawCount = macauMaxSliceLen
+	}
 	g.direction = j.Direction
-	if g.direction == 0 {
+	if g.direction != 1 && g.direction != -1 {
 		g.direction = 1
 	}
 	g.pendingSkip = j.PendingSkip

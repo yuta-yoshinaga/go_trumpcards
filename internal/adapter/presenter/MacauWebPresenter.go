@@ -78,6 +78,9 @@ func (p *MacauWebPresenter) buildMessage(g interfaces.MacauGame, lastErr error) 
 		return "", "macau.mustDeclarePhase", nil
 	case domain.MacauPhaseRoundEnd:
 		return "", "macau.roundEnd", nil
+	case domain.MacauPhaseGameEnd:
+		// Handled by the GetGameEndFlag() branch above; explicit for clarity.
+		return "", "", nil
 	}
 	return "", "", nil
 }

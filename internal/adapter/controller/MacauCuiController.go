@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"math"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -68,7 +66,9 @@ func (c *MacauCuiController) Exec(command string) string {
 					return c.ci.ResetWithConfig(cfg)
 				})
 			case "sl", "setlimit":
-				return cuiutil.WithParsedInt(args, "Point limit is required.", "Invalid point limit: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+				// Cap matches the Web controller's bound (MacauWebConfig.ToConfig) so the
+				// CUI and Web layers enforce the same maximum point limit.
+				return cuiutil.WithParsedInt(args, "Point limit is required.", "Invalid point limit: %s. Please enter 1-1000.", 1, 1000, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.PointLimit = v
 					return c.ci.ResetWithConfig(cfg)

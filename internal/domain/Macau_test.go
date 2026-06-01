@@ -721,10 +721,59 @@ func TestMacau_JSONRoundTrip(t *testing.T) {
 	assert.Equal(t, g.GetPlayerCnt(), restored.GetPlayerCnt())
 }
 
-func TestMacau_UnmarshalDefaultsDirection(t *testing.T) {
-	// A payload without direction (0) should default to +1.
-	var g domain.Macau
-	err := json.Unmarshal([]byte(`{"pl":[],"dr":0}`), &g)
+// macauTamperedJSON marshals a fresh, valid 4-player game and overwrites one
+// wire field, so UnmarshalJSON validation branches can be exercised against an
+// otherwise-valid payload.
+func macauTamperedJSON(t *testing.T, key, raw string) []byte {
+	t.Helper()
+	g := newTestMacau()
+	g.Reset()
+	data, err := json.Marshal(g)
 	require.NoError(t, err)
-	assert.Equal(t, 1, g.GetDirection())
+	var m map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(data, &m))
+	m[key] = json.RawMessage(raw)
+	out, err := json.Marshal(m)
+	require.NoError(t, err)
+	return out
+}
+
+func TestMacau_UnmarshalValidation(t *testing.T) {
+	t.Run("normalises direction 0 to 1", func(t *testing.T) {
+		var g domain.Macau
+		require.NoError(t, json.Unmarshal(macauTamperedJSON(t, "dr", "0"), &g))
+		assert.Equal(t, 1, g.GetDirection())
+	})
+
+	t.Run("normalises out-of-range direction to 1", func(t *testing.T) {
+		var g domain.Macau
+		require.NoError(t, json.Unmarshal(macauTamperedJSON(t, "dr", "99"), &g))
+		assert.Equal(t, 1, g.GetDirection())
+	})
+
+	t.Run("rejects wrong player count", func(t *testing.T) {
+		var g domain.Macau
+		assert.Error(t, json.Unmarshal([]byte(`{"pl":[]}`), &g))
+	})
+
+	t.Run("rejects out-of-range currentPlayerIdx", func(t *testing.T) {
+		var g domain.Macau
+		assert.Error(t, json.Unmarshal(macauTamperedJSON(t, "ci", "9"), &g))
+	})
+
+	t.Run("rejects out-of-range phase", func(t *testing.T) {
+		var g domain.Macau
+		assert.Error(t, json.Unmarshal(macauTamperedJSON(t, "ps", "99"), &g))
+	})
+
+	t.Run("caps oversized penaltyDrawCount", func(t *testing.T) {
+		var g domain.Macau
+		require.NoError(t, json.Unmarshal(macauTamperedJSON(t, "pd", "5000"), &g))
+		assert.LessOrEqual(t, g.GetPenaltyDrawCount(), 1000)
+	})
+
+	t.Run("rejects malformed json", func(t *testing.T) {
+		var g domain.Macau
+		assert.Error(t, json.Unmarshal([]byte(`{`), &g))
+	})
 }
