@@ -134,6 +134,7 @@ Go + Clean Architecture で実装した113種類のトランプゲーム。CLI �
 | 四つ葉のクローバー (Aces Up) | `acesup` | [CUI](docs/manual/cui/acesup.md) / [Web](docs/manual/web/acesup.md) |
 | スコパ (Scopa) | `scopa` | [CUI](docs/manual/cui/scopa.md) / [Web](docs/manual/web/scopa.md) |
 | バルブ (Barbu) | `barbu` | [CUI](docs/manual/cui/barbu.md) / [Web](docs/manual/web/barbu.md) |
+| マカオ (Macau) | `macau` | [CUI](docs/manual/cui/macau.md) / [Web](docs/manual/web/macau.md) |
 
 ## Demo
 

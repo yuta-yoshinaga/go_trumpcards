@@ -43,6 +43,7 @@ import type {
   IndianPokerResponse,
   KlondikeResponse,
   LetItRideResponse,
+  MacauResponse,
   MemoryResponse,
   MightyResponse,
   MississippiStudResponse,
@@ -142,6 +143,7 @@ import { getIrishPokerHint } from '../utils/hints/irishPokerHint';
 import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
 import { getKlondikeHint } from '../utils/hints/klondikeHint';
 import { getLetitrideHint } from '../utils/hints/letitrideHint';
+import { getMacauHint } from '../utils/hints/macauHint';
 import { getMemoryHint } from '../utils/hints/memoryHint';
 import { getMightyHint } from '../utils/hints/mightyHint';
 import { getMississippiStudHint } from '../utils/hints/mississippiStudHint';
@@ -292,6 +294,7 @@ const hintFactories = {
   cassino: (s) => getCassinoHint(s as CassinoResponse),
   scopa: (s) => getScopaHint(s as ScopaResponse),
   barbu: (s) => getBarbuHint(s as BarbuResponse),
+  macau: (s) => getMacauHint(s as MacauResponse),
   clocksolitaire: (s) => getClocksolitaireHint(s as ClockSolitaireResponse),
   spiteandmalice: (s) => getSpiteAndMaliceHint(s as SpiteAndMaliceResponse),
   skat: (s) => getSkatHint(s as SkatResponse),

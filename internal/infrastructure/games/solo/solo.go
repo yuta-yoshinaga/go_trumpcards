@@ -288,4 +288,14 @@ func init() {
 			return usecase.RestoreBarbuInteractor(data, new(presenter.BarbuWebPresenter))
 		},
 		controller.NewBarbuWebControllerWithProvider)
+	// Macau is a Crazy Eights variant bucketed here (solo worker) for binary-size
+	// reasons; the classic worker is at the 1 MB gzip free-tier limit. See registry.go.
+	games.RegisterKVGame("macau", games.CategorySolo,
+		func() usecase.MacauInteractorIF {
+			return usecase.NewMacauInteractor(domain.NewDefaultMacau(), new(presenter.MacauWebPresenter))
+		},
+		func(data []byte) (usecase.MacauInteractorIF, error) {
+			return usecase.RestoreMacauInteractor(data, new(presenter.MacauWebPresenter))
+		},
+		controller.NewMacauWebControllerWithProvider)
 }

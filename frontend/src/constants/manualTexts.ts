@@ -59,6 +59,7 @@ import irishpoker from '../../../docs/manual/web/irishpoker.md?raw';
 import jokerpoker from '../../../docs/manual/web/jokerpoker.md?raw';
 import klondike from '../../../docs/manual/web/klondike.md?raw';
 import letitride from '../../../docs/manual/web/letitride.md?raw';
+import macau from '../../../docs/manual/web/macau.md?raw';
 import memory from '../../../docs/manual/web/memory.md?raw';
 import mighty from '../../../docs/manual/web/mighty.md?raw';
 import mississippistud from '../../../docs/manual/web/mississippistud.md?raw';
@@ -161,6 +162,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/jokerpoker': jokerpoker,
   '/klondike': klondike,
   '/letitride': letitride,
+  '/macau': macau,
   '/memory': memory,
   '/mighty': mighty,
   '/napoleon': napoleon,
