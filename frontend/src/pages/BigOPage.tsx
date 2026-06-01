@@ -299,7 +299,7 @@ function BigOPageContent() {
               return (
                 <>
                   <div
-                    className={`mb-4 ${isMobile ? 'sticky top-0 z-10 bg-game-bg-green-poker pb-1 shadow-sm' : ''}`}
+                    className={isMobile ? 'mb-4 sticky top-0 z-10 bg-game-bg-green-poker pb-1 shadow-sm' : 'mb-4'}
                     data-tutorial="bo-community-cards"
                   >
                     {communityCardsContent}

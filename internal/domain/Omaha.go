@@ -1068,8 +1068,15 @@ func (o *Omaha) evalPreFlopStrength(idx int) int {
 		}
 	}
 
-	// ラップ (連番) ボーナス: 上位4枚のスパンで判定
-	if sorted[0]-sorted[3] <= 4 {
+	// ラップ (連番) ボーナス: 任意の4枚のスパンで判定 (5カードオマハに対応)
+	isWrap := false
+	for i := 0; i <= n-4; i++ {
+		if sorted[i]-sorted[i+3] <= 4 {
+			isWrap = true
+			break
+		}
+	}
+	if isWrap {
 		score += 8
 	}
 
