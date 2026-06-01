@@ -96,6 +96,8 @@ var registry = []*Game{
 	{Name: "holdem", Category: CategoryCasino, Description: "Texas Hold'em (テキサスホールデム)"},
 	{Name: "omaha", Category: CategoryCasino, Description: "Omaha Hold'em (オマハホールデム)"},
 	{Name: "omahahilo", Category: CategoryCasino, Description: "Omaha Hi-Lo / 8 or Better (オマハ ハイロー)"},
+	{Name: "bigo", Category: CategoryCasino, Description: "5 Card Omaha (Big O) (5カードオマハ)"},
+	{Name: "bigohilo", Category: CategoryCasino, Description: "5 Card Omaha Hi-Lo (Big O) (5カードオマハ ハイロー)"},
 	{Name: "shortdeck", Category: CategoryCasino, Description: "Short Deck (6+ Hold'em) (ショートデック)"},
 	{Name: "pineapple", Category: CategoryCasino, Description: "Pineapple Poker (パイナップルポーカー)"},
 	{Name: "crazypineapple", Category: CategoryCasino, Description: "Crazy Pineapple Poker (クレイジーパイナップル)"},

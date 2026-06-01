@@ -63,6 +63,16 @@ func init() {
 			return usecase.NewOmahaInteractor(domain.NewDefaultOmahaHiLo(), new(presenter.OmahaWebPresenter))
 		},
 		controller.NewOmahaWebController)
+	BindWebControllerFor("bigo",
+		func() usecase.OmahaInteractorIF {
+			return usecase.NewOmahaInteractor(domain.NewDefaultBigO(), new(presenter.OmahaWebPresenter))
+		},
+		controller.NewOmahaWebController)
+	BindWebControllerFor("bigohilo",
+		func() usecase.OmahaInteractorIF {
+			return usecase.NewOmahaInteractor(domain.NewDefaultBigOHiLo(), new(presenter.OmahaWebPresenter))
+		},
+		controller.NewOmahaWebController)
 	BindWebControllerFor("shortdeck",
 		func() usecase.ShortDeckInteractorIF {
 			return usecase.NewShortDeckInteractor(domain.NewDefaultShortDeck(), new(presenter.ShortDeckWebPresenter))

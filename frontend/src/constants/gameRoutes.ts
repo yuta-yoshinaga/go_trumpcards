@@ -240,6 +240,20 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [1, 2, 5, 1], skill: [0, 2, 5, 0], social: [1, 3, 5, 1, 4], theme: [3, 1, 3, 1, 3, 1] },
       },
       {
+        path: '/bigo',
+        labelKey: 'nav.bigo',
+        icon: '5️⃣',
+        page: 'BigO',
+        profile: { mood: [1, 3, 5, 2], skill: [1, 3, 5, 1], social: [1, 3, 5, 2, 4], theme: [3, 1, 3, 1, 3, 1] },
+      },
+      {
+        path: '/bigohilo',
+        labelKey: 'nav.bigohilo',
+        icon: '🅱️',
+        page: 'BigOHiLo',
+        profile: { mood: [1, 2, 5, 1], skill: [0, 2, 5, 0], social: [1, 3, 5, 1, 4], theme: [3, 1, 3, 1, 3, 1] },
+      },
+      {
         path: '/shortdeck',
         labelKey: 'nav.shortdeck',
         icon: '6️⃣',

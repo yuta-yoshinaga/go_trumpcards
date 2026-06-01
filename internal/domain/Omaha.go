@@ -53,6 +53,7 @@ type Omaha struct {
 	currentTurn     int
 	phase           int
 	hiLo            bool // Omaha 8 or Better (Hi-Lo) モード
+	holeCards       int  // ホールカード配布枚数 (0 は既定の4枚扱い; Big O は5枚)
 	config          OmahaConfig
 	roundResults    []HoldemResult
 	cpuActions      []HoldemCpuAction
@@ -115,6 +116,18 @@ func NewDefaultOmahaHiLo() *Omaha {
 
 // GetIsHiLo returns true when the game is configured as Omaha 8 or Better.
 func (o *Omaha) GetIsHiLo() bool { return o.hiLo }
+
+// holeCardCount はホールカード配布枚数を返す。未設定 (0) のゲーム
+// (既存のオマハや古いシリアライズ状態) は既定の4枚として扱う。
+func (o *Omaha) holeCardCount() int {
+	if o.holeCards <= 0 {
+		return 4
+	}
+	return o.holeCards
+}
+
+// GetHoleCardCount はホールカード配布枚数を返す (Big O では5)。
+func (o *Omaha) GetHoleCardCount() int { return o.holeCardCount() }
 
 // Reset ゲーム初期化
 func (o *Omaha) Reset() error {
@@ -209,8 +222,8 @@ func (o *Omaha) continueReset() error {
 
 	o.postBlinds()
 
-	// ホールカード配布 (4枚)
-	for i := 0; i < 4; i++ {
+	// ホールカード配布 (オマハ=4枚, Big O=5枚)
+	for i := 0; i < o.holeCardCount(); i++ {
 		for j := 0; j < len(o.players); j++ {
 			idx := (o.dealerIdx + 1 + j) % len(o.players)
 			card := o.trumpCards.DrawCard()
@@ -975,16 +988,19 @@ func (o *Omaha) cpuDecidePostFlopGTO(idx, callAmount int) (int, int) {
 	}
 }
 
-// evalPreFlopStrength プリフロップハンド強度評価 (0-100) for 4-card Omaha hands
+// evalPreFlopStrength プリフロップハンド強度評価 (0-100)。
+// ホールカード4枚 (Omaha) でも5枚 (Big O) でも同じ採点ロジックで動作する。
+// 4枚の場合の挙動は従来と完全に一致する。
 func (o *Omaha) evalPreFlopStrength(idx int) int {
 	p := o.players[idx]
-	if p.GetCardsSize() < 4 {
+	n := p.GetCardsSize()
+	if n < 4 {
 		return 0
 	}
 
-	vals := make([]int, 4)
-	designs := make([]int, 4)
-	for i := 0; i < 4; i++ {
+	vals := make([]int, n)
+	designs := make([]int, n)
+	for i := 0; i < n; i++ {
 		vals[i] = p.GetCard(i).GetValue()
 		designs[i] = p.GetCard(i).GetDesign()
 		if vals[i] == 1 {
@@ -996,8 +1012,8 @@ func (o *Omaha) evalPreFlopStrength(idx int) int {
 
 	// ペアボーナス
 	pairCount := 0
-	for i := 0; i < 4; i++ {
-		for j := i + 1; j < 4; j++ {
+	for i := 0; i < n; i++ {
+		for j := i + 1; j < n; j++ {
 			if vals[i] == vals[j] {
 				pairCount++
 				if vals[i] >= 10 {
@@ -1010,10 +1026,10 @@ func (o *Omaha) evalPreFlopStrength(idx int) int {
 	}
 
 	// ハイカード値 (上位2枚)
-	sorted := make([]int, 4)
+	sorted := make([]int, n)
 	copy(sorted, vals)
-	for i := 0; i < 3; i++ {
-		for j := i + 1; j < 4; j++ {
+	for i := 0; i < n-1; i++ {
+		for j := i + 1; j < n; j++ {
 			if sorted[j] > sorted[i] {
 				sorted[i], sorted[j] = sorted[j], sorted[i]
 			}
@@ -1036,9 +1052,9 @@ func (o *Omaha) evalPreFlopStrength(idx int) int {
 		}
 	}
 
-	// コネクタボーナス: 4枚の隣接ペアを評価
-	for i := 0; i < 4; i++ {
-		for j := i + 1; j < 4; j++ {
+	// コネクタボーナス: 全ホールカードの隣接ペアを評価
+	for i := 0; i < n; i++ {
+		for j := i + 1; j < n; j++ {
 			gap := sorted[i] - sorted[j]
 			if gap < 0 {
 				gap = -gap
@@ -1052,7 +1068,7 @@ func (o *Omaha) evalPreFlopStrength(idx int) int {
 		}
 	}
 
-	// ラップ (4枚連番) ボーナス
+	// ラップ (連番) ボーナス: 上位4枚のスパンで判定
 	if sorted[0]-sorted[3] <= 4 {
 		score += 8
 	}
@@ -1227,7 +1243,7 @@ func (o *Omaha) GetEquity() *HoldemEquityResult {
 			activePlayers++
 		}
 	}
-	result := CalcOmahaEquity(humanCards, o.communityCards, activePlayers, omahaEquitySimulations, nil)
+	result := calcOmahaEquityWithHoleCount(humanCards, o.communityCards, activePlayers, omahaEquitySimulations, nil, o.holeCardCount())
 	return &result
 }
 
@@ -1420,6 +1436,7 @@ type omahaJSON struct {
 	Profile         *BettingHumanProfileData `json:"pf,omitempty"`
 	LastHumanPlayMs int                      `json:"hm"`
 	HiLo            bool                     `json:"hl,omitempty"`
+	HoleCards       int                      `json:"hcn,omitempty"`
 }
 
 // omahaMaxSliceLen caps slice sizes during deserialisation.
@@ -1455,6 +1472,7 @@ func (o *Omaha) MarshalJSON() ([]byte, error) {
 		ActionLog:       o.actionLog,
 		LastHumanPlayMs: o.lastHumanPlayMs,
 		HiLo:            o.hiLo,
+		HoleCards:       o.holeCards,
 	}
 	if o.humanProfile != nil {
 		d := o.humanProfile.Export()
@@ -1544,6 +1562,7 @@ func (o *Omaha) UnmarshalJSON(data []byte) error {
 	}
 	o.lastHumanPlayMs = j.LastHumanPlayMs
 	o.hiLo = j.HiLo
+	o.holeCards = j.HoleCards
 	if j.Profile != nil {
 		o.humanProfile = &BettingHumanProfile{}
 		o.humanProfile.Import(*j.Profile)

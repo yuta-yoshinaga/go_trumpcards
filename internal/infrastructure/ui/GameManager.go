@@ -217,6 +217,44 @@ var gameRegistry = []GameRegistryEntry{
 				}, holdemBlindKeys...),
 			})
 	}},
+	{Name: "bigo", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewOmahaCuiController(usecase.NewOmahaInteractor(
+				domain.NewDefaultBigO(), new(presenter.OmahaCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "omaha.helpTitleBigO",
+				CommandKeys: append([]string{
+					"omaha.helpFold",
+					"omaha.helpCheck",
+					"omaha.helpCall",
+					"omaha.helpBet",
+					"omaha.helpRaise",
+					"omaha.helpAllIn",
+				}, tournamentRebuyAddOnKeys...),
+				SettingKeys: append([]string{
+					"omaha.helpBettingLimit", "omaha.helpTournament",
+				}, holdemBlindKeys...),
+			})
+	}},
+	{Name: "bigohilo", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewOmahaCuiController(usecase.NewOmahaInteractor(
+				domain.NewDefaultBigOHiLo(), new(presenter.OmahaCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "omaha.helpTitleBigOHiLo",
+				CommandKeys: append([]string{
+					"omaha.helpFold",
+					"omaha.helpCheck",
+					"omaha.helpCall",
+					"omaha.helpBet",
+					"omaha.helpRaise",
+					"omaha.helpAllIn",
+				}, tournamentRebuyAddOnKeys...),
+				SettingKeys: append([]string{
+					"omaha.helpBettingLimit", "omaha.helpTournament",
+				}, holdemBlindKeys...),
+			})
+	}},
 	{Name: "shortdeck", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewShortDeckCuiController(usecase.NewShortDeckInteractor(

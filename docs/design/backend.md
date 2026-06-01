@@ -719,7 +719,10 @@ classDiagram
         -config HoldemConfig
         -communityCards []*Card
         -phase int
+        -hiLo bool
+        -holeCards int
         +Reset()
+        +GetHoleCardCount() int
         +PlayerFold() error
         +PlayerCheck() error
         +PlayerCall() error
@@ -2565,7 +2568,7 @@ stateDiagram-v2
 
 ### 3.3 Texas Hold'em フェーズ遷移
 
-Omaha Hold'em および Short Deck Hold'em も同一のフェーズ遷移を共有します。
+Omaha Hold'em、5 Card Omaha (Big O)、および Short Deck Hold'em も同一のフェーズ遷移を共有します。
 
 ```mermaid
 stateDiagram-v2
