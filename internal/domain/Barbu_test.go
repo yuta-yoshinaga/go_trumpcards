@@ -263,6 +263,57 @@ func TestBarbuTrickWinner_Trump(t *testing.T) {
 	assert.Equal(t, 1, b.GetLastTrickWinner()) // trump wins
 }
 
+// TestBarbuTrickWinner_AceHigh は A がトリックで最強 (K より強い) ことを確認する。
+func TestBarbuTrickWinner_AceHigh(t *testing.T) {
+	b := domain.BarbuTestNew(domain.DefaultBarbuConfig())
+	b.BarbuTestSetContract(domain.BarbuContractNoTricks, -1)
+	b.BarbuTestSetPhase(domain.BarbuPhasePlay)
+	b.BarbuTestSetTrickNumber(1)
+	b.BarbuTestSetLeadPlayer(0)
+	// 同スートで A(1) は K(13) に勝つ。
+	b.BarbuTestSetHand(0, []*domain.Card{card(domain.CardDesignSpade, 13)}) // K leads
+	b.BarbuTestSetHand(1, []*domain.Card{card(domain.CardDesignSpade, 1)})  // A
+	b.BarbuTestSetHand(2, []*domain.Card{card(domain.CardDesignSpade, 12)}) // Q
+	b.BarbuTestSetHand(3, []*domain.Card{card(domain.CardDesignSpade, 2)})  // 2
+	for i := 0; i < 4; i++ {
+		require.NoError(t, b.BarbuTestApplyTrickPlay(i, 0))
+	}
+	assert.Equal(t, 1, b.GetLastTrickWinner()) // A (player 1) wins
+}
+
+// TestBarbuTrickWinner_AceTrumpHigh は切り札の A が切り札の K に勝つことを確認する。
+func TestBarbuTrickWinner_AceTrumpHigh(t *testing.T) {
+	b := domain.BarbuTestNew(domain.DefaultBarbuConfig())
+	b.BarbuTestSetContract(domain.BarbuContractTrumps, domain.CardDesignSpade)
+	b.BarbuTestSetPhase(domain.BarbuPhasePlay)
+	b.BarbuTestSetTrickNumber(1)
+	b.BarbuTestSetLeadPlayer(0)
+	b.BarbuTestSetHand(0, []*domain.Card{card(domain.CardDesignSpade, 13)}) // K♠ (trump) leads
+	b.BarbuTestSetHand(1, []*domain.Card{card(domain.CardDesignSpade, 1)})  // A♠ (trump)
+	b.BarbuTestSetHand(2, []*domain.Card{card(domain.CardDesignHeart, 5)})
+	b.BarbuTestSetHand(3, []*domain.Card{card(domain.CardDesignSpade, 7)})
+	for i := 0; i < 4; i++ {
+		require.NoError(t, b.BarbuTestApplyTrickPlay(i, 0))
+	}
+	assert.Equal(t, 1, b.GetLastTrickWinner()) // A♠ (player 1) wins
+}
+
+// TestBarbuDominoes_AceStaysLow は Dominoes では A が低位 (2 の隣) として
+// 扱われることを確認する (トリックの A-high 化が漏れていないこと)。
+func TestBarbuDominoes_AceStaysLow(t *testing.T) {
+	b := domain.BarbuTestNew(domain.DefaultBarbuConfig())
+	b.BarbuTestSetContract(domain.BarbuContractDominoes, -1)
+	b.BarbuTestSetPhase(domain.BarbuPhasePlay)
+	b.BarbuTestSetCurrentPlayer(0)
+	var table [5]uint16
+	for v := 2; v <= 7; v++ { // spades 2..7 placed
+		table[domain.CardDesignSpade] |= uint16(1) << uint(v)
+	}
+	b.BarbuTestSetTablePlaced(table)
+	b.BarbuTestSetHand(0, []*domain.Card{card(domain.CardDesignSpade, 1)}) // A♠ playable next to 2♠
+	assert.Equal(t, []int{0}, b.GetDominoPlayableIndices(0))
+}
+
 // --- Dominoes mechanic ---
 
 func TestBarbuDominoes_PlayableAndPlace(t *testing.T) {
