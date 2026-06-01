@@ -6,6 +6,7 @@ import type {
   BadugiResponse,
   BakersDozenMoveZone,
   BakersDozenResponse,
+  BarbuResponse,
   BeleagueredCastleMoveZone,
   BeleagueredCastleResponse,
   BeloteResponse,
@@ -248,6 +249,7 @@ const workerUrl: Record<string, string> = {
   doudizhu: WORKER_CLASSIC,
   truco: WORKER_CLASSIC,
   scopa: WORKER_CASINO,
+  barbu: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1948,6 +1950,29 @@ export const scopaApi = {
     gameExec<ScopaResponse>('scopa', { command, ...(params ?? {}) }),
 };
 
+/** Configuration options for Barbu game settings. */
+export interface BarbuConfigInput {
+  cpuDifficulty?: number;
+}
+
+/** Command verbs accepted by the Barbu /barbu/exec endpoint (short forms). */
+export type BarbuCommand = 'r' | 'n' | 'c' | 'p' | 'log';
+
+/** Extra payload fields for the Barbu /barbu/exec endpoint. */
+export interface BarbuExecParams {
+  contract?: number;
+  trumpSuit?: number;
+  handIndex?: number;
+  tableIndices?: number[];
+  config?: BarbuConfigInput;
+}
+
+/** API client for the Barbu /barbu/exec endpoint. */
+export const barbuApi = {
+  exec: (command: BarbuCommand, params?: BarbuExecParams) =>
+    gameExec<BarbuResponse>('barbu', { command, ...(params ?? {}) }),
+};
+
 export type { BakersDozenMoveZone, BeleagueredCastleMoveZone, CrescentMoveZone, FortyThievesMoveZone };
 
 /** API client for the Whist /whist/exec endpoint. */
@@ -2144,6 +2169,7 @@ const games = [
   'president',
   'cassino',
   'scopa',
+  'barbu',
   'spanish21',
   'spiteandmalice',
   'skat',

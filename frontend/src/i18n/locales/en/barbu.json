@@ -1,0 +1,81 @@
+{
+  "nav": {
+    "barbu": "Barbu"
+  },
+  "skeleton": {
+    "loading": "Loading..."
+  },
+  "phase": {
+    "selectContract": "Choose Contract",
+    "play": "Playing",
+    "playerTurn": "Your Turn",
+    "cpuTurn": "CPU's Turn",
+    "dealEnd": "Deal End",
+    "end": "Game Over"
+  },
+  "contract": {
+    "0": "No Tricks",
+    "1": "No Hearts",
+    "2": "No Queens",
+    "3": "Barbu (K♥)",
+    "4": "No Last Trick",
+    "5": "Trumps",
+    "6": "Dominoes"
+  },
+  "contractDesc": {
+    "0": "−2 per trick you take",
+    "1": "−2 per heart you take",
+    "2": "−6 per Queen you take",
+    "3": "−20 to whoever takes K♥",
+    "4": "−20 for taking the last trick",
+    "5": "+5 per trick (pick a trump suit)",
+    "6": "Shed your hand fastest (7-row layout)"
+  },
+  "trump": {
+    "1": "♠ Spades",
+    "2": "♣ Clubs",
+    "3": "♥ Hearts",
+    "4": "♦ Diamonds"
+  },
+  "label": {
+    "deal": "Deal {{deal}}/{{total}}",
+    "dealer": "Dealer: {{name}}",
+    "contract": "Contract",
+    "trump": "Trump",
+    "trick": "Current Trick",
+    "board": "Board",
+    "boardEmpty": "Board is empty",
+    "yourTricks": "Tricks",
+    "selectTrump": "Pick a trump suit",
+    "you": "You",
+    "cpu": "CPU {{id}}"
+  },
+  "button": {
+    "play": "Play",
+    "pass": "Pass",
+    "nextDeal": "Next Deal",
+    "reset": "Reset"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty"
+  },
+  "result": {
+    "win": "Win",
+    "lose": "Lose",
+    "draw": "Draw"
+  },
+  "hint": {
+    "win": "Trumps contract — try to win this trick.",
+    "avoid": "Negative contract — play a low card and avoid taking the trick.",
+    "placeDomino": "Lay a card onto the 7-row layout to shed your hand.",
+    "pass": "No playable card — you must pass."
+  },
+  "tutorial": {
+    "dealInfo": "The current deal and dealer. Each player deals 7 times (28 deals total).",
+    "contracts": "When you deal, pick one of 7 contracts — each only once.",
+    "playerHand": "Your hand. Select a card, then press Play.",
+    "actions": "Play the selected card (or Pass in Dominoes).",
+    "resetButton": "Reset the game."
+  }
+}

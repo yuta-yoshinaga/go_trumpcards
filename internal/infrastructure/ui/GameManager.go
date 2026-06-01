@@ -1763,6 +1763,16 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "barbu", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBarbuCuiController(usecase.NewBarbuInteractor(
+				domain.NewDefaultBarbu(), new(presenter.BarbuCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:    "barbu.helpTitle",
+				CommandKeys: []string{"barbu.helpContract", "barbu.helpPlay", "barbu.helpNext"},
+				SettingKeys: []string{"barbu.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

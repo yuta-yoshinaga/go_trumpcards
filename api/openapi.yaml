@@ -66,6 +66,8 @@ tags:
     description: Cassino (カッシーノ) game
   - name: scopa
     description: Scopa (スコパ) game
+  - name: barbu
+    description: Barbu (バルブ) — French compendium trick-taking game (7 contracts, 28 deals)
   - name: spanish21
     description: Spanish 21 (スパニッシュ21) — BlackJack variant with 48-card deck and bonus payouts
   - name: canasta
@@ -7822,6 +7824,65 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ScopaResponse'
+
+  /barbu/exec:
+    post:
+      tags:
+        - barbu
+      summary: Execute a Barbu game command
+      description: |
+        Send a command to advance the Barbu (バルブ) game session identified by
+        `sessionId`. Barbu is a French compendium trick-taking game for 4 players
+        (1 human + 3 CPU) on a 52-card deck. Over 28 deals each player deals 7
+        times; the dealer picks one of 7 contracts (No Tricks / No Hearts / No
+        Queens / Barbu(K♥) / No Last Trick / Trumps / Dominoes), each usable once.
+
+        | Command    | Aliases | Description |
+        |------------|---------|-------------|
+        | `reset`    | `r`     | Start / restart a game |
+        | `next`     | `n`     | Start the next deal |
+        | `contract` | `c`     | Dealer picks a contract (trumpSuit only for Trumps) |
+        | `play`     | `p`     | Play a hand card (handIndex -1 to pass in Dominoes) |
+        | `log`      | `l`     | View action log |
+      operationId: barbuExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BarbuRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              contract:
+                summary: Pick the Trumps contract with spades as trump
+                value:
+                  command: contract
+                  contract: 5
+                  trumpSuit: 1
+                  sessionId: my-session-001
+              play:
+                summary: Play hand card 0
+                value:
+                  command: play
+                  handIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BarbuResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BarbuResponse'
 
   /spanish21/exec:
     post:
@@ -21615,6 +21676,142 @@ components:
               type: object
               additionalProperties:
                 type: integer
+            gained:
+              type: object
+              additionalProperties:
+                type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    BarbuRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: Barbu command. Accepted values. `reset` (`r`), `next` (`n`), `contract` (`c`), `play` (`p`), `log` (`l`).
+          enum: [reset, r, next, n, contract, c, play, p, log, l]
+          example: play
+        contract:
+          type: integer
+          description: Contract id 0-6 (for the `contract` command).
+          minimum: 0
+          maximum: 6
+          example: 5
+        trumpSuit:
+          type: integer
+          description: Trump suit 1-4 (only for the Trumps contract; -1 otherwise).
+          example: 1
+        handIndex:
+          type: integer
+          description: Hand card index to play (-1 to pass in Dominoes).
+          example: 0
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              description: CPU difficulty (0=easy, 1=normal, 2=hard).
+              minimum: 0
+              maximum: 2
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    BarbuResponse:
+      type: object
+      description: Current state of the Barbu game
+      properties:
+        players:
+          type: array
+          description: All players in the game (1 human + 3 CPU).
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              isHuman: { type: boolean }
+              cardCount: { type: integer }
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              trickCount: { type: integer }
+              dominoRank: { type: integer }
+              totalScore: { type: integer }
+        phase:
+          type: string
+          description: Current game phase (selectContract, play, dealEnd, gameEnd).
+        dealNumber: { type: integer }
+        totalDeals: { type: integer }
+        dealerIdx: { type: integer }
+        currentTurn: { type: integer }
+        currentContract:
+          type: integer
+          description: Selected contract id 0-6, or -1 when not yet chosen.
+        trumpSuit:
+          type: integer
+          description: Trump suit 1-4 for the Trumps contract, or -1.
+        trickNumber: { type: integer }
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx: { type: integer }
+              card:
+                $ref: '#/components/schemas/Card'
+        lastTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx: { type: integer }
+              card:
+                $ref: '#/components/schemas/Card'
+        lastTrickWinner: { type: integer }
+        tablePlaced:
+          type: array
+          description: Dominoes layout per suit as bitmasks (index 1-4).
+          items:
+            type: integer
+        dominoPlayable:
+          type: array
+          description: Playable hand indices for the human in Dominoes.
+          items:
+            type: integer
+        usedContracts:
+          type: array
+          description: Which of the 7 contracts the current dealer has used.
+          items:
+            type: boolean
+        gameEndFlag:
+          type: boolean
+        config:
+          type: object
+          properties:
+            cpuDifficulty: { type: integer }
+        roundWinners:
+          type: array
+          items:
+            type: integer
+        lastDealDetail:
+          type: object
+          nullable: true
+          description: Per-player scoring breakdown of the last completed deal.
+          properties:
+            contract: { type: integer }
+            trumpSuit: { type: integer }
+            dealerIdx: { type: integer }
             gained:
               type: object
               additionalProperties:
