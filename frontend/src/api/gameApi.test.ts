@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   actionLogApi,
   baccaratApi,
+  bigOApi,
+  bigOHiLoApi,
   blackjackApi,
   blackjackswitchApi,
   canfieldApi,
@@ -1904,6 +1906,57 @@ describe('gameApi', () => {
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(omahaApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
+  describe('bigOApi / bigOHiLoApi', () => {
+    const payload = {
+      players: [],
+      communityCards: [],
+      pot: 0,
+      sidePots: [],
+      dealerIdx: 0,
+      currentTurn: 0,
+      phase: 1,
+      gameEndFlag: false,
+      lastBet: 0,
+      minRaise: 0,
+      roundResults: [],
+      cpuActions: [],
+      message: '',
+      handCount: 0,
+      smallBlind: 5,
+      bigBlind: 10,
+      tournamentMode: false,
+      blindLevelHands: 10,
+      blindMultiplier: 200,
+      tableSize: 4,
+    };
+
+    it('bigOApi posts to /bigo/exec', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await bigOApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/bigo/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'reset', amount: undefined, sessionId }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('bigOHiLoApi posts to /bigohilo/exec', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await bigOHiLoApi.exec('call', 20);
+      expect(mockFetch).toHaveBeenCalledWith('/bigohilo/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'call', amount: 20, sessionId }),
+      });
+    });
+
+    it('bigOApi throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(bigOApi.exec('reset')).rejects.toThrow('HTTP error: 500');
     });
   });
 

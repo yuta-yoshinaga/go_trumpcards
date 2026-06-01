@@ -144,6 +144,8 @@ const workerUrl: Record<string, string> = {
   holdem: WORKER_CASINO,
   omaha: WORKER_CASINO,
   omahahilo: WORKER_CASINO,
+  bigo: WORKER_CASINO,
+  bigohilo: WORKER_CASINO,
   shortdeck: WORKER_CASINO,
   indianpoker: WORKER_CASINO,
   videopoker: WORKER_CASINO,
@@ -561,6 +563,14 @@ export const omahaApi = createHoldemLikeApi<OmahaResponse>('omaha');
  * LowQualifies, HiWonAmount, LowWonAmount) are surfaced via omitempty
  * JSON encoding so the same TypeScript type works for both. */
 export const omahaHiLoApi = createHoldemLikeApi<OmahaResponse>('omahahilo');
+
+/** API client for the 5 Card Omaha (Big O) /bigo/exec endpoint.
+ * Shares the OmahaResponse shape — Big O is Omaha dealt 5 hole cards. */
+export const bigOApi = createHoldemLikeApi<OmahaResponse>('bigo');
+
+/** API client for the 5 Card Omaha Hi-Lo (Big O) /bigohilo/exec endpoint.
+ * Shares the OmahaResponse shape (Hi-Lo split fields surfaced via omitempty). */
+export const bigOHiLoApi = createHoldemLikeApi<OmahaResponse>('bigohilo');
 
 /** API client for the Short Deck Hold'em /shortdeck/exec endpoint. */
 export const shortdeckApi = createHoldemLikeApi<ShortDeckResponse>('shortdeck');
@@ -2108,6 +2118,8 @@ const games = [
   'holdem',
   'omaha',
   'omahahilo',
+  'bigo',
+  'bigohilo',
   'shortdeck',
   'pineapple',
   'crazypineapple',

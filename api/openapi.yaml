@@ -34,6 +34,10 @@ tags:
     description: Omaha Hold'em game
   - name: omahahilo
     description: Omaha Hi-Lo / 8 or Better (split-pot variant of Omaha)
+  - name: bigo
+    description: 5 Card Omaha (Big O) game (Omaha dealt 5 hole cards)
+  - name: bigohilo
+    description: 5 Card Omaha Hi-Lo (Big O) / 8 or Better (split-pot variant)
   - name: shortdeck
     description: Short Deck (6+ Hold'em) game
   - name: hearts
@@ -1200,6 +1204,96 @@ paths:
         `isHiLo` on the top-level response. Commands and configuration
         options are identical to `/omaha/exec`.
       operationId: omahaHiLoExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HoldemRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              fold:
+                summary: Fold
+                value:
+                  command: fold
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldemResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldemResponse'
+
+  /bigo/exec:
+    post:
+      tags:
+        - bigo
+      summary: Execute a 5 Card Omaha (Big O) game command
+      description: |
+        Send a command to advance the 5 Card Omaha (Big O) game session
+        identified by `sessionId`. Big O is Omaha dealt 5 hole cards (instead
+        of 4); players must still use exactly 2 hole cards + 3 community cards
+        to form the best 5-card hand. Phases, commands, configuration options,
+        and the request/response shape are identical to `/omaha/exec`.
+      operationId: bigOExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HoldemRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              fold:
+                summary: Fold
+                value:
+                  command: fold
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldemResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldemResponse'
+
+  /bigohilo/exec:
+    post:
+      tags:
+        - bigohilo
+      summary: Execute a 5 Card Omaha Hi-Lo (Big O) game command
+      description: |
+        Send a command to advance the 5 Card Omaha Hi-Lo (Big O) game session
+        identified by `sessionId`. This is the 8-or-Better split-pot variant of
+        Big O: the high half follows standard Omaha rules over 5 hole cards;
+        the low half is awarded to the best A-5 lowball hand (5 distinct ranks
+        all ≤ 8, Ace = 1). Pots split 50:50 (odd chips to the high side); if no
+        player qualifies for a low, the high winner takes the full pot. Reuses
+        the Omaha request/response shape (Hi-Lo fields surfaced via
+        `lowQualifies`, `lowBestHand`, `hiWonAmount`, `lowWonAmount`, `isHiLo`).
+        Commands and configuration are identical to `/bigo/exec`.
+      operationId: bigOHiLoExec
       requestBody:
         required: true
         content:

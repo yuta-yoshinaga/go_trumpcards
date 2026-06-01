@@ -30,6 +30,8 @@
     "holdem": "テキサスホールデム",
     "omaha": "オマハホールデム",
     "omahahilo": "オマハ ハイロー",
+    "bigo": "5カードオマハ (Big O)",
+    "bigohilo": "5カードオマハ ハイロー (Big O)",
     "hearts": "ハーツ",
     "spades": "スペード",
     "pitch": "ピッチ",
