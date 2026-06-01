@@ -420,7 +420,12 @@ function WaspPageContent() {
                                   } ${hintTo ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
                                   onClick={() => {
                                     if (selectedSource) {
-                                      if (isLast) {
+                                      // Re-clicking the already-selected card deselects it.
+                                      // Without this, a selected last card would route into
+                                      // handleSelectTarget and fire a doomed same-column move.
+                                      if (isSelected) {
+                                        setSelectedSource(null);
+                                      } else if (isLast) {
                                         handleSelectTarget('tableau', colIdx);
                                       } else {
                                         handleSelectSource('tableau', colIdx, cardIdx);

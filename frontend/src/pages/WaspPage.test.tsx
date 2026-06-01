@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { waspApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, WaspResponse } from '../types/card';
+import { cardAlt } from '../utils/cardAlt';
 import { WaspPage } from './WaspPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -215,6 +216,19 @@ describe('WaspPage', () => {
     renderWithProviders(<WaspPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.getByText('空')).toBeInTheDocument();
+  });
+
+  it('re-clicking the selected last card deselects without firing a move', async () => {
+    // Regression: a selected last card (isLast) must deselect on re-click,
+    // not route into handleSelectTarget and fire a doomed same-column move.
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // SPADE 13 is the last (face-up) card of column 0.
+    const lastCardBtn = screen.getByRole('button', { name: cardAlt(card('SPADE', 13)) });
+    mockExec.mockClear();
+    fireEvent.click(lastCardBtn); // select
+    fireEvent.click(lastCardBtn); // re-click → deselect, no API call
+    expect(mockExec).not.toHaveBeenCalled();
   });
 
   it('hint button triggers hint command via apiCall', async () => {
