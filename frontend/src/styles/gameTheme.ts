@@ -118,6 +118,7 @@ export type GameKey =
   | 'russiansolitaire'
   | 'cruel'
   | 'scorpion'
+  | 'wasp'
   | 'accordion'
   | 'pokersquares'
   | 'montecarlo'
@@ -259,6 +260,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   russiansolitaire: CASINO,
   cruel: CASINO,
   scorpion: CASINO,
+  wasp: CASINO,
   accordion: CASINO,
   pokersquares: CASINO,
   montecarlo: CASINO,

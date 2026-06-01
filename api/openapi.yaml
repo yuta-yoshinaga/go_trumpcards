@@ -159,6 +159,8 @@ tags:
     description: 2-7 Triple Draw (デューストゥセブン) game - Deuce to Seven lowball draw poker
   - name: scorpion
     description: Scorpion (スコーピオン) game - variant of solitaire combining Yukon and Spider mechanics
+  - name: wasp
+    description: Wasp (ワスプ) game - easier Scorpion variant where empty columns accept any card
   - name: accordion
     description: Accordion (アコーディオン) game - compression solitaire where piles merge onto the 1st or 3rd pile to the left
   - name: trash
@@ -6848,6 +6850,113 @@ paths:
         | `undo_n`         | —       | Undo N moves (requires `n`) |
         | `log`            | `l`     | View action log |
       operationId: scorpionExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, deal, d, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau]
+                    col:
+                      type: integer
+                    cardIndex:
+                      type: integer
+                to:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau]
+                    col:
+                      type: integer
+                n:
+                  type: integer
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                  stockCount:
+                    type: integer
+                  completedSuits:
+                    type: integer
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  hint:
+                    type: object
+                    properties:
+                      fromCol:
+                        type: integer
+                      cardIndex:
+                        type: integer
+                      toCol:
+                        type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request
+
+  /wasp/exec:
+    post:
+      tags:
+        - wasp
+      summary: Execute a Wasp (ワスプ) game command
+      description: |
+        Send a command to advance a Wasp solitaire session identified by `sessionId`.
+        Wasp is an easier variant of Scorpion: it shares every rule with Scorpion
+        (Yukon-style group moves of same-suit descending runs, same-suit K-to-A removal,
+        a 3-card stock, and a Deal command blocked while any column is empty) except
+        that an empty column accepts **any** card, not only a King — making stalemates rare.
+        49 cards are dealt into 7 columns (columns 0-3 start with 3 face-down + 4 face-up;
+        columns 4-6 are fully face-up). Remaining 3 cards form the stock.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | 0     | Game in progress |
+        | GameClear | 1     | All 4 suits removed |
+        | GameOver  | 2     | Player gave up |
+
+        | Command          | Aliases | Description |
+        |------------------|---------|-------------|
+        | `reset`          | `r`     | Start / restart a game |
+        | `deal`           | `d`     | Deal 3 stock cards to columns 0-2 (requires no empty column) |
+        | `move`           | `m`     | Move card(s) between tableau columns (requires `from`, `to`) |
+        | `giveup`         | `g`     | Give up the current game |
+        | `hint`           | `h`     | Get a move suggestion |
+        | `autocomplete`   | `ac`    | Auto-remove completed suits when all cards are face-up |
+        | `undo`           | `u`     | Undo last move |
+        | `undo_n`         | —       | Undo N moves (requires `n`) |
+        | `log`            | `l`     | View action log |
+      operationId: waspExec
       requestBody:
         required: true
         content:

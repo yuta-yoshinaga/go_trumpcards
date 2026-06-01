@@ -1,0 +1,152 @@
+//go:build test
+
+package presenter
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+)
+
+func setupWaspCuiMockDefaults(sg *interfaces.MockWaspGame) {
+	sg.On("GetPhase").Return(domain.WaspPhasePlaying).Maybe()
+	sg.On("GetMoveCount").Return(0).Maybe()
+	sg.On("IsStalemate").Return(false).Maybe()
+	sg.On("GetCompletedSuits").Return(0).Maybe()
+	sg.On("GetStockCount").Return(3).Maybe()
+
+	var tableau [domain.WaspTableauCnt][]*domain.KlondikeTableauCard
+	for i := range domain.WaspTableauCnt {
+		tableau[i] = []*domain.KlondikeTableauCard{
+			{Card: domain.NewCard(domain.CardDesignSpade, i+1, false), FaceUp: true},
+		}
+	}
+	sg.On("GetTableau").Return(tableau).Maybe()
+}
+
+func TestWaspCuiPresenter_Output(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		sg := new(interfaces.MockWaspGame)
+		setupWaspCuiMockDefaults(sg)
+		p := new(WaspCuiPresenter)
+
+		result := p.Output(sg, nil)
+		assert.Contains(t, result, "Wasp")
+		assert.Contains(t, result, "完成スーツ")
+		assert.Contains(t, result, "列0:")
+	})
+
+	t.Run("with error", func(t *testing.T) {
+		sg := new(interfaces.MockWaspGame)
+		setupWaspCuiMockDefaults(sg)
+		p := new(WaspCuiPresenter)
+
+		result := p.Output(sg, assert.AnError)
+		assert.Contains(t, result, assert.AnError.Error())
+	})
+
+	t.Run("stalemate", func(t *testing.T) {
+		sg := new(interfaces.MockWaspGame)
+		sg.On("GetPhase").Return(domain.WaspPhasePlaying).Maybe()
+		sg.On("GetMoveCount").Return(5).Maybe()
+		sg.On("IsStalemate").Return(true).Maybe()
+		sg.On("GetCompletedSuits").Return(0).Maybe()
+		sg.On("GetStockCount").Return(0).Maybe()
+		var tableau [domain.WaspTableauCnt][]*domain.KlondikeTableauCard
+		sg.On("GetTableau").Return(tableau).Maybe()
+
+		p := new(WaspCuiPresenter)
+		result := p.Output(sg, nil)
+		assert.Contains(t, result, "手詰まり")
+	})
+
+	t.Run("game clear", func(t *testing.T) {
+		sg := new(interfaces.MockWaspGame)
+		sg.On("GetPhase").Return(domain.WaspPhaseGameClear).Maybe()
+		sg.On("GetMoveCount").Return(42).Maybe()
+		sg.On("IsStalemate").Return(false).Maybe()
+		sg.On("GetCompletedSuits").Return(4).Maybe()
+		sg.On("GetStockCount").Return(0).Maybe()
+		var tableau [domain.WaspTableauCnt][]*domain.KlondikeTableauCard
+		sg.On("GetTableau").Return(tableau).Maybe()
+
+		p := new(WaspCuiPresenter)
+		result := p.Output(sg, nil)
+		assert.Contains(t, result, "ゲームクリア")
+	})
+
+	t.Run("game over", func(t *testing.T) {
+		sg := new(interfaces.MockWaspGame)
+		sg.On("GetPhase").Return(domain.WaspPhaseGameOver).Maybe()
+		sg.On("GetMoveCount").Return(10).Maybe()
+		sg.On("IsStalemate").Return(false).Maybe()
+		sg.On("GetCompletedSuits").Return(0).Maybe()
+		sg.On("GetStockCount").Return(0).Maybe()
+		var tableau [domain.WaspTableauCnt][]*domain.KlondikeTableauCard
+		sg.On("GetTableau").Return(tableau).Maybe()
+
+		p := new(WaspCuiPresenter)
+		result := p.Output(sg, nil)
+		assert.Contains(t, result, "ゲームオーバー")
+	})
+}
+
+func TestWaspCuiPresenter_HintOutput(t *testing.T) {
+	t.Run("with hint", func(t *testing.T) {
+		sg := new(interfaces.MockWaspGame)
+		sg.On("GetHint").Return(&domain.WaspHint{FromCol: 0, CardIndex: 1, ToCol: 3})
+
+		p := new(WaspCuiPresenter)
+		result := p.HintOutput(sg)
+		assert.Contains(t, result, "ヒント")
+		assert.Contains(t, result, "タブロー列3")
+	})
+
+	t.Run("deal hint", func(t *testing.T) {
+		sg := new(interfaces.MockWaspGame)
+		sg.On("GetHint").Return(&domain.WaspHint{
+			FromCol:   domain.WaspHintDeal,
+			CardIndex: domain.WaspHintDeal,
+			ToCol:     domain.WaspHintDeal,
+		})
+
+		p := new(WaspCuiPresenter)
+		result := p.HintOutput(sg)
+		assert.Contains(t, result, "ストック")
+	})
+
+	t.Run("no hint", func(t *testing.T) {
+		sg := new(interfaces.MockWaspGame)
+		sg.On("GetHint").Return((*domain.WaspHint)(nil))
+
+		p := new(WaspCuiPresenter)
+		result := p.HintOutput(sg)
+		assert.Contains(t, result, "ヒントはありません")
+	})
+}
+
+func TestWaspCuiPresenter_ActionLogOutput(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		sg := new(interfaces.MockWaspGame)
+		sg.On("GetPhase").Return(domain.WaspPhasePlaying)
+
+		p := new(WaspCuiPresenter)
+		result := p.ActionLogOutput(sg)
+		assert.NotEmpty(t, result)
+	})
+
+	t.Run("game over", func(t *testing.T) {
+		sg := new(interfaces.MockWaspGame)
+		sg.On("GetPhase").Return(domain.WaspPhaseGameOver)
+		sg.On("GetActionLog").Return([]*domain.ActionLogEntry{
+			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+		})
+
+		p := new(WaspCuiPresenter)
+		result := p.ActionLogOutput(sg)
+		assert.NotEmpty(t, result)
+	})
+}

@@ -114,6 +114,7 @@ import twotenjack from '../../../docs/manual/cui/twotenjack.md?raw';
 import ultimatetexasholdem from '../../../docs/manual/cui/ultimatetexasholdem.md?raw';
 import videopoker from '../../../docs/manual/cui/videopoker.md?raw';
 import war from '../../../docs/manual/cui/war.md?raw';
+import wasp from '../../../docs/manual/cui/wasp.md?raw';
 import whist from '../../../docs/manual/cui/whist.md?raw';
 import yukon from '../../../docs/manual/cui/yukon.md?raw';
 
@@ -213,6 +214,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/russiansolitaire': russiansolitaire,
   '/cruel': cruel,
   '/scorpion': scorpion,
+  '/wasp': wasp,
   '/sevenbridge': sevenbridge,
   '/accordion': accordion,
   '/trash': trash,

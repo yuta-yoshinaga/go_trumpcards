@@ -166,6 +166,14 @@ func init() {
 			return usecase.RestoreScorpionInteractor(data, new(presenter.ScorpionWebPresenter))
 		},
 		controller.NewScorpionWebControllerWithProvider)
+	games.RegisterKVGame("wasp", games.CategorySolo,
+		func() usecase.WaspInteractorIF {
+			return usecase.NewWaspInteractor(domain.NewDefaultWasp(), new(presenter.WaspWebPresenter))
+		},
+		func(data []byte) (usecase.WaspInteractorIF, error) {
+			return usecase.RestoreWaspInteractor(data, new(presenter.WaspWebPresenter))
+		},
+		controller.NewWaspWebControllerWithProvider)
 	games.RegisterKVGame("accordion", games.CategorySolo,
 		func() usecase.AccordionInteractorIF {
 			return usecase.NewAccordionInteractor(domain.NewDefaultAccordion(), new(presenter.AccordionWebPresenter))

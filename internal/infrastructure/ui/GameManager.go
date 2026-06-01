@@ -1093,6 +1093,23 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "wasp", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewWaspCuiController(usecase.NewWaspInteractor(
+				domain.NewDefaultWasp(), new(presenter.WaspCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "wasp.helpTitle",
+				CommandKeys: []string{
+					"wasp.helpMove",
+					"wasp.helpMoveTT",
+					"wasp.helpDeal",
+					"wasp.helpGiveUp",
+					"wasp.helpHint",
+					"wasp.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "accordion", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewAccordionCuiController(usecase.NewAccordionInteractor(

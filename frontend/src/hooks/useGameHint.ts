@@ -92,6 +92,7 @@ import type {
   UltimateTexasHoldemResponse,
   VideoPokerResponse,
   WarResponse,
+  WaspResponse,
   WhistResponse,
   YukonResponse,
 } from '../types/card';
@@ -193,6 +194,7 @@ import { getTwoTenJackHint } from '../utils/hints/twotenjackHint';
 import { getUltimateTexasHoldemHint } from '../utils/hints/ultimateTexasHoldemHint';
 import { getVideoPokerHint } from '../utils/hints/videopokerHint';
 import { getWarHint } from '../utils/hints/warHint';
+import { getWaspHint } from '../utils/hints/waspHint';
 import { getWhistHint } from '../utils/hints/whistHint';
 import { getYukonHint } from '../utils/hints/yukonHint';
 import { useLocalStorageToggle } from './useLocalStorageToggle';
@@ -286,6 +288,7 @@ const hintFactories = {
   russiansolitaire: (s) => getRussianSolitaireHint(s as RussianSolitaireResponse),
   cruel: (s) => getCruelHint(s as CruelResponse),
   scorpion: (s) => getScorpionHint(s as ScorpionResponse),
+  wasp: (s) => getWaspHint(s as WaspResponse),
   accordion: (s) => getAccordionHint(s as AccordionResponse),
   calculation: (s) => getCalculationHint(s as CalculationResponse),
   sevenbridge: (s) => getSevenbridgeHint(s as SevenBridgeResponse),

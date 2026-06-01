@@ -348,6 +348,11 @@ func init() {
 			return usecase.NewScorpionInteractor(domain.NewDefaultScorpion(), new(presenter.ScorpionWebPresenter))
 		},
 		controller.NewScorpionWebController)
+	BindWebControllerFor("wasp",
+		func() usecase.WaspInteractorIF {
+			return usecase.NewWaspInteractor(domain.NewDefaultWasp(), new(presenter.WaspWebPresenter))
+		},
+		controller.NewWaspWebController)
 	BindWebControllerFor("accordion",
 		func() usecase.AccordionInteractorIF {
 			return usecase.NewAccordionInteractor(domain.NewDefaultAccordion(), new(presenter.AccordionWebPresenter))
