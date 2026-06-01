@@ -225,7 +225,7 @@ function ThirtyOnePageContent() {
               {state.players
                 .filter((p) => !p.isHuman)
                 .map((p) => (
-                  <div key={p.id} className={`text-center ${p.isEliminated ? 'opacity-40' : ''}`}>
+                  <div key={p.id} className={p.isEliminated ? 'text-center opacity-40' : 'text-center'}>
                     <div className="text-xs text-ds-text-muted mb-1">
                       {tc('player.cpu', { id: p.id })} — <Lives lives={p.lives} out={p.isEliminated} />
                       {state.knockerIdx === p.id && <span className="ml-1 text-ds-warning">{t('label.knocked')}</span>}
@@ -299,9 +299,15 @@ function ThirtyOnePageContent() {
                     data-testid={`hand-card-${i}`}
                     onClick={() => isDiscard && isHumanTurn && setSelectedCardIdx(i === selectedCardIdx ? null : i)}
                     disabled={!isDiscard || !isHumanTurn}
-                    className={`rounded transition-all ${
-                      selectedCardIdx === i ? 'ring-2 ring-ds-info -translate-y-2' : ''
-                    } ${isDiscard && isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
+                    className={
+                      selectedCardIdx === i
+                        ? isDiscard && isHumanTurn
+                          ? 'rounded transition-all ring-2 ring-ds-info -translate-y-2 cursor-pointer hover:opacity-90'
+                          : 'rounded transition-all ring-2 ring-ds-info -translate-y-2 cursor-default'
+                        : isDiscard && isHumanTurn
+                          ? 'rounded transition-all cursor-pointer hover:opacity-90'
+                          : 'rounded transition-all cursor-default'
+                    }
                   >
                     <AnimatedCard card={c} width={cardWidth} />
                   </button>

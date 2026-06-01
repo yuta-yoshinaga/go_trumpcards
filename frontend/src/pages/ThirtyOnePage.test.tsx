@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { thirtyoneApi } from '../api/gameApi';
+import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, ThirtyOneResponse } from '../types/card';
 import { ThirtyOnePhase } from '../types/phases';
@@ -99,5 +100,85 @@ describe('ThirtyOnePage', () => {
     await screen.findByTestId('draw-stock-button');
     // Human + 3 CPU each render a lives indicator (❤ or 💀).
     expect(screen.getAllByLabelText(/lives-/).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('toggles card selection on and off in the discard phase', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: ThirtyOnePhase.DISCARD }));
+    renderWithProviders(<ThirtyOnePage />);
+    const card0 = await screen.findByTestId('hand-card-0');
+    // Select then re-click to deselect → discard button disabled again.
+    fireEvent.click(card0);
+    expect(screen.getByTestId('discard-button')).toBeEnabled();
+    fireEvent.click(card0);
+    expect(screen.getByTestId('discard-button')).toBeDisabled();
+  });
+
+  it('disables the knock button once someone has knocked', async () => {
+    mockExec.mockResolvedValue(makeState({ knockerIdx: 1 }));
+    renderWithProviders(<ThirtyOnePage />);
+    expect(await screen.findByTestId('knock-button')).toBeDisabled();
+  });
+
+  it('highlights the leading suit badge', async () => {
+    // Default human hand: SPADE 3, HEART 5, DIAMOND 7 → DIAMOND leads.
+    renderWithProviders(<ThirtyOnePage />);
+    const leader = await screen.findByTestId('suit-badge-DIAMOND');
+    expect(leader.className).toContain('bg-ds-accent');
+  });
+
+  it('reveals CPU cards and scores and the next-round button at round end', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: ThirtyOnePhase.ROUND_END,
+        roundWinnerIdx: 0,
+        roundLosers: [1],
+        players: [
+          player(0, true, [card('SPADE', 1), card('SPADE', 13), card('SPADE', 5)], { score: 26 }),
+          player(1, false, [card('HEART', 2), card('CLOVER', 3), card('DIAMOND', 4)], { score: 4 }),
+          player(2, false, [card('SPADE', 9), card('HEART', 9), card('CLOVER', 2)], { score: 9 }),
+          player(3, false, [card('DIAMOND', 7), card('DIAMOND', 8), card('SPADE', 1)], { score: 15 }),
+        ],
+      }),
+    );
+    renderWithProviders(<ThirtyOnePage />);
+    expect(await screen.findByTestId('next-round-button')).toBeInTheDocument();
+    // At round end, draw actions are disabled (not the human's turn).
+    expect(screen.getByTestId('draw-stock-button')).toBeDisabled();
+  });
+
+  it('renders eliminated and zero-life indicators', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          player(0, true, [card('SPADE', 3)], { lives: 0 }),
+          player(1, false, [], { lives: -1, isEliminated: true }),
+          player(2, false, []),
+          player(3, false, []),
+        ],
+      }),
+    );
+    renderWithProviders(<ThirtyOnePage />);
+    await screen.findByTestId('draw-stock-button');
+    expect(screen.getByLabelText('out')).toBeInTheDocument(); // 💀 for eliminated
+    expect(screen.getByLabelText('lives-0')).toBeInTheDocument(); // · fallback
+  });
+
+  it('renders the CLI terminal when CLI mode is enabled', async () => {
+    localStorage.setItem('cli-mode-thirtyone', 'true');
+    renderWithProviders(<ThirtyOnePage />);
+    expect(await screen.findByPlaceholderText(/コマンド/)).toBeInTheDocument();
+    expect(screen.queryByTestId('draw-stock-button')).not.toBeInTheDocument();
+  });
+
+  it('shows a retry button when an action fails', async () => {
+    renderWithProviders(<ThirtyOnePage />);
+    const drawBtn = await screen.findByTestId('draw-stock-button');
+    mockExec.mockRejectedValueOnce(new Error('boom'));
+    fireEvent.click(drawBtn);
+    const retry = await screen.findByText(NETWORK_ERROR_MESSAGE());
+    // Clicking it retries the last action (which now succeeds again).
+    mockExec.mockResolvedValue(makeState());
+    fireEvent.click(retry);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawstock'));
   });
 });

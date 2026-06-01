@@ -273,6 +273,14 @@ func TestThirtyOne_CpuPlaysToCompletion(t *testing.T) {
 	}
 }
 
+func TestThirtyOne_CpuDiscardEmptyHandDoesNotPanic(t *testing.T) {
+	g := newTestThirtyOne()
+	g.SetCurrentPlayerIdx(1) // a CPU
+	g.SetPhase(ThirtyOnePhaseDiscard)
+	g.GetPlayer(1).Reset() // empty hand
+	assert.NotPanics(t, func() { g.CpuPlay() })
+}
+
 func TestThirtyOne_BlitzOnDeal(t *testing.T) {
 	// Hand-craft a draw pile so the human is dealt A♠ K♠ Q♠ = 31.
 	g := NewDefaultThirtyOne()
@@ -309,12 +317,29 @@ func TestThirtyOne_UnmarshalRejectsOversize(t *testing.T) {
 	assert.Error(t, json.Unmarshal(payload, &g))
 }
 
-func TestThirtyOne_UnmarshalNilDefaults(t *testing.T) {
+func TestThirtyOne_UnmarshalRejectsBadPlayerCount(t *testing.T) {
+	// Empty / wrong-sized players slices are rejected to prevent downstream panics.
+	for _, body := range []string{`{}`, `{"pl":[]}`} {
+		var g ThirtyOne
+		assert.Error(t, json.Unmarshal([]byte(body), &g), "body %q should be rejected", body)
+	}
+}
+
+func TestThirtyOne_UnmarshalNilSliceDefaults(t *testing.T) {
+	// A valid 4-player payload with nil collection fields gets safe defaults.
+	players := make([]*ThirtyOnePlayer, ThirtyOnePlayerCnt)
+	for i := range players {
+		players[i] = NewThirtyOnePlayer(i == 0)
+	}
+	payload, err := json.Marshal(thirtyOneJSON{Players: players})
+	require.NoError(t, err)
+
 	var g ThirtyOne
-	require.NoError(t, json.Unmarshal([]byte(`{}`), &g))
+	require.NoError(t, json.Unmarshal(payload, &g))
 	assert.NotNil(t, g.GetActionLog())
 	assert.Equal(t, 0, g.GetDrawPileCount())
 	assert.Empty(t, g.GetRoundLosers())
+	assert.Equal(t, ThirtyOnePlayerCnt, g.GetPlayerCnt())
 }
 
 func TestThirtyOne_BestDropHelpers(t *testing.T) {

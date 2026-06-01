@@ -122,9 +122,14 @@ func (ci *ThirtyOneInteractor) ActionLog() string {
 	return ci.gp.ActionLogOutput(ci.Game)
 }
 
+// thirtyOneMaxCpuSteps bounds runCpuTurns so a malformed state can never spin
+// the CPU loop forever (defensive — normal play always reaches a human turn,
+// round end, or game end well within this limit).
+const thirtyOneMaxCpuSteps = 1000
+
 // runCpuTurns CPUターンを連続実行する
 func (ci *ThirtyOneInteractor) runCpuTurns() {
-	for !ci.Game.GetGameEndFlag() {
+	for step := 0; step < thirtyOneMaxCpuSteps && !ci.Game.GetGameEndFlag(); step++ {
 		phase := ci.Game.GetPhase()
 		if phase == domain.ThirtyOnePhaseRoundEnd || phase == domain.ThirtyOnePhaseGameEnd {
 			break

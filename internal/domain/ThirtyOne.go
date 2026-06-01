@@ -345,6 +345,12 @@ func (g *ThirtyOne) cpuDraw() {
 func (g *ThirtyOne) cpuDiscard() {
 	idx := g.currentPlayerIdx
 	cards := g.handCards(idx)
+	if len(cards) == 0 {
+		// Defensive: only reachable from a corrupt deserialized state where a
+		// player in the discard phase has no cards. Avoid an Intn(0) panic.
+		g.advanceTurn()
+		return
+	}
 
 	dropIdx := 0
 	if g.config.CpuDifficulty == ThirtyOneCpuDifficultyEasy {
@@ -750,8 +756,8 @@ func (g *ThirtyOne) UnmarshalJSON(data []byte) error {
 		g.trumpCards = NewTrumpCards(0)
 	}
 	g.players = j.Players
-	if g.players == nil {
-		g.players = make([]*ThirtyOnePlayer, 0)
+	if len(g.players) != ThirtyOnePlayerCnt {
+		return fmt.Errorf("thirtyone: invalid player count: %d", len(g.players))
 	}
 	g.config = j.Config
 	g.phase = j.Phase

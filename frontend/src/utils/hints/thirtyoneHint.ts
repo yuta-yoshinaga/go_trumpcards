@@ -14,9 +14,10 @@ function cardScore(value: number): number {
 
 /** Highest single-suit total for a set of cards. */
 function bestSuitScore(cards: Card[]): number {
+  if (!cards) return 0;
   const totals: Record<string, number> = {};
   for (const c of cards) {
-    if (c.design === 'JOKER') continue;
+    if (!c || c.design === 'JOKER') continue;
     totals[c.design] = (totals[c.design] ?? 0) + cardScore(c.value);
   }
   let best = 0;
@@ -34,7 +35,8 @@ export function getThirtyOneHint(state: ThirtyOneResponse): HintResult | null {
   if (!human || state.currentPlayerIdx !== human.id) return null;
   if (state.phase !== ThirtyOnePhase.DRAW) return null;
 
-  const currentScore = bestSuitScore(human.cards);
+  const cards = human.cards ?? [];
+  const currentScore = bestSuitScore(cards);
 
   // Strong hand and nobody has knocked yet — recommend knocking.
   if (currentScore >= KNOCK_THRESHOLD && state.knockerIdx < 0) {
@@ -44,8 +46,8 @@ export function getThirtyOneHint(state: ThirtyOneResponse): HintResult | null {
   // Does taking the discard top improve the best-suit score?
   if (state.discardTop) {
     let bestWithDiscard = currentScore;
-    for (let i = 0; i < human.cards.length; i++) {
-      const newHand = [...human.cards];
+    for (let i = 0; i < cards.length; i++) {
+      const newHand = [...cards];
       newHand[i] = state.discardTop;
       const s = bestSuitScore(newHand);
       if (s > bestWithDiscard) bestWithDiscard = s;
