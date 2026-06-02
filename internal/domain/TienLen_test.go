@@ -287,7 +287,9 @@ func TestTienLenPlayStrength_Invalid(t *testing.T) {
 func TestTienLenStraightStrength(t *testing.T) {
 	s1 := []*Card{cardTL(3, CardDesignSpade), cardTL(4, CardDesignHeart), cardTL(5, CardDesignClover)}
 	s2 := []*Card{cardTL(4, CardDesignSpade), cardTL(5, CardDesignHeart), cardTL(6, CardDesignClover)}
-	assert.Less(t, tienLenStraightStrength(s1), tienLenStraightStrength(s2))
+	assert.Less(t,
+		tienLenPlayStrength(s1, TienLenPlayStraight),
+		tienLenPlayStrength(s2, TienLenPlayStraight))
 }
 
 // --- TienLen game flow ---
@@ -483,6 +485,31 @@ func TestTienLen_FinishPlayer(t *testing.T) {
 	assert.NoError(t, tl.PlayerPlay([]int{0}))
 	assert.True(t, players[0].GetIsFinished())
 	assert.Equal(t, 1, players[0].GetRank())
+}
+
+func TestTienLen_PassClearAfterFinisher(t *testing.T) {
+	tl := newTestTienLen()
+	players := tl.players
+	players[0].AddCard(cardTL(2, CardDesignHeart)) // strongest single, player 0's last card
+	players[1].AddCard(cardTL(4, CardDesignSpade))
+	players[2].AddCard(cardTL(5, CardDesignSpade))
+	players[3].AddCard(cardTL(6, CardDesignSpade))
+	tl.round.currentTurn = 0
+	tl.round.firstPlayDone = true
+	tl.round.lastPlayPlayerIdx = -1
+
+	// Player 0 plays their last card and goes out — the table must NOT clear
+	// immediately, so the remaining players still get a chance to respond.
+	require.NoError(t, tl.PlayerPlay([]int{0}))
+	assert.True(t, players[0].GetIsFinished())
+	assert.NotNil(t, tl.GetTableCards())
+	assert.Equal(t, 0, tl.GetLastPlayPlayerIdx())
+
+	// None of the active players can beat the ♥2, so all pass and the table clears.
+	for i := 0; i < 3; i++ {
+		tl.CpuPlay()
+	}
+	assert.Nil(t, tl.GetTableCards())
 }
 
 func TestTienLen_GameEnd(t *testing.T) {

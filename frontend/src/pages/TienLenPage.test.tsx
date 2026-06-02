@@ -99,4 +99,38 @@ describe('TienLenPage', () => {
     fireEvent.click(retry);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', []));
   });
+
+  it('shows a finished CPU rank instead of a card count', async () => {
+    // A CPU has gone out (rank 1) while the round continues — exercises the
+    // `isFinished ? rank : cardCount` branch. Locale is ja in tests, so "1位".
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          player(0, true, [card('SPADE', 3)]),
+          player(1, false, [], { isFinished: true, rank: 1, cardCount: 0 }),
+          player(2, false, [], { cardCount: 5 }),
+          player(3, false, [], { cardCount: 9 }),
+        ],
+      }),
+    );
+    renderWithProviders(<TienLenPage />);
+    await screen.findByTestId('pass-button');
+    expect(screen.getAllByText('1位').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('shows CPU remaining-card counts during play', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          player(0, true, [card('SPADE', 3)]),
+          player(1, false, [], { cardCount: 7 }),
+          player(2, false, [], { cardCount: 5 }),
+          player(3, false, [], { cardCount: 9 }),
+        ],
+      }),
+    );
+    renderWithProviders(<TienLenPage />);
+    await screen.findByTestId('pass-button');
+    expect(screen.getByText('— 7')).toBeInTheDocument();
+  });
 });

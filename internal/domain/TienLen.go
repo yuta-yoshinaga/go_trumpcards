@@ -223,31 +223,45 @@ func (tl *TienLen) advanceTurn() {
 	}
 }
 
-// checkPassClear 全員パスしたら場をクリアする
+// clearTable 場をリセットして次のリードを自由にする
+func (tl *TienLen) clearTable() {
+	tl.round.tableCards = nil
+	tl.round.tablePlayType = TienLenPlayInvalid
+	tl.round.lastPlayPlayerIdx = -1
+	tl.round.passCount = 0
+}
+
+// checkPassClear 全員パスしたら場をクリアする。
+//
+// 通常は、場にカードを出したプレイヤー (lastPlayPlayerIdx) まで手番が一周
+// すれば（＝他全員がパスすれば）クリアする。ただしそのプレイヤーが上がって
+// 場を離れている場合は手番が戻ってこないため、残りのアクティブプレイヤー全員が
+// パスし切った時点でクリアする。これにより、上がりの一手（単体の「2」など）に対しても
+// 他プレイヤーがチョップ役で応じる機会が残る。
 func (tl *TienLen) checkPassClear() {
 	if tl.round.tableCards == nil || tl.round.lastPlayPlayerIdx < 0 {
 		return
 	}
+	if tl.players[tl.round.lastPlayPlayerIdx].GetIsFinished() {
+		active := countPlayers(tl.players, func(p *TienLenPlayer) bool { return !p.GetIsFinished() })
+		if tl.round.passCount >= active {
+			tl.clearTable()
+		}
+		return
+	}
 	if tl.round.currentTurn == tl.round.lastPlayPlayerIdx {
-		tl.round.tableCards = nil
-		tl.round.tablePlayType = TienLenPlayInvalid
-		tl.round.lastPlayPlayerIdx = -1
-		tl.round.passCount = 0
+		tl.clearTable()
 	}
 }
 
-// finishPlayer プレイヤーを上がりにしてランクを付与
+// finishPlayer プレイヤーを上がりにしてランクを付与。
+// 場のクリアはここでは行わない（checkPassClear が、上がったプレイヤーの一手に
+// 他プレイヤーが応じる機会を確保したうえでクリアする）。
 func (tl *TienLen) finishPlayer(idx int) {
 	rank := tl.countFinished() + 1
 	tl.players[idx].SetIsFinished(true)
 	tl.players[idx].SetRank(rank)
 	tl.appendLog(idx, "finish", fmt.Sprintf("player %d finished (rank %d)", idx, rank), nil)
-	if tl.round.lastPlayPlayerIdx == idx {
-		tl.round.tableCards = nil
-		tl.round.tablePlayType = TienLenPlayInvalid
-		tl.round.lastPlayPlayerIdx = -1
-		tl.round.passCount = 0
-	}
 }
 
 // checkGameEnd ゲーム終了チェック

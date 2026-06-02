@@ -29,9 +29,11 @@ import {
 } from '../utils/cli/commands/tienlenCommands';
 import type { CliGameConfig } from '../utils/cli/types';
 
+// Values match the Go domain constants: 0=Normal, 1=Easy, 2=Hard
+// (see TienLenConfig.go / TienLenCuiController help text).
 const DIFFICULTY_OPTIONS = [
-  { value: '0', label: 'Easy' },
-  { value: '1', label: 'Normal' },
+  { value: '0', label: 'Normal' },
+  { value: '1', label: 'Easy' },
   { value: '2', label: 'Hard' },
 ];
 
@@ -188,20 +190,28 @@ function TienLenPageContent() {
                 {human.isFinished && <span className="font-bold">{t(`rank.${human.rank}`)}</span>}
               </div>
               <div className="flex flex-wrap justify-center gap-2">
-                {human.cards.map((c, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => isHumanTurn && toggleCardSelection(i)}
-                    disabled={!isHumanTurn}
-                    className={`rounded transition-all ${
-                      selectedIndices.includes(i) ? 'ring-2 ring-ds-info -translate-y-2' : ''
-                    } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
-                    data-testid={`hand-card-${i}`}
-                  >
-                    <AnimatedCard card={c} width={cardWidth} />
-                  </button>
-                ))}
+                {human.cards.map((c, i) => {
+                  const selected = selectedIndices.includes(i);
+                  const cardClass = selected
+                    ? isHumanTurn
+                      ? 'rounded transition-all ring-2 ring-ds-info -translate-y-2 cursor-pointer hover:opacity-90'
+                      : 'rounded transition-all ring-2 ring-ds-info -translate-y-2 cursor-default'
+                    : isHumanTurn
+                      ? 'rounded transition-all cursor-pointer hover:opacity-90'
+                      : 'rounded transition-all cursor-default';
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => isHumanTurn && toggleCardSelection(i)}
+                      disabled={!isHumanTurn}
+                      className={cardClass}
+                      data-testid={`hand-card-${i}`}
+                    >
+                      <AnimatedCard card={c} width={cardWidth} />
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

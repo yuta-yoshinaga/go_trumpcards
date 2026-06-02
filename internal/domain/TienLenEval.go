@@ -164,10 +164,11 @@ func tienLenPlayStrength(cards []*Card, playType TienLenPlayType) int {
 	switch playType {
 	case TienLenPlaySingle:
 		return TienLenCardStrength(cards[0])
-	case TienLenPlayPair, TienLenPlayTriple, TienLenPlayThreePairRun:
+	// A straight's cards all have distinct values, so the highest TienLenCardStrength
+	// always belongs to the highest-value card (value dominates suit). It therefore
+	// shares the highest-card comparison used by pairs/triples/three-pair-runs.
+	case TienLenPlayPair, TienLenPlayTriple, TienLenPlayThreePairRun, TienLenPlayStraight:
 		return tienLenGroupStrength(cards)
-	case TienLenPlayStraight:
-		return tienLenStraightStrength(cards)
 	case TienLenPlayFourOfAKind:
 		return tienLenValueStrength(cards[0].GetValue())
 	default:
@@ -184,21 +185,6 @@ func tienLenGroupStrength(cards []*Card) int {
 		}
 	}
 	return maxStr
-}
-
-// tienLenStraightStrength returns strength for a straight by its highest card.
-func tienLenStraightStrength(cards []*Card) int {
-	high := cards[0]
-	highStr := TienLenCardStrength(high)
-	for _, c := range cards[1:] {
-		vi := tienLenValueStrength(c.GetValue())
-		vh := tienLenValueStrength(high.GetValue())
-		if vi > vh || (vi == vh && TienLenCardStrength(c) > highStr) {
-			high = c
-			highStr = TienLenCardStrength(c)
-		}
-	}
-	return highStr
 }
 
 // tienLenIsBomb reports whether a play type is a chop (bomb).

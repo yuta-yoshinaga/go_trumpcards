@@ -6,8 +6,10 @@ import { runReplay, shouldSkipReplay } from './gameReplay';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
 
+// 0 = Normal, matching the server's DefaultTienLenConfig() so the settings
+// panel's initial value agrees with the on-mount reset (which sends no config).
 const defaultConfigInput: TienLenConfigInput = {
-  cpuDifficulty: 1,
+  cpuDifficulty: 0,
 };
 
 interface TienLenCountsCtx {

@@ -108,6 +108,10 @@ func TestTienLenWebPresenter_Output(t *testing.T) {
 		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &out))
 		assert.Contains(t, out.Message, "あなた:1位")
 		assert.Equal(t, "tienlen.result.rankings", out.MessageCode)
+		// The rankings param must not embed the "ゲーム終了！" prefix — the frontend
+		// template adds it, so embedding it here would double up.
+		assert.Contains(t, out.MessageParams["rankings"], "あなた:1位")
+		assert.NotContains(t, out.MessageParams["rankings"], "ゲーム終了")
 	})
 }
 

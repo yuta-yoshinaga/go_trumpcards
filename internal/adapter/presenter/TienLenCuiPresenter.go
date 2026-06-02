@@ -12,6 +12,9 @@ import (
 
 // tienLenPlayerStr returns the display string for a single Tien Len player.
 func tienLenPlayerStr(player *domain.TienLenPlayer, i int) string {
+	if player == nil {
+		return ""
+	}
 	var b strings.Builder
 	b.WriteString(cuiPlayerName(player, i))
 	if player.GetIsFinished() {
