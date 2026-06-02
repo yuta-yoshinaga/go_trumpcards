@@ -137,10 +137,10 @@ func TestRestoreOsmosisInteractor(t *testing.T) {
 	data, err := src.MarshalJSON()
 	assert.NoError(t, err)
 
-	oi, err := RestoreOsmosisInteractor(data, new(presenter.OsmosisWebPresenter))
+	oi, err := RestoreOsmosisInteractor(data, newMockOsmosisPresenter())
 	assert.NoError(t, err)
 	assert.NotNil(t, oi)
 
-	_, err = RestoreOsmosisInteractor([]byte("not json"), new(presenter.OsmosisWebPresenter))
+	_, err = RestoreOsmosisInteractor([]byte("not json"), newMockOsmosisPresenter())
 	assert.Error(t, err)
 }

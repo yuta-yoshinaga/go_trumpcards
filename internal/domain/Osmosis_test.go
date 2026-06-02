@@ -20,8 +20,8 @@ func setupPlayingOsmosis() *domain.Osmosis {
 	return o
 }
 
-// card is a short alias for constructing a face-up card in tests.
-func card(design, value int) *domain.Card {
+// osCard is a short alias for constructing a face-up card in tests.
+func osCard(design, value int) *domain.Card {
 	return domain.NewCard(design, value, false)
 }
 
@@ -78,7 +78,7 @@ func TestOsmosis_Draw(t *testing.T) {
 func TestOsmosis_DrawRecycle(t *testing.T) {
 	o := setupPlayingOsmosis()
 	o.SetStock(nil)
-	o.SetWaste([]*domain.Card{card(domain.CardDesignSpade, 5), card(domain.CardDesignHeart, 6)})
+	o.SetWaste([]*domain.Card{osCard(domain.CardDesignSpade, 5), osCard(domain.CardDesignHeart, 6)})
 	err := o.Draw()
 	assert.NoError(t, err)
 	assert.Equal(t, 2, o.GetStockCount())
@@ -105,16 +105,16 @@ func TestOsmosis_FoundationTopRowFreeOrder(t *testing.T) {
 	o := setupPlayingOsmosis()
 	o.SetBaseRank(8)
 	var f [domain.OsmosisFoundationCnt][]*domain.Card
-	f[0] = []*domain.Card{card(domain.CardDesignSpade, 8)}
+	f[0] = []*domain.Card{osCard(domain.CardDesignSpade, 8)}
 	o.SetFoundation(f)
 
 	// Same suit, arbitrary rank (Jack) — allowed on top row.
-	o.SetWaste([]*domain.Card{card(domain.CardDesignSpade, 11)})
+	o.SetWaste([]*domain.Card{osCard(domain.CardDesignSpade, 11)})
 	assert.NoError(t, o.MoveWasteToFoundation(0))
 	assert.Len(t, o.GetFoundation()[0], 2)
 
 	// Different suit — rejected on the (now spade-locked) top row.
-	o.SetWaste([]*domain.Card{card(domain.CardDesignHeart, 9)})
+	o.SetWaste([]*domain.Card{osCard(domain.CardDesignHeart, 9)})
 	assert.Error(t, o.MoveWasteToFoundation(0))
 }
 
@@ -125,20 +125,20 @@ func TestOsmosis_LowerRowNeedsBaseRankToStart(t *testing.T) {
 	o := setupPlayingOsmosis()
 	o.SetBaseRank(8)
 	var f [domain.OsmosisFoundationCnt][]*domain.Card
-	f[0] = []*domain.Card{card(domain.CardDesignSpade, 8)}
+	f[0] = []*domain.Card{osCard(domain.CardDesignSpade, 8)}
 	o.SetFoundation(f)
 
 	// Non-base rank cannot start row 1.
-	o.SetWaste([]*domain.Card{card(domain.CardDesignHeart, 9)})
+	o.SetWaste([]*domain.Card{osCard(domain.CardDesignHeart, 9)})
 	assert.Error(t, o.MoveWasteToFoundation(1))
 
 	// Base-rank heart starts row 1 (row 0 above is non-empty).
-	o.SetWaste([]*domain.Card{card(domain.CardDesignHeart, 8)})
+	o.SetWaste([]*domain.Card{osCard(domain.CardDesignHeart, 8)})
 	assert.NoError(t, o.MoveWasteToFoundation(1))
 	assert.Len(t, o.GetFoundation()[1], 1)
 
 	// A suit already used by row 1 cannot start row 2.
-	o.SetWaste([]*domain.Card{card(domain.CardDesignHeart, 8)})
+	o.SetWaste([]*domain.Card{osCard(domain.CardDesignHeart, 8)})
 	assert.Error(t, o.MoveWasteToFoundation(2))
 }
 
@@ -149,22 +149,22 @@ func TestOsmosis_OsmosisSeepRule(t *testing.T) {
 	o.SetBaseRank(8)
 	var f [domain.OsmosisFoundationCnt][]*domain.Card
 	// Row 0: 8, J (spades). Row 1 started with base heart 8.
-	f[0] = []*domain.Card{card(domain.CardDesignSpade, 8), card(domain.CardDesignSpade, 11)}
-	f[1] = []*domain.Card{card(domain.CardDesignHeart, 8)}
+	f[0] = []*domain.Card{osCard(domain.CardDesignSpade, 8), osCard(domain.CardDesignSpade, 11)}
+	f[1] = []*domain.Card{osCard(domain.CardDesignHeart, 8)}
 	o.SetFoundation(f)
 
 	// Heart J can join row 1 because J exists in row 0 above.
-	o.SetWaste([]*domain.Card{card(domain.CardDesignHeart, 11)})
+	o.SetWaste([]*domain.Card{osCard(domain.CardDesignHeart, 11)})
 	assert.NoError(t, o.MoveWasteToFoundation(1))
 
 	// Heart 3 cannot join row 1 because 3 is not yet in row 0.
-	o.SetWaste([]*domain.Card{card(domain.CardDesignHeart, 3)})
+	o.SetWaste([]*domain.Card{osCard(domain.CardDesignHeart, 3)})
 	assert.Error(t, o.MoveWasteToFoundation(1))
 }
 
 func TestOsmosis_MoveWasteInvalidIndex(t *testing.T) {
 	o := setupPlayingOsmosis()
-	o.SetWaste([]*domain.Card{card(domain.CardDesignSpade, 1)})
+	o.SetWaste([]*domain.Card{osCard(domain.CardDesignSpade, 1)})
 	assert.Error(t, o.MoveWasteToFoundation(-1))
 	assert.Error(t, o.MoveWasteToFoundation(domain.OsmosisFoundationCnt))
 }
@@ -179,11 +179,11 @@ func TestOsmosis_MoveReserveToFoundation(t *testing.T) {
 	o := setupPlayingOsmosis()
 	o.SetBaseRank(8)
 	var f [domain.OsmosisFoundationCnt][]*domain.Card
-	f[0] = []*domain.Card{card(domain.CardDesignSpade, 8)}
+	f[0] = []*domain.Card{osCard(domain.CardDesignSpade, 8)}
 	o.SetFoundation(f)
 
 	var r [domain.OsmosisReserveCnt][]*domain.Card
-	r[2] = []*domain.Card{card(domain.CardDesignSpade, 2), card(domain.CardDesignSpade, 9)}
+	r[2] = []*domain.Card{osCard(domain.CardDesignSpade, 2), osCard(domain.CardDesignSpade, 9)}
 	o.SetReserve(r)
 
 	assert.NoError(t, o.MoveReserveToFoundation(2, 0))
@@ -221,18 +221,18 @@ func TestOsmosis_Hint(t *testing.T) {
 	o := setupPlayingOsmosis()
 	o.SetBaseRank(8)
 	var f [domain.OsmosisFoundationCnt][]*domain.Card
-	f[0] = []*domain.Card{card(domain.CardDesignSpade, 8)}
+	f[0] = []*domain.Card{osCard(domain.CardDesignSpade, 8)}
 	o.SetFoundation(f)
 
 	// No playable card → no hint.
 	var r [domain.OsmosisReserveCnt][]*domain.Card
-	r[0] = []*domain.Card{card(domain.CardDesignHeart, 2)}
+	r[0] = []*domain.Card{osCard(domain.CardDesignHeart, 2)}
 	o.SetReserve(r)
 	o.SetWaste(nil)
 	assert.Nil(t, o.GetHint())
 
 	// Reserve playable → hint from reserve.
-	r[0] = []*domain.Card{card(domain.CardDesignSpade, 9)}
+	r[0] = []*domain.Card{osCard(domain.CardDesignSpade, 9)}
 	o.SetReserve(r)
 	h := o.GetHint()
 	assert.NotNil(t, h)
@@ -243,7 +243,7 @@ func TestOsmosis_Hint(t *testing.T) {
 	// Only waste playable → hint from waste.
 	var empty [domain.OsmosisReserveCnt][]*domain.Card
 	o.SetReserve(empty)
-	o.SetWaste([]*domain.Card{card(domain.CardDesignSpade, 5)})
+	o.SetWaste([]*domain.Card{osCard(domain.CardDesignSpade, 5)})
 	h = o.GetHint()
 	assert.NotNil(t, h)
 	assert.Equal(t, "waste", h.FromZone)
@@ -260,12 +260,12 @@ func TestOsmosis_AutoComplete(t *testing.T) {
 	o := setupPlayingOsmosis()
 	o.SetBaseRank(8)
 	var f [domain.OsmosisFoundationCnt][]*domain.Card
-	f[0] = []*domain.Card{card(domain.CardDesignSpade, 8)}
+	f[0] = []*domain.Card{osCard(domain.CardDesignSpade, 8)}
 	o.SetFoundation(f)
 	var r [domain.OsmosisReserveCnt][]*domain.Card
-	r[0] = []*domain.Card{card(domain.CardDesignSpade, 9), card(domain.CardDesignSpade, 10)}
+	r[0] = []*domain.Card{osCard(domain.CardDesignSpade, 9), osCard(domain.CardDesignSpade, 10)}
 	o.SetReserve(r)
-	o.SetWaste([]*domain.Card{card(domain.CardDesignSpade, 5)})
+	o.SetWaste([]*domain.Card{osCard(domain.CardDesignSpade, 5)})
 
 	err := o.AutoComplete()
 	assert.NoError(t, err)
@@ -279,10 +279,10 @@ func TestOsmosis_AutoCompleteNoMove(t *testing.T) {
 	o := setupPlayingOsmosis()
 	o.SetBaseRank(8)
 	var f [domain.OsmosisFoundationCnt][]*domain.Card
-	f[0] = []*domain.Card{card(domain.CardDesignSpade, 8)}
+	f[0] = []*domain.Card{osCard(domain.CardDesignSpade, 8)}
 	o.SetFoundation(f)
 	var r [domain.OsmosisReserveCnt][]*domain.Card
-	r[0] = []*domain.Card{card(domain.CardDesignHeart, 2)}
+	r[0] = []*domain.Card{osCard(domain.CardDesignHeart, 2)}
 	o.SetReserve(r)
 	o.SetWaste(nil)
 	before := o.CanUndo()
@@ -339,11 +339,11 @@ func TestOsmosis_WinCondition(t *testing.T) {
 			if i == 0 && v == 13 {
 				continue // leave the spade King out
 			}
-			f[i] = append(f[i], card(suit, v))
+			f[i] = append(f[i], osCard(suit, v))
 		}
 	}
 	o.SetFoundation(f)
-	o.SetWaste([]*domain.Card{card(domain.CardDesignSpade, 13)})
+	o.SetWaste([]*domain.Card{osCard(domain.CardDesignSpade, 13)})
 
 	assert.NoError(t, o.MoveWasteToFoundation(0))
 	assert.Equal(t, domain.OsmosisPhaseGameClear, o.GetPhase())
