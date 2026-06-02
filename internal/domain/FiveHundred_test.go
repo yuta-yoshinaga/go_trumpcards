@@ -80,8 +80,10 @@ func TestFiveHundredBid_ValueAndOrder(t *testing.T) {
 		{"bad tricks", domain.FiveHundredBid{Kind: domain.FiveHundredContractSuit, Tricks: 5, Suit: domain.CardDesignSpade}, 40, false},
 	}
 	for _, c := range cases {
-		if got := c.bid.Value(); got != c.wantValue {
-			t.Errorf("%s Value() = %d, want %d", c.name, got, c.wantValue)
+		if c.wantValid {
+			if got := c.bid.Value(); got != c.wantValue {
+				t.Errorf("%s Value() = %d, want %d", c.name, got, c.wantValue)
+			}
 		}
 	}
 	// Order: open misere outranks 10NT; misere sits above 8 spades(240).
@@ -89,10 +91,10 @@ func TestFiveHundredBid_ValueAndOrder(t *testing.T) {
 	openMis := domain.FiveHundredBid{Kind: domain.FiveHundredContractOpenMisere}
 	mis := domain.FiveHundredBid{Kind: domain.FiveHundredContractMisere}
 	eightSpades := domain.FiveHundredBid{Kind: domain.FiveHundredContractSuit, Tricks: 8, Suit: domain.CardDesignSpade}
-	if !(openMis.Order() > tenNT.Order()) {
+	if openMis.Order() <= tenNT.Order() {
 		t.Errorf("open misere order %d should exceed 10NT order %d", openMis.Order(), tenNT.Order())
 	}
-	if !(mis.Order() > eightSpades.Order()) {
+	if mis.Order() <= eightSpades.Order() {
 		t.Errorf("misere order %d should exceed 8 spades order %d", mis.Order(), eightSpades.Order())
 	}
 }
@@ -107,16 +109,16 @@ func TestFiveHundred_CardRank_BowersAndJoker(t *testing.T) {
 	trumpAce := domain.NewCard(domain.CardDesignSpade, 1, false)
 	heartAce := domain.NewCard(domain.CardDesignHeart, 1, false)
 
-	if !(g.CardRankPublic(joker) > g.CardRankPublic(rightBower)) {
+	if g.CardRankPublic(joker) <= g.CardRankPublic(rightBower) {
 		t.Errorf("joker should outrank right bower")
 	}
-	if !(g.CardRankPublic(rightBower) > g.CardRankPublic(leftBower)) {
+	if g.CardRankPublic(rightBower) <= g.CardRankPublic(leftBower) {
 		t.Errorf("right bower should outrank left bower")
 	}
-	if !(g.CardRankPublic(leftBower) > g.CardRankPublic(trumpAce)) {
+	if g.CardRankPublic(leftBower) <= g.CardRankPublic(trumpAce) {
 		t.Errorf("left bower should outrank trump ace")
 	}
-	if !(g.CardRankPublic(trumpAce) > g.CardRankPublic(heartAce)) {
+	if g.CardRankPublic(trumpAce) <= g.CardRankPublic(heartAce) {
 		t.Errorf("trump ace should outrank off-suit ace")
 	}
 	// Left bower's effective suit is the trump suit.

@@ -304,7 +304,7 @@ function FiveHundredPageContent() {
                     label: t('settings.cpuDifficulty'),
                     value: String(config.cpuDifficulty ?? 1),
                     options: CPU_DIFFICULTY_SELECT,
-                    onSelect: (v: string) => handleConfigChange('cpuDifficulty', Number.parseInt(v, 10)),
+                    onSelect: (v: string) => handleConfigChange('cpuDifficulty', v),
                   },
                   {
                     type: 'select' as const,
@@ -312,7 +312,7 @@ function FiveHundredPageContent() {
                     label: t('settings.targetScore'),
                     value: String(config.targetScore ?? 500),
                     options: TARGET_SCORE_SELECT,
-                    onSelect: (v: string) => handleConfigChange('targetScore', Number.parseInt(v, 10)),
+                    onSelect: (v: string) => handleConfigChange('targetScore', v),
                   },
                   {
                     type: 'checkbox' as const,
