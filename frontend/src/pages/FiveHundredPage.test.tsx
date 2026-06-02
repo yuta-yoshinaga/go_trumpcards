@@ -1,0 +1,139 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { fiveHundredApi } from '../api/gameApi';
+import { renderWithProviders } from '../test/renderWithProviders';
+import type { Card, FiveHundredResponse } from '../types/card';
+import { FiveHundredPage } from './FiveHundredPage';
+
+vi.mock('../api/gameApi', () => ({
+  fiveHundredApi: { exec: vi.fn() },
+  actionLogApi: { fivehundred: vi.fn() },
+}));
+
+const mockExec = vi.mocked(fiveHundredApi.exec);
+
+const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
+
+function player(
+  id: number,
+  isHuman: boolean,
+  cards: Card[],
+  over: Partial<FiveHundredResponse['players'][number]> = {},
+) {
+  return {
+    id,
+    isHuman,
+    cardCount: cards.length,
+    cards,
+    team: id % 2,
+    trickCount: 0,
+    passed: false,
+    isDeclarer: false,
+    ...over,
+  };
+}
+
+function makeState(overrides: Partial<FiveHundredResponse> = {}): FiveHundredResponse {
+  return {
+    players: [
+      player(0, true, [card('SPADE', 5), card('HEART', 6), card('DIAMOND', 7)]),
+      player(1, false, []),
+      player(2, false, []),
+      player(3, false, []),
+    ],
+    phase: 0,
+    roundNumber: 1,
+    trickNumber: 0,
+    currentPlayerIdx: 0,
+    bidPlayerIdx: 0,
+    dealerIdx: 3,
+    leadPlayerIdx: 0,
+    trumpSuit: -1,
+    contractKind: 0,
+    contractTricks: 0,
+    contractValue: 0,
+    declarerIdx: -1,
+    highestBid: null,
+    highestBidder: -1,
+    jokerLeadSuit: -1,
+    kittyCount: 3,
+    currentTrick: [],
+    teamScores: [0, 0],
+    gameEndFlag: false,
+    winnerTeam: -1,
+    config: { cpuDifficulty: 1, targetScore: 500 },
+    message: '',
+    ...overrides,
+  };
+}
+
+beforeEach(() => {
+  localStorage.clear();
+  mockExec.mockReset();
+  mockExec.mockResolvedValue(makeState());
+});
+
+describe('FiveHundredPage', () => {
+  it('calls reset on mount', async () => {
+    renderWithProviders(<FiveHundredPage />);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', expect.objectContaining({ config: expect.any(Object) })),
+    );
+  });
+
+  it('shows bid controls on the human bid turn', async () => {
+    renderWithProviders(<FiveHundredPage />);
+    expect(await screen.findByTestId('pass-button')).toBeEnabled();
+  });
+
+  it('bids a suit when a suit button is clicked', async () => {
+    renderWithProviders(<FiveHundredPage />);
+    const spade = await screen.findByRole('button', { name: '♠' });
+    fireEvent.click(spade);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bidKind: 1, bidTricks: 6, bidSuit: 1 }));
+  });
+
+  it('passes when pass is clicked', async () => {
+    renderWithProviders(<FiveHundredPage />);
+    fireEvent.click(await screen.findByTestId('pass-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pass'));
+  });
+
+  it('exchanges three selected cards in the kitty exchange phase', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: 1, declarerIdx: 0, contractKind: 1, contractValue: 40, trumpSuit: 1 }),
+    );
+    renderWithProviders(<FiveHundredPage />);
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+    fireEvent.click(screen.getByTestId('hand-card-2'));
+    const exchangeBtn = screen.getByTestId('exchange-button');
+    expect(exchangeBtn).toBeEnabled();
+    fireEvent.click(exchangeBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('exchange', { discardIndices: [0, 1, 2] }));
+  });
+
+  it('plays a selected card in the play phase', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 2, currentPlayerIdx: 0, contractKind: 1, trumpSuit: 1 }));
+    renderWithProviders(<FiveHundredPage />);
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    const playBtn = screen.getByTestId('play-button');
+    expect(playBtn).toBeEnabled();
+    fireEvent.click(playBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0, jokerSuit: undefined }));
+  });
+
+  it('advances to the next trick', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 3 }));
+    renderWithProviders(<FiveHundredPage />);
+    fireEvent.click(await screen.findByTestId('next-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
+  });
+
+  it('advances to the next round', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 4 }));
+    renderWithProviders(<FiveHundredPage />);
+    fireEvent.click(await screen.findByTestId('nextround-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+  });
+});

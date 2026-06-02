@@ -443,6 +443,11 @@ func init() {
 			return usecase.NewOsmosisInteractor(domain.NewDefaultOsmosis(), new(presenter.OsmosisWebPresenter))
 		},
 		controller.NewOsmosisWebController)
+	BindWebControllerFor("fivehundred",
+		func() usecase.FiveHundredInteractorIF {
+			return usecase.NewFiveHundredInteractor(domain.NewDefaultFiveHundred(), new(presenter.FiveHundredWebPresenter))
+		},
+		controller.NewFiveHundredWebController)
 	BindWebControllerFor("casinowar",
 		func() usecase.CasinoWarInteractorIF {
 			return usecase.NewCasinoWarInteractor(domain.NewDefaultCasinoWar(), new(presenter.CasinoWarWebPresenter))

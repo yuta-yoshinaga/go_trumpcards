@@ -47,6 +47,7 @@ import type {
   EightOffResponse,
   EuchreResponse,
   FiftyOneResponse,
+  FiveHundredResponse,
   FortyThievesMoveZone,
   FortyThievesResponse,
   FourCardPokerResponse,
@@ -211,6 +212,7 @@ const workerUrl: Record<string, string> = {
   fortythieves: WORKER_SOLO,
   canfield: WORKER_SOLO,
   osmosis: WORKER_SOLO,
+  fivehundred: WORKER_SOLO,
   yukon: WORKER_SOLO,
   russiansolitaire: WORKER_SOLO,
   scorpion: WORKER_SOLO,
@@ -1462,6 +1464,46 @@ export const mightyApi = {
     }),
 };
 
+/** Configuration options for 500 (Five Hundred) game settings. */
+export interface FiveHundredConfigInput {
+  cpuDifficulty?: number;
+  targetScore?: number;
+}
+
+/** Optional parameters for a 500 (Five Hundred) action. */
+export interface FiveHundredParams {
+  bidKind?: number;
+  bidTricks?: number;
+  bidSuit?: number;
+  discardIndices?: number[];
+  cardIndex?: number;
+  jokerSuit?: number;
+  config?: FiveHundredConfigInput;
+}
+
+/** API client for the 500 (Five Hundred) game. Calls POST /fivehundred/exec. */
+export const fiveHundredApi = {
+  exec: (
+    command:
+      | 'reset'
+      | 'b'
+      | 'bid'
+      | 'pa'
+      | 'pass'
+      | 'e'
+      | 'exchange'
+      | 'p'
+      | 'play'
+      | 'n'
+      | 'next'
+      | 'nr'
+      | 'nextround'
+      | 'hint'
+      | 'log',
+    params: FiveHundredParams = {},
+  ) => gameExec<FiveHundredResponse>('fivehundred', { command, ...params }),
+};
+
 /** Configuration options for Skat game settings. */
 export interface SkatConfigInput {
   cpuDifficulty?: number;
@@ -2255,6 +2297,7 @@ const games = [
   'calculation',
   'canfield',
   'osmosis',
+  'fivehundred',
   'yukon',
   'russiansolitaire',
   'scorpion',

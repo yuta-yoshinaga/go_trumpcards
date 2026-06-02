@@ -32,6 +32,7 @@ import type {
   EightOffResponse,
   EuchreResponse,
   FiftyOneResponse,
+  FiveHundredResponse,
   FourCardPokerResponse,
   FreeCellResponse,
   GapsResponse,
@@ -134,6 +135,7 @@ import { getEgyptianRatscrewHint } from '../utils/hints/egyptianratscrewHint';
 import { getEightOffHint } from '../utils/hints/eightoffHint';
 import { getEuchreHint } from '../utils/hints/euchreHint';
 import { getFiftyOneHint } from '../utils/hints/fiftyoneHint';
+import { getFiveHundredHint } from '../utils/hints/fivehundredHint';
 import { getFourCardPokerHint } from '../utils/hints/fourcardpokerHint';
 import { getFreeCellHint } from '../utils/hints/freecellHint';
 import { getGapsHint } from '../utils/hints/gapsHint';
@@ -238,6 +240,7 @@ const hintFactories = {
   belote: (s) => getBeloteHint(s as BeloteResponse),
   bigtwo: (s) => getBigTwoHint(s as BigTwoResponse),
   tienlen: (s) => getTienLenHint(s as TienLenResponse),
+  fivehundred: (s) => getFiveHundredHint(s as FiveHundredResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
   mighty: (s) => getMightyHint(s as MightyResponse),

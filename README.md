@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した120種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した121種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -80,6 +80,7 @@ Go + Clean Architecture で実装した120種類のトランプゲーム。CLI �
 | 戦争 (War) | `war` | [CUI](docs/manual/cui/war.md) / [Web](docs/manual/web/war.md) |
 | キャンフィールド (Canfield) | `canfield` | [CUI](docs/manual/cui/canfield.md) / [Web](docs/manual/web/canfield.md) |
 | オズモシス / 浸透 (Osmosis) | `osmosis` | [CUI](docs/manual/cui/osmosis.md) / [Web](docs/manual/web/osmosis.md) |
+| 500 (Five Hundred / ファイブハンドレッド) | `fivehundred` | [CUI](docs/manual/cui/fivehundred.md) / [Web](docs/manual/web/fivehundred.md) |
 | フィフティワン (Fifty-one) | `fiftyone` | [CUI](docs/manual/cui/fiftyone.md) / [Web](docs/manual/web/fiftyone.md) |
 | ユーコン (Yukon) | `yukon` | [CUI](docs/manual/cui/yukon.md) / [Web](docs/manual/web/yukon.md) |
 | ロシアンソリティア (Russian Solitaire) | `russiansolitaire` | [CUI](docs/manual/cui/russiansolitaire.md) / [Web](docs/manual/web/russiansolitaire.md) |

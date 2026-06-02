@@ -387,6 +387,25 @@ export const MightyPhase = {
   GAME_END: 6,
 } as const;
 
+/** 500 (Five Hundred) phase constants (sync: internal/domain/FiveHundred.go). */
+export const FiveHundredPhase = {
+  BID: 0,
+  KITTY_EXCHANGE: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
+/** 500 (Five Hundred) contract kind constants (sync: internal/domain/FiveHundred.go). */
+export const FiveHundredContract = {
+  NONE: 0,
+  SUIT: 1,
+  NO_TRUMP: 2,
+  MISERE: 3,
+  OPEN_MISERE: 4,
+} as const;
+
 /** Baccarat phase constants (sync: internal/domain/Baccarat.go). */
 export const BaccaratPhase = {
   BET: 1,

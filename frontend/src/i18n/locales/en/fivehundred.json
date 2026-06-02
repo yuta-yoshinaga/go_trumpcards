@@ -1,0 +1,39 @@
+{
+  "phase": {
+    "bid": "Bidding",
+    "kittyExchange": "Kitty Exchange",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game Over"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "highestBid": "Highest bid: {{value}}",
+  "contractUndecided": "Contract: undecided",
+  "contractLine": "Contract: {{suit}} ({{value}})",
+  "teamScores": "Team 0: {{t0}} / Team 1: {{t1}}",
+  "teamShort": "T{{team}}",
+  "passed": "pass",
+  "currentTrick": "Current trick",
+  "trickEmpty": "(no cards yet)",
+  "tricksLabel": "Tricks",
+  "misereButton": "Misere",
+  "openMisereButton": "Open Misere",
+  "passButton": "Pass",
+  "exchangeButton": "Exchange ({{count}}/3)",
+  "nominateSuit": "Suit to call with the joker:",
+  "playButton": "Play",
+  "nextTrickButton": "Next trick",
+  "nextRoundButton": "Next round",
+  "settings": {
+    "cpuDifficulty": "CPU difficulty",
+    "targetScore": "Target score"
+  },
+  "tutorial": {
+    "info": "Round, contract, and team scores show here. The first team to reach 500 points wins.",
+    "trick": "Cards played to the table appear here. The strongest card wins the trick.",
+    "hand": "Your hand. To play, select a card then press Play. To exchange, select exactly 3.",
+    "actions": "Phase-specific action buttons (bid, exchange, play) appear here."
+  }
+}

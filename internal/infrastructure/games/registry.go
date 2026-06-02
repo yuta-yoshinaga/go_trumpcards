@@ -220,6 +220,11 @@ var registry = []*Game{
 	// Osmosis (浸透) is a foundation-only solitaire bucketed into the solo
 	// worker. Category here is purely a binary-size bucket.
 	{Name: "osmosis", Category: CategorySolo, Description: "Osmosis Solitaire (オズモシス / 浸透)"},
+	// 500 (Five Hundred) is a trick-taking game (auction + kitty exchange +
+	// bowers/joker). It is bucketed into the solo worker only because the
+	// classic worker is at the 1 MB gzip free-tier limit. Category here is
+	// purely a binary-size bucket.
+	{Name: "fivehundred", Category: CategorySolo, Description: "500 (Five Hundred / ファイブハンドレッド)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.
