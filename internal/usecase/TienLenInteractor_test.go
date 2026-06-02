@@ -52,13 +52,10 @@ func TestTienLenInteractor_Reset_RunsCpuTurns(t *testing.T) {
 	pMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
 	gameMock := new(interfaces.MockTienLenGame)
 	gameMock.On("Reset").Return()
-	// not human first, then becomes human after one CpuPlay
-	humanCalls := 0
 	gameMock.On("GetGameEndFlag").Return(false)
-	gameMock.On("IsHumanTurn").Return(func() bool {
-		humanCalls++
-		return humanCalls > 1
-	})
+	// CPU turn first, then the human's turn ends the loop.
+	gameMock.On("IsHumanTurn").Return(false).Once()
+	gameMock.On("IsHumanTurn").Return(true)
 	gameMock.On("CpuPlay").Return()
 
 	ti := usecase.NewTienLenInteractor(gameMock, pMock)
