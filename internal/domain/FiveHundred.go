@@ -652,18 +652,21 @@ func (g *FiveHundred) isMisere() bool {
 
 // isRightBower 右バウアー (切り札スートのJ) かどうか
 func (g *FiveHundred) isRightBower(c *Card) bool {
-	return g.isSuitContract() && c.GetValue() == 11 && c.GetDesign() == g.trumpSuit
+	return g.isSuitContract() && c != nil && c.GetValue() == 11 && c.GetDesign() == g.trumpSuit
 }
 
 // isLeftBower 左バウアー (同色スートのJ) かどうか
 func (g *FiveHundred) isLeftBower(c *Card) bool {
-	return g.isSuitContract() && c.GetValue() == 11 && c.GetDesign() == sameColorSuit(g.trumpSuit)
+	return g.isSuitContract() && c != nil && c.GetValue() == 11 && c.GetDesign() == sameColorSuit(g.trumpSuit)
 }
 
 // effectiveSuit カードの実効スートを返す。
 // ジョーカー: 切り札契約では切り札スート、NT/ミゼールでは仮想スート。
 // 左バウアー: 切り札スート。
 func (g *FiveHundred) effectiveSuit(c *Card) int {
+	if c == nil {
+		return -1
+	}
 	if g.isJoker(c) {
 		if g.isSuitContract() {
 			return g.trumpSuit
@@ -679,6 +682,9 @@ func (g *FiveHundred) effectiveSuit(c *Card) int {
 // cardRank トリック比較用のカードランクを返す (高い=強い)。
 // ジョーカー(700) > 右バウアー(600) > 左バウアー(500) > 切り札A..9(400+) > 平A..(100+)。
 func (g *FiveHundred) cardRank(c *Card) int {
+	if c == nil {
+		return 0
+	}
 	if g.isJoker(c) {
 		return 700
 	}
@@ -1402,13 +1408,21 @@ func (g *FiveHundred) UnmarshalJSON(data []byte) error {
 	}
 	g.trumpCards = j.TrumpCards
 	if g.trumpCards == nil {
-		g.trumpCards = NewTrumpCards(0)
+		g.trumpCards = NewTrumpCardsFiveHundred()
 	}
 	g.players = j.Players
-	if g.players == nil {
-		g.players = make([]*FiveHundredPlayer, 0)
+	if len(g.players) != FiveHundredPlayerCnt {
+		return fmt.Errorf("fivehundred: invalid player count: %d", len(g.players))
+	}
+	for _, p := range g.players {
+		if p == nil {
+			return fmt.Errorf("fivehundred: player is nil")
+		}
 	}
 	g.config = j.Config
+	if err := g.config.Validate(); err != nil {
+		return fmt.Errorf("fivehundred: invalid config: %w", err)
+	}
 	g.phase = j.Phase
 	g.roundNumber = j.RoundNumber
 	g.trickNumber = j.TrickNumber

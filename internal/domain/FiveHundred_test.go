@@ -582,16 +582,10 @@ func TestFiveHundred_PlayerBid_Variants(t *testing.T) {
 }
 
 func TestFiveHundred_Unmarshal_GuardsAndOversize(t *testing.T) {
-	// Empty object exercises every nil-guard branch.
+	// Empty object must be rejected: player count is not 4.
 	var g domain.FiveHundred
-	if err := json.Unmarshal([]byte(`{}`), &g); err != nil {
-		t.Fatalf("unmarshal empty: %v", err)
-	}
-	if g.GetPlayerCnt() != 0 {
-		t.Errorf("expected 0 players from empty JSON, got %d", g.GetPlayerCnt())
-	}
-	if g.GetKitty() == nil {
-		t.Errorf("kitty should be initialised to a non-nil slice")
+	if err := json.Unmarshal([]byte(`{}`), &g); err == nil {
+		t.Fatalf("expected error for empty JSON (no players), got nil")
 	}
 
 	// Oversize player array must be rejected.
@@ -604,6 +598,23 @@ func TestFiveHundred_Unmarshal_GuardsAndOversize(t *testing.T) {
 	// Malformed JSON returns an error.
 	if err := json.Unmarshal([]byte(`{`), new(domain.FiveHundred)); err == nil {
 		t.Errorf("expected error for malformed JSON")
+	}
+
+	// Nil player element must be rejected.
+	var g3 domain.FiveHundred
+	if err := json.Unmarshal([]byte(`{"ps":[null,null,null,null]}`), &g3); err == nil {
+		t.Errorf("expected error for nil player element")
+	}
+
+	// Invalid config must be rejected.
+	data, _ := json.Marshal(newFiveHundredForTest())
+	var raw map[string]json.RawMessage
+	_ = json.Unmarshal(data, &raw)
+	raw["cf"] = json.RawMessage(`{"cd":99,"ts":0}`)
+	invalidCfg, _ := json.Marshal(raw)
+	var g4 domain.FiveHundred
+	if err := json.Unmarshal(invalidCfg, &g4); err == nil {
+		t.Errorf("expected error for invalid config")
 	}
 }
 
