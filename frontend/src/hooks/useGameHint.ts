@@ -53,6 +53,7 @@ import type {
   OhHellResponse,
   OldMaidResponse,
   OmahaResponse,
+  OsmosisResponse,
   PageOneResponse,
   PenguinResponse,
   PigsTailResponse,
@@ -157,6 +158,7 @@ import { getOhHellHint } from '../utils/hints/ohhellHint';
 import { getOldMaidHint } from '../utils/hints/oldmaidHint';
 import { getOmahaHiLoHint } from '../utils/hints/omahaHiLoHint';
 import { getOmahaHint } from '../utils/hints/omahaHint';
+import { getOsmosisHint } from '../utils/hints/osmosisHint';
 import { getPageOneHint } from '../utils/hints/pageoneHint';
 import { getPenguinHint } from '../utils/hints/penguinHint';
 import { getPigstailHint } from '../utils/hints/pigstailHint';
@@ -266,6 +268,7 @@ const hintFactories = {
   durak: (s) => getDurakHint(s as DurakResponse),
   canasta: (s) => getCanastaHint(s as CanastaResponse),
   canfield: (s) => getCanfieldHint(s as CanfieldResponse),
+  osmosis: (s) => getOsmosisHint(s as OsmosisResponse),
   pinochle: (s) => getPinochleHint(s as PinochleResponse),
   twotenjack: (s) => getTwoTenJackHint(s as TwoTenJackResponse),
   sevencardstud: () => null,

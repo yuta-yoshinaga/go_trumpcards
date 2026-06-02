@@ -1,0 +1,39 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "title": "オズモシス",
+  "stock": "山札",
+  "waste": "ウェイスト",
+  "reserve": "リザーブ",
+  "foundation": "組札",
+  "baseRank": "ベースランク",
+  "moveCount": "手数",
+  "draw": "引く",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "autoComplete": "自動完成",
+  "undo": "元に戻す",
+  "empty": "空",
+  "selectFoundation": "移動先の組札（段）を選んでください",
+  "selectSource": "まずカード（ウェイストまたはリザーブの上札）を選んでください",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "playing": "プレイ中",
+  "noHint": "ヒントはありません",
+  "hintAvailable": "ヒントがあります",
+  "moveReserveToFoundation": "リザーブ→組札",
+  "moveWasteToFoundation": "ウェイスト→組札",
+  "frontendHint": {
+    "moveToFoundation": "組札へ浸透できるカードがあります"
+  },
+  "tutorial": {
+    "foundation": "縦4段の組札です。最上段は同じスートを順不同で集め、下段は「すぐ上の段にあるランク」だけを積めます（浸透）。",
+    "reserve": "4列のリザーブです。各列の一番上のカードを組札へ移動できます。",
+    "stockWaste": "山札をクリックして1枚めくります。ウェイストの一番上を組札へ使えます。",
+    "actionButtons": "ヒント・自動完成・元に戻すなどの操作ボタンです。",
+    "resetButton": "新しいゲームを始めるボタンです。"
+  }
+}

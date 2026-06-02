@@ -20,6 +20,7 @@ import type {
   NapoleonResponse,
   OhHellResponse,
   OldMaidResponse,
+  OsmosisResponse,
   PinochleResponse,
   ScorpionResponse,
   SevensResponse,
@@ -1084,5 +1085,24 @@ describe('useGameHint', () => {
     // Pocket pair (KK) → strong "play" suggestion.
     expect(result.current.hint?.targetAction).toBe('play');
     expect(result.current.hint?.reason).toBe('hint.pocketPair');
+  });
+
+  it('returns osmosis foundation hint when enabled', () => {
+    localStorage.setItem('hint_enabled_osmosis', 'true');
+    const state: Partial<OsmosisResponse> = {
+      reserve: [[], [], [], []],
+      stockCount: 0,
+      waste: [],
+      foundation: [[], [], [], []],
+      baseRank: 1,
+      phase: 0,
+      moveCount: 0,
+      canUndo: false,
+      message: '',
+      hint: { fromZone: 'reserve', fromCol: 0, toCol: 1 },
+    };
+    const { result } = renderHook(() => useGameHint('osmosis', state as OsmosisResponse));
+    expect(result.current.hint).not.toBeNull();
+    expect(result.current.hint?.targetAction).toBe('moveToFoundation');
   });
 });

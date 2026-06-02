@@ -1866,6 +1866,23 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"tienlen.helpSetDifficulty"},
 			})
 	}},
+	{Name: "osmosis", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewOsmosisCuiController(usecase.NewOsmosisInteractor(
+				domain.NewDefaultOsmosis(), new(presenter.OsmosisCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "osmosis.helpTitle",
+				CommandKeys: []string{
+					"osmosis.helpDraw",
+					"osmosis.helpMoveWF",
+					"osmosis.helpMoveRF",
+					"osmosis.helpGiveUp",
+					"osmosis.helpHint",
+					"osmosis.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

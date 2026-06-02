@@ -1578,6 +1578,28 @@ export interface CanfieldResponse extends BaseGameResponse {
   hint?: CanfieldHint;
 }
 
+// --- Osmosis (オズモシス / 浸透) ---
+
+/** A suggested move hint in Osmosis. */
+export interface OsmosisHint {
+  fromZone: string;
+  fromCol: number;
+  toCol: number;
+}
+
+/** Full Osmosis game state returned from the API. */
+export interface OsmosisResponse extends BaseGameResponse {
+  reserve: Card[][];
+  stockCount: number;
+  waste: Card[];
+  foundation: Card[][];
+  baseRank: number;
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  hint?: OsmosisHint;
+}
+
 // --- FreeCell (フリーセル) ---
 
 /** A suggested move hint in FreeCell. */
