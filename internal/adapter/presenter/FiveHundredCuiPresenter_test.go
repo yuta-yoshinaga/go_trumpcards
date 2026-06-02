@@ -91,3 +91,78 @@ func TestFiveHundredCuiPresenter_ActionLog(t *testing.T) {
 		t.Errorf("action log empty")
 	}
 }
+
+func TestFiveHundredCuiPresenter_BidLabelsAndHighestBid(t *testing.T) {
+	p := &presenter.FiveHundredCuiPresenter{}
+
+	// Player bid labels (suit / NT / misère / open misère) + pass + declarer.
+	g := newFiveHundredGame()
+	g.GetPlayer(0).SetBid(&domain.FiveHundredBid{Kind: domain.FiveHundredContractSuit, Tricks: 7, Suit: domain.CardDesignSpade})
+	g.GetPlayer(1).SetBid(&domain.FiveHundredBid{Kind: domain.FiveHundredContractNoTrump, Tricks: 8})
+	g.GetPlayer(2).SetBid(&domain.FiveHundredBid{Kind: domain.FiveHundredContractMisere})
+	g.GetPlayer(3).SetBid(&domain.FiveHundredBid{Kind: domain.FiveHundredContractOpenMisere})
+	g.SetPhase(domain.FiveHundredPhaseBid)
+	if out := p.Output(g, nil); out == "" {
+		t.Errorf("bid-label output empty")
+	}
+
+	// Highest-bid display (contract undecided, a bid stands).
+	g2 := newFiveHundredGame()
+	g2.Reset()
+	g2.SetBidPlayerIdx(0)
+	if err := g2.PlayerBid(domain.FiveHundredContractSuit, 6, domain.CardDesignSpade); err != nil {
+		t.Fatalf("bid failed: %v", err)
+	}
+	if out := p.Output(g2, nil); out == "" {
+		t.Errorf("highest-bid output empty")
+	}
+}
+
+func TestFiveHundredCuiPresenter_HintVariants(t *testing.T) {
+	p := &presenter.FiveHundredCuiPresenter{}
+
+	// Pass hint (weak bid hand).
+	g := newFiveHundredGame()
+	g.SetPhase(domain.FiveHundredPhaseBid)
+	g.SetBidPlayerIdx(0)
+	for v := 5; v <= 9; v++ {
+		g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, v, false))
+	}
+	if out := p.HintOutput(g); out == "" {
+		t.Errorf("pass hint empty")
+	}
+
+	// Bid hint (strong hand).
+	g2 := newFiveHundredGame()
+	g2.SetPhase(domain.FiveHundredPhaseBid)
+	g2.SetBidPlayerIdx(0)
+	for _, c := range []*domain.Card{
+		domain.NewCard(domain.CardDesignJoker, 1, false),
+		domain.NewCard(domain.CardDesignSpade, 11, false),
+		domain.NewCard(domain.CardDesignClover, 11, false),
+		domain.NewCard(domain.CardDesignSpade, 1, false),
+		domain.NewCard(domain.CardDesignSpade, 13, false),
+		domain.NewCard(domain.CardDesignSpade, 12, false),
+		domain.NewCard(domain.CardDesignSpade, 10, false),
+		domain.NewCard(domain.CardDesignSpade, 9, false),
+		domain.NewCard(domain.CardDesignHeart, 1, false),
+		domain.NewCard(domain.CardDesignDiamond, 1, false),
+	} {
+		g2.GetPlayer(0).AddCard(c)
+	}
+	if out := p.HintOutput(g2); out == "" {
+		t.Errorf("bid hint empty")
+	}
+
+	// Discard hint (declarer in kitty exchange).
+	g3 := newFiveHundredGame()
+	g3.SetContract(domain.FiveHundredContractSuit, 7, domain.CardDesignSpade)
+	g3.SetDeclarerIdx(0)
+	g3.SetPhase(domain.FiveHundredPhaseKittyExchange)
+	for i := 0; i < 13; i++ {
+		g3.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, (i%9)+5, false))
+	}
+	if out := p.HintOutput(g3); out == "" {
+		t.Errorf("discard hint empty")
+	}
+}

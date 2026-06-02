@@ -95,3 +95,44 @@ func TestFiveHundredWebPresenter_ActionLog(t *testing.T) {
 		t.Errorf("action log output is empty")
 	}
 }
+
+func TestFiveHundredWebPresenter_PhaseMessages(t *testing.T) {
+	p := &presenter.FiveHundredWebPresenter{}
+	for _, phase := range []domain.FiveHundredPhase{
+		domain.FiveHundredPhaseKittyExchange,
+		domain.FiveHundredPhasePlay,
+		domain.FiveHundredPhaseTrickEnd,
+		domain.FiveHundredPhaseRoundEnd,
+	} {
+		g := newFiveHundredGame()
+		g.SetContract(domain.FiveHundredContractNoTrump, 7, -1)
+		g.SetDeclarerIdx(0)
+		g.SetPhase(phase)
+		if phase == domain.FiveHundredPhasePlay {
+			g.SetCurrentTrick([]*domain.FiveHundredTrickCard{
+				{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 1, false)},
+			})
+		}
+		if out := p.Output(g, nil); out == "" {
+			t.Errorf("phase %d output empty", phase)
+		}
+	}
+
+	// Game-end message branch: declarer team makes the contract and crosses 500.
+	g := newFiveHundredGame()
+	g.SetTeamScore(0, 400)
+	g.SetContract(domain.FiveHundredContractSuit, 7, domain.CardDesignSpade)
+	g.SetDeclarerIdx(0)
+	for i := 0; i < 7; i++ {
+		g.GetPlayer(i % 2 * 2).AddTrick([]*domain.Card{nil})
+	}
+	for i := 0; i < 3; i++ {
+		g.GetPlayer(1).AddTrick([]*domain.Card{nil})
+	}
+	g.SetPhase(domain.FiveHundredPhaseRoundEnd)
+	g.ScoreRound()
+	out := p.Output(g, nil)
+	if !strings.Contains(out, "team0Win") && !strings.Contains(out, "ゲーム終了") {
+		t.Errorf("game-end message missing: %s", out)
+	}
+}
