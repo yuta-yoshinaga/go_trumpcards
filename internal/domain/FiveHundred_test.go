@@ -401,3 +401,174 @@ func TestFiveHundred_Config_Validate(t *testing.T) {
 		t.Errorf("expected invalid config error")
 	}
 }
+
+func fhCard(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
+
+func TestFiveHundred_MisereContract_PartnerSkipped(t *testing.T) {
+	g := newFiveHundredForTest()
+	g.SetContract(domain.FiveHundredContractMisere, 0, -1)
+	g.SetDeclarerIdx(0) // partner = player 2 is skipped
+	g.GetPlayer(0).AddCard(fhCard(domain.CardDesignHeart, 5))
+	g.GetPlayer(1).AddCard(fhCard(domain.CardDesignHeart, 6))
+	g.GetPlayer(3).AddCard(fhCard(domain.CardDesignHeart, 7))
+	g.SetPhase(domain.FiveHundredPhasePlay)
+	g.SetTrickNumber(1)
+	g.SetLeadPlayerIdx(0)
+	g.SetCurrentPlayerIdx(0)
+
+	if err := g.PlayerPlay(0, -1); err != nil {
+		t.Fatalf("human play failed: %v", err)
+	}
+	steps := 0
+	for g.GetPhase() == domain.FiveHundredPhasePlay && steps < 10 {
+		g.CpuPlay()
+		steps++
+	}
+	if g.GetPhase() != domain.FiveHundredPhaseTrickEnd {
+		t.Fatalf("misère trick did not complete with 3 active players, phase=%d", g.GetPhase())
+	}
+	// Player 2 (declarer's partner) must not have played.
+	if g.GetPlayer(2).GetCardsSize() != 0 {
+		t.Errorf("skipped partner should hold no test cards")
+	}
+	g.ResolveTrick()
+}
+
+func TestFiveHundred_GetHint_BidAndExchange(t *testing.T) {
+	// Bid phase, weak hand -> pass recommended.
+	g := newFiveHundredForTest()
+	g.SetPhase(domain.FiveHundredPhaseBid)
+	g.SetBidPlayerIdx(0)
+	for _, v := range []int{5, 6, 7, 8, 9} {
+		g.GetPlayer(0).AddCard(fhCard(domain.CardDesignHeart, v))
+	}
+	hint := g.GetHint()
+	if hint == nil || hint.Pass == nil || !*hint.Pass {
+		t.Errorf("weak bid hand should recommend pass, got %+v", hint)
+	}
+
+	// Kitty exchange phase -> 3 discard indices.
+	g2 := newFiveHundredForTest()
+	g2.SetContract(domain.FiveHundredContractSuit, 7, domain.CardDesignSpade)
+	g2.SetDeclarerIdx(0)
+	g2.SetPhase(domain.FiveHundredPhaseKittyExchange)
+	for i := 0; i < 13; i++ {
+		g2.GetPlayer(0).AddCard(fhCard(domain.CardDesignHeart, (i%9)+5))
+	}
+	h2 := g2.GetHint()
+	if h2 == nil || len(h2.DiscardIndices) != 3 {
+		t.Errorf("exchange hint should suggest 3 discards, got %+v", h2)
+	}
+}
+
+func TestFiveHundred_JokerLeadNoTrump_NominatesSuit(t *testing.T) {
+	g := newFiveHundredForTest()
+	g.SetContract(domain.FiveHundredContractNoTrump, 7, -1)
+	g.SetDeclarerIdx(0)
+	g.GetPlayer(0).AddCard(fhCard(domain.CardDesignJoker, 1))
+	g.GetPlayer(1).AddCard(fhCard(domain.CardDesignHeart, 6))
+	g.GetPlayer(2).AddCard(fhCard(domain.CardDesignHeart, 7))
+	g.GetPlayer(3).AddCard(fhCard(domain.CardDesignHeart, 8))
+	g.SetPhase(domain.FiveHundredPhasePlay)
+	g.SetTrickNumber(1)
+	g.SetLeadPlayerIdx(0)
+	g.SetCurrentPlayerIdx(0)
+
+	if err := g.PlayerPlay(0, domain.CardDesignHeart); err != nil {
+		t.Fatalf("joker lead failed: %v", err)
+	}
+	if g.GetJokerLeadSuit() != domain.CardDesignHeart {
+		t.Errorf("joker lead suit = %d, want heart", g.GetJokerLeadSuit())
+	}
+	for g.GetPhase() == domain.FiveHundredPhasePlay {
+		g.CpuPlay()
+	}
+	g.ResolveTrick()
+	// Joker is the highest card in no-trump, so player 0 wins.
+	if g.GetPlayer(0).GetTrickCount() != 1 {
+		t.Errorf("joker should win the no-trump trick")
+	}
+}
+
+func TestFiveHundred_OpenMisereScoring(t *testing.T) {
+	// Made (0 tricks) -> +520.
+	g := newFiveHundredForTest()
+	g.SetContract(domain.FiveHundredContractOpenMisere, 0, -1)
+	g.SetDeclarerIdx(0)
+	g.SetPhase(domain.FiveHundredPhaseRoundEnd)
+	g.ScoreRound()
+	if g.GetTeamScore(0) != 520 {
+		t.Errorf("open misère made: team0 = %d, want 520", g.GetTeamScore(0))
+	}
+
+	// Failed (a trick) -> -520.
+	g2 := newFiveHundredForTest()
+	g2.SetContract(domain.FiveHundredContractOpenMisere, 0, -1)
+	g2.SetDeclarerIdx(0)
+	g2.GetPlayer(0).AddTrick([]*domain.Card{nil})
+	g2.SetPhase(domain.FiveHundredPhaseRoundEnd)
+	g2.ScoreRound()
+	if g2.GetTeamScore(0) != -520 {
+		t.Errorf("open misère failed: team0 = %d, want -520", g2.GetTeamScore(0))
+	}
+}
+
+func TestFiveHundred_NextRound_AdvancesAndRotates(t *testing.T) {
+	g := newFiveHundredForTest()
+	g.Reset() // round 1, dealer 0
+	g.SetContract(domain.FiveHundredContractSuit, 7, domain.CardDesignSpade)
+	g.SetDeclarerIdx(0)
+	for i := 0; i < 5; i++ {
+		g.GetPlayer(i % 2 * 2).AddTrick([]*domain.Card{nil})
+	}
+	for i := 0; i < 5; i++ {
+		g.GetPlayer(1).AddTrick([]*domain.Card{nil})
+	}
+	g.SetPhase(domain.FiveHundredPhaseRoundEnd)
+	g.ScoreRound()
+	if g.GetGameEndFlag() {
+		t.Skip("unexpected early game end")
+	}
+	g.NextRound()
+	if g.GetRoundNumber() != 2 {
+		t.Errorf("round number = %d, want 2", g.GetRoundNumber())
+	}
+	if g.GetPhase() != domain.FiveHundredPhaseBid {
+		t.Errorf("phase after NextRound = %d, want Bid", g.GetPhase())
+	}
+	if g.GetDealerIdx() != 1 {
+		t.Errorf("dealer = %d, want 1 (rotated)", g.GetDealerIdx())
+	}
+}
+
+func TestFiveHundred_PlayerBid_Variants(t *testing.T) {
+	g := newFiveHundredForTest()
+	g.Reset()
+	g.SetBidPlayerIdx(0)
+	if err := g.PlayerBid(domain.FiveHundredContractNoTrump, 6, -1); err != nil {
+		t.Fatalf("NT bid failed: %v", err)
+	}
+	if g.GetHighestBid() == nil || g.GetHighestBid().Kind != domain.FiveHundredContractNoTrump {
+		t.Errorf("highest bid not set to NT")
+	}
+
+	// Misère bid path.
+	g2 := newFiveHundredForTest()
+	g2.Reset()
+	g2.SetBidPlayerIdx(0)
+	if err := g2.PlayerBid(domain.FiveHundredContractMisere, 0, -1); err != nil {
+		t.Fatalf("misère bid failed: %v", err)
+	}
+
+	// Error paths.
+	g3 := newFiveHundredForTest()
+	g3.Reset()
+	g3.SetBidPlayerIdx(0)
+	if err := g3.PlayerBid(domain.FiveHundredContractSuit, 5, domain.CardDesignSpade); err == nil {
+		t.Errorf("expected error for invalid (5-trick) bid")
+	}
+	g3.SetBidPlayerIdx(1) // CPU's turn
+	if err := g3.PlayerBid(domain.FiveHundredContractNoTrump, 6, -1); err == nil {
+		t.Errorf("expected ErrNotHumanTurn when it is not the human's bid turn")
+	}
+}

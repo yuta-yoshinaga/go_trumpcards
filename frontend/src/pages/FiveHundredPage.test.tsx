@@ -99,6 +99,39 @@ describe('FiveHundredPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pass'));
   });
 
+  it('bids no-trump, misere and open misere', async () => {
+    renderWithProviders(<FiveHundredPage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'NT' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bidKind: 2, bidTricks: 6 }));
+    fireEvent.click(screen.getByRole('button', { name: 'ミゼール' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bidKind: 3 }));
+    fireEvent.click(screen.getByRole('button', { name: 'オープンミゼール' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bidKind: 4 }));
+  });
+
+  it('nominates a suit when leading the joker in no-trump', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        currentPlayerIdx: 0,
+        contractKind: 2,
+        trumpSuit: -1,
+        currentTrick: [],
+        players: [
+          player(0, true, [card('JOKER', 0)]),
+          player(1, false, []),
+          player(2, false, []),
+          player(3, false, []),
+        ] as FiveHundredResponse['players'],
+      }),
+    );
+    renderWithProviders(<FiveHundredPage />);
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    expect(screen.queryByTestId('play-button')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: '♠' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0, jokerSuit: 1 }));
+  });
+
   it('exchanges three selected cards in the kitty exchange phase', async () => {
     mockExec.mockResolvedValue(
       makeState({ phase: 1, declarerIdx: 0, contractKind: 1, contractValue: 40, trumpSuit: 1 }),
