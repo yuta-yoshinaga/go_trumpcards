@@ -175,9 +175,9 @@ func TestOsmosis_UnmarshalFiltersNilCardElements(t *testing.T) {
 	// JSON with explicit null entries in waste, foundation, reserve, and a snapshot.
 	payload := `{
 		"tc": null,
-		"wa": [null, {"design":1,"value":5,"face_up":true}],
-		"fd": [[null, {"design":1,"value":1,"face_up":true}], null, null, null],
-		"rv": [[null, {"design":2,"value":8,"face_up":true}], null, null, null],
+		"wa": [null, {"d":1,"v":5,"w":true}],
+		"fd": [[null, {"d":1,"v":1,"w":true}], null, null, null],
+		"rv": [[null, {"d":2,"v":8,"w":true}], null, null, null],
 		"hi": [{"wa": [null], "fd": [null, null, null, null], "rv": [null, null, null, null]}]
 	}`
 	var restored Osmosis
