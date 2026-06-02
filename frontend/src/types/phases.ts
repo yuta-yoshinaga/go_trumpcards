@@ -178,6 +178,13 @@ export const CanfieldPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Osmosis phase constants (sync: internal/domain/Osmosis.go). */
+export const OsmosisPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** FreeCell phase constants (sync: internal/domain/FreeCell.go). */
 export const FreeCellPhase = {
   PLAYING: 0,

@@ -187,6 +187,8 @@ tags:
     description: Thirty-One (サーティワン / Scat) game - 4-player draw-and-discard survival game; build the highest single-suit total (A=11, J/Q/K=10), knock to stand pat, lowest score loses a life, hitting exactly 31 wins the round instantly
   - name: tienlen
     description: Tien Len (ティエンレン / Vietnamese Big Two) game - 4-player shedding game; suit order ♠<♣<♦<♥, holder of ♠3 leads, chops (three consecutive pairs / four of a kind) cut a lone 2
+  - name: osmosis
+    description: Osmosis (オズモシス / 浸透) solitaire - foundation-only single-player game; 4 reserve columns of 4 cards, 4 vertical foundation rows (one suit each), the top row builds any order while lower rows accept only ranks already present in the row directly above ("seep")
   - name: casinowar
     description: Casino War (カジノウォー) game - simple player-vs-dealer table game; high card wins (Aces high), tie offers Surrender (forfeit half ante) or War (match ante and re-draw)
   - name: pitch
@@ -6448,6 +6450,85 @@ paths:
                 properties:
                   tableau:
                     type: array
+                  reserve:
+                    type: array
+                  stockCount:
+                    type: integer
+                  waste:
+                    type: array
+                  foundation:
+                    type: array
+                  baseRank:
+                    type: integer
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request
+
+  /osmosis/exec:
+    post:
+      tags:
+        - osmosis
+      summary: Execute an Osmosis (オズモシス / 浸透) game command
+      description: |
+        Send a command to advance an Osmosis solitaire session identified by `sessionId`.
+        Osmosis uses 4 reserve columns of 4 cards each, 4 vertical foundation rows, and a
+        stock that draws 1 card at a time to the waste (recyclable). The foundation base
+        rank is set by the first card dealt. Each foundation row holds a single suit: the
+        top row builds in any order, while a lower row accepts a card only if a card of the
+        same rank already appears in the row directly above ("osmosis"/seep). Moves are
+        waste→foundation and reserve→foundation; the destination foundation row is given by
+        `to.col`, and the reserve source column by `from.col`.
+      operationId: osmosisExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, move, m, giveup, g, hint, h, autocomplete, ac, log, l, undo, u, undo_n]
+                sessionId:
+                  type: string
+                from:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [waste, reserve]
+                    col:
+                      type: integer
+                to:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [foundation]
+                    col:
+                      type: integer
+                n:
+                  type: integer
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
                   reserve:
                     type: array
                   stockCount:

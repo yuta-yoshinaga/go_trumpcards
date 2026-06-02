@@ -79,6 +79,7 @@ Go + Clean Architecture で実装した113種類のトランプゲーム。CLI �
 | チャイニーズポーカー (Chinese Poker) | `chinesepoker` | [CUI](docs/manual/cui/chinesepoker.md) / [Web](docs/manual/web/chinesepoker.md) |
 | 戦争 (War) | `war` | [CUI](docs/manual/cui/war.md) / [Web](docs/manual/web/war.md) |
 | キャンフィールド (Canfield) | `canfield` | [CUI](docs/manual/cui/canfield.md) / [Web](docs/manual/web/canfield.md) |
+| オズモシス / 浸透 (Osmosis) | `osmosis` | [CUI](docs/manual/cui/osmosis.md) / [Web](docs/manual/web/osmosis.md) |
 | フィフティワン (Fifty-one) | `fiftyone` | [CUI](docs/manual/cui/fiftyone.md) / [Web](docs/manual/web/fiftyone.md) |
 | ユーコン (Yukon) | `yukon` | [CUI](docs/manual/cui/yukon.md) / [Web](docs/manual/web/yukon.md) |
 | ロシアンソリティア (Russian Solitaire) | `russiansolitaire` | [CUI](docs/manual/cui/russiansolitaire.md) / [Web](docs/manual/web/russiansolitaire.md) |

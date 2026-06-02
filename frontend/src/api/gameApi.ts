@@ -74,6 +74,7 @@ import type {
   OhHellResponse,
   OldMaidResponse,
   OmahaResponse,
+  OsmosisResponse,
   PageOneResponse,
   PaiGowResponse,
   PenguinResponse,
@@ -209,6 +210,7 @@ const workerUrl: Record<string, string> = {
   clocksolitaire: WORKER_SOLO,
   fortythieves: WORKER_SOLO,
   canfield: WORKER_SOLO,
+  osmosis: WORKER_SOLO,
   yukon: WORKER_SOLO,
   russiansolitaire: WORKER_SOLO,
   scorpion: WORKER_SOLO,
@@ -896,6 +898,19 @@ export const canfieldApi = createSolitaireMoveApi<
   CanfieldMoveZone,
   'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('canfield');
+
+/** Source or target zone for an Osmosis card move. */
+export interface OsmosisMoveZone {
+  zone: string;
+  col?: number;
+}
+
+/** API client for the Osmosis /osmosis/exec endpoint. */
+export const osmosisApi = createSolitaireMoveApi<
+  OsmosisResponse,
+  OsmosisMoveZone,
+  'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('osmosis');
 
 /** Source or target zone for a FreeCell card move. */
 export interface FreeCellMoveZone {
@@ -2239,6 +2254,7 @@ const games = [
   'fortythieves',
   'calculation',
   'canfield',
+  'osmosis',
   'yukon',
   'russiansolitaire',
   'scorpion',

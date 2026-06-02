@@ -70,6 +70,7 @@ import ohhell from '../../../docs/manual/cui/ohhell.md?raw';
 import oldmaid from '../../../docs/manual/cui/oldmaid.md?raw';
 import omaha from '../../../docs/manual/cui/omaha.md?raw';
 import omahahilo from '../../../docs/manual/cui/omahahilo.md?raw';
+import osmosis from '../../../docs/manual/cui/osmosis.md?raw';
 import pageone from '../../../docs/manual/cui/pageone.md?raw';
 import paigow from '../../../docs/manual/cui/paigow.md?raw';
 import penguin from '../../../docs/manual/cui/penguin.md?raw';
@@ -129,6 +130,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/calculation': calculation,
   '/canasta': canasta,
   '/canfield': canfield,
+  '/osmosis': osmosis,
   '/caribbeanstud': caribbeanstud,
   '/casinoholdem': casinoholdem,
   '/callbreak': callbreak,

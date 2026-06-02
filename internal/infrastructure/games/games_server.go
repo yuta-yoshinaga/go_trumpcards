@@ -438,6 +438,11 @@ func init() {
 			return usecase.NewTienLenInteractor(domain.NewDefaultTienLen(), new(presenter.TienLenWebPresenter))
 		},
 		controller.NewTienLenWebController)
+	BindWebControllerFor("osmosis",
+		func() usecase.OsmosisInteractorIF {
+			return usecase.NewOsmosisInteractor(domain.NewDefaultOsmosis(), new(presenter.OsmosisWebPresenter))
+		},
+		controller.NewOsmosisWebController)
 	BindWebControllerFor("casinowar",
 		func() usecase.CasinoWarInteractorIF {
 			return usecase.NewCasinoWarInteractor(domain.NewDefaultCasinoWar(), new(presenter.CasinoWarWebPresenter))

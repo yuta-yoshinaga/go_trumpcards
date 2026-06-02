@@ -322,4 +322,12 @@ func init() {
 			return usecase.RestoreTienLenInteractor(data, new(presenter.TienLenWebPresenter))
 		},
 		controller.NewTienLenWebControllerWithProvider)
+	games.RegisterKVGame("osmosis", games.CategorySolo,
+		func() usecase.OsmosisInteractorIF {
+			return usecase.NewOsmosisInteractor(domain.NewDefaultOsmosis(), new(presenter.OsmosisWebPresenter))
+		},
+		func(data []byte) (usecase.OsmosisInteractorIF, error) {
+			return usecase.RestoreOsmosisInteractor(data, new(presenter.OsmosisWebPresenter))
+		},
+		controller.NewOsmosisWebControllerWithProvider)
 }

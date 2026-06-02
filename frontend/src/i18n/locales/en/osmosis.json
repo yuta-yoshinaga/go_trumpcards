@@ -1,0 +1,39 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "Osmosis",
+  "stock": "Stock",
+  "waste": "Waste",
+  "reserve": "Reserve",
+  "foundation": "Foundation",
+  "baseRank": "Base rank",
+  "moveCount": "Moves",
+  "draw": "Draw",
+  "giveup": "Give up",
+  "hint": "Hint",
+  "autoComplete": "Auto complete",
+  "undo": "Undo",
+  "empty": "empty",
+  "selectFoundation": "Select the destination foundation row",
+  "selectSource": "First select a card (waste or a reserve top card)",
+  "gameClear": "Game cleared! Moves: {{moveCount}}",
+  "gameOver": "Game over",
+  "playing": "Playing",
+  "noHint": "No hint available",
+  "hintAvailable": "Hint available",
+  "moveReserveToFoundation": "Reserve → Foundation",
+  "moveWasteToFoundation": "Waste → Foundation",
+  "frontendHint": {
+    "moveToFoundation": "A card can seep into a foundation"
+  },
+  "tutorial": {
+    "foundation": "Four vertical foundation rows. The top row collects one suit in any order; lower rows accept only ranks already present in the row directly above (osmosis).",
+    "reserve": "Four reserve columns. Move the top card of any column to a foundation.",
+    "stockWaste": "Click the stock to draw one card. Use the top of the waste on a foundation.",
+    "actionButtons": "Action buttons: hint, auto-complete, undo, give up.",
+    "resetButton": "Start a new game."
+  }
+}
