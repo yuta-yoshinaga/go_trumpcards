@@ -114,14 +114,12 @@ func spadesDispatch(bc *baseController, w http.ResponseWriter, si usecase.Spades
 	case "r", "reset":
 		bc.writePresenterResponse(w, si.ResetWithConfig(param.ToConfig()))
 	case "b", "bid":
-		if param.Bid == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: bid is required."))
+		if !requireParam(bc, w, newDefault, param.Bid == nil, "param error: bid is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, si.Bid(*param.Bid))
 	case "p", "play":
-		if param.CardIndex == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: cardIndex is required."))
+		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, si.Play(*param.CardIndex))

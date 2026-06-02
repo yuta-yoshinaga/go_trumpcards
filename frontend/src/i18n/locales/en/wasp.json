@@ -1,0 +1,39 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "Wasp",
+  "tableau": "Tableau",
+  "stock": "Stock",
+  "completed": "Completed",
+  "moveCount": "Moves",
+  "giveup": "Give Up",
+  "hint": "Hint",
+  "deal": "Deal",
+  "autoComplete": "Auto Complete",
+  "undo": "Undo",
+  "empty": "Empty",
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "playing": "Playing",
+  "noHint": "No hint available",
+  "hintAvailable": "Hint available",
+  "stalemate": "Stalemate",
+  "cannotDealEmptyColExists": "Fill every empty column before dealing",
+  "landscapeBanner": "Landscape mode recommended",
+  "frontendHint": {
+    "moveToTableau": "A card can be moved between tableau columns",
+    "dealStock": "You can deal from the stock"
+  },
+  "tutorial": {
+    "tableau": "Seven columns are dealt here. Click or drag any face-up card (with everything on top of it) to move it.",
+    "stock": "Stock has 3 cards. Use the Deal button to add one card to each of columns 0-2. Empty columns block deal.",
+    "controls": "Action buttons: hint, give up, undo.",
+    "resetButton": "Start a new game."
+  },
+  "nav": {
+    "wasp": "Wasp"
+  }
+}

@@ -57,8 +57,7 @@ func golfDispatch(bc *baseController, w http.ResponseWriter, gi usecase.GolfInte
 	case "d", "draw":
 		bc.writePresenterResponse(w, gi.Draw())
 	case "rm", "remove":
-		if param.Col == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: col is required."))
+		if !requireParam(bc, w, newDefault, param.Col == nil, "param error: col is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, gi.Remove(*param.Col))
@@ -67,8 +66,7 @@ func golfDispatch(bc *baseController, w http.ResponseWriter, gi usecase.GolfInte
 	case "u", "undo":
 		bc.writePresenterResponse(w, gi.Undo())
 	case "undo_n":
-		if param.N == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: n is required."))
+		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, gi.UndoN(*param.N))

@@ -132,8 +132,7 @@ func oldMaidDispatch(bc *baseController, w http.ResponseWriter, omi usecase.OldM
 	case "s", "shuffle":
 		bc.writePresenterResponse(w, omi.Shuffle())
 	case "reorder":
-		if param.ReorderIndices == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: reorderIndices is required."))
+		if !requireParam(bc, w, newDefault, param.ReorderIndices == nil, "param error: reorderIndices is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, omi.Reorder(param.ReorderIndices))

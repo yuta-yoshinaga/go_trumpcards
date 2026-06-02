@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { GameGiveUpDialog } from './GameGiveUpDialog';
 import { GamePageHeading } from './GamePageHeading';
 import { GameResetDialog } from './GameResetDialog';
 import { ManualButton } from './ManualButton';
@@ -7,8 +8,8 @@ import { WinCelebration } from './motion/WinCelebration';
 import { PhaseIndicator } from './PhaseIndicator';
 import { TutorialButton } from './tutorial/TutorialButton';
 
-/** Props for the GamePageShell component. */
-export interface GamePageShellProps {
+/** Base props for the GamePageShell component (everything except the give-up trio). */
+interface GamePageShellBaseProps {
   /** Page title rendered as a visually-hidden h1 heading. */
   title: string;
   /** Tailwind background class for the outer container (e.g., gameTheme.hearts.bg). */
@@ -64,6 +65,27 @@ export interface GamePageShellProps {
 }
 
 /**
+ * Give-up confirmation props. Modeled as a discriminated union so the three
+ * fields are all-or-nothing: a page either opts out entirely (most non-solitaire
+ * games) or supplies the open flag *and* both callbacks. This makes incomplete
+ * wiring a compile error rather than a silently no-op dialog (issue #2099,
+ * PR #2108 review).
+ */
+type GiveUpConfirmProps =
+  | { giveUpConfirmOpen?: undefined; confirmGiveUp?: undefined; cancelGiveUp?: undefined }
+  | {
+      /** Whether the give-up confirmation dialog is open. */
+      giveUpConfirmOpen: boolean;
+      /** Callback to confirm the give-up action. */
+      confirmGiveUp: () => void;
+      /** Callback to cancel the give-up action. */
+      cancelGiveUp: () => void;
+    };
+
+/** Props for the GamePageShell component. */
+export type GamePageShellProps = GamePageShellBaseProps & GiveUpConfirmProps;
+
+/**
  * Renders the shared outer shell of a game page.
  * Includes the background container, visually-hidden heading, PhaseIndicator with
  * TutorialButton and ManualButton, and end-game overlays (WinCelebration, GameResetDialog).
@@ -82,6 +104,9 @@ export function GamePageShell({
   confirmOpen,
   confirmReset,
   cancelReset,
+  giveUpConfirmOpen,
+  confirmGiveUp,
+  cancelGiveUp,
   outerKey,
   headerExtra,
   headerEnd,
@@ -101,6 +126,13 @@ export function GamePageShell({
       {children}
       <WinCelebration show={winShow ?? gameEndFlag} onCelebrate={onCelebrate} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
+      {giveUpConfirmOpen !== undefined && confirmGiveUp && cancelGiveUp && (
+        <GameGiveUpDialog
+          giveUpConfirmOpen={giveUpConfirmOpen}
+          confirmGiveUp={confirmGiveUp}
+          cancelGiveUp={cancelGiveUp}
+        />
+      )}
     </div>
   );
 }

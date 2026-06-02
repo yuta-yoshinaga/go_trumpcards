@@ -57,14 +57,12 @@ func acesUpDispatch(bc *baseController, w http.ResponseWriter, ai usecase.AcesUp
 	case "d", "draw":
 		bc.writePresenterResponse(w, ai.Draw())
 	case "rm", "remove":
-		if param.Col == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: col is required."))
+		if !requireParam(bc, w, newDefault, param.Col == nil, "param error: col is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ai.Remove(*param.Col))
 	case "mv", "move":
-		if param.Col == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: col is required."))
+		if !requireParam(bc, w, newDefault, param.Col == nil, "param error: col is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ai.Move(*param.Col))
@@ -73,8 +71,7 @@ func acesUpDispatch(bc *baseController, w http.ResponseWriter, ai usecase.AcesUp
 	case "u", "undo":
 		bc.writePresenterResponse(w, ai.Undo())
 	case "undo_n":
-		if param.N == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: n is required."))
+		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ai.UndoN(*param.N))

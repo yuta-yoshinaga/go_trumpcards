@@ -89,26 +89,22 @@ func spiteAndMaliceDispatch(bc *baseController, w http.ResponseWriter, si usecas
 }
 
 func spiteAndMaliceMoveDispatch(bc *baseController, w http.ResponseWriter, si usecase.SpiteAndMaliceInteractorIF, param SpiteAndMaliceWebInput, newDefault func(string) *SpiteAndMaliceWebOutput) bool {
-	if param.From == nil || param.To == nil {
-		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from and to are required."))
+	if !requireParam(bc, w, newDefault, param.From == nil || param.To == nil, "param error: from and to are required.") {
 		return true
 	}
-	if param.To.Zone != "foundation" || param.To.Idx == nil {
-		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: to.zone must be 'foundation' with idx."))
+	if !requireParam(bc, w, newDefault, param.To.Zone != "foundation" || param.To.Idx == nil, "param error: to.zone must be 'foundation' with idx.") {
 		return true
 	}
 	switch param.From.Zone {
 	case "hand":
-		if param.From.Idx == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from.idx is required."))
+		if !requireParam(bc, w, newDefault, param.From.Idx == nil, "param error: from.idx is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, si.PlayFromHand(*param.From.Idx, *param.To.Idx))
 	case "goal":
 		bc.writePresenterResponse(w, si.PlayFromGoal(*param.To.Idx))
 	case "side":
-		if param.From.Idx == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from.idx is required."))
+		if !requireParam(bc, w, newDefault, param.From.Idx == nil, "param error: from.idx is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, si.PlayFromSide(*param.From.Idx, *param.To.Idx))
@@ -119,16 +115,13 @@ func spiteAndMaliceMoveDispatch(bc *baseController, w http.ResponseWriter, si us
 }
 
 func spiteAndMaliceDiscardDispatch(bc *baseController, w http.ResponseWriter, si usecase.SpiteAndMaliceInteractorIF, param SpiteAndMaliceWebInput, newDefault func(string) *SpiteAndMaliceWebOutput) bool {
-	if param.From == nil || param.To == nil {
-		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from and to are required."))
+	if !requireParam(bc, w, newDefault, param.From == nil || param.To == nil, "param error: from and to are required.") {
 		return true
 	}
-	if param.From.Zone != "hand" || param.From.Idx == nil {
-		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from must be hand with idx."))
+	if !requireParam(bc, w, newDefault, param.From.Zone != "hand" || param.From.Idx == nil, "param error: from must be hand with idx.") {
 		return true
 	}
-	if param.To.Zone != "side" || param.To.Idx == nil {
-		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: to must be side with idx."))
+	if !requireParam(bc, w, newDefault, param.To.Zone != "side" || param.To.Idx == nil, "param error: to must be side with idx.") {
 		return true
 	}
 	bc.writePresenterResponse(w, si.Discard(*param.From.Idx, *param.To.Idx))

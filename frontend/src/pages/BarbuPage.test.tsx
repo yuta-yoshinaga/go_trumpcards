@@ -1,0 +1,142 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { barbuApi } from '../api/gameApi';
+import { renderWithProviders } from '../test/renderWithProviders';
+import type { BarbuResponse, Card } from '../types/card';
+import { BarbuPage } from './BarbuPage';
+
+vi.mock('../api/gameApi', () => ({
+  barbuApi: { exec: vi.fn() },
+  actionLogApi: { barbu: vi.fn() },
+}));
+
+const mockExec = vi.mocked(barbuApi.exec);
+
+const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
+
+function makeState(overrides: Partial<BarbuResponse> = {}): BarbuResponse {
+  return {
+    players: [
+      {
+        id: 0,
+        isHuman: true,
+        cardCount: 2,
+        cards: [card('SPADE', 3), card('HEART', 5)],
+        trickCount: 0,
+        dominoRank: 0,
+        totalScore: 0,
+      },
+      { id: 1, isHuman: false, cardCount: 2, cards: [], trickCount: 0, dominoRank: 0, totalScore: 0 },
+      { id: 2, isHuman: false, cardCount: 2, cards: [], trickCount: 0, dominoRank: 0, totalScore: 0 },
+      { id: 3, isHuman: false, cardCount: 2, cards: [], trickCount: 0, dominoRank: 0, totalScore: 0 },
+    ],
+    phase: 'selectContract',
+    dealNumber: 0,
+    totalDeals: 28,
+    dealerIdx: 0,
+    currentTurn: 0,
+    currentContract: -1,
+    trumpSuit: -1,
+    trickNumber: 0,
+    currentTrick: [],
+    lastTrick: [],
+    lastTrickWinner: -1,
+    tablePlaced: [0, 0, 0, 0, 0],
+    dominoPlayable: [],
+    usedContracts: [false, false, false, false, false, false, false],
+    gameEndFlag: false,
+    config: { cpuDifficulty: 1 },
+    roundWinners: [],
+    lastDealDetail: null,
+    message: '',
+    ...overrides,
+  };
+}
+
+beforeEach(() => {
+  mockExec.mockReset();
+  mockExec.mockResolvedValue(makeState());
+});
+
+describe('BarbuPage', () => {
+  it('calls reset on mount with the short "r" command', async () => {
+    renderWithProviders(<BarbuPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('r'));
+  });
+
+  it('renders contract buttons in the select phase', async () => {
+    renderWithProviders(<BarbuPage />);
+    await waitFor(() => expect(screen.getByTestId('contract-0')).toBeInTheDocument());
+    expect(screen.getByTestId('contract-6')).toBeInTheDocument();
+  });
+
+  it('selects a non-trump contract directly', async () => {
+    renderWithProviders(<BarbuPage />);
+    await waitFor(() => expect(screen.getByTestId('contract-0')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('contract-0'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('c', { contract: 0, trumpSuit: -1 }));
+  });
+
+  it('opens the trump picker for the Trumps contract', async () => {
+    renderWithProviders(<BarbuPage />);
+    await waitFor(() => expect(screen.getByTestId('contract-5')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('contract-5'));
+    await waitFor(() => expect(screen.getByTestId('trump-1')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('trump-3'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('c', { contract: 5, trumpSuit: 3 }));
+  });
+
+  it('disables used contracts', async () => {
+    mockExec.mockResolvedValue(makeState({ usedContracts: [true, false, false, false, false, false, false] }));
+    renderWithProviders(<BarbuPage />);
+    await waitFor(() => expect(screen.getByTestId('contract-0')).toBeDisabled());
+  });
+
+  it('plays a trick card after selecting it', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 'play', currentContract: 0, currentTurn: 0 }));
+    renderWithProviders(<BarbuPage />);
+    await waitFor(() => expect(screen.getByTestId('play-button')).toBeInTheDocument());
+    expect(screen.getByTestId('play-button')).toBeDisabled();
+
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    await waitFor(() => expect(screen.getByTestId('play-button')).not.toBeDisabled());
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('play-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('p', { handIndex: 0 }));
+  });
+
+  it('shows a pass button in Dominoes and passes when no card is playable', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 'play', currentContract: 6, currentTurn: 0, dominoPlayable: [] }));
+    renderWithProviders(<BarbuPage />);
+    await waitFor(() => expect(screen.getByTestId('pass-button')).toBeInTheDocument());
+    expect(screen.getByTestId('pass-button')).not.toBeDisabled();
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('pass-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('p', { handIndex: -1 }));
+  });
+
+  it('shows the next-deal button at deal end', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 'dealEnd', currentContract: 0 }));
+    renderWithProviders(<BarbuPage />);
+    await waitFor(() => expect(screen.getByTestId('next-deal-button')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('next-deal-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('n'));
+  });
+
+  it('shows loading state when there are no players', async () => {
+    mockExec.mockResolvedValue(makeState({ players: [] }));
+    renderWithProviders(<BarbuPage />);
+    await waitFor(() => expect(screen.queryByTestId('contract-0')).not.toBeInTheDocument());
+  });
+
+  it('renders CLI terminal when CLI mode is enabled via localStorage', async () => {
+    localStorage.setItem('cli-mode-barbu', 'true');
+    renderWithProviders(<BarbuPage />);
+    await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
+    localStorage.removeItem('cli-mode-barbu');
+  });
+});

@@ -35,6 +35,8 @@ export type GameKey =
   | 'holdem'
   | 'omaha'
   | 'omahahilo'
+  | 'bigo'
+  | 'bigohilo'
   | 'shortdeck'
   | 'pineapple'
   | 'crazypineapple'
@@ -42,6 +44,7 @@ export type GameKey =
   | 'sevencardstud'
   | 'razz'
   | 'badugi'
+  | 'deucetoseven'
   | 'indianpoker'
   | 'videopoker'
   | 'deuceswild'
@@ -70,8 +73,12 @@ export type GameKey =
   | 'durak'
   | 'daifugo'
   | 'bigtwo'
+  | 'tienlen'
   | 'president'
   | 'cassino'
+  | 'scopa'
+  | 'barbu'
+  | 'macau'
   | 'sevens'
   | 'crazyeights'
   | 'pageone'
@@ -108,10 +115,12 @@ export type GameKey =
   | 'bakersdozen'
   | 'beleagueredcastle'
   | 'canfield'
+  | 'osmosis'
   | 'yukon'
   | 'russiansolitaire'
   | 'cruel'
   | 'scorpion'
+  | 'wasp'
   | 'accordion'
   | 'pokersquares'
   | 'montecarlo'
@@ -120,6 +129,7 @@ export type GameKey =
   // Counting/Rummy
   | 'ginrummy'
   | 'tonk'
+  | 'thirtyone'
   | 'canasta'
   | 'cribbage'
   | 'sevenbridge'
@@ -170,6 +180,8 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   holdem: POKER,
   omaha: POKER,
   omahahilo: POKER,
+  bigo: POKER,
+  bigohilo: POKER,
   shortdeck: POKER,
   pineapple: POKER,
   crazypineapple: POKER,
@@ -177,6 +189,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   sevencardstud: POKER,
   razz: POKER,
   badugi: POKER,
+  deucetoseven: POKER,
   indianpoker: POKER,
   videopoker: CASINO,
   deuceswild: CASINO,
@@ -205,8 +218,12 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   durak: GREEN,
   daifugo: GREEN,
   bigtwo: GREEN,
+  tienlen: GREEN,
   president: GREEN,
   cassino: GREEN,
+  scopa: GREEN,
+  barbu: GREEN,
+  macau: GREEN,
   sevens: GREEN,
   crazyeights: GREEN,
   pageone: GREEN,
@@ -243,10 +260,12 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   bakersdozen: CASINO,
   beleagueredcastle: CASINO,
   canfield: CASINO,
+  osmosis: CASINO,
   yukon: CASINO,
   russiansolitaire: CASINO,
   cruel: CASINO,
   scorpion: CASINO,
+  wasp: CASINO,
   accordion: CASINO,
   pokersquares: CASINO,
   montecarlo: CASINO,
@@ -255,6 +274,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Counting/Rummy
   ginrummy: BLUE,
   tonk: BLUE,
+  thirtyone: CASINO,
   canasta: BLUE,
   cribbage: BLUE,
   sevenbridge: BLUE,

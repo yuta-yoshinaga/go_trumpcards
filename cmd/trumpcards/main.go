@@ -865,6 +865,42 @@ func updateExitCode(err error) int {
 	}
 }
 
+// trailingFlag classifies one trailing-arg token against a flag named `name`,
+// accepting both the single- and double-dash spellings Go's flag package
+// treats as equivalent (`-name` and `--name`). It reports:
+//
+//   - matched:   the token is this flag, in either bare or `=value` form
+//   - hasInline: the token carried an inline `=value` (`--name=v` / `-name=v`)
+//   - inlineVal: that value (meaningful only when hasInline)
+//   - bare:      the token was exactly `--name` / `-name` (a separate value,
+//     if the flag takes one, comes from the following arg)
+//
+// Extracted so the trailing-flag scanner no longer hand-repeats the
+// dash/equals quartet for every flag (issue #2100).
+func trailingFlag(arg, name string) (inlineVal string, hasInline, bare, matched bool) {
+	if arg == "--"+name || arg == "-"+name {
+		return "", false, true, true
+	}
+	if v, ok := strings.CutPrefix(arg, "--"+name+"="); ok {
+		return v, true, false, true
+	}
+	if v, ok := strings.CutPrefix(arg, "-"+name+"="); ok {
+		return v, true, false, true
+	}
+	return "", false, false, false
+}
+
+// trailingFlagAny is trailingFlag against several alias spellings of the same
+// flag (e.g. the long "quiet" and short "q"), returning the first match.
+func trailingFlagAny(arg string, names ...string) (inlineVal string, hasInline, bare, matched bool) {
+	for _, n := range names {
+		if v, hi, b, ok := trailingFlag(arg, n); ok {
+			return v, hi, b, true
+		}
+	}
+	return "", false, false, false
+}
+
 // applyTrailingGlobalFlags scans args for global flags (`--lang`,
 // `--no-color`, `--color`, `--quiet`/`-q`) that landed after the game
 // name because Go's flag package stops parsing at the first positional
@@ -911,54 +947,14 @@ func applyTrailingGlobalFlags(args []string, quietPtr *bool, stderr io.Writer) [
 			rest = append(rest, args[i:]...)
 			break
 		}
-		var langVal, colorVal string
-		var haveLang, haveNoColor, haveColor, consumed bool
-		switch {
-		case a == "--lang" || a == "-lang":
-			haveLang, consumed = true, true
-			if i+1 < len(args) {
+
+		// --lang / -lang [=value | <next arg>]: value flag.
+		if v, _, bare, ok := trailingFlag(a, "lang"); ok {
+			langVal := v
+			if bare && i+1 < len(args) {
 				langVal = args[i+1]
 				i++
 			}
-		case strings.HasPrefix(a, "--lang="):
-			langVal = strings.TrimPrefix(a, "--lang=")
-			haveLang, consumed = true, true
-		case strings.HasPrefix(a, "-lang="):
-			langVal = strings.TrimPrefix(a, "-lang=")
-			haveLang, consumed = true, true
-		case a == "--no-color" || a == "-no-color":
-			haveNoColor, consumed = true, true
-		case strings.HasPrefix(a, "--no-color=") || strings.HasPrefix(a, "-no-color="):
-			val := a[strings.Index(a, "=")+1:]
-			b, err := strconv.ParseBool(val)
-			if err == nil {
-				consumed = true
-				haveNoColor = b
-			}
-		case a == "--color" || a == "-color":
-			haveColor, consumed = true, true
-			if i+1 < len(args) {
-				colorVal = args[i+1]
-				i++
-			}
-		case strings.HasPrefix(a, "--color="):
-			colorVal = strings.TrimPrefix(a, "--color=")
-			haveColor, consumed = true, true
-		case strings.HasPrefix(a, "-color="):
-			colorVal = strings.TrimPrefix(a, "-color=")
-			haveColor, consumed = true, true
-		case a == "--quiet" || a == "-quiet" || a == "-q" || a == "--q":
-			// Consumed; value already resolved by resolveTrailingQuiet.
-			consumed = true
-		case strings.HasPrefix(a, "--quiet=") || strings.HasPrefix(a, "-quiet=") ||
-			strings.HasPrefix(a, "--q=") || strings.HasPrefix(a, "-q="):
-			val := a[strings.Index(a, "=")+1:]
-			if _, err := strconv.ParseBool(val); err == nil {
-				consumed = true
-			}
-		}
-		switch {
-		case haveLang:
 			switch {
 			case supportedLangs[langVal]:
 				i18n.SetLang(langVal)
@@ -969,14 +965,54 @@ func applyTrailingGlobalFlags(args []string, quietPtr *bool, stderr io.Writer) [
 				_, _ = fmt.Fprintln(stderr, i18n.Tf("cliUnsupportedLang", "lang", langVal))
 				_, _ = fmt.Fprintln(stderr, i18n.T("cliSupportedLangs"))
 			}
-		case haveNoColor:
-			trailingNoColor = true
-		case haveColor:
+			continue
+		}
+
+		// --no-color / -no-color [=bool]: bool flag. An invalid `=value` is
+		// left for the caller (not consumed), matching the original.
+		if v, hasInline, _, ok := trailingFlag(a, "no-color"); ok {
+			if !hasInline {
+				trailingNoColor = true
+				continue
+			}
+			if b, err := strconv.ParseBool(v); err == nil {
+				if b {
+					trailingNoColor = true
+				}
+				continue
+			}
+			rest = append(rest, a) // --no-color=<non-bool>: unrecognized, keep it
+			continue
+		}
+
+		// --color / -color [=value | <next arg>]: value flag; resolution is
+		// deferred to applyColorMode after the scan for correct precedence.
+		if v, _, bare, ok := trailingFlag(a, "color"); ok {
+			colorVal := v
+			if bare && i+1 < len(args) {
+				colorVal = args[i+1]
+				i++
+			}
 			haveTrailingColor = true
 			trailingColor = colorVal
-		case !consumed:
-			rest = append(rest, a)
+			continue
 		}
+
+		// --quiet / -quiet / --q / -q [=bool]: value already folded into
+		// `quiet` by resolveTrailingQuiet; here we only consume the token.
+		// An invalid `=value` is left for the caller.
+		if v, hasInline, _, ok := trailingFlagAny(a, "quiet", "q"); ok {
+			if !hasInline {
+				continue
+			}
+			if _, err := strconv.ParseBool(v); err == nil {
+				continue
+			}
+			rest = append(rest, a) // --quiet=<non-bool>: unrecognized, keep it
+			continue
+		}
+
+		rest = append(rest, a)
 	}
 	// Single delegated color resolution. Skipping the call when neither
 	// flag was seen preserves the "trailing args without color flags
@@ -1007,13 +1043,14 @@ func resolveTrailingQuiet(args []string, start bool) bool {
 		if a == "--" {
 			break
 		}
+		v, hasInline, _, ok := trailingFlagAny(a, "quiet", "q")
 		switch {
-		case a == "--quiet" || a == "-quiet" || a == "-q" || a == "--q":
+		case !ok:
+			// not a quiet flag
+		case !hasInline:
 			quiet = true
-		case strings.HasPrefix(a, "--quiet=") || strings.HasPrefix(a, "-quiet=") ||
-			strings.HasPrefix(a, "--q=") || strings.HasPrefix(a, "-q="):
-			val := a[strings.Index(a, "=")+1:]
-			if b, err := strconv.ParseBool(val); err == nil {
+		default:
+			if b, err := strconv.ParseBool(v); err == nil {
 				quiet = b
 			}
 		}

@@ -109,14 +109,12 @@ func rummy500Dispatch(bc *baseController, w http.ResponseWriter, ci usecase.Rumm
 	case "m", "meld":
 		bc.writePresenterResponse(w, ci.Meld(param.CardIndices))
 	case "lo", "layoff":
-		if param.MeldOwner == nil || param.MeldIdx == nil || param.CardIndex == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: meldOwner, meldIdx and cardIndex are required."))
+		if !requireParam(bc, w, newDefault, param.MeldOwner == nil || param.MeldIdx == nil || param.CardIndex == nil, "param error: meldOwner, meldIdx and cardIndex are required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ci.Layoff(*param.MeldOwner, *param.MeldIdx, *param.CardIndex))
 	case "d", "discard":
-		if param.CardIndex == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: cardIndex is required."))
+		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ci.Discard(*param.CardIndex))

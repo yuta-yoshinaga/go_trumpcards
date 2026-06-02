@@ -9,11 +9,18 @@ import (
 // activePlayers: アクティブ相手プレイヤー数, simulations: シミュレーション回数,
 // rng: 乱数生成器 (nilの場合はグローバルrand使用)
 func CalcOmahaEquity(humanCards, communityCards []*Card, activePlayers, simulations int, rng *rand.Rand) HoldemEquityResult {
+	return calcOmahaEquityWithHoleCount(humanCards, communityCards, activePlayers, simulations, rng, 4)
+}
+
+// calcOmahaEquityWithHoleCount はオマハ系エクイティ計算の共通実装。
+// holeCardCount で相手プレイヤーに配布するホールカード枚数を指定する
+// (オマハ=4, Big O=5)。CalcOmahaEquity は4枚版の薄いラッパー。
+func calcOmahaEquityWithHoleCount(humanCards, communityCards []*Card, activePlayers, simulations int, rng *rand.Rand, holeCardCount int) HoldemEquityResult {
 	omahaEval := func(holeCards, simCommunity []*Card) (int, []*Card) {
 		return evalBestFromOmaha(holeCards, simCommunity)
 	}
 	return calcEquityCore(humanCards, communityCards, activePlayers, simulations, rng, equityConfig{
-		holeCardsPerOpponent: 4,
+		holeCardsPerOpponent: holeCardCount,
 		handNames:            PokerHandNames,
 		buildPool:            buildFullDeckPool,
 		evalHuman:            omahaEval,

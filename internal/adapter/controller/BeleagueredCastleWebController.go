@@ -71,8 +71,7 @@ func beleagueredCastleDispatch(bc *baseController, w http.ResponseWriter, bi use
 	case "u", "undo":
 		bc.writePresenterResponse(w, bi.Undo())
 	case "undo_n":
-		if param.N == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: n is required."))
+		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, bi.UndoN(*param.N))
@@ -83,8 +82,7 @@ func beleagueredCastleDispatch(bc *baseController, w http.ResponseWriter, bi use
 }
 
 func beleagueredCastleMoveDispatch(bc *baseController, w http.ResponseWriter, bi usecase.BeleagueredCastleInteractorIF, param BeleagueredCastleWebInput, newDefault func(string) *BeleagueredCastleWebOutput) bool {
-	if param.From == nil || param.To == nil {
-		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from and to are required."))
+	if !requireParam(bc, w, newDefault, param.From == nil || param.To == nil, "param error: from and to are required.") {
 		return true
 	}
 	fromZone := param.From.Zone
@@ -92,16 +90,14 @@ func beleagueredCastleMoveDispatch(bc *baseController, w http.ResponseWriter, bi
 
 	switch {
 	case fromZone == "tableau" && toZone == "tableau":
-		if param.From.Col == nil || param.To.Col == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from.col and to.col are required."))
+		if !requireParam(bc, w, newDefault, param.From.Col == nil || param.To.Col == nil, "param error: from.col and to.col are required.") {
 			return true
 		}
 		// Beleaguered Castle only ever moves the top card; pass -1 so the
 		// domain resolves the index from its own state.
 		bc.writePresenterResponse(w, bi.MoveTableauToTableau(*param.From.Col, -1, *param.To.Col))
 	case fromZone == "tableau" && toZone == "foundation":
-		if param.From.Col == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from.col is required."))
+		if !requireParam(bc, w, newDefault, param.From.Col == nil, "param error: from.col is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, bi.MoveTableauToFoundation(*param.From.Col))

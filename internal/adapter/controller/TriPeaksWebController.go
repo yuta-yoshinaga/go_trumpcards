@@ -59,8 +59,7 @@ func triPeaksDispatch(bc *baseController, w http.ResponseWriter, ti usecase.TriP
 	case "d", "draw":
 		bc.writePresenterResponse(w, ti.Draw())
 	case "rm", "remove":
-		if param.Row == nil || param.Col == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: row and col are required."))
+		if !requireParam(bc, w, newDefault, param.Row == nil || param.Col == nil, "param error: row and col are required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ti.Remove(*param.Row, *param.Col))
@@ -69,8 +68,7 @@ func triPeaksDispatch(bc *baseController, w http.ResponseWriter, ti usecase.TriP
 	case "u", "undo":
 		bc.writePresenterResponse(w, ti.Undo())
 	case "undo_n":
-		if param.N == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: n is required."))
+		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ti.UndoN(*param.N))

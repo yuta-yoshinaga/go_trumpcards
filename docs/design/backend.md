@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全110ゲーム)](#12-ゲームドメイン-全110ゲーム)
+  - [1.2 ゲームドメイン (全120ゲーム)](#12-ゲームドメイン-全120ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -73,6 +73,7 @@
   - [3.38 PokerSquares フェーズ遷移](#338-pokersquares-フェーズ遷移)
   - [3.39 RedDog フェーズ遷移](#339-reddog-フェーズ遷移)
   - [3.40 Scorpion フェーズ遷移](#340-scorpion-フェーズ遷移)
+  - [3.40b Wasp フェーズ遷移](#340b-wasp-フェーズ遷移)
   - [3.41 Trash フェーズ遷移](#341-trash-フェーズ遷移)
   - [3.42 SpiteAndMalice フェーズ遷移](#342-spiteandmalice-フェーズ遷移)
   - [3.43 Accordion フェーズ遷移](#343-accordion-フェーズ遷移)
@@ -84,6 +85,8 @@
   - [3.49 RussianSolitaire フェーズ遷移](#349-russiansolitaire-フェーズ遷移)
   - [3.50 CasinoWar フェーズ遷移](#350-casinowar-フェーズ遷移)
   - [3.51 Mighty フェーズ遷移](#351-mighty-フェーズ遷移)
+  - [3.57 Scopa フェーズ遷移](#357-scopa-フェーズ遷移)
+  - [3.58 Barbu フェーズ遷移](#358-barbu-フェーズ遷移)
 
 ---
 
@@ -151,7 +154,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全110ゲーム)
+### 1.2 ゲームドメイン (全120ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -717,7 +720,10 @@ classDiagram
         -config HoldemConfig
         -communityCards []*Card
         -phase int
+        -hiLo bool
+        -holeCards int
         +Reset()
+        +GetHoleCardCount() int
         +PlayerFold() error
         +PlayerCheck() error
         +PlayerCall() error
@@ -1482,6 +1488,32 @@ classDiagram
     Scorpion --> "*" KlondikeTableauCard
     Scorpion --> "1" TrumpCards
 
+    class Wasp {
+        -trumpCards *TrumpCards
+        -tableau [7][]*KlondikeTableauCard
+        -stock []*Card
+        -completedSuits int
+        -phase WaspPhase
+        -moveCount int
+        -actionLog []*ActionLogEntry
+        -history []*waspSnapshot
+        -isStalemate bool
+        +Reset()
+        +Deal() error
+        +MoveTableauToTableau(fromCol int, cardIndex int, toCol int) error
+        +GetHint() *WaspHint
+        +AutoComplete() error
+        +AllFaceUp() bool
+        +Undo() error
+        +UndoN(n int) error
+        +UndoToEscape() int
+        +GiveUp()
+        +GetPhase() WaspPhase
+    }
+
+    Wasp --> "*" KlondikeTableauCard
+    Wasp --> "1" TrumpCards
+
     class RussianSolitaire {
         -trumpCards *TrumpCards
         -tableau [7][]*KlondikeTableauCard
@@ -1683,7 +1715,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全110ゲーム共通)**
+**Interactor パターン (全120ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -1755,8 +1787,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "110ゲーム × CUI/Web = 220 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
-    note for GameCuiPresenter "110ゲーム × CUI/Web = 220 Presenter 実装"
+    note for GameCuiController "120ゲーム × CUI/Web = 240 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
+    note for GameCuiPresenter "120ゲーム × CUI/Web = 240 Presenter 実装"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -2563,7 +2595,7 @@ stateDiagram-v2
 
 ### 3.3 Texas Hold'em フェーズ遷移
 
-Omaha Hold'em および Short Deck Hold'em も同一のフェーズ遷移を共有します。
+Omaha Hold'em、5 Card Omaha (Big O)、および Short Deck Hold'em も同一のフェーズ遷移を共有します。
 
 ```mermaid
 stateDiagram-v2
@@ -3280,6 +3312,28 @@ stateDiagram-v2
 
 Scorpion 固有のアクション: `MoveTableauToTableau(fromCol, cardIndex, toCol)` / `Deal` / `Undo` / `UndoN` / `GiveUp`。Yukon 的な「任意カード以降を一括で移動」ルールと Spider 的な「同スート13枚で自動除去」ルールを組み合わせた 52 枚 1 デッキのソリティア。ストック 3 枚は各列の末尾に追加され、4 スート全完成でゲームクリア。
 
+### 3.40b Wasp フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Playing : Reset()
+    Playing --> Playing : MoveTableauToTableau()
+    Playing --> Playing : Deal() (ストック3枚配布)
+    Playing --> Playing : Undo() / UndoN() / GetHint()
+    Playing --> GameClear : 4スートが完成した
+    Playing --> GameClear : AutoComplete()
+    Playing --> GameOver : GiveUp()
+    Playing --> GameOver : 手詰まり検出 (isStalemate)
+    GameClear --> [*]
+    GameOver --> [*]
+
+    note right of Playing : WaspPhasePlaying = 0
+    note right of GameClear : WaspPhaseGameClear = 1
+    note right of GameOver : WaspPhaseGameOver = 2
+```
+
+Wasp は Scorpion の易しいバリアント。状態遷移・アクションは Scorpion と完全に同一で、唯一の違いは `canPlaceOnTableau` における「空の列には任意のカードを置ける（Scorpion は K のみ）」点。この緩和により手詰まり (isStalemate) が起きにくい。
+
 ### 3.41 Trash フェーズ遷移
 
 ```mermaid
@@ -3625,3 +3679,45 @@ stateDiagram-v2
 ```
 
 **注:** Truco は 1 マノ = 最大 3 バサの best-of-2、`resolveMano` がパルダ (引き分け) を含む勝者判定を行う。マッチは複数マノにまたがり、`playerMatchPoints` に賭け点を累積する。`Truco.go` のドメインは Briscola のトリック進行を流用しつつ、Respond フェーズ (ベッティング割り込み) を追加している。
+
+### 3.57 Scopa フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Dealing : Reset() / NewRound() (3 枚ハンド + 4 枚テーブル配布)
+    Dealing --> PlayerTurn : 配札完了
+    PlayerTurn --> PlayerTurn : Play(handIdx, [tableIdxs]) (取る/場に置く ターン交代)
+    PlayerTurn --> PlayerTurn : CpuStep() (CPU ターン)
+    PlayerTurn --> Dealing : 全員手札 0 → 再配布 (山札残あり)
+    PlayerTurn --> RoundEnd : 山札・手札ともに尽きた
+    RoundEnd --> Dealing : NewRound() (継続)
+    RoundEnd --> GameEnd : TargetScore 到達
+    GameEnd --> [*]
+
+    note right of Dealing : ScopaPhaseDealing = "dealing"
+    note right of PlayerTurn : ScopaPhasePlayerTurn = "playerTurn"
+    note right of RoundEnd : ScopaPhaseRoundEnd = "roundEnd"
+    note right of GameEnd : ScopaPhaseGameEnd = "gameEnd"
+```
+
+**注:** Scopa は Cassino と同じくフェーズ定数を文字列 (string) で保持する。40 枚デッキ (8/9/10 を除外) で 1 人 vs 1 CPU。`Play(handIdx, [tableIdxs])` で手札 1 枚を出し、値が一致する単札があれば必ずその単札を取る (強制)。一致がなければ合計一致の場札を取るか場に置く。場札を払い切ると **scopa** ボーナス。ラウンド終了時に最多カード (carte)・最多ダイヤ (denari)・7♦ (settebello)・最多 7 (簡易 primiera)・各 scopa で得点し、TargetScore (既定 11) 到達でゲーム終了。
+
+### 3.58 Barbu フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> SelectContract : Reset() / NextDeal() (52 枚を 13 枚ずつ配布)
+    SelectContract --> Play : SelectContract(c, trump) (ディーラーが選択)
+    Play --> Play : Play(handIdx) / CpuStep() (トリック or 7 並べ)
+    Play --> DealEnd : ディール終了 (得点計算)
+    DealEnd --> SelectContract : NextDeal() (継続)
+    DealEnd --> GameEnd : 28 ディール完了
+    GameEnd --> [*]
+
+    note right of SelectContract : BarbuPhaseSelectContract = "selectContract"
+    note right of Play : BarbuPhasePlay = "play"
+    note right of DealEnd : BarbuPhaseDealEnd = "dealEnd"
+    note right of GameEnd : BarbuPhaseGameEnd = "gameEnd"
+```
+
+**注:** Barbu は 4 人・52 枚デッキのコンペンディウム型トリックテイキング。フェーズ定数は文字列で保持する。各プレイヤーがディーラーを 7 回務め計 28 ディール。ディーラーは 7 コントラクト (No Tricks / No Hearts / No Queens / Barbu(K♥) / No Last Trick / Trumps / Dominoes) を 1 回ずつ選択する。得点は `BarbuContracts.go` の Strategy テーブルで切り替える。6 つのトリック系コントラクトは共通のフォロースート処理 (Hearts/Whist と同型) を、Dominoes は Sevens 同型の bitmask レイアウト (`BarbuDominoes.go`) を再利用する。28 ディール後の累計最高得点が勝者。

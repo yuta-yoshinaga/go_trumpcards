@@ -678,6 +678,26 @@ func TestOmahaCuiPresenter_HiLo_Title(t *testing.T) {
 	assert.Contains(t, result, "Omaha Hi-Lo (8 or Better)")
 }
 
+// TestOmahaCuiPresenter_BigO_Title asserts the heading switches to the
+// Big O (5 Card Omaha) variants based on the hole-card count.
+func TestOmahaCuiPresenter_BigO_Title(t *testing.T) {
+	p := new(presenter.OmahaCuiPresenter)
+
+	t.Run("big o hi", func(t *testing.T) {
+		o := domain.NewDefaultBigO()
+		o.SetPhase(domain.OmahaPhasePreFlop)
+		result := p.Output(o, nil)
+		assert.Contains(t, result, "5 Card Omaha (Big O)")
+	})
+
+	t.Run("big o hi-lo", func(t *testing.T) {
+		o := domain.NewDefaultBigOHiLo()
+		o.SetPhase(domain.OmahaPhasePreFlop)
+		result := p.Output(o, nil)
+		assert.Contains(t, result, "5 Card Omaha Hi-Lo (Big O)")
+	})
+}
+
 // TestOmahaCuiPresenter_HiLo_ResultRendering exercises the Hi-Lo
 // result branches: low hand display when qualified, and the
 // (Hi:N / Lo:M) / (Hi) / (Lo) suffixes on chip totals.

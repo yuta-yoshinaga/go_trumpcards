@@ -34,6 +34,10 @@ tags:
     description: Omaha Hold'em game
   - name: omahahilo
     description: Omaha Hi-Lo / 8 or Better (split-pot variant of Omaha)
+  - name: bigo
+    description: 5 Card Omaha (Big O) game (Omaha dealt 5 hole cards)
+  - name: bigohilo
+    description: 5 Card Omaha Hi-Lo (Big O) / 8 or Better (split-pot variant)
   - name: shortdeck
     description: Short Deck (6+ Hold'em) game
   - name: hearts
@@ -64,6 +68,12 @@ tags:
     description: President / Scum (プレジデント) game
   - name: cassino
     description: Cassino (カッシーノ) game
+  - name: scopa
+    description: Scopa (スコパ) game
+  - name: barbu
+    description: Barbu (バルブ) — French compendium trick-taking game (7 contracts, 28 deals)
+  - name: macau
+    description: Macau (マカオ) — European Crazy Eights variant with magic cards (2/7/8/J) and "Macau!" declaration
   - name: spanish21
     description: Spanish 21 (スパニッシュ21) — BlackJack variant with 48-card deck and bonus payouts
   - name: canasta
@@ -145,8 +155,12 @@ tags:
     description: Razz (ラズ) game - lowball variant of Seven Card Stud
   - name: badugi
     description: Badugi (バドゥーギ) game - Asian 4-card draw lowball poker
+  - name: deucetoseven
+    description: 2-7 Triple Draw (デューストゥセブン) game - Deuce to Seven lowball draw poker
   - name: scorpion
     description: Scorpion (スコーピオン) game - variant of solitaire combining Yukon and Spider mechanics
+  - name: wasp
+    description: Wasp (ワスプ) game - easier Scorpion variant where empty columns accept any card
   - name: accordion
     description: Accordion (アコーディオン) game - compression solitaire where piles merge onto the 1st or 3rd pile to the left
   - name: trash
@@ -169,6 +183,12 @@ tags:
     description: Baker's Dozen (ベーカーズ・ダズン) game - single-player open-information solitaire with 13 tableau columns of 4 cards each; kings auto-move to the bottom of each column at deal time
   - name: tonk
     description: Tonk (トンク) game - 2-player rummy variant with 5-card hands; instant Tonk win on a 49 or 50 point initial deal, knock when deadwood is 5 or less
+  - name: thirtyone
+    description: Thirty-One (サーティワン / Scat) game - 4-player draw-and-discard survival game; build the highest single-suit total (A=11, J/Q/K=10), knock to stand pat, lowest score loses a life, hitting exactly 31 wins the round instantly
+  - name: tienlen
+    description: Tien Len (ティエンレン / Vietnamese Big Two) game - 4-player shedding game; suit order ♠<♣<♦<♥, holder of ♠3 leads, chops (three consecutive pairs / four of a kind) cut a lone 2
+  - name: osmosis
+    description: Osmosis (オズモシス / 浸透) solitaire - foundation-only single-player game; 4 reserve columns of 4 cards, 4 vertical foundation rows (one suit each), the top row builds any order while lower rows accept only ranks already present in the row directly above ("seep")
   - name: casinowar
     description: Casino War (カジノウォー) game - simple player-vs-dealer table game; high card wins (Aces high), tie offers Surrender (forfeit half ante) or War (match ante and re-draw)
   - name: pitch
@@ -845,6 +865,61 @@ paths:
               schema:
                 $ref: '#/components/schemas/BigTwoResponse'
 
+  /tienlen/exec:
+    post:
+      tags:
+        - tienlen
+      summary: Execute a Tien Len (ティエンレン) game command
+      description: |
+        Send a command to advance the Tien Len game session identified by
+        `sessionId`.  The game has 4 players (player 0 = human, players 1–3 =
+        CPU). Card strength is `3 < 4 < … < A < 2`, ties broken by suit
+        `♠ < ♣ < ♦ < ♥`. The holder of ♠3 leads first and must include it.
+        Chops (three consecutive pairs / four of a kind) can cut a lone 2.
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `play`  | `p`     | Play cards specified by `indices`; pass with an empty array |
+      operationId: tienlenExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TienLenRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play cards at indices 0 and 1
+                value:
+                  command: play
+                  indices: [0, 1]
+                  sessionId: my-session-001
+              pass:
+                summary: Pass (empty indices)
+                value:
+                  command: play
+                  indices: []
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TienLenResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TienLenResponse'
+
   /sevens/exec:
     post:
       tags:
@@ -1194,6 +1269,96 @@ paths:
         `isHiLo` on the top-level response. Commands and configuration
         options are identical to `/omaha/exec`.
       operationId: omahaHiLoExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HoldemRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              fold:
+                summary: Fold
+                value:
+                  command: fold
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldemResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldemResponse'
+
+  /bigo/exec:
+    post:
+      tags:
+        - bigo
+      summary: Execute a 5 Card Omaha (Big O) game command
+      description: |
+        Send a command to advance the 5 Card Omaha (Big O) game session
+        identified by `sessionId`. Big O is Omaha dealt 5 hole cards (instead
+        of 4); players must still use exactly 2 hole cards + 3 community cards
+        to form the best 5-card hand. Phases, commands, configuration options,
+        and the request/response shape are identical to `/omaha/exec`.
+      operationId: bigOExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HoldemRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              fold:
+                summary: Fold
+                value:
+                  command: fold
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldemResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldemResponse'
+
+  /bigohilo/exec:
+    post:
+      tags:
+        - bigohilo
+      summary: Execute a 5 Card Omaha Hi-Lo (Big O) game command
+      description: |
+        Send a command to advance the 5 Card Omaha Hi-Lo (Big O) game session
+        identified by `sessionId`. This is the 8-or-Better split-pot variant of
+        Big O: the high half follows standard Omaha rules over 5 hole cards;
+        the low half is awarded to the best A-5 lowball hand (5 distinct ranks
+        all ≤ 8, Ace = 1). Pots split 50:50 (odd chips to the high side); if no
+        player qualifies for a low, the high winner takes the full pot. Reuses
+        the Omaha request/response shape (Hi-Lo fields surfaced via
+        `lowQualifies`, `lowBestHand`, `hiWonAmount`, `lowWonAmount`, `isHiLo`).
+        Commands and configuration are identical to `/bigo/exec`.
+      operationId: bigOHiLoExec
       requestBody:
         required: true
         content:
@@ -1988,6 +2153,90 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CrazyEightsResponse'
+
+  /macau/exec:
+    post:
+      tags:
+        - macau
+      summary: Execute a Macau game command
+      description: |
+        Send a command to advance the Macau (マカオ) game session identified by
+        `sessionId`.  Macau is a 4-player European Crazy Eights variant on a
+        standard 52-card deck with "magic cards" and a last-card declaration.
+        Match the top discard by suit or rank.  Magic cards: **2** forces the
+        next player to draw two (stackable — play another 2 to pass on the
+        accumulated penalty), **7** skips the next player, **8** is wild (choose
+        the next suit), **J** reverses the play direction.  On reaching 1 card a
+        player must `declare` "Macau!" or `skipdeclare` to take a 2-card penalty.
+        Round ends when a player empties their hand; scoring: 8=50, J/Q/K=10,
+        A=1, others=face value.  Match ends at the point limit (default 200).
+
+        | Phase        | Value | Description |
+        |--------------|-------|-------------|
+        | Play         | `0`   | Play a card, draw, or take the penalty stack |
+        | ChooseSuit   | `1`   | Choose suit after playing an 8 |
+        | MustDeclare  | `2`   | Declare "Macau!" or take the penalty |
+        | RoundEnd     | `3`   | A player emptied their hand; advance with `nextround` |
+        | GameEnd      | `4`   | A player reached the point limit |
+
+        | Command       | Aliases | Description |
+        |---------------|---------|-------------|
+        | `reset`       | `r`     | Start / restart a game |
+        | `play`        | `p`     | Play a card (requires `cardIndex`) |
+        | `draw`        | `d`     | Draw a card / take the penalty stack |
+        | `suit`        | `s`     | Choose next suit after playing 8 (requires `suit`: 1-4) |
+        | `declare`     | `dc`    | Declare "Macau!" (one card left) |
+        | `skipdeclare` | `sk`    | Skip the declaration and take the penalty |
+        | `nextround`   | `nr`    | Score the round and start the next |
+        | `log`         | `l`     | View action log |
+      operationId: macauExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MacauRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play card at index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+              draw:
+                summary: Draw a card or take the penalty stack
+                value:
+                  command: draw
+                  sessionId: my-session-001
+              suit:
+                summary: Choose hearts as next suit
+                value:
+                  command: suit
+                  suit: 3
+                  sessionId: my-session-001
+              declare:
+                summary: Declare "Macau!"
+                value:
+                  command: declare
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MacauResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MacauResponse'
 
   /pageone/exec:
     post:
@@ -6224,6 +6473,85 @@ paths:
         '400':
           description: Bad request
 
+  /osmosis/exec:
+    post:
+      tags:
+        - osmosis
+      summary: Execute an Osmosis (オズモシス / 浸透) game command
+      description: |
+        Send a command to advance an Osmosis solitaire session identified by `sessionId`.
+        Osmosis uses 4 reserve columns of 4 cards each, 4 vertical foundation rows, and a
+        stock that draws 1 card at a time to the waste (recyclable). The foundation base
+        rank is set by the first card dealt. Each foundation row holds a single suit: the
+        top row builds in any order, while a lower row accepts a card only if a card of the
+        same rank already appears in the row directly above ("osmosis"/seep). Moves are
+        waste→foundation and reserve→foundation; the destination foundation row is given by
+        `to.col`, and the reserve source column by `from.col`.
+      operationId: osmosisExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, move, m, giveup, g, hint, h, autocomplete, ac, log, l, undo, u, undo_n]
+                sessionId:
+                  type: string
+                from:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [waste, reserve]
+                    col:
+                      type: integer
+                to:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [foundation]
+                    col:
+                      type: integer
+                n:
+                  type: integer
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reserve:
+                    type: array
+                  stockCount:
+                    type: integer
+                  waste:
+                    type: array
+                  foundation:
+                    type: array
+                  baseRank:
+                    type: integer
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request
+
   /fiftyone/exec:
     post:
       tags:
@@ -6662,6 +6990,113 @@ paths:
         | `undo_n`         | —       | Undo N moves (requires `n`) |
         | `log`            | `l`     | View action log |
       operationId: scorpionExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, deal, d, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau]
+                    col:
+                      type: integer
+                    cardIndex:
+                      type: integer
+                to:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau]
+                    col:
+                      type: integer
+                n:
+                  type: integer
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                  stockCount:
+                    type: integer
+                  completedSuits:
+                    type: integer
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  hint:
+                    type: object
+                    properties:
+                      fromCol:
+                        type: integer
+                      cardIndex:
+                        type: integer
+                      toCol:
+                        type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request
+
+  /wasp/exec:
+    post:
+      tags:
+        - wasp
+      summary: Execute a Wasp (ワスプ) game command
+      description: |
+        Send a command to advance a Wasp solitaire session identified by `sessionId`.
+        Wasp is an easier variant of Scorpion: it shares every rule with Scorpion
+        (Yukon-style group moves of same-suit descending runs, same-suit K-to-A removal,
+        a 3-card stock, and a Deal command blocked while any column is empty) except
+        that an empty column accepts **any** card, not only a King — making stalemates rare.
+        49 cards are dealt into 7 columns (columns 0-3 start with 3 face-down + 4 face-up;
+        columns 4-6 are fully face-up). Remaining 3 cards form the stock.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | 0     | Game in progress |
+        | GameClear | 1     | All 4 suits removed |
+        | GameOver  | 2     | Player gave up |
+
+        | Command          | Aliases | Description |
+        |------------------|---------|-------------|
+        | `reset`          | `r`     | Start / restart a game |
+        | `deal`           | `d`     | Deal 3 stock cards to columns 0-2 (requires no empty column) |
+        | `move`           | `m`     | Move card(s) between tableau columns (requires `from`, `to`) |
+        | `giveup`         | `g`     | Give up the current game |
+        | `hint`           | `h`     | Get a move suggestion |
+        | `autocomplete`   | `ac`    | Auto-remove completed suits when all cards are face-up |
+        | `undo`           | `u`     | Undo last move |
+        | `undo_n`         | —       | Undo N moves (requires `n`) |
+        | `log`            | `l`     | View action log |
+      operationId: waspExec
       requestBody:
         required: true
         content:
@@ -7521,6 +7956,115 @@ paths:
                     type: object
                     additionalProperties: { type: string }
 
+  /deucetoseven/exec:
+    post:
+      tags:
+        - deucetoseven
+      summary: Execute a 2-7 Triple Draw game command
+      description: |
+        Send a command to advance the 2-7 Triple Draw (デューストゥセブン)
+        game session identified by `sessionId`. "Deuce to Seven" is a lowball
+        draw poker variant where the hand is read as an ordinary 5-card poker
+        hand and the LOWEST hand wins. The Ace is always high (so A-2-3-4-5 is
+        merely Ace-high, not a straight) and straights/flushes count against
+        you — the nut low is 7-5-4-3-2.
+
+        Each player receives 5 cards and may exchange any of them over three
+        draws, with a betting round before the first draw and after each draw
+        (four betting rounds total).
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Init       | `0`   | Pre-reset state |
+        | Deal       | `1`   | Cards dealt; first betting round |
+        | Bet        | `2`   | Betting round after a draw (drawIndex identifies which) |
+        | Draw       | `3`   | Draw round in progress (drawIndex 1..3) |
+        | Showdown   | `4`   | Hands evaluated |
+        | End        | `5`   | Round complete |
+
+        | Command  | Aliases | Description |
+        |----------|---------|-------------|
+        | `reset`  | `r`     | Start / restart a game |
+        | `fold`   | `f`     | Fold and forfeit the pot |
+        | `check`  | `ck`    | Pass without betting |
+        | `call`   | `c`     | Match the current bet |
+        | `bet`    | `b`     | Place a bet (use `amount`) |
+        | `raise`  | `ra`    | Raise (use `amount`) |
+        | `allin`  | `a`     | Go all-in |
+        | `exchange` | `e`   | Draw the cards at `indices` (0..4) |
+        | `stand`  | `s`     | Stand pat (no exchange) |
+        | `log`    | `l`     | View action log |
+      operationId: deuceToSevenExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [command]
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, fold, f, check, ck, call, c, bet, b, raise, ra, allin, a, exchange, e, stand, s, log, l]
+                sessionId:
+                  type: string
+                amount:
+                  type: integer
+                humanPlayMs:
+                  type: integer
+                indices:
+                  type: array
+                  items:
+                    type: integer
+                cpuCount:
+                  type: integer
+                bettingLimit:
+                  type: integer
+                cpuMetaAI:
+                  type: boolean
+                profile:
+                  type: object
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                    items: { type: object }
+                  pot: { type: integer }
+                  sidePots:
+                    type: array
+                    items: { type: object }
+                  dealerIdx: { type: integer }
+                  currentTurn: { type: integer }
+                  phase: { type: integer }
+                  drawIndex: { type: integer }
+                  gameEndFlag: { type: boolean }
+                  lastBet: { type: integer }
+                  minRaise: { type: integer }
+                  ante: { type: integer }
+                  bettingLimit: { type: integer }
+                  raiseCount: { type: integer }
+                  maxBetAmount: { type: integer }
+                  roundResults:
+                    type: array
+                    items: { type: object }
+                  cpuActions:
+                    type: array
+                    items: { type: object }
+                  cpuExchanges:
+                    type: array
+                    items: { type: object }
+                  message: { type: string }
+                  messageCode: { type: string }
+                  messageParams:
+                    type: object
+                    additionalProperties: { type: string }
+
   /president/exec:
     post:
       tags:
@@ -7648,6 +8192,126 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CassinoResponse'
+
+  /scopa/exec:
+    post:
+      tags:
+        - scopa
+      summary: Execute a Scopa game command
+      description: |
+        Send a command to advance the Scopa (スコパ) game session identified
+        by `sessionId`. Scopa is an Italian national fishing card game played
+        heads-up (1 human + 1 CPU) with a 40-card deck (the 8/9/10 are removed).
+        Play one hand card to capture table cards of equal value or summing to
+        it (a single exact match is forced when one exists), otherwise lay the
+        card. Clearing the table earns a `scopa` bonus. Scoring runs to 11 via
+        cards (carte), diamonds (denari), the 7♦ (settebello), most 7s, and
+        scope.
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `next`  | `n`     | Start the next round |
+        | `play`  | `p`     | Play a hand card to capture table cards or lay it |
+        | `log`   | `l`     | View action log |
+      operationId: scopaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScopaRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play hand card 0 to capture table cards 1 and 3
+                value:
+                  command: play
+                  handIndex: 0
+                  tableIndices: [1, 3]
+                  sessionId: my-session-001
+              lay:
+                summary: Lay hand card 2 on the table (no capture)
+                value:
+                  command: play
+                  handIndex: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScopaResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScopaResponse'
+
+  /barbu/exec:
+    post:
+      tags:
+        - barbu
+      summary: Execute a Barbu game command
+      description: |
+        Send a command to advance the Barbu (バルブ) game session identified by
+        `sessionId`. Barbu is a French compendium trick-taking game for 4 players
+        (1 human + 3 CPU) on a 52-card deck. Over 28 deals each player deals 7
+        times; the dealer picks one of 7 contracts (No Tricks / No Hearts / No
+        Queens / Barbu(K♥) / No Last Trick / Trumps / Dominoes), each usable once.
+
+        | Command    | Aliases | Description |
+        |------------|---------|-------------|
+        | `reset`    | `r`     | Start / restart a game |
+        | `next`     | `n`     | Start the next deal |
+        | `contract` | `c`     | Dealer picks a contract (trumpSuit only for Trumps) |
+        | `play`     | `p`     | Play a hand card (handIndex -1 to pass in Dominoes) |
+        | `log`      | `l`     | View action log |
+      operationId: barbuExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BarbuRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              contract:
+                summary: Pick the Trumps contract with spades as trump
+                value:
+                  command: contract
+                  contract: 5
+                  trumpSuit: 1
+                  sessionId: my-session-001
+              play:
+                summary: Play hand card 0
+                value:
+                  command: play
+                  handIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BarbuResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BarbuResponse'
 
   /spanish21/exec:
     post:
@@ -8590,6 +9254,73 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TonkResponse'
+
+  /thirtyone/exec:
+    post:
+      tags:
+        - thirtyone
+      summary: Execute a Thirty-One game command
+      description: |
+        Send a command to advance the Thirty-One (サーティワン / Scat) game session
+        identified by `sessionId`. Thirty-One is a 4-player (1 human + 3 CPU)
+        draw-and-discard survival game using a standard 52-card deck. Each player
+        is dealt 3 cards and tries to maximise the sum of a single suit (A=11,
+        J/Q/K=10, 2-10 face value), aiming for exactly 31. On your turn, draw from
+        the stock or the discard pile and discard one card, or knock to stand pat.
+        After a knock every other active player takes one more turn, then the
+        lowest best-suit score loses a life (ties: all tied lose). Reaching exactly
+        31 wins the round instantly and every other active player loses a life.
+        Each player starts with a configurable number of lives (default 3) and is
+        eliminated when lives drop below 0; the game ends when one player remains
+        or the human is eliminated.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Draw      | `0`   | Draw from stock or discard, or knock |
+        | Discard   | `1`   | Discard a card |
+        | RoundEnd  | `2`   | Round scored; advance with `nextround` |
+        | GameEnd   | `3`   | One player remains (or human eliminated) |
+
+        | Command       | Aliases | Description |
+        |---------------|---------|-------------|
+        | `reset`       | `r`     | Start / restart a game |
+        | `drawstock`   | `ds`    | Draw a card from the stock pile |
+        | `drawdiscard` | `dd`    | Draw the top card from the discard pile |
+        | `discard`     | `d`     | Discard a card (requires `cardIndex`) |
+        | `knock`       | `k`     | Knock (stand pat) |
+        | `nextround`   | `nr`    | Score the round and start the next |
+        | `log`         | `l`     | View action log |
+      operationId: thirtyoneExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ThirtyOneRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              knock:
+                summary: Knock to stand pat
+                value:
+                  command: knock
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThirtyOneResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThirtyOneResponse'
 
   /casinowar/exec:
     post:
@@ -12491,6 +13222,94 @@ components:
           nullable: true
 
     # -------------------------------------------------------------------------
+    # Tien Len
+    # -------------------------------------------------------------------------
+    TienLenRequest:
+      type: object
+      required:
+        - command
+      properties:
+        command:
+          type: string
+          enum: [reset, r, play, p]
+        indices:
+          type: array
+          items:
+            type: integer
+        config:
+          $ref: '#/components/schemas/TienLenConfig'
+        sessionId:
+          type: string
+    TienLenConfig:
+      type: object
+      properties:
+        cpuDifficulty:
+          type: integer
+          enum: [0, 1, 2]
+    TienLenResponse:
+      type: object
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/TienLenPlayer'
+        currentTurn:
+          type: integer
+        tableCards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        tablePlayType:
+          type: integer
+        lastPlayPlayerIdx:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        cpuActions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TienLenAction'
+        humanAction:
+          $ref: '#/components/schemas/TienLenAction'
+        config:
+          $ref: '#/components/schemas/TienLenConfig'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    TienLenPlayer:
+      type: object
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        isFinished:
+          type: boolean
+        rank:
+          type: integer
+        cardCount:
+          type: integer
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+    TienLenAction:
+      type: object
+      properties:
+        playerIdx:
+          type: integer
+        playedCards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+          nullable: true
+
+    # -------------------------------------------------------------------------
     # Sevens
     # -------------------------------------------------------------------------
     SevensRequest:
@@ -15673,6 +16492,129 @@ components:
           description: Interpolation parameters for the message template keyed by placeholder name.
 
     # -------------------------------------------------------------------------
+    # Macau
+    # -------------------------------------------------------------------------
+    MacauRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `play` (`p`),
+            `draw` (`d`), `suit` (`s`), `declare` (`dc`), `skipdeclare` (`sk`),
+            `nextround` (`nr`), `log` (`l`).
+          enum: [reset, r, play, p, draw, d, suit, s, declare, dc, skipdeclare, sk, nextround, nr, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Index of the card to play.  Required for `play` command.
+          example: 2
+        suit:
+          type: integer
+          description: "Suit choice after playing an 8 (1=♠, 2=♣, 3=♥, 4=♦).  Required for `suit` command."
+          minimum: 1
+          maximum: 4
+          example: 3
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            pointLimit:
+              type: integer
+              minimum: 1
+              maximum: 1000
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    MacauResponse:
+      type: object
+      description: Current state of the Macau game
+      properties:
+        players:
+          type: array
+          description: Array of player objects
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+              hasDeclared:
+                type: boolean
+                description: Whether the player has declared "Macau!" this turn
+        phase:
+          type: integer
+          description: "Game phase: 0 = Play, 1 = ChooseSuit, 2 = MustDeclare, 3 = RoundEnd, 4 = GameEnd"
+          enum: [0, 1, 2, 3, 4]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Current round number
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        discardTop:
+          description: The top card of the discard pile
+          $ref: '#/components/schemas/Card'
+        drawPileCount:
+          type: integer
+          description: Number of cards remaining in the draw pile
+        chosenSuit:
+          type: integer
+          description: "Suit chosen after playing an 8 (0 if not applicable; 1=♠, 2=♣, 3=♥, 4=♦)"
+        penaltyDrawCount:
+          type: integer
+          description: Accumulated draw-two penalty (0 when no penalty is active)
+        direction:
+          type: integer
+          description: "Play direction: 1 = clockwise, -1 = counter-clockwise (reversed by Jacks)"
+        gameEndFlag:
+          type: boolean
+          description: Whether the match has ended
+        winnerIdx:
+          type: integer
+          description: Index of the match winner (-1 if not ended)
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+        message:
+          type: string
+          description: Game status message
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
     # Page One
     # -------------------------------------------------------------------------
     PageOneRequest:
@@ -16138,6 +17080,116 @@ components:
             cpuDifficulty:
               type: integer
             pointLimit:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    # -------------------------------------------------------------------------
+    # Thirty-One types
+    # -------------------------------------------------------------------------
+    ThirtyOneRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `drawstock` (`ds`),
+            `drawdiscard` (`dd`), `discard` (`d`), `knock` (`k`),
+            `nextround` (`nr`), `log` (`l`).
+          enum: [reset, r, drawstock, ds, drawdiscard, dd, discard, d, knock, k, nextround, nr, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Index of the card to discard. Required for the `discard` command.
+          example: 1
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            initialLives:
+              type: integer
+              minimum: 1
+              maximum: 10
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    ThirtyOneResponse:
+      type: object
+      description: Current state of the Thirty-One game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              lives:
+                type: integer
+              score:
+                type: integer
+                description: Best single-suit total (revealed for the human always, for CPUs at round end)
+              isEliminated:
+                type: boolean
+        phase:
+          type: integer
+          description: "Game phase: 0 = Draw, 1 = Discard, 2 = RoundEnd, 3 = GameEnd"
+          enum: [0, 1, 2, 3]
+          example: 0
+        roundNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        discardTop:
+          $ref: '#/components/schemas/Card'
+        drawPileCount:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+        knockerIdx:
+          type: integer
+          description: Index of the player who knocked (-1 if none)
+        thirtyOneIdx:
+          type: integer
+          description: Index of the player who reached exactly 31 (-1 if none)
+        roundWinnerIdx:
+          type: integer
+        roundLosers:
+          type: array
+          items:
+            type: integer
+          description: Indices of players who lost a life in the most recent round
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            initialLives:
               type: integer
         message:
           type: string
@@ -21291,6 +22343,292 @@ components:
               type: object
               additionalProperties:
                 type: integer
+            gained:
+              type: object
+              additionalProperties:
+                type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    ScopaRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: Scopa command. Accepted values. `reset` (`r`), `next` (`n`), `play` (`p`), `log` (`l`).
+          enum: [reset, r, next, n, play, p, log, l]
+          example: play
+        handIndex:
+          type: integer
+          description: Hand card index to play (for the `play` command).
+          example: 0
+        tableIndices:
+          type: array
+          description: >
+            Table card indices to capture with the played card (for the `play`
+            command). When a single exact match exists it is forced.
+          items:
+            type: integer
+          example: [1, 3]
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            targetScore:
+              type: integer
+              description: Score required to win the match.
+              example: 11
+            cpuDifficulty:
+              type: integer
+              description: CPU difficulty (0=easy, 1=normal, 2=hard).
+              minimum: 0
+              maximum: 2
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    ScopaResponse:
+      type: object
+      description: Current state of the Scopa game
+      properties:
+        players:
+          type: array
+          description: All players in the game (1 human + 1 CPU).
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              isHuman: { type: boolean }
+              cardCount: { type: integer }
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              capturedCount: { type: integer }
+              scopaCount: { type: integer }
+              totalScore: { type: integer }
+        currentTurn:
+          type: integer
+        tableCards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        lastCaptureIdx:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        phase:
+          type: string
+          description: Current game phase.
+        config:
+          type: object
+          properties:
+            targetScore: { type: integer }
+            cpuDifficulty: { type: integer }
+        cpuActions:
+          type: array
+          description: Actions taken by the CPU since the last human action.
+          items:
+            type: object
+            properties:
+              playerIdx: { type: integer }
+              playedCard:
+                nullable: true
+                $ref: '#/components/schemas/Card'
+              capturedCards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              isScopa: { type: boolean }
+        humanAction:
+          type: object
+          nullable: true
+          properties:
+            playerIdx: { type: integer }
+            playedCard:
+              nullable: true
+              $ref: '#/components/schemas/Card'
+            capturedCards:
+              type: array
+              items:
+                $ref: '#/components/schemas/Card'
+            isScopa: { type: boolean }
+        remainingDeck:
+          type: integer
+        packsDealt:
+          type: integer
+        roundWinners:
+          type: array
+          items:
+            type: integer
+        lastRoundDetail:
+          type: object
+          nullable: true
+          description: Per-point scoring breakdown of the last completed round.
+          properties:
+            cards:
+              type: object
+              additionalProperties:
+                type: integer
+            diamonds:
+              type: object
+              additionalProperties:
+                type: integer
+            sevens:
+              type: object
+              additionalProperties:
+                type: integer
+            hasSetteBello: { type: integer }
+            scopas:
+              type: object
+              additionalProperties:
+                type: integer
+            gained:
+              type: object
+              additionalProperties:
+                type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    BarbuRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: Barbu command. Accepted values. `reset` (`r`), `next` (`n`), `contract` (`c`), `play` (`p`), `log` (`l`).
+          enum: [reset, r, next, n, contract, c, play, p, log, l]
+          example: play
+        contract:
+          type: integer
+          description: Contract id 0-6 (for the `contract` command).
+          minimum: 0
+          maximum: 6
+          example: 5
+        trumpSuit:
+          type: integer
+          description: Trump suit 1-4 (only for the Trumps contract; -1 otherwise).
+          example: 1
+        handIndex:
+          type: integer
+          description: Hand card index to play (-1 to pass in Dominoes).
+          example: 0
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              description: CPU difficulty (0=easy, 1=normal, 2=hard).
+              minimum: 0
+              maximum: 2
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    BarbuResponse:
+      type: object
+      description: Current state of the Barbu game
+      properties:
+        players:
+          type: array
+          description: All players in the game (1 human + 3 CPU).
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              isHuman: { type: boolean }
+              cardCount: { type: integer }
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              trickCount: { type: integer }
+              dominoRank: { type: integer }
+              totalScore: { type: integer }
+        phase:
+          type: string
+          description: Current game phase (selectContract, play, dealEnd, gameEnd).
+        dealNumber: { type: integer }
+        totalDeals: { type: integer }
+        dealerIdx: { type: integer }
+        currentTurn: { type: integer }
+        currentContract:
+          type: integer
+          description: Selected contract id 0-6, or -1 when not yet chosen.
+        trumpSuit:
+          type: integer
+          description: Trump suit 1-4 for the Trumps contract, or -1.
+        trickNumber: { type: integer }
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx: { type: integer }
+              card:
+                $ref: '#/components/schemas/Card'
+        lastTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx: { type: integer }
+              card:
+                $ref: '#/components/schemas/Card'
+        lastTrickWinner: { type: integer }
+        tablePlaced:
+          type: array
+          description: Dominoes layout per suit as bitmasks (index 1-4).
+          items:
+            type: integer
+        dominoPlayable:
+          type: array
+          description: Playable hand indices for the human in Dominoes.
+          items:
+            type: integer
+        usedContracts:
+          type: array
+          description: Which of the 7 contracts the current dealer has used.
+          items:
+            type: boolean
+        gameEndFlag:
+          type: boolean
+        config:
+          type: object
+          properties:
+            cpuDifficulty: { type: integer }
+        roundWinners:
+          type: array
+          items:
+            type: integer
+        lastDealDetail:
+          type: object
+          nullable: true
+          description: Per-player scoring breakdown of the last completed deal.
+          properties:
+            contract: { type: integer }
+            trumpSuit: { type: integer }
+            dealerIdx: { type: integer }
             gained:
               type: object
               additionalProperties:

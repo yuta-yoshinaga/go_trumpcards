@@ -84,6 +84,26 @@ export const BadugiAction = {
   ALL_IN: 5,
 } as const;
 
+/** 2-7 Triple Draw phase constants (sync: internal/domain/DeuceToSeven.go). */
+export const DeuceToSevenPhase = {
+  INIT: 0,
+  DEAL: 1,
+  BET: 2,
+  DRAW: 3,
+  SHOWDOWN: 4,
+  END: 5,
+} as const;
+
+/** 2-7 Triple Draw betting action constants (sync: internal/domain/DeuceToSeven.go). */
+export const DeuceToSevenAction = {
+  FOLD: 0,
+  CHECK: 1,
+  CALL: 2,
+  BET: 3,
+  RAISE: 4,
+  ALL_IN: 5,
+} as const;
+
 /** Texas Hold'em phase constants (sync: internal/domain/Holdem.go). */
 export const HoldemPhase = {
   INIT: 0,
@@ -153,6 +173,13 @@ export const KlondikeScoringMode = {
 
 /** Canfield phase constants (sync: internal/domain/Canfield.go). */
 export const CanfieldPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** Osmosis phase constants (sync: internal/domain/Osmosis.go). */
+export const OsmosisPhase = {
   PLAYING: 0,
   GAME_CLEAR: 1,
   GAME_OVER: 2,
@@ -255,6 +282,15 @@ export const CrazyEightsSuit = {
   DIAMOND: 4,
 } as const;
 
+/** Macau phase constants (sync: internal/domain/Macau.go). */
+export const MacauPhase = {
+  PLAY: 0,
+  CHOOSE_SUIT: 1,
+  MUST_DECLARE: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Gin Rummy phase constants (sync: internal/domain/GinRummy.go). */
 export const GinRummyPhase = {
   DRAW: 0,
@@ -266,6 +302,14 @@ export const GinRummyPhase = {
 
 /** Tonk phase constants (sync: internal/domain/Tonk.go). */
 export const TonkPhase = {
+  DRAW: 0,
+  DISCARD: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/** Thirty-One phase constants (sync: internal/domain/ThirtyOne.go). */
+export const ThirtyOnePhase = {
   DRAW: 0,
   DISCARD: 1,
   ROUND_END: 2,
@@ -650,6 +694,13 @@ export const CruelPhase = {
 
 /** Scorpion phase constants (sync: internal/domain/Scorpion.go). */
 export const ScorpionPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** Wasp phase constants (sync: internal/domain/Wasp.go). */
+export const WaspPhase = {
   PLAYING: 0,
   GAME_CLEAR: 1,
   GAME_OVER: 2,

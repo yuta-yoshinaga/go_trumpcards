@@ -69,8 +69,7 @@ func eightOffDispatch(bc *baseController, w http.ResponseWriter, ei usecase.Eigh
 	case "u", "undo":
 		bc.writePresenterResponse(w, ei.Undo())
 	case "undo_n":
-		if param.N == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: n is required."))
+		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ei.UndoN(*param.N))
@@ -81,8 +80,7 @@ func eightOffDispatch(bc *baseController, w http.ResponseWriter, ei usecase.Eigh
 }
 
 func eightOffMoveDispatch(bc *baseController, w http.ResponseWriter, ei usecase.EightOffInteractorIF, param EightOffWebInput, newDefault func(string) *EightOffWebOutput) bool {
-	if param.From == nil || param.To == nil {
-		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from and to are required."))
+	if !requireParam(bc, w, newDefault, param.From == nil || param.To == nil, "param error: from and to are required.") {
 		return true
 	}
 	fromZone := param.From.Zone
@@ -90,32 +88,27 @@ func eightOffMoveDispatch(bc *baseController, w http.ResponseWriter, ei usecase.
 
 	switch {
 	case fromZone == "tableau" && toZone == "tableau":
-		if param.From.Col == nil || param.From.CardIndex == nil || param.To.Col == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from.col, from.cardIndex, to.col are required."))
+		if !requireParam(bc, w, newDefault, param.From.Col == nil || param.From.CardIndex == nil || param.To.Col == nil, "param error: from.col, from.cardIndex, to.col are required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ei.MoveTableauToTableau(*param.From.Col, *param.From.CardIndex, *param.To.Col))
 	case fromZone == "tableau" && toZone == "foundation":
-		if param.From.Col == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from.col is required."))
+		if !requireParam(bc, w, newDefault, param.From.Col == nil, "param error: from.col is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ei.MoveTableauToFoundation(*param.From.Col))
 	case fromZone == "tableau" && toZone == "freecell":
-		if param.From.Col == nil || param.To.Cell == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from.col and to.cell are required."))
+		if !requireParam(bc, w, newDefault, param.From.Col == nil || param.To.Cell == nil, "param error: from.col and to.cell are required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ei.MoveTableauToFreeCell(*param.From.Col, *param.To.Cell))
 	case fromZone == "freecell" && toZone == "tableau":
-		if param.From.Cell == nil || param.To.Col == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from.cell and to.col are required."))
+		if !requireParam(bc, w, newDefault, param.From.Cell == nil || param.To.Col == nil, "param error: from.cell and to.col are required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ei.MoveFreeCellToTableau(*param.From.Cell, *param.To.Col))
 	case fromZone == "freecell" && toZone == "foundation":
-		if param.From.Cell == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from.cell is required."))
+		if !requireParam(bc, w, newDefault, param.From.Cell == nil, "param error: from.cell is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ei.MoveFreeCellToFoundation(*param.From.Cell))

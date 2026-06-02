@@ -158,45 +158,38 @@ func nertzConfigFromInput(current domain.NertzConfig, in *NertzWebConfig) domain
 }
 
 func nertzMoveDispatch(bc *baseController, w http.ResponseWriter, ni usecase.NertzInteractorIF, param NertzWebInput, newDefault func(string) *NertzWebOutput) bool {
-	if param.From == nil || param.To == nil {
-		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from and to are required."))
+	if !requireParam(bc, w, newDefault, param.From == nil || param.To == nil, "param error: from and to are required.") {
 		return true
 	}
 	playerIdx := derefDefault(param.PlayerIdx, 0)
 	switch {
 	case param.From.Zone == "nertz" && param.To.Zone == "foundation":
-		if param.To.Idx == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: to.idx is required."))
+		if !requireParam(bc, w, newDefault, param.To.Idx == nil, "param error: to.idx is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ni.MoveNertzToFoundation(playerIdx, *param.To.Idx))
 	case param.From.Zone == "nertz" && param.To.Zone == "tableau":
-		if param.To.Col == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: to.col is required."))
+		if !requireParam(bc, w, newDefault, param.To.Col == nil, "param error: to.col is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ni.MoveNertzToTableau(playerIdx, *param.To.Col))
 	case param.From.Zone == "waste" && param.To.Zone == "foundation":
-		if param.To.Idx == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: to.idx is required."))
+		if !requireParam(bc, w, newDefault, param.To.Idx == nil, "param error: to.idx is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ni.MoveWasteToFoundation(playerIdx, *param.To.Idx))
 	case param.From.Zone == "waste" && param.To.Zone == "tableau":
-		if param.To.Col == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: to.col is required."))
+		if !requireParam(bc, w, newDefault, param.To.Col == nil, "param error: to.col is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ni.MoveWasteToTableau(playerIdx, *param.To.Col))
 	case param.From.Zone == "tableau" && param.To.Zone == "foundation":
-		if param.From.Col == nil || param.To.Idx == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from.col and to.idx are required."))
+		if !requireParam(bc, w, newDefault, param.From.Col == nil || param.To.Idx == nil, "param error: from.col and to.idx are required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ni.MoveTableauToFoundation(playerIdx, *param.From.Col, *param.To.Idx))
 	case param.From.Zone == "tableau" && param.To.Zone == "tableau":
-		if param.From.Col == nil || param.From.CardIndex == nil || param.To.Col == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from.col, from.cardIndex, to.col are required."))
+		if !requireParam(bc, w, newDefault, param.From.Col == nil || param.From.CardIndex == nil || param.To.Col == nil, "param error: from.col, from.cardIndex, to.col are required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ni.MoveTableauToTableau(playerIdx, *param.From.Col, *param.From.CardIndex, *param.To.Col))

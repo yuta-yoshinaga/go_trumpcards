@@ -119,8 +119,7 @@ func trucoDispatch(bc *baseController, w http.ResponseWriter, ti usecase.TrucoIn
 	case "r", "reset":
 		bc.writePresenterResponse(w, ti.ResetWithConfig(param.ToConfig()))
 	case "p", "play":
-		if param.CardIndex == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: cardIndex is required."))
+		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ti.Play(*param.CardIndex))

@@ -67,4 +67,6 @@ type OmahaGame interface {
 	GetPotOdds() float64
 	// GetIsHiLo Omaha 8 or Better (Hi-Lo) モードかどうか
 	GetIsHiLo() bool
+	// GetHoleCardCount ホールカード配布枚数を取得する (オマハ=4, Big O=5)
+	GetHoleCardCount() int
 }

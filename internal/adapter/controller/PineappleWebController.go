@@ -85,8 +85,7 @@ func pineappleDispatch(bc *baseController, w http.ResponseWriter, pgi usecase.Pi
 		}
 		bc.writePresenterResponse(w, pgi.ResetWithConfig(cfg, param.Profile))
 	case "d", "discard":
-		if param.CardIdx == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: cardIdx is required for discard"))
+		if !requireParam(bc, w, newDefault, param.CardIdx == nil, "param error: cardIdx is required for discard") {
 			return true
 		}
 		bc.writePresenterResponse(w, pgi.Discard(*param.CardIdx))

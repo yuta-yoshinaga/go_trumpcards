@@ -1,0 +1,86 @@
+package controller
+
+import (
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
+)
+
+// BarbuCuiController はバルブ CUI コントローラークラス。
+type BarbuCuiController struct {
+	bi usecase.BarbuInteractorIF
+}
+
+// NewBarbuCuiController コンストラクタ。
+func NewBarbuCuiController(bi usecase.BarbuInteractorIF) *BarbuCuiController {
+	return &BarbuCuiController{bi: bi}
+}
+
+// Exec コマンド実行。
+//
+//	contract <c> [trump]  コントラクト c を選択 (Trumps=5 のみ trump 1-4 を指定)
+//	play <h>              手札 h を出す (Dominoes では -1 でパス)
+//	next / n              次のディール
+//	sd <0-2>              CPU 難易度
+//	log / l
+func (c *BarbuCuiController) Exec(command string) string {
+	return execCuiCommand(
+		command,
+		func(_ []string) string {
+			cfg := c.bi.GetConfig()
+			return c.bi.ResetWithConfig(cfg)
+		},
+		[]string{
+			"contract", "c", "play", "p", "next", "n", "sd", "setdifficulty", "log", "l",
+		},
+		func(cmd string, args []string) (string, bool) {
+			switch cmd {
+			case "c", "contract":
+				return c.handleSelectContract(args)
+			case "p", "play":
+				return c.handlePlay(args)
+			case "n", "next":
+				return c.bi.NextDeal(), true
+			case "sd", "setdifficulty":
+				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+					cfg := c.bi.GetConfig()
+					cfg.CpuDifficulty = domain.BarbuCpuDifficulty(v)
+					return c.bi.ResetWithConfig(cfg)
+				})
+			default:
+				return handleCuiLog(cmd, c.bi.ActionLog)
+			}
+		},
+	)
+}
+
+// handleSelectContract は `c <contract> [trump]` を処理する。
+func (c *BarbuCuiController) handleSelectContract(args []string) (string, bool) {
+	if len(args) < 1 {
+		return "Usage: c <contract 0-6> [trumpSuit 1-4 for Trumps]", true
+	}
+	contract, _, ok := cuiutil.ParseIntArg([]string{args[0]}, "contract is required", "Invalid contract: %s", 0, domain.BarbuContractCnt-1)
+	if !ok {
+		return "Invalid contract: " + args[0], true
+	}
+	trump := -1
+	if len(args) >= 2 {
+		t, _, tok := cuiutil.ParseIntArg([]string{args[1]}, "trump suit", "Invalid trump suit: %s", domain.CardDesignSpade, domain.CardDesignDiamond)
+		if tok {
+			trump = t
+		}
+	}
+	return c.bi.SelectContract(contract, trump), true
+}
+
+// handlePlay は `p <h>` (Dominoes では `p -1` でパス) を処理する。
+func (c *BarbuCuiController) handlePlay(args []string) (string, bool) {
+	if len(args) < 1 {
+		return "Usage: p <handIdx> (-1 to pass in Dominoes)", true
+	}
+	handIdx, _, ok := cuiutil.ParseIntArg([]string{args[0]}, "hand index is required", "Invalid hand index: %s", -1, domain.BarbuHandSize-1)
+	if !ok {
+		return "Invalid hand index: " + args[0], true
+	}
+	return c.bi.Play(handIdx, nil), true
+}

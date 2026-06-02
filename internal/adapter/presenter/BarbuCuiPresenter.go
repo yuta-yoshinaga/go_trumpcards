@@ -1,0 +1,142 @@
+package presenter
+
+import (
+	"strconv"
+	"strings"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
+)
+
+// BarbuCuiPresenter renders the Barbu CUI view.
+type BarbuCuiPresenter struct{}
+
+// Output renders the current game state for the active locale.
+func (p *BarbuCuiPresenter) Output(bg interfaces.BarbuGame, lastErr error) string {
+	return buildCuiOutput(i18n.T("barbu.helpTitle"), func(b *strings.Builder) {
+		b.WriteString(i18n.Tf("barbu.dealLine",
+			"deal", strconv.Itoa(bg.GetDealNumber()+1),
+			"total", strconv.Itoa(domain.BarbuTotalDeals),
+			"dealer", cuiPlayerName(bg.GetPlayer(bg.GetDealerIdx()), bg.GetDealerIdx())) + "\n")
+
+		for i := 0; i < bg.GetPlayerCnt(); i++ {
+			b.WriteString(barbuPlayerStr(bg.GetPlayer(i), i))
+		}
+		b.WriteString("----------\n")
+
+		if bg.GetCurrentContract() >= 0 {
+			b.WriteString(i18n.Tf("barbu.contractLine",
+				"contract", barbuContractLabel(bg.GetCurrentContract()),
+				"trump", barbuTrumpLabel(bg.GetTrumpSuit())) + "\n")
+		}
+
+		barbuWriteBoard(b, bg)
+		cuiErrorBlock(b, lastErr)
+
+		if bg.GetGameEndFlag() {
+			b.WriteString(i18n.T("barbu.gameEnd") + "\n")
+			for i := 0; i < bg.GetPlayerCnt(); i++ {
+				pl := bg.GetPlayer(i)
+				if pl == nil {
+					continue
+				}
+				b.WriteString(i18n.Tf("barbu.scoreEntry",
+					"name", cuiPlayerName(pl, i),
+					"score", strconv.Itoa(pl.GetTotalScore())) + "\n")
+			}
+			return
+		}
+
+		if bg.GetPhase() == domain.BarbuPhaseSelectContract {
+			b.WriteString(i18n.Tf("barbu.selectPrompt",
+				"name", cuiPlayerName(bg.GetPlayer(bg.GetDealerIdx()), bg.GetDealerIdx())) + "\n")
+		} else {
+			b.WriteString(i18n.Tf("barbu.promptCurrentTurn",
+				"name", cuiPlayerName(bg.GetPlayer(bg.GetCurrentTurn()), bg.GetCurrentTurn())) + "\n")
+		}
+		b.WriteString(i18n.T("barbu.promptHelp") + "\n")
+	})
+}
+
+// barbuWriteBoard renders the current trick (trick contracts) or the placed
+// dominoes (Dominoes contract).
+func barbuWriteBoard(b *strings.Builder, bg interfaces.BarbuGame) {
+	if bg.GetCurrentContract() == domain.BarbuContractDominoes {
+		table := bg.GetTablePlaced()
+		any := false
+		for suit := domain.CardDesignSpade; suit <= domain.CardDesignDiamond; suit++ {
+			cards := barbuPlacedCards(suit, table[suit])
+			if len(cards) == 0 {
+				continue
+			}
+			any = true
+			b.WriteString(i18n.Tf("barbu.dominoRow",
+				"suit", barbuTrumpLabel(suit),
+				"cards", cuiCardSliceStr(cards)) + "\n")
+		}
+		if !any {
+			b.WriteString(i18n.T("barbu.tableEmpty") + "\n")
+		}
+		return
+	}
+	if trick := bg.GetCurrentTrick(); len(trick) > 0 {
+		cards := make([]*domain.Card, 0, len(trick))
+		for _, tc := range trick {
+			cards = append(cards, tc.Card)
+		}
+		b.WriteString(i18n.Tf("barbu.trickLine", "cards", cuiCardSliceStr(cards)) + "\n")
+	} else {
+		b.WriteString(i18n.T("barbu.tableEmpty") + "\n")
+	}
+}
+
+// barbuPlacedCards は 1 スートの bitmask から配置済みカードを復元する。
+func barbuPlacedCards(suit int, mask uint16) []*domain.Card {
+	cards := make([]*domain.Card, 0)
+	for v := 1; v <= domain.CardValueMax; v++ {
+		if mask&(uint16(1)<<uint(v)) != 0 {
+			cards = append(cards, domain.NewCard(suit, v, false))
+		}
+	}
+	return cards
+}
+
+// barbuPlayerStr returns the display string for a single Barbu player.
+func barbuPlayerStr(player *domain.BarbuPlayer, i int) string {
+	var b strings.Builder
+	b.WriteString(i18n.Tf("barbu.playerLine",
+		"name", cuiPlayerName(player, i),
+		"hand", strconv.Itoa(player.GetCardsSize()),
+		"tricks", strconv.Itoa(player.GetTrickCount()),
+		"total", strconv.Itoa(player.GetTotalScore())) + "\n")
+	if player.GetIsHuman() {
+		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+	}
+	return b.String()
+}
+
+// barbuContractLabel はコントラクトの表示名を i18n で返す。
+func barbuContractLabel(contract int) string {
+	keys := []string{
+		"barbu.cNoTricks", "barbu.cNoHearts", "barbu.cNoQueens", "barbu.cBarbu",
+		"barbu.cNoLastTrick", "barbu.cTrumps", "barbu.cDominoes",
+	}
+	if contract < 0 || contract >= len(keys) {
+		return "-"
+	}
+	return i18n.T(keys[contract])
+}
+
+// barbuTrumpLabel は切り札スートの表示名を返す (-1 = なし)。
+func barbuTrumpLabel(suit int) string {
+	if suit < domain.CardDesignSpade || suit > domain.CardDesignDiamond {
+		return "-"
+	}
+	return suitNames[suit]
+}
+
+// ActionLogOutput emits the action-log transcript as plain text.
+func (p *BarbuCuiPresenter) ActionLogOutput(bg interfaces.BarbuGame) string {
+	return actionLogOutputText(bg)
+}

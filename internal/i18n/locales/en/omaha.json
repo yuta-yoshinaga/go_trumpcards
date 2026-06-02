@@ -1,6 +1,8 @@
 {
   "helpTitle": "Omaha Hold'em",
   "helpTitleHiLo": "Omaha Hi-Lo (8 or Better)",
+  "helpTitleBigO": "5 Card Omaha (Big O)",
+  "helpTitleBigOHiLo": "5 Card Omaha Hi-Lo (Big O) (8 or Better)",
   "helpFold": "  f                    fold",
   "helpCheck": "  ck                   check",
   "helpCall": "  c                    call",

@@ -18,12 +18,24 @@ func (p *OmahaCuiPresenter) ActionLogOutput(o interfaces.OmahaGame) string {
 	return actionLogOutputText(o)
 }
 
+// omahaTitleKey は、ホールカード枚数 (4=オマハ, 5=Big O) と Hi-Lo フラグから
+// CUI ヘッダーに使う i18n タイトルキーを選択する。
+func omahaTitleKey(holeCards int, hiLo bool) string {
+	if holeCards >= 5 {
+		if hiLo {
+			return "omaha.helpTitleBigOHiLo"
+		}
+		return "omaha.helpTitleBigO"
+	}
+	if hiLo {
+		return "omaha.helpTitleHiLo"
+	}
+	return "omaha.helpTitle"
+}
+
 // Output renders the current game state for the active locale (#1699).
 func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string {
-	titleKey := "omaha.helpTitle"
-	if o.GetIsHiLo() {
-		titleKey = "omaha.helpTitleHiLo"
-	}
+	titleKey := omahaTitleKey(o.GetHoleCardCount(), o.GetIsHiLo())
 	return buildCuiOutput(i18n.T(titleKey), func(b *strings.Builder) {
 		cfg := o.GetConfig()
 		if cfg.TournamentMode {

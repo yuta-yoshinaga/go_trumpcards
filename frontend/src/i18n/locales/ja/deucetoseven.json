@@ -1,0 +1,46 @@
+{
+  "phase": {
+    "init": "初期化中",
+    "deal": "ディール",
+    "bet": "ベット",
+    "draw": "ドロー {{n}}/3",
+    "showdown": "ショーダウン",
+    "end": "結果"
+  },
+  "yourHand": "あなたの手札",
+  "drawBadge": "ドロー {{n}}/3",
+  "preDrawLabel": "プリドロー",
+  "exchangeInstruction": "交換したいカードをクリックして選択し、「交換」または「スタンド」を押してください。",
+  "exchangeLabel": "交換",
+  "standLabel": "スタンド (交換なし)",
+  "madePatLowBanner": "✨ 8以下のローが完成！スタンドパット推奨",
+  "cpuExchange": "CPUドロー:",
+  "cpuExchangeEntry": "Player {{idx}} (draw {{draw}}): {{count}}枚交換",
+  "exchangeCount": "交換: {{count}}枚",
+  "cardSelected": "(交換選択中)",
+  "settings": {
+    "title": "設定",
+    "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）"
+  },
+  "tutorial": {
+    "playerHand": "あなたの手札（5枚）です。ストレートやフラッシュを含まない、最も数字の低い5枚を目指します（Aは常にハイ）。",
+    "exchangeButton": "不要なカードをクリックしてから「交換」を押します。3回までドローできます。",
+    "betControls": "ベットアクションを選びます。コール・レイズ・フォールドが可能です。",
+    "resultMessage": "ゲームの結果が表示されます。7-5-4-3-2（セブンロー）が最強です。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "hint": {
+    "standPat": "8以下のローが完成しているためスタンドパット推奨",
+    "dropDup": "ペアや高いカードを交換してローを狙う推奨",
+    "bigBet": "強いローなのでベット・レイズ推奨",
+    "callWithValue": "そこそこのローなのでバリューコール推奨",
+    "foldWeak": "役が弱いのでフォールド推奨",
+    "checkWeak": "役は弱いですが追加ベットがないためチェック推奨"
+  },
+  "result": {
+    "win": "あなたの勝ちです。",
+    "lose": "あなたの負けです。",
+    "folded": "あなたはフォールドしました。",
+    "gameOver": "ゲーム終了"
+  }
+}

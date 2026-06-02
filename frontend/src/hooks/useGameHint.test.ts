@@ -20,6 +20,7 @@ import type {
   NapoleonResponse,
   OhHellResponse,
   OldMaidResponse,
+  OsmosisResponse,
   PinochleResponse,
   ScorpionResponse,
   SevensResponse,
@@ -27,6 +28,7 @@ import type {
   ThreeCardResponse,
   TrashResponse,
   TwoTenJackResponse,
+  WaspResponse,
 } from '../types/card';
 import { CanastaPhase, CaribbeanStudPhase, GoFishPhase } from '../types/phases';
 import { useGameHint } from './useGameHint';
@@ -756,6 +758,41 @@ describe('useGameHint', () => {
     expect(result.current.hint?.reason).toBe('frontendHint.dealStock');
   });
 
+  it('routes wasp through getWaspHint (tableau move)', () => {
+    localStorage.setItem('hint_enabled_wasp', 'true');
+    const state: WaspResponse = {
+      tableau: [],
+      stockCount: 0,
+      completedSuits: 0,
+      phase: 0,
+      moveCount: 0,
+      canUndo: false,
+      isStalemate: false,
+      message: '',
+      hint: { fromCol: 1, cardIndex: 2, toCol: 3 },
+    };
+    const { result } = renderHook(() => useGameHint('wasp', state));
+    expect(result.current.hint).not.toBeNull();
+    expect(result.current.hint?.reason).toBe('frontendHint.moveToTableau');
+  });
+
+  it('routes wasp through getWaspHint (deal stock)', () => {
+    localStorage.setItem('hint_enabled_wasp', 'true');
+    const state: WaspResponse = {
+      tableau: [],
+      stockCount: 3,
+      completedSuits: 0,
+      phase: 0,
+      moveCount: 0,
+      canUndo: false,
+      isStalemate: false,
+      message: '',
+      hint: { fromCol: -1, cardIndex: -1, toCol: -1 },
+    };
+    const { result } = renderHook(() => useGameHint('wasp', state));
+    expect(result.current.hint?.reason).toBe('frontendHint.dealStock');
+  });
+
   it('routes accordion through getAccordionHint', () => {
     localStorage.setItem('hint_enabled_accordion', 'true');
     const state: AccordionResponse = {
@@ -1048,5 +1085,24 @@ describe('useGameHint', () => {
     // Pocket pair (KK) → strong "play" suggestion.
     expect(result.current.hint?.targetAction).toBe('play');
     expect(result.current.hint?.reason).toBe('hint.pocketPair');
+  });
+
+  it('returns osmosis foundation hint when enabled', () => {
+    localStorage.setItem('hint_enabled_osmosis', 'true');
+    const state: Partial<OsmosisResponse> = {
+      reserve: [[], [], [], []],
+      stockCount: 0,
+      waste: [],
+      foundation: [[], [], [], []],
+      baseRank: 1,
+      phase: 0,
+      moveCount: 0,
+      canUndo: false,
+      message: '',
+      hint: { fromZone: 'reserve', fromCol: 0, toCol: 1 },
+    };
+    const { result } = renderHook(() => useGameHint('osmosis', state as OsmosisResponse));
+    expect(result.current.hint).not.toBeNull();
+    expect(result.current.hint?.targetAction).toBe('moveToFoundation');
   });
 });

@@ -70,6 +70,12 @@ func TestNewDefaultFiftyOne(t *testing.T) {
 	assertHumanFirst(t, g, func(i int) bool { return g.GetPlayer(i).GetIsHuman() }, 4)
 }
 
+func TestNewDefaultThirtyOne(t *testing.T) {
+	g := domain.NewDefaultThirtyOne()
+	assert.NotNil(t, g)
+	assertHumanFirst(t, g, func(i int) bool { return g.GetPlayer(i).GetIsHuman() }, 4)
+}
+
 func TestNewDefaultDurak(t *testing.T) {
 	g := domain.NewDefaultDurak()
 	assert.NotNil(t, g)
@@ -226,6 +232,10 @@ func TestNewDefaultYukon(t *testing.T) {
 
 func TestNewDefaultScorpion(t *testing.T) {
 	assert.NotNil(t, domain.NewDefaultScorpion())
+}
+
+func TestNewDefaultWasp(t *testing.T) {
+	assert.NotNil(t, domain.NewDefaultWasp())
 }
 
 func TestNewDefaultPokerSquares(t *testing.T) {

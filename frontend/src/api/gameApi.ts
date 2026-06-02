@@ -6,6 +6,7 @@ import type {
   BadugiResponse,
   BakersDozenMoveZone,
   BakersDozenResponse,
+  BarbuResponse,
   BeleagueredCastleMoveZone,
   BeleagueredCastleResponse,
   BeloteResponse,
@@ -35,6 +36,7 @@ import type {
   CruelResponse,
   DaifugoConfigInput,
   DaifugoResponse,
+  DeuceToSevenResponse,
   DoubtConfig,
   DoubtResponse,
   DoudizhuResponse,
@@ -59,6 +61,7 @@ import type {
   IndianPokerResponse,
   KlondikeResponse,
   LetItRideResponse,
+  MacauResponse,
   MemoryResponse,
   MightyResponse,
   MississippiStudResponse,
@@ -71,6 +74,7 @@ import type {
   OhHellResponse,
   OldMaidResponse,
   OmahaResponse,
+  OsmosisResponse,
   PageOneResponse,
   PaiGowResponse,
   PenguinResponse,
@@ -88,6 +92,7 @@ import type {
   Rummy500Response,
   RussianPokerResponse,
   RussianSolitaireResponse,
+  ScopaResponse,
   ScorpionResponse,
   SeahavenTowersResponse,
   SevenBridgeResponse,
@@ -109,7 +114,10 @@ import type {
   SpiteAndMaliceResponse,
   TarneebResponse,
   TexasHoldemBonusResponse,
+  ThirtyOneResponse,
   ThreeCardResponse,
+  TienLenConfigInput,
+  TienLenResponse,
   TonkResponse,
   TrashResponse,
   TriPeaksResponse,
@@ -119,6 +127,7 @@ import type {
   UltimateTexasHoldemResponse,
   VideoPokerResponse,
   WarResponse,
+  WaspResponse,
   WhistConfig,
   WhistResponse,
   YukonResponse,
@@ -141,6 +150,8 @@ const workerUrl: Record<string, string> = {
   holdem: WORKER_CASINO,
   omaha: WORKER_CASINO,
   omahahilo: WORKER_CASINO,
+  bigo: WORKER_CASINO,
+  bigohilo: WORKER_CASINO,
   shortdeck: WORKER_CASINO,
   indianpoker: WORKER_CASINO,
   videopoker: WORKER_CASINO,
@@ -157,6 +168,7 @@ const workerUrl: Record<string, string> = {
   sevencardstud: WORKER_CASINO,
   razz: WORKER_CASINO,
   badugi: WORKER_CASINO,
+  deucetoseven: WORKER_CASINO,
   calculation: WORKER_SOLO,
   hearts: WORKER_CLASSIC,
   spades: WORKER_CLASSIC,
@@ -170,6 +182,7 @@ const workerUrl: Record<string, string> = {
   durak: WORKER_CLASSIC,
   daifugo: WORKER_CLASSIC,
   bigtwo: WORKER_CLASSIC,
+  tienlen: WORKER_SOLO,
   sevens: WORKER_CLASSIC,
   crazyeights: WORKER_CLASSIC,
   pageone: WORKER_CLASSIC,
@@ -197,9 +210,11 @@ const workerUrl: Record<string, string> = {
   clocksolitaire: WORKER_SOLO,
   fortythieves: WORKER_SOLO,
   canfield: WORKER_SOLO,
+  osmosis: WORKER_SOLO,
   yukon: WORKER_SOLO,
   russiansolitaire: WORKER_SOLO,
   scorpion: WORKER_SOLO,
+  wasp: WORKER_SOLO,
   accordion: WORKER_SOLO,
   sevenbridge: WORKER_SOLO,
   trash: WORKER_CLASSIC,
@@ -216,6 +231,7 @@ const workerUrl: Record<string, string> = {
   slapjack: WORKER_CLASSIC,
   egyptianratscrew: WORKER_CLASSIC,
   bakersdozen: WORKER_SOLO,
+  thirtyone: WORKER_SOLO,
   tonk: WORKER_CLASSIC,
   dragontiger: WORKER_CASINO,
   blackjackswitch: WORKER_CASINO,
@@ -244,6 +260,9 @@ const workerUrl: Record<string, string> = {
   sixcardgolf: WORKER_CLASSIC,
   doudizhu: WORKER_CLASSIC,
   truco: WORKER_CLASSIC,
+  scopa: WORKER_CASINO,
+  barbu: WORKER_SOLO,
+  macau: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -368,6 +387,33 @@ export const badugiApi = {
   ) => gameExec<BadugiResponse>('badugi', { command, indices, amount, humanPlayMs, profile, ...config }),
 };
 
+/** Configuration options for 2-7 Triple Draw game settings. */
+export interface DeuceToSevenConfigInput {
+  cpuCount?: number;
+  bettingLimit?: number;
+  cpuMetaAI?: boolean;
+}
+
+/** API client for the 2-7 Triple Draw /deucetoseven/exec endpoint. */
+export const deuceToSevenApi = {
+  exec: (
+    command: 'reset' | 'exchange' | 'stand' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allin',
+    indices?: number[],
+    amount?: number,
+    config?: DeuceToSevenConfigInput,
+    humanPlayMs?: number,
+    profile?: unknown,
+  ) =>
+    gameExec<DeuceToSevenResponse>('deucetoseven', {
+      command,
+      indices,
+      amount,
+      humanPlayMs,
+      profile,
+      ...config,
+    }),
+};
+
 /** API client for the Old Maid /oldmaid/exec endpoint. */
 export const oldmaidApi = {
   exec: (
@@ -404,6 +450,12 @@ export const daifugoApi = {
 export const bigtwoApi = {
   exec: (command: 'reset' | 'play', indices?: number[], config?: BigTwoConfigInput) =>
     gameExec<BigTwoResponse>('bigtwo', { command, indices, config }),
+};
+
+/** API client for the Tien Len /tienlen/exec endpoint. */
+export const tienlenApi = {
+  exec: (command: 'reset' | 'play', indices?: number[], config?: TienLenConfigInput) =>
+    gameExec<TienLenResponse>('tienlen', { command, indices, config }),
 };
 
 /** API client for the Durak /durak/exec endpoint. */
@@ -528,6 +580,14 @@ export const omahaApi = createHoldemLikeApi<OmahaResponse>('omaha');
  * LowQualifies, HiWonAmount, LowWonAmount) are surfaced via omitempty
  * JSON encoding so the same TypeScript type works for both. */
 export const omahaHiLoApi = createHoldemLikeApi<OmahaResponse>('omahahilo');
+
+/** API client for the 5 Card Omaha (Big O) /bigo/exec endpoint.
+ * Shares the OmahaResponse shape — Big O is Omaha dealt 5 hole cards. */
+export const bigOApi = createHoldemLikeApi<OmahaResponse>('bigo');
+
+/** API client for the 5 Card Omaha Hi-Lo (Big O) /bigohilo/exec endpoint.
+ * Shares the OmahaResponse shape (Hi-Lo split fields surfaced via omitempty). */
+export const bigOHiLoApi = createHoldemLikeApi<OmahaResponse>('bigohilo');
 
 /** API client for the Short Deck Hold'em /shortdeck/exec endpoint. */
 export const shortdeckApi = createHoldemLikeApi<ShortDeckResponse>('shortdeck');
@@ -839,6 +899,19 @@ export const canfieldApi = createSolitaireMoveApi<
   'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('canfield');
 
+/** Source or target zone for an Osmosis card move. */
+export interface OsmosisMoveZone {
+  zone: string;
+  col?: number;
+}
+
+/** API client for the Osmosis /osmosis/exec endpoint. */
+export const osmosisApi = createSolitaireMoveApi<
+  OsmosisResponse,
+  OsmosisMoveZone,
+  'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('osmosis');
+
 /** Source or target zone for a FreeCell card move. */
 export interface FreeCellMoveZone {
   zone: string;
@@ -1011,6 +1084,26 @@ export const tonkApi = {
     config?: TonkConfigInput,
   ) =>
     gameExec<TonkResponse>('tonk', {
+      command,
+      cardIndex,
+      config,
+    }),
+};
+
+/** Configuration options for Thirty-One game settings. */
+export interface ThirtyOneConfigInput {
+  cpuDifficulty?: number;
+  initialLives?: number;
+}
+
+/** API client for the Thirty-One /thirtyone/exec endpoint. */
+export const thirtyoneApi = {
+  exec: (
+    command: 'reset' | 'drawstock' | 'drawdiscard' | 'discard' | 'knock' | 'nextround' | 'log',
+    cardIndex?: number,
+    config?: ThirtyOneConfigInput,
+  ) =>
+    gameExec<ThirtyOneResponse>('thirtyone', {
       command,
       cardIndex,
       config,
@@ -1698,6 +1791,20 @@ export const scorpionApi = createSolitaireMoveApi<
   'reset' | 'deal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('scorpion');
 
+/** Source or target zone for a Wasp card move. */
+export interface WaspMoveZone {
+  zone: string;
+  col?: number;
+  cardIndex?: number;
+}
+
+/** API client for the Wasp /wasp/exec endpoint. */
+export const waspApi = createSolitaireMoveApi<
+  WaspResponse,
+  WaspMoveZone,
+  'reset' | 'deal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('wasp');
+
 /** Source or target pile for an Accordion move. */
 export interface AccordionMoveZone {
   zone: 'pile';
@@ -1895,6 +2002,73 @@ export const cassinoApi = {
     gameExec<CassinoResponse>('cassino', { command, ...(params ?? {}) }),
 };
 
+/** Configuration options for Scopa game settings. */
+export interface ScopaConfigInput {
+  targetScore?: number;
+  cpuDifficulty?: number;
+}
+
+/** Command verbs accepted by the Scopa /scopa/exec endpoint (short forms). */
+export type ScopaCommand = 'r' | 'n' | 'p' | 'log';
+
+/** Extra payload fields for the Scopa /scopa/exec endpoint. */
+export interface ScopaExecParams {
+  handIndex?: number;
+  tableIndices?: number[];
+  config?: ScopaConfigInput;
+}
+
+/** API client for the Scopa /scopa/exec endpoint. */
+export const scopaApi = {
+  exec: (command: ScopaCommand, params?: ScopaExecParams) =>
+    gameExec<ScopaResponse>('scopa', { command, ...(params ?? {}) }),
+};
+
+/** Configuration options for Barbu game settings. */
+export interface BarbuConfigInput {
+  cpuDifficulty?: number;
+}
+
+/** Command verbs accepted by the Barbu /barbu/exec endpoint (short forms). */
+export type BarbuCommand = 'r' | 'n' | 'c' | 'p' | 'log';
+
+/** Extra payload fields for the Barbu /barbu/exec endpoint. */
+export interface BarbuExecParams {
+  contract?: number;
+  trumpSuit?: number;
+  handIndex?: number;
+  tableIndices?: number[];
+  config?: BarbuConfigInput;
+}
+
+/** API client for the Barbu /barbu/exec endpoint. */
+export const barbuApi = {
+  exec: (command: BarbuCommand, params?: BarbuExecParams) =>
+    gameExec<BarbuResponse>('barbu', { command, ...(params ?? {}) }),
+};
+
+/** Configuration options for Macau game settings. */
+export interface MacauConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Macau /macau/exec endpoint. */
+export const macauApi = {
+  exec: (
+    command: 'reset' | 'play' | 'draw' | 'suit' | 'declare' | 'skipdeclare' | 'nextround',
+    cardIndex?: number,
+    suit?: number,
+    config?: MacauConfigInput,
+  ) =>
+    gameExec<MacauResponse>('macau', {
+      command,
+      cardIndex,
+      suit,
+      config,
+    }),
+};
+
 export type { BakersDozenMoveZone, BeleagueredCastleMoveZone, CrescentMoveZone, FortyThievesMoveZone };
 
 /** API client for the Whist /whist/exec endpoint. */
@@ -2024,12 +2198,15 @@ const games = [
   'oldmaid',
   'daifugo',
   'bigtwo',
+  'tienlen',
   'sevens',
   'doubt',
   'durak',
   'holdem',
   'omaha',
   'omahahilo',
+  'bigo',
+  'bigohilo',
   'shortdeck',
   'pineapple',
   'crazypineapple',
@@ -2037,6 +2214,7 @@ const games = [
   'sevencardstud',
   'razz',
   'badugi',
+  'deucetoseven',
   'hearts',
   'spades',
   'twotenjack',
@@ -2076,9 +2254,11 @@ const games = [
   'fortythieves',
   'calculation',
   'canfield',
+  'osmosis',
   'yukon',
   'russiansolitaire',
   'scorpion',
+  'wasp',
   'accordion',
   'sevenbridge',
   'trash',
@@ -2089,6 +2269,9 @@ const games = [
   'reddog',
   'president',
   'cassino',
+  'scopa',
+  'barbu',
+  'macau',
   'spanish21',
   'spiteandmalice',
   'skat',
@@ -2097,6 +2280,7 @@ const games = [
   'slapjack',
   'egyptianratscrew',
   'bakersdozen',
+  'thirtyone',
   'tonk',
   'casinowar',
   'pitch',

@@ -107,14 +107,12 @@ func tonkDispatch(bc *baseController, w http.ResponseWriter, ci usecase.TonkInte
 	case "dd", "drawdiscard":
 		bc.writePresenterResponse(w, ci.DrawFromDiscard())
 	case "d", "discard":
-		if param.CardIndex == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: cardIndex is required."))
+		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ci.Discard(*param.CardIndex))
 	case "k", "knock":
-		if param.CardIndex == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: cardIndex is required."))
+		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ci.Knock(*param.CardIndex))

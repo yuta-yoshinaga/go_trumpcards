@@ -1,0 +1,53 @@
+{
+  "nav": {
+    "scopa": "スコパ"
+  },
+  "skeleton": {
+    "loading": "読み込み中..."
+  },
+  "phase": {
+    "play": "プレイ中",
+    "playerTurn": "あなたの番",
+    "cpuTurn": "CPUの番",
+    "roundEnd": "ラウンド終了",
+    "end": "ゲーム終了"
+  },
+  "label": {
+    "tableCards": "場札",
+    "tableEmpty": "場札なし",
+    "yourCaptures": "獲得カード"
+  },
+  "button": {
+    "take": "取る",
+    "lay": "場に置く",
+    "nextRound": "次のラウンド",
+    "reset": "リセット"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetScore": "目標点"
+  },
+  "result": {
+    "win": "勝ち",
+    "lose": "負け",
+    "draw": "引き分け"
+  },
+  "hint": {
+    "take": {
+      "settebello": "セッテベッロ（7♦）を取れます。確実に獲得しましょう。",
+      "diamonds": "ダイヤを取れます。プリメーラに有利です。",
+      "capture": "場札を取れる手札があります。"
+    },
+    "lay": {
+      "safe": "取れる組み合わせがありません。手札を場に置きましょう。"
+    }
+  },
+  "tutorial": {
+    "cpuArea": "CPUの手札枚数とスコアです。",
+    "tableCards": "場札です。手札の値と同じ単札、または合計が一致する組み合わせを取れます。",
+    "playerHand": "あなたの手札です。カードを選んでアクションします。",
+    "actions": "取る（場札を選択）か、場に置く（場札を選ばない）を選びます。",
+    "resetButton": "ゲームをリセットします。"
+  }
+}

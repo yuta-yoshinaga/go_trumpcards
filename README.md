@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した110種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した120種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -29,6 +29,8 @@ Go + Clean Architecture で実装した110種類のトランプゲーム。CLI �
 | テキサスホールデム (Texas Hold'em) | `holdem` | [CUI](docs/manual/cui/holdem.md) / [Web](docs/manual/web/holdem.md) |
 | オマハホールデム (Omaha Hold'em) | `omaha` | [CUI](docs/manual/cui/omaha.md) / [Web](docs/manual/web/omaha.md) |
 | オマハ ハイロー (Omaha Hi-Lo / 8 or Better) | `omahahilo` | [CUI](docs/manual/cui/omahahilo.md) / [Web](docs/manual/web/omahahilo.md) |
+| 5カードオマハ (5 Card Omaha / Big O) | `bigo` | [CUI](docs/manual/cui/bigo.md) / [Web](docs/manual/web/bigo.md) |
+| 5カードオマハ ハイロー (5 Card Omaha Hi-Lo / Big O) | `bigohilo` | [CUI](docs/manual/cui/bigohilo.md) / [Web](docs/manual/web/bigohilo.md) |
 | ショートデック (Short Deck / 6+ Hold'em) | `shortdeck` | [CUI](docs/manual/cui/shortdeck.md) / [Web](docs/manual/web/shortdeck.md) |
 | パイナップルポーカー (Pineapple Poker) | `pineapple` | [CUI](docs/manual/cui/pineapple.md) / [Web](docs/manual/web/pineapple.md) |
 | クレイジーパイナップル (Crazy Pineapple Poker) | `crazypineapple` | [CUI](docs/manual/cui/crazypineapple.md) / [Web](docs/manual/web/crazypineapple.md) |
@@ -77,6 +79,7 @@ Go + Clean Architecture で実装した110種類のトランプゲーム。CLI �
 | チャイニーズポーカー (Chinese Poker) | `chinesepoker` | [CUI](docs/manual/cui/chinesepoker.md) / [Web](docs/manual/web/chinesepoker.md) |
 | 戦争 (War) | `war` | [CUI](docs/manual/cui/war.md) / [Web](docs/manual/web/war.md) |
 | キャンフィールド (Canfield) | `canfield` | [CUI](docs/manual/cui/canfield.md) / [Web](docs/manual/web/canfield.md) |
+| オズモシス / 浸透 (Osmosis) | `osmosis` | [CUI](docs/manual/cui/osmosis.md) / [Web](docs/manual/web/osmosis.md) |
 | フィフティワン (Fifty-one) | `fiftyone` | [CUI](docs/manual/cui/fiftyone.md) / [Web](docs/manual/web/fiftyone.md) |
 | ユーコン (Yukon) | `yukon` | [CUI](docs/manual/cui/yukon.md) / [Web](docs/manual/web/yukon.md) |
 | ロシアンソリティア (Russian Solitaire) | `russiansolitaire` | [CUI](docs/manual/cui/russiansolitaire.md) / [Web](docs/manual/web/russiansolitaire.md) |
@@ -87,7 +90,9 @@ Go + Clean Architecture で実装した110種類のトランプゲーム。CLI �
 | レッドドッグ (Red Dog) | `reddog` | [CUI](docs/manual/cui/reddog.md) / [Web](docs/manual/web/reddog.md) |
 | ラズ (Razz) | `razz` | [CUI](docs/manual/cui/razz.md) / [Web](docs/manual/web/razz.md) |
 | バドゥーギ (Badugi) | `badugi` | [CUI](docs/manual/cui/badugi.md) / [Web](docs/manual/web/badugi.md) |
+| 2-7 トリプルドロー (2-7 Triple Draw) | `deucetoseven` | [CUI](docs/manual/cui/deucetoseven.md) / [Web](docs/manual/web/deucetoseven.md) |
 | スコーピオン (Scorpion) | `scorpion` | [CUI](docs/manual/cui/scorpion.md) / [Web](docs/manual/web/scorpion.md) |
+| ワスプ (Wasp) | `wasp` | [CUI](docs/manual/cui/wasp.md) / [Web](docs/manual/web/wasp.md) |
 | アコーディオン (Accordion) | `accordion` | [CUI](docs/manual/cui/accordion.md) / [Web](docs/manual/web/accordion.md) |
 | トラッシュ (Trash) | `trash` | [CUI](docs/manual/cui/trash.md) / [Web](docs/manual/web/trash.md) |
 | セブンブリッジ (Seven Bridge) | `sevenbridge` | [CUI](docs/manual/cui/sevenbridge.md) / [Web](docs/manual/web/sevenbridge.md) |
@@ -105,6 +110,8 @@ Go + Clean Architecture で実装した110種類のトランプゲーム。CLI �
 | 包囲された城 (Beleaguered Castle) | `beleagueredcastle` | [CUI](docs/manual/cui/beleagueredcastle.md) / [Web](docs/manual/web/beleagueredcastle.md) |
 | ピケ (Piquet) | `piquet` | [CUI](docs/manual/cui/piquet.md) / [Web](docs/manual/web/piquet.md) |
 | トンク (Tonk) | `tonk` | [CUI](docs/manual/cui/tonk.md) / [Web](docs/manual/web/tonk.md) |
+| サーティワン (Thirty-One) | `thirtyone` | [CUI](docs/manual/cui/thirtyone.md) / [Web](docs/manual/web/thirtyone.md) |
+| ティエンレン (Tien Len) | `tienlen` | [CUI](docs/manual/cui/tienlen.md) / [Web](docs/manual/web/tienlen.md) |
 | シックスカードゴルフ (Six Card Golf) | `sixcardgolf` | [CUI](docs/manual/cui/sixcardgolf.md) / [Web](docs/manual/web/sixcardgolf.md) |
 | カジノウォー (Casino War) | `casinowar` | [CUI](docs/manual/cui/casinowar.md) / [Web](docs/manual/web/casinowar.md) |
 | ピッチ / セットバック (Pitch / Setback) | `pitch` | [CUI](docs/manual/cui/pitch.md) / [Web](docs/manual/web/pitch.md) |
@@ -129,6 +136,9 @@ Go + Clean Architecture で実装した110種類のトランプゲーム。CLI �
 | 斗地主 (Dou Dizhu) | `doudizhu` | [CUI](docs/manual/cui/doudizhu.md) / [Web](docs/manual/web/doudizhu.md) |
 | トゥルコ (Truco) | `truco` | [CUI](docs/manual/cui/truco.md) / [Web](docs/manual/web/truco.md) |
 | 四つ葉のクローバー (Aces Up) | `acesup` | [CUI](docs/manual/cui/acesup.md) / [Web](docs/manual/web/acesup.md) |
+| スコパ (Scopa) | `scopa` | [CUI](docs/manual/cui/scopa.md) / [Web](docs/manual/web/scopa.md) |
+| バルブ (Barbu) | `barbu` | [CUI](docs/manual/cui/barbu.md) / [Web](docs/manual/web/barbu.md) |
+| マカオ (Macau) | `macau` | [CUI](docs/manual/cui/macau.md) / [Web](docs/manual/web/macau.md) |
 
 ## Demo
 

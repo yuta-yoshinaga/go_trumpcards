@@ -139,26 +139,22 @@ func skatDispatch(bc *baseController, w http.ResponseWriter, si usecase.SkatInte
 	case "r", "reset":
 		bc.writePresenterResponse(w, si.ResetWithConfig(param.ToConfig()))
 	case "b", "bid":
-		if param.Accept == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: accept is required."))
+		if !requireParam(bc, w, newDefault, param.Accept == nil, "param error: accept is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, si.Bid(*param.Accept))
 	case "ps", "pickskat":
-		if param.Pickup == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: pickup is required."))
+		if !requireParam(bc, w, newDefault, param.Pickup == nil, "param error: pickup is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, si.PickSkat(*param.Pickup))
 	case "d", "discard":
-		if param.DiscardA == nil || param.DiscardB == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: discardA and discardB are required."))
+		if !requireParam(bc, w, newDefault, param.DiscardA == nil || param.DiscardB == nil, "param error: discardA and discardB are required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, si.Discard(*param.DiscardA, *param.DiscardB))
 	case "g", "game":
-		if param.GameType == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: gameType is required."))
+		if !requireParam(bc, w, newDefault, param.GameType == nil, "param error: gameType is required.") {
 			return true
 		}
 		trump := 0
@@ -167,8 +163,7 @@ func skatDispatch(bc *baseController, w http.ResponseWriter, si usecase.SkatInte
 		}
 		bc.writePresenterResponse(w, si.DeclareGame(domain.SkatGameType(*param.GameType), trump))
 	case "p", "play":
-		if param.CardIndex == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: cardIndex is required."))
+		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, si.Play(*param.CardIndex))

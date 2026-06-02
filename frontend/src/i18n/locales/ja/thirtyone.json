@@ -1,0 +1,42 @@
+{
+  "button": {
+    "drawStock": "山札から引く",
+    "drawDiscard": "捨て札から引く",
+    "knock": "ノック",
+    "discard": "捨てる",
+    "nextRound": "次のラウンド"
+  },
+  "phase": {
+    "draw": "ドロー",
+    "discard": "ディスカード",
+    "roundEnd": "ラウンド終了",
+    "end": "終了"
+  },
+  "label": {
+    "stock": "山札",
+    "discardPile": "捨て札",
+    "lives": "ライフ",
+    "score": "最高スート",
+    "round": "ラウンド",
+    "knocked": "ノック!",
+    "out": "脱落",
+    "suitScores": "スート別合計",
+    "selectCard": "捨てるカードを選んでください"
+  },
+  "settings": {
+    "cpuDifficulty": "CPU難易度",
+    "initialLives": "初期ライフ"
+  },
+  "hint": {
+    "knockHigh": "手札が強いです — ノックを検討しましょう",
+    "drawDiscard": "捨て札を取ると最高スートが伸びます",
+    "drawStock": "山札から引いて手札を強化しましょう"
+  },
+  "tutorial": {
+    "cpuArea": "CPUプレイヤー。ライフが表示され、カードはラウンド終了時に公開されます。",
+    "discardArea": "山札と捨て札。自分の番にどちらかから引きます。",
+    "playerHand": "あなたの手札。同じスートの合計を高く (31を目指す!) しましょう。",
+    "actionButtons": "山札か捨て札から引いて1枚捨てる、または引かずにノックします。",
+    "resetButton": "新しいゲームを始めます。"
+  }
+}

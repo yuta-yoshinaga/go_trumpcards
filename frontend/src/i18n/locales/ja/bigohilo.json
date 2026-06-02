@@ -1,0 +1,73 @@
+{
+  "phase": {
+    "preFlop": "プリフロップ",
+    "flop": "フロップ",
+    "turn": "ターン",
+    "river": "リバー",
+    "showdown": "ショーダウン",
+    "end": "結果",
+    "init": "初期化中",
+    "rebuy": "リバイ/アドオン"
+  },
+  "communityCards": "コミュニティカード",
+  "yourHand": "あなたの手札",
+  "mandatoryRule": "ルール: 手札から2枚 + 場札から3枚 (Hi/Lo別に組合せ可)",
+  "mandatoryRuleAria": "Hi-Loルール: ハイとローそれぞれで手札2枚と場札3枚を使います",
+  "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
+  "rebuy": {
+    "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",
+    "accept": "リバイ",
+    "skip": "スキップ"
+  },
+  "addon": {
+    "prompt": "アドオンしますか? ({{chips}}チップ)",
+    "accept": "アドオン",
+    "skip": "スキップ"
+  },
+  "muck": {
+    "prompt": "マックしますか?",
+    "muck": "マック",
+    "show": "ショー"
+  },
+  "stats": {
+    "vpip": "VPIP",
+    "vpipTooltip": "VPIP（ボランタリー・プット・イン・ポット）: 自発的にポットに参加した割合",
+    "pfr": "PFR",
+    "pfrTooltip": "PFR（プリフロップレイズ）: プリフロップでレイズした割合",
+    "threeBet": "3Bet",
+    "threeBetTooltip": "3Bet（スリーベット）: 相手のレイズに対して再レイズした割合",
+    "af": "AF",
+    "afTooltip": "AF（アグレッションファクター）: ベット・レイズのコールに対する比率"
+  },
+  "learning": {
+    "title": "ラーニングモード",
+    "toggle": "ラーニングモード",
+    "equity": "エクイティ",
+    "potOdds": "ポットオッズ",
+    "plusEV": "+EV (期待値プラス)",
+    "minusEV": "-EV (期待値マイナス)",
+    "handOdds": "ハンドオッズ"
+  },
+  "settings": {
+    "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）"
+  },
+  "tutorial": {
+    "communityCards": "コミュニティカードです。5枚が順次公開されます。",
+    "playerHand": "あなたのホールカード（5枚）です。必ず2枚を使います。",
+    "combinationRule": "Big O（5カードオマハ）では手札から必ず2枚、コミュニティから必ず3枚を使って役を作ります。",
+    "actionButtons": "ベットアクションを選びます。",
+    "potDisplay": "ポットとブラインドレベルが表示されます。",
+    "cpuArea": "CPU対戦相手の情報です。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "hint": {
+    "positiveEV": "期待値プラス — レイズ推奨",
+    "marginalEV": "期待値ほぼ均衡 — コール推奨",
+    "negativeEV": "期待値マイナス — フォールド推奨",
+    "strongHandRank": "強いハンド — レイズ推奨",
+    "decentHandRank": "まずまずのハンド — コール推奨",
+    "weakHandRank": "弱いハンド — フォールド推奨",
+    "scoopChance": "ハイ＋ローのスクープ圏内 — レイズ推奨",
+    "lowDraw": "ロー成立濃厚 — 半分狙いでコール推奨"
+  }
+}

@@ -1,0 +1,235 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { deuceToSevenApi } from '../api/gameApi';
+import { renderWithProviders } from '../test/renderWithProviders';
+import type { DeuceToSevenResponse } from '../types/card';
+import { DeuceToSevenPhase } from '../types/phases';
+import { DeuceToSevenPage } from './DeuceToSevenPage';
+
+vi.mock('../api/gameApi', () => ({
+  deuceToSevenApi: { exec: vi.fn() },
+  actionLogApi: { deucetoseven: vi.fn() },
+}));
+
+const mockExec = vi.mocked(deuceToSevenApi.exec);
+
+const humanPlayer = (overrides: Partial<import('../types/card').DeuceToSevenPlayerData> = {}) => ({
+  id: 0,
+  isHuman: true,
+  // Made pat low 7-5-4-3-2 (no pair / straight / flush).
+  cards: [
+    { design: 'SPADE' as const, value: 7 },
+    { design: 'HEART' as const, value: 5 },
+    { design: 'DIAMOND' as const, value: 4 },
+    { design: 'CLOVER' as const, value: 3 },
+    { design: 'SPADE' as const, value: 2 },
+  ],
+  chips: 990,
+  currentBet: 0,
+  folded: false,
+  allIn: false,
+  handRank: 0,
+  handName: '',
+  drawCount: 0,
+  totalDraws: 0,
+  playStyleName: '',
+  ...overrides,
+});
+
+const cpuPlayer = (id: number): import('../types/card').DeuceToSevenPlayerData => ({
+  id,
+  isHuman: false,
+  cards: [],
+  chips: 980,
+  currentBet: 0,
+  folded: false,
+  allIn: false,
+  handRank: 0,
+  handName: '',
+  drawCount: 0,
+  totalDraws: 0,
+  playStyleName: `CPU ${id}`,
+});
+
+const baseState = (overrides: Partial<DeuceToSevenResponse> = {}): DeuceToSevenResponse => ({
+  players: [humanPlayer(), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
+  pot: 40,
+  sidePots: [],
+  dealerIdx: 0,
+  currentTurn: 0,
+  phase: DeuceToSevenPhase.DEAL,
+  drawIndex: 0,
+  gameEndFlag: false,
+  lastBet: 0,
+  minRaise: 10,
+  ante: 10,
+  bettingLimit: 0,
+  raiseCount: 0,
+  maxBetAmount: 0,
+  roundResults: [],
+  cpuActions: [],
+  cpuExchanges: [],
+  message: '',
+  ...overrides,
+});
+
+describe('DeuceToSevenPage', () => {
+  beforeEach(() => {
+    mockExec.mockReset();
+  });
+
+  it('calls reset on mount', async () => {
+    mockExec.mockResolvedValue(baseState());
+    renderWithProviders(<DeuceToSevenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('renders the pot and dealer label', async () => {
+    mockExec.mockResolvedValue(baseState({ pot: 120, dealerIdx: 2 }));
+    renderWithProviders(<DeuceToSevenPage />);
+    await waitFor(() => expect(screen.getByText('120')).toBeInTheDocument());
+    expect(screen.getByText(/Player 2/)).toBeInTheDocument();
+  });
+
+  it('renders the pre-draw badge on the initial deal', async () => {
+    mockExec.mockResolvedValue(baseState({ phase: DeuceToSevenPhase.DEAL, drawIndex: 0 }));
+    renderWithProviders(<DeuceToSevenPage />);
+    await waitFor(() => expect(screen.getByText('プリドロー')).toBeInTheDocument());
+  });
+
+  it('renders the draw counter badge during draw phases', async () => {
+    mockExec.mockResolvedValue(baseState({ phase: DeuceToSevenPhase.DRAW, drawIndex: 2 }));
+    renderWithProviders(<DeuceToSevenPage />);
+    await waitFor(() => expect(screen.getAllByText('ドロー 2/3').length).toBeGreaterThan(0));
+  });
+
+  it('shows the end message at showdown', async () => {
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: DeuceToSevenPhase.END,
+        gameEndFlag: true,
+        message: 'あなたの勝ちです。',
+        messageCode: 'deucetoseven.result.win',
+        roundResults: [{ playerIdx: 0, handRank: 0, handName: 'High Card', wonAmount: 40 }],
+      }),
+    );
+    renderWithProviders(<DeuceToSevenPage />);
+    await waitFor(() => expect(screen.getByText('あなたの勝ちです。')).toBeInTheDocument());
+  });
+
+  it('wires betting buttons during the human turn', async () => {
+    mockExec.mockResolvedValue(baseState({ phase: DeuceToSevenPhase.DEAL, currentTurn: 0 }));
+    renderWithProviders(<DeuceToSevenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /チェック/ })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: /チェック/ }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('check', undefined, undefined, undefined, 0));
+  });
+
+  it('wires fold and allin', async () => {
+    mockExec.mockResolvedValue(baseState({ phase: DeuceToSevenPhase.BET, currentTurn: 0, lastBet: 20 }));
+    renderWithProviders(<DeuceToSevenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /フォールド/ })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: /フォールド/ }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('fold', undefined, undefined, undefined, 0));
+
+    fireEvent.click(screen.getByRole('button', { name: /オールイン/ }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('allin', undefined, undefined, undefined, 0));
+  });
+
+  it('exposes exchange and stand during draw phase', async () => {
+    mockExec.mockResolvedValue(baseState({ phase: DeuceToSevenPhase.DRAW, drawIndex: 1, currentTurn: 0 }));
+    renderWithProviders(<DeuceToSevenPage />);
+
+    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: '交換' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('exchange', []));
+
+    fireEvent.click(screen.getByRole('button', { name: /スタンド/ }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('stand'));
+  });
+
+  it('hides betting controls when the human has folded', async () => {
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: DeuceToSevenPhase.BET,
+        players: [humanPlayer({ folded: true }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
+      }),
+    );
+    renderWithProviders(<DeuceToSevenPage />);
+    await waitFor(() => expect(screen.getByText(/フォールド/)).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: /チェック/ })).toBeNull();
+  });
+
+  it('shows next game button at end phase', async () => {
+    mockExec.mockResolvedValue(baseState({ phase: DeuceToSevenPhase.END, gameEndFlag: true }));
+    renderWithProviders(<DeuceToSevenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument());
+  });
+
+  it('toggles betting limit and reissues reset with the new config', async () => {
+    mockExec.mockResolvedValue(baseState({ phase: DeuceToSevenPhase.END, gameEndFlag: true }));
+    renderWithProviders(<DeuceToSevenPage />);
+    const summary = await screen.findByText('設定');
+    fireEvent.click(summary);
+
+    const limitSelect = await screen.findByLabelText(/リミット/);
+    fireEvent.change(limitSelect, { target: { value: '2' } });
+    fireEvent.click(screen.getByRole('button', { name: /次のゲーム/ }));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenLastCalledWith('reset', undefined, undefined, { bettingLimit: 2, cpuMetaAI: false }),
+    );
+  });
+
+  it('shows the made-low banner and pulses the stand button when the hand is already an 8-or-better low', async () => {
+    // The default humanPlayer() holds 7-5-4-3-2 → a made pat low.
+    mockExec.mockResolvedValue(baseState({ phase: DeuceToSevenPhase.DRAW, drawIndex: 1, currentTurn: 0 }));
+    renderWithProviders(<DeuceToSevenPage />);
+    await waitFor(() => expect(screen.getByTestId('d7-stand-btn')).toBeInTheDocument());
+
+    expect(screen.getByTestId('d7-made-low-banner')).toBeInTheDocument();
+    expect(screen.getByTestId('d7-stand-btn').className).toContain('animate-pulse');
+  });
+
+  it('hides the banner and skips the pulse when the hand is not a made low (pair)', async () => {
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: DeuceToSevenPhase.DRAW,
+        drawIndex: 1,
+        currentTurn: 0,
+        players: [
+          humanPlayer({
+            cards: [
+              { design: 'SPADE', value: 2 },
+              { design: 'HEART', value: 2 },
+              { design: 'DIAMOND', value: 4 },
+              { design: 'CLOVER', value: 6 },
+              { design: 'SPADE', value: 8 },
+            ],
+          }),
+          cpuPlayer(1),
+          cpuPlayer(2),
+          cpuPlayer(3),
+        ],
+      }),
+    );
+    renderWithProviders(<DeuceToSevenPage />);
+    await waitFor(() => expect(screen.getByTestId('d7-stand-btn')).toBeInTheDocument());
+
+    expect(screen.queryByTestId('d7-made-low-banner')).not.toBeInTheDocument();
+    expect(screen.getByTestId('d7-stand-btn').className).not.toContain('animate-pulse');
+  });
+
+  it('marks a selected card as pressed in draw phase', async () => {
+    mockExec.mockResolvedValue(baseState({ phase: DeuceToSevenPhase.DRAW, drawIndex: 1, currentTurn: 0 }));
+    renderWithProviders(<DeuceToSevenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
+
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+    expect(cardButtons.length).toBe(5);
+    fireEvent.click(cardButtons[0]);
+    await waitFor(() => expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'true'));
+  });
+});

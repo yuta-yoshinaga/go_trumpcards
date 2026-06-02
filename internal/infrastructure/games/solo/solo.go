@@ -166,6 +166,14 @@ func init() {
 			return usecase.RestoreScorpionInteractor(data, new(presenter.ScorpionWebPresenter))
 		},
 		controller.NewScorpionWebControllerWithProvider)
+	games.RegisterKVGame("wasp", games.CategorySolo,
+		func() usecase.WaspInteractorIF {
+			return usecase.NewWaspInteractor(domain.NewDefaultWasp(), new(presenter.WaspWebPresenter))
+		},
+		func(data []byte) (usecase.WaspInteractorIF, error) {
+			return usecase.RestoreWaspInteractor(data, new(presenter.WaspWebPresenter))
+		},
+		controller.NewWaspWebControllerWithProvider)
 	games.RegisterKVGame("accordion", games.CategorySolo,
 		func() usecase.AccordionInteractorIF {
 			return usecase.NewAccordionInteractor(domain.NewDefaultAccordion(), new(presenter.AccordionWebPresenter))
@@ -278,4 +286,48 @@ func init() {
 			return usecase.RestoreAcesUpInteractor(data, new(presenter.AcesUpWebPresenter))
 		},
 		controller.NewAcesUpWebControllerWithProvider)
+	// Barbu is bucketed here (solo worker) for binary-size reasons; the classic
+	// worker is at the 1 MB gzip free-tier limit. See registry.go.
+	games.RegisterKVGame("barbu", games.CategorySolo,
+		func() usecase.BarbuInteractorIF {
+			return usecase.NewBarbuInteractor(domain.NewDefaultBarbu(), new(presenter.BarbuWebPresenter))
+		},
+		func(data []byte) (usecase.BarbuInteractorIF, error) {
+			return usecase.RestoreBarbuInteractor(data, new(presenter.BarbuWebPresenter))
+		},
+		controller.NewBarbuWebControllerWithProvider)
+	// Macau is a Crazy Eights variant bucketed here (solo worker) for binary-size
+	// reasons; the classic worker is at the 1 MB gzip free-tier limit. See registry.go.
+	games.RegisterKVGame("macau", games.CategorySolo,
+		func() usecase.MacauInteractorIF {
+			return usecase.NewMacauInteractor(domain.NewDefaultMacau(), new(presenter.MacauWebPresenter))
+		},
+		func(data []byte) (usecase.MacauInteractorIF, error) {
+			return usecase.RestoreMacauInteractor(data, new(presenter.MacauWebPresenter))
+		},
+		controller.NewMacauWebControllerWithProvider)
+	games.RegisterKVGame("thirtyone", games.CategorySolo,
+		func() usecase.ThirtyOneInteractorIF {
+			return usecase.NewThirtyOneInteractor(domain.NewDefaultThirtyOne(), new(presenter.ThirtyOneWebPresenter))
+		},
+		func(data []byte) (usecase.ThirtyOneInteractorIF, error) {
+			return usecase.RestoreThirtyOneInteractor(data, new(presenter.ThirtyOneWebPresenter))
+		},
+		controller.NewThirtyOneWebControllerWithProvider)
+	games.RegisterKVGame("tienlen", games.CategorySolo,
+		func() usecase.TienLenInteractorIF {
+			return usecase.NewTienLenInteractor(domain.NewDefaultTienLen(), new(presenter.TienLenWebPresenter))
+		},
+		func(data []byte) (usecase.TienLenInteractorIF, error) {
+			return usecase.RestoreTienLenInteractor(data, new(presenter.TienLenWebPresenter))
+		},
+		controller.NewTienLenWebControllerWithProvider)
+	games.RegisterKVGame("osmosis", games.CategorySolo,
+		func() usecase.OsmosisInteractorIF {
+			return usecase.NewOsmosisInteractor(domain.NewDefaultOsmosis(), new(presenter.OsmosisWebPresenter))
+		},
+		func(data []byte) (usecase.OsmosisInteractorIF, error) {
+			return usecase.RestoreOsmosisInteractor(data, new(presenter.OsmosisWebPresenter))
+		},
+		controller.NewOsmosisWebControllerWithProvider)
 }

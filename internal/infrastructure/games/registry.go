@@ -5,7 +5,7 @@
 // binaries (TinyGo / WASM) stay under the 1 MB gzipped free-tier limit:
 //
 //   - registry.go (this file, no tag)  — types and bare metadata (Name +
-//     Category) for all 106 games. Cheap; no references to game code.
+//     Category) for all 120 games. Cheap; no references to game code.
 //   - games_server.go (!js || !wasm)   — installs Web-server factories for
 //     every game via BindWebController. Imported by TrumpCardsWeb.
 //   - casino/, classic/, solo/ (js && wasm) — per-category worker bindings.
@@ -96,6 +96,8 @@ var registry = []*Game{
 	{Name: "holdem", Category: CategoryCasino, Description: "Texas Hold'em (テキサスホールデム)"},
 	{Name: "omaha", Category: CategoryCasino, Description: "Omaha Hold'em (オマハホールデム)"},
 	{Name: "omahahilo", Category: CategoryCasino, Description: "Omaha Hi-Lo / 8 or Better (オマハ ハイロー)"},
+	{Name: "bigo", Category: CategoryCasino, Description: "5 Card Omaha (Big O) (5カードオマハ)"},
+	{Name: "bigohilo", Category: CategoryCasino, Description: "5 Card Omaha Hi-Lo (Big O) (5カードオマハ ハイロー)"},
 	{Name: "shortdeck", Category: CategoryCasino, Description: "Short Deck (6+ Hold'em) (ショートデック)"},
 	{Name: "pineapple", Category: CategoryCasino, Description: "Pineapple Poker (パイナップルポーカー)"},
 	{Name: "crazypineapple", Category: CategoryCasino, Description: "Crazy Pineapple Poker (クレイジーパイナップル)"},
@@ -148,8 +150,10 @@ var registry = []*Game{
 	{Name: "pageone", Category: CategoryClassic, Description: "Page One (ページワン)"},
 	{Name: "reddog", Category: CategoryCasino, Description: "Red Dog (レッドドッグ)"},
 	{Name: "badugi", Category: CategoryCasino, Description: "Badugi (バドゥーギ)"},
+	{Name: "deucetoseven", Category: CategoryCasino, Description: "2-7 Triple Draw (デューストゥセブン)"},
 	{Name: "razz", Category: CategoryCasino, Description: "Razz (ラズ)"},
 	{Name: "scorpion", Category: CategorySolo, Description: "Scorpion (スコーピオン)"},
+	{Name: "wasp", Category: CategorySolo, Description: "Wasp (ワスプ)"},
 	{Name: "accordion", Category: CategorySolo, Description: "Accordion (アコーディオン)"},
 	{Name: "trash", Category: CategoryClassic, Description: "Trash (トラッシュ)"},
 	{Name: "sevenbridge", Category: CategorySolo, Description: "Seven Bridge (セブンブリッジ)"},
@@ -195,7 +199,27 @@ var registry = []*Game{
 	{Name: "sixcardgolf", Category: CategoryClassic, Description: "Six Card Golf (シックスカードゴルフ)"},
 	{Name: "doudizhu", Category: CategoryClassic, Description: "Dou Dizhu / Fight the Landlord (斗地主)"},
 	{Name: "truco", Category: CategoryClassic, Description: "Truco (トゥルコ)"},
+	{Name: "scopa", Category: CategoryCasino, Description: "Scopa (スコパ)"},
 	{Name: "acesup", Category: CategorySolo, Description: "Aces Up (四つ葉のクローバー)"},
+	// Barbu is a classic compendium trick-taking game, but it is bucketed into
+	// the solo worker because the classic worker is at the 1 MB gzip free-tier
+	// limit. Category here is purely a binary-size bucket (see package doc).
+	{Name: "barbu", Category: CategorySolo, Description: "Barbu (バルブ)"},
+	// Macau is a classic Crazy Eights variant, but it is bucketed into the solo
+	// worker because the classic worker is at the 1 MB gzip free-tier limit.
+	// Category here is purely a binary-size bucket (see package doc).
+	{Name: "macau", Category: CategorySolo, Description: "Macau (マカオ)"},
+	// Thirty-One (Scat) is a classic draw-and-discard pub game, but it is
+	// bucketed into the solo worker because the classic worker is at the 1 MB
+	// gzip free-tier limit. Category here is purely a binary-size bucket.
+	{Name: "thirtyone", Category: CategorySolo, Description: "Thirty-One (サーティワン)"},
+	// Tien Len (Vietnamese Big Two) is a classic shedding game, but it is
+	// bucketed into the solo worker because the classic worker is at the 1 MB
+	// gzip free-tier limit. Category here is purely a binary-size bucket.
+	{Name: "tienlen", Category: CategorySolo, Description: "Tien Len (ティエンレン)"},
+	// Osmosis (浸透) is a foundation-only solitaire bucketed into the solo
+	// worker. Category here is purely a binary-size bucket.
+	{Name: "osmosis", Category: CategorySolo, Description: "Osmosis Solitaire (オズモシス / 浸透)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

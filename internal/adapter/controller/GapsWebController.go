@@ -65,8 +65,7 @@ func gapsDispatch(bc *baseController, w http.ResponseWriter, gi usecase.GapsInte
 	case "u", "undo":
 		bc.writePresenterResponse(w, gi.Undo())
 	case "undo_n":
-		if param.N == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: n is required."))
+		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, gi.UndoN(*param.N))
@@ -77,12 +76,10 @@ func gapsDispatch(bc *baseController, w http.ResponseWriter, gi usecase.GapsInte
 }
 
 func gapsMoveDispatch(bc *baseController, w http.ResponseWriter, gi usecase.GapsInteractorIF, param GapsWebInput, newDefault func(string) *GapsWebOutput) bool {
-	if param.From == nil || param.To == nil {
-		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from and to are required."))
+	if !requireParam(bc, w, newDefault, param.From == nil || param.To == nil, "param error: from and to are required.") {
 		return true
 	}
-	if param.From.Row == nil || param.From.Col == nil || param.To.Row == nil || param.To.Col == nil {
-		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: row and col are required."))
+	if !requireParam(bc, w, newDefault, param.From.Row == nil || param.From.Col == nil || param.To.Row == nil || param.To.Col == nil, "param error: row and col are required.") {
 		return true
 	}
 	bc.writePresenterResponse(w, gi.Move(*param.From.Row, *param.From.Col, *param.To.Row, *param.To.Col))

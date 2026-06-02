@@ -76,8 +76,7 @@ func fiftyOneDispatch(bc *baseController, w http.ResponseWriter, fi usecase.Fift
 		cfg := buildFiftyOneConfig(fi.GetConfig(), param.Config)
 		bc.writePresenterResponse(w, fi.Reset(cfg))
 	case "play":
-		if param.HandIdx == nil || param.TableIdx == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: handIdx and tableIdx are required."))
+		if !requireParam(bc, w, newDefault, param.HandIdx == nil || param.TableIdx == nil, "param error: handIdx and tableIdx are required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, fi.ExchangeOne(*param.HandIdx, *param.TableIdx))

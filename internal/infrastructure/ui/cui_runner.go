@@ -6,34 +6,66 @@ import (
 	"os"
 	"os/signal"
 	"strings"
-	"sync"
 	"syscall"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-var signalHandlerOnce sync.Once
+// signalExitCode prints the goodbye banner, runs cleanup, and returns the
+// POSIX exit code (128 + signal number) for sig.
+//
+// os.Exit does NOT run deferred functions, so a signal handler that simply
+// calls os.Exit would skip the deferred reader.Close() in the CUI loops —
+// losing the command history (never written to ~/.trumpcards_history) and,
+// worse, leaving the terminal stuck in liner's raw mode (requiring `reset` /
+// `stty sane` to recover). To avoid that, the signal watcher runs `cleanup`
+// (which performs exactly what the deferred teardown would: history save +
+// terminal restore) before exiting. Extracted as a pure function so the
+// exit-code mapping and the cleanup invocation are unit-testable without
+// raising a real signal or calling os.Exit. See issue #2096.
+func signalExitCode(sig os.Signal, cleanup func()) int {
+	fmt.Println("\n" + i18n.T("bye"))
+	if cleanup != nil {
+		cleanup()
+	}
+	// POSIX convention: exit code = 128 + signal number (SIGINT=130, SIGTERM=143).
+	exitCode := 128
+	if sigNum, ok := sig.(syscall.Signal); ok {
+		exitCode += int(sigNum)
+	}
+	return exitCode
+}
 
-// setupSignalHandler registers a handler for SIGINT and SIGTERM that prints
-// a goodbye message and exits gracefully. Call this at the start of any CUI loop.
-// It is safe to call multiple times; only the first call has an effect.
-func setupSignalHandler() {
-	signalHandlerOnce.Do(func() {
-		sigCh := make(chan os.Signal, 1)
-		signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
-		go func() {
-			sig := <-sigCh
+// runSignalWatcher installs a SIGINT/SIGTERM handler scoped to a single CUI
+// loop and returns a stop function the loop must defer. On a signal it runs
+// cleanup (see signalExitCode) and exits; on normal loop return the deferred
+// stop() tears the watcher down without touching cleanup, so the loop's own
+// deferred teardown runs exactly once. cleanup may be nil for loops with no
+// resources to release (e.g. the plain-stdin Doubt loop).
+//
+// This replaces the previous package-level os.Exit handler, which bypassed
+// deferred terminal restore and history persistence (issue #2096) — mirroring
+// the local-signal approach already used by RunRealtimeCuiLoop.
+func runSignalWatcher(cleanup func()) (stop func()) {
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
+	done := make(chan struct{})
+	stopped := make(chan struct{})
+	go func() {
+		defer close(stopped)
+		select {
+		case sig := <-sigCh:
 			signal.Stop(sigCh)
-			fmt.Println("\n" + i18n.T("bye"))
-			// POSIX convention: exit code = 128 + signal number
-			exitCode := 128
-			if sigNum, ok := sig.(syscall.Signal); ok {
-				exitCode += int(sigNum)
-			}
-			os.Exit(exitCode)
-		}()
-	})
+			os.Exit(signalExitCode(sig, cleanup))
+		case <-done:
+			signal.Stop(sigCh)
+		}
+	}()
+	return func() {
+		close(done)
+		<-stopped
+	}
 }
 
 // CuiExecer CUIコントローラの共通インタフェース
@@ -148,7 +180,6 @@ func filterByPrefix(candidates []string, token string) []string {
 // error (issue #1839). The manager handles help/? commands internally;
 // other commands are delegated to the current game.
 func RunInteractiveCuiLoop(manager *GameManager) int {
-	setupSignalHandler()
 	initMsg := manager.InitCurrentGame()
 	if initMsg != "" {
 		fmt.Println(initMsg)
@@ -156,6 +187,9 @@ func RunInteractiveCuiLoop(manager *GameManager) int {
 	fmt.Println(i18n.T("typeHelp"))
 	reader := newDefaultLineReader()
 	defer func() { _ = reader.Close() }()
+	// On SIGINT/SIGTERM, close the reader (history save + terminal restore)
+	// before exiting since os.Exit skips the defer above (issue #2096).
+	defer runSignalWatcher(func() { _ = reader.Close() })()
 	// *GameManager statically satisfies commandLister, so no type assertion
 	// is needed here. RunCuiLoop below uses one because its parameter is the
 	// CuiExecer interface and we don't know the concrete type.
@@ -201,11 +235,13 @@ func printResult(res string) {
 // Returns 0 on normal exit (EOF, "quit", QuitSentinel) and 1 when stdin
 // reads fail with a non-EOF I/O error (issue #1839). See issue #1605.
 func RunCuiLoop(gameName string, controller CuiExecer, helpLines []string) int {
-	setupSignalHandler()
 	fmt.Println(controller.Exec("r"))
 	fmt.Println(i18n.T("typeHelp"))
 	reader := newDefaultLineReader()
 	defer func() { _ = reader.Close() }()
+	// On SIGINT/SIGTERM, close the reader (history save + terminal restore)
+	// before exiting since os.Exit skips the defer above (issue #2096).
+	defer runSignalWatcher(func() { _ = reader.Close() })()
 	if lister, ok := controller.(commandLister); ok {
 		installCompleter(reader, lister)
 	} else {

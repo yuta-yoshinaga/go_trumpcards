@@ -303,3 +303,9 @@ func (_m *MockOmahaGame) GetIsHiLo() bool {
 	ret := _m.Called()
 	return ret.Bool(0)
 }
+
+// GetHoleCardCount モック
+func (_m *MockOmahaGame) GetHoleCardCount() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}

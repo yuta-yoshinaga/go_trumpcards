@@ -1,0 +1,162 @@
+import { screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { osmosisApi } from '../api/gameApi';
+import { renderWithProviders } from '../test/renderWithProviders';
+import type { Card, CardDesign, OsmosisResponse } from '../types/card';
+import { OsmosisPage } from './OsmosisPage';
+
+vi.mock('../api/gameApi', () => ({
+  osmosisApi: { exec: vi.fn() },
+  actionLogApi: { osmosis: vi.fn() },
+}));
+
+const mockExec = vi.mocked(osmosisApi.exec);
+
+const card = (design: CardDesign, value: number): Card => ({ design, value });
+
+const playingState: OsmosisResponse = {
+  reserve: [[card('SPADE', 2)], [card('HEART', 9)], [card('CLOVER', 4)], [card('DIAMOND', 10)]],
+  stockCount: 34,
+  waste: [card('HEART', 4)],
+  foundation: [[card('SPADE', 5)], [], [], []],
+  baseRank: 5,
+  phase: 0,
+  moveCount: 0,
+  canUndo: false,
+  message: '',
+  messageCode: 'osmosis.playing',
+};
+
+const gameClearState: OsmosisResponse = {
+  ...playingState,
+  phase: 1,
+  moveCount: 42,
+  messageCode: 'osmosis.gameClear',
+  messageParams: { moveCount: '42' },
+};
+
+const gameOverState: OsmosisResponse = {
+  ...playingState,
+  phase: 2,
+  messageCode: 'osmosis.gameOver',
+};
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  mockExec.mockResolvedValue(playingState);
+});
+
+describe('OsmosisPage', () => {
+  it('renders heading', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+  });
+
+  it('calls reset on mount', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('shows base rank', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(screen.getByText(/ベースランク/)).toBeInTheDocument());
+  });
+
+  it('clicks stock to fire draw command', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    screen.getByRole('button', { name: /山札/ }).click();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
+  });
+
+  it('selects waste then moves it to a foundation row', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    screen.getByRole('button', { name: 'ウェイスト' }).click();
+    // Foundation row 0 becomes enabled once a source is selected.
+    await waitFor(() => expect(screen.getByRole('button', { name: '組札 0' })).toBeEnabled());
+    screen.getByRole('button', { name: '組札 0' }).click();
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste' }, { zone: 'foundation', col: 0 }),
+    );
+  });
+
+  it('selects a reserve column then moves it to a foundation row', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    screen.getByRole('button', { name: 'リザーブ 1' }).click();
+    await waitFor(() => expect(screen.getByRole('button', { name: '組札 2' })).toBeEnabled());
+    screen.getByRole('button', { name: '組札 2' }).click();
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'reserve', col: 1 }, { zone: 'foundation', col: 2 }),
+    );
+  });
+
+  it('foundation rows are disabled until a source is selected', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByRole('button', { name: '組札 0' })).toBeDisabled();
+  });
+
+  it('hint button triggers hint command', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    screen.getByRole('button', { name: 'ヒント' }).click();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+  });
+
+  it('autocomplete button triggers autocomplete command', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    screen.getByRole('button', { name: '自動完成' }).click();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
+  });
+
+  it('giveup button triggers giveup command', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    screen.getByRole('button', { name: 'ギブアップ' }).click();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
+  });
+
+  it('undo button fires undo when canUndo is true', async () => {
+    mockExec.mockResolvedValue({ ...playingState, canUndo: true });
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    screen.getByRole('button', { name: '元に戻す' }).click();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
+  });
+
+  it('undo button is disabled when canUndo is false', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByRole('button', { name: '元に戻す' })).toBeDisabled();
+  });
+
+  it('shows game clear phase', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(screen.getAllByText('ゲームクリア').length).toBeGreaterThan(0));
+  });
+
+  it('shows game over phase and hides action buttons', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByRole('button', { name: 'ギブアップ' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'ヒント' })).not.toBeInTheDocument();
+  });
+
+  it('shows error alert when API fails on mount', async () => {
+    mockExec.mockRejectedValue(new Error('network error'));
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+  });
+
+  it('renders empty waste placeholder', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [] });
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByRole('button', { name: 'ウェイスト' })).not.toBeInTheDocument();
+  });
+});

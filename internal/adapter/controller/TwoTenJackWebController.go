@@ -107,14 +107,12 @@ func twoTenJackDispatch(bc *baseController, w http.ResponseWriter, ti usecase.Tw
 	case "r", "reset":
 		bc.writePresenterResponse(w, ti.ResetWithConfig(param.ToConfig()))
 	case "d", "declare":
-		if param.TrumpSuit == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: trumpSuit is required."))
+		if !requireParam(bc, w, newDefault, param.TrumpSuit == nil, "param error: trumpSuit is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ti.DeclareTrump(*param.TrumpSuit))
 	case "p", "play":
-		if param.CardIndex == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: cardIndex is required."))
+		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, ti.Play(*param.CardIndex))

@@ -8,8 +8,11 @@ import acesup from '../../../docs/manual/cui/acesup.md?raw';
 import baccarat from '../../../docs/manual/cui/baccarat.md?raw';
 import badugi from '../../../docs/manual/cui/badugi.md?raw';
 import bakersdozen from '../../../docs/manual/cui/bakersdozen.md?raw';
+import barbu from '../../../docs/manual/cui/barbu.md?raw';
 import beleagueredcastle from '../../../docs/manual/cui/beleagueredcastle.md?raw';
 import belote from '../../../docs/manual/cui/belote.md?raw';
+import bigo from '../../../docs/manual/cui/bigo.md?raw';
+import bigohilo from '../../../docs/manual/cui/bigohilo.md?raw';
 import bigtwo from '../../../docs/manual/cui/bigtwo.md?raw';
 import blackjack from '../../../docs/manual/cui/blackjack.md?raw';
 import blackjackswitch from '../../../docs/manual/cui/blackjackswitch.md?raw';
@@ -33,6 +36,7 @@ import cribbage from '../../../docs/manual/cui/cribbage.md?raw';
 import cruel from '../../../docs/manual/cui/cruel.md?raw';
 import daifugo from '../../../docs/manual/cui/daifugo.md?raw';
 import deuceswild from '../../../docs/manual/cui/deuceswild.md?raw';
+import deucetoseven from '../../../docs/manual/cui/deucetoseven.md?raw';
 import doubt from '../../../docs/manual/cui/doubt.md?raw';
 import doudizhu from '../../../docs/manual/cui/doudizhu.md?raw';
 import dragontiger from '../../../docs/manual/cui/dragontiger.md?raw';
@@ -56,6 +60,7 @@ import irishpoker from '../../../docs/manual/cui/irishpoker.md?raw';
 import jokerpoker from '../../../docs/manual/cui/jokerpoker.md?raw';
 import klondike from '../../../docs/manual/cui/klondike.md?raw';
 import letitride from '../../../docs/manual/cui/letitride.md?raw';
+import macau from '../../../docs/manual/cui/macau.md?raw';
 import memory from '../../../docs/manual/cui/memory.md?raw';
 import mighty from '../../../docs/manual/cui/mighty.md?raw';
 import mississippistud from '../../../docs/manual/cui/mississippistud.md?raw';
@@ -65,6 +70,7 @@ import ohhell from '../../../docs/manual/cui/ohhell.md?raw';
 import oldmaid from '../../../docs/manual/cui/oldmaid.md?raw';
 import omaha from '../../../docs/manual/cui/omaha.md?raw';
 import omahahilo from '../../../docs/manual/cui/omahahilo.md?raw';
+import osmosis from '../../../docs/manual/cui/osmosis.md?raw';
 import pageone from '../../../docs/manual/cui/pageone.md?raw';
 import paigow from '../../../docs/manual/cui/paigow.md?raw';
 import penguin from '../../../docs/manual/cui/penguin.md?raw';
@@ -81,6 +87,7 @@ import reddog from '../../../docs/manual/cui/reddog.md?raw';
 import rummy500 from '../../../docs/manual/cui/rummy500.md?raw';
 import russianpoker from '../../../docs/manual/cui/russianpoker.md?raw';
 import russiansolitaire from '../../../docs/manual/cui/russiansolitaire.md?raw';
+import scopa from '../../../docs/manual/cui/scopa.md?raw';
 import scorpion from '../../../docs/manual/cui/scorpion.md?raw';
 import seahaventowers from '../../../docs/manual/cui/seahaventowers.md?raw';
 import sevenbridge from '../../../docs/manual/cui/sevenbridge.md?raw';
@@ -99,7 +106,9 @@ import spiderette from '../../../docs/manual/cui/spiderette.md?raw';
 import spiteandmalice from '../../../docs/manual/cui/spiteandmalice.md?raw';
 import tarneeb from '../../../docs/manual/cui/tarneeb.md?raw';
 import texasholdembonus from '../../../docs/manual/cui/texasholdembonus.md?raw';
+import thirtyone from '../../../docs/manual/cui/thirtyone.md?raw';
 import threecard from '../../../docs/manual/cui/threecard.md?raw';
+import tienlen from '../../../docs/manual/cui/tienlen.md?raw';
 import tonk from '../../../docs/manual/cui/tonk.md?raw';
 import trash from '../../../docs/manual/cui/trash.md?raw';
 import tripeaks from '../../../docs/manual/cui/tripeaks.md?raw';
@@ -108,6 +117,7 @@ import twotenjack from '../../../docs/manual/cui/twotenjack.md?raw';
 import ultimatetexasholdem from '../../../docs/manual/cui/ultimatetexasholdem.md?raw';
 import videopoker from '../../../docs/manual/cui/videopoker.md?raw';
 import war from '../../../docs/manual/cui/war.md?raw';
+import wasp from '../../../docs/manual/cui/wasp.md?raw';
 import whist from '../../../docs/manual/cui/whist.md?raw';
 import yukon from '../../../docs/manual/cui/yukon.md?raw';
 
@@ -120,6 +130,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/calculation': calculation,
   '/canasta': canasta,
   '/canfield': canfield,
+  '/osmosis': osmosis,
   '/caribbeanstud': caribbeanstud,
   '/casinoholdem': casinoholdem,
   '/callbreak': callbreak,
@@ -160,6 +171,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/jokerpoker': jokerpoker,
   '/klondike': klondike,
   '/letitride': letitride,
+  '/macau': macau,
   '/memory': memory,
   '/mighty': mighty,
   '/napoleon': napoleon,
@@ -167,6 +179,8 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/oldmaid': oldmaid,
   '/omaha': omaha,
   '/omahahilo': omahahilo,
+  '/bigo': bigo,
+  '/bigohilo': bigohilo,
   '/pageone': pageone,
   '/paigow': paigow,
   '/chinesepoker': chinesepoker,
@@ -181,6 +195,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/gaps': gaps,
   '/razz': razz,
   '/badugi': badugi,
+  '/deucetoseven': deucetoseven,
   '/reddog': reddog,
   '/sevencardstud': sevencardstud,
   '/sevens': sevens,
@@ -191,6 +206,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/speed': speed,
   '/spider': spider,
   '/spiderette': spiderette,
+  '/thirtyone': thirtyone,
   '/threecard': threecard,
   '/tonk': tonk,
   '/tripeaks': tripeaks,
@@ -203,11 +219,14 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/russiansolitaire': russiansolitaire,
   '/cruel': cruel,
   '/scorpion': scorpion,
+  '/wasp': wasp,
   '/sevenbridge': sevenbridge,
   '/accordion': accordion,
   '/trash': trash,
   '/president': president,
   '/cassino': cassino,
+  '/scopa': scopa,
+  '/barbu': barbu,
   '/spiteandmalice': spiteandmalice,
   '/skat': skat,
   '/shithead': shithead,
@@ -218,6 +237,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/highcardflush': highcardflush,
   '/briscola': briscola,
   '/bigtwo': bigtwo,
+  '/tienlen': tienlen,
   '/doudizhu': doudizhu,
   '/truco': truco,
 };
