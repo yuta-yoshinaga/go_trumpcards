@@ -490,6 +490,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 5, 3, 3], skill: [3, 4, 4, 2], social: [0, 2, 5, 3, 4], theme: [2, 2, 2, 4, 2, 3] },
       },
       {
+        path: '/tienlen',
+        labelKey: 'nav.tienlen',
+        icon: '🐉',
+        page: 'TienLen',
+        profile: { mood: [2, 5, 3, 3], skill: [3, 4, 4, 2], social: [0, 2, 5, 3, 4], theme: [2, 2, 2, 4, 2, 3] },
+      },
+      {
         path: '/president',
         labelKey: 'nav.president',
         icon: '🎩',

@@ -185,6 +185,8 @@ tags:
     description: Tonk (トンク) game - 2-player rummy variant with 5-card hands; instant Tonk win on a 49 or 50 point initial deal, knock when deadwood is 5 or less
   - name: thirtyone
     description: Thirty-One (サーティワン / Scat) game - 4-player draw-and-discard survival game; build the highest single-suit total (A=11, J/Q/K=10), knock to stand pat, lowest score loses a life, hitting exactly 31 wins the round instantly
+  - name: tienlen
+    description: Tien Len (ティエンレン / Vietnamese Big Two) game - 4-player shedding game; suit order ♠<♣<♦<♥, holder of ♠3 leads, chops (three consecutive pairs / four of a kind) cut a lone 2
   - name: casinowar
     description: Casino War (カジノウォー) game - simple player-vs-dealer table game; high card wins (Aces high), tie offers Surrender (forfeit half ante) or War (match ante and re-draw)
   - name: pitch
@@ -860,6 +862,61 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BigTwoResponse'
+
+  /tienlen/exec:
+    post:
+      tags:
+        - tienlen
+      summary: Execute a Tien Len (ティエンレン) game command
+      description: |
+        Send a command to advance the Tien Len game session identified by
+        `sessionId`.  The game has 4 players (player 0 = human, players 1–3 =
+        CPU). Card strength is `3 < 4 < … < A < 2`, ties broken by suit
+        `♠ < ♣ < ♦ < ♥`. The holder of ♠3 leads first and must include it.
+        Chops (three consecutive pairs / four of a kind) can cut a lone 2.
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `play`  | `p`     | Play cards specified by `indices`; pass with an empty array |
+      operationId: tienlenExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TienLenRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play cards at indices 0 and 1
+                value:
+                  command: play
+                  indices: [0, 1]
+                  sessionId: my-session-001
+              pass:
+                summary: Pass (empty indices)
+                value:
+                  command: play
+                  indices: []
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TienLenResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TienLenResponse'
 
   /sevens/exec:
     post:
@@ -13073,6 +13130,94 @@ components:
           items:
             $ref: '#/components/schemas/Card'
     BigTwoAction:
+      type: object
+      properties:
+        playerIdx:
+          type: integer
+        playedCards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+          nullable: true
+
+    # -------------------------------------------------------------------------
+    # Tien Len
+    # -------------------------------------------------------------------------
+    TienLenRequest:
+      type: object
+      required:
+        - command
+      properties:
+        command:
+          type: string
+          enum: [reset, r, play, p]
+        indices:
+          type: array
+          items:
+            type: integer
+        config:
+          $ref: '#/components/schemas/TienLenConfig'
+        sessionId:
+          type: string
+    TienLenConfig:
+      type: object
+      properties:
+        cpuDifficulty:
+          type: integer
+          enum: [0, 1, 2]
+    TienLenResponse:
+      type: object
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/TienLenPlayer'
+        currentTurn:
+          type: integer
+        tableCards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        tablePlayType:
+          type: integer
+        lastPlayPlayerIdx:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        cpuActions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TienLenAction'
+        humanAction:
+          $ref: '#/components/schemas/TienLenAction'
+        config:
+          $ref: '#/components/schemas/TienLenConfig'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    TienLenPlayer:
+      type: object
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        isFinished:
+          type: boolean
+        rank:
+          type: integer
+        cardCount:
+          type: integer
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+    TienLenAction:
       type: object
       properties:
         playerIdx:

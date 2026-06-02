@@ -1,0 +1,48 @@
+{
+  "rank": {
+    "1": "1位",
+    "2": "2位",
+    "3": "3位",
+    "4": "4位"
+  },
+  "cardCount": "{{count}}枚",
+  "selectToPlay": "カードを選択して出す",
+  "tableCards": "場のカード",
+  "tableEmpty": "(なし)",
+  "playButton": "選択したカードを出す",
+  "passButton": "パス",
+  "phase": {
+    "play": "プレイ",
+    "end": "終了"
+  },
+  "settings": {
+    "title": "ゲーム設定",
+    "cpuDifficulty": "CPU難易度:",
+    "difficultyNormal": "ノーマル",
+    "difficultyEasy": "イージー",
+    "difficultyHard": "ハード"
+  },
+  "tutorial": {
+    "tableCards": "場に出されたカードです。同じ役・同じ枚数で、より強いカードを出します。",
+    "playerHand": "あなたの手札です。カードをクリックして選択します。",
+    "playPass": "選択したカードを出すか、パスします。",
+    "cpuArea": "CPUプレイヤーの残り枚数です。",
+    "resetButton": "ゲームをリセットします。"
+  },
+  "hint": {
+    "canPlay": "出せるカードがあります",
+    "shouldPass": "パスを検討しましょう",
+    "playLow": "弱いカードから出しましょう"
+  },
+  "result": {
+    "rankings": "ゲーム終了！ {{rankings}}"
+  },
+  "playType": {
+    "single": "シングル",
+    "pair": "ペア",
+    "triple": "トリプル",
+    "straight": "ストレート",
+    "threePairRun": "連続3ペア",
+    "fourOfAKind": "フォーカード"
+  }
+}

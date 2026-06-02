@@ -110,6 +110,7 @@ Go + Clean Architecture で実装した113種類のトランプゲーム。CLI �
 | ピケ (Piquet) | `piquet` | [CUI](docs/manual/cui/piquet.md) / [Web](docs/manual/web/piquet.md) |
 | トンク (Tonk) | `tonk` | [CUI](docs/manual/cui/tonk.md) / [Web](docs/manual/web/tonk.md) |
 | サーティワン (Thirty-One) | `thirtyone` | [CUI](docs/manual/cui/thirtyone.md) / [Web](docs/manual/web/thirtyone.md) |
+| ティエンレン (Tien Len) | `tienlen` | [CUI](docs/manual/cui/tienlen.md) / [Web](docs/manual/web/tienlen.md) |
 | シックスカードゴルフ (Six Card Golf) | `sixcardgolf` | [CUI](docs/manual/cui/sixcardgolf.md) / [Web](docs/manual/web/sixcardgolf.md) |
 | カジノウォー (Casino War) | `casinowar` | [CUI](docs/manual/cui/casinowar.md) / [Web](docs/manual/web/casinowar.md) |
 | ピッチ / セットバック (Pitch / Setback) | `pitch` | [CUI](docs/manual/cui/pitch.md) / [Web](docs/manual/web/pitch.md) |
