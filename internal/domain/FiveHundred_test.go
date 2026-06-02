@@ -347,7 +347,14 @@ func TestFiveHundred_BidFlow_FinalizesContract(t *testing.T) {
 	for g.GetPhase() == domain.FiveHundredPhaseBid && steps < 5000 {
 		idx := g.GetBidPlayerIdx()
 		if g.GetPlayer(idx).GetIsHuman() {
-			_ = g.PlayerPass()
+			// Open with the lowest bid when nobody has bid yet, else pass.
+			// This guarantees a standing bid so the auction always resolves
+			// (avoids relying on a CPU bidding, which can all-pass and redeal).
+			if g.GetHighestBid() == nil {
+				_ = g.PlayerBid(domain.FiveHundredContractSuit, 6, domain.CardDesignSpade)
+			} else {
+				_ = g.PlayerPass()
+			}
 		} else {
 			g.CpuBid()
 		}
