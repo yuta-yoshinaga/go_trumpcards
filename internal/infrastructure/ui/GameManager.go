@@ -1839,6 +1839,23 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"macau.helpSetDifficulty", "macau.helpSetLimit"},
 			})
 	}},
+	{Name: "thirtyone", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewThirtyOneCuiController(usecase.NewThirtyOneInteractor(
+				domain.NewDefaultThirtyOne(), new(presenter.ThirtyOneCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "thirtyone.helpTitle",
+				CommandKeys: []string{
+					"thirtyone.helpDrawStock",
+					"thirtyone.helpDrawDiscard",
+					"thirtyone.helpDiscard",
+					"thirtyone.helpKnock",
+					"thirtyone.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"thirtyone.helpSetDifficulty", "thirtyone.helpSetLives"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

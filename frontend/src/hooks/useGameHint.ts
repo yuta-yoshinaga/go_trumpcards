@@ -85,6 +85,7 @@ import type {
   SpiteAndMaliceResponse,
   TarneebResponse,
   TexasHoldemBonusResponse,
+  ThirtyOneResponse,
   ThreeCardResponse,
   TrashResponse,
   TriPeaksResponse,
@@ -187,6 +188,7 @@ import { getSpiderHint } from '../utils/hints/spiderHint';
 import { getSpiteAndMaliceHint } from '../utils/hints/spiteAndMaliceHint';
 import { getTarneebHint } from '../utils/hints/tarneebHint';
 import { getTexasHoldemBonusHint } from '../utils/hints/texasHoldemBonusHint';
+import { getThirtyOneHint } from '../utils/hints/thirtyoneHint';
 import { getThreeCardHint } from '../utils/hints/threecardHint';
 import { getTrashHint } from '../utils/hints/trashHint';
 import { getTriPeaksHint } from '../utils/hints/tripeaksHint';
@@ -271,6 +273,7 @@ const hintFactories = {
   bakersdozen: (s) => getBakersdozenHint(s as BakersDozenResponse),
   beleagueredcastle: (s) => getBeleagueredcastleHint(s as BeleagueredCastleResponse),
   tonk: () => null,
+  thirtyone: (s) => getThirtyOneHint(s as ThirtyOneResponse),
   paigow: () => null,
   chinesepoker: () => null,
   pageone: (s) => getPageOneHint(s as PageOneResponse),

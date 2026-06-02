@@ -1,0 +1,23 @@
+{
+  "helpTitle": "サーティワン",
+  "helpDrawStock": "  ds                   山札から引く",
+  "helpDrawDiscard": "  dd                   捨て札から引く",
+  "helpDiscard": "  d <idx>              カードを捨てる",
+  "helpKnock": "  k                    ノック (勝負する)",
+  "helpNextRound": "  nr                   次のラウンドへ",
+  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=易 1=普通 2=難)",
+  "helpSetLives": "  sv <n>               初期ライフ (1-10)",
+  "header": "ラウンド: {{round}}  山札: {{stock}}",
+  "discardLine": "捨て札: {{card}}",
+  "playerLine": "{{name}}: ライフ {{lives}}  最高スート {{score}}  手札 {{cards}}枚",
+  "gameEnd": "ゲーム終了! {{name}} の勝ち!",
+  "promptDraw": "{{name}} の番です (ドローフェーズ)",
+  "promptDrawHelpStock": "ds: 山札から引く",
+  "promptDrawHelpDiscard": "dd: 捨て札から引く",
+  "promptKnockHelp": "k: ノック (引かずに勝負)",
+  "promptDiscard": "{{name}} の番です (ディスカードフェーズ)",
+  "promptDiscardHelp": "d <idx>: カードを捨てる",
+  "promptThirtyOne": "{{name}} が31を達成!",
+  "promptRoundEnd": "ラウンド終了",
+  "promptRoundEndHelp": "nr / nextround: 次のラウンドへ"
+}

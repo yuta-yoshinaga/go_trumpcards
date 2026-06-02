@@ -301,6 +301,14 @@ export const TonkPhase = {
   GAME_END: 3,
 } as const;
 
+/** Thirty-One phase constants (sync: internal/domain/ThirtyOne.go). */
+export const ThirtyOnePhase = {
+  DRAW: 0,
+  DISCARD: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Seven Bridge phase constants (sync: internal/domain/SevenBridge.go). */
 export const SevenBridgePhase = {
   DRAW: 0,

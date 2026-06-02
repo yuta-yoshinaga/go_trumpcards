@@ -1,0 +1,121 @@
+//go:build test
+
+package presenter_test
+
+import (
+	"errors"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+)
+
+func setupThirtyOneCuiMock() (*interfaces.MockThirtyOneGame, []*domain.ThirtyOnePlayer) {
+	m := new(interfaces.MockThirtyOneGame)
+	players := makeThirtyOnePlayers()
+	m.On("GetRoundNumber").Return(1)
+	m.On("GetDrawPileCount").Return(39)
+	m.On("GetDiscardTop").Return((*domain.Card)(nil))
+	m.On("GetGameEndFlag").Return(false)
+	m.On("GetPhase").Return(domain.ThirtyOnePhaseDraw)
+	m.On("GetCurrentPlayerIdx").Return(0)
+	m.On("GetWinnerIdx").Return(-1)
+	m.On("GetKnockerIdx").Return(-1)
+	m.On("GetThirtyOneIdx").Return(-1)
+	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	m.On("GetPlayerCnt").Return(4)
+	for i := 0; i < 4; i++ {
+		m.On("GetPlayer", i).Return(players[i])
+	}
+	return m, players
+}
+
+func TestThirtyOneCuiPresenter_Output(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.ThirtyOneCuiPresenter)
+
+	t.Run("initial draw phase", func(t *testing.T) {
+		m, players := setupThirtyOneCuiMock()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "サーティワン")
+		assert.Contains(t, result, "ラウンド: 1")
+		assert.Contains(t, result, "山札: 39")
+		assert.Contains(t, result, "あなた: ライフ 3")
+		assert.Contains(t, result, "[0]SPADE 1")
+		assert.Contains(t, result, "ds")
+		assert.Contains(t, result, "dd")
+		assert.Contains(t, result, "k:") // knock help shown when no knocker
+	})
+
+	t.Run("discard top shown", func(t *testing.T) {
+		m, _ := setupThirtyOneCuiMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardTop")
+		m.On("GetDiscardTop").Return(domain.NewCard(domain.CardDesignHeart, 7, false))
+		assert.Contains(t, p.Output(m, nil), "捨て札: HEART 7")
+	})
+
+	t.Run("error shown", func(t *testing.T) {
+		m, _ := setupThirtyOneCuiMock()
+		assert.Contains(t, p.Output(m, errors.New("invalid card index")), "invalid card index")
+	})
+
+	t.Run("eliminated player shown OUT", func(t *testing.T) {
+		m, players := setupThirtyOneCuiMock()
+		players[3].SetLives(-1)
+		assert.Contains(t, p.Output(m, nil), "OUT")
+	})
+
+	t.Run("discard phase commands", func(t *testing.T) {
+		m, _ := setupThirtyOneCuiMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.ThirtyOnePhaseDiscard)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ディスカードフェーズ")
+		assert.Contains(t, result, "d <idx>")
+	})
+
+	t.Run("round end with thirty-one banner", func(t *testing.T) {
+		m, _ := setupThirtyOneCuiMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetThirtyOneIdx")
+		m.On("GetPhase").Return(domain.ThirtyOnePhaseRoundEnd)
+		m.On("GetThirtyOneIdx").Return(0)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "31を達成")
+		assert.Contains(t, result, "nr / nextround")
+	})
+
+	t.Run("game ended human winner", func(t *testing.T) {
+		m, _ := setupThirtyOneCuiMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetWinnerIdx")
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetWinnerIdx").Return(0)
+		assert.Contains(t, p.Output(m, nil), "ゲーム終了")
+	})
+}
+
+func TestThirtyOneCuiPresenter_ActionLogOutput(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.ThirtyOneCuiPresenter)
+
+	m := new(interfaces.MockThirtyOneGame)
+	entries := []*domain.ActionLogEntry{
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "knock", Detail: "You knock"},
+	}
+	m.On("GetGameEndFlag").Return(true)
+	m.On("GetActionLog").Return(entries)
+	assert.Contains(t, p.ActionLogOutput(m), "knock")
+}

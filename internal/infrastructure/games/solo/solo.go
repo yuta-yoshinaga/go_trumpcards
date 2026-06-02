@@ -306,4 +306,12 @@ func init() {
 			return usecase.RestoreMacauInteractor(data, new(presenter.MacauWebPresenter))
 		},
 		controller.NewMacauWebControllerWithProvider)
+	games.RegisterKVGame("thirtyone", games.CategorySolo,
+		func() usecase.ThirtyOneInteractorIF {
+			return usecase.NewThirtyOneInteractor(domain.NewDefaultThirtyOne(), new(presenter.ThirtyOneWebPresenter))
+		},
+		func(data []byte) (usecase.ThirtyOneInteractorIF, error) {
+			return usecase.RestoreThirtyOneInteractor(data, new(presenter.ThirtyOneWebPresenter))
+		},
+		controller.NewThirtyOneWebControllerWithProvider)
 }
