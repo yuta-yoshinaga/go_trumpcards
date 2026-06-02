@@ -160,6 +160,42 @@ func TestOsmosis_UnmarshalNormalizesNilSlices(t *testing.T) {
 	for i := 0; i < OsmosisReserveCnt; i++ {
 		assert.NotNil(t, restored.reserve[i])
 	}
+	for i := 0; i < OsmosisFoundationCnt; i++ {
+		assert.NotNil(t, restored.foundation[i])
+	}
 	assert.NotNil(t, restored.actionLog)
 	assert.NotNil(t, restored.history)
+}
+
+// TestOsmosis_UnmarshalFiltersNilCardElements ensures null elements within card
+// slices are silently dropped to prevent nil pointer dereferences in game logic.
+func TestOsmosis_UnmarshalFiltersNilCardElements(t *testing.T) {
+	t.Parallel()
+
+	// JSON with explicit null entries in waste, foundation, reserve, and a snapshot.
+	payload := `{
+		"tc": null,
+		"wa": [null, {"design":1,"value":5,"face_up":true}],
+		"fd": [[null, {"design":1,"value":1,"face_up":true}], null, null, null],
+		"rv": [[null, {"design":2,"value":8,"face_up":true}], null, null, null],
+		"hi": [{"wa": [null], "fd": [null, null, null, null], "rv": [null, null, null, null]}]
+	}`
+	var restored Osmosis
+	require.NoError(t, json.Unmarshal([]byte(payload), &restored))
+
+	// Null waste element is dropped; only the real card survives.
+	require.Len(t, restored.waste, 1)
+	assert.Equal(t, 5, restored.waste[0].GetValue())
+
+	// Null foundation element is dropped; only the real card survives.
+	require.Len(t, restored.foundation[0], 1)
+	assert.Equal(t, 1, restored.foundation[0][0].GetValue())
+
+	// Null reserve element is dropped; only the real card survives.
+	require.Len(t, restored.reserve[0], 1)
+	assert.Equal(t, 8, restored.reserve[0][0].GetValue())
+
+	// Snapshot's waste null element is also dropped.
+	require.Len(t, restored.history, 1)
+	assert.Empty(t, restored.history[0].waste)
 }

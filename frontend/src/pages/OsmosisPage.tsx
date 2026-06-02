@@ -190,9 +190,11 @@ function OsmosisPageContent() {
                   onClick={() => handleFoundationClick(i)}
                   disabled={!isPlaying || !selected || loading}
                   aria-label={`${t('foundation')} ${i}`}
-                  className={`flex items-center gap-2 rounded border p-1 text-left ${focusRingWhite} ${
-                    selected ? 'border-ds-info' : 'border-white/30'
-                  }`}
+                  className={
+                    selected
+                      ? `flex items-center gap-2 rounded border p-1 text-left ${focusRingWhite} border-ds-info`
+                      : `flex items-center gap-2 rounded border p-1 text-left ${focusRingWhite} border-white/30`
+                  }
                 >
                   <span className="w-5 text-xs text-ds-text-muted">#{i}</span>
                   <div className="relative" style={{ width: cardWidth, height: cardHeight }}>
@@ -224,9 +226,11 @@ function OsmosisPageContent() {
                         disabled={!isPlaying || loading}
                         aria-label={`${t('reserve')} ${i}`}
                         aria-pressed={isSelected(zone)}
-                        className={`p-0 border-2 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
-                          isSelected(zone) ? 'border-ds-info' : 'border-transparent'
-                        }`}
+                        className={
+                          isSelected(zone)
+                            ? `p-0 border-2 bg-transparent cursor-pointer rounded ${focusRingWhite} border-ds-info`
+                            : `p-0 border-2 bg-transparent cursor-pointer rounded ${focusRingWhite} border-transparent`
+                        }
                       >
                         <AnimatedCard card={top} width={cardWidth} draggable={false} />
                       </button>
@@ -273,9 +277,11 @@ function OsmosisPageContent() {
                       disabled={!isPlaying || loading}
                       aria-label={t('waste')}
                       aria-pressed={isSelected({ zone: 'waste' })}
-                      className={`p-0 border-2 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
-                        isSelected({ zone: 'waste' }) ? 'border-ds-info' : 'border-transparent'
-                      }`}
+                      className={
+                        isSelected({ zone: 'waste' })
+                          ? `p-0 border-2 bg-transparent cursor-pointer rounded ${focusRingWhite} border-ds-info`
+                          : `p-0 border-2 bg-transparent cursor-pointer rounded ${focusRingWhite} border-transparent`
+                      }
                     >
                       <AnimatedCard card={topWaste} width={cardWidth} draggable={false} />
                     </button>

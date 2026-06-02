@@ -533,7 +533,9 @@ func (s *osmosisSnapshot) UnmarshalJSON(data []byte) error {
 	s.reserve = osmosisNormalizeReserve(j.Reserve)
 	s.stock = osmosisNonNil(j.Stock)
 	s.waste = osmosisNonNil(j.Waste)
-	s.foundation = j.Foundation
+	for i := 0; i < OsmosisFoundationCnt; i++ {
+		s.foundation[i] = osmosisNonNil(j.Foundation[i])
+	}
 	s.phase = j.Phase
 	s.moveCount = j.MoveCount
 	return nil
@@ -582,7 +584,9 @@ func (o *Osmosis) UnmarshalJSON(data []byte) error {
 	o.reserve = osmosisNormalizeReserve(j.Reserve)
 	o.stock = osmosisNonNil(j.Stock)
 	o.waste = osmosisNonNil(j.Waste)
-	o.foundation = j.Foundation
+	for i := 0; i < OsmosisFoundationCnt; i++ {
+		o.foundation[i] = osmosisNonNil(j.Foundation[i])
+	}
 	o.baseRank = j.BaseRank
 	o.phase = j.Phase
 	o.moveCount = j.MoveCount
@@ -597,20 +601,21 @@ func (o *Osmosis) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// osmosisNonNil returns a non-nil slice, substituting an empty slice for nil.
+// osmosisNonNil returns a non-nil slice with nil elements removed.
 func osmosisNonNil(s []*Card) []*Card {
-	if s == nil {
-		return make([]*Card, 0)
+	res := make([]*Card, 0, len(s))
+	for _, c := range s {
+		if c != nil {
+			res = append(res, c)
+		}
 	}
-	return s
+	return res
 }
 
-// osmosisNormalizeReserve ensures every reserve pile is non-nil.
+// osmosisNormalizeReserve ensures every reserve pile is non-nil and free of nil elements.
 func osmosisNormalizeReserve(r [OsmosisReserveCnt][]*Card) [OsmosisReserveCnt][]*Card {
 	for i := 0; i < OsmosisReserveCnt; i++ {
-		if r[i] == nil {
-			r[i] = make([]*Card, 0)
-		}
+		r[i] = osmosisNonNil(r[i])
 	}
 	return r
 }
