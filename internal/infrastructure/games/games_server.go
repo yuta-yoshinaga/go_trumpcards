@@ -433,6 +433,11 @@ func init() {
 			return usecase.NewThirtyOneInteractor(domain.NewDefaultThirtyOne(), new(presenter.ThirtyOneWebPresenter))
 		},
 		controller.NewThirtyOneWebController)
+	BindWebControllerFor("tienlen",
+		func() usecase.TienLenInteractorIF {
+			return usecase.NewTienLenInteractor(domain.NewDefaultTienLen(), new(presenter.TienLenWebPresenter))
+		},
+		controller.NewTienLenWebController)
 	BindWebControllerFor("casinowar",
 		func() usecase.CasinoWarInteractorIF {
 			return usecase.NewCasinoWarInteractor(domain.NewDefaultCasinoWar(), new(presenter.CasinoWarWebPresenter))

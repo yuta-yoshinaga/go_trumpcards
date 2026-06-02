@@ -1856,6 +1856,16 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"thirtyone.helpSetDifficulty", "thirtyone.helpSetLives"},
 			})
 	}},
+	{Name: "tienlen", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewTienLenCuiController(usecase.NewTienLenInteractor(
+				domain.NewDefaultTienLen(), new(presenter.TienLenCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:    "tienlen.helpTitle",
+				CommandKeys: []string{"tienlen.helpPlay"},
+				SettingKeys: []string{"tienlen.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

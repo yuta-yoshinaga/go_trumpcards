@@ -87,6 +87,7 @@ import type {
   TexasHoldemBonusResponse,
   ThirtyOneResponse,
   ThreeCardResponse,
+  TienLenResponse,
   TrashResponse,
   TriPeaksResponse,
   TwoTenJackResponse,
@@ -190,6 +191,7 @@ import { getTarneebHint } from '../utils/hints/tarneebHint';
 import { getTexasHoldemBonusHint } from '../utils/hints/texasHoldemBonusHint';
 import { getThirtyOneHint } from '../utils/hints/thirtyoneHint';
 import { getThreeCardHint } from '../utils/hints/threecardHint';
+import { getTienLenHint } from '../utils/hints/tienlenHint';
 import { getTrashHint } from '../utils/hints/trashHint';
 import { getTriPeaksHint } from '../utils/hints/tripeaksHint';
 import { getTwoTenJackHint } from '../utils/hints/twotenjackHint';
@@ -233,6 +235,7 @@ const hintFactories = {
   euchre: (s) => getEuchreHint(s as EuchreResponse),
   belote: (s) => getBeloteHint(s as BeloteResponse),
   bigtwo: (s) => getBigTwoHint(s as BigTwoResponse),
+  tienlen: (s) => getTienLenHint(s as TienLenResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
   mighty: (s) => getMightyHint(s as MightyResponse),

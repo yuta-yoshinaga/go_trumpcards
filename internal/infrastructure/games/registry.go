@@ -213,6 +213,10 @@ var registry = []*Game{
 	// bucketed into the solo worker because the classic worker is at the 1 MB
 	// gzip free-tier limit. Category here is purely a binary-size bucket.
 	{Name: "thirtyone", Category: CategorySolo, Description: "Thirty-One (サーティワン)"},
+	// Tien Len (Vietnamese Big Two) is a classic shedding game, but it is
+	// bucketed into the solo worker because the classic worker is at the 1 MB
+	// gzip free-tier limit. Category here is purely a binary-size bucket.
+	{Name: "tienlen", Category: CategorySolo, Description: "Tien Len (ティエンレン)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

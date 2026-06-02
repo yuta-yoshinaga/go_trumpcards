@@ -107,6 +107,7 @@ import tarneeb from '../../../docs/manual/cui/tarneeb.md?raw';
 import texasholdembonus from '../../../docs/manual/cui/texasholdembonus.md?raw';
 import thirtyone from '../../../docs/manual/cui/thirtyone.md?raw';
 import threecard from '../../../docs/manual/cui/threecard.md?raw';
+import tienlen from '../../../docs/manual/cui/tienlen.md?raw';
 import tonk from '../../../docs/manual/cui/tonk.md?raw';
 import trash from '../../../docs/manual/cui/trash.md?raw';
 import tripeaks from '../../../docs/manual/cui/tripeaks.md?raw';
@@ -234,6 +235,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/highcardflush': highcardflush,
   '/briscola': briscola,
   '/bigtwo': bigtwo,
+  '/tienlen': tienlen,
   '/doudizhu': doudizhu,
   '/truco': truco,
 };

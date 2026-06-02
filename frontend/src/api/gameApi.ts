@@ -115,6 +115,8 @@ import type {
   TexasHoldemBonusResponse,
   ThirtyOneResponse,
   ThreeCardResponse,
+  TienLenConfigInput,
+  TienLenResponse,
   TonkResponse,
   TrashResponse,
   TriPeaksResponse,
@@ -179,6 +181,7 @@ const workerUrl: Record<string, string> = {
   durak: WORKER_CLASSIC,
   daifugo: WORKER_CLASSIC,
   bigtwo: WORKER_CLASSIC,
+  tienlen: WORKER_SOLO,
   sevens: WORKER_CLASSIC,
   crazyeights: WORKER_CLASSIC,
   pageone: WORKER_CLASSIC,
@@ -445,6 +448,12 @@ export const daifugoApi = {
 export const bigtwoApi = {
   exec: (command: 'reset' | 'play', indices?: number[], config?: BigTwoConfigInput) =>
     gameExec<BigTwoResponse>('bigtwo', { command, indices, config }),
+};
+
+/** API client for the Tien Len /tienlen/exec endpoint. */
+export const tienlenApi = {
+  exec: (command: 'reset' | 'play', indices?: number[], config?: TienLenConfigInput) =>
+    gameExec<TienLenResponse>('tienlen', { command, indices, config }),
 };
 
 /** API client for the Durak /durak/exec endpoint. */
@@ -2174,6 +2183,7 @@ const games = [
   'oldmaid',
   'daifugo',
   'bigtwo',
+  'tienlen',
   'sevens',
   'doubt',
   'durak',

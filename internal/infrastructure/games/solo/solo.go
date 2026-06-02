@@ -314,4 +314,12 @@ func init() {
 			return usecase.RestoreThirtyOneInteractor(data, new(presenter.ThirtyOneWebPresenter))
 		},
 		controller.NewThirtyOneWebControllerWithProvider)
+	games.RegisterKVGame("tienlen", games.CategorySolo,
+		func() usecase.TienLenInteractorIF {
+			return usecase.NewTienLenInteractor(domain.NewDefaultTienLen(), new(presenter.TienLenWebPresenter))
+		},
+		func(data []byte) (usecase.TienLenInteractorIF, error) {
+			return usecase.RestoreTienLenInteractor(data, new(presenter.TienLenWebPresenter))
+		},
+		controller.NewTienLenWebControllerWithProvider)
 }
