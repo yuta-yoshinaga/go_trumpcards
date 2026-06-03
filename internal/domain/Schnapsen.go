@@ -19,6 +19,7 @@ package domain
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sort"
 )
@@ -67,39 +68,48 @@ type SchnapsenHint struct {
 	IsMarriage bool   // 推奨アクションがマリアージュ宣言かどうか
 }
 
-// schnapsenCardPoints シュナプセンのカード点数 (A=11,10=10,K=4,Q=3,J=2)
-var schnapsenCardPoints = map[int]int{
-	1:  11, // Ace
-	10: 10, // Ten
-	13: 4,  // King
-	12: 3,  // Queen
-	11: 2,  // Jack
-}
-
-// schnapsenRankOrder スート内のカード強さ。値が大きいほど強い。
-// A>10>K>Q>J を 1-base で表現する。
-var schnapsenRankOrder = map[int]int{
-	11: 1, // J
-	12: 2, // Q
-	13: 3, // K
-	10: 4, // 10
-	1:  5, // A
-}
-
-// SchnapsenCardPoints カードの得点を返す (公開ヘルパー)。
+// SchnapsenCardPoints カードの得点を返す (A=11,10=10,K=4,Q=3,J=2; その他=0)。
+// switch 実装はパッケージ初期化時のグローバルマップを避け、全 Cloudflare
+// Worker WASM バイナリ (classic は 1 MB gzip 上限) のサイズを抑える。
 func SchnapsenCardPoints(c *Card) int {
 	if c == nil {
 		return 0
 	}
-	return schnapsenCardPoints[c.GetValue()]
+	switch c.GetValue() {
+	case 1: // Ace
+		return 11
+	case 10: // Ten
+		return 10
+	case 13: // King
+		return 4
+	case 12: // Queen
+		return 3
+	case 11: // Jack
+		return 2
+	default:
+		return 0
+	}
 }
 
-// SchnapsenRankOrder カードのスート内順位を返す (大きいほど強い)。
+// SchnapsenRankOrder カードのスート内順位を返す (大きいほど強い; A>10>K>Q>J)。
 func SchnapsenRankOrder(c *Card) int {
 	if c == nil {
 		return 0
 	}
-	return schnapsenRankOrder[c.GetValue()]
+	switch c.GetValue() {
+	case 1: // A
+		return 5
+	case 10: // 10
+		return 4
+	case 13: // K
+		return 3
+	case 12: // Q
+		return 2
+	case 11: // J
+		return 1
+	default:
+		return 0
+	}
 }
 
 // Schnapsen シュナプセンゲームクラス
@@ -1002,62 +1012,53 @@ func (s *Schnapsen) MarshalJSON() ([]byte, error) {
 // excessive memory allocation from malformed input.
 const schnapsenMaxSliceLen = 1000
 
+// errSchnapsenSnapshot is returned for any malformed serialised game state.
+// A single shared sentinel (rather than per-field formatted messages) keeps
+// UnmarshalJSON's compiled footprint small — the domain package is linked into
+// every Cloudflare Worker WASM binary, and the classic worker is at the 1 MB
+// gzip free-tier limit.
+var errSchnapsenSnapshot = errors.New("schnapsen: invalid serialised game state")
+
+// schnapsenIdxInRange reports whether i is a valid player index.
+func schnapsenIdxInRange(i int) bool { return i >= 0 && i < SchnapsenPlayerCnt }
+
 // UnmarshalJSON implements json.Unmarshaler.
 //
 // Validates that the deserialised game state matches Schnapsen's fixed shape
-// (SchnapsenPlayerCnt = 2 players, at most SchnapsenPlayerCnt cards on the
-// current trick, PlayerPoints aligned to the player count) and that the
-// variable-length ActionLog does not exceed schnapsenMaxSliceLen, preventing
-// DoS via crafted payloads and out-of-bounds access during play.
+// before adopting it, preventing nil-pointer dereferences and out-of-bounds
+// panics (and DoS via oversized slices) from a corrupted or maliciously
+// crafted snapshot: exactly SchnapsenPlayerCnt non-nil players, at most
+// SchnapsenPlayerCnt non-nil trick cards (each with a non-nil face and an
+// in-range PlayerIdx), PlayerPoints aligned to the player count, an ActionLog
+// within schnapsenMaxSliceLen with no nil entries, in-range
+// current/lead/dealer indices, and a known Phase.
 func (s *Schnapsen) UnmarshalJSON(data []byte) error {
 	var j schnapsenJSON
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if len(j.Players) != SchnapsenPlayerCnt {
-		return fmt.Errorf("schnapsen: expected %d players, got %d", SchnapsenPlayerCnt, len(j.Players))
+	if len(j.Players) != SchnapsenPlayerCnt || len(j.CurrentTrick) > SchnapsenPlayerCnt ||
+		(j.PlayerPoints != nil && len(j.PlayerPoints) != SchnapsenPlayerCnt) ||
+		len(j.ActionLog) > schnapsenMaxSliceLen ||
+		!schnapsenIdxInRange(j.CurrentPlayerIdx) || !schnapsenIdxInRange(j.LeadPlayerIdx) ||
+		!schnapsenIdxInRange(j.DealerIdx) ||
+		j.Phase < SchnapsenPhasePlay || j.Phase > SchnapsenPhaseGameEnd {
+		return errSchnapsenSnapshot
 	}
-	for i, p := range j.Players {
+	for _, p := range j.Players {
 		if p == nil {
-			return fmt.Errorf("schnapsen: player at index %d is nil", i)
+			return errSchnapsenSnapshot
 		}
 	}
-	if len(j.CurrentTrick) > SchnapsenPlayerCnt {
-		return fmt.Errorf("schnapsen: current trick has %d cards (max %d)", len(j.CurrentTrick), SchnapsenPlayerCnt)
-	}
-	for i, tc := range j.CurrentTrick {
-		if tc == nil {
-			return fmt.Errorf("schnapsen: trick card at index %d is nil", i)
-		}
-		if tc.Card == nil {
-			return fmt.Errorf("schnapsen: card in trick at index %d is nil", i)
-		}
-		if tc.PlayerIdx < 0 || tc.PlayerIdx >= SchnapsenPlayerCnt {
-			return fmt.Errorf("schnapsen: invalid player index %d in trick card at index %d", tc.PlayerIdx, i)
+	for _, tc := range j.CurrentTrick {
+		if tc == nil || tc.Card == nil || !schnapsenIdxInRange(tc.PlayerIdx) {
+			return errSchnapsenSnapshot
 		}
 	}
-	if j.PlayerPoints != nil && len(j.PlayerPoints) != SchnapsenPlayerCnt {
-		return fmt.Errorf("schnapsen: expected %d player points entries, got %d", SchnapsenPlayerCnt, len(j.PlayerPoints))
-	}
-	if len(j.ActionLog) > schnapsenMaxSliceLen {
-		return fmt.Errorf("schnapsen: action log exceeds maximum allowed size")
-	}
-	for i, entry := range j.ActionLog {
+	for _, entry := range j.ActionLog {
 		if entry == nil {
-			return fmt.Errorf("schnapsen: action log entry at index %d is nil", i)
+			return errSchnapsenSnapshot
 		}
-	}
-	if j.CurrentPlayerIdx < 0 || j.CurrentPlayerIdx >= SchnapsenPlayerCnt {
-		return fmt.Errorf("schnapsen: invalid current player index %d", j.CurrentPlayerIdx)
-	}
-	if j.LeadPlayerIdx < 0 || j.LeadPlayerIdx >= SchnapsenPlayerCnt {
-		return fmt.Errorf("schnapsen: invalid lead player index %d", j.LeadPlayerIdx)
-	}
-	if j.DealerIdx < 0 || j.DealerIdx >= SchnapsenPlayerCnt {
-		return fmt.Errorf("schnapsen: invalid dealer index %d", j.DealerIdx)
-	}
-	if j.Phase < SchnapsenPhasePlay || j.Phase > SchnapsenPhaseGameEnd {
-		return fmt.Errorf("schnapsen: invalid phase %d", j.Phase)
 	}
 	s.trumpCards = j.TrumpCards
 	if s.trumpCards == nil {
