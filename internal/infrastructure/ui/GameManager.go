@@ -1906,6 +1906,20 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "schnapsen", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSchnapsenCuiController(usecase.NewSchnapsenInteractor(
+				domain.NewDefaultSchnapsen(), new(presenter.SchnapsenCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "schnapsen.helpTitle",
+				CommandKeys: []string{
+					"schnapsen.helpPlay",
+					"schnapsen.helpMarriage",
+					"schnapsen.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

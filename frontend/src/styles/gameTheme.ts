@@ -64,6 +64,7 @@ export type GameKey =
   | 'callbreak'
   | 'tarneeb'
   | 'briscola'
+  | 'schnapsen'
   | 'skat'
   | 'belote'
   | 'mighty'
@@ -214,6 +215,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   callbreak: BLUE,
   tarneeb: BLUE,
   briscola: BLUE,
+  schnapsen: BLUE,
   // Matching/Pass
   oldmaid: GREEN,
   doubt: GREEN,

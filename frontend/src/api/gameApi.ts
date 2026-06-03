@@ -93,6 +93,8 @@ import type {
   Rummy500Response,
   RussianPokerResponse,
   RussianSolitaireResponse,
+  SchnapsenConfig,
+  SchnapsenResponse,
   ScopaResponse,
   ScorpionResponse,
   SeahavenTowersResponse,
@@ -253,6 +255,7 @@ const workerUrl: Record<string, string> = {
   tarneeb: WORKER_CLASSIC,
   highcardflush: WORKER_CASINO,
   briscola: WORKER_CLASSIC,
+  schnapsen: WORKER_SOLO,
   gaps: WORKER_SOLO,
   fourcardpoker: WORKER_CASINO,
   rummy500: WORKER_SOLO,
@@ -2128,6 +2131,15 @@ export const briscolaApi = {
     gameExec<BriscolaResponse>('briscola', { command, cardIndex, config }),
 };
 
+/** API client for the Schnapsen /schnapsen/exec endpoint. */
+export const schnapsenApi = {
+  exec: (
+    command: 'reset' | 'play' | 'marriage' | 'next' | 'hint' | 'log',
+    cardIndex?: number,
+    config?: Partial<SchnapsenConfig>,
+  ) => gameExec<SchnapsenResponse>('schnapsen', { command, cardIndex, config }),
+};
+
 /** API client for the Truco /truco/exec endpoint. */
 export const trucoApi = {
   exec: (
@@ -2356,6 +2368,7 @@ const games = [
   'doudizhu',
   'truco',
   'acesup',
+  'schnapsen',
 ] as const;
 type Game = (typeof games)[number];
 

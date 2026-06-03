@@ -88,6 +88,7 @@ import reddog from '../../../docs/manual/cui/reddog.md?raw';
 import rummy500 from '../../../docs/manual/cui/rummy500.md?raw';
 import russianpoker from '../../../docs/manual/cui/russianpoker.md?raw';
 import russiansolitaire from '../../../docs/manual/cui/russiansolitaire.md?raw';
+import schnapsen from '../../../docs/manual/cui/schnapsen.md?raw';
 import scopa from '../../../docs/manual/cui/scopa.md?raw';
 import scorpion from '../../../docs/manual/cui/scorpion.md?raw';
 import seahaventowers from '../../../docs/manual/cui/seahaventowers.md?raw';
@@ -238,6 +239,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/tarneeb': tarneeb,
   '/highcardflush': highcardflush,
   '/briscola': briscola,
+  '/schnapsen': schnapsen,
   '/bigtwo': bigtwo,
   '/tienlen': tienlen,
   '/doudizhu': doudizhu,

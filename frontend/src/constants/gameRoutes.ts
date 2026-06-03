@@ -455,6 +455,13 @@ export const gameCategories: readonly GameCategory[] = [
         page: 'Briscola',
         profile: { mood: [3, 4, 3, 4], skill: [4, 4, 3, 3], social: [1, 3, 5, 4, 3], theme: [2, 5, 1, 1, 2, 3] },
       },
+      {
+        path: '/schnapsen',
+        labelKey: 'nav.schnapsen',
+        icon: '🇦🇹',
+        page: 'Schnapsen',
+        profile: { mood: [2, 4, 4, 3], skill: [5, 4, 2, 2], social: [1, 2, 5, 4, 3], theme: [2, 4, 1, 1, 2, 3] },
+      },
     ],
   },
   {
