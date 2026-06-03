@@ -4,36 +4,6 @@ package domain
 
 import "encoding/json"
 
-// ポーカーハンドランク定数
-const (
-	PokerHandHighCard      = 0
-	PokerHandOnePair       = 1
-	PokerHandTwoPair       = 2
-	PokerHandThreeOfAKind  = 3
-	PokerHandStraight      = 4
-	PokerHandFlush         = 5
-	PokerHandFullHouse     = 6
-	PokerHandFourOfAKind   = 7
-	PokerHandStraightFlush = 8
-	PokerHandRoyalFlush    = 9
-	PokerHandFiveOfAKind   = 10
-)
-
-// PokerHandNames ポーカーハンド名
-var PokerHandNames = []string{
-	"High Card",
-	"One Pair",
-	"Two Pair",
-	"Three of a Kind",
-	"Straight",
-	"Flush",
-	"Full House",
-	"Four of a Kind",
-	"Straight Flush",
-	"Royal Flush",
-	"Five of a Kind",
-}
-
 // PokerPlayer ポーカープレイヤークラス
 type PokerPlayer struct {
 	Player                           // 親クラス
