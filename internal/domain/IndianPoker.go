@@ -422,24 +422,34 @@ type indianPokerCpuStyleParams struct {
 	raisePotPct    int  // raise = pot * this / 100
 }
 
-// indianPokerStyleParamsMap スタイルごとのパラメータ
-var indianPokerStyleParamsMap = map[HoldemPlayStyle]indianPokerCpuStyleParams{
-	HoldemStyleTAG: {
-		aggressive: true, bluffRate: 15,
-		foldThreshold: 45, raiseThreshold: 70, raisePotPct: 75,
-	},
-	HoldemStyleLAP: {
-		aggressive: false, bluffRate: 5,
-		foldThreshold: 20, raiseThreshold: 80, raisePotPct: 50,
-	},
-	HoldemStyleTAP: {
-		aggressive: false, bluffRate: 5,
-		foldThreshold: 35, raiseThreshold: 85, raisePotPct: 50,
-	},
-	HoldemStyleLAG: {
-		aggressive: true, bluffRate: 30,
-		foldThreshold: 20, raiseThreshold: 50, raisePotPct: 100,
-	},
+// indianPokerStyleParams はスタイルごとのパラメータを返す。switch 実装は
+// パッケージ初期化時のグローバルマップを避け、全 Cloudflare Worker WASM
+// バイナリ (classic は 1 MB gzip 上限) のサイズを抑える。
+func indianPokerStyleParams(style HoldemPlayStyle) (indianPokerCpuStyleParams, bool) {
+	switch style {
+	case HoldemStyleTAG:
+		return indianPokerCpuStyleParams{
+			aggressive: true, bluffRate: 15,
+			foldThreshold: 45, raiseThreshold: 70, raisePotPct: 75,
+		}, true
+	case HoldemStyleLAP:
+		return indianPokerCpuStyleParams{
+			aggressive: false, bluffRate: 5,
+			foldThreshold: 20, raiseThreshold: 80, raisePotPct: 50,
+		}, true
+	case HoldemStyleTAP:
+		return indianPokerCpuStyleParams{
+			aggressive: false, bluffRate: 5,
+			foldThreshold: 35, raiseThreshold: 85, raisePotPct: 50,
+		}, true
+	case HoldemStyleLAG:
+		return indianPokerCpuStyleParams{
+			aggressive: true, bluffRate: 30,
+			foldThreshold: 20, raiseThreshold: 50, raisePotPct: 100,
+		}, true
+	default:
+		return indianPokerCpuStyleParams{}, false
+	}
 }
 
 // runCpuActions CPUプレイヤーのアクションを実行
@@ -495,7 +505,7 @@ func (ip *IndianPoker) cpuDecide(idx int) (int, int) {
 	p := ip.players[idx]
 	callAmount := ip.lastBet - p.GetCurrentBet()
 
-	params, ok := indianPokerStyleParamsMap[p.GetPlayStyle()]
+	params, ok := indianPokerStyleParams(p.GetPlayStyle())
 	if !ok {
 		return CpuCallOrCheck(callAmount)
 	}
