@@ -1,3 +1,5 @@
+//go:build !js || !wasm || solo
+
 package domain
 
 // Burraco (ブラーコ) is implemented as a configured Canasta: the Pozzetto

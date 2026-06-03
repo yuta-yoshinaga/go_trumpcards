@@ -1,3 +1,5 @@
+//go:build !js || !wasm || solo
+
 package domain
 
 // checkKlondikeStalemate checks for immediate deadlock in Klondike.

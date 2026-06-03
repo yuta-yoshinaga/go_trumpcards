@@ -1,3 +1,5 @@
+//go:build !js || !wasm || solo
+
 // Package domain シュナプセン / Sixty-Six (Schnapsen / 66) のドメインモデル。
 //
 // Schnapsen はドイツ・オーストリアで人気の 2 人用トリックテイキングゲーム。

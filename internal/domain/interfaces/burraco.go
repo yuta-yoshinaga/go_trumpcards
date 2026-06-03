@@ -1,3 +1,5 @@
+//go:build !js || !wasm || solo
+
 package interfaces
 
 // BurracoGame はブラーコゲームのインタフェース。Burraco は「ポゼットを有効化した

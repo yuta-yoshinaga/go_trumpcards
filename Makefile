@@ -18,7 +18,14 @@ define build_worker
 	# runCpuTurns → Output on staging, so we bump to 128KB. The flag only
 	# reserves linear memory at runtime (binary stays well under the
 	# Cloudflare Workers free-tier 1MB gzipped limit).
-	$(TINYGO) build -o workers/$(1)/build/app.wasm -target wasm -stack-size=128KB -no-debug -opt=z ./cmd/workers/$(1)
+	# -tags $(1): the worker name doubles as a per-category build tag (casino /
+	# classic / solo). Each game's domain/usecase/adapter files carry a
+	# `//go:build !js || !wasm || <category>` constraint, so a worker only
+	# compiles its own category's games. This stops every game's serialisation
+	# from shipping in every worker and keeps each binary under the 1 MB gzip
+	# free-tier limit (see issue #2126). Non-worker builds (server, CLI, tests)
+	# match `!js || !wasm`, so they still include all games.
+	$(TINYGO) build -tags $(1) -o workers/$(1)/build/app.wasm -target wasm -stack-size=128KB -no-debug -opt=z ./cmd/workers/$(1)
 	$(WASM_OPT) --enable-bulk-memory --enable-nontrapping-float-to-int --enable-sign-ext -Oz workers/$(1)/build/app.wasm -o workers/$(1)/build/app.wasm
 	@RAW=$$(stat -c%s workers/$(1)/build/app.wasm); GZIP=$$(gzip -c workers/$(1)/build/app.wasm | wc -c); \
 	echo "  $(1): $$RAW bytes raw, $$GZIP bytes gzip"
