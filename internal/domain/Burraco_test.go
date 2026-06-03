@@ -23,6 +23,64 @@ func newTestBurraco() *domain.Burraco {
 	return domain.NewBurraco(domain.NewTrumpCardsWithDecks(2, 4), players, domain.DefaultBurracoConfig())
 }
 
+func TestNewDefaultBurraco(t *testing.T) {
+	g := domain.NewDefaultBurraco()
+	g.Reset()
+	assert.True(t, g.GetConfig().UsePozzetto)
+	assert.Equal(t, 2, g.GetPlayerCnt())
+	assert.Equal(t, domain.BurracoHandSize, g.GetPlayer(0).GetCardsSize())
+	assert.Equal(t, 2, g.GetPozzettoCount())
+}
+
+func TestBurraco_CpuMeld_TakesPozzetto(t *testing.T) {
+	g := newTestBurraco()
+	g.Reset()
+	g.SetPhase(domain.BurracoPhaseMeld)
+	g.SetCurrentPlayerIdx(1) // CPU
+
+	cpu := g.GetPlayer(1)
+	cpu.Reset()
+	cpu.SetHasInitMeld(true)
+	cpu.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	cpu.AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+	cpu.AddCard(domain.NewCard(domain.CardDesignDiamond, 1, false))
+
+	g.CpuPlay() // cpuMeld melds the three aces, emptying the hand → take pozzetto
+
+	assert.True(t, cpu.GetTookPozzetto())
+	assert.Equal(t, 1, g.GetPozzettoCount())
+}
+
+func TestBurraco_CpuDiscard_EmptyHandTakesPozzetto(t *testing.T) {
+	g := newTestBurraco()
+	g.Reset()
+	g.SetPhase(domain.BurracoPhaseDiscard)
+	g.SetCurrentPlayerIdx(1) // CPU
+
+	cpu := g.GetPlayer(1)
+	cpu.Reset() // empty hand, pozzetto not yet taken
+
+	g.CpuPlay() // cpuDiscard: empty hand + no pozzetto → take it, then discard
+
+	assert.True(t, cpu.GetTookPozzetto())
+}
+
+func TestBurraco_CpuDiscard_EmptyHandAfterPozzettoAdvances(t *testing.T) {
+	g := newTestBurraco()
+	g.Reset()
+	g.SetPhase(domain.BurracoPhaseDiscard)
+	g.SetCurrentPlayerIdx(1) // CPU
+
+	cpu := g.GetPlayer(1)
+	cpu.Reset()
+	cpu.SetTookPozzetto(true) // already took pozzetto, no burraco, empty hand
+
+	g.CpuPlay() // cpuDiscard: cannot discard/go out → advance turn
+
+	assert.Equal(t, domain.BurracoPhaseDraw, g.GetPhase())
+	assert.Equal(t, 0, g.GetCurrentPlayerIdx())
+}
+
 func TestBurraco_DefaultConfig(t *testing.T) {
 	cfg := domain.DefaultBurracoConfig()
 	assert.True(t, cfg.UsePozzetto)

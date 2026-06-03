@@ -354,7 +354,7 @@ func TestBurracoWebPresenter_Output(t *testing.T) {
 		_ = json.Unmarshal([]byte(result), &resObj)
 
 		assert.Equal(t, int(domain.BurracoCpuDifficultyNormal), resObj.Config.CpuDifficulty)
-		assert.Equal(t, 5000, resObj.Config.PointLimit)
+		assert.Equal(t, domain.BurracoDefaultPointLimit, resObj.Config.PointLimit)
 	})
 }
 
