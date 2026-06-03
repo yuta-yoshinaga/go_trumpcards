@@ -239,6 +239,10 @@ func NewTrumpCardsSchnapsen() *TrumpCards {
 	return t
 }
 
+// ShortDeckValues はショートデック(6+)の札値 A,6-K。デッキ構築 (core) と
+// 役判定 (casino) の両方が参照するため、untagged な core ファイルに置く (#2126)。
+var ShortDeckValues = []int{1, 6, 7, 8, 9, 10, 11, 12, 13}
+
 // NewTrumpCardsShortDeck ショートデック(6+)用36枚デッキコンストラクタ
 // A,6,7,8,9,10,J,Q,K (値: 1,6,7,8,9,10,11,12,13) × 4スート = 36枚
 func NewTrumpCardsShortDeck() *TrumpCards {
