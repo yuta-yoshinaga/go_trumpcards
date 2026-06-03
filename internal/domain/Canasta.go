@@ -13,6 +13,12 @@ const CanastaPlayerCnt = 2
 // CanastaHandSize 初期配布枚数 (2人制カナスタ)
 const CanastaHandSize = 15
 
+// CanastaBurracoHandSize Burraco モードの初期配布枚数 (2人制)
+const CanastaBurracoHandSize = 11
+
+// CanastaPozzettoSize Burraco モードのポゼット（予備手札）1山の枚数
+const CanastaPozzettoSize = 11
+
 // CanastaDefaultPointLimit デフォルトの目標スコア
 const CanastaDefaultPointLimit = 5000
 
@@ -52,7 +58,8 @@ type Canasta struct {
 	currentPlayerIdx int
 	discardPile      []*Card
 	drawPile         []*Card
-	isFrozen         bool // 捨て札の山がフリーズ状態か
+	pozzetti         [][]*Card // Burraco モードの予備手札（ポゼット）。各11枚×2山
+	isFrozen         bool      // 捨て札の山がフリーズ状態か
 	gameEndFlag      bool
 	winnerIdx        int
 	roundNumber      int
@@ -90,6 +97,7 @@ func (g *Canasta) Reset() {
 	g.roundNumber = 1
 	g.discardPile = nil
 	g.drawPile = nil
+	g.pozzetti = nil
 	g.isFrozen = false
 	g.currentPlayerIdx = 0
 	g.actionLog = nil
@@ -104,6 +112,7 @@ func (g *Canasta) Reset() {
 		p.melds = make([]*CanastaMeld, 0)
 		p.red3s = make([]*Card, 0)
 		p.hasInitMeld = false
+		p.tookPozzetto = false
 	}
 
 	g.trumpCards.Shuffle()
@@ -122,6 +131,7 @@ func (g *Canasta) NextRound() {
 	g.roundNumber++
 	g.discardPile = nil
 	g.drawPile = nil
+	g.pozzetti = nil
 	g.isFrozen = false
 	g.currentPlayerIdx = 0
 	g.drewFromDiscard = false
@@ -153,14 +163,32 @@ func (g *Canasta) dealInitialCards() {
 		g.drawPile[i], g.drawPile[j] = g.drawPile[j], g.drawPile[i]
 	})
 
-	// 各プレイヤーに15枚配布
-	for i := 0; i < CanastaHandSize; i++ {
+	// 各プレイヤーに配布 (Canasta=15枚, Burraco=11枚)
+	handSize := CanastaHandSize
+	if g.config.UsePozzetto {
+		handSize = CanastaBurracoHandSize
+	}
+	for i := 0; i < handSize; i++ {
 		for j := 0; j < CanastaPlayerCnt; j++ {
 			if len(g.drawPile) > 0 {
 				card := g.drawPile[len(g.drawPile)-1]
 				g.drawPile = g.drawPile[:len(g.drawPile)-1]
 				g.players[j].AddCard(card)
 			}
+		}
+	}
+
+	// Burraco モード: ポゼット（予備手札）を2山、各11枚ずつ脇に取り分ける
+	if g.config.UsePozzetto {
+		g.pozzetti = make([][]*Card, 0, CanastaPlayerCnt)
+		for p := 0; p < CanastaPlayerCnt; p++ {
+			pile := make([]*Card, 0, CanastaPozzettoSize)
+			for i := 0; i < CanastaPozzettoSize && len(g.drawPile) > 0; i++ {
+				card := g.drawPile[len(g.drawPile)-1]
+				g.drawPile = g.drawPile[:len(g.drawPile)-1]
+				pile = append(pile, card)
+			}
+			g.pozzetti = append(g.pozzetti, pile)
 		}
 	}
 
@@ -210,6 +238,36 @@ func (g *Canasta) autoLayRed3s(playerIdx int) {
 			break
 		}
 	}
+}
+
+// takePozzetto Burraco モードで、プレイヤーが手札を出し切ったときポゼット
+// （予備手札）を1山獲得して手札に加える。取得した場合 true を返す。
+func (g *Canasta) takePozzetto(playerIdx int) bool {
+	player := g.players[playerIdx]
+	if !g.config.UsePozzetto || player.tookPozzetto || len(g.pozzetti) == 0 {
+		return false
+	}
+	pile := g.pozzetti[len(g.pozzetti)-1]
+	g.pozzetti = g.pozzetti[:len(g.pozzetti)-1]
+	for _, c := range pile {
+		player.AddCard(c)
+	}
+	player.tookPozzetto = true
+	g.appendLog(playerIdx, "pozzetto", fmt.Sprintf("%s takes the pozzetto (%d cards)", g.playerName(playerIdx), len(pile)), nil)
+	// 獲得した手札に赤3があれば自動的に場に出す
+	g.autoLayRed3s(playerIdx)
+	g.sortHand(playerIdx)
+	return true
+}
+
+// canGoOut 上がり条件を満たすか。Burraco モードではポゼット獲得済みかつ
+// カナスタ（ブラーコ）完成が必要。Canasta モードではカナスタ完成のみ。
+func (g *Canasta) canGoOut(playerIdx int) bool {
+	p := g.players[playerIdx]
+	if g.config.UsePozzetto && !p.tookPozzetto {
+		return false
+	}
+	return p.HasCanasta()
 }
 
 // PlayerDrawFromStock 人間プレイヤーが山札からカードを引く
@@ -517,10 +575,15 @@ func (g *Canasta) PlayerMeld(meldGroups [][]int) error {
 		}
 	}
 
-	// 手札が空で上がれるかチェック
-	if player.GetCardsSize() == 0 && player.HasCanasta() {
-		g.goOut(g.currentPlayerIdx, false)
-		return nil
+	// 手札を出し切った場合の処理
+	if player.GetCardsSize() == 0 {
+		if g.config.UsePozzetto && !player.tookPozzetto {
+			// Burraco: 初めて手札を出し切った → ポゼットを獲得して継続
+			g.takePozzetto(g.currentPlayerIdx)
+		} else if player.HasCanasta() {
+			g.goOut(g.currentPlayerIdx, false)
+			return nil
+		}
 	}
 
 	g.phase = CanastaPhaseDiscard
@@ -580,6 +643,11 @@ func (g *Canasta) PlayerDiscard(cardIndex int) error {
 
 	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", g.playerName(g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 
+	// Burraco: 捨て札で手札を出し切り、まだポゼット未獲得なら獲得する
+	if g.config.UsePozzetto && player.GetCardsSize() == 0 && !player.tookPozzetto {
+		g.takePozzetto(g.currentPlayerIdx)
+	}
+
 	g.advanceTurn()
 	return nil
 }
@@ -598,6 +666,9 @@ func (g *Canasta) PlayerGoOut() error {
 
 	player := g.players[g.currentPlayerIdx]
 
+	if g.config.UsePozzetto && !player.tookPozzetto {
+		return NewDomainError(ErrInvalidPlay, "上がるにはポゼット（予備手札）を獲得している必要があります")
+	}
 	if !player.HasCanasta() {
 		return NewDomainError(ErrInvalidPlay, "上がるには少なくとも1つのカナスタが必要です")
 	}
@@ -796,10 +867,14 @@ func (g *Canasta) cpuMeld() {
 	g.drewFromDiscard = false
 	g.drawnCard = nil
 
-	// 手札が空で上がれるかチェック
-	if player.GetCardsSize() == 0 && player.HasCanasta() {
-		g.goOut(g.currentPlayerIdx, false)
-		return
+	// 手札を出し切った場合の処理
+	if player.GetCardsSize() == 0 {
+		if g.config.UsePozzetto && !player.tookPozzetto {
+			g.takePozzetto(g.currentPlayerIdx)
+		} else if player.HasCanasta() {
+			g.goOut(g.currentPlayerIdx, false)
+			return
+		}
 	}
 
 	g.phase = CanastaPhaseDiscard
@@ -813,12 +888,21 @@ func (g *Canasta) cpuDiscard() {
 	// prior meld emptied the hand but HasCanasta() was false so goOut didn't
 	// fire), do not try to discard — that path panics via RemoveCard → nil.
 	if player.GetCardsSize() == 0 {
-		g.goOut(g.currentPlayerIdx, false)
-		return
+		if g.config.UsePozzetto && !player.tookPozzetto {
+			// Burraco: 手札を出し切ったがポゼット未獲得 → 獲得して継続
+			g.takePozzetto(g.currentPlayerIdx)
+		} else if g.config.UsePozzetto {
+			// Burraco: ポゼット獲得済みだがブラーコ未完成 → 捨てられないので進む
+			g.advanceTurn()
+			return
+		} else {
+			g.goOut(g.currentPlayerIdx, false)
+			return
+		}
 	}
 
 	// 上がれるかチェック
-	if player.GetCardsSize() == 1 && player.HasCanasta() {
+	if player.GetCardsSize() == 1 && g.canGoOut(g.currentPlayerIdx) {
 		card := player.GetCard(0)
 		if !CanastaIsRed3(card) {
 			discarded := player.RemoveCard(0)
@@ -1303,6 +1387,21 @@ func (g *Canasta) SetDrawPile(pile []*Card) { g.drawPile = pile }
 // GetDiscardPileCount 捨て札の枚数取得
 func (g *Canasta) GetDiscardPileCount() int { return len(g.discardPile) }
 
+// GetPozzettoCount 残っているポゼット（予備手札）の山の数を取得 (Burraco モード)
+func (g *Canasta) GetPozzettoCount() int { return len(g.pozzetti) }
+
+// GetPozzettoCardCount 残っているポゼットの総カード枚数を取得
+func (g *Canasta) GetPozzettoCardCount() int {
+	n := 0
+	for _, pile := range g.pozzetti {
+		n += len(pile)
+	}
+	return n
+}
+
+// SetPozzetti ポゼットを設定 (テスト用)
+func (g *Canasta) SetPozzetti(piles [][]*Card) { g.pozzetti = piles }
+
 // GetIsFrozen 捨て札の山がフリーズ状態か取得
 func (g *Canasta) GetIsFrozen() bool { return g.isFrozen }
 
@@ -1418,6 +1517,7 @@ type canastaJSON struct {
 	CurrentPlayerIdx int               `json:"ci"`
 	DiscardPile      []*Card           `json:"dp"`
 	DrawPile         []*Card           `json:"wp"`
+	Pozzetti         [][]*Card         `json:"pz,omitempty"`
 	IsFrozen         bool              `json:"fr"`
 	GameEndFlag      bool              `json:"ge"`
 	WinnerIdx        int               `json:"wi"`
@@ -1436,6 +1536,7 @@ func (g *Canasta) MarshalJSON() ([]byte, error) {
 		CurrentPlayerIdx: g.currentPlayerIdx,
 		DiscardPile:      g.discardPile,
 		DrawPile:         g.drawPile,
+		Pozzetti:         g.pozzetti,
 		IsFrozen:         g.isFrozen,
 		GameEndFlag:      g.gameEndFlag,
 		WinnerIdx:        g.winnerIdx,
@@ -1478,6 +1579,7 @@ func (g *Canasta) UnmarshalJSON(data []byte) error {
 	if g.drawPile == nil {
 		g.drawPile = make([]*Card, 0)
 	}
+	g.pozzetti = j.Pozzetti
 	g.isFrozen = j.IsFrozen
 	g.gameEndFlag = j.GameEndFlag
 	g.winnerIdx = j.WinnerIdx
