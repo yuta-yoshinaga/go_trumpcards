@@ -237,6 +237,33 @@ func NewTrumpCardsShortDeck() *TrumpCards {
 	return t
 }
 
+// NewTrumpCardsFiveHundred 500 (Five Hundred) 用43枚デッキコンストラクタ
+// ジョーカー1枚 + 赤スート(♥♦)の 4〜A(値: 4-13,1 = 11枚) + 黒スート(♠♣)の 5〜A(値: 5-13,1 = 10枚)
+// 合計 11×2 + 10×2 + 1 = 43枚。赤の2〜3、黒の2〜4を抜いた標準的な4人用500デッキ。
+func NewTrumpCardsFiveHundred() *TrumpCards {
+	redValues := []int{1, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13} // A,4..K
+	blackValues := []int{1, 5, 6, 7, 8, 9, 10, 11, 12, 13}  // A,5..K
+	redSuits := []int{CardDesignHeart, CardDesignDiamond}
+	blackSuits := []int{CardDesignSpade, CardDesignClover}
+
+	t := new(TrumpCards)
+	t.deck = make([]*Card, 0, 43)
+	for _, suit := range redSuits {
+		for _, val := range redValues {
+			t.deck = append(t.deck, NewCard(suit, val, false))
+		}
+	}
+	for _, suit := range blackSuits {
+		for _, val := range blackValues {
+			t.deck = append(t.deck, NewCard(suit, val, false))
+		}
+	}
+	t.deck = append(t.deck, NewCard(CardDesignJoker, 1, false))
+	t.deckCnt = len(t.deck) // 43
+	t.deckInit()
+	return t
+}
+
 // DrawCard 山札配る
 func (t *TrumpCards) DrawCard() *Card {
 	var res *Card = nil

@@ -1883,6 +1883,29 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "fivehundred", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewFiveHundredCuiController(usecase.NewFiveHundredInteractor(
+				domain.NewDefaultFiveHundred(), new(presenter.FiveHundredCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "fivehundred.helpTitle",
+				CommandKeys: []string{
+					"fivehundred.helpBid",
+					"fivehundred.helpBidNoTrump",
+					"fivehundred.helpMisere",
+					"fivehundred.helpOpenMisere",
+					"fivehundred.helpPass",
+					"fivehundred.helpExchange",
+					"fivehundred.helpPlay",
+					"fivehundred.helpNext",
+					"fivehundred.helpNextRound",
+				},
+				SettingKeys: []string{
+					"fivehundred.helpSetDifficulty",
+					"fivehundred.helpSetTarget",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

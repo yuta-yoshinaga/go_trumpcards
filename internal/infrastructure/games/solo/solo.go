@@ -330,4 +330,12 @@ func init() {
 			return usecase.RestoreOsmosisInteractor(data, new(presenter.OsmosisWebPresenter))
 		},
 		controller.NewOsmosisWebControllerWithProvider)
+	games.RegisterKVGame("fivehundred", games.CategorySolo,
+		func() usecase.FiveHundredInteractorIF {
+			return usecase.NewFiveHundredInteractor(domain.NewDefaultFiveHundred(), new(presenter.FiveHundredWebPresenter))
+		},
+		func(data []byte) (usecase.FiveHundredInteractorIF, error) {
+			return usecase.RestoreFiveHundredInteractor(data, new(presenter.FiveHundredWebPresenter))
+		},
+		controller.NewFiveHundredWebControllerWithProvider)
 }

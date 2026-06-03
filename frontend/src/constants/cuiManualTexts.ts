@@ -45,6 +45,7 @@ import egyptianratscrew from '../../../docs/manual/cui/egyptianratscrew.md?raw';
 import eightoff from '../../../docs/manual/cui/eightoff.md?raw';
 import euchre from '../../../docs/manual/cui/euchre.md?raw';
 import fiftyone from '../../../docs/manual/cui/fiftyone.md?raw';
+import fivehundred from '../../../docs/manual/cui/fivehundred.md?raw';
 import fortythieves from '../../../docs/manual/cui/fortythieves.md?raw';
 import fourcardpoker from '../../../docs/manual/cui/fourcardpoker.md?raw';
 import freecell from '../../../docs/manual/cui/freecell.md?raw';
@@ -131,6 +132,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/canasta': canasta,
   '/canfield': canfield,
   '/osmosis': osmosis,
+  '/fivehundred': fivehundred,
   '/caribbeanstud': caribbeanstud,
   '/casinoholdem': casinoholdem,
   '/callbreak': callbreak,

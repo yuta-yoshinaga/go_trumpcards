@@ -44,6 +44,7 @@ import egyptianratscrew from '../../../docs/manual/web/egyptianratscrew.md?raw';
 import eightoff from '../../../docs/manual/web/eightoff.md?raw';
 import euchre from '../../../docs/manual/web/euchre.md?raw';
 import fiftyone from '../../../docs/manual/web/fiftyone.md?raw';
+import fivehundred from '../../../docs/manual/web/fivehundred.md?raw';
 import fortythieves from '../../../docs/manual/web/fortythieves.md?raw';
 import fourcardpoker from '../../../docs/manual/web/fourcardpoker.md?raw';
 import freecell from '../../../docs/manual/web/freecell.md?raw';
@@ -133,6 +134,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/canasta': canasta,
   '/canfield': canfield,
   '/osmosis': osmosis,
+  '/fivehundred': fivehundred,
   '/caribbeanstud': caribbeanstud,
   '/casinoholdem': casinoholdem,
   '/callbreak': callbreak,
