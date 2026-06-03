@@ -53,44 +53,58 @@ type BriscolaHint struct {
 	Reason    string // ヒント理由キー
 }
 
-// briscolaCardPoints ブリスコラのカード点数 (Ace=1, 3, K=13, Q=12, J=11, それ以外=0)
-var briscolaCardPoints = map[int]int{
-	1:  11, // Asso
-	3:  10, // Tre
-	13: 4,  // Re
-	12: 3,  // Cavallo / Donna
-	11: 2,  // Fante
-}
-
-// briscolaRankOrder スート内のカード強さ。値が大きいほど強い。
-// A>3>K>Q>J>7>6>5>4>2 を 1-base で表現する。
-var briscolaRankOrder = map[int]int{
-	2:  1,
-	4:  2,
-	5:  3,
-	6:  4,
-	7:  5,
-	11: 6,  // J
-	12: 7,  // Q
-	13: 8,  // K
-	3:  9,  // 3
-	1:  10, // A
-}
-
-// BriscolaCardPoints カードの得点を返す (公開ヘルパー)。
+// BriscolaCardPoints カードの得点を返す (Asso=11, Tre=10, Re=4, Cavallo=3,
+// Fante=2, それ以外=0)。switch 実装はパッケージ初期化時のグローバルマップを避け、
+// 全 Cloudflare Worker WASM バイナリ (classic は 1 MB gzip 上限) のサイズを抑える。
 func BriscolaCardPoints(c *Card) int {
 	if c == nil {
 		return 0
 	}
-	return briscolaCardPoints[c.GetValue()]
+	switch c.GetValue() {
+	case 1: // Asso
+		return 11
+	case 3: // Tre
+		return 10
+	case 13: // Re
+		return 4
+	case 12: // Cavallo / Donna
+		return 3
+	case 11: // Fante
+		return 2
+	default:
+		return 0
+	}
 }
 
-// BriscolaRankOrder カードのスート内順位を返す (大きいほど強い)。
+// BriscolaRankOrder カードのスート内順位を返す (大きいほど強い; A>3>K>Q>J>7>6>5>4>2)。
 func BriscolaRankOrder(c *Card) int {
 	if c == nil {
 		return 0
 	}
-	return briscolaRankOrder[c.GetValue()]
+	switch c.GetValue() {
+	case 1: // A
+		return 10
+	case 3: // 3
+		return 9
+	case 13: // K
+		return 8
+	case 12: // Q
+		return 7
+	case 11: // J
+		return 6
+	case 7:
+		return 5
+	case 6:
+		return 4
+	case 5:
+		return 3
+	case 4:
+		return 2
+	case 2:
+		return 1
+	default:
+		return 0
+	}
 }
 
 // Briscola ブリスコラゲームクラス
