@@ -10,6 +10,7 @@ import type {
   BigTwoResponse,
   BlackJackResponse,
   BlackJackSwitchResponse,
+  BurracoResponse,
   CalculationResponse,
   CallBreakResponse,
   CanastaResponse,
@@ -112,6 +113,7 @@ import { getBeloteHint } from '../utils/hints/beloteHint';
 import { getBigTwoHint } from '../utils/hints/bigtwoHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getBlackjackswitchHint } from '../utils/hints/blackjackswitchHint';
+import { getBurracoHint } from '../utils/hints/burracoHint';
 import { getCalculationHint } from '../utils/hints/calculationHint';
 import { getCallBreakHint } from '../utils/hints/callbreakHint';
 import { getCanastaHint } from '../utils/hints/canastaHint';
@@ -273,6 +275,7 @@ const hintFactories = {
   mississippistud: (s) => getMississippiStudHint(s as MississippiStudResponse),
   durak: (s) => getDurakHint(s as DurakResponse),
   canasta: (s) => getCanastaHint(s as CanastaResponse),
+  burraco: (s) => getBurracoHint(s as BurracoResponse),
   canfield: (s) => getCanfieldHint(s as CanfieldResponse),
   osmosis: (s) => getOsmosisHint(s as OsmosisResponse),
   pinochle: (s) => getPinochleHint(s as PinochleResponse),

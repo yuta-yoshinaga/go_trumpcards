@@ -133,6 +133,7 @@ export type GameKey =
   | 'tonk'
   | 'thirtyone'
   | 'canasta'
+  | 'burraco'
   | 'cribbage'
   | 'sevenbridge'
   | 'contractrummy'
@@ -280,6 +281,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   tonk: BLUE,
   thirtyone: CASINO,
   canasta: BLUE,
+  burraco: GREEN,
   cribbage: BLUE,
   sevenbridge: BLUE,
   contractrummy: BLUE,

@@ -17,6 +17,7 @@ import type {
   BridgeResponse,
   BriscolaConfig,
   BriscolaResponse,
+  BurracoResponse,
   CalculationMoveZone,
   CalculationResponse,
   CallBreakResponse,
@@ -207,6 +208,7 @@ const workerUrl: Record<string, string> = {
   memory: WORKER_SOLO,
   ginrummy: WORKER_SOLO,
   canasta: WORKER_SOLO,
+  burraco: WORKER_SOLO,
   cribbage: WORKER_SOLO,
   golf: WORKER_SOLO,
   acesup: WORKER_SOLO,
@@ -1131,6 +1133,30 @@ export const canastaApi = {
     meldGroups?: number[][],
   ) =>
     gameExec<CanastaResponse>('canasta', {
+      command,
+      cardIndex,
+      config,
+      naturalPairIndices,
+      meldGroups,
+    }),
+};
+
+/** Configuration options for Burraco game settings. */
+export interface BurracoConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Burraco /burraco/exec endpoint. */
+export const burracoApi = {
+  exec: (
+    command: 'reset' | 'drawstock' | 'drawdiscard' | 'meld' | 'skipmeld' | 'discard' | 'goout' | 'nextround' | 'log',
+    cardIndex?: number,
+    config?: BurracoConfigInput,
+    naturalPairIndices?: number[],
+    meldGroups?: number[][],
+  ) =>
+    gameExec<BurracoResponse>('burraco', {
       command,
       cardIndex,
       config,
@@ -2283,6 +2309,7 @@ const games = [
   'crazyeights',
   'ginrummy',
   'canasta',
+  'burraco',
   'spider',
   'indianpoker',
   'videopoker',

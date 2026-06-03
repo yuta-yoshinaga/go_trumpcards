@@ -1920,6 +1920,33 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                    action log"},
 			})
 	}},
+	{Name: "burraco", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBurracoCuiController(usecase.NewBurracoInteractor(
+				domain.NewDefaultBurraco(), new(presenter.BurracoCuiPresenter))),
+			CuiHelpSpec{Body: []string{
+				"Burraco (ブラーコ) Help",
+				"",
+				"Game Commands:",
+				"  ds                   draw from stock",
+				"  dd <idx,idx>         pick up discard pile (natural pair indices)",
+				"  m <idx,idx;idx,idx>  meld (semicolon-separated groups)",
+				"  sm                   skip meld phase",
+				"  d <idx>              discard a card",
+				"  go                   go out (requires the pozzetto + a burraco)",
+				"  nr                   next round",
+				"  l                    action log",
+				"",
+				"Settings:",
+				"  sd <0-2>             set CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+				"  sl <n>               set point limit",
+				"",
+				"Session:",
+				"  r / reset            reset game",
+				"  q / quit             quit",
+				"  ? / help             show help",
+			}})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

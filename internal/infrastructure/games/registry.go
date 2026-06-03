@@ -230,6 +230,10 @@ var registry = []*Game{
 	// worker is at the 1 MB gzip free-tier limit. Category here is purely a
 	// binary-size bucket.
 	{Name: "schnapsen", Category: CategorySolo, Description: "Schnapsen / Sixty-Six (シュナプセン / 66)"},
+	// Burraco is a Canasta-derived rummy game. Bucketed into the solo worker
+	// (the classic worker is at the 1 MB gzip free-tier limit). Category here is
+	// purely a binary-size bucket.
+	{Name: "burraco", Category: CategorySolo, Description: "Burraco (ブラーコ)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

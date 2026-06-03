@@ -453,6 +453,11 @@ func init() {
 			return usecase.NewSchnapsenInteractor(domain.NewDefaultSchnapsen(), new(presenter.SchnapsenWebPresenter))
 		},
 		controller.NewSchnapsenWebController)
+	BindWebControllerFor("burraco",
+		func() usecase.BurracoInteractorIF {
+			return usecase.NewBurracoInteractor(domain.NewDefaultBurraco(), new(presenter.BurracoWebPresenter))
+		},
+		controller.NewBurracoWebController)
 	BindWebControllerFor("casinowar",
 		func() usecase.CasinoWarInteractorIF {
 			return usecase.NewCasinoWarInteractor(domain.NewDefaultCasinoWar(), new(presenter.CasinoWarWebPresenter))
