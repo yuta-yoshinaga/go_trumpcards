@@ -24,6 +24,20 @@ const PokerSquaresGridSize = 5
 // PokerSquaresTotalCells は総セル数 (5x5=25)。
 const PokerSquaresTotalCells = PokerSquaresGridSize * PokerSquaresGridSize
 
+// pokerSquaresScoreTable は American scoring system のハンドランク -> スコア のマップ。
+var pokerSquaresScoreTable = map[int]int{
+	PokerHandHighCard:      0,
+	PokerHandOnePair:       2,
+	PokerHandTwoPair:       5,
+	PokerHandThreeOfAKind:  10,
+	PokerHandStraight:      15,
+	PokerHandFlush:         20,
+	PokerHandFullHouse:     25,
+	PokerHandFourOfAKind:   50,
+	PokerHandStraightFlush: 75,
+	PokerHandRoyalFlush:    100,
+}
+
 // PokerSquares はポーカー・スクエアズのゲーム状態を表す。
 type PokerSquares struct {
 	trumpCards  *TrumpCards
@@ -229,33 +243,16 @@ func (p *PokerSquares) TotalScore() int {
 	return total
 }
 
-// pokerSquaresRankToScore はハンドランクを得点に変換する (American scoring system)。
-// switch 実装はパッケージ初期化時のグローバルマップを避け、全 Cloudflare Worker
-// WASM バイナリ (classic は 1 MB gzip 上限) のサイズを抑える。
+// pokerSquaresRankToScore はハンドランクを得点に変換する。
 func pokerSquaresRankToScore(rank int) int {
-	switch rank {
-	case PokerHandOnePair:
-		return 2
-	case PokerHandTwoPair:
-		return 5
-	case PokerHandThreeOfAKind:
-		return 10
-	case PokerHandStraight:
-		return 15
-	case PokerHandFlush:
-		return 20
-	case PokerHandFullHouse:
-		return 25
-	// FiveOfAKind (ジョーカー未使用の 52 枚デッキでは発生しない) は 4K 相当にマップ
-	case PokerHandFourOfAKind, PokerHandFiveOfAKind:
-		return 50
-	case PokerHandStraightFlush:
-		return 75
-	case PokerHandRoyalFlush:
-		return 100
-	default: // PokerHandHighCard を含む
-		return 0
+	if s, ok := pokerSquaresScoreTable[rank]; ok {
+		return s
 	}
+	// FiveOfAKind (ジョーカー未使用の 52 枚デッキでは発生しない) は 4K 相当にマップ
+	if rank == PokerHandFiveOfAKind {
+		return pokerSquaresScoreTable[PokerHandFourOfAKind]
+	}
+	return 0
 }
 
 // takeSnapshot は現在の状態をスナップショットとして保存する。

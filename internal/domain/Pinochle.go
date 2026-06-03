@@ -76,40 +76,23 @@ type PinochleMeld struct {
 	Cards  []*Card          `json:"c"`
 }
 
-// pinochleMeldPoints メルド種類ごとのポイントを返す。switch 実装はパッケージ
-// 初期化時のグローバルマップを避け、全 Cloudflare Worker WASM バイナリ
-// (classic は 1 MB gzip 上限) のサイズを抑える。
-func pinochleMeldPoints(t PinochleMeldType) int {
-	switch t {
-	case PinochleMeldDix:
-		return 10
-	case PinochleMeldCommonMarriage:
-		return 20
-	case PinochleMeldRoyalMarriage, PinochleMeldPinochle, PinochleMeldJacksAround:
-		return 40
-	case PinochleMeldQueensAround:
-		return 60
-	case PinochleMeldKingsAround:
-		return 80
-	case PinochleMeldAcesAround:
-		return 100
-	case PinochleMeldRun:
-		return 150
-	case PinochleMeldDoublePinochle:
-		return 300
-	case PinochleMeldDoubleJacksAround:
-		return 400
-	case PinochleMeldDoubleQueensAround:
-		return 600
-	case PinochleMeldDoubleKingsAround:
-		return 800
-	case PinochleMeldDoubleAcesAround:
-		return 1000
-	case PinochleMeldDoubleRun:
-		return 1500
-	default:
-		return 0
-	}
+// pinochleMeldPoints メルド種類ごとのポイント
+var pinochleMeldPoints = map[PinochleMeldType]int{
+	PinochleMeldDix:                10,
+	PinochleMeldCommonMarriage:     20,
+	PinochleMeldRoyalMarriage:      40,
+	PinochleMeldPinochle:           40,
+	PinochleMeldJacksAround:        40,
+	PinochleMeldQueensAround:       60,
+	PinochleMeldKingsAround:        80,
+	PinochleMeldAcesAround:         100,
+	PinochleMeldRun:                150,
+	PinochleMeldDoublePinochle:     300,
+	PinochleMeldDoubleJacksAround:  400,
+	PinochleMeldDoubleQueensAround: 600,
+	PinochleMeldDoubleKingsAround:  800,
+	PinochleMeldDoubleAcesAround:   1000,
+	PinochleMeldDoubleRun:          1500,
 }
 
 // PinochleHint ヒント情報
@@ -416,7 +399,7 @@ func evaluateMelds(hand []*Card, trumpSuit int) []*PinochleMeld {
 		}
 		melds = append(melds, &PinochleMeld{
 			Type:   PinochleMeldDoubleRun,
-			Points: pinochleMeldPoints(PinochleMeldDoubleRun),
+			Points: pinochleMeldPoints[PinochleMeldDoubleRun],
 			Cards:  cards,
 		})
 	} else if minRunCount >= 1 {
@@ -426,7 +409,7 @@ func evaluateMelds(hand []*Card, trumpSuit int) []*PinochleMeld {
 		}
 		melds = append(melds, &PinochleMeld{
 			Type:   PinochleMeldRun,
-			Points: pinochleMeldPoints(PinochleMeldRun),
+			Points: pinochleMeldPoints[PinochleMeldRun],
 			Cards:  cards,
 		})
 	}
@@ -458,7 +441,7 @@ func evaluateMelds(hand []*Card, trumpSuit int) []*PinochleMeld {
 			}
 			melds = append(melds, &PinochleMeld{
 				Type:   a.doubleType,
-				Points: pinochleMeldPoints(a.doubleType),
+				Points: pinochleMeldPoints[a.doubleType],
 				Cards:  cards,
 			})
 		} else if minCount >= 1 {
@@ -468,7 +451,7 @@ func evaluateMelds(hand []*Card, trumpSuit int) []*PinochleMeld {
 			}
 			melds = append(melds, &PinochleMeld{
 				Type:   a.singleType,
-				Points: pinochleMeldPoints(a.singleType),
+				Points: pinochleMeldPoints[a.singleType],
 				Cards:  cards,
 			})
 		}
@@ -484,13 +467,13 @@ func evaluateMelds(hand []*Card, trumpSuit int) []*PinochleMeld {
 		cards = append(cards, cardMap[sv{CardDesignSpade, 12}]...)
 		melds = append(melds, &PinochleMeld{
 			Type:   PinochleMeldDoublePinochle,
-			Points: pinochleMeldPoints(PinochleMeldDoublePinochle),
+			Points: pinochleMeldPoints[PinochleMeldDoublePinochle],
 			Cards:  cards,
 		})
 	} else if pinochleCount >= 1 {
 		melds = append(melds, &PinochleMeld{
 			Type:   PinochleMeldPinochle,
-			Points: pinochleMeldPoints(PinochleMeldPinochle),
+			Points: pinochleMeldPoints[PinochleMeldPinochle],
 			Cards:  []*Card{cardMap[sv{CardDesignDiamond, 11}][0], cardMap[sv{CardDesignSpade, 12}][0]},
 		})
 	}
@@ -524,7 +507,7 @@ func evaluateMelds(hand []*Card, trumpSuit int) []*PinochleMeld {
 			}
 			melds = append(melds, &PinochleMeld{
 				Type:   meldType,
-				Points: pinochleMeldPoints(meldType),
+				Points: pinochleMeldPoints[meldType],
 				Cards:  cards,
 			})
 		}
@@ -535,7 +518,7 @@ func evaluateMelds(hand []*Card, trumpSuit int) []*PinochleMeld {
 	for i := range dixCount {
 		melds = append(melds, &PinochleMeld{
 			Type:   PinochleMeldDix,
-			Points: pinochleMeldPoints(PinochleMeldDix),
+			Points: pinochleMeldPoints[PinochleMeldDix],
 			Cards:  []*Card{cardMap[sv{trumpSuit, 9}][i]},
 		})
 	}
