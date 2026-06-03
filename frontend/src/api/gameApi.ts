@@ -248,7 +248,7 @@ const workerUrl: Record<string, string> = {
   mississippistud: WORKER_CASINO,
   belote: WORKER_CLASSIC,
   spiderette: WORKER_SOLO,
-  mighty: WORKER_CLASSIC,
+  mighty: WORKER_CASINO,
   oasispoker: WORKER_CASINO,
   russianpoker: WORKER_CASINO,
   beleagueredcastle: WORKER_SOLO,

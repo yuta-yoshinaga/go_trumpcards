@@ -180,7 +180,11 @@ var registry = []*Game{
 	{Name: "mississippistud", Category: CategoryCasino, Description: "Mississippi Stud (ミシシッピ・スタッド)"},
 	{Name: "belote", Category: CategoryClassic, Description: "Belote (ベロート)"},
 	{Name: "spiderette", Category: CategorySolo, Description: "Spiderette (スパイダレット)"},
-	{Name: "mighty", Category: CategoryClassic, Description: "Mighty (マイティ)"},
+	// Mighty is a trick-taking game, but it is bucketed into the casino worker
+	// purely for binary-size balancing (#2126): it is one of the heaviest games
+	// and the classic worker is at the 1 MB gzip limit. Category is only a
+	// per-worker size bucket with no user-facing meaning.
+	{Name: "mighty", Category: CategoryCasino, Description: "Mighty (マイティ)"},
 	{Name: "oasispoker", Category: CategoryCasino, Description: "Oasis Poker (オアシスポーカー)"},
 	{Name: "beleagueredcastle", Category: CategorySolo, Description: "Beleaguered Castle (包囲された城)"},
 	{Name: "piquet", Category: CategoryClassic, Description: "Piquet (ピケ)"},

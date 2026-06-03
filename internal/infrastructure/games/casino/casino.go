@@ -329,4 +329,13 @@ func init() {
 			return usecase.RestoreScopaInteractor(data, new(presenter.ScopaWebPresenter))
 		},
 		controller.NewScopaWebControllerWithProvider)
+	games.RegisterKVGame("mighty", games.CategoryCasino,
+		func() usecase.MightyInteractorIF {
+			return usecase.NewMightyInteractor(domain.NewDefaultMighty(), new(presenter.MightyWebPresenter))
+		},
+		func(data []byte) (usecase.MightyInteractorIF, error) {
+			return usecase.RestoreMightyInteractor(data, new(presenter.MightyWebPresenter))
+		},
+		controller.NewMightyWebControllerWithProvider)
+
 }
