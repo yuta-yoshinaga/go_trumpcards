@@ -1,3 +1,5 @@
+//go:build !js || !wasm || casino
+
 package domain
 
 // DeuceToSevenCpuCountMin / DeuceToSevenCpuCountMax are the valid CPU opponent

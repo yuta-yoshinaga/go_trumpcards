@@ -1,3 +1,5 @@
+//go:build !js || !wasm || casino
+
 package domain
 
 // VideoPokerVariantConfig はビデオポーカーのバリアント固有設定を保持する

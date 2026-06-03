@@ -1,3 +1,5 @@
+//go:build !js || !wasm || casino
+
 package domain
 
 // Big O (5 Card Omaha) は通常のオマハ (ホールカード4枚) のホールカードを

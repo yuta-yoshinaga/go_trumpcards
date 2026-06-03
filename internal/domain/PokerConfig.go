@@ -1,3 +1,5 @@
+//go:build !js || !wasm || casino
+
 package domain
 
 // PokerCpuCountMin PokerCpuCountMax CPU プレイヤー数の有効範囲

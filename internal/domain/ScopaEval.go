@@ -1,3 +1,5 @@
+//go:build !js || !wasm || casino
+
 package domain
 
 // ScopaMaxSubsetCards は scopaSubsetsSummingTo で処理する最大カード枚数。

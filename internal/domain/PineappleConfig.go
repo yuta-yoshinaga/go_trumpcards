@@ -1,3 +1,5 @@
+//go:build !js || !wasm || casino
+
 package domain
 
 // PineappleConfig パイナップルポーカー設定 (HoldemConfigと同一構造)

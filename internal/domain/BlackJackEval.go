@@ -1,3 +1,5 @@
+//go:build !js || !wasm || casino
+
 package domain
 
 // dealerPlay ディーラーのカードドロー＆精算

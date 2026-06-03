@@ -1,3 +1,5 @@
+//go:build !js || !wasm || casino
+
 package domain
 
 // checkAndTransitionAddon はアドオン判定を行い、人間にアドオン決定を促す場合は true を返す。
