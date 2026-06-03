@@ -275,14 +275,6 @@ func canPlaceOnFoundation(card *Card, fIdx int, foundation [FreeCellFoundationCn
 	return card.GetValue() == count+1
 }
 
-func isAlternateColor(card1, card2 *Card) bool {
-	return isBlack(card1) != isBlack(card2)
-}
-
-func isBlack(card *Card) bool {
-	return card.GetDesign() == CardDesignSpade || card.GetDesign() == CardDesignClover
-}
-
 // stateKey returns the state key for the solver's initial state (used in tests).
 func (s *freeCellSolver) stateKey() [52]uint16 {
 	return stateKeyFromState(s.initialState)

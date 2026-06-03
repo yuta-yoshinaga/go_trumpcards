@@ -1,5 +1,3 @@
-//go:build !js || !wasm || solo
-
 package domain
 
 import (
