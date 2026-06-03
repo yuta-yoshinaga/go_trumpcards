@@ -1510,24 +1510,36 @@ func canastaTypeStr(isNatural bool) string {
 
 // canastaJSON is the JSON wire format for Canasta.
 type canastaJSON struct {
-	TrumpCards       *TrumpCards       `json:"tc"`
-	Players          []*CanastaPlayer  `json:"pl"`
-	Config           CanastaConfig     `json:"cf"`
-	Phase            CanastaPhase      `json:"ps"`
-	CurrentPlayerIdx int               `json:"ci"`
-	DiscardPile      []*Card           `json:"dp"`
-	DrawPile         []*Card           `json:"wp"`
-	Pozzetti         [][]*Card         `json:"pz,omitempty"`
-	IsFrozen         bool              `json:"fr"`
-	GameEndFlag      bool              `json:"ge"`
-	WinnerIdx        int               `json:"wi"`
-	RoundNumber      int               `json:"rn"`
-	ActionLog        []*ActionLogEntry `json:"al"`
-	DrewFromDiscard  bool              `json:"dd"`
+	TrumpCards       *TrumpCards      `json:"tc"`
+	Players          []*CanastaPlayer `json:"pl"`
+	Config           CanastaConfig    `json:"cf"`
+	Phase            CanastaPhase     `json:"ps"`
+	CurrentPlayerIdx int              `json:"ci"`
+	DiscardPile      []*Card          `json:"dp"`
+	DrawPile         []*Card          `json:"wp"`
+	// Pozzetto piles are serialised as two flat []*Card fields rather than a
+	// [][]*Card. The slice-of-slice form would make TinyGo emit a dedicated
+	// encoder that ships in every Cloudflare Worker WASM binary (the classic
+	// worker is at the 1 MB gzip limit); the flat []*Card encoder already exists.
+	Pozzetto1       []*Card           `json:"p1,omitempty"`
+	Pozzetto2       []*Card           `json:"p2,omitempty"`
+	IsFrozen        bool              `json:"fr"`
+	GameEndFlag     bool              `json:"ge"`
+	WinnerIdx       int               `json:"wi"`
+	RoundNumber     int               `json:"rn"`
+	ActionLog       []*ActionLogEntry `json:"al"`
+	DrewFromDiscard bool              `json:"dd"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (g *Canasta) MarshalJSON() ([]byte, error) {
+	var pz1, pz2 []*Card
+	if len(g.pozzetti) > 0 {
+		pz1 = g.pozzetti[0]
+	}
+	if len(g.pozzetti) > 1 {
+		pz2 = g.pozzetti[1]
+	}
 	return json.Marshal(canastaJSON{
 		TrumpCards:       g.trumpCards,
 		Players:          g.players,
@@ -1536,7 +1548,8 @@ func (g *Canasta) MarshalJSON() ([]byte, error) {
 		CurrentPlayerIdx: g.currentPlayerIdx,
 		DiscardPile:      g.discardPile,
 		DrawPile:         g.drawPile,
-		Pozzetti:         g.pozzetti,
+		Pozzetto1:        pz1,
+		Pozzetto2:        pz2,
 		IsFrozen:         g.isFrozen,
 		GameEndFlag:      g.gameEndFlag,
 		WinnerIdx:        g.winnerIdx,
@@ -1579,7 +1592,13 @@ func (g *Canasta) UnmarshalJSON(data []byte) error {
 	if g.drawPile == nil {
 		g.drawPile = make([]*Card, 0)
 	}
-	g.pozzetti = j.Pozzetti
+	g.pozzetti = nil
+	if len(j.Pozzetto1) > 0 {
+		g.pozzetti = append(g.pozzetti, j.Pozzetto1)
+	}
+	if len(j.Pozzetto2) > 0 {
+		g.pozzetti = append(g.pozzetti, j.Pozzetto2)
+	}
 	g.isFrozen = j.IsFrozen
 	g.gameEndFlag = j.GameEndFlag
 	g.winnerIdx = j.WinnerIdx

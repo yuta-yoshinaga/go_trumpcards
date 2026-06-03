@@ -290,7 +290,7 @@ func TestBurracoWebController_ResetWithConfig(t *testing.T) {
 	t.Run("custom config values are passed", func(t *testing.T) {
 		diff := 2
 		limit := 7500
-		expected := domain.BurracoConfig{CpuDifficulty: domain.BurracoCpuDifficultyHard, PointLimit: 7500}
+		expected := domain.BurracoConfig{CpuDifficulty: domain.BurracoCpuDifficultyHard, PointLimit: 7500, UsePozzetto: true}
 		siMock := new(usecase.MockBurracoInteractor)
 		siMock.On("ResetWithConfig", expected).Return(mockOutput)
 
