@@ -487,9 +487,17 @@ func TestSchnapsen_JSONRoundTrip(t *testing.T) {
 
 func TestSchnapsen_UnmarshalValidation(t *testing.T) {
 	bad := []string{
-		`{"ps":[]}`,                      // wrong player count
-		`{"ps":[{},{}],"ct":[{},{},{}]}`, // trick too long
-		`{"ps":[{},{}],"pp":[1,2,3]}`,    // wrong points length
+		`{"ps":[]}`,                             // wrong player count
+		`{"ps":[null,{}]}`,                      // nil player pointer
+		`{"ps":[{},{}],"ct":[{},{},{}]}`,        // trick too long
+		`{"ps":[{},{}],"ct":[{"pi":0}]}`,        // nil card in trick
+		`{"ps":[{},{}],"ct":[{"pi":5,"c":{}}]}`, // out-of-range trick player index
+		`{"ps":[{},{}],"pp":[1,2,3]}`,           // wrong points length
+		`{"ps":[{},{}],"al":[null]}`,            // nil action-log entry
+		`{"ps":[{},{}],"ci":5}`,                 // out-of-range current player index
+		`{"ps":[{},{}],"li":-1}`,                // out-of-range lead player index
+		`{"ps":[{},{}],"di":9}`,                 // out-of-range dealer index
+		`{"ps":[{},{}],"ph":9}`,                 // invalid phase
 	}
 	for _, b := range bad {
 		var s domain.Schnapsen

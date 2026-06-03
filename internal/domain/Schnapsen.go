@@ -1017,14 +1017,47 @@ func (s *Schnapsen) UnmarshalJSON(data []byte) error {
 	if len(j.Players) != SchnapsenPlayerCnt {
 		return fmt.Errorf("schnapsen: expected %d players, got %d", SchnapsenPlayerCnt, len(j.Players))
 	}
+	for i, p := range j.Players {
+		if p == nil {
+			return fmt.Errorf("schnapsen: player at index %d is nil", i)
+		}
+	}
 	if len(j.CurrentTrick) > SchnapsenPlayerCnt {
 		return fmt.Errorf("schnapsen: current trick has %d cards (max %d)", len(j.CurrentTrick), SchnapsenPlayerCnt)
+	}
+	for i, tc := range j.CurrentTrick {
+		if tc == nil {
+			return fmt.Errorf("schnapsen: trick card at index %d is nil", i)
+		}
+		if tc.Card == nil {
+			return fmt.Errorf("schnapsen: card in trick at index %d is nil", i)
+		}
+		if tc.PlayerIdx < 0 || tc.PlayerIdx >= SchnapsenPlayerCnt {
+			return fmt.Errorf("schnapsen: invalid player index %d in trick card at index %d", tc.PlayerIdx, i)
+		}
 	}
 	if j.PlayerPoints != nil && len(j.PlayerPoints) != SchnapsenPlayerCnt {
 		return fmt.Errorf("schnapsen: expected %d player points entries, got %d", SchnapsenPlayerCnt, len(j.PlayerPoints))
 	}
 	if len(j.ActionLog) > schnapsenMaxSliceLen {
 		return fmt.Errorf("schnapsen: action log exceeds maximum allowed size")
+	}
+	for i, entry := range j.ActionLog {
+		if entry == nil {
+			return fmt.Errorf("schnapsen: action log entry at index %d is nil", i)
+		}
+	}
+	if j.CurrentPlayerIdx < 0 || j.CurrentPlayerIdx >= SchnapsenPlayerCnt {
+		return fmt.Errorf("schnapsen: invalid current player index %d", j.CurrentPlayerIdx)
+	}
+	if j.LeadPlayerIdx < 0 || j.LeadPlayerIdx >= SchnapsenPlayerCnt {
+		return fmt.Errorf("schnapsen: invalid lead player index %d", j.LeadPlayerIdx)
+	}
+	if j.DealerIdx < 0 || j.DealerIdx >= SchnapsenPlayerCnt {
+		return fmt.Errorf("schnapsen: invalid dealer index %d", j.DealerIdx)
+	}
+	if j.Phase < SchnapsenPhasePlay || j.Phase > SchnapsenPhaseGameEnd {
+		return fmt.Errorf("schnapsen: invalid phase %d", j.Phase)
 	}
 	s.trumpCards = j.TrumpCards
 	if s.trumpCards == nil {
