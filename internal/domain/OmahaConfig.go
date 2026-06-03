@@ -1,3 +1,5 @@
+//go:build !js || !wasm || casino
+
 package domain
 
 // OmahaConfig オマハホールデム設定 (HoldemConfigと同一構造)

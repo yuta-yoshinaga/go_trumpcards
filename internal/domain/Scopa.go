@@ -1,3 +1,5 @@
+//go:build !js || !wasm || casino
+
 // Package domain スコパ (Scopa) のドメインモデル。
 //
 // Scopa はイタリアの国民的フィッシング系カードゲーム。40 枚デッキ

@@ -1,3 +1,5 @@
+//go:build !js || !wasm || casino
+
 package domain
 
 // trackPreFlopStats プリフロップのHUDスタッツを追跡

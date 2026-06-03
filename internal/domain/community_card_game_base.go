@@ -1,3 +1,5 @@
+//go:build !js || !wasm || casino
+
 package domain
 
 // communityCardBettingBase はコミュニティカード系ポーカー（Holdem, Omaha, ShortDeck, Pineapple）
