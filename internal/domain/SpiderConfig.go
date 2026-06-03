@@ -1,3 +1,5 @@
+//go:build !js || !wasm || solo
+
 package domain
 
 // SpiderDifficulty スパイダーソリティア難易度

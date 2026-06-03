@@ -1,3 +1,5 @@
+//go:build !js || !wasm || solo
+
 package domain
 
 // Rummy500CpuDifficulty CPUの難易度レベル
