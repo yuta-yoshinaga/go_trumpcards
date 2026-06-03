@@ -125,7 +125,10 @@ var registry = []*Game{
 	{Name: "cribbage", Category: CategorySolo, Description: "Cribbage (クリベッジ)"},
 	{Name: "threecard", Category: CategoryCasino, Description: "Three Card Poker (スリーカードポーカー)"},
 	{Name: "ohhell", Category: CategoryClassic, Description: "Oh Hell (オー・ヘル)"},
-	{Name: "bridge", Category: CategoryClassic, Description: "Contract Bridge (コントラクトブリッジ)"},
+	// Bridge is a trick-taking game bucketed into the casino worker purely for
+	// binary-size balancing (#2126): it is one of the heaviest games and the
+	// classic worker is at the 1 MB gzip limit. Category is only a size bucket.
+	{Name: "bridge", Category: CategoryCasino, Description: "Contract Bridge (コントラクトブリッジ)"},
 	{Name: "speed", Category: CategoryClassic, Description: "Speed (スピード)"},
 	{Name: "gofish", Category: CategoryClassic, Description: "Go Fish (ゴーフィッシュ)"},
 	{Name: "pinochle", Category: CategoryClassic, Description: "Pinochle (ピノクル)"},

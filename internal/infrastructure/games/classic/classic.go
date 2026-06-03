@@ -103,14 +103,6 @@ func init() {
 			return usecase.RestoreOhHellInteractor(data, new(presenter.OhHellWebPresenter))
 		},
 		controller.NewOhHellWebControllerWithProvider)
-	games.RegisterKVGame("bridge", games.CategoryClassic,
-		func() usecase.BridgeInteractorIF {
-			return usecase.NewBridgeInteractor(domain.NewDefaultBridge(), new(presenter.BridgeWebPresenter))
-		},
-		func(data []byte) (usecase.BridgeInteractorIF, error) {
-			return usecase.RestoreBridgeInteractor(data, new(presenter.BridgeWebPresenter))
-		},
-		controller.NewBridgeWebControllerWithProvider)
 	games.RegisterKVGame("speed", games.CategoryClassic,
 		func() usecase.SpeedInteractorIF {
 			return usecase.NewSpeedInteractor(domain.NewDefaultSpeed(), new(presenter.SpeedWebPresenter))
