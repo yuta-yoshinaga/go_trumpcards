@@ -265,8 +265,12 @@ function FiveHundredPageContent() {
                   const selected = selectedCardIndices.includes(i);
                   const selectable = isHumanPlayTurn || isHumanExchange;
                   const cardClass = selected
-                    ? (selectable ? 'rounded transition-all ring-2 ring-ds-info -translate-y-2 cursor-pointer hover:opacity-90' : 'rounded transition-all ring-2 ring-ds-info -translate-y-2 cursor-default')
-                    : (selectable ? 'rounded transition-all cursor-pointer hover:opacity-90' : 'rounded transition-all cursor-default');
+                    ? selectable
+                      ? 'rounded transition-all ring-2 ring-ds-info -translate-y-2 cursor-pointer hover:opacity-90'
+                      : 'rounded transition-all ring-2 ring-ds-info -translate-y-2 cursor-default'
+                    : selectable
+                      ? 'rounded transition-all cursor-pointer hover:opacity-90'
+                      : 'rounded transition-all cursor-default';
                   return (
                     <button
                       key={i}
