@@ -13,6 +13,9 @@ func (m *CanastaMeld) IsCanasta() bool {
 	return len(m.Cards) >= 7
 }
 
+// IsBurraco は IsCanasta のエイリアス（Burraco モードでの呼称）。
+func (m *CanastaMeld) IsBurraco() bool { return m.IsCanasta() }
+
 // GetRank メルドのランク（ナチュラルカードのランク）を返す
 func (m *CanastaMeld) GetRank() int {
 	for _, c := range m.Cards {
@@ -27,9 +30,10 @@ func (m *CanastaMeld) GetRank() int {
 type CanastaPlayer struct {
 	*GamePlayer
 	RoundScoreHolder
-	melds       []*CanastaMeld // テーブル上のメルド
-	red3s       []*Card        // 場に出した赤3
-	hasInitMeld bool           // 初回メルド済みフラグ
+	melds        []*CanastaMeld // テーブル上のメルド
+	red3s        []*Card        // 場に出した赤3
+	hasInitMeld  bool           // 初回メルド済みフラグ
+	tookPozzetto bool           // ポゼット（予備手札）を獲得済みか (Burraco モードのみ)
 }
 
 // NewCanastaPlayer コンストラクタ
@@ -49,6 +53,7 @@ func (p *CanastaPlayer) ResetRound() {
 	p.melds = make([]*CanastaMeld, 0)
 	p.red3s = make([]*Card, 0)
 	p.hasInitMeld = false
+	p.tookPozzetto = false
 }
 
 // GetMelds メルドを取得
@@ -89,6 +94,15 @@ func (p *CanastaPlayer) HasCanasta() bool {
 	return false
 }
 
+// HasBurraco は HasCanasta のエイリアス（Burraco モードでの呼称）。
+func (p *CanastaPlayer) HasBurraco() bool { return p.HasCanasta() }
+
+// GetTookPozzetto ポゼット獲得済みフラグ取得 (Burraco モードのみ)
+func (p *CanastaPlayer) GetTookPozzetto() bool { return p.tookPozzetto }
+
+// SetTookPozzetto ポゼット獲得済みフラグ設定 (テスト用)
+func (p *CanastaPlayer) SetTookPozzetto(v bool) { p.tookPozzetto = v }
+
 // canastaPlayerJSON is the JSON wire format for CanastaPlayer.
 type canastaPlayerJSON struct {
 	GamePlayer       *GamePlayer       `json:"gp"`
@@ -96,6 +110,7 @@ type canastaPlayerJSON struct {
 	Melds            []*CanastaMeld    `json:"ml"`
 	Red3s            []*Card           `json:"r3"`
 	HasInitMeld      bool              `json:"hi"`
+	TookPozzetto     bool              `json:"tp,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -106,6 +121,7 @@ func (p *CanastaPlayer) MarshalJSON() ([]byte, error) {
 		Melds:            p.melds,
 		Red3s:            p.red3s,
 		HasInitMeld:      p.hasInitMeld,
+		TookPozzetto:     p.tookPozzetto,
 	})
 }
 
@@ -132,5 +148,6 @@ func (p *CanastaPlayer) UnmarshalJSON(data []byte) error {
 		p.red3s = make([]*Card, 0)
 	}
 	p.hasInitMeld = j.HasInitMeld
+	p.tookPozzetto = j.TookPozzetto
 	return nil
 }

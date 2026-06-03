@@ -45,6 +45,8 @@ type CanastaGame interface {
 	GetDrawPileCount() int
 	// GetDiscardPileCount 捨て札の枚数を取得する
 	GetDiscardPileCount() int
+	// GetPozzettoCount 残っているポゼット（予備手札）の山の数を取得する (Burraco モード)
+	GetPozzettoCount() int
 	// GetIsFrozen 捨て札の山がフリーズ状態かを返す
 	GetIsFrozen() bool
 	// GetWinnerIdx 勝者インデックスを取得する

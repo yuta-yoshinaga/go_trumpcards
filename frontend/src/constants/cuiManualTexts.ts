@@ -18,6 +18,7 @@ import blackjack from '../../../docs/manual/cui/blackjack.md?raw';
 import blackjackswitch from '../../../docs/manual/cui/blackjackswitch.md?raw';
 import bridge from '../../../docs/manual/cui/bridge.md?raw';
 import briscola from '../../../docs/manual/cui/briscola.md?raw';
+import burraco from '../../../docs/manual/cui/burraco.md?raw';
 import calculation from '../../../docs/manual/cui/calculation.md?raw';
 import callbreak from '../../../docs/manual/cui/callbreak.md?raw';
 import canasta from '../../../docs/manual/cui/canasta.md?raw';
@@ -129,6 +130,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/baccarat': baccarat,
   '/belote': belote,
   '/bridge': bridge,
+  '/burraco': burraco,
   '/calculation': calculation,
   '/canasta': canasta,
   '/canfield': canfield,

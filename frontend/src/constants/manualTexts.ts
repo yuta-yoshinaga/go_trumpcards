@@ -17,6 +17,7 @@ import blackjack from '../../../docs/manual/web/blackjack.md?raw';
 import blackjackswitch from '../../../docs/manual/web/blackjackswitch.md?raw';
 import bridge from '../../../docs/manual/web/bridge.md?raw';
 import briscola from '../../../docs/manual/web/briscola.md?raw';
+import burraco from '../../../docs/manual/web/burraco.md?raw';
 import calculation from '../../../docs/manual/web/calculation.md?raw';
 import callbreak from '../../../docs/manual/web/callbreak.md?raw';
 import canasta from '../../../docs/manual/web/canasta.md?raw';
@@ -131,6 +132,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/baccarat': baccarat,
   '/belote': belote,
   '/bridge': bridge,
+  '/burraco': burraco,
   '/calculation': calculation,
   '/canasta': canasta,
   '/canfield': canfield,

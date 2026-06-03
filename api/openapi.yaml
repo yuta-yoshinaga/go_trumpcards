@@ -78,6 +78,8 @@ tags:
     description: Spanish 21 (スパニッシュ21) — BlackJack variant with 48-card deck and bonus payouts
   - name: canasta
     description: Canasta (カナスタ) game
+  - name: burraco
+    description: Burraco (ブラーコ) — Canasta-derived rummy with pozzetto reserve hands
   - name: pinochle
     description: Pinochle (ピノクル) game
   - name: spider
@@ -2538,6 +2540,92 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CanastaResponse'
+
+  /burraco/exec:
+    post:
+      tags:
+        - burraco
+      summary: Execute a Burraco game command
+      description: |
+        Send a command to advance the Burraco (ブラーコ) game session
+        identified by `sessionId`.  Burraco is a Canasta-derived 2-player
+        rummy card game using 2 decks + 4 jokers (108 cards).  11 cards are
+        dealt to each player, and two 11-card "pozzetto" reserve piles are set
+        aside.  Wild cards (2s and Jokers) can substitute in melds.  Burraco =
+        7+ card meld.  The first player to empty their hand claims a pozzetto;
+        going out requires the pozzetto plus at least one burraco.  First to
+        reach the point limit (default 2005) wins.
+
+        The game proceeds through these phases:
+
+        | Phase        | Value | Description |
+        |--------------|-------|-------------|
+        | Draw         | `0`   | Draw from stock or pick up discard pile |
+        | Meld         | `1`   | Meld cards or skip |
+        | Discard      | `2`   | Discard a card or go out |
+        | RoundEnd     | `3`   | Round scored; advance with `nextround` |
+        | GameEnd      | `4`   | A player reached the point limit |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `drawstock`    | `ds`    | Draw a card from the stock pile |
+        | `drawdiscard`  | `dd`    | Pick up the discard pile (requires `naturalPairIndices`) |
+        | `meld`         | `m`     | Meld cards (requires `meldGroups`) |
+        | `skipmeld`     | `sm`    | Skip meld phase |
+        | `discard`      | `d`     | Discard a card (requires `cardIndex`) |
+        | `goout`        | `go`    | Go out (requires the pozzetto and at least 1 burraco) |
+        | `nextround`    | `nr`    | Score the round and start the next |
+        | `log`          | `l`     | View action log |
+      operationId: burracoExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BurracoRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              drawstock:
+                summary: Draw from stock pile
+                value:
+                  command: drawstock
+                  sessionId: my-session-001
+              drawdiscard:
+                summary: Pick up discard pile with natural pair at indices 0 and 1
+                value:
+                  command: drawdiscard
+                  naturalPairIndices: [0, 1]
+                  sessionId: my-session-001
+              meld:
+                summary: Meld cards at indices 0, 1, 2
+                value:
+                  command: meld
+                  meldGroups: [[0, 1, 2]]
+                  sessionId: my-session-001
+              discard:
+                summary: Discard card at index 2
+                value:
+                  command: discard
+                  cardIndex: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BurracoResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BurracoResponse'
 
   /pinochle/exec:
     post:
@@ -17624,6 +17712,162 @@ components:
         discardPileCount:
           type: integer
           description: Number of cards in the discard pile
+        isFrozen:
+          type: boolean
+          description: Whether the discard pile is frozen
+        gameEndFlag:
+          type: boolean
+          description: Whether the match has ended
+        winnerIdx:
+          type: integer
+          description: Index of the match winner (-1 if not ended)
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+        message:
+          type: string
+          description: Game status message
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Burraco types
+    # -------------------------------------------------------------------------
+    BurracoRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `drawstock` (`ds`),
+            `drawdiscard` (`dd`), `meld` (`m`), `skipmeld` (`sm`),
+            `discard` (`d`), `goout` (`go`), `nextround` (`nr`), `log` (`l`).
+          enum: [reset, r, drawstock, ds, drawdiscard, dd, meld, m, skipmeld, sm, discard, d, goout, go, nextround, nr, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Index of the card to discard.  Required for `discard` command.
+          example: 2
+        naturalPairIndices:
+          type: array
+          description: Indices of two natural cards matching the discard top.  Required for `drawdiscard` command.
+          items:
+            type: integer
+          example: [0, 1]
+        meldGroups:
+          type: array
+          description: Groups of card indices to meld.  Required for `meld` command.
+          items:
+            type: array
+            items:
+              type: integer
+          example: [[0, 1, 2]]
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            pointLimit:
+              type: integer
+              minimum: 1
+              maximum: 100000
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    BurracoResponse:
+      type: object
+      description: Current state of the Burraco game
+      properties:
+        players:
+          type: array
+          description: Array of player objects
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              melds:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    cards:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Card'
+                    isNatural:
+                      type: boolean
+                    isBurraco:
+                      type: boolean
+                    rank:
+                      type: integer
+              red3Count:
+                type: integer
+              red3s:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+              hasBurraco:
+                type: boolean
+              hasInitMeld:
+                type: boolean
+              tookPozzetto:
+                type: boolean
+                description: Whether the player has claimed their pozzetto reserve hand
+        phase:
+          type: integer
+          description: "Game phase: 0 = Draw, 1 = Meld, 2 = Discard, 3 = RoundEnd, 4 = GameEnd"
+          enum: [0, 1, 2, 3, 4]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Current round number
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        discardTop:
+          description: The top card of the discard pile
+          $ref: '#/components/schemas/Card'
+        drawPileCount:
+          type: integer
+          description: Number of cards remaining in the stock pile
+        discardPileCount:
+          type: integer
+          description: Number of cards in the discard pile
+        pozzettoCount:
+          type: integer
+          description: Number of pozzetto (reserve hand) piles still available
         isFrozen:
           type: boolean
           description: Whether the discard pile is frozen

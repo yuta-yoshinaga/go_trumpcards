@@ -17,6 +17,11 @@ const (
 type CanastaConfig struct {
 	CpuDifficulty CanastaCpuDifficulty `json:"cd"`
 	PointLimit    int                  `json:"pl"` // ゲーム終了スコア (先に到達したプレイヤーが勝利)
+	// UsePozzetto は Burraco モードを有効にする。true のとき初期配布を11枚に
+	// 減らし、11枚のポゼット（予備手札）を2山取り分け、最初に手札を出し切った
+	// プレイヤーがポゼットを獲得する。ポゼット獲得かつブラーコ完成が上がり条件
+	// になる。Canasta では false（omitempty によりワイヤ形式は不変）。
+	UsePozzetto bool `json:"up,omitempty"`
 }
 
 // DefaultCanastaConfig デフォルト設定を返す
