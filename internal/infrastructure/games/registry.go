@@ -225,6 +225,11 @@ var registry = []*Game{
 	// classic worker is at the 1 MB gzip free-tier limit. Category here is
 	// purely a binary-size bucket.
 	{Name: "fivehundred", Category: CategorySolo, Description: "500 (Five Hundred / ファイブハンドレッド)"},
+	// Schnapsen / Sixty-Six is a 2-player trick-taking game (marriages + draw
+	// from stock). It is bucketed into the solo worker only because the classic
+	// worker is at the 1 MB gzip free-tier limit. Category here is purely a
+	// binary-size bucket.
+	{Name: "schnapsen", Category: CategorySolo, Description: "Schnapsen / Sixty-Six (シュナプセン / 66)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

@@ -1,0 +1,39 @@
+{
+  "currentTrick": "Current trick",
+  "title": "Schnapsen / Sixty-Six",
+  "subtitle": "Austrian 2-player trick-taking — 20-card deck, marriages, first to 66",
+  "header": {
+    "trick": "Trick",
+    "stock": "Stock",
+    "you": "You",
+    "cpu": "CPU",
+    "points": "Points",
+    "trump": "Trump upcard",
+    "trumpNone": "Trump: stock exhausted",
+    "tricks": "Tricks",
+    "phase1": "Phase 1 (follow optional)",
+    "phase2": "Phase 2 (must follow)"
+  },
+  "phase": {
+    "play": "Play",
+    "trickEnd": "Trick end",
+    "gameEnd": "Game end"
+  },
+  "actions": {
+    "next": "Next trick",
+    "reset": "Reset",
+    "marriage": "Marriage",
+    "hint": "Hint"
+  },
+  "result": {
+    "youWin": "You win! ({{p0}}-{{p1}})",
+    "cpuWin": "CPU wins ({{p0}}-{{p1}})",
+    "tie": "Tie ({{p0}}-{{p1}})"
+  },
+  "message": {
+    "yourTurn": "Your turn",
+    "cpuTurn": "CPU's turn…",
+    "trickComplete": "Trick complete — proceed to the next trick",
+    "loading": "Loading…"
+  }
+}

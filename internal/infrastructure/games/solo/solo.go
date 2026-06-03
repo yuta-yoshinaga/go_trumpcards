@@ -338,4 +338,15 @@ func init() {
 			return usecase.RestoreFiveHundredInteractor(data, new(presenter.FiveHundredWebPresenter))
 		},
 		controller.NewFiveHundredWebControllerWithProvider)
+	// Schnapsen / Sixty-Six is a 2-player trick-taking game bucketed here (solo
+	// worker) for binary-size reasons; the classic worker is at the 1 MB gzip
+	// free-tier limit. See registry.go.
+	games.RegisterKVGame("schnapsen", games.CategorySolo,
+		func() usecase.SchnapsenInteractorIF {
+			return usecase.NewSchnapsenInteractor(domain.NewDefaultSchnapsen(), new(presenter.SchnapsenWebPresenter))
+		},
+		func(data []byte) (usecase.SchnapsenInteractorIF, error) {
+			return usecase.RestoreSchnapsenInteractor(data, new(presenter.SchnapsenWebPresenter))
+		},
+		controller.NewSchnapsenWebControllerWithProvider)
 }

@@ -760,6 +760,13 @@ export const BriscolaPhase = {
   GAME_END: 2,
 } as const;
 
+/** Schnapsen phase constants (sync: internal/domain/Schnapsen.go). */
+export const SchnapsenPhase = {
+  PLAY: 0,
+  TRICK_END: 1,
+  GAME_END: 2,
+} as const;
+
 /** Truco phase constants (sync: internal/domain/Truco.go). */
 export const TrucoPhase = {
   PLAY: 0,
