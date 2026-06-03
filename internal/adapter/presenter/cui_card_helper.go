@@ -62,18 +62,6 @@ type cuiPlayer interface {
 // Index 0 is unused (joker); indices 1–4 correspond to CardDesignSpade–CardDesignDiamond.
 var suitNames = []string{"", "SPADE", "CLOVER", "HEART", "DIAMOND"}
 
-// bettingActionKeys maps betting action constants to i18n keys in
-// cui_common.json. Used by cuiBettingActionName so the displayed action
-// text follows the active locale (issue #1699 Phase 1).
-var bettingActionKeys = map[int]string{
-	domain.PokerActionFold:  "cuiBettingActionFold",
-	domain.PokerActionCheck: "cuiBettingActionCheck",
-	domain.PokerActionCall:  "cuiBettingActionCall",
-	domain.PokerActionBet:   "cuiBettingActionBet",
-	domain.PokerActionRaise: "cuiBettingActionRaise",
-	domain.PokerActionAllIn: "cuiBettingActionAllIn",
-}
-
 // cuiCardStr returns a text-based card string (e.g. "SPADE 5", "JOKER", "??").
 // Used by BlackJack, OldMaid, Daifugo, Sevens, and Doubt CUI presenters.
 func cuiCardStr(card *domain.Card) string {
@@ -151,15 +139,6 @@ func cuiPlayerNameWithStyle[P cuiPlayerWithStyle](player P, idx int) string {
 		name = fmt.Sprintf("%s (%s)", name, player.GetPlayStyleName())
 	}
 	return name
-}
-
-// cuiBettingActionName returns the localized action name for betting
-// actions. Used by Poker and Holdem CUI presenters.
-func cuiBettingActionName(action int) string {
-	if key, ok := bettingActionKeys[action]; ok {
-		return i18n.T(key)
-	}
-	return i18n.T("cuiBettingActionUnknown")
 }
 
 // cuiIndexedCardListStr returns a double-space separated indexed card string.

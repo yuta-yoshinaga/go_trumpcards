@@ -1,3 +1,5 @@
+//go:build !js || !wasm || casino
+
 package controller
 
 // PokerCommonInput holds the tournament/limit/rebuy/addon/tableSize fields
