@@ -338,4 +338,13 @@ func init() {
 		},
 		controller.NewMightyWebControllerWithProvider)
 
+	games.RegisterKVGame("bridge", games.CategoryCasino,
+		func() usecase.BridgeInteractorIF {
+			return usecase.NewBridgeInteractor(domain.NewDefaultBridge(), new(presenter.BridgeWebPresenter))
+		},
+		func(data []byte) (usecase.BridgeInteractorIF, error) {
+			return usecase.RestoreBridgeInteractor(data, new(presenter.BridgeWebPresenter))
+		},
+		controller.NewBridgeWebControllerWithProvider)
+
 }

@@ -178,7 +178,7 @@ const workerUrl: Record<string, string> = {
   spades: WORKER_CLASSIC,
   pitch: WORKER_CLASSIC,
   euchre: WORKER_CLASSIC,
-  bridge: WORKER_CLASSIC,
+  bridge: WORKER_CASINO,
   napoleon: WORKER_CLASSIC,
   ohhell: WORKER_CLASSIC,
   oldmaid: WORKER_CLASSIC,
