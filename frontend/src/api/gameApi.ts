@@ -246,7 +246,7 @@ const workerUrl: Record<string, string> = {
   ultimatetexasholdem: WORKER_CASINO,
   crescent: WORKER_SOLO,
   mississippistud: WORKER_CASINO,
-  belote: WORKER_CLASSIC,
+  belote: WORKER_CASINO,
   spiderette: WORKER_SOLO,
   mighty: WORKER_CASINO,
   oasispoker: WORKER_CASINO,
