@@ -265,7 +265,7 @@ const workerUrl: Record<string, string> = {
   penguin: WORKER_SOLO,
   chinesepoker: WORKER_CASINO,
   sixcardgolf: WORKER_CLASSIC,
-  doudizhu: WORKER_CLASSIC,
+  doudizhu: WORKER_CASINO,
   truco: WORKER_CLASSIC,
   scopa: WORKER_CASINO,
   barbu: WORKER_SOLO,

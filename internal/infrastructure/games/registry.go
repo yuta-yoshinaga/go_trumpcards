@@ -216,7 +216,9 @@ var registry = []*Game{
 	{Name: "penguin", Category: CategorySolo, Description: "Penguin (ペンギン)"},
 	{Name: "chinesepoker", Category: CategoryCasino, Description: "Chinese Poker (チャイニーズポーカー)"},
 	{Name: "sixcardgolf", Category: CategoryClassic, Description: "Six Card Golf (シックスカードゴルフ)"},
-	{Name: "doudizhu", Category: CategoryClassic, Description: "Dou Dizhu / Fight the Landlord (斗地主)"},
+	// Dou Dizhu is bucketed into the casino worker purely for binary-size
+	// balancing (#2126). Category is only a size bucket.
+	{Name: "doudizhu", Category: CategoryCasino, Description: "Dou Dizhu / Fight the Landlord (斗地主)"},
 	{Name: "truco", Category: CategoryClassic, Description: "Truco (トゥルコ)"},
 	{Name: "scopa", Category: CategoryCasino, Description: "Scopa (スコパ)"},
 	{Name: "acesup", Category: CategorySolo, Description: "Aces Up (四つ葉のクローバー)"},

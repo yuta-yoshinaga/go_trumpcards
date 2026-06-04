@@ -374,4 +374,13 @@ func init() {
 		},
 		controller.NewTarneebWebControllerWithProvider)
 
+	games.RegisterKVGame("doudizhu", games.CategoryCasino,
+		func() usecase.DoudizhuInteractorIF {
+			return usecase.NewDoudizhuInteractor(domain.NewDefaultDoudizhu(), new(presenter.DoudizhuWebPresenter))
+		},
+		func(data []byte) (usecase.DoudizhuInteractorIF, error) {
+			return usecase.RestoreDoudizhuInteractor(data, new(presenter.DoudizhuWebPresenter))
+		},
+		controller.NewDoudizhuWebControllerWithProvider)
+
 }
