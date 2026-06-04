@@ -1,3 +1,5 @@
+//go:build !js || !wasm || solo
+
 package domain
 
 import (
@@ -932,19 +934,6 @@ func (e *Euchre) playerName(idx int) string {
 }
 
 // suitStr スート名を返す
-func suitStr(suit int) string {
-	switch suit {
-	case CardDesignSpade:
-		return "Spade"
-	case CardDesignClover:
-		return "Club"
-	case CardDesignHeart:
-		return "Heart"
-	case CardDesignDiamond:
-		return "Diamond"
-	}
-	return "Unknown"
-}
 
 // appendLog 棋譜にエントリを追加する
 func (e *Euchre) appendLog(playerIdx int, actionType, detail string, cards []*Card) {

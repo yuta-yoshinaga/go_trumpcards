@@ -357,4 +357,13 @@ func init() {
 			return usecase.RestoreBurracoInteractor(data, new(presenter.BurracoWebPresenter))
 		},
 		controller.NewBurracoWebControllerWithProvider)
+	games.RegisterKVGame("euchre", games.CategorySolo,
+		func() usecase.EuchreInteractorIF {
+			return usecase.NewEuchreInteractor(domain.NewDefaultEuchre(), new(presenter.EuchreWebPresenter))
+		},
+		func(data []byte) (usecase.EuchreInteractorIF, error) {
+			return usecase.RestoreEuchreInteractor(data, new(presenter.EuchreWebPresenter))
+		},
+		controller.NewEuchreWebControllerWithProvider)
+
 }
