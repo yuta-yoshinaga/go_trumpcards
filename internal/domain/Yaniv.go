@@ -368,8 +368,9 @@ func (g *Yaniv) cpuDiscard() {
 	cards := g.handCards(idx)
 	combo := bestYanivDiscard(cards)
 	if err := g.discard(idx, combo); err != nil {
-		// Defensive: bestYanivDiscard always yields a valid single-card combo.
-		g.discard(idx, []int{0})
+		// Defensive: bestYanivDiscard always yields a valid single-card combo, so
+		// the fallback (discarding the first card) can never fail in practice.
+		_ = g.discard(idx, []int{0})
 	}
 }
 

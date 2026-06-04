@@ -2385,6 +2385,7 @@ const games = [
   'egyptianratscrew',
   'bakersdozen',
   'thirtyone',
+  'yaniv',
   'tonk',
   'casinowar',
   'pitch',

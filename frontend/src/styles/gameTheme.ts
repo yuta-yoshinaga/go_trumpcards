@@ -132,6 +132,7 @@ export type GameKey =
   | 'ginrummy'
   | 'tonk'
   | 'thirtyone'
+  | 'yaniv'
   | 'canasta'
   | 'burraco'
   | 'cribbage'
