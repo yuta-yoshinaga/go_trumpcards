@@ -114,7 +114,10 @@ var registry = []*Game{
 	{Name: "ginrummy", Category: CategorySolo, Description: "Gin Rummy (ジンラミー)"},
 	{Name: "canasta", Category: CategorySolo, Description: "Canasta (カナスタ)"},
 	{Name: "spider", Category: CategorySolo, Description: "Spider Solitaire (スパイダーソリティア)"},
-	{Name: "napoleon", Category: CategoryClassic, Description: "Napoleon (ナポレオン)"},
+	// Napoleon is a trick-taking game bucketed into the casino worker purely for
+	// binary-size balancing (#2126): it is one of the heaviest games. Category is
+	// only a size bucket.
+	{Name: "napoleon", Category: CategoryCasino, Description: "Napoleon (ナポレオン)"},
 	{Name: "indianpoker", Category: CategoryCasino, Description: "Indian Poker (インディアンポーカー)"},
 	{Name: "videopoker", Category: CategoryCasino, Description: "Video Poker Jacks or Better (ビデオポーカー)"},
 	{Name: "deuceswild", Category: CategoryCasino, Description: "Deuces Wild (デューシーズワイルド)"},
