@@ -383,4 +383,13 @@ func init() {
 		},
 		controller.NewDoudizhuWebControllerWithProvider)
 
+	games.RegisterKVGame("belote", games.CategoryCasino,
+		func() usecase.BeloteInteractorIF {
+			return usecase.NewBeloteInteractor(domain.NewDefaultBelote(), new(presenter.BeloteWebPresenter))
+		},
+		func(data []byte) (usecase.BeloteInteractorIF, error) {
+			return usecase.RestoreBeloteInteractor(data, new(presenter.BeloteWebPresenter))
+		},
+		controller.NewBeloteWebControllerWithProvider)
+
 }

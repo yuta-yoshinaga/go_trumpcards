@@ -189,7 +189,9 @@ var registry = []*Game{
 	{Name: "ultimatetexasholdem", Category: CategoryCasino, Description: "Ultimate Texas Hold'em (アルティメット・テキサスホールデム)"},
 	{Name: "crescent", Category: CategorySolo, Description: "Crescent Solitaire (クレセント・ソリティア)"},
 	{Name: "mississippistud", Category: CategoryCasino, Description: "Mississippi Stud (ミシシッピ・スタッド)"},
-	{Name: "belote", Category: CategoryClassic, Description: "Belote (ベロート)"},
+	// Belote is bucketed into the casino worker purely for binary-size balancing
+	// (#2126). Category is only a size bucket.
+	{Name: "belote", Category: CategoryCasino, Description: "Belote (ベロート)"},
 	{Name: "spiderette", Category: CategorySolo, Description: "Spiderette (スパイダレット)"},
 	// Mighty is a trick-taking game, but it is bucketed into the casino worker
 	// purely for binary-size balancing (#2126): it is one of the heaviest games
