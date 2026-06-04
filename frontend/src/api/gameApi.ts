@@ -252,7 +252,7 @@ const workerUrl: Record<string, string> = {
   oasispoker: WORKER_CASINO,
   russianpoker: WORKER_CASINO,
   beleagueredcastle: WORKER_SOLO,
-  piquet: WORKER_CLASSIC,
+  piquet: WORKER_SOLO,
   callbreak: WORKER_CLASSIC,
   tarneeb: WORKER_CASINO,
   highcardflush: WORKER_CASINO,

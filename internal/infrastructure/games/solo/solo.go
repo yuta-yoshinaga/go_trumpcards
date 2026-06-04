@@ -366,4 +366,13 @@ func init() {
 		},
 		controller.NewEuchreWebControllerWithProvider)
 
+	games.RegisterKVGame("piquet", games.CategorySolo,
+		func() usecase.PiquetInteractorIF {
+			return usecase.NewPiquetInteractor(domain.NewDefaultPiquet(), new(presenter.PiquetWebPresenter))
+		},
+		func(data []byte) (usecase.PiquetInteractorIF, error) {
+			return usecase.RestorePiquetInteractor(data, new(presenter.PiquetWebPresenter))
+		},
+		controller.NewPiquetWebControllerWithProvider)
+
 }

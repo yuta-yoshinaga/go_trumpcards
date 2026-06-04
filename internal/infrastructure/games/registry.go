@@ -198,7 +198,9 @@ var registry = []*Game{
 	{Name: "mighty", Category: CategoryCasino, Description: "Mighty (マイティ)"},
 	{Name: "oasispoker", Category: CategoryCasino, Description: "Oasis Poker (オアシスポーカー)"},
 	{Name: "beleagueredcastle", Category: CategorySolo, Description: "Beleaguered Castle (包囲された城)"},
-	{Name: "piquet", Category: CategoryClassic, Description: "Piquet (ピケ)"},
+	// Piquet is a trick-taking game bucketed into the SOLO worker purely for
+	// binary-size balancing (#2126). Category is only a size bucket.
+	{Name: "piquet", Category: CategorySolo, Description: "Piquet (ピケ)"},
 	{Name: "casinoholdem", Category: CategoryCasino, Description: "Casino Hold'em (カジノホールデム)"},
 	{Name: "callbreak", Category: CategoryClassic, Description: "Call Break (コールブレイク)"},
 	// Tarneeb is a trick-taking game bucketed into the casino worker purely for
