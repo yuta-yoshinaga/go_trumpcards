@@ -198,7 +198,9 @@ var registry = []*Game{
 	{Name: "piquet", Category: CategoryClassic, Description: "Piquet (ピケ)"},
 	{Name: "casinoholdem", Category: CategoryCasino, Description: "Casino Hold'em (カジノホールデム)"},
 	{Name: "callbreak", Category: CategoryClassic, Description: "Call Break (コールブレイク)"},
-	{Name: "tarneeb", Category: CategoryClassic, Description: "Tarneeb (ターニーブ)"},
+	// Tarneeb is a trick-taking game bucketed into the casino worker purely for
+	// binary-size balancing (#2126). Category is only a size bucket.
+	{Name: "tarneeb", Category: CategoryCasino, Description: "Tarneeb (ターニーブ)"},
 	{Name: "highcardflush", Category: CategoryCasino, Description: "High Card Flush (ハイカードフラッシュ)"},
 	{Name: "briscola", Category: CategoryClassic, Description: "Briscola (ブリスコラ)"},
 	{Name: "gaps", Category: CategorySolo, Description: "Gaps / Montana (ギャップス)"},

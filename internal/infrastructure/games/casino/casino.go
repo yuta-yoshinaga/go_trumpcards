@@ -365,4 +365,13 @@ func init() {
 		},
 		controller.NewSkatWebControllerWithProvider)
 
+	games.RegisterKVGame("tarneeb", games.CategoryCasino,
+		func() usecase.TarneebInteractorIF {
+			return usecase.NewTarneebInteractor(domain.NewDefaultTarneeb(), new(presenter.TarneebWebPresenter))
+		},
+		func(data []byte) (usecase.TarneebInteractorIF, error) {
+			return usecase.RestoreTarneebInteractor(data, new(presenter.TarneebWebPresenter))
+		},
+		controller.NewTarneebWebControllerWithProvider)
+
 }

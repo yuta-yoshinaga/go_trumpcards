@@ -254,7 +254,7 @@ const workerUrl: Record<string, string> = {
   beleagueredcastle: WORKER_SOLO,
   piquet: WORKER_CLASSIC,
   callbreak: WORKER_CLASSIC,
-  tarneeb: WORKER_CLASSIC,
+  tarneeb: WORKER_CASINO,
   highcardflush: WORKER_CASINO,
   briscola: WORKER_CLASSIC,
   schnapsen: WORKER_SOLO,
