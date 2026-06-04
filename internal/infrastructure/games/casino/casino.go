@@ -356,4 +356,13 @@ func init() {
 		},
 		controller.NewNapoleonWebControllerWithProvider)
 
+	games.RegisterKVGame("skat", games.CategoryCasino,
+		func() usecase.SkatInteractorIF {
+			return usecase.NewSkatInteractor(domain.NewDefaultSkat(), new(presenter.SkatWebPresenter))
+		},
+		func(data []byte) (usecase.SkatInteractorIF, error) {
+			return usecase.RestoreSkatInteractor(data, new(presenter.SkatWebPresenter))
+		},
+		controller.NewSkatWebControllerWithProvider)
+
 }

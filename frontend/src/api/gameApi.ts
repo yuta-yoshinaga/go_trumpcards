@@ -231,7 +231,7 @@ const workerUrl: Record<string, string> = {
   president: WORKER_CLASSIC,
   cassino: WORKER_CLASSIC,
   spiteandmalice: WORKER_CLASSIC,
-  skat: WORKER_CLASSIC,
+  skat: WORKER_CASINO,
   shithead: WORKER_CLASSIC,
   nertz: WORKER_CLASSIC,
   slapjack: WORKER_CLASSIC,

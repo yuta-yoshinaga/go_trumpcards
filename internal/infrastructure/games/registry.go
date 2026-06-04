@@ -168,7 +168,9 @@ var registry = []*Game{
 	{Name: "spanish21", Category: CategoryCasino, Description: "Spanish 21 (スパニッシュ21)"},
 	{Name: "calculation", Category: CategorySolo, Description: "Calculation (カルキュレーション)"},
 	{Name: "spiteandmalice", Category: CategoryClassic, Description: "Spite and Malice (スパイト・アンド・マリス)"},
-	{Name: "skat", Category: CategoryClassic, Description: "Skat (スカート)"},
+	// Skat is a trick-taking game bucketed into the casino worker purely for
+	// binary-size balancing (#2126). Category is only a size bucket.
+	{Name: "skat", Category: CategoryCasino, Description: "Skat (スカート)"},
 	{Name: "shithead", Category: CategoryClassic, Description: "Shithead / Karma (シットヘッド)"},
 	{Name: "nertz", Category: CategoryClassic, Description: "Nertz / Pounce (ナーツ / パウンス)"},
 	{Name: "slapjack", Category: CategoryClassic, Description: "Slapjack (スラップジャック)"},
