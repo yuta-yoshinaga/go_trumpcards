@@ -122,7 +122,10 @@ var registry = []*Game{
 	{Name: "videopoker", Category: CategoryCasino, Description: "Video Poker Jacks or Better (ビデオポーカー)"},
 	{Name: "deuceswild", Category: CategoryCasino, Description: "Deuces Wild (デューシーズワイルド)"},
 	{Name: "jokerpoker", Category: CategoryCasino, Description: "Joker Poker (ジョーカーポーカー)"},
-	{Name: "euchre", Category: CategoryClassic, Description: "Euchre (ユーカー)"},
+	// Euchre is a trick-taking game bucketed into the SOLO worker purely for
+	// binary-size balancing (#2126): the classic worker is the constrained one,
+	// and solo has more headroom than casino now. Category is only a size bucket.
+	{Name: "euchre", Category: CategorySolo, Description: "Euchre (ユーカー)"},
 	{Name: "pyramid", Category: CategorySolo, Description: "Pyramid (ピラミッド)"},
 	{Name: "tripeaks", Category: CategorySolo, Description: "TriPeaks (トリピークス)"},
 	{Name: "cribbage", Category: CategorySolo, Description: "Cribbage (クリベッジ)"},

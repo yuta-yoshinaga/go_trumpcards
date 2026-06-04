@@ -79,14 +79,6 @@ func init() {
 			return usecase.RestoreCrazyEightsInteractor(data, new(presenter.CrazyEightsWebPresenter))
 		},
 		controller.NewCrazyEightsWebControllerWithProvider)
-	games.RegisterKVGame("euchre", games.CategoryClassic,
-		func() usecase.EuchreInteractorIF {
-			return usecase.NewEuchreInteractor(domain.NewDefaultEuchre(), new(presenter.EuchreWebPresenter))
-		},
-		func(data []byte) (usecase.EuchreInteractorIF, error) {
-			return usecase.RestoreEuchreInteractor(data, new(presenter.EuchreWebPresenter))
-		},
-		controller.NewEuchreWebControllerWithProvider)
 	games.RegisterKVGame("ohhell", games.CategoryClassic,
 		func() usecase.OhHellInteractorIF {
 			return usecase.NewOhHellInteractor(domain.NewDefaultOhHell(), new(presenter.OhHellWebPresenter))
