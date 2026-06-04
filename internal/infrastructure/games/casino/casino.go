@@ -347,4 +347,13 @@ func init() {
 		},
 		controller.NewBridgeWebControllerWithProvider)
 
+	games.RegisterKVGame("napoleon", games.CategoryCasino,
+		func() usecase.NapoleonInteractorIF {
+			return usecase.NewNapoleonInteractor(domain.NewDefaultNapoleon(), new(presenter.NapoleonWebPresenter))
+		},
+		func(data []byte) (usecase.NapoleonInteractorIF, error) {
+			return usecase.RestoreNapoleonInteractor(data, new(presenter.NapoleonWebPresenter))
+		},
+		controller.NewNapoleonWebControllerWithProvider)
+
 }
