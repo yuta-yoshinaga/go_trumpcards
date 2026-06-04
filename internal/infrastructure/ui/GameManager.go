@@ -1947,6 +1947,23 @@ var gameRegistry = []GameRegistryEntry{
 				"  ? / help             show help",
 			}})
 	}},
+	{Name: "yaniv", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewYanivCuiController(usecase.NewYanivInteractor(
+				domain.NewDefaultYaniv(), new(presenter.YanivCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "yaniv.helpTitle",
+				CommandKeys: []string{
+					"yaniv.helpDiscard",
+					"yaniv.helpYaniv",
+					"yaniv.helpDrawStock",
+					"yaniv.helpDrawPickup",
+					"yaniv.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"yaniv.helpSetDifficulty", "yaniv.helpSetLimit"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

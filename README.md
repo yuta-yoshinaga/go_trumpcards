@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した122種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した124種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -113,6 +113,7 @@ Go + Clean Architecture で実装した122種類のトランプゲーム。CLI �
 | ピケ (Piquet) | `piquet` | [CUI](docs/manual/cui/piquet.md) / [Web](docs/manual/web/piquet.md) |
 | トンク (Tonk) | `tonk` | [CUI](docs/manual/cui/tonk.md) / [Web](docs/manual/web/tonk.md) |
 | サーティワン (Thirty-One) | `thirtyone` | [CUI](docs/manual/cui/thirtyone.md) / [Web](docs/manual/web/thirtyone.md) |
+| ヤニブ (Yaniv) | `yaniv` | [CUI](docs/manual/cui/yaniv.md) / [Web](docs/manual/web/yaniv.md) |
 | ティエンレン (Tien Len) | `tienlen` | [CUI](docs/manual/cui/tienlen.md) / [Web](docs/manual/web/tienlen.md) |
 | シックスカードゴルフ (Six Card Golf) | `sixcardgolf` | [CUI](docs/manual/cui/sixcardgolf.md) / [Web](docs/manual/web/sixcardgolf.md) |
 | カジノウォー (Casino War) | `casinowar` | [CUI](docs/manual/cui/casinowar.md) / [Web](docs/manual/web/casinowar.md) |

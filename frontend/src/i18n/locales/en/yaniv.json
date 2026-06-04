@@ -1,0 +1,38 @@
+{
+  "button": {
+    "discard": "Discard",
+    "yaniv": "Yaniv!",
+    "drawStock": "Draw (Stock)",
+    "nextRound": "Next Round"
+  },
+  "phase": {
+    "discard": "Discard",
+    "draw": "Draw",
+    "roundEnd": "Round End",
+    "end": "End"
+  },
+  "label": {
+    "stock": "Stock",
+    "discardPile": "Discard",
+    "score": "Penalty",
+    "hand": "Hand",
+    "selectCard": "Select cards to discard (single / set / run)"
+  },
+  "settings": {
+    "cpuDifficulty": "CPU Difficulty",
+    "scoreLimit": "Elimination Score"
+  },
+  "hint": {
+    "declareYaniv": "Your hand total is 5 or less — declare Yaniv!",
+    "discardHigh": "Discard your highest cards to lower your hand total",
+    "takePickup": "Take the low card from the discard to keep your total down",
+    "drawStock": "Draw from the stock"
+  },
+  "tutorial": {
+    "cpuArea": "Your opponents. Their penalty totals are shown; hands are revealed at round end.",
+    "discardArea": "The stock and the last discard. You may take either end of the previous discard.",
+    "playerHand": "Your hand. Keep the total low — discard high cards or matching sets and runs.",
+    "actionButtons": "Discard, then draw. When your hand total is 5 or less, call Yaniv to end the round.",
+    "resetButton": "Start a new game."
+  }
+}

@@ -280,6 +280,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   ginrummy: BLUE,
   tonk: BLUE,
   thirtyone: CASINO,
+  yaniv: BLUE,
   canasta: BLUE,
   burraco: GREEN,
   cribbage: BLUE,
