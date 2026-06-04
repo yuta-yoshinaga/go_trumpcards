@@ -255,14 +255,6 @@ func init() {
 			return usecase.RestoreBeloteInteractor(data, new(presenter.BeloteWebPresenter))
 		},
 		controller.NewBeloteWebControllerWithProvider)
-	games.RegisterKVGame("piquet", games.CategoryClassic,
-		func() usecase.PiquetInteractorIF {
-			return usecase.NewPiquetInteractor(domain.NewDefaultPiquet(), new(presenter.PiquetWebPresenter))
-		},
-		func(data []byte) (usecase.PiquetInteractorIF, error) {
-			return usecase.RestorePiquetInteractor(data, new(presenter.PiquetWebPresenter))
-		},
-		controller.NewPiquetWebControllerWithProvider)
 	games.RegisterKVGame("callbreak", games.CategoryClassic,
 		func() usecase.CallBreakInteractorIF {
 			return usecase.NewCallBreakInteractor(domain.NewDefaultCallBreak(), new(presenter.CallBreakWebPresenter))
