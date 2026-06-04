@@ -19,9 +19,13 @@ test.describe('Yaniv E2E', () => {
 
     await expect(discardBtn).toBeVisible({ timeout: 10_000 });
 
-    const MAX_TURNS = 100;
+    // Yaniv's elimination score (default 200) means a full game far exceeds the
+    // 90s test budget, so cap the number of interactions — the test only needs to
+    // verify reset and that the human can act through phase transitions.
+    const MAX_TURNS = 40;
+    const TARGET_INTERACTIONS = 12;
     let interactions = 0;
-    for (let turn = 0; turn < MAX_TURNS; turn++) {
+    for (let turn = 0; turn < MAX_TURNS && interactions < TARGET_INTERACTIONS; turn++) {
       if (await nextRound.isEnabled()) {
         interactions++;
         await nextRound.click();
