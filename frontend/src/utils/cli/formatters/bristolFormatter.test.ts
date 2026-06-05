@@ -32,9 +32,7 @@ describe('formatBristolState', () => {
   });
 
   it('formats foundation piles with cards', () => {
-    const output = formatBristolState(
-      makeState({ foundation: [[{ design: 'SPADE', value: 1 }], [], [], []] }),
-    );
+    const output = formatBristolState(makeState({ foundation: [[{ design: 'SPADE', value: 1 }], [], [], []] }));
     expect(output).toContain('foundation0:');
     expect(output).toContain('(1)');
   });
