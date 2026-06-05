@@ -36,7 +36,10 @@ check() { # label  actual  expected
   fi
 }
 
-grepval() { grep -nE "$2" "$1" 2>/dev/null | head -1 | grep -oE '[0-9]+' | tail -1; }
+# Extract the numeric value from the first line matching ERE $2 in file $1.
+# Strip // comments first so an inline trailing number (e.g. "= 47 // up from 45")
+# can't be mistaken for the value; take the last remaining digit run on the line.
+grepval() { grep -E "$2" "$1" 2>/dev/null | head -1 | sed 's|//.*||' | grep -oE '[0-9]+' | tail -1; }
 
 echo "── Go: $REG_TEST ───────────"
 check "expectedCasino"  "$(grepval "$REG_TEST" 'expectedCasino[[:space:]]*=')"  "$cas"
@@ -46,10 +49,13 @@ echo
 
 echo "── Frontend (tsc-only — NOT caught by 'bun run check') ─────────"
 check "useTutorialProgress.test.ts totalCount" "$(grepval "$TUT_HOOK" 'totalCount\).toBe\(')" "$total"
-# TutorialProgressPanel.test.tsx has three total assertions on separate lines:
-panel_text=$(grep -nE 'getByText\(/[0-9]+/\)' "$TUT_PANEL" 2>/dev/null | grep -oE '/[0-9]+/' | tr -d '/' | sort -rn | head -1)
-panel_links=$(grep -nE 'links\.length\)\.toBe\(' "$TUT_PANEL" 2>/dev/null | grep -oE '[0-9]+' | tail -1)
-panel_incomplete=$(grep -nE 'incompleteMarkers\.length\)\.toBe\(' "$TUT_PANEL" 2>/dev/null | grep -oE '[0-9]+' | tail -1)
+# TutorialProgressPanel.test.tsx has three total assertions on separate lines.
+# getByText(/N/) has no unique anchor token, so we take the largest of the
+# getByText(/…/) numbers (the file also asserts /0/ and /3/); this assumes the
+# total is the largest such literal in the file — true today (124 > 3 > 0).
+panel_text=$(grep -E 'getByText\(/[0-9]+/\)' "$TUT_PANEL" 2>/dev/null | sed 's|//.*||' | grep -oE '/[0-9]+/' | tr -d '/' | sort -rn | head -1)
+panel_links=$(grepval "$TUT_PANEL" 'links\.length\)\.toBe\(')
+panel_incomplete=$(grepval "$TUT_PANEL" 'incompleteMarkers\.length\)\.toBe\(')
 check "TutorialProgressPanel getByText(/N/)"   "$panel_text"       "$total"
 check "TutorialProgressPanel links.length"     "$panel_links"      "$total"
 check "TutorialProgressPanel incompleteMarkers" "$panel_incomplete" "$total"
