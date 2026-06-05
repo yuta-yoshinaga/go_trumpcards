@@ -17,6 +17,8 @@ import type {
   BridgeResponse,
   BriscolaConfig,
   BriscolaResponse,
+  BristolMoveZone,
+  BristolResponse,
   BurracoResponse,
   CalculationMoveZone,
   CalculationResponse,
@@ -274,6 +276,7 @@ const workerUrl: Record<string, string> = {
   barbu: WORKER_SOLO,
   macau: WORKER_SOLO,
   gongzhu: WORKER_SOLO,
+  bristol: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -944,6 +947,13 @@ export const osmosisApi = createSolitaireMoveApi<
   OsmosisMoveZone,
   'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('osmosis');
+
+/** API client for the Bristol /bristol/exec endpoint. */
+export const bristolApi = createSolitaireMoveApi<
+  BristolResponse,
+  BristolMoveZone,
+  'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('bristol');
 
 /** Source or target zone for a FreeCell card move. */
 export interface FreeCellMoveZone {
@@ -2400,6 +2410,7 @@ const games = [
   'scopa',
   'barbu',
   'macau',
+  'bristol',
   'spanish21',
   'spiteandmalice',
   'skat',

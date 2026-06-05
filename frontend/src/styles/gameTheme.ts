@@ -118,6 +118,7 @@ export type GameKey =
   | 'beleagueredcastle'
   | 'canfield'
   | 'osmosis'
+  | 'bristol'
   | 'yukon'
   | 'russiansolitaire'
   | 'cruel'
@@ -268,6 +269,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   beleagueredcastle: CASINO,
   canfield: CASINO,
   osmosis: CASINO,
+  bristol: CASINO,
   yukon: CASINO,
   russiansolitaire: CASINO,
   cruel: CASINO,

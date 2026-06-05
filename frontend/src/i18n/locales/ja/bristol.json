@@ -1,0 +1,38 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "title": "ブリストル",
+  "stock": "山札",
+  "tableau": "場札",
+  "fan": "ファン",
+  "foundation": "組札",
+  "moveCount": "手数",
+  "draw": "配る",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "autoComplete": "自動完成",
+  "undo": "元に戻す",
+  "empty": "空",
+  "selectDestination": "移動先（場札または組札）を選んでください",
+  "selectSource": "まずカード（場札の最上段またはファンの上札）を選んでください",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "playing": "プレイ中",
+  "noHint": "ヒントはありません",
+  "hintAvailable": "ヒントがあります",
+  "frontendHint": {
+    "moveToFoundation": "組札へ移動できるカードがあります",
+    "moveToTableau": "場札間で移動可能なカードがあります"
+  },
+  "tutorial": {
+    "foundation": "4つの組札です。スート不問でAからKへ昇順に積み上げます。すべて揃えるとクリアです。",
+    "tableau": "8列の場札です。最上段のカードを、他の列（スート不問・降順）へ移動できます。一度空になった列にはもう置けません。",
+    "fan": "3つのファン（予備列）です。山札から配られ、各ファンの上札を場札や組札へ移動できます。",
+    "stock": "山札をクリックすると、3つのファンに1枚ずつ配られます。",
+    "actionButtons": "ヒント・自動完成・元に戻すなどの操作ボタンです。",
+    "resetButton": "新しいゲームを始めるボタンです。"
+  }
+}

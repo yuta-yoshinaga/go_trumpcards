@@ -384,4 +384,13 @@ func init() {
 		},
 		controller.NewGongZhuWebControllerWithProvider)
 
+	games.RegisterKVGame("bristol", games.CategorySolo,
+		func() usecase.BristolInteractorIF {
+			return usecase.NewBristolInteractor(domain.NewDefaultBristol(), new(presenter.BristolWebPresenter))
+		},
+		func(data []byte) (usecase.BristolInteractorIF, error) {
+			return usecase.RestoreBristolInteractor(data, new(presenter.BristolWebPresenter))
+		},
+		controller.NewBristolWebControllerWithProvider)
+
 }

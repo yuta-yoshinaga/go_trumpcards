@@ -823,6 +823,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [5, 1, 4, 3], skill: [3, 4, 5, 3], social: [5, 1, 0, 3, 4], theme: [3, 3, 3, 1, 3, 3] },
       },
       {
+        path: '/bristol',
+        labelKey: 'nav.bristol',
+        icon: '🌉',
+        page: 'Bristol',
+        profile: { mood: [5, 1, 4, 3], skill: [3, 4, 5, 3], social: [5, 1, 0, 3, 4], theme: [3, 3, 3, 1, 3, 3] },
+      },
+      {
         path: '/yukon',
         labelKey: 'nav.yukon',
         icon: '🏔️',
