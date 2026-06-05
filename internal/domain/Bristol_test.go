@@ -308,8 +308,11 @@ func TestBristol_HintNotPlaying(t *testing.T) {
 
 func TestBristol_AutoComplete(t *testing.T) {
 	b := setupPlayingBristol()
+	// AutoComplete only moves the top card of each pile, so the Ace and 2 must be
+	// reachable (separate column tops) rather than stacked under one another.
 	var tb [domain.BristolTableauCnt][]*domain.Card
-	tb[0] = []*domain.Card{brCard(domain.CardDesignSpade, 1), brCard(domain.CardDesignHeart, 2)}
+	tb[0] = []*domain.Card{brCard(domain.CardDesignSpade, 1)}
+	tb[1] = []*domain.Card{brCard(domain.CardDesignHeart, 2)}
 	b.SetTableau(tb)
 	var fn [domain.BristolFanCnt][]*domain.Card
 	fn[0] = []*domain.Card{brCard(domain.CardDesignClover, 3)}
@@ -320,6 +323,7 @@ func TestBristol_AutoComplete(t *testing.T) {
 	// A,2,3 all land on foundation 0.
 	assert.Len(t, b.GetFoundation()[0], 3)
 	assert.Empty(t, b.GetTableau()[0])
+	assert.Empty(t, b.GetTableau()[1])
 	assert.Empty(t, b.GetFan()[0])
 }
 

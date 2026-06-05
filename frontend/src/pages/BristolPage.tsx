@@ -98,31 +98,38 @@ function BristolPageContent() {
 
   const handleTableauClick = useCallback(
     (col: number) => {
-      setSelected((prev) => {
-        if (prev) {
-          if (prev.zone === 'tableau' && prev.col === col) return null;
-          execApi('move', prev, { zone: 'tableau', col });
-          return null;
+      if (selected) {
+        if (selected.zone === 'tableau' && selected.col === col) {
+          setSelected(null);
+          return;
         }
-        return { zone: 'tableau', col };
-      });
+        execApi('move', selected, { zone: 'tableau', col });
+        setSelected(null);
+        return;
+      }
+      setSelected({ zone: 'tableau', col });
     },
-    [execApi],
+    [execApi, selected],
   );
 
-  const handleFanClick = useCallback((col: number) => {
-    setSelected((prev) => (prev && prev.zone === 'fan' && prev.col === col ? null : { zone: 'fan', col }));
-  }, []);
+  const handleFanClick = useCallback(
+    (col: number) => {
+      if (selected && selected.zone === 'fan' && selected.col === col) {
+        setSelected(null);
+        return;
+      }
+      setSelected({ zone: 'fan', col });
+    },
+    [selected],
+  );
 
   const handleFoundationClick = useCallback(
     (fIdx: number) => {
-      setSelected((prev) => {
-        if (!prev) return null;
-        execApi('move', prev, { zone: 'foundation', col: fIdx });
-        return null;
-      });
+      if (!selected) return;
+      execApi('move', selected, { zone: 'foundation', col: fIdx });
+      setSelected(null);
     },
-    [execApi],
+    [execApi, selected],
   );
 
   const theme = useMemo(() => gameTheme.bristol, []);
