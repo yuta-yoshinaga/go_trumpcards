@@ -2410,6 +2410,7 @@ const games = [
   'bakersdozen',
   'thirtyone',
   'yaniv',
+  'gongzhu',
   'tonk',
   'casinowar',
   'pitch',

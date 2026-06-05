@@ -208,7 +208,7 @@ func TestGongZhuExposeEmptyAllowed(t *testing.T) {
 func TestGongZhuExecuteExposeStartsPlay(t *testing.T) {
 	g := newTestGongZhu()
 	g.Reset() // deals + expose phase
-	g.PlayerExpose([]int{})
+	_ = g.PlayerExpose([]int{})
 	// not all ready yet
 	g.ExecuteExpose()
 	assert.Equal(t, domain.GongZhuPhaseExpose, g.GetPhase())
@@ -362,7 +362,7 @@ func TestGongZhuCpuPlayProducesValidCard(t *testing.T) {
 		cfg.CpuDifficulty = diff
 		g.SetConfig(cfg)
 		g.Reset()
-		g.PlayerExpose([]int{})
+		_ = g.PlayerExpose([]int{})
 		g.CpuExpose()
 		g.ExecuteExpose()
 		// run a full round of CPU/auto play to exercise AI branches
