@@ -399,5 +399,13 @@ func init() {
 			return usecase.RestoreYanivInteractor(data, new(presenter.YanivWebPresenter))
 		},
 		controller.NewYanivWebControllerWithProvider)
+	games.RegisterKVGame("tressette", games.CategoryCasino,
+		func() usecase.TressetteInteractorIF {
+			return usecase.NewTressetteInteractor(domain.NewDefaultTressette(), new(presenter.TressetteWebPresenter))
+		},
+		func(data []byte) (usecase.TressetteInteractorIF, error) {
+			return usecase.RestoreTressetteInteractor(data, new(presenter.TressetteWebPresenter))
+		},
+		controller.NewTressetteWebControllerWithProvider)
 
 }

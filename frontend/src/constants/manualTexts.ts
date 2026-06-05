@@ -119,6 +119,7 @@ import threecard from '../../../docs/manual/web/threecard.md?raw';
 import tienlen from '../../../docs/manual/web/tienlen.md?raw';
 import tonk from '../../../docs/manual/web/tonk.md?raw';
 import trash from '../../../docs/manual/web/trash.md?raw';
+import tressette from '../../../docs/manual/web/tressette.md?raw';
 import tripeaks from '../../../docs/manual/web/tripeaks.md?raw';
 import truco from '../../../docs/manual/web/truco.md?raw';
 import twotenjack from '../../../docs/manual/web/twotenjack.md?raw';
@@ -173,6 +174,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/golf': golf,
   '/acesup': acesup,
   '/gongzhu': gongzhu,
+  '/tressette': tressette,
   '/hearts': hearts,
   '/holdem': holdem,
   '/indianpoker': indianpoker,

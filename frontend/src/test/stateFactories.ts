@@ -3,6 +3,7 @@ import type {
   GongZhuResponse,
   HeartsResponse,
   SpadesResponse,
+  TressetteResponse,
   TwoTenJackResponse,
 } from '../types/card';
 
@@ -323,4 +324,48 @@ const baseTwoTenJackState: TwoTenJackResponse = {
  */
 export function makeTwoTenJackState(overrides?: Partial<TwoTenJackResponse>): TwoTenJackResponse {
   return { ...baseTwoTenJackState, ...overrides };
+}
+
+/** Base Tressette game state (play phase, human's turn) for tests. */
+const baseTressetteState: TressetteResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 10,
+      cards: [
+        { design: 'SPADE' as const, value: 3 },
+        { design: 'DIAMOND' as const, value: 13 },
+      ],
+      trickCount: 0,
+      teamId: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 10, cards: [], trickCount: 0, teamId: 1 },
+    { id: 2, isHuman: false, cardCount: 10, cards: [], trickCount: 0, teamId: 0 },
+    { id: 3, isHuman: false, cardCount: 10, cards: [], trickCount: 0, teamId: 1 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  currentTrick: [],
+  leadPlayerIdx: 0,
+  teamScores: [0, 0],
+  teamRoundThirds: [0, 0],
+  playableIndices: [0, 1],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 21 },
+};
+
+/**
+ * Creates a Tressette game state for testing with sensible defaults.
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial TressetteResponse fields to override.
+ * @returns A complete TressetteResponse suitable for use in tests.
+ */
+export function makeTressetteState(overrides?: Partial<TressetteResponse>): TressetteResponse {
+  return { ...baseTressetteState, ...overrides };
 }

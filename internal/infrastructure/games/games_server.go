@@ -648,4 +648,9 @@ func init() {
 			return usecase.NewBidWhistInteractor(domain.NewDefaultBidWhist(), new(presenter.BidWhistWebPresenter))
 		},
 		controller.NewBidWhistWebController)
+	BindWebControllerFor("tressette",
+		func() usecase.TressetteInteractorIF {
+			return usecase.NewTressetteInteractor(domain.NewDefaultTressette(), new(presenter.TressetteWebPresenter))
+		},
+		controller.NewTressetteWebController)
 }

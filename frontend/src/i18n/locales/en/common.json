@@ -135,6 +135,7 @@
     "thirtyone": "Thirty-One",
     "yaniv": "Yaniv",
     "gongzhu": "Gong Zhu",
+    "tressette": "Tressette",
     "casinowar": "Casino War",
     "dragontiger": "Dragon Tiger",
     "blackjackswitch": "Blackjack Switch",
@@ -276,6 +277,12 @@
     "errorBoundaryDetails": "Show error details"
   },
   "messageCode": {
+    "tressette.playPhase.lead": "Your turn — pick a card to lead.",
+    "tressette.playPhase.follow": "Your turn — follow the led suit.",
+    "tressette.trickEnd": "Trick complete — continue.",
+    "tressette.roundEnd": "Round complete — go to the next round.",
+    "tressette.result.humanTeamWin": "Game over! Your Team {{team}} wins!",
+    "tressette.result.cpuTeamWin": "Game over! Team {{team}} (CPU) wins.",
     "truco.result.p0Win": "Match over! You win ({{p0}}-{{p1}})!",
     "truco.result.p1Win": "Match over! CPU wins ({{p0}}-{{p1}}).",
     "truco.playPhase.lead": "Your turn — pick a card to lead.",
