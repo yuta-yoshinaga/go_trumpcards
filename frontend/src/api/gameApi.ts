@@ -57,6 +57,7 @@ import type {
   GinRummyResponse,
   GoFishResponse,
   GolfResponse,
+  GongZhuResponse,
   HeartsResponse,
   HighCardFlushResponse,
   HoldemResponse,
@@ -272,6 +273,7 @@ const workerUrl: Record<string, string> = {
   scopa: WORKER_CASINO,
   barbu: WORKER_SOLO,
   macau: WORKER_SOLO,
+  gongzhu: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -703,6 +705,28 @@ export const heartsApi = {
     config?: HeartsConfigInput,
   ) =>
     gameExec<HeartsResponse>('hearts', {
+      command,
+      cardIndices,
+      cardIndex,
+      config,
+    }),
+};
+
+/** Configuration options for Gong Zhu game settings. */
+export interface GongZhuConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Gong Zhu /gongzhu/exec endpoint. */
+export const gongzhuApi = {
+  exec: (
+    command: 'reset' | 'expose' | 'play' | 'next' | 'nextround' | 'hint',
+    cardIndices?: number[],
+    cardIndex?: number,
+    config?: GongZhuConfigInput,
+  ) =>
+    gameExec<GongZhuResponse>('gongzhu', {
       command,
       cardIndices,
       cardIndex,

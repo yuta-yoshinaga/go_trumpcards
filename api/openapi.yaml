@@ -189,6 +189,8 @@ tags:
     description: Thirty-One (サーティワン / Scat) game - 4-player draw-and-discard survival game; build the highest single-suit total (A=11, J/Q/K=10), knock to stand pat, lowest score loses a life, hitting exactly 31 wins the round instantly
   - name: yaniv
     description: Yaniv (ヤニブ) game - 4-player Israeli draw-and-discard hand-reduction game on a 54-card deck; discard singles/sets/runs, draw from stock or a discard end, declare Yaniv at hand total <= 5, beware the Asaf undercut (30-point penalty)
+  - name: gongzhu
+    description: Gong Zhu (拱猪 / Chinese Hearts) game - 4-player trick-taking game with positive and negative point cards (♠Q=-100, ♦J=+100), a doubling ♣10, graded hearts (total -200), an all-hearts +200 bonus, and a pre-round exposure phase that doubles a card's stakes
   - name: tienlen
     description: Tien Len (ティエンレン / Vietnamese Big Two) game - 4-player shedding game; suit order ♠<♣<♦<♥, holder of ♠3 leads, chops (three consecutive pairs / four of a kind) cut a lone 2
   - name: osmosis
@@ -9579,6 +9581,75 @@ paths:
               schema:
                 $ref: '#/components/schemas/YanivResponse'
 
+  /gongzhu/exec:
+    post:
+      tags:
+        - gongzhu
+      summary: Execute a Gong Zhu game command
+      description: |
+        Send a command to advance the Gong Zhu (拱猪 / Chinese Hearts) game session
+        identified by `sessionId`. Gong Zhu is a 4-player (1 human + 3 CPU)
+        trick-taking game on a 52-card deck dealt 13 each. Trick play follows Hearts
+        (follow suit; hearts cannot be led until broken; the ♣2 holder leads first;
+        the highest led-suit card wins, Ace high) but with positive and negative
+        point cards: ♠Q (pig) = -100, ♦J (sheep) = +100, ♣10 (transformer) doubles
+        the holder's whole round total (or +50 if taken alone), and hearts A=-50,
+        K=-40, Q=-30, J=-20, 10–5=-10 each, 4–2=0 (total -200). Collecting all 13
+        hearts flips them to +200. Before each round a player may expose ♠Q/♦J/♥A/♣10
+        to double that card's stakes for whoever captures it. The game ends when any
+        player's cumulative score reaches -PointLimit (default 1000); the highest
+        score wins.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Expose    | `0`   | Optionally expose point cards |
+        | Play      | `1`   | Play a card to the trick |
+        | TrickEnd  | `2`   | Trick won; advance with `next` |
+        | RoundEnd  | `3`   | Round scored; advance with `nextround` |
+        | GameEnd   | `4`   | A player reached the point limit |
+
+        | Command     | Aliases | Description |
+        |-------------|---------|-------------|
+        | `reset`     | `r`     | Start / restart a game |
+        | `expose`    |         | Expose point cards (`cardIndices`; empty = none) |
+        | `play`      | `p`     | Play a card (requires `cardIndex`) |
+        | `next`      | `n`     | Resolve the trick and start the next |
+        | `nextround` | `nr`    | Score the round and start the next |
+        | `hint`      | `h`     | Get a suggested move |
+        | `log`       | `l`     | View action log |
+      operationId: gongzhuExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GongZhuRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              expose:
+                summary: Expose nothing and start play
+                value:
+                  command: expose
+                  cardIndices: []
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GongZhuResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GongZhuResponse'
+
   /casinowar/exec:
     post:
       tags:
@@ -17770,6 +17841,144 @@ components:
             cpuDifficulty:
               type: integer
             scoreLimit:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    # -------------------------------------------------------------------------
+    # Gong Zhu types
+    # -------------------------------------------------------------------------
+    GongZhuRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `expose`, `play` (`p`),
+            `next` (`n`), `nextround` (`nr`), `hint` (`h`), `log` (`l`).
+          enum: [reset, r, expose, play, p, next, n, nextround, nr, hint, h, log, l]
+          example: reset
+        cardIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices of point cards to expose. Used by the `expose` command (empty array = expose nothing).
+          example: []
+        cardIndex:
+          type: integer
+          description: Hand index of the card to play. Required for the `play` command.
+          example: 0
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            pointLimit:
+              type: integer
+              minimum: 1
+              maximum: 100000
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    GongZhuResponse:
+      type: object
+      description: Current state of the Gong Zhu game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+              trickCount:
+                type: integer
+        phase:
+          type: integer
+          description: "Game phase: 0 = Expose, 1 = Play, 2 = TrickEnd, 3 = RoundEnd, 4 = GameEnd"
+          enum: [0, 1, 2, 3, 4]
+          example: 0
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        heartsBroken:
+          type: boolean
+        exposed:
+          type: object
+          description: Which point cards have been exposed (stakes doubled)
+          properties:
+            pig:
+              type: boolean
+            sheep:
+              type: boolean
+            ace:
+              type: boolean
+            doubler:
+              type: boolean
+        exposableIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices of the human's exposable point cards
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        hint:
+          type: object
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
               type: integer
         message:
           type: string

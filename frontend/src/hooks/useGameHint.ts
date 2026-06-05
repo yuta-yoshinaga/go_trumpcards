@@ -39,6 +39,7 @@ import type {
   GapsResponse,
   GinRummyResponse,
   GoFishResponse,
+  GongZhuResponse,
   HeartsResponse,
   HighCardFlushResponse,
   HoldemResponse,
@@ -145,6 +146,7 @@ import { getFreeCellHint } from '../utils/hints/freecellHint';
 import { getGapsHint } from '../utils/hints/gapsHint';
 import { getGinRummyHint } from '../utils/hints/ginrummyHint';
 import { getGoFishHint } from '../utils/hints/gofishHint';
+import { getGongZhuHint } from '../utils/hints/gongzhuHint';
 import { getHeartsHint } from '../utils/hints/heartsHint';
 import { getHighCardFlushHint } from '../utils/hints/highcardflushHint';
 import { getHoldemHint } from '../utils/hints/holdemHint';
@@ -223,6 +225,7 @@ const hintFactories = {
   spanish21: (s) => getBlackjackHint(s as BlackJackResponse),
   poker: (s) => getPokerHint(s as PokerResponse),
   hearts: (s) => getHeartsHint(s as HeartsResponse),
+  gongzhu: (s) => getGongZhuHint(s as GongZhuResponse),
   spades: (s) => getSpadesHint(s as SpadesResponse),
   callbreak: (s) => getCallBreakHint(s as CallBreakResponse),
   tarneeb: (s) => getTarneebHint(s as TarneebResponse),

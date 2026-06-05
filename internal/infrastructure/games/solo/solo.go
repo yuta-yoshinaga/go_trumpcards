@@ -375,4 +375,13 @@ func init() {
 		},
 		controller.NewPiquetWebControllerWithProvider)
 
+	games.RegisterKVGame("gongzhu", games.CategorySolo,
+		func() usecase.GongZhuInteractorIF {
+			return usecase.NewGongZhuInteractor(domain.NewDefaultGongZhu(), new(presenter.GongZhuWebPresenter))
+		},
+		func(data []byte) (usecase.GongZhuInteractorIF, error) {
+			return usecase.RestoreGongZhuInteractor(data, new(presenter.GongZhuWebPresenter))
+		},
+		controller.NewGongZhuWebControllerWithProvider)
+
 }
