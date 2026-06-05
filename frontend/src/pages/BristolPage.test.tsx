@@ -76,6 +76,9 @@ describe('BristolPage', () => {
     renderWithProviders(<BristolPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     screen.getByRole('button', { name: '場札 0' }).click();
+    // Wait for the source selection to render before clicking the destination,
+    // so the destination handler reads the updated `selected` state.
+    await waitFor(() => expect(screen.getByRole('button', { name: '場札 0' })).toHaveAttribute('aria-pressed', 'true'));
     screen.getByRole('button', { name: '場札 1' }).click();
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0 }, { zone: 'tableau', col: 1 }),
