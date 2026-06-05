@@ -458,6 +458,11 @@ func init() {
 			return usecase.NewBurracoInteractor(domain.NewDefaultBurraco(), new(presenter.BurracoWebPresenter))
 		},
 		controller.NewBurracoWebController)
+	BindWebControllerFor("yaniv",
+		func() usecase.YanivInteractorIF {
+			return usecase.NewYanivInteractor(domain.NewDefaultYaniv(), new(presenter.YanivWebPresenter))
+		},
+		controller.NewYanivWebController)
 	BindWebControllerFor("casinowar",
 		func() usecase.CasinoWarInteractorIF {
 			return usecase.NewCasinoWarInteractor(domain.NewDefaultCasinoWar(), new(presenter.CasinoWarWebPresenter))

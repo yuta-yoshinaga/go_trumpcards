@@ -257,6 +257,11 @@ var registry = []*Game{
 	// (the classic worker is at the 1 MB gzip free-tier limit). Category here is
 	// purely a binary-size bucket.
 	{Name: "burraco", Category: CategorySolo, Description: "Burraco (ブラーコ)"},
+	// Yaniv (ヤニブ) is a draw-and-discard hand-reduction game. The issue
+	// proposed the classic worker, but that worker is at the 1 MB gzip free-tier
+	// limit, so Yaniv is bucketed into the casino worker. Category here is purely
+	// a binary-size bucket (see package doc).
+	{Name: "yaniv", Category: CategoryCasino, Description: "Yaniv (ヤニブ)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

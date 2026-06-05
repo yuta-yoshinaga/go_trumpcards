@@ -920,6 +920,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [3, 4, 3, 4], skill: [3, 4, 3, 3], social: [1, 3, 5, 4, 4], theme: [3, 1, 3, 2, 4, 2] },
       },
       {
+        path: '/yaniv',
+        labelKey: 'nav.yaniv',
+        icon: '🎒',
+        page: 'Yaniv',
+        profile: { mood: [3, 4, 4, 3], skill: [4, 4, 3, 2], social: [1, 3, 5, 4, 4], theme: [3, 1, 3, 2, 3, 2] },
+      },
+      {
         path: '/canasta',
         labelKey: 'nav.canasta',
         icon: '🃏',

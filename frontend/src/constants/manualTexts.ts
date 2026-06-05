@@ -124,6 +124,7 @@ import videopoker from '../../../docs/manual/web/videopoker.md?raw';
 import war from '../../../docs/manual/web/war.md?raw';
 import wasp from '../../../docs/manual/web/wasp.md?raw';
 import whist from '../../../docs/manual/web/whist.md?raw';
+import yaniv from '../../../docs/manual/web/yaniv.md?raw';
 import yukon from '../../../docs/manual/web/yukon.md?raw';
 
 /** Map from game route path to raw Markdown manual text. */
@@ -225,6 +226,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/war': war,
   '/fiftyone': fiftyone,
   '/whist': whist,
+  '/yaniv': yaniv,
   '/yukon': yukon,
   '/russiansolitaire': russiansolitaire,
   '/cruel': cruel,

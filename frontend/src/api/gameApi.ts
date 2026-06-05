@@ -134,6 +134,7 @@ import type {
   WaspResponse,
   WhistConfig,
   WhistResponse,
+  YanivResponse,
   YukonResponse,
 } from '../types/card';
 
@@ -238,6 +239,7 @@ const workerUrl: Record<string, string> = {
   egyptianratscrew: WORKER_CLASSIC,
   bakersdozen: WORKER_SOLO,
   thirtyone: WORKER_SOLO,
+  yaniv: WORKER_CASINO,
   tonk: WORKER_CLASSIC,
   dragontiger: WORKER_CASINO,
   blackjackswitch: WORKER_CASINO,
@@ -1114,6 +1116,26 @@ export const thirtyoneApi = {
       command,
       cardIndex,
       config,
+    }),
+};
+
+/** Configuration options for Yaniv game settings. */
+export interface YanivConfigInput {
+  cpuDifficulty?: number;
+  scoreLimit?: number;
+}
+
+/** API client for the Yaniv /yaniv/exec endpoint. */
+export const yanivApi = {
+  exec: (
+    command: 'reset' | 'discard' | 'yaniv' | 'drawstock' | 'drawpickup' | 'nextround' | 'log',
+    opts?: { cardIndices?: number[]; end?: number; config?: YanivConfigInput },
+  ) =>
+    gameExec<YanivResponse>('yaniv', {
+      command,
+      cardIndices: opts?.cardIndices,
+      end: opts?.end,
+      config: opts?.config,
     }),
 };
 
@@ -2363,6 +2385,7 @@ const games = [
   'egyptianratscrew',
   'bakersdozen',
   'thirtyone',
+  'yaniv',
   'tonk',
   'casinowar',
   'pitch',

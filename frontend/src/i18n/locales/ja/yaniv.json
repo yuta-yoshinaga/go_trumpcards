@@ -1,0 +1,38 @@
+{
+  "button": {
+    "discard": "捨てる",
+    "yaniv": "ヤニブ！",
+    "drawStock": "山札から引く",
+    "nextRound": "次のラウンド"
+  },
+  "phase": {
+    "discard": "ディスカード",
+    "draw": "ドロー",
+    "roundEnd": "ラウンド終了",
+    "end": "終了"
+  },
+  "label": {
+    "stock": "山札",
+    "discardPile": "捨て札",
+    "score": "失点",
+    "hand": "手札",
+    "selectCard": "捨てるカードを選択 (単札 / 同数の組 / 連番)"
+  },
+  "settings": {
+    "cpuDifficulty": "CPU難易度",
+    "scoreLimit": "脱落スコア"
+  },
+  "hint": {
+    "declareYaniv": "手札合計が5以下です — Yanivを宣言しましょう！",
+    "discardHigh": "高いカードを捨てて手札合計を下げましょう",
+    "takePickup": "捨て札の低いカードを取って合計を抑えましょう",
+    "drawStock": "山札から引きましょう"
+  },
+  "tutorial": {
+    "cpuArea": "対戦相手です。失点の累計が表示され、手札はラウンド終了時に公開されます。",
+    "discardArea": "山札と直前の捨て札です。直前の捨て札は端のカードを引くことができます。",
+    "playerHand": "あなたの手札です。合計を低く保ちましょう。高いカードや同数・連番をまとめて捨てます。",
+    "actionButtons": "カードを捨ててから引きます。手札合計が5以下になったらYanivを宣言してラウンドを終えます。",
+    "resetButton": "新しいゲームを始めます。"
+  }
+}

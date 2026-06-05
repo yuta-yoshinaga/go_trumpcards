@@ -100,6 +100,7 @@ import type {
   WarResponse,
   WaspResponse,
   WhistResponse,
+  YanivResponse,
   YukonResponse,
 } from '../types/card';
 import type { HintResult } from '../types/hint';
@@ -208,6 +209,7 @@ import { getVideoPokerHint } from '../utils/hints/videopokerHint';
 import { getWarHint } from '../utils/hints/warHint';
 import { getWaspHint } from '../utils/hints/waspHint';
 import { getWhistHint } from '../utils/hints/whistHint';
+import { getYanivHint } from '../utils/hints/yanivHint';
 import { getYukonHint } from '../utils/hints/yukonHint';
 import { useLocalStorageToggle } from './useLocalStorageToggle';
 
@@ -289,6 +291,7 @@ const hintFactories = {
   beleagueredcastle: (s) => getBeleagueredcastleHint(s as BeleagueredCastleResponse),
   tonk: () => null,
   thirtyone: (s) => getThirtyOneHint(s as ThirtyOneResponse),
+  yaniv: (s) => getYanivHint(s as YanivResponse),
   paigow: () => null,
   chinesepoker: () => null,
   pageone: (s) => getPageOneHint(s as PageOneResponse),

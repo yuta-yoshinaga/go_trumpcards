@@ -316,6 +316,14 @@ export const ThirtyOnePhase = {
   GAME_END: 3,
 } as const;
 
+/** Yaniv phase constants (sync: internal/domain/Yaniv.go). */
+export const YanivPhase = {
+  DISCARD: 0,
+  DRAW: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Seven Bridge phase constants (sync: internal/domain/SevenBridge.go). */
 export const SevenBridgePhase = {
   DRAW: 0,

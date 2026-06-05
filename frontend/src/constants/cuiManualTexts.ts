@@ -122,6 +122,7 @@ import videopoker from '../../../docs/manual/cui/videopoker.md?raw';
 import war from '../../../docs/manual/cui/war.md?raw';
 import wasp from '../../../docs/manual/cui/wasp.md?raw';
 import whist from '../../../docs/manual/cui/whist.md?raw';
+import yaniv from '../../../docs/manual/cui/yaniv.md?raw';
 import yukon from '../../../docs/manual/cui/yukon.md?raw';
 
 /** Map from game route path to raw CUI Markdown manual text. */
@@ -219,6 +220,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/videopoker': videopoker,
   '/war': war,
   '/whist': whist,
+  '/yaniv': yaniv,
   '/yukon': yukon,
   '/russianpoker': russianpoker,
   '/russiansolitaire': russiansolitaire,

@@ -187,6 +187,8 @@ tags:
     description: Tonk (トンク) game - 2-player rummy variant with 5-card hands; instant Tonk win on a 49 or 50 point initial deal, knock when deadwood is 5 or less
   - name: thirtyone
     description: Thirty-One (サーティワン / Scat) game - 4-player draw-and-discard survival game; build the highest single-suit total (A=11, J/Q/K=10), knock to stand pat, lowest score loses a life, hitting exactly 31 wins the round instantly
+  - name: yaniv
+    description: Yaniv (ヤニブ) game - 4-player Israeli draw-and-discard hand-reduction game on a 54-card deck; discard singles/sets/runs, draw from stock or a discard end, declare Yaniv at hand total <= 5, beware the Asaf undercut (30-point penalty)
   - name: tienlen
     description: Tien Len (ティエンレン / Vietnamese Big Two) game - 4-player shedding game; suit order ♠<♣<♦<♥, holder of ♠3 leads, chops (three consecutive pairs / four of a kind) cut a lone 2
   - name: osmosis
@@ -9511,6 +9513,72 @@ paths:
               schema:
                 $ref: '#/components/schemas/ThirtyOneResponse'
 
+  /yaniv/exec:
+    post:
+      tags:
+        - yaniv
+      summary: Execute a Yaniv game command
+      description: |
+        Send a command to advance the Yaniv (ヤニブ) game session identified by
+        `sessionId`. Yaniv is a 4-player (1 human + 3 CPU) Israeli draw-and-discard
+        hand-reduction game on a 54-card deck (2 jokers; Joker=0, A=1, J/Q/K=10,
+        others face value). Each player is dealt 5 cards. On your turn you first
+        discard a single card, a same-value set (2+), or a same-suit run (3+
+        consecutive), then draw one card from the stock or from either end of the
+        previous player's discard. When your hand total is 5 or less you may instead
+        declare Yaniv to end the round. On reveal, if the caller is strictly lowest
+        they score 0; otherwise it is Asaf and the caller takes a 30-point penalty
+        while the lowest opponent scores 0. A player is eliminated when their
+        cumulative score exceeds the limit (default 200).
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Discard   | `0`   | Discard a combo, or declare Yaniv |
+        | Draw      | `1`   | Draw from stock or a discard end |
+        | RoundEnd  | `2`   | Round scored; advance with `nextround` |
+        | GameEnd   | `3`   | One player remains (or human eliminated) |
+
+        | Command      | Aliases | Description |
+        |--------------|---------|-------------|
+        | `reset`      | `r`     | Start / restart a game |
+        | `discard`    | `d`     | Discard a combo (requires `cardIndices`) |
+        | `yaniv`      | `y`     | Declare Yaniv (hand total <= 5) |
+        | `drawstock`  | `ds`    | Draw a card from the stock pile |
+        | `drawpickup` | `dp`    | Take an end of the previous discard (requires `end`) |
+        | `nextround`  | `nr`    | Score the round and start the next |
+        | `log`        | `l`     | View action log |
+      operationId: yanivExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/YanivRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              yaniv:
+                summary: Declare Yaniv
+                value:
+                  command: yaniv
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/YanivResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/YanivResponse'
+
   /casinowar/exec:
     post:
       tags:
@@ -17581,6 +17649,127 @@ components:
             cpuDifficulty:
               type: integer
             initialLives:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    # -------------------------------------------------------------------------
+    # Yaniv types
+    # -------------------------------------------------------------------------
+    YanivRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `discard` (`d`),
+            `yaniv` (`y`), `drawstock` (`ds`), `drawpickup` (`dp`),
+            `nextround` (`nr`), `log` (`l`).
+          enum: [reset, r, discard, d, yaniv, y, drawstock, ds, drawpickup, dp, nextround, nr, log, l]
+          example: reset
+        cardIndices:
+          type: array
+          items:
+            type: integer
+          description: Indices of the cards to discard. Required for the `discard` command (single card, same-value set, or same-suit run).
+          example: [0, 1]
+        end:
+          type: integer
+          description: Which end of the previous discard to take (0 = first, 1 = last). Required for the `drawpickup` command.
+          enum: [0, 1]
+          example: 0
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            scoreLimit:
+              type: integer
+              minimum: 50
+              maximum: 500
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    YanivResponse:
+      type: object
+      description: Current state of the Yaniv game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              score:
+                type: integer
+                description: Cumulative penalty score (lower is better)
+              handTotal:
+                type: integer
+                description: Sum of the hand's card values (revealed for the human always, for CPUs at round end)
+              isEliminated:
+                type: boolean
+        phase:
+          type: integer
+          description: "Game phase: 0 = Discard, 1 = Draw, 2 = RoundEnd, 3 = GameEnd"
+          enum: [0, 1, 2, 3]
+          example: 0
+        roundNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        pickupCards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+          description: The previous player's discard; only the two end cards may be taken
+        drawPileCount:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+        callerIdx:
+          type: integer
+          description: Index of the player who declared Yaniv (-1 if none)
+        asafWinnerIdx:
+          type: integer
+          description: Index of the player who undercut the caller on Asaf (-1 if none)
+        isAsaf:
+          type: boolean
+        roundScores:
+          type: array
+          items:
+            type: integer
+          description: Penalty added to each player in the most recent round
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            scoreLimit:
               type: integer
         message:
           type: string
