@@ -128,7 +128,9 @@ func TestBidWhistInteractor_FullGame(t *testing.T) {
 func TestBidWhistInteractor_GuardAfterGameEnd(t *testing.T) {
 	g := newBidWhistTestGame()
 	g.Reset()
-	g.SetContract(7, domain.BidWhistDirectionUptown, domain.CardDesignSpade)
+	// Bid 1 needs 6+1=7 tricks; sweeping all 12 makes it for +6, pushing team 0
+	// from 6 to 12 (>= target 7) so the game genuinely ends.
+	g.SetContract(1, domain.BidWhistDirectionUptown, domain.CardDesignSpade)
 	g.SetDeclarerIdx(0)
 	g.GetPlayer(0).SetIsDeclarer(true)
 	g.SetTeamScore(0, 6)
