@@ -203,5 +203,5 @@ func RestoreBidWhistInteractor(data []byte, fp presenter.BidWhistPresenter) (*Bi
 	if err != nil {
 		return nil, err
 	}
-	return &BidWhistInteractor{GameBase: GameBase[interfaces.BidWhistGame]{Game: g}, fp: fp}, nil
+	return NewBidWhistInteractor(g, fp), nil
 }

@@ -1207,9 +1207,12 @@ func (g *BidWhist) sortHand(p *BidWhistPlayer) {
 	}
 }
 
-// playerName プレイヤー名を返す
+// playerName プレイヤー名を返す。idx<0 はチーム単位イベント (集計・終局) の番兵。
 func (g *BidWhist) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
+	if idx < 0 {
+		return "System"
+	}
+	if idx >= len(g.players) {
 		return fmt.Sprintf("Player %d", idx)
 	}
 	if g.players[idx].GetIsHuman() {
@@ -1341,8 +1344,9 @@ func (g *BidWhist) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// bidWhistMaxSliceLen caps slice sizes during deserialisation.
-const bidWhistMaxSliceLen = 1000
+// bidWhistMaxActionLogLen caps the action-log size during deserialisation
+// (DoS guard). Other slices have exact structural bounds enforced below.
+const bidWhistMaxActionLogLen = 5000
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (g *BidWhist) UnmarshalJSON(data []byte) error {
@@ -1350,8 +1354,12 @@ func (g *BidWhist) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if len(j.Players) > bidWhistMaxSliceLen || len(j.CurrentTrick) > bidWhistMaxSliceLen ||
-		len(j.Kitty) > bidWhistMaxSliceLen || len(j.ActionLog) > bidWhistMaxSliceLen {
+	// Enforce tight, structural bounds on every restored slice (DoS guard).
+	if len(j.Players) != BidWhistPlayerCnt {
+		return fmt.Errorf("bidwhist: invalid player count: %d", len(j.Players))
+	}
+	if len(j.CurrentTrick) > BidWhistPlayerCnt || len(j.Kitty) > BidWhistKittySize ||
+		len(j.ActionLog) > bidWhistMaxActionLogLen {
 		return fmt.Errorf("bidwhist: input array exceeds maximum allowed size")
 	}
 	g.trumpCards = j.TrumpCards
@@ -1359,9 +1367,6 @@ func (g *BidWhist) UnmarshalJSON(data []byte) error {
 		g.trumpCards = NewTrumpCards(2)
 	}
 	g.players = j.Players
-	if len(g.players) != BidWhistPlayerCnt {
-		return fmt.Errorf("bidwhist: invalid player count: %d", len(g.players))
-	}
 	for _, p := range g.players {
 		if p == nil {
 			return fmt.Errorf("bidwhist: player is nil")
@@ -1379,10 +1384,20 @@ func (g *BidWhist) UnmarshalJSON(data []byte) error {
 	if g.currentTrick == nil {
 		g.currentTrick = make([]*BidWhistTrickCard, 0)
 	}
+	for _, tc := range g.currentTrick {
+		if tc == nil || tc.Card == nil {
+			return fmt.Errorf("bidwhist: trick card is nil")
+		}
+	}
 	g.dealerIdx = j.DealerIdx
 	g.kitty = j.Kitty
 	if g.kitty == nil {
 		g.kitty = make([]*Card, 0)
+	}
+	for _, c := range g.kitty {
+		if c == nil {
+			return fmt.Errorf("bidwhist: kitty card is nil")
+		}
 	}
 	g.leadPlayerIdx = j.LeadPlayerIdx
 	g.bidPlayerIdx = j.BidPlayerIdx
@@ -1398,6 +1413,11 @@ func (g *BidWhist) UnmarshalJSON(data []byte) error {
 	g.actionLog = j.ActionLog
 	if g.actionLog == nil {
 		g.actionLog = make([]*ActionLogEntry, 0)
+	}
+	for _, al := range g.actionLog {
+		if al == nil {
+			return fmt.Errorf("bidwhist: action log entry is nil")
+		}
 	}
 	return nil
 }

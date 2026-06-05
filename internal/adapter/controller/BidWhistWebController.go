@@ -150,7 +150,8 @@ func bidWhistDispatch(bc *baseController, w http.ResponseWriter, bi usecase.BidW
 		}
 		bc.writePresenterResponse(w, bi.DeclareTrump(*param.TrumpSuit))
 	case "e", "exchange":
-		if !requireParam(bc, w, newDefault, len(param.DiscardIndices) == 0, "param error: discardIndices is required.") {
+		if !requireParam(bc, w, newDefault, len(param.DiscardIndices) != domain.BidWhistKittySize,
+			"param error: exactly 6 discardIndices are required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, bi.ExchangeKitty(param.DiscardIndices))

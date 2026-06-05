@@ -615,6 +615,46 @@ func TestBidWhist_NoTrumpAndDowntownTrickResolution(t *testing.T) {
 	}
 }
 
+func TestBidWhist_UnmarshalRejectsCorruptSlices(t *testing.T) {
+	g := newBidWhistForTest()
+	g.Reset()
+	data, err := json.Marshal(g)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+
+	withField := func(key, raw string) []byte {
+		var m map[string]json.RawMessage
+		if err := json.Unmarshal(data, &m); err != nil {
+			t.Fatalf("unmarshal to map: %v", err)
+		}
+		m[key] = json.RawMessage(raw)
+		out, err := json.Marshal(m)
+		if err != nil {
+			t.Fatalf("re-marshal: %v", err)
+		}
+		return out
+	}
+
+	cases := []struct {
+		name, key, raw string
+	}{
+		{"nil trick card", "ct", `[null]`},
+		{"trick card with nil card", "ct", `[{"pi":0}]`},
+		{"oversized trick", "ct", `[{},{},{},{},{}]`},
+		{"nil kitty card", "kt", `[null]`},
+		{"nil action log entry", "al", `[null]`},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			var restored domain.BidWhist
+			if err := json.Unmarshal(withField(c.key, c.raw), &restored); err == nil {
+				t.Errorf("expected error for %s", c.name)
+			}
+		})
+	}
+}
+
 func TestBidWhist_GetHint(t *testing.T) {
 	g := newBidWhistForTest()
 	g.Reset()
