@@ -1,0 +1,41 @@
+{
+  "phase": {
+    "bid": "Bid",
+    "trumpDeclaration": "Trump",
+    "kittyExchange": "Kitty",
+    "play": "Play",
+    "trickEnd": "Trick over",
+    "roundEnd": "Round over",
+    "gameEnd": "Game over"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "highestBid": "Highest bid: {{tricks}} {{dir}}",
+  "contractUndecided": "Contract: undecided",
+  "contractLine": "Contract: {{tricks}} {{dir}} (trump: {{trump}})",
+  "teamScores": "Team 0: {{t0}} / Team 1: {{t1}}",
+  "teamShort": "T{{team}}",
+  "passed": "pass",
+  "currentTrick": "Current trick",
+  "trickEmpty": "(no cards yet)",
+  "tricksLabel": "Target tricks",
+  "dirUptown": "Uptown",
+  "dirDowntown": "Downtown",
+  "dirNoTrump": "No Trump",
+  "passButton": "Pass",
+  "declareTrumpPrompt": "Choose a trump suit:",
+  "exchangeButton": "Exchange ({{count}}/6)",
+  "playButton": "Play",
+  "nextTrickButton": "Next trick",
+  "nextRoundButton": "Next round",
+  "settings": {
+    "cpuDifficulty": "CPU difficulty",
+    "targetScore": "Target score"
+  },
+  "tutorial": {
+    "info": "Round, contract, and team scores appear here. The first team to 7 points wins.",
+    "trick": "Cards played to the table appear here. The strongest card wins the trick.",
+    "hand": "Your hand. To play, select a card then press Play. When exchanging, select six cards.",
+    "actions": "Phase-specific action buttons (bid, declare trump, exchange, play) appear here."
+  }
+}

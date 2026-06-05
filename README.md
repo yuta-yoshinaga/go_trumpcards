@@ -145,6 +145,7 @@ Go + Clean Architecture で実装した126種類のトランプゲーム。CLI �
 | マカオ (Macau) | `macau` | [CUI](docs/manual/cui/macau.md) / [Web](docs/manual/web/macau.md) |
 | シュナプセン / 66 (Schnapsen / Sixty-Six) | `schnapsen` | [CUI](docs/manual/cui/schnapsen.md) / [Web](docs/manual/web/schnapsen.md) |
 | ブリストル (Bristol) | `bristol` | [CUI](docs/manual/cui/bristol.md) / [Web](docs/manual/web/bristol.md) |
+| ビッド・ホイスト (Bid Whist) | `bidwhist` | [CUI](docs/manual/cui/bidwhist.md) / [Web](docs/manual/web/bidwhist.md) |
 
 ## Demo
 

@@ -10,6 +10,7 @@ import bakersdozen from '../../../docs/manual/web/bakersdozen.md?raw';
 import barbu from '../../../docs/manual/web/barbu.md?raw';
 import beleagueredcastle from '../../../docs/manual/web/beleagueredcastle.md?raw';
 import belote from '../../../docs/manual/web/belote.md?raw';
+import bidwhist from '../../../docs/manual/web/bidwhist.md?raw';
 import bigo from '../../../docs/manual/web/bigo.md?raw';
 import bigohilo from '../../../docs/manual/web/bigohilo.md?raw';
 import bigtwo from '../../../docs/manual/web/bigtwo.md?raw';
@@ -141,6 +142,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/canfield': canfield,
   '/osmosis': osmosis,
   '/bristol': bristol,
+  '/bidwhist': bidwhist,
   '/fivehundred': fivehundred,
   '/caribbeanstud': caribbeanstud,
   '/casinoholdem': casinoholdem,

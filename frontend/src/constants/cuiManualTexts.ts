@@ -11,6 +11,7 @@ import bakersdozen from '../../../docs/manual/cui/bakersdozen.md?raw';
 import barbu from '../../../docs/manual/cui/barbu.md?raw';
 import beleagueredcastle from '../../../docs/manual/cui/beleagueredcastle.md?raw';
 import belote from '../../../docs/manual/cui/belote.md?raw';
+import bidwhist from '../../../docs/manual/cui/bidwhist.md?raw';
 import bigo from '../../../docs/manual/cui/bigo.md?raw';
 import bigohilo from '../../../docs/manual/cui/bigohilo.md?raw';
 import bigtwo from '../../../docs/manual/cui/bigtwo.md?raw';
@@ -139,6 +140,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/canfield': canfield,
   '/osmosis': osmosis,
   '/bristol': bristol,
+  '/bidwhist': bidwhist,
   '/fivehundred': fivehundred,
   '/caribbeanstud': caribbeanstud,
   '/casinoholdem': casinoholdem,

@@ -430,6 +430,24 @@ export const FiveHundredContract = {
   OPEN_MISERE: 4,
 } as const;
 
+/** Bid Whist phase constants (sync: internal/domain/BidWhist.go). */
+export const BidWhistPhase = {
+  BID: 0,
+  TRUMP_DECLARATION: 1,
+  KITTY_EXCHANGE: 2,
+  PLAY: 3,
+  TRICK_END: 4,
+  ROUND_END: 5,
+  GAME_END: 6,
+} as const;
+
+/** Bid Whist bid direction constants (sync: internal/domain/BidWhist.go). */
+export const BidWhistDirection = {
+  UPTOWN: 0,
+  DOWNTOWN: 1,
+  NO_TRUMP: 2,
+} as const;
+
 /** Baccarat phase constants (sync: internal/domain/Baccarat.go). */
 export const BaccaratPhase = {
   BET: 1,

@@ -643,4 +643,9 @@ func init() {
 			return usecase.NewBristolInteractor(domain.NewDefaultBristol(), new(presenter.BristolWebPresenter))
 		},
 		controller.NewBristolWebController)
+	BindWebControllerFor("bidwhist",
+		func() usecase.BidWhistInteractorIF {
+			return usecase.NewBidWhistInteractor(domain.NewDefaultBidWhist(), new(presenter.BidWhistWebPresenter))
+		},
+		controller.NewBidWhistWebController)
 }

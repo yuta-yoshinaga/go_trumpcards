@@ -2057,6 +2057,75 @@ export interface FiveHundredResponse extends BaseGameResponse {
   hint?: FiveHundredHint;
 }
 
+// --- Bid Whist (ビッド・ホイスト) ---
+
+/** A Bid Whist bid: target tricks over the book plus a direction. */
+export interface BidWhistBidData {
+  tricks: number;
+  direction: number;
+}
+
+/** A Bid Whist player's per-round state. */
+export interface BidWhistPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  team: number;
+  trickCount: number;
+  bid?: BidWhistBidData | null;
+  passed: boolean;
+  isDeclarer: boolean;
+}
+
+/** A card played in a Bid Whist trick. */
+export interface BidWhistTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Bid Whist game configuration. */
+export interface BidWhistConfig {
+  cpuDifficulty: number;
+  targetScore: number;
+}
+
+/** A suggested hint for Bid Whist. */
+export interface BidWhistHint {
+  bidTricks?: number;
+  bidDirection?: number;
+  pass?: boolean;
+  trumpSuit?: number;
+  discardIndices?: number[];
+  cardIndex?: number;
+  reason: string;
+}
+
+/** Full Bid Whist game state returned from the API. */
+export interface BidWhistResponse extends BaseGameResponse {
+  players: BidWhistPlayerData[];
+  phase: number;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  bidPlayerIdx: number;
+  dealerIdx: number;
+  leadPlayerIdx: number;
+  trumpSuit: number;
+  contractTricks: number;
+  contractDirection: number;
+  declarerIdx: number;
+  highestBid?: BidWhistBidData | null;
+  highestBidder: number;
+  kittyCount: number;
+  currentTrick: BidWhistTrickCard[];
+  teamScores: [number, number];
+  gameEndFlag: boolean;
+  winnerTeam: number;
+  config: BidWhistConfig;
+  hint?: BidWhistHint;
+}
+
 // --- Skat (スカート) ---
 
 /** A Skat player's per-round state. */

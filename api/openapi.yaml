@@ -197,6 +197,8 @@ tags:
     description: Osmosis (オズモシス / 浸透) solitaire - foundation-only single-player game; 4 reserve columns of 4 cards, 4 vertical foundation rows (one suit each), the top row builds any order while lower rows accept only ranks already present in the row directly above ("seep")
   - name: bristol
     description: Bristol (ブリストル) solitaire - single-player tableau-and-reserve game; 8 tableau columns (build down any suit, top card only, emptied columns are dead), 3 fans dealt from a stock (one card each per draw), and 4 foundations built up Ace-to-King regardless of suit
+  - name: bidwhist
+    description: Bid Whist (ビッド・ホイスト) - 4-player partnership trick-taking on a 54-card deck (52 + 2 jokers); 12-card hands with a 6-card kitty, auction bidding (target tricks 1-7 over the book of 6 plus Uptown/Downtown/No-Trump direction), trump declaration, kitty exchange, big/little joker as top trumps, first team to the target score (default 7) wins
   - name: fivehundred
     description: 500 (Five Hundred / ファイブハンドレッド) game - 4-player partnership trick-taking with a 43-card deck (joker + red 4-A + black 5-A); auction bidding (6-10 tricks per suit/NT plus Misère/Open Misère), kitty exchange, Euchre-style bowers + joker as top trumps, first team to 500 wins
   - name: casinowar
@@ -6719,6 +6721,112 @@ paths:
                     type: integer
                   canUndo:
                     type: boolean
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request
+
+  /bidwhist/exec:
+    post:
+      tags:
+        - bidwhist
+      summary: Execute a Bid Whist (ビッド・ホイスト) game command
+      description: |
+        Send a command to advance a Bid Whist session identified by `sessionId`.
+        Bid Whist is a 4-player partnership trick-taking game on a 54-card deck
+        (52 + 2 jokers). Bidding (`b`/`bid`) sets `bidTricks` (1-7, target tricks
+        over the book of 6) and `bidDirection` (0=Uptown, 1=Downtown, 2=NoTrump);
+        `pass` (`pa`) passes. The high bidder declares trump with `trump` (`t`,
+        `trumpSuit` 1=♠ 2=♣ 3=♥ 4=♦) for Uptown/Downtown contracts, then exchanges
+        the 6-card kitty via `exchange` (`discardIndices`, six indices). During play
+        (`play`), `cardIndex` selects the card. `next` advances the trick,
+        `nextround` scores and deals the next round.
+      operationId: bidWhistExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bid, b, pass, pa, trump, t, exchange, e, play, p, next, n, nextround, nr, hint, log, l]
+                sessionId:
+                  type: string
+                bidTricks:
+                  type: integer
+                  description: Target tricks over the book of 6 (1-7)
+                bidDirection:
+                  type: integer
+                  description: 0=Uptown (Ace high), 1=Downtown (2 high), 2=No Trump
+                trumpSuit:
+                  type: integer
+                  description: 1=♠ 2=♣ 3=♥ 4=♦ (trump declaration)
+                discardIndices:
+                  type: array
+                  items:
+                    type: integer
+                cardIndex:
+                  type: integer
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                    targetScore:
+                      type: integer
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                  phase:
+                    type: integer
+                  roundNumber:
+                    type: integer
+                  trickNumber:
+                    type: integer
+                  currentPlayerIdx:
+                    type: integer
+                  bidPlayerIdx:
+                    type: integer
+                  dealerIdx:
+                    type: integer
+                  leadPlayerIdx:
+                    type: integer
+                  trumpSuit:
+                    type: integer
+                  contractTricks:
+                    type: integer
+                  contractDirection:
+                    type: integer
+                  declarerIdx:
+                    type: integer
+                  highestBidder:
+                    type: integer
+                  kittyCount:
+                    type: integer
+                  currentTrick:
+                    type: array
+                  teamScores:
+                    type: array
+                    items:
+                      type: integer
+                  gameEndFlag:
+                    type: boolean
+                  winnerTeam:
+                    type: integer
                   message:
                     type: string
                   messageCode:
