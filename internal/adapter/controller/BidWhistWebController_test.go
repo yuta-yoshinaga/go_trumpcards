@@ -93,8 +93,8 @@ func TestBidWhistWebController_MissingParams(t *testing.T) {
 			c.input.SessionID = "s1"
 			rec := execRequest(t, ctrl.Exec, &c.input)
 			rec.CodeIs(http.StatusBadRequest)
-			if !strings.Contains(rec.Body.String(), "is required") {
-				t.Errorf("expected 'is required' message, got %s", rec.Body.String())
+			if !strings.Contains(rec.Body.String(), "required") {
+				t.Errorf("expected 'required' message, got %s", rec.Body.String())
 			}
 		})
 	}

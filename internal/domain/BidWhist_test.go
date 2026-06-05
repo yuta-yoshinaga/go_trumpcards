@@ -81,10 +81,10 @@ func TestBidWhistBid_ValidAndOrder(t *testing.T) {
 	up := domain.BidWhistBid{Tricks: 4, Direction: domain.BidWhistDirectionUptown}
 	nt := domain.BidWhistBid{Tricks: 4, Direction: domain.BidWhistDirectionNoTrump}
 	five := domain.BidWhistBid{Tricks: 5, Direction: domain.BidWhistDirectionUptown}
-	if !(nt.Order() > up.Order()) {
+	if nt.Order() <= up.Order() {
 		t.Error("4NT should outrank 4 Uptown")
 	}
-	if !(five.Order() > nt.Order()) {
+	if five.Order() <= nt.Order() {
 		t.Error("5 Uptown should outrank 4NT")
 	}
 }
@@ -352,6 +352,113 @@ func TestBidWhist_UnmarshalRejectsBadPlayerCount(t *testing.T) {
 	var g domain.BidWhist
 	if err := json.Unmarshal([]byte(bad), &g); err == nil {
 		t.Error("expected error for invalid player count / nil player")
+	}
+}
+
+func TestBidWhist_PlayValidationAndCpu(t *testing.T) {
+	// No Trump: a joker cannot be led while other cards are held.
+	g := newBidWhistForTest()
+	g.SetContract(3, domain.BidWhistDirectionNoTrump, -1)
+	g.SetPhase(domain.BidWhistPhasePlay)
+	g.SetCurrentPlayerIdx(0)
+	g.GetPlayer(0).AddCard(bwCard(domain.CardDesignJoker, 2))
+	g.GetPlayer(0).AddCard(bwCard(domain.CardDesignSpade, 5))
+	valid := g.GetValidPlayIndices(0)
+	if len(valid) != 1 || valid[0] != 1 {
+		t.Errorf("NT: joker must not be a valid lead; valid=%v", valid)
+	}
+
+	// Trump game: must follow the lead suit (cannot trump while able to follow).
+	g2 := newBidWhistForTest()
+	g2.SetContract(3, domain.BidWhistDirectionUptown, domain.CardDesignSpade)
+	g2.SetTrumpSuit(domain.CardDesignSpade)
+	g2.SetPhase(domain.BidWhistPhasePlay)
+	g2.SetCurrentPlayerIdx(1)
+	g2.SetCurrentTrick([]*domain.BidWhistTrickCard{
+		{PlayerIdx: 0, Card: bwCard(domain.CardDesignHeart, 5)},
+	})
+	g2.GetPlayer(1).AddCard(bwCard(domain.CardDesignHeart, 10))
+	g2.GetPlayer(1).AddCard(bwCard(domain.CardDesignSpade, 2))
+	if v := g2.GetValidPlayIndices(1); len(v) != 1 {
+		t.Errorf("must-follow: expected 1 valid play, got %v", v)
+	}
+	g2.CpuPlay()
+	if g2.GetPlayer(1).GetCardsSize() != 1 {
+		t.Errorf("CpuPlay should have played exactly one card")
+	}
+
+	// CPU follow when partner is winning → dumps lowest; exercises follow branches.
+	g3 := newBidWhistForTest()
+	g3.SetContract(3, domain.BidWhistDirectionUptown, domain.CardDesignSpade)
+	g3.SetTrumpSuit(domain.CardDesignSpade)
+	g3.SetPhase(domain.BidWhistPhasePlay)
+	g3.SetCurrentPlayerIdx(2) // CPU on team 0, partner of leader idx 0
+	g3.SetCurrentTrick([]*domain.BidWhistTrickCard{
+		{PlayerIdx: 0, Card: bwCard(domain.CardDesignHeart, 1)}, // partner leads the ace
+	})
+	g3.GetPlayer(2).AddCard(bwCard(domain.CardDesignHeart, 4))
+	g3.GetPlayer(2).AddCard(bwCard(domain.CardDesignHeart, 9))
+	g3.CpuPlay()
+	if g3.GetPlayer(2).GetCardsSize() != 1 {
+		t.Errorf("CpuPlay (partner winning) should play one card")
+	}
+}
+
+func TestBidWhist_CpuBidDifficulties(t *testing.T) {
+	for _, diff := range []domain.BidWhistCpuDifficulty{
+		domain.BidWhistCpuDifficultyEasy,
+		domain.BidWhistCpuDifficultyNormal,
+		domain.BidWhistCpuDifficultyHard,
+	} {
+		g := newBidWhistForTest()
+		cfg := g.GetConfig()
+		cfg.CpuDifficulty = diff
+		g.SetConfig(cfg)
+		g.SetPhase(domain.BidWhistPhaseBid)
+		g.SetBidPlayerIdx(1)
+		// A strong downtown hand (low pips) + jokers so the CPU is inclined to bid.
+		g.GetPlayer(1).AddCard(bwCard(domain.CardDesignJoker, 2))
+		g.GetPlayer(1).AddCard(bwCard(domain.CardDesignJoker, 1))
+		for _, v := range []int{2, 3, 4, 2, 3, 4, 2, 3, 4, 2} {
+			g.GetPlayer(1).AddCard(bwCard(domain.CardDesignSpade, v))
+		}
+		g.CpuBid()
+		// The bid turn must have advanced (bid or pass applied).
+		if g.GetBidPlayerIdx() == 1 {
+			t.Errorf("diff %d: CpuBid did not advance the turn", diff)
+		}
+	}
+}
+
+func TestBidWhist_GettersAndGuards(t *testing.T) {
+	g := newBidWhistForTest()
+	g.Reset()
+	g.SetContract(4, domain.BidWhistDirectionDowntown, domain.CardDesignClover)
+	if g.GetContractDirection() != domain.BidWhistDirectionDowntown {
+		t.Errorf("direction getter")
+	}
+	if g.GetContractTricks() != 4 {
+		t.Errorf("tricks getter")
+	}
+	g.SetDeclarerIdx(0) // player 0 is human in this fixture
+	if !g.IsHumanDeclarerTurn() {
+		t.Errorf("expected human declarer turn")
+	}
+	_ = g.GetKitty()
+	_ = g.GetHighestBidder()
+	_ = g.GetLeadPlayerIdx()
+	_ = g.GetDealerIdx()
+	_ = g.GetCurrentTrick()
+	_ = g.EffectiveSuitPublic(bwCard(domain.CardDesignClover, 2))
+
+	// Phase guards: methods are no-ops outside their phase.
+	g.SetPhase(domain.BidWhistPhaseBid)
+	g.ResolveTrick() // not TrickEnd → no-op
+	g.NextTrick()    // not TrickEnd → no-op
+	g.ScoreRound()   // not RoundEnd → no-op
+	g.NextRound()    // not RoundEnd → no-op
+	if g.GetPhase() != domain.BidWhistPhaseBid {
+		t.Errorf("guards should not have changed the phase")
 	}
 }
 
