@@ -1,0 +1,66 @@
+{
+  "phase": {
+    "expose": "公開",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "pointLimit": "終了ポイント",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "trick": "トリック {{n}}",
+  "exposed": "公開済み: {{cards}}",
+  "exposedNone": "なし",
+  "exposableHint": "公開できるカード: {{indices}}",
+  "exposableNone": "公開できるポイントカードはありません",
+  "cards": "{{count}}枚",
+  "cumulativeScore": "累計: {{score}}",
+  "roundScore": "ラウンド: {{score}}",
+  "currentTrick": "現在のトリック",
+  "scores": "スコア",
+  "scoresPlayer": "プレイヤー",
+  "scoresRound": "ラウンド",
+  "scoresTotal": "累計",
+  "scoresTricks": "トリック",
+  "exposeButton": "公開する",
+  "skipExpose": "公開しない",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド",
+  "hintAvailable": "ヒント",
+  "hintReason": {
+    "lead_low": "低いカードでリード",
+    "follow_suit": "リードスートに追随",
+    "discard_pig": "♠Q（豚）を捨てるチャンス",
+    "discard_hearts": "ハートを捨てる",
+    "discard_high": "高いカードを捨てる",
+    "expose_sheep": "♦J（羊）を公開して得点を倍に",
+    "expose_none": "公開せず様子を見る"
+  },
+  "tutorial": {
+    "exposeArea": "公開フェーズです。♠Q・♦J・♥A・♣10 を公開すると、そのカードの得点が倍になります。公開しなくても構いません。",
+    "trickDisplay": "現在のトリックです。各プレイヤーが1枚ずつカードを出します。",
+    "playerHand": "あなたの手札です。出せるカードをクリックします。",
+    "playButton": "カードを選んだらこのボタンで出します。",
+    "scoreTable": "各プレイヤーのスコアです。♠Q=-100、♦J=+100、ハート=マイナス、♣10は得点を倍にします。",
+    "pointInfo": "ハート（合計-200）と♠Q（-100、豚）がマイナス、♦J（+100、羊）がプラス。♣10（変圧器）は獲得点を倍にします。全ハートを集めると+200。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "hint": {
+    "exposeSheep": "♦J（羊）を公開して得点を倍にすることを推奨",
+    "exposeNone": "公開せず様子を見ることを推奨",
+    "leadLowest": "最も低いカードでリード推奨",
+    "chaseSheep": "羊（♦J）を取りに行くチャンス",
+    "followSuit": "リードされたスートに従ってプレイ推奨",
+    "dumpPig": "♠Q（豚）を捨てるチャンス",
+    "dumpHearts": "ハートカードを捨てるチャンス",
+    "playHighest": "最も高いカードをプレイ推奨"
+  }
+}

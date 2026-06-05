@@ -1,4 +1,10 @@
-import type { CallBreakResponse, HeartsResponse, SpadesResponse, TwoTenJackResponse } from '../types/card';
+import type {
+  CallBreakResponse,
+  GongZhuResponse,
+  HeartsResponse,
+  SpadesResponse,
+  TwoTenJackResponse,
+} from '../types/card';
 
 /** Base Hearts player data for player 0 (human). */
 const heartsHumanPlayer = {
@@ -45,6 +51,51 @@ const baseHeartsState: HeartsResponse = {
  */
 export function makeHeartsState(overrides?: Partial<HeartsResponse>): HeartsResponse {
   return { ...baseHeartsState, ...overrides };
+}
+
+/** Base Gong Zhu state used as the default for {@link makeGongZhuState}. */
+const baseGongZhuState: GongZhuResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 13,
+      cards: [
+        { design: 'SPADE' as const, value: 12 },
+        { design: 'DIAMOND' as const, value: 11 },
+      ],
+      roundScore: 0,
+      cumulativeScore: 0,
+      trickCount: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 13, cards: [], roundScore: 0, cumulativeScore: -30, trickCount: 1 },
+    { id: 2, isHuman: false, cardCount: 13, cards: [], roundScore: 0, cumulativeScore: -10, trickCount: 2 },
+    { id: 3, isHuman: false, cardCount: 13, cards: [], roundScore: 0, cumulativeScore: -50, trickCount: 0 },
+  ],
+  phase: 1,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  currentTrick: [],
+  heartsBroken: false,
+  exposed: { pig: false, sheep: false, ace: false, doubler: false },
+  exposableIndices: [],
+  gameEndFlag: false,
+  winnerIdx: -1,
+  leadPlayerIdx: 0,
+  message: '',
+  config: { cpuDifficulty: 1, pointLimit: 1000 },
+};
+
+/**
+ * Creates a {@link GongZhuResponse} with sensible defaults.
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial GongZhuResponse fields to override.
+ * @returns A complete GongZhuResponse suitable for use in tests.
+ */
+export function makeGongZhuState(overrides?: Partial<GongZhuResponse>): GongZhuResponse {
+  return { ...baseGongZhuState, ...overrides };
 }
 
 /** Base Spades player data used by {@link makeSpadesState}. */

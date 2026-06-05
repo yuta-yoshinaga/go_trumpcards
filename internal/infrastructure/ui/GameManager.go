@@ -1964,6 +1964,22 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"yaniv.helpSetDifficulty", "yaniv.helpSetLimit"},
 			})
 	}},
+	{Name: "gongzhu", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewGongZhuCuiController(usecase.NewGongZhuInteractor(
+				domain.NewDefaultGongZhu(), new(presenter.GongZhuCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "gongzhu.helpTitle",
+				CommandKeys: []string{
+					"gongzhu.helpExpose",
+					"gongzhu.helpPlay",
+					"gongzhu.helpNext",
+					"gongzhu.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"gongzhu.helpSetDifficulty", "gongzhu.helpSetLimit"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

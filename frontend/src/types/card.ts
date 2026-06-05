@@ -970,6 +970,63 @@ export interface HeartsResponse extends BaseGameResponse {
   hint?: HeartsHint;
 }
 
+// --- Gong Zhu (拱猪) ---
+
+/** Gong Zhu player data with scores and trick count. */
+export interface GongZhuPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  roundScore: number;
+  cumulativeScore: number;
+  trickCount: number;
+}
+
+/** A card played in a Gong Zhu trick. */
+export interface GongZhuTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Which point cards have been exposed (stakes doubled). */
+export interface GongZhuExposure {
+  pig: boolean;
+  sheep: boolean;
+  ace: boolean;
+  doubler: boolean;
+}
+
+/** Gong Zhu game configuration. */
+export interface GongZhuConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+/** A suggested hint for Gong Zhu. */
+export interface GongZhuHint {
+  cardIndices: number[];
+  reason: string;
+}
+
+/** Full Gong Zhu game state returned from the API. */
+export interface GongZhuResponse extends BaseGameResponse {
+  players: GongZhuPlayerData[];
+  phase: number;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  currentTrick: GongZhuTrickCard[];
+  heartsBroken: boolean;
+  exposed: GongZhuExposure;
+  exposableIndices: number[];
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  leadPlayerIdx: number;
+  config: GongZhuConfig;
+  hint?: GongZhuHint;
+}
+
 // --- Spades ---
 
 /** Spades player data with bid, scores, and bags. */

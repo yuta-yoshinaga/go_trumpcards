@@ -633,4 +633,9 @@ func init() {
 			return usecase.NewMacauInteractor(domain.NewDefaultMacau(), new(presenter.MacauWebPresenter))
 		},
 		controller.NewMacauWebController)
+	BindWebControllerFor("gongzhu",
+		func() usecase.GongZhuInteractorIF {
+			return usecase.NewGongZhuInteractor(domain.NewDefaultGongZhu(), new(presenter.GongZhuWebPresenter))
+		},
+		controller.NewGongZhuWebController)
 }

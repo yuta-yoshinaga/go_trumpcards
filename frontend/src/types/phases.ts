@@ -150,6 +150,15 @@ export const HeartsPhase = {
   GAME_END: 4,
 } as const;
 
+/** Gong Zhu phase constants (sync: internal/domain/GongZhu.go). */
+export const GongZhuPhase = {
+  EXPOSE: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Memory phase constants (sync: internal/domain/Memory.go). */
 export const MemoryPhase = {
   FLIP1: 0,

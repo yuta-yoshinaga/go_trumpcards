@@ -1,0 +1,66 @@
+{
+  "phase": {
+    "expose": "Expose",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "pointLimit": "End Point Limit",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "exposed": "Exposed: {{cards}}",
+  "exposedNone": "none",
+  "exposableHint": "Exposable cards: {{indices}}",
+  "exposableNone": "No exposable point cards",
+  "cards": "{{count}} cards",
+  "cumulativeScore": "Total: {{score}}",
+  "roundScore": "Round: {{score}}",
+  "currentTrick": "Current Trick",
+  "scores": "Scores",
+  "scoresPlayer": "Player",
+  "scoresRound": "Round",
+  "scoresTotal": "Total",
+  "scoresTricks": "Tricks",
+  "exposeButton": "Expose",
+  "skipExpose": "Expose Nothing",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "hintAvailable": "Hint",
+  "hintReason": {
+    "lead_low": "Lead a low card",
+    "follow_suit": "Follow the led suit",
+    "discard_pig": "A chance to dump the ♠Q (pig)",
+    "discard_hearts": "Discard hearts",
+    "discard_high": "Discard a high card",
+    "expose_sheep": "Expose the ♦J (sheep) to double its value",
+    "expose_none": "Hold back and don't expose"
+  },
+  "tutorial": {
+    "exposeArea": "Exposure phase. Exposing ♠Q, ♦J, ♥A, or ♣10 doubles that card's value. You may also expose nothing.",
+    "trickDisplay": "The current trick. Each player plays one card.",
+    "playerHand": "Your hand. Click a playable card.",
+    "playButton": "Once you've picked a card, play it with this button.",
+    "scoreTable": "Each player's score. ♠Q=-100, ♦J=+100, hearts are negative, ♣10 doubles your score.",
+    "pointInfo": "Hearts (total -200) and ♠Q (-100, pig) are negative; ♦J (+100, sheep) is positive. ♣10 (transformer) doubles your points. Collecting all hearts scores +200.",
+    "resetButton": "Use the reset button to start a new game."
+  },
+  "hint": {
+    "exposeSheep": "Consider exposing the ♦J (sheep) to double its value",
+    "exposeNone": "Hold back and don't expose",
+    "leadLowest": "Lead your lowest card",
+    "chaseSheep": "A chance to capture the sheep (♦J)",
+    "followSuit": "Follow the led suit",
+    "dumpPig": "A chance to dump the ♠Q (pig)",
+    "dumpHearts": "A chance to discard hearts",
+    "playHighest": "Play your highest card"
+  }
+}
