@@ -35,6 +35,18 @@ func newBidWhistAllCpu() *domain.BidWhist {
 
 func bwCard(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
 
+func TestBidWhistConfig_Validate(t *testing.T) {
+	if err := domain.DefaultBidWhistConfig().Validate(); err != nil {
+		t.Errorf("default config should be valid: %v", err)
+	}
+	if err := (domain.BidWhistConfig{CpuDifficulty: 0, TargetScore: 0}).Validate(); err == nil {
+		t.Error("zero target score should be invalid")
+	}
+	if err := (domain.BidWhistConfig{CpuDifficulty: 9, TargetScore: 7}).Validate(); err == nil {
+		t.Error("out-of-range difficulty should be invalid")
+	}
+}
+
 func TestBidWhist_DeckComposition(t *testing.T) {
 	tc := domain.NewTrumpCards(2)
 	if got := tc.GetTotalCount(); got != 54 {
@@ -459,6 +471,147 @@ func TestBidWhist_GettersAndGuards(t *testing.T) {
 	g.NextRound()    // not RoundEnd → no-op
 	if g.GetPhase() != domain.BidWhistPhaseBid {
 		t.Errorf("guards should not have changed the phase")
+	}
+}
+
+func TestBidWhist_HumanErrorPaths(t *testing.T) {
+	g := newBidWhistForTest()
+	g.Reset()
+
+	// Wrong-phase guards (currently bidding, so these all reject).
+	g.SetPhase(domain.BidWhistPhasePlay)
+	g.SetCurrentPlayerIdx(0)
+	if err := g.PlayerBid(1, domain.BidWhistDirectionUptown); err == nil {
+		t.Error("bid in play phase should error")
+	}
+	if err := g.PlayerPass(); err == nil {
+		t.Error("pass in play phase should error")
+	}
+	if err := g.PlayerDeclareTrump(domain.CardDesignSpade); err == nil {
+		t.Error("declare in play phase should error")
+	}
+	if err := g.PlayerExchangeKitty([]int{0, 1, 2, 3, 4, 5}); err == nil {
+		t.Error("exchange in play phase should error")
+	}
+
+	// Out-of-range card index on the human's play turn.
+	g.GetPlayer(0).AddCard(bwCard(domain.CardDesignHeart, 5))
+	if err := g.PlayerPlay(99); err == nil {
+		t.Error("out-of-range play index should error")
+	}
+	// Not the human's turn.
+	g.SetCurrentPlayerIdx(1)
+	if err := g.PlayerPlay(0); err == nil {
+		t.Error("playing on a CPU turn should error")
+	}
+
+	// Invalid trump suit during declaration.
+	g2 := newBidWhistForTest()
+	g2.SetDeclarerIdx(0)
+	g2.SetContract(3, domain.BidWhistDirectionUptown, -1)
+	g2.SetPhase(domain.BidWhistPhaseTrumpDeclaration)
+	if err := g2.PlayerDeclareTrump(99); err == nil {
+		t.Error("invalid trump suit should error")
+	}
+	// Wrong discard count.
+	g3 := newBidWhistForTest()
+	g3.SetDeclarerIdx(0)
+	g3.SetContract(3, domain.BidWhistDirectionNoTrump, -1)
+	g3.SetPhase(domain.BidWhistPhaseKittyExchange)
+	for i := 0; i < 18; i++ {
+		g3.GetPlayer(0).AddCard(bwCard(domain.CardDesignHeart, (i%12)+2))
+	}
+	if err := g3.PlayerExchangeKitty([]int{0, 1, 2}); err == nil {
+		t.Error("wrong discard count should error")
+	}
+	// Duplicate discard index.
+	if err := g3.PlayerExchangeKitty([]int{0, 0, 1, 2, 3, 4}); err == nil {
+		t.Error("duplicate discard index should error")
+	}
+}
+
+func TestBidWhist_CpuPlayBranches(t *testing.T) {
+	// Opponent winning + CPU can beat → plays the minimal winning card ("over").
+	g := newBidWhistForTest()
+	g.SetContract(3, domain.BidWhistDirectionUptown, domain.CardDesignSpade)
+	g.SetTrumpSuit(domain.CardDesignSpade)
+	g.SetPhase(domain.BidWhistPhasePlay)
+	g.SetCurrentPlayerIdx(1) // team 1, opponent of leader 0 (team 0)
+	g.SetCurrentTrick([]*domain.BidWhistTrickCard{
+		{PlayerIdx: 0, Card: bwCard(domain.CardDesignHeart, 5)},
+	})
+	g.GetPlayer(1).AddCard(bwCard(domain.CardDesignHeart, 13)) // beats the 5
+	g.GetPlayer(1).AddCard(bwCard(domain.CardDesignHeart, 2))
+	g.CpuPlay()
+	if g.GetPlayer(1).GetCardsSize() != 1 {
+		t.Error("cpu (over) should play one card")
+	}
+
+	// Opponent winning + CPU cannot beat → dumps the weakest.
+	g2 := newBidWhistForTest()
+	g2.SetContract(3, domain.BidWhistDirectionUptown, domain.CardDesignSpade)
+	g2.SetTrumpSuit(domain.CardDesignSpade)
+	g2.SetPhase(domain.BidWhistPhasePlay)
+	g2.SetCurrentPlayerIdx(1)
+	g2.SetCurrentTrick([]*domain.BidWhistTrickCard{
+		{PlayerIdx: 0, Card: bwCard(domain.CardDesignHeart, 13)},
+	})
+	g2.GetPlayer(1).AddCard(bwCard(domain.CardDesignHeart, 4))
+	g2.GetPlayer(1).AddCard(bwCard(domain.CardDesignHeart, 2))
+	g2.CpuPlay()
+	if g2.GetPlayer(1).GetCardsSize() != 1 {
+		t.Error("cpu (cannot beat) should play one card")
+	}
+}
+
+func TestBidWhist_NoTrumpAndDowntownTrickResolution(t *testing.T) {
+	// No Trump: the joker is dead and loses; the highest follow card wins.
+	g := newBidWhistForTest()
+	g.SetContract(3, domain.BidWhistDirectionNoTrump, -1)
+	g.SetTrickNumber(1)
+	g.SetCurrentTrick([]*domain.BidWhistTrickCard{
+		{PlayerIdx: 0, Card: bwCard(domain.CardDesignHeart, 5)},
+		{PlayerIdx: 1, Card: bwCard(domain.CardDesignHeart, 13)},
+		{PlayerIdx: 2, Card: bwCard(domain.CardDesignJoker, 2)},
+		{PlayerIdx: 3, Card: bwCard(domain.CardDesignHeart, 2)},
+	})
+	g.SetPhase(domain.BidWhistPhaseTrickEnd)
+	g.ResolveTrick()
+	if g.GetPlayer(1).GetTrickCount() != 1 {
+		t.Error("NT: highest heart should win, joker is dead")
+	}
+
+	// No Trump with a (forced) joker lead: every real card competes; highest wins.
+	g2 := newBidWhistForTest()
+	g2.SetContract(3, domain.BidWhistDirectionNoTrump, -1)
+	g2.SetTrickNumber(1)
+	g2.SetCurrentTrick([]*domain.BidWhistTrickCard{
+		{PlayerIdx: 0, Card: bwCard(domain.CardDesignJoker, 2)},
+		{PlayerIdx: 1, Card: bwCard(domain.CardDesignHeart, 13)},
+		{PlayerIdx: 2, Card: bwCard(domain.CardDesignSpade, 5)},
+		{PlayerIdx: 3, Card: bwCard(domain.CardDesignDiamond, 2)},
+	})
+	g2.SetPhase(domain.BidWhistPhaseTrickEnd)
+	g2.ResolveTrick()
+	if g2.GetPlayer(1).GetTrickCount() != 1 {
+		t.Error("NT joker lead: highest real card should win")
+	}
+
+	// Downtown: the 2 beats the King in the same suit.
+	g3 := newBidWhistForTest()
+	g3.SetContract(3, domain.BidWhistDirectionDowntown, domain.CardDesignSpade)
+	g3.SetTrumpSuit(domain.CardDesignSpade)
+	g3.SetTrickNumber(1)
+	g3.SetCurrentTrick([]*domain.BidWhistTrickCard{
+		{PlayerIdx: 0, Card: bwCard(domain.CardDesignSpade, 13)},
+		{PlayerIdx: 1, Card: bwCard(domain.CardDesignSpade, 2)},
+		{PlayerIdx: 2, Card: bwCard(domain.CardDesignHeart, 1)},
+		{PlayerIdx: 3, Card: bwCard(domain.CardDesignSpade, 3)},
+	})
+	g3.SetPhase(domain.BidWhistPhaseTrickEnd)
+	g3.ResolveTrick()
+	if g3.GetPlayer(1).GetTrickCount() != 1 {
+		t.Error("Downtown: the trump 2 should beat the trump King")
 	}
 }
 
