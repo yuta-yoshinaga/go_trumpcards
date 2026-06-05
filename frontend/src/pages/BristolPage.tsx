@@ -272,7 +272,9 @@ function BristolPageContent() {
                   const zone: BristolMoveZone = { zone: 'fan', col: i };
                   return (
                     <div key={`fan-${i}`} className="flex flex-col items-center gap-1">
-                      <span className="text-xs text-ds-text-muted">{t('fan')} {i}</span>
+                      <span className="text-xs text-ds-text-muted">
+                        {t('fan')} {i}
+                      </span>
                       {top ? (
                         <button
                           type="button"

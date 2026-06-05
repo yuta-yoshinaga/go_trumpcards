@@ -44,9 +44,7 @@ describe('getBristolHint', () => {
   });
 
   it('returns tableau hint with moderate confidence', () => {
-    const hint = getBristolHint(
-      makeState({ hint: { fromZone: 'fan', fromCol: 1, toZone: 'tableau', toCol: 3 } }),
-    );
+    const hint = getBristolHint(makeState({ hint: { fromZone: 'fan', fromCol: 1, toZone: 'tableau', toCol: 3 } }));
     expect(hint).toEqual({
       targetAction: 'moveToTableau',
       reason: 'frontendHint.moveToTableau',
