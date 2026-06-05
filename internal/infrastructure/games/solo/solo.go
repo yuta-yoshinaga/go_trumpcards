@@ -393,4 +393,13 @@ func init() {
 		},
 		controller.NewBristolWebControllerWithProvider)
 
+	games.RegisterKVGame("bidwhist", games.CategorySolo,
+		func() usecase.BidWhistInteractorIF {
+			return usecase.NewBidWhistInteractor(domain.NewDefaultBidWhist(), new(presenter.BidWhistWebPresenter))
+		},
+		func(data []byte) (usecase.BidWhistInteractorIF, error) {
+			return usecase.RestoreBidWhistInteractor(data, new(presenter.BidWhistWebPresenter))
+		},
+		controller.NewBidWhistWebControllerWithProvider)
+
 }

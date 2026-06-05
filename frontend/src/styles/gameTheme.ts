@@ -119,6 +119,7 @@ export type GameKey =
   | 'canfield'
   | 'osmosis'
   | 'bristol'
+  | 'bidwhist'
   | 'yukon'
   | 'russiansolitaire'
   | 'cruel'
@@ -270,6 +271,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   canfield: CASINO,
   osmosis: CASINO,
   bristol: CASINO,
+  bidwhist: GREEN,
   yukon: CASINO,
   russiansolitaire: CASINO,
   cruel: CASINO,

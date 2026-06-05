@@ -10,6 +10,7 @@ import type {
   BeleagueredCastleMoveZone,
   BeleagueredCastleResponse,
   BeloteResponse,
+  BidWhistResponse,
   BigTwoConfigInput,
   BigTwoResponse,
   BlackJackResponse,
@@ -277,6 +278,7 @@ const workerUrl: Record<string, string> = {
   macau: WORKER_SOLO,
   gongzhu: WORKER_SOLO,
   bristol: WORKER_SOLO,
+  bidwhist: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1589,6 +1591,47 @@ export const fiveHundredApi = {
   ) => gameExec<FiveHundredResponse>('fivehundred', { command, ...params }),
 };
 
+/** Configuration options for Bid Whist game settings. */
+export interface BidWhistConfigInput {
+  cpuDifficulty?: number;
+  targetScore?: number;
+}
+
+/** Optional parameters for a Bid Whist action. */
+export interface BidWhistParams {
+  bidTricks?: number;
+  bidDirection?: number;
+  trumpSuit?: number;
+  discardIndices?: number[];
+  cardIndex?: number;
+  config?: BidWhistConfigInput;
+}
+
+/** API client for the Bid Whist game. Calls POST /bidwhist/exec. */
+export const bidWhistApi = {
+  exec: (
+    command:
+      | 'reset'
+      | 'b'
+      | 'bid'
+      | 'pa'
+      | 'pass'
+      | 't'
+      | 'trump'
+      | 'e'
+      | 'exchange'
+      | 'p'
+      | 'play'
+      | 'n'
+      | 'next'
+      | 'nr'
+      | 'nextround'
+      | 'hint'
+      | 'log',
+    params: BidWhistParams = {},
+  ) => gameExec<BidWhistResponse>('bidwhist', { command, ...params }),
+};
+
 /** Configuration options for Skat game settings. */
 export interface SkatConfigInput {
   cpuDifficulty?: number;
@@ -2411,6 +2454,7 @@ const games = [
   'barbu',
   'macau',
   'bristol',
+  'bidwhist',
   'spanish21',
   'spiteandmalice',
   'skat',

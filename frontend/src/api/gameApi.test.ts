@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   actionLogApi,
   baccaratApi,
+  bidWhistApi,
   bigOApi,
   bigOHiLoApi,
   blackjackApi,
@@ -2049,6 +2050,29 @@ describe('gameApi', () => {
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(heartsApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
+  describe('bidWhistApi.exec', () => {
+    it('posts to /bidwhist/exec with the bid params', async () => {
+      mockFetch.mockReturnValue(makeResponse({ players: [] }));
+      await bidWhistApi.exec('bid', { bidTricks: 4, bidDirection: 0 });
+      expect(mockFetch).toHaveBeenCalledWith('/bidwhist/exec', expect.objectContaining({ method: 'POST' }));
+      const body = JSON.parse(mockFetch.mock.calls.at(-1)?.[1].body);
+      expect(body.command).toBe('bid');
+      expect(body.bidTricks).toBe(4);
+      expect(body.bidDirection).toBe(0);
+    });
+
+    it('posts trump and exchange commands', async () => {
+      mockFetch.mockReturnValue(makeResponse({ players: [] }));
+      await bidWhistApi.exec('t', { trumpSuit: 1 });
+      let body = JSON.parse(mockFetch.mock.calls.at(-1)?.[1].body);
+      expect(body).toMatchObject({ command: 't', trumpSuit: 1 });
+
+      await bidWhistApi.exec('e', { discardIndices: [0, 1, 2, 3, 4, 5] });
+      body = JSON.parse(mockFetch.mock.calls.at(-1)?.[1].body);
+      expect(body).toMatchObject({ command: 'e', discardIndices: [0, 1, 2, 3, 4, 5] });
     });
   });
 

@@ -271,6 +271,11 @@ var registry = []*Game{
 	// Bristol is a tableau/reserve solitaire (build-down tableau, 3 fans, stock).
 	// Bucketed into the solo worker (classic worker is at the 1 MB gzip limit).
 	{Name: "bristol", Category: CategorySolo, Description: "Bristol (ブリストル)"},
+	// Bid Whist is a 4-player partnership trick-taking game with jokers, a 6-card
+	// kitty and Uptown/Downtown/No-Trump bidding. Conceptually a "classic"
+	// trick-taker, but the classic worker is at the 1 MB gzip limit, so it is
+	// bucketed into the solo worker. Category here is purely a binary-size bucket.
+	{Name: "bidwhist", Category: CategorySolo, Description: "Bid Whist (ビッド・ホイスト)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

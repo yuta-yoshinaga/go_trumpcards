@@ -113,6 +113,12 @@ describe('useGameHint', () => {
     expect(result.current.hint).toBeNull();
   });
 
+  it('returns null hint for bidwhist (server-side hints only)', () => {
+    localStorage.setItem('hint_enabled_bidwhist', 'true');
+    const { result } = renderHook(() => useGameHint('bidwhist', { phase: 3 } as never));
+    expect(result.current.hint).toBeNull();
+  });
+
   it('returns baccarat hint when enabled', () => {
     localStorage.setItem('hint_enabled_baccarat', 'true');
     const state: Partial<BaccaratResponse> = {

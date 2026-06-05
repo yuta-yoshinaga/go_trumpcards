@@ -1999,6 +1999,27 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                    action log"},
 			})
 	}},
+	{Name: "bidwhist", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBidWhistCuiController(usecase.NewBidWhistInteractor(
+				domain.NewDefaultBidWhist(), new(presenter.BidWhistCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "bidwhist.helpTitle",
+				CommandKeys: []string{
+					"bidwhist.helpBid",
+					"bidwhist.helpPass",
+					"bidwhist.helpTrump",
+					"bidwhist.helpExchange",
+					"bidwhist.helpPlay",
+					"bidwhist.helpNext",
+					"bidwhist.helpNextRound",
+				},
+				SettingKeys: []string{
+					"bidwhist.helpSetDifficulty",
+					"bidwhist.helpSetTarget",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
