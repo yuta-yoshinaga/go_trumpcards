@@ -268,6 +268,9 @@ var registry = []*Game{
 	// limit, so Gong Zhu is bucketed into the solo worker (most headroom).
 	// Category here is purely a binary-size bucket (see package doc).
 	{Name: "gongzhu", Category: CategorySolo, Description: "Gong Zhu (拱猪)"},
+	// Bristol is a tableau/reserve solitaire (build-down tableau, 3 fans, stock).
+	// Bucketed into the solo worker (classic worker is at the 1 MB gzip limit).
+	{Name: "bristol", Category: CategorySolo, Description: "Bristol (ブリストル)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

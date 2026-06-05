@@ -1,0 +1,38 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "Bristol",
+  "stock": "Stock",
+  "tableau": "Tableau",
+  "fan": "Fan",
+  "foundation": "Foundation",
+  "moveCount": "Moves",
+  "draw": "Deal",
+  "giveup": "Give Up",
+  "hint": "Hint",
+  "autoComplete": "Auto Complete",
+  "undo": "Undo",
+  "empty": "Empty",
+  "selectDestination": "Select a destination (tableau or foundation)",
+  "selectSource": "Select a card first (a tableau top or fan top)",
+  "gameClear": "Game cleared! Moves: {{moveCount}}",
+  "gameOver": "Game over",
+  "playing": "Playing",
+  "noHint": "No hint",
+  "hintAvailable": "Hint available",
+  "frontendHint": {
+    "moveToFoundation": "A card can move to a foundation",
+    "moveToTableau": "A card can move between tableau columns"
+  },
+  "tutorial": {
+    "foundation": "The four foundations. Build up from Ace to King regardless of suit. Complete all four to win.",
+    "tableau": "The eight tableau columns. Move the top card onto another column (any suit, descending). Once a column empties it can no longer be used.",
+    "fan": "The three fans (reserve piles). They are dealt from the stock; the top card of each fan can move to a tableau column or foundation.",
+    "stock": "Click the stock to deal one card to each of the three fans.",
+    "actionButtons": "Action buttons: hint, auto-complete, undo, and more.",
+    "resetButton": "Start a new game."
+  }
+}

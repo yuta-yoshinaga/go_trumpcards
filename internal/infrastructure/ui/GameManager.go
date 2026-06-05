@@ -1980,6 +1980,25 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"gongzhu.helpSetDifficulty", "gongzhu.helpSetLimit"},
 			})
 	}},
+	{Name: "bristol", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBristolCuiController(usecase.NewBristolInteractor(
+				domain.NewDefaultBristol(), new(presenter.BristolCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "bristol.helpTitle",
+				CommandKeys: []string{
+					"bristol.helpDraw",
+					"bristol.helpMoveTT",
+					"bristol.helpMoveTF",
+					"bristol.helpMoveNT",
+					"bristol.helpMoveNF",
+					"bristol.helpGiveUp",
+					"bristol.helpHint",
+					"bristol.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

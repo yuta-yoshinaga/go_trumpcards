@@ -1,0 +1,115 @@
+//go:build test
+
+package presenter
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+)
+
+func setupBristolWebMockDefaults(bg *interfaces.MockBristolGame) {
+	bg.On("GetPhase").Return(domain.BristolPhasePlaying).Maybe()
+	bg.On("GetMoveCount").Return(0).Maybe()
+	bg.On("GetStockCount").Return(28).Maybe()
+	bg.On("CanUndo").Return(false).Maybe()
+
+	var tableau [domain.BristolTableauCnt][]*domain.Card
+	for i := 0; i < domain.BristolTableauCnt; i++ {
+		tableau[i] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, i+1, false)}
+	}
+	bg.On("GetTableau").Return(tableau).Maybe()
+
+	var fan [domain.BristolFanCnt][]*domain.Card
+	fan[0] = []*domain.Card{domain.NewCard(domain.CardDesignHeart, 5, false)}
+	bg.On("GetFan").Return(fan).Maybe()
+
+	var foundation [domain.BristolFoundationCnt][]*domain.Card
+	foundation[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}
+	bg.On("GetFoundation").Return(foundation).Maybe()
+}
+
+func TestBristolWebPresenter_Output(t *testing.T) {
+	t.Run("initial state", func(t *testing.T) {
+		bg := new(interfaces.MockBristolGame)
+		setupBristolWebMockDefaults(bg)
+		p := new(BristolWebPresenter)
+		result := p.Output(bg, nil)
+		assert.Contains(t, result, `"stockCount":28`)
+		assert.Contains(t, result, `"messageCode":"bristol.playing"`)
+		assert.Contains(t, result, `"tableau"`)
+		assert.Contains(t, result, `"fan"`)
+		assert.Contains(t, result, `"foundation"`)
+	})
+
+	t.Run("with error", func(t *testing.T) {
+		bg := new(interfaces.MockBristolGame)
+		setupBristolWebMockDefaults(bg)
+		p := new(BristolWebPresenter)
+		result := p.Output(bg, assert.AnError)
+		assert.Contains(t, result, assert.AnError.Error())
+	})
+
+	t.Run("game clear", func(t *testing.T) {
+		bg := new(interfaces.MockBristolGame)
+		setupBristolWebMockDefaults(bg)
+		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "GetPhase")
+		bg.On("GetPhase").Return(domain.BristolPhaseGameClear)
+		p := new(BristolWebPresenter)
+		result := p.Output(bg, nil)
+		assert.Contains(t, result, "bristol.gameClear")
+	})
+
+	t.Run("game over", func(t *testing.T) {
+		bg := new(interfaces.MockBristolGame)
+		setupBristolWebMockDefaults(bg)
+		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "GetPhase")
+		bg.On("GetPhase").Return(domain.BristolPhaseGameOver)
+		p := new(BristolWebPresenter)
+		result := p.Output(bg, nil)
+		assert.Contains(t, result, "bristol.gameOver")
+	})
+}
+
+func TestBristolWebPresenter_HintOutput(t *testing.T) {
+	t.Run("hint available", func(t *testing.T) {
+		bg := new(interfaces.MockBristolGame)
+		setupBristolWebMockDefaults(bg)
+		bg.On("GetHint").Return(&domain.BristolHint{FromZone: "tableau", FromCol: 0, ToZone: "foundation", ToCol: 1})
+		p := new(BristolWebPresenter)
+		result := p.HintOutput(bg)
+		assert.Contains(t, result, `"bristol.hintAvailable"`)
+		assert.Contains(t, result, `"toZone":"foundation"`)
+	})
+
+	t.Run("no hint", func(t *testing.T) {
+		bg := new(interfaces.MockBristolGame)
+		setupBristolWebMockDefaults(bg)
+		bg.On("GetHint").Return((*domain.BristolHint)(nil))
+		p := new(BristolWebPresenter)
+		result := p.HintOutput(bg)
+		assert.Contains(t, result, `"bristol.noHint"`)
+	})
+}
+
+func TestBristolWebPresenter_ActionLogOutput(t *testing.T) {
+	t.Run("playing", func(t *testing.T) {
+		bg := new(interfaces.MockBristolGame)
+		bg.On("GetPhase").Return(domain.BristolPhasePlaying)
+		bg.On("GetGameEndFlag").Return(false)
+		p := new(BristolWebPresenter)
+		_ = p.ActionLogOutput(bg)
+	})
+
+	t.Run("cleared", func(t *testing.T) {
+		bg := new(interfaces.MockBristolGame)
+		bg.On("GetPhase").Return(domain.BristolPhaseGameClear)
+		bg.On("GetGameEndFlag").Return(true)
+		bg.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, ActionType: "draw"}})
+		p := new(BristolWebPresenter)
+		_ = p.ActionLogOutput(bg)
+	})
+}

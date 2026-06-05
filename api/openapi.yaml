@@ -195,6 +195,8 @@ tags:
     description: Tien Len (ティエンレン / Vietnamese Big Two) game - 4-player shedding game; suit order ♠<♣<♦<♥, holder of ♠3 leads, chops (three consecutive pairs / four of a kind) cut a lone 2
   - name: osmosis
     description: Osmosis (オズモシス / 浸透) solitaire - foundation-only single-player game; 4 reserve columns of 4 cards, 4 vertical foundation rows (one suit each), the top row builds any order while lower rows accept only ranks already present in the row directly above ("seep")
+  - name: bristol
+    description: Bristol (ブリストル) solitaire - single-player tableau-and-reserve game; 8 tableau columns (build down any suit, top card only, emptied columns are dead), 3 fans dealt from a stock (one card each per draw), and 4 foundations built up Ace-to-King regardless of suit
   - name: fivehundred
     description: 500 (Five Hundred / ファイブハンドレッド) game - 4-player partnership trick-taking with a 43-card deck (joker + red 4-A + black 5-A); auction bidding (6-10 tricks per suit/NT plus Misère/Open Misère), kitty exchange, Euchre-style bowers + joker as top trumps, first team to 500 wins
   - name: casinowar
@@ -6635,6 +6637,82 @@ paths:
                     type: array
                   baseRank:
                     type: integer
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request
+
+  /bristol/exec:
+    post:
+      tags:
+        - bristol
+      summary: Execute a Bristol (ブリストル) game command
+      description: |
+        Send a command to advance a Bristol solitaire session identified by `sessionId`.
+        Bristol uses 8 tableau columns dealt 3 cards each, 3 fans (reserve piles), a stock,
+        and 4 foundations. `draw` deals one card from the stock to each of the three fans.
+        Moves take a `from` zone (`tableau` with `from.col`, or `fan` with `from.col`) and a
+        `to` zone (`tableau` with `to.col` to build down regardless of suit, or `foundation`
+        whose target pile is auto-selected). Emptied tableau columns can no longer hold a
+        card. Foundations build up Ace-to-King regardless of suit; clearing all four wins.
+      operationId: bristolExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, move, m, giveup, g, hint, h, autocomplete, ac, log, l, undo, u, undo_n]
+                sessionId:
+                  type: string
+                from:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau, fan]
+                    col:
+                      type: integer
+                to:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau, foundation]
+                    col:
+                      type: integer
+                n:
+                  type: integer
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                  fan:
+                    type: array
+                  stockCount:
+                    type: integer
+                  foundation:
+                    type: array
                   phase:
                     type: integer
                   moveCount:

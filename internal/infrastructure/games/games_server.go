@@ -638,4 +638,9 @@ func init() {
 			return usecase.NewGongZhuInteractor(domain.NewDefaultGongZhu(), new(presenter.GongZhuWebPresenter))
 		},
 		controller.NewGongZhuWebController)
+	BindWebControllerFor("bristol",
+		func() usecase.BristolInteractorIF {
+			return usecase.NewBristolInteractor(domain.NewDefaultBristol(), new(presenter.BristolWebPresenter))
+		},
+		controller.NewBristolWebController)
 }
