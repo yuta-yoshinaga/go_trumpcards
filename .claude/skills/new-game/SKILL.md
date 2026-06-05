@@ -45,7 +45,15 @@ If `<name>` or `<category>` is missing, ask before scaffolding.
    self-audit block at the bottom.
 
 4. **Bump ALL count assertions** (the #1 first-push failure). Adding one game changes these
-   hardcoded totals — update every one in the same commit:
+   hardcoded totals. Run the bundled audit to see, in one shot, the source-of-truth count
+   (`RegisterKVGame` calls per category) against every assertion and exactly which are stale:
+
+   ```sh
+   bash .claude/skills/new-game/scripts/count-audit.sh
+   ```
+
+   It is read-only (edits nothing) and exits non-zero on any mismatch. Bump every ❌ line to
+   the source-of-truth value, then re-run until it prints all ✅. The assertions it covers:
 
    | File | What to bump |
    |------|--------------|
@@ -53,9 +61,11 @@ If `<name>` or `<category>` is missing, ask before scaffolding.
    | `frontend/src/hooks/useTutorialProgress.test.ts` | `totalCount).toBe(N)` (~line 12) |
    | `frontend/src/components/tutorial/TutorialProgressPanel.test.tsx` | **three** assertions: `getByText(/N/)`, `links.length === N`, `incompleteMarkers.length === N` (~lines 22, 36, 49) |
 
-   The Go `expected<Category>` const must match the **count of `RegisterKVGame` calls in
-   that category's sub-package**, and `TestWorkerRegistrationsCoverAllGames` parses the
-   sources to enforce registry ↔ worker agreement (ADR-0031). A mismatch fails the build.
+   The three frontend assertions are **tsc-only** — `bun run check` (biome) does not catch a
+   stale count, so without this audit they slip through to a failed CI run. The Go
+   `expected<Category>` const must match the **count of `RegisterKVGame` calls in that
+   category's sub-package**, and `TestWorkerRegistrationsCoverAllGames` parses the sources to
+   enforce registry ↔ worker agreement (ADR-0031). A mismatch fails the build.
 
 5. **Registration ordering gotcha.** `TestRegistryMatchesCLI` requires the order of entries
    in `internal/infrastructure/ui/GameManager.go` `gameRegistry` to match the order in
@@ -79,11 +89,12 @@ If `<name>` or `<category>` is missing, ask before scaffolding.
    non-domain packages, `goimports -w`, `biome check`, `vitest`, host `go build ./...`,
    and `make build-worker-<category>` for the size check.
 
-9. **Run the registration checker before committing.** Invoke the
-   `game-registration-checker` subagent (Agent tool, `subagent_type:
-   "game-registration-checker"`) with the new `<name>` and `<category>`. It greps every
-   touchpoint and diffs the count assertions read-only — catching the exact failures above
-   *before* the expensive CI round-trip. Fix anything it flags, then commit.
+9. **Gate before committing.** First re-run `bash .claude/skills/new-game/scripts/count-audit.sh`
+   — it must print all ✅. Then invoke the `game-registration-checker` subagent (Agent tool,
+   `subagent_type: "game-registration-checker"`) with the new `<name>` and `<category>`. It
+   greps every touchpoint and diffs the count assertions read-only — catching the exact
+   failures above *before* the expensive, OOM-prone CI round-trip. Fix anything either flags,
+   then commit.
 
 10. **Docs in the same commit.** README.md, CLAUDE.md (games list), docs/games.md,
     docs/architecture.md (+ endpoint count), api/openapi.yaml, and both
