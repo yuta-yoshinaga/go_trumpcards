@@ -82,10 +82,9 @@ func NewDefaultFreeCell() *FreeCell {
 // （ベーカーズ・ゲーム）を構築する。盤面構成・配り方・スーパームーブはフリーセルと
 // 同一だが、タブロー積み上げ条件が「赤黒交互の降順」ではなく「同じスートの降順」になる。
 func NewBakersGame(trumpCards *TrumpCards) *FreeCell {
-	return &FreeCell{
-		trumpCards: trumpCards,
-		sameSuit:   true,
-	}
+	f := NewFreeCell(trumpCards)
+	f.sameSuit = true
+	return f
 }
 
 // NewDefaultBakersGame returns a Baker's Game with a standard single 52-card deck.
