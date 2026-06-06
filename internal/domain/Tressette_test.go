@@ -358,8 +358,9 @@ func TestTressetteHintFollowReasons(t *testing.T) {
 	g.SetCurrentPlayerIdx(0)
 	trSetHand(g.GetPlayer(0), trCard(domain.CardDesignSpade, 1), trCard(domain.CardDesignSpade, 4))
 
-	// Opponent (player 3, team B) leads a low spade → human can win.
-	g.SetCurrentTrick([]*domain.TressetteTrickCard{{PlayerIdx: 3, Card: trCard(domain.CardDesignSpade, 5)}})
+	// Opponent (player 3, team B) leads ♠K (a point card, strength 6) and the
+	// human holds ♠A (strength 7) → worth winning the points.
+	g.SetCurrentTrick([]*domain.TressetteTrickCard{{PlayerIdx: 3, Card: trCard(domain.CardDesignSpade, 13)}})
 	assert.Equal(t, "follow_win", g.GetHint().Reason)
 
 	// Partner (player 2, team A) is winning → give partner points.

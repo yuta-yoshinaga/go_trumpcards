@@ -28,9 +28,9 @@ test.describe('Tressette E2E', () => {
     const MAX_TURNS = 60;
     let interactions = 0;
     for (let turn = 0; turn < MAX_TURNS; turn++) {
-      await expect(
-        playButton.or(nextTrickButton).or(nextRoundButton).or(anyResetButton).first(),
-      ).toBeVisible({ timeout: 10_000 });
+      await expect(playButton.or(nextTrickButton).or(nextRoundButton).or(anyResetButton).first()).toBeVisible({
+        timeout: 10_000,
+      });
 
       const playVisible = await playButton.isVisible();
       const nextTrickVisible = await nextTrickButton.isVisible();
