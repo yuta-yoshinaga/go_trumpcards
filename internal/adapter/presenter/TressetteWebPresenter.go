@@ -72,6 +72,9 @@ func (p *TressetteWebPresenter) buildPlayersOutput(g interfaces.TressetteGame) [
 	out := make([]*controller.TressetteWebOutputPlayer, 0)
 	for i := 0; i < g.GetPlayerCnt(); i++ {
 		player := g.GetPlayer(i)
+		if player == nil {
+			continue
+		}
 		out = append(out, &controller.TressetteWebOutputPlayer{
 			ID:         i,
 			IsHuman:    player.GetIsHuman(),

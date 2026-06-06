@@ -571,7 +571,7 @@ func (g *Tressette) indexOfPlayerInTrick(playerIdx int) int {
 			return i
 		}
 	}
-	return 0
+	return -1
 }
 
 // --- CPU AI ---
