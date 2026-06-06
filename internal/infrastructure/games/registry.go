@@ -295,6 +295,9 @@ var registry = []*Game{
 	// Baker's Game is FreeCell's same-suit ancestor; it reuses the FreeCell
 	// engine (domain.NewDefaultBakersGame) and ships in the solo worker.
 	{Name: "bakersgame", Category: CategorySolo, Description: "Baker's Game (ベーカーズ・ゲーム)"},
+	// Bourré fuses poker-style ante/draw betting with must-follow trick-taking.
+	// Category is purely a binary-size bucket here (see package doc).
+	{Name: "bourre", Category: CategoryCasino, Description: "Bourré (ブーレ)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

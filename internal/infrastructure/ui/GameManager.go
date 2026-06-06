@@ -2088,6 +2088,22 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "bourre", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBourreCuiController(usecase.NewBourreInteractor(
+				domain.NewDefaultBourre(), new(presenter.BourreCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "bourre.helpTitle",
+				CommandKeys: []string{
+					"bourre.helpDecide",
+					"bourre.helpDraw",
+					"bourre.helpPlay",
+					"bourre.helpNext",
+					"bourre.helpSetDifficulty",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

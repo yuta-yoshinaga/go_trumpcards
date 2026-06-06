@@ -670,4 +670,9 @@ func init() {
 			return usecase.NewTichuInteractor(domain.NewDefaultTichu(), new(presenter.TichuWebPresenter))
 		},
 		controller.NewTichuWebController)
+	BindWebControllerFor("bourre",
+		func() usecase.BourreInteractorIF {
+			return usecase.NewBourreInteractor(domain.NewDefaultBourre(), new(presenter.BourreWebPresenter))
+		},
+		controller.NewBourreWebController)
 }

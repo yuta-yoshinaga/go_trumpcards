@@ -18,6 +18,7 @@ import bigohilo from '../../../docs/manual/cui/bigohilo.md?raw';
 import bigtwo from '../../../docs/manual/cui/bigtwo.md?raw';
 import blackjack from '../../../docs/manual/cui/blackjack.md?raw';
 import blackjackswitch from '../../../docs/manual/cui/blackjackswitch.md?raw';
+import bourre from '../../../docs/manual/cui/bourre.md?raw';
 import bridge from '../../../docs/manual/cui/bridge.md?raw';
 import briscola from '../../../docs/manual/cui/briscola.md?raw';
 import bristol from '../../../docs/manual/cui/bristol.md?raw';
@@ -260,6 +261,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/bigtwo': bigtwo,
   '/tienlen': tienlen,
   '/tichu': tichu,
+  '/bourre': bourre,
   '/doudizhu': doudizhu,
   '/truco': truco,
 };
