@@ -207,7 +207,7 @@ func (t *Tichu) PlayerPlay(indices []int) error {
 	seen := make(map[int]bool)
 	for _, idx := range indices {
 		if seen[idx] {
-			continue
+			return NewDomainError(ErrInvalidPlay, "duplicate card indices selected")
 		}
 		seen[idx] = true
 		card := player.GetCard(idx)
@@ -741,9 +741,19 @@ func (t *Tichu) UnmarshalJSON(data []byte) error {
 		len(j.CpuActions) > tichuMaxSliceLen || len(j.ActionLog) > tichuMaxSliceLen {
 		return fmt.Errorf("tichu: input array exceeds maximum allowed size")
 	}
+	if len(j.Players) != TichuPlayerCnt {
+		return fmt.Errorf("tichu: invalid player count %d, want %d", len(j.Players), TichuPlayerCnt)
+	}
+	for _, p := range j.Players {
+		if p == nil {
+			return fmt.Errorf("tichu: nil player in input")
+		}
+	}
 	t.trumpCards = j.TrumpCards
 	if t.trumpCards == nil {
-		t.trumpCards = NewTrumpCards(0)
+		// Tichu requires the four special cards (jokers); a fresh deck must
+		// carry them so a post-restore Reset deals a correct 56-card deck.
+		t.trumpCards = NewTrumpCards(TichuJokerCount)
 	}
 	t.players = j.Players
 	if t.players == nil {
