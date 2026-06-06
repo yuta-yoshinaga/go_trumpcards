@@ -1,0 +1,18 @@
+{
+  "helpTitle": "ティチュー",
+  "helpPlay": "  p [idx...]           カードを出す (空=パス)",
+  "helpDeclare": "  d [0-2]              宣言 (0=なし, 1=ティチュー, 2=グランド)",
+  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=通常, 1=簡単, 2=難しい)",
+  "phaseDeclare": "宣言フェーズ",
+  "phasePlay": "プレイフェーズ",
+  "gameEnd": "ディール終了",
+  "tableCards": "場",
+  "team": "チーム",
+  "teamA": "チームA",
+  "teamB": "チームB",
+  "tichu": "ティチュー",
+  "grandTichu": "グランドティチュー",
+  "you": "あなた",
+  "playerRank": " (上がり {{rank}}位)",
+  "playerCardCount": " ({{count}}枚)"
+}

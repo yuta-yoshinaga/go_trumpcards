@@ -203,6 +203,8 @@ tags:
     description: Tressette (トレセッテ) - 4-player no-trump must-follow trick-taking team game on the 40-card Briscola deck (8/9/10 removed), 10-card hands; trick strength 3>2>A>K>Q>J>7>6>5>4, scoring in thirds (A=1pt, 2/3/K/Q/J=1/3, last trick +1/3), first team to the target (default 21) wins
   - name: easthaven
     description: Easthaven (イーストヘイブン) - single-player Klondike/Spider hybrid solitaire; 7 tableau columns of 3 (2 face-down + 1 face-up), alternating-color descending tableau and A-to-K suit foundations (Klondike), with a Spider-style stock that deals one card to every column at once (no waste pile)
+  - name: tichu
+    description: Tichu (ティチュー) - 4-player 2-vs-2 partnership shedding game on a 56-card deck (52 + Dragon/Phoenix/Dog/Mahjong); 14-card hands, optional Tichu/Grand Tichu declarations (±100/±200), Daifugo-style combinations with four-of-a-kind and straight-flush bombs, special-card behaviours (Mahjong leads, Dog passes lead to partner, Phoenix wild, Dragon strongest single but trick goes to an opponent), card points (5/10/K, Dragon +25, Phoenix -25), one-two double victory (+200); higher team score wins the deal
   - name: fivehundred
     description: 500 (Five Hundred / ファイブハンドレッド) game - 4-player partnership trick-taking with a 43-card deck (joker + red 4-A + black 5-A); auction bidding (6-10 tricks per suit/NT plus Misère/Open Misère), kitty exchange, Euchre-style bowers + joker as top trumps, first team to 500 wins
   - name: casinowar
@@ -7339,6 +7341,121 @@ paths:
                         type: string
                       toCol:
                         type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request
+
+  /tichu/exec:
+    post:
+      tags:
+        - tichu
+      summary: Execute a Tichu (ティチュー) game command
+      description: |
+        Send a command to advance a Tichu session identified by `sessionId`.
+        Tichu is a 4-player, 2-vs-2 partnership shedding game (teams {P0,P2} vs {P1,P3})
+        on a 56-card deck (standard 52 + Dragon/Phoenix/Dog/Mahjong). Each player is dealt
+        14 cards. Before play, players may declare Tichu (±100) or Grand Tichu (±200).
+
+        | Phase   | Value | Description |
+        |---------|-------|-------------|
+        | Declare | 0     | Declaration phase |
+        | Play    | 1     | Trick play |
+        | End     | 2     | Deal over |
+
+        | Command         | Aliases | Description |
+        |-----------------|---------|-------------|
+        | `reset`         | `r`     | Start / restart a deal (optional `config`) |
+        | `declare`       | `d`     | Declare (`declType`: 0=none, 1=Tichu, 2=Grand) |
+        | `play`          | `p`     | Play cards by `indices` (empty = pass) |
+        | `setdifficulty` | `sd`    | Set CPU difficulty (reset) |
+        | `log`           | `l`     | View action log |
+      operationId: tichuExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, declare, d, play, p, log, l]
+                sessionId:
+                  type: string
+                indices:
+                  type: array
+                  items:
+                    type: integer
+                declType:
+                  type: integer
+                  enum: [0, 1, 2]
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      enum: [0, 1, 2]
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        isHuman:
+                          type: boolean
+                        isFinished:
+                          type: boolean
+                        team:
+                          type: integer
+                        rank:
+                          type: integer
+                        declType:
+                          type: integer
+                        cardCount:
+                          type: integer
+                        cards:
+                          type: array
+                  phase:
+                    type: string
+                  currentTurn:
+                    type: integer
+                  tableCards:
+                    type: array
+                  tableCombo:
+                    type: string
+                  lastPlayIdx:
+                    type: integer
+                  startLeader:
+                    type: integer
+                  finishOrder:
+                    type: array
+                    items:
+                      type: integer
+                  scores:
+                    type: array
+                    items:
+                      type: integer
+                  isOneTwo:
+                    type: boolean
+                  bombCount:
+                    type: integer
+                  gameEndFlag:
+                    type: boolean
                   message:
                     type: string
                   messageCode:

@@ -126,6 +126,7 @@ export type GameKey =
   | 'scorpion'
   | 'wasp'
   | 'easthaven'
+  | 'tichu'
   | 'accordion'
   | 'pokersquares'
   | 'montecarlo'
@@ -280,6 +281,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   scorpion: CASINO,
   wasp: CASINO,
   easthaven: GREEN,
+  tichu: CASINO,
   accordion: CASINO,
   pokersquares: CASINO,
   montecarlo: CASINO,

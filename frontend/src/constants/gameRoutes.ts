@@ -637,6 +637,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 5, 3, 3], skill: [3, 5, 4, 2], social: [0, 2, 5, 3, 4], theme: [2, 2, 2, 5, 2, 3] },
       },
       {
+        path: '/tichu',
+        labelKey: 'nav.tichu',
+        icon: '🐉',
+        page: 'Tichu',
+        profile: { mood: [2, 5, 4, 3], skill: [2, 5, 5, 2], social: [0, 1, 5, 4, 4], theme: [2, 2, 3, 4, 2, 4] },
+      },
+      {
         path: '/truco',
         labelKey: 'nav.truco',
         icon: '🃏',

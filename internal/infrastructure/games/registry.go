@@ -286,6 +286,12 @@ var registry = []*Game{
 	// alternating-color descending tableau with A-K foundations (Klondike) but
 	// a Spider-style stock that deals one card to every column. Solo worker.
 	{Name: "easthaven", Category: CategorySolo, Description: "Easthaven (イーストヘイブン)"},
+	// Tichu (ティチュー) is a 4-player partnership shedding game (Daifugo-like
+	// combinations + special cards Dragon/Phoenix/Dog/Mahjong). The issue proposed
+	// the classic worker, but that worker is at the 1 MB gzip free-tier limit, so
+	// Tichu is bucketed into the casino worker. Category is purely a binary-size
+	// bucket here (see package doc).
+	{Name: "tichu", Category: CategoryCasino, Description: "Tichu (ティチュー)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.
