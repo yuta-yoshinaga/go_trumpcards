@@ -383,6 +383,28 @@ func TestEasthaven_Stalemate(t *testing.T) {
 	assert.Nil(t, e.GetHint())
 }
 
+func TestEasthaven_NilCardSafety(t *testing.T) {
+	// Game state can be restored from untrusted KV JSON, so tableau slices may
+	// contain nil entries or cards with a nil Card. No public method must panic.
+	e := setupPlayingEasthaven()
+	clearEasthavenTableau(e)
+	e.SetStock(nil)
+	var tab [domain.EasthavenTableauCnt][]*domain.KlondikeTableauCard
+	tab[0] = []*domain.KlondikeTableauCard{nil}
+	tab[1] = []*domain.KlondikeTableauCard{{Card: nil, FaceUp: true}}
+	tab[2] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 5, true)}
+	e.SetFoundation([domain.EasthavenFoundationCnt][]*domain.Card{{nil}, nil, nil, nil})
+	e.SetTableau(tab)
+
+	assert.Error(t, e.MoveTableauToTableau(0, 0, 2), "nil entry rejected")
+	assert.Error(t, e.MoveTableauToTableau(1, 0, 2), "nil Card rejected")
+	assert.Error(t, e.MoveTableauToFoundation(0), "nil entry rejected")
+	assert.Error(t, e.MoveTableauToFoundation(1), "nil Card rejected")
+	assert.False(t, e.AllFaceUp(), "nil entry is not face up")
+	assert.NotPanics(t, func() { _ = e.GetHint() })
+	assert.NotPanics(t, func() { _ = e.AutoComplete() })
+}
+
 func TestEasthaven_JSONRoundTrip(t *testing.T) {
 	e := setupPlayingEasthaven()
 	require.NoError(t, e.Deal())

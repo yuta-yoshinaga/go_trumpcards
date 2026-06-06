@@ -161,6 +161,9 @@ func (e *Easthaven) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 		return errors.New("invalid card index")
 	}
 	tc := fromCards[cardIndex]
+	if tc == nil || tc.Card == nil {
+		return errors.New("card is nil")
+	}
 	if !tc.FaceUp {
 		return errors.New("card is face down")
 	}
@@ -200,6 +203,9 @@ func (e *Easthaven) MoveTableauToFoundation(col int) error {
 		return errors.New("tableau column is empty")
 	}
 	tc := fromCards[len(fromCards)-1]
+	if tc == nil || tc.Card == nil {
+		return errors.New("card is nil")
+	}
 	card := tc.Card
 	fIdx := card.GetDesign() - 1
 	if fIdx < 0 || fIdx >= EasthavenFoundationCnt {
@@ -238,6 +244,9 @@ func (e *Easthaven) GetHint() *EasthavenHint {
 			continue
 		}
 		tc := e.tableau[col][len(e.tableau[col])-1]
+		if tc == nil || tc.Card == nil {
+			continue
+		}
 		card := tc.Card
 		fIdx := card.GetDesign() - 1
 		if fIdx >= 0 && fIdx < EasthavenFoundationCnt && e.canPlaceOnFoundation(card, fIdx) {
@@ -258,7 +267,7 @@ func (e *Easthaven) GetHint() *EasthavenHint {
 			}
 			firstFaceUp := -1
 			for i, tc := range fromCards {
-				if tc.FaceUp {
+				if tc != nil && tc.FaceUp {
 					firstFaceUp = i
 					break
 				}
@@ -318,6 +327,9 @@ func (e *Easthaven) AutoComplete() error {
 				continue
 			}
 			tc := e.tableau[col][len(e.tableau[col])-1]
+			if tc == nil || tc.Card == nil {
+				continue
+			}
 			card := tc.Card
 			fIdx := card.GetDesign() - 1
 			if !e.canPlaceOnFoundation(card, fIdx) {
@@ -344,7 +356,7 @@ func (e *Easthaven) AllFaceUp() bool {
 	}
 	for col := range EasthavenTableauCnt {
 		for _, tc := range e.tableau[col] {
-			if !tc.FaceUp {
+			if tc == nil || !tc.FaceUp {
 				return false
 			}
 		}
@@ -448,7 +460,11 @@ func (e *Easthaven) canPlaceOnTableau(card *Card, col int) bool {
 		// 空の列にはKのみ置ける
 		return card.GetValue() == CardValueMax
 	}
-	topCard := colCards[len(colCards)-1].Card
+	top := colCards[len(colCards)-1]
+	if top == nil || top.Card == nil {
+		return false
+	}
+	topCard := top.Card
 	// 交互の色で降順
 	return e.isAlternateColor(card, topCard) && card.GetValue() == topCard.GetValue()-1
 }
@@ -461,6 +477,9 @@ func (e *Easthaven) canPlaceOnFoundation(card *Card, fIdx int) bool {
 		return card.GetValue() == 1
 	}
 	topCard := pile[len(pile)-1]
+	if topCard == nil {
+		return false
+	}
 	// 同じスートで昇順
 	return card.GetDesign() == topCard.GetDesign() && card.GetValue() == topCard.GetValue()+1
 }
@@ -470,15 +489,15 @@ func (e *Easthaven) isValidEasthavenSequence(cards []*KlondikeTableauCard) bool 
 	if len(cards) == 0 {
 		return false
 	}
-	if !cards[0].FaceUp {
+	if cards[0] == nil || cards[0].Card == nil || !cards[0].FaceUp {
 		return false
 	}
 	for i := 1; i < len(cards); i++ {
-		prev := cards[i-1].Card
-		curr := cards[i].Card
-		if !cards[i].FaceUp {
+		if cards[i] == nil || cards[i].Card == nil || !cards[i].FaceUp {
 			return false
 		}
+		prev := cards[i-1].Card
+		curr := cards[i].Card
 		if !e.isAlternateColor(curr, prev) {
 			return false
 		}

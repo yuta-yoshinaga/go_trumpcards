@@ -117,6 +117,16 @@ function parseEasthavenCommand(input: string): { args: Parameters<typeof easthav
         if (Number.isNaN(col)) return { error: 'Invalid column' };
         return { args: ['move', { zone: 'tableau', col, cardIndex: -1 }, { zone: 'foundation' }] };
       }
+      // m t <col> <idx> t <col>  → move a run by card index
+      if (parts.length === 6 && parts[1] === 't' && parts[4] === 't') {
+        const from = Number.parseInt(parts[2], 10);
+        const idx = Number.parseInt(parts[3], 10);
+        const to = Number.parseInt(parts[5], 10);
+        if (Number.isNaN(from) || Number.isNaN(idx) || Number.isNaN(to)) return { error: 'Invalid arg' };
+        return {
+          args: ['move', { zone: 'tableau', col: from, cardIndex: idx }, { zone: 'tableau', col: to }],
+        };
+      }
       // m <from> <to>  → tableau top card
       if (parts.length === 3) {
         const from = Number.parseInt(parts[1], 10);
@@ -126,7 +136,7 @@ function parseEasthavenCommand(input: string): { args: Parameters<typeof easthav
           args: ['move', { zone: 'tableau', col: from, cardIndex: -1 }, { zone: 'tableau', col: to }],
         };
       }
-      return { error: 'Usage: m <fromCol> <toCol> | m t <col> f' };
+      return { error: 'Usage: m <fromCol> <toCol> | m t <col> f | m t <col> <idx> t <col>' };
     }
     default:
       return { error: `Unknown command: ${cmd}` };
@@ -404,9 +414,11 @@ function EasthavenPageContent() {
                   >
                     <button
                       type="button"
-                      className={`${focusRingWhite} rounded-lg transition-colors ${
-                        isTarget ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''
-                      }`}
+                      className={
+                        isTarget
+                          ? `${focusRingWhite} rounded-lg transition-colors hover:ring-2 hover:ring-ds-warning cursor-pointer`
+                          : `${focusRingWhite} rounded-lg transition-colors`
+                      }
                       onClick={() => isTarget && handleSelectTarget('foundation', i)}
                       disabled={!isPlaying || !isTarget}
                       aria-label={

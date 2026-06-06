@@ -180,4 +180,60 @@ describe('EasthavenPage', () => {
     expect(screen.getByText('♥')).toBeInTheDocument();
     expect(screen.getByText('♦')).toBeInTheDocument();
   });
+
+  it('selecting a card then a target column fires a tableau move', async () => {
+    renderWithProviders(<EasthavenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    const src = screen.getByRole('button', { name: '♠ K' }); // col0 top
+    src.click();
+    // The first click's selection must flush before the second click routes to target.
+    await waitFor(() => expect(src.className).toContain('ring-ds-warning'));
+    screen.getByRole('button', { name: '♥ 8' }).click(); // target col1 top
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        expect.objectContaining({ zone: 'tableau', col: 0 }),
+        expect.objectContaining({ zone: 'tableau', col: 1 }),
+      ),
+    );
+  });
+
+  it('selecting a card then a foundation fires a foundation move', async () => {
+    renderWithProviders(<EasthavenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    const src = screen.getByRole('button', { name: '♥ 8' }); // col1
+    src.click();
+    await waitFor(() => expect(src.className).toContain('ring-ds-warning'));
+    screen.getByRole('button', { name: '空の組札 (♠)' }).click(); // empty ♠ foundation
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', expect.anything(), expect.objectContaining({ zone: 'foundation' })),
+    );
+  });
+
+  it('renders a hint banner from state.hint', async () => {
+    mockExec.mockResolvedValue({ ...playingState, hint: { fromCol: 0, cardIndex: 1, toZone: 'foundation', toCol: 0 } });
+    renderWithProviders(<EasthavenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getAllByText('組札').length).toBeGreaterThan(0);
+  });
+
+  it('deal is guarded (no deal call) while an empty column exists', async () => {
+    mockExec.mockResolvedValue({ ...playingState, tableau: [[], ...playingState.tableau.slice(1)] });
+    renderWithProviders(<EasthavenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    screen.getByRole('button', { name: '配る' }).click();
+    expect(mockExec).not.toHaveBeenCalledWith('deal');
+  });
+
+  it('renders stalemate escape controls when stalemate', async () => {
+    mockExec.mockResolvedValue({ ...playingState, isStalemate: true, undoToEscape: 2, canUndo: true });
+    renderWithProviders(<EasthavenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeInTheDocument();
+  });
 });
