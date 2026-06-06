@@ -47,6 +47,7 @@ import type {
   DragonTigerResponse,
   DurakConfigInput,
   DurakResponse,
+  EasthavenResponse,
   EgyptianRatscrewResponse,
   EightOffResponse,
   EuchreResponse,
@@ -281,6 +282,7 @@ const workerUrl: Record<string, string> = {
   gongzhu: WORKER_SOLO,
   bristol: WORKER_SOLO,
   bidwhist: WORKER_SOLO,
+  easthaven: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1999,6 +2001,20 @@ export const waspApi = createSolitaireMoveApi<
   'reset' | 'deal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('wasp');
 
+/** Source or target zone for an Easthaven card move. */
+export interface EasthavenMoveZone {
+  zone: string;
+  col?: number;
+  cardIndex?: number;
+}
+
+/** API client for the Easthaven /easthaven/exec endpoint. */
+export const easthavenApi = createSolitaireMoveApi<
+  EasthavenResponse,
+  EasthavenMoveZone,
+  'reset' | 'deal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('easthaven');
+
 /** Source or target pile for an Accordion move. */
 export interface AccordionMoveZone {
   zone: 'pile';
@@ -2524,6 +2540,7 @@ const games = [
   'acesup',
   'schnapsen',
   'tressette',
+  'easthaven',
 ] as const;
 type Game = (typeof games)[number];
 

@@ -872,6 +872,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [5, 1, 5, 2], skill: [2, 4, 4, 2], social: [5, 1, 0, 2, 4], theme: [3, 3, 3, 1, 3, 3] },
       },
       {
+        path: '/easthaven',
+        labelKey: 'nav.easthaven',
+        icon: '🏡',
+        page: 'Easthaven',
+        profile: { mood: [5, 1, 4, 2], skill: [3, 4, 4, 2], social: [5, 1, 0, 2, 4], theme: [3, 3, 3, 1, 3, 3] },
+      },
+      {
         path: '/accordion',
         labelKey: 'nav.accordion',
         icon: '🪗',

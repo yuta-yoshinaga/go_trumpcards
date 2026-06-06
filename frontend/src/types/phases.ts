@@ -784,6 +784,13 @@ export const WaspPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Easthaven phase constants (sync: internal/domain/Easthaven.go). */
+export const EasthavenPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Accordion phase constants (sync: internal/domain/Accordion.go). */
 export const AccordionPhase = {
   PLAYING: 0,
