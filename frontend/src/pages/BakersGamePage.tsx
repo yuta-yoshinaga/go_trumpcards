@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { type bakersgameApi, type FreeCellMoveZone } from '../api/gameApi';
+import type { bakersgameApi, FreeCellMoveZone } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -237,7 +237,14 @@ function BakersGamePageContent() {
                             draggable={isPlaying && !loading}
                             onDragStart={dnd.handleDragStart(freeCellZone)}
                             onDragEnd={dnd.handleDragEnd}
-                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('freecell', undefined, idx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(freeCellZone) ? 'opacity-50' : ''}`}
+                            className={[
+                              'p-0 border-0 bg-transparent cursor-pointer rounded',
+                              focusRingWhite,
+                              isSourceSelected('freecell', undefined, idx) && 'ring-2 ring-ds-warning',
+                              dnd.isDragSource(freeCellZone) && 'opacity-50',
+                            ]
+                              .filter(Boolean)
+                              .join(' ')}
                           >
                             <AnimatedCard card={card} width={cardWidth} draggable={false} />
                           </button>
