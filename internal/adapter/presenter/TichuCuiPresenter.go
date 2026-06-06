@@ -64,7 +64,7 @@ func tichuPlayerStr(player *domain.TichuPlayer, idx int) string {
 	}
 	var b strings.Builder
 	b.WriteString(cuiPlayerName(player, idx))
-	b.WriteString(fmt.Sprintf(" [%s %d]", i18n.T("tichu.team"), domain.TichuTeamOf(idx)))
+	fmt.Fprintf(&b, " [%s %d]", i18n.T("tichu.team"), domain.TichuTeamOf(idx))
 	switch player.GetDeclType() {
 	case domain.TichuDeclTichu:
 		b.WriteString(" [" + i18n.T("tichu.tichu") + "]")

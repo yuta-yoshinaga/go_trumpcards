@@ -162,9 +162,10 @@ func (t *Tichu) executeDeclare(declType int) {
 	}
 
 	detail := "no declaration"
-	if declType == TichuDeclTichu {
+	switch declType {
+	case TichuDeclTichu:
 		detail = "Tichu"
-	} else if declType == TichuDeclGrand {
+	case TichuDeclGrand:
 		detail = "Grand Tichu"
 	}
 	t.appendLog(idx, "declare", detail, nil)

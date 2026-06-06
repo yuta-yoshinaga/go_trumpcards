@@ -201,8 +201,14 @@ func TestTichuGettersAndConfig(t *testing.T) {
 	if g.GetBombCount() < 0 {
 		t.Error("bomb count negative")
 	}
+	// drive one declaration so the action log is exercised
+	if g.IsHumanTurn() {
+		_ = g.PlayerDeclare(TichuDeclNone)
+	} else {
+		g.CpuPlay()
+	}
 	if len(g.GetActionLog()) == 0 {
-		t.Error("action log should have declarations or be non-nil")
+		t.Error("action log should record the declaration")
 	}
 	_ = g.GetFinishOrder()
 	_ = g.GetLastPlayIdx()

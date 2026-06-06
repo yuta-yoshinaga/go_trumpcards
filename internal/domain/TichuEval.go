@@ -488,6 +488,10 @@ func TichuCanBeat(cand, table *TichuCombo) bool {
 	}
 	switch cand.Type {
 	case TichuComboSingle:
+		// 鳳凰は龍を超えられない
+		if cand.PhoenixSingle && !table.PhoenixSingle && table.Rank == tichuDragonRank {
+			return false
+		}
 		// 龍は最強、鳳凰はテーブル依存
 		return tichuSingleValueX2(cand) > tichuSingleValueX2(table)
 	case TichuComboStraight, TichuComboStairs:
