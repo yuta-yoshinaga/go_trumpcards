@@ -7,6 +7,7 @@ import acesup from '../../../docs/manual/web/acesup.md?raw';
 import baccarat from '../../../docs/manual/web/baccarat.md?raw';
 import badugi from '../../../docs/manual/web/badugi.md?raw';
 import bakersdozen from '../../../docs/manual/web/bakersdozen.md?raw';
+import bakersgame from '../../../docs/manual/web/bakersgame.md?raw';
 import barbu from '../../../docs/manual/web/barbu.md?raw';
 import beleagueredcastle from '../../../docs/manual/web/beleagueredcastle.md?raw';
 import belote from '../../../docs/manual/web/belote.md?raw';
@@ -162,6 +163,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/blackjackswitch': blackjackswitch,
   '/durak': durak,
   '/bakersdozen': bakersdozen,
+  '/bakersgame': bakersgame,
   '/beleagueredcastle': beleagueredcastle,
   '/egyptianratscrew': egyptianratscrew,
   '/fortythieves': fortythieves,

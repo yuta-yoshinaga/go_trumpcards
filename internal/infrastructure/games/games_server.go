@@ -113,6 +113,13 @@ func init() {
 			return usecase.NewFreeCellInteractor(domain.NewDefaultFreeCell(), new(presenter.FreeCellWebPresenter))
 		},
 		controller.NewFreeCellWebController)
+	// Baker's Game reuses the FreeCell interactor/controller; the same-suit rule
+	// lives in the domain (NewDefaultBakersGame) and the i18n namespace in the presenter.
+	BindWebControllerFor("bakersgame",
+		func() usecase.FreeCellInteractorIF {
+			return usecase.NewFreeCellInteractor(domain.NewDefaultBakersGame(), new(presenter.BakersGameWebPresenter))
+		},
+		controller.NewFreeCellWebController)
 	BindWebControllerFor("seahaventowers",
 		func() usecase.SeahavenTowersInteractorIF {
 			return usecase.NewSeahavenTowersInteractor(domain.NewDefaultSeahavenTowers(), new(presenter.SeahavenTowersWebPresenter))

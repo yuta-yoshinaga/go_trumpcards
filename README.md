@@ -40,6 +40,7 @@ Go + Clean Architecture で実装した126種類のトランプゲーム。CLI �
 | クロンダイク (Klondike) | `klondike` | [CUI](docs/manual/cui/klondike.md) / [Web](docs/manual/web/klondike.md) |
 | レットイットライド (Let It Ride) | `letitride` | [CUI](docs/manual/cui/letitride.md) / [Web](docs/manual/web/letitride.md) |
 | フリーセル (FreeCell) | `freecell` | [CUI](docs/manual/cui/freecell.md) / [Web](docs/manual/web/freecell.md) |
+| ベーカーズ・ゲーム (Baker's Game) | `bakersgame` | [CUI](docs/manual/cui/bakersgame.md) / [Web](docs/manual/web/bakersgame.md) |
 | シーヘイブンタワーズ (Seahaven Towers) | `seahaventowers` | [CUI](docs/manual/cui/seahaventowers.md) / [Web](docs/manual/web/seahaventowers.md) |
 | バカラ (Baccarat) | `baccarat` | [CUI](docs/manual/cui/baccarat.md) / [Web](docs/manual/web/baccarat.md) |
 | スペード (Spades) | `spades` | [CUI](docs/manual/cui/spades.md) / [Web](docs/manual/web/spades.md) |

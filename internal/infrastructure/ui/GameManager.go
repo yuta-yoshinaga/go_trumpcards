@@ -2066,6 +2066,28 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"tichu.helpSetDifficulty"},
 			})
 	}},
+	{Name: "bakersgame", NewCui: func() cuiGame {
+		// Baker's Game reuses the FreeCell interactor/controller; only the
+		// domain (same-suit stacking) and presenter (i18n namespace) differ.
+		return cuiEntry(
+			controller.NewFreeCellCuiController(usecase.NewFreeCellInteractor(
+				domain.NewDefaultBakersGame(), new(presenter.BakersGameCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "bakersgame.helpTitle",
+				CommandKeys: []string{
+					"bakersgame.helpMove",
+					"bakersgame.helpMoveTF",
+					"bakersgame.helpMoveTT",
+					"bakersgame.helpMoveTC",
+					"bakersgame.helpMoveCT",
+					"bakersgame.helpMoveCF",
+					"bakersgame.helpGiveUp",
+					"bakersgame.helpHint",
+					"bakersgame.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

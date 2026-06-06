@@ -14,6 +14,7 @@ import type {
   DoubtResponse,
   DurakResponse,
   EuchreResponse,
+  FreeCellResponse,
   GinRummyResponse,
   GoFishResponse,
   HighCardFlushResponse,
@@ -117,6 +118,25 @@ describe('useGameHint', () => {
     localStorage.setItem('hint_enabled_bidwhist', 'true');
     const { result } = renderHook(() => useGameHint('bidwhist', { phase: 3 } as never));
     expect(result.current.hint).toBeNull();
+  });
+
+  it('routes bakersgame through the FreeCell hint generator', () => {
+    // Baker's Game reuses the FreeCell response shape and hint logic. An Ace on a
+    // tableau top with empty foundations yields the "move to foundation" hint.
+    localStorage.setItem('hint_enabled_bakersgame', 'true');
+    const state: FreeCellResponse = {
+      tableau: [[{ design: 'SPADE', value: 1 }], [], [], [], [], [], [], []],
+      freeCells: [null, null, null, null],
+      foundation: [[], [], [], []],
+      phase: 0,
+      moveCount: 0,
+      canUndo: false,
+      isStalemate: false,
+      message: '',
+    };
+    const { result } = renderHook(() => useGameHint('bakersgame', state));
+    expect(result.current.hint).not.toBeNull();
+    expect(result.current.hint?.reason).toBe('frontendHint.moveToFoundation');
   });
 
   it('returns baccarat hint when enabled', () => {

@@ -207,6 +207,7 @@ const workerUrl: Record<string, string> = {
   twotenjack: WORKER_CLASSIC,
   klondike: WORKER_SOLO,
   freecell: WORKER_SOLO,
+  bakersgame: WORKER_SOLO,
   seahaventowers: WORKER_SOLO,
   cruel: WORKER_SOLO,
   spider: WORKER_SOLO,
@@ -999,6 +1000,16 @@ export const freecellApi = createSolitaireMoveApi<
   FreeCellMoveZone,
   'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('freecell');
+
+/**
+ * API client for the Baker's Game /bakersgame/exec endpoint. Baker's Game is the
+ * same-suit FreeCell variant; it reuses the FreeCell wire shape.
+ */
+export const bakersgameApi = createSolitaireMoveApi<
+  FreeCellResponse,
+  FreeCellMoveZone,
+  'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('bakersgame');
 
 /** Source or target zone for an Eight Off card move. */
 export interface EightOffMoveZone {
@@ -2450,6 +2461,7 @@ const games = [
   'memory',
   'klondike',
   'freecell',
+  'bakersgame',
   'seahaventowers',
   'cruel',
   'baccarat',
