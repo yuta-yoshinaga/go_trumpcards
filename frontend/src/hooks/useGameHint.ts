@@ -31,6 +31,7 @@ import type {
   DoudizhuResponse,
   DragonTigerResponse,
   DurakResponse,
+  EasthavenResponse,
   EgyptianRatscrewResponse,
   EightOffResponse,
   EuchreResponse,
@@ -141,6 +142,7 @@ import { getDoubtHint } from '../utils/hints/doubtHint';
 import { getDoudizhuHint } from '../utils/hints/doudizhuHint';
 import { getDragontigerHint } from '../utils/hints/dragontigerHint';
 import { getDurakHint } from '../utils/hints/durakHint';
+import { getEasthavenHint } from '../utils/hints/easthavenHint';
 import { getEgyptianRatscrewHint } from '../utils/hints/egyptianratscrewHint';
 import { getEightOffHint } from '../utils/hints/eightoffHint';
 import { getEuchreHint } from '../utils/hints/euchreHint';
@@ -321,6 +323,7 @@ const hintFactories = {
   cruel: (s) => getCruelHint(s as CruelResponse),
   scorpion: (s) => getScorpionHint(s as ScorpionResponse),
   wasp: (s) => getWaspHint(s as WaspResponse),
+  easthaven: (s) => getEasthavenHint(s as EasthavenResponse),
   accordion: (s) => getAccordionHint(s as AccordionResponse),
   calculation: (s) => getCalculationHint(s as CalculationResponse),
   sevenbridge: (s) => getSevenbridgeHint(s as SevenBridgeResponse),

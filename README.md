@@ -95,6 +95,7 @@ Go + Clean Architecture で実装した126種類のトランプゲーム。CLI �
 | 2-7 トリプルドロー (2-7 Triple Draw) | `deucetoseven` | [CUI](docs/manual/cui/deucetoseven.md) / [Web](docs/manual/web/deucetoseven.md) |
 | スコーピオン (Scorpion) | `scorpion` | [CUI](docs/manual/cui/scorpion.md) / [Web](docs/manual/web/scorpion.md) |
 | ワスプ (Wasp) | `wasp` | [CUI](docs/manual/cui/wasp.md) / [Web](docs/manual/web/wasp.md) |
+| イーストヘイブン (Easthaven) | `easthaven` | [CUI](docs/manual/cui/easthaven.md) / [Web](docs/manual/web/easthaven.md) |
 | アコーディオン (Accordion) | `accordion` | [CUI](docs/manual/cui/accordion.md) / [Web](docs/manual/web/accordion.md) |
 | トラッシュ (Trash) | `trash` | [CUI](docs/manual/cui/trash.md) / [Web](docs/manual/web/trash.md) |
 | セブンブリッジ (Seven Bridge) | `sevenbridge` | [CUI](docs/manual/cui/sevenbridge.md) / [Web](docs/manual/web/sevenbridge.md) |

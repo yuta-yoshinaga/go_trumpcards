@@ -1,0 +1,43 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "Easthaven",
+  "foundation": "Foundation",
+  "tableau": "Tableau",
+  "stock": "Stock",
+  "moveCount": "Moves",
+  "giveup": "Give Up",
+  "hint": "Hint",
+  "deal": "Deal",
+  "autoComplete": "Auto-Complete",
+  "autoCompleteNotReady": "Available once every card is face up",
+  "undo": "Undo",
+  "empty": "Empty",
+  "gameClear": "Game clear! Moves: {{moveCount}}",
+  "gameOver": "Game over",
+  "playing": "Playing",
+  "noHint": "No hint available",
+  "hintAvailable": "A hint is available",
+  "foundationAriaLabel": "{{suit}} foundation, {{count}} cards",
+  "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
+  "stalemate": "No moves left",
+  "cannotDealEmptyColExists": "Fill every empty column before dealing",
+  "landscapeBanner": "Landscape orientation recommended",
+  "frontendHint": {
+    "moveToFoundation": "A card can move to a foundation",
+    "moveToTableau": "A card can move between tableau columns"
+  },
+  "tutorial": {
+    "foundation": "Build each suit up from Ace to King here. Complete all four to win.",
+    "tableau": "Seven tableau columns. Build down in alternating colors. Click/drag an ordered face-up run to move it. Only Kings go to an empty column.",
+    "stock": "The Deal button deals one face-up card to every column from the stock. You cannot deal while a column is empty.",
+    "controls": "Hint, give up, and undo controls.",
+    "resetButton": "Start a new game."
+  },
+  "nav": {
+    "easthaven": "Easthaven"
+  }
+}

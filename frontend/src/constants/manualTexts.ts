@@ -43,6 +43,7 @@ import doubt from '../../../docs/manual/web/doubt.md?raw';
 import doudizhu from '../../../docs/manual/web/doudizhu.md?raw';
 import dragontiger from '../../../docs/manual/web/dragontiger.md?raw';
 import durak from '../../../docs/manual/web/durak.md?raw';
+import easthaven from '../../../docs/manual/web/easthaven.md?raw';
 import egyptianratscrew from '../../../docs/manual/web/egyptianratscrew.md?raw';
 import eightoff from '../../../docs/manual/web/eightoff.md?raw';
 import euchre from '../../../docs/manual/web/euchre.md?raw';
@@ -240,6 +241,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/cruel': cruel,
   '/scorpion': scorpion,
   '/wasp': wasp,
+  '/easthaven': easthaven,
   '/sevenbridge': sevenbridge,
   '/accordion': accordion,
   '/trash': trash,

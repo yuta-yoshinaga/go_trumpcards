@@ -282,6 +282,10 @@ var registry = []*Game{
 	// is bucketed into the casino worker (most headroom). Category here is purely
 	// a binary-size bucket (see package doc).
 	{Name: "tressette", Category: CategoryCasino, Description: "Tressette (トレセッテ)"},
+	// Easthaven (イーストヘイブン) is a Klondike/Spider hybrid solitaire:
+	// alternating-color descending tableau with A-K foundations (Klondike) but
+	// a Spider-style stock that deals one card to every column. Solo worker.
+	{Name: "easthaven", Category: CategorySolo, Description: "Easthaven (イーストヘイブン)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

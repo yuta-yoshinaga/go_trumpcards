@@ -201,6 +201,8 @@ tags:
     description: Bid Whist (ビッド・ホイスト) - 4-player partnership trick-taking on a 54-card deck (52 + 2 jokers); 12-card hands with a 6-card kitty, auction bidding (target tricks 1-7 over the book of 6 plus Uptown/Downtown/No-Trump direction), trump declaration, kitty exchange, big/little joker as top trumps, first team to the target score (default 7) wins
   - name: tressette
     description: Tressette (トレセッテ) - 4-player no-trump must-follow trick-taking team game on the 40-card Briscola deck (8/9/10 removed), 10-card hands; trick strength 3>2>A>K>Q>J>7>6>5>4, scoring in thirds (A=1pt, 2/3/K/Q/J=1/3, last trick +1/3), first team to the target (default 21) wins
+  - name: easthaven
+    description: Easthaven (イーストヘイブン) - single-player Klondike/Spider hybrid solitaire; 7 tableau columns of 3 (2 face-down + 1 face-up), alternating-color descending tableau and A-to-K suit foundations (Klondike), with a Spider-style stock that deals one card to every column at once (no waste pile)
   - name: fivehundred
     description: 500 (Five Hundred / ファイブハンドレッド) game - 4-player partnership trick-taking with a 43-card deck (joker + red 4-A + black 5-A); auction bidding (6-10 tricks per suit/NT plus Misère/Open Misère), kitty exchange, Euchre-style bowers + joker as top trumps, first team to 500 wins
   - name: casinowar
@@ -7208,6 +7210,114 @@ paths:
                     type: array
                   foundation:
                     type: array
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  hint:
+                    type: object
+                    properties:
+                      fromCol:
+                        type: integer
+                      cardIndex:
+                        type: integer
+                      toZone:
+                        type: string
+                      toCol:
+                        type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request
+
+  /easthaven/exec:
+    post:
+      tags:
+        - easthaven
+      summary: Execute an Easthaven (イーストヘイブン) game command
+      description: |
+        Send a command to advance an Easthaven session identified by `sessionId`.
+        Easthaven fuses Klondike and Spider: the 52-card deck is dealt as 7 columns of 3
+        (2 face-down + 1 face-up), the tableau builds down in alternating colours, foundations
+        build A-to-K by suit, and an empty column accepts only a King. The stock deals
+        Spider-style — one face-up card to **every** column at once (`deal`), blocked while any
+        column is empty. There is no waste pile.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | 0     | Game in progress |
+        | GameClear | 1     | All foundations complete |
+        | GameOver  | 2     | Player gave up or stalemate |
+
+        | Command          | Aliases | Description |
+        |------------------|---------|-------------|
+        | `reset`          | `r`     | Start / restart a game |
+        | `deal`           | `d`     | Deal one card to every tableau column |
+        | `move`           | `m`     | Move card(s) between zones (requires `from`, `to`) |
+        | `giveup`         | `g`     | Give up the current game |
+        | `hint`           | `h`     | Get a move suggestion |
+        | `autocomplete`   | `ac`    | Auto-complete to foundations |
+        | `undo`           | `u`     | Undo last move |
+        | `undo_n`         | —       | Undo N moves (requires `n`) |
+        | `log`            | `l`     | View action log |
+      operationId: easthavenExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, deal, d, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau]
+                    col:
+                      type: integer
+                    cardIndex:
+                      type: integer
+                to:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau, foundation]
+                    col:
+                      type: integer
+                n:
+                  type: integer
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                  foundation:
+                    type: array
+                  stockCount:
+                    type: integer
                   phase:
                     type: integer
                   moveCount:

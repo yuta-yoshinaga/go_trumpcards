@@ -402,4 +402,13 @@ func init() {
 		},
 		controller.NewBidWhistWebControllerWithProvider)
 
+	games.RegisterKVGame("easthaven", games.CategorySolo,
+		func() usecase.EasthavenInteractorIF {
+			return usecase.NewEasthavenInteractor(domain.NewDefaultEasthaven(), new(presenter.EasthavenWebPresenter))
+		},
+		func(data []byte) (usecase.EasthavenInteractorIF, error) {
+			return usecase.RestoreEasthavenInteractor(data, new(presenter.EasthavenWebPresenter))
+		},
+		controller.NewEasthavenWebControllerWithProvider)
+
 }

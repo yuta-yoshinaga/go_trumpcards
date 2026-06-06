@@ -3874,6 +3874,29 @@ export interface WaspResponse extends BaseGameResponse {
   hint?: WaspHint;
 }
 
+// --- Easthaven (イーストヘイブン) ---
+
+/** A suggested move hint in Easthaven. */
+export interface EasthavenHint {
+  fromCol: number;
+  cardIndex: number;
+  toZone: string;
+  toCol: number;
+}
+
+/** API response shape for an Easthaven game. */
+export interface EasthavenResponse extends BaseGameResponse {
+  tableau: KlondikeTableauCard[][];
+  foundation: Card[][];
+  stockCount: number;
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  hint?: EasthavenHint;
+}
+
 // --- Accordion (アコーディオン) ---
 
 /** A single pile in Accordion. Only the top card is revealed; size tracks stacked depth. */

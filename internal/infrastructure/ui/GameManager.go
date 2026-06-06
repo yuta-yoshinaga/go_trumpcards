@@ -2038,6 +2038,24 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "easthaven", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewEasthavenCuiController(usecase.NewEasthavenInteractor(
+				domain.NewDefaultEasthaven(), new(presenter.EasthavenCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "easthaven.helpTitle",
+				CommandKeys: []string{
+					"easthaven.helpMove",
+					"easthaven.helpMoveTF",
+					"easthaven.helpMoveTT",
+					"easthaven.helpDeal",
+					"easthaven.helpGiveUp",
+					"easthaven.helpHint",
+					"easthaven.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
