@@ -95,6 +95,7 @@ import type {
   TexasHoldemBonusResponse,
   ThirtyOneResponse,
   ThreeCardResponse,
+  TichuResponse,
   TienLenResponse,
   TrashResponse,
   TressetteResponse,
@@ -209,6 +210,7 @@ import { getTarneebHint } from '../utils/hints/tarneebHint';
 import { getTexasHoldemBonusHint } from '../utils/hints/texasHoldemBonusHint';
 import { getThirtyOneHint } from '../utils/hints/thirtyoneHint';
 import { getThreeCardHint } from '../utils/hints/threecardHint';
+import { getTichuHint } from '../utils/hints/tichuHint';
 import { getTienLenHint } from '../utils/hints/tienlenHint';
 import { getTrashHint } from '../utils/hints/trashHint';
 import { getTressetteHint } from '../utils/hints/tressetteHint';
@@ -252,6 +254,7 @@ const hintFactories = {
   jokerpoker: (s) => getJokerPokerHint(s as VideoPokerResponse),
   indianpoker: (s) => getIndianPokerHint(s as IndianPokerResponse),
   threecard: (s) => getThreeCardHint(s as ThreeCardResponse),
+  tichu: (s) => getTichuHint(s as TichuResponse),
   highcardflush: (s) => getHighCardFlushHint(s as HighCardFlushResponse),
   euchre: (s) => getEuchreHint(s as EuchreResponse),
   belote: (s) => getBeloteHint(s as BeloteResponse),

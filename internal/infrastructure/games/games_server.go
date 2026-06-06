@@ -658,4 +658,9 @@ func init() {
 			return usecase.NewEasthavenInteractor(domain.NewDefaultEasthaven(), new(presenter.EasthavenWebPresenter))
 		},
 		controller.NewEasthavenWebController)
+	BindWebControllerFor("tichu",
+		func() usecase.TichuInteractorIF {
+			return usecase.NewTichuInteractor(domain.NewDefaultTichu(), new(presenter.TichuWebPresenter))
+		},
+		controller.NewTichuWebController)
 }

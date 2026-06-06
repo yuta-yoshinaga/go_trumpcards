@@ -125,6 +125,7 @@ import type {
   TexasHoldemBonusResponse,
   ThirtyOneResponse,
   ThreeCardResponse,
+  TichuResponse,
   TienLenConfigInput,
   TienLenResponse,
   TonkResponse,
@@ -283,6 +284,7 @@ const workerUrl: Record<string, string> = {
   bristol: WORKER_SOLO,
   bidwhist: WORKER_SOLO,
   easthaven: WORKER_SOLO,
+  tichu: WORKER_CASINO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1447,6 +1449,12 @@ export const doudizhuApi = {
     gameExec<DoudizhuResponse>('doudizhu', params),
 };
 
+/** API client for the Tichu /tichu/exec endpoint. */
+export const tichuApi = {
+  exec: (params: { command: string; indices?: number[]; declType?: number; config?: { cpuDifficulty?: number } }) =>
+    gameExec<TichuResponse>('tichu', params),
+};
+
 /** Source or target zone for a Spider card move. */
 export interface SpiderMoveZone {
   zone: string;
@@ -2541,6 +2549,7 @@ const games = [
   'schnapsen',
   'tressette',
   'easthaven',
+  'tichu',
 ] as const;
 type Game = (typeof games)[number];
 

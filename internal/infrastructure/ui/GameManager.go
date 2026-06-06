@@ -2056,6 +2056,16 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "tichu", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewTichuCuiController(usecase.NewTichuInteractor(
+				domain.NewDefaultTichu(), new(presenter.TichuCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:    "tichu.helpTitle",
+				CommandKeys: []string{"tichu.helpPlay", "tichu.helpDeclare"},
+				SettingKeys: []string{"tichu.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

@@ -117,6 +117,7 @@ import tarneeb from '../../../docs/manual/web/tarneeb.md?raw';
 import texasholdembonus from '../../../docs/manual/web/texasholdembonus.md?raw';
 import thirtyone from '../../../docs/manual/web/thirtyone.md?raw';
 import threecard from '../../../docs/manual/web/threecard.md?raw';
+import tichu from '../../../docs/manual/web/tichu.md?raw';
 import tienlen from '../../../docs/manual/web/tienlen.md?raw';
 import tonk from '../../../docs/manual/web/tonk.md?raw';
 import trash from '../../../docs/manual/web/trash.md?raw';
@@ -261,6 +262,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/schnapsen': schnapsen,
   '/bigtwo': bigtwo,
   '/tienlen': tienlen,
+  '/tichu': tichu,
   '/doudizhu': doudizhu,
   '/truco': truco,
 };
