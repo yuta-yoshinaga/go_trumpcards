@@ -8,6 +8,7 @@ import acesup from '../../../docs/manual/cui/acesup.md?raw';
 import baccarat from '../../../docs/manual/cui/baccarat.md?raw';
 import badugi from '../../../docs/manual/cui/badugi.md?raw';
 import bakersdozen from '../../../docs/manual/cui/bakersdozen.md?raw';
+import bakersgame from '../../../docs/manual/cui/bakersgame.md?raw';
 import barbu from '../../../docs/manual/cui/barbu.md?raw';
 import beleagueredcastle from '../../../docs/manual/cui/beleagueredcastle.md?raw';
 import belote from '../../../docs/manual/cui/belote.md?raw';
@@ -163,6 +164,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/dragontiger': dragontiger,
   '/blackjackswitch': blackjackswitch,
   '/bakersdozen': bakersdozen,
+  '/bakersgame': bakersgame,
   '/beleagueredcastle': beleagueredcastle,
   '/durak': durak,
   '/egyptianratscrew': egyptianratscrew,

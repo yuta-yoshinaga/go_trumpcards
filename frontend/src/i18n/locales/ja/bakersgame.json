@@ -1,0 +1,36 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア！",
+    "gameOver": "ゲームオーバー"
+  },
+  "freecell": "フリーセル",
+  "foundation": "ファンデーション",
+  "tableau": "タブロー",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "autoComplete": "オートコンプリート",
+  "undo": "元に戻す",
+  "moveCount": "手数",
+  "empty": "空",
+  "hintAvailable": "ヒント",
+  "foundationAriaLabel": "{{suit}} ファンデーション ({{cardCount}}枚)",
+  "emptyFoundationAriaLabel": "{{suit}} ファンデーション (空)",
+  "emptyFreecellAriaLabel": "フリーセル {{idx}} (空)",
+  "supermoveLimitTooltip": "一度に動かせるのは{{limit}}枚までです",
+  "tutorial": {
+    "freeCells": "フリーセルです。一時的にカードを置ける4つのスペースです。空きセルが多いほど多くのカードを一度に移動できます。",
+    "foundation": "ファウンデーションです。各スートをAからKまで順番に積み上げます。",
+    "tableau": "タブローです。カードを同じスートで降順に整理します（ここがフリーセルとの違い）。全カードが表向きです。",
+    "controls": "元に戻す、ヒント、自動完了などの操作ボタンです。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "landscapeBanner": "横向きにすると操作しやすくなります",
+  "freecellShort": "FC",
+  "frontendHint": {
+    "moveToFoundation": "組札に移動できるカードがあります",
+    "freeCellsFilling": "フリーセルがほぼ満杯です — 空けることを検討しましょう",
+    "useEmptyColumn": "空の列があります — 整理に活用しましょう",
+    "useFreeCells": "フリーセルにカードを移動して手を広げましょう"
+  }
+}

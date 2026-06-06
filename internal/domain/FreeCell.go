@@ -50,6 +50,9 @@ type FreeCell struct {
 	actionLog   []*ActionLogEntry
 	history     []*freeCellSnapshot
 	isStalemate bool
+	// sameSuit が true のときタブロー積み上げ条件を「同じスートの降順」にする
+	// （Baker's Game / ベーカーズ・ゲーム）。false なら通常のフリーセル（赤黒交互の降順）。
+	sameSuit bool
 }
 
 // freeCellSnapshot アンドゥ用スナップショット
@@ -73,6 +76,22 @@ func NewFreeCell(trumpCards *TrumpCards) *FreeCell {
 // Used as the single source of truth for CUI, Web, and Worker construction sites.
 func NewDefaultFreeCell() *FreeCell {
 	return NewFreeCell(NewTrumpCards(0))
+}
+
+// NewBakersGame コンストラクタ。フリーセルの直接の元祖である Baker's Game
+// （ベーカーズ・ゲーム）を構築する。盤面構成・配り方・スーパームーブはフリーセルと
+// 同一だが、タブロー積み上げ条件が「赤黒交互の降順」ではなく「同じスートの降順」になる。
+func NewBakersGame(trumpCards *TrumpCards) *FreeCell {
+	return &FreeCell{
+		trumpCards: trumpCards,
+		sameSuit:   true,
+	}
+}
+
+// NewDefaultBakersGame returns a Baker's Game with a standard single 52-card deck.
+// Used as the single source of truth for CUI, Web, and Worker construction sites.
+func NewDefaultBakersGame() *FreeCell {
+	return NewBakersGame(NewTrumpCards(0))
 }
 
 // Reset ゲームリセット
@@ -329,8 +348,7 @@ func (f *FreeCell) GetHint() *FreeCellHint {
 		// 表向きのシーケンスの先頭を探す
 		seqStart := len(fromCards) - 1
 		for seqStart > 0 {
-			if !f.isAlternateColor(fromCards[seqStart], fromCards[seqStart-1]) ||
-				fromCards[seqStart].GetValue() != fromCards[seqStart-1].GetValue()-1 {
+			if !f.tableauStackable(fromCards[seqStart-1], fromCards[seqStart]) {
 				break
 			}
 			seqStart--
@@ -449,8 +467,7 @@ func (f *FreeCell) getHintToEmptyColumn() *FreeCellHint {
 		}
 		seqStart := len(fromCards) - 1
 		for seqStart > 0 {
-			if !f.isAlternateColor(fromCards[seqStart], fromCards[seqStart-1]) ||
-				fromCards[seqStart].GetValue() != fromCards[seqStart-1].GetValue()-1 {
+			if !f.tableauStackable(fromCards[seqStart-1], fromCards[seqStart]) {
 				break
 			}
 			seqStart--
@@ -622,7 +639,20 @@ func (f *FreeCell) canPlaceOnTableau(card *Card, col int) bool {
 		return true
 	}
 	topCard := colCards[len(colCards)-1]
-	return f.isAlternateColor(card, topCard) && card.GetValue() == topCard.GetValue()-1
+	return f.tableauStackable(topCard, card)
+}
+
+// tableauStackable は lower を upper の上にタブローで重ねられるか判定する。
+// lower は upper より 1 ランク下で、かつバリアントごとの色/スート条件を満たす必要がある。
+// 通常のフリーセルでは赤黒交互、Baker's Game では同じスートを要求する。
+func (f *FreeCell) tableauStackable(upper, lower *Card) bool {
+	if lower.GetValue() != upper.GetValue()-1 {
+		return false
+	}
+	if f.sameSuit {
+		return upper.GetDesign() == lower.GetDesign()
+	}
+	return f.isAlternateColor(upper, lower)
 }
 
 // canPlaceOnFoundation ファンデーションにカードを置けるか判定
@@ -645,10 +675,11 @@ func (f *FreeCell) isBlack(card *Card) bool {
 	return card.GetDesign() == CardDesignSpade || card.GetDesign() == CardDesignClover
 }
 
-// isValidTableauSequence 降順交互色のシーケンスか判定
+// isValidTableauSequence タブロー移動可能なシーケンスか判定する。
+// 通常のフリーセルでは降順かつ赤黒交互、Baker's Game では降順かつ同じスート。
 func (f *FreeCell) isValidTableauSequence(cards []*Card) bool {
 	for i := 1; i < len(cards); i++ {
-		if !f.isAlternateColor(cards[i], cards[i-1]) || cards[i].GetValue() != cards[i-1].GetValue()-1 {
+		if !f.tableauStackable(cards[i-1], cards[i]) {
 			return false
 		}
 	}
@@ -746,6 +777,7 @@ type freeCellJSON struct {
 	ActionLog   []*ActionLogEntry              `json:"al"`
 	IsStalemate bool                           `json:"sm"`
 	History     []*freeCellSnapshot            `json:"hi,omitempty"`
+	SameSuit    bool                           `json:"ss,omitempty"`
 }
 
 // freeCellSnapshotJSON is the wire format for a single undo snapshot.
@@ -812,6 +844,7 @@ func (f *FreeCell) MarshalJSON() ([]byte, error) {
 		ActionLog:   f.actionLog,
 		IsStalemate: f.isStalemate,
 		History:     f.history,
+		SameSuit:    f.sameSuit,
 	})
 }
 
@@ -856,5 +889,6 @@ func (f *FreeCell) UnmarshalJSON(data []byte) error {
 		f.history = make([]*freeCellSnapshot, 0)
 	}
 	f.isStalemate = j.IsStalemate
+	f.sameSuit = j.SameSuit
 	return nil
 }

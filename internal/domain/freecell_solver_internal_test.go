@@ -406,27 +406,38 @@ func TestFreeCellSolver_AStarPriorityQueueOrder(t *testing.T) {
 
 func TestCanPlaceOnTableau_SolverAllowsNonKingOnEmpty(t *testing.T) {
 	var tableau [FreeCellTableauCnt][]*Card
+	// Zero-value solver models a standard FreeCell board (sameSuit == false).
+	solver := &freeCellSolver{}
 
 	t.Run("non-King on empty column", func(t *testing.T) {
 		// FreeCell rule: any card can go on an empty column
 		heart5 := NewCard(CardDesignHeart, 5, false)
-		assert.True(t, canPlaceOnTableau(heart5, 0, tableau))
+		assert.True(t, solver.canPlaceOnTableau(heart5, 0, tableau))
 	})
 
 	t.Run("King on empty column", func(t *testing.T) {
 		king := NewCard(CardDesignSpade, CardValueMax, false)
-		assert.True(t, canPlaceOnTableau(king, 0, tableau))
+		assert.True(t, solver.canPlaceOnTableau(king, 0, tableau))
 	})
 
 	t.Run("valid alternating-color descending on non-empty", func(t *testing.T) {
 		tableau[1] = []*Card{NewCard(CardDesignSpade, 6, false)}
 		heart5 := NewCard(CardDesignHeart, 5, false)
-		assert.True(t, canPlaceOnTableau(heart5, 1, tableau))
+		assert.True(t, solver.canPlaceOnTableau(heart5, 1, tableau))
 	})
 
 	t.Run("invalid same-color on non-empty", func(t *testing.T) {
 		tableau[2] = []*Card{NewCard(CardDesignSpade, 6, false)}
 		clover5 := NewCard(CardDesignClover, 5, false)
-		assert.False(t, canPlaceOnTableau(clover5, 2, tableau))
+		assert.False(t, solver.canPlaceOnTableau(clover5, 2, tableau))
+	})
+
+	t.Run("Baker's Game requires same suit on non-empty", func(t *testing.T) {
+		bakers := &freeCellSolver{sameSuit: true}
+		tableau[3] = []*Card{NewCard(CardDesignSpade, 6, false)}
+		// Same suit one rank lower is allowed.
+		assert.True(t, bakers.canPlaceOnTableau(NewCard(CardDesignSpade, 5, false), 3, tableau))
+		// Alternating colour (different suit) is rejected.
+		assert.False(t, bakers.canPlaceOnTableau(NewCard(CardDesignHeart, 5, false), 3, tableau))
 	})
 }

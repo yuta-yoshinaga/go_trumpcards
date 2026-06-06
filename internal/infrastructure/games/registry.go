@@ -292,6 +292,9 @@ var registry = []*Game{
 	// Tichu is bucketed into the casino worker. Category is purely a binary-size
 	// bucket here (see package doc).
 	{Name: "tichu", Category: CategoryCasino, Description: "Tichu (ティチュー)"},
+	// Baker's Game is FreeCell's same-suit ancestor; it reuses the FreeCell
+	// engine (domain.NewDefaultBakersGame) and ships in the solo worker.
+	{Name: "bakersgame", Category: CategorySolo, Description: "Baker's Game (ベーカーズ・ゲーム)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

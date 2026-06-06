@@ -274,6 +274,8 @@ const hintFactories = {
   speed: (s) => getSpeedHint(s as SpeedResponse),
   klondike: (s) => getKlondikeHint(s as KlondikeResponse),
   freecell: (s) => getFreeCellHint(s as FreeCellResponse),
+  // Baker's Game shares the FreeCell response shape and stacking heuristics.
+  bakersgame: (s) => getFreeCellHint(s as FreeCellResponse),
   eightoff: (s) => getEightOffHint(s as EightOffResponse),
   penguin: (s) => getPenguinHint(s as PenguinResponse),
   seahaventowers: (s) => getSeahavenTowersHint(s as SeahavenTowersResponse),

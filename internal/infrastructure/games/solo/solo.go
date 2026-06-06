@@ -38,6 +38,17 @@ func init() {
 			return usecase.RestoreFreeCellInteractor(data, new(presenter.FreeCellWebPresenter))
 		},
 		controller.NewFreeCellWebControllerWithProvider)
+	// Baker's Game reuses the FreeCell engine (same-suit stacking variant).
+	// The sameSuit flag is serialised in the snapshot, so the restore path
+	// rebuilds the correct variant from KV automatically.
+	games.RegisterKVGame("bakersgame", games.CategorySolo,
+		func() usecase.FreeCellInteractorIF {
+			return usecase.NewFreeCellInteractor(domain.NewDefaultBakersGame(), new(presenter.BakersGameWebPresenter))
+		},
+		func(data []byte) (usecase.FreeCellInteractorIF, error) {
+			return usecase.RestoreFreeCellInteractor(data, new(presenter.BakersGameWebPresenter))
+		},
+		controller.NewFreeCellWebControllerWithProvider)
 	games.RegisterKVGame("seahaventowers", games.CategorySolo,
 		func() usecase.SeahavenTowersInteractorIF {
 			return usecase.NewSeahavenTowersInteractor(domain.NewDefaultSeahavenTowers(), new(presenter.SeahavenTowersWebPresenter))
