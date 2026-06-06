@@ -96,6 +96,7 @@ import type {
   ThreeCardResponse,
   TienLenResponse,
   TrashResponse,
+  TressetteResponse,
   TriPeaksResponse,
   TwoTenJackResponse,
   UltimateTexasHoldemResponse,
@@ -208,6 +209,7 @@ import { getThirtyOneHint } from '../utils/hints/thirtyoneHint';
 import { getThreeCardHint } from '../utils/hints/threecardHint';
 import { getTienLenHint } from '../utils/hints/tienlenHint';
 import { getTrashHint } from '../utils/hints/trashHint';
+import { getTressetteHint } from '../utils/hints/tressetteHint';
 import { getTriPeaksHint } from '../utils/hints/tripeaksHint';
 import { getTwoTenJackHint } from '../utils/hints/twotenjackHint';
 import { getUltimateTexasHoldemHint } from '../utils/hints/ultimateTexasHoldemHint';
@@ -300,6 +302,7 @@ const hintFactories = {
   tonk: () => null,
   thirtyone: (s) => getThirtyOneHint(s as ThirtyOneResponse),
   yaniv: (s) => getYanivHint(s as YanivResponse),
+  tressette: (s) => getTressetteHint(s as TressetteResponse),
   paigow: () => null,
   chinesepoker: () => null,
   pageone: (s) => getPageOneHint(s as PageOneResponse),

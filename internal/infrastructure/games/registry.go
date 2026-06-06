@@ -276,6 +276,12 @@ var registry = []*Game{
 	// trick-taker, but the classic worker is at the 1 MB gzip limit, so it is
 	// bucketed into the solo worker. Category here is purely a binary-size bucket.
 	{Name: "bidwhist", Category: CategorySolo, Description: "Bid Whist (ビッド・ホイスト)"},
+	// Tressette (トレセッテ) is an Italian no-trump must-follow trick-taking
+	// team game on the 40-card Briscola deck. The issue proposed the classic
+	// worker, but that worker is at the 1 MB gzip free-tier limit, so Tressette
+	// is bucketed into the casino worker (most headroom). Category here is purely
+	// a binary-size bucket (see package doc).
+	{Name: "tressette", Category: CategoryCasino, Description: "Tressette (トレセッテ)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

@@ -128,6 +128,7 @@ import type {
   TienLenResponse,
   TonkResponse,
   TrashResponse,
+  TressetteResponse,
   TriPeaksResponse,
   TrucoConfig,
   TrucoResponse,
@@ -244,6 +245,7 @@ const workerUrl: Record<string, string> = {
   bakersdozen: WORKER_SOLO,
   thirtyone: WORKER_SOLO,
   yaniv: WORKER_CASINO,
+  tressette: WORKER_CASINO,
   tonk: WORKER_CLASSIC,
   dragontiger: WORKER_CASINO,
   blackjackswitch: WORKER_CASINO,
@@ -732,6 +734,28 @@ export const gongzhuApi = {
     config?: GongZhuConfigInput,
   ) =>
     gameExec<GongZhuResponse>('gongzhu', {
+      command,
+      cardIndices,
+      cardIndex,
+      config,
+    }),
+};
+
+/** Configuration options for Tressette game settings. */
+export interface TressetteConfigInput {
+  cpuDifficulty?: number;
+  targetPoints?: number;
+}
+
+/** API client for the Tressette /tressette/exec endpoint. */
+export const tressetteApi = {
+  exec: (
+    command: 'reset' | 'play' | 'next' | 'nextround' | 'hint' | 'log',
+    cardIndices?: number[],
+    cardIndex?: number,
+    config?: TressetteConfigInput,
+  ) =>
+    gameExec<TressetteResponse>('tressette', {
       command,
       cardIndices,
       cardIndex,
@@ -2499,6 +2523,7 @@ const games = [
   'truco',
   'acesup',
   'schnapsen',
+  'tressette',
 ] as const;
 type Game = (typeof games)[number];
 

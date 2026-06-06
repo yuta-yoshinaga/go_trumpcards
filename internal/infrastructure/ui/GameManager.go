@@ -2020,6 +2020,24 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "tressette", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewTressetteCuiController(usecase.NewTressetteInteractor(
+				domain.NewDefaultTressette(), new(presenter.TressetteCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "tressette.helpTitle",
+				CommandKeys: []string{
+					"tressette.helpPlay",
+					"tressette.helpNext",
+					"tressette.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys: []string{
+					"tressette.helpSetDifficulty",
+					"tressette.helpSetTarget",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

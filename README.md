@@ -146,6 +146,7 @@ Go + Clean Architecture で実装した126種類のトランプゲーム。CLI �
 | シュナプセン / 66 (Schnapsen / Sixty-Six) | `schnapsen` | [CUI](docs/manual/cui/schnapsen.md) / [Web](docs/manual/web/schnapsen.md) |
 | ブリストル (Bristol) | `bristol` | [CUI](docs/manual/cui/bristol.md) / [Web](docs/manual/web/bristol.md) |
 | ビッド・ホイスト (Bid Whist) | `bidwhist` | [CUI](docs/manual/cui/bidwhist.md) / [Web](docs/manual/web/bidwhist.md) |
+| トレセッテ (Tressette) | `tressette` | [CUI](docs/manual/cui/tressette.md) / [Web](docs/manual/web/tressette.md) |
 
 ## Demo
 
