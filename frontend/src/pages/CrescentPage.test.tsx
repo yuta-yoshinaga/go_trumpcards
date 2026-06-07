@@ -104,6 +104,16 @@ describe('CrescentPage', () => {
     expect(screen.getAllByText(/♠ ↓/).length).toBeGreaterThanOrEqual(1);
   });
 
+  it('color-codes the foundation direction badges and names the top card', async () => {
+    renderWithProviders(<CrescentPage />);
+    const asc = await screen.findByTestId('foundation-dir-0'); // row 0 = ascending
+    expect(asc.className).toContain('text-ds-success');
+    const desc = screen.getByTestId('foundation-dir-4'); // row 1 = descending
+    expect(desc.className).toContain('text-ds-warning');
+    // Ascending ♠ pile tops out at A → aria-label mentions the top card.
+    expect(screen.getByLabelText(/トップ ♠ A/)).toBeInTheDocument();
+  });
+
   it('redeal button shows remaining count', async () => {
     renderWithProviders(<CrescentPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /再配り/ })).toBeInTheDocument());

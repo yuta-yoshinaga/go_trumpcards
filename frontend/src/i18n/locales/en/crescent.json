@@ -12,7 +12,7 @@
   "redealUnavailable": "No redeals remaining",
   "giveup": "Give Up",
   "empty": "Empty",
-  "foundationAriaLabel": "{{direction}} foundation {{suit}} {{count}} cards",
+  "foundationAriaLabel": "{{direction}} foundation {{suit}} {{count}} cards top {{top}}",
   "emptyFoundationAriaLabel": "Empty {{direction}} foundation ({{suit}})",
   "landscapeBanner": "Landscape mode recommended",
   "hint": "Hint",

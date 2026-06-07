@@ -12,7 +12,7 @@
   "redealUnavailable": "残り再配り回数がありません",
   "giveup": "ギブアップ",
   "empty": "空",
-  "foundationAriaLabel": "{{direction}}ファンデーション {{suit}} 残り{{count}}枚",
+  "foundationAriaLabel": "{{direction}}ファンデーション {{suit}} 残り{{count}}枚 トップ {{top}}",
   "emptyFoundationAriaLabel": "空の{{direction}}ファンデーション ({{suit}})",
   "landscapeBanner": "横向きでのプレイを推奨します",
   "hint": "ヒント",
