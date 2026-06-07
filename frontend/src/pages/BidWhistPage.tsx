@@ -261,9 +261,11 @@ function BidWhistPageContent() {
                 </div>
                 <div className="h-2 overflow-hidden rounded-full bg-ds-surface-elevated">
                   <div
-                    className={`h-full rounded-full transition-all ${
-                      selectedCardIndices.length === 6 ? 'bg-ds-success' : 'bg-ds-info'
-                    }`}
+                    className={
+                      selectedCardIndices.length === 6
+                        ? 'h-full rounded-full transition-all bg-ds-success'
+                        : 'h-full rounded-full transition-all bg-ds-info'
+                    }
                     style={{ width: `${(Math.min(selectedCardIndices.length, 6) * 100) / 6}%` }}
                   />
                 </div>
