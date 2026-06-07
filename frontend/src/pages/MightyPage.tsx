@@ -110,9 +110,9 @@ const SUIT_SYMBOLS: Record<number, string> = { 1: '♠', 2: '♣', 3: '♥', 4: 
 
 /** Tailwind classes for a suit/option toggle button (44px tap target, highlighted when selected). */
 function suitToggleClass(selected: boolean): string {
-  return `min-h-[44px] min-w-[44px] rounded px-2 font-bold text-lg ${
-    selected ? 'bg-ds-accent text-white ring-2 ring-ds-accent' : 'bg-white/20 text-ds-text-primary'
-  }`;
+  return selected
+    ? 'min-h-[44px] min-w-[44px] rounded px-2 font-bold text-lg bg-ds-accent text-white ring-2 ring-ds-accent'
+    : 'min-h-[44px] min-w-[44px] rounded px-2 font-bold text-lg bg-white/20 text-ds-text-primary';
 }
 
 /** Renders the Mighty game page with bidding, trump/friend declaration, kitty exchange, trick play, and scoring. */
@@ -685,7 +685,8 @@ function MightyPageContent() {
               {/* Trump & Friend declaration controls */}
               {isHumanDeclarer && (
                 <>
-                  <fieldset className="flex flex-wrap gap-1 border-0 p-0" aria-label={t('trumpSuit')}>
+                  <fieldset className="flex flex-wrap gap-1 border-0 p-0">
+                    <legend className="sr-only">{t('trumpSuit')}</legend>
                     <button
                       type="button"
                       aria-pressed={trumpSuitValue === -1}
@@ -711,7 +712,8 @@ function MightyPageContent() {
                       </button>
                     ))}
                   </fieldset>
-                  <fieldset className="flex flex-wrap gap-1 border-0 p-0" aria-label={t('partnerSuit')}>
+                  <fieldset className="flex flex-wrap gap-1 border-0 p-0">
+                    <legend className="sr-only">{t('partnerSuit')}</legend>
                     <button
                       type="button"
                       aria-pressed={partnerSuitValue === 0}

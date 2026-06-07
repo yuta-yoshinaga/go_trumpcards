@@ -388,6 +388,15 @@ describe('MightyPage', () => {
     expect(screen.getByTestId('trump-suit-1')).toHaveAttribute('aria-pressed', 'false');
   });
 
+  it('highlights the selected partner suit button', async () => {
+    mockCall.mockResolvedValue(trumpAndFriendState);
+    renderWithProviders(<MightyPage />);
+    const club = await screen.findByTestId('partner-suit-2');
+    fireEvent.click(club);
+    expect(screen.getByTestId('partner-suit-2')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('partner-suit-0')).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('does not show declaration controls when cpu is declarer', async () => {
     mockCall.mockResolvedValue(trumpAndFriendCpuState);
     renderWithProviders(<MightyPage />);
