@@ -12,7 +12,8 @@
     "human": "あなた",
     "cpu": "CPU{{id}}",
     "faceDown": "伏せ札",
-    "finalTurn": "最終ターン"
+    "finalTurn": "最終ターン",
+    "columnScore": "{{score}}pt"
   },
   "button": {
     "flipInitial": "めくる",

@@ -12,7 +12,8 @@
     "human": "You",
     "cpu": "CPU {{id}}",
     "faceDown": "Face Down",
-    "finalTurn": "Final Turn"
+    "finalTurn": "Final Turn",
+    "columnScore": "{{score}} pt"
   },
   "button": {
     "flipInitial": "Flip",
