@@ -169,8 +169,22 @@ describe('FourCardPokerPage', () => {
   it('sends play command with the chosen multiplier button', async () => {
     mockExec.mockResolvedValue(actionPhaseState);
     renderWithProviders(<FourCardPokerPage />);
-    fireEvent.click(await screen.findByTestId('play-3x'));
+    fireEvent.click(await screen.findByTestId('play-1x'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, undefined, 1));
+    fireEvent.click(screen.getByTestId('play-2x'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, undefined, 2));
+    fireEvent.click(screen.getByTestId('play-3x'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, undefined, 3));
+  });
+
+  it('plays via the 1/2/3 keyboard shortcuts', async () => {
+    mockExec.mockResolvedValue(actionPhaseState);
+    renderWithProviders(<FourCardPokerPage />);
+    await screen.findByTestId('play-1x');
+    for (const key of ['1', '2', '3'] as const) {
+      fireEvent.keyDown(document, { key });
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, undefined, Number(key)));
+    }
   });
 
   it('sends fold command', async () => {

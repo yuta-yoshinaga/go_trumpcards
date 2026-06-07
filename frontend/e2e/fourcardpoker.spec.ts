@@ -10,7 +10,7 @@ test.describe('Four Card Poker E2E', () => {
     await betButton.click();
     await waitForLoaded(page);
 
-    const playButton = page.getByRole('button', { name: 'プレイ' });
+    const playButton = page.getByRole('button', { name: 'プレイ 1x' });
     await expect(playButton).toBeVisible({ timeout: 10_000 });
     await playButton.click();
     await waitForLoaded(page);
