@@ -7,6 +7,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -263,8 +264,9 @@ function BelotePageContent() {
 
         {/* Face-up card (during bidding) */}
         {state.faceUpCard && (isBidPickUp || isBidCallTrump) && (
-          <div className="text-center mb-3 text-ds-text-muted">
-            {t('faceUpCard')}: {state.faceUpCard.design} {state.faceUpCard.value}
+          <div className="mb-3 flex flex-col items-center gap-1 text-ds-text-muted">
+            <span className="text-xs">{t('faceUpCard')}</span>
+            <AnimatedCard card={state.faceUpCard} width={cardWidth * 0.8} />
           </div>
         )}
 
