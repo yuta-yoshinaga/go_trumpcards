@@ -79,8 +79,8 @@ describe('BarbuPage', () => {
     // Focusing a different contract updates the panel...
     fireEvent.focus(screen.getByTestId('contract-3'));
     expect(panel.textContent).not.toBe(initial);
-    // ...and focusing back restores the original description.
-    fireEvent.focus(screen.getByTestId('contract-0'));
+    // ...and blurring it restores the original description.
+    fireEvent.blur(screen.getByTestId('contract-3'));
     expect(panel.textContent).toBe(initial);
   });
 

@@ -228,7 +228,9 @@ function BarbuPageContent() {
                           type="button"
                           onClick={() => onContractClick(c)}
                           onMouseEnter={() => setHoveredContract(c)}
+                          onMouseLeave={() => setHoveredContract(null)}
                           onFocus={() => setHoveredContract(c)}
+                          onBlur={() => setHoveredContract(null)}
                           disabled={loading || state.usedContracts[c]}
                           className="px-3 py-2 rounded-lg bg-ds-info text-white text-xs font-medium disabled:opacity-30 disabled:line-through"
                           data-testid={`contract-${c}`}
