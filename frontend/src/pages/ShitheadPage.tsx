@@ -16,6 +16,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useShitheadGame } from '../hooks/useShitheadGame';
+import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, CardDesign, ShitheadConfig, ShitheadResponse } from '../types/card';
@@ -168,7 +169,7 @@ function ShitheadPageContent() {
                             data-testid="sh-discard-magic-badge"
                             data-magic-rank={topValue}
                             title={title || undefined}
-                            className="inline-flex items-center rounded-full bg-ds-warning/30 px-1.5 py-0 text-xs leading-tight text-ds-warning motion-safe:animate-pulse"
+                            className={`inline-flex items-center rounded-full px-1.5 py-0 text-xs leading-tight motion-safe:animate-pulse ${badgeWarningColors}`}
                           >
                             {badge}
                           </span>

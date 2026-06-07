@@ -14,6 +14,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { badgeErrorColors, badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnDanger, btnOutline, btnPrimary, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, ContractRummyContractSlot, ContractRummyResponse } from '../types/card';
@@ -232,16 +233,16 @@ function ContractRummyPageContent() {
           {state.contractSlots.map((slot, slotIdx) => {
             const ev = slotEvaluations[slotIdx] ?? { placed: 0, required: slot.size, satisfied: false, invalid: false };
             const color = ev.satisfied
-              ? 'bg-ds-success/20 border-ds-success text-ds-success'
+              ? badgeSuccessColors
               : ev.invalid
-                ? 'bg-ds-error/20 border-ds-error text-ds-error'
+                ? badgeErrorColors
                 : ev.placed === 0
-                  ? 'bg-black/20 border-white/30 text-ds-text-muted'
-                  : 'bg-ds-warning/20 border-ds-warning text-ds-warning';
+                  ? 'bg-black/20 border border-white/30 text-ds-text-muted'
+                  : badgeWarningColors;
             return (
               <span
                 key={`slot-${slotIdx}`}
-                className={`px-2 py-1 rounded border ${color}`}
+                className={`px-2 py-1 rounded ${color}`}
                 data-testid={`cr-slot-progress-${slotIdx}`}
                 data-state={ev.satisfied ? 'satisfied' : ev.invalid ? 'invalid' : ev.placed === 0 ? 'empty' : 'partial'}
               >
