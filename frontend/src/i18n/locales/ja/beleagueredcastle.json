@@ -14,6 +14,7 @@
   "landscapeBanner": "横画面での表示を推奨します",
   "hint": "ヒント",
   "autoComplete": "自動完成",
+  "autoCompleteNotReady": "ファンデーションを2枚目以降まで進めると有効になります",
   "undo": "元に戻す",
   "stalemate": "手詰まりです",
   "playing": "カードを移動してください",

@@ -108,10 +108,26 @@ describe('BeleagueredCastlePage', () => {
     await waitFor(() => expect(screen.getAllByText(/ゲームオーバー/).length).toBeGreaterThan(0));
   });
 
-  it('renders auto-complete button enabled while playing', async () => {
-    mockExec.mockResolvedValue(playingState);
+  it('disables the auto-complete button and shows a reason when no foundation has progressed', async () => {
+    mockExec.mockResolvedValue(playingState); // foundations hold only aces
     renderWithProviders(<BeleagueredCastlePage />);
-    await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeEnabled());
+    const btn = await screen.findByTestId('autocomplete-button');
+    expect(btn).toBeDisabled();
+    expect(btn.className).not.toContain('animate-pulse');
+    expect(btn).toHaveAttribute('title');
+  });
+
+  it('enables and pulses the auto-complete button once a foundation builds past its ace', async () => {
+    const readyState: BeleagueredCastleResponse = {
+      ...playingState,
+      foundation: [[card('SPADE', 1), card('SPADE', 2)], [card('CLOVER', 1)], [card('HEART', 1)], [card('DIAMOND', 1)]],
+    };
+    mockExec.mockResolvedValue(readyState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    const btn = await screen.findByTestId('autocomplete-button');
+    expect(btn).toBeEnabled();
+    expect(btn.className).toContain('animate-pulse');
+    expect(btn.className).toContain('ring-ds-success');
   });
 
   it('shows StalemateEscapeButton when stalemate flag is set', async () => {
