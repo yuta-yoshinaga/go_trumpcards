@@ -66,7 +66,6 @@ function FourCardPokerPageContent() {
 
   const [anteAmount, setAnteAmount] = useState(100);
   const [acesUpAmount, setAcesUpAmount] = useState(0);
-  const [playMultiplier, setPlayMultiplier] = useState(1);
 
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
@@ -85,11 +84,13 @@ function FourCardPokerPageContent() {
         action: () => execApi('bet', anteAmount, acesUpAmount),
         enabled: isBetPhase,
       },
-      { key: 'p', action: () => execApi('play', undefined, undefined, playMultiplier), enabled: isActionPhase },
+      { key: '1', action: () => execApi('play', undefined, undefined, 1), enabled: isActionPhase },
+      { key: '2', action: () => execApi('play', undefined, undefined, 2), enabled: isActionPhase },
+      { key: '3', action: () => execApi('play', undefined, undefined, 3), enabled: isActionPhase },
       { key: 'f', action: () => execApi('fold'), enabled: isActionPhase },
       { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
     ],
-    [execApi, anteAmount, acesUpAmount, playMultiplier, isBetPhase, isActionPhase, isEndPhase],
+    [execApi, anteAmount, acesUpAmount, isBetPhase, isActionPhase, isEndPhase],
   );
 
   useActionKeyboardNav({
@@ -103,8 +104,8 @@ function FourCardPokerPageContent() {
     execApi('bet', anteAmount, acesUpAmount);
   };
 
-  const handlePlay = () => {
-    execApi('play', undefined, undefined, playMultiplier);
+  const handlePlay = (mult: number) => {
+    execApi('play', undefined, undefined, mult);
   };
 
   const handleFold = () => {
@@ -295,25 +296,19 @@ function FourCardPokerPageContent() {
         )}
         {isActionPhase && (
           <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="fcp-action-buttons">
-            <div className="flex items-center gap-2">
-              <label htmlFor="fcp-play-multiplier" className="text-ds-text-primary text-sm">
-                {t('label.playMultiplier')}
-              </label>
-              <select
-                id="fcp-play-multiplier"
-                value={playMultiplier}
-                onChange={(e) => setPlayMultiplier(Number(e.target.value))}
-                className="px-2 py-1 rounded text-sm"
-              >
-                <option value={1}>1x</option>
-                <option value={2}>2x</option>
-                <option value={3}>3x</option>
-              </select>
-            </div>
-            <div className="flex justify-center gap-2">
-              <button type="button" className={btnSuccess} onClick={handlePlay} disabled={loading}>
-                {t('button.play')}
-              </button>
+            <div className="flex flex-wrap justify-center gap-2">
+              {[1, 2, 3].map((mult) => (
+                <button
+                  key={mult}
+                  type="button"
+                  className={btnSuccess}
+                  onClick={() => handlePlay(mult)}
+                  disabled={loading}
+                  data-testid={`play-${mult}x`}
+                >
+                  {t('button.playMult', { mult })}
+                </button>
+              ))}
               <button type="button" className={btnDanger} onClick={handleFold} disabled={loading}>
                 {t('button.fold')}
               </button>
