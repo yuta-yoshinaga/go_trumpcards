@@ -88,6 +88,24 @@ describe('EasthavenPage', () => {
     expect(screen.getByRole('button', { name: '配る' })).toBeDisabled();
   });
 
+  it('warns on empty stock and flags columns that still hide a face-down card', async () => {
+    // stock 0, column 0 still has a face-down card, columns 1+ are all face up.
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 0 });
+    renderWithProviders(<EasthavenPage />);
+    await waitFor(() => expect(screen.getByTestId('eh-stock')).toBeInTheDocument());
+    expect(screen.getByTestId('eh-stock').className).toContain('text-ds-warning');
+    expect(screen.getByTestId('eh-col-header-0').className).toContain('bg-ds-warning');
+    expect(screen.getByTestId('eh-col-header-1').className).not.toContain('bg-ds-warning');
+  });
+
+  it('does not flag stock or columns while the stock still has cards', async () => {
+    mockExec.mockResolvedValue(playingState); // stockCount 31
+    renderWithProviders(<EasthavenPage />);
+    await waitFor(() => expect(screen.getByTestId('eh-stock')).toBeInTheDocument());
+    expect(screen.getByTestId('eh-stock').className).not.toContain('text-ds-warning');
+    expect(screen.getByTestId('eh-col-header-0').className).not.toContain('bg-ds-warning');
+  });
+
   it('shows game clear phase', async () => {
     mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<EasthavenPage />);
