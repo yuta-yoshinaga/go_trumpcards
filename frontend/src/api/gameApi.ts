@@ -15,6 +15,7 @@ import type {
   BigTwoResponse,
   BlackJackResponse,
   BlackJackSwitchResponse,
+  BourreResponse,
   BridgeResponse,
   BriscolaConfig,
   BriscolaResponse,
@@ -286,6 +287,7 @@ const workerUrl: Record<string, string> = {
   bidwhist: WORKER_SOLO,
   easthaven: WORKER_SOLO,
   tichu: WORKER_CASINO,
+  bourre: WORKER_CASINO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1466,6 +1468,17 @@ export const tichuApi = {
     gameExec<TichuResponse>('tichu', params),
 };
 
+/** API client for the Bourré /bourre/exec endpoint. */
+export const bourreApi = {
+  exec: (params: {
+    command: string;
+    decide?: boolean;
+    indices?: number[];
+    cardIndex?: number;
+    config?: { cpuDifficulty?: number };
+  }) => gameExec<BourreResponse>('bourre', params),
+};
+
 /** Source or target zone for a Spider card move. */
 export interface SpiderMoveZone {
   zone: string;
@@ -2562,6 +2575,7 @@ const games = [
   'tressette',
   'easthaven',
   'tichu',
+  'bourre',
 ] as const;
 type Game = (typeof games)[number];
 

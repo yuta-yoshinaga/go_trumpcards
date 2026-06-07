@@ -17,6 +17,7 @@ import bigohilo from '../../../docs/manual/web/bigohilo.md?raw';
 import bigtwo from '../../../docs/manual/web/bigtwo.md?raw';
 import blackjack from '../../../docs/manual/web/blackjack.md?raw';
 import blackjackswitch from '../../../docs/manual/web/blackjackswitch.md?raw';
+import bourre from '../../../docs/manual/web/bourre.md?raw';
 import bridge from '../../../docs/manual/web/bridge.md?raw';
 import briscola from '../../../docs/manual/web/briscola.md?raw';
 import bristol from '../../../docs/manual/web/bristol.md?raw';
@@ -265,6 +266,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/bigtwo': bigtwo,
   '/tienlen': tienlen,
   '/tichu': tichu,
+  '/bourre': bourre,
   '/doudizhu': doudizhu,
   '/truco': truco,
 };

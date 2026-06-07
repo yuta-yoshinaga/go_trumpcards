@@ -644,6 +644,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 5, 4, 3], skill: [2, 5, 5, 2], social: [0, 1, 5, 4, 4], theme: [2, 2, 3, 4, 2, 4] },
       },
       {
+        path: '/bourre',
+        labelKey: 'nav.bourre',
+        icon: '🎰',
+        page: 'Bourre',
+        profile: { mood: [3, 4, 4, 3], skill: [2, 4, 5, 3], social: [0, 2, 5, 3, 4], theme: [5, 3, 2, 1, 4, 2] },
+      },
+      {
         path: '/truco',
         labelKey: 'nav.truco',
         icon: '🃏',

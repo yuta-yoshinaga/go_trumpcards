@@ -415,5 +415,13 @@ func init() {
 			return usecase.RestoreTichuInteractor(data, new(presenter.TichuWebPresenter))
 		},
 		controller.NewTichuWebControllerWithProvider)
+	games.RegisterKVGame("bourre", games.CategoryCasino,
+		func() usecase.BourreInteractorIF {
+			return usecase.NewBourreInteractor(domain.NewDefaultBourre(), new(presenter.BourreWebPresenter))
+		},
+		func(data []byte) (usecase.BourreInteractorIF, error) {
+			return usecase.RestoreBourreInteractor(data, new(presenter.BourreWebPresenter))
+		},
+		controller.NewBourreWebControllerWithProvider)
 
 }

@@ -205,6 +205,8 @@ tags:
     description: Easthaven (イーストヘイブン) - single-player Klondike/Spider hybrid solitaire; 7 tableau columns of 3 (2 face-down + 1 face-up), alternating-color descending tableau and A-to-K suit foundations (Klondike), with a Spider-style stock that deals one card to every column at once (no waste pile)
   - name: tichu
     description: Tichu (ティチュー) - 4-player 2-vs-2 partnership shedding game on a 56-card deck (52 + Dragon/Phoenix/Dog/Mahjong); 14-card hands, optional Tichu/Grand Tichu declarations (±100/±200), Daifugo-style combinations with four-of-a-kind and straight-flush bombs, special-card behaviours (Mahjong leads, Dog passes lead to partner, Phoenix wild, Dragon strongest single but trick goes to an opponent), card points (5/10/K, Dragon +25, Phoenix -25), one-two double victory (+200); higher team score wins the deal
+  - name: bourre
+    description: Bourré (ブーレ) - 5-player gambling trick-taking game fusing poker-style ante/draw betting with must-follow trick play on a 52-card deck; each player antes into the pot and is dealt 5 cards with the dealer's last card setting the trump suit, then decides to play or fold and may discard/draw (draw poker); five tricks under must-follow/must-trump-when-void/must-win-when-able rules, the most tricks takes the pot, and a player who plays but wins zero tricks is "bourréd" and pays a penalty equal to the pot
   - name: fivehundred
     description: 500 (Five Hundred / ファイブハンドレッド) game - 4-player partnership trick-taking with a 43-card deck (joker + red 4-A + black 5-A); auction bidding (6-10 tricks per suit/NT plus Misère/Open Misère), kitty exchange, Euchre-style bowers + joker as top trumps, first team to 500 wins
   - name: casinowar
