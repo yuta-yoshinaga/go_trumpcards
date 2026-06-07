@@ -22,7 +22,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useMacauGame } from '../hooks/useMacauGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
+import { btnDanger, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -171,6 +171,7 @@ function MacauPageContent() {
   const isRoundEnd = state.phase === MacauPhase.ROUND_END;
   const isGameEnd = state.phase === MacauPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const hasPenalty = state.penaltyDrawCount > 0;
   const directionLabel = state.direction < 0 ? '←' : '→';
 
   return (
@@ -267,7 +268,7 @@ function MacauPageContent() {
                   </div>
                 )}
 
-                {state.penaltyDrawCount > 0 && (
+                {hasPenalty && (
                   <div
                     className="my-2 p-2 rounded bg-ds-warning/20 text-ds-warning text-sm font-semibold"
                     role="status"
@@ -375,10 +376,22 @@ function MacauPageContent() {
                   >
                     {t('playButton')}
                   </button>
-                  <button type="button" className={btnPrimary} onClick={handleDraw} disabled={loading}>
-                    {state.penaltyDrawCount > 0
-                      ? t('takePenaltyButton', { count: state.penaltyDrawCount })
-                      : t('drawButton')}
+                  <button
+                    type="button"
+                    className={`${hasPenalty ? btnDanger : btnPrimary} relative`}
+                    onClick={handleDraw}
+                    disabled={loading}
+                  >
+                    {hasPenalty ? t('takePenaltyButton', { count: state.penaltyDrawCount }) : t('drawButton')}
+                    {hasPenalty && (
+                      <span
+                        data-testid="penalty-badge"
+                        aria-hidden="true"
+                        className="pointer-events-none absolute -top-2 -right-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-ds-error px-1 font-bold text-white text-xs"
+                      >
+                        {state.penaltyDrawCount}
+                      </span>
+                    )}
                   </button>
                 </div>
               )}
