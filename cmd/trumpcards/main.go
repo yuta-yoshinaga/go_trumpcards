@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"net"
 	"os"
 	"os/signal"
 	"slices"
@@ -60,6 +61,62 @@ func isPosixLocalePlaceholder(prefix string) bool {
 // reserved for "let the OS assign an ephemeral port" (POSIX convention).
 func portInRange(port int) bool {
 	return port >= 0 && port <= 65535
+}
+
+// validHost reports whether s is usable as the host portion of a TCP bind
+// address: a literal IP (v4/v6), an empty string (treated as "all interfaces"
+// by net.Listen), or a syntactically valid hostname. We deliberately do NOT
+// resolve DNS here — name-resolution failure at bind time stays a runtime
+// error (exit 1); only syntactically impossible values are rejected as a
+// usage error (exit 2). Whitespace and an embedded ":" (which would corrupt
+// net.JoinHostPort, or smuggle in a port) are rejected up front. See #2150.
+func validHost(s string) bool {
+	if s == "" {
+		return true
+	}
+	if strings.TrimSpace(s) != s || strings.ContainsAny(s, " \t") {
+		return false
+	}
+	if net.ParseIP(s) != nil {
+		return true
+	}
+	// Reject anything that would break net.JoinHostPort / contain a port.
+	if strings.Contains(s, ":") {
+		return false
+	}
+	return isValidHostname(s)
+}
+
+// isValidHostname reports whether s is a syntactically valid RFC 1123 hostname:
+// 1-253 characters total, dot-separated labels of 1-63 characters each, where
+// every label contains only ASCII letters, digits, or hyphens and does not
+// start or end with a hyphen. A single trailing dot (fully-qualified form) is
+// tolerated. This is a syntax check only — it does not attempt resolution.
+func isValidHostname(s string) bool {
+	s = strings.TrimSuffix(s, ".")
+	if s == "" || len(s) > 253 {
+		return false
+	}
+	for _, label := range strings.Split(s, ".") {
+		if len(label) == 0 || len(label) > 63 {
+			return false
+		}
+		if label[0] == '-' || label[len(label)-1] == '-' {
+			return false
+		}
+		for i := 0; i < len(label); i++ {
+			c := label[i]
+			switch {
+			case c >= 'a' && c <= 'z':
+			case c >= 'A' && c <= 'Z':
+			case c >= '0' && c <= '9':
+			case c == '-':
+			default:
+				return false
+			}
+		}
+	}
+	return true
 }
 
 // applyColorMode resolves the tristate `--color=auto|always|never` flag (issue
@@ -389,8 +446,18 @@ func run() int {
 			}
 			_ = os.Setenv("PORT", strconv.Itoa(port))
 		}
-		if host != "" {
-			_ = os.Setenv("HOST", host)
+		if flagSetVisited(fs, "host") {
+			if !validHost(host) {
+				// Usage error (malformed bind address), not a runtime
+				// failure — mirrors --port so systemd / CI can branch on
+				// exit 2. DNS-resolvable-but-down names stay exit 1 at bind.
+				fmt.Fprintln(os.Stderr, i18n.Tf("cliInvalidHost", "host", host))
+				fmt.Fprintln(os.Stderr, i18n.Tf("cliTryHelp", "cmd", "web"))
+				return 2
+			}
+			if host != "" {
+				_ = os.Setenv("HOST", host)
+			}
 		}
 		// Default to quiet when stderr is not a TTY (systemd, docker, pipe).
 		// See issue #1452: human-friendly text is noise for log shippers, but

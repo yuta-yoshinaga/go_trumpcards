@@ -157,6 +157,93 @@ func TestPortInRange(t *testing.T) {
 	}
 }
 
+func TestValidHost(t *testing.T) {
+	tests := []struct {
+		host string
+		want bool
+	}{
+		{"", true},                    // unset -> all interfaces (net.Listen convention)
+		{"0.0.0.0", true},             // expose-all literal
+		{"127.0.0.1", true},           // IPv4 loopback
+		{"::1", true},                 // IPv6 loopback
+		{"2001:db8::1", true},         // IPv6 literal
+		{"localhost", true},           // hostname
+		{"example.com", true},         // dotted hostname
+		{"my-host.local", true},       // hyphen inside label
+		{"nonexistent.invalid", true}, // syntactically valid; DNS failure stays exit 1 at bind
+		{"bad host", false},           // embedded space
+		{" leading", false},           // leading whitespace
+		{"trailing ", false},          // trailing whitespace
+		{"1.2.3.4:5", false},          // smuggled port (would corrupt JoinHostPort)
+		{"-bad.com", false},           // label starts with hyphen
+		{"bad-.com", false},           // label ends with hyphen
+		{"a..b", false},               // empty label
+	}
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("host=%q", tt.host), func(t *testing.T) {
+			if got := validHost(tt.host); got != tt.want {
+				t.Errorf("validHost(%q) = %v, want %v", tt.host, got, tt.want)
+			}
+		})
+	}
+}
+
+// TestRunWebRejectsInvalidHost is the --host analogue of
+// TestRunWebRejectsExplicitInvalidPort (#2150): a syntactically malformed
+// --host must exit 2 (usage error) with cliInvalidHost + the help hint and
+// must NOT set the HOST env var, so systemd/CI can distinguish an operator
+// typo from a runtime bind failure (exit 1).
+func TestRunWebRejectsInvalidHost(t *testing.T) {
+	origArgs := os.Args
+	origCmdLine := flag.CommandLine
+	origStdout := os.Stdout
+	origStderr := os.Stderr
+	origHostEnv, hostEnvWasSet := os.LookupEnv("HOST")
+	defer func() {
+		os.Args = origArgs
+		flag.CommandLine = origCmdLine
+		os.Stdout = origStdout
+		os.Stderr = origStderr
+		if hostEnvWasSet {
+			_ = os.Setenv("HOST", origHostEnv)
+		} else {
+			_ = os.Unsetenv("HOST")
+		}
+	}()
+	_ = os.Unsetenv("HOST") // baseline
+
+	flag.CommandLine = flag.NewFlagSet("trumpcards", flag.ExitOnError)
+	os.Args = []string{"trumpcards", "web", "--host", "bad host"}
+
+	rOut, wOut, _ := os.Pipe()
+	rErr, wErr, _ := os.Pipe()
+	os.Stdout = wOut
+	os.Stderr = wErr
+
+	exitCh := make(chan int, 1)
+	go func() { exitCh <- run() }()
+	exit := <-exitCh
+
+	_ = wOut.Close()
+	_ = wErr.Close()
+	var outBuf, errBuf bytes.Buffer
+	_, _ = outBuf.ReadFrom(rOut)
+	_, _ = errBuf.ReadFrom(rErr)
+
+	if exit != 2 {
+		t.Errorf("exit = %d, want 2 (usage error; stderr=%q)", exit, errBuf.String())
+	}
+	if !strings.Contains(errBuf.String(), "bad host") {
+		t.Errorf("stderr should mention the offending host; got: %q", errBuf.String())
+	}
+	if !strings.Contains(errBuf.String(), "help web") {
+		t.Errorf("stderr should include cliTryHelp hint; got: %q", errBuf.String())
+	}
+	if got := os.Getenv("HOST"); got != "" {
+		t.Errorf("HOST should not be set on invalid input; got %q", got)
+	}
+}
+
 func TestFlagSetVisitedDistinguishesExplicitFromDefault(t *testing.T) {
 	tests := []struct {
 		name        string
