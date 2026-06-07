@@ -462,20 +462,33 @@ function CallBreakPageContent() {
                 </button>
               )}
               {isHumanBidTurn && (
-                <>
-                  <input
-                    type="number"
-                    min={1}
-                    max={13}
-                    value={bidValue}
-                    onChange={(e) => setBidValue(Number(e.target.value))}
-                    className="w-16 px-2 py-1 rounded bg-white/20 text-ds-text-primary text-center"
-                    aria-label="bid-input"
-                  />
+                <div className="flex flex-col items-center gap-2">
+                  <fieldset
+                    className="grid max-w-[16rem] grid-cols-7 gap-1 border-0 p-0"
+                    aria-label={t('bidSelectLabel')}
+                  >
+                    {Array.from({ length: 13 }, (_, i) => i + 1).map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => setBidValue(n)}
+                        disabled={loading}
+                        aria-pressed={bidValue === n}
+                        data-testid={`bid-option-${n}`}
+                        className={`h-9 w-9 rounded-lg font-medium text-sm transition-all ${
+                          bidValue === n
+                            ? 'bg-ds-accent text-white ring-2 ring-ds-accent'
+                            : 'bg-white/20 text-ds-text-primary hover:bg-white/30'
+                        }`}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </fieldset>
                   <button type="button" className={btnPrimary} onClick={() => handleBid(bidValue)} disabled={loading}>
                     {t('bidButton')}
                   </button>
-                </>
+                </div>
               )}
               {isHumanTurn && (
                 <button
