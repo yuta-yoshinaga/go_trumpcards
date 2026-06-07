@@ -22,7 +22,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useMacauGame } from '../hooks/useMacauGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
+import { btnDanger, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -375,11 +375,27 @@ function MacauPageContent() {
                   >
                     {t('playButton')}
                   </button>
-                  <button type="button" className={btnPrimary} onClick={handleDraw} disabled={loading}>
-                    {state.penaltyDrawCount > 0
-                      ? t('takePenaltyButton', { count: state.penaltyDrawCount })
-                      : t('drawButton')}
-                  </button>
+                  <div className="relative inline-flex">
+                    <button
+                      type="button"
+                      className={state.penaltyDrawCount > 0 ? btnDanger : btnPrimary}
+                      onClick={handleDraw}
+                      disabled={loading}
+                    >
+                      {state.penaltyDrawCount > 0
+                        ? t('takePenaltyButton', { count: state.penaltyDrawCount })
+                        : t('drawButton')}
+                    </button>
+                    {state.penaltyDrawCount > 0 && (
+                      <span
+                        data-testid="penalty-badge"
+                        aria-hidden="true"
+                        className="pointer-events-none absolute -top-2 -right-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-ds-error px-1 font-bold text-white text-xs"
+                      >
+                        {state.penaltyDrawCount}
+                      </span>
+                    )}
+                  </div>
                 </div>
               )}
               {isChooseSuit && state.players[state.currentPlayerIdx]?.isHuman && (
