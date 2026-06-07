@@ -75,6 +75,50 @@ describe('YanivPage', () => {
     expect(screen.getByTestId('discard-button')).toBeDisabled();
   });
 
+  it('highlights the hand-total badge in success color and pulses the Yaniv button when total <= 5', async () => {
+    renderWithProviders(<YanivPage />);
+    const badge = await screen.findByTestId('hand-total-badge');
+    expect(badge.className).toContain('bg-ds-success');
+    const yanivBtn = screen.getByTestId('yaniv-button');
+    expect(yanivBtn.className).toContain('ring-ds-success');
+    expect(yanivBtn.className).toContain('animate-pulse');
+  });
+
+  it('soft-highlights the hand-total badge in warning color when total is 6-10', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          player(0, true, [card('SPADE', 8)], { handTotal: 8 }),
+          player(1, false, []),
+          player(2, false, []),
+          player(3, false, []),
+        ],
+      }),
+    );
+    renderWithProviders(<YanivPage />);
+    const badge = await screen.findByTestId('hand-total-badge');
+    expect(badge.className).toContain('bg-ds-warning');
+    expect(badge.className).not.toContain('bg-ds-success');
+    expect(screen.getByTestId('yaniv-button').className).not.toContain('ring-ds-success');
+  });
+
+  it('leaves the hand-total badge unstyled when total exceeds 10', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          player(0, true, [card('SPADE', 13)], { handTotal: 15 }),
+          player(1, false, []),
+          player(2, false, []),
+          player(3, false, []),
+        ],
+      }),
+    );
+    renderWithProviders(<YanivPage />);
+    const badge = await screen.findByTestId('hand-total-badge');
+    expect(badge.className).not.toContain('bg-ds-success');
+    expect(badge.className).not.toContain('bg-ds-warning');
+  });
+
   it('declares Yaniv when the hand total is low enough', async () => {
     renderWithProviders(<YanivPage />);
     const yanivBtn = await screen.findByTestId('yaniv-button');

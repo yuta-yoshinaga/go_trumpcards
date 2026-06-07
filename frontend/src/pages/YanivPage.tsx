@@ -271,7 +271,15 @@ function YanivPageContent() {
             {/* Human hand */}
             <div className="text-center" data-tutorial="y-player-hand">
               <div className="text-xs text-ds-text-muted mb-1">
-                {tc('player.you')} · {t('label.score')}: {human.score} · {t('label.hand')}: {human.handTotal}
+                {tc('player.you')} · {t('label.score')}: {human.score} · {t('label.hand')}:{' '}
+                <span
+                  data-testid="hand-total-badge"
+                  className={`inline-block rounded px-1.5 font-bold ${
+                    human.handTotal <= 5 ? 'bg-ds-success text-white' : human.handTotal <= 10 ? 'bg-ds-warning/40' : ''
+                  }`}
+                >
+                  {human.handTotal}
+                </span>
               </div>
               {isDiscard && isHumanTurn && (
                 <div className="text-xs text-ds-text-muted mb-1">{t('label.selectCard')}</div>
@@ -356,7 +364,9 @@ function YanivPageContent() {
                 type="button"
                 onClick={handleYaniv}
                 disabled={loading || !canYaniv}
-                className="px-4 py-2 rounded-lg bg-ds-warning text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className={`px-4 py-2 rounded-lg bg-ds-warning text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm ${
+                  canYaniv ? 'motion-safe:animate-pulse ring-2 ring-ds-success' : ''
+                }`}
                 data-testid="yaniv-button"
               >
                 {t('button.yaniv')}
