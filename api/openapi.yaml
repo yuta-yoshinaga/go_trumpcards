@@ -269,6 +269,14 @@ tags:
     description: Truco (トゥルコ) - 2-player (1 human + 1 CPU) South-American trick-taking + bluffing game with a 40-card deck (8/9/10 removed). Deal 3 cards per hand (mano); win 2 of 3 bazas (tricks, no must-follow) to win the mano. Card strength (matadores) 1-spades > 1-clubs > 7-spades > 7-coins > all 3 > 2 > 1 > K > Q > J > 7 > 6 > 5 > 4; equal-strength bazas tie (parda). Declare Truco to raise the stake (Truco=2, Retruco=3, Vale Cuatro=4); opponent accepts (Quiero), declines (No Quiero = caller wins at the prior stake), or re-raises. First to the match target (default 15) wins.
   - name: acesup
     description: Aces Up (四つ葉のクローバー) - single-player solitaire with a standard 52-card deck. 4 tableau columns dealt 1 card each (48 to stock). Aces rank highest. Remove a column's top card when another column's top is the same suit and higher rank; deal one card onto each column; move a top card into an empty column. Win by clearing the board down to the four Aces.
+  - name: whist
+    description: Whist (ホイスト) - 4-player partnership trick-taking on a standard 52-card deck; 13-card hands, the last dealt card fixes the trump suit, must-follow trick play, the highest trump (or highest lead-suit card if none) wins each trick, and the team taking more than 6 tricks scores 1 point per trick over the book of 6.
+  - name: canfield
+    description: Canfield (キャンフィールド) - single-player solitaire with a standard 52-card deck; 4 tableau columns, a 13-card reserve, a stock dealt 3 at a time, and 4 foundations built up by suit from a randomly chosen base rank with K-A wraparound. Tableau builds down alternating colors with wraparound; the reserve feeds the tableau.
+  - name: sixcardgolf
+    description: Six Card Golf (シックスカードゴルフ) - 2-4 player golf-style game on a standard 52-card deck; each player holds a 2x3 grid of six cards (two face-up at start). On a turn, draw from the stock or discard pile and either swap a grid card or discard. The round ends when a grid is fully face-up; lowest total score wins, with vertical pairs of equal rank scoring zero.
+  - name: bakersgame
+    description: Baker's Game (ベーカーズゲーム) - single-player FreeCell variant on a standard 52-card deck; identical layout to FreeCell (8 tableau columns, 4 free cells, 4 foundations Ace-to-King by suit) except tableau builds **same-suit descending** instead of alternating colors, making it harder. Only Kings move to an empty column; supermove limit = (1 + emptyFreeCells) x 2^(emptyTableauCols).
 
 paths:
   /blackjack/exec:
@@ -12165,6 +12173,305 @@ paths:
                     type: integer
                   moveCount:
                     type: integer
+                  message:
+                    type: string
+
+  /bakersgame/exec:
+    post:
+      tags:
+        - bakersgame
+      summary: Execute a Baker's Game command
+      description: |
+        Send a command to advance the Baker's Game (ベーカーズゲーム) session identified by
+        `sessionId`. Baker's Game is a FreeCell variant on a standard 52-card deck with an
+        identical layout (8 tableau columns, 4 free cells, 4 foundations built up by suit
+        Ace to King) except the tableau builds **same-suit descending** instead of
+        alternating colors, which makes it harder. Only Kings may move to an empty column.
+        Supermove: max movable cards = (1 + emptyFreeCells) x 2^(emptyTableauCols).
+
+        Baker's Game shares FreeCell's request/response schema
+        (`FreeCellRequest` / `FreeCellResponse`).
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All foundations completed; player wins |
+        | GameOver   | `2`   | No more moves available; game over |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset`        | `r`  | Start / restart a game |
+        | `move`         | `m`  | Move card(s) between zones (requires `from` and `to`) |
+        | `giveup`       | `g`  | Give up the current game |
+        | `hint`         | `h`  | Get a hint for the next move |
+        | `autocomplete` | `ac` | Auto-complete remaining moves to foundation |
+        | `undo`         | `u`  | Undo the last action |
+        | `undo_n`       |      | Undo N actions (requires `n` parameter) |
+        | `log`          | `l`  | View action log |
+      operationId: bakersgameExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FreeCellRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              move:
+                summary: Move a card
+                value:
+                  command: move
+                  from:
+                    zone: tableau
+                    col: 0
+                    cardIndex: 6
+                  to:
+                    zone: freecell
+                    cell: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FreeCellResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FreeCellResponse'
+
+  /bourre/exec:
+    post:
+      tags:
+        - bourre
+      summary: Execute a Bourré (ブーレ) game command
+      description: |
+        Send a command to advance a Bourré session identified by `sessionId`.
+        Bourré is a 5-player gambling trick-taking game fusing poker-style ante/draw
+        betting with must-follow trick play on a standard 52-card deck. Each player antes
+        into the pot and is dealt 5 cards; the dealer's last card sets the trump suit.
+        Players decide to play or fold, may discard and draw replacements, then play five
+        tricks under must-follow / must-trump-when-void / must-win-when-able rules. The
+        most tricks takes the pot; a player who plays but wins zero tricks is "bourréd"
+        and pays a penalty equal to the pot.
+
+        | Phase    | Value      | Description |
+        |----------|------------|-------------|
+        | Decide   | `decide`   | Each player chooses to play or fold |
+        | Draw     | `draw`     | Active players discard and draw |
+        | Play     | `play`     | Five tricks are played |
+        | RoundEnd | `roundEnd` | Hand resolved; pot distributed |
+        | GameEnd  | `gameEnd`  | Match over |
+
+        | Command  | Aliases | Description |
+        |----------|---------|-------------|
+        | `reset`  | `r`     | Start / restart the game (optional `config`) |
+        | `decide` |         | Play or fold (`decide`: true=play, false=fold) |
+        | `draw`   |         | Discard cards by `indices`, then draw replacements |
+        | `play`   | `p`     | Play a card by `cardIndex` |
+        | `next`   |         | Advance to the next hand |
+        | `log`    | `l`     | View action log |
+      operationId: bourreExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, decide, draw, play, p, next, log, l]
+                sessionId:
+                  type: string
+                decide:
+                  type: boolean
+                  description: For the `decide` command — true to play, false to fold.
+                indices:
+                  type: array
+                  description: For the `draw` command — indices of the cards to discard.
+                  items:
+                    type: integer
+                cardIndex:
+                  type: integer
+                  description: For the `play` command — index of the card to play.
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      enum: [0, 1, 2]
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              decide:
+                summary: Choose to play this hand
+                value:
+                  command: decide
+                  decide: true
+                  sessionId: my-session-001
+              play:
+                summary: Play a card
+                value:
+                  command: play
+                  cardIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        isHuman:
+                          type: boolean
+                        isFinished:
+                          type: boolean
+                        folded:
+                          type: boolean
+                        decided:
+                          type: boolean
+                        drawn:
+                          type: boolean
+                        bourreed:
+                          type: boolean
+                        chips:
+                          type: integer
+                        tricks:
+                          type: integer
+                        cardCount:
+                          type: integer
+                        cards:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              design:
+                                type: string
+                              value:
+                                type: integer
+                  phase:
+                    type: string
+                    enum: [decide, draw, play, roundEnd, gameEnd, unknown]
+                  currentPlayerIdx:
+                    type: integer
+                  dealerIdx:
+                    type: integer
+                  pot:
+                    type: integer
+                  carryPot:
+                    type: integer
+                  trumpSuit:
+                    type: string
+                  trumpCard:
+                    type: object
+                    nullable: true
+                    properties:
+                      design:
+                        type: string
+                      value:
+                        type: integer
+                  trickNumber:
+                    type: integer
+                  currentTrick:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        playerIdx:
+                          type: integer
+                        card:
+                          type: object
+                          properties:
+                            design:
+                              type: string
+                            value:
+                              type: integer
+                  lastTrick:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        playerIdx:
+                          type: integer
+                        card:
+                          type: object
+                          properties:
+                            design:
+                              type: string
+                            value:
+                              type: integer
+                  lastTrickWinner:
+                    type: integer
+                  leadPlayerIdx:
+                    type: integer
+                  handNumber:
+                    type: integer
+                  gameEndFlag:
+                    type: boolean
+                  winnerIdx:
+                    type: integer
+                  validPlays:
+                    type: array
+                    items:
+                      type: integer
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        playerIdx:
+                          type: integer
+                        tricks:
+                          type: integer
+                        wonAmount:
+                          type: integer
+                        bourreed:
+                          type: boolean
+                        folded:
+                          type: boolean
+                  config:
+                    type: object
+                    properties:
+                      cpuDifficulty:
+                        type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+                    additionalProperties: true
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
                   message:
                     type: string
 
