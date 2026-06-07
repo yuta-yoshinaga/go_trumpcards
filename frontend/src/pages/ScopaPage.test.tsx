@@ -1,5 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import i18n from 'i18next';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { scopaApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, ScopaResponse } from '../types/card';
@@ -67,6 +68,19 @@ describe('ScopaPage', () => {
     renderWithProviders(<ScopaPage />);
     await waitFor(() => expect(screen.getByTestId('table-card-0')).toBeInTheDocument());
     expect(screen.getByTestId('table-card-1')).toBeInTheDocument();
+  });
+
+  it('renders human stats via i18n (no hardcoded Japanese under en locale)', async () => {
+    await i18n.changeLanguage('en');
+    renderWithProviders(<ScopaPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    // English locale must show English stat labels, never the Japanese "枚" unit.
+    expect(screen.getByText(/Hand 3 \/ Captured 0 \/ Scopa 0 \/ Total 0 pt/)).toBeInTheDocument();
+    expect(screen.queryByText(/枚/)).not.toBeInTheDocument();
+  });
+
+  afterEach(async () => {
+    await i18n.changeLanguage('ja');
   });
 
   it('take button is disabled until both hand and table are selected', async () => {

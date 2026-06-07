@@ -169,7 +169,8 @@ function ScopaPageContent() {
                 .map((p) => (
                   <div key={p.id} className="text-center">
                     <div className="text-xs text-ds-text-muted mb-1">
-                      {tc('player.cpu', { id: p.id })} — {p.cardCount}枚 / {p.totalScore}pt
+                      {tc('player.cpu', { id: p.id })} —{' '}
+                      {t('label.cpuStats', { cards: p.cardCount, score: p.totalScore })}
                     </div>
                     <div className="flex gap-0.5 justify-center">
                       {Array.from({ length: Math.min(p.cardCount, 8) }, (_, i) => (
@@ -216,9 +217,13 @@ function ScopaPageContent() {
             {/* Human hand */}
             <div className="text-center" data-tutorial="sc-player-hand">
               <div className="text-xs text-ds-text-muted mb-1">
-                {tc('player.you')} — 手札{human.cardCount}枚 / 捕獲{human.capturedCount}枚 / スコパ{human.scopaCount} /
-                累計
-                {human.totalScore}pt
+                {tc('player.you')} —{' '}
+                {t('label.humanStats', {
+                  cards: human.cardCount,
+                  captured: human.capturedCount,
+                  scopa: human.scopaCount,
+                  score: human.totalScore,
+                })}
               </div>
               <div className="flex flex-wrap justify-center gap-2">
                 {human.cards.map((c, i) => (

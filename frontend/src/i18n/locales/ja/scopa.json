@@ -15,7 +15,9 @@
   "label": {
     "tableCards": "場札",
     "tableEmpty": "場札なし",
-    "yourCaptures": "獲得カード"
+    "yourCaptures": "獲得カード",
+    "cpuStats": "{{cards}}枚 / {{score}}pt",
+    "humanStats": "手札{{cards}}枚 / 捕獲{{captured}}枚 / スコパ{{scopa}} / 累計{{score}}pt"
   },
   "button": {
     "take": "取る",
