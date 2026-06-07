@@ -382,9 +382,7 @@ function MacauPageContent() {
                     onClick={handleDraw}
                     disabled={loading}
                   >
-                    {hasPenalty
-                      ? t('takePenaltyButton', { count: state.penaltyDrawCount })
-                      : t('drawButton')}
+                    {hasPenalty ? t('takePenaltyButton', { count: state.penaltyDrawCount }) : t('drawButton')}
                     {hasPenalty && (
                       <span
                         data-testid="penalty-badge"
