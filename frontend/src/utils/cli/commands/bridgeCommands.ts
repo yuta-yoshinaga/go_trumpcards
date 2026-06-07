@@ -1,22 +1,10 @@
 import type { bridgeApi } from '../../../api/gameApi';
 import { parseIntArg } from '../commandParserBase';
+import { BRIDGE_SUIT_MAP as SUIT_MAP } from '../suitMaps';
 import type { CliParseResult } from '../types';
 import { parseTrickCommand, TRICK_HELP } from './sharedTrickCommands';
 
 type BridgeArgs = Parameters<typeof bridgeApi.exec>;
-
-const SUIT_MAP: Record<string, number> = {
-  clubs: 1,
-  c: 1,
-  diamonds: 2,
-  d: 2,
-  hearts: 3,
-  h: 3,
-  spades: 4,
-  s: 4,
-  notrump: 5,
-  nt: 5,
-};
 
 const EXTRA_COMMANDS = ['bid', 'pass', 'double', 'dbl', 'redouble', 'rdbl', 'log'];
 

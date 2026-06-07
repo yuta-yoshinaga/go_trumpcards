@@ -29,6 +29,13 @@ describe('parseSevensCommand', () => {
     expect('error' in result2).toBe(true);
   });
 
+  // Regression for #2152: `club` (singular) must be accepted, matching Mighty.
+  it('accepts club, clubs, and clover for the joker suit', () => {
+    expect(parseSevensCommand('j club 6')).toEqual({ args: ['joker', -1, 2, 6] });
+    expect(parseSevensCommand('j clubs 6')).toEqual({ args: ['joker', -1, 2, 6] });
+    expect(parseSevensCommand('j clover 6')).toEqual({ args: ['joker', -1, 2, 6] });
+  });
+
   it('returns error for joker with invalid suit', () => {
     const result = parseSevensCommand('j invalid 5');
     expect('error' in result).toBe(true);
