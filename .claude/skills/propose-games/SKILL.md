@@ -48,6 +48,7 @@ example):
 
 ### 1. Enumerate existing games (dedup source of truth)
 ```sh
+mkdir -p /tmp/newgames
 grep -oE '\{Name: "[^"]+"' internal/infrastructure/games/registry.go \
   | sed -E 's/.*"([^"]+)"/\1/' | sort > /tmp/newgames/existing.txt
 ```

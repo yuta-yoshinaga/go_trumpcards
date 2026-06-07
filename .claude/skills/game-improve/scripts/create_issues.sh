@@ -18,6 +18,7 @@ BODY="$WORKDIR/body.md"
 SLEEP="${SLEEP:-3}"          # seconds between creates (secondary-rate-limit safety)
 
 cd "$REPO_DIR"
+mkdir -p "$WORKDIR"
 touch "$LOG" "$ERR"
 
 command -v jq >/dev/null || { echo "jq required" >&2; exit 1; }
@@ -34,10 +35,9 @@ for ((i=0; i<n; i++)); do
     continue
   fi
   title=$(jq -r ".[$i].title" "$SRC")
-  jq -r ".[$i].body" "$SRC" > "$BODY"
+  jq -r ".[$i].body" "$SRC" > "$BODY" || { echo "[$((i+1))/$n] $game -> jq extract failed, skip" >&2; continue; }
   printf '\n\n---\n_対象ゲーム: `%s`。ゲーム改善提案バッチにより自動起票。_\n' "$game" >> "$BODY"
-  url=$(gh issue create --title "$title" --body-file "$BODY" 2>>"$ERR")
-  if [ -n "$url" ]; then
+  if url=$(gh issue create --title "$title" --body-file "$BODY" 2>>"$ERR"); then
     printf '%s\t%s\t%s\n' "$game" "$url" "$title" >> "$LOG"
     echo "[$((i+1))/$n] $game -> $url"
   else
