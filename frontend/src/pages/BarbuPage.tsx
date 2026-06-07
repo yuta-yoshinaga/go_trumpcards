@@ -108,6 +108,7 @@ function BarbuPageContent() {
   const { handleCommand } = useCliGame(callApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const [trumpPickerOpen, setTrumpPickerOpen] = useState(false);
+  const [hoveredContract, setHoveredContract] = useState<number | null>(null);
   const onReset = useCallback(() => handleResetWithConfig(), [handleResetWithConfig]);
 
   const onContractClick = useCallback(
@@ -130,6 +131,13 @@ function BarbuPageContent() {
 
   const human = state && state.players.length >= 1 ? state.players[0] : null;
   const isSelectPhase = !!state && state.phase === 'selectContract';
+  // Default the description panel to the first contract that is still selectable.
+  const firstAvailableContract = state
+    ? Math.max(
+        0,
+        state.usedContracts.findIndex((used) => !used),
+      )
+    : 0;
   const isPlayPhase = !!state && state.phase === 'play';
   const isHumanSelect = isSelectPhase && state.dealerIdx === 0 && !state.gameEndFlag;
   const isHumanPlay = isPlayPhase && state.currentTurn === 0 && !state.gameEndFlag;
@@ -212,21 +220,34 @@ function BarbuPageContent() {
             {isHumanSelect && (
               <div className="py-2 bg-black/20 rounded-lg" data-tutorial="bb-contracts">
                 {!trumpPickerOpen ? (
-                  <div className="flex flex-wrap justify-center gap-2">
-                    {Array.from({ length: CONTRACT_COUNT }, (_, c) => (
-                      <button
-                        key={c}
-                        type="button"
-                        onClick={() => onContractClick(c)}
-                        disabled={loading || state.usedContracts[c]}
-                        className="px-3 py-2 rounded-lg bg-ds-info text-white text-xs font-medium disabled:opacity-30 disabled:line-through"
-                        data-testid={`contract-${c}`}
-                        title={t(`contractDesc.${c}`)}
-                      >
-                        {t(`contract.${c}`)}
-                      </button>
-                    ))}
-                  </div>
+                  <>
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {Array.from({ length: CONTRACT_COUNT }, (_, c) => (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => onContractClick(c)}
+                          onMouseEnter={() => setHoveredContract(c)}
+                          onMouseLeave={() => setHoveredContract(null)}
+                          onFocus={() => setHoveredContract(c)}
+                          onBlur={() => setHoveredContract(null)}
+                          disabled={loading || state.usedContracts[c]}
+                          className="px-3 py-2 rounded-lg bg-ds-info text-white text-xs font-medium disabled:opacity-30 disabled:line-through"
+                          data-testid={`contract-${c}`}
+                          title={t(`contractDesc.${c}`)}
+                        >
+                          {t(`contract.${c}`)}
+                        </button>
+                      ))}
+                    </div>
+                    <p
+                      role="status"
+                      data-testid="contract-desc"
+                      className="mt-2 min-h-[2rem] px-3 text-center text-ds-text-muted text-xs"
+                    >
+                      {t(`contractDesc.${hoveredContract ?? firstAvailableContract}`)}
+                    </p>
+                  </>
                 ) : (
                   <div className="flex flex-col items-center gap-2">
                     <span className="text-xs text-ds-text-muted">{t('label.selectTrump')}</span>
