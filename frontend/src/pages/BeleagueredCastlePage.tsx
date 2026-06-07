@@ -157,6 +157,9 @@ function BeleagueredCastlePageContent() {
   const isGameClear = state.phase === BeleagueredCastlePhase.GAME_CLEAR;
   const isGameOver = state.phase === BeleagueredCastlePhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
+  // Auto-complete becomes useful once a foundation has built past its ace, so
+  // pulse the button only then (mirrors Crescent / Spiderette).
+  const autoCompleteReady = state.foundation.some((pile) => pile.length > 1);
 
   const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
     selectedSource !== null &&
@@ -399,10 +402,11 @@ function BeleagueredCastlePageContent() {
                   </button>
                   <button
                     type="button"
-                    className={btnSuccess}
+                    className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
                     onClick={game.handleAutoComplete}
-                    disabled={loading || isAutoCompleting}
+                    disabled={loading || isAutoCompleting || !autoCompleteReady}
                     data-testid="autocomplete-button"
+                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
                   >
                     {t('autoComplete')}
                   </button>
