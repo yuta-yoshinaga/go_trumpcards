@@ -25,6 +25,7 @@
   "meldButton": "メルドする",
   "layoffOwner": "所有者",
   "layoffMeld": "メルド#",
+  "layoffMeldTarget": "{{owner}} のメルド {{idx}} をレイオフ先に選択",
   "layoffButton": "レイオフ",
   "discardButton": "捨てる",
   "nextRound": "次のラウンド",
