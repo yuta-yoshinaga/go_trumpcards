@@ -251,7 +251,7 @@ function SlapjackPageContent() {
                   </div>
                 )}
                 {/* Screen-reader announcement for the flash slap chance. */}
-                <div className="sr-only" aria-live="assertive" data-testid="sj-jack-announce">
+                <div className="sr-only" aria-live="assertive" aria-atomic="true" data-testid="sj-jack-announce">
                   {state.isTopJack ? t('slapjack.jackAnnounce') : ''}
                 </div>
               </div>
