@@ -117,6 +117,21 @@ describe('CasinoWarPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('war'));
   });
 
+  it('shows the War cost badge with the ante amount', async () => {
+    mockApi.mockResolvedValue(tieState); // ante 100
+    renderWithProviders(<CasinoWarPage />);
+    const badge = await screen.findByTestId('war-cost-badge');
+    expect(badge).toHaveTextContent('100');
+    expect(screen.queryByTestId('war-insufficient')).not.toBeInTheDocument();
+  });
+
+  it('disables War and shows an insufficient-chips alert when chips < ante', async () => {
+    mockApi.mockResolvedValue({ ...tieState, chips: 50, ante: 100 });
+    renderWithProviders(<CasinoWarPage />);
+    await waitFor(() => expect(screen.getByTestId('war-insufficient')).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: /ウォー/ })).toBeDisabled();
+  });
+
   it('renders end phase with reset and payout', async () => {
     mockApi.mockResolvedValue(winState);
     renderWithProviders(<CasinoWarPage />);

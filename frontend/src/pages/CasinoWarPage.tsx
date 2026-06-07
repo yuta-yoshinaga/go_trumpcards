@@ -259,6 +259,17 @@ function CasinoWarPageContent() {
             {isTieDecision && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="cw-action-buttons">
                 <p className="text-ds-text-muted text-sm">{t('tieGuide')}</p>
+                <span
+                  data-testid="war-cost-badge"
+                  className="inline-flex items-center rounded-full bg-ds-warning/20 px-2 py-0.5 font-bold text-ds-warning text-xs"
+                >
+                  {t('warCost', { amount: state.ante })}
+                </span>
+                {state.chips < state.ante && (
+                  <p role="alert" data-testid="war-insufficient" className="text-ds-error text-xs">
+                    {t('insufficientChips')}
+                  </p>
+                )}
                 <div className="flex justify-center gap-2">
                   <button
                     type="button"
