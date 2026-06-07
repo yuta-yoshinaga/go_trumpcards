@@ -70,6 +70,20 @@ describe('BarbuPage', () => {
     expect(screen.getByTestId('contract-6')).toBeInTheDocument();
   });
 
+  it('shows a contract description panel that updates on focus', async () => {
+    renderWithProviders(<BarbuPage />);
+    const panel = await screen.findByTestId('contract-desc');
+    // Defaults to the first available contract's description.
+    const initial = panel.textContent;
+    expect(initial).toBeTruthy();
+    // Focusing a different contract updates the panel...
+    fireEvent.focus(screen.getByTestId('contract-3'));
+    expect(panel.textContent).not.toBe(initial);
+    // ...and focusing back restores the original description.
+    fireEvent.focus(screen.getByTestId('contract-0'));
+    expect(panel.textContent).toBe(initial);
+  });
+
   it('selects a non-trump contract directly', async () => {
     renderWithProviders(<BarbuPage />);
     await waitFor(() => expect(screen.getByTestId('contract-0')).toBeInTheDocument());
