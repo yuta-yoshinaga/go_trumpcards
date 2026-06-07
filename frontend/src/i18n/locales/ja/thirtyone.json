@@ -21,7 +21,9 @@
     "knocked": "ノック!",
     "out": "脱落",
     "suitScores": "スート別合計",
-    "selectCard": "捨てるカードを選んでください"
+    "selectCard": "捨てるカードを選んでください",
+    "knockBannerLastTurn": "{{knocker}} がノック — あなたの最後のターン",
+    "knockBannerActive": "{{knocker}} がノック中"
   },
   "settings": {
     "cpuDifficulty": "CPU難易度",

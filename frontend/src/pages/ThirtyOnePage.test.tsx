@@ -119,6 +119,21 @@ describe('ThirtyOnePage', () => {
     expect(await screen.findByTestId('knock-button')).toBeDisabled();
   });
 
+  it('shows the knock countdown banner with the knocker name on the human last turn', async () => {
+    mockExec.mockResolvedValue(makeState({ knockerIdx: 1 }));
+    renderWithProviders(<ThirtyOnePage />);
+    const banner = await screen.findByTestId('knock-countdown-banner');
+    expect(banner).toHaveTextContent(/CPU 1/);
+    expect(banner).toHaveTextContent(/最後のターン/);
+  });
+
+  it('hides the knock countdown banner at round end', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: ThirtyOnePhase.ROUND_END, knockerIdx: 1 }));
+    renderWithProviders(<ThirtyOnePage />);
+    await screen.findByTestId('next-round-button');
+    expect(screen.queryByTestId('knock-countdown-banner')).not.toBeInTheDocument();
+  });
+
   it('highlights the leading suit badge', async () => {
     // Default human hand: SPADE 3, HEART 5, DIAMOND 7 → DIAMOND leads.
     renderWithProviders(<ThirtyOnePage />);
