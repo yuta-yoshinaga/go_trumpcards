@@ -242,7 +242,7 @@ function ContractRummyPageContent() {
             return (
               <span
                 key={`slot-${slotIdx}`}
-                className={`px-2 py-1 rounded border ${color}`}
+                className={`px-2 py-1 rounded ${color}`}
                 data-testid={`cr-slot-progress-${slotIdx}`}
                 data-state={ev.satisfied ? 'satisfied' : ev.invalid ? 'invalid' : ev.placed === 0 ? 'empty' : 'partial'}
               >

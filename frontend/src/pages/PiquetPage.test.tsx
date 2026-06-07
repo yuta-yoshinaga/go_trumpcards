@@ -137,6 +137,40 @@ describe('PiquetPage', () => {
       }),
     );
     renderWithProviders(<PiquetPage />);
-    await waitFor(() => expect(screen.getByTestId('piquet-meld-badge')).toBeInTheDocument());
+    const wonBadge = await screen.findByTestId('piquet-meld-badge');
+    // Human (elder, idx 0) was scoredBy:0 above → won → success palette.
+    expect(wonBadge).toHaveClass('text-ds-success', 'border-ds-success');
+  });
+
+  it('shows the meld badge in the lost palette when the opponent scores', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: PiquetPhase.DECLARATION,
+        declStage: PiquetDeclarationKind.SEQUENCE,
+        declResults: [
+          {
+            kind: PiquetDeclarationKind.POINT,
+            elderClaim: {
+              length: 2,
+              topRank: 13,
+              pipTotal: 21,
+              suit: 0,
+              cards: [
+                { design: 'SPADE', value: 13 },
+                { design: 'HEART', value: 1 },
+              ],
+            },
+            youngerClaim: { length: 0, topRank: 0, pipTotal: 0, suit: 0, cards: [] },
+            winner: 1,
+            scoredBy: 1,
+            score: 2,
+          },
+        ],
+      }),
+    );
+    renderWithProviders(<PiquetPage />);
+    const lostBadge = await screen.findByTestId('piquet-meld-badge');
+    // scoredBy:1 (younger) → human lost → error palette (border signal, readable text).
+    expect(lostBadge).toHaveClass('text-ds-text-primary', 'border-ds-error');
   });
 });
