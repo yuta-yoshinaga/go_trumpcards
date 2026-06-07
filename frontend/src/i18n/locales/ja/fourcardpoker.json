@@ -8,12 +8,11 @@
     "ante": "アンテ",
     "acesUp": "エースズアップ",
     "play": "プレイベット",
-    "playMultiplier": "プレイ倍率",
     "handRank": "役"
   },
   "button": {
     "bet": "ベット",
-    "play": "プレイ",
+    "playMult": "プレイ {{mult}}x",
     "fold": "フォールド",
     "reset": "リセット"
   },
