@@ -40,6 +40,7 @@
   "cliStartupBanner": "trumpcards {{version}} - インタラクティブモード",
   "cliStartupGame": "{{game}} を開始します。'switch <game>' でゲームを切り替え、'games' で一覧を表示できます。",
   "cliInvalidPort": "エラー: 無効なポート番号 {{port}} です (0-65535 の範囲で指定してください。0 はOSに空きポートを割り当てさせます)",
+  "cliInvalidHost": "エラー: 無効なホスト {{host}} です (IP アドレスまたはホスト名を指定してください。全インターフェースに公開するには 0.0.0.0 を使用します)",
   "cliExtraArgsWarning": "警告: 余分な引数は無視されました: {{args}}",
   "cliCompletionUsage": "使い方: trumpcards completion <bash|zsh|fish>",
   "cliCompletionUnsupportedShell": "エラー: サポートされていないシェル \"{{shell}}\" (対応: bash, zsh, fish)",
