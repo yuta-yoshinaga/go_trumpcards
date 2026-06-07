@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ultimatetexasholdemApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ChipBetInput } from '../components/common/ChipBetInput';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -334,36 +335,30 @@ function UltimateTexasHoldemPageContent() {
         {isBetPhase && (
           <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="uth-bet-controls">
             <div className="flex items-center gap-2">
-              <label htmlFor="uth-ante-amount" className="text-ds-text-primary text-sm">
-                {t('label.ante')}
-              </label>
-              <input
+              <ChipBetInput
                 id="uth-ante-amount"
-                type="number"
+                label={t('label.ante')}
+                value={anteAmount}
+                onChange={setAnteAmount}
                 min={10}
                 max={Math.floor(state.chips / 2)}
                 step={10}
-                value={anteAmount}
-                onChange={(e) => setAnteAmount(Number(e.target.value))}
-                className="w-24 px-2 py-1 rounded text-sm"
+                disabled={loading}
+                showSteppers
               />
               <span className="text-ds-text-muted text-xs">×2 ({t('label.blind')})</span>
             </div>
-            <div className="flex items-center gap-2">
-              <label htmlFor="uth-trips-amount" className="text-ds-text-primary text-sm">
-                {t('label.trips')}
-              </label>
-              <input
-                id="uth-trips-amount"
-                type="number"
-                min={0}
-                max={state.chips}
-                step={10}
-                value={tripsAmount}
-                onChange={(e) => setTripsAmount(Number(e.target.value))}
-                className="w-24 px-2 py-1 rounded text-sm"
-              />
-            </div>
+            <ChipBetInput
+              id="uth-trips-amount"
+              label={t('label.trips')}
+              value={tripsAmount}
+              onChange={setTripsAmount}
+              min={0}
+              max={state.chips}
+              step={10}
+              disabled={loading}
+              showSteppers
+            />
             <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
               {t('button.bet')}
             </button>
