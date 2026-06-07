@@ -127,6 +127,14 @@ describe('ThirtyOnePage', () => {
     expect(banner).toHaveTextContent(/最後のターン/);
   });
 
+  it('shows the active knock banner without last-turn text when it is not the human turn', async () => {
+    mockExec.mockResolvedValue(makeState({ knockerIdx: 2, currentPlayerIdx: 1 }));
+    renderWithProviders(<ThirtyOnePage />);
+    const banner = await screen.findByTestId('knock-countdown-banner');
+    expect(banner).toHaveTextContent(/CPU 2/);
+    expect(banner).not.toHaveTextContent(/最後のターン/);
+  });
+
   it('hides the knock countdown banner at round end', async () => {
     mockExec.mockResolvedValue(makeState({ phase: ThirtyOnePhase.ROUND_END, knockerIdx: 1 }));
     renderWithProviders(<ThirtyOnePage />);
