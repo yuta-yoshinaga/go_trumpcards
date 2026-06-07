@@ -372,17 +372,27 @@ describe('MightyPage', () => {
     mockCall.mockResolvedValue(trumpAndFriendState);
     renderWithProviders(<MightyPage />);
     await waitFor(() => {
-      expect(screen.getByLabelText('trump-suit')).toBeInTheDocument();
-      expect(screen.getByLabelText('partner-suit')).toBeInTheDocument();
+      expect(screen.getByTestId('trump-suit--1')).toBeInTheDocument();
+      expect(screen.getByTestId('trump-suit-1')).toBeInTheDocument();
+      expect(screen.getByTestId('partner-suit-0')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: '宣言' })).toBeInTheDocument();
     });
+  });
+
+  it('highlights the selected trump suit button', async () => {
+    mockCall.mockResolvedValue(trumpAndFriendState);
+    renderWithProviders(<MightyPage />);
+    const heart = await screen.findByTestId('trump-suit-3');
+    fireEvent.click(heart);
+    expect(screen.getByTestId('trump-suit-3')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('trump-suit-1')).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('does not show declaration controls when cpu is declarer', async () => {
     mockCall.mockResolvedValue(trumpAndFriendCpuState);
     renderWithProviders(<MightyPage />);
     await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
-    expect(screen.queryByLabelText('trump-suit')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('trump-suit--1')).not.toBeInTheDocument();
   });
 
   it('calls trump command when declare button clicked', async () => {
@@ -400,18 +410,18 @@ describe('MightyPage', () => {
   it('hides partner-value when partner-suit is joker (0)', async () => {
     mockCall.mockResolvedValue(trumpAndFriendState);
     renderWithProviders(<MightyPage />);
-    await waitFor(() => expect(screen.getByLabelText('partner-suit')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('partner-suit-0')).toBeInTheDocument());
 
-    fireEvent.change(screen.getByLabelText('partner-suit'), { target: { value: '0' } });
+    fireEvent.click(screen.getByTestId('partner-suit-0'));
     expect(screen.queryByLabelText('partner-value')).not.toBeInTheDocument();
   });
 
   it('sends partner-value 0 when joker partner is chosen', async () => {
     mockCall.mockResolvedValue(trumpAndFriendState);
     renderWithProviders(<MightyPage />);
-    await waitFor(() => expect(screen.getByLabelText('partner-suit')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('partner-suit-0')).toBeInTheDocument());
 
-    fireEvent.change(screen.getByLabelText('partner-suit'), { target: { value: '0' } });
+    fireEvent.click(screen.getByTestId('partner-suit-0'));
 
     mockCall.mockClear();
     mockCall.mockResolvedValue(playPhaseState);
@@ -423,9 +433,9 @@ describe('MightyPage', () => {
   it('supports No-Trump trump declaration (-1)', async () => {
     mockCall.mockResolvedValue(trumpAndFriendState);
     renderWithProviders(<MightyPage />);
-    await waitFor(() => expect(screen.getByLabelText('trump-suit')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('trump-suit--1')).toBeInTheDocument());
 
-    fireEvent.change(screen.getByLabelText('trump-suit'), { target: { value: '-1' } });
+    fireEvent.click(screen.getByTestId('trump-suit--1'));
 
     mockCall.mockClear();
     mockCall.mockResolvedValue(playPhaseState);

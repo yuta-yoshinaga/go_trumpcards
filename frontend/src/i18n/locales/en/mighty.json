@@ -32,6 +32,7 @@
   "noTrumpToggle": "No-Trump",
   "currentTrick": "Current Trick",
   "trumpSuit": "Trump",
+  "partnerSuit": "Partner card suit",
   "noTrump": "No-Trump",
   "partnerCard": "Partner card",
   "partnerNone": "(none)",

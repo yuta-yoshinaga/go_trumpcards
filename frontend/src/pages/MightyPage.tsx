@@ -106,6 +106,14 @@ const MIGHTY_PHASE_KEYS: Readonly<Record<number, string>> = {
 };
 
 const SUIT_KEYS: Record<number, string> = { 1: 'spade', 2: 'club', 3: 'heart', 4: 'diamond' };
+const SUIT_SYMBOLS: Record<number, string> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
+
+/** Tailwind classes for a suit/option toggle button (44px tap target, highlighted when selected). */
+function suitToggleClass(selected: boolean): string {
+  return `min-h-[44px] min-w-[44px] rounded px-2 font-bold text-lg ${
+    selected ? 'bg-ds-accent text-white ring-2 ring-ds-accent' : 'bg-white/20 text-ds-text-primary'
+  }`;
+}
 
 /** Renders the Mighty game page with bidding, trump/friend declaration, kitty exchange, trick play, and scoring. */
 export const MightyPage = withTutorial(MightyPageContent, 'mighty', MIGHTY_TUTORIAL_STEPS);
@@ -677,32 +685,58 @@ function MightyPageContent() {
               {/* Trump & Friend declaration controls */}
               {isHumanDeclarer && (
                 <>
-                  <select
-                    value={trumpSuitValue}
-                    onChange={(e) => setTrumpSuitValue(Number(e.target.value))}
-                    className="px-2 py-1 rounded bg-white/20 text-ds-text-primary"
-                    aria-label="trump-suit"
-                  >
-                    <option value={-1}>{t('noTrump')}</option>
+                  <fieldset className="flex flex-wrap gap-1 border-0 p-0" aria-label={t('trumpSuit')}>
+                    <button
+                      type="button"
+                      aria-pressed={trumpSuitValue === -1}
+                      data-testid="trump-suit--1"
+                      onClick={() => setTrumpSuitValue(-1)}
+                      disabled={loading}
+                      className={suitToggleClass(trumpSuitValue === -1)}
+                    >
+                      {t('noTrump')}
+                    </button>
                     {[1, 2, 3, 4].map((s) => (
-                      <option key={s} value={s}>
-                        {t(`suitName.${SUIT_KEYS[s]}`)}
-                      </option>
+                      <button
+                        key={s}
+                        type="button"
+                        aria-pressed={trumpSuitValue === s}
+                        aria-label={t(`suitName.${SUIT_KEYS[s]}`)}
+                        data-testid={`trump-suit-${s}`}
+                        onClick={() => setTrumpSuitValue(s)}
+                        disabled={loading}
+                        className={suitToggleClass(trumpSuitValue === s)}
+                      >
+                        {SUIT_SYMBOLS[s]}
+                      </button>
                     ))}
-                  </select>
-                  <select
-                    value={partnerSuitValue}
-                    onChange={(e) => setPartnerSuitValue(Number(e.target.value))}
-                    className="px-2 py-1 rounded bg-white/20 text-ds-text-primary"
-                    aria-label="partner-suit"
-                  >
-                    <option value={0}>JOKER</option>
+                  </fieldset>
+                  <fieldset className="flex flex-wrap gap-1 border-0 p-0" aria-label={t('partnerSuit')}>
+                    <button
+                      type="button"
+                      aria-pressed={partnerSuitValue === 0}
+                      data-testid="partner-suit-0"
+                      onClick={() => setPartnerSuitValue(0)}
+                      disabled={loading}
+                      className={suitToggleClass(partnerSuitValue === 0)}
+                    >
+                      JOKER
+                    </button>
                     {[1, 2, 3, 4].map((s) => (
-                      <option key={s} value={s}>
-                        {t(`suitName.${SUIT_KEYS[s]}`)}
-                      </option>
+                      <button
+                        key={s}
+                        type="button"
+                        aria-pressed={partnerSuitValue === s}
+                        aria-label={t(`suitName.${SUIT_KEYS[s]}`)}
+                        data-testid={`partner-suit-${s}`}
+                        onClick={() => setPartnerSuitValue(s)}
+                        disabled={loading}
+                        className={suitToggleClass(partnerSuitValue === s)}
+                      >
+                        {SUIT_SYMBOLS[s]}
+                      </button>
                     ))}
-                  </select>
+                  </fieldset>
                   {partnerSuitValue > 0 && (
                     <select
                       value={partnerValueValue}
