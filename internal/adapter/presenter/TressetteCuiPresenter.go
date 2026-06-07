@@ -104,7 +104,7 @@ func (p *TressetteCuiPresenter) HintOutput(g interfaces.TressetteGame) string {
 	}
 	return color.Yellow(i18n.Tf("tressette.hintCard",
 		"cards", strings.Join(cards, ", "),
-		"reason", tressetteHintReasonStr(hint.Reason))) + "\n"
+		"reason", hintReasonStr(hint.Reason, tressetteHintReasonKeys))) + "\n"
 }
 
 // tressetteHintReasonKeys maps Tressette-specific hint-reason identifiers to i18n keys.
@@ -114,14 +114,6 @@ var tressetteHintReasonKeys = map[string]string{
 	"follow_duck":  "tressette.hintReasonFollowDuck",
 	"give_partner": "tressette.hintReasonGivePartner",
 	"discard_low":  "tressette.hintReasonDiscardLow",
-}
-
-// tressetteHintReasonStr resolves a reason via the per-game map first, then the shared layer.
-func tressetteHintReasonStr(reason string) string {
-	if key, ok := tressetteHintReasonKeys[reason]; ok {
-		return i18n.T(key)
-	}
-	return lookupHintReason(reason, nil)
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

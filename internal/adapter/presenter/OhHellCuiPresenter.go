@@ -111,7 +111,7 @@ func (p *OhHellCuiPresenter) HintOutput(o interfaces.OhHellGame) string {
 	if hint == nil {
 		return i18n.T("ohhell.hintNone") + "\n"
 	}
-	reason := ohHellHintReasonStr(hint.Reason)
+	reason := hintReasonStr(hint.Reason, nil)
 	if hint.Bid != nil {
 		return color.Yellow(i18n.Tf("ohhell.hintBid",
 			"bid", strconv.Itoa(*hint.Bid),
@@ -135,12 +135,6 @@ func (p *OhHellCuiPresenter) HintOutput(o interfaces.OhHellGame) string {
 		"idx", strconv.Itoa(*hint.CardIndex),
 		"card", cuiCardStr(card),
 		"reason", reason)) + "\n"
-}
-
-// ohHellHintReasonStr falls through to the cui_common shared keys (Oh Hell
-// has no game-specific hint reasons today).
-func ohHellHintReasonStr(reason string) string {
-	return lookupHintReason(reason, nil)
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

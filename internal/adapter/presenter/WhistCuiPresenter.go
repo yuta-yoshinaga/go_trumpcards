@@ -92,23 +92,14 @@ func (p *WhistCuiPresenter) HintOutput(w interfaces.WhistGame) string {
 	return color.Yellow(i18n.Tf("whist.hintCard",
 		"idx", strconv.Itoa(*hint.CardIndex),
 		"card", cuiCardStr(card),
-		"reason", whistHintReasonStr(hint.Reason))) + "\n"
+		"reason", hintReasonStr(hint.Reason, whistHintReasonKeys))) + "\n"
 }
 
 // whistHintReasonKeys maps Whist-specific hint-reason identifiers to their
 // i18n keys. Reasons not listed here fall through to cui_common via
-// lookupHintReason.
+// hintReasonStr.
 var whistHintReasonKeys = map[string]string{
 	"trump_cut": "whist.hintReasonTrumpCut",
-}
-
-// whistHintReasonStr resolves a reason via the per-game map first, then the
-// shared (cui_common) layer.
-func whistHintReasonStr(reason string) string {
-	if key, ok := whistHintReasonKeys[reason]; ok {
-		return i18n.T(key)
-	}
-	return lookupHintReason(reason, nil)
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

@@ -127,7 +127,7 @@ func (p *PitchCuiPresenter) HintOutput(s interfaces.PitchGame) string {
 	if hint == nil {
 		return i18n.T("pitch.hintNone") + "\n"
 	}
-	reason := pitchHintReasonStr(hint.Reason)
+	reason := hintReasonStr(hint.Reason, pitchHintReasonKeys)
 	if hint.Bid != nil {
 		return color.Yellow(i18n.Tf("pitch.hintBid",
 			"bid", pitchBidStr(*hint.Bid),
@@ -154,22 +154,13 @@ func (p *PitchCuiPresenter) HintOutput(s interfaces.PitchGame) string {
 }
 
 // pitchHintReasonKeys maps Pitch-specific hint-reason identifiers to their
-// i18n keys. Reasons not in this map fall through to lookupHintReason →
+// i18n keys. Reasons not in this map fall through to hintReasonStr →
 // cui_common.
 var pitchHintReasonKeys = map[string]string{
 	"set_trump_lead": "pitch.hintReasonSetTrumpLead",
 	"trump_cut":      "pitch.hintReasonTrumpCut",
 	"bid_strong":     "pitch.hintReasonBidStrong",
 	"bid_pass":       "pitch.hintReasonBidPass",
-}
-
-// pitchHintReasonStr resolves a reason via the per-game map first, then
-// the shared (cui_common) layer.
-func pitchHintReasonStr(reason string) string {
-	if key, ok := pitchHintReasonKeys[reason]; ok {
-		return i18n.T(key)
-	}
-	return lookupHintReason(reason, nil)
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

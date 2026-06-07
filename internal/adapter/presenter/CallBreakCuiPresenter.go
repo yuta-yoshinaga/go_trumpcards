@@ -100,7 +100,7 @@ func (p *CallBreakCuiPresenter) HintOutput(cb interfaces.CallBreakGame) string {
 	if hint == nil {
 		return i18n.T("callbreak.hintNone") + "\n"
 	}
-	reason := callBreakHintReasonStr(hint.Reason)
+	reason := hintReasonStr(hint.Reason, callBreakHintReasonKeys)
 	if hint.Bid != nil {
 		return color.Yellow(i18n.Tf("callbreak.hintBid",
 			"bid", strconv.Itoa(*hint.Bid),
@@ -117,16 +117,9 @@ func (p *CallBreakCuiPresenter) HintOutput(cb interfaces.CallBreakGame) string {
 }
 
 // callBreakHintReasonKeys maps Call Break-specific hint-reason identifiers to
-// their i18n keys. Reasons not in this map fall through to lookupHintReason.
+// their i18n keys. Reasons not in this map fall through to hintReasonStr.
 var callBreakHintReasonKeys = map[string]string{
 	"trump_cut": "callbreak.hintReasonTrumpCut",
-}
-
-func callBreakHintReasonStr(reason string) string {
-	if key, ok := callBreakHintReasonKeys[reason]; ok {
-		return i18n.T(key)
-	}
-	return lookupHintReason(reason, nil)
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

@@ -162,7 +162,7 @@ func (p *MightyCuiPresenter) HintOutput(m interfaces.MightyGame) string {
 	if hint == nil {
 		return i18n.T("mighty.hintNone") + "\n"
 	}
-	reason := mightyHintReasonStr(hint.Reason)
+	reason := hintReasonStr(hint.Reason, mightyHintReasonKeys)
 	switch {
 	case hint.Bid != nil:
 		tag := ""
@@ -219,14 +219,6 @@ var mightyHintReasonKeys = map[string]string{
 	"play_low":          "mighty.hintReasonPlayLow",
 	"play_trump":        "mighty.hintReasonPlayTrump",
 	"play_follow":       "mighty.hintReasonPlayFollow",
-}
-
-// mightyHintReasonStr resolves a reason to the active locale.
-func mightyHintReasonStr(reason string) string {
-	if key, ok := mightyHintReasonKeys[reason]; ok {
-		return i18n.T(key)
-	}
-	return lookupHintReason(reason, nil)
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

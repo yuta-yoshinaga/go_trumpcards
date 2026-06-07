@@ -100,25 +100,16 @@ func (p *HeartsCuiPresenter) HintOutput(h interfaces.HeartsGame) string {
 	}
 	return color.Yellow(i18n.Tf("hearts.hintCard",
 		"cards", strings.Join(cards, ", "),
-		"reason", heartsHintReasonStr(hint.Reason))) + "\n"
+		"reason", hintReasonStr(hint.Reason, heartsHintReasonKeys))) + "\n"
 }
 
 // heartsHintReasonKeys maps Hearts-specific hint-reason identifiers to
 // their i18n keys. Reasons not in this map fall through to
-// lookupHintReason → cui_common.
+// hintReasonStr → cui_common.
 var heartsHintReasonKeys = map[string]string{
 	"pass_high_risk_cards": "hearts.hintReasonPassHighRisk",
 	"discard_queen_spades": "hearts.hintReasonDiscardQueenSpades",
 	"discard_hearts":       "hearts.hintReasonDiscardHearts",
-}
-
-// heartsHintReasonStr resolves a reason via the per-game map first, then
-// the shared (cui_common) layer.
-func heartsHintReasonStr(reason string) string {
-	if key, ok := heartsHintReasonKeys[reason]; ok {
-		return i18n.T(key)
-	}
-	return lookupHintReason(reason, nil)
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

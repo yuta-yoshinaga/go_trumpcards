@@ -141,12 +141,12 @@ func (p *SchnapsenCuiPresenter) HintOutput(s interfaces.SchnapsenGame) string {
 	return color.Yellow(i18n.Tf("schnapsen.hintCard",
 		"idx", strconv.Itoa(*hint.CardIndex),
 		"card", cuiCardStr(card),
-		"reason", schnapsenHintReasonStr(hint.Reason))) + "\n"
+		"reason", hintReasonStr(hint.Reason, schnapsenHintReasonKeys))) + "\n"
 }
 
 // schnapsenHintReasonKeys maps Schnapsen-specific hint-reason identifiers to their
 // i18n keys. Reasons not listed here fall through to cui_common via
-// lookupHintReason.
+// hintReasonStr.
 var schnapsenHintReasonKeys = map[string]string{
 	"lead_trump":  "schnapsen.hintReasonLeadTrump",
 	"lead_low":    "schnapsen.hintReasonLeadLow",
@@ -154,15 +154,6 @@ var schnapsenHintReasonKeys = map[string]string{
 	"follow_cut":  "schnapsen.hintReasonFollowCut",
 	"follow_win":  "schnapsen.hintReasonFollowWin",
 	"follow_dump": "schnapsen.hintReasonFollowDump",
-}
-
-// schnapsenHintReasonStr resolves a reason via the per-game map first, then the
-// shared (cui_common) layer.
-func schnapsenHintReasonStr(reason string) string {
-	if key, ok := schnapsenHintReasonKeys[reason]; ok {
-		return i18n.T(key)
-	}
-	return lookupHintReason(reason, nil)
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

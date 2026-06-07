@@ -120,7 +120,7 @@ func (p *EuchreCuiPresenter) HintOutput(e interfaces.EuchreGame) string {
 	if hint == nil {
 		return i18n.T("euchre.hintNone") + "\n"
 	}
-	reason := euchreHintReasonStr(hint.Reason)
+	reason := hintReasonStr(hint.Reason, euchreHintReasonKeys)
 	if hint.OrderUp != nil {
 		if *hint.OrderUp {
 			key := "euchre.hintOrderUp"
@@ -153,18 +153,9 @@ func (p *EuchreCuiPresenter) HintOutput(e interfaces.EuchreGame) string {
 
 // euchreHintReasonKeys maps Euchre-specific hint-reason identifiers to their
 // i18n keys. Reasons not listed here fall through to cui_common via
-// lookupHintReason.
+// hintReasonStr.
 var euchreHintReasonKeys = map[string]string{
 	"discard_weakest": "euchre.hintReasonDiscardWeakest",
-}
-
-// euchreHintReasonStr resolves a reason via the per-game map first, then the
-// shared (cui_common) layer.
-func euchreHintReasonStr(reason string) string {
-	if key, ok := euchreHintReasonKeys[reason]; ok {
-		return i18n.T(key)
-	}
-	return lookupHintReason(reason, nil)
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.
