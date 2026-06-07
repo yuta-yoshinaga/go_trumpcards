@@ -142,6 +142,14 @@ describe('ThirtyOnePage', () => {
     expect(screen.queryByTestId('knock-countdown-banner')).not.toBeInTheDocument();
   });
 
+  it('names the human in the knock banner when the human is the knocker', async () => {
+    mockExec.mockResolvedValue(makeState({ knockerIdx: 0, currentPlayerIdx: 1 }));
+    renderWithProviders(<ThirtyOnePage />);
+    const banner = await screen.findByTestId('knock-countdown-banner');
+    expect(banner).toHaveTextContent(/あなた/);
+    expect(banner).not.toHaveTextContent(/最後のターン/);
+  });
+
   it('hides the knock countdown banner at game end', async () => {
     mockExec.mockResolvedValue(makeState({ phase: ThirtyOnePhase.GAME_END, gameEndFlag: true, knockerIdx: 1 }));
     renderWithProviders(<ThirtyOnePage />);
