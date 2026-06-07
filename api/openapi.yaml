@@ -12286,33 +12286,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - command
-                - sessionId
-              properties:
-                command:
-                  type: string
-                  enum: [reset, r, decide, draw, play, p, next, log, l]
-                sessionId:
-                  type: string
-                decide:
-                  type: boolean
-                  description: For the `decide` command — true to play, false to fold.
-                indices:
-                  type: array
-                  description: For the `draw` command — indices of the cards to discard.
-                  items:
-                    type: integer
-                cardIndex:
-                  type: integer
-                  description: For the `play` command — index of the card to play.
-                config:
-                  type: object
-                  properties:
-                    cpuDifficulty:
-                      type: integer
-                      enum: [0, 1, 2]
+              $ref: '#/components/schemas/BourreRequest'
             examples:
               reset:
                 summary: Start a new game
@@ -12337,143 +12311,13 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  players:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: integer
-                        isHuman:
-                          type: boolean
-                        isFinished:
-                          type: boolean
-                        folded:
-                          type: boolean
-                        decided:
-                          type: boolean
-                        drawn:
-                          type: boolean
-                        bourreed:
-                          type: boolean
-                        chips:
-                          type: integer
-                        tricks:
-                          type: integer
-                        cardCount:
-                          type: integer
-                        cards:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              design:
-                                type: string
-                              value:
-                                type: integer
-                  phase:
-                    type: string
-                    enum: [decide, draw, play, roundEnd, gameEnd, unknown]
-                  currentPlayerIdx:
-                    type: integer
-                  dealerIdx:
-                    type: integer
-                  pot:
-                    type: integer
-                  carryPot:
-                    type: integer
-                  trumpSuit:
-                    type: string
-                  trumpCard:
-                    type: object
-                    nullable: true
-                    properties:
-                      design:
-                        type: string
-                      value:
-                        type: integer
-                  trickNumber:
-                    type: integer
-                  currentTrick:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        playerIdx:
-                          type: integer
-                        card:
-                          type: object
-                          properties:
-                            design:
-                              type: string
-                            value:
-                              type: integer
-                  lastTrick:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        playerIdx:
-                          type: integer
-                        card:
-                          type: object
-                          properties:
-                            design:
-                              type: string
-                            value:
-                              type: integer
-                  lastTrickWinner:
-                    type: integer
-                  leadPlayerIdx:
-                    type: integer
-                  handNumber:
-                    type: integer
-                  gameEndFlag:
-                    type: boolean
-                  winnerIdx:
-                    type: integer
-                  validPlays:
-                    type: array
-                    items:
-                      type: integer
-                  results:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        playerIdx:
-                          type: integer
-                        tricks:
-                          type: integer
-                        wonAmount:
-                          type: integer
-                        bourreed:
-                          type: boolean
-                        folded:
-                          type: boolean
-                  config:
-                    type: object
-                    properties:
-                      cpuDifficulty:
-                        type: integer
-                  message:
-                    type: string
-                  messageCode:
-                    type: string
-                  messageParams:
-                    type: object
-                    additionalProperties: true
+                $ref: '#/components/schemas/BourreResponse'
         '400':
           description: Bad request (unsupported command, missing/invalid parameters, or session error)
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
+                $ref: '#/components/schemas/BourreResponse'
 
 components:
   schemas:
@@ -26388,3 +26232,162 @@ components:
           additionalProperties:
             type: string
           description: Interpolation parameters for the message template keyed by placeholder name.
+
+    BourreRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          enum: [reset, r, decide, draw, play, p, next, log, l]
+        sessionId:
+          type: string
+        decide:
+          type: boolean
+          description: For the `decide` command — true to play, false to fold.
+        indices:
+          type: array
+          description: For the `draw` command — indices of the cards to discard.
+          items:
+            type: integer
+        cardIndex:
+          type: integer
+          description: For the `play` command — index of the card to play.
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+              enum: [0, 1, 2]
+
+    BourreResponse:
+      type: object
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              isFinished:
+                type: boolean
+              folded:
+                type: boolean
+              decided:
+                type: boolean
+              drawn:
+                type: boolean
+              bourreed:
+                type: boolean
+              chips:
+                type: integer
+              tricks:
+                type: integer
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    design:
+                      type: string
+                    value:
+                      type: integer
+        phase:
+          type: string
+          enum: [decide, draw, play, roundEnd, gameEnd, unknown]
+        currentPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        pot:
+          type: integer
+        carryPot:
+          type: integer
+        trumpSuit:
+          type: string
+        trumpCard:
+          type: object
+          nullable: true
+          properties:
+            design:
+              type: string
+            value:
+              type: integer
+        trickNumber:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                type: object
+                properties:
+                  design:
+                    type: string
+                  value:
+                    type: integer
+        lastTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                type: object
+                properties:
+                  design:
+                    type: string
+                  value:
+                    type: integer
+        lastTrickWinner:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        handNumber:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+        validPlays:
+          type: array
+          items:
+            type: integer
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              tricks:
+                type: integer
+              wonAmount:
+                type: integer
+              bourreed:
+                type: boolean
+              folded:
+                type: boolean
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties: true

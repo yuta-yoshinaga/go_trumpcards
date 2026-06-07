@@ -266,10 +266,10 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/tichu': tichu,
   '/bourre': bourre,
   '/doudizhu': doudizhu,
-  '/truco': truco,
   '/montecarlo': montecarlo,
   '/oasispoker': oasispoker,
   '/piquet': piquet,
+  '/truco': truco,
 };
 
 /** Returns true when CLI mode is enabled for the game at the given path. */
