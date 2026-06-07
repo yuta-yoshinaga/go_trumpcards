@@ -213,18 +213,34 @@ function Rummy500PageContent() {
                 {p.laidMelds.length > 0 && (
                   <div className="mt-1">
                     <div className="text-ds-text-muted text-xs mb-1">{t('laidMelds')}</div>
-                    {p.laidMelds.map((meld, mIdx) => (
-                      <div key={`meld-${p.id}-${mIdx}`} className="flex flex-wrap gap-1 mb-1">
-                        <span className="text-xs text-ds-text-muted self-center">[{mIdx}]</span>
-                        {meld.cards.map((card, ci) => (
-                          <AnimatedCard
-                            key={`meld-${p.id}-${mIdx}-${card.design}-${card.value}-${ci}`}
-                            card={card}
-                            width={cardWidth * 0.6}
-                          />
-                        ))}
-                      </div>
-                    ))}
+                    {p.laidMelds.map((meld, mIdx) => {
+                      const isLayoffTarget = layoffOwner === p.id && layoffMeldIdx === mIdx;
+                      return (
+                        <button
+                          type="button"
+                          key={`meld-${p.id}-${mIdx}`}
+                          onClick={() => {
+                            setLayoffOwner(p.id);
+                            setLayoffMeldIdx(mIdx);
+                          }}
+                          aria-pressed={isLayoffTarget}
+                          aria-label={t('layoffMeldTarget', { owner: playerName(p.id, p.isHuman), idx: mIdx })}
+                          data-testid={`layoff-meld-${p.id}-${mIdx}`}
+                          className={`flex flex-wrap gap-1 mb-1 w-full rounded p-1 text-left transition-all ${
+                            isLayoffTarget ? 'ring-2 ring-ds-info' : 'hover:bg-white/5'
+                          }`}
+                        >
+                          <span className="text-xs text-ds-text-muted self-center">[{mIdx}]</span>
+                          {meld.cards.map((card, ci) => (
+                            <AnimatedCard
+                              key={`meld-${p.id}-${mIdx}-${card.design}-${card.value}-${ci}`}
+                              card={card}
+                              width={cardWidth * 0.6}
+                            />
+                          ))}
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>

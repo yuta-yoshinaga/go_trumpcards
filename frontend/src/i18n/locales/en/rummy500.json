@@ -25,6 +25,7 @@
   "meldButton": "Meld",
   "layoffOwner": "Owner",
   "layoffMeld": "Meld#",
+  "layoffMeldTarget": "Select {{owner}}'s meld {{idx}} as lay-off target",
   "layoffButton": "Lay off",
   "discardButton": "Discard",
   "nextRound": "Next round",

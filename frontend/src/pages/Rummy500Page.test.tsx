@@ -121,6 +121,33 @@ describe('Rummy500Page', () => {
     expect(screen.getByRole('button', { name: /^捨てる$/ })).toBeInTheDocument();
   });
 
+  it('selects a lay-off target by clicking a laid meld', async () => {
+    const withMeld: Rummy500Response = {
+      ...playPhaseState,
+      players: [
+        playPhaseState.players[0],
+        {
+          ...playPhaseState.players[1],
+          laidMelds: [
+            {
+              cards: [
+                { design: 'DIAMOND', value: 4 },
+                { design: 'DIAMOND', value: 5 },
+                { design: 'DIAMOND', value: 6 },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    mockExec.mockResolvedValue(withMeld);
+    renderWithProviders(<Rummy500Page />);
+    const meldBtn = await screen.findByTestId('layoff-meld-1-0');
+    expect(meldBtn).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(meldBtn);
+    await waitFor(() => expect(screen.getByTestId('layoff-meld-1-0')).toHaveAttribute('aria-pressed', 'true'));
+  });
+
   it('shows next round button in RoundEnd phase', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<Rummy500Page />);
