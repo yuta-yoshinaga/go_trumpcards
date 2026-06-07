@@ -1,21 +1,22 @@
 #!/usr/bin/env bash
-# game-improve: idempotent, rate-limit-safe GitHub issue creation from a merged
+# propose-games: idempotent, rate-limit-safe GitHub issue creation from a merged
 # proposals JSON (array of {game,title,body}).
 #
 # Usage:
-#   SRC=/tmp/claude-proposals/all.json REPO_DIR=/path/to/repo \
+#   SRC=/tmp/newgames/all.json FOOTER='新規ゲーム追加提案バッチにより自動起票。' \
 #     bash create_issues.sh
 # Run in the background; ~3s/issue. Rerun to resume (skips already-created games).
 set -uo pipefail
 
 REPO_DIR="${REPO_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
-SRC="${SRC:-/tmp/claude-proposals/all.json}"
+SRC="${SRC:-/tmp/newgames/all.json}"
 [[ "$SRC" = /* ]] || SRC="$PWD/$SRC"   # absolutize before the cd below
+FOOTER="${FOOTER:-自動起票。実装時は docs/new-game-checklist.md に従うこと。}"
+SLEEP="${SLEEP:-3}"                    # seconds between creates (rate-limit safety)
 WORKDIR="$(dirname "$SRC")"
 LOG="$WORKDIR/created.log"
 ERR="$WORKDIR/errors.log"
 BODY="$WORKDIR/body.md"
-SLEEP="${SLEEP:-3}"          # seconds between creates (secondary-rate-limit safety)
 
 cd "$REPO_DIR"
 mkdir -p "$WORKDIR"
@@ -36,7 +37,7 @@ for ((i=0; i<n; i++)); do
   fi
   title=$(jq -r ".[$i].title" "$SRC")
   jq -r ".[$i].body" "$SRC" > "$BODY" || { echo "[$((i+1))/$n] $game -> jq extract failed, skip" >&2; continue; }
-  printf '\n\n---\n_対象ゲーム: `%s`。ゲーム改善提案バッチにより自動起票。_\n' "$game" >> "$BODY"
+  printf '\n\n---\n_%s（スラッグ案: `%s`）_\n' "$FOOTER" "$game" >> "$BODY"
   if url=$(gh issue create --title "$title" --body-file "$BODY" 2>>"$ERR"); then
     printf '%s\t%s\t%s\n' "$game" "$url" "$title" >> "$LOG"
     echo "[$((i+1))/$n] $game -> $url"

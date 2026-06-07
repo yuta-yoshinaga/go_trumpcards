@@ -245,3 +245,4 @@ Key routing rules:
 - Save progress, checkpoint, resume → invoke checkpoint
 - Code quality, health check → invoke health
 - Per-game improvement proposals → GitHub issues ("各ゲームの改善提案", "全ゲームのissueを作って") → invoke game-improve
+- New-game candidates → GitHub issues ("追加した方が良いゲームを提案", "新規ゲーム候補をissueに") → invoke propose-games
