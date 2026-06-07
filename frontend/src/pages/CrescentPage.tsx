@@ -221,7 +221,9 @@ function CrescentPageContent() {
                             <span
                               data-testid={`foundation-dir-${idx}`}
                               className={`inline-block rounded px-1 font-bold ${
-                                directionKey === 'asc' ? 'text-ds-success' : 'text-ds-warning'
+                                directionKey === 'asc'
+                                  ? 'bg-ds-success/20 text-ds-success'
+                                  : 'bg-ds-warning/20 text-ds-warning'
                               }`}
                             >
                               {suit} {directionKey === 'asc' ? '↑' : '↓'}
@@ -240,7 +242,7 @@ function CrescentPageContent() {
                                 disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
                                 aria-label={t('foundationAriaLabel', {
                                   suit,
-                                  direction: directionKey,
+                                  direction: t(`direction.${directionKey}`),
                                   count: pile.length,
                                   top: cardAlt(pile[pile.length - 1]),
                                 })}

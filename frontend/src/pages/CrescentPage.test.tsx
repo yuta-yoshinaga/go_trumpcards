@@ -110,8 +110,8 @@ describe('CrescentPage', () => {
     expect(asc.className).toContain('text-ds-success');
     const desc = screen.getByTestId('foundation-dir-4'); // row 1 = descending
     expect(desc.className).toContain('text-ds-warning');
-    // Ascending ♠ pile tops out at A → aria-label mentions the top card.
-    expect(screen.getByLabelText(/トップ ♠ A/)).toBeInTheDocument();
+    // Ascending ♠ pile tops out at A → aria-label is localized and names the top card.
+    expect(screen.getByLabelText(/昇順ファンデーション ♠ 残り1枚 トップ ♠ A/)).toBeInTheDocument();
   });
 
   it('redeal button shows remaining count', async () => {

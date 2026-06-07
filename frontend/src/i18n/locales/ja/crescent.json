@@ -14,6 +14,10 @@
   "empty": "空",
   "foundationAriaLabel": "{{direction}}ファンデーション {{suit}} 残り{{count}}枚 トップ {{top}}",
   "emptyFoundationAriaLabel": "空の{{direction}}ファンデーション ({{suit}})",
+  "direction": {
+    "asc": "昇順",
+    "desc": "降順"
+  },
   "landscapeBanner": "横向きでのプレイを推奨します",
   "hint": "ヒント",
   "autoComplete": "オートコンプリート",
