@@ -38,6 +38,7 @@ export const STANDARD_SUIT_MAP: Readonly<Record<string, number>> = {
 export const BRIDGE_SUIT_MAP: Readonly<Record<string, number>> = {
   club: 1,
   clubs: 1,
+  clover: 1,
   c: 1,
   diamond: 2,
   diamonds: 2,
