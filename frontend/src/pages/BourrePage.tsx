@@ -168,8 +168,12 @@ function BourrePageContent() {
     [apiCall],
   );
 
-  const handleNext = useCallback(() => apiCall({ command: 'next' }), [apiCall]);
-  const handleReset = useCallback(() => apiCall({ command: 'reset' }), [apiCall]);
+  const handleNext = useCallback(() => {
+    void apiCall({ command: 'next' });
+  }, [apiCall]);
+  const handleReset = useCallback(() => {
+    void apiCall({ command: 'reset' });
+  }, [apiCall]);
 
   const toggleCard = useCallback((idx: number) => {
     setSelectedCards((prev) => {

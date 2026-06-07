@@ -265,6 +265,42 @@ func TestBourreCheckGameEndHumanBroke(t *testing.T) {
 	}
 }
 
+func TestBourreEmptyPlayersNoPanic(t *testing.T) {
+	b := &Bourre{}
+	// None of these may panic on an empty player list (e.g. crafted "ps":null JSON).
+	b.CpuPlay()
+	b.startHand()
+	b.finishHand()
+	b.checkGameEnd()
+	if b.GetPlayerCnt() != 0 {
+		t.Errorf("expected 0 players, got %d", b.GetPlayerCnt())
+	}
+}
+
+func TestBourreCpuPlayDefensiveGuards(t *testing.T) {
+	t.Run("cpu with empty hand does not panic", func(t *testing.T) {
+		b := &Bourre{
+			phase:            BourrePhasePlay,
+			players:          []*BourrePlayer{NewBourrePlayer(true), NewBourrePlayer(false)},
+			currentPlayerIdx: 1,
+			lastTrickWinner:  -1,
+		}
+		b.CpuPlay() // player 1 is active but has 0 cards -> guarded
+		if len(b.currentTrick) != 0 {
+			t.Errorf("no card should be played from an empty hand")
+		}
+	})
+	t.Run("nil player slot does not panic", func(t *testing.T) {
+		b := &Bourre{
+			phase:            BourrePhasePlay,
+			players:          []*BourrePlayer{nil, NewBourrePlayer(false)},
+			currentPlayerIdx: 0,
+			lastTrickWinner:  -1,
+		}
+		b.CpuPlay() // current player is nil -> guarded
+	})
+}
+
 func TestBourreCpuDifficultyThreshold(t *testing.T) {
 	mk := func(diff BourreCpuDifficulty) *Bourre {
 		b := &Bourre{trumpSuit: CardDesignSpade, config: BourreConfig{CpuDifficulty: diff}}

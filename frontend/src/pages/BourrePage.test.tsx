@@ -163,11 +163,134 @@ describe('BourrePage', () => {
     });
   });
 
+  it('draw phase: selecting a card then discarding dispatches draw with indices', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'draw',
+        currentPlayerIdx: 0,
+        players: [
+          player({
+            id: 0,
+            isHuman: true,
+            cards: [
+              { design: 'SPADE', value: 9 },
+              { design: 'CLOVER', value: 5 },
+            ],
+          }),
+          player({ id: 1 }),
+          player({ id: 2 }),
+          player({ id: 3 }),
+          player({ id: 4 }),
+        ],
+      }),
+    );
+    const { container } = renderWithProviders(<BourrePage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
+    const cardBtn = container.querySelector('[data-tutorial="bourre-hand"] button');
+    fireEvent.click(cardBtn as Element);
+    fireEvent.click(screen.getByRole('button', { name: /交換する/ }));
+    await waitFor(() => {
+      expect(mockExec).toHaveBeenCalledWith(expect.objectContaining({ command: 'draw', indices: [0] }));
+    });
+  });
+
+  it('draw phase: keep all dispatches an empty draw', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'draw',
+        currentPlayerIdx: 0,
+        players: [
+          player({ id: 0, isHuman: true, cards: [{ design: 'SPADE', value: 9 }] }),
+          player({ id: 1 }),
+          player({ id: 2 }),
+          player({ id: 3 }),
+          player({ id: 4 }),
+        ],
+      }),
+    );
+    renderWithProviders(<BourrePage />);
+    fireEvent.click(await screen.findByRole('button', { name: '交換しない' }));
+    await waitFor(() => {
+      expect(mockExec).toHaveBeenCalledWith(expect.objectContaining({ command: 'draw', indices: [] }));
+    });
+  });
+
+  it('roundEnd phase shows results and the next hand button', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'roundEnd',
+        results: [
+          { playerIdx: 0, tricks: 0, wonAmount: 0, bourreed: true, folded: false },
+          { playerIdx: 1, tricks: 3, wonAmount: 25, bourreed: false, folded: false },
+        ],
+      }),
+    );
+    renderWithProviders(<BourrePage />);
+    fireEvent.click(await screen.findByRole('button', { name: '次のハンド' }));
+    await waitFor(() => {
+      expect(mockExec).toHaveBeenCalledWith(expect.objectContaining({ command: 'next' }));
+    });
+  });
+
+  it('end phase: shows the lose message when a CPU wins', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'gameEnd',
+        gameEndFlag: true,
+        winnerIdx: 1,
+        results: [{ playerIdx: 1, tricks: 5, wonAmount: 50, bourreed: false, folded: false }],
+      }),
+    );
+    renderWithProviders(<BourrePage />);
+    await waitFor(() => {
+      expect(screen.getByText(/CPU 1 の勝ち/)).toBeInTheDocument();
+    });
+  });
+
   it('toggles CLI mode', async () => {
     renderWithProviders(<BourrePage />);
     await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
     const cliToggle = screen.getByRole('button', { name: /CLI/i });
     fireEvent.click(cliToggle);
     await waitFor(() => expect(screen.queryByText(/CPU 1/)).not.toBeInTheDocument());
+  });
+
+  it('parses and dispatches CLI commands, and formats state output', async () => {
+    localStorage.setItem('cli-mode-bourre', 'true');
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'play',
+        currentTrick: [{ playerIdx: 1, card: { design: 'HEART', value: 7 } }],
+        message: 'your turn',
+      }),
+    );
+    renderWithProviders(<BourrePage />);
+    const input = await screen.findByRole('textbox');
+
+    const run = async (cmd: string, expected: Record<string, unknown>) => {
+      fireEvent.change(input, { target: { value: cmd } });
+      fireEvent.keyDown(input, { key: 'Enter' });
+      await waitFor(() => {
+        expect(mockExec).toHaveBeenCalledWith(expect.objectContaining(expected));
+      });
+    };
+
+    await run('d 1', { command: 'decide', decide: true });
+    await run('d 0', { command: 'decide', decide: false });
+    await run('dr 0 2', { command: 'draw', indices: [0, 2] });
+    await run('p 3', { command: 'p', cardIndex: 3 });
+    await run('n', { command: 'next' });
+    await run('r', { command: 'reset' });
+    await run('sd 1', { command: 'reset', config: { cpuDifficulty: 1 } });
+    await run('log', { command: 'l' });
+
+    // Unknown command surfaces an error and does not dispatch.
+    mockExec.mockClear();
+    fireEvent.change(input, { target: { value: 'xyz' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => {
+      expect(screen.getAllByText(/Unknown command/).length).toBeGreaterThan(0);
+    });
+    expect(mockExec).not.toHaveBeenCalled();
   });
 });

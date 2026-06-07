@@ -121,6 +121,9 @@ func (b *Bourre) Reset() {
 // startHand 1ハンド分の準備 (アンティ・配札・切り札決定) を行う
 func (b *Bourre) startHand() {
 	n := len(b.players)
+	if n == 0 {
+		return
+	}
 	b.handNumber++
 	b.trickNumber = 0
 	b.currentTrick = nil
@@ -143,7 +146,7 @@ func (b *Bourre) startHand() {
 		if p.GetIsFinished() {
 			continue
 		}
-		ante := minInt(BourreAnte, p.GetChips())
+		ante := min(BourreAnte, p.GetChips())
 		p.SubtractChips(ante)
 		b.pot += ante
 		b.appendLog(i, "ante", fmt.Sprintf("%s antes %d", b.playerName(i), ante), nil)
@@ -203,7 +206,7 @@ func (b *Bourre) PlayerDecide(play bool) error {
 		return ErrNotHumanTurn
 	}
 	p := b.players[idx]
-	if !p.GetIsHuman() || p.GetIsFinished() || p.GetDecided() {
+	if p == nil || !p.GetIsHuman() || p.GetIsFinished() || p.GetDecided() {
 		return ErrNotHumanTurn
 	}
 	b.applyDecide(idx, play)
@@ -217,7 +220,7 @@ func (b *Bourre) cpuDecide() {
 		return
 	}
 	p := b.players[idx]
-	if p.GetIsHuman() || p.GetIsFinished() || p.GetDecided() {
+	if p == nil || p.GetIsHuman() || p.GetIsFinished() || p.GetDecided() {
 		return
 	}
 	b.applyDecide(idx, b.cpuShouldPlay(idx))
@@ -276,7 +279,7 @@ func (b *Bourre) PlayerDraw(indices []int) error {
 		return ErrNotHumanTurn
 	}
 	p := b.players[idx]
-	if !p.GetIsHuman() || !b.isActive(idx) || p.GetDrawn() {
+	if p == nil || !p.GetIsHuman() || !b.isActive(idx) || p.GetDrawn() {
 		return ErrNotHumanTurn
 	}
 	if err := b.validateDrawIndices(p, indices); err != nil {
@@ -293,7 +296,7 @@ func (b *Bourre) cpuDraw() {
 		return
 	}
 	p := b.players[idx]
-	if p.GetIsHuman() || !b.isActive(idx) || p.GetDrawn() {
+	if p == nil || p.GetIsHuman() || !b.isActive(idx) || p.GetDrawn() {
 		return
 	}
 	b.applyDraw(idx, b.cpuSelectDiscards(idx))
@@ -368,7 +371,7 @@ func (b *Bourre) PlayerPlay(cardIndex int) error {
 		return ErrNotHumanTurn
 	}
 	p := b.players[idx]
-	if !p.GetIsHuman() || !b.isActive(idx) {
+	if p == nil || !p.GetIsHuman() || !b.isActive(idx) {
 		return ErrNotHumanTurn
 	}
 	if cardIndex < 0 || cardIndex >= p.GetCardsSize() {
@@ -389,11 +392,14 @@ func (b *Bourre) cpuPlayCard() {
 		return
 	}
 	p := b.players[idx]
-	if p.GetIsHuman() || !b.isActive(idx) {
+	if p == nil || p.GetIsHuman() || !b.isActive(idx) || p.GetCardsSize() == 0 {
 		return
 	}
 	cardIdx := b.cpuSelectPlay(idx)
 	played := p.RemoveCard(cardIdx)
+	if played == nil {
+		return
+	}
 	b.playCard(idx, played)
 }
 
@@ -531,7 +537,7 @@ func (b *Bourre) scoreHand() {
 	for i := range b.players {
 		if b.isActive(i) && b.players[i].GetTrickCount() == 0 {
 			b.players[i].SetBourreed(true)
-			pen := minInt(potValue, b.players[i].GetChips())
+			pen := min(potValue, b.players[i].GetChips())
 			b.players[i].SubtractChips(pen)
 			b.carryPot += pen
 			b.appendLog(i, "bourre", fmt.Sprintf("%s is bourréd! pays %d penalty", b.playerName(i), pen), nil)
@@ -577,12 +583,17 @@ func (b *Bourre) buildResults(potValue, winnerIdx int) {
 // finishHand ハンド終了の共通処理 (ディーラー移動・ゲーム終了判定)
 func (b *Bourre) finishHand() {
 	b.phase = BourrePhaseRoundEnd
-	b.dealerIdx = (b.dealerIdx + 1) % len(b.players)
+	if n := len(b.players); n > 0 {
+		b.dealerIdx = (b.dealerIdx + 1) % n
+	}
 	b.checkGameEnd()
 }
 
 // checkGameEnd ゲーム終了判定 (生存者1人以下、または人間が破産)
 func (b *Bourre) checkGameEnd() {
+	if len(b.players) == 0 {
+		return
+	}
 	solvent := 0
 	for _, p := range b.players {
 		if p.GetChips() > 0 {
@@ -650,6 +661,9 @@ func (b *Bourre) isActive(idx int) bool {
 		return false
 	}
 	p := b.players[idx]
+	if p == nil {
+		return false
+	}
 	return !p.GetIsFinished() && !p.GetFolded()
 }
 
@@ -814,14 +828,6 @@ func bourreRank(c *Card) int {
 		return 14
 	}
 	return c.GetValue()
-}
-
-// minInt 2つの整数の小さい方を返す
-func minInt(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
 }
 
 // suitNameOf design 定数のスート名 (英語)
