@@ -61,6 +61,16 @@ describe('BriscolaPage', () => {
     expect(screen.getByText(/得点/)).toBeInTheDocument();
   });
 
+  it('exposes the tutorial target elements for the guided tour', async () => {
+    // A card on the table so the trick area (conditionally rendered) is present.
+    mockExec.mockResolvedValue(makeState({ currentTrick: [{ playerIdx: 1, card: card('CLOVER', 4) }] }));
+    const { container } = renderWithProviders(<BriscolaPage />);
+    await waitFor(() => expect(screen.getByText(/トリック: 1/)).toBeInTheDocument());
+    for (const target of ['briscola-trump', 'briscola-trick', 'briscola-hand', 'briscola-score']) {
+      expect(container.querySelector(`[data-tutorial="${target}"]`)).not.toBeNull();
+    }
+  });
+
   it('shows human hand as 3 play buttons', async () => {
     renderWithProviders(<BriscolaPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'Play SPADE 1' })).toBeInTheDocument());
