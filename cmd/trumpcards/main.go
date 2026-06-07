@@ -64,12 +64,15 @@ func portInRange(port int) bool {
 }
 
 // validHost reports whether s is usable as the host portion of a TCP bind
-// address: a literal IP (v4/v6), an empty string (treated as "all interfaces"
-// by net.Listen), or a syntactically valid hostname. We deliberately do NOT
-// resolve DNS here — name-resolution failure at bind time stays a runtime
-// error (exit 1); only syntactically impossible values are rejected as a
-// usage error (exit 2). Whitespace and an embedded ":" (which would corrupt
-// net.JoinHostPort, or smuggle in a port) are rejected up front. See #2150.
+// address: a literal IP (v4/v6), an empty string, or a syntactically valid
+// hostname. An empty host is accepted but treated by the server as "unset" —
+// getListenAddr falls back to the 127.0.0.1 default, so `--host ""` is
+// equivalent to omitting the flag; pass 0.0.0.0 to expose on all interfaces.
+// We deliberately do NOT resolve DNS here — name-resolution failure at bind
+// time stays a runtime error (exit 1); only syntactically impossible values
+// are rejected as a usage error (exit 2). Whitespace and an embedded ":"
+// (which would corrupt net.JoinHostPort, or smuggle in a port) are rejected
+// up front. See #2150.
 func validHost(s string) bool {
 	if s == "" {
 		return true
@@ -635,7 +638,7 @@ var builtinSubcommandHelp = map[string][]string{
 		"    0  Server exited cleanly without receiving a signal",
 		"    1  Server start failure (includes EADDRINUSE / port already in use —",
 		"       systemd / Docker `restart: on-failure` should retry on this code)",
-		"    2  Usage error (unknown flag, --port out of range)",
+		"    2  Usage error (unknown flag, --port out of range, or invalid --host)",
 		"  130  Graceful shutdown triggered by SIGINT (Ctrl+C)  (128 + 2)",
 		"  143  Graceful shutdown triggered by SIGTERM  (128 + 15)",
 		"",

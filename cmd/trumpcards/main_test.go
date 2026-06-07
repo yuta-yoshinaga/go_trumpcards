@@ -162,7 +162,7 @@ func TestValidHost(t *testing.T) {
 		host string
 		want bool
 	}{
-		{"", true},                    // unset -> all interfaces (net.Listen convention)
+		{"", true},                    // empty -> server falls back to its 127.0.0.1 default
 		{"0.0.0.0", true},             // expose-all literal
 		{"127.0.0.1", true},           // IPv4 loopback
 		{"::1", true},                 // IPv6 loopback
@@ -172,6 +172,7 @@ func TestValidHost(t *testing.T) {
 		{"my-host.local", true},       // hyphen inside label
 		{"nonexistent.invalid", true}, // syntactically valid; DNS failure stays exit 1 at bind
 		{"bad host", false},           // embedded space
+		{"a\tb", false},               // embedded tab
 		{" leading", false},           // leading whitespace
 		{"trailing ", false},          // trailing whitespace
 		{"1.2.3.4:5", false},          // smuggled port (would corrupt JoinHostPort)
