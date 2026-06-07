@@ -72,8 +72,10 @@ import macau from '../../../docs/manual/cui/macau.md?raw';
 import memory from '../../../docs/manual/cui/memory.md?raw';
 import mighty from '../../../docs/manual/cui/mighty.md?raw';
 import mississippistud from '../../../docs/manual/cui/mississippistud.md?raw';
+import montecarlo from '../../../docs/manual/cui/montecarlo.md?raw';
 import napoleon from '../../../docs/manual/cui/napoleon.md?raw';
 import nertz from '../../../docs/manual/cui/nertz.md?raw';
+import oasispoker from '../../../docs/manual/cui/oasispoker.md?raw';
 import ohhell from '../../../docs/manual/cui/ohhell.md?raw';
 import oldmaid from '../../../docs/manual/cui/oldmaid.md?raw';
 import omaha from '../../../docs/manual/cui/omaha.md?raw';
@@ -85,6 +87,7 @@ import penguin from '../../../docs/manual/cui/penguin.md?raw';
 import pigtail from '../../../docs/manual/cui/pigtail.md?raw';
 import pineapple from '../../../docs/manual/cui/pineapple.md?raw';
 import pinochle from '../../../docs/manual/cui/pinochle.md?raw';
+import piquet from '../../../docs/manual/cui/piquet.md?raw';
 import pitch from '../../../docs/manual/cui/pitch.md?raw';
 import poker from '../../../docs/manual/cui/poker.md?raw';
 import pokersquares from '../../../docs/manual/cui/pokersquares.md?raw';
@@ -263,6 +266,9 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/tichu': tichu,
   '/bourre': bourre,
   '/doudizhu': doudizhu,
+  '/montecarlo': montecarlo,
+  '/oasispoker': oasispoker,
+  '/piquet': piquet,
   '/truco': truco,
 };
 
