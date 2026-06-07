@@ -217,8 +217,17 @@ function CrescentPageContent() {
                       const suit = FOUNDATION_SUITS[col];
                       return (
                         <div key={`f-${idx}`} className="text-center">
-                          <div className="text-game-text-muted text-xs mb-1">
-                            {suit} {directionKey === 'asc' ? '↑' : '↓'}
+                          <div className="text-xs mb-1">
+                            <span
+                              data-testid={`foundation-dir-${idx}`}
+                              className={`inline-block rounded px-1 font-bold ${
+                                directionKey === 'asc'
+                                  ? 'bg-ds-success/20 text-ds-success'
+                                  : 'bg-ds-warning/20 text-ds-warning'
+                              }`}
+                            >
+                              {suit} {directionKey === 'asc' ? '↑' : '↓'}
+                            </span>
                           </div>
                           <DropZone
                             isDropTarget={dnd.isDropTarget(foundationZone)}
@@ -233,8 +242,9 @@ function CrescentPageContent() {
                                 disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
                                 aria-label={t('foundationAriaLabel', {
                                   suit,
-                                  direction: directionKey,
+                                  direction: t(`direction.${directionKey}`),
                                   count: pile.length,
+                                  top: cardAlt(pile[pile.length - 1]),
                                 })}
                                 className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
                               >
