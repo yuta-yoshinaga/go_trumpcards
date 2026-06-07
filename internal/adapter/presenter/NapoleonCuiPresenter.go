@@ -160,7 +160,7 @@ func (p *NapoleonCuiPresenter) HintOutput(n interfaces.NapoleonGame) string {
 	if hint == nil {
 		return i18n.T("napoleon.hintNone") + "\n"
 	}
-	reason := napoleonHintReasonStr(hint.Reason)
+	reason := hintReasonStr(hint.Reason, napoleonHintReasonKeys)
 	switch {
 	case hint.Bid != nil:
 		return color.Yellow(i18n.Tf("napoleon.hintBid",
@@ -203,18 +203,6 @@ var napoleonHintReasonKeys = map[string]string{
 	"strategic_discard": "napoleon.hintReasonStrategicDiscard",
 	"play_joker":        "napoleon.hintReasonPlayJoker",
 	"discard_low":       "napoleon.hintReasonDiscardLow",
-}
-
-// napoleonHintReasonStr resolves a reason to the active locale, falling
-// through to the shared (cui_common) reason map and finally to the raw
-// reason key as a debug-friendly fallback.
-func napoleonHintReasonStr(reason string) string {
-	if key, ok := napoleonHintReasonKeys[reason]; ok {
-		return i18n.T(key)
-	}
-	// lookupHintReason already delegates to cui_common via i18n; passing nil
-	// for the per-game map skips the second lookup we just did.
-	return lookupHintReason(reason, nil)
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

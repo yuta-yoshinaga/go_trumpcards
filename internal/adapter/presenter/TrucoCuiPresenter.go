@@ -129,7 +129,7 @@ func (p *TrucoCuiPresenter) HintOutput(g interfaces.TrucoGame) string {
 		return color.Yellow(i18n.Tf("truco.hintCard",
 			"idx", strconv.Itoa(*hint.CardIndex),
 			"card", cuiCardStr(card),
-			"reason", trucoHintReasonStr(hint.Reason))) + "\n"
+			"reason", hintReasonStr(hint.Reason, trucoHintReasonKeys))) + "\n"
 	}
 }
 
@@ -139,15 +139,6 @@ var trucoHintReasonKeys = map[string]string{
 	"leadLow":    "truco.hintReasonLeadLow",
 	"followWin":  "truco.hintReasonFollowWin",
 	"followDump": "truco.hintReasonFollowDump",
-}
-
-// trucoHintReasonStr resolves a reason via the per-game map first, then the
-// shared (cui_common) layer.
-func trucoHintReasonStr(reason string) string {
-	if key, ok := trucoHintReasonKeys[reason]; ok {
-		return i18n.T(key)
-	}
-	return lookupHintReason(reason, nil)
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

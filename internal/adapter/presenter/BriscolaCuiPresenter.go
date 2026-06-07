@@ -99,7 +99,7 @@ func (p *BriscolaCuiPresenter) HintOutput(b interfaces.BriscolaGame) string {
 	return color.Yellow(i18n.Tf("briscola.hintCard",
 		"idx", strconv.Itoa(*hint.CardIndex),
 		"card", cuiCardStr(card),
-		"reason", briscolaHintReasonStr(hint.Reason))) + "\n"
+		"reason", hintReasonStr(hint.Reason, briscolaHintReasonKeys))) + "\n"
 }
 
 // briscolaHintReasonKeys maps Briscola-specific hint-reason identifiers to their
@@ -112,15 +112,6 @@ var briscolaHintReasonKeys = map[string]string{
 	"follow_cut":  "briscola.hintReasonFollowCut",
 	"follow_win":  "briscola.hintReasonFollowWin",
 	"follow_dump": "briscola.hintReasonFollowDump",
-}
-
-// briscolaHintReasonStr resolves a reason via the per-game map first, then the
-// shared (cui_common) layer.
-func briscolaHintReasonStr(reason string) string {
-	if key, ok := briscolaHintReasonKeys[reason]; ok {
-		return i18n.T(key)
-	}
-	return lookupHintReason(reason, nil)
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

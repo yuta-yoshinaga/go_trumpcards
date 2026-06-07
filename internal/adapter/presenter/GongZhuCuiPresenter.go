@@ -118,7 +118,7 @@ func (p *GongZhuCuiPresenter) HintOutput(g interfaces.GongZhuGame) string {
 	}
 	return color.Yellow(i18n.Tf("gongzhu.hintCard",
 		"cards", cardsStr,
-		"reason", gongZhuHintReasonStr(hint.Reason))) + "\n"
+		"reason", hintReasonStr(hint.Reason, gongZhuHintReasonKeys))) + "\n"
 }
 
 // gongZhuHintReasonKeys maps Gong Zhu-specific hint-reason identifiers to i18n keys.
@@ -127,14 +127,6 @@ var gongZhuHintReasonKeys = map[string]string{
 	"expose_none":    "gongzhu.hintReasonExposeNone",
 	"discard_pig":    "gongzhu.hintReasonDiscardPig",
 	"discard_hearts": "gongzhu.hintReasonDiscardHearts",
-}
-
-// gongZhuHintReasonStr resolves a reason via the per-game map first, then the shared layer.
-func gongZhuHintReasonStr(reason string) string {
-	if key, ok := gongZhuHintReasonKeys[reason]; ok {
-		return i18n.T(key)
-	}
-	return lookupHintReason(reason, nil)
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

@@ -109,7 +109,7 @@ func (p *BeloteCuiPresenter) HintOutput(b interfaces.BeloteGame) string {
 	if hint == nil {
 		return i18n.T("belote.hintNone") + "\n"
 	}
-	reason := beloteHintReasonStr(hint.Reason)
+	reason := hintReasonStr(hint.Reason, nil)
 	if hint.OrderUp != nil {
 		if *hint.OrderUp {
 			return color.Yellow(i18n.Tf("belote.hintOrderUp", "reason", reason)) + "\n"
@@ -130,12 +130,6 @@ func (p *BeloteCuiPresenter) HintOutput(b interfaces.BeloteGame) string {
 		"idx", strconv.Itoa(*hint.CardIndex),
 		"card", cuiCardStr(card),
 		"reason", reason)) + "\n"
-}
-
-// beloteHintReasonStr resolves a Belote-specific reason key, falling back to
-// the shared cui_common layer.
-func beloteHintReasonStr(reason string) string {
-	return lookupHintReason(reason, nil)
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

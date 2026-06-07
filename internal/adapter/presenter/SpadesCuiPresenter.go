@@ -100,7 +100,7 @@ func (p *SpadesCuiPresenter) HintOutput(s interfaces.SpadesGame) string {
 	if hint == nil {
 		return i18n.T("spades.hintNone") + "\n"
 	}
-	reason := spadesHintReasonStr(hint.Reason)
+	reason := hintReasonStr(hint.Reason, spadesHintReasonKeys)
 	if hint.Bid != nil {
 		return color.Yellow(i18n.Tf("spades.hintBid",
 			"bid", strconv.Itoa(*hint.Bid),
@@ -121,15 +121,6 @@ func (p *SpadesCuiPresenter) HintOutput(s interfaces.SpadesGame) string {
 // lookupHintReason → cui_common.
 var spadesHintReasonKeys = map[string]string{
 	"trump_cut": "spades.hintReasonTrumpCut",
-}
-
-// spadesHintReasonStr resolves a reason via the per-game map first, then
-// the shared (cui_common) layer.
-func spadesHintReasonStr(reason string) string {
-	if key, ok := spadesHintReasonKeys[reason]; ok {
-		return i18n.T(key)
-	}
-	return lookupHintReason(reason, nil)
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.
