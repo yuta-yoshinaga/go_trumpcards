@@ -105,7 +105,7 @@ func (p *HeartsCuiPresenter) HintOutput(h interfaces.HeartsGame) string {
 
 // heartsHintReasonKeys maps Hearts-specific hint-reason identifiers to
 // their i18n keys. Reasons not in this map fall through to
-// lookupHintReason → cui_common.
+// hintReasonStr → cui_common.
 var heartsHintReasonKeys = map[string]string{
 	"pass_high_risk_cards": "hearts.hintReasonPassHighRisk",
 	"discard_queen_spades": "hearts.hintReasonDiscardQueenSpades",

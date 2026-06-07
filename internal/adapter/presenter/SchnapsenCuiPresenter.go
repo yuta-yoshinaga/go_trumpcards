@@ -146,7 +146,7 @@ func (p *SchnapsenCuiPresenter) HintOutput(s interfaces.SchnapsenGame) string {
 
 // schnapsenHintReasonKeys maps Schnapsen-specific hint-reason identifiers to their
 // i18n keys. Reasons not listed here fall through to cui_common via
-// lookupHintReason.
+// hintReasonStr.
 var schnapsenHintReasonKeys = map[string]string{
 	"lead_trump":  "schnapsen.hintReasonLeadTrump",
 	"lead_low":    "schnapsen.hintReasonLeadLow",

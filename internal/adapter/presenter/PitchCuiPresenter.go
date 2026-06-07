@@ -154,7 +154,7 @@ func (p *PitchCuiPresenter) HintOutput(s interfaces.PitchGame) string {
 }
 
 // pitchHintReasonKeys maps Pitch-specific hint-reason identifiers to their
-// i18n keys. Reasons not in this map fall through to lookupHintReason →
+// i18n keys. Reasons not in this map fall through to hintReasonStr →
 // cui_common.
 var pitchHintReasonKeys = map[string]string{
 	"set_trump_lead": "pitch.hintReasonSetTrumpLead",

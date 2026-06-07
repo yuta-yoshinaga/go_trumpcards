@@ -153,7 +153,7 @@ func (p *EuchreCuiPresenter) HintOutput(e interfaces.EuchreGame) string {
 
 // euchreHintReasonKeys maps Euchre-specific hint-reason identifiers to their
 // i18n keys. Reasons not listed here fall through to cui_common via
-// lookupHintReason.
+// hintReasonStr.
 var euchreHintReasonKeys = map[string]string{
 	"discard_weakest": "euchre.hintReasonDiscardWeakest",
 }

@@ -97,7 +97,7 @@ func (p *WhistCuiPresenter) HintOutput(w interfaces.WhistGame) string {
 
 // whistHintReasonKeys maps Whist-specific hint-reason identifiers to their
 // i18n keys. Reasons not listed here fall through to cui_common via
-// lookupHintReason.
+// hintReasonStr.
 var whistHintReasonKeys = map[string]string{
 	"trump_cut": "whist.hintReasonTrumpCut",
 }

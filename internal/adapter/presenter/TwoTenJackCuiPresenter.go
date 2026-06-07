@@ -124,7 +124,7 @@ func (p *TwoTenJackCuiPresenter) HintOutput(s interfaces.TwoTenJackGame) string 
 
 // twoTenJackHintReasonKeys maps Two Ten Jack-specific hint-reason identifiers
 // to their i18n keys. Reasons not listed here fall through to cui_common via
-// lookupHintReason.
+// hintReasonStr.
 var twoTenJackHintReasonKeys = map[string]string{
 	"strategic_trump": "twotenjack.hintReasonStrategicTrump",
 	"lead":            "twotenjack.hintReasonLead",

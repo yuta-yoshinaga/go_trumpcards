@@ -104,7 +104,7 @@ func (p *BriscolaCuiPresenter) HintOutput(b interfaces.BriscolaGame) string {
 
 // briscolaHintReasonKeys maps Briscola-specific hint-reason identifiers to their
 // i18n keys. Reasons not listed here fall through to cui_common via
-// lookupHintReason.
+// hintReasonStr.
 var briscolaHintReasonKeys = map[string]string{
 	"lead_trump":  "briscola.hintReasonLeadTrump",
 	"lead_low":    "briscola.hintReasonLeadLow",

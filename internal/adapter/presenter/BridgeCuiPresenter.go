@@ -190,7 +190,7 @@ func bridgeBidTypeStr(bidType int) string {
 
 // bridgeHintReasonKeys maps Bridge-specific hint-reason identifiers to
 // their i18n keys. Reasons not in this map fall through to
-// lookupHintReason → cui_common (e.g. strategic_bid).
+// hintReasonStr → cui_common (e.g. strategic_bid).
 var bridgeHintReasonKeys = map[string]string{
 	"support_partner": "bridge.hintReasonSupportPartner",
 	"competitive_bid": "bridge.hintReasonCompetitiveBid",

@@ -117,7 +117,7 @@ func (p *CallBreakCuiPresenter) HintOutput(cb interfaces.CallBreakGame) string {
 }
 
 // callBreakHintReasonKeys maps Call Break-specific hint-reason identifiers to
-// their i18n keys. Reasons not in this map fall through to lookupHintReason.
+// their i18n keys. Reasons not in this map fall through to hintReasonStr.
 var callBreakHintReasonKeys = map[string]string{
 	"trump_cut": "callbreak.hintReasonTrumpCut",
 }

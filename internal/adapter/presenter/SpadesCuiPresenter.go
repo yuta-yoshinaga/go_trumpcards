@@ -118,7 +118,7 @@ func (p *SpadesCuiPresenter) HintOutput(s interfaces.SpadesGame) string {
 
 // spadesHintReasonKeys maps Spades-specific hint-reason identifiers to
 // their i18n keys. Reasons not in this map fall through to
-// lookupHintReason → cui_common.
+// hintReasonStr → cui_common.
 var spadesHintReasonKeys = map[string]string{
 	"trump_cut": "spades.hintReasonTrumpCut",
 }
