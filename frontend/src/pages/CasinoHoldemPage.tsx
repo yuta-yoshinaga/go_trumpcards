@@ -3,6 +3,7 @@ import { casinoholdemApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { ChipBetInput } from '../components/common/ChipBetInput';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -131,6 +132,12 @@ function CasinoHoldemPageContent() {
   const handleCall = () => execApi('call');
   const handleFold = () => execApi('fold');
   const handleReset = () => execApi('reset');
+
+  // Bet validation: ante must be a positive multiple of 10, bonus a (possibly
+  // zero) multiple of 10, and their sum within the chip balance.
+  const anteInvalid = Number.isNaN(anteAmount) || anteAmount < 10 || anteAmount % 10 !== 0;
+  const bonusInvalid = Number.isNaN(bonusAmount) || bonusAmount < 0 || bonusAmount % 10 !== 0;
+  const betInvalid = anteInvalid || bonusInvalid || anteAmount + bonusAmount > state.chips;
 
   const phaseName = isBetPhase ? t('phase.bet') : isFlopPhase ? t('phase.flop') : t('phase.end');
 
@@ -320,51 +327,38 @@ function CasinoHoldemPageContent() {
             <SettingsPanel title={t('settings.title')} groups={[]} />
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="ch-bet-controls">
-                <div className="flex items-center gap-2">
-                  <label htmlFor="casinoholdem-ante-amount" className="text-ds-text-primary text-sm">
-                    {t('label.ante')}
-                  </label>
-                  <input
-                    id="casinoholdem-ante-amount"
-                    type="number"
-                    min={10}
-                    max={state.chips}
-                    step={10}
-                    value={anteAmount}
-                    onChange={(e) => setAnteAmount(Number(e.target.value))}
-                    className="w-24 px-2 py-1 rounded text-sm"
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <label htmlFor="casinoholdem-bonus-amount" className="text-ds-text-primary text-sm">
-                    {t('label.bonus')}
-                  </label>
-                  <input
-                    id="casinoholdem-bonus-amount"
-                    type="number"
-                    min={0}
-                    max={state.chips}
-                    step={10}
-                    value={bonusAmount}
-                    onChange={(e) => setBonusAmount(Number(e.target.value))}
-                    className="w-24 px-2 py-1 rounded text-sm"
-                  />
-                </div>
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handleBet}
-                  disabled={
-                    loading ||
-                    Number.isNaN(anteAmount) ||
-                    Number.isNaN(bonusAmount) ||
-                    anteAmount < 10 ||
-                    anteAmount % 10 !== 0 ||
-                    (bonusAmount > 0 && bonusAmount < 10) ||
-                    bonusAmount % 10 !== 0 ||
-                    anteAmount + bonusAmount > state.chips
-                  }
-                >
+                <ChipBetInput
+                  id="casinoholdem-ante-amount"
+                  label={t('label.ante')}
+                  value={anteAmount}
+                  onChange={setAnteAmount}
+                  min={10}
+                  max={state.chips}
+                  step={10}
+                  disabled={loading}
+                  showSteppers
+                  invalid={anteInvalid}
+                  describedBy={betInvalid ? 'casinoholdem-bet-error' : undefined}
+                />
+                <ChipBetInput
+                  id="casinoholdem-bonus-amount"
+                  label={t('label.bonus')}
+                  value={bonusAmount}
+                  onChange={setBonusAmount}
+                  min={0}
+                  max={state.chips}
+                  step={10}
+                  disabled={loading}
+                  showSteppers
+                  invalid={bonusInvalid}
+                  describedBy={betInvalid ? 'casinoholdem-bet-error' : undefined}
+                />
+                {betInvalid && (
+                  <p id="casinoholdem-bet-error" role="alert" className="text-ds-error text-xs">
+                    {t('betError')}
+                  </p>
+                )}
+                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading || betInvalid}>
                   {t('button.bet')}
                 </button>
               </div>

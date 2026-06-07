@@ -5,6 +5,7 @@
   "board": "ボード",
   "dealerQualified": "ディーラークオリファイ",
   "dealerDoesNotQualify": "ディーラーノークオリファイ",
+  "betError": "アンテは10以上、ベットは10単位で、残高以内で指定してください",
   "label": {
     "chips": "チップ",
     "ante": "アンテ",
