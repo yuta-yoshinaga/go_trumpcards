@@ -16,40 +16,68 @@
  * pulses) remain allowed; this file is specifically for state badges.
  */
 
-const BADGE_BASE = 'rounded-lg py-2 px-3.5 text-xs border';
+const BADGE_SIZE = 'rounded-lg py-2 px-3.5 text-xs';
 
 /**
- * Neutral info badge — surface bg, primary text, subtle border.
+ * Opaque color tokens (1px border + surface bg + token foreground + token
+ * border) for an **info** state badge that needs custom sizing.
+ *
+ * Combine with your own `rounded-*` / padding / `text-*` classes for compact
+ * inline pills, where the full {@link badgeInfo} (which forces `rounded-lg
+ * py-2 px-3.5`) would be too large. The contrast guarantees are identical.
  *
  * Intentionally uses `text-ds-text-primary` (10.1:1 AAA on surface) rather
  * than `text-ds-info`: the info token (#5B8FB9) hits only ~4.5:1 on the
- * surface background, right at the AA boundary, so we lean on the
- * border-coloured `border-ds-info` would have given for semantic signal
- * is replaced by `border-ds-border-subtle` — info badges read as quiet
- * notifications, not warnings.
+ * surface background, right at the AA boundary, so the semantic signal comes
+ * from the subtle border while the text stays fully readable.
  */
-export const badgeInfo = `${BADGE_BASE} bg-ds-surface text-ds-text-primary border-ds-border-subtle`;
+export const badgeInfoColors = 'border bg-ds-surface text-ds-text-primary border-ds-border-subtle';
 
 /**
- * Success badge — surface bg, success text (5.8:1 AA on surface) + matching
- * border. Use for "round won", "auto-go", or other positive confirmations.
+ * Opaque color tokens for a **success** state badge that needs custom sizing.
+ * Success text is 5.8:1 (AA) on the surface background. See
+ * {@link badgeInfoColors} for usage.
  */
-export const badgeSuccess = `${BADGE_BASE} bg-ds-surface text-ds-success border-ds-success`;
+export const badgeSuccessColors = 'border bg-ds-surface text-ds-success border-ds-success';
 
 /**
- * Warning badge — surface bg, warning text (6.3:1 AA on surface) + matching
- * border. Use for "forced", "involuntary", or "restricted" states.
+ * Opaque color tokens for a **warning** state badge that needs custom sizing.
+ * Warning text is 6.3:1 (AA) on the surface background. See
+ * {@link badgeInfoColors} for usage.
  */
-export const badgeWarning = `${BADGE_BASE} bg-ds-surface text-ds-warning border-ds-warning`;
+export const badgeWarningColors = 'border bg-ds-surface text-ds-warning border-ds-warning';
 
 /**
- * Error badge — surface bg, primary text (10.1:1 AAA on surface) + error
- * border. Use for "fold", "out", "bust", or error notifications.
+ * Opaque color tokens for an **error** state badge that needs custom sizing.
  *
- * Foreground is intentionally `text-ds-text-primary` rather than
- * `text-ds-error`: the error token (#B83A3A) only hits ~2.7:1 on the
- * surface background — well below WCAG AA — so the semantic signal
- * comes entirely from the coloured border while the message stays
- * fully readable.
+ * Foreground is intentionally `text-ds-text-primary` (10.1:1 AAA on surface)
+ * rather than `text-ds-error`: the error token (#B83A3A) only hits ~2.7:1 on
+ * the surface background — well below WCAG AA — so the semantic signal comes
+ * entirely from the coloured border while the message stays fully readable.
+ * See {@link badgeInfoColors} for usage.
  */
-export const badgeError = `${BADGE_BASE} bg-ds-surface text-ds-text-primary border-ds-error`;
+export const badgeErrorColors = 'border bg-ds-surface text-ds-text-primary border-ds-error';
+
+/**
+ * Neutral info badge — surface bg, primary text, subtle border. Use for quiet
+ * notifications. For compact inline pills use {@link badgeInfoColors}.
+ */
+export const badgeInfo = `${BADGE_SIZE} ${badgeInfoColors}`;
+
+/**
+ * Success badge — surface bg, success text + matching border. Use for "round
+ * won", "auto-go", or other positive confirmations.
+ */
+export const badgeSuccess = `${BADGE_SIZE} ${badgeSuccessColors}`;
+
+/**
+ * Warning badge — surface bg, warning text + matching border. Use for
+ * "forced", "involuntary", or "restricted" states.
+ */
+export const badgeWarning = `${BADGE_SIZE} ${badgeWarningColors}`;
+
+/**
+ * Error badge — surface bg, primary text + error border. Use for "fold",
+ * "out", "bust", or error notifications.
+ */
+export const badgeError = `${BADGE_SIZE} ${badgeErrorColors}`;

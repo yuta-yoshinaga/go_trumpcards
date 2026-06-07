@@ -1,3 +1,5 @@
+import { badgeInfoColors } from '../styles/badgeStyles';
+
 /** Props for the BidProgressBar component. */
 export interface BidProgressBarProps {
   /** Bid amount declared by the player. Negative values render nothing. */
@@ -61,7 +63,7 @@ export function BidProgressBar({ bid, tricksWon, testId, ariaLabel }: BidProgres
         ))}
       </div>
       {overTricks > 0 && !nilBroken && (
-        <span className="rounded-full bg-ds-info/30 px-1.5 py-0 text-[10px] font-semibold leading-tight text-ds-info">
+        <span className={`rounded-full px-1.5 py-0 text-[10px] font-semibold leading-tight ${badgeInfoColors}`}>
           +{overTricks}
         </span>
       )}

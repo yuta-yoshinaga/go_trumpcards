@@ -23,6 +23,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useHeartsGame } from '../hooks/useHeartsGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { badgeErrorColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -482,7 +483,7 @@ function ShootTheMoonBadge({ label }: { label: string }) {
       data-testid="hearts-shoot-the-moon-badge"
       role="status"
       aria-live="polite"
-      className="ml-2 inline-flex items-center gap-1 rounded-full bg-ds-error/30 px-2 py-0.5 text-xs font-bold text-ds-error motion-safe:animate-pulse"
+      className={`ml-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold motion-safe:animate-pulse ${badgeErrorColors}`}
     >
       <span aria-hidden="true">🌕</span>
       {label}

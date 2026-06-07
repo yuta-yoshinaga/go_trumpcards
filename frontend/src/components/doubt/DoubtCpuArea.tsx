@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { badgeWarningColors } from '../../styles/badgeStyles';
 import { playerAreaBase } from '../../styles/gameStyles';
 import type { DoubtPlayerData } from '../../types/card';
 import { CpuTurnArea } from '../CpuTurnArea';
@@ -43,7 +44,9 @@ export function DoubtCpuArea({
           <span aria-hidden="true" className="animate-eye-dart text-lg leading-none">
             👀
           </span>
-          <span className="rounded-full bg-ds-warning/30 px-1.5 py-0 text-[10px] font-semibold leading-tight text-ds-warning motion-safe:animate-pulse">
+          <span
+            className={`rounded-full px-1.5 py-0 text-[10px] font-semibold leading-tight motion-safe:animate-pulse ${badgeWarningColors}`}
+          >
             {t('tellBadge')}
           </span>
         </div>

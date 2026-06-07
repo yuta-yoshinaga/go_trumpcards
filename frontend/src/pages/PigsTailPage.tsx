@@ -18,6 +18,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { badgeErrorColors } from '../styles/badgeStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { PigsTailResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
@@ -204,7 +205,7 @@ function PigsTailPageContent() {
                 {state.cpuActions.map((action, i) => (
                   <div
                     key={i}
-                    className={`text-xs px-2 py-1 rounded ${action.penaltyFlag ? 'bg-ds-error/40 text-ds-error/80' : 'bg-black/30 text-ds-text-muted'}`}
+                    className={`text-xs px-2 py-1 rounded ${action.penaltyFlag ? badgeErrorColors : 'bg-black/30 text-ds-text-muted'}`}
                   >
                     CPU {action.drawPlayerIdx}:{' '}
                     {action.drawnCard ? (SUIT_SYMBOLS[action.drawnCard.design] ?? '?') + action.drawnCard.value : '?'}

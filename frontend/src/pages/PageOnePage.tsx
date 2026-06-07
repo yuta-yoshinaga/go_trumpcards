@@ -22,6 +22,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, usePageOneGame } from '../hooks/usePageOneGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
+import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -262,7 +263,7 @@ function PageOnePageContent() {
                           {cpuAtOne && (
                             <span
                               data-testid={`po-cpu-${p.id}-last-card-badge`}
-                              className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded bg-ds-warning/30 text-ds-warning text-xs font-bold"
+                              className={`ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold ${badgeWarningColors}`}
                             >
                               <span
                                 aria-hidden="true"
@@ -309,7 +310,7 @@ function PageOnePageContent() {
                 role="alert"
                 aria-live="assertive"
                 data-testid="po-last-card-banner"
-                className="mb-2 px-3 py-2 rounded bg-ds-warning/20 border-2 border-ds-warning text-ds-warning text-sm font-bold flex items-center gap-2"
+                className="mb-2 px-3 py-2 rounded bg-ds-surface border-2 border-ds-warning text-ds-warning text-sm font-bold flex items-center gap-2"
               >
                 <span aria-hidden="true" className="inline-block w-2 h-2 rounded-full bg-ds-warning animate-pulse" />
                 {t('lastCardBanner')}
