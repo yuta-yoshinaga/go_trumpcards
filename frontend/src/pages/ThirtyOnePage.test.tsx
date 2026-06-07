@@ -142,6 +142,13 @@ describe('ThirtyOnePage', () => {
     expect(screen.queryByTestId('knock-countdown-banner')).not.toBeInTheDocument();
   });
 
+  it('hides the knock countdown banner at game end', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: ThirtyOnePhase.GAME_END, gameEndFlag: true, knockerIdx: 1 }));
+    renderWithProviders(<ThirtyOnePage />);
+    await waitFor(() => expect(screen.getAllByLabelText(/lives-|out/).length).toBeGreaterThan(0));
+    expect(screen.queryByTestId('knock-countdown-banner')).not.toBeInTheDocument();
+  });
+
   it('highlights the leading suit badge', async () => {
     // Default human hand: SPADE 3, HEART 5, DIAMOND 7 → DIAMOND leads.
     renderWithProviders(<ThirtyOnePage />);
