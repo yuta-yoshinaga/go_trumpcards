@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { highcardflushApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ChipBetInput } from '../components/common/ChipBetInput';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -319,51 +320,39 @@ function HighCardFlushPageContent() {
         />
         {isBetPhase && (
           <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="hcf-bet-controls">
-            <div className="flex items-center gap-2">
-              <label htmlFor="hcf-ante" className="text-ds-text-primary text-sm">
-                {t('label.ante')}
-              </label>
-              <input
-                id="hcf-ante"
-                type="number"
-                min={10}
-                max={state.chips}
-                step={10}
-                value={anteAmount}
-                onChange={(e) => setAnteAmount(Number(e.target.value))}
-                className="w-24 px-2 py-1 rounded text-sm"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <label htmlFor="hcf-flush-bonus" className="text-ds-text-primary text-sm">
-                {t('label.flushBonus')}
-              </label>
-              <input
-                id="hcf-flush-bonus"
-                type="number"
-                min={0}
-                max={state.chips}
-                step={10}
-                value={flushBonusAmount}
-                onChange={(e) => setFlushBonusAmount(Number(e.target.value))}
-                className="w-24 px-2 py-1 rounded text-sm"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <label htmlFor="hcf-straight-flush" className="text-ds-text-primary text-sm">
-                {t('label.straightFlush')}
-              </label>
-              <input
-                id="hcf-straight-flush"
-                type="number"
-                min={0}
-                max={state.chips}
-                step={10}
-                value={straightFlushAmount}
-                onChange={(e) => setStraightFlushAmount(Number(e.target.value))}
-                className="w-24 px-2 py-1 rounded text-sm"
-              />
-            </div>
+            <ChipBetInput
+              id="hcf-ante"
+              label={t('label.ante')}
+              value={anteAmount}
+              onChange={setAnteAmount}
+              min={10}
+              max={state.chips}
+              step={10}
+              disabled={loading}
+              showSteppers
+            />
+            <ChipBetInput
+              id="hcf-flush-bonus"
+              label={t('label.flushBonus')}
+              value={flushBonusAmount}
+              onChange={setFlushBonusAmount}
+              min={0}
+              max={state.chips}
+              step={10}
+              disabled={loading}
+              showSteppers
+            />
+            <ChipBetInput
+              id="hcf-straight-flush"
+              label={t('label.straightFlush')}
+              value={straightFlushAmount}
+              onChange={setStraightFlushAmount}
+              min={0}
+              max={state.chips}
+              step={10}
+              disabled={loading}
+              showSteppers
+            />
             <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
               {t('button.bet')}
             </button>

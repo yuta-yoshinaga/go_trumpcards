@@ -141,4 +141,34 @@ describe('ChipBetInput', () => {
     fireEvent.wheel(input, { deltaY: 100 });
     expect(document.activeElement).not.toBe(input);
   });
+
+  describe('steppers', () => {
+    it('does not render steppers by default', () => {
+      render(<ChipBetInput id="bet" label="Bet" value={50} onChange={() => {}} max={500} />);
+      expect(screen.queryByRole('button', { name: /Bet \+/ })).not.toBeInTheDocument();
+    });
+
+    it('increments and decrements by step, clamped to [min, max]', () => {
+      const onChange = vi.fn();
+      render(
+        <ChipBetInput id="bet" label="Bet" value={50} onChange={onChange} min={10} max={500} step={10} showSteppers />,
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Bet +10' }));
+      expect(onChange).toHaveBeenLastCalledWith(60);
+      fireEvent.click(screen.getByRole('button', { name: 'Bet −10' }));
+      expect(onChange).toHaveBeenLastCalledWith(40);
+    });
+
+    it('disables the minus button at min and the plus button at max', () => {
+      const { rerender } = render(
+        <ChipBetInput id="bet" label="Bet" value={10} onChange={() => {}} min={10} max={100} step={10} showSteppers />,
+      );
+      expect(screen.getByRole('button', { name: 'Bet −10' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Bet +10' })).toBeEnabled();
+      rerender(
+        <ChipBetInput id="bet" label="Bet" value={100} onChange={() => {}} min={10} max={100} step={10} showSteppers />,
+      );
+      expect(screen.getByRole('button', { name: 'Bet +10' })).toBeDisabled();
+    });
+  });
 });
