@@ -171,6 +171,7 @@ function MacauPageContent() {
   const isRoundEnd = state.phase === MacauPhase.ROUND_END;
   const isGameEnd = state.phase === MacauPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const hasPenalty = state.penaltyDrawCount > 0;
   const directionLabel = state.direction < 0 ? '←' : '→';
 
   return (
@@ -267,7 +268,7 @@ function MacauPageContent() {
                   </div>
                 )}
 
-                {state.penaltyDrawCount > 0 && (
+                {hasPenalty && (
                   <div
                     className="my-2 p-2 rounded bg-ds-warning/20 text-ds-warning text-sm font-semibold"
                     role="status"
@@ -375,18 +376,16 @@ function MacauPageContent() {
                   >
                     {t('playButton')}
                   </button>
-                  <div className="relative inline-flex">
-                    <button
-                      type="button"
-                      className={state.penaltyDrawCount > 0 ? btnDanger : btnPrimary}
-                      onClick={handleDraw}
-                      disabled={loading}
-                    >
-                      {state.penaltyDrawCount > 0
-                        ? t('takePenaltyButton', { count: state.penaltyDrawCount })
-                        : t('drawButton')}
-                    </button>
-                    {state.penaltyDrawCount > 0 && (
+                  <button
+                    type="button"
+                    className={`${hasPenalty ? btnDanger : btnPrimary} relative`}
+                    onClick={handleDraw}
+                    disabled={loading}
+                  >
+                    {hasPenalty
+                      ? t('takePenaltyButton', { count: state.penaltyDrawCount })
+                      : t('drawButton')}
+                    {hasPenalty && (
                       <span
                         data-testid="penalty-badge"
                         aria-hidden="true"
@@ -395,7 +394,7 @@ function MacauPageContent() {
                         {state.penaltyDrawCount}
                       </span>
                     )}
-                  </div>
+                  </button>
                 </div>
               )}
               {isChooseSuit && state.players[state.currentPlayerIdx]?.isHuman && (
