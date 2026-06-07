@@ -25,6 +25,7 @@
   "passButton": "パス",
   "declareTrumpPrompt": "切り札スートを選択:",
   "exchangeButton": "交換 ({{count}}/6)",
+  "kittyProgress": "選択済み: {{count}} / 6",
   "playButton": "出す",
   "nextTrickButton": "次のトリック",
   "nextRoundButton": "次のラウンド",
