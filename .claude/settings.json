@@ -9,6 +9,12 @@
         "hooks": [
           {
             "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command'); if printf '%s' \"$cmd\" | grep -qE '(^|[^[:alnum:]_-])git[[:space:]]+(add[[:space:]]+(-A|--all|\\.)([[:space:]/]|$)|checkout[[:space:]]+[^[:space:]]+[[:space:]]+--[[:space:]]+\\.([[:space:]]|$))'; then printf '%s' '{\"continue\": false, \"stopReason\": \"Blocked: do not use git add -A / git add . / git checkout <ref> -- . in this worktree. It has local-only files (node_modules, vendored .claude/skills, casino/classic/solo TinyGo build dirs, public/sounds) that must never be staged. Stage specific paths instead, e.g. git add path/to/file.\"}'; else echo '{}'; fi",
+            "timeout": 5,
+            "statusMessage": "Guarding against bulk git add..."
+          },
+          {
+            "type": "command",
             "command": "jq -r '.tool_input.command' | { read -r cmd; case \"$cmd\" in git\\ commit*) if git diff --cached --name-only | grep -q '\\.go$'; then output=$(golangci-lint run ./... 2>&1 | head -30); if [ -n \"$output\" ]; then printf '{\"continue\": false, \"stopReason\": \"golangci-lint failed:\\n%s\"}' \"$output\"; else echo '{}'; fi; else echo '{}'; fi ;; *) echo '{}' ;; esac; }",
             "timeout": 120,
             "statusMessage": "Running golangci-lint..."
