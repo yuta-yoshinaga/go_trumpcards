@@ -1,3 +1,5 @@
+//go:build !js || !wasm || solo
+
 package domain
 
 // BarbuContracts.go はコントラクトごとの得点計算 (Strategy パターン) を担う。

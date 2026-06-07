@@ -38,6 +38,17 @@ func init() {
 			return usecase.RestoreFreeCellInteractor(data, new(presenter.FreeCellWebPresenter))
 		},
 		controller.NewFreeCellWebControllerWithProvider)
+	// Baker's Game reuses the FreeCell engine (same-suit stacking variant).
+	// The sameSuit flag is serialised in the snapshot, so the restore path
+	// rebuilds the correct variant from KV automatically.
+	games.RegisterKVGame("bakersgame", games.CategorySolo,
+		func() usecase.FreeCellInteractorIF {
+			return usecase.NewFreeCellInteractor(domain.NewDefaultBakersGame(), new(presenter.BakersGameWebPresenter))
+		},
+		func(data []byte) (usecase.FreeCellInteractorIF, error) {
+			return usecase.RestoreFreeCellInteractor(data, new(presenter.BakersGameWebPresenter))
+		},
+		controller.NewFreeCellWebControllerWithProvider)
 	games.RegisterKVGame("seahaventowers", games.CategorySolo,
 		func() usecase.SeahavenTowersInteractorIF {
 			return usecase.NewSeahavenTowersInteractor(domain.NewDefaultSeahavenTowers(), new(presenter.SeahavenTowersWebPresenter))
@@ -330,4 +341,85 @@ func init() {
 			return usecase.RestoreOsmosisInteractor(data, new(presenter.OsmosisWebPresenter))
 		},
 		controller.NewOsmosisWebControllerWithProvider)
+	games.RegisterKVGame("fivehundred", games.CategorySolo,
+		func() usecase.FiveHundredInteractorIF {
+			return usecase.NewFiveHundredInteractor(domain.NewDefaultFiveHundred(), new(presenter.FiveHundredWebPresenter))
+		},
+		func(data []byte) (usecase.FiveHundredInteractorIF, error) {
+			return usecase.RestoreFiveHundredInteractor(data, new(presenter.FiveHundredWebPresenter))
+		},
+		controller.NewFiveHundredWebControllerWithProvider)
+	// Schnapsen / Sixty-Six is a 2-player trick-taking game bucketed here (solo
+	// worker) for binary-size reasons; the classic worker is at the 1 MB gzip
+	// free-tier limit. See registry.go.
+	games.RegisterKVGame("schnapsen", games.CategorySolo,
+		func() usecase.SchnapsenInteractorIF {
+			return usecase.NewSchnapsenInteractor(domain.NewDefaultSchnapsen(), new(presenter.SchnapsenWebPresenter))
+		},
+		func(data []byte) (usecase.SchnapsenInteractorIF, error) {
+			return usecase.RestoreSchnapsenInteractor(data, new(presenter.SchnapsenWebPresenter))
+		},
+		controller.NewSchnapsenWebControllerWithProvider)
+	games.RegisterKVGame("burraco", games.CategorySolo,
+		func() usecase.BurracoInteractorIF {
+			return usecase.NewBurracoInteractor(domain.NewDefaultBurraco(), new(presenter.BurracoWebPresenter))
+		},
+		func(data []byte) (usecase.BurracoInteractorIF, error) {
+			return usecase.RestoreBurracoInteractor(data, new(presenter.BurracoWebPresenter))
+		},
+		controller.NewBurracoWebControllerWithProvider)
+	games.RegisterKVGame("euchre", games.CategorySolo,
+		func() usecase.EuchreInteractorIF {
+			return usecase.NewEuchreInteractor(domain.NewDefaultEuchre(), new(presenter.EuchreWebPresenter))
+		},
+		func(data []byte) (usecase.EuchreInteractorIF, error) {
+			return usecase.RestoreEuchreInteractor(data, new(presenter.EuchreWebPresenter))
+		},
+		controller.NewEuchreWebControllerWithProvider)
+
+	games.RegisterKVGame("piquet", games.CategorySolo,
+		func() usecase.PiquetInteractorIF {
+			return usecase.NewPiquetInteractor(domain.NewDefaultPiquet(), new(presenter.PiquetWebPresenter))
+		},
+		func(data []byte) (usecase.PiquetInteractorIF, error) {
+			return usecase.RestorePiquetInteractor(data, new(presenter.PiquetWebPresenter))
+		},
+		controller.NewPiquetWebControllerWithProvider)
+
+	games.RegisterKVGame("gongzhu", games.CategorySolo,
+		func() usecase.GongZhuInteractorIF {
+			return usecase.NewGongZhuInteractor(domain.NewDefaultGongZhu(), new(presenter.GongZhuWebPresenter))
+		},
+		func(data []byte) (usecase.GongZhuInteractorIF, error) {
+			return usecase.RestoreGongZhuInteractor(data, new(presenter.GongZhuWebPresenter))
+		},
+		controller.NewGongZhuWebControllerWithProvider)
+
+	games.RegisterKVGame("bristol", games.CategorySolo,
+		func() usecase.BristolInteractorIF {
+			return usecase.NewBristolInteractor(domain.NewDefaultBristol(), new(presenter.BristolWebPresenter))
+		},
+		func(data []byte) (usecase.BristolInteractorIF, error) {
+			return usecase.RestoreBristolInteractor(data, new(presenter.BristolWebPresenter))
+		},
+		controller.NewBristolWebControllerWithProvider)
+
+	games.RegisterKVGame("bidwhist", games.CategorySolo,
+		func() usecase.BidWhistInteractorIF {
+			return usecase.NewBidWhistInteractor(domain.NewDefaultBidWhist(), new(presenter.BidWhistWebPresenter))
+		},
+		func(data []byte) (usecase.BidWhistInteractorIF, error) {
+			return usecase.RestoreBidWhistInteractor(data, new(presenter.BidWhistWebPresenter))
+		},
+		controller.NewBidWhistWebControllerWithProvider)
+
+	games.RegisterKVGame("easthaven", games.CategorySolo,
+		func() usecase.EasthavenInteractorIF {
+			return usecase.NewEasthavenInteractor(domain.NewDefaultEasthaven(), new(presenter.EasthavenWebPresenter))
+		},
+		func(data []byte) (usecase.EasthavenInteractorIF, error) {
+			return usecase.RestoreEasthavenInteractor(data, new(presenter.EasthavenWebPresenter))
+		},
+		controller.NewEasthavenWebControllerWithProvider)
+
 }

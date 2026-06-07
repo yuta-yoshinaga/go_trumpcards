@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した120種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した126種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -40,6 +40,7 @@ Go + Clean Architecture で実装した120種類のトランプゲーム。CLI �
 | クロンダイク (Klondike) | `klondike` | [CUI](docs/manual/cui/klondike.md) / [Web](docs/manual/web/klondike.md) |
 | レットイットライド (Let It Ride) | `letitride` | [CUI](docs/manual/cui/letitride.md) / [Web](docs/manual/web/letitride.md) |
 | フリーセル (FreeCell) | `freecell` | [CUI](docs/manual/cui/freecell.md) / [Web](docs/manual/web/freecell.md) |
+| ベーカーズ・ゲーム (Baker's Game) | `bakersgame` | [CUI](docs/manual/cui/bakersgame.md) / [Web](docs/manual/web/bakersgame.md) |
 | シーヘイブンタワーズ (Seahaven Towers) | `seahaventowers` | [CUI](docs/manual/cui/seahaventowers.md) / [Web](docs/manual/web/seahaventowers.md) |
 | バカラ (Baccarat) | `baccarat` | [CUI](docs/manual/cui/baccarat.md) / [Web](docs/manual/web/baccarat.md) |
 | スペード (Spades) | `spades` | [CUI](docs/manual/cui/spades.md) / [Web](docs/manual/web/spades.md) |
@@ -47,6 +48,7 @@ Go + Clean Architecture で実装した120種類のトランプゲーム。CLI �
 | クレイジーエイト (Crazy Eights) | `crazyeights` | [CUI](docs/manual/cui/crazyeights.md) / [Web](docs/manual/web/crazyeights.md) |
 | ジンラミー (Gin Rummy) | `ginrummy` | [CUI](docs/manual/cui/ginrummy.md) / [Web](docs/manual/web/ginrummy.md) |
 | カナスタ (Canasta) | `canasta` | [CUI](docs/manual/cui/canasta.md) / [Web](docs/manual/web/canasta.md) |
+| ブラーコ (Burraco) | `burraco` | [CUI](docs/manual/cui/burraco.md) / [Web](docs/manual/web/burraco.md) |
 | スパイダーソリティア (Spider Solitaire) | `spider` | [CUI](docs/manual/cui/spider.md) / [Web](docs/manual/web/spider.md) |
 | スパイダレット (Spiderette) | `spiderette` | [CUI](docs/manual/cui/spiderette.md) / [Web](docs/manual/web/spiderette.md) |
 | ナポレオン (Napoleon) | `napoleon` | [CUI](docs/manual/cui/napoleon.md) / [Web](docs/manual/web/napoleon.md) |
@@ -80,6 +82,7 @@ Go + Clean Architecture で実装した120種類のトランプゲーム。CLI �
 | 戦争 (War) | `war` | [CUI](docs/manual/cui/war.md) / [Web](docs/manual/web/war.md) |
 | キャンフィールド (Canfield) | `canfield` | [CUI](docs/manual/cui/canfield.md) / [Web](docs/manual/web/canfield.md) |
 | オズモシス / 浸透 (Osmosis) | `osmosis` | [CUI](docs/manual/cui/osmosis.md) / [Web](docs/manual/web/osmosis.md) |
+| 500 (Five Hundred / ファイブハンドレッド) | `fivehundred` | [CUI](docs/manual/cui/fivehundred.md) / [Web](docs/manual/web/fivehundred.md) |
 | フィフティワン (Fifty-one) | `fiftyone` | [CUI](docs/manual/cui/fiftyone.md) / [Web](docs/manual/web/fiftyone.md) |
 | ユーコン (Yukon) | `yukon` | [CUI](docs/manual/cui/yukon.md) / [Web](docs/manual/web/yukon.md) |
 | ロシアンソリティア (Russian Solitaire) | `russiansolitaire` | [CUI](docs/manual/cui/russiansolitaire.md) / [Web](docs/manual/web/russiansolitaire.md) |
@@ -93,6 +96,7 @@ Go + Clean Architecture で実装した120種類のトランプゲーム。CLI �
 | 2-7 トリプルドロー (2-7 Triple Draw) | `deucetoseven` | [CUI](docs/manual/cui/deucetoseven.md) / [Web](docs/manual/web/deucetoseven.md) |
 | スコーピオン (Scorpion) | `scorpion` | [CUI](docs/manual/cui/scorpion.md) / [Web](docs/manual/web/scorpion.md) |
 | ワスプ (Wasp) | `wasp` | [CUI](docs/manual/cui/wasp.md) / [Web](docs/manual/web/wasp.md) |
+| イーストヘイブン (Easthaven) | `easthaven` | [CUI](docs/manual/cui/easthaven.md) / [Web](docs/manual/web/easthaven.md) |
 | アコーディオン (Accordion) | `accordion` | [CUI](docs/manual/cui/accordion.md) / [Web](docs/manual/web/accordion.md) |
 | トラッシュ (Trash) | `trash` | [CUI](docs/manual/cui/trash.md) / [Web](docs/manual/web/trash.md) |
 | セブンブリッジ (Seven Bridge) | `sevenbridge` | [CUI](docs/manual/cui/sevenbridge.md) / [Web](docs/manual/web/sevenbridge.md) |
@@ -111,6 +115,8 @@ Go + Clean Architecture で実装した120種類のトランプゲーム。CLI �
 | ピケ (Piquet) | `piquet` | [CUI](docs/manual/cui/piquet.md) / [Web](docs/manual/web/piquet.md) |
 | トンク (Tonk) | `tonk` | [CUI](docs/manual/cui/tonk.md) / [Web](docs/manual/web/tonk.md) |
 | サーティワン (Thirty-One) | `thirtyone` | [CUI](docs/manual/cui/thirtyone.md) / [Web](docs/manual/web/thirtyone.md) |
+| ヤニブ (Yaniv) | `yaniv` | [CUI](docs/manual/cui/yaniv.md) / [Web](docs/manual/web/yaniv.md) |
+| 拱猪 (Gong Zhu) | `gongzhu` | [CUI](docs/manual/cui/gongzhu.md) / [Web](docs/manual/web/gongzhu.md) |
 | ティエンレン (Tien Len) | `tienlen` | [CUI](docs/manual/cui/tienlen.md) / [Web](docs/manual/web/tienlen.md) |
 | シックスカードゴルフ (Six Card Golf) | `sixcardgolf` | [CUI](docs/manual/cui/sixcardgolf.md) / [Web](docs/manual/web/sixcardgolf.md) |
 | カジノウォー (Casino War) | `casinowar` | [CUI](docs/manual/cui/casinowar.md) / [Web](docs/manual/web/casinowar.md) |
@@ -134,11 +140,17 @@ Go + Clean Architecture で実装した120種類のトランプゲーム。CLI �
 | エイトオフ (Eight Off) | `eightoff` | [CUI](docs/manual/cui/eightoff.md) / [Web](docs/manual/web/eightoff.md) |
 | ペンギン (Penguin) | `penguin` | [CUI](docs/manual/cui/penguin.md) / [Web](docs/manual/web/penguin.md) |
 | 斗地主 (Dou Dizhu) | `doudizhu` | [CUI](docs/manual/cui/doudizhu.md) / [Web](docs/manual/web/doudizhu.md) |
+| ティチュー (Tichu) | `tichu` | [CUI](docs/manual/cui/tichu.md) / [Web](docs/manual/web/tichu.md) |
+| ブーレ (Bourré) | `bourre` | [CUI](docs/manual/cui/bourre.md) / [Web](docs/manual/web/bourre.md) |
 | トゥルコ (Truco) | `truco` | [CUI](docs/manual/cui/truco.md) / [Web](docs/manual/web/truco.md) |
 | 四つ葉のクローバー (Aces Up) | `acesup` | [CUI](docs/manual/cui/acesup.md) / [Web](docs/manual/web/acesup.md) |
 | スコパ (Scopa) | `scopa` | [CUI](docs/manual/cui/scopa.md) / [Web](docs/manual/web/scopa.md) |
 | バルブ (Barbu) | `barbu` | [CUI](docs/manual/cui/barbu.md) / [Web](docs/manual/web/barbu.md) |
 | マカオ (Macau) | `macau` | [CUI](docs/manual/cui/macau.md) / [Web](docs/manual/web/macau.md) |
+| シュナプセン / 66 (Schnapsen / Sixty-Six) | `schnapsen` | [CUI](docs/manual/cui/schnapsen.md) / [Web](docs/manual/web/schnapsen.md) |
+| ブリストル (Bristol) | `bristol` | [CUI](docs/manual/cui/bristol.md) / [Web](docs/manual/web/bristol.md) |
+| ビッド・ホイスト (Bid Whist) | `bidwhist` | [CUI](docs/manual/cui/bidwhist.md) / [Web](docs/manual/web/bidwhist.md) |
+| トレセッテ (Tressette) | `tressette` | [CUI](docs/manual/cui/tressette.md) / [Web](docs/manual/web/tressette.md) |
 
 ## Demo
 

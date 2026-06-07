@@ -1,3 +1,5 @@
+//go:build !js || !wasm || solo
+
 package domain
 
 import "container/heap"
@@ -54,12 +56,15 @@ type freeCellSolver struct {
 	iterations    int
 	maxIterations int
 	initialState  *freeCellState
+	// sameSuit はタブロー積み上げ条件が同じスートの降順か（Baker's Game）を表す。
+	sameSuit bool
 }
 
 func newFreeCellSolver(f *FreeCell) *freeCellSolver {
 	s := &freeCellSolver{
 		visited:       make(map[[52]uint16]struct{}),
 		maxIterations: FreeCellSolverMaxIterations,
+		sameSuit:      f.sameSuit,
 	}
 	state := &freeCellState{}
 	// Deep copy tableau
@@ -182,7 +187,7 @@ func (s *freeCellSolver) generateSuccessors(st *freeCellState) []*freeCellState 
 			if toCol == fromCol {
 				continue
 			}
-			if canPlaceOnTableau(card, toCol, st.tableau) {
+			if s.canPlaceOnTableau(card, toCol, st.tableau) {
 				next := copyState(st)
 				next.tableau[fromCol] = next.tableau[fromCol][:len(next.tableau[fromCol])-1]
 				next.tableau[toCol] = append(next.tableau[toCol], card)
@@ -200,7 +205,7 @@ func (s *freeCellSolver) generateSuccessors(st *freeCellState) []*freeCellState 
 		}
 		card := st.freeCells[cell]
 		for toCol := range FreeCellTableauCnt {
-			if canPlaceOnTableau(card, toCol, st.tableau) {
+			if s.canPlaceOnTableau(card, toCol, st.tableau) {
 				next := copyState(st)
 				next.freeCells[cell] = nil
 				next.tableau[toCol] = append(next.tableau[toCol], card)
@@ -255,14 +260,23 @@ func isSolvedState(st *freeCellState) bool {
 	return true
 }
 
-func canPlaceOnTableau(card *Card, col int, tableau [FreeCellTableauCnt][]*Card) bool {
+// canPlaceOnTableau はバリアント（フリーセル / Baker's Game）に応じてタブロー
+// 積み上げ条件を判定する。Baker's Game では同じスートの降順、通常のフリーセルでは
+// 赤黒交互の降順を要求する。
+func (s *freeCellSolver) canPlaceOnTableau(card *Card, col int, tableau [FreeCellTableauCnt][]*Card) bool {
 	colCards := tableau[col]
 	if len(colCards) == 0 {
-		// フリーセルでは空列には任意のカードを置ける
+		// 空列には任意のカードを置ける
 		return true
 	}
 	topCard := colCards[len(colCards)-1]
-	return isAlternateColor(card, topCard) && card.GetValue() == topCard.GetValue()-1
+	if card.GetValue() != topCard.GetValue()-1 {
+		return false
+	}
+	if s.sameSuit {
+		return card.GetDesign() == topCard.GetDesign()
+	}
+	return isAlternateColor(card, topCard)
 }
 
 func canPlaceOnFoundation(card *Card, fIdx int, foundation [FreeCellFoundationCnt]int) bool {
@@ -271,14 +285,6 @@ func canPlaceOnFoundation(card *Card, fIdx int, foundation [FreeCellFoundationCn
 		return card.GetValue() == 1
 	}
 	return card.GetValue() == count+1
-}
-
-func isAlternateColor(card1, card2 *Card) bool {
-	return isBlack(card1) != isBlack(card2)
-}
-
-func isBlack(card *Card) bool {
-	return card.GetDesign() == CardDesignSpade || card.GetDesign() == CardDesignClover
 }
 
 // stateKey returns the state key for the solver's initial state (used in tests).

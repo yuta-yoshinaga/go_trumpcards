@@ -1,0 +1,41 @@
+{
+  "phase": {
+    "bid": "ビッド",
+    "trumpDeclaration": "切り札宣言",
+    "kittyExchange": "キティ交換",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "round": "ラウンド {{n}}",
+  "trick": "トリック {{n}}",
+  "highestBid": "最高ビッド: {{tricks}} {{dir}}",
+  "contractUndecided": "契約: 未決定",
+  "contractLine": "契約: {{tricks}} {{dir}} (切り札: {{trump}})",
+  "teamScores": "チーム0: {{t0}}点 / チーム1: {{t1}}点",
+  "teamShort": "T{{team}}",
+  "passed": "パス",
+  "currentTrick": "現在のトリック",
+  "trickEmpty": "(まだカードがありません)",
+  "tricksLabel": "目標トリック数",
+  "dirUptown": "アップタウン",
+  "dirDowntown": "ダウンタウン",
+  "dirNoTrump": "ノートランプ",
+  "passButton": "パス",
+  "declareTrumpPrompt": "切り札スートを選択:",
+  "exchangeButton": "交換 ({{count}}/6)",
+  "playButton": "出す",
+  "nextTrickButton": "次のトリック",
+  "nextRoundButton": "次のラウンド",
+  "settings": {
+    "cpuDifficulty": "CPU難易度",
+    "targetScore": "目標スコア"
+  },
+  "tutorial": {
+    "info": "ここにラウンド・契約・チームスコアが表示されます。先に7点に到達したチームの勝ちです。",
+    "trick": "場に出されたカードがここに並びます。最強のカードを出したプレイヤーがトリックを取ります。",
+    "hand": "あなたの手札です。プレイ時はカードを選んでから「出す」を押します。交換時は6枚選びます。",
+    "actions": "ビッド・切り札宣言・交換・プレイなど、フェーズに応じた操作ボタンがここに表示されます。"
+  }
+}

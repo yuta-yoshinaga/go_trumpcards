@@ -1,3 +1,5 @@
+//go:build !js || !wasm || solo
+
 package domain
 
 // MacauCpuDifficulty CPU の難易度レベル

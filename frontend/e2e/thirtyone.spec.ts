@@ -20,10 +20,13 @@ test.describe('Thirty-One E2E', () => {
 
     await expect(drawStock).toBeVisible({ timeout: 10_000 });
 
+    // The next-round button is only rendered at round end, so probe it with
+    // isVisible() (immediate) rather than isEnabled() (which auto-waits for the
+    // element and would hang the whole test for the 90s timeout when absent).
     const MAX_TURNS = 80;
     let interactions = 0;
     for (let turn = 0; turn < MAX_TURNS; turn++) {
-      if (await nextRound.isEnabled()) {
+      if (await nextRound.isVisible()) {
         interactions++;
         await nextRound.click();
         await waitForLoaded(page);
@@ -36,7 +39,8 @@ test.describe('Thirty-One E2E', () => {
         continue;
       }
       if (await discardBtn.isVisible()) {
-        // Discard phase: pick a card then discard.
+        // Discard phase: pick a card then discard. Cards are rendered (but
+        // disabled) at round/game end too, so gate the click on isEnabled().
         if (await handCard0.isEnabled()) {
           await handCard0.click();
         }
@@ -48,9 +52,7 @@ test.describe('Thirty-One E2E', () => {
         }
       }
       // Nothing actionable for the human — likely game end.
-      if (!(await drawStock.isEnabled()) && !(await nextRound.isEnabled()) && !(await discardBtn.isEnabled())) {
-        break;
-      }
+      break;
     }
 
     expect(interactions).toBeGreaterThan(0);

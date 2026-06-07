@@ -114,18 +114,27 @@ var registry = []*Game{
 	{Name: "ginrummy", Category: CategorySolo, Description: "Gin Rummy (ジンラミー)"},
 	{Name: "canasta", Category: CategorySolo, Description: "Canasta (カナスタ)"},
 	{Name: "spider", Category: CategorySolo, Description: "Spider Solitaire (スパイダーソリティア)"},
-	{Name: "napoleon", Category: CategoryClassic, Description: "Napoleon (ナポレオン)"},
+	// Napoleon is a trick-taking game bucketed into the casino worker purely for
+	// binary-size balancing (#2126): it is one of the heaviest games. Category is
+	// only a size bucket.
+	{Name: "napoleon", Category: CategoryCasino, Description: "Napoleon (ナポレオン)"},
 	{Name: "indianpoker", Category: CategoryCasino, Description: "Indian Poker (インディアンポーカー)"},
 	{Name: "videopoker", Category: CategoryCasino, Description: "Video Poker Jacks or Better (ビデオポーカー)"},
 	{Name: "deuceswild", Category: CategoryCasino, Description: "Deuces Wild (デューシーズワイルド)"},
 	{Name: "jokerpoker", Category: CategoryCasino, Description: "Joker Poker (ジョーカーポーカー)"},
-	{Name: "euchre", Category: CategoryClassic, Description: "Euchre (ユーカー)"},
+	// Euchre is a trick-taking game bucketed into the SOLO worker purely for
+	// binary-size balancing (#2126): the classic worker is the constrained one,
+	// and solo has more headroom than casino now. Category is only a size bucket.
+	{Name: "euchre", Category: CategorySolo, Description: "Euchre (ユーカー)"},
 	{Name: "pyramid", Category: CategorySolo, Description: "Pyramid (ピラミッド)"},
 	{Name: "tripeaks", Category: CategorySolo, Description: "TriPeaks (トリピークス)"},
 	{Name: "cribbage", Category: CategorySolo, Description: "Cribbage (クリベッジ)"},
 	{Name: "threecard", Category: CategoryCasino, Description: "Three Card Poker (スリーカードポーカー)"},
 	{Name: "ohhell", Category: CategoryClassic, Description: "Oh Hell (オー・ヘル)"},
-	{Name: "bridge", Category: CategoryClassic, Description: "Contract Bridge (コントラクトブリッジ)"},
+	// Bridge is a trick-taking game bucketed into the casino worker purely for
+	// binary-size balancing (#2126): it is one of the heaviest games and the
+	// classic worker is at the 1 MB gzip limit. Category is only a size bucket.
+	{Name: "bridge", Category: CategoryCasino, Description: "Contract Bridge (コントラクトブリッジ)"},
 	{Name: "speed", Category: CategoryClassic, Description: "Speed (スピード)"},
 	{Name: "gofish", Category: CategoryClassic, Description: "Go Fish (ゴーフィッシュ)"},
 	{Name: "pinochle", Category: CategoryClassic, Description: "Pinochle (ピノクル)"},
@@ -162,7 +171,9 @@ var registry = []*Game{
 	{Name: "spanish21", Category: CategoryCasino, Description: "Spanish 21 (スパニッシュ21)"},
 	{Name: "calculation", Category: CategorySolo, Description: "Calculation (カルキュレーション)"},
 	{Name: "spiteandmalice", Category: CategoryClassic, Description: "Spite and Malice (スパイト・アンド・マリス)"},
-	{Name: "skat", Category: CategoryClassic, Description: "Skat (スカート)"},
+	// Skat is a trick-taking game bucketed into the casino worker purely for
+	// binary-size balancing (#2126). Category is only a size bucket.
+	{Name: "skat", Category: CategoryCasino, Description: "Skat (スカート)"},
 	{Name: "shithead", Category: CategoryClassic, Description: "Shithead / Karma (シットヘッド)"},
 	{Name: "nertz", Category: CategoryClassic, Description: "Nertz / Pounce (ナーツ / パウンス)"},
 	{Name: "slapjack", Category: CategoryClassic, Description: "Slapjack (スラップジャック)"},
@@ -178,15 +189,25 @@ var registry = []*Game{
 	{Name: "ultimatetexasholdem", Category: CategoryCasino, Description: "Ultimate Texas Hold'em (アルティメット・テキサスホールデム)"},
 	{Name: "crescent", Category: CategorySolo, Description: "Crescent Solitaire (クレセント・ソリティア)"},
 	{Name: "mississippistud", Category: CategoryCasino, Description: "Mississippi Stud (ミシシッピ・スタッド)"},
-	{Name: "belote", Category: CategoryClassic, Description: "Belote (ベロート)"},
+	// Belote is bucketed into the casino worker purely for binary-size balancing
+	// (#2126). Category is only a size bucket.
+	{Name: "belote", Category: CategoryCasino, Description: "Belote (ベロート)"},
 	{Name: "spiderette", Category: CategorySolo, Description: "Spiderette (スパイダレット)"},
-	{Name: "mighty", Category: CategoryClassic, Description: "Mighty (マイティ)"},
+	// Mighty is a trick-taking game, but it is bucketed into the casino worker
+	// purely for binary-size balancing (#2126): it is one of the heaviest games
+	// and the classic worker is at the 1 MB gzip limit. Category is only a
+	// per-worker size bucket with no user-facing meaning.
+	{Name: "mighty", Category: CategoryCasino, Description: "Mighty (マイティ)"},
 	{Name: "oasispoker", Category: CategoryCasino, Description: "Oasis Poker (オアシスポーカー)"},
 	{Name: "beleagueredcastle", Category: CategorySolo, Description: "Beleaguered Castle (包囲された城)"},
-	{Name: "piquet", Category: CategoryClassic, Description: "Piquet (ピケ)"},
+	// Piquet is a trick-taking game bucketed into the SOLO worker purely for
+	// binary-size balancing (#2126). Category is only a size bucket.
+	{Name: "piquet", Category: CategorySolo, Description: "Piquet (ピケ)"},
 	{Name: "casinoholdem", Category: CategoryCasino, Description: "Casino Hold'em (カジノホールデム)"},
 	{Name: "callbreak", Category: CategoryClassic, Description: "Call Break (コールブレイク)"},
-	{Name: "tarneeb", Category: CategoryClassic, Description: "Tarneeb (ターニーブ)"},
+	// Tarneeb is a trick-taking game bucketed into the casino worker purely for
+	// binary-size balancing (#2126). Category is only a size bucket.
+	{Name: "tarneeb", Category: CategoryCasino, Description: "Tarneeb (ターニーブ)"},
 	{Name: "highcardflush", Category: CategoryCasino, Description: "High Card Flush (ハイカードフラッシュ)"},
 	{Name: "briscola", Category: CategoryClassic, Description: "Briscola (ブリスコラ)"},
 	{Name: "gaps", Category: CategorySolo, Description: "Gaps / Montana (ギャップス)"},
@@ -197,7 +218,9 @@ var registry = []*Game{
 	{Name: "penguin", Category: CategorySolo, Description: "Penguin (ペンギン)"},
 	{Name: "chinesepoker", Category: CategoryCasino, Description: "Chinese Poker (チャイニーズポーカー)"},
 	{Name: "sixcardgolf", Category: CategoryClassic, Description: "Six Card Golf (シックスカードゴルフ)"},
-	{Name: "doudizhu", Category: CategoryClassic, Description: "Dou Dizhu / Fight the Landlord (斗地主)"},
+	// Dou Dizhu is bucketed into the casino worker purely for binary-size
+	// balancing (#2126). Category is only a size bucket.
+	{Name: "doudizhu", Category: CategoryCasino, Description: "Dou Dizhu / Fight the Landlord (斗地主)"},
 	{Name: "truco", Category: CategoryClassic, Description: "Truco (トゥルコ)"},
 	{Name: "scopa", Category: CategoryCasino, Description: "Scopa (スコパ)"},
 	{Name: "acesup", Category: CategorySolo, Description: "Aces Up (四つ葉のクローバー)"},
@@ -220,6 +243,61 @@ var registry = []*Game{
 	// Osmosis (浸透) is a foundation-only solitaire bucketed into the solo
 	// worker. Category here is purely a binary-size bucket.
 	{Name: "osmosis", Category: CategorySolo, Description: "Osmosis Solitaire (オズモシス / 浸透)"},
+	// 500 (Five Hundred) is a trick-taking game (auction + kitty exchange +
+	// bowers/joker). It is bucketed into the solo worker only because the
+	// classic worker is at the 1 MB gzip free-tier limit. Category here is
+	// purely a binary-size bucket.
+	{Name: "fivehundred", Category: CategorySolo, Description: "500 (Five Hundred / ファイブハンドレッド)"},
+	// Schnapsen / Sixty-Six is a 2-player trick-taking game (marriages + draw
+	// from stock). It is bucketed into the solo worker only because the classic
+	// worker is at the 1 MB gzip free-tier limit. Category here is purely a
+	// binary-size bucket.
+	{Name: "schnapsen", Category: CategorySolo, Description: "Schnapsen / Sixty-Six (シュナプセン / 66)"},
+	// Burraco is a Canasta-derived rummy game. Bucketed into the solo worker
+	// (the classic worker is at the 1 MB gzip free-tier limit). Category here is
+	// purely a binary-size bucket.
+	{Name: "burraco", Category: CategorySolo, Description: "Burraco (ブラーコ)"},
+	// Yaniv (ヤニブ) is a draw-and-discard hand-reduction game. The issue
+	// proposed the classic worker, but that worker is at the 1 MB gzip free-tier
+	// limit, so Yaniv is bucketed into the casino worker. Category here is purely
+	// a binary-size bucket (see package doc).
+	{Name: "yaniv", Category: CategoryCasino, Description: "Yaniv (ヤニブ)"},
+	// Gong Zhu (拱猪 / Chinese Hearts) is a trick-taking game with positive and
+	// negative point cards, a doubling card, and an exposure phase. The issue
+	// proposed the classic worker, but that worker is at the 1 MB gzip free-tier
+	// limit, so Gong Zhu is bucketed into the solo worker (most headroom).
+	// Category here is purely a binary-size bucket (see package doc).
+	{Name: "gongzhu", Category: CategorySolo, Description: "Gong Zhu (拱猪)"},
+	// Bristol is a tableau/reserve solitaire (build-down tableau, 3 fans, stock).
+	// Bucketed into the solo worker (classic worker is at the 1 MB gzip limit).
+	{Name: "bristol", Category: CategorySolo, Description: "Bristol (ブリストル)"},
+	// Bid Whist is a 4-player partnership trick-taking game with jokers, a 6-card
+	// kitty and Uptown/Downtown/No-Trump bidding. Conceptually a "classic"
+	// trick-taker, but the classic worker is at the 1 MB gzip limit, so it is
+	// bucketed into the solo worker. Category here is purely a binary-size bucket.
+	{Name: "bidwhist", Category: CategorySolo, Description: "Bid Whist (ビッド・ホイスト)"},
+	// Tressette (トレセッテ) is an Italian no-trump must-follow trick-taking
+	// team game on the 40-card Briscola deck. The issue proposed the classic
+	// worker, but that worker is at the 1 MB gzip free-tier limit, so Tressette
+	// is bucketed into the casino worker (most headroom). Category here is purely
+	// a binary-size bucket (see package doc).
+	{Name: "tressette", Category: CategoryCasino, Description: "Tressette (トレセッテ)"},
+	// Easthaven (イーストヘイブン) is a Klondike/Spider hybrid solitaire:
+	// alternating-color descending tableau with A-K foundations (Klondike) but
+	// a Spider-style stock that deals one card to every column. Solo worker.
+	{Name: "easthaven", Category: CategorySolo, Description: "Easthaven (イーストヘイブン)"},
+	// Tichu (ティチュー) is a 4-player partnership shedding game (Daifugo-like
+	// combinations + special cards Dragon/Phoenix/Dog/Mahjong). The issue proposed
+	// the classic worker, but that worker is at the 1 MB gzip free-tier limit, so
+	// Tichu is bucketed into the casino worker. Category is purely a binary-size
+	// bucket here (see package doc).
+	{Name: "tichu", Category: CategoryCasino, Description: "Tichu (ティチュー)"},
+	// Baker's Game is FreeCell's same-suit ancestor; it reuses the FreeCell
+	// engine (domain.NewDefaultBakersGame) and ships in the solo worker.
+	{Name: "bakersgame", Category: CategorySolo, Description: "Baker's Game (ベーカーズ・ゲーム)"},
+	// Bourré fuses poker-style ante/draw betting with must-follow trick-taking.
+	// Category is purely a binary-size bucket here (see package doc).
+	{Name: "bourre", Category: CategoryCasino, Description: "Bourré (ブーレ)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

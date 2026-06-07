@@ -26,6 +26,15 @@ describe('parseBridgeCommand', () => {
     expect(parseBridgeCommand('bid 3 nt')).toEqual({ args: ['bid', undefined, 3, 3, 5] });
   });
 
+  // #2152 review: the shared BRIDGE_SUIT_MAP also accepts singular forms and
+  // the `clover` club alias, matching the other games.
+  it('parses bid with singular and clover suit aliases', () => {
+    expect(parseBridgeCommand('bid 1 club')).toEqual(parseBridgeCommand('bid 1 clubs'));
+    expect(parseBridgeCommand('bid 1 clover')).toEqual({ args: ['bid', undefined, 3, 1, 1] });
+    expect(parseBridgeCommand('bid 2 heart')).toEqual({ args: ['bid', undefined, 3, 2, 3] });
+    expect(parseBridgeCommand('bid 4 spade')).toEqual({ args: ['bid', undefined, 3, 4, 4] });
+  });
+
   it('returns error for bid without enough args', () => {
     const result = parseBridgeCommand('bid');
     expect('error' in result).toBe(true);

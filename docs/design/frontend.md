@@ -437,7 +437,7 @@ classDiagram
         +object messageParams
     }
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全120ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全132ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -868,7 +868,7 @@ classDiagram
     class actionLogApi {
         +blackjack() Promise~ActionLogResponse~
         +poker() Promise~ActionLogResponse~
-        ...全120ゲーム()
+        ...全132ゲーム()
     }
 
     BlackJackApi --> gameApi : uses postJson/gameExec
@@ -930,7 +930,7 @@ classDiagram
 
     RedDogApi --> gameApi : uses postJson/gameExec
 
-    note for BlackJackApi "全120ゲーム分のAPI Objectが存在\n(blackjack, spanish21, poker, oldmaid, daifugo,\nsevens, doubt, bigtwo, holdem, omaha, omahahilo, bigo, bigohilo, shortdeck,\npineapple, crazypineapple, hearts, memory, klondike, freecell,\nseahaventowers, cruel, baccarat, spades, twotenjack, crazyeights,\nginrummy, canasta, spider, spiderette, napoleon, mighty,\nindianpoker, videopoker, deuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, caribbeanstud, texasholdembonus,\nultimatetexasholdem, mississippistud, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow, war, canfield, fiftyone, yukon, russiansolitaire, scorpion, wasp, accordion, whist,\nletitride, pokersquares, pageone, reddog, razz, badugi, trash,\nsevenbridge, president, cassino, calculation, crescent, spiteandmalice,\nskat, shithead, nertz, slapjack, egyptianratscrew, bakersdozen, tonk,\ncasinowar, pitch, dragontiger, blackjackswitch, montecarlo, contractrummy, belote,\noasispoker, beleagueredcastle, piquet, casinoholdem, callbreak,\nhighcardflush, fourcardpoker, russianpoker, briscola, tarneeb, gaps, rummy500, eightoff, penguin,\nirishpoker, chinesepoker, sixcardgolf, doudizhu, truco, acesup, scopa, barbu,\ndeucetoseven, macau, thirtyone, tienlen, osmosis)"
+    note for BlackJackApi "全132ゲーム分のAPI Objectが存在\n(blackjack, spanish21, poker, oldmaid, daifugo,\nsevens, doubt, bigtwo, holdem, omaha, omahahilo, bigo, bigohilo, shortdeck,\npineapple, crazypineapple, hearts, memory, klondike, freecell,\nseahaventowers, cruel, baccarat, spades, twotenjack, crazyeights,\nginrummy, canasta, spider, spiderette, napoleon, mighty,\nindianpoker, videopoker, deuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, caribbeanstud, texasholdembonus,\nultimatetexasholdem, mississippistud, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow, war, canfield, fiftyone, yukon, russiansolitaire, scorpion, wasp, accordion, whist,\nletitride, pokersquares, pageone, reddog, razz, badugi, trash,\nsevenbridge, president, cassino, calculation, crescent, spiteandmalice,\nskat, shithead, nertz, slapjack, egyptianratscrew, bakersdozen, tonk,\ncasinowar, pitch, dragontiger, blackjackswitch, montecarlo, contractrummy, belote,\noasispoker, beleagueredcastle, piquet, casinoholdem, callbreak,\nhighcardflush, fourcardpoker, russianpoker, briscola, tarneeb, gaps, rummy500, eightoff, penguin,\nirishpoker, chinesepoker, sixcardgolf, doudizhu, truco, acesup, scopa, barbu,\ndeucetoseven, macau, thirtyone, tienlen, osmosis, fivehundred,\nschnapsen, burraco, yaniv, gongzhu, bristol, bidwhist, tressette, easthaven, tichu, bakersgame, bourre)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -1309,7 +1309,7 @@ classDiagram
 
     useCanastaGame --> useGameApi : uses
 
-    note for useBlackJackGame "全120ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    note for useBlackJackGame "全132ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -1908,7 +1908,7 @@ classDiagram
     GamePage --> PokerTableLayout : renders (Hold'em/Omaha/BigO/ShortDeck/Pineapple/SevenCardStud/Razz)
     PokerTableLayout --> CpuPlayerCard : wraps
 
-    note for GamePage "全120ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全132ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -1931,13 +1931,13 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (120ゲーム)
+        +Routes (132ゲーム)
     }
 
     class gameCategories {
         +table: [BlackJack, Spanish21, Baccarat, ThreeCard, CaribbeanStud, OasisPoker, RussianPoker, TexasHoldemBonus, CasinoHoldem, UltimateTexasHoldem, PaiGow, LetItRide, RedDog, CasinoWar, DragonTiger, BlackJackSwitch, MississippiStud, HighCardFlush, FourCardPoker]
         +poker: [Poker, Holdem, Omaha, OmahaHiLo, BigO, BigOHiLo, ShortDeck, Pineapple, CrazyPineapple, SevenCardStud, Razz, Badugi, IndianPoker, VideoPoker, DeucesWild, JokerPoker]
-        +trickTaking: [Hearts, Spades, Pitch, TwoTenJack, OhHell, Euchre, Bridge, Napoleon, Whist, Belote, Mighty, Piquet, CallBreak, Tarneeb, Briscola]
+        +trickTaking: [Hearts, Spades, Pitch, TwoTenJack, OhHell, Euchre, Bridge, Napoleon, Whist, Belote, Mighty, FiveHundred, Piquet, CallBreak, Tarneeb, Briscola]
         +matching: [OldMaid, Doubt, Durak, Daifugo, President, Cassino, Scopa, Barbu, Sevens, CrazyEights, PageOne, Speed, GoFish, Pinochle, PigsTail, War, FiftyOne, Trash, SpiteAndMalice, Skat, Shithead, Nertz, Slapjack, EgyptianRatscrew]
         +solitaire: [Klondike, FreeCell, EightOff, Penguin, SeahavenTowers, Spider, Spiderette, Pyramid, Gaps, TriPeaks, Golf, Memory, ClockSolitaire, FortyThieves, BakersDozen, BeleagueredCastle, Canfield, Yukon, RussianSolitaire, Cruel, Scorpion, Wasp, Accordion, PokerSquares, MonteCarlo, Calculation, Crescent]
         +rummy: [GinRummy, Tonk, Canasta, Cribbage, SevenBridge, ContractRummy, Rummy500]
@@ -1958,7 +1958,7 @@ classDiagram
     GamePage --> TutorialProvider : wraps (per-game)
     TutorialProvider --> TutorialOverlay : renders when active
 
-    note for i18n "123名前空間: common + 120ゲーム固有 + tutorial + discover\n翻訳ファイル: locales/{ja,en}/game.json"
+    note for i18n "135名前空間: common + 132ゲーム固有 + tutorial + discover\n翻訳ファイル: locales/{ja,en}/game.json"
 ```
 
 ### 1.8 AI Game Concierge (/discover)

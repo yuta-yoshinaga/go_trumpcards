@@ -1,3 +1,5 @@
+//go:build !js || !wasm || casino
+
 package domain
 
 // cpuBid CPUのビッド処理 (executeBid が cpuActions に行動記録を追加する)

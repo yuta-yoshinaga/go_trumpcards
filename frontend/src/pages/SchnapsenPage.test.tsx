@@ -1,0 +1,163 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { schnapsenApi } from '../api/gameApi';
+import { renderWithProviders } from '../test/renderWithProviders';
+import type { Card, SchnapsenResponse } from '../types/card';
+import { SchnapsenPage } from './SchnapsenPage';
+
+vi.mock('../api/gameApi', () => ({
+  schnapsenApi: { exec: vi.fn() },
+  actionLogApi: { schnapsen: vi.fn() },
+}));
+
+const mockExec = vi.mocked(schnapsenApi.exec);
+
+const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
+
+function makeState(overrides: Partial<SchnapsenResponse> = {}): SchnapsenResponse {
+  return {
+    players: [
+      {
+        id: 0,
+        isHuman: true,
+        cardCount: 5,
+        cards: [card('SPADE', 1), card('HEART', 10), card('DIAMOND', 11), card('CLOVER', 13), card('CLOVER', 12)],
+        points: 0,
+        trickCount: 0,
+      },
+      { id: 1, isHuman: false, cardCount: 5, cards: [], points: 0, trickCount: 0 },
+    ],
+    phase: 0,
+    trickNumber: 1,
+    currentPlayerIdx: 0,
+    currentTrick: [],
+    trumpSuit: 1,
+    trumpCard: card('SPADE', 13),
+    dealerIdx: 0,
+    leadPlayerIdx: 0,
+    stockRemaining: 9,
+    isEndgame: false,
+    validPlays: [0, 1, 2, 3, 4],
+    marriagePlays: [],
+    gameEndFlag: false,
+    winnerIdx: -1,
+    message: '',
+    config: { cpuDifficulty: 0 },
+    ...overrides,
+  };
+}
+
+beforeEach(() => {
+  mockExec.mockResolvedValue(makeState());
+});
+
+describe('SchnapsenPage', () => {
+  it('calls reset on mount', async () => {
+    renderWithProviders(<SchnapsenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('renders header info (trick, stock, points, phase)', async () => {
+    renderWithProviders(<SchnapsenPage />);
+    await waitFor(() => expect(screen.getByText(/トリック: 1/)).toBeInTheDocument());
+    expect(screen.getByText(/山札: 9/)).toBeInTheDocument();
+    expect(screen.getByTestId('schnapsen-phase')).toHaveTextContent(/第1フェーズ/);
+  });
+
+  it('shows the human hand as play buttons', async () => {
+    renderWithProviders(<SchnapsenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Play SPADE 1' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'Play HEART 10' })).toBeInTheDocument();
+  });
+
+  it('fires play with the selected card index when a card is clicked', async () => {
+    renderWithProviders(<SchnapsenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Play HEART 10' })).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'Play HEART 10' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 1));
+  });
+
+  it('shows a marriage button and dispatches marriage when present', async () => {
+    mockExec.mockResolvedValue(makeState({ marriagePlays: [3, 4] }));
+    renderWithProviders(<SchnapsenPage />);
+    await waitFor(() => expect(screen.getByTestId('schnapsen-marriage-3')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('schnapsen-marriage-4'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('marriage', 4));
+  });
+
+  it('disables non-legal cards in the endgame (phase 2)', async () => {
+    mockExec.mockResolvedValue(makeState({ isEndgame: true, validPlays: [0] }));
+    renderWithProviders(<SchnapsenPage />);
+    await waitFor(() => expect(screen.getByTestId('schnapsen-phase')).toHaveTextContent(/第2フェーズ/));
+    expect(screen.getByRole('button', { name: 'Play SPADE 1' })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Play HEART 10' })).toBeDisabled();
+  });
+
+  it('shows "Next trick" button on trick-end and dispatches next', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1 }));
+    renderWithProviders(<SchnapsenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のトリックへ' })).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '次のトリックへ' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
+  });
+
+  it('shows youWin banner when winnerIdx is 0', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        gameEndFlag: true,
+        winnerIdx: 0,
+        players: [
+          { id: 0, isHuman: true, cardCount: 0, cards: [], points: 70, trickCount: 6 },
+          { id: 1, isHuman: false, cardCount: 0, cards: [], points: 40, trickCount: 4 },
+        ],
+      }),
+    );
+    renderWithProviders(<SchnapsenPage />);
+    await waitFor(() => expect(screen.getByText(/あなたの勝ち！.*70.*40/)).toBeInTheDocument());
+  });
+
+  it('shows cpuWin banner when winnerIdx is 1', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        gameEndFlag: true,
+        winnerIdx: 1,
+        players: [
+          { id: 0, isHuman: true, cardCount: 0, cards: [], points: 40, trickCount: 4 },
+          { id: 1, isHuman: false, cardCount: 0, cards: [], points: 70, trickCount: 6 },
+        ],
+      }),
+    );
+    renderWithProviders(<SchnapsenPage />);
+    await waitFor(() => expect(screen.getByText(/CPUの勝ち/)).toBeInTheDocument());
+  });
+
+  it('hides trump card label when stock is exhausted', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpCard: undefined, stockRemaining: 0, isEndgame: true }));
+    renderWithProviders(<SchnapsenPage />);
+    await waitFor(() => expect(screen.getByText(/切り札: 山札なし/)).toBeInTheDocument());
+  });
+
+  it('disables play buttons when it is not the human turn', async () => {
+    mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
+    renderWithProviders(<SchnapsenPage />);
+    await waitFor(() => {
+      const btn = screen.getByRole('button', { name: 'Play SPADE 1' });
+      expect(btn).toBeDisabled();
+    });
+  });
+
+  it('shows confirm dialog on reset click and runs reset on accept', async () => {
+    renderWithProviders(<SchnapsenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+});

@@ -1,3 +1,5 @@
+//go:build !js || !wasm || casino
+
 package domain
 
 // TarneebCpuDifficulty CPU の難易度レベル

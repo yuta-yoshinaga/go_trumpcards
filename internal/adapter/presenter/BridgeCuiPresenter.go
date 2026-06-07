@@ -1,3 +1,5 @@
+//go:build !js || !wasm || casino
+
 package presenter
 
 import (
@@ -145,7 +147,7 @@ func (p *BridgeCuiPresenter) HintOutput(b interfaces.BridgeGame) string {
 	if hint == nil {
 		return i18n.T("bridge.hintNone") + "\n"
 	}
-	reason := bridgeHintReasonStr(hint.Reason)
+	reason := hintReasonStr(hint.Reason, bridgeHintReasonKeys)
 	if hint.BidType != nil {
 		bidTypeStr := bridgeBidTypeStr(*hint.BidType)
 		if *hint.BidType == int(domain.BridgeBidNormal) && hint.BidLevel != nil && hint.BidSuit != nil {
@@ -188,19 +190,10 @@ func bridgeBidTypeStr(bidType int) string {
 
 // bridgeHintReasonKeys maps Bridge-specific hint-reason identifiers to
 // their i18n keys. Reasons not in this map fall through to
-// lookupHintReason → cui_common (e.g. strategic_bid).
+// hintReasonStr → cui_common (e.g. strategic_bid).
 var bridgeHintReasonKeys = map[string]string{
 	"support_partner": "bridge.hintReasonSupportPartner",
 	"competitive_bid": "bridge.hintReasonCompetitiveBid",
-}
-
-// bridgeHintReasonStr resolves a reason via the per-game map first, then
-// the shared (cui_common) layer.
-func bridgeHintReasonStr(reason string) string {
-	if key, ok := bridgeHintReasonKeys[reason]; ok {
-		return i18n.T(key)
-	}
-	return lookupHintReason(reason, nil)
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

@@ -78,6 +78,8 @@ tags:
     description: Spanish 21 (スパニッシュ21) — BlackJack variant with 48-card deck and bonus payouts
   - name: canasta
     description: Canasta (カナスタ) game
+  - name: burraco
+    description: Burraco (ブラーコ) — Canasta-derived rummy with pozzetto reserve hands
   - name: pinochle
     description: Pinochle (ピノクル) game
   - name: spider
@@ -185,10 +187,28 @@ tags:
     description: Tonk (トンク) game - 2-player rummy variant with 5-card hands; instant Tonk win on a 49 or 50 point initial deal, knock when deadwood is 5 or less
   - name: thirtyone
     description: Thirty-One (サーティワン / Scat) game - 4-player draw-and-discard survival game; build the highest single-suit total (A=11, J/Q/K=10), knock to stand pat, lowest score loses a life, hitting exactly 31 wins the round instantly
+  - name: yaniv
+    description: Yaniv (ヤニブ) game - 4-player Israeli draw-and-discard hand-reduction game on a 54-card deck; discard singles/sets/runs, draw from stock or a discard end, declare Yaniv at hand total <= 5, beware the Asaf undercut (30-point penalty)
+  - name: gongzhu
+    description: Gong Zhu (拱猪 / Chinese Hearts) game - 4-player trick-taking game with positive and negative point cards (♠Q=-100, ♦J=+100), a doubling ♣10, graded hearts (total -200), an all-hearts +200 bonus, and a pre-round exposure phase that doubles a card's stakes
   - name: tienlen
     description: Tien Len (ティエンレン / Vietnamese Big Two) game - 4-player shedding game; suit order ♠<♣<♦<♥, holder of ♠3 leads, chops (three consecutive pairs / four of a kind) cut a lone 2
   - name: osmosis
     description: Osmosis (オズモシス / 浸透) solitaire - foundation-only single-player game; 4 reserve columns of 4 cards, 4 vertical foundation rows (one suit each), the top row builds any order while lower rows accept only ranks already present in the row directly above ("seep")
+  - name: bristol
+    description: Bristol (ブリストル) solitaire - single-player tableau-and-reserve game; 8 tableau columns (build down any suit, top card only, emptied columns are dead), 3 fans dealt from a stock (one card each per draw), and 4 foundations built up Ace-to-King regardless of suit
+  - name: bidwhist
+    description: Bid Whist (ビッド・ホイスト) - 4-player partnership trick-taking on a 54-card deck (52 + 2 jokers); 12-card hands with a 6-card kitty, auction bidding (target tricks 1-7 over the book of 6 plus Uptown/Downtown/No-Trump direction), trump declaration, kitty exchange, big/little joker as top trumps, first team to the target score (default 7) wins
+  - name: tressette
+    description: Tressette (トレセッテ) - 4-player no-trump must-follow trick-taking team game on the 40-card Briscola deck (8/9/10 removed), 10-card hands; trick strength 3>2>A>K>Q>J>7>6>5>4, scoring in thirds (A=1pt, 2/3/K/Q/J=1/3, last trick +1/3), first team to the target (default 21) wins
+  - name: easthaven
+    description: Easthaven (イーストヘイブン) - single-player Klondike/Spider hybrid solitaire; 7 tableau columns of 3 (2 face-down + 1 face-up), alternating-color descending tableau and A-to-K suit foundations (Klondike), with a Spider-style stock that deals one card to every column at once (no waste pile)
+  - name: tichu
+    description: Tichu (ティチュー) - 4-player 2-vs-2 partnership shedding game on a 56-card deck (52 + Dragon/Phoenix/Dog/Mahjong); 14-card hands, optional Tichu/Grand Tichu declarations (±100/±200), Daifugo-style combinations with four-of-a-kind and straight-flush bombs, special-card behaviours (Mahjong leads, Dog passes lead to partner, Phoenix wild, Dragon strongest single but trick goes to an opponent), card points (5/10/K, Dragon +25, Phoenix -25), one-two double victory (+200); higher team score wins the deal
+  - name: bourre
+    description: Bourré (ブーレ) - 5-player gambling trick-taking game fusing poker-style ante/draw betting with must-follow trick play on a 52-card deck; each player antes into the pot and is dealt 5 cards with the dealer's last card setting the trump suit, then decides to play or fold and may discard/draw (draw poker); five tricks under must-follow/must-trump-when-void/must-win-when-able rules, the most tricks takes the pot, and a player who plays but wins zero tricks is "bourréd" and pays a penalty equal to the pot
+  - name: fivehundred
+    description: 500 (Five Hundred / ファイブハンドレッド) game - 4-player partnership trick-taking with a 43-card deck (joker + red 4-A + black 5-A); auction bidding (6-10 tricks per suit/NT plus Misère/Open Misère), kitty exchange, Euchre-style bowers + joker as top trumps, first team to 500 wins
   - name: casinowar
     description: Casino War (カジノウォー) game - simple player-vs-dealer table game; high card wins (Aces high), tie offers Surrender (forfeit half ante) or War (match ante and re-draw)
   - name: pitch
@@ -231,6 +251,8 @@ tags:
     description: High Card Flush (ハイカードフラッシュ) game - single-player casino table game. Both player and dealer get 7 cards; longest same-suit subset (flush length) decides the winner (ties broken by high card within the flush). Player places an Ante and optional Flush Bonus / Straight Flush Bonus side bets, then chooses Raise (1x/2x/3x capped by flush length) or Fold. Dealer qualifies on 3+ card flush with 9-high or better.
   - name: briscola
     description: Briscola (ブリスコラ) game - 2-player Italian trick-taking classic. 40-card deck (A,2-7,J,Q,K x 4 suits — no 8/9/10), 3-card hands replenished from the stock, face-up trump (briscola) decides the trump suit. No must-follow — any card is legal at any time. Intra-suit rank order A>3>K>Q>J>7>6>5>4>2; trump beats non-trump. Card points A=11, 3=10, K=4, Q=3, J=2 (total 120); >60 points wins, 60-60 is a tie.
+  - name: schnapsen
+    description: Schnapsen / Sixty-Six (シュナプセン / 66) game - 2-player Austrian/German trick-taking classic. 20-card deck (A,10,K,Q,J x 4 suits), 5-card hands replenished from the stock, face-up trump upcard decides the trump suit. Phase 1 (stock present) has no must-follow; phase 2 (stock exhausted) requires following suit, winning if able, else trumping. A marriage (K+Q of one suit, declared on lead) scores 20 (40 for trump). Intra-suit rank A>10>K>Q>J; card points A=11, 10=10, K=4, Q=3, J=2 (total 120). First to 66 wins the round; otherwise the last trick taker wins.
   - name: gaps
     description: 'Gaps / Montana (ギャップス) - single-player puzzle solitaire on a 4x13 grid. All four Aces are removed leaving 4 gaps. A gap accepts the card whose suit matches its left neighbour and whose rank is +1. A gap in column 0 accepts any 2. A gap right-of-King is dead. Up to 3 redeals are allowed; the locked prefix of each row (2 then same-suit +1 successors) stays put and the rest is shuffled. Win when each row holds 2..K of one suit.'
   - name: fourcardpoker
@@ -247,6 +269,14 @@ tags:
     description: Truco (トゥルコ) - 2-player (1 human + 1 CPU) South-American trick-taking + bluffing game with a 40-card deck (8/9/10 removed). Deal 3 cards per hand (mano); win 2 of 3 bazas (tricks, no must-follow) to win the mano. Card strength (matadores) 1-spades > 1-clubs > 7-spades > 7-coins > all 3 > 2 > 1 > K > Q > J > 7 > 6 > 5 > 4; equal-strength bazas tie (parda). Declare Truco to raise the stake (Truco=2, Retruco=3, Vale Cuatro=4); opponent accepts (Quiero), declines (No Quiero = caller wins at the prior stake), or re-raises. First to the match target (default 15) wins.
   - name: acesup
     description: Aces Up (四つ葉のクローバー) - single-player solitaire with a standard 52-card deck. 4 tableau columns dealt 1 card each (48 to stock). Aces rank highest. Remove a column's top card when another column's top is the same suit and higher rank; deal one card onto each column; move a top card into an empty column. Win by clearing the board down to the four Aces.
+  - name: whist
+    description: Whist (ホイスト) - 4-player partnership trick-taking on a standard 52-card deck; 13-card hands, the last dealt card fixes the trump suit, must-follow trick play, the highest trump (or highest lead-suit card if none) wins each trick, and the team taking more than 6 tricks scores 1 point per trick over the book of 6.
+  - name: canfield
+    description: Canfield (キャンフィールド) - single-player solitaire with a standard 52-card deck; 4 tableau columns, a 13-card reserve, a stock dealt 3 at a time, and 4 foundations built up by suit from a randomly chosen base rank with K-A wraparound. Tableau builds down alternating colors with wraparound; the reserve feeds the tableau.
+  - name: sixcardgolf
+    description: Six Card Golf (シックスカードゴルフ) - 2-4 player golf-style game on a standard 52-card deck; each player holds a 2x3 grid of six cards (two face-up at start). On a turn, draw from the stock or discard pile and either swap a grid card or discard. The round ends when a grid is fully face-up; lowest total score wins, with vertical pairs of equal rank scoring zero.
+  - name: bakersgame
+    description: Baker's Game (ベーカーズゲーム) - single-player FreeCell variant on a standard 52-card deck; identical layout to FreeCell (8 tableau columns, 4 free cells, 4 foundations Ace-to-King by suit) except tableau builds **same-suit descending** instead of alternating colors, making it harder. Only Kings move to an empty column; supermove limit = (1 + emptyFreeCells) x 2^(emptyTableauCols).
 
 paths:
   /blackjack/exec:
@@ -2534,6 +2564,92 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CanastaResponse'
+
+  /burraco/exec:
+    post:
+      tags:
+        - burraco
+      summary: Execute a Burraco game command
+      description: |
+        Send a command to advance the Burraco (ブラーコ) game session
+        identified by `sessionId`.  Burraco is a Canasta-derived 2-player
+        rummy card game using 2 decks + 4 jokers (108 cards).  11 cards are
+        dealt to each player, and two 11-card "pozzetto" reserve piles are set
+        aside.  Wild cards (2s and Jokers) can substitute in melds.  Burraco =
+        7+ card meld.  The first player to empty their hand claims a pozzetto;
+        going out requires the pozzetto plus at least one burraco.  First to
+        reach the point limit (default 2005) wins.
+
+        The game proceeds through these phases:
+
+        | Phase        | Value | Description |
+        |--------------|-------|-------------|
+        | Draw         | `0`   | Draw from stock or pick up discard pile |
+        | Meld         | `1`   | Meld cards or skip |
+        | Discard      | `2`   | Discard a card or go out |
+        | RoundEnd     | `3`   | Round scored; advance with `nextround` |
+        | GameEnd      | `4`   | A player reached the point limit |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `drawstock`    | `ds`    | Draw a card from the stock pile |
+        | `drawdiscard`  | `dd`    | Pick up the discard pile (requires `naturalPairIndices`) |
+        | `meld`         | `m`     | Meld cards (requires `meldGroups`) |
+        | `skipmeld`     | `sm`    | Skip meld phase |
+        | `discard`      | `d`     | Discard a card (requires `cardIndex`) |
+        | `goout`        | `go`    | Go out (requires the pozzetto and at least 1 burraco) |
+        | `nextround`    | `nr`    | Score the round and start the next |
+        | `log`          | `l`     | View action log |
+      operationId: burracoExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BurracoRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              drawstock:
+                summary: Draw from stock pile
+                value:
+                  command: drawstock
+                  sessionId: my-session-001
+              drawdiscard:
+                summary: Pick up discard pile with natural pair at indices 0 and 1
+                value:
+                  command: drawdiscard
+                  naturalPairIndices: [0, 1]
+                  sessionId: my-session-001
+              meld:
+                summary: Meld cards at indices 0, 1, 2
+                value:
+                  command: meld
+                  meldGroups: [[0, 1, 2]]
+                  sessionId: my-session-001
+              discard:
+                summary: Discard card at index 2
+                value:
+                  command: discard
+                  cardIndex: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BurracoResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BurracoResponse'
 
   /pinochle/exec:
     post:
@@ -6552,6 +6668,285 @@ paths:
         '400':
           description: Bad request
 
+  /bristol/exec:
+    post:
+      tags:
+        - bristol
+      summary: Execute a Bristol (ブリストル) game command
+      description: |
+        Send a command to advance a Bristol solitaire session identified by `sessionId`.
+        Bristol uses 8 tableau columns dealt 3 cards each, 3 fans (reserve piles), a stock,
+        and 4 foundations. `draw` deals one card from the stock to each of the three fans.
+        Moves take a `from` zone (`tableau` with `from.col`, or `fan` with `from.col`) and a
+        `to` zone (`tableau` with `to.col` to build down regardless of suit, or `foundation`
+        whose target pile is auto-selected). Emptied tableau columns can no longer hold a
+        card. Foundations build up Ace-to-King regardless of suit; clearing all four wins.
+      operationId: bristolExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, move, m, giveup, g, hint, h, autocomplete, ac, log, l, undo, u, undo_n]
+                sessionId:
+                  type: string
+                from:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau, fan]
+                    col:
+                      type: integer
+                to:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau, foundation]
+                    col:
+                      type: integer
+                n:
+                  type: integer
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                  fan:
+                    type: array
+                  stockCount:
+                    type: integer
+                  foundation:
+                    type: array
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request
+
+  /bidwhist/exec:
+    post:
+      tags:
+        - bidwhist
+      summary: Execute a Bid Whist (ビッド・ホイスト) game command
+      description: |
+        Send a command to advance a Bid Whist session identified by `sessionId`.
+        Bid Whist is a 4-player partnership trick-taking game on a 54-card deck
+        (52 + 2 jokers). Bidding (`b`/`bid`) sets `bidTricks` (1-7, target tricks
+        over the book of 6) and `bidDirection` (0=Uptown, 1=Downtown, 2=NoTrump);
+        `pass` (`pa`) passes. The high bidder declares trump with `trump` (`t`,
+        `trumpSuit` 1=♠ 2=♣ 3=♥ 4=♦) for Uptown/Downtown contracts, then exchanges
+        the 6-card kitty via `exchange` (`discardIndices`, six indices). During play
+        (`play`), `cardIndex` selects the card. `next` advances the trick,
+        `nextround` scores and deals the next round.
+      operationId: bidWhistExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bid, b, pass, pa, trump, t, exchange, e, play, p, next, n, nextround, nr, hint, log, l]
+                sessionId:
+                  type: string
+                bidTricks:
+                  type: integer
+                  description: Target tricks over the book of 6 (1-7)
+                bidDirection:
+                  type: integer
+                  description: 0=Uptown (Ace high), 1=Downtown (2 high), 2=No Trump
+                trumpSuit:
+                  type: integer
+                  description: 1=♠ 2=♣ 3=♥ 4=♦ (trump declaration)
+                discardIndices:
+                  type: array
+                  items:
+                    type: integer
+                cardIndex:
+                  type: integer
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                    targetScore:
+                      type: integer
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                  phase:
+                    type: integer
+                  roundNumber:
+                    type: integer
+                  trickNumber:
+                    type: integer
+                  currentPlayerIdx:
+                    type: integer
+                  bidPlayerIdx:
+                    type: integer
+                  dealerIdx:
+                    type: integer
+                  leadPlayerIdx:
+                    type: integer
+                  trumpSuit:
+                    type: integer
+                  contractTricks:
+                    type: integer
+                  contractDirection:
+                    type: integer
+                  declarerIdx:
+                    type: integer
+                  highestBidder:
+                    type: integer
+                  kittyCount:
+                    type: integer
+                  currentTrick:
+                    type: array
+                  teamScores:
+                    type: array
+                    items:
+                      type: integer
+                  gameEndFlag:
+                    type: boolean
+                  winnerTeam:
+                    type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request
+
+  /fivehundred/exec:
+    post:
+      tags:
+        - fivehundred
+      summary: Execute a 500 (Five Hundred / ファイブハンドレッド) game command
+      description: |
+        Send a command to advance a 500 game session identified by `sessionId`.
+        500 is a 4-player partnership trick-taking game. Bidding (`b`/`bid`) sets a
+        contract via `bidKind` (1=Suit, 2=NoTrump, 3=Misère, 4=Open Misère),
+        `bidTricks` (6-10 for Suit/NT), and `bidSuit` (1=♠ 2=♣ 3=♥ 4=♦ for Suit
+        contracts). The high bidder takes the 3-card kitty and discards 3 via
+        `exchange` (`discardIndices`). During play (`play`), `cardIndex` selects the
+        card; `jokerSuit` nominates the suit when leading the joker in a no-trump
+        contract. `next` advances the trick, `nextround` scores and deals the next round.
+      operationId: fiveHundredExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bid, b, pass, pa, exchange, e, play, p, next, n, nextround, nr, hint, log, l]
+                sessionId:
+                  type: string
+                bidKind:
+                  type: integer
+                  description: 1=Suit, 2=NoTrump, 3=Misère, 4=Open Misère
+                bidTricks:
+                  type: integer
+                bidSuit:
+                  type: integer
+                discardIndices:
+                  type: array
+                  items:
+                    type: integer
+                cardIndex:
+                  type: integer
+                jokerSuit:
+                  type: integer
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                    targetScore:
+                      type: integer
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                  phase:
+                    type: integer
+                  roundNumber:
+                    type: integer
+                  trickNumber:
+                    type: integer
+                  currentPlayerIdx:
+                    type: integer
+                  bidPlayerIdx:
+                    type: integer
+                  trumpSuit:
+                    type: integer
+                  contractKind:
+                    type: integer
+                  contractValue:
+                    type: integer
+                  declarerIdx:
+                    type: integer
+                  currentTrick:
+                    type: array
+                  teamScores:
+                    type: array
+                    items:
+                      type: integer
+                  gameEndFlag:
+                    type: boolean
+                  winnerTeam:
+                    type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request
+
   /fiftyone/exec:
     post:
       tags:
@@ -6848,6 +7243,229 @@ paths:
                         type: string
                       toCol:
                         type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request
+
+  /easthaven/exec:
+    post:
+      tags:
+        - easthaven
+      summary: Execute an Easthaven (イーストヘイブン) game command
+      description: |
+        Send a command to advance an Easthaven session identified by `sessionId`.
+        Easthaven fuses Klondike and Spider: the 52-card deck is dealt as 7 columns of 3
+        (2 face-down + 1 face-up), the tableau builds down in alternating colours, foundations
+        build A-to-K by suit, and an empty column accepts only a King. The stock deals
+        Spider-style — one face-up card to **every** column at once (`deal`), blocked while any
+        column is empty. There is no waste pile.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | 0     | Game in progress |
+        | GameClear | 1     | All foundations complete |
+        | GameOver  | 2     | Player gave up or stalemate |
+
+        | Command          | Aliases | Description |
+        |------------------|---------|-------------|
+        | `reset`          | `r`     | Start / restart a game |
+        | `deal`           | `d`     | Deal one card to every tableau column |
+        | `move`           | `m`     | Move card(s) between zones (requires `from`, `to`) |
+        | `giveup`         | `g`     | Give up the current game |
+        | `hint`           | `h`     | Get a move suggestion |
+        | `autocomplete`   | `ac`    | Auto-complete to foundations |
+        | `undo`           | `u`     | Undo last move |
+        | `undo_n`         | —       | Undo N moves (requires `n`) |
+        | `log`            | `l`     | View action log |
+      operationId: easthavenExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, deal, d, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau]
+                    col:
+                      type: integer
+                    cardIndex:
+                      type: integer
+                to:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau, foundation]
+                    col:
+                      type: integer
+                n:
+                  type: integer
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                  foundation:
+                    type: array
+                  stockCount:
+                    type: integer
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  hint:
+                    type: object
+                    properties:
+                      fromCol:
+                        type: integer
+                      cardIndex:
+                        type: integer
+                      toZone:
+                        type: string
+                      toCol:
+                        type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request
+
+  /tichu/exec:
+    post:
+      tags:
+        - tichu
+      summary: Execute a Tichu (ティチュー) game command
+      description: |
+        Send a command to advance a Tichu session identified by `sessionId`.
+        Tichu is a 4-player, 2-vs-2 partnership shedding game (teams {P0,P2} vs {P1,P3})
+        on a 56-card deck (standard 52 + Dragon/Phoenix/Dog/Mahjong). Each player is dealt
+        14 cards. Before play, players may declare Tichu (±100) or Grand Tichu (±200).
+
+        | Phase   | Value | Description |
+        |---------|-------|-------------|
+        | Declare | 0     | Declaration phase |
+        | Play    | 1     | Trick play |
+        | End     | 2     | Deal over |
+
+        | Command         | Aliases | Description |
+        |-----------------|---------|-------------|
+        | `reset`         | `r`     | Start / restart a deal (optional `config`) |
+        | `declare`       | `d`     | Declare (`declType`: 0=none, 1=Tichu, 2=Grand) |
+        | `play`          | `p`     | Play cards by `indices` (empty = pass) |
+        | `setdifficulty` | `sd`    | Set CPU difficulty (reset) |
+        | `log`           | `l`     | View action log |
+      operationId: tichuExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, declare, d, play, p, log, l]
+                sessionId:
+                  type: string
+                indices:
+                  type: array
+                  items:
+                    type: integer
+                declType:
+                  type: integer
+                  enum: [0, 1, 2]
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      enum: [0, 1, 2]
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        isHuman:
+                          type: boolean
+                        isFinished:
+                          type: boolean
+                        team:
+                          type: integer
+                        rank:
+                          type: integer
+                        declType:
+                          type: integer
+                        cardCount:
+                          type: integer
+                        cards:
+                          type: array
+                  phase:
+                    type: string
+                  currentTurn:
+                    type: integer
+                  tableCards:
+                    type: array
+                  tableCombo:
+                    type: string
+                  lastPlayIdx:
+                    type: integer
+                  startLeader:
+                    type: integer
+                  finishOrder:
+                    type: array
+                    items:
+                      type: integer
+                  scores:
+                    type: array
+                    items:
+                      type: integer
+                  isOneTwo:
+                    type: boolean
+                  bombCount:
+                    type: integer
+                  gameEndFlag:
+                    type: boolean
                   message:
                     type: string
                   messageCode:
@@ -9322,6 +9940,206 @@ paths:
               schema:
                 $ref: '#/components/schemas/ThirtyOneResponse'
 
+  /yaniv/exec:
+    post:
+      tags:
+        - yaniv
+      summary: Execute a Yaniv game command
+      description: |
+        Send a command to advance the Yaniv (ヤニブ) game session identified by
+        `sessionId`. Yaniv is a 4-player (1 human + 3 CPU) Israeli draw-and-discard
+        hand-reduction game on a 54-card deck (2 jokers; Joker=0, A=1, J/Q/K=10,
+        others face value). Each player is dealt 5 cards. On your turn you first
+        discard a single card, a same-value set (2+), or a same-suit run (3+
+        consecutive), then draw one card from the stock or from either end of the
+        previous player's discard. When your hand total is 5 or less you may instead
+        declare Yaniv to end the round. On reveal, if the caller is strictly lowest
+        they score 0; otherwise it is Asaf and the caller takes a 30-point penalty
+        while the lowest opponent scores 0. A player is eliminated when their
+        cumulative score exceeds the limit (default 200).
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Discard   | `0`   | Discard a combo, or declare Yaniv |
+        | Draw      | `1`   | Draw from stock or a discard end |
+        | RoundEnd  | `2`   | Round scored; advance with `nextround` |
+        | GameEnd   | `3`   | One player remains (or human eliminated) |
+
+        | Command      | Aliases | Description |
+        |--------------|---------|-------------|
+        | `reset`      | `r`     | Start / restart a game |
+        | `discard`    | `d`     | Discard a combo (requires `cardIndices`) |
+        | `yaniv`      | `y`     | Declare Yaniv (hand total <= 5) |
+        | `drawstock`  | `ds`    | Draw a card from the stock pile |
+        | `drawpickup` | `dp`    | Take an end of the previous discard (requires `end`) |
+        | `nextround`  | `nr`    | Score the round and start the next |
+        | `log`        | `l`     | View action log |
+      operationId: yanivExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/YanivRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              yaniv:
+                summary: Declare Yaniv
+                value:
+                  command: yaniv
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/YanivResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/YanivResponse'
+
+  /tressette/exec:
+    post:
+      tags:
+        - tressette
+      summary: Execute a Tressette game command
+      description: |
+        Send a command to advance the Tressette (トレセッテ) game session identified
+        by `sessionId`. Tressette is a 4-player (1 human + 3 CPU) no-trump
+        must-follow trick-taking team game (teams 0+2 vs 1+3) on the 40-card
+        Briscola deck (8/9/10 removed), dealt 10 cards each. There is no trump:
+        trick strength runs 3 > 2 > A > K > Q > J > 7 > 6 > 5 > 4 and the highest
+        card of the led suit wins. Scoring is in thirds of a point: A = 3 thirds
+        (1 point); 2/3/K/Q/J = 1 third each; 4-7 = 0; the last-trick winner gets
+        +1 third (round total 33 thirds = 11 points). At round end each team's
+        thirds are divided by 3 (remainder dropped) and added to its score; the
+        first team to the target (default 21) while leading wins.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Play      | `0`   | Play a card (must follow the led suit) |
+        | TrickEnd  | `1`   | Trick resolved; advance with `next` |
+        | RoundEnd  | `2`   | Round scored; advance with `nextround` |
+        | GameEnd   | `3`   | A team reached the target score |
+
+        | Command      | Aliases | Description |
+        |--------------|---------|-------------|
+        | `reset`      | `r`     | Start / restart a game |
+        | `play`       | `p`     | Play a card (requires `cardIndex`) |
+        | `next`       | `n`     | Advance to the next trick |
+        | `nextround`  | `nr`    | Score the round and start the next |
+        | `hint`       | `h`     | Get a recommended play |
+        | `log`        | `l`     | View action log |
+      operationId: tressetteExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TressetteRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play the card at hand index 0
+                value:
+                  command: play
+                  cardIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TressetteResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TressetteResponse'
+
+  /gongzhu/exec:
+    post:
+      tags:
+        - gongzhu
+      summary: Execute a Gong Zhu game command
+      description: |
+        Send a command to advance the Gong Zhu (拱猪 / Chinese Hearts) game session
+        identified by `sessionId`. Gong Zhu is a 4-player (1 human + 3 CPU)
+        trick-taking game on a 52-card deck dealt 13 each. Trick play follows Hearts
+        (follow suit; hearts cannot be led until broken; the ♣2 holder leads first;
+        the highest led-suit card wins, Ace high) but with positive and negative
+        point cards: ♠Q (pig) = -100, ♦J (sheep) = +100, ♣10 (transformer) doubles
+        the holder's whole round total (or +50 if taken alone), and hearts A=-50,
+        K=-40, Q=-30, J=-20, 10–5=-10 each, 4–2=0 (total -200). Collecting all 13
+        hearts flips them to +200. Before each round a player may expose ♠Q/♦J/♥A/♣10
+        to double that card's stakes for whoever captures it. The game ends when any
+        player's cumulative score reaches -PointLimit (default 1000); the highest
+        score wins.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Expose    | `0`   | Optionally expose point cards |
+        | Play      | `1`   | Play a card to the trick |
+        | TrickEnd  | `2`   | Trick won; advance with `next` |
+        | RoundEnd  | `3`   | Round scored; advance with `nextround` |
+        | GameEnd   | `4`   | A player reached the point limit |
+
+        | Command     | Aliases | Description |
+        |-------------|---------|-------------|
+        | `reset`     | `r`     | Start / restart a game |
+        | `expose`    |         | Expose point cards (`cardIndices`; empty = none) |
+        | `play`      | `p`     | Play a card (requires `cardIndex`) |
+        | `next`      | `n`     | Resolve the trick and start the next |
+        | `nextround` | `nr`    | Score the round and start the next |
+        | `hint`      | `h`     | Get a suggested move |
+        | `log`       | `l`     | View action log |
+      operationId: gongzhuExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GongZhuRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              expose:
+                summary: Expose nothing and start play
+                value:
+                  command: expose
+                  cardIndices: []
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GongZhuResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GongZhuResponse'
+
   /casinowar/exec:
     post:
       tags:
@@ -10636,6 +11454,101 @@ paths:
               schema:
                 $ref: '#/components/schemas/BriscolaResponse'
 
+  /schnapsen/exec:
+    post:
+      tags:
+        - schnapsen
+      summary: Execute a Schnapsen / Sixty-Six (シュナプセン / 66) game command
+      description: |
+        Send a command to advance the Schnapsen game session identified by
+        `sessionId`. Schnapsen is a 2-player Austrian/German trick-taking
+        classic played with a 20-card deck (A,10,K,Q,J x 4 suits). Each
+        player holds 5 cards, replenished from the stock after each trick.
+        The face-up trump upcard at the bottom of the stock decides the trump
+        suit. **Phase 1 (stock present): no must-follow** — any card is legal.
+        **Phase 2 (stock exhausted): must-follow** — follow suit and win if
+        able, otherwise trump if void. A **marriage** (K+Q of one suit,
+        declared while on lead) scores 20 (40 for the trump suit) and leads
+        one of those cards. Intra-suit rank A>10>K>Q>J; card points A=11,
+        10=10, K=4, Q=3, J=2 (total 120). First to 66 wins the round; if
+        nobody reaches 66, the last trick taker wins.
+
+        Phases:
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Play     | `0`   | Either player to act |
+        | TrickEnd | `1`   | Trick resolved; call `n`/`next` to continue |
+        | GameEnd  | `2`   | Round over; winnerIdx set |
+
+        Commands:
+
+        | Command          | Aliases | Description |
+        |------------------|---------|-------------|
+        | `reset` / `r`    |         | Restart with optional config |
+        | `play` / `p`     |         | Play card at index |
+        | `marriage` / `m` |         | Declare marriage and lead the K/Q at index |
+        | `next` / `n`     |         | Advance to next trick (draw replenish + game-end detect) |
+        | `hint` / `h`     |         | Suggested move |
+        | `log` / `l`      |         | View action log |
+      operationId: schnapsenExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, p, marriage, m, next, n, hint, h, log, l]
+                cardIndex:
+                  type: integer
+                  description: Card index for `play`/`p` and `marriage`/`m`
+                config:
+                  $ref: '#/components/schemas/SchnapsenConfig'
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play hand[0]
+                value:
+                  command: p
+                  cardIndex: 0
+                  sessionId: my-session-001
+              marriage:
+                summary: Declare a marriage and lead hand[2]
+                value:
+                  command: m
+                  cardIndex: 2
+                  sessionId: my-session-001
+              next:
+                summary: Advance to next trick
+                value:
+                  command: n
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchnapsenResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchnapsenResponse'
+
   /gaps/exec:
     post:
       tags:
@@ -11262,6 +12175,149 @@ paths:
                     type: integer
                   message:
                     type: string
+
+  /bakersgame/exec:
+    post:
+      tags:
+        - bakersgame
+      summary: Execute a Baker's Game command
+      description: |
+        Send a command to advance the Baker's Game (ベーカーズゲーム) session identified by
+        `sessionId`. Baker's Game is a FreeCell variant on a standard 52-card deck with an
+        identical layout (8 tableau columns, 4 free cells, 4 foundations built up by suit
+        Ace to King) except the tableau builds **same-suit descending** instead of
+        alternating colors, which makes it harder. Only Kings may move to an empty column.
+        Supermove: max movable cards = (1 + emptyFreeCells) x 2^(emptyTableauCols).
+
+        Baker's Game shares FreeCell's request/response schema
+        (`FreeCellRequest` / `FreeCellResponse`).
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All foundations completed; player wins |
+        | GameOver   | `2`   | No more moves available; game over |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset`        | `r`  | Start / restart a game |
+        | `move`         | `m`  | Move card(s) between zones (requires `from` and `to`) |
+        | `giveup`       | `g`  | Give up the current game |
+        | `hint`         | `h`  | Get a hint for the next move |
+        | `autocomplete` | `ac` | Auto-complete remaining moves to foundation |
+        | `undo`         | `u`  | Undo the last action |
+        | `undo_n`       |      | Undo N actions (requires `n` parameter) |
+        | `log`          | `l`  | View action log |
+      operationId: bakersgameExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FreeCellRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              move:
+                summary: Move a card
+                value:
+                  command: move
+                  from:
+                    zone: tableau
+                    col: 0
+                    cardIndex: 6
+                  to:
+                    zone: freecell
+                    cell: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FreeCellResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FreeCellResponse'
+
+  /bourre/exec:
+    post:
+      tags:
+        - bourre
+      summary: Execute a Bourré (ブーレ) game command
+      description: |
+        Send a command to advance a Bourré session identified by `sessionId`.
+        Bourré is a 5-player gambling trick-taking game fusing poker-style ante/draw
+        betting with must-follow trick play on a standard 52-card deck. Each player antes
+        into the pot and is dealt 5 cards; the dealer's last card sets the trump suit.
+        Players decide to play or fold, may discard and draw replacements, then play five
+        tricks under must-follow / must-trump-when-void / must-win-when-able rules. The
+        most tricks takes the pot; a player who plays but wins zero tricks is "bourréd"
+        and pays a penalty equal to the pot.
+
+        | Phase    | Value      | Description |
+        |----------|------------|-------------|
+        | Decide   | `decide`   | Each player chooses to play or fold |
+        | Draw     | `draw`     | Active players discard and draw |
+        | Play     | `play`     | Five tricks are played |
+        | RoundEnd | `roundEnd` | Hand resolved; pot distributed |
+        | GameEnd  | `gameEnd`  | Match over |
+
+        | Command  | Aliases | Description |
+        |----------|---------|-------------|
+        | `reset`  | `r`     | Start / restart the game (optional `config`) |
+        | `decide` |         | Play or fold (`decide`: true=play, false=fold) |
+        | `draw`   |         | Discard cards by `indices`, then draw replacements |
+        | `play`   | `p`     | Play a card by `cardIndex` |
+        | `next`   |         | Advance to the next hand |
+        | `log`    | `l`     | View action log |
+      operationId: bourreExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BourreRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              decide:
+                summary: Choose to play this hand
+                value:
+                  command: decide
+                  decide: true
+                  sessionId: my-session-001
+              play:
+                summary: Play a card
+                value:
+                  command: play
+                  cardIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BourreResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BourreResponse'
 
 components:
   schemas:
@@ -16162,6 +17218,113 @@ components:
               type: string
 
     # -------------------------------------------------------------------------
+    # Schnapsen / Sixty-Six
+    # -------------------------------------------------------------------------
+    SchnapsenConfig:
+      type: object
+      description: Schnapsen game configuration. v1 only supports Normal difficulty.
+      properties:
+        cpuDifficulty:
+          type: integer
+          minimum: 0
+          maximum: 0
+          description: "0 = Normal (only level supported in v1)"
+
+    SchnapsenResponse:
+      type: object
+      description: Current state of the Schnapsen game.
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              points:
+                type: integer
+                description: Cumulative card points + marriage bonuses (0-120+)
+              trickCount:
+                type: integer
+        phase:
+          type: integer
+          description: "0=Play, 1=TrickEnd, 2=GameEnd"
+          enum: [0, 1, 2]
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        trumpSuit:
+          type: integer
+          description: "1=♠, 2=♣, 3=♥, 4=♦"
+        trumpCard:
+          $ref: '#/components/schemas/Card'
+          description: Face-up trump upcard; omitted once the stock is exhausted.
+        dealerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        stockRemaining:
+          type: integer
+          description: Cards left in the stock (excludes the face-up trump upcard).
+        isEndgame:
+          type: boolean
+          description: True once the stock is exhausted and must-follow rules apply (phase 2).
+        validPlays:
+          type: array
+          items:
+            type: integer
+          description: Indices in the human hand that are legal to play right now.
+        marriagePlays:
+          type: array
+          items:
+            type: integer
+          description: Indices in the human hand that can start a marriage declaration.
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: -1 = unfinished, 0 = human, 1 = CPU
+        config:
+          $ref: '#/components/schemas/SchnapsenConfig'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+        hint:
+          type: object
+          nullable: true
+          properties:
+            cardIndex:
+              type: integer
+              nullable: true
+            reason:
+              type: string
+            isMarriage:
+              type: boolean
+
+    # -------------------------------------------------------------------------
     # Gaps / Montana
     # -------------------------------------------------------------------------
     GapsMoveZone:
@@ -17201,6 +18364,389 @@ components:
             type: string
 
     # -------------------------------------------------------------------------
+    # Yaniv types
+    # -------------------------------------------------------------------------
+    YanivRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `discard` (`d`),
+            `yaniv` (`y`), `drawstock` (`ds`), `drawpickup` (`dp`),
+            `nextround` (`nr`), `log` (`l`).
+          enum: [reset, r, discard, d, yaniv, y, drawstock, ds, drawpickup, dp, nextround, nr, log, l]
+          example: reset
+        cardIndices:
+          type: array
+          items:
+            type: integer
+          description: Indices of the cards to discard. Required for the `discard` command (single card, same-value set, or same-suit run).
+          example: [0, 1]
+        end:
+          type: integer
+          description: Which end of the previous discard to take (0 = first, 1 = last). Required for the `drawpickup` command.
+          enum: [0, 1]
+          example: 0
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            scoreLimit:
+              type: integer
+              minimum: 50
+              maximum: 500
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    YanivResponse:
+      type: object
+      description: Current state of the Yaniv game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              score:
+                type: integer
+                description: Cumulative penalty score (lower is better)
+              handTotal:
+                type: integer
+                description: Sum of the hand's card values (revealed for the human always, for CPUs at round end)
+              isEliminated:
+                type: boolean
+        phase:
+          type: integer
+          description: "Game phase: 0 = Discard, 1 = Draw, 2 = RoundEnd, 3 = GameEnd"
+          enum: [0, 1, 2, 3]
+          example: 0
+        roundNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        pickupCards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+          description: The previous player's discard; only the two end cards may be taken
+        drawPileCount:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+        callerIdx:
+          type: integer
+          description: Index of the player who declared Yaniv (-1 if none)
+        asafWinnerIdx:
+          type: integer
+          description: Index of the player who undercut the caller on Asaf (-1 if none)
+        isAsaf:
+          type: boolean
+        roundScores:
+          type: array
+          items:
+            type: integer
+          description: Penalty added to each player in the most recent round
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            scoreLimit:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    TressetteRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `play` (`p`),
+            `next` (`n`), `nextround` (`nr`), `hint` (`h`), `log` (`l`).
+          enum: [reset, r, play, p, next, n, nextround, nr, hint, h, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Index of the card to play. Required for the `play` command.
+          example: 0
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            targetPoints:
+              type: integer
+              minimum: 1
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    TressetteResponse:
+      type: object
+      description: Current state of the Tressette game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              trickCount:
+                type: integer
+              teamId:
+                type: integer
+                description: "Team membership: 0 = players 0 & 2, 1 = players 1 & 3"
+        phase:
+          type: integer
+          description: "Game phase: 0 = Play, 1 = TrickEnd, 2 = RoundEnd, 3 = GameEnd"
+          enum: [0, 1, 2, 3]
+          example: 0
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        leadPlayerIdx:
+          type: integer
+        teamScores:
+          type: array
+          items:
+            type: integer
+          description: Cumulative points for each team (index 0 = Team A, 1 = Team B)
+        teamRoundThirds:
+          type: array
+          items:
+            type: integer
+          description: Thirds-of-a-point accumulated by each team in the current round
+        playableIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices the human may legally play (must-follow filtered)
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: Winning team index (-1 if undecided)
+        hint:
+          type: object
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            targetPoints:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    # -------------------------------------------------------------------------
+    # Gong Zhu types
+    # -------------------------------------------------------------------------
+    GongZhuRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `expose`, `play` (`p`),
+            `next` (`n`), `nextround` (`nr`), `hint` (`h`), `log` (`l`).
+          enum: [reset, r, expose, play, p, next, n, nextround, nr, hint, h, log, l]
+          example: reset
+        cardIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices of point cards to expose. Used by the `expose` command (empty array = expose nothing).
+          example: []
+        cardIndex:
+          type: integer
+          description: Hand index of the card to play. Required for the `play` command.
+          example: 0
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            pointLimit:
+              type: integer
+              minimum: 1
+              maximum: 100000
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    GongZhuResponse:
+      type: object
+      description: Current state of the Gong Zhu game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+              trickCount:
+                type: integer
+        phase:
+          type: integer
+          description: "Game phase: 0 = Expose, 1 = Play, 2 = TrickEnd, 3 = RoundEnd, 4 = GameEnd"
+          enum: [0, 1, 2, 3, 4]
+          example: 0
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        heartsBroken:
+          type: boolean
+        exposed:
+          type: object
+          description: Which point cards have been exposed (stakes doubled)
+          properties:
+            pig:
+              type: boolean
+            sheep:
+              type: boolean
+            ace:
+              type: boolean
+            doubler:
+              type: boolean
+        exposableIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices of the human's exposable point cards
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        hint:
+          type: object
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    # -------------------------------------------------------------------------
     # Canasta types
     # -------------------------------------------------------------------------
     CanastaRequest:
@@ -17321,6 +18867,162 @@ components:
         discardPileCount:
           type: integer
           description: Number of cards in the discard pile
+        isFrozen:
+          type: boolean
+          description: Whether the discard pile is frozen
+        gameEndFlag:
+          type: boolean
+          description: Whether the match has ended
+        winnerIdx:
+          type: integer
+          description: Index of the match winner (-1 if not ended)
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+        message:
+          type: string
+          description: Game status message
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Burraco types
+    # -------------------------------------------------------------------------
+    BurracoRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `drawstock` (`ds`),
+            `drawdiscard` (`dd`), `meld` (`m`), `skipmeld` (`sm`),
+            `discard` (`d`), `goout` (`go`), `nextround` (`nr`), `log` (`l`).
+          enum: [reset, r, drawstock, ds, drawdiscard, dd, meld, m, skipmeld, sm, discard, d, goout, go, nextround, nr, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Index of the card to discard.  Required for `discard` command.
+          example: 2
+        naturalPairIndices:
+          type: array
+          description: Indices of two natural cards matching the discard top.  Required for `drawdiscard` command.
+          items:
+            type: integer
+          example: [0, 1]
+        meldGroups:
+          type: array
+          description: Groups of card indices to meld.  Required for `meld` command.
+          items:
+            type: array
+            items:
+              type: integer
+          example: [[0, 1, 2]]
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            pointLimit:
+              type: integer
+              minimum: 1
+              maximum: 100000
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    BurracoResponse:
+      type: object
+      description: Current state of the Burraco game
+      properties:
+        players:
+          type: array
+          description: Array of player objects
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              melds:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    cards:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Card'
+                    isNatural:
+                      type: boolean
+                    isBurraco:
+                      type: boolean
+                    rank:
+                      type: integer
+              red3Count:
+                type: integer
+              red3s:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+              hasBurraco:
+                type: boolean
+              hasInitMeld:
+                type: boolean
+              tookPozzetto:
+                type: boolean
+                description: Whether the player has claimed their pozzetto reserve hand
+        phase:
+          type: integer
+          description: "Game phase: 0 = Draw, 1 = Meld, 2 = Discard, 3 = RoundEnd, 4 = GameEnd"
+          enum: [0, 1, 2, 3, 4]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Current round number
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        discardTop:
+          description: The top card of the discard pile
+          $ref: '#/components/schemas/Card'
+        drawPileCount:
+          type: integer
+          description: Number of cards remaining in the stock pile
+        discardPileCount:
+          type: integer
+          description: Number of cards in the discard pile
+        pozzettoCount:
+          type: integer
+          description: Number of pozzetto (reserve hand) piles still available
         isFrozen:
           type: boolean
           description: Whether the discard pile is frozen
@@ -24530,3 +26232,162 @@ components:
           additionalProperties:
             type: string
           description: Interpolation parameters for the message template keyed by placeholder name.
+
+    BourreRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          enum: [reset, r, decide, draw, play, p, next, log, l]
+        sessionId:
+          type: string
+        decide:
+          type: boolean
+          description: For the `decide` command — true to play, false to fold.
+        indices:
+          type: array
+          description: For the `draw` command — indices of the cards to discard.
+          items:
+            type: integer
+        cardIndex:
+          type: integer
+          description: For the `play` command — index of the card to play.
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+              enum: [0, 1, 2]
+
+    BourreResponse:
+      type: object
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              isFinished:
+                type: boolean
+              folded:
+                type: boolean
+              decided:
+                type: boolean
+              drawn:
+                type: boolean
+              bourreed:
+                type: boolean
+              chips:
+                type: integer
+              tricks:
+                type: integer
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    design:
+                      type: string
+                    value:
+                      type: integer
+        phase:
+          type: string
+          enum: [decide, draw, play, roundEnd, gameEnd, unknown]
+        currentPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        pot:
+          type: integer
+        carryPot:
+          type: integer
+        trumpSuit:
+          type: string
+        trumpCard:
+          type: object
+          nullable: true
+          properties:
+            design:
+              type: string
+            value:
+              type: integer
+        trickNumber:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                type: object
+                properties:
+                  design:
+                    type: string
+                  value:
+                    type: integer
+        lastTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                type: object
+                properties:
+                  design:
+                    type: string
+                  value:
+                    type: integer
+        lastTrickWinner:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        handNumber:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+        validPlays:
+          type: array
+          items:
+            type: integer
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              tricks:
+                type: integer
+              wonAmount:
+                type: integer
+              bourreed:
+                type: boolean
+              folded:
+                type: boolean
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties: true

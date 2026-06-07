@@ -1,3 +1,5 @@
+//go:build !js || !wasm || casino
+
 package domain
 
 // ShortDeckConfig ショートデックホールデム設定 (HoldemConfigと同一構造)

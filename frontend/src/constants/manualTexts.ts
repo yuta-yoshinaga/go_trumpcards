@@ -7,16 +7,21 @@ import acesup from '../../../docs/manual/web/acesup.md?raw';
 import baccarat from '../../../docs/manual/web/baccarat.md?raw';
 import badugi from '../../../docs/manual/web/badugi.md?raw';
 import bakersdozen from '../../../docs/manual/web/bakersdozen.md?raw';
+import bakersgame from '../../../docs/manual/web/bakersgame.md?raw';
 import barbu from '../../../docs/manual/web/barbu.md?raw';
 import beleagueredcastle from '../../../docs/manual/web/beleagueredcastle.md?raw';
 import belote from '../../../docs/manual/web/belote.md?raw';
+import bidwhist from '../../../docs/manual/web/bidwhist.md?raw';
 import bigo from '../../../docs/manual/web/bigo.md?raw';
 import bigohilo from '../../../docs/manual/web/bigohilo.md?raw';
 import bigtwo from '../../../docs/manual/web/bigtwo.md?raw';
 import blackjack from '../../../docs/manual/web/blackjack.md?raw';
 import blackjackswitch from '../../../docs/manual/web/blackjackswitch.md?raw';
+import bourre from '../../../docs/manual/web/bourre.md?raw';
 import bridge from '../../../docs/manual/web/bridge.md?raw';
 import briscola from '../../../docs/manual/web/briscola.md?raw';
+import bristol from '../../../docs/manual/web/bristol.md?raw';
+import burraco from '../../../docs/manual/web/burraco.md?raw';
 import calculation from '../../../docs/manual/web/calculation.md?raw';
 import callbreak from '../../../docs/manual/web/callbreak.md?raw';
 import canasta from '../../../docs/manual/web/canasta.md?raw';
@@ -40,10 +45,12 @@ import doubt from '../../../docs/manual/web/doubt.md?raw';
 import doudizhu from '../../../docs/manual/web/doudizhu.md?raw';
 import dragontiger from '../../../docs/manual/web/dragontiger.md?raw';
 import durak from '../../../docs/manual/web/durak.md?raw';
+import easthaven from '../../../docs/manual/web/easthaven.md?raw';
 import egyptianratscrew from '../../../docs/manual/web/egyptianratscrew.md?raw';
 import eightoff from '../../../docs/manual/web/eightoff.md?raw';
 import euchre from '../../../docs/manual/web/euchre.md?raw';
 import fiftyone from '../../../docs/manual/web/fiftyone.md?raw';
+import fivehundred from '../../../docs/manual/web/fivehundred.md?raw';
 import fortythieves from '../../../docs/manual/web/fortythieves.md?raw';
 import fourcardpoker from '../../../docs/manual/web/fourcardpoker.md?raw';
 import freecell from '../../../docs/manual/web/freecell.md?raw';
@@ -51,6 +58,7 @@ import gaps from '../../../docs/manual/web/gaps.md?raw';
 import ginrummy from '../../../docs/manual/web/ginrummy.md?raw';
 import gofish from '../../../docs/manual/web/gofish.md?raw';
 import golf from '../../../docs/manual/web/golf.md?raw';
+import gongzhu from '../../../docs/manual/web/gongzhu.md?raw';
 import hearts from '../../../docs/manual/web/hearts.md?raw';
 import highcardflush from '../../../docs/manual/web/highcardflush.md?raw';
 import holdem from '../../../docs/manual/web/holdem.md?raw';
@@ -89,6 +97,7 @@ import reddog from '../../../docs/manual/web/reddog.md?raw';
 import rummy500 from '../../../docs/manual/web/rummy500.md?raw';
 import russianpoker from '../../../docs/manual/web/russianpoker.md?raw';
 import russiansolitaire from '../../../docs/manual/web/russiansolitaire.md?raw';
+import schnapsen from '../../../docs/manual/web/schnapsen.md?raw';
 import scopa from '../../../docs/manual/web/scopa.md?raw';
 import scorpion from '../../../docs/manual/web/scorpion.md?raw';
 import seahaventowers from '../../../docs/manual/web/seahaventowers.md?raw';
@@ -110,9 +119,11 @@ import tarneeb from '../../../docs/manual/web/tarneeb.md?raw';
 import texasholdembonus from '../../../docs/manual/web/texasholdembonus.md?raw';
 import thirtyone from '../../../docs/manual/web/thirtyone.md?raw';
 import threecard from '../../../docs/manual/web/threecard.md?raw';
+import tichu from '../../../docs/manual/web/tichu.md?raw';
 import tienlen from '../../../docs/manual/web/tienlen.md?raw';
 import tonk from '../../../docs/manual/web/tonk.md?raw';
 import trash from '../../../docs/manual/web/trash.md?raw';
+import tressette from '../../../docs/manual/web/tressette.md?raw';
 import tripeaks from '../../../docs/manual/web/tripeaks.md?raw';
 import truco from '../../../docs/manual/web/truco.md?raw';
 import twotenjack from '../../../docs/manual/web/twotenjack.md?raw';
@@ -121,6 +132,7 @@ import videopoker from '../../../docs/manual/web/videopoker.md?raw';
 import war from '../../../docs/manual/web/war.md?raw';
 import wasp from '../../../docs/manual/web/wasp.md?raw';
 import whist from '../../../docs/manual/web/whist.md?raw';
+import yaniv from '../../../docs/manual/web/yaniv.md?raw';
 import yukon from '../../../docs/manual/web/yukon.md?raw';
 
 /** Map from game route path to raw Markdown manual text. */
@@ -129,10 +141,14 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/baccarat': baccarat,
   '/belote': belote,
   '/bridge': bridge,
+  '/burraco': burraco,
   '/calculation': calculation,
   '/canasta': canasta,
   '/canfield': canfield,
   '/osmosis': osmosis,
+  '/bristol': bristol,
+  '/bidwhist': bidwhist,
+  '/fivehundred': fivehundred,
   '/caribbeanstud': caribbeanstud,
   '/casinoholdem': casinoholdem,
   '/callbreak': callbreak,
@@ -148,6 +164,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/blackjackswitch': blackjackswitch,
   '/durak': durak,
   '/bakersdozen': bakersdozen,
+  '/bakersgame': bakersgame,
   '/beleagueredcastle': beleagueredcastle,
   '/egyptianratscrew': egyptianratscrew,
   '/fortythieves': fortythieves,
@@ -161,6 +178,8 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/gofish': gofish,
   '/golf': golf,
   '/acesup': acesup,
+  '/gongzhu': gongzhu,
+  '/tressette': tressette,
   '/hearts': hearts,
   '/holdem': holdem,
   '/indianpoker': indianpoker,
@@ -220,11 +239,13 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/war': war,
   '/fiftyone': fiftyone,
   '/whist': whist,
+  '/yaniv': yaniv,
   '/yukon': yukon,
   '/russiansolitaire': russiansolitaire,
   '/cruel': cruel,
   '/scorpion': scorpion,
   '/wasp': wasp,
+  '/easthaven': easthaven,
   '/sevenbridge': sevenbridge,
   '/accordion': accordion,
   '/trash': trash,
@@ -241,8 +262,11 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/tarneeb': tarneeb,
   '/highcardflush': highcardflush,
   '/briscola': briscola,
+  '/schnapsen': schnapsen,
   '/bigtwo': bigtwo,
   '/tienlen': tienlen,
+  '/tichu': tichu,
+  '/bourre': bourre,
   '/doudizhu': doudizhu,
   '/truco': truco,
 };

@@ -970,6 +970,111 @@ export interface HeartsResponse extends BaseGameResponse {
   hint?: HeartsHint;
 }
 
+// --- Gong Zhu (拱猪) ---
+
+/** Gong Zhu player data with scores and trick count. */
+export interface GongZhuPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  roundScore: number;
+  cumulativeScore: number;
+  trickCount: number;
+}
+
+/** A card played in a Gong Zhu trick. */
+export interface GongZhuTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Which point cards have been exposed (stakes doubled). */
+export interface GongZhuExposure {
+  pig: boolean;
+  sheep: boolean;
+  ace: boolean;
+  doubler: boolean;
+}
+
+/** Gong Zhu game configuration. */
+export interface GongZhuConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+/** A suggested hint for Gong Zhu. */
+export interface GongZhuHint {
+  cardIndices: number[];
+  reason: string;
+}
+
+/** Full Gong Zhu game state returned from the API. */
+export interface GongZhuResponse extends BaseGameResponse {
+  players: GongZhuPlayerData[];
+  phase: number;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  currentTrick: GongZhuTrickCard[];
+  heartsBroken: boolean;
+  exposed: GongZhuExposure;
+  exposableIndices: number[];
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  leadPlayerIdx: number;
+  config: GongZhuConfig;
+  hint?: GongZhuHint;
+}
+
+// --- Tressette ---
+
+/** A Tressette player's public/own state. */
+export interface TressettePlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  trickCount: number;
+  teamId: number;
+}
+
+/** A card played in a Tressette trick. */
+export interface TressetteTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Tressette game configuration. */
+export interface TressetteConfig {
+  cpuDifficulty: number;
+  targetPoints: number;
+}
+
+/** A suggested hint for Tressette. */
+export interface TressetteHint {
+  cardIndices: number[];
+  reason: string;
+}
+
+/** Full Tressette game state returned from the API. */
+export interface TressetteResponse extends BaseGameResponse {
+  players: TressettePlayerData[];
+  phase: number;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  currentTrick: TressetteTrickCard[];
+  leadPlayerIdx: number;
+  teamScores: number[];
+  teamRoundThirds: number[];
+  playableIndices: number[];
+  gameEndFlag: boolean;
+  winnerTeam: number;
+  config: TressetteConfig;
+  hint?: TressetteHint;
+}
+
 // --- Spades ---
 
 /** Spades player data with bid, scores, and bags. */
@@ -1385,6 +1490,42 @@ export interface ThirtyOneResponse extends BaseGameResponse {
   config: ThirtyOneConfig;
 }
 
+// --- Yaniv (ヤニブ) ---
+
+/** Yaniv player data with cumulative penalty score and revealed hand total. */
+export interface YanivPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  score: number;
+  handTotal: number;
+  isEliminated: boolean;
+}
+
+/** Yaniv game configuration. */
+export interface YanivConfig {
+  cpuDifficulty: number;
+  scoreLimit: number;
+}
+
+/** Full Yaniv game state returned from the API. */
+export interface YanivResponse extends BaseGameResponse {
+  players: YanivPlayerData[];
+  phase: number;
+  roundNumber: number;
+  currentPlayerIdx: number;
+  pickupCards: Card[];
+  drawPileCount: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  callerIdx: number;
+  asafWinnerIdx: number;
+  isAsaf: boolean;
+  roundScores: number[];
+  config: YanivConfig;
+}
+
 // --- Seven Bridge (セブンブリッジ) ---
 
 /** A meld (set or run) shared across players in Seven Bridge. */
@@ -1598,6 +1739,34 @@ export interface OsmosisResponse extends BaseGameResponse {
   moveCount: number;
   canUndo: boolean;
   hint?: OsmosisHint;
+}
+
+// --- Bristol (ブリストル) ---
+
+/** A suggested move hint in Bristol. */
+export interface BristolHint {
+  fromZone: string;
+  fromCol: number;
+  toZone: string;
+  toCol: number;
+}
+
+/** Full Bristol game state returned from the API. */
+export interface BristolResponse extends BaseGameResponse {
+  tableau: Card[][];
+  fan: Card[][];
+  stockCount: number;
+  foundation: Card[][];
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  hint?: BristolHint;
+}
+
+/** Source or target zone for a Bristol card move. */
+export interface BristolMoveZone {
+  zone: string;
+  col?: number;
 }
 
 // --- FreeCell (フリーセル) ---
@@ -1860,6 +2029,149 @@ export interface MightyResponse extends BaseGameResponse {
   leadPlayerIdx: number;
   config: MightyConfig;
   hint?: MightyHint;
+}
+
+// --- 500 (Five Hundred) ---
+
+/** A bid (contract) in 500. */
+export interface FiveHundredBidData {
+  kind: number;
+  tricks: number;
+  suit: number;
+  value: number;
+}
+
+/** A 500 player's per-round state. */
+export interface FiveHundredPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  team: number;
+  trickCount: number;
+  bid?: FiveHundredBidData | null;
+  passed: boolean;
+  isDeclarer: boolean;
+}
+
+/** A card played in a 500 trick. */
+export interface FiveHundredTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** 500 game configuration. */
+export interface FiveHundredConfig {
+  cpuDifficulty: number;
+  targetScore: number;
+}
+
+/** A suggested hint for 500. */
+export interface FiveHundredHint {
+  bidKind?: number;
+  bidTricks?: number;
+  bidSuit?: number;
+  pass?: boolean;
+  discardIndices?: number[];
+  cardIndex?: number;
+  jokerSuit?: number;
+  reason: string;
+}
+
+/** Full 500 game state returned from the API. */
+export interface FiveHundredResponse extends BaseGameResponse {
+  players: FiveHundredPlayerData[];
+  phase: number;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  bidPlayerIdx: number;
+  dealerIdx: number;
+  leadPlayerIdx: number;
+  trumpSuit: number;
+  contractKind: number;
+  contractTricks: number;
+  contractValue: number;
+  declarerIdx: number;
+  highestBid?: FiveHundredBidData | null;
+  highestBidder: number;
+  jokerLeadSuit: number;
+  kittyCount: number;
+  currentTrick: FiveHundredTrickCard[];
+  teamScores: [number, number];
+  gameEndFlag: boolean;
+  winnerTeam: number;
+  config: FiveHundredConfig;
+  hint?: FiveHundredHint;
+}
+
+// --- Bid Whist (ビッド・ホイスト) ---
+
+/** A Bid Whist bid: target tricks over the book plus a direction. */
+export interface BidWhistBidData {
+  tricks: number;
+  direction: number;
+}
+
+/** A Bid Whist player's per-round state. */
+export interface BidWhistPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  team: number;
+  trickCount: number;
+  bid?: BidWhistBidData | null;
+  passed: boolean;
+  isDeclarer: boolean;
+}
+
+/** A card played in a Bid Whist trick. */
+export interface BidWhistTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Bid Whist game configuration. */
+export interface BidWhistConfig {
+  cpuDifficulty: number;
+  targetScore: number;
+}
+
+/** A suggested hint for Bid Whist. */
+export interface BidWhistHint {
+  bidTricks?: number;
+  bidDirection?: number;
+  pass?: boolean;
+  trumpSuit?: number;
+  discardIndices?: number[];
+  cardIndex?: number;
+  reason: string;
+}
+
+/** Full Bid Whist game state returned from the API. */
+export interface BidWhistResponse extends BaseGameResponse {
+  players: BidWhistPlayerData[];
+  phase: number;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  bidPlayerIdx: number;
+  dealerIdx: number;
+  leadPlayerIdx: number;
+  trumpSuit: number;
+  contractTricks: number;
+  contractDirection: number;
+  declarerIdx: number;
+  highestBid?: BidWhistBidData | null;
+  highestBidder: number;
+  kittyCount: number;
+  currentTrick: BidWhistTrickCard[];
+  teamScores: [number, number];
+  gameEndFlag: boolean;
+  winnerTeam: number;
+  config: BidWhistConfig;
+  hint?: BidWhistHint;
 }
 
 // --- Skat (スカート) ---
@@ -2843,6 +3155,54 @@ export interface CanastaResponse extends BaseGameResponse {
   config: CanastaConfig;
 }
 
+// --- Burraco (ブラーコ) ---
+
+/** Burraco game configuration. */
+export interface BurracoConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+/** A single meld on the table in Burraco. */
+export interface BurracoMeldData {
+  cards: Card[];
+  isNatural: boolean;
+  isBurraco: boolean;
+  rank: number;
+}
+
+/** Burraco player data with melds, red 3s, and pozzetto status. */
+export interface BurracoPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  melds: BurracoMeldData[];
+  red3Count: number;
+  red3s: Card[];
+  roundScore: number;
+  cumulativeScore: number;
+  hasBurraco: boolean;
+  hasInitMeld: boolean;
+  tookPozzetto: boolean;
+}
+
+/** Full Burraco game state returned from the API. */
+export interface BurracoResponse extends BaseGameResponse {
+  players: BurracoPlayerData[];
+  phase: number;
+  roundNumber: number;
+  currentPlayerIdx: number;
+  discardTop: Card | null;
+  drawPileCount: number;
+  discardPileCount: number;
+  pozzettoCount: number;
+  isFrozen: boolean;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  config: BurracoConfig;
+}
+
 /** Pinochle game configuration. */
 export interface PinochleConfig {
   cpuDifficulty: number;
@@ -3514,6 +3874,29 @@ export interface WaspResponse extends BaseGameResponse {
   hint?: WaspHint;
 }
 
+// --- Easthaven (イーストヘイブン) ---
+
+/** A suggested move hint in Easthaven. */
+export interface EasthavenHint {
+  fromCol: number;
+  cardIndex: number;
+  toZone: string;
+  toCol: number;
+}
+
+/** API response shape for an Easthaven game. */
+export interface EasthavenResponse extends BaseGameResponse {
+  tableau: KlondikeTableauCard[][];
+  foundation: Card[][];
+  stockCount: number;
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  hint?: EasthavenHint;
+}
+
 // --- Accordion (アコーディオン) ---
 
 /** A single pile in Accordion. Only the top card is revealed; size tracks stacked depth. */
@@ -3669,6 +4052,63 @@ export interface BriscolaResponse extends BaseGameResponse {
   winnerIdx: number;
   config: BriscolaConfig;
   hint?: BriscolaHint;
+}
+
+// --- Schnapsen / Sixty-Six (シュナプセン / 66) ---
+
+/** Schnapsen player data with points and trick count. */
+export interface SchnapsenPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  points: number;
+  trickCount: number;
+}
+
+/** A card played in a Schnapsen trick. */
+export interface SchnapsenTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Schnapsen game configuration. */
+export interface SchnapsenConfig {
+  cpuDifficulty: number;
+}
+
+/** A suggested hint for Schnapsen. */
+export interface SchnapsenHint {
+  cardIndex?: number;
+  reason: string;
+  isMarriage: boolean;
+}
+
+/** Full Schnapsen game state returned from the API. */
+export interface SchnapsenResponse extends BaseGameResponse {
+  players: SchnapsenPlayerData[];
+  phase: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  currentTrick: SchnapsenTrickCard[];
+  trumpSuit: number;
+  /** Face-up trump upcard (omitted once the stock is exhausted). */
+  trumpCard?: Card;
+  dealerIdx: number;
+  leadPlayerIdx: number;
+  /** Cards remaining in the stock (excludes the face-up trump upcard). */
+  stockRemaining: number;
+  /** True once the stock is exhausted and must-follow rules apply (phase 2). */
+  isEndgame: boolean;
+  /** Indices in the human hand that are legal to play right now. */
+  validPlays: number[];
+  /** Indices in the human hand that can start a marriage declaration. */
+  marriagePlays: number[];
+  gameEndFlag: boolean;
+  /** -1 = tie or unfinished. */
+  winnerIdx: number;
+  config: SchnapsenConfig;
+  hint?: SchnapsenHint;
 }
 
 // --- Truco (トゥルコ) ---
@@ -4672,4 +5112,106 @@ export interface DoudizhuResponse extends BaseGameResponse {
   config: DoudizhuConfig;
   cpuActions: DoudizhuAction[];
   humanAction: DoudizhuAction | null;
+}
+
+/** Tichu player action record. */
+export interface TichuAction {
+  playerIdx: number;
+  playedCards: Card[] | null;
+  declType: number;
+  isPass: boolean;
+}
+
+/** Tichu player data. */
+export interface TichuPlayerData {
+  id: number;
+  isHuman: boolean;
+  isFinished: boolean;
+  team: number;
+  rank: number;
+  declType: number;
+  cardCount: number;
+  cards: Card[];
+}
+
+/** Tichu config. */
+export interface TichuConfig {
+  cpuDifficulty: number;
+}
+
+/** Tichu API response. */
+export interface TichuResponse extends BaseGameResponse {
+  players: TichuPlayerData[];
+  phase: string;
+  currentTurn: number;
+  tableCards: Card[];
+  tableCombo: string;
+  lastPlayIdx: number;
+  startLeader: number;
+  finishOrder: number[];
+  scores: number[];
+  isOneTwo: boolean;
+  bombCount: number;
+  gameEndFlag: boolean;
+  config: TichuConfig;
+  cpuActions: TichuAction[];
+  humanAction: TichuAction | null;
+}
+
+/** Bourré player data. */
+export interface BourrePlayerData {
+  id: number;
+  isHuman: boolean;
+  isFinished: boolean;
+  folded: boolean;
+  decided: boolean;
+  drawn: boolean;
+  bourreed: boolean;
+  chips: number;
+  tricks: number;
+  cardCount: number;
+  cards: Card[];
+}
+
+/** A single card played into a Bourré trick. */
+export interface BourreTrickCardData {
+  playerIdx: number;
+  card: Card | null;
+}
+
+/** Bourré hand result for one player. */
+export interface BourreResultData {
+  playerIdx: number;
+  tricks: number;
+  wonAmount: number;
+  bourreed: boolean;
+  folded: boolean;
+}
+
+/** Bourré config. */
+export interface BourreConfig {
+  cpuDifficulty: number;
+}
+
+/** Bourré API response. */
+export interface BourreResponse extends BaseGameResponse {
+  players: BourrePlayerData[];
+  phase: string;
+  currentPlayerIdx: number;
+  dealerIdx: number;
+  pot: number;
+  carryPot: number;
+  trumpSuit: string;
+  trumpCard: Card | null;
+  trickNumber: number;
+  currentTrick: BourreTrickCardData[];
+  lastTrick: BourreTrickCardData[];
+  lastTrickWinner: number;
+  leadPlayerIdx: number;
+  handNumber: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  validPlays: number[];
+  results: BourreResultData[];
+  config: BourreConfig;
 }

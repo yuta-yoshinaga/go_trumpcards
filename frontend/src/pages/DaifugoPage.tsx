@@ -29,6 +29,7 @@ import { useDaifugoGame } from '../hooks/useDaifugoGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSound } from '../providers/SoundProvider';
+import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -289,7 +290,7 @@ function DaifugoPageContent() {
 
             {pendingBanner && (
               <div
-                className="bg-ds-warning/80 rounded-[10px] text-white text-center py-2 px-4 text-sm font-bold my-2"
+                className={`${badgeWarningColors} rounded-[10px] text-center py-2 px-4 text-sm font-bold my-2`}
                 data-tutorial="df-special-actions"
               >
                 {pendingBanner}

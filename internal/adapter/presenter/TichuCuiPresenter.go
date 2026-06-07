@@ -1,0 +1,89 @@
+//go:build !js || !wasm || casino
+
+package presenter
+
+import (
+	"fmt"
+	"strconv"
+	"strings"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
+)
+
+// TichuCuiPresenter renders the Tichu CUI view.
+type TichuCuiPresenter struct{}
+
+// Output renders the current game state.
+func (p *TichuCuiPresenter) Output(tg interfaces.TichuGame, lastErr error) string {
+	return buildCuiOutput(i18n.T("tichu.helpTitle"), func(b *strings.Builder) {
+		phase := tg.GetPhase()
+
+		if phase == domain.TichuPhaseDeclare {
+			b.WriteString(color.BoldYellow(i18n.T("tichu.phaseDeclare")) + "\n")
+		}
+
+		for idx := 0; idx < tg.GetPlayerCnt(); idx++ {
+			b.WriteString(tichuPlayerStr(tg.GetPlayer(idx), idx))
+		}
+
+		b.WriteString("----------\n")
+
+		if phase == domain.TichuPhasePlay || phase == domain.TichuPhaseEnd {
+			if combo := tg.GetTableCombo(); combo != nil {
+				fmt.Fprintf(b, "%s: %s (%s)\n", i18n.T("tichu.tableCards"),
+					cuiCardListStr(tichuCardSlice(combo.Cards)), tichuComboName(combo.Type))
+			} else {
+				fmt.Fprintf(b, "%s: ---\n", i18n.T("tichu.tableCards"))
+			}
+		}
+
+		if phase == domain.TichuPhaseEnd {
+			scores := tg.GetScores()
+			b.WriteString(color.BoldYellow(i18n.T("tichu.gameEnd")) + "\n")
+			fmt.Fprintf(b, "%s (P0/P2): %d\n", i18n.T("tichu.teamA"), scores[0])
+			fmt.Fprintf(b, "%s (P1/P3): %d\n", i18n.T("tichu.teamB"), scores[1])
+		}
+
+		if lastErr != nil {
+			b.WriteString(color.Red(lastErr.Error()) + "\n")
+		}
+	})
+}
+
+// ActionLogOutput 棋譜をCUI出力
+func (p *TichuCuiPresenter) ActionLogOutput(tg interfaces.TichuGame) string {
+	return actionLogOutputText(tg)
+}
+
+func tichuPlayerStr(player *domain.TichuPlayer, idx int) string {
+	if player == nil {
+		return ""
+	}
+	var b strings.Builder
+	b.WriteString(cuiPlayerName(player, idx))
+	fmt.Fprintf(&b, " [%s %d]", i18n.T("tichu.team"), domain.TichuTeamOf(idx))
+	switch player.GetDeclType() {
+	case domain.TichuDeclTichu:
+		b.WriteString(" [" + i18n.T("tichu.tichu") + "]")
+	case domain.TichuDeclGrand:
+		b.WriteString(" [" + i18n.T("tichu.grandTichu") + "]")
+	}
+	if player.GetIsFinished() {
+		b.WriteString(" " + i18n.Tf("tichu.playerRank", "rank", strconv.Itoa(player.GetRank())) + "\n")
+	} else {
+		b.WriteString(i18n.Tf("tichu.playerCardCount", "count", strconv.Itoa(player.GetCardsSize())) + "\n")
+		if player.GetIsHuman() {
+			b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		}
+	}
+	return b.String()
+}
+
+// tichuCardSlice wraps []*Card to satisfy the cuiCardList interface.
+type tichuCardSlice []*domain.Card
+
+func (s tichuCardSlice) GetCardsSize() int          { return len(s) }
+func (s tichuCardSlice) GetCard(i int) *domain.Card { return s[i] }

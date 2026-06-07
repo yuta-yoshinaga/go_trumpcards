@@ -514,7 +514,7 @@ func TestNapoleonCuiPresenter_English(t *testing.T) {
 	// strategic_bid is intentionally NOT in napoleonHintReasonKeys — it's
 	// shared with Bridge, Spades, Skat, OhHell and lives in
 	// sharedHintReasonKeys (cui_common). The fallthrough path in
-	// napoleonHintReasonStr (per-game miss → lookupHintReason → cui_common)
+	// hintReasonStr (per-game miss → sharedHintReasonKeys → cui_common)
 	// is what makes it render. This test pins that path under LANG=en.
 	t.Run("strategic_bid falls through to shared key in English", func(t *testing.T) {
 		bid := 14

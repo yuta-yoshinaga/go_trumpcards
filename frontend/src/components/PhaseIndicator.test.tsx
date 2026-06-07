@@ -17,7 +17,7 @@ describe('PhaseIndicator', () => {
       'motion-safe:animate-pulse',
       'font-bold',
       'text-base',
-      'bg-ds-success/20',
+      'bg-ds-surface',
       'ring-2',
       'ring-ds-success/40',
       'px-2',

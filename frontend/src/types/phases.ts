@@ -150,6 +150,15 @@ export const HeartsPhase = {
   GAME_END: 4,
 } as const;
 
+/** Gong Zhu phase constants (sync: internal/domain/GongZhu.go). */
+export const GongZhuPhase = {
+  EXPOSE: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Memory phase constants (sync: internal/domain/Memory.go). */
 export const MemoryPhase = {
   FLIP1: 0,
@@ -180,6 +189,13 @@ export const CanfieldPhase = {
 
 /** Osmosis phase constants (sync: internal/domain/Osmosis.go). */
 export const OsmosisPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** Bristol phase constants (sync: internal/domain/Bristol.go). */
+export const BristolPhase = {
   PLAYING: 0,
   GAME_CLEAR: 1,
   GAME_OVER: 2,
@@ -220,6 +236,14 @@ export const SpadesPhase = {
   TRICK_END: 2,
   ROUND_END: 3,
   GAME_END: 4,
+} as const;
+
+/** Tressette phase constants (sync: internal/domain/Tressette.go). */
+export const TressettePhase = {
+  PLAY: 0,
+  TRICK_END: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
 } as const;
 
 /** Call Break phase constants (sync: internal/domain/CallBreak.go). */
@@ -316,6 +340,14 @@ export const ThirtyOnePhase = {
   GAME_END: 3,
 } as const;
 
+/** Yaniv phase constants (sync: internal/domain/Yaniv.go). */
+export const YanivPhase = {
+  DISCARD: 0,
+  DRAW: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Seven Bridge phase constants (sync: internal/domain/SevenBridge.go). */
 export const SevenBridgePhase = {
   DRAW: 0,
@@ -385,6 +417,43 @@ export const MightyPhase = {
   TRICK_END: 4,
   ROUND_END: 5,
   GAME_END: 6,
+} as const;
+
+/** 500 (Five Hundred) phase constants (sync: internal/domain/FiveHundred.go). */
+export const FiveHundredPhase = {
+  BID: 0,
+  KITTY_EXCHANGE: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
+/** 500 (Five Hundred) contract kind constants (sync: internal/domain/FiveHundred.go). */
+export const FiveHundredContract = {
+  NONE: 0,
+  SUIT: 1,
+  NO_TRUMP: 2,
+  MISERE: 3,
+  OPEN_MISERE: 4,
+} as const;
+
+/** Bid Whist phase constants (sync: internal/domain/BidWhist.go). */
+export const BidWhistPhase = {
+  BID: 0,
+  TRUMP_DECLARATION: 1,
+  KITTY_EXCHANGE: 2,
+  PLAY: 3,
+  TRICK_END: 4,
+  ROUND_END: 5,
+  GAME_END: 6,
+} as const;
+
+/** Bid Whist bid direction constants (sync: internal/domain/BidWhist.go). */
+export const BidWhistDirection = {
+  UPTOWN: 0,
+  DOWNTOWN: 1,
+  NO_TRUMP: 2,
 } as const;
 
 /** Baccarat phase constants (sync: internal/domain/Baccarat.go). */
@@ -555,6 +624,15 @@ export const CanastaPhase = {
   GAME_END: 4,
 } as const;
 
+/** Burraco phase constants (sync: internal/domain/Burraco.go). */
+export const BurracoPhase = {
+  DRAW: 0,
+  MELD: 1,
+  DISCARD: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Pinochle phase constants (sync: internal/domain/Pinochle.go). */
 export const PinochlePhase = {
   BID: 0,
@@ -706,6 +784,13 @@ export const WaspPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Easthaven phase constants (sync: internal/domain/Easthaven.go). */
+export const EasthavenPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Accordion phase constants (sync: internal/domain/Accordion.go). */
 export const AccordionPhase = {
   PLAYING: 0,
@@ -736,6 +821,13 @@ export const WhistPhase = {
 
 /** Briscola phase constants (sync: internal/domain/Briscola.go). */
 export const BriscolaPhase = {
+  PLAY: 0,
+  TRICK_END: 1,
+  GAME_END: 2,
+} as const;
+
+/** Schnapsen phase constants (sync: internal/domain/Schnapsen.go). */
+export const SchnapsenPhase = {
   PLAY: 0,
   TRICK_END: 1,
   GAME_END: 2,

@@ -113,6 +113,13 @@ func init() {
 			return usecase.NewFreeCellInteractor(domain.NewDefaultFreeCell(), new(presenter.FreeCellWebPresenter))
 		},
 		controller.NewFreeCellWebController)
+	// Baker's Game reuses the FreeCell interactor/controller; the same-suit rule
+	// lives in the domain (NewDefaultBakersGame) and the i18n namespace in the presenter.
+	BindWebControllerFor("bakersgame",
+		func() usecase.FreeCellInteractorIF {
+			return usecase.NewFreeCellInteractor(domain.NewDefaultBakersGame(), new(presenter.BakersGameWebPresenter))
+		},
+		controller.NewFreeCellWebController)
 	BindWebControllerFor("seahaventowers",
 		func() usecase.SeahavenTowersInteractorIF {
 			return usecase.NewSeahavenTowersInteractor(domain.NewDefaultSeahavenTowers(), new(presenter.SeahavenTowersWebPresenter))
@@ -443,6 +450,26 @@ func init() {
 			return usecase.NewOsmosisInteractor(domain.NewDefaultOsmosis(), new(presenter.OsmosisWebPresenter))
 		},
 		controller.NewOsmosisWebController)
+	BindWebControllerFor("fivehundred",
+		func() usecase.FiveHundredInteractorIF {
+			return usecase.NewFiveHundredInteractor(domain.NewDefaultFiveHundred(), new(presenter.FiveHundredWebPresenter))
+		},
+		controller.NewFiveHundredWebController)
+	BindWebControllerFor("schnapsen",
+		func() usecase.SchnapsenInteractorIF {
+			return usecase.NewSchnapsenInteractor(domain.NewDefaultSchnapsen(), new(presenter.SchnapsenWebPresenter))
+		},
+		controller.NewSchnapsenWebController)
+	BindWebControllerFor("burraco",
+		func() usecase.BurracoInteractorIF {
+			return usecase.NewBurracoInteractor(domain.NewDefaultBurraco(), new(presenter.BurracoWebPresenter))
+		},
+		controller.NewBurracoWebController)
+	BindWebControllerFor("yaniv",
+		func() usecase.YanivInteractorIF {
+			return usecase.NewYanivInteractor(domain.NewDefaultYaniv(), new(presenter.YanivWebPresenter))
+		},
+		controller.NewYanivWebController)
 	BindWebControllerFor("casinowar",
 		func() usecase.CasinoWarInteractorIF {
 			return usecase.NewCasinoWarInteractor(domain.NewDefaultCasinoWar(), new(presenter.CasinoWarWebPresenter))
@@ -613,4 +640,39 @@ func init() {
 			return usecase.NewMacauInteractor(domain.NewDefaultMacau(), new(presenter.MacauWebPresenter))
 		},
 		controller.NewMacauWebController)
+	BindWebControllerFor("gongzhu",
+		func() usecase.GongZhuInteractorIF {
+			return usecase.NewGongZhuInteractor(domain.NewDefaultGongZhu(), new(presenter.GongZhuWebPresenter))
+		},
+		controller.NewGongZhuWebController)
+	BindWebControllerFor("bristol",
+		func() usecase.BristolInteractorIF {
+			return usecase.NewBristolInteractor(domain.NewDefaultBristol(), new(presenter.BristolWebPresenter))
+		},
+		controller.NewBristolWebController)
+	BindWebControllerFor("bidwhist",
+		func() usecase.BidWhistInteractorIF {
+			return usecase.NewBidWhistInteractor(domain.NewDefaultBidWhist(), new(presenter.BidWhistWebPresenter))
+		},
+		controller.NewBidWhistWebController)
+	BindWebControllerFor("tressette",
+		func() usecase.TressetteInteractorIF {
+			return usecase.NewTressetteInteractor(domain.NewDefaultTressette(), new(presenter.TressetteWebPresenter))
+		},
+		controller.NewTressetteWebController)
+	BindWebControllerFor("easthaven",
+		func() usecase.EasthavenInteractorIF {
+			return usecase.NewEasthavenInteractor(domain.NewDefaultEasthaven(), new(presenter.EasthavenWebPresenter))
+		},
+		controller.NewEasthavenWebController)
+	BindWebControllerFor("tichu",
+		func() usecase.TichuInteractorIF {
+			return usecase.NewTichuInteractor(domain.NewDefaultTichu(), new(presenter.TichuWebPresenter))
+		},
+		controller.NewTichuWebController)
+	BindWebControllerFor("bourre",
+		func() usecase.BourreInteractorIF {
+			return usecase.NewBourreInteractor(domain.NewDefaultBourre(), new(presenter.BourreWebPresenter))
+		},
+		controller.NewBourreWebController)
 }

@@ -64,9 +64,11 @@ export type GameKey =
   | 'callbreak'
   | 'tarneeb'
   | 'briscola'
+  | 'schnapsen'
   | 'skat'
   | 'belote'
   | 'mighty'
+  | 'fivehundred'
   // Matching/Pass
   | 'oldmaid'
   | 'doubt'
@@ -99,6 +101,7 @@ export type GameKey =
   // Solitaire
   | 'klondike'
   | 'freecell'
+  | 'bakersgame'
   | 'eightoff'
   | 'penguin'
   | 'seahaventowers'
@@ -116,11 +119,16 @@ export type GameKey =
   | 'beleagueredcastle'
   | 'canfield'
   | 'osmosis'
+  | 'bristol'
+  | 'bidwhist'
   | 'yukon'
   | 'russiansolitaire'
   | 'cruel'
   | 'scorpion'
   | 'wasp'
+  | 'easthaven'
+  | 'tichu'
+  | 'bourre'
   | 'accordion'
   | 'pokersquares'
   | 'montecarlo'
@@ -130,7 +138,11 @@ export type GameKey =
   | 'ginrummy'
   | 'tonk'
   | 'thirtyone'
+  | 'yaniv'
+  | 'gongzhu'
+  | 'tressette'
   | 'canasta'
+  | 'burraco'
   | 'cribbage'
   | 'sevenbridge'
   | 'contractrummy'
@@ -209,9 +221,11 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   skat: BLUE,
   belote: BLUE,
   mighty: BLUE,
+  fivehundred: BLUE,
   callbreak: BLUE,
   tarneeb: BLUE,
   briscola: BLUE,
+  schnapsen: BLUE,
   // Matching/Pass
   oldmaid: GREEN,
   doubt: GREEN,
@@ -244,6 +258,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Solitaire
   klondike: CASINO,
   freecell: CASINO,
+  bakersgame: CASINO,
   eightoff: CASINO,
   penguin: CASINO,
   seahaventowers: CASINO,
@@ -261,11 +276,16 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   beleagueredcastle: CASINO,
   canfield: CASINO,
   osmosis: CASINO,
+  bristol: CASINO,
+  bidwhist: GREEN,
   yukon: CASINO,
   russiansolitaire: CASINO,
   cruel: CASINO,
   scorpion: CASINO,
   wasp: CASINO,
+  easthaven: GREEN,
+  tichu: CASINO,
+  bourre: CASINO,
   accordion: CASINO,
   pokersquares: CASINO,
   montecarlo: CASINO,
@@ -275,7 +295,11 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   ginrummy: BLUE,
   tonk: BLUE,
   thirtyone: CASINO,
+  yaniv: BLUE,
+  gongzhu: GREEN,
+  tressette: GREEN,
   canasta: BLUE,
+  burraco: GREEN,
   cribbage: BLUE,
   sevenbridge: BLUE,
   contractrummy: BLUE,

@@ -7,6 +7,7 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePiquetGame } from '../hooks/usePiquetGame';
+import { badgeErrorColors, badgeSuccessColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, PiquetDeclaration, PiquetPlayerData, PiquetResponse } from '../types/card';
@@ -176,7 +177,7 @@ function PiquetPageContent() {
               <span
                 data-testid="piquet-meld-badge"
                 className={`rounded px-2 py-0.5 text-xs font-bold ${
-                  activeHighlight.won ? 'bg-ds-success/30 text-ds-success' : 'bg-ds-error/30 text-ds-error'
+                  activeHighlight.won ? badgeSuccessColors : badgeErrorColors
                 }`}
               >
                 {t(activeHighlight.won ? 'meldWonBadge' : 'meldLostBadge', {

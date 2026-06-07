@@ -1,0 +1,38 @@
+{
+  "title": "Tichu",
+  "label": {
+    "table": "Table",
+    "bombs": "Bombs",
+    "team": "Team",
+    "cards": "cards",
+    "tichu": "Tichu",
+    "grandTichu": "Grand",
+    "teamA": "Team A (P0/P2)",
+    "teamB": "Team B (P1/P3)",
+    "oneTwo": "1-2 finish (+200)"
+  },
+  "button": {
+    "declareNone": "No declaration",
+    "tichu": "Call Tichu",
+    "grandTichu": "Call Grand",
+    "pass": "Pass",
+    "play": "Play",
+    "reset": "New game"
+  },
+  "phase": {
+    "declare": "Declaration",
+    "play": "Play",
+    "end": "Result"
+  },
+  "result": {
+    "youWin": "Your team wins!",
+    "youLose": "Opponents win",
+    "summary": "{{summary}}"
+  },
+  "tutorial": {
+    "intro": "Tichu is a 2-vs-2 partnership game. Players sitting across from each other (P0 & P2, P1 & P3) are teammates. The goal is to empty your hand first.",
+    "declare": "Before play you may call 'Tichu' (±100) or 'Grand Tichu' (±200). Go out first to earn the bonus, fail and you lose it.",
+    "play": "Play combinations (single, pair, straight, bomb, ...) like Daifugo to control the table. The four special cards — Dragon, Phoenix, Dog, Mahjong — are the key to the game.",
+    "teams": "5s, 10s and Kings, plus the Dragon (+25) and Phoenix (-25), are the card points. Teams score by card points and finishing order; first to 1000 wins."
+  }
+}

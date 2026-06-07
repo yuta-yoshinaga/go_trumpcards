@@ -1,3 +1,5 @@
+//go:build !js || !wasm || casino
+
 package interfaces
 
 import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"

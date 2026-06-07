@@ -10,13 +10,18 @@ import type {
   BeleagueredCastleMoveZone,
   BeleagueredCastleResponse,
   BeloteResponse,
+  BidWhistResponse,
   BigTwoConfigInput,
   BigTwoResponse,
   BlackJackResponse,
   BlackJackSwitchResponse,
+  BourreResponse,
   BridgeResponse,
   BriscolaConfig,
   BriscolaResponse,
+  BristolMoveZone,
+  BristolResponse,
+  BurracoResponse,
   CalculationMoveZone,
   CalculationResponse,
   CallBreakResponse,
@@ -43,10 +48,12 @@ import type {
   DragonTigerResponse,
   DurakConfigInput,
   DurakResponse,
+  EasthavenResponse,
   EgyptianRatscrewResponse,
   EightOffResponse,
   EuchreResponse,
   FiftyOneResponse,
+  FiveHundredResponse,
   FortyThievesMoveZone,
   FortyThievesResponse,
   FourCardPokerResponse,
@@ -55,6 +62,7 @@ import type {
   GinRummyResponse,
   GoFishResponse,
   GolfResponse,
+  GongZhuResponse,
   HeartsResponse,
   HighCardFlushResponse,
   HoldemResponse,
@@ -92,6 +100,8 @@ import type {
   Rummy500Response,
   RussianPokerResponse,
   RussianSolitaireResponse,
+  SchnapsenConfig,
+  SchnapsenResponse,
   ScopaResponse,
   ScorpionResponse,
   SeahavenTowersResponse,
@@ -116,10 +126,12 @@ import type {
   TexasHoldemBonusResponse,
   ThirtyOneResponse,
   ThreeCardResponse,
+  TichuResponse,
   TienLenConfigInput,
   TienLenResponse,
   TonkResponse,
   TrashResponse,
+  TressetteResponse,
   TriPeaksResponse,
   TrucoConfig,
   TrucoResponse,
@@ -130,6 +142,7 @@ import type {
   WaspResponse,
   WhistConfig,
   WhistResponse,
+  YanivResponse,
   YukonResponse,
 } from '../types/card';
 
@@ -173,9 +186,9 @@ const workerUrl: Record<string, string> = {
   hearts: WORKER_CLASSIC,
   spades: WORKER_CLASSIC,
   pitch: WORKER_CLASSIC,
-  euchre: WORKER_CLASSIC,
-  bridge: WORKER_CLASSIC,
-  napoleon: WORKER_CLASSIC,
+  euchre: WORKER_SOLO,
+  bridge: WORKER_CASINO,
+  napoleon: WORKER_CASINO,
   ohhell: WORKER_CLASSIC,
   oldmaid: WORKER_CLASSIC,
   doubt: WORKER_CLASSIC,
@@ -195,6 +208,7 @@ const workerUrl: Record<string, string> = {
   twotenjack: WORKER_CLASSIC,
   klondike: WORKER_SOLO,
   freecell: WORKER_SOLO,
+  bakersgame: WORKER_SOLO,
   seahaventowers: WORKER_SOLO,
   cruel: WORKER_SOLO,
   spider: WORKER_SOLO,
@@ -204,6 +218,7 @@ const workerUrl: Record<string, string> = {
   memory: WORKER_SOLO,
   ginrummy: WORKER_SOLO,
   canasta: WORKER_SOLO,
+  burraco: WORKER_SOLO,
   cribbage: WORKER_SOLO,
   golf: WORKER_SOLO,
   acesup: WORKER_SOLO,
@@ -211,6 +226,7 @@ const workerUrl: Record<string, string> = {
   fortythieves: WORKER_SOLO,
   canfield: WORKER_SOLO,
   osmosis: WORKER_SOLO,
+  fivehundred: WORKER_SOLO,
   yukon: WORKER_SOLO,
   russiansolitaire: WORKER_SOLO,
   scorpion: WORKER_SOLO,
@@ -225,13 +241,15 @@ const workerUrl: Record<string, string> = {
   president: WORKER_CLASSIC,
   cassino: WORKER_CLASSIC,
   spiteandmalice: WORKER_CLASSIC,
-  skat: WORKER_CLASSIC,
+  skat: WORKER_CASINO,
   shithead: WORKER_CLASSIC,
   nertz: WORKER_CLASSIC,
   slapjack: WORKER_CLASSIC,
   egyptianratscrew: WORKER_CLASSIC,
   bakersdozen: WORKER_SOLO,
   thirtyone: WORKER_SOLO,
+  yaniv: WORKER_CASINO,
+  tressette: WORKER_CASINO,
   tonk: WORKER_CLASSIC,
   dragontiger: WORKER_CASINO,
   blackjackswitch: WORKER_CASINO,
@@ -240,17 +258,18 @@ const workerUrl: Record<string, string> = {
   ultimatetexasholdem: WORKER_CASINO,
   crescent: WORKER_SOLO,
   mississippistud: WORKER_CASINO,
-  belote: WORKER_CLASSIC,
+  belote: WORKER_CASINO,
   spiderette: WORKER_SOLO,
-  mighty: WORKER_CLASSIC,
+  mighty: WORKER_CASINO,
   oasispoker: WORKER_CASINO,
   russianpoker: WORKER_CASINO,
   beleagueredcastle: WORKER_SOLO,
-  piquet: WORKER_CLASSIC,
+  piquet: WORKER_SOLO,
   callbreak: WORKER_CLASSIC,
-  tarneeb: WORKER_CLASSIC,
+  tarneeb: WORKER_CASINO,
   highcardflush: WORKER_CASINO,
   briscola: WORKER_CLASSIC,
+  schnapsen: WORKER_SOLO,
   gaps: WORKER_SOLO,
   fourcardpoker: WORKER_CASINO,
   rummy500: WORKER_SOLO,
@@ -258,11 +277,17 @@ const workerUrl: Record<string, string> = {
   penguin: WORKER_SOLO,
   chinesepoker: WORKER_CASINO,
   sixcardgolf: WORKER_CLASSIC,
-  doudizhu: WORKER_CLASSIC,
+  doudizhu: WORKER_CASINO,
   truco: WORKER_CLASSIC,
   scopa: WORKER_CASINO,
   barbu: WORKER_SOLO,
   macau: WORKER_SOLO,
+  gongzhu: WORKER_SOLO,
+  bristol: WORKER_SOLO,
+  bidwhist: WORKER_SOLO,
+  easthaven: WORKER_SOLO,
+  tichu: WORKER_CASINO,
+  bourre: WORKER_CASINO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -701,6 +726,50 @@ export const heartsApi = {
     }),
 };
 
+/** Configuration options for Gong Zhu game settings. */
+export interface GongZhuConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Gong Zhu /gongzhu/exec endpoint. */
+export const gongzhuApi = {
+  exec: (
+    command: 'reset' | 'expose' | 'play' | 'next' | 'nextround' | 'hint',
+    cardIndices?: number[],
+    cardIndex?: number,
+    config?: GongZhuConfigInput,
+  ) =>
+    gameExec<GongZhuResponse>('gongzhu', {
+      command,
+      cardIndices,
+      cardIndex,
+      config,
+    }),
+};
+
+/** Configuration options for Tressette game settings. */
+export interface TressetteConfigInput {
+  cpuDifficulty?: number;
+  targetPoints?: number;
+}
+
+/** API client for the Tressette /tressette/exec endpoint. */
+export const tressetteApi = {
+  exec: (
+    command: 'reset' | 'play' | 'next' | 'nextround' | 'hint' | 'log',
+    cardIndices?: number[],
+    cardIndex?: number,
+    config?: TressetteConfigInput,
+  ) =>
+    gameExec<TressetteResponse>('tressette', {
+      command,
+      cardIndices,
+      cardIndex,
+      config,
+    }),
+};
+
 /** Configuration options for Spades game settings. */
 export interface SpadesConfigInput {
   cpuDifficulty?: number;
@@ -912,6 +981,13 @@ export const osmosisApi = createSolitaireMoveApi<
   'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('osmosis');
 
+/** API client for the Bristol /bristol/exec endpoint. */
+export const bristolApi = createSolitaireMoveApi<
+  BristolResponse,
+  BristolMoveZone,
+  'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('bristol');
+
 /** Source or target zone for a FreeCell card move. */
 export interface FreeCellMoveZone {
   zone: string;
@@ -926,6 +1002,16 @@ export const freecellApi = createSolitaireMoveApi<
   FreeCellMoveZone,
   'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('freecell');
+
+/**
+ * API client for the Baker's Game /bakersgame/exec endpoint. Baker's Game is the
+ * same-suit FreeCell variant; it reuses the FreeCell wire shape.
+ */
+export const bakersgameApi = createSolitaireMoveApi<
+  FreeCellResponse,
+  FreeCellMoveZone,
+  'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('bakersgame');
 
 /** Source or target zone for an Eight Off card move. */
 export interface EightOffMoveZone {
@@ -1110,6 +1196,26 @@ export const thirtyoneApi = {
     }),
 };
 
+/** Configuration options for Yaniv game settings. */
+export interface YanivConfigInput {
+  cpuDifficulty?: number;
+  scoreLimit?: number;
+}
+
+/** API client for the Yaniv /yaniv/exec endpoint. */
+export const yanivApi = {
+  exec: (
+    command: 'reset' | 'discard' | 'yaniv' | 'drawstock' | 'drawpickup' | 'nextround' | 'log',
+    opts?: { cardIndices?: number[]; end?: number; config?: YanivConfigInput },
+  ) =>
+    gameExec<YanivResponse>('yaniv', {
+      command,
+      cardIndices: opts?.cardIndices,
+      end: opts?.end,
+      config: opts?.config,
+    }),
+};
+
 /** Configuration options for Canasta game settings. */
 export interface CanastaConfigInput {
   cpuDifficulty?: number;
@@ -1126,6 +1232,30 @@ export const canastaApi = {
     meldGroups?: number[][],
   ) =>
     gameExec<CanastaResponse>('canasta', {
+      command,
+      cardIndex,
+      config,
+      naturalPairIndices,
+      meldGroups,
+    }),
+};
+
+/** Configuration options for Burraco game settings. */
+export interface BurracoConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Burraco /burraco/exec endpoint. */
+export const burracoApi = {
+  exec: (
+    command: 'reset' | 'drawstock' | 'drawdiscard' | 'meld' | 'skipmeld' | 'discard' | 'goout' | 'nextround' | 'log',
+    cardIndex?: number,
+    config?: BurracoConfigInput,
+    naturalPairIndices?: number[],
+    meldGroups?: number[][],
+  ) =>
+    gameExec<BurracoResponse>('burraco', {
       command,
       cardIndex,
       config,
@@ -1332,6 +1462,23 @@ export const doudizhuApi = {
     gameExec<DoudizhuResponse>('doudizhu', params),
 };
 
+/** API client for the Tichu /tichu/exec endpoint. */
+export const tichuApi = {
+  exec: (params: { command: string; indices?: number[]; declType?: number; config?: { cpuDifficulty?: number } }) =>
+    gameExec<TichuResponse>('tichu', params),
+};
+
+/** API client for the Bourré /bourre/exec endpoint. */
+export const bourreApi = {
+  exec: (params: {
+    command: string;
+    decide?: boolean;
+    indices?: number[];
+    cardIndex?: number;
+    config?: { cpuDifficulty?: number };
+  }) => gameExec<BourreResponse>('bourre', params),
+};
+
 /** Source or target zone for a Spider card move. */
 export interface SpiderMoveZone {
   zone: string;
@@ -1460,6 +1607,87 @@ export const mightyApi = {
       jokerLeadSuit,
       config,
     }),
+};
+
+/** Configuration options for 500 (Five Hundred) game settings. */
+export interface FiveHundredConfigInput {
+  cpuDifficulty?: number;
+  targetScore?: number;
+}
+
+/** Optional parameters for a 500 (Five Hundred) action. */
+export interface FiveHundredParams {
+  bidKind?: number;
+  bidTricks?: number;
+  bidSuit?: number;
+  discardIndices?: number[];
+  cardIndex?: number;
+  jokerSuit?: number;
+  config?: FiveHundredConfigInput;
+}
+
+/** API client for the 500 (Five Hundred) game. Calls POST /fivehundred/exec. */
+export const fiveHundredApi = {
+  exec: (
+    command:
+      | 'reset'
+      | 'b'
+      | 'bid'
+      | 'pa'
+      | 'pass'
+      | 'e'
+      | 'exchange'
+      | 'p'
+      | 'play'
+      | 'n'
+      | 'next'
+      | 'nr'
+      | 'nextround'
+      | 'hint'
+      | 'log',
+    params: FiveHundredParams = {},
+  ) => gameExec<FiveHundredResponse>('fivehundred', { command, ...params }),
+};
+
+/** Configuration options for Bid Whist game settings. */
+export interface BidWhistConfigInput {
+  cpuDifficulty?: number;
+  targetScore?: number;
+}
+
+/** Optional parameters for a Bid Whist action. */
+export interface BidWhistParams {
+  bidTricks?: number;
+  bidDirection?: number;
+  trumpSuit?: number;
+  discardIndices?: number[];
+  cardIndex?: number;
+  config?: BidWhistConfigInput;
+}
+
+/** API client for the Bid Whist game. Calls POST /bidwhist/exec. */
+export const bidWhistApi = {
+  exec: (
+    command:
+      | 'reset'
+      | 'b'
+      | 'bid'
+      | 'pa'
+      | 'pass'
+      | 't'
+      | 'trump'
+      | 'e'
+      | 'exchange'
+      | 'p'
+      | 'play'
+      | 'n'
+      | 'next'
+      | 'nr'
+      | 'nextround'
+      | 'hint'
+      | 'log',
+    params: BidWhistParams = {},
+  ) => gameExec<BidWhistResponse>('bidwhist', { command, ...params }),
 };
 
 /** Configuration options for Skat game settings. */
@@ -1805,6 +2033,20 @@ export const waspApi = createSolitaireMoveApi<
   'reset' | 'deal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('wasp');
 
+/** Source or target zone for an Easthaven card move. */
+export interface EasthavenMoveZone {
+  zone: string;
+  col?: number;
+  cardIndex?: number;
+}
+
+/** API client for the Easthaven /easthaven/exec endpoint. */
+export const easthavenApi = createSolitaireMoveApi<
+  EasthavenResponse,
+  EasthavenMoveZone,
+  'reset' | 'deal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('easthaven');
+
 /** Source or target pile for an Accordion move. */
 export interface AccordionMoveZone {
   zone: 'pile';
@@ -2086,6 +2328,15 @@ export const briscolaApi = {
     gameExec<BriscolaResponse>('briscola', { command, cardIndex, config }),
 };
 
+/** API client for the Schnapsen /schnapsen/exec endpoint. */
+export const schnapsenApi = {
+  exec: (
+    command: 'reset' | 'play' | 'marriage' | 'next' | 'hint' | 'log',
+    cardIndex?: number,
+    config?: Partial<SchnapsenConfig>,
+  ) => gameExec<SchnapsenResponse>('schnapsen', { command, cardIndex, config }),
+};
+
 /** API client for the Truco /truco/exec endpoint. */
 export const trucoApi = {
   exec: (
@@ -2223,12 +2474,14 @@ const games = [
   'memory',
   'klondike',
   'freecell',
+  'bakersgame',
   'seahaventowers',
   'cruel',
   'baccarat',
   'crazyeights',
   'ginrummy',
   'canasta',
+  'burraco',
   'spider',
   'indianpoker',
   'videopoker',
@@ -2255,6 +2508,7 @@ const games = [
   'calculation',
   'canfield',
   'osmosis',
+  'fivehundred',
   'yukon',
   'russiansolitaire',
   'scorpion',
@@ -2272,6 +2526,8 @@ const games = [
   'scopa',
   'barbu',
   'macau',
+  'bristol',
+  'bidwhist',
   'spanish21',
   'spiteandmalice',
   'skat',
@@ -2281,6 +2537,8 @@ const games = [
   'egyptianratscrew',
   'bakersdozen',
   'thirtyone',
+  'yaniv',
+  'gongzhu',
   'tonk',
   'casinowar',
   'pitch',
@@ -2313,6 +2571,11 @@ const games = [
   'doudizhu',
   'truco',
   'acesup',
+  'schnapsen',
+  'tressette',
+  'easthaven',
+  'tichu',
+  'bourre',
 ] as const;
 type Game = (typeof games)[number];
 

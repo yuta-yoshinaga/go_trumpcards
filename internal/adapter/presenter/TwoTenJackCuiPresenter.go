@@ -105,7 +105,7 @@ func (p *TwoTenJackCuiPresenter) HintOutput(s interfaces.TwoTenJackGame) string 
 	if hint == nil {
 		return i18n.T("twotenjack.hintNone") + "\n"
 	}
-	reason := twoTenJackHintReasonStr(hint.Reason)
+	reason := hintReasonStr(hint.Reason, twoTenJackHintReasonKeys)
 	if hint.TrumpSuit != nil {
 		return color.Yellow(i18n.Tf("twotenjack.hintTrump",
 			"suit", twoTenJackSuitLabel(*hint.TrumpSuit),
@@ -124,22 +124,13 @@ func (p *TwoTenJackCuiPresenter) HintOutput(s interfaces.TwoTenJackGame) string 
 
 // twoTenJackHintReasonKeys maps Two Ten Jack-specific hint-reason identifiers
 // to their i18n keys. Reasons not listed here fall through to cui_common via
-// lookupHintReason.
+// hintReasonStr.
 var twoTenJackHintReasonKeys = map[string]string{
 	"strategic_trump": "twotenjack.hintReasonStrategicTrump",
 	"lead":            "twotenjack.hintReasonLead",
 	"follow_suit":     "twotenjack.hintReasonFollowSuit",
 	"trump_cut":       "twotenjack.hintReasonTrumpCut",
 	"discard":         "twotenjack.hintReasonDiscard",
-}
-
-// twoTenJackHintReasonStr resolves a reason via the per-game map first, then
-// the shared (cui_common) layer.
-func twoTenJackHintReasonStr(reason string) string {
-	if key, ok := twoTenJackHintReasonKeys[reason]; ok {
-		return i18n.T(key)
-	}
-	return lookupHintReason(reason, nil)
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

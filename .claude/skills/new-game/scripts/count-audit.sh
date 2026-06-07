@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+# count-audit.sh — read-only audit of the game-count assertions that a new game must bump.
+#
+# Prints the source-of-truth count (RegisterKVGame calls per category) alongside every
+# hardcoded assertion, and flags any mismatch. Run from the repo root. Safe to run anytime;
+# it edits nothing. Exit code 0 = all consistent, 1 = at least one mismatch.
+#
+# The #1 recurring new-game miss is forgetting one of these assertions: tsc only runs in CI
+# (`bun run check` is biome-only), so a stale frontend count slips past local checks and
+# fails the expensive, OOM-prone CI round-trip. Run this before committing instead.
+set -u
+
+cd "$(git rev-parse --show-toplevel 2>/dev/null || echo .)" || exit 2
+
+REG_TEST=internal/infrastructure/games/registry_test.go
+TUT_HOOK=frontend/src/hooks/useTutorialProgress.test.ts
+TUT_PANEL=frontend/src/components/tutorial/TutorialProgressPanel.test.tsx
+
+fail=0
+
+# --- source of truth: RegisterKVGame calls per category sub-package ---
+cas=$(grep -rc 'RegisterKVGame' internal/infrastructure/games/casino/  2>/dev/null | awk -F: '{s+=$2} END{print s+0}')
+cla=$(grep -rc 'RegisterKVGame' internal/infrastructure/games/classic/ 2>/dev/null | awk -F: '{s+=$2} END{print s+0}')
+sol=$(grep -rc 'RegisterKVGame' internal/infrastructure/games/solo/    2>/dev/null | awk -F: '{s+=$2} END{print s+0}')
+total=$((cas + cla + sol))
+
+echo "── Source of truth (RegisterKVGame calls) ──────────────────────"
+printf '  casino=%s  classic=%s  solo=%s  TOTAL=%s\n\n' "$cas" "$cla" "$sol" "$total"
+
+check() { # label  actual  expected
+  if [ "$2" = "$3" ]; then
+    printf '  ✅ %-52s %s\n' "$1" "$2"
+  else
+    printf '  ❌ %-52s %s (expected %s)\n' "$1" "$2" "$3"
+    fail=1
+  fi
+}
+
+# Extract the numeric value from the first line matching ERE $2 in file $1.
+# Strip // comments first so an inline trailing number (e.g. "= 47 // up from 45")
+# can't be mistaken for the value; take the last remaining digit run on the line.
+grepval() { grep -E "$2" "$1" 2>/dev/null | head -1 | sed 's|//.*||' | grep -oE '[0-9]+' | tail -1; }
+
+echo "── Go: $REG_TEST ───────────"
+check "expectedCasino"  "$(grepval "$REG_TEST" 'expectedCasino[[:space:]]*=')"  "$cas"
+check "expectedClassic" "$(grepval "$REG_TEST" 'expectedClassic[[:space:]]*=')" "$cla"
+check "expectedSolo"    "$(grepval "$REG_TEST" 'expectedSolo[[:space:]]*=')"    "$sol"
+echo
+
+echo "── Frontend (tsc-only — NOT caught by 'bun run check') ─────────"
+check "useTutorialProgress.test.ts totalCount" "$(grepval "$TUT_HOOK" 'totalCount\).toBe\(')" "$total"
+# TutorialProgressPanel.test.tsx has three total assertions on separate lines.
+# getByText(/N/) has no unique anchor token, so we take the largest of the
+# getByText(/…/) numbers (the file also asserts /0/ and /3/); this assumes the
+# total is the largest such literal in the file — true today (124 > 3 > 0).
+panel_text=$(grep -E 'getByText\(/[0-9]+/\)' "$TUT_PANEL" 2>/dev/null | sed 's|//.*||' | grep -oE '/[0-9]+/' | tr -d '/' | sort -rn | head -1)
+panel_links=$(grepval "$TUT_PANEL" 'links\.length\)\.toBe\(')
+panel_incomplete=$(grepval "$TUT_PANEL" 'incompleteMarkers\.length\)\.toBe\(')
+check "TutorialProgressPanel getByText(/N/)"   "$panel_text"       "$total"
+check "TutorialProgressPanel links.length"     "$panel_links"      "$total"
+check "TutorialProgressPanel incompleteMarkers" "$panel_incomplete" "$total"
+echo
+
+if [ "$fail" -eq 0 ]; then
+  echo "VERDICT: ✅ all count assertions consistent ($total games)"
+else
+  echo "VERDICT: ❌ mismatch — bump the ❌ lines to match the source-of-truth column above"
+fi
+exit "$fail"

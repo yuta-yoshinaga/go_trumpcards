@@ -1,3 +1,5 @@
+//go:build !js || !wasm || casino
+
 package presenter
 
 import (
@@ -126,7 +128,7 @@ func (p *TarneebCuiPresenter) HintOutput(t interfaces.TarneebGame) string {
 	if hint == nil {
 		return i18n.T("tarneeb.hintNone") + "\n"
 	}
-	reason := tarneebHintReasonStr(hint.Reason)
+	reason := hintReasonStr(hint.Reason, tarneebHintReasonKeys)
 	if hint.Bid != nil {
 		return color.Yellow(i18n.Tf("tarneeb.hintBid",
 			"bid", strconv.Itoa(*hint.Bid),
@@ -153,13 +155,6 @@ var tarneebHintReasonKeys = map[string]string{
 	"bid_estimate":  "tarneeb.hintReasonBidEstimate",
 	"trump_longest": "tarneeb.hintReasonTrumpLongest",
 	"trump_cut":     "tarneeb.hintReasonTrumpCut",
-}
-
-func tarneebHintReasonStr(reason string) string {
-	if key, ok := tarneebHintReasonKeys[reason]; ok {
-		return i18n.T(key)
-	}
-	return lookupHintReason(reason, nil)
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

@@ -1,3 +1,5 @@
+//go:build !js || !wasm || solo
+
 // Package domain バルブ (Barbu) のドメインモデル。
 //
 // Barbu はフランス発祥のコンペンディウム (オムニバス) 型トリックテイキング

@@ -1,0 +1,108 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { gongzhuApi } from '../api/gameApi';
+import { renderWithProviders } from '../test/renderWithProviders';
+import { makeGongZhuState } from '../test/stateFactories';
+import { GongZhuPage } from './GongZhuPage';
+
+vi.mock('../api/gameApi', () => ({
+  gongzhuApi: { exec: vi.fn() },
+  actionLogApi: { gongzhu: vi.fn() },
+}));
+
+const mockExec = vi.mocked(gongzhuApi.exec);
+
+const playPhaseState = makeGongZhuState();
+const exposePhaseState = makeGongZhuState({ phase: 0, trickNumber: 0, exposableIndices: [0, 1] });
+const trickEndState = makeGongZhuState({
+  phase: 2,
+  currentTrick: [
+    { playerIdx: 0, card: { design: 'DIAMOND', value: 3 } },
+    { playerIdx: 1, card: { design: 'HEART', value: 5 } },
+  ],
+});
+const roundEndState = makeGongZhuState({ phase: 3 });
+const gameEndState = makeGongZhuState({ phase: 4, gameEndFlag: true, winnerIdx: 0, message: 'ゲーム終了！' });
+const cpuTurnState = makeGongZhuState({ currentPlayerIdx: 1 });
+
+beforeEach(() => {
+  mockExec.mockResolvedValue(playPhaseState);
+});
+
+describe('GongZhuPage', () => {
+  it('renders skeleton when no state', () => {
+    mockExec.mockReturnValue(new Promise(() => undefined));
+    renderWithProviders(<GongZhuPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('calls reset on mount with config', async () => {
+    renderWithProviders(<GongZhuPage />);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+        cpuDifficulty: 1,
+        pointLimit: 1000,
+      }),
+    );
+  });
+
+  it('renders play phase with human cards', async () => {
+    renderWithProviders(<GongZhuPage />);
+    await waitFor(() => {
+      expect(screen.getByAltText('♠ Q')).toBeInTheDocument();
+      expect(screen.getByAltText('♦ J')).toBeInTheDocument();
+    });
+  });
+
+  it('renders expose phase with expose button', async () => {
+    mockExec.mockResolvedValue(exposePhaseState);
+    renderWithProviders(<GongZhuPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '公開しない' })).toBeInTheDocument());
+  });
+
+  it('expose button dispatches expose with empty selection', async () => {
+    mockExec.mockResolvedValue(exposePhaseState);
+    renderWithProviders(<GongZhuPage />);
+    const btn = await screen.findByRole('button', { name: '公開しない' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(btn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('expose', []));
+  });
+
+  it('selecting a card then playing dispatches play', async () => {
+    renderWithProviders(<GongZhuPage />);
+    const card = await screen.findByAltText('♠ Q');
+    fireEvent.click(card);
+    const playBtn = await screen.findByRole('button', { name: '出す' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(playBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, 0));
+  });
+
+  it('renders trick end with next trick button', async () => {
+    mockExec.mockResolvedValue(trickEndState);
+    renderWithProviders(<GongZhuPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+  });
+
+  it('renders round end with next round button', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<GongZhuPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
+  });
+
+  it('renders game end message', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<GongZhuPage />);
+    await waitFor(() => expect(screen.getByText('ゲーム終了！')).toBeInTheDocument());
+  });
+
+  it('does not show play button on CPU turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<GongZhuPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ Q')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
+  });
+});

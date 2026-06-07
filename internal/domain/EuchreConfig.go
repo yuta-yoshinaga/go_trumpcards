@@ -1,3 +1,5 @@
+//go:build !js || !wasm || solo
+
 package domain
 
 // EuchreCpuDifficulty CPU の難易度レベル

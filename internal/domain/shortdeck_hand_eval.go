@@ -1,3 +1,5 @@
+//go:build !js || !wasm || casino
+
 package domain
 
 import "sort"
@@ -31,7 +33,6 @@ var ShortDeckHandNames = []string{
 }
 
 // ShortDeckValues ショートデックで使用するカード値 (A,6,7,8,9,10,J,Q,K)
-var ShortDeckValues = []int{1, 6, 7, 8, 9, 10, 11, 12, 13}
 
 // evalShortDeckFiveCardHand ショートデック用5枚ハンド評価
 // Flush > FullHouse, A-6-7-8-9が最弱ストレート

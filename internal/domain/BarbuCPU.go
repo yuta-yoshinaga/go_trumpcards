@@ -1,3 +1,5 @@
+//go:build !js || !wasm || solo
+
 package domain
 
 // BarbuCPU.go は CPU の意思決定 (コントラクト選択 / トリックプレイ / 7 並べ) を担う。

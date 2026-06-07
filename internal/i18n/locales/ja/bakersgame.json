@@ -1,0 +1,23 @@
+{
+  "helpTitle": "Baker's Game (ベーカーズ・ゲーム)",
+  "helpMove": "  m t <col> t <col>    move tableau top card to tableau",
+  "helpMoveTF": "  m t <col> f          move tableau to foundation",
+  "helpMoveTT": "  m t <col> <idx> t <col>  move tableau sequence to tableau",
+  "helpMoveTC": "  m t <col> c <cell>   move tableau to free cell",
+  "helpMoveCT": "  m c <cell> t <col>   move free cell to tableau",
+  "helpMoveCF": "  m c <cell> f         move free cell to foundation",
+  "helpMoveShorthand": "  m <col> <col>        タブロー間移動 (省略形)",
+  "helpFoundation": "  f <col>              タブローから組札へ (省略形)",
+  "helpGiveUp": "  g                    give up",
+  "helpHint": "  h                    hint",
+  "helpAutoComplete": "  ac                   auto-complete",
+  "freeCellHeader": "FreeCells: ",
+  "foundationHeader": "Foundation: ",
+  "columnLabel": "列{{col}}:",
+  "hintFromTableau": "タブロー列{{col}}[{{idx}}]",
+  "hintFromFreeCell": "フリーセル{{col}}",
+  "hintToFoundation": "ファンデーション",
+  "hintToTableau": "タブロー列{{col}}",
+  "hintToFreeCell": "フリーセル{{col}}",
+  "hintLine": "ヒント: {{from}} → {{to}}"
+}

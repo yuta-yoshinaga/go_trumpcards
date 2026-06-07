@@ -329,4 +329,99 @@ func init() {
 			return usecase.RestoreScopaInteractor(data, new(presenter.ScopaWebPresenter))
 		},
 		controller.NewScopaWebControllerWithProvider)
+	games.RegisterKVGame("mighty", games.CategoryCasino,
+		func() usecase.MightyInteractorIF {
+			return usecase.NewMightyInteractor(domain.NewDefaultMighty(), new(presenter.MightyWebPresenter))
+		},
+		func(data []byte) (usecase.MightyInteractorIF, error) {
+			return usecase.RestoreMightyInteractor(data, new(presenter.MightyWebPresenter))
+		},
+		controller.NewMightyWebControllerWithProvider)
+
+	games.RegisterKVGame("bridge", games.CategoryCasino,
+		func() usecase.BridgeInteractorIF {
+			return usecase.NewBridgeInteractor(domain.NewDefaultBridge(), new(presenter.BridgeWebPresenter))
+		},
+		func(data []byte) (usecase.BridgeInteractorIF, error) {
+			return usecase.RestoreBridgeInteractor(data, new(presenter.BridgeWebPresenter))
+		},
+		controller.NewBridgeWebControllerWithProvider)
+
+	games.RegisterKVGame("napoleon", games.CategoryCasino,
+		func() usecase.NapoleonInteractorIF {
+			return usecase.NewNapoleonInteractor(domain.NewDefaultNapoleon(), new(presenter.NapoleonWebPresenter))
+		},
+		func(data []byte) (usecase.NapoleonInteractorIF, error) {
+			return usecase.RestoreNapoleonInteractor(data, new(presenter.NapoleonWebPresenter))
+		},
+		controller.NewNapoleonWebControllerWithProvider)
+
+	games.RegisterKVGame("skat", games.CategoryCasino,
+		func() usecase.SkatInteractorIF {
+			return usecase.NewSkatInteractor(domain.NewDefaultSkat(), new(presenter.SkatWebPresenter))
+		},
+		func(data []byte) (usecase.SkatInteractorIF, error) {
+			return usecase.RestoreSkatInteractor(data, new(presenter.SkatWebPresenter))
+		},
+		controller.NewSkatWebControllerWithProvider)
+
+	games.RegisterKVGame("tarneeb", games.CategoryCasino,
+		func() usecase.TarneebInteractorIF {
+			return usecase.NewTarneebInteractor(domain.NewDefaultTarneeb(), new(presenter.TarneebWebPresenter))
+		},
+		func(data []byte) (usecase.TarneebInteractorIF, error) {
+			return usecase.RestoreTarneebInteractor(data, new(presenter.TarneebWebPresenter))
+		},
+		controller.NewTarneebWebControllerWithProvider)
+
+	games.RegisterKVGame("doudizhu", games.CategoryCasino,
+		func() usecase.DoudizhuInteractorIF {
+			return usecase.NewDoudizhuInteractor(domain.NewDefaultDoudizhu(), new(presenter.DoudizhuWebPresenter))
+		},
+		func(data []byte) (usecase.DoudizhuInteractorIF, error) {
+			return usecase.RestoreDoudizhuInteractor(data, new(presenter.DoudizhuWebPresenter))
+		},
+		controller.NewDoudizhuWebControllerWithProvider)
+
+	games.RegisterKVGame("belote", games.CategoryCasino,
+		func() usecase.BeloteInteractorIF {
+			return usecase.NewBeloteInteractor(domain.NewDefaultBelote(), new(presenter.BeloteWebPresenter))
+		},
+		func(data []byte) (usecase.BeloteInteractorIF, error) {
+			return usecase.RestoreBeloteInteractor(data, new(presenter.BeloteWebPresenter))
+		},
+		controller.NewBeloteWebControllerWithProvider)
+	games.RegisterKVGame("yaniv", games.CategoryCasino,
+		func() usecase.YanivInteractorIF {
+			return usecase.NewYanivInteractor(domain.NewDefaultYaniv(), new(presenter.YanivWebPresenter))
+		},
+		func(data []byte) (usecase.YanivInteractorIF, error) {
+			return usecase.RestoreYanivInteractor(data, new(presenter.YanivWebPresenter))
+		},
+		controller.NewYanivWebControllerWithProvider)
+	games.RegisterKVGame("tressette", games.CategoryCasino,
+		func() usecase.TressetteInteractorIF {
+			return usecase.NewTressetteInteractor(domain.NewDefaultTressette(), new(presenter.TressetteWebPresenter))
+		},
+		func(data []byte) (usecase.TressetteInteractorIF, error) {
+			return usecase.RestoreTressetteInteractor(data, new(presenter.TressetteWebPresenter))
+		},
+		controller.NewTressetteWebControllerWithProvider)
+	games.RegisterKVGame("tichu", games.CategoryCasino,
+		func() usecase.TichuInteractorIF {
+			return usecase.NewTichuInteractor(domain.NewDefaultTichu(), new(presenter.TichuWebPresenter))
+		},
+		func(data []byte) (usecase.TichuInteractorIF, error) {
+			return usecase.RestoreTichuInteractor(data, new(presenter.TichuWebPresenter))
+		},
+		controller.NewTichuWebControllerWithProvider)
+	games.RegisterKVGame("bourre", games.CategoryCasino,
+		func() usecase.BourreInteractorIF {
+			return usecase.NewBourreInteractor(domain.NewDefaultBourre(), new(presenter.BourreWebPresenter))
+		},
+		func(data []byte) (usecase.BourreInteractorIF, error) {
+			return usecase.RestoreBourreInteractor(data, new(presenter.BourreWebPresenter))
+		},
+		controller.NewBourreWebControllerWithProvider)
+
 }

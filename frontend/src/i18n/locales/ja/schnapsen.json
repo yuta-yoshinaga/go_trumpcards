@@ -1,0 +1,39 @@
+{
+  "currentTrick": "現在のトリック",
+  "title": "Schnapsen / Sixty-Six (シュナプセン / 66)",
+  "subtitle": "オーストリアの2人用トリックテイキング — 20枚デッキ, マリアージュ, 66点先取",
+  "header": {
+    "trick": "トリック",
+    "stock": "山札",
+    "you": "あなた",
+    "cpu": "CPU",
+    "points": "得点",
+    "trump": "切り札表示カード",
+    "trumpNone": "切り札: 山札なし",
+    "tricks": "獲得",
+    "phase1": "第1フェーズ (フォロー自由)",
+    "phase2": "第2フェーズ (マストフォロー)"
+  },
+  "phase": {
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "actions": {
+    "next": "次のトリックへ",
+    "reset": "リセット",
+    "marriage": "マリアージュ宣言",
+    "hint": "ヒント"
+  },
+  "result": {
+    "youWin": "あなたの勝ち！ ({{p0}}-{{p1}})",
+    "cpuWin": "CPUの勝ち ({{p0}}-{{p1}})",
+    "tie": "引き分け ({{p0}}-{{p1}})"
+  },
+  "message": {
+    "yourTurn": "あなたの番です",
+    "cpuTurn": "CPUの番です…",
+    "trickComplete": "トリック完了 — 次へ進んでください",
+    "loading": "ロード中…"
+  }
+}

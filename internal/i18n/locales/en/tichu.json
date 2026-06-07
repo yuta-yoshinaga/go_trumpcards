@@ -1,0 +1,18 @@
+{
+  "helpTitle": "Tichu",
+  "helpPlay": "  p [idx...]           Play cards (empty = pass)",
+  "helpDeclare": "  d [0-2]              Declare (0=none, 1=Tichu, 2=Grand)",
+  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Normal, 1=Easy, 2=Hard)",
+  "phaseDeclare": "Declaration phase",
+  "phasePlay": "Play phase",
+  "gameEnd": "Deal over",
+  "tableCards": "Table",
+  "team": "Team",
+  "teamA": "Team A",
+  "teamB": "Team B",
+  "tichu": "Tichu",
+  "grandTichu": "Grand Tichu",
+  "you": "You",
+  "playerRank": " (finished #{{rank}})",
+  "playerCardCount": " ({{count}} cards)"
+}

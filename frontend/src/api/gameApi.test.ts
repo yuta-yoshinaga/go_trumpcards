@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   actionLogApi,
   baccaratApi,
+  bidWhistApi,
   bigOApi,
   bigOHiLoApi,
   blackjackApi,
@@ -13,6 +14,7 @@ import {
   doubtApi,
   ginrummyApi,
   golfApi,
+  gongzhuApi,
   heartsApi,
   holdemApi,
   indianpokerApi,
@@ -2048,6 +2050,121 @@ describe('gameApi', () => {
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(heartsApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
+  describe('bidWhistApi.exec', () => {
+    it('posts to /bidwhist/exec with the bid params', async () => {
+      mockFetch.mockReturnValue(makeResponse({ players: [] }));
+      await bidWhistApi.exec('bid', { bidTricks: 4, bidDirection: 0 });
+      expect(mockFetch).toHaveBeenCalledWith('/bidwhist/exec', expect.objectContaining({ method: 'POST' }));
+      const body = JSON.parse(mockFetch.mock.calls.at(-1)?.[1].body);
+      expect(body.command).toBe('bid');
+      expect(body.bidTricks).toBe(4);
+      expect(body.bidDirection).toBe(0);
+    });
+
+    it('posts trump and exchange commands', async () => {
+      mockFetch.mockReturnValue(makeResponse({ players: [] }));
+      await bidWhistApi.exec('t', { trumpSuit: 1 });
+      let body = JSON.parse(mockFetch.mock.calls.at(-1)?.[1].body);
+      expect(body).toMatchObject({ command: 't', trumpSuit: 1 });
+
+      await bidWhistApi.exec('e', { discardIndices: [0, 1, 2, 3, 4, 5] });
+      body = JSON.parse(mockFetch.mock.calls.at(-1)?.[1].body);
+      expect(body).toMatchObject({ command: 'e', discardIndices: [0, 1, 2, 3, 4, 5] });
+    });
+  });
+
+  describe('gongzhuApi.exec', () => {
+    const payload = {
+      players: [],
+      phase: 0,
+      roundNumber: 1,
+      trickNumber: 0,
+      currentPlayerIdx: 0,
+      currentTrick: [],
+      heartsBroken: false,
+      exposed: { pig: false, sheep: false, ace: false, doubler: false },
+      exposableIndices: [],
+      gameEndFlag: false,
+      winnerIdx: -1,
+      leadPlayerIdx: 0,
+      message: '',
+      config: { cpuDifficulty: 1, pointLimit: 1000 },
+    };
+
+    it('calls the correct URL with reset command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await gongzhuApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/gongzhu/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          cardIndices: undefined,
+          cardIndex: undefined,
+          config: undefined,
+          sessionId,
+        }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with expose command and cardIndices', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await gongzhuApi.exec('expose', [0, 1]);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/gongzhu/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'expose',
+            cardIndices: [0, 1],
+            cardIndex: undefined,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with play command and cardIndex', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await gongzhuApi.exec('play', undefined, 3);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/gongzhu/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'play',
+            cardIndices: undefined,
+            cardIndex: 3,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with reset and config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await gongzhuApi.exec('reset', undefined, undefined, { cpuDifficulty: 2, pointLimit: 500 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/gongzhu/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            cardIndices: undefined,
+            cardIndex: undefined,
+            config: { cpuDifficulty: 2, pointLimit: 500 },
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(gongzhuApi.exec('reset')).rejects.toThrow('HTTP error: 500');
     });
   });
 
