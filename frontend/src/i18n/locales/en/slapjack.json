@@ -26,6 +26,7 @@
   "slapjack": {
     "slap": "Slap!",
     "jackOnTop": "JACK! Slap fast!",
+    "jackAnnounce": "A Jack is up! Slap chance!",
     "burst": {
       "jack": "JACK!",
       "miss": "MISS!"
