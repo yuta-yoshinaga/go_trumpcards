@@ -15,7 +15,9 @@
   "label": {
     "tableCards": "Table",
     "tableEmpty": "No table cards",
-    "yourCaptures": "Captures"
+    "yourCaptures": "Captures",
+    "cpuStats": "{{cards}} cards / {{score}} pt",
+    "humanStats": "Hand {{cards}} / Captured {{captured}} / Scopa {{scopa}} / Total {{score}} pt"
   },
   "button": {
     "take": "Take",
