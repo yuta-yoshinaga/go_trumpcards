@@ -274,9 +274,13 @@ function YanivPageContent() {
                 {tc('player.you')} · {t('label.score')}: {human.score} · {t('label.hand')}:{' '}
                 <span
                   data-testid="hand-total-badge"
-                  className={`inline-block rounded px-1.5 font-bold ${
-                    human.handTotal <= 5 ? 'bg-ds-success text-white' : human.handTotal <= 10 ? 'bg-ds-warning/40' : ''
-                  }`}
+                  className={
+                    human.handTotal <= 5
+                      ? 'inline-block rounded px-1.5 font-bold bg-ds-success text-white'
+                      : human.handTotal <= 10
+                        ? 'inline-block rounded px-1.5 font-bold bg-ds-warning/40'
+                        : 'inline-block rounded px-1.5 font-bold'
+                  }
                 >
                   {human.handTotal}
                 </span>
@@ -364,9 +368,11 @@ function YanivPageContent() {
                 type="button"
                 onClick={handleYaniv}
                 disabled={loading || !canYaniv}
-                className={`px-4 py-2 rounded-lg bg-ds-warning text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm ${
-                  canYaniv ? 'motion-safe:animate-pulse ring-2 ring-ds-success' : ''
-                }`}
+                className={
+                  canYaniv
+                    ? 'px-4 py-2 rounded-lg bg-ds-warning text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm motion-safe:animate-pulse ring-2 ring-ds-success'
+                    : 'px-4 py-2 rounded-lg bg-ds-warning text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm'
+                }
                 data-testid="yaniv-button"
               >
                 {t('button.yaniv')}
