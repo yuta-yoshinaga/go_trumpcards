@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { spideretteApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -78,6 +78,20 @@ describe('SpiderettePage', () => {
     mockSend.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<SpiderettePage />);
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('highlights the hint source card and target column after requesting a hint', async () => {
+    renderWithProviders(<SpiderettePage />);
+    await screen.findByTestId('spdt-card-1-1');
+    // The Hint button fetches a hint: move HEART 5 (col 1, idx 1) onto column 0.
+    mockSend.mockResolvedValue({ ...playingState, hint: { fromCol: 1, cardIndex: 1, toCol: 0 } });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    // Hint-suggested source uses ring-ds-info (distinct from user-selected ring-ds-warning).
+    await waitFor(() => expect(screen.getByTestId('spdt-card-1-1').className).toContain('ring-ds-info'));
+    expect(screen.getByTestId('spdt-card-1-1').className).not.toContain('ring-ds-warning');
+    expect(screen.getByTestId('spdt-col-0').className).toContain('ring-ds-success');
+    // A non-target column is not highlighted.
+    expect(screen.getByTestId('spdt-col-2').className).not.toContain('ring-ds-success');
   });
 
   it('renders stock count', async () => {
