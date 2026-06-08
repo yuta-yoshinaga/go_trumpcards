@@ -1,5 +1,6 @@
 {
   "title": "ブーレ",
+  "decideSummary": "ポット: {{pot}}チップ | ブーレ時ペナルティ: {{penalty}}チップ",
   "label": {
     "pot": "ポット",
     "carry": "繰越",
