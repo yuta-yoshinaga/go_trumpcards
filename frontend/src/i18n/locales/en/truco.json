@@ -44,5 +44,11 @@
   "caller": {
     "you": "You",
     "cpu": "CPU"
+  },
+  "tutorial": {
+    "score": "Match score. The first player to reach the target (usually 30) wins.",
+    "trick": "Cards played to the table. The matadores (special cards) are strongest and follow their own ranking.",
+    "hand": "Your hand — click a card to play it.",
+    "call": "Calling Truco raises the stake (Truco → Retruco → Vale Cuatro). The opponent may accept, decline, or re-raise."
   }
 }
