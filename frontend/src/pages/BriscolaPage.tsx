@@ -18,8 +18,13 @@ import type { BriscolaResponse } from '../types/card';
 import { BriscolaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 
-/** Tutorial steps for the Briscola page. v1 ships without a guided tour. */
-const BRISCOLA_TUTORIAL_STEPS: TutorialStep[] = [];
+/** Tutorial steps for the Briscola page. */
+const BRISCOLA_TUTORIAL_STEPS: TutorialStep[] = [
+  { target: '[data-tutorial="briscola-trump"]', messageKey: 'tutorial.trump', placement: 'bottom', advanceOn: 'next' },
+  { target: '[data-tutorial="briscola-trick"]', messageKey: 'tutorial.trick', placement: 'bottom', advanceOn: 'next' },
+  { target: '[data-tutorial="briscola-hand"]', messageKey: 'tutorial.hand', placement: 'top', advanceOn: 'next' },
+  { target: '[data-tutorial="briscola-score"]', messageKey: 'tutorial.score', placement: 'bottom', advanceOn: 'next' },
+];
 
 /**
  * Inner content for the Briscola page (wrapped by `withTutorial` below).
@@ -101,7 +106,7 @@ function BriscolaPageContent() {
       cancelReset={cancelReset}
     >
       <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
-        <div className="text-ds-text-primary text-center mb-3">
+        <div className="text-ds-text-primary text-center mb-3" data-tutorial="briscola-score">
           <span className="mr-4">
             {t('header.trick')}: {state.trickNumber}
           </span>
@@ -118,7 +123,11 @@ function BriscolaPageContent() {
           <div className="p-2 rounded bg-black/30 text-ds-text-muted text-sm">
             {t('header.cpu')}: {cpu?.cardCount ?? 0} / {t('header.tricks')}: {cpu?.trickCount ?? 0}
           </div>
-          <div className="flex items-center gap-2 rounded bg-black/30 p-2" data-testid="briscola-stock">
+          <div
+            className="flex items-center gap-2 rounded bg-black/30 p-2"
+            data-testid="briscola-stock"
+            data-tutorial="briscola-trump"
+          >
             <span className="text-ds-text-muted text-sm">
               {state.trumpCard ? t('header.trump') : t('header.trumpNone')}
             </span>
@@ -176,6 +185,7 @@ function BriscolaPageContent() {
           players={state.players}
           cardWidth={cardWidth}
           label={t('currentTrick')}
+          dataTutorial="briscola-trick"
         />
 
         {/* Result banner */}
@@ -190,7 +200,7 @@ function BriscolaPageContent() {
 
         {/* Human hand */}
         {human && human.cards.length > 0 && (
-          <div className="mt-4">
+          <div className="mt-4" data-tutorial="briscola-hand">
             <div className="text-ds-text-muted text-sm mb-1">
               {t('header.you')}: {human.cardCount} / {t('header.tricks')}: {human.trickCount}
             </div>
