@@ -191,6 +191,8 @@ describe('MonteCarloPage', () => {
       board[1][0] = { card: card('HEART', 7) }; // adjacent, same rank
       mockExec.mockResolvedValue({ ...playingState, board });
       renderWithProviders(<MonteCarloPage />);
+      // Use vi.waitFor (not RTL waitFor) here: RTL's waitFor relies on real timers
+      // and would hang under vi.useFakeTimers().
       await vi.waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
 
       fireEvent.click(screen.getByTestId('mc-cell-0-0'));
