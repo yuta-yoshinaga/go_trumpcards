@@ -1,0 +1,79 @@
+import { waitFor, within } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { tarneebApi } from '../api/gameApi';
+import { renderWithProviders } from '../test/renderWithProviders';
+import type { Card, TarneebResponse } from '../types/card';
+import { TarneebPage } from './TarneebPage';
+
+vi.mock('../api/gameApi', () => ({
+  tarneebApi: { exec: vi.fn() },
+  actionLogApi: { tarneeb: vi.fn() },
+}));
+
+const mockExec = vi.mocked(tarneebApi.exec);
+
+const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
+
+function player(id: number, isHuman: boolean, team: number, trickCount: number) {
+  return {
+    id,
+    isHuman,
+    team,
+    cardCount: 5,
+    cards: isHuman ? [card('SPADE', 1)] : [],
+    bid: -1,
+    roundScore: 0,
+    cumulativeScore: 0,
+    trickCount,
+  };
+}
+
+function makeState(overrides: Partial<TarneebResponse> = {}): TarneebResponse {
+  return {
+    players: [player(0, true, 0, 3), player(1, false, 1, 2), player(2, false, 0, 1), player(3, false, 1, 0)],
+    teamScores: [10, 5],
+    phase: 0,
+    roundNumber: 1,
+    trickNumber: 1,
+    currentPlayerIdx: 0,
+    bidPlayerIdx: 0,
+    bidWinnerIdx: -1,
+    highestBid: 0,
+    trumpSuit: -1,
+    redealCount: 0,
+    dealerIdx: 0,
+    currentTrick: [],
+    gameEndFlag: false,
+    winnerTeam: -1,
+    leadPlayerIdx: 0,
+    config: { cpuDifficulty: 1, pointLimit: 31, minBid: 7 },
+    message: '',
+    ...overrides,
+  };
+}
+
+beforeEach(() => {
+  mockExec.mockReset();
+  mockExec.mockResolvedValue(makeState());
+});
+
+describe('TarneebPage', () => {
+  it('resets on mount', async () => {
+    renderWithProviders(<TarneebPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, expect.any(Object)));
+  });
+
+  it('labels the human team and opponents and shows round tricks + total per team', async () => {
+    const { container } = renderWithProviders(<TarneebPage />);
+    await waitFor(() => expect(container.querySelector('[data-tutorial="tn-score-table"] table')).not.toBeNull());
+    const table = container.querySelector('[data-tutorial="tn-score-table"] table') as HTMLTableElement;
+    // Your team (team 0): round tricks 3 + 1 = 4, total 10.
+    const yourRow = within(table).getByText('あなたのチーム').closest('tr') as HTMLTableRowElement;
+    expect(within(yourRow).getByText('4')).toBeInTheDocument();
+    expect(within(yourRow).getByText('10')).toBeInTheDocument();
+    // Opponents (team 1): round tricks 2 + 0 = 2, total 5.
+    const oppRow = within(table).getByText('相手チーム').closest('tr') as HTMLTableRowElement;
+    expect(within(oppRow).getByText('2')).toBeInTheDocument();
+    expect(within(oppRow).getByText('5')).toBeInTheDocument();
+  });
+});

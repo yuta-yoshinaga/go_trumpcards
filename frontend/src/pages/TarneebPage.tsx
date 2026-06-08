@@ -330,16 +330,24 @@ function TarneebPageContent() {
                           <th scope="col" className="text-left">
                             {t('scoresTeam')}
                           </th>
+                          <th scope="col">{t('scoresRound')}</th>
                           <th scope="col">{t('scoresTotal')}</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {state.teamScores.map((score, i) => (
-                          <tr key={i} className={humanPlayer && humanPlayer.team === i ? 'text-ds-accent' : ''}>
-                            <td>{t('team', { n: i })}</td>
-                            <td className="text-center">{score}</td>
-                          </tr>
-                        ))}
+                        {state.teamScores.map((score, i) => {
+                          const isYourTeam = humanPlayer != null && humanPlayer.team === i;
+                          const roundTricks = state.players
+                            .filter((p) => p.team === i)
+                            .reduce((sum, p) => sum + p.trickCount, 0);
+                          return (
+                            <tr key={i} className={isYourTeam ? 'text-ds-accent' : ''}>
+                              <td>{isYourTeam ? t('yourTeam') : t('opponentTeam')}</td>
+                              <td className="text-center">{roundTricks}</td>
+                              <td className="text-center">{score}</td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
