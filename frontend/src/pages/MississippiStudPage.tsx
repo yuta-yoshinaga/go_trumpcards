@@ -270,16 +270,25 @@ function MississippiStudPageContent() {
         )}
         {isStreetPhase && (
           <div className="flex justify-center gap-2 pb-2 flex-wrap" data-tutorial="ms-street-buttons">
-            <button type="button" className={btnSecondary} onClick={() => handlePlay(1)} disabled={loading}>
-              {t('button.play1x')}
-            </button>
-            <button type="button" className={btnPrimary} onClick={() => handlePlay(2)} disabled={loading}>
-              {t('button.play2x')}
-            </button>
-            <button type="button" className={btnSuccess} onClick={() => handlePlay(3)} disabled={loading}>
-              {t('button.play3x')}
-            </button>
-            <button type="button" className={btnDanger} onClick={handleFold} disabled={loading}>
+            {(
+              [
+                { m: 1, cls: btnSecondary },
+                { m: 2, cls: btnPrimary },
+                { m: 3, cls: btnSuccess },
+              ] as const
+            ).map(({ m, cls }) => (
+              <button
+                key={m}
+                type="button"
+                className={`${cls} min-h-[44px]`}
+                onClick={() => handlePlay(m)}
+                disabled={loading}
+                data-testid={`ms-play-${m}x`}
+              >
+                {t('button.playMult', { mult: m, amount: state.anteAmount * m })}
+              </button>
+            ))}
+            <button type="button" className={`${btnDanger} min-h-[44px]`} onClick={handleFold} disabled={loading}>
               {t('button.fold')}
             </button>
           </div>
