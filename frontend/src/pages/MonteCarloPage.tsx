@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { montecarloApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -74,6 +74,17 @@ function MonteCarloPageContent() {
   const phaseNames = usePhaseNames('montecarlo', MC_PHASE_KEYS);
 
   const [selected, setSelected] = useState<CellPos | null>(null);
+  const [pairRemoved, setPairRemoved] = useState(false);
+  const pairToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clear the success toast timer on unmount to avoid setting state after teardown.
+  useEffect(() => () => clearTimeout(pairToastTimer.current ?? undefined), []);
+
+  const flashPairRemoved = useCallback(() => {
+    setPairRemoved(true);
+    clearTimeout(pairToastTimer.current ?? undefined);
+    pairToastTimer.current = setTimeout(() => setPairRemoved(false), 1000);
+  }, []);
 
   const isPlaying = state?.phase === MonteCarloPhase.PLAYING;
   const isGameClear = state?.phase === MonteCarloPhase.GAME_CLEAR;
@@ -98,11 +109,16 @@ function MonteCarloPageContent() {
         return;
       }
       // Two cells chosen. Send the remove request (server validates adjacency + rank).
+      // Flash the success toast when the chosen pair is locally valid (adjacent + same rank).
+      const firstCard = state.board[selected.row]?.[selected.col]?.card;
+      const isValidPair =
+        firstCard != null && firstCard.value === cell.card.value && isAdjacent(selected, { row, col });
       void execApi('remove', selected.row, selected.col, row, col);
       playSound('cardPlace');
+      if (isValidPair) flashPairRemoved();
       setSelected(null);
     },
-    [execApi, isPlaying, playSound, selected, state],
+    [execApi, flashPairRemoved, isPlaying, playSound, selected, state],
   );
 
   const handleDeal = useCallback(() => {
@@ -227,13 +243,13 @@ function MonteCarloPageContent() {
                           onClick={() => handleCellClick(rowIdx, colIdx)}
                           disabled={!isPlaying || loading || !filled}
                           data-pair-match={isMatchingPair ? 'true' : undefined}
-                          className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${
+                          className={`p-0 border-0 bg-transparent rounded transition-transform ${focusRingWhite} ${
                             filled ? 'cursor-pointer' : ''
                           } ${isSelected ? 'ring-2 ring-ds-accent' : ''} ${
                             isMatchingPair
-                              ? 'ring-2 ring-ds-success animate-pulse'
+                              ? 'ring-2 ring-ds-success animate-pulse -translate-y-1'
                               : isAdjOfSelected
-                                ? 'ring-1 ring-ds-warning'
+                                ? 'opacity-60'
                                 : ''
                           } ${isHintTarget ? 'ring-2 ring-ds-warning' : ''}`}
                         >
@@ -257,6 +273,17 @@ function MonteCarloPageContent() {
             <div className="text-center text-ds-text-muted text-sm mb-2" data-testid="mc-prompt">
               {selected === null ? t('label.selectFirst') : t('label.selectSecond')}
             </div>
+
+            {pairRemoved && (
+              <div
+                role="status"
+                aria-live="polite"
+                data-testid="mc-pair-toast"
+                className="mb-2 text-center text-ds-success text-sm font-medium"
+              >
+                {t('pairRemoved')}
+              </div>
+            )}
 
             <GameMessageBox
               message={state.message}

@@ -1,5 +1,6 @@
 {
   "title": "モンテカルロ・ソリティア",
+  "pairRemoved": "ペアを除去しました！",
   "phase": {
     "playing": "プレイ中",
     "gameClear": "ゲームクリア",

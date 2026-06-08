@@ -1,5 +1,6 @@
 {
   "title": "Monte Carlo Solitaire",
+  "pairRemoved": "Pair removed!",
   "phase": {
     "playing": "Playing",
     "gameClear": "Game Clear",
