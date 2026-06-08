@@ -188,7 +188,9 @@ describe('PiquetPage', () => {
       }),
     );
     renderWithProviders(<PiquetPage />);
-    await waitFor(() => expect(screen.getByText(/P0:/)).toBeInTheDocument()); // TrickView entry
+    // Exact match isolates the TrickView header from the "トリック: 0" stats line.
+    await waitFor(() => expect(screen.getByText('トリック')).toBeInTheDocument()); // trickHeader
+    expect(screen.getByText(/P0:/)).toBeInTheDocument(); // TrickView entry
   });
 
   it('shows the meld badge in the lost palette when the opponent scores', async () => {
