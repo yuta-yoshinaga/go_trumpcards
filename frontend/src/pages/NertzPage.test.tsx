@@ -116,6 +116,42 @@ describe('NertzPage', () => {
     expect(screen.getByRole('button', { name: '35' })).toBeInTheDocument();
   });
 
+  it('renders per-player score progress bars scaled to the target score', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      players: [
+        { ...playingState.players[0], score: 50 }, // 50 / 100 = 50%
+        { ...playingState.players[1], score: 25 }, // 25 / 100 = 25%
+      ],
+    });
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    const humanBar = await screen.findByTestId('nertz-scorebar-0');
+    const cpuBar = screen.getByTestId('nertz-scorebar-1');
+    expect(humanBar).toHaveStyle({ width: '50%' });
+    expect(cpuBar).toHaveStyle({ width: '25%' });
+    // Human bar is green, CPU bar is the warning accent; both animate only when motion is allowed.
+    expect(humanBar.className).toContain('bg-ds-success');
+    expect(cpuBar.className).toContain('bg-ds-warning');
+    expect(humanBar.className).toContain('motion-safe:transition-[width]');
+  });
+
+  it('clamps the score bar to 0% for negative scores', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      players: [{ ...playingState.players[0], score: -20 }, playingState.players[1]],
+    });
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    expect(await screen.findByTestId('nertz-scorebar-0')).toHaveStyle({ width: '0%' });
+  });
+
   it('clicking the stock dispatches a draw command', async () => {
     renderWithProviders(
       <MemoryRouter initialEntries={['/nertz']}>
