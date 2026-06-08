@@ -122,7 +122,6 @@ function TienLenPageContent() {
   const human = state.players[0];
   const selectedCards = selectedIndices.map((i) => human.cards[i]).filter((c): c is NonNullable<typeof c> => c != null);
   const hasValidCombo = isValidTienLenCombo(selectedCards);
-  // Only allow Play for a legal Tien Len combination; flag an invalid selection.
   const canPlay = isHumanTurn && selectedIndices.length > 0 && hasValidCombo;
   const showInvalidCombo = isHumanTurn && selectedIndices.length > 0 && !hasValidCombo;
   const phaseName = isGameEnd ? t('phase.end') : t('phase.play');

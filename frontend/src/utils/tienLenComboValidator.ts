@@ -11,9 +11,8 @@ function allSameValue(cards: Card[]): boolean {
   return cards.length > 0 && cards.every((c) => c.value === cards[0].value);
 }
 
-/** A run of 3+ consecutive ranks; 2 cannot appear, suits may be mixed. */
+/** A run of consecutive ranks (callers pass 3+ cards); 2 cannot appear, suits may be mixed. */
 function checkStraight(cards: Card[]): boolean {
-  if (cards.length < 3) return false;
   if (cards.some((c) => c.value === 2)) return false;
   const strengths = cards.map((c) => valueStrength(c.value)).sort((a, b) => a - b);
   for (let i = 1; i < strengths.length; i++) {
