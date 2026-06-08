@@ -4,6 +4,7 @@ import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
+import { DropZone } from '../components/DropZone';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -21,6 +22,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -118,6 +120,15 @@ function AcesUpPageContent() {
     handleReset();
   }, [handleReset, hideActionLog]);
 
+  // Drag a movable top card onto an empty column to move it (the "Move [n]" buttons
+  // remain as keyboard/tap-friendly fallbacks; D&D is additive, never required).
+  // Declared before the early return so the hook order stays stable.
+  const dnd = useSolitaireDragDrop<{ zone: string; col: number }>({
+    onMove: (source) => handleMove(source.col),
+    isPlaying: state?.phase === AcesUpPhase.PLAYING,
+    disabled: loading,
+  });
+
   if (!state)
     return <GameSkeleton gameKey="acesup" layout={{ kind: 'tiered-rows', rows: [4, 4, 4, 4], columns: true }} />;
 
@@ -168,6 +179,8 @@ function AcesUpPageContent() {
                 const col = state.columns[colIdx] ?? [];
                 const topIdx = col.length - 1;
                 const topCard = col[topIdx];
+                const columnZone = { zone: 'column', col: colIdx };
+                const isDropping = dnd.isDropTarget(columnZone);
                 const isHinted = (hint?.type === 'remove' || hint?.type === 'move') && hint.col === colIdx;
                 const stackHeight =
                   col.length === 0 ? cardHeight : cardHeight + (col.length - 1) * (cardHeight - rowOverlap);
@@ -175,14 +188,22 @@ function AcesUpPageContent() {
                   <div key={`col-${colIdx.toString()}`} className="flex flex-col items-center">
                     <div className="relative" style={{ width: cardWidth + cardGap, height: stackHeight }}>
                       {col.length === 0 ? (
-                        <div
-                          style={{ width: cardWidth, height: cardHeight }}
-                          className={`rounded border-2 border-dashed ${
-                            isHinted ? 'border-ds-warning' : 'border-white/30'
-                          } text-game-text-muted text-xs flex items-center justify-center`}
+                        <DropZone
+                          isDropTarget={isDropping}
+                          onDragOver={dnd.handleDragOver(columnZone)}
+                          onDrop={dnd.handleDrop(columnZone)}
+                          onDragLeave={dnd.handleDragLeave}
                         >
-                          {t('empty')}
-                        </div>
+                          <div
+                            data-testid={`acesup-empty-${colIdx.toString()}`}
+                            style={{ width: cardWidth, height: cardHeight }}
+                            className={`rounded border-2 border-dashed ${
+                              isDropping || isHinted ? 'border-ds-warning' : 'border-white/30'
+                            } text-game-text-muted text-xs flex items-center justify-center`}
+                          >
+                            {t('empty')}
+                          </div>
+                        </DropZone>
                       ) : (
                         col.map((c, rowIdx) => {
                           const top = rowIdx * (cardHeight - rowOverlap);
@@ -199,9 +220,14 @@ function AcesUpPageContent() {
                                   onClick={() => handleRemove(colIdx)}
                                   disabled={!isPlaying || loading || !c.removable}
                                   aria-label={cardAlt(c.card)}
+                                  draggable={isPlaying && !loading && c.movable === true}
+                                  onDragStart={dnd.handleDragStart(columnZone)}
+                                  onDragEnd={dnd.handleDragEnd}
                                   className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
                                     isHinted ? 'ring-2 ring-ds-warning' : ''
-                                  } ${!c.removable ? 'opacity-90' : ''}`}
+                                  } ${!c.removable ? 'opacity-90' : ''} ${
+                                    dnd.isDragSource(columnZone) ? 'opacity-50' : ''
+                                  }`}
                                 >
                                   <AnimatedCard card={c.card} width={cardWidth} />
                                 </button>
