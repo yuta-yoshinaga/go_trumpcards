@@ -205,6 +205,28 @@ describe('ShitheadPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /ブラインドで出す/ })).toBeInTheDocument());
   });
 
+  it('shows the current-source banner on the human turn and reflects the source', async () => {
+    mockExec.mockResolvedValue({ ...humanTurnState, currentSource: 'facedown' });
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/shithead']}>
+        <ShitheadPage />
+      </MemoryRouter>,
+    );
+    const banner = await screen.findByTestId('sh-source-banner');
+    expect(banner).toHaveTextContent(/裏向き/);
+  });
+
+  it('hides the source banner when it is not the human turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/shithead']}>
+        <ShitheadPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('sh-source-banner')).not.toBeInTheDocument();
+  });
+
   it('renders magic-card badges for enabled magic ranks in the human hand', async () => {
     renderWithProviders(
       <MemoryRouter initialEntries={['/shithead']}>

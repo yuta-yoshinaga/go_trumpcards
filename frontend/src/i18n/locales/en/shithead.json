@@ -13,6 +13,11 @@
     "eight": "Skip: skip the next player's turn",
     "ten": "Burn: clear the discard pile and play again"
   },
+  "sourceBanner": {
+    "hand": "🃏 Play from your hand",
+    "faceup": "👆 Play from your face-up cards",
+    "facedown": "🎴 Play a face-down card (you can't see it)"
+  },
   "labels": {
     "hand": "Hand",
     "faceUp": "Face-up cards",
