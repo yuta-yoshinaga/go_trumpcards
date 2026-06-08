@@ -62,6 +62,19 @@ describe('OsmosisPage', () => {
     await waitFor(() => expect(screen.getByText(/ベースランク/)).toBeInTheDocument());
   });
 
+  it('shows the allowed-rank guide per foundation row', async () => {
+    // foundation [[♠5],[],[],[]], baseRank 5.
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(screen.getByTestId('os-allowed-0')).toBeInTheDocument());
+    // Row 0 is the base row (★) with a fixed suit → any rank.
+    expect(screen.getByTestId('os-allowed-0')).toHaveTextContent('★');
+    expect(screen.getByTestId('os-allowed-0')).toHaveTextContent('任意');
+    // Row 1 (empty, row 0 non-empty) accepts the base rank 5.
+    expect(screen.getByTestId('os-allowed-1')).toHaveTextContent('5');
+    // Row 2 (empty, row 1 empty) accepts nothing yet.
+    expect(screen.getByTestId('os-allowed-2')).toHaveTextContent('—');
+  });
+
   it('clicks stock to fire draw command', async () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -90,6 +103,18 @@ describe('OsmosisPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'reserve', col: 1 }, { zone: 'foundation', col: 2 }),
     );
+  });
+
+  it('flags foundation rows the selected card cannot be placed on', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // ♥9 (reserve col 1): wrong suit for the ♠ base row and not the base rank
+    // for the empty rows → cannot be placed anywhere.
+    screen.getByRole('button', { name: 'リザーブ 1' }).click();
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: '組札 0' })).toHaveAttribute('title', 'この段には置けません'),
+    );
+    expect(screen.getByRole('button', { name: '組札 0' }).className).toContain('border-ds-error');
   });
 
   it('foundation rows are disabled until a source is selected', async () => {
