@@ -19,6 +19,15 @@ describe('classifyTienLenCombo', () => {
     expect(classifyTienLenCombo([c('SPADE', 13), c('HEART', 1), c('CLOVER', 2)])).toBe('invalid'); // contains a 2
   });
 
+  it('classifies longer straights (5, 6, 7 cards) and rejects broken ones', () => {
+    expect(classifyTienLenCombo([c('S', 3), c('H', 4), c('C', 5), c('D', 6), c('S', 7)])).toBe('straight'); // 5
+    expect(classifyTienLenCombo([c('S', 3), c('H', 4), c('C', 5), c('D', 6), c('S', 7), c('H', 8)])).toBe('straight'); // 6
+    expect(classifyTienLenCombo([c('S', 3), c('H', 4), c('C', 5), c('D', 6), c('S', 7), c('H', 8), c('C', 9)])).toBe(
+      'straight',
+    ); // 7
+    expect(classifyTienLenCombo([c('S', 3), c('H', 4), c('C', 5), c('D', 6), c('S', 9)])).toBe('invalid'); // 5, broken
+  });
+
   it('classifies a three-pair run (chop) and rejects non-consecutive pairs', () => {
     expect(
       classifyTienLenCombo([c('SPADE', 4), c('HEART', 4), c('SPADE', 5), c('HEART', 5), c('SPADE', 6), c('HEART', 6)]),
