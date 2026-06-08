@@ -25,6 +25,12 @@
     "marriage": "Marriage",
     "hint": "Hint"
   },
+  "tutorial": {
+    "trump": "The trump upcard and stock. The trump suit beats all others in a trick. When the stock runs out, phase 2 begins.",
+    "trick": "The current trick. In phase 2 you must follow suit (or trump if you can't).",
+    "hand": "Your hand. Click a card to play it. With a K+Q of the same suit you can declare a marriage (40 pts trump / 20 pts otherwise).",
+    "actions": "Advance or reset the game here. The first player to reach 66 points wins the round."
+  },
   "result": {
     "youWin": "You win! ({{p0}}-{{p1}})",
     "cpuWin": "CPU wins ({{p0}}-{{p1}})",

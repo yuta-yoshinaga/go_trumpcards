@@ -2,15 +2,18 @@ import { useCallback, useEffect } from 'react';
 import { schnapsenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -19,7 +22,17 @@ import { SchnapsenPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 
 /** Tutorial steps for the Schnapsen page. v1 ships without a guided tour. */
-const SCHNAPSEN_TUTORIAL_STEPS: TutorialStep[] = [];
+const SCHNAPSEN_TUTORIAL_STEPS: TutorialStep[] = [
+  { target: '[data-tutorial="schnapsen-trump"]', messageKey: 'tutorial.trump', placement: 'bottom', advanceOn: 'next' },
+  { target: '[data-tutorial="schnapsen-trick"]', messageKey: 'tutorial.trick', placement: 'bottom', advanceOn: 'next' },
+  { target: '[data-tutorial="schnapsen-hand"]', messageKey: 'tutorial.hand', placement: 'top', advanceOn: 'next' },
+  {
+    target: '[data-tutorial="schnapsen-actions"]',
+    messageKey: 'tutorial.actions',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
 
 /**
  * Inner content for the Schnapsen / Sixty-Six page (wrapped by `withTutorial`).
@@ -40,6 +53,7 @@ function SchnapsenPageContent() {
     retry,
   } = useGameApi<SchnapsenResponse, Parameters<typeof schnapsenApi.exec>>(schnapsenApi.exec);
   const { cardWidth } = useCardDimensions();
+  const { hint, hintEnabled, setHintEnabled } = useGameHint('schnapsen', state);
 
   // Initial reset on mount.
   useEffect(() => {
@@ -132,7 +146,11 @@ function SchnapsenPageContent() {
           <div className="p-2 rounded bg-black/30 text-ds-text-muted text-sm">
             {t('header.cpu')}: {cpu?.cardCount ?? 0} / {t('header.tricks')}: {cpu?.trickCount ?? 0}
           </div>
-          <div className="flex items-center gap-2 rounded bg-black/30 p-2" data-testid="schnapsen-stock">
+          <div
+            className="flex items-center gap-2 rounded bg-black/30 p-2"
+            data-testid="schnapsen-stock"
+            data-tutorial="schnapsen-trump"
+          >
             <span className="text-ds-text-muted text-sm">
               {state.trumpCard ? t('header.trump') : t('header.trumpNone')}
             </span>
@@ -167,12 +185,14 @@ function SchnapsenPageContent() {
         </div>
 
         {/* Current trick */}
-        <TrickDisplay
-          currentTrick={state.currentTrick}
-          players={state.players}
-          cardWidth={cardWidth}
-          label={t('currentTrick')}
-        />
+        <div data-tutorial="schnapsen-trick">
+          <TrickDisplay
+            currentTrick={state.currentTrick}
+            players={state.players}
+            cardWidth={cardWidth}
+            label={t('currentTrick')}
+          />
+        </div>
 
         {/* Result banner */}
         {resultBanner && (
@@ -186,7 +206,7 @@ function SchnapsenPageContent() {
 
         {/* Human hand */}
         {human && human.cards.length > 0 && (
-          <div className="mt-4">
+          <div className="mt-4" data-tutorial="schnapsen-hand">
             <div className="text-ds-text-muted text-sm mb-1">
               {t('header.you')}: {human.cardCount} / {t('header.tricks')}: {human.trickCount}
             </div>
@@ -222,8 +242,15 @@ function SchnapsenPageContent() {
           </div>
         )}
 
+        {/* Frontend hint */}
+        {hintEnabled && hint && (
+          <div className="mt-3 flex justify-center">
+            <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
+          </div>
+        )}
+
         {/* Phase-specific controls */}
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-4 flex flex-wrap gap-2" data-tutorial="schnapsen-actions">
           {isTrickEnd && (
             <button type="button" className={btnSuccess} onClick={handleNext} disabled={loading}>
               {t('actions.next')}
@@ -233,6 +260,23 @@ function SchnapsenPageContent() {
             {t('actions.reset')}
           </button>
         </div>
+
+        <SettingsPanel
+          title={tc('settings.title')}
+          groups={[
+            {
+              items: [
+                {
+                  type: 'checkbox' as const,
+                  id: 'frontendHint',
+                  label: tc('hint.toggle', { ns: 'tutorial' }),
+                  checked: hintEnabled,
+                  onToggle: setHintEnabled,
+                },
+              ],
+            },
+          ]}
+        />
       </div>
 
       <ActionLogSection
