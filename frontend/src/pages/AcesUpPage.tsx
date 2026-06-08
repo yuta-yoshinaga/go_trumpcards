@@ -179,6 +179,8 @@ function AcesUpPageContent() {
                 const col = state.columns[colIdx] ?? [];
                 const topIdx = col.length - 1;
                 const topCard = col[topIdx];
+                const columnZone = { zone: 'column', col: colIdx };
+                const isDropping = dnd.isDropTarget(columnZone);
                 const isHinted = (hint?.type === 'remove' || hint?.type === 'move') && hint.col === colIdx;
                 const stackHeight =
                   col.length === 0 ? cardHeight : cardHeight + (col.length - 1) * (cardHeight - rowOverlap);
@@ -187,18 +189,16 @@ function AcesUpPageContent() {
                     <div className="relative" style={{ width: cardWidth + cardGap, height: stackHeight }}>
                       {col.length === 0 ? (
                         <DropZone
-                          isDropTarget={dnd.isDropTarget({ zone: 'column', col: colIdx })}
-                          onDragOver={dnd.handleDragOver({ zone: 'column', col: colIdx })}
-                          onDrop={dnd.handleDrop({ zone: 'column', col: colIdx })}
+                          isDropTarget={isDropping}
+                          onDragOver={dnd.handleDragOver(columnZone)}
+                          onDrop={dnd.handleDrop(columnZone)}
                           onDragLeave={dnd.handleDragLeave}
                         >
                           <div
                             data-testid={`acesup-empty-${colIdx.toString()}`}
                             style={{ width: cardWidth, height: cardHeight }}
                             className={`rounded border-2 border-dashed ${
-                              dnd.isDropTarget({ zone: 'column', col: colIdx }) || isHinted
-                                ? 'border-ds-warning'
-                                : 'border-white/30'
+                              isDropping || isHinted ? 'border-ds-warning' : 'border-white/30'
                             } text-game-text-muted text-xs flex items-center justify-center`}
                           >
                             {t('empty')}
@@ -221,12 +221,12 @@ function AcesUpPageContent() {
                                   disabled={!isPlaying || loading || !c.removable}
                                   aria-label={cardAlt(c.card)}
                                   draggable={isPlaying && !loading && c.movable === true}
-                                  onDragStart={dnd.handleDragStart({ zone: 'column', col: colIdx })}
+                                  onDragStart={dnd.handleDragStart(columnZone)}
                                   onDragEnd={dnd.handleDragEnd}
                                   className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
                                     isHinted ? 'ring-2 ring-ds-warning' : ''
                                   } ${!c.removable ? 'opacity-90' : ''} ${
-                                    dnd.isDragSource({ zone: 'column', col: colIdx }) ? 'opacity-50' : ''
+                                    dnd.isDragSource(columnZone) ? 'opacity-50' : ''
                                   }`}
                                 >
                                   <AnimatedCard card={c.card} width={cardWidth} />
