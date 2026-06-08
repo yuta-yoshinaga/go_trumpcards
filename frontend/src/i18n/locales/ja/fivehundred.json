@@ -20,6 +20,7 @@
   "tricksLabel": "トリック数",
   "misereButton": "ミゼール",
   "openMisereButton": "オープンミゼール",
+  "bidValueLabel": "{{value}}点",
   "passButton": "パス",
   "exchangeButton": "交換 ({{count}}/3)",
   "nominateSuit": "ジョーカーで指名するスート:",
