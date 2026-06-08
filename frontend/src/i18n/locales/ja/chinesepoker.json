@@ -56,6 +56,9 @@
   "selectCards": "フロント3枚とミドル5枚を選んでください",
   "selectedFront": "フロント: {{count}} / 3",
   "selectedMiddle": "ミドル: {{count}} / 5",
+  "previewFront": "フロント",
+  "previewMiddle": "ミドル",
+  "previewBack": "バック",
   "foulWarning": "ファウル: バック ≧ ミドル ≧ フロント の順になるように配置してください",
   "royalty": "ロイヤリティ: +{{points}}",
   "tutorial": {
