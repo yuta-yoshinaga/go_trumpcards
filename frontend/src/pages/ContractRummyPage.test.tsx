@@ -238,6 +238,28 @@ describe('ContractRummyPage', () => {
     expect(screen.getByRole('button', { name: /Lay off|レイオフ/ })).toBeInTheDocument();
   });
 
+  it('selecting an opponent meld highlights it and shows the layoff target in the footer', async () => {
+    const metState: ContractRummyResponse = {
+      ...playState,
+      players: [
+        { ...playState.players[0], contractMet: true },
+        {
+          ...playState.players[1],
+          contractMet: true,
+          melds: [{ cards: [card('SPADE', 5), card('HEART', 5), card('DIAMOND', 5)] }],
+        },
+        playState.players[2],
+      ],
+    };
+    mockExec.mockResolvedValue(metState);
+    renderWithProviders(<ContractRummyPage />);
+    const meldButton = await screen.findByRole('button', { name: /メルド1/ });
+    fireEvent.click(meldButton);
+    expect(meldButton).toHaveAttribute('aria-pressed', 'true');
+    expect(meldButton.className).toContain('bg-ds-warning/20');
+    expect(screen.getByTestId('cr-layoff-target')).toBeInTheDocument();
+  });
+
   it('shows per-slot progress and only enables Submit when both slots satisfy their contract', async () => {
     mockExec.mockResolvedValue(playState);
     renderWithProviders(<ContractRummyPage />);

@@ -23,6 +23,8 @@
   "submitContract": "Submit contract",
   "meldExtra": "Lay extra meld",
   "layoff": "Lay off",
+  "meldAria": "{{player}}'s meld {{meld}}",
+  "layoffTargetSummary": "→ Lay off to: {{player}} meld {{meld}}",
   "discard": "Discard card",
   "nextRound": "Next round",
   "viewLog": "View log",
