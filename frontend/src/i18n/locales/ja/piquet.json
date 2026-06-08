@@ -20,6 +20,12 @@
   "nextDeal": "次のディールへ",
   "partieWinner": "★ パルティ勝者: プレイヤー {{idx}}",
   "partieDraw": "パルティは引き分けです",
+  "carteBlanche": "★ カルトブランシュ",
+  "playerStats": "手札: {{hand}} | トリック: {{tricks}} | ラウンド: {{round}} | マッチ: {{match}}",
+  "declarationsList": "宣言結果",
+  "declTied": "引き分け",
+  "declScored": "{{player}} +{{score}}",
+  "trickHeader": "トリック",
   "tutorial": {
     "hand": "あなたの手札です。交換フェーズではクリックで選択し、プレイフェーズではクリックでプレイします。",
     "controls": "交換確定・宣言進行・次ディールなどのアクションがここに出ます。"
