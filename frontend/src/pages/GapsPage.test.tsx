@@ -123,12 +123,18 @@ describe('GapsPage', () => {
     await waitFor(() => expect(mockedRun).toHaveBeenCalledWith('giveup'));
   });
 
-  it('shows hint coordinates when backend hint is present', async () => {
-    mockedRun.mockResolvedValue(withHintState);
+  it('highlights hint source and target cells with rings instead of coordinate text', async () => {
+    mockedRun.mockResolvedValue(withHintState); // from (1,0) card, to (0,12) gap
     renderWithProviders(<GapsPage />);
     const btn = await screen.findByRole('button', { name: 'ヒント' });
     fireEvent.click(btn);
-    await waitFor(() => expect(screen.getByText(/\(1,0\)/)).toBeInTheDocument());
+
+    // Target gap cell gets the hint ring.
+    await waitFor(() => expect(screen.getByTestId('gaps-cell-0-12').className).toContain('ring-ds-warning'));
+    // Source card cell gets the hint ring (locked in this fixture; the hint ring wins over the locked ring).
+    expect(screen.getByTestId('gaps-locked-1-0').className).toContain('ring-ds-warning');
+    // The old coordinate text line is gone.
+    expect(screen.queryByText(/\(1,0\)/)).not.toBeInTheDocument();
   });
 
   it('hides action buttons when game is in game-clear phase', async () => {
