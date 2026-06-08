@@ -475,6 +475,14 @@ function BakersGamePageContent() {
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
             <div className="flex gap-2 items-center flex-wrap">
               {isPlaying && (
+                <span
+                  data-testid="bg-movable-count"
+                  className="text-ds-text-primary text-xs font-medium bg-ds-surface-elevated rounded px-2 py-1"
+                >
+                  {t('movableCount', { count: supermoveLimit })}
+                </span>
+              )}
+              {isPlaying && (
                 <div data-tutorial="fc-controls">
                   <button
                     type="button"

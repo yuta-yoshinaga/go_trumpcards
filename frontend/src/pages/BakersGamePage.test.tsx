@@ -128,6 +128,19 @@ describe('BakersGamePage', () => {
     expect(emptyButtons.length).toBe(4);
   });
 
+  it('shows the movable-count badge during play', async () => {
+    // playingState: 4 empty free cells, 6 empty tableau columns → (1+4)*2^6 = 320.
+    renderWithProviders(<BakersGamePage />);
+    await waitFor(() => expect(screen.getByTestId('bg-movable-count')).toHaveTextContent('320'));
+  });
+
+  it('hides the movable-count badge once the game ends', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<BakersGamePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('bg-movable-count')).not.toBeInTheDocument();
+  });
+
   it('renders freecell with card occupied', async () => {
     mockExec.mockResolvedValue(withFreeCellCardState);
     renderWithProviders(<BakersGamePage />);

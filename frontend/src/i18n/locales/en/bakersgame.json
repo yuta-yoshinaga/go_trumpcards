@@ -18,6 +18,7 @@
   "emptyFoundationAriaLabel": "{{suit}} Foundation (empty)",
   "emptyFreecellAriaLabel": "Free Cell {{idx}} (empty)",
   "supermoveLimitTooltip": "Only {{limit}} card(s) can be moved at once",
+  "movableCount": "Movable: {{count}}",
   "tutorial": {
     "freeCells": "Free cells. Four temporary storage slots. More empty cells allow moving more cards at once.",
     "foundation": "Foundation piles. Build each suit from Ace to King.",
