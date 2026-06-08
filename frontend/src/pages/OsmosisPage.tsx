@@ -201,7 +201,6 @@ function OsmosisPageContent() {
                 const allowed = osmosisAllowedRanks(state.foundation, state.baseRank, i);
                 const blocked =
                   selectedCard != null && !osmosisCanPlace(state.foundation, state.baseRank, i, selectedCard);
-                const borderColor = blocked ? 'border-ds-error' : selected ? 'border-ds-info' : 'border-white/30';
                 return (
                   <button
                     key={`f-${i}`}
@@ -210,7 +209,13 @@ function OsmosisPageContent() {
                     disabled={!isPlaying || !selected || loading}
                     aria-label={`${t('foundation')} ${i}`}
                     title={blocked ? t('cannotPlaceHere') : undefined}
-                    className={`flex items-center gap-2 rounded border p-1 text-left ${focusRingWhite} ${borderColor}`}
+                    className={
+                      blocked
+                        ? `flex items-center gap-2 rounded border p-1 text-left ${focusRingWhite} border-ds-error`
+                        : selected
+                          ? `flex items-center gap-2 rounded border p-1 text-left ${focusRingWhite} border-ds-info`
+                          : `flex items-center gap-2 rounded border p-1 text-left ${focusRingWhite} border-white/30`
+                    }
                   >
                     <span className="w-5 text-xs text-ds-text-muted">#{i}</span>
                     <div className="relative" style={{ width: cardWidth, height: cardHeight }}>
