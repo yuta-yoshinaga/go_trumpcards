@@ -209,15 +209,25 @@ describe('BakersDozenPage', () => {
     expect(container.querySelector('[data-tutorial="bd-tableau"]')).toHaveClass('overflow-x-auto');
   });
 
-  it('scrolls the selected tableau column into view', async () => {
+  it('centers the selected tableau column in view on mobile', async () => {
+    const originalScrollIntoView = Element.prototype.scrollIntoView;
+    const originalWidth = window.innerWidth;
     const scrollIntoView = vi.fn();
-    // jsdom does not implement scrollIntoView; provide a spy for this test.
+    // jsdom lacks scrollIntoView; spy on it and force a mobile viewport so the effect runs.
     Element.prototype.scrollIntoView = scrollIntoView;
-    mockExec.mockResolvedValue(playingState);
-    renderWithProviders(<BakersDozenPage />);
-    const sourceBtn = await screen.findByRole('button', { name: '♠ 5' });
-    fireEvent.click(sourceBtn);
-    await waitFor(() => expect(scrollIntoView).toHaveBeenCalled());
+    window.innerWidth = 375;
+    window.dispatchEvent(new Event('resize'));
+    try {
+      mockExec.mockResolvedValue(playingState);
+      renderWithProviders(<BakersDozenPage />);
+      const sourceBtn = await screen.findByRole('button', { name: '♠ 5' });
+      fireEvent.click(sourceBtn);
+      await waitFor(() => expect(scrollIntoView).toHaveBeenCalledWith(expect.objectContaining({ inline: 'center' })));
+    } finally {
+      Element.prototype.scrollIntoView = originalScrollIntoView;
+      window.innerWidth = originalWidth;
+      window.dispatchEvent(new Event('resize'));
+    }
   });
 
   it('forwards reset commands to the API on initial load', async () => {

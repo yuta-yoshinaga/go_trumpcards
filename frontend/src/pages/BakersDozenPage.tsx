@@ -142,10 +142,11 @@ function BakersDozenPageContent() {
   const selectedColRef = useRef<HTMLDivElement | null>(null);
   const selectedTableauCol = selectedSource?.zone === 'tableau' ? selectedSource.col : undefined;
   useEffect(() => {
-    if (selectedTableauCol == null) return;
+    // Only relevant on the horizontally-scrolling mobile layout; a no-op on desktop.
+    if (selectedTableauCol == null || !isMobile) return;
     // Optional-call: scrollIntoView is unavailable in jsdom.
     selectedColRef.current?.scrollIntoView?.({ inline: 'center', block: 'nearest', behavior: 'smooth' });
-  }, [selectedTableauCol]);
+  }, [selectedTableauCol, isMobile]);
 
   const isPlayingForKbd = state?.phase === BakersDozenPhase.PLAYING;
 
