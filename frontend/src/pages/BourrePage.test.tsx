@@ -87,6 +87,43 @@ describe('BourrePage', () => {
     });
   });
 
+  it('decide phase: shows the pot/penalty summary, flagged in warning color when the pot is high', async () => {
+    renderWithProviders(<BourrePage />); // default: pot 25, carryPot 0 → penalty 25 (>= threshold)
+    const summary = await screen.findByTestId('bourre-decide-summary');
+    expect(summary).toHaveTextContent('25');
+    expect(summary).toHaveClass('text-ds-warning');
+  });
+
+  it('decide phase: pot/penalty summary uses muted color when the pot is small', async () => {
+    mockExec.mockResolvedValue(makeState({ pot: 3, carryPot: 0 }));
+    renderWithProviders(<BourrePage />);
+    const summary = await screen.findByTestId('bourre-decide-summary');
+    expect(summary).toHaveClass('text-ds-text-muted');
+    expect(summary).not.toHaveClass('text-ds-warning');
+  });
+
+  it('decide phase: penalty includes carryPot', async () => {
+    mockExec.mockResolvedValue(makeState({ pot: 25, carryPot: 5 }));
+    renderWithProviders(<BourrePage />);
+    const summary = await screen.findByTestId('bourre-decide-summary');
+    expect(summary).toHaveTextContent('30'); // penalty = pot + carryPot
+  });
+
+  it('decide phase: carryPot can push a small pot over the warning threshold', async () => {
+    mockExec.mockResolvedValue(makeState({ pot: 5, carryPot: 6 }));
+    renderWithProviders(<BourrePage />);
+    const summary = await screen.findByTestId('bourre-decide-summary');
+    expect(summary).toHaveTextContent('11'); // 5 + 6 >= 10
+    expect(summary).toHaveClass('text-ds-warning');
+  });
+
+  it('does not show the decide summary outside the decide phase', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 'play', currentPlayerIdx: 0 }));
+    renderWithProviders(<BourrePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('bourre-decide-summary')).not.toBeInTheDocument();
+  });
+
   it('decide phase: play and fold buttons dispatch decide', async () => {
     renderWithProviders(<BourrePage />);
     fireEvent.click(await screen.findByRole('button', { name: '参加（アンティ）' }));
