@@ -138,11 +138,13 @@ function OsmosisPageContent() {
 
   // The actual card currently selected (waste top or a reserve-column top), used
   // to flag foundation rows the card cannot be placed on.
-  const selectedCard: Card | null = !selected
-    ? null
-    : selected.zone === 'waste'
-      ? topWaste
-      : (state.reserve[selected.col]?.[state.reserve[selected.col].length - 1] ?? null);
+  let selectedCard: Card | null = null;
+  if (selected?.zone === 'waste') {
+    selectedCard = topWaste;
+  } else if (selected?.zone === 'reserve' && selected.col != null) {
+    const col = state.reserve[selected.col] ?? [];
+    selectedCard = col.length > 0 ? col[col.length - 1] : null;
+  }
 
   return (
     <GamePageShell
