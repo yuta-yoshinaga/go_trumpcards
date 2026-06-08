@@ -88,9 +88,16 @@ describe('FiveHundredPage', () => {
 
   it('bids a suit when a suit button is clicked', async () => {
     renderWithProviders(<FiveHundredPage />);
-    const spade = await screen.findByRole('button', { name: '♠' });
+    const spade = await screen.findByTestId('fh-bid-suit-1');
     fireEvent.click(spade);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bidKind: 1, bidTricks: 6, bidSuit: 1 }));
+  });
+
+  it('shows the Avondale score under each bid button (6 = ♠40 / ♥100 / NT120)', async () => {
+    renderWithProviders(<FiveHundredPage />);
+    expect(await screen.findByTestId('fh-bid-suit-1')).toHaveTextContent('40'); // 6♠
+    expect(screen.getByTestId('fh-bid-suit-3')).toHaveTextContent('100'); // 6♥
+    expect(screen.getByTestId('fh-bid-nt')).toHaveTextContent('120'); // 6NT
   });
 
   it('passes when pass is clicked', async () => {
@@ -101,11 +108,11 @@ describe('FiveHundredPage', () => {
 
   it('bids no-trump, misere and open misere', async () => {
     renderWithProviders(<FiveHundredPage />);
-    fireEvent.click(await screen.findByRole('button', { name: 'NT' }));
+    fireEvent.click(await screen.findByTestId('fh-bid-nt'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bidKind: 2, bidTricks: 6 }));
-    fireEvent.click(screen.getByRole('button', { name: 'ミゼール' }));
+    fireEvent.click(screen.getByRole('button', { name: /ミゼール 250/ }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bidKind: 3 }));
-    fireEvent.click(screen.getByRole('button', { name: 'オープンミゼール' }));
+    fireEvent.click(screen.getByRole('button', { name: /オープンミゼール 520/ }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bidKind: 4 }));
   });
 
