@@ -382,6 +382,7 @@ function FiveHundredPageContent() {
                     type="button"
                     onClick={bidMisere}
                     disabled={loading}
+                    data-testid="fh-bid-misere"
                     className="flex flex-col items-center rounded-lg bg-ds-surface px-3 py-1.5 text-sm text-ds-text disabled:opacity-40"
                   >
                     <span>{t('misereButton')}</span>
@@ -393,6 +394,7 @@ function FiveHundredPageContent() {
                     type="button"
                     onClick={bidOpenMisere}
                     disabled={loading}
+                    data-testid="fh-bid-open-misere"
                     className="flex flex-col items-center rounded-lg bg-ds-surface px-3 py-1.5 text-sm text-ds-text disabled:opacity-40"
                   >
                     <span>{t('openMisereButton')}</span>
