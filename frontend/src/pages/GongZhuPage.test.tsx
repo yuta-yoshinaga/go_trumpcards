@@ -76,6 +76,17 @@ describe('GongZhuPage', () => {
     expect(cards[1]).toHaveClass('opacity-60');
   });
 
+  it('does not dim any card when there are no exposable cards', async () => {
+    mockExec.mockResolvedValue(makeGongZhuState({ phase: 0, trickNumber: 0, exposableIndices: [] }));
+    const { container } = renderWithProviders(<GongZhuPage />);
+    const hand = await waitFor(() => {
+      const el = container.querySelector('[data-tutorial="gz-player-hand"]');
+      if (!el) throw new Error('hand not rendered yet');
+      return el as HTMLElement;
+    });
+    for (const card of hand.querySelectorAll('button')) expect(card).not.toHaveClass('opacity-60');
+  });
+
   it('expose button dispatches expose with empty selection', async () => {
     mockExec.mockResolvedValue(exposePhaseState);
     renderWithProviders(<GongZhuPage />);

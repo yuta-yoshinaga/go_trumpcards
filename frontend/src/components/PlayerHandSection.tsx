@@ -82,7 +82,8 @@ export function PlayerHandSection({
         const restricted = isRestricted(idx);
         const highlighted = isHighlighted(idx);
         // When a highlight list is active, dim the non-highlighted (and unselected) cards.
-        const dimmed = highlightIndices != null && !highlighted && !isSelected;
+        // Skip already-restricted cards so the two opacity classes never collide.
+        const dimmed = highlightIndices != null && !highlighted && !isSelected && !restricted;
         return (
           <button
             type="button"
@@ -103,11 +104,7 @@ export function PlayerHandSection({
               padding: 0,
               borderRadius: 8,
               // Selection takes visual priority; otherwise show the highlight border.
-              ...(isSelected
-                ? selectedCardStyle(true)
-                : highlighted
-                  ? highlightCardStyle(true)
-                  : selectedCardStyle(false)),
+              ...(isSelected ? selectedCardStyle(true) : highlighted ? highlightCardStyle() : selectedCardStyle(false)),
               boxSizing: 'border-box',
             }}
           >

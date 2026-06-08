@@ -42,10 +42,10 @@ export function playableCardStyle(isPlayable: boolean): React.CSSProperties {
  * `ring`) because the selection styles set `boxShadow` inline, which would
  * otherwise override a class-based ring.
  */
-export function highlightCardStyle(isHighlighted: boolean): React.CSSProperties {
+export function highlightCardStyle(): React.CSSProperties {
   return {
-    border: isHighlighted ? '3px solid var(--color-ds-warning)' : '3px solid transparent',
-    boxShadow: isHighlighted ? '0 0 8px rgba(232, 146, 58, 0.45)' : 'none',
+    border: '3px solid var(--color-ds-warning)',
+    boxShadow: '0 0 8px rgba(232, 146, 58, 0.45)',
     transition: 'border 0.15s, box-shadow 0.15s',
   };
 }

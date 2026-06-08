@@ -96,7 +96,7 @@ export function MobileHandGrid({
               const ml = i === 0 ? 0 : isExpanded ? expansionMargin(true, overlap) : overlap;
               const restricted = isRestricted(globalIdx);
               const highlighted = isHighlighted(globalIdx);
-              const dimmed = highlightIndices != null && !highlighted && !isSelected;
+              const dimmed = highlightIndices != null && !highlighted && !isSelected && !restricted;
               return (
                 <button
                   type="button"
@@ -121,7 +121,7 @@ export function MobileHandGrid({
                     ...(isSelected
                       ? selectedCardStyle(true)
                       : highlighted
-                        ? highlightCardStyle(true)
+                        ? highlightCardStyle()
                         : selectedCardStyle(false)),
                     transition: 'transform 0.15s, border 0.15s, box-shadow 0.15s, margin-left 0.15s',
                     boxSizing: 'border-box',
