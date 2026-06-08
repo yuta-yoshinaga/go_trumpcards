@@ -289,11 +289,9 @@ function BristolPageContent() {
                           disabled={!isPlaying || loading}
                           aria-label={`${t('fan')} ${i}`}
                           aria-pressed={isSelected(zone)}
-                          className={
-                            isSelected(zone)
-                              ? `relative rounded border-2 bg-transparent p-0 ${focusRingWhite} border-ds-info`
-                              : `relative rounded border-2 bg-transparent p-0 ${focusRingWhite} border-transparent`
-                          }
+                          className={`relative rounded border-2 bg-transparent p-0 ${focusRingWhite} ${
+                            isSelected(zone) ? 'border-ds-info' : 'border-transparent'
+                          }`}
                         >
                           <AnimatedCard card={top} width={cardWidth} draggable={false} />
                           {pile.length >= 2 ? (
