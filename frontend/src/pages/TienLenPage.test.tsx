@@ -67,6 +67,15 @@ describe('TienLenPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0]));
   });
 
+  it('disables play and shows a reason for an invalid combination', async () => {
+    renderWithProviders(<TienLenPage />);
+    // Select ♠3 + ♥5 (two different ranks) → not a legal combo.
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+    expect(screen.getByTestId('play-button')).toBeDisabled();
+    expect(screen.getByTestId('tl-invalid-combo')).toBeInTheDocument();
+  });
+
   it('passes when the pass button is clicked', async () => {
     renderWithProviders(<TienLenPage />);
     fireEvent.click(await screen.findByTestId('pass-button'));

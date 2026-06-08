@@ -11,6 +11,7 @@
   "tableEmpty": "(なし)",
   "playButton": "選択したカードを出す",
   "passButton": "パス",
+  "invalidCombo": "有効な組み合わせではありません（シングル・ペア・トリオ・ストレート・連続ペア・フォーカード）",
   "phase": {
     "play": "プレイ",
     "end": "終了"
