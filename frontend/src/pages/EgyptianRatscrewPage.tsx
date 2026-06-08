@@ -263,6 +263,16 @@ function EgyptianRatscrewPageContent() {
                     {t('egyptianratscrew.slappable')}
                   </div>
                 )}
+                {state.isSlappable && state.lastSlapReason !== EgyptianRatscrewSlapReason.NONE && (
+                  <div
+                    data-testid="er-slap-reason"
+                    className="mt-1 inline-flex items-center gap-1 rounded-full bg-ds-warning/20 px-2 py-0.5 text-xs font-medium text-ds-warning"
+                  >
+                    {state.lastSlapReason === EgyptianRatscrewSlapReason.PAIR
+                      ? `👯 ${t('egyptianratscrew.slapReason.pair')}`
+                      : `🥪 ${t('egyptianratscrew.slapReason.sandwich')}`}
+                  </div>
+                )}
               </div>
             </div>
 

@@ -4,7 +4,7 @@ import { egyptianRatscrewApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { EgyptianRatscrewResponse } from '../types/card';
-import { EgyptianRatscrewPhase } from '../types/phases';
+import { EgyptianRatscrewPhase, EgyptianRatscrewSlapReason } from '../types/phases';
 import { EgyptianRatscrewPage } from './EgyptianRatscrewPage';
 
 vi.mock('../hooks/useCliMode', () => ({
@@ -161,6 +161,25 @@ describe('EgyptianRatscrewPage', () => {
     const slap = screen.getByTestId('slap-button');
     expect(slap).not.toBeDisabled();
     expect(slap.className).toMatch(/animate-pulse/);
+  });
+
+  it('shows a pair slap-reason badge while slappable', async () => {
+    mockExec.mockResolvedValueOnce({ ...slappableState, lastSlapReason: EgyptianRatscrewSlapReason.PAIR });
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('er-slap-reason')).toHaveTextContent('ペア'));
+  });
+
+  it('labels the slap-reason badge as a sandwich when applicable', async () => {
+    mockExec.mockResolvedValueOnce({ ...slappableState, lastSlapReason: EgyptianRatscrewSlapReason.SANDWICH });
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('er-slap-reason')).toHaveTextContent('サンドイッチ'));
+  });
+
+  it('does not show the slap-reason badge when the pile is not slappable', async () => {
+    mockExec.mockResolvedValueOnce(baseState); // isSlappable false, lastSlapReason 0
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('slap-button')).toBeInTheDocument());
+    expect(screen.queryByTestId('er-slap-reason')).not.toBeInTheDocument();
   });
 
   it('renders chance remaining indicator on face-card chance battle', async () => {
