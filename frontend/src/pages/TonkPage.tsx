@@ -24,7 +24,7 @@ import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useTonkGame } from '../hooks/useTonkGame';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
-import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
+import { focusRingCard, playableCardStyle, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { TonkResponse } from '../types/card';
@@ -35,6 +35,7 @@ import { parseTonkCommand, TONK_HELP } from '../utils/cli/commands/tonkCommands'
 import { formatTonkState } from '../utils/cli/formatters/tonkFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+import { tonkMeldIndices } from '../utils/tonkMeldIndices';
 
 const TONK_PHASE_KEYS: Readonly<Record<number, string>> = {
   [TonkPhase.DRAW]: 'draw',
@@ -162,6 +163,20 @@ function TonkPageContent() {
   const isRoundEnd = state.phase === TonkPhase.ROUND_END;
   const isGameEnd = state.phase === TonkPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = (isDrawPhase || isDiscardPhase) && state.players[state.currentPlayerIdx]?.isHuman === true;
+
+  // When exactly one card is selected to discard, highlight which of the remaining
+  // four cards already form a meld (set or run) so the player can knock with confidence.
+  const meldHighlight = (() => {
+    if (!humanPlayer || !isDiscardPhase || !isHumanTurn || selectedCardIndices.length !== 1) {
+      return new Set<number>();
+    }
+    const discardIdx = selectedCardIndices[0];
+    const remaining = humanPlayer.cards.map((card, idx) => ({ card, idx })).filter((x) => x.idx !== discardIdx);
+    const meldedPositions = tonkMeldIndices(remaining.map((x) => x.card));
+    const result = new Set<number>();
+    for (const pos of meldedPositions) result.add(remaining[pos].idx);
+    return result;
+  })();
   // Undercut early-warning: if any opponent has 2 or fewer cards, calling Knock is
   // disproportionately risky (they're likely about to go out themselves, flipping the
   // result). We add a warning ring + ⚠️ glyph + tooltip so the player notices the
@@ -329,25 +344,36 @@ function TonkPageContent() {
           <GameFooter className={`${gameTheme.tonk.footer} px-4 py-2.5`}>
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="tonk-player-hand">
-                {humanPlayer.cards.map((card, idx) => (
-                  <button
-                    type="button"
-                    key={`${card.design}-${card.value}-${idx}`}
-                    onClick={() => toggleCard(idx)}
-                    aria-label={cardAlt(card)}
-                    aria-pressed={selectedCardIndices.includes(idx)}
-                    className={`transition-transform ${focusRingCard}`}
-                    style={{
-                      background: 'none',
-                      padding: 0,
-                      borderRadius: 8,
-                      ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                      boxSizing: 'border-box',
-                    }}
-                  >
-                    <AnimatedCard card={card} width={cardWidth} />
-                  </button>
-                ))}
+                {humanPlayer.cards.map((card, idx) => {
+                  const isCardSelected = selectedCardIndices.includes(idx);
+                  const isMeldCard = !isCardSelected && meldHighlight.has(idx);
+                  return (
+                    <button
+                      type="button"
+                      key={`${card.design}-${card.value}-${idx}`}
+                      onClick={() => toggleCard(idx)}
+                      aria-label={cardAlt(card)}
+                      aria-pressed={isCardSelected}
+                      data-meld={isMeldCard ? 'true' : undefined}
+                      data-testid={`tonk-hand-${idx.toString()}`}
+                      className={`transition-transform ${focusRingCard}`}
+                      style={{
+                        background: 'none',
+                        padding: 0,
+                        borderRadius: 8,
+                        // Selection wins; otherwise green-highlight cards that already form a meld.
+                        ...(isCardSelected
+                          ? selectedCardStyle(true)
+                          : isMeldCard
+                            ? playableCardStyle(true)
+                            : selectedCardStyle(false)),
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      <AnimatedCard card={card} width={cardWidth} />
+                    </button>
+                  );
+                })}
               </div>
             )}
 
