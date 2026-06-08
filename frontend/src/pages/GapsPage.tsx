@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import { type GapsMoveZone, gapsApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -48,7 +48,7 @@ const GAPS_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
   {
-    target: '[data-tutorial="gaps-hint-display"]',
+    target: '[data-tutorial="gaps-grid"]',
     messageKey: 'tutorial.hintDisplay',
     placement: 'bottom',
     advanceOn: 'next',
@@ -69,7 +69,6 @@ function GapsPageContent() {
     useGamePageSetup('gaps');
   const apiRun = gapsApi.exec;
   const { state, loading, error, exec: run, retry } = useGameApi(apiRun);
-  const [hintEnabledByUser, setHintEnabledByUser] = useState(false);
 
   useEffect(() => {
     void run('reset');
@@ -85,7 +84,6 @@ function GapsPageContent() {
 
   const handleReset = useCallback(() => {
     hideActionLog();
-    setHintEnabledByUser(false);
     void run('reset');
   }, [run, hideActionLog]);
 
@@ -102,7 +100,6 @@ function GapsPageContent() {
   }, [run]);
 
   const handleHint = useCallback(() => {
-    setHintEnabledByUser(true);
     void run('hint');
   }, [run]);
 
@@ -172,6 +169,7 @@ function GapsPageContent() {
                         onDragLeave={dnd.handleDragLeave}
                         onDrop={dnd.handleDrop(zone)}
                         aria-label={t('gap')}
+                        data-testid={`gaps-cell-${rIdx.toString()}-${cIdx.toString()}`}
                         className={`relative flex items-center justify-center rounded border-2 ${
                           dnd.isDropTarget(zone)
                             ? 'border-ds-warning bg-ds-warning/20'
@@ -225,7 +223,11 @@ function GapsPageContent() {
                       onDragEnd={dnd.handleDragEnd}
                       aria-label={isLocked ? `${cardAlt(cell)} ${t('lockedAria')}` : cardAlt(cell)}
                       disabled={!isPlaying || loading}
-                      data-testid={isLocked ? `gaps-locked-${rIdx}-${cIdx}` : undefined}
+                      data-testid={
+                        isLocked
+                          ? `gaps-locked-${rIdx.toString()}-${cIdx.toString()}`
+                          : `gaps-cell-${rIdx.toString()}-${cIdx.toString()}`
+                      }
                       className={`relative p-0 border-0 bg-transparent rounded ${focusRingWhite} ${ringClass} ${dnd.isDragSource(zone) ? 'opacity-50' : ''}`}
                     >
                       <AnimatedCard card={cell} width={cardWidth} />
@@ -244,15 +246,6 @@ function GapsPageContent() {
               </div>
             );
           })}
-        </div>
-
-        <div data-tutorial="gaps-hint-display">
-          {state.hint && hintEnabledByUser && (
-            <div className="text-ds-warning text-sm mb-2 text-center">
-              {t('hintAvailable')}: ({state.hint.fromRow},{state.hint.fromCol}) → ({state.hint.toRow},{state.hint.toCol}
-              )
-            </div>
-          )}
         </div>
 
         {frontendHintEnabled && frontendHint && (

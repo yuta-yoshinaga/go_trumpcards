@@ -19,7 +19,6 @@
   "gameClear": "Game Clear! Moves: {{moveCount}}",
   "gameOver": "Game Over",
   "noHint": "No hint available",
-  "hintAvailable": "Hint available",
   "noRedealsLeft": "No redeals remaining",
   "landscapeBanner": "Rotate to landscape for easier play",
   "tutorial": {
