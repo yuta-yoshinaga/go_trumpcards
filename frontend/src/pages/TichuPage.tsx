@@ -3,6 +3,7 @@ import { tichuApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -38,6 +39,13 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="tichu-declare"]', messageKey: 'tutorial.declare', placement: 'bottom', advanceOn: 'next' },
   { target: '[data-tutorial="tichu-table"]', messageKey: 'tutorial.play', placement: 'bottom', advanceOn: 'next' },
   { target: '[data-tutorial="tichu-cpus"]', messageKey: 'tutorial.teams', placement: 'bottom', advanceOn: 'next' },
+];
+
+// Values match the Go domain constants (TichuConfig.go): 0=Normal, 1=Easy, 2=Hard.
+const DIFFICULTY_OPTIONS = [
+  { value: '0', label: 'Normal' },
+  { value: '1', label: 'Easy' },
+  { value: '2', label: 'Hard' },
 ];
 
 function parseTichuCommand(input: string): CliParseResult<[ApiArgs]> {
@@ -120,10 +128,11 @@ function TichuPageContent() {
   const { playSound } = useSound();
 
   const [selectedCards, setSelectedCards] = useState<Set<number>>(new Set());
+  const [cpuDifficulty, setCpuDifficulty] = useState(0);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: mount-only reset
   useEffect(() => {
-    void apiCall({ command: 'reset' });
+    void apiCall({ command: 'reset', config: { cpuDifficulty } });
   }, []);
 
   const phase = state?.phase ?? '';
@@ -156,7 +165,18 @@ function TichuPageContent() {
     setSelectedCards(new Set());
   }, [apiCall]);
 
-  const handleReset = useCallback(() => apiCall({ command: 'reset' }), [apiCall]);
+  const handleReset = useCallback(
+    () => apiCall({ command: 'reset', config: { cpuDifficulty } }),
+    [apiCall, cpuDifficulty],
+  );
+
+  const handleDifficultyChange = useCallback(
+    (value: number) => {
+      setCpuDifficulty(value);
+      void apiCall({ command: 'reset', config: { cpuDifficulty: value } });
+    },
+    [apiCall],
+  );
 
   const toggleCard = useCallback((idx: number) => {
     setSelectedCards((prev) => {
@@ -328,6 +348,30 @@ function TichuPageContent() {
           />
         </div>
       )}
+      <SettingsPanel
+        title={tc('settings.title')}
+        groups={[
+          {
+            items: [
+              {
+                type: 'select' as const,
+                id: 'cpuDifficulty',
+                label: t('settings.cpuDifficulty'),
+                value: String(cpuDifficulty),
+                options: DIFFICULTY_OPTIONS,
+                onSelect: (v: string) => handleDifficultyChange(Number.parseInt(v, 10)),
+              },
+              {
+                type: 'checkbox' as const,
+                id: 'frontendHint',
+                label: tc('hint.toggle', { ns: 'tutorial' }),
+                checked: hintEnabled,
+                onToggle: setHintEnabled,
+              },
+            ],
+          },
+        ]}
+      />
       <GameFooter className={gameTheme.tichu.footer}>
         <GameResetButton
           isGameEnd={isGameEnd}
@@ -336,10 +380,6 @@ function TichuPageContent() {
           loading={loading}
           dataTutorial="tichu-reset"
         />
-        <label className="flex items-center gap-1 text-ds-text-primary text-xs">
-          <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
-          {tc('hint')}
-        </label>
       </GameFooter>
     </GamePageShell>
   );

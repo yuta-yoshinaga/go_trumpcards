@@ -1,5 +1,8 @@
 {
   "title": "Tichu",
+  "settings": {
+    "cpuDifficulty": "CPU difficulty"
+  },
   "label": {
     "table": "Table",
     "bombs": "Bombs",
