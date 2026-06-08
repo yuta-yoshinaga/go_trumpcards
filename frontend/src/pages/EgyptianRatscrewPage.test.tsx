@@ -163,6 +163,25 @@ describe('EgyptianRatscrewPage', () => {
     expect(slap.className).toMatch(/animate-pulse/);
   });
 
+  it('shows a pair slap-reason badge while slappable', async () => {
+    mockExec.mockResolvedValueOnce({ ...slappableState, lastSlapReason: 1 }); // 1 = PAIR
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('er-slap-reason')).toHaveTextContent('ペア'));
+  });
+
+  it('labels the slap-reason badge as a sandwich when applicable', async () => {
+    mockExec.mockResolvedValueOnce({ ...slappableState, lastSlapReason: 2 }); // 2 = SANDWICH
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('er-slap-reason')).toHaveTextContent('サンドイッチ'));
+  });
+
+  it('does not show the slap-reason badge when the pile is not slappable', async () => {
+    mockExec.mockResolvedValueOnce(baseState); // isSlappable false, lastSlapReason 0
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('slap-button')).toBeInTheDocument());
+    expect(screen.queryByTestId('er-slap-reason')).not.toBeInTheDocument();
+  });
+
   it('renders chance remaining indicator on face-card chance battle', async () => {
     mockExec.mockResolvedValueOnce(chanceState);
     renderWithProviders(<EgyptianRatscrewPage />);
