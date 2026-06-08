@@ -143,6 +143,17 @@ function ShitheadPageContent() {
                 ))}
             </div>
 
+            {isHumanTurn && (
+              <div
+                key={state.currentSource}
+                role="status"
+                data-testid="sh-source-banner"
+                className="mb-2 animate-pulse-once rounded-lg bg-ds-info/20 px-3 py-1.5 text-center font-medium text-ds-info text-sm"
+              >
+                {t(`sourceBanner.${state.currentSource}`)}
+              </div>
+            )}
+
             <GameMessageBox
               message={state.message}
               messageCode={state.messageCode}
