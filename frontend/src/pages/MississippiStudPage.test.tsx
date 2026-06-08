@@ -143,12 +143,13 @@ describe('MississippiStudPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 100));
   });
 
-  it('shows street phase with 1x / 2x / 3x / fold buttons', async () => {
-    mockApi.mockResolvedValue(thirdStreetState);
+  it('shows street buttons with the additional bet amount per multiplier (ante 100)', async () => {
+    mockApi.mockResolvedValue(thirdStreetState); // anteAmount 100
     renderWithProviders(<MississippiStudPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '1倍' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: '2倍' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '3倍' })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId('ms-play-1x')).toBeInTheDocument());
+    expect(screen.getByTestId('ms-play-1x')).toHaveTextContent('+100');
+    expect(screen.getByTestId('ms-play-2x')).toHaveTextContent('+200');
+    expect(screen.getByTestId('ms-play-3x')).toHaveTextContent('+300');
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
   });
 
@@ -173,10 +174,10 @@ describe('MississippiStudPage', () => {
   it('calls execApi with play and multiplier=3 when 3倍 clicked', async () => {
     mockApi.mockResolvedValue(thirdStreetState);
     renderWithProviders(<MississippiStudPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '3倍' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('ms-play-3x')).toBeInTheDocument());
 
     mockApi.mockResolvedValue(fourthStreetState);
-    fireEvent.click(screen.getByRole('button', { name: '3倍' }));
+    fireEvent.click(screen.getByTestId('ms-play-3x'));
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('play', undefined, 3));
   });
 
@@ -235,7 +236,7 @@ describe('MississippiStudPage', () => {
   it('renders hint toggle checkbox', async () => {
     mockApi.mockResolvedValue(thirdStreetState);
     renderWithProviders(<MississippiStudPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '1倍' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('ms-play-1x')).toBeInTheDocument());
     expect(screen.getByRole('checkbox')).toBeInTheDocument();
   });
 

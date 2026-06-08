@@ -14,9 +14,7 @@
   },
   "button": {
     "bet": "Ante",
-    "play1x": "1x",
-    "play2x": "2x",
-    "play3x": "3x",
+    "playMult": "{{mult}}x +{{amount}}",
     "fold": "Fold",
     "reset": "Reset"
   },
