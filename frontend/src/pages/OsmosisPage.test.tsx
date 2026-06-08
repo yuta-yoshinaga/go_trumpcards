@@ -105,6 +105,18 @@ describe('OsmosisPage', () => {
     );
   });
 
+  it('flags foundation rows the selected card cannot be placed on', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // ♥9 (reserve col 1): wrong suit for the ♠ base row and not the base rank
+    // for the empty rows → cannot be placed anywhere.
+    screen.getByRole('button', { name: 'リザーブ 1' }).click();
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: '組札 0' })).toHaveAttribute('title', 'この段には置けません'),
+    );
+    expect(screen.getByRole('button', { name: '組札 0' }).className).toContain('border-ds-error');
+  });
+
   it('foundation rows are disabled until a source is selected', async () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
