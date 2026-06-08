@@ -216,7 +216,11 @@ function SpiderettePageContent() {
                 <div
                   key={`col-${colIdx.toString()}`}
                   data-testid={`spdt-col-${colIdx.toString()}`}
-                  className={`flex-1 min-w-0${isHintTargetCol(colIdx) ? ' rounded ring-1 ring-ds-success' : ''}`}
+                  className={
+                    isHintTargetCol(colIdx)
+                      ? 'flex-1 min-w-0 rounded ring-1 ring-ds-success animate-pulse'
+                      : 'flex-1 min-w-0'
+                  }
                 >
                   <DropZone
                     isDropTarget={dnd.isDropTarget(tableauColZone)}
@@ -268,7 +272,7 @@ function SpiderettePageContent() {
                                   onDragStart={dnd.handleDragStart(cardZone)}
                                   onDragEnd={dnd.handleDragEnd}
                                   data-testid={`spdt-card-${colIdx.toString()}-${cardIdx.toString()}`}
-                                  className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected(colIdx, cardIdx) || isHintSource(colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                                  className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected(colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : isHintSource(colIdx, cardIdx) ? 'ring-2 ring-ds-info animate-pulse' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
                                 >
                                   <AnimatedCard
                                     card={tc.card}

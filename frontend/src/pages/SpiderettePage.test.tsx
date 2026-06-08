@@ -86,7 +86,9 @@ describe('SpiderettePage', () => {
     // The Hint button fetches a hint: move HEART 5 (col 1, idx 1) onto column 0.
     mockSend.mockResolvedValue({ ...playingState, hint: { fromCol: 1, cardIndex: 1, toCol: 0 } });
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
-    await waitFor(() => expect(screen.getByTestId('spdt-card-1-1').className).toContain('ring-ds-warning'));
+    // Hint-suggested source uses ring-ds-info (distinct from user-selected ring-ds-warning).
+    await waitFor(() => expect(screen.getByTestId('spdt-card-1-1').className).toContain('ring-ds-info'));
+    expect(screen.getByTestId('spdt-card-1-1').className).not.toContain('ring-ds-warning');
     expect(screen.getByTestId('spdt-col-0').className).toContain('ring-ds-success');
     // A non-target column is not highlighted.
     expect(screen.getByTestId('spdt-col-2').className).not.toContain('ring-ds-success');
