@@ -286,17 +286,20 @@ function ContractRummyPageContent() {
                 {p.melds.map((m, mi) => {
                   const isLayoffTarget = layoffTarget?.playerIdx === p.id && layoffTarget?.meldIdx === mi;
                   const playerLabel = p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id });
+                  // The meld is only a selectable layoff target once both contracts are met.
+                  const canLayoff = humanPlayer?.contractMet === true && p.contractMet;
                   return (
                     <button
                       type="button"
                       key={`${p.id}-${mi}`}
                       onClick={() => {
-                        if (humanPlayer?.contractMet && p.contractMet) {
+                        if (canLayoff) {
                           setLayoffTarget({ playerIdx: p.id, meldIdx: mi });
                         }
                       }}
                       aria-label={t('meldAria', { player: playerLabel, meld: mi + 1 })}
-                      aria-pressed={isLayoffTarget}
+                      // Only expose the toggle semantics when the meld is actually actionable.
+                      aria-pressed={canLayoff ? isLayoffTarget : undefined}
                       className={`flex flex-wrap gap-1 mb-1 px-1 rounded ${focusRingWhite} ${
                         isLayoffTarget ? 'ring-2 ring-ds-warning bg-ds-warning/20' : ''
                       }`}

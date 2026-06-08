@@ -256,7 +256,7 @@ describe('ContractRummyPage', () => {
     const meldButton = await screen.findByRole('button', { name: /メルド1/ });
     fireEvent.click(meldButton);
     expect(meldButton).toHaveAttribute('aria-pressed', 'true');
-    expect(meldButton.className).toContain('bg-ds-warning/20');
+    expect(meldButton).toHaveClass('bg-ds-warning/20');
     expect(screen.getByTestId('cr-layoff-target')).toBeInTheDocument();
   });
 
