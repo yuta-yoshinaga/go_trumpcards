@@ -291,11 +291,20 @@ function BristolPageContent() {
                           aria-pressed={isSelected(zone)}
                           className={
                             isSelected(zone)
-                              ? `rounded border-2 bg-transparent p-0 ${focusRingWhite} border-ds-info`
-                              : `rounded border-2 bg-transparent p-0 ${focusRingWhite} border-transparent`
+                              ? `relative rounded border-2 bg-transparent p-0 ${focusRingWhite} border-ds-info`
+                              : `relative rounded border-2 bg-transparent p-0 ${focusRingWhite} border-transparent`
                           }
                         >
                           <AnimatedCard card={top} width={cardWidth} draggable={false} />
+                          {pile.length >= 2 ? (
+                            <span
+                              aria-hidden="true"
+                              data-testid={`br-fan-count-${i.toString()}`}
+                              className="absolute bottom-0.5 right-0.5 px-1 rounded bg-ds-accent text-ds-text-on-accent text-[10px] font-bold shadow-sm pointer-events-none"
+                            >
+                              {pile.length}
+                            </span>
+                          ) : null}
                         </button>
                       ) : (
                         <div

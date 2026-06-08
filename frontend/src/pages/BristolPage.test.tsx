@@ -65,6 +65,18 @@ describe('BristolPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('shows a stacked-count badge on fans with 2+ cards and hides it otherwise', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      fan: [[card('HEART', 4), card('SPADE', 5), card('CLOVER', 6)], [card('DIAMOND', 9)], []],
+    });
+    renderWithProviders(<BristolPage />);
+    // Fan 0 has 3 cards → badge shows the count.
+    await waitFor(() => expect(screen.getByTestId('br-fan-count-0')).toHaveTextContent('3'));
+    // Fan 1 has a single card → no badge.
+    expect(screen.queryByTestId('br-fan-count-1')).not.toBeInTheDocument();
+  });
+
   it('clicks stock to fire draw command', async () => {
     renderWithProviders(<BristolPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
