@@ -56,8 +56,8 @@ describe('RussianPokerPage', () => {
     renderWithProviders(<RussianPokerPage />);
     const line = await screen.findByTestId('russian-exchange-fee-line');
     // Visible with zero selection: count 0 and fee 0 (ante 100).
-    expect(line).toHaveTextContent('0');
-    expect(line).toHaveTextContent('100');
+    expect(line).toHaveTextContent('選択中: 0枚');
+    expect(line).toHaveTextContent('× 100 = 0');
     // High-risk warning is absent at 0 selected.
     expect(within(line).queryByText(/⚠/)).not.toBeInTheDocument();
   });

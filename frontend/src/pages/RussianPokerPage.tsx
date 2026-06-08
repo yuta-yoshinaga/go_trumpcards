@@ -405,7 +405,6 @@ function RussianPokerPageContent() {
             )}
             {isActionPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="russian-action-buttons">
-                {/* Always show the exchange-cost line in the action phase (0 cards = 0 chips). */}
                 <div
                   className="text-ds-text-primary text-sm text-center"
                   data-tutorial="russian-exchange-controls"
