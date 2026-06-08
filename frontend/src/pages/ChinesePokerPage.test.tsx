@@ -114,9 +114,15 @@ describe('ChinesePokerPage', () => {
     // Initially everything is unassigned → all 13 cards sit in the back row.
     expect(back()).toHaveLength(13);
     expect(front()).toHaveLength(0);
+    const middle = () => within(screen.getByTestId('cp-row-middle')).queryAllByTestId('animated-card');
     // First click assigns the card to the front row.
     fireEvent.click(screen.getByRole('button', { name: 'Card 0' }));
     expect(front()).toHaveLength(1);
+    expect(back()).toHaveLength(12);
+    // Second click cycles front → middle.
+    fireEvent.click(screen.getByRole('button', { name: 'Card 0' }));
+    expect(front()).toHaveLength(0);
+    expect(middle()).toHaveLength(1);
     expect(back()).toHaveLength(12);
   });
 

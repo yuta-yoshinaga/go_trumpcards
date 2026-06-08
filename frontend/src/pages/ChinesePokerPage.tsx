@@ -274,17 +274,23 @@ function ChinesePokerPageContent() {
                     [
                       { key: 'front', label: t('previewFront'), indices: frontIndices, need: 3 },
                       { key: 'middle', label: t('previewMiddle'), indices: middleIndices, need: 5 },
-                      { key: 'back', label: t('previewBack'), indices: backIndices, need: 5 },
+                      // Back drains toward 5 rather than filling up, so show a plain
+                      // count (no denominator) to avoid a confusing "13/5" reading.
+                      { key: 'back', label: t('previewBack'), indices: backIndices, need: undefined },
                     ] as const
                   ).map((row) => (
                     <div key={row.key} className="flex items-center gap-2">
                       <span className="w-24 shrink-0 text-ds-text-muted text-xs">
-                        {row.label} ({row.indices.length}/{row.need})
+                        {row.label} ({row.indices.length}
+                        {row.need != null ? `/${row.need}` : ''})
                       </span>
                       <div className="flex flex-wrap gap-0.5" data-testid={`cp-row-${row.key}`}>
-                        {row.indices.map((idx) => (
-                          <AnimatedCard key={idx} card={state.playerCards[idx]} width={cardWidth * 0.6} />
-                        ))}
+                        {row.indices.map((idx) => {
+                          const previewCard = state.playerCards[idx];
+                          return previewCard ? (
+                            <AnimatedCard key={idx} card={previewCard} width={cardWidth * 0.6} />
+                          ) : null;
+                        })}
                       </div>
                     </div>
                   ))}
