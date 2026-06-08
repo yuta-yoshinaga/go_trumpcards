@@ -333,6 +333,58 @@ describe('EightOffPage', () => {
     await waitFor(() => expect(screen.getByTestId('eo-tableau-0-0').className).toContain('ring-ds-info'));
   });
 
+  it('highlights a free-cell hint source with an info ring', async () => {
+    mockExec.mockResolvedValue({
+      ...withFreeCellCardState,
+      hint: { fromZone: 'freecell', fromCol: 0, cardIndex: -1, toZone: 'tableau', toCol: -1 },
+    });
+    renderWithProviders(<EightOffPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    await waitFor(() => expect(screen.getByTestId('eo-freecell-0').className).toContain('ring-ds-info'));
+  });
+
+  it('highlights an empty free-cell hint target with a success ring', async () => {
+    renderWithProviders(<EightOffPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromZone: 'tableau', fromCol: 0, cardIndex: 0, toZone: 'freecell', toCol: 1 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    await waitFor(() => expect(screen.getByTestId('eo-freecell-empty-1').className).toContain('ring-ds-success'));
+  });
+
+  it('highlights an empty foundation hint target with a success ring', async () => {
+    renderWithProviders(<EightOffPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromZone: 'tableau', fromCol: 0, cardIndex: 0, toZone: 'foundation', toCol: 0 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    await waitFor(() => expect(screen.getByTestId('eo-foundation-empty-0').className).toContain('ring-ds-success'));
+  });
+
+  it('highlights a filled foundation hint target with a success ring', async () => {
+    mockExec.mockResolvedValue({
+      ...withFoundationState, // foundation[0] has SPADE A
+      hint: { fromZone: 'tableau', fromCol: 0, cardIndex: 0, toZone: 'foundation', toCol: 0 },
+    });
+    renderWithProviders(<EightOffPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    await waitFor(() => expect(screen.getByTestId('eo-foundation-0').className).toContain('ring-ds-success'));
+  });
+
   // --- Keyboard shortcuts ---
 
   it('pressing h triggers hint in PLAYING phase', async () => {

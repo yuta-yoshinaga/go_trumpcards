@@ -275,6 +275,7 @@ function PenguinPageContent() {
                             onClick={() => handleSelectTarget(freeCellZone)}
                             disabled={!isPlaying || loading || !selectedSource}
                             aria-label={t('emptyFreecellAriaLabel', { idx: String(idx) })}
+                            data-testid={`pg-freecell-empty-${idx.toString()}`}
                             style={{ width: cardWidth, height: cardHeight }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${isHintTarget('freecell', idx) ? ' ring-2 ring-ds-success animate-pulse' : ''}`}
                           >
@@ -311,6 +312,7 @@ function PenguinPageContent() {
                               suit: FOUNDATION_SUITS[idx],
                               cardCount: String(pile.length),
                             })}
+                            data-testid={`pg-foundation-${idx.toString()}`}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}${isHintTarget('foundation', idx) ? ' ring-2 ring-ds-success animate-pulse' : ''}`}
                           >
                             <AnimatedCard
@@ -326,6 +328,7 @@ function PenguinPageContent() {
                             onClick={() => handleSelectTarget(foundationZone)}
                             disabled={!isPlaying || loading || !selectedSource}
                             aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
+                            data-testid={`pg-foundation-empty-${idx.toString()}`}
                             style={{ width: cardWidth, height: cardHeight }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${isHintTarget('foundation', idx) ? ' ring-2 ring-ds-success animate-pulse' : ''}`}
                           >

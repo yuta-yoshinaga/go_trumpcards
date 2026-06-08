@@ -240,6 +240,7 @@ function EightOffPageContent() {
                             disabled={!isPlaying || loading}
                             aria-label={cardAlt(card)}
                             aria-pressed={isSourceSelected('freecell', undefined, idx)}
+                            data-testid={`eo-freecell-${idx.toString()}`}
                             draggable={isPlaying && !loading}
                             onDragStart={dnd.handleDragStart(freeCellZone)}
                             onDragEnd={dnd.handleDragEnd}
@@ -253,6 +254,7 @@ function EightOffPageContent() {
                             onClick={() => handleSelectTarget(freeCellZone)}
                             disabled={!isPlaying || loading || !selectedSource}
                             aria-label={t('emptyFreecellAriaLabel', { idx: String(idx) })}
+                            data-testid={`eo-freecell-empty-${idx.toString()}`}
                             style={{ width: cardWidth, height: cardHeight }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${isHintTarget('freecell', idx) ? ' ring-2 ring-ds-success animate-pulse' : ''}`}
                           >
@@ -289,6 +291,7 @@ function EightOffPageContent() {
                               suit: FOUNDATION_SUITS[idx],
                               cardCount: String(pile.length),
                             })}
+                            data-testid={`eo-foundation-${idx.toString()}`}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}${isHintTarget('foundation', idx) ? ' ring-2 ring-ds-success animate-pulse' : ''}`}
                           >
                             <AnimatedCard
@@ -304,6 +307,7 @@ function EightOffPageContent() {
                             onClick={() => handleSelectTarget(foundationZone)}
                             disabled={!isPlaying || loading || !selectedSource}
                             aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
+                            data-testid={`eo-foundation-empty-${idx.toString()}`}
                             style={{ width: cardWidth, height: cardHeight }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${isHintTarget('foundation', idx) ? ' ring-2 ring-ds-success animate-pulse' : ''}`}
                           >
