@@ -141,6 +141,11 @@ function SpiderettePageContent() {
     selectedSource.col === col &&
     selectedSource.cardIndex === cardIndex;
 
+  // Visual hint highlighting: ring the suggested source card and target column.
+  const isHintSource = (col: number, cardIndex: number) =>
+    hint != null && hint.fromCol === col && hint.cardIndex === cardIndex;
+  const isHintTargetCol = (col: number) => hint != null && hint.toCol === col;
+
   // A partial final deal (1–6 cards) still counts as one deal opportunity,
   // so round up rather than down (#1676 review).
   const dealsRemaining = Math.ceil(state.stockCount / TABLEAU_COLS);
@@ -208,7 +213,11 @@ function SpiderettePageContent() {
             {state.tableau.map((col, colIdx) => {
               const tableauColZone: SpideretteMoveZone = { zone: 'tableau', col: colIdx };
               return (
-                <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
+                <div
+                  key={`col-${colIdx.toString()}`}
+                  data-testid={`spdt-col-${colIdx.toString()}`}
+                  className={`flex-1 min-w-0${isHintTargetCol(colIdx) ? ' rounded ring-1 ring-ds-success' : ''}`}
+                >
                   <DropZone
                     isDropTarget={dnd.isDropTarget(tableauColZone)}
                     onDragOver={dnd.handleDragOver(tableauColZone)}
@@ -258,7 +267,8 @@ function SpiderettePageContent() {
                                   draggable={isPlaying && !loading}
                                   onDragStart={dnd.handleDragStart(cardZone)}
                                   onDragEnd={dnd.handleDragEnd}
-                                  className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected(colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                                  data-testid={`spdt-card-${colIdx.toString()}-${cardIdx.toString()}`}
+                                  className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected(colIdx, cardIdx) || isHintSource(colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
                                 >
                                   <AnimatedCard
                                     card={tc.card}
