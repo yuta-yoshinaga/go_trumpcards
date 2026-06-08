@@ -104,7 +104,7 @@ describe('TressettePage', () => {
     expect(dots0).toHaveLength(3);
     expect(team0.querySelectorAll('.bg-ds-accent')).toHaveLength(2);
     // Tooltip shows the remaining thirds (3 - 2 = 1) and sr-only text the filled count.
-    expect(team0).toHaveAttribute('title', expect.stringContaining('1'));
+    expect(team0).toHaveAttribute('title', 'ラウンド得点まであと1サーズ');
     expect(team0).toHaveTextContent('2/3');
 
     // Team 1 has 0 thirds → no filled dots.

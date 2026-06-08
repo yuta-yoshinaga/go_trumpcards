@@ -280,7 +280,9 @@ function TressettePageContent() {
                     </thead>
                     <tbody>
                       {teamLabels.map((label, idx) => {
-                        const thirds = state.teamRoundThirds[idx] ?? 0;
+                        // Thirds reset to 0 once they reach 3 (converted to a point),
+                        // but clamp defensively so the 3-dot indicator never overflows.
+                        const filled = Math.min(Math.max(state.teamRoundThirds[idx] ?? 0, 0), 3);
                         return (
                           <tr key={label} className={humanPlayer && humanPlayer.teamId === idx ? 'text-ds-accent' : ''}>
                             <td>{t('teamLabel', { team: label })}</td>
@@ -288,7 +290,7 @@ function TressettePageContent() {
                             <td className="text-center">
                               <span
                                 className="inline-flex gap-0.5 align-middle"
-                                title={t('thirdsTooltip', { n: Math.max(0, 3 - thirds) })}
+                                title={t('thirdsTooltip', { n: 3 - filled })}
                                 data-testid={`tr-thirds-${idx.toString()}`}
                               >
                                 {[0, 1, 2].map((d) => (
@@ -296,11 +298,11 @@ function TressettePageContent() {
                                     key={`tr-dot-${idx.toString()}-${d.toString()}`}
                                     aria-hidden="true"
                                     className={`inline-block w-2 h-2 rounded-full ${
-                                      d < thirds ? 'bg-ds-accent' : 'border border-ds-border-subtle'
+                                      d < filled ? 'bg-ds-accent' : 'border border-ds-border-subtle'
                                     }`}
                                   />
                                 ))}
-                                <span className="sr-only">{t('thirdsAria', { filled: thirds })}</span>
+                                <span className="sr-only">{t('thirdsAria', { filled })}</span>
                               </span>
                             </td>
                           </tr>
