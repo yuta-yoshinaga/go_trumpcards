@@ -17,8 +17,13 @@ import type { TrucoResponse } from '../types/card';
 import { TrucoPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 
-/** Tutorial steps for the Truco page. v1 ships without a guided tour. */
-const TRUCO_TUTORIAL_STEPS: TutorialStep[] = [];
+/** Tutorial steps for the Truco page. */
+const TRUCO_TUTORIAL_STEPS: TutorialStep[] = [
+  { target: '[data-tutorial="truco-score"]', messageKey: 'tutorial.score', placement: 'bottom', advanceOn: 'next' },
+  { target: '[data-tutorial="truco-trick"]', messageKey: 'tutorial.trick', placement: 'bottom', advanceOn: 'next' },
+  { target: '[data-tutorial="truco-hand"]', messageKey: 'tutorial.hand', placement: 'top', advanceOn: 'next' },
+  { target: '[data-tutorial="truco-call"]', messageKey: 'tutorial.call', placement: 'top', advanceOn: 'next' },
+];
 
 /** Betting-level i18n key suffixes indexed by level (0=none .. 3=Vale Cuatro). */
 const LEVEL_KEYS = ['none', 'truco', 'retruco', 'valecuatro'] as const;
@@ -109,7 +114,7 @@ function TrucoPageContent() {
       cancelReset={cancelReset}
     >
       <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
-        <div className="text-ds-text-primary text-center mb-3">
+        <div className="text-ds-text-primary text-center mb-3" data-tutorial="truco-score">
           <span className="mr-4">
             {t('header.match')} — {t('header.you')}: {youPoints} / {t('header.cpu')}: {cpuPoints} ({t('header.target')}:{' '}
             {state.matchTarget})
@@ -138,6 +143,7 @@ function TrucoPageContent() {
           players={state.players}
           cardWidth={cardWidth}
           label={t('currentTrick')}
+          dataTutorial="truco-trick"
         />
 
         {resultBanner && (
