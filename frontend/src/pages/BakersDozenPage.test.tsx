@@ -202,6 +202,24 @@ describe('BakersDozenPage', () => {
     await waitFor(() => expect(sourceBtn).toHaveAttribute('aria-pressed', 'true'));
   });
 
+  it('makes the tableau horizontally scrollable so 13 columns stay legible', async () => {
+    mockExec.mockResolvedValue(playingState);
+    const { container } = renderWithProviders(<BakersDozenPage />);
+    await waitFor(() => expect(container.querySelector('[data-tutorial="bd-tableau"]')).toBeInTheDocument());
+    expect(container.querySelector('[data-tutorial="bd-tableau"]')).toHaveClass('overflow-x-auto');
+  });
+
+  it('scrolls the selected tableau column into view', async () => {
+    const scrollIntoView = vi.fn();
+    // jsdom does not implement scrollIntoView; provide a spy for this test.
+    Element.prototype.scrollIntoView = scrollIntoView;
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BakersDozenPage />);
+    const sourceBtn = await screen.findByRole('button', { name: '♠ 5' });
+    fireEvent.click(sourceBtn);
+    await waitFor(() => expect(scrollIntoView).toHaveBeenCalled());
+  });
+
   it('forwards reset commands to the API on initial load', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BakersDozenPage />);

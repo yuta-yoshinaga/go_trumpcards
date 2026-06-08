@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { BakersDozenMoveZone, bakersDozenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -129,11 +129,23 @@ function BakersDozenPageContent() {
     const gapPx = 4;
     const cols = 13;
     const colW = Math.floor((windowWidth - padX - (cols - 1) * gapPx) / cols);
-    const cw = Math.min(Math.max(colW, 22), cardWidth);
+    // Floor at 32px so suits/ranks stay legible; the tableau scrolls horizontally
+    // when 13 columns no longer fit (e.g. a 375px portrait phone).
+    const cw = Math.min(Math.max(colW, 32), cardWidth);
     const ch = Math.round(cw * 1.5);
     const co = Math.round(cw * 0.48);
     return { cw, ch, co };
   }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
+
+  // Keep the selected tableau column centred in the horizontally-scrolling mobile layout.
+  // Declared before any early return so hook order stays stable.
+  const selectedColRef = useRef<HTMLDivElement | null>(null);
+  const selectedTableauCol = selectedSource?.zone === 'tableau' ? selectedSource.col : undefined;
+  useEffect(() => {
+    if (selectedTableauCol == null) return;
+    // Optional-call: scrollIntoView is unavailable in jsdom.
+    selectedColRef.current?.scrollIntoView?.({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+  }, [selectedTableauCol]);
 
   const isPlayingForKbd = state?.phase === BakersDozenPhase.PLAYING;
 
@@ -262,11 +274,19 @@ function BakersDozenPageContent() {
             </div>
 
             {/* Tableau */}
-            <div className="flex gap-1 sm:gap-2 mb-3" data-tutorial="bd-tableau">
+            <div className="flex gap-1 sm:gap-2 mb-3 overflow-x-auto" data-tutorial="bd-tableau">
               {state.tableau.map((col, colIdx) => {
                 const tableauColZone: BakersDozenMoveZone = { zone: 'tableau', col: colIdx };
+                const isColumnSelected = selectedTableauCol === colIdx;
                 return (
-                  <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
+                  <div
+                    key={`col-${colIdx.toString()}`}
+                    ref={isColumnSelected ? selectedColRef : null}
+                    // On mobile keep each column at its computed width and let the row scroll;
+                    // on desktop the columns flex to fill the available width as before.
+                    className={isMobile ? 'shrink-0' : 'flex-1 min-w-0'}
+                    style={isMobile ? { width: bd.cw } : undefined}
+                  >
                     <DropZone
                       isDropTarget={dnd.isDropTarget(tableauColZone)}
                       onDragOver={dnd.handleDragOver(tableauColZone)}
