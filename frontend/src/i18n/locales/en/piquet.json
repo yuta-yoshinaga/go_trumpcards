@@ -20,6 +20,12 @@
   "nextDeal": "Next deal",
   "partieWinner": "★ Partie winner: player {{idx}}",
   "partieDraw": "Partie ended in a draw",
+  "carteBlanche": "★ carte blanche",
+  "playerStats": "Hand: {{hand}} | Tricks: {{tricks}} | Round: {{round}} | Match: {{match}}",
+  "declarationsList": "Declarations",
+  "declTied": "tied",
+  "declScored": "{{player}} +{{score}}",
+  "trickHeader": "Trick",
   "tutorial": {
     "hand": "Your hand. Click to select for exchange, or click to play during the play phase.",
     "controls": "Action buttons (exchange, declaration advance, next deal) appear here."

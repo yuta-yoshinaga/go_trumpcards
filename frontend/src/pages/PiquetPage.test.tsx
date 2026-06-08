@@ -142,6 +142,55 @@ describe('PiquetPage', () => {
     expect(wonBadge).toHaveClass('text-ds-success', 'border-ds-success');
   });
 
+  it('renders the translated per-player stats line', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<PiquetPage />);
+    // ja: "手札: 12 | トリック: 0 | ラウンド: 0 | マッチ: 0" (PlayerCard.playerStats)
+    await waitFor(() => expect(screen.getAllByText(/手札: 12/).length).toBeGreaterThan(0));
+  });
+
+  it('renders the declaration list with translated tied and fallback-scorer labels', async () => {
+    const claim = { length: 0, topRank: 0, pipTotal: 0, suit: 0, cards: [] };
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: PiquetPhase.DECLARATION,
+        declStage: PiquetDeclarationKind.SET,
+        declResults: [
+          {
+            kind: PiquetDeclarationKind.POINT,
+            elderClaim: claim,
+            youngerClaim: claim,
+            winner: -1,
+            scoredBy: -1,
+            score: 0,
+          },
+          {
+            kind: PiquetDeclarationKind.SEQUENCE,
+            elderClaim: claim,
+            youngerClaim: claim,
+            winner: -1,
+            scoredBy: 5, // neither elder (0) nor younger (1) → "?" fallback label
+            score: 3,
+          },
+        ],
+      }),
+    );
+    renderWithProviders(<PiquetPage />);
+    await waitFor(() => expect(screen.getByText(/引き分け/)).toBeInTheDocument()); // declTied
+    expect(screen.getByText(/\? \+3/)).toBeInTheDocument(); // declScored with "?" scorer
+  });
+
+  it('renders the translated trick header during the play phase', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: PiquetPhase.PLAY,
+        currentTrick: [{ playerIdx: 0, card: { design: 'SPADE', value: 13 } }],
+      }),
+    );
+    renderWithProviders(<PiquetPage />);
+    await waitFor(() => expect(screen.getByText(/P0:/)).toBeInTheDocument()); // TrickView entry
+  });
+
   it('shows the meld badge in the lost palette when the opponent scores', async () => {
     mockExec.mockResolvedValue(
       makeState({
