@@ -268,6 +268,21 @@ describe('BurracoPage', () => {
     expect(playSoundMock).toHaveBeenCalledWith('chipClick');
   });
 
+  it('names the CPU in the banner when a CPU takes the pozzetto', async () => {
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<BurracoPage />);
+    await waitFor(() => expect(screen.getByTestId('bu-pozzetto-count')).toBeInTheDocument());
+
+    mockExec.mockResolvedValue({
+      ...meldPhaseState,
+      players: [basePlayers[0], { ...basePlayers[1], tookPozzetto: true }],
+    });
+    fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
+    // ja CPU label is "CPU 1" → banner interpolates the CPU name, not "あなた".
+    await waitFor(() => expect(screen.getByTestId('bu-pozzetto-banner')).toHaveTextContent('CPU 1'));
+    expect(playSoundMock).toHaveBeenCalledWith('chipClick');
+  });
+
   it('pulses a round-score cell when that score changes', async () => {
     mockExec.mockResolvedValue(drawPhaseState); // roundScore 0
     renderWithProviders(<BurracoPage />);

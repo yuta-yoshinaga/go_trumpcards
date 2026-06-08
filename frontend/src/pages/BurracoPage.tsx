@@ -254,7 +254,6 @@ function BurracoPageContent() {
             {pozzettoBanner && (
               <div
                 role="status"
-                aria-live="polite"
                 data-testid="bu-pozzetto-banner"
                 className="mb-2 text-center text-ds-info font-bold motion-safe:animate-pulse"
               >
