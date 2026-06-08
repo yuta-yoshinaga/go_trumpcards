@@ -25,6 +25,8 @@
   "scoresTeam": "Team",
   "scoresPoints": "Points",
   "scoresThirds": "This round (1/3)",
+  "thirdsTooltip": "{{n}} more third(s) to score this round",
+  "thirdsAria": "{{filled}} of 3 thirds this round",
   "scoresTricks": "Tricks",
   "playButton": "Play",
   "nextTrick": "Next Trick",

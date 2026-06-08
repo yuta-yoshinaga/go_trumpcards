@@ -279,13 +279,33 @@ function TressettePageContent() {
                       </tr>
                     </thead>
                     <tbody>
-                      {teamLabels.map((label, idx) => (
-                        <tr key={label} className={humanPlayer && humanPlayer.teamId === idx ? 'text-ds-accent' : ''}>
-                          <td>{t('teamLabel', { team: label })}</td>
-                          <td className="text-center">{state.teamScores[idx] ?? 0}</td>
-                          <td className="text-center">{state.teamRoundThirds[idx] ?? 0}/3</td>
-                        </tr>
-                      ))}
+                      {teamLabels.map((label, idx) => {
+                        const thirds = state.teamRoundThirds[idx] ?? 0;
+                        return (
+                          <tr key={label} className={humanPlayer && humanPlayer.teamId === idx ? 'text-ds-accent' : ''}>
+                            <td>{t('teamLabel', { team: label })}</td>
+                            <td className="text-center">{state.teamScores[idx] ?? 0}</td>
+                            <td className="text-center">
+                              <span
+                                className="inline-flex gap-0.5 align-middle"
+                                title={t('thirdsTooltip', { n: Math.max(0, 3 - thirds) })}
+                                data-testid={`tr-thirds-${idx.toString()}`}
+                              >
+                                {[0, 1, 2].map((d) => (
+                                  <span
+                                    key={`tr-dot-${idx.toString()}-${d.toString()}`}
+                                    aria-hidden="true"
+                                    className={`inline-block w-2 h-2 rounded-full ${
+                                      d < thirds ? 'bg-ds-accent' : 'border border-ds-border-subtle'
+                                    }`}
+                                  />
+                                ))}
+                                <span className="sr-only">{t('thirdsAria', { filled: thirds })}</span>
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

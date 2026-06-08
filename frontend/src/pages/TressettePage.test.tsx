@@ -93,4 +93,22 @@ describe('TressettePage', () => {
     await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
   });
+
+  it('renders a three-dot thirds indicator with the filled count and remaining tooltip', async () => {
+    mockExec.mockResolvedValue(makeTressetteState({ teamRoundThirds: [2, 0] }));
+    renderWithProviders(<TressettePage />);
+
+    const team0 = await screen.findByTestId('tr-thirds-0');
+    // 3 dots rendered; 2 filled (bg-ds-accent), 1 empty (border).
+    const dots0 = team0.querySelectorAll('span[aria-hidden="true"]');
+    expect(dots0).toHaveLength(3);
+    expect(team0.querySelectorAll('.bg-ds-accent')).toHaveLength(2);
+    // Tooltip shows the remaining thirds (3 - 2 = 1) and sr-only text the filled count.
+    expect(team0).toHaveAttribute('title', expect.stringContaining('1'));
+    expect(team0).toHaveTextContent('2/3');
+
+    // Team 1 has 0 thirds → no filled dots.
+    const team1 = screen.getByTestId('tr-thirds-1');
+    expect(team1.querySelectorAll('.bg-ds-accent')).toHaveLength(0);
+  });
 });

@@ -25,6 +25,8 @@
   "scoresTeam": "チーム",
   "scoresPoints": "得点",
   "scoresThirds": "今ラウンド(1/3点)",
+  "thirdsTooltip": "ラウンド得点まであと{{n}}サーズ",
+  "thirdsAria": "今ラウンド {{filled}}/3 サーズ",
   "scoresTricks": "トリック",
   "playButton": "出す",
   "nextTrick": "次のトリック",
