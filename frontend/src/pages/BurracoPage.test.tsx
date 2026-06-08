@@ -11,6 +11,15 @@ vi.mock('../api/gameApi', () => ({
 }));
 const mockExec = vi.mocked(burracoApi.exec);
 
+const playSoundMock = vi.fn();
+vi.mock('../providers/SoundProvider', async () => {
+  const actual = await vi.importActual<typeof import('../providers/SoundProvider')>('../providers/SoundProvider');
+  return {
+    ...actual,
+    useSound: () => ({ playSound: playSoundMock, muted: false, toggleMute: vi.fn() }),
+  };
+});
+
 const basePlayers: BurracoPlayerData[] = [
   {
     id: 0,
@@ -241,6 +250,51 @@ describe('BurracoPage', () => {
     expect(screen.getByTestId('ca-draw-discard-reason')).toHaveTextContent(
       'フリーズ中はワイルドカードでの代用ができません',
     );
+  });
+
+  it('shows a banner and plays a sound when a player takes the pozzetto', async () => {
+    mockExec.mockResolvedValue(drawPhaseState); // tookPozzetto false for everyone
+    renderWithProviders(<BurracoPage />);
+    await waitFor(() => expect(screen.getByTestId('bu-pozzetto-count')).toBeInTheDocument());
+    expect(screen.queryByTestId('bu-pozzetto-banner')).not.toBeInTheDocument();
+
+    // The next fetch reports the human took the pozzetto (false → true).
+    mockExec.mockResolvedValue({
+      ...meldPhaseState,
+      players: [{ ...basePlayers[0], tookPozzetto: true }, basePlayers[1]],
+    });
+    fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
+    await waitFor(() => expect(screen.getByTestId('bu-pozzetto-banner')).toBeInTheDocument());
+    expect(playSoundMock).toHaveBeenCalledWith('chipClick');
+  });
+
+  it('names the CPU in the banner when a CPU takes the pozzetto', async () => {
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<BurracoPage />);
+    await waitFor(() => expect(screen.getByTestId('bu-pozzetto-count')).toBeInTheDocument());
+
+    mockExec.mockResolvedValue({
+      ...meldPhaseState,
+      players: [basePlayers[0], { ...basePlayers[1], tookPozzetto: true }],
+    });
+    fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
+    // ja CPU label is "CPU 1" → banner interpolates the CPU name, not "あなた".
+    await waitFor(() => expect(screen.getByTestId('bu-pozzetto-banner')).toHaveTextContent('CPU 1'));
+    expect(playSoundMock).toHaveBeenCalledWith('chipClick');
+  });
+
+  it('pulses a round-score cell when that score changes', async () => {
+    mockExec.mockResolvedValue(drawPhaseState); // roundScore 0
+    renderWithProviders(<BurracoPage />);
+    await waitFor(() => expect(screen.getByTestId('bu-round-score-0')).toBeInTheDocument());
+    expect(screen.getByTestId('bu-round-score-0')).not.toHaveClass('motion-safe:animate-pulse');
+
+    mockExec.mockResolvedValue({
+      ...roundEndState,
+      players: [{ ...basePlayers[0], roundScore: 120 }, basePlayers[1]],
+    });
+    fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
+    await waitFor(() => expect(screen.getByTestId('bu-round-score-0')).toHaveClass('motion-safe:animate-pulse'));
   });
 
   afterEach(() => {

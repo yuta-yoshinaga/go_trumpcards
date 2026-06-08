@@ -24,6 +24,7 @@
   "discardPile": "Discard: {{count}} cards",
   "pozzetto": "Pozzetti: {{count}} left",
   "tookPozzetto": "Pozzetto taken",
+  "pozzettoTakenBanner": "{{player}} took the pozzetto!",
   "frozen": "Frozen",
   "melds": "Melds",
   "red3s": "Red 3s",

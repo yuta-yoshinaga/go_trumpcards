@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { burracoApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -133,6 +133,47 @@ function BurracoPageContent() {
   const isHumanTurn =
     (isDrawPhase || isMeldPhase || isDiscardPhase) && state?.players[state.currentPlayerIdx]?.isHuman === true;
 
+  // Transient feedback when a player grabs the pozzetto (a pivotal Burraco moment)
+  // and a one-shot pulse on round-score cells that just changed.
+  const [pozzettoBanner, setPozzettoBanner] = useState<string | null>(null);
+  const [pulsingScoreIds, setPulsingScoreIds] = useState<Set<number>>(new Set());
+  const prevPozzettoRef = useRef<boolean[]>([]);
+  const prevScoresRef = useRef<number[]>([]);
+  const bannerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pulseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(
+    () => () => {
+      clearTimeout(bannerTimerRef.current ?? undefined);
+      clearTimeout(pulseTimerRef.current ?? undefined);
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (!state) return;
+    const prevPozzetto = prevPozzettoRef.current;
+    const prevScores = prevScoresRef.current;
+    const taker = state.players.find((p, i) => p.tookPozzetto && prevPozzetto[i] === false);
+    const changedScoreIds = state.players
+      .filter((p, i) => prevScores[i] !== undefined && prevScores[i] !== p.roundScore)
+      .map((p) => p.id);
+    prevPozzettoRef.current = state.players.map((p) => p.tookPozzetto);
+    prevScoresRef.current = state.players.map((p) => p.roundScore);
+
+    if (taker) {
+      setPozzettoBanner(taker.isHuman ? tc('player.you') : tc('player.cpu', { id: taker.id }));
+      playSound('chipClick');
+      clearTimeout(bannerTimerRef.current ?? undefined);
+      bannerTimerRef.current = setTimeout(() => setPozzettoBanner(null), 2000);
+    }
+    if (changedScoreIds.length > 0) {
+      setPulsingScoreIds(new Set(changedScoreIds));
+      clearTimeout(pulseTimerRef.current ?? undefined);
+      pulseTimerRef.current = setTimeout(() => setPulsingScoreIds(new Set()), 1000);
+    }
+  }, [state, tc, playSound]);
+
   const kbdConfirmAction = useCallback(() => {
     if (isDiscardPhase) handleDiscard();
     else if (isMeldPhase) handleMeldSelected();
@@ -210,6 +251,15 @@ function BurracoPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {pozzettoBanner && (
+              <div
+                role="status"
+                data-testid="bu-pozzetto-banner"
+                className="mb-2 text-center text-ds-info font-bold motion-safe:animate-pulse"
+              >
+                {t('pozzettoTakenBanner', { player: pozzettoBanner })}
+              </div>
+            )}
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span>
@@ -307,7 +357,12 @@ function BurracoPageContent() {
                       {state.players.map((p) => (
                         <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
                           <td>{playerName(p.id, p.isHuman)}</td>
-                          <td className="text-center">{p.roundScore}</td>
+                          <td
+                            className={`text-center ${pulsingScoreIds.has(p.id) ? 'motion-safe:animate-pulse text-ds-info' : ''}`}
+                            data-testid={`bu-round-score-${p.id.toString()}`}
+                          >
+                            {p.roundScore}
+                          </td>
                           <td className="text-center">{p.cumulativeScore}</td>
                         </tr>
                       ))}
