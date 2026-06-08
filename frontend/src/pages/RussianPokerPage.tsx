@@ -405,32 +405,30 @@ function RussianPokerPageContent() {
             )}
             {isActionPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="russian-action-buttons">
-                {isExchangeSelecting && (
-                  <div
-                    className="text-ds-text-primary text-sm text-center"
-                    data-tutorial="russian-exchange-controls"
-                    data-testid="russian-exchange-fee-line"
+                <div
+                  className="text-ds-text-primary text-sm text-center"
+                  data-tutorial="russian-exchange-controls"
+                  data-testid="russian-exchange-fee-line"
+                >
+                  <p>{t('exchangeGuide')}</p>
+                  <p
+                    className={
+                      selectedIndices.length >= 4
+                        ? 'font-semibold text-ds-error'
+                        : selectedIndices.length >= 2
+                          ? 'font-semibold text-ds-warning'
+                          : 'text-ds-text-primary'
+                    }
                   >
-                    <p>{t('exchangeGuide')}</p>
-                    <p
-                      className={
-                        selectedIndices.length >= 4
-                          ? 'font-semibold text-ds-error'
-                          : selectedIndices.length >= 2
-                            ? 'font-semibold text-ds-warning'
-                            : 'text-ds-text-primary'
-                      }
-                    >
-                      {t('exchangeSelected', { count: selectedIndices.length })} —{' '}
-                      {t('exchangeFeeInfo', { ante: state.anteBet, fee: exchangePreviewFee })}
-                      {selectedIndices.length >= 4 && (
-                        <span className="ml-2 inline-block rounded-full bg-ds-error/30 px-2 py-0.5 text-xs font-bold">
-                          <span aria-hidden="true">⚠</span> {t('exchangeFeeHighRisk')}
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                )}
+                    {t('exchangeSelected', { count: selectedIndices.length })} —{' '}
+                    {t('exchangeFeeInfo', { ante: state.anteBet, fee: exchangePreviewFee })}
+                    {selectedIndices.length >= 4 && (
+                      <span className="ml-2 inline-block rounded-full bg-ds-error/30 px-2 py-0.5 text-xs font-bold">
+                        <span aria-hidden="true">⚠</span> {t('exchangeFeeHighRisk')}
+                      </span>
+                    )}
+                  </p>
+                </div>
                 <p className="text-ds-text-muted text-sm">{t('actionGuide')}</p>
                 <div className="flex gap-2 flex-wrap justify-center">
                   <button type="button" className={btnSuccess} onClick={handlePlay} disabled={loading}>
