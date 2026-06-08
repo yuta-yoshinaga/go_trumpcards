@@ -405,6 +405,7 @@ function GongZhuPageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="gz"
+                highlightIndices={isExposePhase ? state.exposableIndices : undefined}
               />
             )}
 
