@@ -190,6 +190,27 @@ describe('BlackJackSwitchPage', () => {
     expect(screen.queryByTestId('hand-0-preview')).not.toBeInTheDocument();
   });
 
+  it('touching Switch shows then hides the preview for touch devices', async () => {
+    mockApi.mockResolvedValue(switchState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    const btn = await screen.findByTestId('switch-button');
+    expect(screen.queryByTestId('hand-0-preview')).not.toBeInTheDocument();
+    fireEvent.touchStart(btn);
+    expect(screen.getByTestId('hand-0-preview')).toHaveTextContent('20');
+    fireEvent.touchEnd(btn);
+    expect(screen.queryByTestId('hand-0-preview')).not.toBeInTheDocument();
+  });
+
+  it('keeps the preview visible without hover when "always preview" is enabled', async () => {
+    mockApi.mockResolvedValue(switchState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    await screen.findByTestId('switch-button');
+    expect(screen.queryByTestId('hand-0-preview')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText(/常に表示|Always show/));
+    // Visible without any hover/focus.
+    expect(screen.getByTestId('hand-0-preview')).toHaveTextContent('20');
+  });
+
   it('focusing Switch shows the preview for keyboard parity', async () => {
     mockApi.mockResolvedValue(switchState);
     renderWithProviders(<BlackJackSwitchPage />);
