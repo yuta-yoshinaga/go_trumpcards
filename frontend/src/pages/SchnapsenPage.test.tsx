@@ -179,7 +179,7 @@ describe('SchnapsenPage', () => {
 
   it('renders the HintTooltip when the hint is enabled and available', async () => {
     vi.mocked(useGameHint).mockReturnValue({
-      hint: { reason: 'frontendHint.followSuit', confidence: 'moderate' },
+      hint: { targetAction: 'play-0', reason: 'frontendHint.followSuit', confidence: 'moderate' },
       hintEnabled: true,
       setHintEnabled: vi.fn(),
     });
