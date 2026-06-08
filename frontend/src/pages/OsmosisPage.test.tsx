@@ -62,6 +62,19 @@ describe('OsmosisPage', () => {
     await waitFor(() => expect(screen.getByText(/ベースランク/)).toBeInTheDocument());
   });
 
+  it('shows the allowed-rank guide per foundation row', async () => {
+    // foundation [[♠5],[],[],[]], baseRank 5.
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(screen.getByTestId('os-allowed-0')).toBeInTheDocument());
+    // Row 0 is the base row (★) with a fixed suit → any rank.
+    expect(screen.getByTestId('os-allowed-0')).toHaveTextContent('★');
+    expect(screen.getByTestId('os-allowed-0')).toHaveTextContent('任意');
+    // Row 1 (empty, row 0 non-empty) accepts the base rank 5.
+    expect(screen.getByTestId('os-allowed-1')).toHaveTextContent('5');
+    // Row 2 (empty, row 1 empty) accepts nothing yet.
+    expect(screen.getByTestId('os-allowed-2')).toHaveTextContent('—');
+  });
+
   it('clicks stock to fire draw command', async () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

@@ -9,6 +9,8 @@
   "waste": "Waste",
   "reserve": "Reserve",
   "foundation": "Foundation",
+  "anyRank": "any",
+  "cannotPlaceHere": "Can't place here",
   "baseRank": "Base rank",
   "moveCount": "Moves",
   "draw": "Draw",

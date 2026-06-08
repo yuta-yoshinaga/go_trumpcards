@@ -23,12 +23,16 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { OsmosisResponse } from '../types/card';
+import type { Card, OsmosisResponse } from '../types/card';
 import { OsmosisPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { OSMOSIS_HELP, parseOsmosisCommand } from '../utils/cli/commands/osmosisCommands';
 import { formatOsmosisState } from '../utils/cli/formatters/osmosisFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { osmosisAllowedRanks, osmosisCanPlace } from '../utils/osmosisRules';
+
+/** Card rank value (1–13) → short display label. */
+const RANK_LABELS = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 
 /** Tutorial steps for the Osmosis solitaire game. */
 const OS_TUTORIAL_STEPS: TutorialStep[] = [
@@ -132,6 +136,14 @@ function OsmosisPageContent() {
   const topWaste = state.waste.length > 0 ? state.waste[state.waste.length - 1] : null;
   const isSelected = (zone: OsmosisMoveZone) => !!selected && selected.zone === zone.zone && selected.col === zone.col;
 
+  // The actual card currently selected (waste top or a reserve-column top), used
+  // to flag foundation rows the card cannot be placed on.
+  const selectedCard: Card | null = !selected
+    ? null
+    : selected.zone === 'waste'
+      ? topWaste
+      : (state.reserve[selected.col]?.[state.reserve[selected.col].length - 1] ?? null);
+
   return (
     <GamePageShell
       title={tc('nav.osmosis')}
@@ -183,32 +195,43 @@ function OsmosisPageContent() {
             {/* Foundation rows */}
             <div className="mb-3 flex flex-col gap-2" data-tutorial="os-foundation">
               <span className="text-xs text-ds-text-muted">{t('foundation')}</span>
-              {state.foundation.map((pile, i) => (
-                <button
-                  key={`f-${i}`}
-                  type="button"
-                  onClick={() => handleFoundationClick(i)}
-                  disabled={!isPlaying || !selected || loading}
-                  aria-label={`${t('foundation')} ${i}`}
-                  className={
-                    selected
-                      ? `flex items-center gap-2 rounded border p-1 text-left ${focusRingWhite} border-ds-info`
-                      : `flex items-center gap-2 rounded border p-1 text-left ${focusRingWhite} border-white/30`
-                  }
-                >
-                  <span className="w-5 text-xs text-ds-text-muted">#{i}</span>
-                  <div className="relative" style={{ width: cardWidth, height: cardHeight }}>
-                    {pile.length > 0 ? (
-                      <AnimatedCard card={pile[pile.length - 1]} width={cardWidth} />
-                    ) : (
-                      <span className="absolute inset-0 flex items-center justify-center text-xs text-ds-text-muted/80">
-                        {t('foundation')}
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-xs text-ds-text-muted">({pile.length})</span>
-                </button>
-              ))}
+              {state.foundation.map((pile, i) => {
+                const allowed = osmosisAllowedRanks(state.foundation, state.baseRank, i);
+                const blocked =
+                  selectedCard != null && !osmosisCanPlace(state.foundation, state.baseRank, i, selectedCard);
+                const borderColor = blocked ? 'border-ds-error' : selected ? 'border-ds-info' : 'border-white/30';
+                return (
+                  <button
+                    key={`f-${i}`}
+                    type="button"
+                    onClick={() => handleFoundationClick(i)}
+                    disabled={!isPlaying || !selected || loading}
+                    aria-label={`${t('foundation')} ${i}`}
+                    title={blocked ? t('cannotPlaceHere') : undefined}
+                    className={`flex items-center gap-2 rounded border p-1 text-left ${focusRingWhite} ${borderColor}`}
+                  >
+                    <span className="w-5 text-xs text-ds-text-muted">#{i}</span>
+                    <div className="relative" style={{ width: cardWidth, height: cardHeight }}>
+                      {pile.length > 0 ? (
+                        <AnimatedCard card={pile[pile.length - 1]} width={cardWidth} />
+                      ) : (
+                        <span className="absolute inset-0 flex items-center justify-center text-xs text-ds-text-muted/80">
+                          {t('foundation')}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs text-ds-text-muted">({pile.length})</span>
+                    <span className="text-xs text-ds-text-muted" data-testid={`os-allowed-${i}`}>
+                      {i === 0 && <span className="text-ds-warning">★ </span>}
+                      {allowed.length === 0
+                        ? '—'
+                        : i === 0 && pile.length > 0
+                          ? t('anyRank')
+                          : allowed.map((r) => RANK_LABELS[r]).join(' ')}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
             {/* Reserve columns */}
