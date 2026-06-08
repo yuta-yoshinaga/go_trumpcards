@@ -72,6 +72,28 @@ describe('TichuPage', () => {
     });
   });
 
+  it('changing CPU difficulty in settings resets with the new config', async () => {
+    renderWithProviders(<TichuPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith(expect.objectContaining({ command: 'reset' })));
+    fireEvent.click(screen.getByText('設定')); // open the collapsed settings panel
+    fireEvent.change(screen.getByLabelText('CPUの難易度'), { target: { value: '2' } });
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        expect.objectContaining({ command: 'reset', config: { cpuDifficulty: 2 } }),
+      ),
+    );
+  });
+
+  it('toggles the hint setting from the settings panel', async () => {
+    renderWithProviders(<TichuPage />);
+    await screen.findByText('設定');
+    fireEvent.click(screen.getByText('設定'));
+    const hintToggle = screen.getByLabelText('ヒント表示');
+    expect(hintToggle).not.toBeChecked();
+    fireEvent.click(hintToggle);
+    expect(hintToggle).toBeChecked();
+  });
+
   it('renders CPU player areas and declaration labels after load', async () => {
     mockExec.mockResolvedValue(
       makeState({
