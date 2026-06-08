@@ -477,6 +477,7 @@ function BakersGamePageContent() {
               {isPlaying && (
                 <span
                   data-testid="bg-movable-count"
+                  aria-live="polite"
                   className="text-ds-text-primary text-xs font-medium bg-ds-surface-elevated rounded px-2 py-1"
                 >
                   {t('movableCount', { count: supermoveLimit })}

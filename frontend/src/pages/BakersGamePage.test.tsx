@@ -134,8 +134,11 @@ describe('BakersGamePage', () => {
     await waitFor(() => expect(screen.getByTestId('bg-movable-count')).toHaveTextContent('320'));
   });
 
-  it('hides the movable-count badge once the game ends', async () => {
-    mockExec.mockResolvedValue(gameClearState);
+  it.each([
+    ['game clear', gameClearState],
+    ['game over', gameOverState],
+  ])('hides the movable-count badge once the game ends (%s)', async (_label, endState) => {
+    mockExec.mockResolvedValue(endState);
     renderWithProviders(<BakersGamePage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(screen.queryByTestId('bg-movable-count')).not.toBeInTheDocument();
