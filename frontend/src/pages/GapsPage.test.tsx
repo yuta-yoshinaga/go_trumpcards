@@ -130,9 +130,9 @@ describe('GapsPage', () => {
     fireEvent.click(btn);
 
     // Target gap cell gets the hint ring.
-    await waitFor(() => expect(screen.getByTestId('gaps-cell-0-12').className).toContain('ring-ds-warning'));
+    await waitFor(() => expect(screen.getByTestId('gaps-cell-0-12')).toHaveClass('ring-ds-warning'));
     // Source card cell gets the hint ring (locked in this fixture; the hint ring wins over the locked ring).
-    expect(screen.getByTestId('gaps-locked-1-0').className).toContain('ring-ds-warning');
+    expect(screen.getByTestId('gaps-locked-1-0')).toHaveClass('ring-ds-warning');
     // The old coordinate text line is gone.
     expect(screen.queryByText(/\(1,0\)/)).not.toBeInTheDocument();
   });

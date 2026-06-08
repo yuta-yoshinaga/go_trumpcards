@@ -223,7 +223,11 @@ function GapsPageContent() {
                       onDragEnd={dnd.handleDragEnd}
                       aria-label={isLocked ? `${cardAlt(cell)} ${t('lockedAria')}` : cardAlt(cell)}
                       disabled={!isPlaying || loading}
-                      data-testid={isLocked ? `gaps-locked-${rIdx}-${cIdx}` : `gaps-cell-${rIdx}-${cIdx}`}
+                      data-testid={
+                        isLocked
+                          ? `gaps-locked-${rIdx.toString()}-${cIdx.toString()}`
+                          : `gaps-cell-${rIdx.toString()}-${cIdx.toString()}`
+                      }
                       className={`relative p-0 border-0 bg-transparent rounded ${focusRingWhite} ${ringClass} ${dnd.isDragSource(zone) ? 'opacity-50' : ''}`}
                     >
                       <AnimatedCard card={cell} width={cardWidth} />
