@@ -32,7 +32,6 @@ type ApiArgs = {
   config?: { cpuDifficulty?: number };
 };
 
-// At/above this total pot (pot + carryPot) the bourré penalty is flagged in warning color.
 const BOURRE_PENALTY_WARN_THRESHOLD = 10;
 
 const TUTORIAL_STEPS: TutorialStep[] = [
@@ -325,7 +324,7 @@ function BourrePageContent() {
               {t('decideSummary', {
                 pot: state.pot,
                 penalty: state.pot + state.carryPot,
-                defaultValue: 'Pot: {{pot}} | Bourré penalty: {{penalty}}',
+                defaultValue: 'Pot: {{pot}} chips | Bourré penalty: {{penalty}} chips',
               })}
             </p>
           )}
