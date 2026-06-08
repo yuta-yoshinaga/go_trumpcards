@@ -58,7 +58,7 @@ const withHintState: EightOffResponse = {
 
 const withHintFromColState: EightOffResponse = {
   ...playingState,
-  hint: { fromZone: 'tableau', fromCol: 2, cardIndex: 0, toZone: 'foundation', toCol: -1 },
+  hint: { fromZone: 'tableau', fromCol: 0, cardIndex: 0, toZone: 'foundation', toCol: -1 },
 };
 
 const withFreeCellCardState: EightOffResponse = {
@@ -312,24 +312,25 @@ describe('EightOffPage', () => {
 
   // --- Hint display ---
 
-  it('hint display when hint is set', async () => {
+  it('highlights the hint target column (success ring) when a hint is set', async () => {
     renderWithProviders(<EightOffPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
 
-    mockExec.mockResolvedValue(withHintState);
+    mockExec.mockResolvedValue(withHintState); // toZone tableau, toCol 3
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
-    await waitFor(() => expect(screen.getAllByText(/ヒント/).length).toBeGreaterThanOrEqual(1));
+    await waitFor(() => expect(screen.getByTestId('eo-col-3').className).toContain('ring-ds-success'));
+    expect(screen.getByTestId('eo-col-0').className).not.toContain('ring-ds-success');
   });
 
-  it('hint display shows fromCol when fromCol is non-negative', async () => {
+  it('highlights the hint source card with an info ring when fromZone is tableau', async () => {
     renderWithProviders(<EightOffPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
 
-    mockExec.mockResolvedValue(withHintFromColState);
+    mockExec.mockResolvedValue(withHintFromColState); // fromZone tableau, fromCol 0, cardIndex 0
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
-    await waitFor(() => expect(screen.getByText(/tableau 2/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('eo-tableau-0-0').className).toContain('ring-ds-info'));
   });
 
   // --- Keyboard shortcuts ---

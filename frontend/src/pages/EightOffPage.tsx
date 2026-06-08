@@ -175,6 +175,12 @@ function EightOffPageContent() {
     selectedSource.cell === cell &&
     selectedSource.cardIndex === cardIndex;
 
+  // Visual hint: ring the suggested source card (info) and target zone (success).
+  const isHintSourceTableau = (colIdx: number, cardIdx: number) =>
+    hint != null && hint.fromZone === 'tableau' && hint.fromCol === colIdx && hint.cardIndex === cardIdx;
+  const isHintSourceFreecell = (cell: number) => hint != null && hint.fromZone === 'freecell' && hint.fromCol === cell;
+  const isHintTarget = (zone: string, col: number) => hint != null && hint.toZone === zone && hint.toCol === col;
+
   return (
     <GamePageShell
       title={tc('nav.eightoff')}
@@ -237,7 +243,7 @@ function EightOffPageContent() {
                             draggable={isPlaying && !loading}
                             onDragStart={dnd.handleDragStart(freeCellZone)}
                             onDragEnd={dnd.handleDragEnd}
-                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('freecell', undefined, idx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(freeCellZone) ? 'opacity-50' : ''}`}
+                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('freecell', undefined, idx) ? 'ring-2 ring-ds-warning' : isHintSourceFreecell(idx) ? 'ring-2 ring-ds-info animate-pulse' : ''} ${dnd.isDragSource(freeCellZone) ? 'opacity-50' : ''}`}
                           >
                             <AnimatedCard card={card} width={cardWidth} draggable={false} />
                           </button>
@@ -248,7 +254,7 @@ function EightOffPageContent() {
                             disabled={!isPlaying || loading || !selectedSource}
                             aria-label={t('emptyFreecellAriaLabel', { idx: String(idx) })}
                             style={{ width: cardWidth, height: cardHeight }}
-                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${isHintTarget('freecell', idx) ? ' ring-2 ring-ds-success animate-pulse' : ''}`}
                           >
                             {t('empty')}
                           </button>
@@ -283,7 +289,7 @@ function EightOffPageContent() {
                               suit: FOUNDATION_SUITS[idx],
                               cardCount: String(pile.length),
                             })}
-                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
+                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}${isHintTarget('foundation', idx) ? ' ring-2 ring-ds-success animate-pulse' : ''}`}
                           >
                             <AnimatedCard
                               card={pile[pile.length - 1]}
@@ -299,7 +305,7 @@ function EightOffPageContent() {
                             disabled={!isPlaying || loading || !selectedSource}
                             aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
                             style={{ width: cardWidth, height: cardHeight }}
-                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${isHintTarget('foundation', idx) ? ' ring-2 ring-ds-success animate-pulse' : ''}`}
                           >
                             A
                           </button>
@@ -317,7 +323,11 @@ function EightOffPageContent() {
                 {state.tableau.map((col: (Card | null)[], colIdx: number) => {
                   const tableauColZone: EightOffMoveZone = { zone: 'tableau', col: colIdx };
                   return (
-                    <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
+                    <div
+                      key={`col-${colIdx.toString()}`}
+                      data-testid={`eo-col-${colIdx.toString()}`}
+                      className={`flex-1 min-w-0${isHintTarget('tableau', colIdx) ? ' rounded ring-2 ring-ds-success animate-pulse' : ''}`}
+                    >
                       <DropZone
                         isDropTarget={dnd.isDropTarget(tableauColZone)}
                         onDragOver={dnd.handleDragOver(tableauColZone)}
@@ -368,6 +378,7 @@ function EightOffPageContent() {
                                       }}
                                       disabled={!isPlaying || loading}
                                       aria-label={cardAlt(card)}
+                                      data-testid={`eo-tableau-${colIdx.toString()}-${cardIdx.toString()}`}
                                       aria-pressed={isSourceSelected('tableau', colIdx, undefined, cardIdx)}
                                       draggable={isPlaying && !loading && !exceedsSupermove}
                                       onDragStart={dnd.handleDragStart(cardZone)}
@@ -388,6 +399,9 @@ function EightOffPageContent() {
                                         focusRingWhite,
                                         isSourceSelected('tableau', colIdx, undefined, cardIdx) &&
                                           'ring-2 ring-ds-warning',
+                                        !isSourceSelected('tableau', colIdx, undefined, cardIdx) &&
+                                          isHintSourceTableau(colIdx, cardIdx) &&
+                                          'ring-2 ring-ds-info animate-pulse',
                                         dnd.isDragSource(cardZone) && 'opacity-50',
                                         exceedsSupermove && 'opacity-60 ring-1 ring-ds-error',
                                         isInHoveredBlock && 'ring-2 ring-ds-success',
@@ -418,14 +432,7 @@ function EightOffPageContent() {
               </div>
             </div>
 
-            {/* Hint display */}
-            {hint && (
-              <div className="text-ds-warning text-sm mb-2">
-                {t('hintAvailable')}: {hint.fromZone}
-                {hint.fromCol >= 0 ? ` ${hint.fromCol}` : ''} → {hint.toZone}
-                {hint.toCol >= 0 ? ` ${hint.toCol}` : ''}
-              </div>
-            )}
+            {/* Hint is shown via ring highlights on the suggested source card and target zone. */}
             {frontendHintEnabled && frontendHint && (
               <div className="flex justify-center">
                 <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
