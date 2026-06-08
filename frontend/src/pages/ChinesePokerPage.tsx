@@ -128,6 +128,11 @@ function ChinesePokerPageContent() {
     () => assignments.map((a, i) => (a === 'middle' ? i : -1)).filter((i) => i >= 0),
     [assignments],
   );
+  // Cards not assigned to front/middle implicitly form the back (bottom) row.
+  const backIndices = useMemo(
+    () => (state?.playerCards ?? []).map((_, i) => i).filter((i) => !assignments[i]),
+    [state?.playerCards, assignments],
+  );
   const canSet = frontIndices.length === 3 && middleIndices.length === 5;
 
   const toggleCard = useCallback((index: number) => {
@@ -260,6 +265,28 @@ function ChinesePokerPageContent() {
                         </span>
                       )}
                     </button>
+                  ))}
+                </div>
+
+                {/* Front / middle / back row preview */}
+                <div className="mt-3 space-y-1" data-testid="cp-row-preview">
+                  {(
+                    [
+                      { key: 'front', label: t('previewFront'), indices: frontIndices, need: 3 },
+                      { key: 'middle', label: t('previewMiddle'), indices: middleIndices, need: 5 },
+                      { key: 'back', label: t('previewBack'), indices: backIndices, need: 5 },
+                    ] as const
+                  ).map((row) => (
+                    <div key={row.key} className="flex items-center gap-2">
+                      <span className="w-24 shrink-0 text-ds-text-muted text-xs">
+                        {row.label} ({row.indices.length}/{row.need})
+                      </span>
+                      <div className="flex flex-wrap gap-0.5" data-testid={`cp-row-${row.key}`}>
+                        {row.indices.map((idx) => (
+                          <AnimatedCard key={idx} card={state.playerCards[idx]} width={cardWidth * 0.6} />
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>

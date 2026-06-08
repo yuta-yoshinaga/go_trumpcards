@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, ChinesePokerResponse } from '../types/card';
@@ -103,6 +103,21 @@ describe('ChinesePokerPage', () => {
     await waitFor(() => expect(screen.getByTestId('set-hands-button')).toBeInTheDocument());
     const cardButtons = screen.getAllByRole('button', { name: /Card \d+/ });
     expect(cardButtons.length).toBe(13);
+  });
+
+  it('shows the front/middle/back row preview and updates it on assignment', async () => {
+    mockExec.mockResolvedValue(setHandsState);
+    renderWithProviders(<ChinesePokerPage />);
+    await screen.findByTestId('cp-row-preview');
+    const back = () => within(screen.getByTestId('cp-row-back')).queryAllByTestId('animated-card');
+    const front = () => within(screen.getByTestId('cp-row-front')).queryAllByTestId('animated-card');
+    // Initially everything is unassigned → all 13 cards sit in the back row.
+    expect(back()).toHaveLength(13);
+    expect(front()).toHaveLength(0);
+    // First click assigns the card to the front row.
+    fireEvent.click(screen.getByRole('button', { name: 'Card 0' }));
+    expect(front()).toHaveLength(1);
+    expect(back()).toHaveLength(12);
   });
 
   it('set button disabled when not enough cards selected', async () => {
