@@ -4,7 +4,7 @@ import { egyptianRatscrewApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { EgyptianRatscrewResponse } from '../types/card';
-import { EgyptianRatscrewPhase } from '../types/phases';
+import { EgyptianRatscrewPhase, EgyptianRatscrewSlapReason } from '../types/phases';
 import { EgyptianRatscrewPage } from './EgyptianRatscrewPage';
 
 vi.mock('../hooks/useCliMode', () => ({
@@ -164,13 +164,13 @@ describe('EgyptianRatscrewPage', () => {
   });
 
   it('shows a pair slap-reason badge while slappable', async () => {
-    mockExec.mockResolvedValueOnce({ ...slappableState, lastSlapReason: 1 }); // 1 = PAIR
+    mockExec.mockResolvedValueOnce({ ...slappableState, lastSlapReason: EgyptianRatscrewSlapReason.PAIR });
     renderWithProviders(<EgyptianRatscrewPage />);
     await waitFor(() => expect(screen.getByTestId('er-slap-reason')).toHaveTextContent('ペア'));
   });
 
   it('labels the slap-reason badge as a sandwich when applicable', async () => {
-    mockExec.mockResolvedValueOnce({ ...slappableState, lastSlapReason: 2 }); // 2 = SANDWICH
+    mockExec.mockResolvedValueOnce({ ...slappableState, lastSlapReason: EgyptianRatscrewSlapReason.SANDWICH });
     renderWithProviders(<EgyptianRatscrewPage />);
     await waitFor(() => expect(screen.getByTestId('er-slap-reason')).toHaveTextContent('サンドイッチ'));
   });
