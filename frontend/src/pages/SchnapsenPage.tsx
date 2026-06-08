@@ -21,7 +21,7 @@ import type { SchnapsenResponse } from '../types/card';
 import { SchnapsenPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 
-/** Tutorial steps for the Schnapsen page. v1 ships without a guided tour. */
+/** Guided tutorial steps for the Schnapsen page (trump/stock, trick, hand, actions). */
 const SCHNAPSEN_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="schnapsen-trump"]', messageKey: 'tutorial.trump', placement: 'bottom', advanceOn: 'next' },
   { target: '[data-tutorial="schnapsen-trick"]', messageKey: 'tutorial.trick', placement: 'bottom', advanceOn: 'next' },
