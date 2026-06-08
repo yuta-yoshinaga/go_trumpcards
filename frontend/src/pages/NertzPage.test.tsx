@@ -152,6 +152,19 @@ describe('NertzPage', () => {
     expect(await screen.findByTestId('nertz-scorebar-0')).toHaveStyle({ width: '0%' });
   });
 
+  it('caps the score bar at 100% when the score exceeds the target', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      players: [{ ...playingState.players[0], score: 150 }, playingState.players[1]], // > targetScore 100
+    });
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    expect(await screen.findByTestId('nertz-scorebar-0')).toHaveStyle({ width: '100%' });
+  });
+
   it('clicking the stock dispatches a draw command', async () => {
     renderWithProviders(
       <MemoryRouter initialEntries={['/nertz']}>

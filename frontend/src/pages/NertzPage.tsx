@@ -353,7 +353,9 @@ function NertzPageContent() {
                         role="progressbar"
                         aria-valuemin={0}
                         aria-valuemax={state.targetScore}
-                        aria-valuenow={p.score}
+                        // WAI-ARIA requires aria-valuenow within [min, max]; clamp it
+                        // (the raw score is still shown in the numeric label).
+                        aria-valuenow={Math.max(0, Math.min(p.score, state.targetScore))}
                         aria-label={t('labels.scoreBarAria', {
                           player: label,
                           score: p.score,
