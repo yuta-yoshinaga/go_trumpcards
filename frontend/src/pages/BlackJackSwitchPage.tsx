@@ -277,6 +277,7 @@ function BlackJackSwitchPageContent() {
                   onBlur={() => setSwitchPreview(false)}
                   onTouchStart={() => setSwitchPreview(true)}
                   onTouchEnd={() => setSwitchPreview(false)}
+                  onTouchCancel={() => setSwitchPreview(false)}
                   data-testid="switch-button"
                   disabled={loading}
                 >
