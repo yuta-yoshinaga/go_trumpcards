@@ -244,7 +244,7 @@ function EightOffPageContent() {
                             draggable={isPlaying && !loading}
                             onDragStart={dnd.handleDragStart(freeCellZone)}
                             onDragEnd={dnd.handleDragEnd}
-                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('freecell', undefined, idx) ? 'ring-2 ring-ds-warning' : isHintSourceFreecell(idx) ? 'ring-2 ring-ds-info animate-pulse' : ''} ${dnd.isDragSource(freeCellZone) ? 'opacity-50' : ''}`}
+                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${isSourceSelected('freecell', undefined, idx) ? 'ring-2 ring-ds-warning' : isHintSourceFreecell(idx) ? 'ring-2 ring-ds-info animate-pulse' : focusRingWhite} ${dnd.isDragSource(freeCellZone) ? 'opacity-50' : ''}`}
                           >
                             <AnimatedCard card={card} width={cardWidth} draggable={false} />
                           </button>
@@ -400,15 +400,16 @@ function EightOffPageContent() {
                                       data-supermove-block={isInHoveredBlock ? 'true' : undefined}
                                       className={[
                                         'p-0 border-0 bg-transparent cursor-pointer w-full rounded',
-                                        focusRingWhite,
-                                        isSourceSelected('tableau', colIdx, undefined, cardIdx) &&
-                                          'ring-2 ring-ds-warning',
-                                        !isSourceSelected('tableau', colIdx, undefined, cardIdx) &&
-                                          isHintSourceTableau(colIdx, cardIdx) &&
-                                          'ring-2 ring-ds-info animate-pulse',
+                                        isSourceSelected('tableau', colIdx, undefined, cardIdx)
+                                          ? 'ring-2 ring-ds-warning'
+                                          : isHintSourceTableau(colIdx, cardIdx)
+                                            ? 'ring-2 ring-ds-info animate-pulse'
+                                            : exceedsSupermove
+                                              ? 'opacity-60 ring-1 ring-ds-error'
+                                              : isInHoveredBlock
+                                                ? 'ring-2 ring-ds-success'
+                                                : focusRingWhite,
                                         dnd.isDragSource(cardZone) && 'opacity-50',
-                                        exceedsSupermove && 'opacity-60 ring-1 ring-ds-error',
-                                        isInHoveredBlock && 'ring-2 ring-ds-success',
                                       ]
                                         .filter(Boolean)
                                         .join(' ')}
