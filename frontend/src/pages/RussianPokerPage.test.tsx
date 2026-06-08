@@ -70,4 +70,18 @@ describe('RussianPokerPage', () => {
     const line = screen.getByTestId('russian-exchange-fee-line');
     expect(line).toHaveTextContent('選択中: 1枚');
   });
+
+  it('shows the high-risk warning and error styling at 4+ selected cards', async () => {
+    renderWithProviders(<RussianPokerPage />);
+    await screen.findByTestId('russian-exchange-fee-line');
+    // Select 4 of the 5 hand cards (11=J, 12=Q via cardAlt).
+    fireEvent.click(screen.getByAltText('♠ 10'));
+    fireEvent.click(screen.getByAltText('♥ J'));
+    fireEvent.click(screen.getByAltText('♦ Q'));
+    fireEvent.click(screen.getByAltText('♣ 3'));
+    const line = screen.getByTestId('russian-exchange-fee-line');
+    expect(line).toHaveTextContent('選択中: 4枚');
+    expect(within(line).getByText(/⚠/)).toBeInTheDocument();
+    expect(line.querySelector('.text-ds-error')).not.toBeNull();
+  });
 });
