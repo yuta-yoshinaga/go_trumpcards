@@ -28,6 +28,7 @@ import {
   type TienLenCliArgs,
 } from '../utils/cli/commands/tienlenCommands';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isValidTienLenCombo } from '../utils/tienLenComboValidator';
 
 // Values match the Go domain constants: 0=Normal, 1=Easy, 2=Hard
 // (see TienLenConfig.go / TienLenCuiController help text).
@@ -119,7 +120,10 @@ function TienLenPageContent() {
   const humanWon = isGameEnd && state.players[0]?.rank === 1;
   const isHumanTurn = state.currentTurn === 0 && !isGameEnd;
   const human = state.players[0];
-  const canPlay = isHumanTurn && selectedIndices.length > 0;
+  const selectedCards = selectedIndices.map((i) => human.cards[i]).filter((c): c is NonNullable<typeof c> => c != null);
+  const hasValidCombo = isValidTienLenCombo(selectedCards);
+  const canPlay = isHumanTurn && selectedIndices.length > 0 && hasValidCombo;
+  const showInvalidCombo = isHumanTurn && selectedIndices.length > 0 && !hasValidCombo;
   const phaseName = isGameEnd ? t('phase.end') : t('phase.play');
 
   return (
@@ -252,6 +256,15 @@ function TienLenPageContent() {
           <ReplaySpeedSettingsPanel />
 
           <GameFooter className={`${gameTheme.tienlen.footer} px-4 py-2.5`}>
+            {showInvalidCombo && (
+              <p
+                role="status"
+                data-testid="tl-invalid-combo"
+                className="mb-1 text-center font-medium text-ds-warning text-xs"
+              >
+                {t('invalidCombo')}
+              </p>
+            )}
             <div className="flex gap-2 justify-center flex-wrap" data-tutorial="tl-play-pass">
               <button
                 type="button"

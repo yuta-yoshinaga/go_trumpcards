@@ -11,6 +11,7 @@
   "tableEmpty": "(empty)",
   "playButton": "Play Selected",
   "passButton": "Pass",
+  "invalidCombo": "Not a valid combination (single, pair, triple, straight, double-sequence, or four of a kind)",
   "phase": {
     "play": "Play",
     "end": "End"
