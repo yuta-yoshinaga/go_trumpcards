@@ -20,6 +20,8 @@
   "label.sweep": "Sweeps",
   "label.buildValue": "Build Value",
   "label.remainingDeck": "Deck",
+  "label.cpuStats": "{{cards}} cards / {{score}} pt",
+  "label.humanStats": "Hand {{hand}} / Captured {{captured}} / Sweeps {{sweep}} / Total {{score}} pt",
   "settings.cpuDifficulty": "CPU Difficulty",
   "settings.targetScore": "Target Score",
   "settings.multiBuild": "Multi-Builds",

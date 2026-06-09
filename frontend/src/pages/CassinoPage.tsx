@@ -216,7 +216,8 @@ function CassinoPageContent() {
                 .map((p) => (
                   <div key={p.id} className="text-center">
                     <div className="text-xs text-ds-text-muted mb-1">
-                      {tc('player.cpu', { id: p.id })} — {p.cardCount}枚 / {p.totalScore}pt
+                      {tc('player.cpu', { id: p.id })} —{' '}
+                      {t('label.cpuStats', { cards: p.cardCount, score: p.totalScore })}
                     </div>
                     <div className="flex gap-0.5 justify-center">
                       {Array.from({ length: Math.min(p.cardCount, 8) }, (_, i) => (
@@ -288,9 +289,13 @@ function CassinoPageContent() {
             {/* Human hand */}
             <div className="text-center" data-tutorial="cs-player-hand">
               <div className="text-xs text-ds-text-muted mb-1">
-                {tc('player.you')} — 手札{human.cardCount}枚 / 捕獲{human.capturedCount}枚 / スイープ{human.sweepCount}{' '}
-                / 累計
-                {human.totalScore}pt
+                {tc('player.you')} —{' '}
+                {t('label.humanStats', {
+                  hand: human.cardCount,
+                  captured: human.capturedCount,
+                  sweep: human.sweepCount,
+                  score: human.totalScore,
+                })}
               </div>
               <div className="flex flex-wrap justify-center gap-2">
                 {human.cards.map((c, i) => (
