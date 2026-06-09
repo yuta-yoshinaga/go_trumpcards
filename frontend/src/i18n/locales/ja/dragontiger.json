@@ -32,8 +32,7 @@
     "tie": "タイ",
     "oddsBadge": "{{type}} ×{{odds}}",
     "win": "勝ち +{{amount}}",
-    "loss": "負け {{amount}}",
-    "even": "増減なし"
+    "loss": "負け -{{amount}}"
   },
   "tutorial": {
     "betButtons": "ドラゴン・タイガー・タイのいずれかを選んでベット",

@@ -32,8 +32,7 @@
     "tie": "Tie",
     "oddsBadge": "{{type}} ×{{odds}}",
     "win": "Win +{{amount}}",
-    "loss": "Loss {{amount}}",
-    "even": "No change"
+    "loss": "Loss -{{amount}}"
   },
   "tutorial": {
     "betButtons": "Pick Dragon, Tiger, or Tie and place your bet",

@@ -73,6 +73,8 @@ func TestDragonTigerCuiPresenter_Output_TigerWins(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "タイガーの勝ち")
+	// Player bet Dragon (×1) here, so the odds line reads ×1.
+	assert.Contains(t, result, "DRAGON ×1")
 }
 
 // Regression coverage for the gemini/Claude review: the result message color

@@ -186,6 +186,17 @@ describe('DragonTigerPage', () => {
     expect(diff).toHaveClass('text-ds-success');
   });
 
+  it('shows the tiger-win result and ×1 badge for a winning Tiger bet', async () => {
+    mockApi.mockResolvedValueOnce(tigerWinOnTigerBetState); // result -1, bet Tiger 100, payout 200
+    renderWithProviders(<DragonTigerPage />);
+    const breakdown = await screen.findByTestId('payout-breakdown');
+    expect(breakdown).toHaveTextContent('タイガーの勝ち');
+    expect(breakdown).toHaveTextContent('タイガー ×1');
+    const diff = screen.getByTestId('payout-diff');
+    expect(diff).toHaveTextContent('+100');
+    expect(diff).toHaveClass('text-ds-success');
+  });
+
   it('shows the ×8 odds badge and a big green profit for a Tie-bet win', async () => {
     mockApi.mockResolvedValueOnce(tieWinOnTieBetState); // bet Tie 100, payout 900
     renderWithProviders(<DragonTigerPage />);
