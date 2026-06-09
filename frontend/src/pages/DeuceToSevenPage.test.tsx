@@ -88,7 +88,9 @@ describe('DeuceToSevenPage', () => {
     mockExec.mockResolvedValue(baseState({ pot: 120, dealerIdx: 2 }));
     renderWithProviders(<DeuceToSevenPage />);
     await waitFor(() => expect(screen.getByText('120')).toBeInTheDocument());
-    expect(screen.getByText(/Player 2/)).toBeInTheDocument();
+    // Dealer renders via playerName (CPU 2), not the raw index.
+    expect(screen.getAllByText('CPU 2').length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Player 2|プレイヤー 2/)).not.toBeInTheDocument();
   });
 
   it('renders the pre-draw badge on the initial deal', async () => {

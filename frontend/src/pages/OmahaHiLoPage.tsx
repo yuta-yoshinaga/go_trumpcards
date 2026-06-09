@@ -43,6 +43,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { OMAHA_HELP, parseOmahaCommand } from '../utils/cli/commands/omahaCommands';
 import { formatOmahaState } from '../utils/cli/formatters/omahaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { findPlayerName } from '../utils/playerUtils';
 
 /** Omaha Hi-Lo (8 or Better) tutorial step definitions. */
 const OHL_TUTORIAL_STEPS: TutorialStep[] = [
@@ -230,7 +231,7 @@ function OmahaHiLoPageContent() {
             </strong>
           </span>
           <span>
-            {tc('label.dealer')} <strong>Player {state?.dealerIdx ?? 0}</strong>
+            {tc('label.dealer')} <strong>{findPlayerName(state.players, state.dealerIdx)}</strong>
           </span>
           {state?.tournamentMode && (
             <span>{t('handNumber', { count: state.handCount, level: state.blindLevelHands })}</span>

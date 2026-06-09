@@ -37,6 +37,7 @@ import type { SevenCardStudResponse } from '../types/card';
 import { SevenCardStudPhase, SevenCardStudRebuyPhaseType } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { findPlayerName } from '../utils/playerUtils';
 
 /** Razz tutorial step definitions. */
 const RAZZ_TUTORIAL_STEPS: TutorialStep[] = [
@@ -266,10 +267,7 @@ function RazzPageContent() {
             </strong>
           </span>
           <span>
-            {tc('label.dealer')}{' '}
-            <strong>
-              {tc('label.player')} {state?.dealerIdx ?? 0}
-            </strong>
+            {tc('label.dealer')} <strong>{findPlayerName(state.players, state.dealerIdx)}</strong>
           </span>
           {state?.tournamentMode && (
             <span>{t('handNumber', { count: state.handCount, level: state.anteLevelHands })}</span>

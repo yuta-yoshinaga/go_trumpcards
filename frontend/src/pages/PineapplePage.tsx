@@ -43,6 +43,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { PINEAPPLE_HELP, parsePineappleCommand } from '../utils/cli/commands/pineappleCommands';
 import { formatPineappleState } from '../utils/cli/formatters/pineappleFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { findPlayerName } from '../utils/playerUtils';
 
 /** Pineapple Poker tutorial step definitions. */
 const PN_TUTORIAL_STEPS: TutorialStep[] = [
@@ -260,7 +261,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
             </strong>
           </span>
           <span>
-            {tc('label.dealer')} <strong>Player {state?.dealerIdx ?? 0}</strong>
+            {tc('label.dealer')} <strong>{findPlayerName(state.players, state.dealerIdx)}</strong>
           </span>
           {state?.tournamentMode && (
             <span>{t('handNumber', { count: state.handCount, level: state.blindLevelHands })}</span>

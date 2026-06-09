@@ -256,11 +256,23 @@ describe('HoldemPage', () => {
   });
 
   // ---- info bar ----
-  it('shows pot and dealer index', async () => {
+  it('shows pot and the dealer name via playerName (CPU dealer)', async () => {
     mockExec.mockResolvedValue(preFlopState);
     renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/ポット:/)).toBeInTheDocument());
     expect(screen.getByText(/ディーラー:/)).toBeInTheDocument();
+    // Dealer renders via playerName (CPU 3), not the raw index.
+    expect(screen.getAllByText('CPU 3').length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Player 3|プレイヤー 3/)).not.toBeInTheDocument();
+  });
+
+  it('shows あなた as the dealer name when the human is the dealer', async () => {
+    mockExec.mockResolvedValue({ ...preFlopState, dealerIdx: 0 }); // player 0 is the human
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(screen.getByText(/ディーラー:/)).toBeInTheDocument());
+    // The dealer <strong> renders the human label, not "Player 0".
+    expect(screen.queryByText(/Player 0|プレイヤー 0/)).not.toBeInTheDocument();
+    expect(screen.getAllByText('あなた').length).toBeGreaterThan(0);
   });
 
   // ---- community cards ----

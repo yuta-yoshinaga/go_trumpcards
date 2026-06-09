@@ -39,6 +39,7 @@ import { DEUCE_TO_SEVEN_HELP, parseDeuceToSevenCommand } from '../utils/cli/comm
 import { formatDeuceToSevenState } from '../utils/cli/formatters/deuceToSevenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isMadePatLow } from '../utils/deuceToSevenUtils';
+import { findPlayerName } from '../utils/playerUtils';
 
 /** 2-7 Triple Draw tutorial step definitions. */
 const D7_TUTORIAL_STEPS: TutorialStep[] = [
@@ -207,7 +208,7 @@ function DeuceToSevenPageContent() {
       headerEnd={
         <>
           <span>
-            {tc('label.dealer')} <strong>Player {state?.dealerIdx ?? 0}</strong>
+            {tc('label.dealer')} <strong>{findPlayerName(state.players, state.dealerIdx)}</strong>
           </span>
           <span className="text-xs bg-black/20 text-ds-text-primary px-2 py-0.5 rounded">
             {drawIndex === 0 ? t('preDrawLabel') : t('drawBadge', { n: drawIndex })}

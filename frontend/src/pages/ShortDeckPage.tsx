@@ -44,6 +44,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseShortdeckCommand, SHORTDECK_HELP } from '../utils/cli/commands/shortdeckCommands';
 import { formatShortdeckState } from '../utils/cli/formatters/shortdeckFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { findPlayerName } from '../utils/playerUtils';
 
 /** Short Deck Hold'em tutorial step definitions. */
 const SD_TUTORIAL_STEPS: TutorialStep[] = [
@@ -230,7 +231,7 @@ function ShortDeckPageContent() {
             </strong>
           </span>
           <span>
-            {tc('label.dealer')} <strong>Player {state?.dealerIdx ?? 0}</strong>
+            {tc('label.dealer')} <strong>{findPlayerName(state.players, state.dealerIdx)}</strong>
           </span>
           {state?.tournamentMode && (
             <span>{t('handNumber', { count: state.handCount, level: state.blindLevelHands })}</span>
