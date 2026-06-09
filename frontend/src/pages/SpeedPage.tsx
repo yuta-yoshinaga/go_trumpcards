@@ -338,12 +338,7 @@ function SpeedPageContent() {
             ]}
           />
           <GameFooter>
-            <button
-              type="button"
-              onClick={handleHint}
-              disabled={loading || !isPlayPhase}
-              className={`${btnOutline} text-sm`}
-            >
+            <button type="button" onClick={handleHint} disabled={loading || !isPlayPhase} className={btnOutline}>
               {tc('button.hint')}
             </button>
             <ActionLogSection
