@@ -53,6 +53,8 @@ func TestDragonTigerCuiPresenter_Output_DragonWins(t *testing.T) {
 	assert.Contains(t, result, "タイガー")
 	assert.Contains(t, result, "ドラゴンの勝ち")
 	assert.Contains(t, result, "払戻し: 200")
+	// Dragon pays 1:1, so the odds line reads ×1.
+	assert.Contains(t, result, "DRAGON ×1")
 }
 
 func TestDragonTigerCuiPresenter_Output_TigerWins(t *testing.T) {
@@ -71,6 +73,8 @@ func TestDragonTigerCuiPresenter_Output_TigerWins(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "タイガーの勝ち")
+	// Player bet Dragon (×1) here, so the odds line reads ×1.
+	assert.Contains(t, result, "DRAGON ×1")
 }
 
 // Regression coverage for the gemini/Claude review: the result message color
@@ -156,6 +160,8 @@ func TestDragonTigerCuiPresenter_Output_Tie_TieBetWins(t *testing.T) {
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "タイベット的中")
 	assert.Contains(t, result, "払戻し: 900")
+	// Tie pays 8:1, so the odds line reads ×8.
+	assert.Contains(t, result, "TIE ×8")
 }
 
 func TestDragonTigerCuiPresenter_Output_Error(t *testing.T) {

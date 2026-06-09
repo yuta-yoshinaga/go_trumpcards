@@ -69,6 +69,18 @@ func (dp *DragonTigerCuiPresenter) Output(dt interfaces.DragonTigerGame, lastErr
 				}
 			default:
 			}
+			// Show the bet type and its odds (Tie pays 8:1, Dragon/Tiger 1:1) so the
+			// payout figure below is self-explanatory.
+			odds := 1
+			betTypeKey := "dragontiger.betTypeDragon"
+			switch betType {
+			case domain.DragonTigerBetTiger:
+				betTypeKey = "dragontiger.betTypeTiger"
+			case domain.DragonTigerBetTie:
+				betTypeKey = "dragontiger.betTypeTie"
+				odds = 8
+			}
+			b.WriteString(i18n.Tf("dragontiger.oddsLine", "type", i18n.T(betTypeKey), "odds", strconv.Itoa(odds)) + "\n")
 			b.WriteString(i18n.Tf("dragontiger.payoutLine", "payout", strconv.Itoa(dt.GetPayout())) + "\n")
 		}
 	})

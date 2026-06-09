@@ -97,6 +97,27 @@ function DragonTigerPageContent() {
 
   const phaseName = isBetPhase ? t('phase.bet') : t('phase.end');
 
+  // END-phase payout breakdown (state is non-null past the guard above).
+  const odds = state.betType === DragonTigerBetType.TIE ? 8 : 1;
+  const betTypeName =
+    state.betType === DragonTigerBetType.DRAGON
+      ? t('payout.dragon')
+      : state.betType === DragonTigerBetType.TIGER
+        ? t('payout.tiger')
+        : t('payout.tie');
+  // GameResult wire value: 1 = Dragon wins, -1 = Tiger wins, 0 = tie.
+  const resultKey =
+    state.result > 0
+      ? 'dragonWins'
+      : state.result < 0
+        ? 'tigerWins'
+        : state.betType === DragonTigerBetType.TIE
+          ? 'tieWin'
+          : 'tieRefund';
+  // Payouts are always a loss (< bet) or a win (> bet); a break-even is impossible.
+  const profit = state.payout - state.betAmount;
+  const isProfit = profit >= 0;
+
   return (
     <GamePageShell
       title={tc('nav.dragontiger')}
@@ -197,7 +218,19 @@ function DragonTigerPageContent() {
             )}
 
             {isEndPhase && (
-              <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="payout-breakdown">
+              <div className="text-ds-text-primary text-center text-sm mb-2 space-y-1" data-testid="payout-breakdown">
+                <div data-testid="payout-result">{t(`result.${resultKey}`)}</div>
+                <div>
+                  <span className="inline-block rounded-full bg-ds-surface-elevated px-2 py-0.5 text-xs font-medium">
+                    {t('payout.oddsBadge', { type: betTypeName, odds })}
+                  </span>
+                </div>
+                <div
+                  className={`font-medium ${isProfit ? 'text-ds-success' : 'text-ds-error'}`}
+                  data-testid="payout-diff"
+                >
+                  {isProfit ? t('payout.win', { amount: profit }) : t('payout.loss', { amount: Math.abs(profit) })}
+                </div>
                 <div className="font-bold">
                   {t('payout.total')}: {state.payout}
                 </div>

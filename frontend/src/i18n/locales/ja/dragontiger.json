@@ -26,7 +26,13 @@
     "tieRefund": "タイ (ベット額の半分を返還)"
   },
   "payout": {
-    "total": "払戻し"
+    "total": "払戻し",
+    "dragon": "ドラゴン",
+    "tiger": "タイガー",
+    "tie": "タイ",
+    "oddsBadge": "{{type}} ×{{odds}}",
+    "win": "勝ち +{{amount}}",
+    "loss": "負け -{{amount}}"
   },
   "tutorial": {
     "betButtons": "ドラゴン・タイガー・タイのいずれかを選んでベット",
