@@ -20,6 +20,8 @@
   "label.sweep": "スイープ",
   "label.buildValue": "宣言値",
   "label.remainingDeck": "山札残",
+  "label.cpuStats": "{{cards}}枚 / {{score}}pt",
+  "label.humanStats": "手札{{hand}}枚 / 捕獲{{captured}}枚 / スイープ{{sweep}} / 累計{{score}}pt",
   "settings.cpuDifficulty": "CPU難易度",
   "settings.targetScore": "目標点",
   "settings.multiBuild": "複合ビルド",
