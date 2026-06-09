@@ -246,3 +246,4 @@ Key routing rules:
 - Code quality, health check → invoke health
 - Per-game improvement proposals → GitHub issues ("各ゲームの改善提案", "全ゲームのissueを作って") → invoke game-improve
 - New-game candidates → GitHub issues ("追加した方が良いゲームを提案", "新規ゲーム候補をissueに") → invoke propose-games
+- Implement a single GitHub issue end-to-end ("issueに着手して", "#NNNN を対応して", "implement issue #N") → invoke improve-issue (explicit `/improve-issue <#>`)

@@ -10,14 +10,7 @@ allowed-tools:
   - Grep
   - Glob
   - AskUserQuestion
-triggers:
-  - issueに着手
-  - issueを対応
-  - issueをやって
-  - issueをマージまで
-  - 改善issueの実装
-  - implement issue
-  - work the issue
+# Explicit-invocation only (it commits and opens PRs); run it with `/improve-issue <#>`.
 disable-model-invocation: true
 ---
 
@@ -61,8 +54,9 @@ the lowest-effort still-open issue from the batch the user names.
    cd frontend && bun run test -- --run src/pages/<X>Page.test.tsx
    cd frontend && bun run check          # biome + design-tokens (NOT tsc — see gotchas)
    ```
-   For Go changes also: `goimports -w <file>` (at `/home/yuta/go/bin/goimports`),
-   `go vet -tags test ./internal/adapter/presenter/` and run the focused package
+   For Go changes also: `goimports -w <file>` (install with
+   `go install golang.org/x/tools/cmd/goimports@latest`; ensure `$(go env GOPATH)/bin`
+   is on `PATH`), `go vet -tags test ./internal/adapter/presenter/` and run the focused package
    test (`internal/domain` OOMs locally — CI-gate it; `adapter/presenter` is fine).
 
 5. **Commit (Conventional Commits), push, open the PR.**
