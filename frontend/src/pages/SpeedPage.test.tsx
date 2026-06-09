@@ -214,6 +214,15 @@ describe('SpeedPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
   });
 
+  it('uses the design-system button token (not Bootstrap classes) for the hint button', async () => {
+    renderWithProviders(<SpeedPage />);
+    const hint = await screen.findByRole('button', { name: 'ヒント' });
+    // btnOutline token applied; legacy Bootstrap classes gone.
+    expect(hint.className).toContain('border');
+    expect(hint.className).not.toContain('btn-outline');
+    expect(hint.className).not.toMatch(/\bbtn\b/);
+  });
+
   it('shows phase as stuck when phase is 1', async () => {
     mockExec.mockResolvedValue(stuckState);
     renderWithProviders(<SpeedPage />);

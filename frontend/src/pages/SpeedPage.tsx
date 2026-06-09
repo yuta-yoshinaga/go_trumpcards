@@ -22,6 +22,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { AUTO_FLIP_DELAY_MS, CPU_DIFFICULTY_OPTIONS, useSpeedGame } from '../hooks/useSpeedGame';
 import { useSound } from '../providers/SoundProvider';
+import { btnOutline } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import type { SpeedResponse } from '../types/card';
 import { SpeedPhase } from '../types/phases';
@@ -341,7 +342,7 @@ function SpeedPageContent() {
               type="button"
               onClick={handleHint}
               disabled={loading || !isPlayPhase}
-              className="btn btn-sm btn-outline"
+              className={`${btnOutline} text-sm`}
             >
               {tc('button.hint')}
             </button>
