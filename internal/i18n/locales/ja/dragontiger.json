@@ -19,5 +19,6 @@
   "tigerWins": "タイガーの勝ち！",
   "tieWin": "タイ！タイベット的中！",
   "tieRefund": "タイ。ベット額の半分を返還します。",
+  "oddsLine": "ベット: {{type}} ×{{odds}}",
   "payoutLine": "払戻し: {{payout}}"
 }

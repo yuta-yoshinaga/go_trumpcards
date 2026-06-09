@@ -19,5 +19,6 @@
   "tigerWins": "Tiger wins!",
   "tieWin": "Tie! You win the tie bet.",
   "tieRefund": "Tie. Half of your bet is refunded.",
+  "oddsLine": "Bet: {{type}} ×{{odds}}",
   "payoutLine": "payout: {{payout}}"
 }

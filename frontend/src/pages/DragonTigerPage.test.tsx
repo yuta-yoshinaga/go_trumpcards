@@ -59,8 +59,8 @@ const tigerWinOnTigerBetState: DragonTigerResponse = {
   chips: 1100,
   betAmount: 100,
   betType: DragonTigerBetType.TIGER,
-  // result===2 (GameResultLose, tiger-side won) but the player took Tiger so they win.
-  result: 2,
+  // GameResult wire value: -1 (GameResultLose = Tiger side won); the player took Tiger so they win.
+  result: -1,
   payout: 200,
   history: [DragonTigerHistoryResult.TIGER],
   message: 'Tiger wins!',
@@ -74,7 +74,7 @@ const tieWinOnTieBetState: DragonTigerResponse = {
   chips: 1800,
   betAmount: 100,
   betType: DragonTigerBetType.TIE,
-  result: 3,
+  result: 0,
   payout: 900,
   history: [DragonTigerHistoryResult.TIE],
   message: 'Tie! You win the tie bet.',
@@ -89,7 +89,7 @@ const tieRefundOnDragonBetState: DragonTigerResponse = {
   betAmount: 100,
   betType: DragonTigerBetType.DRAGON,
   // Tie outcome: half-refund on a Dragon bet means payout < betAmount → no celebration.
-  result: 3,
+  result: 0,
   payout: 50,
   history: [DragonTigerHistoryResult.TIE],
   message: 'Tie. Half of your bet is refunded.',
@@ -173,5 +173,36 @@ describe('DragonTigerPage', () => {
     mockApi.mockResolvedValueOnce(tieRefundOnDragonBetState);
     renderWithProviders(<DragonTigerPage />);
     await waitFor(() => expect(screen.getByText('払戻し: 50')).toBeInTheDocument());
+  });
+
+  it('shows the payout breakdown — result, ×1 odds badge, and a green profit — for a Dragon win', async () => {
+    mockApi.mockResolvedValueOnce(dragonWinState); // bet Dragon 100, payout 200
+    renderWithProviders(<DragonTigerPage />);
+    const breakdown = await screen.findByTestId('payout-breakdown');
+    expect(breakdown).toHaveTextContent('ドラゴンの勝ち');
+    expect(breakdown).toHaveTextContent('ドラゴン ×1');
+    const diff = screen.getByTestId('payout-diff');
+    expect(diff).toHaveTextContent('+100');
+    expect(diff).toHaveClass('text-ds-success');
+  });
+
+  it('shows the ×8 odds badge and a big green profit for a Tie-bet win', async () => {
+    mockApi.mockResolvedValueOnce(tieWinOnTieBetState); // bet Tie 100, payout 900
+    renderWithProviders(<DragonTigerPage />);
+    const breakdown = await screen.findByTestId('payout-breakdown');
+    expect(breakdown).toHaveTextContent('タイ ×8');
+    expect(screen.getByTestId('payout-result')).toHaveTextContent('的中'); // tieWin text
+    const diff = screen.getByTestId('payout-diff');
+    expect(diff).toHaveTextContent('+800');
+    expect(diff).toHaveClass('text-ds-success');
+  });
+
+  it('distinguishes a tie refund with a red loss diff for a Dragon bet', async () => {
+    mockApi.mockResolvedValueOnce(tieRefundOnDragonBetState); // bet Dragon 100, payout 50
+    renderWithProviders(<DragonTigerPage />);
+    const diff = await screen.findByTestId('payout-diff');
+    expect(diff).toHaveTextContent('-50');
+    expect(diff).toHaveClass('text-ds-error');
+    expect(screen.getByTestId('payout-result')).toHaveTextContent('返還'); // tieRefund text
   });
 });

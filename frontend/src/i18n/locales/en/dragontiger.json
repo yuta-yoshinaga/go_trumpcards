@@ -26,7 +26,14 @@
     "tieRefund": "Tie (half bet refunded)"
   },
   "payout": {
-    "total": "Payout"
+    "total": "Payout",
+    "dragon": "Dragon",
+    "tiger": "Tiger",
+    "tie": "Tie",
+    "oddsBadge": "{{type}} ×{{odds}}",
+    "win": "Win +{{amount}}",
+    "loss": "Loss {{amount}}",
+    "even": "No change"
   },
   "tutorial": {
     "betButtons": "Pick Dragon, Tiger, or Tie and place your bet",

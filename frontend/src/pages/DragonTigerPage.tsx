@@ -196,13 +196,50 @@ function DragonTigerPageContent() {
               </div>
             )}
 
-            {isEndPhase && (
-              <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="payout-breakdown">
-                <div className="font-bold">
-                  {t('payout.total')}: {state.payout}
-                </div>
-              </div>
-            )}
+            {isEndPhase &&
+              (() => {
+                const odds = state.betType === DragonTigerBetType.TIE ? 8 : 1;
+                const betTypeName =
+                  state.betType === DragonTigerBetType.DRAGON
+                    ? t('payout.dragon')
+                    : state.betType === DragonTigerBetType.TIGER
+                      ? t('payout.tiger')
+                      : t('payout.tie');
+                // GameResult: 1 = Dragon wins, -1 = Tiger wins, 0 = tie.
+                const resultKey =
+                  state.result > 0
+                    ? 'dragonWins'
+                    : state.result < 0
+                      ? 'tigerWins'
+                      : state.betType === DragonTigerBetType.TIE
+                        ? 'tieWin'
+                        : 'tieRefund';
+                const profit = state.payout - state.betAmount;
+                const profitCls = profit > 0 ? 'text-ds-success' : profit < 0 ? 'text-ds-error' : 'text-ds-text-muted';
+                return (
+                  <div
+                    className="text-ds-text-primary text-center text-sm mb-2 space-y-1"
+                    data-testid="payout-breakdown"
+                  >
+                    <div data-testid="payout-result">{t(`result.${resultKey}`)}</div>
+                    <div>
+                      <span className="inline-block rounded-full bg-ds-surface-elevated px-2 py-0.5 text-xs font-medium">
+                        {t('payout.oddsBadge', { type: betTypeName, odds })}
+                      </span>
+                    </div>
+                    <div className={`font-medium ${profitCls}`} data-testid="payout-diff">
+                      {profit > 0
+                        ? t('payout.win', { amount: profit })
+                        : profit < 0
+                          ? t('payout.loss', { amount: profit })
+                          : t('payout.even')}
+                    </div>
+                    <div className="font-bold">
+                      {t('payout.total')}: {state.payout}
+                    </div>
+                  </div>
+                );
+              })()}
 
             {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
           </div>
