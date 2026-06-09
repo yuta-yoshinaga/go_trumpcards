@@ -27,6 +27,10 @@
   "moveReserveToTableau": "Reserve → Tableau",
   "moveWasteToFoundation": "Waste → Foundation",
   "moveWasteToTableau": "Waste → Tableau",
+  "moveWasteToCol": "W→{{col}}",
+  "moveReserveToCol": "R→{{col}}",
+  "moveToFoundation": "→F",
+  "moveToCol": "→T{{col}}",
   "moveTableauToFoundation": "Tableau → Foundation",
   "frontendHint": {
     "moveToFoundation": "A card can be moved to the foundation",
