@@ -4,6 +4,7 @@
     "round": "Round",
     "moveCount": "Moves",
     "score": "Score",
+    "scoreBarAria": "{{player}}: {{score}} of {{target}}",
     "you": "You",
     "cpu": "CPU",
     "nertz": "Nertz pile",
