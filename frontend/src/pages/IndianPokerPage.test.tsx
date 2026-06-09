@@ -172,11 +172,23 @@ describe('IndianPokerPage', () => {
   });
 
   // ---- info bar ----
-  it('shows pot and dealer index', async () => {
-    mockExec.mockResolvedValue(bettingState);
+  it('shows pot and the dealer name via playerName (CPU dealer)', async () => {
+    mockExec.mockResolvedValue(bettingState); // dealerIdx 3 → CPU
     renderWithProviders(<IndianPokerPage />);
     await waitFor(() => expect(screen.getByText(/ポット:/)).toBeInTheDocument());
     expect(screen.getByText(/ディーラー:/)).toBeInTheDocument();
+    // Dealer renders via playerName (CPU 3), not the raw "Player 3" index.
+    expect(screen.getAllByText('CPU 3').length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Player 3/)).not.toBeInTheDocument();
+  });
+
+  it('shows あなた as the dealer name when the human is the dealer', async () => {
+    mockExec.mockResolvedValue({ ...bettingState, dealerIdx: 0 }); // player 0 is the human
+    renderWithProviders(<IndianPokerPage />);
+    await waitFor(() => expect(screen.getByText(/ディーラー:/)).toBeInTheDocument());
+    // The dealer <strong> renders the human label, not "Player 0".
+    expect(screen.queryByText(/Player 0/)).not.toBeInTheDocument();
+    expect(screen.getAllByText('あなた').length).toBeGreaterThan(0);
   });
 
   it('shows ante in info bar', async () => {
