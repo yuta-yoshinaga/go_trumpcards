@@ -8,5 +8,20 @@
   "helpNext": "  n                    next trick",
   "helpNextRound": "  nr                   next round",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
-  "helpSetTarget": "  sl <n>               game-end target score"
+  "helpSetTarget": "  sl <n>               game-end target score",
+  "hintNone": "No hint available.",
+  "hintBid": "[HINT: {{choice}} ({{reason}})]",
+  "hintPickSkat": "[HINT: {{choice}} the skat ({{reason}})]",
+  "hintDiscard": "[HINT: discard [{{idx}}]{{card}} ({{reason}})]",
+  "hintDeclare": "[HINT: declare {{game}} ({{reason}})]",
+  "hintPlay": "[HINT: play [{{idx}}]{{card}} ({{reason}})]",
+  "choiceBidPass": "pass",
+  "choiceBidAccept": "accept",
+  "choiceSkatDecline": "decline",
+  "choiceSkatPickUp": "pick up",
+  "hintReasonStrategicBid": "strategic bid",
+  "hintReasonSkatPickup": "skat pickup",
+  "hintReasonDiscardLow": "discard low cards",
+  "hintReasonGameChoice": "best game choice",
+  "hintReasonBestPlay": "best play"
 }

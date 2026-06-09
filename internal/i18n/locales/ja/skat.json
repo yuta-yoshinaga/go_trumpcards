@@ -8,5 +8,20 @@
   "helpNext": "  n                    next trick",
   "helpNextRound": "  nr                   next round",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
-  "helpSetTarget": "  sl <n>               game-end target score"
+  "helpSetTarget": "  sl <n>               game-end target score",
+  "hintNone": "ヒントはありません。",
+  "hintBid": "[ヒント: {{choice}} ({{reason}})]",
+  "hintPickSkat": "[ヒント: スカートを{{choice}} ({{reason}})]",
+  "hintDiscard": "[ヒント: [{{idx}}]{{card}} を捨てる ({{reason}})]",
+  "hintDeclare": "[ヒント: {{game}} を宣言 ({{reason}})]",
+  "hintPlay": "[ヒント: [{{idx}}]{{card}} をプレイ ({{reason}})]",
+  "choiceBidPass": "パス",
+  "choiceBidAccept": "アクセプト",
+  "choiceSkatDecline": "見送る",
+  "choiceSkatPickUp": "取得する",
+  "hintReasonStrategicBid": "戦略的なビッド",
+  "hintReasonSkatPickup": "スカート取得",
+  "hintReasonDiscardLow": "低いカードを捨てる",
+  "hintReasonGameChoice": "最適なゲーム選択",
+  "hintReasonBestPlay": "最善手"
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupSkatCuiMock() *interfaces.MockSkatGame {
@@ -95,6 +96,8 @@ func TestSkatCuiPresenter_HintOutput(t *testing.T) {
 	orig := color.NoColor()
 	color.SetNoColor(true)
 	defer color.SetNoColor(orig)
+	i18n.SetLang("en")
+	defer i18n.SetLang("ja")
 	p := new(presenter.SkatCuiPresenter)
 
 	t.Run("no hint", func(t *testing.T) {
@@ -252,6 +255,8 @@ func TestSkatCuiPresenter_HintOutputAllBranches(t *testing.T) {
 	orig := color.NoColor()
 	color.SetNoColor(true)
 	defer color.SetNoColor(orig)
+	i18n.SetLang("en")
+	defer i18n.SetLang("ja")
 	p := new(presenter.SkatCuiPresenter)
 
 	t.Run("discard hint", func(t *testing.T) {
@@ -308,4 +313,42 @@ func TestSkatCuiPresenter_HintOutputAllBranches(t *testing.T) {
 		m.On("GetHint").Return(&domain.SkatHint{Reason: "best_play"})
 		assert.Contains(t, p.HintOutput(m), "No hint")
 	})
+}
+
+func TestSkatCuiPresenter_HintOutput_Localized(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.SkatCuiPresenter)
+
+	t.Run("ja renders Japanese hint + reason", func(t *testing.T) {
+		i18n.SetLang("ja")
+		m := setupSkatCuiMock()
+		val := 1
+		m.On("GetHint").Return(&domain.SkatHint{Bid: &val, Reason: "strategic_bid"})
+		out := p.HintOutput(m)
+		assert.Contains(t, out, "アクセプト")   // choiceBidAccept
+		assert.Contains(t, out, "戦略的なビッド") // hintReasonStrategicBid
+		assert.NotContains(t, out, "strategic bid")
+	})
+
+	t.Run("ja renders Japanese no-hint", func(t *testing.T) {
+		i18n.SetLang("ja")
+		m := setupSkatCuiMock()
+		m.On("GetHint").Return((*domain.SkatHint)(nil))
+		assert.Contains(t, p.HintOutput(m), "ヒントはありません")
+	})
+
+	t.Run("en renders English hint + reason", func(t *testing.T) {
+		i18n.SetLang("en")
+		defer i18n.SetLang("ja")
+		m := setupSkatCuiMock()
+		val := 1
+		m.On("GetHint").Return(&domain.SkatHint{Bid: &val, Reason: "strategic_bid"})
+		out := p.HintOutput(m)
+		assert.Contains(t, out, "accept")
+		assert.Contains(t, out, "strategic bid")
+	})
+
+	i18n.SetLang("ja")
 }

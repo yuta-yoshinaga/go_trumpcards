@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -119,26 +120,27 @@ func (p *SkatCuiPresenter) Output(s interfaces.SkatGame, lastErr error) string {
 func (p *SkatCuiPresenter) HintOutput(s interfaces.SkatGame) string {
 	hint := s.GetHint()
 	if hint == nil {
-		return "No hint available.\n"
+		return i18n.T("skat.hintNone") + "\n"
 	}
+	reason := hintReasonStr(hint.Reason, skatHintReasonKeys)
 	if hint.Bid != nil {
-		choice := "pass"
+		choice := i18n.T("skat.choiceBidPass")
 		if *hint.Bid == 1 {
-			choice = "accept"
+			choice = i18n.T("skat.choiceBidAccept")
 		}
-		return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: %s (%s)]", choice, skatHintReasonStr(hint.Reason))))
+		return color.Yellow(i18n.Tf("skat.hintBid", "choice", choice, "reason", reason)) + "\n"
 	}
 	if hint.PickSkat != nil {
-		choice := "decline"
+		choice := i18n.T("skat.choiceSkatDecline")
 		if *hint.PickSkat {
-			choice = "pick up"
+			choice = i18n.T("skat.choiceSkatPickUp")
 		}
-		return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: %s the skat (%s)]", choice, skatHintReasonStr(hint.Reason))))
+		return color.Yellow(i18n.Tf("skat.hintPickSkat", "choice", choice, "reason", reason)) + "\n"
 	}
 	if hint.DiscardIndex != nil {
-		player := s.GetPlayer(0)
-		card := player.GetCard(*hint.DiscardIndex)
-		return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: discard [%d]%s (%s)]", *hint.DiscardIndex, cuiCardStr(card), skatHintReasonStr(hint.Reason))))
+		card := s.GetPlayer(0).GetCard(*hint.DiscardIndex)
+		return color.Yellow(i18n.Tf("skat.hintDiscard",
+			"idx", strconv.Itoa(*hint.DiscardIndex), "card", cuiCardStr(card), "reason", reason)) + "\n"
 	}
 	if hint.GameType != nil {
 		gt := domain.SkatGameType(*hint.GameType)
@@ -146,14 +148,14 @@ func (p *SkatCuiPresenter) HintOutput(s interfaces.SkatGame) string {
 		if gt == domain.SkatGameSuit && hint.TrumpSuit != nil {
 			s2 = fmt.Sprintf("%s %s", s2, skatSuitSymbol(*hint.TrumpSuit))
 		}
-		return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: declare %s (%s)]", s2, skatHintReasonStr(hint.Reason))))
+		return color.Yellow(i18n.Tf("skat.hintDeclare", "game", s2, "reason", reason)) + "\n"
 	}
 	if hint.CardIndex != nil {
-		player := s.GetPlayer(0)
-		card := player.GetCard(*hint.CardIndex)
-		return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: play [%d]%s (%s)]", *hint.CardIndex, cuiCardStr(card), skatHintReasonStr(hint.Reason))))
+		card := s.GetPlayer(0).GetCard(*hint.CardIndex)
+		return color.Yellow(i18n.Tf("skat.hintPlay",
+			"idx", strconv.Itoa(*hint.CardIndex), "card", cuiCardStr(card), "reason", reason)) + "\n"
 	}
-	return "No hint available.\n"
+	return i18n.T("skat.hintNone") + "\n"
 }
 
 // ActionLogOutput returns the round's action log as text.
@@ -189,16 +191,11 @@ func skatSuitSymbol(suit int) string {
 	return "?"
 }
 
-// skatHintReasons localised reason strings.
-var skatHintReasons = map[string]string{
-	"strategic_bid": "strategic bid",
-	"skat_pickup":   "skat pickup",
-	"discard_low":   "discard low cards",
-	"game_choice":   "best game choice",
-	"best_play":     "best play",
-}
-
-// skatHintReasonStr translates a hint reason key.
-func skatHintReasonStr(reason string) string {
-	return lookupHintReason(reason, skatHintReasons)
+// skatHintReasonKeys maps Skat-specific hint-reason identifiers to i18n keys.
+var skatHintReasonKeys = map[string]string{
+	"strategic_bid": "skat.hintReasonStrategicBid",
+	"skat_pickup":   "skat.hintReasonSkatPickup",
+	"discard_low":   "skat.hintReasonDiscardLow",
+	"game_choice":   "skat.hintReasonGameChoice",
+	"best_play":     "skat.hintReasonBestPlay",
 }
