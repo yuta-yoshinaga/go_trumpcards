@@ -187,8 +187,8 @@ describe('CanfieldPage', () => {
   it('tableau-to-tableau button fires move command with correct args', async () => {
     renderWithProviders(<CanfieldPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    // Column 0 → column 1 button (each non-empty column has 3 →Tj buttons)
-    const btn = screen.getAllByRole('button', { name: /→T1/ })[0];
+    // Column 0 → column 1 button (ja moveToCol label is exactly "→1"; each non-empty column renders one per other column)
+    const btn = screen.getAllByRole('button', { name: '→1' })[0];
     btn.click();
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith(
