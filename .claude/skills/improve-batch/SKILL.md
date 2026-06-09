@@ -66,15 +66,17 @@ scope issue N+1 read-only** (don't edit — you're still on N's branch) → merg
    sync). Do **not** advance until the current PR is merged (or the issue is
    closed as a false-positive).
 
-4. **Maintain a running tally** in the batch memory file
-   (`memory/project_issues_*.md` + `MEMORY.md`): which issues are merged, which
+4. **Maintain a running tally** in the batch memory file (reuse the existing
+   `memory/project_issues_*.md` for this batch, or start a new
+   `project_issues_<lo>_<hi>.md`, and link it from `MEMORY.md`): which issues are merged, which
    PR numbers, recurring gotchas surfaced this run. Update it as you go so a
    resumed run has context.
 
 5. **Stop and surface** (don't push through) when:
    - the range is exhausted (report the final list of merged PRs + closed issues);
    - an issue genuinely needs a product/UX decision (use `AskUserQuestion`);
-   - the same CI failure recurs after a flake rerun (it may be real — `--log-failed`);
+   - the same CI failure recurs after a flake rerun (it may be real — inspect with
+     `gh run view --job <id> --log-failed`);
    - a change would touch architecture/ADR territory (out of "improvement" scope).
 
 ## Reporting
