@@ -42,6 +42,7 @@ import type {
   GapsResponse,
   GinRummyResponse,
   GoFishResponse,
+  GolfResponse,
   GongZhuResponse,
   HeartsResponse,
   HighCardFlushResponse,
@@ -154,6 +155,7 @@ import { getFreeCellHint } from '../utils/hints/freecellHint';
 import { getGapsHint } from '../utils/hints/gapsHint';
 import { getGinRummyHint } from '../utils/hints/ginrummyHint';
 import { getGoFishHint } from '../utils/hints/gofishHint';
+import { getGolfHint } from '../utils/hints/golfHint';
 import { getGongZhuHint } from '../utils/hints/gongzhuHint';
 import { getHeartsHint } from '../utils/hints/heartsHint';
 import { getHighCardFlushHint } from '../utils/hints/highcardflushHint';
@@ -286,6 +288,7 @@ const hintFactories = {
   ginrummy: (s) => getGinRummyHint(s as GinRummyResponse),
   cribbage: (s) => getCribbageHint(s as CribbageResponse),
   gofish: (s) => getGoFishHint(s as GoFishResponse),
+  golf: (s) => getGolfHint(s as GolfResponse),
   caribbeanstud: (s) => getCaribbeanStudHint(s as CaribbeanStudResponse),
   casinoholdem: (s) => getCasinoHoldemHint(s as CasinoHoldemResponse),
   texasholdembonus: (s) => getTexasHoldemBonusHint(s as TexasHoldemBonusResponse),

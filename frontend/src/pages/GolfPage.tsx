@@ -9,6 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
@@ -20,6 +21,7 @@ import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useChainCombo } from '../hooks/useChainCombo';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGolfGame } from '../hooks/useGolfGame';
 import { useSound } from '../providers/SoundProvider';
@@ -90,6 +92,11 @@ function GolfPageContent() {
     handleUndoEscape,
     handleSelectCard,
   } = useGolfGame();
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('golf', state);
   const { cardHeight, cardWidth, isMobile } = useCardDimensions();
   const windowWidth = useWindowWidth();
   // CLI mode
@@ -302,8 +309,27 @@ function GolfPageContent() {
             />
           </div>
 
+          {frontendHintEnabled && frontendHint && (
+            <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+          )}
+
           {/* Settings */}
-          <SettingsPanel title={tc('settings.title')} groups={[]} />
+          <SettingsPanel
+            title={tc('settings.title')}
+            groups={[
+              {
+                items: [
+                  {
+                    type: 'checkbox' as const,
+                    id: 'frontendHint',
+                    label: tc('hint.toggle', { ns: 'tutorial' }),
+                    checked: frontendHintEnabled,
+                    onToggle: setFrontendHintEnabled,
+                  },
+                ],
+              },
+            ]}
+          />
 
           <GameFooter className={`${gameTheme.golf.footer} px-4 py-2.5`}>
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
