@@ -12,8 +12,9 @@ test.describe('Pai Gow Poker E2E', () => {
     await waitForLoaded(page);
 
     // SET HANDS phase: select 2 cards and click セット
-    // Cards should be visible; click on the first two to select them for low hand
-    const cards = page.locator('[data-tutorial="pg-set-hands"] button[aria-label^="Card"]');
+    // Cards should be visible; click on the first two to select them for low hand.
+    // Cards are labelled with their suit/rank (cardAlt), so select by the toggle-state attribute.
+    const cards = page.locator('[data-tutorial="pg-set-hands"] button[aria-pressed]');
     await expect(cards.first()).toBeVisible({ timeout: 10_000 });
     await cards.nth(0).click();
     await cards.nth(1).click();

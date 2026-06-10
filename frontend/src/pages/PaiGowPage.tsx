@@ -28,6 +28,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { PaiGowResponse } from '../types/card';
 import { PaiGowPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { PAIGOW_HELP, parsePaigowCommand } from '../utils/cli/commands/paigowCommands';
 import { formatPaigowState } from '../utils/cli/formatters/paigowFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -239,7 +240,7 @@ function PaiGowPageContent() {
                       onClick={() => toggleCardSelection(i)}
                       className={`relative transition-transform ${selectedIndices.includes(i) ? '-translate-y-3 ring-2 ring-ds-warning rounded' : ''}`}
                       aria-pressed={selectedIndices.includes(i)}
-                      aria-label={`Card ${i}`}
+                      aria-label={cardAlt(card)}
                     >
                       <AnimatedCard card={card} width={cardWidth} />
                     </button>
