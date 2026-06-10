@@ -31,7 +31,7 @@ func (vpp *VideoPokerCuiPresenter) Output(vp interfaces.VideoPokerGame, lastErr 
 		holdLabel := i18n.T("videopoker.holdLabel")
 		parts := make([]string, len(hand))
 		for i, card := range hand {
-			s := cuiCardStr(card)
+			s := vpp.cardStr(vp, card)
 			if held[i] {
 				s += " " + holdLabel
 			}
@@ -64,6 +64,21 @@ func (vpp *VideoPokerCuiPresenter) Output(vp interfaces.VideoPokerGame, lastErr 
 // ActionLogOutput 棋譜をテキスト出力
 func (vpp *VideoPokerCuiPresenter) ActionLogOutput(vp interfaces.VideoPokerGame) string {
 	return actionLogOutputText(vp)
+}
+
+// cardStr ワイルドカードを強調した手札カード文字列（ジョーカーは太字黄、Deuces Wildの2は黄）
+func (vpp *VideoPokerCuiPresenter) cardStr(vp interfaces.VideoPokerGame, card *domain.Card) string {
+	if card == nil {
+		return cuiCardStr(card)
+	}
+	if card.GetDesign() == domain.CardDesignJoker {
+		return color.BoldYellow("JOKER")
+	}
+	if card.GetValue() == 2 && vp.GetVariantName() == "deuceswild" {
+		// 赤スートの通常色（赤）を上書きしないよう、素のスート名から組み立てる
+		return color.Yellow(cuiSuitName(card.GetDesign()) + " 2")
+	}
+	return cuiCardStr(card)
 }
 
 // phaseStr フェーズ文字列
