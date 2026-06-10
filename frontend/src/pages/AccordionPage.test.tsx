@@ -81,6 +81,24 @@ describe('AccordionPage', () => {
     await waitFor(() => expect(screen.getAllByText('ゲームオーバー').length).toBeGreaterThan(0));
   });
 
+  it('shows a clear summary banner after game clear', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<AccordionPage />);
+    await waitFor(() => expect(screen.getByTestId('result-banner')).toHaveTextContent('クリア！ 51手'));
+  });
+
+  it('shows the remaining-piles summary banner after game over', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<AccordionPage />);
+    await waitFor(() => expect(screen.getByTestId('result-banner')).toHaveTextContent('残り4パイル / 0手'));
+  });
+
+  it('does not show the result banner while playing', async () => {
+    renderWithProviders(<AccordionPage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+    expect(screen.queryByTestId('result-banner')).not.toBeInTheDocument();
+  });
+
   it('hint button triggers hint command', async () => {
     renderWithProviders(<AccordionPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
