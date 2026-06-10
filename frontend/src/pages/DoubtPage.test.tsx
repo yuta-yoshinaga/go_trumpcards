@@ -1,4 +1,4 @@
-import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, doubtApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -176,100 +176,35 @@ describe('DoubtPage', () => {
     expect(screen.getByRole('button', { name: '出す' })).toBeDisabled();
   });
 
-  it('shows claimed value input when cards are selected', async () => {
+  it('shows the claimed-value button group when cards are selected', async () => {
     renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
     fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
-    expect(screen.getByRole('spinbutton')).toBeInTheDocument();
-    // Default value 1 shows (A)
-    expect(screen.getByText('(A)')).toBeInTheDocument();
+    const group = screen.getByRole('group', { name: '宣言する値:' });
+    // 13 value buttons (A, 2-10, J, Q, K); the default value 1 is pre-selected.
+    expect(within(group).getAllByRole('button')).toHaveLength(13);
+    expect(within(group).getByRole('button', { name: 'A' })).toHaveAttribute('aria-pressed', 'true');
+    // The old numeric input (mobile numpad) is gone.
+    expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
   });
 
-  it('claim input is associated with label via htmlFor/id', async () => {
+  it('selects a claimed value by tapping its button and plays with it', async () => {
     renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
     fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
-    const input = screen.getByRole('spinbutton');
-    expect(input).toHaveAttribute('id', 'claim-input');
-    const label = input.closest('.mt-2')?.querySelector('label');
-    expect(label).toHaveAttribute('for', 'claim-input');
-  });
+    const group = screen.getByRole('group', { name: '宣言する値:' });
+    fireEvent.click(within(group).getByRole('button', { name: 'J' }));
+    expect(within(group).getByRole('button', { name: 'J' })).toHaveAttribute('aria-pressed', 'true');
+    expect(within(group).getByRole('button', { name: 'A' })).toHaveAttribute('aria-pressed', 'false');
 
-  it('claim input receives focus when it appears', async () => {
-    renderWithProviders(<DoubtPage />);
-    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
-
-    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
-    const input = screen.getByRole('spinbutton');
-    expect(document.activeElement).toBe(input);
-  });
-
-  it('changes claimed value and shows special name', async () => {
-    renderWithProviders(<DoubtPage />);
-    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
-
-    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
-    const input = screen.getByRole('spinbutton');
-
-    fireEvent.change(input, { target: { value: '11' } });
-    expect(input).toHaveValue(11);
-    expect(screen.getByText('(J)')).toBeInTheDocument();
-
-    fireEvent.change(input, { target: { value: '12' } });
-    expect(screen.getByText('(Q)')).toBeInTheDocument();
-
-    fireEvent.change(input, { target: { value: '13' } });
-    expect(screen.getByText('(K)')).toBeInTheDocument();
-
-    // Test value clamping at max
-    fireEvent.change(input, { target: { value: '14' } });
-    expect(input).toHaveValue(13);
-
-    // Test value clamping at min
-    fireEvent.change(input, { target: { value: '0' } });
-    expect(input).toHaveValue(1);
-
-    // non-numeric input is sanitized to '' by the browser; Number('') = 0 → clamped to 1
-    fireEvent.change(input, { target: { value: 'abc' } });
-    expect(input).toHaveValue(1);
-  });
-
-  it('claim input has aria-describedby linked to range hint', async () => {
-    renderWithProviders(<DoubtPage />);
-    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
-
-    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
-    const input = screen.getByRole('spinbutton');
-    expect(input).toHaveAttribute('aria-describedby', 'claim-range-hint');
-    expect(screen.getByText('1〜13の値を入力')).toBeInTheDocument();
-  });
-
-  it('shows warning when value is clamped out of range', async () => {
-    renderWithProviders(<DoubtPage />);
-    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
-
-    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
-    const input = screen.getByRole('spinbutton');
-
-    fireEvent.change(input, { target: { value: '15' } });
-    expect(screen.getByText('1〜13の範囲に調整されました')).toBeInTheDocument();
-
-    // Warning clears after 2 seconds
-    await waitFor(() => expect(screen.getByText('1〜13の値を入力')).toBeInTheDocument(), { timeout: 3000 });
-  });
-
-  it('does not show warning when value is within range', async () => {
-    renderWithProviders(<DoubtPage />);
-    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
-
-    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
-    const input = screen.getByRole('spinbutton');
-
-    fireEvent.change(input, { target: { value: '7' } });
-    expect(screen.getByText('1〜13の値を入力')).toBeInTheDocument();
-    expect(screen.queryByText('1〜13の範囲に調整されました')).not.toBeInTheDocument();
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(cpuTurnState);
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('play', [0], 11, undefined, undefined, expect.any(Number)),
+    );
   });
 
   it('calls play command with selected cards when 出す clicked', async () => {
@@ -1351,20 +1286,6 @@ describe('DoubtPage', () => {
       // No play button, keyboard should be disabled
       fireEvent.keyDown(document, { key: '1' });
       // No cards to check since game ended, just ensure no errors
-    });
-
-    it('number keys do not fire when typing in claim input', async () => {
-      renderWithProviders(<DoubtPage />);
-      await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
-
-      // Select a card to show claim input
-      fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
-      const input = screen.getByRole('spinbutton');
-
-      // Press '2' while focused on input - should not toggle second card
-      fireEvent.keyDown(input, { key: '2' });
-      const secondCardBtn = screen.getByAltText('♥ J').closest('button') as HTMLButtonElement;
-      expect(secondCardBtn).toHaveAttribute('aria-pressed', 'false');
     });
   });
 
