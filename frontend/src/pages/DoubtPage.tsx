@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { doubtApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -118,9 +118,6 @@ function DoubtPageContent() {
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
 
-  const claimInputRef = useRef<HTMLInputElement>(null);
-  const [valWarning, setValWarning] = useState(false);
-  const warningTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('doubt');
   const cliConfig: CliGameConfig<DoubtResponse, Parameters<typeof doubtApi.exec>> = useMemo(
@@ -134,22 +131,8 @@ function DoubtPageContent() {
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  useEffect(() => {
-    return () => {
-      if (warningTimeoutRef.current) {
-        clearTimeout(warningTimeoutRef.current);
-      }
-    };
-  }, []);
-
   const isHumanTurn = !state?.gameEndFlag && state?.players[state.currentTurn]?.isHuman === true;
   const showClaimInput = selectedCardIndices.length > 0 && isHumanTurn && state?.phase === 0;
-
-  useEffect(() => {
-    if (showClaimInput && claimInputRef.current) {
-      claimInputRef.current.focus();
-    }
-  }, [showClaimInput]);
 
   const isHumanPlayTurn = isHumanTurn && state?.phase === 0;
   const humanPlayer = state?.players.find((p) => p.isHuman);
@@ -508,42 +491,29 @@ function DoubtPageContent() {
                   ))}
                 </div>
 
-                {/* Claimed value input (shown when cards are selected) */}
+                {/* Claimed value buttons (shown when cards are selected) */}
                 {showClaimInput && (
-                  <div className="mt-2 flex items-center gap-2" data-tutorial="dt-claim-input">
-                    <label htmlFor="claim-input" className="text-ds-text-primary text-sm">
-                      {t('claimedValue')}
-                    </label>
-                    <input
-                      ref={claimInputRef}
-                      type="number"
-                      min={1}
-                      max={13}
-                      value={claimedValue}
-                      id="claim-input"
-                      aria-describedby="claim-range-hint"
-                      onChange={(e) => {
-                        const num = Number(e.target.value);
-                        const clamped = Math.max(1, Math.min(13, num));
-                        setClaimedValue(clamped);
-                        if (num !== clamped) {
-                          if (warningTimeoutRef.current) {
-                            clearTimeout(warningTimeoutRef.current);
+                  <fieldset className="m-0 border-0 p-0 mt-2" data-tutorial="dt-claim-input">
+                    <legend className="text-ds-text-primary text-sm mb-1">{t('claimedValue')}</legend>
+                    <div className="flex flex-wrap gap-1.5">
+                      {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => (
+                        <button
+                          key={v}
+                          type="button"
+                          className={
+                            claimedValue === v
+                              ? `${btnSecondary} min-w-[44px] ring-2 ring-ds-warning ${focusRingAccent}`
+                              : `${btnSecondary} min-w-[44px] ${focusRingAccent}`
                           }
-                          setValWarning(true);
-                          warningTimeoutRef.current = setTimeout(() => setValWarning(false), 2000);
-                        }
-                      }}
-                      className={`bg-ds-surface-elevated text-ds-text-primary rounded px-2 py-1 w-16 text-sm border border-ds-border-subtle ${focusRingAccent}`}
-                    />
-                    <span className="text-game-text-muted text-xs">({valueName(claimedValue)})</span>
-                    <span
-                      id="claim-range-hint"
-                      className={`text-xs ${valWarning ? 'text-ds-warning' : 'text-ds-text-muted'}`}
-                    >
-                      {valWarning ? t('claimRangeWarning') : t('claimRangeHint')}
-                    </span>
-                  </div>
+                          aria-pressed={claimedValue === v}
+                          onClick={() => setClaimedValue(v)}
+                          disabled={loading}
+                        >
+                          {valueName(v)}
+                        </button>
+                      ))}
+                    </div>
+                  </fieldset>
                 )}
               </div>
             )}
