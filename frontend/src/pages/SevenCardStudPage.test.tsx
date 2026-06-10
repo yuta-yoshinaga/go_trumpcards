@@ -731,4 +731,15 @@ describe('SevenCardStudPage', () => {
     const settingsSummary = Array.from(allSummaries).find((s) => s.textContent?.includes('設定'));
     expect(settingsSummary).toBeTruthy();
   });
+
+  it('renders settings via the standard SettingsPanel component', async () => {
+    mockExec.mockResolvedValue(initState);
+    const { container } = renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+    // SettingsPanel items carry stable ids (the raw <details> checkboxes had none).
+    expect(container.querySelector('#frontendHint')).toBeInTheDocument();
+    expect(container.querySelector('#cpuMetaAI')).toBeInTheDocument();
+    expect(screen.getByLabelText('ヒント表示')).toBeInTheDocument();
+    expect(screen.getByLabelText('メタAI（CPUがプレイスタイルを学習）')).toBeInTheDocument();
+  });
 });
