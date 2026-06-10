@@ -116,10 +116,11 @@ afterEach(() => {
 });
 
 describe('PinochlePage', () => {
-  it('renders loading message when no state', () => {
+  it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<PinochlePage />);
-    expect(screen.getByText('考え中...')).toBeInTheDocument();
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+    expect(screen.queryByText('考え中...')).not.toBeInTheDocument();
   });
 
   it('calls reset on mount', async () => {
