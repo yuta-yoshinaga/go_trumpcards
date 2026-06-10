@@ -28,10 +28,11 @@ import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { FortyThievesResponse } from '../types/card';
 import { FortyThievesPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { FORTYTHIEVES_HELP, parseFortythievesCommand } from '../utils/cli/commands/fortythievesCommands';
+import { formatFortythievesState } from '../utils/cli/formatters/fortythievesFormatter';
 import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
 const FOUNDATION_SUITS = ['♠', '♠', '♣', '♣', '♥', '♥', '♦', '♦'] as const;
@@ -104,9 +105,9 @@ function FortyThievesPageContent() {
   const ftCliConfig = useMemo(
     () => ({
       gameName: 'fortythieves' as const,
-      parseCommand: (_cmd: string) => ({ error: 'CLI not supported' }) as const,
-      formatResponse: (_res: FortyThievesResponse): string => '',
-      helpText: [] as string[],
+      parseCommand: parseFortythievesCommand,
+      formatResponse: formatFortythievesState,
+      helpText: FORTYTHIEVES_HELP,
     }),
     [],
   );
