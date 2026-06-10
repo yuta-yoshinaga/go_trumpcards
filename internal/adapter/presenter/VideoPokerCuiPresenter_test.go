@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
@@ -21,6 +22,7 @@ func setupVideoPokerCuiMockDefaults(m *interfaces.MockVideoPokerGame) {
 	m.On("GetHandName").Return("").Maybe()
 	m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{}).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("GetVariantName").Return("videopoker").Maybe()
 }
 
 func TestVideoPokerCuiPresenter_Output_BetPhase(t *testing.T) {
@@ -107,6 +109,7 @@ func TestVideoPokerCuiPresenter_Output_ResultPhase_Lose(t *testing.T) {
 	m.On("GetHandName").Return("").Maybe()
 	m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{}).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("GetVariantName").Return("videopoker").Maybe()
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "役なし。")
@@ -136,4 +139,77 @@ func TestVideoPokerCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetGameEndFlag").Return(false)
 	result := p.ActionLogOutput(m)
 	assert.NotEmpty(t, result)
+}
+
+func TestVideoPokerCuiPresenter_Output_JokerHighlighted(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(false)
+	defer color.SetNoColor(origNoColor)
+
+	p := new(VideoPokerCuiPresenter)
+	m := new(interfaces.MockVideoPokerGame)
+	m.On("GetChips").Return(1000).Maybe()
+	m.On("GetPhase").Return(domain.VideoPokerPhaseDraw).Maybe()
+	m.On("GetGameEndFlag").Return(false).Maybe()
+	m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{}).Maybe()
+	m.On("GetVariantName").Return("jokerpoker").Maybe()
+	m.On("GetHand").Return([]*domain.Card{
+		domain.NewCard(domain.CardDesignJoker, 0, false),
+		domain.NewCard(domain.CardDesignSpade, 5, false),
+	}).Maybe()
+
+	result := p.Output(m, nil)
+	assert.Contains(t, result, color.BoldYellow("JOKER"))
+	assert.Contains(t, result, "SPADE 5")
+}
+
+func TestVideoPokerCuiPresenter_Output_DeucesWildTwosHighlighted(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(false)
+	defer color.SetNoColor(origNoColor)
+
+	p := new(VideoPokerCuiPresenter)
+	m := new(interfaces.MockVideoPokerGame)
+	m.On("GetChips").Return(1000).Maybe()
+	m.On("GetPhase").Return(domain.VideoPokerPhaseDraw).Maybe()
+	m.On("GetGameEndFlag").Return(false).Maybe()
+	m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{}).Maybe()
+	m.On("GetVariantName").Return("deuceswild").Maybe()
+	m.On("GetHand").Return([]*domain.Card{
+		domain.NewCard(domain.CardDesignHeart, 2, false),
+		domain.NewCard(domain.CardDesignSpade, 2, false),
+		domain.NewCard(domain.CardDesignSpade, 5, false),
+	}).Maybe()
+
+	result := p.Output(m, nil)
+	assert.Contains(t, result, color.Yellow("HEART 2"))
+	assert.Contains(t, result, color.Yellow("SPADE 2"))
+	assert.NotContains(t, result, color.Yellow("SPADE 5"))
+}
+
+func TestVideoPokerCuiPresenter_Output_PlainVariantTwoNotHighlighted(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(false)
+	defer color.SetNoColor(origNoColor)
+
+	p := new(VideoPokerCuiPresenter)
+	m := new(interfaces.MockVideoPokerGame)
+	m.On("GetChips").Return(1000).Maybe()
+	m.On("GetPhase").Return(domain.VideoPokerPhaseDraw).Maybe()
+	m.On("GetGameEndFlag").Return(false).Maybe()
+	m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{}).Maybe()
+	m.On("GetVariantName").Return("videopoker").Maybe()
+	m.On("GetHand").Return([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 2, false),
+	}).Maybe()
+
+	result := p.Output(m, nil)
+	assert.Contains(t, result, "SPADE 2")
+	assert.NotContains(t, result, color.Yellow("SPADE 2"))
+}
+
+func TestVideoPokerCuiPresenter_cardStr_NilCard(t *testing.T) {
+	p := new(VideoPokerCuiPresenter)
+	m := new(interfaces.MockVideoPokerGame)
+	assert.Equal(t, "??", p.cardStr(m, nil))
 }
