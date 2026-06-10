@@ -96,6 +96,18 @@ describe('ClockSolitairePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('renders skeleton before first API response', () => {
+    mockExec.mockReturnValue(new Promise(() => undefined));
+    renderWithProviders(<ClockSolitairePage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('renders the hint toggle inside the settings panel', async () => {
+    renderWithProviders(<ClockSolitairePage />);
+    await waitFor(() => expect(screen.getByText('設定')).toBeInTheDocument());
+    expect(screen.getByLabelText('ヒント表示')).toBeInTheDocument();
+  });
+
   it('shows game clear phase name', async () => {
     mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<ClockSolitairePage />);
