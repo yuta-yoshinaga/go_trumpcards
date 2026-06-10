@@ -311,6 +311,8 @@ function RussianSolitairePageContent() {
       ? t('foundation')
       : `${t('tableau')} ${state.hint.toCol}`
     : '';
+  const hintCard = state.hint ? state.tableau[state.hint.fromCol]?.[state.hint.cardIndex]?.card : null;
+  const hintCardName = hintCard ? cardAlt(hintCard) : '';
 
   const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
     selectedSource !== null &&
@@ -528,7 +530,7 @@ function RussianSolitairePageContent() {
             {/* Visually hidden so the hint costs no footer space, but still announced to AT. */}
             {state.hint && (
               <div className="sr-only" role="status" aria-live="polite">
-                {t('hintFromAria', { dest: hintDest })}
+                {t('hintAnnouncement', { card: hintCardName, dest: hintDest })}
               </div>
             )}
             {frontendHintEnabled && frontendHint && (
