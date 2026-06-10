@@ -306,6 +306,11 @@ function RussianSolitairePageContent() {
   const isGameOver = state.phase === RussianSolitairePhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
   const autoCompleteReady = isTableauAllFaceUp(state.tableau);
+  const hintDest = state.hint
+    ? state.hint.toZone === 'foundation'
+      ? t('foundation')
+      : `${t('tableau')} ${state.hint.toCol}`
+    : '';
 
   const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
     selectedSource !== null &&
@@ -438,11 +443,16 @@ function RussianSolitairePageContent() {
                         const isDragSrc = dnd.isDragSource(zone);
                         const isLast = cardIdx === col.length - 1;
 
-                        // Hint highlight
+                        // Hint highlight (announced via the card aria-labels, no visible text panel)
                         const hintFrom =
                           state.hint && state.hint.fromCol === colIdx && state.hint.cardIndex === cardIdx;
                         const hintTo =
                           state.hint && state.hint.toZone === 'tableau' && state.hint.toCol === colIdx && isLast;
+                        const hintAria = hintFrom
+                          ? ` ${t('hintFromAria', { dest: hintDest })}`
+                          : hintTo
+                            ? ` ${t('hintToAria')}`
+                            : '';
 
                         return (
                           <div key={cardIdx} className="absolute" style={{ top: cardIdx * rs.co, zIndex: cardIdx }}>
@@ -485,7 +495,7 @@ function RussianSolitairePageContent() {
                                         }
                                       }}
                                       disabled={!isPlaying}
-                                      aria-label={tc.card ? cardAlt(tc.card) : ''}
+                                      aria-label={`${tc.card ? cardAlt(tc.card) : ''}${hintAria}`}
                                     >
                                       {tc.card && <AnimatedCard card={tc.card} width={rs.cw} />}
                                     </button>
@@ -515,13 +525,10 @@ function RussianSolitairePageContent() {
 
             {error && <ErrorAlert message={error} onRetry={retry} />}
 
+            {/* Visually hidden so the hint costs no footer space, but still announced to AT. */}
             {state.hint && (
-              <div
-                className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1"
-                role="status"
-                aria-live="polite"
-              >
-                {state.hint.toZone === 'foundation' ? t('foundation') : `${t('tableau')} ${state.hint.toCol}`}
+              <div className="sr-only" role="status" aria-live="polite">
+                {t('hintFromAria', { dest: hintDest })}
               </div>
             )}
             {frontendHintEnabled && frontendHint && (
