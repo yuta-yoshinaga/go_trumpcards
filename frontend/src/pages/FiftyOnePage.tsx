@@ -157,6 +157,13 @@ function FiftyOnePageContent() {
   const human = state.players[0];
   const phaseName = isGameEnd ? t('phase.end') : t('phase.play');
   const canExchange = isHumanTurn && selectedHandIdx !== null && selectedTableIdx !== null;
+  const exchangeGuide = !isHumanTurn
+    ? ''
+    : selectedHandIdx === null
+      ? t('guide.selectHand')
+      : selectedTableIdx === null
+        ? t('guide.selectTable')
+        : '';
 
   return (
     <GamePageShell
@@ -316,6 +323,7 @@ function FiftyOnePageContent() {
                 type="button"
                 onClick={handleExchange}
                 disabled={loading || !canExchange}
+                title={exchangeGuide || undefined}
                 className="px-4 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="exchange-button"
               >
@@ -353,6 +361,10 @@ function FiftyOnePageContent() {
                 hideActionLog={hideActionLog}
               />
             </div>
+            {/* Always rendered so the footer height stays stable while selections toggle. */}
+            <p className="text-xs text-ds-text-muted text-center mt-1 mb-0 min-h-4" role="note">
+              {exchangeGuide}
+            </p>
           </GameFooter>
         </>
       )}

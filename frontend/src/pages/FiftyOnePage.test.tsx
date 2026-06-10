@@ -123,6 +123,33 @@ describe('FiftyOnePage', () => {
     expect(exchangeBtn).toBeDisabled();
   });
 
+  it('guides the next selection while the exchange button is disabled', async () => {
+    const { FiftyOnePage } = await import('./FiftyOnePage');
+    renderWithProviders(<FiftyOnePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    // Nothing selected → prompt for a hand card.
+    expect(screen.getByText('手札を選択してください')).toBeInTheDocument();
+
+    // Hand selected → prompt for a table card.
+    fireEvent.click(screen.getByRole('button', { name: '♠ A' }));
+    expect(screen.getByText('場札を選択してください')).toBeInTheDocument();
+    expect(screen.queryByText('手札を選択してください')).not.toBeInTheDocument();
+
+    // Both selected → guide disappears, button enabled.
+    fireEvent.click(screen.getByRole('button', { name: '♠ K' }));
+    expect(screen.queryByText(/を選択してください/)).not.toBeInTheDocument();
+    expect(screen.getByTestId('exchange-button')).not.toBeDisabled();
+  });
+
+  it('hides the selection guide when it is not the human turn', async () => {
+    mockExec.mockResolvedValue({ ...baseState, currentTurn: 1 });
+    const { FiftyOnePage } = await import('./FiftyOnePage');
+    renderWithProviders(<FiftyOnePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByText(/を選択してください/)).not.toBeInTheDocument();
+  });
+
   it('renders suit score badges and highlights the leading suit', async () => {
     const { FiftyOnePage } = await import('./FiftyOnePage');
     renderWithProviders(<FiftyOnePage />);

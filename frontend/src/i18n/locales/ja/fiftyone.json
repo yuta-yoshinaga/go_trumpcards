@@ -4,6 +4,10 @@
     "exchangeAll": "全交換",
     "stop": "ストップ"
   },
+  "guide": {
+    "selectHand": "手札を選択してください",
+    "selectTable": "場札を選択してください"
+  },
   "phase": {
     "play": "プレイ中",
     "end": "終了"

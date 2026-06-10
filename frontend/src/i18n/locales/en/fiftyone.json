@@ -4,6 +4,10 @@
     "exchangeAll": "Exchange All",
     "stop": "Stop"
   },
+  "guide": {
+    "selectHand": "Select a card from your hand",
+    "selectTable": "Select a table card"
+  },
   "phase": {
     "play": "Playing",
     "end": "End"
