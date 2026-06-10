@@ -11,6 +11,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -207,11 +208,7 @@ function PinochlePageContent() {
   }, [state?.players, state?.playerMelds, t]);
 
   if (!state) {
-    return (
-      <div className="p-4 text-center text-ds-text-primary">
-        <p>{tc('status.thinking')}</p>
-      </div>
-    );
+    return <GameSkeleton gameKey="pinochle" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 12 }} />;
   }
 
   const phase = state.phase;
