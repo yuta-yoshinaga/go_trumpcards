@@ -108,8 +108,11 @@ describe('RussianSolitairePage', () => {
     );
     expect(screen.getByRole('button', { name: /ヒント: 移動先/ })).toBeInTheDocument();
     // The hint live region survives for screen readers but is visually hidden,
-    // so it no longer squeezes the footer on mobile.
-    expect(screen.getByRole('status')).toHaveClass('sr-only');
+    // so it no longer squeezes the footer on mobile. It names the card since
+    // "this card" is ambiguous when announced without focus context.
+    const liveRegion = screen.getByRole('status');
+    expect(liveRegion).toHaveClass('sr-only');
+    expect(liveRegion).toHaveTextContent('♥ 8');
   });
 
   it('labels the hint source with the foundation destination', async () => {
