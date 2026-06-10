@@ -164,6 +164,78 @@ describe('OhHellPage', () => {
     });
   });
 
+  it('shows the bid-progress chip in the header during play', async () => {
+    renderWithProviders(<OhHellPage />);
+    // Human bid 2, won 0, 5 cards left \u2192 still achievable \u2192 neutral info colors.
+    const chip = await screen.findByTestId('bid-progress-chip');
+    expect(chip).toHaveTextContent('\u5ba3\u8a00: 2 / \u7372\u5f97: 0');
+    expect(chip.className).toContain('border-ds-border-subtle');
+  });
+
+  it('colors the progress chip green when tricks match the bid', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      players: [{ ...playPhaseState.players[0], trickCount: 2 }, ...playPhaseState.players.slice(1)],
+    });
+    renderWithProviders(<OhHellPage />);
+    const chip = await screen.findByTestId('bid-progress-chip');
+    expect(chip).toHaveTextContent('\u5ba3\u8a00: 2 / \u7372\u5f97: 2');
+    expect(chip.className).toContain('border-ds-success');
+  });
+
+  it('colors the progress chip yellow when tricks exceed the bid', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      players: [{ ...playPhaseState.players[0], trickCount: 3 }, ...playPhaseState.players.slice(1)],
+    });
+    renderWithProviders(<OhHellPage />);
+    const chip = await screen.findByTestId('bid-progress-chip');
+    expect(chip.className).toContain('border-ds-warning');
+  });
+
+  it('colors the progress chip red when the bid is no longer reachable', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      players: [{ ...playPhaseState.players[0], cardCount: 1 }, ...playPhaseState.players.slice(1)],
+    });
+    renderWithProviders(<OhHellPage />);
+    // Needs 2 more tricks with only 1 card left.
+    const chip = await screen.findByTestId('bid-progress-chip');
+    expect(chip.className).toContain('border-ds-error');
+  });
+
+  it('does not turn red while the human card in the unresolved trick can still win', async () => {
+    // 1 card in hand + 1 card already played into the open trick → 2 winnable tricks, bid 2 reachable.
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      currentTrick: [{ playerIdx: 0, card: { design: 'SPADE', value: 9 } }],
+      players: [{ ...playPhaseState.players[0], cardCount: 1 }, ...playPhaseState.players.slice(1)],
+    });
+    renderWithProviders(<OhHellPage />);
+    const chip = await screen.findByTestId('bid-progress-chip');
+    expect(chip.className).toContain('border-ds-border-subtle');
+    expect(chip.className).not.toContain('border-ds-error');
+  });
+
+  it('hides the progress chip during the bid phase and at game end', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    let view = renderWithProviders(<OhHellPage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+    expect(screen.queryByTestId('bid-progress-chip')).not.toBeInTheDocument();
+    view.unmount();
+
+    mockExec.mockResolvedValue(gameEndState);
+    view = renderWithProviders(<OhHellPage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+    expect(screen.queryByTestId('bid-progress-chip')).not.toBeInTheDocument();
+    view.unmount();
+
+    mockExec.mockResolvedValue(gameEndByFlagState);
+    renderWithProviders(<OhHellPage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+    expect(screen.queryByTestId('bid-progress-chip')).not.toBeInTheDocument();
+  });
+
   it('renders bid phase as a button group of bid choices', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<OhHellPage />);

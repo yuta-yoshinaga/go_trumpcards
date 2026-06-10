@@ -32,6 +32,7 @@
   "roundScore": "Round: {{score}}",
   "bid": "Bid {{n}}",
   "bidNone": "No bid",
+  "bidProgress": "Bid: {{bid}} / Won: {{won}}",
   "currentTrick": "Current Trick",
   "scores": "Scores",
   "scoresPlayer": "Player",
