@@ -288,11 +288,14 @@ describe('BigOPage', () => {
   });
 
   // ---- info bar ----
-  it('shows pot and dealer index', async () => {
+  it('shows pot and the dealer name via playerName (CPU dealer)', async () => {
     mockExec.mockResolvedValue(preFlopState);
     renderWithProviders(<BigOPage />);
     await waitFor(() => expect(screen.getByText(/ポット:/)).toBeInTheDocument());
     expect(screen.getByText(/ディーラー:/)).toBeInTheDocument();
+    // Dealer renders via playerName (CPU 3), not the raw index.
+    expect(screen.getAllByText('CPU 3').length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Player 3|プレイヤー 3/)).not.toBeInTheDocument();
   });
 
   // ---- community cards ----

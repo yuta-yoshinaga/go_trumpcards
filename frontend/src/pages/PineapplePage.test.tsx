@@ -194,6 +194,16 @@ describe('PineapplePage', () => {
     await waitFor(() => expect(screen.getByText('初期化中')).toBeInTheDocument());
   });
 
+  it('shows pot and the dealer name via playerName (CPU dealer)', async () => {
+    mockExec.mockResolvedValue(preFlopState); // dealerIdx 3 → CPU
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByText(/ポット:/)).toBeInTheDocument());
+    expect(screen.getByText(/ディーラー:/)).toBeInTheDocument();
+    // Dealer renders via playerName (CPU 3), not the raw index.
+    expect(screen.getAllByText('CPU 3').length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Player 3|プレイヤー 3/)).not.toBeInTheDocument();
+  });
+
   it('shows betting controls during pre-flop when it is human turn', async () => {
     mockExec.mockResolvedValue(preFlopState);
     renderWithProviders(<PineapplePage />);

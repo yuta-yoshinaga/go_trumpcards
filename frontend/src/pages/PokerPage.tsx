@@ -41,6 +41,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { POKER_HELP, parsePokerCommand } from '../utils/cli/commands/pokerCommands';
 import { formatPokerState } from '../utils/cli/formatters/pokerFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { findPlayerName } from '../utils/playerUtils';
 
 const POKER_PHASE_KEYS: Readonly<Record<number, string>> = {
   [PokerPhase.INIT]: 'init',
@@ -211,7 +212,7 @@ function PokerPageContent() {
       headerEnd={
         <>
           <span>
-            {tc('label.dealer')} <strong>Player {state?.dealerIdx ?? 0}</strong>
+            {tc('label.dealer')} <strong>{findPlayerName(state.players, state.dealerIdx)}</strong>
           </span>
           {(state?.jokerCount ?? 0) > 0 && (
             <span>
