@@ -746,6 +746,17 @@ describe('RazzPage', () => {
     expect(settingsSummary).toBeTruthy();
   });
 
+  it('renders settings via the standard SettingsPanel component', async () => {
+    mockExec.mockResolvedValue(initState);
+    const { container } = renderWithProviders(<RazzPage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+    // SettingsPanel items carry stable ids (the raw <details> checkboxes had none).
+    expect(container.querySelector('#frontendHint')).toBeInTheDocument();
+    expect(container.querySelector('#cpuMetaAI')).toBeInTheDocument();
+    expect(screen.getByLabelText('ヒント表示')).toBeInTheDocument();
+    expect(screen.getByLabelText('メタAI（CPUがプレイスタイルを学習）')).toBeInTheDocument();
+  });
+
   // ---- CLI mode ----
   it('renders CliTerminal when CLI mode is enabled', async () => {
     mockUseCliMode.mockReturnValue({
