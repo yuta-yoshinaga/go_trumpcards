@@ -9,9 +9,13 @@ const DESIGN_SYMBOLS: Record<string, string> = {
   CLOVER: '♣',
 };
 
+/** Return the suit symbol for a card design (e.g. SPADE → ♠), or the raw design when unknown. */
+export function suitSymbol(design: Card['design']): string {
+  return DESIGN_SYMBOLS[design] ?? design;
+}
+
 /** Return accessible alt text for a card: localized "Joker" for jokers, "♠ A" style for normal cards. */
 export function cardAlt(card: Card): string {
   if (card.design === 'JOKER') return i18n.t('common:card.joker');
-  const symbol = DESIGN_SYMBOLS[card.design] ?? card.design;
-  return `${symbol} ${valueName(card.value)}`;
+  return `${suitSymbol(card.design)} ${valueName(card.value)}`;
 }
