@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import i18n from '../i18n';
 import type { CardDesign } from '../types/card';
-import { cardAlt } from './cardAlt';
+import { cardAlt, suitSymbol } from './cardAlt';
 
 describe('cardAlt', () => {
   it('returns localized joker text for JOKER', () => {
@@ -26,5 +26,20 @@ describe('cardAlt', () => {
 
   it('falls back to raw design for unknown design', () => {
     expect(cardAlt({ design: 'UNKNOWN' as CardDesign, value: 3 })).toBe('UNKNOWN 3');
+  });
+});
+
+describe('suitSymbol', () => {
+  it.each<[CardDesign, string]>([
+    ['SPADE', '♠'],
+    ['HEART', '♥'],
+    ['DIAMOND', '♦'],
+    ['CLOVER', '♣'],
+  ])('maps %s to %s', (design, symbol) => {
+    expect(suitSymbol(design)).toBe(symbol);
+  });
+
+  it('falls back to the raw design for unknown designs', () => {
+    expect(suitSymbol('JOKER')).toBe('JOKER');
   });
 });
