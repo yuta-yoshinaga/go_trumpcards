@@ -32,6 +32,7 @@ import {
 } from '../hooks/useOhHellGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
+import { badgeErrorColors, badgeInfoColors, badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -84,6 +85,13 @@ const OH_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
 ];
+
+/** Pick the badge color tokens for the bid-progress chip: green on target, yellow overshot, red unreachable. */
+function progressChipColors(bid: number, won: number, remainingTricks: number): string {
+  if (won === bid) return badgeSuccessColors;
+  if (won > bid) return badgeWarningColors;
+  return bid - won > remainingTricks ? badgeErrorColors : badgeInfoColors;
+}
 
 const OH_HELL_PHASE_KEYS: Readonly<Record<number, string>> = {
   [OhHellPhase.BID]: 'bid',
@@ -192,6 +200,12 @@ function OhHellPageContent() {
     state.players[state.dealerIdx]?.isHuman ?? false,
   );
 
+  // A card already played into the unresolved trick still counts as a winnable trick,
+  // even though cardCount has been decremented for it.
+  const humanIdx = state.players.findIndex((p) => p.isHuman);
+  const humanInCurrentTrick = state.currentTrick.some((tc) => tc.playerIdx === humanIdx);
+  const showProgressChip = !isBidPhase && !isGameEnd && humanPlayer !== undefined && humanPlayer.bid >= 0;
+
   return (
     <GamePageShell
       title={tc('nav.ohhell')}
@@ -205,7 +219,23 @@ function OhHellPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
-      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
+      headerExtra={
+        <>
+          {showProgressChip && (
+            <span
+              data-testid="bid-progress-chip"
+              className={`rounded-full px-2.5 py-1 text-xs font-medium ${progressChipColors(
+                humanPlayer.bid,
+                humanPlayer.trickCount,
+                humanPlayer.cardCount + (humanInCurrentTrick ? 1 : 0),
+              )}`}
+            >
+              {t('bidProgress', { bid: humanPlayer.bid, won: humanPlayer.trickCount })}
+            </span>
+          )}
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        </>
+      }
     >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
