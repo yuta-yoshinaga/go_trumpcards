@@ -111,6 +111,24 @@ describe('DurakPage', () => {
     });
   });
 
+  it('labels hand card buttons with cardAlt and tracks selection via aria-pressed', async () => {
+    renderWithProviders(<DurakPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ A' })).toBeInTheDocument());
+
+    const aceBtn = screen.getByRole('button', { name: '♠ A' });
+    const jackBtn = screen.getByRole('button', { name: '♥ J' });
+    expect(aceBtn).toHaveAttribute('aria-pressed', 'false');
+    expect(jackBtn).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(aceBtn);
+    expect(aceBtn).toHaveAttribute('aria-pressed', 'true');
+    expect(jackBtn).toHaveAttribute('aria-pressed', 'false');
+
+    // Clicking again deselects.
+    fireEvent.click(aceBtn);
+    expect(aceBtn).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('shows attack button when human is attacker in attack phase', async () => {
     renderWithProviders(<DurakPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '攻撃' })).toBeInTheDocument());
