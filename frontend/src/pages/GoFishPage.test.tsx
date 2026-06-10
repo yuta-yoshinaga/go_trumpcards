@@ -258,6 +258,16 @@ describe('GoFishPage', () => {
     expect(screen.getByRole('checkbox')).toBeInTheDocument();
   });
 
+  it('renders the hint toggle as a SettingsPanel item next to the difficulty select', async () => {
+    renderWithProviders(<GoFishPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 2/)).toBeInTheDocument());
+    // The toggle is a SettingsPanel item with a stable id (the old inline checkbox had none).
+    const checkbox = screen.getByRole('checkbox');
+    expect(checkbox).toHaveAttribute('id', 'frontendHint');
+    expect(screen.getByLabelText('ヒント表示')).toBe(checkbox);
+    expect(screen.getByRole('combobox')).toHaveAttribute('id', 'cpuDifficulty');
+  });
+
   it('shows HintTooltip when hint is enabled and human has a valid turn', async () => {
     localStorage.setItem('hint_enabled_gofish', 'true');
     renderWithProviders(<GoFishPage />);

@@ -3,6 +3,7 @@ import type { goFishApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -10,7 +11,6 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { GoFishBooksDisplay } from '../components/gofish/GoFishBooksDisplay';
 import { GoFishPlayerArea } from '../components/gofish/GoFishPlayerArea';
-import { GoFishSettingsDialog } from '../components/gofish/GoFishSettingsDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -36,6 +36,13 @@ import { valueName } from '../utils/cardUtils';
 import { GOFISH_HELP, parseGofishCommand } from '../utils/cli/commands/gofishCommands';
 import { formatGofishState } from '../utils/cli/formatters/gofishFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+
+/** CPU difficulty options for Go Fish. */
+const CPU_DIFFICULTY_OPTIONS = [
+  { value: 0, label: 'easy' },
+  { value: 1, label: 'normal' },
+  { value: 2, label: 'hard' },
+] as const;
 
 /** Go Fish tutorial step definitions. */
 const GF_TUTORIAL_STEPS: TutorialStep[] = [
@@ -154,24 +161,39 @@ function GoFishPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
-          <GoFishSettingsDialog
-            cpuDifficulty={goFishConfig.cpuDifficulty}
-            onCpuDifficultyChange={(v) => handleConfigChange('cpuDifficulty', v)}
+          <SettingsPanel
+            title={t('setup.title')}
+            groups={[
+              {
+                items: [
+                  {
+                    type: 'select' as const,
+                    id: 'cpuDifficulty',
+                    label: t('setup.cpuDifficulty'),
+                    value: goFishConfig.cpuDifficulty,
+                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+                      value: o.value,
+                      label: t(`setup.${o.label}`),
+                    })),
+                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+                  },
+                  {
+                    type: 'checkbox' as const,
+                    id: 'frontendHint',
+                    label: tc('hint.toggle', { ns: 'tutorial' }),
+                    checked: frontendHintEnabled,
+                    onToggle: setFrontendHintEnabled,
+                  },
+                ],
+              },
+            ]}
           />
 
           {/* Scrollable area */}
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            {/* Turn, deck info & hint toggle */}
+            {/* Turn & deck info */}
             <div className="text-ds-text-primary text-center mb-2 flex items-center justify-center gap-4">
               <span>{t('deck', { count: state.deckRemaining })}</span>
-              <label className="inline-flex items-center gap-1 text-sm cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={frontendHintEnabled}
-                  onChange={(e) => setFrontendHintEnabled(e.target.checked)}
-                />
-                {tc('hint.toggle', { ns: 'tutorial' })}
-              </label>
             </div>
 
             {/* CPU player areas */}
