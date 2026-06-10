@@ -368,6 +368,23 @@ function AccordionPageContent() {
               messageParams={state.messageParams}
             />
 
+            {isEnded && (
+              <div
+                data-testid="result-banner"
+                role="status"
+                aria-live="polite"
+                className={
+                  isGameClear
+                    ? 'text-sm text-center font-medium rounded px-3 py-1.5 mt-1 border bg-ds-success/20 text-ds-success border-ds-success'
+                    : 'text-sm text-center font-medium rounded px-3 py-1.5 mt-1 border bg-ds-error/20 text-ds-error border-ds-error'
+                }
+              >
+                {isGameClear
+                  ? t('result.clear', { moveCount: state.moveCount })
+                  : t('result.gameOver', { pileCount: state.pileCount, moveCount: state.moveCount })}
+              </div>
+            )}
+
             {state.hint && (
               <div
                 className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1"
