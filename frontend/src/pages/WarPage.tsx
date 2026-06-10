@@ -60,6 +60,21 @@ const WR_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
+/**
+ * Pick the emphasis classes for a revealed card: green ring for the round winner
+ * and a dimmed loser when resolved, yellow rings on both cards during a war.
+ */
+function revealedCardEmphasis(phase: number, lastWinnerIdx: number, isPlayer: boolean): string {
+  if (phase === WarPhase.RESOLVED) {
+    const won = isPlayer ? lastWinnerIdx === 0 : lastWinnerIdx === 1;
+    return won ? 'ring-2 ring-ds-success' : 'opacity-60';
+  }
+  if (phase === WarPhase.WAR_BURY) {
+    return 'ring-2 ring-ds-warning';
+  }
+  return '';
+}
+
 /** Renders the War (戦争) game page. */
 export const WarPage = withTutorial(WarPageContent, 'war', WR_TUTORIAL_STEPS);
 /** Inner content of the War page. */
@@ -184,7 +199,11 @@ function WarPageContent() {
               <div className="text-center">
                 <div className="text-xs text-ds-text-muted mb-1">CPU</div>
                 {state.cpuRevealed ? (
-                  <AnimatedCard card={state.cpuRevealed} width={cardWidth * 1.1} />
+                  <AnimatedCard
+                    card={state.cpuRevealed}
+                    width={cardWidth * 1.1}
+                    className={revealedCardEmphasis(state.phase, state.lastWinnerIdx, false)}
+                  />
                 ) : (
                   <div
                     className="rounded border border-dashed border-white/30"
@@ -224,7 +243,11 @@ function WarPageContent() {
               <div className="text-center">
                 <div className="text-xs text-ds-text-muted mb-1">{tc('player.you')}</div>
                 {state.playerRevealed ? (
-                  <AnimatedCard card={state.playerRevealed} width={cardWidth * 1.1} />
+                  <AnimatedCard
+                    card={state.playerRevealed}
+                    width={cardWidth * 1.1}
+                    className={revealedCardEmphasis(state.phase, state.lastWinnerIdx, true)}
+                  />
                 ) : (
                   <div
                     className="rounded border border-dashed border-white/30"
