@@ -69,6 +69,7 @@ const gameOverState: GolfResponse = {
 };
 
 beforeEach(() => {
+  localStorage.clear();
   mockExec.mockResolvedValue(playingState);
   mockCombo.mockReturnValue(0);
 });
@@ -79,6 +80,21 @@ describe('GolfPage', () => {
     renderWithProviders(<GolfPage />);
     const pulseElements = document.querySelectorAll('.animate-pulse');
     expect(pulseElements.length).toBeGreaterThan(0);
+  });
+
+  it('offers the frontend hint toggle in the settings panel', async () => {
+    renderWithProviders(<GolfPage />);
+    await waitFor(() => expect(screen.getByText('捨て札')).toBeInTheDocument());
+    const toggle = screen.getByLabelText('ヒント表示');
+    expect(toggle).not.toBeChecked();
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+  });
+
+  it('shows the frontend hint tooltip when the toggle is enabled', async () => {
+    localStorage.setItem('hint_enabled_golf', 'true');
+    renderWithProviders(<GolfPage />);
+    // playingState's waste top (♣4) has adjacent exposed cards → the removable suggestion appears.
+    await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
   });
 
   it('renders stock count', async () => {
