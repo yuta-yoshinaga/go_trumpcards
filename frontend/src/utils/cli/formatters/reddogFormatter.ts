@@ -6,7 +6,6 @@ const PHASE_NAMES: Record<number, string> = {
   [RedDogPhase.BET]: 'BET',
   [RedDogPhase.INITIAL_DEALT]: 'INITIAL DEALT',
   [RedDogPhase.SPREAD_DECISION]: 'SPREAD DECISION',
-  [RedDogPhase.PAIR_THIRD]: 'PAIR THIRD',
   [RedDogPhase.END]: 'END',
 };
 

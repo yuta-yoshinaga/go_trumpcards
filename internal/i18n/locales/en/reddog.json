@@ -13,7 +13,6 @@
   "phaseBet": "BET",
   "phaseInitialDealt": "INITIAL DEALT",
   "phaseSpreadDecision": "SPREAD DECISION",
-  "phasePairThird": "PAIR THIRD",
   "phaseEnd": "END",
   "phaseUnknown": "UNKNOWN",
   "playerWins": "Player wins!",
