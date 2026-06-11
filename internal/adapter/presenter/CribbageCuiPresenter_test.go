@@ -285,4 +285,16 @@ func TestCribbageCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetHint").Return(&domain.CribbageHint{Type: "??"})
 		assert.Contains(t, p.HintOutput(m), "ヒントはありません")
 	})
+
+	t.Run("discard hint with short indices falls back to no-hint message", func(t *testing.T) {
+		m := new(interfaces.MockCribbageGame)
+		m.On("GetHint").Return(&domain.CribbageHint{Type: "discard", Indices: []int{0}})
+		assert.Contains(t, p.HintOutput(m), "ヒントはありません")
+	})
+
+	t.Run("play hint with no indices falls back to no-hint message", func(t *testing.T) {
+		m := new(interfaces.MockCribbageGame)
+		m.On("GetHint").Return(&domain.CribbageHint{Type: "play"})
+		assert.Contains(t, p.HintOutput(m), "ヒントはありません")
+	})
 }

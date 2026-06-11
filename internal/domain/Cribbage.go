@@ -1049,15 +1049,15 @@ func (g *Cribbage) peggingHint() *CribbageHint {
 	p := g.players[g.currentPlayerIdx]
 	bestScore := -1
 	bestIdx := -1
+	seq := make([]*Card, len(g.pegPlayedCards)+1)
+	copy(seq, g.pegPlayedCards)
 	for i := 0; i < p.GetCardsSize(); i++ {
 		c := p.GetCard(i)
 		v := cribbageCardValue(c)
 		if g.pegCount+v > CribbagePegLimit {
 			continue
 		}
-		seq := make([]*Card, 0, len(g.pegPlayedCards)+1)
-		seq = append(seq, g.pegPlayedCards...)
-		seq = append(seq, c)
+		seq[len(seq)-1] = c
 		score := CribbageScorePegging(seq, g.pegCount+v)
 		if score > bestScore {
 			bestScore = score
