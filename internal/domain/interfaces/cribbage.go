@@ -33,6 +33,8 @@ type CribbageGame interface {
 	GetPhase() domain.CribbagePhase
 	// IsHumanTurn 現在の手番が人間かを返す
 	IsHumanTurn() bool
+	// GetHint 人間プレイヤー向けの推奨アクションを取得する（対象外フェーズや手番外は nil）
+	GetHint() *domain.CribbageHint
 	// GetRoundNumber 現在のラウンド番号を取得する
 	GetRoundNumber() int
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックスを取得する

@@ -45,6 +45,11 @@ func (_m *MockCribbageInteractor) GetConfig() domain.CribbageConfig {
 	return _m.Called().Get(0).(domain.CribbageConfig)
 }
 
+func (_m *MockCribbageInteractor) Hint() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
 func (_m *MockCribbageInteractor) ActionLog() string {
 	return _m.Called().String(0)
 }

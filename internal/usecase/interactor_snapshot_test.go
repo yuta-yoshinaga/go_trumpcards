@@ -171,11 +171,12 @@ type stubGinRummyPresenter struct{}
 func (s *stubGinRummyPresenter) Output(_ interfaces.GinRummyGame, _ error) string { return `{}` }
 func (s *stubGinRummyPresenter) ActionLogOutput(_ interfaces.GinRummyGame) string { return `{}` }
 
-// stubCribbagePresenter implements presenter.CribbagePresenter (= GamePresenter[interfaces.CribbageGame])
+// stubCribbagePresenter implements presenter.CribbagePresenter
 type stubCribbagePresenter struct{}
 
 func (s *stubCribbagePresenter) Output(_ interfaces.CribbageGame, _ error) string { return `{}` }
 func (s *stubCribbagePresenter) ActionLogOutput(_ interfaces.CribbageGame) string { return `{}` }
+func (s *stubCribbagePresenter) HintOutput(_ interfaces.CribbageGame) string      { return `{}` }
 
 // stubPaiGowPresenter implements presenter.PaiGowPresenter (= GamePresenter[interfaces.PaiGowGame])
 type stubPaiGowPresenter struct{}

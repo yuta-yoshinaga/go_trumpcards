@@ -25,6 +25,13 @@ func (m *MockCribbageGame) GetConfig() domain.CribbageConfig {
 }
 func (m *MockCribbageGame) SetConfig(cfg domain.CribbageConfig) { m.Called(cfg) }
 func (m *MockCribbageGame) GetGameEndFlag() bool                { return m.Called().Bool(0) }
+func (m *MockCribbageGame) GetHint() *domain.CribbageHint {
+	ret := m.Called().Get(0)
+	if ret == nil {
+		return nil
+	}
+	return ret.(*domain.CribbageHint)
+}
 func (m *MockCribbageGame) GetPhase() domain.CribbagePhase {
 	return m.Called().Get(0).(domain.CribbagePhase)
 }

@@ -445,3 +445,12 @@ func TestCribbageInteractor_RunCpuTurns(t *testing.T) {
 		gameMock.AssertCalled(t, "CpuPlay")
 	})
 }
+
+func TestCribbageInteractor_Hint(t *testing.T) {
+	gameMock := new(interfaces.MockCribbageGame)
+	pMock := new(presenter.MockCribbagePresenter)
+	pMock.On("HintOutput", gameMock).Return("hint output")
+	ci := usecase.NewCribbageInteractor(gameMock, pMock)
+	assert.Equal(t, "hint output", ci.Hint())
+	pMock.AssertCalled(t, "HintOutput", gameMock)
+}
