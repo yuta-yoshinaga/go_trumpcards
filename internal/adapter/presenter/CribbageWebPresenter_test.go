@@ -441,3 +441,13 @@ func TestCribbageWebPresenter_ActionLogOutput(t *testing.T) {
 		m.AssertExpectations(t)
 	})
 }
+
+func TestCribbageWebPresenter_HintOutput_DelegatesToOutput(t *testing.T) {
+	p := new(presenter.CribbageWebPresenter)
+	m, players := setupCribbageWebMockWithPlayers()
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	// The Web GUI computes hints in the frontend, so the server hint command
+	// simply re-emits the current state.
+	assert.Equal(t, p.Output(m, nil), p.HintOutput(m))
+}

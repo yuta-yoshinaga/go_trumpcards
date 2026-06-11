@@ -32,7 +32,7 @@ func (c *CribbageCuiController) Exec(command string) string {
 			"d", "discard", "p", "peg", "go",
 			"sn", "shownext",
 			"nr", "nextround",
-			"sd", "setdifficulty", "sl", "setlimit", "log", "l",
+			"sd", "setdifficulty", "sl", "setlimit", "log", "l", "h", "hint",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -43,6 +43,8 @@ func (c *CribbageCuiController) Exec(command string) string {
 				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ci.Peg)
 			case "go":
 				return c.ci.Go(), true
+			case "h", "hint":
+				return c.ci.Hint(), true
 			case "sn", "shownext":
 				return c.ci.ShowNext(), true
 			case "nr", "nextround":

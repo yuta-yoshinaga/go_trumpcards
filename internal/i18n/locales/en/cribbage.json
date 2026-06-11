@@ -3,6 +3,7 @@
   "helpDiscard": "  d <idx,idx>          discard 2 cards to the crib",
   "helpPeg": "  p <idx>              play a card for pegging",
   "helpGo": "  go                   declare Go",
+  "helpHint": "  h                    hint",
   "helpShowNext": "  sn                   next score calculation",
   "helpNextRound": "  nr                   next round",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
@@ -26,5 +27,7 @@
   "showLabelPone": "Pone hand",
   "showLabelDealer": "Dealer hand",
   "showLabelCrib": "Crib",
-  "showDetailLine": "  {{label}}: {{total}} points (15s={{fifteens}}, pairs={{pairs}}, runs={{runs}}, flush={{flush}}, nobs={{nobs}})"
+  "showDetailLine": "  {{label}}: {{total}} points (15s={{fifteens}}, pairs={{pairs}}, runs={{runs}}, flush={{flush}}, nobs={{nobs}})",
+  "hintDiscard": "Hint: discarding indices {{i}} and {{j}} to the crib is recommended.",
+  "hintPlay": "Hint: playing the card at index {{i}} is recommended."
 }

@@ -994,3 +994,78 @@ func (g *Cribbage) UnmarshalJSON(data []byte) error {
 	g.originalHands = [CribbagePlayerCnt][]*Card{j.OriginalHand0, j.OriginalHand1}
 	return nil
 }
+
+// CribbageHint 人間プレイヤー向けの推奨アクション
+type CribbageHint struct {
+	Type    string // "discard"（クリブへ捨てる2枚） or "play"（ペギングで出す1枚）
+	Indices []int  // 手札インデックス
+}
+
+// GetHint 人間プレイヤーの現フェーズにおける推奨アクションを返す（対象外フェーズや手番外は nil）
+func (g *Cribbage) GetHint() *CribbageHint {
+	if g.gameEndFlag || !g.IsHumanTurn() {
+		return nil
+	}
+	switch g.phase {
+	case CribbagePhaseDiscard:
+		return g.discardHint()
+	case CribbagePhasePegging:
+		return g.peggingHint()
+	default:
+		return nil
+	}
+}
+
+// discardHint 残す4枚の素点（スターターなし）が最大になる捨て札2枚を返す
+func (g *Cribbage) discardHint() *CribbageHint {
+	p := g.players[g.currentPlayerIdx]
+	handSize := p.GetCardsSize()
+	if handSize != CribbageHandSize+CribbageDiscardSize {
+		return nil
+	}
+	bestScore := -1
+	var bestI, bestJ int
+	keep := make([]*Card, 0, CribbageHandSize)
+	for i := 0; i < handSize; i++ {
+		for j := i + 1; j < handSize; j++ {
+			keep = keep[:0]
+			for k := 0; k < handSize; k++ {
+				if k != i && k != j {
+					keep = append(keep, p.GetCard(k))
+				}
+			}
+			score := CribbageScoreHand(keep, nil, false).Total
+			if score > bestScore {
+				bestScore = score
+				bestI, bestJ = i, j
+			}
+		}
+	}
+	return &CribbageHint{Type: "discard", Indices: []int{bestI, bestJ}}
+}
+
+// peggingHint 即時ペギング得点が最大になる合法カード1枚を返す（合法手なし＝Goのみなら nil）
+func (g *Cribbage) peggingHint() *CribbageHint {
+	p := g.players[g.currentPlayerIdx]
+	bestScore := -1
+	bestIdx := -1
+	seq := make([]*Card, len(g.pegPlayedCards)+1)
+	copy(seq, g.pegPlayedCards)
+	for i := 0; i < p.GetCardsSize(); i++ {
+		c := p.GetCard(i)
+		v := cribbageCardValue(c)
+		if g.pegCount+v > CribbagePegLimit {
+			continue
+		}
+		seq[len(seq)-1] = c
+		score := CribbageScorePegging(seq, g.pegCount+v)
+		if score > bestScore {
+			bestScore = score
+			bestIdx = i
+		}
+	}
+	if bestIdx < 0 {
+		return nil
+	}
+	return &CribbageHint{Type: "play", Indices: []int{bestIdx}}
+}

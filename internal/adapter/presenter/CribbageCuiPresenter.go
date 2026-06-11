@@ -133,3 +133,27 @@ func (p *CribbageCuiPresenter) writeShowDetails(b *strings.Builder, g interfaces
 func (p *CribbageCuiPresenter) ActionLogOutput(g interfaces.CribbageGame) string {
 	return actionLogOutputText(g)
 }
+
+// HintOutput ヒントを出力（ディスカード推奨2枚 or ペギング推奨1枚）
+func (p *CribbageCuiPresenter) HintOutput(g interfaces.CribbageGame) string {
+	hint := g.GetHint()
+	if hint == nil {
+		return i18n.T("cuiHintNone") + "\n"
+	}
+	switch hint.Type {
+	case "discard":
+		if len(hint.Indices) < 2 {
+			return i18n.T("cuiHintNone") + "\n"
+		}
+		return i18n.Tf("cribbage.hintDiscard",
+			"i", strconv.Itoa(hint.Indices[0]),
+			"j", strconv.Itoa(hint.Indices[1])) + "\n"
+	case "play":
+		if len(hint.Indices) < 1 {
+			return i18n.T("cuiHintNone") + "\n"
+		}
+		return i18n.Tf("cribbage.hintPlay", "i", strconv.Itoa(hint.Indices[0])) + "\n"
+	default:
+		return i18n.T("cuiHintNone") + "\n"
+	}
+}
