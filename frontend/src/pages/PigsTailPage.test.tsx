@@ -199,4 +199,18 @@ describe('PigsTailPage', () => {
     fireEvent.click(screen.getByTestId('circular-deck-card-0'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
   });
+
+  it('places the action log section inside the scrollable area before the footer', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<PigsTailPage />);
+    const buttons = await screen.findAllByRole('button', { name: '棋譜を見る' });
+    const footer = document.querySelector('footer');
+    expect(footer).not.toBeNull();
+    // At least one action-log view button (the ActionLogSection one) must
+    // precede the footer in document order — i.e. live in the scroll area.
+    const precedesFooter = buttons.some(
+      (b) => footer && (footer.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_PRECEDING) !== 0,
+    );
+    expect(precedesFooter).toBe(true);
+  });
 });
