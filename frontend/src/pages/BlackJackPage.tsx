@@ -41,6 +41,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
+import { btnDanger } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BlackJackResponse } from '../types/card';
@@ -504,7 +505,12 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
 
             {/* Phase-based buttons */}
             <div className="text-center">
-              {phase === BjPhase.BET && (
+              {phase === BjPhase.BET && playerChips === 0 && (
+                <button type="button" className={btnDanger} onClick={handleReset} disabled={loading}>
+                  {t('outOfChips')}
+                </button>
+              )}
+              {phase === BjPhase.BET && playerChips > 0 && (
                 <>
                   <div data-tutorial="bj-bet-controls">
                     <BjBetPhaseControls

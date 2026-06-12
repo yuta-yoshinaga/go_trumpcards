@@ -74,6 +74,7 @@
   "handCount": "Hands:",
   "handCountUnit": "",
   "autoAdvance": "Auto Advance:",
+  "outOfChips": "Out of chips — restart",
   "autoAdvanceSec": "{{sec}}s",
   "sideBet": {
     "perfectPairs": "Perfect Pairs",
