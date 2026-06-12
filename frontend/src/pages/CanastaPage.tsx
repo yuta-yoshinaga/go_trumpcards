@@ -11,6 +11,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useCanastaGame } from '../hooks/useCanastaGame';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -148,9 +149,10 @@ function CanastaPageContent() {
 
   if (!state) {
     return (
-      <div className="p-4 text-center text-ds-text-primary">
-        <p>{tc('status.thinking')}</p>
-      </div>
+      <GameSkeleton
+        gameKey="canasta"
+        layout={{ kind: 'trick-taking', opponents: 1, centerCard: true, trickArea: true, footerHandSize: 11 }}
+      />
     );
   }
 

@@ -100,6 +100,12 @@ const gameEndState: BurracoResponse = {
 };
 
 describe('BurracoPage', () => {
+  it('renders skeleton before first API response', () => {
+    mockExec.mockReturnValue(new Promise(() => undefined));
+    renderWithProviders(<BurracoPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockExec.mockResolvedValue(drawPhaseState);
