@@ -28,7 +28,7 @@ test.describe('Spades E2E', () => {
     const playButton = page.getByRole('button', { name: '出す' });
     const nextTrickButton = page.getByRole('button', { name: '次のトリック' });
     const nextRoundButton = page.getByRole('button', { name: '次のラウンド' });
-    const bidInput = page.locator('input[aria-label="bid-input"]');
+    const bidValueButton = page.getByRole('button', { name: '3', exact: true });
     const handCards = page.locator('button[aria-pressed]:has(img)');
     const anyResetButton = page.getByRole('button', { name: /リセット|次のゲーム/ });
 
@@ -48,10 +48,10 @@ test.describe('Spades E2E', () => {
       // Game end: no action buttons visible
       if (!bidVisible && !playVisible && !nextTrickVisible && !nextRoundVisible) break;
 
-      // Bid phase: enter a bid
+      // Bid phase: pick a bid value button, then bid
       if (bidVisible) {
         interactions++;
-        await bidInput.fill('3');
+        await bidValueButton.click();
         await bidButton.click();
         await waitForLoaded(page);
         continue;
