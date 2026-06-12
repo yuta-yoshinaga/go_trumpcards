@@ -71,6 +71,18 @@ beforeEach(() => {
 });
 
 describe('TrashPage', () => {
+  it('shows the CPU open-slot count indicator', async () => {
+    const mixedSlots = Array.from({ length: 10 }, (_, i) =>
+      i < 3 ? { faceUp: true, card: card('HEART', i + 1) } : { faceUp: false },
+    );
+    mockExec.mockResolvedValue({
+      ...playerTurnState,
+      players: [playerTurnState.players[0], { slots: mixedSlots, isCpu: true }],
+    });
+    renderWithProviders(<TrashPage />);
+    expect(await screen.findByText('3/10 枚オープン')).toBeInTheDocument();
+  });
+
   it('renders the page heading', async () => {
     renderWithProviders(<TrashPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
