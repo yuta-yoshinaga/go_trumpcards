@@ -408,7 +408,7 @@ function PokerPageContent() {
                 <button
                   type="button"
                   className={`${btnWarning} min-w-[90px]`}
-                  disabled={loading}
+                  disabled={loading || selected.length === 0}
                   onClick={() => exec('exchange', selected)}
                 >
                   {t('exchangeLabel')}

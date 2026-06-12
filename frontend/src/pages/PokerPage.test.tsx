@@ -589,6 +589,17 @@ describe('PokerPage', () => {
     expect(screen.queryByRole('button', { name: 'スタンド' })).not.toBeInTheDocument();
   });
 
+  it('disables the exchange button until a card is selected', async () => {
+    mockExec.mockResolvedValue(exchangeState);
+    renderWithProviders(<PokerPage />);
+    const exchangeBtn = await screen.findByRole('button', { name: '交換' });
+    // Nothing selected yet: stand is the only enabled action.
+    expect(exchangeBtn).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'スタンド' })).toBeEnabled();
+    fireEvent.click(screen.getByAltText('♠ A'));
+    expect(exchangeBtn).toBeEnabled();
+  });
+
   it('calls exchange with selected indices', async () => {
     mockExec.mockResolvedValue(exchangeState);
     renderWithProviders(<PokerPage />);
