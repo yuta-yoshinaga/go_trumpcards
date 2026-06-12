@@ -220,11 +220,12 @@ describe('VideoPokerGameContent', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 5));
   });
 
-  it('renders payout table collapsed by default in draw phase', async () => {
+  it('renders payout table collapsed in draw phase once dismissed', async () => {
+    localStorage.setItem('paytable_open_videopoker', 'false');
     mockExec.mockResolvedValue(drawPhaseState);
     renderContent();
     await waitFor(() => expect(screen.getByText(/配当表/)).toBeInTheDocument());
-    // Payout table should be collapsed (details element should not have open attribute)
+    // Once the player has collapsed the table, it stays collapsed across phases.
     const details = screen.getByText(/配当表/).closest('details');
     expect(details).not.toHaveAttribute('open');
   });
@@ -286,6 +287,32 @@ describe('VideoPokerGameContent', () => {
     mockExec.mockResolvedValue(betPhaseState);
     renderContent();
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+  });
+
+  it('expands the payout table on first visit', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderContent();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const details = screen.getByText(/配当表/).closest('details') as HTMLDetailsElement;
+    expect(details.open).toBe(true);
+  });
+
+  it('keeps the payout table collapsed once dismissed', async () => {
+    localStorage.setItem('paytable_open_videopoker', 'false');
+    mockExec.mockResolvedValue(betPhaseState);
+    renderContent();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect((screen.getByText(/配当表/).closest('details') as HTMLDetailsElement).open).toBe(false);
+  });
+
+  it('persists the collapsed state when the payout table is toggled shut', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderContent();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const details = screen.getByText(/配当表/).closest('details') as HTMLDetailsElement;
+    details.open = false;
+    fireEvent(details, new Event('toggle'));
+    expect(localStorage.getItem('paytable_open_videopoker')).toBe('false');
   });
 
   it('marks twos with a WILD badge in Deuces Wild', async () => {

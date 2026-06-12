@@ -54,10 +54,20 @@ export interface VideoPokerGameContentProps {
   cliGameConfig: Omit<CliGameConfig<VideoPokerResponse, Parameters<VideoPokerGameContentProps['apiExec']>>, 'gameName'>;
 }
 
-/** Payout table display component (collapsed by default, user can expand on tap). */
-function PayoutTable({ t, rows }: { t: (key: string) => string; rows: string[] }) {
+/** Payout table display component. Expanded on the first visit so new players see
+ * the payouts; once the player collapses it, the choice persists per variant. */
+function PayoutTable({
+  t,
+  rows,
+  gameName,
+}: {
+  t: (key: string) => string;
+  rows: string[];
+  gameName: 'videopoker' | 'deuceswild' | 'jokerpoker';
+}) {
+  const [open, setOpen] = useLocalStorageToggle(`paytable_open_${gameName}`, true);
   return (
-    <details className="mb-3 text-center">
+    <details className="mb-3 text-center" open={open} onToggle={(e) => setOpen(e.currentTarget.open)}>
       <summary className="text-ds-warning text-sm cursor-pointer lg:text-base">{t('payoutTable.title')}</summary>
       <ul className="text-ds-text-muted text-xs mt-1 space-y-0.5 lg:text-sm lg:space-y-1">
         {rows.map((row) => (
@@ -300,7 +310,7 @@ export function VideoPokerGameContent({
               </div>
             )}
 
-            <PayoutTable t={tNs} rows={payoutTableRows} />
+            <PayoutTable t={tNs} rows={payoutTableRows} gameName={gameName} />
 
             {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
           </div>
