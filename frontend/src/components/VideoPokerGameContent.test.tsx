@@ -293,9 +293,8 @@ describe('VideoPokerGameContent', () => {
     mockExec.mockResolvedValue(betPhaseState);
     renderContent();
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    const details = document.querySelector('details');
-    expect(details).not.toBeNull();
-    expect(details?.open).toBe(true);
+    const details = screen.getByText(/配当表/).closest('details') as HTMLDetailsElement;
+    expect(details.open).toBe(true);
   });
 
   it('keeps the payout table collapsed once dismissed', async () => {
@@ -303,14 +302,14 @@ describe('VideoPokerGameContent', () => {
     mockExec.mockResolvedValue(betPhaseState);
     renderContent();
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    expect(document.querySelector('details')?.open).toBe(false);
+    expect((screen.getByText(/配当表/).closest('details') as HTMLDetailsElement).open).toBe(false);
   });
 
   it('persists the collapsed state when the payout table is toggled shut', async () => {
     mockExec.mockResolvedValue(betPhaseState);
     renderContent();
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    const details = document.querySelector('details') as HTMLDetailsElement;
+    const details = screen.getByText(/配当表/).closest('details') as HTMLDetailsElement;
     details.open = false;
     fireEvent(details, new Event('toggle'));
     expect(localStorage.getItem('paytable_open_videopoker')).toBe('false');
