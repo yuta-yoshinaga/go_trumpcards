@@ -18,6 +18,7 @@
     "result": "結果"
   },
   "hold": "ホールド",
+  "wild": "ワイルド",
   "result": {
     "win": "{{handName}}! {{payout}}コイン獲得!",
     "lose": "役なし。次のハンドで頑張りましょう!"

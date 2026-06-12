@@ -248,6 +248,15 @@ export function VideoPokerGameContent({
                             {tNs('hold')}
                           </span>
                         )}
+                        {WILD_CARD_PREDICATE[gameName](card) && (
+                          <span
+                            aria-hidden="true"
+                            className="absolute top-1 right-1 px-1.5 py-0.5 rounded bg-ds-info text-ds-text-on-accent text-[9px] font-extrabold tracking-wider shadow-md pointer-events-none"
+                            data-testid={`vp-wild-badge-${i}`}
+                          >
+                            {tNs('wild')}
+                          </span>
+                        )}
                       </button>
                     </div>
                   ))}

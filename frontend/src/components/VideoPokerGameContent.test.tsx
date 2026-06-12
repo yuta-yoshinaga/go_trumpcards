@@ -8,7 +8,11 @@ import { VideoPokerGameContent } from './VideoPokerGameContent';
 
 vi.mock('../api/gameApi', () => ({
   videopokerApi: { exec: vi.fn() },
-  actionLogApi: { videopoker: vi.fn().mockResolvedValue([]) },
+  actionLogApi: {
+    videopoker: vi.fn().mockResolvedValue([]),
+    deuceswild: vi.fn().mockResolvedValue([]),
+    jokerpoker: vi.fn().mockResolvedValue([]),
+  },
 }));
 
 const mockExec = vi.fn();
@@ -81,15 +85,15 @@ const tutorialConfig: TutorialConfig = {
   steps: [],
 };
 
-function renderContent() {
+function renderContent(gameName: 'videopoker' | 'deuceswild' | 'jokerpoker' = 'videopoker') {
   return renderWithProviders(
     <TutorialProvider config={tutorialConfig} translateMessage={(k: string) => k}>
       <VideoPokerGameContent
-        gameName="videopoker"
-        i18nNamespace="videopoker"
+        gameName={gameName}
+        i18nNamespace={gameName}
         apiExec={mockExec}
         payoutTableRows={payoutRows}
-        gamePath="/videopoker"
+        gamePath={`/${gameName}`}
         cliGameConfig={{
           parseCommand: () => ({ args: ['reset'] }),
           formatResponse: () => '',
@@ -282,5 +286,40 @@ describe('VideoPokerGameContent', () => {
     mockExec.mockResolvedValue(betPhaseState);
     renderContent();
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+  });
+
+  it('marks twos with a WILD badge in Deuces Wild', async () => {
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      variantName: 'deuceswild',
+      hand: [card('SPADE', 2), card('HEART', 11), card('CLOVER', 2), card('DIAMOND', 8), card('SPADE', 13)],
+    });
+    renderContent('deuceswild');
+    await waitFor(() => expect(screen.getByTestId('vp-wild-badge-0')).toBeInTheDocument());
+    expect(screen.getByTestId('vp-wild-badge-2')).toBeInTheDocument();
+    expect(screen.queryByTestId('vp-wild-badge-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('vp-wild-badge-3')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('vp-wild-badge-4')).not.toBeInTheDocument();
+  });
+
+  it('marks jokers with a WILD badge in Joker Poker', async () => {
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      variantName: 'jokerpoker',
+      hand: [card('JOKER', 0), card('HEART', 11), card('CLOVER', 5), card('DIAMOND', 8), card('SPADE', 13)],
+    });
+    renderContent('jokerpoker');
+    await waitFor(() => expect(screen.getByTestId('vp-wild-badge-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('vp-wild-badge-1')).not.toBeInTheDocument();
+  });
+
+  it('shows no WILD badge in Jacks or Better even on twos', async () => {
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      hand: [card('SPADE', 2), card('HEART', 11), card('CLOVER', 5), card('DIAMOND', 8), card('SPADE', 13)],
+    });
+    renderContent();
+    await waitFor(() => expect(screen.getByRole('button', { name: /ドロー/ })).toBeInTheDocument());
+    expect(screen.queryByTestId('vp-wild-badge-0')).not.toBeInTheDocument();
   });
 });
