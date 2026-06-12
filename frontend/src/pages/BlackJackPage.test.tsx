@@ -161,6 +161,16 @@ beforeEach(() => {
 });
 
 describe('BlackJackPage', () => {
+  it('shows the out-of-chips restart button instead of bet controls at zero chips', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, player: { chips: 0 } });
+    renderWithProviders(<BlackJackPage />);
+    const restart = await screen.findByRole('button', { name: /チップ不足/ });
+    expect(screen.queryByRole('button', { name: 'ベット' })).not.toBeInTheDocument();
+    mockExec.mockClear();
+    fireEvent.click(restart);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, expect.anything()));
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<BlackJackPage />);
