@@ -82,6 +82,40 @@ beforeEach(() => {
 });
 
 describe('TriPeaksPage', () => {
+  it('rings exposed cards adjacent to the waste top during play', async () => {
+    renderWithProviders(<TriPeaksPage />);
+    await waitFor(() => expect(screen.getByLabelText('♠ 5')).toBeInTheDocument());
+    // Waste top is ♣4: the exposed ♠5 is playable, ♥6/♣7 are not, ♦10 is face-down.
+    expect(screen.getByLabelText('♠ 5')).toHaveClass('ring-ds-success/70');
+    expect(screen.getByLabelText('♥ 6')).not.toHaveClass('ring-ds-success/70');
+    expect(screen.getByLabelText('♦ 10')).not.toHaveClass('ring-ds-success/70');
+  });
+
+  it('prefers the hint ring over the playable ring on the same card', async () => {
+    renderWithProviders(<TriPeaksPage />);
+    await waitFor(() => expect(screen.getByLabelText('♠ 5')).toBeInTheDocument());
+
+    // Server hint targets ♠5 at row 3, col 0 — the same card the playable ring covers.
+    mockExec.mockResolvedValueOnce({ ...playingState, hint: { type: 'remove', row: 3, col: 0 } });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByLabelText('♠ 5')).toHaveClass('ring-ds-warning'));
+    expect(screen.getByLabelText('♠ 5')).not.toHaveClass('ring-ds-success/70');
+  });
+
+  it('shows no playable ring when the waste is empty', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [] });
+    renderWithProviders(<TriPeaksPage />);
+    await waitFor(() => expect(screen.getByLabelText('♠ 5')).toBeInTheDocument());
+    expect(screen.getByLabelText('♠ 5')).not.toHaveClass('ring-ds-success/70');
+  });
+
+  it('shows no playable ring after the game ends', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<TriPeaksPage />);
+    await waitFor(() => expect(screen.getByLabelText('♠ 5')).toBeInTheDocument());
+    expect(screen.getByLabelText('♠ 5')).not.toHaveClass('ring-ds-success/70');
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<TriPeaksPage />);
