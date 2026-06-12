@@ -170,7 +170,7 @@ function PokerPageContent() {
     cardCount,
     onToggle: toggleCard,
     onConfirm: useCallback(() => {
-      if (canExchange && !loading) exec('exchange', selected);
+      if (canExchange && !loading && selected.length > 0) exec('exchange', selected);
     }, [canExchange, loading, exec, selected]),
     onClear: clearSelection,
     enabled: canExchange,
@@ -408,7 +408,7 @@ function PokerPageContent() {
                 <button
                   type="button"
                   className={`${btnWarning} min-w-[90px]`}
-                  disabled={loading}
+                  disabled={loading || selected.length === 0}
                   onClick={() => exec('exchange', selected)}
                 >
                   {t('exchangeLabel')}
