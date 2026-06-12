@@ -170,7 +170,7 @@ function PokerPageContent() {
     cardCount,
     onToggle: toggleCard,
     onConfirm: useCallback(() => {
-      if (canExchange && !loading) exec('exchange', selected);
+      if (canExchange && !loading && selected.length > 0) exec('exchange', selected);
     }, [canExchange, loading, exec, selected]),
     onClear: clearSelection,
     enabled: canExchange,

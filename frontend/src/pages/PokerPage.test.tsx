@@ -1352,6 +1352,19 @@ describe('PokerPage', () => {
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith('exchange', [0]));
     });
 
+    it('Enter key does nothing when no cards are selected', async () => {
+      mockExec.mockResolvedValue(exchangeState);
+      renderWithProviders(<PokerPage />);
+      await waitFor(() => expect(screen.getByText('交換するカードを選んでください')).toBeInTheDocument());
+      mockExec.mockClear();
+
+      await act(async () => {
+        fireEvent.keyDown(document, { key: 'Enter' });
+      });
+
+      expect(mockExec).not.toHaveBeenCalled();
+    });
+
     it('Escape key clears selection', async () => {
       mockExec.mockResolvedValue(exchangeState);
       renderWithProviders(<PokerPage />);
