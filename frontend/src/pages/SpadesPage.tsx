@@ -24,7 +24,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useSpadesGame } from '../hooks/useSpadesGame';
-import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
+import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { SpadesResponse } from '../types/card';
@@ -438,15 +438,31 @@ function SpadesPageContent() {
               )}
               {isHumanBidTurn && (
                 <>
-                  <input
-                    type="number"
-                    min={0}
-                    max={13}
-                    value={bidValue}
-                    onChange={(e) => setBidValue(Number(e.target.value))}
-                    className="w-16 px-2 py-1 rounded bg-white/20 text-ds-text-primary text-center"
-                    aria-label="bid-input"
-                  />
+                  <fieldset className="m-0 border-0 p-0" aria-label={t('bidPhase')}>
+                    <div className="flex flex-wrap gap-1.5 justify-center">
+                      <button
+                        type="button"
+                        className={`${btnSecondary} min-w-[44px] min-h-[44px]${bidValue === 0 ? ' ring-2 ring-ds-warning' : ''}`}
+                        aria-pressed={bidValue === 0}
+                        onClick={() => setBidValue(0)}
+                        disabled={loading}
+                      >
+                        {t('nilButton')}
+                      </button>
+                      {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => (
+                        <button
+                          key={v}
+                          type="button"
+                          className={`${btnSecondary} min-w-[44px] min-h-[44px]${bidValue === v ? ' ring-2 ring-ds-warning' : ''}`}
+                          aria-pressed={bidValue === v}
+                          onClick={() => setBidValue(v)}
+                          disabled={loading}
+                        >
+                          {v}
+                        </button>
+                      ))}
+                    </div>
+                  </fieldset>
                   <button type="button" className={btnPrimary} onClick={() => handleBid(bidValue)} disabled={loading}>
                     {t('bidButton')}
                   </button>
