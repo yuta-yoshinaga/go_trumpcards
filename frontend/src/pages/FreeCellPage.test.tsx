@@ -180,15 +180,29 @@ describe('FreeCellPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
 
-  it('handleGiveUp called on giveup button click', async () => {
+  it('give up button opens a confirm dialog and only dispatches giveup after confirm', async () => {
     renderWithProviders(<FreeCellPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(gameOverState);
+    // Clicking give-up must NOT dispatch immediately — it opens a confirm dialog (#2180).
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    expect(mockExec).not.toHaveBeenCalledWith('giveup');
+    expect(screen.getByText('投了確認')).toBeInTheDocument();
 
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
+  });
+
+  it('cancelling the give up dialog does not dispatch giveup', async () => {
+    renderWithProviders(<FreeCellPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    expect(mockExec).not.toHaveBeenCalledWith('giveup');
   });
 
   it('handleUndo called on undo button click', async () => {
@@ -354,13 +368,16 @@ describe('FreeCellPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
 
-  it('pressing g triggers giveup in PLAYING phase', async () => {
+  it('pressing g opens the give up confirm dialog in PLAYING phase', async () => {
     renderWithProviders(<FreeCellPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(gameOverState);
     fireEvent.keyDown(document, { key: 'g' });
+    expect(mockExec).not.toHaveBeenCalledWith('giveup');
+    expect(screen.getByText('投了確認')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
   });
 
