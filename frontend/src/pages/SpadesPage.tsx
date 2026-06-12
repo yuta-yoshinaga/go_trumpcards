@@ -442,7 +442,11 @@ function SpadesPageContent() {
                     <div className="flex flex-wrap gap-1.5 justify-center">
                       <button
                         type="button"
-                        className={`${btnSecondary} min-w-[44px] min-h-[44px]${bidValue === 0 ? ' ring-2 ring-ds-warning' : ''}`}
+                        className={
+                          bidValue === 0
+                            ? `${btnSecondary} min-w-[44px] ring-2 ring-ds-warning`
+                            : `${btnSecondary} min-w-[44px]`
+                        }
                         aria-pressed={bidValue === 0}
                         onClick={() => setBidValue(0)}
                         disabled={loading}
@@ -453,7 +457,11 @@ function SpadesPageContent() {
                         <button
                           key={v}
                           type="button"
-                          className={`${btnSecondary} min-w-[44px] min-h-[44px]${bidValue === v ? ' ring-2 ring-ds-warning' : ''}`}
+                          className={
+                            bidValue === v
+                              ? `${btnSecondary} min-w-[44px] ring-2 ring-ds-warning`
+                              : `${btnSecondary} min-w-[44px]`
+                          }
                           aria-pressed={bidValue === v}
                           onClick={() => setBidValue(v)}
                           disabled={loading}
