@@ -18,6 +18,7 @@
     "result": "Result"
   },
   "hold": "HOLD",
+  "wild": "WILD",
   "result": {
     "win": "{{handName}}! You win {{payout}} coins!",
     "lose": "No winning hand."
