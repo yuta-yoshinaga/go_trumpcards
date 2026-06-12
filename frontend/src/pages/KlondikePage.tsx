@@ -618,13 +618,14 @@ function KlondikePageContent() {
                   const n = Number(e.target.value);
                   // Mid-game the change discards progress, so confirm first (#2179);
                   // the local setting state only updates on confirm, reverting the
-                  // controlled select on cancel.
+                  // controlled select on cancel. A fresh deal (no moves yet) and a
+                  // finished game have nothing to lose, so they skip the dialog.
                   const apply = () => {
                     setDrawCountSetting(n);
                     handleResetWithConfig({ drawCount: n, scoringMode: scoringModeSetting });
                     resetTimer();
                   };
-                  if (isEnded) apply();
+                  if (isEnded || state.moveCount === 0) apply();
                   else requestConfirm(apply);
                 }}
                 className="bg-ds-surface-elevated text-ds-text-primary text-sm rounded px-2 py-1"
@@ -647,7 +648,7 @@ function KlondikePageContent() {
                     handleResetWithConfig({ drawCount: drawCountSetting, scoringMode: n });
                     resetTimer();
                   };
-                  if (isEnded) apply();
+                  if (isEnded || state.moveCount === 0) apply();
                   else requestConfirm(apply);
                 }}
                 className="bg-ds-surface-elevated text-ds-text-primary text-sm rounded px-2 py-1"
