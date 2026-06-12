@@ -75,8 +75,21 @@ const FC_TUTORIAL_STEPS: TutorialStep[] = [
 export const FreeCellPage = withTutorial(FreeCellPageContent, 'freecell', FC_TUTORIAL_STEPS);
 /** Inner content of the FreeCell page, wrapped by TutorialProvider. */
 function FreeCellPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('freecell');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('freecell');
   const { playSound } = useSound();
   const {
     state,
@@ -135,14 +148,19 @@ function FreeCellPageContent() {
     handleReset();
   }, [handleReset, hideActionLog]);
 
+  const confirmGiveUpAction = useCallback(
+    () => requestGiveUpConfirm(handleGiveUp),
+    [requestGiveUpConfirm, handleGiveUp],
+  );
+
   const actionBindings = useMemo(
     () => [
       { key: 'h', action: handleHint },
       { key: 'a', action: handleAutoComplete },
-      { key: 'g', action: handleGiveUp },
+      { key: 'g', action: confirmGiveUpAction },
       { key: 'z', action: handleUndo },
     ],
-    [handleHint, handleAutoComplete, handleGiveUp, handleUndo],
+    [handleHint, handleAutoComplete, confirmGiveUpAction, handleUndo],
   );
 
   useActionKeyboardNav({
@@ -188,6 +206,9 @@ function FreeCellPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
           <span>
@@ -503,7 +524,7 @@ function FreeCellPageContent() {
                   <button
                     type="button"
                     className={btnDanger}
-                    onClick={handleGiveUp}
+                    onClick={confirmGiveUpAction}
                     disabled={loading || isAutoCompleting}
                   >
                     {t('giveup')}
