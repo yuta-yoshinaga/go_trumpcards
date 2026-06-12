@@ -47,6 +47,10 @@ function countRemovableCards(state: TriPeaksResponse, wasteValue: number): numbe
 }
 
 /** Check if two values are adjacent (with King-Ace wrap-around). */
+export function isTriPeaksAdjacent(a: number, b: number): boolean {
+  return isAdjacent(a, b);
+}
+
 function isAdjacent(a: number, b: number): boolean {
   const diff = Math.abs(a - b);
   return diff === 1 || diff === MAX_VALUE - 1;

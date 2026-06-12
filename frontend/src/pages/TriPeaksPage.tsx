@@ -34,6 +34,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { parseTripeaksCommand, TRIPEAKS_HELP } from '../utils/cli/commands/tripeaksCommands';
 import { formatTripeaksState } from '../utils/cli/formatters/tripeaksFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isTriPeaksAdjacent } from '../utils/hints/tripeaksHint';
 
 /** Valid column positions per row in the TriPeaks tableau. */
 const VALID_COLS: readonly number[][] = [
@@ -148,6 +149,8 @@ function TriPeaksPageContent() {
     return <GameSkeleton gameKey="tripeaks" layout={{ kind: 'tiered-rows', rows: [3, 6, 9, 10], stockWaste: true }} />;
 
   const isPlaying = state.phase === TriPeaksPhase.PLAYING;
+  // Rank of the waste top, used to ring playable (±1 with K-A wrap) tableau cards.
+  const wasteTopValue = state.waste.length > 0 ? state.waste[state.waste.length - 1].value : undefined;
   const isGameClear = state.phase === TriPeaksPhase.GAME_CLEAR;
   const isGameOver = state.phase === TriPeaksPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
@@ -234,6 +237,11 @@ function TriPeaksPageContent() {
                       if (!tc2.card) return null;
                       const exposed = tc2.exposed;
                       const isHinted = hint?.type === 'remove' && hint.row === rowIdx && hint.col === colIdx;
+                      const isPlayable =
+                        isPlaying &&
+                        exposed &&
+                        wasteTopValue !== undefined &&
+                        isTriPeaksAdjacent(tc2.card.value, wasteTopValue);
                       return (
                         <div key={`tc-${rowIdx.toString()}-${colIdx.toString()}`} className="absolute" style={{ left }}>
                           <button
@@ -245,7 +253,7 @@ function TriPeaksPageContent() {
                             disabled={!isPlaying || loading || !exposed}
                             aria-label={cardAlt(tc2.card)}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
-                              isHinted ? 'ring-2 ring-ds-warning' : ''
+                              isHinted ? 'ring-2 ring-ds-warning' : isPlayable ? 'ring-2 ring-ds-success/70' : ''
                             } ${!exposed ? 'opacity-60' : ''}`}
                           >
                             <AnimatedCard card={tc2.card} width={effectiveCardWidth} />
