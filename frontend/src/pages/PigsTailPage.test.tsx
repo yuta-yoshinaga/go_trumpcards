@@ -204,12 +204,11 @@ describe('PigsTailPage', () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<PigsTailPage />);
     const buttons = await screen.findAllByRole('button', { name: '棋譜を見る' });
-    const footer = document.querySelector('footer');
-    expect(footer).not.toBeNull();
+    const footer = screen.getByRole('contentinfo');
     // At least one action-log view button (the ActionLogSection one) must
     // precede the footer in document order — i.e. live in the scroll area.
     const precedesFooter = buttons.some(
-      (b) => footer && (footer.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_PRECEDING) !== 0,
+      (b) => (footer.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_PRECEDING) !== 0,
     );
     expect(precedesFooter).toBe(true);
   });
