@@ -616,9 +616,16 @@ function KlondikePageContent() {
                 value={drawCountSetting}
                 onChange={(e) => {
                   const n = Number(e.target.value);
-                  setDrawCountSetting(n);
-                  handleResetWithConfig({ drawCount: n, scoringMode: scoringModeSetting });
-                  resetTimer();
+                  // Mid-game the change discards progress, so confirm first (#2179);
+                  // the local setting state only updates on confirm, reverting the
+                  // controlled select on cancel.
+                  const apply = () => {
+                    setDrawCountSetting(n);
+                    handleResetWithConfig({ drawCount: n, scoringMode: scoringModeSetting });
+                    resetTimer();
+                  };
+                  if (isEnded) apply();
+                  else requestConfirm(apply);
                 }}
                 className="bg-ds-surface-elevated text-ds-text-primary text-sm rounded px-2 py-1"
                 aria-label={t('drawMode')}
@@ -635,9 +642,13 @@ function KlondikePageContent() {
                 value={scoringModeSetting}
                 onChange={(e) => {
                   const n = Number(e.target.value);
-                  setScoringModeSetting(n);
-                  handleResetWithConfig({ drawCount: drawCountSetting, scoringMode: n });
-                  resetTimer();
+                  const apply = () => {
+                    setScoringModeSetting(n);
+                    handleResetWithConfig({ drawCount: drawCountSetting, scoringMode: n });
+                    resetTimer();
+                  };
+                  if (isEnded) apply();
+                  else requestConfirm(apply);
                 }}
                 className="bg-ds-surface-elevated text-ds-text-primary text-sm rounded px-2 py-1"
                 aria-label={t('scoringMode')}
