@@ -259,9 +259,9 @@ describe('MemoryPage', () => {
     mockExec.mockResolvedValue(flip1State);
     fireEvent.click(screen.getByRole('button', { name: '次へ' }));
     await waitFor(() => expect(screen.getByTestId('board-visited-5')).toBeInTheDocument());
-    expect(screen.getByTestId('board-5').className).toContain('ring-ds-accent');
+    expect(screen.getByTestId('board-5')).toHaveClass('ring-ds-accent');
     // Unvisited face-down cards keep the plain back (no persistent ring).
-    expect(screen.getByTestId('board-0').className).not.toContain('ring-ds-accent');
+    expect(screen.getByTestId('board-0')).not.toHaveClass('ring-ds-accent');
   });
 
   it('face-down cards show card back image instead of position number', async () => {

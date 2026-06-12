@@ -290,7 +290,7 @@ function MemoryPageContent() {
                               aria-hidden="true"
                               className="absolute inset-0 rounded bg-black/25 pointer-events-none flex items-start justify-end p-0.5"
                             >
-                              <span className="text-[14px] leading-none" title={t('visitedMark')}>
+                              <span className="text-sm leading-none" title={t('visitedMark')}>
                                 {'\u{1F441}'}
                               </span>
                             </span>
