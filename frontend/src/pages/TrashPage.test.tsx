@@ -81,6 +81,8 @@ describe('TrashPage', () => {
     });
     renderWithProviders(<TrashPage />);
     expect(await screen.findByText('3/10 枚オープン')).toBeInTheDocument();
+    // Exactly one badge: the human row never receives the badge prop.
+    expect(screen.getAllByText(/枚オープン/)).toHaveLength(1);
   });
 
   it('renders the page heading', async () => {

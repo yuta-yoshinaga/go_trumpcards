@@ -337,8 +337,10 @@ function PlayerRow({
     <div className="flex flex-col items-center" data-tutorial={dataTutorial}>
       <span className="text-sm text-ds-secondary mb-1">
         {label}
-        {badge !== undefined && (
-          <span className="ml-2 px-1.5 py-0.5 rounded bg-ds-surface/70 text-xs text-ds-secondary">{badge}</span>
+        {badge && (
+          <span className="ml-2 px-1.5 py-0.5 rounded bg-ds-surface/70 text-xs text-ds-secondary whitespace-nowrap">
+            {badge}
+          </span>
         )}
       </span>
       <div className="grid grid-cols-5 gap-1 sm:gap-2">
