@@ -24,6 +24,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useTwoTenJackGame } from '../hooks/useTwoTenJackGame';
+import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -150,6 +151,7 @@ function TwoTenJackPageContent() {
   });
 
   const phaseNames = usePhaseNames('twotenjack', TWOTENJACK_PHASE_KEYS);
+  const { playSound } = useSound();
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
@@ -171,6 +173,9 @@ function TwoTenJackPageContent() {
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const isHumanDeclarer = isDeclarePhase && state.players[state.declarerIdx]?.isHuman === true;
 
+  // The human sits at seat 0, so team 0 is the human team.
+  const humanWon = isGameEnd && state.winnerTeam === 0;
+
   // Team totals (team 0 = seats 0,2 ; team 1 = seats 1,3).
   const team0Total = (state.players[0]?.cumulativeScore ?? 0) + (state.players[2]?.cumulativeScore ?? 0);
   const team1Total = (state.players[1]?.cumulativeScore ?? 0) + (state.players[3]?.cumulativeScore ?? 0);
@@ -185,6 +190,8 @@ function TwoTenJackPageContent() {
       isHumanTurn={isHumanDeclarer || isHumanTurn}
       gamePath="/twotenjack"
       gameEndFlag={!!state?.gameEndFlag}
+      winShow={humanWon}
+      onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
