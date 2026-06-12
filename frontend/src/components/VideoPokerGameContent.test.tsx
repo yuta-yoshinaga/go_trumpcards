@@ -297,6 +297,8 @@ describe('VideoPokerGameContent', () => {
     renderContent('deuceswild');
     await waitFor(() => expect(screen.getByTestId('vp-wild-badge-0')).toBeInTheDocument());
     expect(screen.getByTestId('vp-wild-badge-2')).toBeInTheDocument();
+    // Wild status is surfaced to screen readers via the button aria-label.
+    expect(screen.getAllByRole('button', { name: /ワイルド/ })).toHaveLength(2);
     expect(screen.queryByTestId('vp-wild-badge-1')).not.toBeInTheDocument();
     expect(screen.queryByTestId('vp-wild-badge-3')).not.toBeInTheDocument();
     expect(screen.queryByTestId('vp-wild-badge-4')).not.toBeInTheDocument();
@@ -311,6 +313,9 @@ describe('VideoPokerGameContent', () => {
     renderContent('jokerpoker');
     await waitFor(() => expect(screen.getByTestId('vp-wild-badge-0')).toBeInTheDocument());
     expect(screen.queryByTestId('vp-wild-badge-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('vp-wild-badge-2')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('vp-wild-badge-3')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('vp-wild-badge-4')).not.toBeInTheDocument();
   });
 
   it('shows no WILD badge in Jacks or Better even on twos', async () => {
