@@ -276,7 +276,9 @@ function MemoryPageContent() {
                           ? 'hidden'
                           : bc.faceUp
                             ? 'bg-white ring-2 ring-ds-warning shadow-lg shadow-ds-warning/30'
-                            : 'bg-ds-info border border-white/10 hover:ring-1 hover:ring-ds-warning'
+                            : wasVisited
+                              ? 'bg-ds-info border border-white/10 ring-1 ring-ds-accent hover:ring-ds-warning'
+                              : 'bg-ds-info border border-white/10 hover:ring-1 hover:ring-ds-warning'
                       } transition-all`}
                     >
                       <div className={`memory-card-inner${bc.faceUp ? ' flipped' : ''}`}>
@@ -288,7 +290,7 @@ function MemoryPageContent() {
                               aria-hidden="true"
                               className="absolute inset-0 rounded bg-black/25 pointer-events-none flex items-start justify-end p-0.5"
                             >
-                              <span className="text-[10px] leading-none" title={t('visitedMark')}>
+                              <span className="text-[14px] leading-none" title={t('visitedMark')}>
                                 {'\u{1F441}'}
                               </span>
                             </span>
