@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, twoTenJackApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -168,6 +168,21 @@ describe('TwoTenJackPage', () => {
     await waitFor(() =>
       expect(screen.getByRole('button', { name: '\u6b21\u306e\u30e9\u30a6\u30f3\u30c9' })).toBeInTheDocument(),
     );
+  });
+
+  it('plays the win celebration when the human team wins', async () => {
+    mockExec.mockResolvedValue(gameEndState); // winnerTeam: 0 = human team
+    renderWithProviders(<TwoTenJackPage />);
+    expect(await screen.findByTestId('win-celebration')).toBeInTheDocument();
+  });
+
+  it('does not celebrate when the CPU team wins', async () => {
+    mockExec.mockResolvedValue({ ...gameEndState, winnerTeam: 1 });
+    renderWithProviders(<TwoTenJackPage />);
+    await waitFor(() => expect(screen.getByText('Game end!')).toBeInTheDocument());
+    // Outwait the celebration's 400ms delay so a wrongly-fired overlay would be visible.
+    await act(() => new Promise((resolve) => setTimeout(resolve, 600)));
+    expect(screen.queryByTestId('win-celebration')).not.toBeInTheDocument();
   });
 
   it('shows game end with action log button', async () => {
