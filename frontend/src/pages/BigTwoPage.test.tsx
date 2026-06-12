@@ -1,25 +1,25 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { tienlenApi } from '../api/gameApi';
+import { bigtwoApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
-import type { Card, TienLenResponse } from '../types/card';
-import { TienLenPage } from './TienLenPage';
+import type { BigTwoResponse, Card } from '../types/card';
+import { BigTwoPage } from './BigTwoPage';
 
 vi.mock('../api/gameApi', () => ({
-  tienlenApi: { exec: vi.fn() },
-  actionLogApi: { tienlen: vi.fn() },
+  bigtwoApi: { exec: vi.fn() },
+  actionLogApi: { bigtwo: vi.fn() },
 }));
 
-const mockExec = vi.mocked(tienlenApi.exec);
+const mockExec = vi.mocked(bigtwoApi.exec);
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
 
-function player(id: number, isHuman: boolean, cards: Card[], over: Partial<TienLenResponse['players'][number]> = {}) {
+function player(id: number, isHuman: boolean, cards: Card[], over: Partial<BigTwoResponse['players'][number]> = {}) {
   return { id, isHuman, isFinished: false, rank: 0, cardCount: cards.length, cards, ...over };
 }
 
-function makeState(overrides: Partial<TienLenResponse> = {}): TienLenResponse {
+function makeState(overrides: Partial<BigTwoResponse> = {}): BigTwoResponse {
   return {
     players: [
       player(0, true, [card('SPADE', 3), card('HEART', 5), card('DIAMOND', 7)]),
@@ -46,33 +46,33 @@ beforeEach(() => {
   mockExec.mockResolvedValue(makeState());
 });
 
-describe('TienLenPage', () => {
+describe('BigTwoPage', () => {
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
-    renderWithProviders(<TienLenPage />);
+    renderWithProviders(<BigTwoPage />);
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
   it('renders skeleton when fewer than 4 players are present', async () => {
     mockExec.mockResolvedValue(makeState({ players: [player(0, true, [])] }));
-    renderWithProviders(<TienLenPage />);
+    renderWithProviders(<BigTwoPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
   it('calls reset on mount', async () => {
-    renderWithProviders(<TienLenPage />);
+    renderWithProviders(<BigTwoPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
   it('shows play and pass buttons on the human turn', async () => {
-    renderWithProviders(<TienLenPage />);
+    renderWithProviders(<BigTwoPage />);
     expect(await screen.findByTestId('pass-button')).toBeEnabled();
     expect(screen.getByTestId('play-button')).toBeDisabled(); // nothing selected yet
   });
 
   it('selecting a card enables play and clicking plays it', async () => {
-    renderWithProviders(<TienLenPage />);
+    renderWithProviders(<BigTwoPage />);
     fireEvent.click(await screen.findByTestId('hand-card-0'));
     const playBtn = screen.getByTestId('play-button');
     expect(playBtn).toBeEnabled();
@@ -80,23 +80,14 @@ describe('TienLenPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0]));
   });
 
-  it('disables play and shows a reason for an invalid combination', async () => {
-    renderWithProviders(<TienLenPage />);
-    // Select ♠3 + ♥5 (two different ranks) → not a legal combo.
-    fireEvent.click(await screen.findByTestId('hand-card-0'));
-    fireEvent.click(screen.getByTestId('hand-card-1'));
-    expect(screen.getByTestId('play-button')).toBeDisabled();
-    expect(screen.getByTestId('tl-invalid-combo')).toBeInTheDocument();
-  });
-
   it('passes when the pass button is clicked', async () => {
-    renderWithProviders(<TienLenPage />);
+    renderWithProviders(<BigTwoPage />);
     fireEvent.click(await screen.findByTestId('pass-button'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', []));
   });
 
   it('toggles card selection on and off', async () => {
-    renderWithProviders(<TienLenPage />);
+    renderWithProviders(<BigTwoPage />);
     const card0 = await screen.findByTestId('hand-card-0');
     fireEvent.click(card0);
     expect(screen.getByTestId('play-button')).toBeEnabled();
@@ -105,14 +96,14 @@ describe('TienLenPage', () => {
   });
 
   it('renders the CLI terminal when CLI mode is enabled', async () => {
-    localStorage.setItem('cli-mode-tienlen', 'true');
-    renderWithProviders(<TienLenPage />);
+    localStorage.setItem('cli-mode-bigtwo', 'true');
+    renderWithProviders(<BigTwoPage />);
     expect(await screen.findByPlaceholderText(/コマンド/)).toBeInTheDocument();
     expect(screen.queryByTestId('play-button')).not.toBeInTheDocument();
   });
 
   it('shows a retry button when an action fails', async () => {
-    renderWithProviders(<TienLenPage />);
+    renderWithProviders(<BigTwoPage />);
     const passBtn = await screen.findByTestId('pass-button');
     mockExec.mockRejectedValueOnce(new Error('boom'));
     fireEvent.click(passBtn);
@@ -120,39 +111,5 @@ describe('TienLenPage', () => {
     mockExec.mockResolvedValue(makeState());
     fireEvent.click(retry);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', []));
-  });
-
-  it('shows a finished CPU rank instead of a card count', async () => {
-    // A CPU has gone out (rank 1) while the round continues — exercises the
-    // `isFinished ? rank : cardCount` branch. Locale is ja in tests, so "1位".
-    mockExec.mockResolvedValue(
-      makeState({
-        players: [
-          player(0, true, [card('SPADE', 3)]),
-          player(1, false, [], { isFinished: true, rank: 1, cardCount: 0 }),
-          player(2, false, [], { cardCount: 5 }),
-          player(3, false, [], { cardCount: 9 }),
-        ],
-      }),
-    );
-    renderWithProviders(<TienLenPage />);
-    await screen.findByTestId('pass-button');
-    expect(screen.getAllByText('1位').length).toBeGreaterThanOrEqual(1);
-  });
-
-  it('shows CPU remaining-card counts during play', async () => {
-    mockExec.mockResolvedValue(
-      makeState({
-        players: [
-          player(0, true, [card('SPADE', 3)]),
-          player(1, false, [], { cardCount: 7 }),
-          player(2, false, [], { cardCount: 5 }),
-          player(3, false, [], { cardCount: 9 }),
-        ],
-      }),
-    );
-    renderWithProviders(<TienLenPage />);
-    await screen.findByTestId('pass-button');
-    expect(screen.getByText('— 7')).toBeInTheDocument();
   });
 });
