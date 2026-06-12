@@ -19,6 +19,7 @@
   "label.pending": "手札",
   "label.you": "あなた",
   "label.cpu": "CPU",
+  "label.cpuOpen": "{{open}}/{{total}} 枚オープン",
   "cli.help": "使えるコマンド:\n  d, draw             山札から1枚引く\n  p, place <pos>      ワイルドを位置 <pos> に配置 (1〜10)\n  cpu                 CPUのターンを進める\n  r, reset            ゲームをやり直す\n  log, l              棋譜を表示",
   "cli.errInvalidPosition": "位置は 1〜10 の整数を指定してください",
   "cli.errUnknown": "未知のコマンド: {{cmd}}",
