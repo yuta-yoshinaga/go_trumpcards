@@ -505,7 +505,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
 
             {/* Phase-based buttons */}
             <div className="text-center">
-              {phase === BjPhase.BET && playerChips === 0 && (
+              {phase === BjPhase.BET && playerChips <= 0 && (
                 <button type="button" className={btnDanger} onClick={handleReset} disabled={loading}>
                   {t('outOfChips')}
                 </button>
