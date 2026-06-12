@@ -88,15 +88,15 @@ const gameEndState: CanastaResponse = {
 };
 
 describe('CanastaPage', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockExec.mockResolvedValue(drawPhaseState);
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<CanastaPage />);
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
-  });
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockExec.mockResolvedValue(drawPhaseState);
   });
 
   it('calls reset on mount', async () => {

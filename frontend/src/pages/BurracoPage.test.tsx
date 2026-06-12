@@ -100,15 +100,15 @@ const gameEndState: BurracoResponse = {
 };
 
 describe('BurracoPage', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockExec.mockResolvedValue(drawPhaseState);
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<BurracoPage />);
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
-  });
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockExec.mockResolvedValue(drawPhaseState);
   });
 
   it('calls reset on mount', async () => {
