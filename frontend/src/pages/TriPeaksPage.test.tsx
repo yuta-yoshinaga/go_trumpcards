@@ -91,6 +91,17 @@ describe('TriPeaksPage', () => {
     expect(screen.getByLabelText('♦ 10')).not.toHaveClass('ring-ds-success/70');
   });
 
+  it('prefers the hint ring over the playable ring on the same card', async () => {
+    renderWithProviders(<TriPeaksPage />);
+    await waitFor(() => expect(screen.getByLabelText('♠ 5')).toBeInTheDocument());
+
+    // Server hint targets ♠5 at row 3, col 0 — the same card the playable ring covers.
+    mockExec.mockResolvedValueOnce({ ...playingState, hint: { type: 'remove', row: 3, col: 0 } });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByLabelText('♠ 5')).toHaveClass('ring-ds-warning'));
+    expect(screen.getByLabelText('♠ 5')).not.toHaveClass('ring-ds-success/70');
+  });
+
   it('shows no playable ring when the waste is empty', async () => {
     mockExec.mockResolvedValue({ ...playingState, waste: [] });
     renderWithProviders(<TriPeaksPage />);
