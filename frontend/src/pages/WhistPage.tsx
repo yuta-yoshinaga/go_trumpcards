@@ -84,6 +84,16 @@ const WHIST_PHASE_KEYS: Readonly<Record<number, string>> = {
 };
 
 /** Renders the Whist game page with trump suit, trick play, and team scoring. */
+/**
+ * Tailwind classes for a team-color chip. Team 0 is info (blue), team 1 is
+ * error (red) — both within the DESIGN.md token set — so partners and
+ * opponents read at a glance in this 2-vs-2 game.
+ */
+function teamBadgeClass(team: number): string {
+  const base = 'inline-block rounded px-1.5 py-0.5 text-xs font-medium';
+  return team === 0 ? `${base} bg-ds-info/20 text-ds-info` : `${base} bg-ds-error/20 text-ds-error`;
+}
+
 export const WhistPage = withTutorial(WhistPageContent, 'whist', WH_TUTORIAL_STEPS);
 /** Inner content of the Whist page, wrapped by TutorialProvider. */
 function WhistPageContent() {
@@ -259,7 +269,8 @@ function WhistPageContent() {
                         .map((p) => (
                           <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                             {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                            {t('team', { n: p.team })} | {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
+                            <span className={teamBadgeClass(p.team)}>{t('team', { n: p.team })}</span> |{' '}
+                            {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
                             {t('roundScore', { score: p.roundScore })}
                           </div>
                         ))}
@@ -272,7 +283,8 @@ function WhistPageContent() {
                       <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
                         <div className="text-ds-text-muted text-sm">
                           {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                          {t('team', { n: p.team })} | {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
+                          <span className={teamBadgeClass(p.team)}>{t('team', { n: p.team })}</span> |{' '}
+                          {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
                           {t('roundScore', { score: p.roundScore })}
                         </div>
                       </div>
@@ -301,11 +313,15 @@ function WhistPageContent() {
                         </thead>
                         <tbody>
                           <tr className="text-ds-accent">
-                            <td>{t('team', { n: 0 })}</td>
+                            <td>
+                              <span className={teamBadgeClass(0)}>{t('team', { n: 0 })}</span>
+                            </td>
                             <td className="text-center">{state.teamScores[0]}</td>
                           </tr>
                           <tr>
-                            <td>{t('team', { n: 1 })}</td>
+                            <td>
+                              <span className={teamBadgeClass(1)}>{t('team', { n: 1 })}</span>
+                            </td>
                             <td className="text-center">{state.teamScores[1]}</td>
                           </tr>
                         </tbody>
@@ -328,11 +344,15 @@ function WhistPageContent() {
                         </thead>
                         <tbody>
                           <tr className="text-ds-accent">
-                            <td>{t('team', { n: 0 })}</td>
+                            <td>
+                              <span className={teamBadgeClass(0)}>{t('team', { n: 0 })}</span>
+                            </td>
                             <td className="text-center">{state.teamScores[0]}</td>
                           </tr>
                           <tr>
-                            <td>{t('team', { n: 1 })}</td>
+                            <td>
+                              <span className={teamBadgeClass(1)}>{t('team', { n: 1 })}</span>
+                            </td>
                             <td className="text-center">{state.teamScores[1]}</td>
                           </tr>
                         </tbody>
@@ -382,6 +402,13 @@ function WhistPageContent() {
           {/* Footer */}
           <GameFooter className={`${gameTheme.whist.footer} px-4 py-2.5`}>
             {/* Human cards */}
+            {humanPlayer && (
+              <div className="mb-1 text-ds-text-muted text-sm" data-testid="whist-human-team">
+                {tc('label.you')}:{' '}
+                <span className={teamBadgeClass(humanPlayer.team)}>{t('team', { n: humanPlayer.team })}</span>
+              </div>
+            )}
+
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}
