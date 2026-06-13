@@ -270,6 +270,20 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
   });
 
+  it('shows variant bonus badges at end phase when bonuses are present', async () => {
+    mockExec.mockResolvedValue({ ...endPhaseState, bonuses: ['spanish21.bonus.777.spade'] });
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByTestId('bj-bonus-badges')).toBeInTheDocument());
+    expect(screen.getAllByTestId('bj-bonus-badge')).toHaveLength(1);
+  });
+
+  it('shows no bonus badges at end phase without bonuses', async () => {
+    mockExec.mockResolvedValue(endPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    expect(screen.queryByTestId('bj-bonus-badges')).not.toBeInTheDocument();
+  });
+
   it('shows message overlay when message is non-empty', async () => {
     mockExec.mockResolvedValue(endPhaseState);
     renderWithProviders(<BlackJackPage />);

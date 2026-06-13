@@ -74,6 +74,7 @@ type BlackJack struct {
 	sideBetResults     []*BJSideBetResult      // サイドベット結果
 	multiHandCount     int                     // マルチハンド数（0=デフォルト1）
 	actionLog          []*ActionLogEntry       // 棋譜
+	bonusKeys          []string                // 当ラウンドで成立したバリアントボーナスのi18nキー (Spanish 21 等)
 }
 
 // NewDefaultBlackJack デフォルト設定のブラックジャックを生成するファクトリ関数
@@ -126,6 +127,7 @@ func (b *BlackJack) Reset() {
 	b.perfectPairsBet = 0
 	b.twentyOnePlus3Bet = 0
 	b.sideBetResults = nil
+	b.bonusKeys = nil
 	b.multiHandCount = 0
 	b.actionLog = nil
 	// チップが最低ベット額未満ならデフォルト値にリセット
@@ -656,6 +658,12 @@ func (b *BlackJack) GetMultiHandCount() int {
 		return 1
 	}
 	return b.multiHandCount
+}
+
+// GetBonusKeys 当ラウンドで成立したバリアントボーナスのi18nキー一覧を返す
+// (Spanish 21 の 7-7-7 / 6-7-8 / 5枚以上21 等)。ボーナスなしの場合は空。
+func (b *BlackJack) GetBonusKeys() []string {
+	return b.bonusKeys
 }
 
 // SetMultiHandCount マルチハンド数設定（テスト用）
