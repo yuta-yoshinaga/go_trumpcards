@@ -134,6 +134,23 @@ func TestPineappleWebController_Discard_ValidCardIdx(t *testing.T) {
 	recorded.CodeIs(200)
 }
 
+func TestPineappleWebController_Discard_MultipleCardIdxs(t *testing.T) {
+	mi := new(mockUsecase.MockPineappleInteractor)
+	pwc := newPineappleTestController(mi)
+	defer pwc.Stop()
+
+	// Irish Poker: cardIdxs takes precedence and routes to DiscardMany.
+	mi.On("DiscardMany", []int{1, 3}).Return(`{"phase":2}`)
+
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "discard",
+		"sessionId": "s1",
+		"cardIdxs":  []int{1, 3},
+	})
+	recorded.CodeIs(200)
+	mi.AssertCalled(t, "DiscardMany", []int{1, 3})
+}
+
 func TestPineappleWebController_Discard_ShortCommand(t *testing.T) {
 	mi := new(mockUsecase.MockPineappleInteractor)
 	pwc := newPineappleTestController(mi)
