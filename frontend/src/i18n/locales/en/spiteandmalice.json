@@ -11,6 +11,7 @@
     "cpu": "CPU",
     "goal": "Goal",
     "side": "Side",
+    "cpuSides": "CPU side piles",
     "hand": "Hand",
     "foundation": "Foundation",
     "stock": "Stock",

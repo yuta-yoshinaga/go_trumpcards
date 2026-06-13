@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { spiteAndMaliceApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -86,6 +86,22 @@ describe('SpiteAndMalicePage', () => {
   it('shows move count label', async () => {
     renderWithProviders(<SpiteAndMalicePage />);
     await waitFor(() => expect(screen.getByText(/手数|Moves/)).toBeInTheDocument());
+  });
+
+  it('renders the CPU side piles with a count badge on non-empty piles', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      players: [
+        baseState.players[0],
+        { ...baseState.players[1], sides: [[card('SPADE', 4), card('HEART', 3)], [], [], []] },
+      ],
+    });
+    renderWithProviders(<SpiteAndMalicePage />);
+    await waitFor(() => expect(screen.getByTestId('sam-cpu-sides')).toBeInTheDocument());
+    // Pile 0 has 2 cards → top card image + count badge "2".
+    expect(within(screen.getByTestId('sam-cpu-side-0')).getByText('2')).toBeInTheDocument();
+    // The other three piles render an empty dashed placeholder (no count badge).
+    expect(within(screen.getByTestId('sam-cpu-side-1')).queryByText(/\d/)).not.toBeInTheDocument();
   });
 
   it('drives CPU turn automatically', async () => {
