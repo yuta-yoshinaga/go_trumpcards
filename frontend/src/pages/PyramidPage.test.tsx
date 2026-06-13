@@ -83,6 +83,45 @@ beforeEach(() => {
 });
 
 describe('PyramidPage', () => {
+  it('rings both cards of a pair hint on the board', async () => {
+    renderWithProviders(<PyramidPage />);
+    await waitFor(() => expect(screen.getByLabelText('♦ 3')).toBeInTheDocument());
+
+    mockExec.mockResolvedValueOnce({ ...playingState, hint: { type: 'pair', row1: 2, col1: 0, row2: 2, col2: 1 } });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByLabelText('♦ 3')).toHaveClass('ring-ds-warning'));
+    expect(screen.getByLabelText('♠ 10')).toHaveClass('ring-ds-warning');
+    expect(screen.getByLabelText('♥ K')).not.toHaveClass('ring-ds-warning');
+  });
+
+  it('shows only the hint ring when a card is both hinted and a pair candidate', async () => {
+    renderWithProviders(<PyramidPage />);
+    await waitFor(() => expect(screen.getByLabelText('♠ 10')).toBeInTheDocument());
+
+    // Select ♠10 (partner value 3) so ♦3 becomes a pair candidate…
+    fireEvent.click(screen.getByLabelText('♠ 10'));
+    await waitFor(() => expect(screen.getByLabelText('♦ 3')).toHaveClass('ring-ds-success'));
+
+    // …then request a hint that also targets ♦3: the hint ring must win alone.
+    mockExec.mockResolvedValueOnce({ ...playingState, hint: { type: 'pair', row1: 2, col1: 0, row2: 2, col2: 1 } });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByLabelText('♦ 3')).toHaveClass('ring-ds-warning'));
+    expect(screen.getByLabelText('♦ 3')).not.toHaveClass('ring-ds-success');
+  });
+
+  it('rings the king cell for a king hint and clears it on the next card click', async () => {
+    renderWithProviders(<PyramidPage />);
+    await waitFor(() => expect(screen.getByLabelText('♥ K')).toBeInTheDocument());
+
+    mockExec.mockResolvedValueOnce({ ...playingState, hint: { type: 'king', row1: 2, col1: 2, row2: -1, col2: -1 } });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByLabelText('♥ K')).toHaveClass('ring-ds-warning'));
+
+    // Any card interaction clears the hint highlight.
+    fireEvent.click(screen.getByLabelText('♦ 3'));
+    await waitFor(() => expect(screen.getByLabelText('♥ K')).not.toHaveClass('ring-ds-warning'));
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<PyramidPage />);
