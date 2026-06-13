@@ -3,6 +3,7 @@ import { texasholdembonusApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { ChipBetInput } from '../components/common/ChipBetInput';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -334,36 +335,23 @@ function TexasHoldemBonusPageContent() {
             <SettingsPanel title={t('settings.title')} groups={[]} />
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="thb-bet-controls">
-                <div className="flex items-center gap-2">
-                  <label htmlFor="texasholdembonus-ante-amount" className="text-ds-text-primary text-sm">
-                    {t('label.ante')}
-                  </label>
-                  <input
-                    id="texasholdembonus-ante-amount"
-                    type="number"
-                    min={10}
-                    max={state.chips}
-                    step={10}
-                    value={anteAmount}
-                    onChange={(e) => setAnteAmount(Number(e.target.value))}
-                    className="w-24 px-2 py-1 rounded text-sm"
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <label htmlFor="texasholdembonus-bonus-amount" className="text-ds-text-primary text-sm">
-                    {t('label.bonus')}
-                  </label>
-                  <input
-                    id="texasholdembonus-bonus-amount"
-                    type="number"
-                    min={0}
-                    max={state.chips}
-                    step={10}
-                    value={bonusAmount}
-                    onChange={(e) => setBonusAmount(Number(e.target.value))}
-                    className="w-24 px-2 py-1 rounded text-sm"
-                  />
-                </div>
+                <ChipBetInput
+                  id="texasholdembonus-ante-amount"
+                  label={t('label.ante')}
+                  value={anteAmount}
+                  onChange={setAnteAmount}
+                  max={state.chips}
+                  showSteppers
+                />
+                <ChipBetInput
+                  id="texasholdembonus-bonus-amount"
+                  label={t('label.bonus')}
+                  value={bonusAmount}
+                  onChange={setBonusAmount}
+                  min={0}
+                  max={state.chips}
+                  showSteppers
+                />
                 <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
                   {t('button.bet')}
                 </button>
