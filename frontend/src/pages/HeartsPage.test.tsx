@@ -156,6 +156,34 @@ describe('HeartsPage', () => {
     expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled();
   });
 
+  it('shows a N/3 selection-progress pill during the pass phase', async () => {
+    mockExec.mockResolvedValue({
+      ...passPhaseState,
+      players: [
+        {
+          ...passPhaseState.players[0],
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 11 },
+            { design: 'CLOVER', value: 5 },
+          ],
+        },
+        ...passPhaseState.players.slice(1),
+      ],
+    });
+    renderWithProviders(<HeartsPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    // No pill before any selection.
+    expect(screen.queryByTestId('hearts-pass-progress')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    expect(screen.getByTestId('hearts-pass-progress')).toHaveTextContent('1/3');
+
+    fireEvent.click(screen.getByAltText('♥ J').closest('button') as HTMLButtonElement);
+    expect(screen.getByTestId('hearts-pass-progress')).toHaveTextContent('2/3');
+  });
+
   it('play button disabled when not 1 card selected', async () => {
     renderWithProviders(<HeartsPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '出す' })).toBeDisabled());
