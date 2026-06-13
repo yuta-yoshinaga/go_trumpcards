@@ -36,9 +36,10 @@ export function usePyramidGame() {
 
   const handleSelectCard = useCallback(
     (sel: PyramidSelection, cardValue?: number) => {
+      // Any card interaction consumes the current hint (#2195).
+      base.setHint(null);
       // King (value 13) - remove solo immediately
       if (cardValue === 13) {
-        base.setHint(null);
         void base.apiCall('remove', selectionToRemoveCard(sel));
         setSelectedCard(null);
         return;
@@ -57,7 +58,6 @@ export function usePyramidGame() {
       }
 
       // Second card selected - attempt to remove pair
-      base.setHint(null);
       void base.apiCall('remove', selectionToRemoveCard(selectedCard), selectionToRemoveCard(sel));
       setSelectedCard(null);
     },

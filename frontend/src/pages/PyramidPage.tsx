@@ -237,6 +237,11 @@ function PyramidPageContent() {
                         exposed &&
                         pc.card.value === partnerValue &&
                         !isSelected('pyramid', rowIdx, colIdx);
+                      // Server hint targets (-1 sentinels for king/waste never match a cell).
+                      const isHintTarget =
+                        hint !== null &&
+                        ((hint.row1 === rowIdx && hint.col1 === colIdx) ||
+                          (hint.row2 === rowIdx && hint.col2 === colIdx));
                       return (
                         <div key={`pc-${rowIdx.toString()}-${colIdx.toString()}`} className="absolute" style={{ left }}>
                           <button
@@ -250,7 +255,11 @@ function PyramidPageContent() {
                             aria-pressed={isSelected('pyramid', rowIdx, colIdx)}
                             data-pair-candidate={isPairCandidate ? 'true' : undefined}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
-                              isSelected('pyramid', rowIdx, colIdx) ? 'ring-2 ring-ds-warning' : ''
+                              isSelected('pyramid', rowIdx, colIdx)
+                                ? 'ring-2 ring-ds-warning'
+                                : isHintTarget
+                                  ? 'ring-2 ring-ds-warning animate-pulse'
+                                  : ''
                             } ${isPairCandidate ? 'ring-2 ring-ds-success animate-pulse' : ''} ${!exposed ? 'opacity-60' : ''}`}
                           >
                             <AnimatedCard card={pc.card} width={effectiveCardWidth} />
