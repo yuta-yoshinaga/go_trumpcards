@@ -239,7 +239,7 @@ function PyramidPageContent() {
                         !isSelected('pyramid', rowIdx, colIdx);
                       // Server hint targets (-1 sentinels for king/waste never match a cell).
                       const isHintTarget =
-                        hint !== null &&
+                        !!hint &&
                         ((hint.row1 === rowIdx && hint.col1 === colIdx) ||
                           (hint.row2 === rowIdx && hint.col2 === colIdx));
                       return (
@@ -259,8 +259,10 @@ function PyramidPageContent() {
                                 ? 'ring-2 ring-ds-warning'
                                 : isHintTarget
                                   ? 'ring-2 ring-ds-warning animate-pulse'
-                                  : ''
-                            } ${isPairCandidate ? 'ring-2 ring-ds-success animate-pulse' : ''} ${!exposed ? 'opacity-60' : ''}`}
+                                  : isPairCandidate
+                                    ? 'ring-2 ring-ds-success animate-pulse'
+                                    : ''
+                            } ${!exposed ? 'opacity-60' : ''}`}
                           >
                             <AnimatedCard card={pc.card} width={effectiveCardWidth} />
                           </button>
