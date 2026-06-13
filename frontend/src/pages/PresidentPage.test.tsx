@@ -102,6 +102,14 @@ describe('PresidentPage', () => {
     await waitFor(() => expect(screen.getByText(/革命中/)).toBeInTheDocument());
   });
 
+  it('flashes a full-screen overlay when revolution turns on', async () => {
+    // revolutionActive arrives true on mount → false→true transition fires the flash.
+    mockExec.mockResolvedValue(makeState({ revolutionActive: true }));
+    renderWithProviders(<PresidentPage />);
+    await waitFor(() => expect(screen.getByTestId('president-revolution-flash')).toBeInTheDocument());
+    expect(screen.getByTestId('president-revolution-flash')).toHaveClass('bg-ds-warning/40');
+  });
+
   it('disables action buttons when it is not human turn', async () => {
     mockExec.mockResolvedValue(makeState({ currentTurn: 1 }));
     renderWithProviders(<PresidentPage />);
