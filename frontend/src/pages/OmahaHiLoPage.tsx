@@ -318,6 +318,48 @@ function OmahaHiLoPageContent() {
             {/* Round results */}
             {isShowdown && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}
 
+            {/* Hi/Lo split breakdown: green Hi badges + blue Lo badges (Lo omitted when nobody qualifies) */}
+            {isShowdown &&
+              (() => {
+                const results = state?.roundResults ?? [];
+                const hiWinners = results.filter((r) => (r.hiWonAmount ?? 0) > 0);
+                const loWinners = results.filter((r) => (r.lowWonAmount ?? 0) > 0);
+                if (hiWinners.length === 0 && loWinners.length === 0) return null;
+                return (
+                  <div className="mb-2 text-center text-sm" data-testid="omahahilo-split">
+                    <div className="mb-1 text-ds-text-muted">{t('hiLo.title')}</div>
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {hiWinners.map((r) => (
+                        <span
+                          key={`hi-${r.playerIdx}`}
+                          data-testid="omahahilo-hi-badge"
+                          className="inline-block rounded border border-ds-success bg-ds-surface px-2 py-0.5 text-ds-success"
+                        >
+                          {t('hiLo.hi')}:{' '}
+                          {t('hiLo.winner', {
+                            name: findPlayerName(state?.players ?? [], r.playerIdx),
+                            amount: r.hiWonAmount ?? 0,
+                          })}
+                        </span>
+                      ))}
+                      {loWinners.map((r) => (
+                        <span
+                          key={`lo-${r.playerIdx}`}
+                          data-testid="omahahilo-lo-badge"
+                          className="inline-block rounded border border-ds-info bg-ds-surface px-2 py-0.5 text-ds-info"
+                        >
+                          {t('hiLo.lo')}:{' '}
+                          {t('hiLo.winner', {
+                            name: findPlayerName(state?.players ?? [], r.playerIdx),
+                            amount: r.lowWonAmount ?? 0,
+                          })}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
             {/* Action log */}
             <ActionLogSection
               isEndPhase={!!state?.gameEndFlag}
