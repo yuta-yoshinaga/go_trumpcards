@@ -383,10 +383,13 @@ function WaspPageContent() {
                         style={{ width: sc.cw, height: sc.ch }}
                         onClick={() => selectedSource && handleSelectTarget('tableau', colIdx)}
                         disabled={!isPlaying || !selectedSource}
-                        aria-label={`${t('empty')} ${t('tableau')} ${colIdx}`}
+                        aria-label={`${t('empty')} ${t('tableau')} ${colIdx} — ${t('anyCard')}`}
                         data-testid={`sc-empty-col-${colIdx.toString()}`}
                       >
-                        {t('empty')}
+                        <span className="flex flex-col items-center leading-tight">
+                          <span>{t('empty')}</span>
+                          <span className="text-[9px] text-ds-info">{t('anyCard')}</span>
+                        </span>
                       </button>
                     </DropZone>
                   ) : (
