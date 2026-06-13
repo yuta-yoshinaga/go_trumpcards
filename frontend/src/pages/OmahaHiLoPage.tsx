@@ -321,38 +321,35 @@ function OmahaHiLoPageContent() {
             {/* Hi/Lo split breakdown: green Hi badges + blue Lo badges (Lo omitted when nobody qualifies) */}
             {isShowdown &&
               (() => {
-                const results = state?.roundResults ?? [];
-                const hiWinners = results.filter((r) => (r.hiWonAmount ?? 0) > 0);
-                const loWinners = results.filter((r) => (r.lowWonAmount ?? 0) > 0);
+                // Narrow each winner to a concrete { name, amount } (no optional fallbacks).
+                // A won amount is non-negative, so a truthy value means "> 0".
+                const hiWinners = state.roundResults.flatMap((r) =>
+                  r.hiWonAmount ? [{ name: findPlayerName(state.players, r.playerIdx), amount: r.hiWonAmount }] : [],
+                );
+                const loWinners = state.roundResults.flatMap((r) =>
+                  r.lowWonAmount ? [{ name: findPlayerName(state.players, r.playerIdx), amount: r.lowWonAmount }] : [],
+                );
                 if (hiWinners.length === 0 && loWinners.length === 0) return null;
                 return (
                   <div className="mb-2 text-center text-sm" data-testid="omahahilo-split">
                     <div className="mb-1 text-ds-text-muted">{t('hiLo.title')}</div>
                     <div className="flex flex-wrap justify-center gap-2">
-                      {hiWinners.map((r) => (
+                      {hiWinners.map((w) => (
                         <span
-                          key={`hi-${r.playerIdx}`}
+                          key={`hi-${w.name}`}
                           data-testid="omahahilo-hi-badge"
                           className="inline-block rounded border border-ds-success bg-ds-surface px-2 py-0.5 text-ds-success"
                         >
-                          {t('hiLo.hi')}:{' '}
-                          {t('hiLo.winner', {
-                            name: findPlayerName(state?.players ?? [], r.playerIdx),
-                            amount: r.hiWonAmount ?? 0,
-                          })}
+                          {t('hiLo.hi')}: {t('hiLo.winner', { name: w.name, amount: w.amount })}
                         </span>
                       ))}
-                      {loWinners.map((r) => (
+                      {loWinners.map((w) => (
                         <span
-                          key={`lo-${r.playerIdx}`}
+                          key={`lo-${w.name}`}
                           data-testid="omahahilo-lo-badge"
                           className="inline-block rounded border border-ds-info bg-ds-surface px-2 py-0.5 text-ds-info"
                         >
-                          {t('hiLo.lo')}:{' '}
-                          {t('hiLo.winner', {
-                            name: findPlayerName(state?.players ?? [], r.playerIdx),
-                            amount: r.lowWonAmount ?? 0,
-                          })}
+                          {t('hiLo.lo')}: {t('hiLo.winner', { name: w.name, amount: w.amount })}
                         </span>
                       ))}
                     </div>
