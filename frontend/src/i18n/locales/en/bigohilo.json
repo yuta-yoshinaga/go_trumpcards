@@ -1,4 +1,10 @@
 {
+  "hiLo": {
+    "title": "Hi/Lo split",
+    "hi": "Hi",
+    "lo": "Lo",
+    "winner": "{{name}} (+{{amount}})"
+  },
   "phase": {
     "preFlop": "Pre-Flop",
     "flop": "Flop",

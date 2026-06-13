@@ -1,4 +1,10 @@
 {
+  "hiLo": {
+    "title": "ハイ/ロー内訳",
+    "hi": "ハイ",
+    "lo": "ロー",
+    "winner": "{{name}} (+{{amount}})"
+  },
   "phase": {
     "preFlop": "プリフロップ",
     "flop": "フロップ",
