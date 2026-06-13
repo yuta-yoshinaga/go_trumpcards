@@ -38,7 +38,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { DEUCE_TO_SEVEN_HELP, parseDeuceToSevenCommand } from '../utils/cli/commands/deuceToSevenCommands';
 import { formatDeuceToSevenState } from '../utils/cli/formatters/deuceToSevenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { isMadePatLow } from '../utils/deuceToSevenUtils';
+import { deuceToSevenBestIndices, isMadePatLow } from '../utils/deuceToSevenUtils';
 import { findPlayerName } from '../utils/playerUtils';
 
 /** 2-7 Triple Draw tutorial step definitions. */
@@ -158,6 +158,12 @@ function DeuceToSevenPageContent() {
   // low (no pair / straight / flush). Drawing from this state can only weaken it.
   const humanHasMadeLow = useMemo(
     () => (canExchange ? isMadePatLow(humanPlayer?.cards ?? []) : false),
+    [canExchange, humanPlayer?.cards],
+  );
+
+  // During the draw, lift the best-low core cards and dim the draw candidates.
+  const bestSubset = useMemo(
+    () => (canExchange ? new Set(deuceToSevenBestIndices(humanPlayer?.cards ?? [])) : null),
     [canExchange, humanPlayer?.cards],
   );
 
@@ -294,6 +300,11 @@ function DeuceToSevenPageContent() {
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {(humanPlayer.cards ?? []).map((card, i) => {
                     const isSelected = selected.includes(i);
+                    let liftOrDim = '';
+                    if (bestSubset) {
+                      if (bestSubset.has(i)) liftOrDim = '-translate-y-1';
+                      else if (!isSelected) liftOrDim = 'opacity-50';
+                    }
                     return (
                       <button
                         key={`${card.design}-${card.value}`}
@@ -301,7 +312,7 @@ function DeuceToSevenPageContent() {
                         aria-label={`${cardAlt(card)}${isSelected ? ` ${t('cardSelected')}` : ''}`}
                         aria-pressed={isSelected}
                         onClick={() => toggleCard(i)}
-                        className={`${focusRingAccent} rounded transition-transform`}
+                        className={`${focusRingAccent} rounded transition-transform ${liftOrDim}`}
                         style={{
                           background: 'none',
                           padding: 0,
