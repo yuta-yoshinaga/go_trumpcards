@@ -476,9 +476,10 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
             {/* Variant bonus badges (Spanish 21): 7-7-7 / 6-7-8 / 5+card 21 achievements. */}
             {phase === BjPhase.END && (state?.bonuses?.length ?? 0) > 0 && (
               <div className="mb-2 flex flex-wrap justify-center gap-1" data-testid="bj-bonus-badges">
-                {state?.bonuses?.map((key) => (
+                {state?.bonuses?.map((key, i) => (
                   <span
-                    key={key}
+                    // Multi-hand rounds can repeat the same bonus key, so include the index.
+                    key={`${key}-${i}`}
                     data-testid="bj-bonus-badge"
                     className="rounded-full border border-ds-warning bg-ds-surface px-3 py-0.5 text-ds-warning text-sm font-bold motion-safe:animate-pulse-once"
                   >
