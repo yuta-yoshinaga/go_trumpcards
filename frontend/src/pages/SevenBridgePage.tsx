@@ -350,37 +350,42 @@ function SevenBridgePageContent() {
                   >
                     {t('meldButton')}
                   </button>
-                  <label className="text-ds-text-muted text-xs flex items-center gap-1">
-                    <span>{t('layoffTarget')}:</span>
-                    <select
-                      value={layoffTarget}
-                      onChange={(e) => {
-                        const val = Number(e.target.value);
-                        if (!Number.isNaN(val)) {
-                          setLayoffTarget(val);
-                          setLayoffMeldIdx(0);
-                        }
-                      }}
-                      className="border rounded px-1 text-xs bg-white text-black"
-                    >
-                      {layoffPlayers.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {playerName(p.id, p.isHuman)}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      value={layoffMeldIdx}
-                      onChange={(e) => setLayoffMeldIdx(Number(e.target.value))}
-                      className="border rounded px-1 text-xs bg-white text-black"
-                    >
-                      {layoffMelds.map((_m, mi) => (
-                        <option key={mi} value={mi}>
-                          #{mi + 1}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                  {/* Visual meld picker: tap a meld's card row to target it for layoff. */}
+                  <div className="flex w-full flex-col gap-1" data-testid="sb-layoff-melds">
+                    <span className="text-ds-text-muted text-xs">{t('layoffTarget')}:</span>
+                    {layoffPlayers.map((p) =>
+                      p.melds.length > 0 ? (
+                        <div key={p.id} className="flex flex-wrap items-center gap-1">
+                          <span className="text-ds-text-muted text-xs">{playerName(p.id, p.isHuman)}:</span>
+                          {p.melds.map((meld, mi) => {
+                            const selected = layoffTarget === p.id && layoffMeldIdx === mi;
+                            return (
+                              <button
+                                type="button"
+                                key={`${p.id}-${mi}`}
+                                data-testid={`sb-layoff-meld-${p.id}-${mi}`}
+                                aria-pressed={selected}
+                                aria-label={`${playerName(p.id, p.isHuman)} ${t('layoffTarget')} ${mi + 1}`}
+                                onClick={() => {
+                                  setLayoffTarget(p.id);
+                                  setLayoffMeldIdx(mi);
+                                }}
+                                className={`flex gap-0.5 rounded p-0.5 ${focusRingCard} ${selected ? 'ring-2 ring-ds-info' : ''}`}
+                              >
+                                {meld.cards.map((c, ci) => (
+                                  <AnimatedCard
+                                    key={`${c.design}-${c.value}-${ci}`}
+                                    card={c}
+                                    width={Math.round(cardWidth * 0.4)}
+                                  />
+                                ))}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ) : null,
+                    )}
+                  </div>
                   <button
                     type="button"
                     className={btnPrimary}
