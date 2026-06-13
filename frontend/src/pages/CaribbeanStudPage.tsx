@@ -3,6 +3,7 @@ import { caribbeanstudApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { ChipBetInput } from '../components/common/ChipBetInput';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -319,36 +320,28 @@ function CaribbeanStudPageContent() {
             <SettingsPanel title={t('settings.title')} groups={[]} />
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="csp-bet-controls">
-                <div className="flex items-center gap-2">
-                  <label htmlFor="caribbeanstud-ante-amount" className="text-ds-text-primary text-sm">
-                    {t('label.ante')}
-                  </label>
-                  <input
-                    id="caribbeanstud-ante-amount"
-                    type="number"
-                    min={10}
-                    max={state.chips}
-                    step={10}
-                    value={anteAmount}
-                    onChange={(e) => setAnteAmount(Number(e.target.value))}
-                    className="w-24 px-2 py-1 rounded text-sm"
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <label htmlFor="caribbeanstud-jackpot-amount" className="text-ds-text-primary text-sm">
-                    {t('label.jackpot')}
-                  </label>
-                  <input
-                    id="caribbeanstud-jackpot-amount"
-                    type="number"
-                    min={0}
-                    max={state.chips}
-                    step={10}
-                    value={jackpotAmount}
-                    onChange={(e) => setJackpotAmount(Number(e.target.value))}
-                    className="w-24 px-2 py-1 rounded text-sm"
-                  />
-                </div>
+                <ChipBetInput
+                  id="caribbeanstud-ante-amount"
+                  label={t('label.ante')}
+                  value={anteAmount}
+                  onChange={setAnteAmount}
+                  min={10}
+                  max={state.chips}
+                  step={10}
+                  disabled={loading}
+                  showSteppers
+                />
+                <ChipBetInput
+                  id="caribbeanstud-jackpot-amount"
+                  label={t('label.jackpot')}
+                  value={jackpotAmount}
+                  onChange={setJackpotAmount}
+                  min={0}
+                  max={state.chips}
+                  step={10}
+                  disabled={loading}
+                  showSteppers
+                />
                 <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
                   {t('button.bet')}
                 </button>

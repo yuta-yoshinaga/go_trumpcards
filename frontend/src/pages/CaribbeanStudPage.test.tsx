@@ -218,6 +218,25 @@ describe('CaribbeanStudPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 200, 10));
   });
 
+  it('steps the ante and jackpot amounts with the chip steppers', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<CaribbeanStudPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    // Default ante 100 → +10 → 110; jackpot 0 → +10 → 10.
+    fireEvent.click(screen.getByRole('button', { name: 'アンテ +10' }));
+    fireEvent.click(screen.getByRole('button', { name: 'ジャックポット +10' }));
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 110, 10));
+  });
+
+  it('disables the jackpot minus stepper at zero', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<CaribbeanStudPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'ジャックポット −10' })).toBeDisabled();
+  });
+
   it('next game button executes reset without confirm dialog', async () => {
     mockApi.mockResolvedValue(endPhasePlayerWins);
     renderWithProviders(<CaribbeanStudPage />);
