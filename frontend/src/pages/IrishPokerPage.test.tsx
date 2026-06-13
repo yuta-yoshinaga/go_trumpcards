@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { irishPokerApi, pineappleApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -143,5 +143,39 @@ describe('IrishPokerPage', () => {
     mockIrishExec.mockResolvedValue(discardState);
     renderWithProviders(<IrishPokerPage />);
     await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+  });
+
+  it('requires selecting 2 cards then submits them together as cardIdxs', async () => {
+    mockIrishExec.mockResolvedValue(discardState);
+    renderWithProviders(<IrishPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+
+    const discardBtn = screen.getByRole('button', { name: 'カードを捨ててください。' });
+    expect(discardBtn).toBeDisabled(); // 0 selected
+
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+    fireEvent.click(cardButtons[2]); // 1/2 selected → still disabled, count badge shows
+    expect(screen.getByTestId('discard-count')).toHaveTextContent('1/2');
+    expect(discardBtn).toBeDisabled();
+
+    fireEvent.click(cardButtons[3]); // 2/2 selected → enabled
+    await waitFor(() => expect(discardBtn).not.toBeDisabled());
+
+    fireEvent.click(discardBtn);
+    fireEvent.click(screen.getByRole('button', { name: '確定' }));
+    await waitFor(() => expect(mockIrishExec).toHaveBeenCalledWith('discard', undefined, { cardIdxs: [2, 3] }));
+  });
+
+  it('caps the discard selection at 2 cards', async () => {
+    mockIrishExec.mockResolvedValue(discardState);
+    renderWithProviders(<IrishPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+    fireEvent.click(cardButtons[0]);
+    fireEvent.click(cardButtons[1]);
+    fireEvent.click(cardButtons[2]); // ignored — cap is 2
+    expect(screen.getByTestId('discard-count')).toHaveTextContent('2/2');
+    expect(cardButtons[2]).toHaveAttribute('aria-pressed', 'false');
   });
 });
