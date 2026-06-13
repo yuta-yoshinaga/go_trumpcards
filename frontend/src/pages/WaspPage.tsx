@@ -4,6 +4,7 @@ import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
+import { SuitProgressBadge } from '../components/common/SuitProgressBadge';
 import { DropZone } from '../components/DropZone';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -331,8 +332,9 @@ function WaspPageContent() {
           <span>
             {t('moveCount')}: {state.moveCount}
           </span>
-          <span data-tutorial="sc-stock">
-            {t('stock')}: {state.stockCount} / {t('completed')}: {state.completedSuits}/4
+          <span data-tutorial="sc-stock" className="inline-flex items-center gap-2">
+            {t('stock')}: {state.stockCount}
+            <SuitProgressBadge completed={state.completedSuits} label={t('completed')} />
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
