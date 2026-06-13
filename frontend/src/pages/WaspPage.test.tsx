@@ -142,6 +142,26 @@ describe('WaspPage', () => {
     expect(mockExec).not.toHaveBeenCalledWith('deal');
   });
 
+  it('labels empty columns with the "any card" rule sublabel', async () => {
+    const stateWithEmptyCol: WaspResponse = {
+      ...playingState,
+      tableau: [
+        [{ card: card('SPADE', 13), faceUp: true }],
+        [], // empty
+        [{ card: card('CLOVER', 5), faceUp: true }],
+        [{ card: card('DIAMOND', 10), faceUp: true }],
+        [{ card: card('SPADE', 3), faceUp: true }],
+        [{ card: card('HEART', 7), faceUp: true }],
+        [{ card: card('CLOVER', 2), faceUp: true }],
+      ],
+    };
+    mockExec.mockResolvedValue(stateWithEmptyCol);
+    renderWithProviders(<WaspPage />);
+    const emptyCol = await screen.findByTestId('sc-empty-col-1');
+    expect(emptyCol).toHaveTextContent('任意カード可');
+    expect(emptyCol).toHaveAttribute('aria-label', expect.stringContaining('任意カード可'));
+  });
+
   it('deal button exposes empty-column reason via title when blocked', async () => {
     const stateWithEmptyCol: WaspResponse = {
       ...playingState,
