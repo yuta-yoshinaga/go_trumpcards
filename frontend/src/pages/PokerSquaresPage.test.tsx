@@ -105,6 +105,20 @@ describe('PokerSquaresPage', () => {
     expect(screen.getByText(/次に置くカード/)).toBeInTheDocument();
   });
 
+  it('grows the card width to fill the viewport on a 375px mobile screen', async () => {
+    const original = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      mockApi.mockResolvedValue(playingState);
+      renderWithProviders(<PokerSquaresPage />);
+      const cell = await screen.findByTestId('cell-0-0');
+      // floor((375 - 112) / 5) = 52, clamped to [40, 60] → 52px (> the fixed 40px mobile preset).
+      expect(cell.querySelector('div')).toHaveStyle({ width: '52px' });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+    }
+  });
+
   it('calls exec with place when an empty cell is clicked', async () => {
     mockApi.mockResolvedValue(playingState);
     renderWithProviders(<PokerSquaresPage />);
