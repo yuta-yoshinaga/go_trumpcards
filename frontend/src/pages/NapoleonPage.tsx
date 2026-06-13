@@ -344,6 +344,7 @@ function NapoleonPageContent() {
                 {isKittyExchange && state.kitty.length > 0 && (
                   <div className="my-2 p-2 rounded bg-black/40" data-tutorial="np-kitty-cards">
                     <div className="text-ds-text-muted text-sm mb-1">{t('kittyLabel')}</div>
+                    {isHumanExchange && <div className="text-ds-info text-xs mb-1">{t('kittyAcquireLabel')}</div>}
                     <div className="flex gap-2">
                       {state.kitty.map((card, idx) => (
                         <AnimatedCard key={`kitty-${card.design}-${card.value}-${idx}`} card={card} width={cardWidth} />
@@ -518,6 +519,11 @@ function NapoleonPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.napoleon.footer} px-4 py-2.5`}>
+            {isHumanExchange && (
+              <div className="text-ds-info text-xs text-center mb-1" data-testid="np-hand-discard-label">
+                {t('handDiscardLabel')}
+              </div>
+            )}
             {/* Human cards */}
             {humanPlayer &&
               (isMobile ? (
@@ -662,7 +668,9 @@ function NapoleonPageContent() {
                   }}
                   disabled={loading || selectedCardIndices.length !== 1}
                 >
-                  {t('exchangeButton')}
+                  {selectedCardIndices.length === 1 && humanPlayer
+                    ? t('exchangeButtonNamed', { card: cardAlt(humanPlayer.cards[selectedCardIndices[0]]) })
+                    : t('exchangeButton')}
                 </button>
               )}
 

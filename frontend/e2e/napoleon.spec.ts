@@ -21,7 +21,8 @@ test.describe('Napoleon E2E', () => {
     const bidButton = page.getByRole('button', { name: 'ビッド' });
     const passButton = page.getByRole('button', { name: 'パス' });
     const declareButton = page.getByRole('button', { name: '宣言' });
-    const exchangeButton = page.getByRole('button', { name: '交換' });
+    // Matches both the idle "交換" label and the dynamic "<card> を捨てる" label shown once a card is selected.
+    const exchangeButton = page.getByRole('button', { name: /交換|を捨てる/ });
     const playButton = page.getByRole('button', { name: '出す' });
     const nextTrickButton = page.getByRole('button', { name: '次のトリック' });
     const nextRoundButton = page.getByRole('button', { name: '次のラウンド' });
