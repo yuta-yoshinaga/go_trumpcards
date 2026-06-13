@@ -214,6 +214,25 @@ describe('TexasHoldemBonusPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 200, 10));
   });
 
+  it('steps the ante and bonus amounts with the chip steppers', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<TexasHoldemBonusPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    // Default ante 100 → +10 → 110; bonus 0 → +10 → 10.
+    fireEvent.click(screen.getByRole('button', { name: 'アンテ +10' }));
+    fireEvent.click(screen.getByRole('button', { name: 'ボーナス +10' }));
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 110, 10));
+  });
+
+  it('disables the bonus minus stepper at zero', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<TexasHoldemBonusPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'ボーナス −10' })).toBeDisabled();
+  });
+
   it('shows network error', async () => {
     mockApi.mockResolvedValueOnce(betPhaseState).mockRejectedValueOnce(new Error('Network'));
     renderWithProviders(<TexasHoldemBonusPage />);
