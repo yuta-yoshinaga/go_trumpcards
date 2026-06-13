@@ -361,8 +361,19 @@ function ShortDeckPageContent() {
                   {humanPlayer.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                   {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
-                    <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
+                    <span
+                      className={`inline-flex items-center gap-1 ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
+                    >
                       {humanPlayer.handName}
+                      <span
+                        data-testid="shortdeck-handname-rule"
+                        role="img"
+                        aria-label={t('rankOverrideReminder')}
+                        title={t('rankOverrideReminder')}
+                        className="cursor-help text-ds-warning"
+                      >
+                        ★
+                      </span>
                     </span>
                   )}
                 </div>

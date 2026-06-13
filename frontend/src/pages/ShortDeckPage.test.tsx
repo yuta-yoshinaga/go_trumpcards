@@ -332,6 +332,14 @@ describe('ShortDeckPage', () => {
     await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
   });
 
+  it('appends the Short Deck rank-override marker to the human hand-name badge at showdown', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<ShortDeckPage />);
+    const marker = await screen.findByTestId('shortdeck-handname-rule');
+    expect(marker).toHaveAttribute('title', 'ショートデック特殊ルール：フラッシュ > フルハウス');
+    expect(marker).toHaveAttribute('aria-label', 'ショートデック特殊ルール：フラッシュ > フルハウス');
+  });
+
   it('shows CPU cards face-up during showdown when not folded', async () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<ShortDeckPage />);
