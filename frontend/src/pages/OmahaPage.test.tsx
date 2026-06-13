@@ -366,6 +366,15 @@ describe('OmahaPage', () => {
     await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
   });
 
+  it('highlights exactly 2 hole + 3 board cards as the best-5 at showdown', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    const { container } = renderWithProviders(<OmahaPage />);
+    await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
+    // Omaha must-use-2 rule → exactly 2 hole and 3 board cards highlighted.
+    expect(container.querySelectorAll('[data-best5-hole]')).toHaveLength(2);
+    expect(container.querySelectorAll('[data-best5-board]')).toHaveLength(3);
+  });
+
   it('does not show CPU hand name badge when CPU is folded in showdown', async () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<OmahaPage />);
