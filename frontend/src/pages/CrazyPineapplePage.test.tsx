@@ -146,4 +146,26 @@ describe('CrazyPineapplePage', () => {
     // through useGamePageSetup → useTranslation('crazypineapple').
     expect(screen.getByText('捨てるカードを選択してください')).toBeInTheDocument();
   });
+
+  it('forewarns the upcoming discard with a banner during the flop betting round', async () => {
+    const flopState: PineappleResponse = {
+      ...initState,
+      players: [humanPlayer(), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
+      pot: 60,
+      currentTurn: 0,
+      phase: 2, // PineapplePhase.FLOP
+      communityCards: [
+        { design: 'SPADE', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      handCount: 1,
+    };
+    mockCrazyExec.mockResolvedValue(flopState);
+    renderWithProviders(<CrazyPineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('cp-discard-upcoming-banner')).toBeInTheDocument());
+    expect(screen.getByTestId('cp-discard-upcoming-banner')).toHaveTextContent(
+      'フロップベット終了後にカードを1枚捨てます',
+    );
+  });
 });
