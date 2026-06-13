@@ -165,6 +165,26 @@ describe('LetItRidePage', () => {
     expect(screen.getByTestId('bet-status')).toHaveTextContent('引き戻し');
   });
 
+  it('shows the per-bet amount and total current risk when all bets are live', async () => {
+    mockApi.mockResolvedValue(firstDecisionState);
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByTestId('bet-status')).toBeInTheDocument());
+    // betAmount 100 in each of the 3 boxes.
+    expect(screen.getByTestId('bet-box-bet1')).toHaveTextContent('100');
+    // All three live → risk 300, and the active box carries the success ring.
+    expect(screen.getByTestId('current-risk')).toHaveTextContent('300');
+    expect(screen.getByTestId('bet-box-bet1').className).toContain('ring-ds-success');
+  });
+
+  it('dims a pulled bet box and lowers the current risk total', async () => {
+    mockApi.mockResolvedValue(secondDecisionState);
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByTestId('bet-status')).toBeInTheDocument());
+    // bet1 pulled → dimmed, risk drops to 2 × 100 = 200.
+    expect(screen.getByTestId('bet-box-bet1').className).toContain('opacity-40');
+    expect(screen.getByTestId('current-risk')).toHaveTextContent('200');
+  });
+
   it('shows END phase with reset button and payout breakdown on win', async () => {
     mockApi.mockResolvedValue(endPhaseWin);
     renderWithProviders(<LetItRidePage />);
