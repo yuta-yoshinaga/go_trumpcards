@@ -448,7 +448,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
             {/* Discard controls */}
             {canDiscard && (
               <div className="mb-2 text-center" data-testid="discard-controls" data-tutorial="pn-discard-controls">
-                {discardConfirming && selectedDiscards.length === discardCount ? (
+                {discardConfirming && selectedDiscards.length === discardCount && humanPlayer ? (
                   <div data-testid="discard-confirm">
                     <p className="text-ds-text-primary mb-2">
                       {t('discard.confirm', {
