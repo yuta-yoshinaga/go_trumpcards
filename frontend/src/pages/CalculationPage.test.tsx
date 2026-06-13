@@ -132,6 +132,26 @@ describe('CalculationPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
 
+  it('shows the bottom-up rank preview as a tooltip/aria-label on a non-empty waste pile', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      // Array order is bottom→top; the last <=3 (5, K, A) render in order.
+      wastes: [[card('SPADE', 2), card('HEART', 5), card('DIAMOND', 13), card('CLOVER', 1)], [], [], []],
+    });
+    renderWithProviders(<CalculationPage />);
+    const btn = await screen.findByTestId('calc-waste-button-0');
+    expect(btn).toHaveAttribute('title', 'ウェイスト0（上3枚）: 5・K・A');
+    expect(btn).toHaveAttribute('aria-label', 'ウェイスト0（上3枚）: 5・K・A');
+  });
+
+  it('omits the rank tooltip on an empty waste pile', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<CalculationPage />);
+    const btn = await screen.findByTestId('calc-waste-button-0');
+    expect(btn).not.toHaveAttribute('title');
+    expect(btn).not.toHaveAttribute('aria-label');
+  });
+
   it('clicking foundation without a source has no effect', async () => {
     renderWithProviders(<CalculationPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
