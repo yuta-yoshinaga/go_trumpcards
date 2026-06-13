@@ -340,7 +340,10 @@ function TexasHoldemBonusPageContent() {
                   label={t('label.ante')}
                   value={anteAmount}
                   onChange={setAnteAmount}
+                  min={10}
                   max={state.chips}
+                  step={10}
+                  disabled={loading}
                   showSteppers
                 />
                 <ChipBetInput
@@ -350,6 +353,8 @@ function TexasHoldemBonusPageContent() {
                   onChange={setBonusAmount}
                   min={0}
                   max={state.chips}
+                  step={10}
+                  disabled={loading}
                   showSteppers
                 />
                 <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
