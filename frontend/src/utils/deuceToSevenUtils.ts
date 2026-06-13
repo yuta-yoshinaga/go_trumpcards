@@ -39,3 +39,28 @@ export function isMadePatLow(cards: ReadonlyArray<Card>): boolean {
   if (isDeuceStraight(highs)) return false; // straight
   return highs[highs.length - 1] <= 8; // 8-or-better high card
 }
+
+/**
+ * Indices of the cards worth keeping toward the best 2-7 low draw. A completed
+ * pat low (see {@link isMadePatLow}) keeps all five cards. Otherwise the "core"
+ * is the set of distinct 8-or-better ranks (the low targets): a pair's higher
+ * duplicate and any 9-or-higher card are treated as draw candidates and left
+ * out. Used to lift the keepers / dim the discards during the draw phase.
+ */
+export function deuceToSevenBestIndices(cards: ReadonlyArray<Card>): number[] {
+  if (cards.length === 0) return [];
+  // A made low can only be weakened by drawing — keep everything.
+  if (isMadePatLow(cards)) return cards.map((_, i) => i);
+  // Visit lowest-first so the kept copy of a pair is its (equal) lowest card.
+  const order = cards
+    .map((c, i) => ({ i, hv: highValue(c), rank: c.value, joker: c.design === 'JOKER' }))
+    .sort((a, b) => a.hv - b.hv);
+  const seenRank = new Set<number>();
+  const keep: number[] = [];
+  for (const { i, hv, rank, joker } of order) {
+    if (joker || hv > 8 || seenRank.has(rank)) continue; // high card / pair dup → draw candidate
+    seenRank.add(rank);
+    keep.push(i);
+  }
+  return keep.sort((a, b) => a - b);
+}

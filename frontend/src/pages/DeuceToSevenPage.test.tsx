@@ -224,6 +224,37 @@ describe('DeuceToSevenPage', () => {
     expect(screen.getByTestId('d7-stand-btn').className).not.toContain('animate-pulse');
   });
 
+  it('lifts the best-low core cards and dims the draw candidates', async () => {
+    // Hand 2-2-4-6-8: the duplicate 2 is a draw candidate; the rest are kept.
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: DeuceToSevenPhase.DRAW,
+        drawIndex: 1,
+        currentTurn: 0,
+        players: [
+          humanPlayer({
+            cards: [
+              { design: 'SPADE', value: 2 },
+              { design: 'HEART', value: 2 },
+              { design: 'DIAMOND', value: 4 },
+              { design: 'CLOVER', value: 6 },
+              { design: 'SPADE', value: 8 },
+            ],
+          }),
+          cpuPlayer(1),
+          cpuPlayer(2),
+          cpuPlayer(3),
+        ],
+      }),
+    );
+    renderWithProviders(<DeuceToSevenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
+
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+    expect(cardButtons[0].className).toContain('-translate-y-1'); // kept 2
+    expect(cardButtons[1].className).toContain('opacity-50'); // duplicate 2 → draw candidate
+  });
+
   it('marks a selected card as pressed in draw phase', async () => {
     mockExec.mockResolvedValue(baseState({ phase: DeuceToSevenPhase.DRAW, drawIndex: 1, currentTurn: 0 }));
     renderWithProviders(<DeuceToSevenPage />);
