@@ -338,6 +338,13 @@ describe('GinRummyPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'レイオフ' })).toBeDisabled());
   });
 
+  it('shows a type badge on each knocker meld during layoff', async () => {
+    mockExec.mockResolvedValue(layoffPhaseState);
+    renderWithProviders(<GinRummyPage />);
+    // The fixture meld is a set of three 3s → rank badge "3".
+    await waitFor(() => expect(screen.getByTestId('gr-meld-badge-0')).toHaveTextContent('3'));
+  });
+
   it('calls layoff command when layoff button is clicked', async () => {
     mockExec.mockResolvedValue(layoffPhaseState);
     renderWithProviders(<GinRummyPage />);
