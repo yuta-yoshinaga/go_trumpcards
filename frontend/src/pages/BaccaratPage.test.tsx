@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, baccaratApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -119,6 +119,18 @@ describe('BaccaratPage', () => {
     renderWithProviders(<BaccaratPage />);
     await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument();
+  });
+
+  it('renders the side-bet inputs inside a collapsed details section', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    const details = screen.getByTestId('baccarat-sidebet-details');
+    // Collapsed by default (no `open` attribute) but the inputs still live inside it.
+    expect(details).not.toHaveAttribute('open');
+    expect(within(details).getByText('サイドベット（任意）')).toBeInTheDocument();
+    expect(within(details).getByLabelText('プレイヤーペア')).toBeInTheDocument();
+    expect(within(details).getByLabelText('バンカーペア')).toBeInTheDocument();
   });
 
   it('does not expand card area with flex-1 during bet phase', async () => {
