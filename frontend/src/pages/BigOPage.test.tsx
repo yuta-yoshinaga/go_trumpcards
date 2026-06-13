@@ -366,6 +366,15 @@ describe('BigOPage', () => {
     await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
   });
 
+  it('highlights exactly 2 hole + 3 board cards as the best-5 at showdown', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    const { container } = renderWithProviders(<BigOPage />);
+    await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
+    // Big O must-use-2 rule (2 of 5 hole) → exactly 2 hole and 3 board highlighted.
+    expect(container.querySelectorAll('[data-best5-hole]')).toHaveLength(2);
+    expect(container.querySelectorAll('[data-best5-board]')).toHaveLength(3);
+  });
+
   it('does not show CPU hand name badge when CPU is folded in showdown', async () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<BigOPage />);
