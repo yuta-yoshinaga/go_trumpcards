@@ -12,6 +12,7 @@
   },
   "communityCards": "コミュニティカード",
   "yourHand": "あなたの手札",
+  "discardUpcoming": "フロップベット終了後にカードを1枚捨てます",
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
   "discard": {
     "prompt": "1枚捨ててください。",
