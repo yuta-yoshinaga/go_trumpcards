@@ -1165,7 +1165,20 @@ func TestPinochle_CpuBid(t *testing.T) {
 		for j := 0; j < 200 && g2.GetPhase() == PinochlePhaseBid; j++ {
 			bidder := g2.GetBidPlayerIdx()
 			if g2.players[bidder].GetIsHuman() {
-				_ = g2.doPass(bidder)
+				// The last remaining active bidder cannot pass (doPass returns
+				// ErrCannotPass) and is forced to take the bid. Ignoring that
+				// error left the human active forever, spinning the loop to its
+				// cap and leaving the phase stuck at Bid — the source of the
+				// flake. Force a valid bid so bidding always resolves to Trump.
+				if err := g2.doPass(bidder); err != nil {
+					forced := PinochleMinBid
+					if g2.GetHighestBid() >= forced {
+						forced = g2.GetHighestBid() + 1
+					}
+					if bidErr := g2.doBid(bidder, forced); bidErr != nil {
+						t.Fatalf("iteration %d: human forced bid failed: %v", i, bidErr)
+					}
+				}
 			} else {
 				g2.CpuBid()
 			}

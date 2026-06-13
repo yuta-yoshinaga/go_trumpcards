@@ -415,15 +415,19 @@ func TestFiftyOne_FullGame(t *testing.T) {
 		for !fo.IsHumanTurn() && !fo.GetGameEndFlag() {
 			require.NoError(t, fo.CpuPlay())
 		}
-		if !fo.GetGameEndFlag() {
+		// 人間がストップを宣言できるのは、まだ誰もストップしていない場合のみ。
+		// CPU が早い段階でストップ宣言する手札を引くと最終ラウンドに入っており、
+		// その場合に Stop() を呼ぶと "stop already called" になる(これが CI フレークの原因)。
+		// 既にストップ済みなら宣言せず、残りターンを消化するだけにする。
+		if !fo.GetGameEndFlag() && fo.GetStopCallerIdx() < 0 {
 			require.NoError(t, fo.Stop())
-			// 残りCPUターンをプレイ
-			for !fo.GetGameEndFlag() {
-				if !fo.IsHumanTurn() {
-					require.NoError(t, fo.CpuPlay())
-				} else {
-					break
-				}
+		}
+		// 残りCPUターンをプレイ
+		for !fo.GetGameEndFlag() {
+			if !fo.IsHumanTurn() {
+				require.NoError(t, fo.CpuPlay())
+			} else {
+				break
 			}
 		}
 	}
