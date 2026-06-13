@@ -1,4 +1,8 @@
 {
+  "toast": {
+    "revolution": "Revolution! Card strength reversed",
+    "elevenBack": "Eleven Back! Strength temporarily reversed"
+  },
   "rank": {
     "1": "Daifugo",
     "2": "Fugo",
