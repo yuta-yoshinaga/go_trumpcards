@@ -15,7 +15,10 @@
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
   "discard": {
     "prompt": "カードを捨ててください。",
-    "select": "捨てるカードを選択してください（計2枚）"
+    "select": "捨てるカードを選択してください（計2枚）",
+    "confirm": "{{card}} を捨てますか？",
+    "confirmYes": "確定",
+    "confirmNo": "キャンセル"
   },
   "rebuy": {
     "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",

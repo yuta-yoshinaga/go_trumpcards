@@ -235,8 +235,31 @@ describe('PineapplePage', () => {
     // Now discard button should be enabled
     await waitFor(() => expect(discardBtn).not.toBeDisabled());
 
+    // Pressing discard now opens an inline confirm step rather than committing immediately.
     fireEvent.click(discardBtn);
+    expect(mockExec).not.toHaveBeenCalledWith('discard', undefined, { cardIdx: 0 });
+    expect(screen.getByTestId('discard-confirm')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: '確定' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', undefined, { cardIdx: 0 }));
+  });
+
+  it('cancels the discard confirm step and returns to selection', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    mockExec.mockClear(); // isolate from prior tests' discard calls (beforeEach doesn't clear history)
+
+    const cardButtons = screen.getAllByRole('button').filter((btn) => btn.getAttribute('aria-pressed') !== null);
+    fireEvent.click(cardButtons[0]);
+    fireEvent.click(screen.getByRole('button', { name: '1枚捨ててください。' }));
+    expect(screen.getByTestId('discard-confirm')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    // Back to selection; nothing discarded.
+    expect(screen.queryByTestId('discard-confirm')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '1枚捨ててください。' })).toBeInTheDocument();
+    expect(mockExec).not.toHaveBeenCalledWith('discard', undefined, { cardIdx: 0 });
   });
 
   it('shows round results during showdown', async () => {

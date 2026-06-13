@@ -40,6 +40,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { PineappleResponse } from '../types/card';
 import { HoldemRebuyPhaseType, PineapplePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { PINEAPPLE_HELP, parsePineappleCommand } from '../utils/cli/commands/pineappleCommands';
 import { formatPineappleState } from '../utils/cli/formatters/pineappleFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -137,6 +138,8 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   const [cpuMetaAI, setCpuMetaAI] = useState(false);
   const { hint, hintEnabled, setHintEnabled } = useGameHint(variant, state);
   const [selectedDiscard, setSelectedDiscard] = useState<number | null>(null);
+  // Two-step discard: pressing "discard" enters a confirm step before committing.
+  const [discardConfirming, setDiscardConfirming] = useState(false);
   const turnStartRef = useRef(0);
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode(variant);
@@ -172,10 +175,11 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
     }
   }, [state]);
 
-  // Reset discard selection when leaving discard phase
+  // Reset discard selection (and any pending confirm) when leaving discard phase
   useEffect(() => {
     if (!state?.isDiscardPhase) {
       setSelectedDiscard(null);
+      setDiscardConfirming(false);
     }
   }, [state?.isDiscardPhase]);
 
@@ -429,20 +433,47 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
             {/* Discard controls */}
             {canDiscard && (
               <div className="mb-2 text-center" data-testid="discard-controls" data-tutorial="pn-discard-controls">
-                <p className="text-ds-text-primary mb-2">{t('discard.select')}</p>
-                <button
-                  type="button"
-                  className={`${btnPrimary} min-w-[90px]`}
-                  disabled={loading || selectedDiscard === null}
-                  onClick={() => {
-                    if (selectedDiscard !== null) {
-                      apiExec('discard', undefined, { cardIdx: selectedDiscard });
-                      setSelectedDiscard(null);
-                    }
-                  }}
-                >
-                  {t('discard.prompt')}
-                </button>
+                {discardConfirming && selectedDiscard !== null && humanPlayer?.cards[selectedDiscard] ? (
+                  <div data-testid="discard-confirm">
+                    <p className="text-ds-text-primary mb-2">
+                      {t('discard.confirm', { card: cardAlt(humanPlayer.cards[selectedDiscard]) })}
+                    </p>
+                    <div className="flex justify-center gap-2">
+                      <button
+                        type="button"
+                        className={`${btnPrimary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => {
+                          apiExec('discard', undefined, { cardIdx: selectedDiscard });
+                          setSelectedDiscard(null);
+                          setDiscardConfirming(false);
+                        }}
+                      >
+                        {t('discard.confirmYes')}
+                      </button>
+                      <button
+                        type="button"
+                        className={`${btnSecondary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => setDiscardConfirming(false)}
+                      >
+                        {t('discard.confirmNo')}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-ds-text-primary mb-2">{t('discard.select')}</p>
+                    <button
+                      type="button"
+                      className={`${btnPrimary} min-w-[90px]`}
+                      disabled={loading || selectedDiscard === null}
+                      onClick={() => setDiscardConfirming(true)}
+                    >
+                      {t('discard.prompt')}
+                    </button>
+                  </>
+                )}
               </div>
             )}
 
