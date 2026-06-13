@@ -473,6 +473,21 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
               </div>
             )}
 
+            {/* Variant bonus badges (Spanish 21): 7-7-7 / 6-7-8 / 5+card 21 achievements. */}
+            {phase === BjPhase.END && (state?.bonuses?.length ?? 0) > 0 && (
+              <div className="mb-2 flex flex-wrap justify-center gap-1" data-testid="bj-bonus-badges">
+                {state?.bonuses?.map((key) => (
+                  <span
+                    key={key}
+                    data-testid="bj-bonus-badge"
+                    className="rounded-full border border-ds-warning bg-ds-surface px-3 py-0.5 text-ds-warning text-sm font-bold motion-safe:animate-pulse-once"
+                  >
+                    🎉 {t(key.replace(/^spanish21\./, ''))}
+                  </span>
+                ))}
+              </div>
+            )}
+
             {/* Hint banner */}
             {hintEnabled && suggestedAction !== BJ_SUGGEST_NONE && (
               <div className="mb-2">

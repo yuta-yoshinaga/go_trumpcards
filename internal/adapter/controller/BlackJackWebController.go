@@ -83,6 +83,7 @@ type BlackJackWebOutput struct {
 	PerfectPairsBet    int                                `json:"perfectPairsBet"`
 	TwentyOnePlus3Bet  int                                `json:"twentyOnePlus3Bet"`
 	SideBetResults     []*BlackJackWebOutputSideBetResult `json:"sideBetResults,omitempty"`
+	Bonuses            []string                           `json:"bonuses,omitempty"`
 	DoubleAfterSplit   bool                               `json:"doubleAfterSplit"`
 	CountingSystem     int                                `json:"countingSystem"`
 	DeckPenetration    int                                `json:"deckPenetration"`

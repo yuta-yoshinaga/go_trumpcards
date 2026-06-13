@@ -248,6 +248,15 @@ func (_m *MockBlackJackGame) GetMultiHandCount() int {
 	return ret.Int(0)
 }
 
+// GetBonusKeys モック
+func (_m *MockBlackJackGame) GetBonusKeys() []string {
+	ret := _m.Called()
+	if v, ok := ret.Get(0).([]string); ok {
+		return v
+	}
+	return nil
+}
+
 // CanSurrenderHand モック
 func (_m *MockBlackJackGame) CanSurrenderHand(handIdx int) bool {
 	ret := _m.Called(handIdx)

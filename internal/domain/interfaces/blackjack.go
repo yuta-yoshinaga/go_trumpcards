@@ -82,6 +82,8 @@ type BlackJackGame interface {
 	GetDeckPenetration() int
 	// GetMultiHandCount マルチハンド数を取得する
 	GetMultiHandCount() int
+	// GetBonusKeys 当ラウンドで成立したバリアントボーナスのi18nキー一覧を取得する
+	GetBonusKeys() []string
 	// CanSurrenderHand 指定ハンドのサレンダー可否を返す
 	CanSurrenderHand(handIdx int) bool
 	// CanSurrenderCpuHand CPUハンドのサレンダー可否を返す

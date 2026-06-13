@@ -184,6 +184,8 @@ export interface BlackJackResponse extends BaseGameResponse {
   perfectPairsBet: number;
   twentyOnePlus3Bet: number;
   sideBetResults?: BlackJackSideBetResult[];
+  /** i18n keys of variant bonuses achieved this round (Spanish 21, e.g. `spanish21.bonus.777.spade`). */
+  bonuses?: string[];
   doubleAfterSplit: boolean;
   countingSystem: number;
   deckPenetration: number;
