@@ -223,6 +223,20 @@ describe('BridgePage', () => {
     });
   });
 
+  it('renders the human hand via MobileHandGrid on a narrow mobile viewport', async () => {
+    const original = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      mockExec.mockResolvedValue(playPhaseState);
+      renderWithProviders(<BridgePage />);
+      // MobileHandGrid lays the hand out in fanned rows instead of a scrolling strip.
+      await waitFor(() => expect(screen.getAllByTestId('hand-row').length).toBeGreaterThan(0));
+      expect(screen.getByAltText('\u2660 A')).toBeInTheDocument();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+    }
+  });
+
   it('play button disabled when not 1 card selected', async () => {
     mockExec.mockResolvedValue(playPhaseState);
     renderWithProviders(<BridgePage />);
