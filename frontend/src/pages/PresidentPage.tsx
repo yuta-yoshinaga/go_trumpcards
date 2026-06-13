@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -127,6 +127,23 @@ function PresidentPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('president', state);
 
+  // One-shot full-screen flash when revolution toggles on (false → true), to
+  // make the strength inversion impossible to miss. flashKey re-triggers the
+  // CSS animation without AnimatePresence; the timer hides the scrim after 400ms.
+  const [revolutionFlash, setRevolutionFlash] = useState(0);
+  const prevRevolution = useRef(false);
+  const revolutionFlashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => clearTimeout(revolutionFlashTimer.current ?? undefined), []);
+  useEffect(() => {
+    const active = state?.revolutionActive ?? false;
+    if (active && !prevRevolution.current) {
+      setRevolutionFlash((k) => k + 1);
+      clearTimeout(revolutionFlashTimer.current ?? undefined);
+      revolutionFlashTimer.current = setTimeout(() => setRevolutionFlash(0), 400);
+    }
+    prevRevolution.current = active;
+  }, [state?.revolutionActive]);
+
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('president');
   const cliConfig: CliGameConfig<PresidentResponse, PresidentCliArgs> = useMemo(
@@ -176,6 +193,14 @@ function PresidentPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
+          {revolutionFlash > 0 && (
+            <div
+              key={revolutionFlash}
+              data-testid="president-revolution-flash"
+              aria-hidden="true"
+              className="pointer-events-none fixed inset-0 z-40 bg-ds-warning/40 motion-safe:animate-[fadeIn_0.2s_ease-out] motion-reduce:hidden"
+            />
+          )}
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
             {error && (
               <button type="button" onClick={retry} className="text-ds-error underline">
@@ -184,7 +209,12 @@ function PresidentPageContent() {
             )}
 
             {state.revolutionActive && (
-              <div className="text-center text-ds-warning font-semibold">{t('badge.revolution')}</div>
+              <div className="flex items-center justify-center gap-1.5 text-center text-ds-warning font-semibold">
+                <span className="inline-block motion-safe:rotate-180 transition-transform" aria-hidden="true">
+                  ⇅
+                </span>
+                {t('badge.revolution')}
+              </div>
             )}
 
             {/* CPU players */}
