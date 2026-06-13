@@ -80,6 +80,33 @@ describe('SevenBridgePage', () => {
     expect(screen.getByRole('button', { name: /捨てる|Discard/i })).toBeInTheDocument();
   });
 
+  it('renders layoff target melds as clickable card-row buttons and highlights the selection', async () => {
+    const meldState: SevenBridgeResponse = {
+      ...playState,
+      players: [
+        {
+          ...playState.players[0],
+          melds: [
+            {
+              cards: [
+                { design: 'SPADE', value: 5 },
+                { design: 'HEART', value: 5 },
+                { design: 'DIAMOND', value: 5 },
+              ],
+            },
+          ],
+        },
+        playState.players[1],
+      ],
+    };
+    mockExec.mockResolvedValue(meldState);
+    renderWithProviders(<SevenBridgePage />);
+    const meldBtn = await screen.findByTestId('sb-layoff-meld-0-0');
+    fireEvent.click(meldBtn);
+    expect(meldBtn).toHaveAttribute('aria-pressed', 'true');
+    expect(meldBtn.className).toContain('ring-ds-info');
+  });
+
   it('fires drawstock when clicking stock draw', async () => {
     mockExec.mockResolvedValue(drawState);
     renderWithProviders(<SevenBridgePage />);
