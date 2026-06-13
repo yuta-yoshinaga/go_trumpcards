@@ -668,7 +668,7 @@ function NapoleonPageContent() {
                   }}
                   disabled={loading || selectedCardIndices.length !== 1}
                 >
-                  {selectedCardIndices.length === 1 && humanPlayer
+                  {selectedCardIndices.length === 1 && humanPlayer?.cards[selectedCardIndices[0]]
                     ? t('exchangeButtonNamed', { card: cardAlt(humanPlayer.cards[selectedCardIndices[0]]) })
                     : t('exchangeButton')}
                 </button>
