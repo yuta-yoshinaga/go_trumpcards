@@ -511,26 +511,28 @@ function EuchrePageContent() {
               {/* Call trump phase controls */}
               {isHumanBidTurn && isCallTrumpPhase && (
                 <>
-                  {[1, 2, 3, 4]
-                    .filter(
-                      (s) =>
-                        state.faceUpCard == null ||
-                        s !==
-                          ({ SPADE: 1, CLOVER: 2, HEART: 3, DIAMOND: 4, JOKER: 0 } as Record<string, number>)[
-                            state.faceUpCard.design
-                          ],
-                    )
-                    .map((s) => (
+                  {[1, 2, 3, 4].map((s) => {
+                    // The turned-down card's suit cannot be called; keep its button
+                    // visible but disabled so the rule is discoverable.
+                    const isTurnedDownSuit =
+                      state.faceUpCard != null &&
+                      s ===
+                        ({ SPADE: 1, CLOVER: 2, HEART: 3, DIAMOND: 4, JOKER: 0 } as Record<string, number>)[
+                          state.faceUpCard.design
+                        ];
+                    return (
                       <button
                         key={s}
                         type="button"
                         className={btnPrimary}
                         onClick={() => handleCallTrump(s, goAlone)}
-                        disabled={loading}
+                        disabled={loading || isTurnedDownSuit}
+                        title={isTurnedDownSuit ? t('turnedDownSuit') : undefined}
                       >
                         {t(SUIT_NAMES[s])}
                       </button>
-                    ))}
+                    );
+                  })}
                   <label className="text-ds-text-primary text-sm flex items-center gap-1">
                     <input type="checkbox" checked={goAlone} onChange={(e) => setGoAlone(e.target.checked)} />
                     {t('goAloneCheck')}
