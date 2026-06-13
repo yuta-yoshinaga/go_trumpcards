@@ -1,4 +1,4 @@
-import { createEvent, fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, createEvent, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, daifugoApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -1255,5 +1255,32 @@ describe('DaifugoPage', () => {
     mockExec.mockResolvedValue(humanTurnState);
     renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+  });
+
+  it('shows a toast when revolution becomes active', async () => {
+    mockExec.mockResolvedValue({ ...humanTurnState, revolutionActive: true });
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByTestId('df-inversion-toast')).toHaveTextContent('革命発動！'));
+  });
+
+  it('shows an eleven-back toast when eleven-back becomes active', async () => {
+    mockExec.mockResolvedValue({ ...humanTurnState, elevenBackActive: true });
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByTestId('df-inversion-toast')).toHaveTextContent('11バック発動！'));
+  });
+
+  it('auto-hides the inversion toast after 3 seconds', async () => {
+    vi.useFakeTimers();
+    try {
+      mockExec.mockResolvedValue({ ...humanTurnState, revolutionActive: true });
+      renderWithProviders(<DaifugoPage />);
+      await vi.waitFor(() => expect(screen.getByTestId('df-inversion-toast')).toBeInTheDocument());
+      await act(async () => {
+        vi.advanceTimersByTime(3000);
+      });
+      expect(screen.queryByTestId('df-inversion-toast')).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
