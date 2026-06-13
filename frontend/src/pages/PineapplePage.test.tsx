@@ -237,11 +237,11 @@ describe('PineapplePage', () => {
 
     // Pressing discard now opens an inline confirm step rather than committing immediately.
     fireEvent.click(discardBtn);
-    expect(mockExec).not.toHaveBeenCalledWith('discard', undefined, { cardIdx: 0 });
+    expect(mockExec).not.toHaveBeenCalledWith('discard', undefined, { cardIdxs: [0] });
     expect(screen.getByTestId('discard-confirm')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: '確定' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', undefined, { cardIdx: 0 }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', undefined, { cardIdxs: [0] }));
   });
 
   it('cancels the discard confirm step and returns to selection', async () => {
@@ -259,7 +259,7 @@ describe('PineapplePage', () => {
     // Back to selection; nothing discarded.
     expect(screen.queryByTestId('discard-confirm')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '1枚捨ててください。' })).toBeInTheDocument();
-    expect(mockExec).not.toHaveBeenCalledWith('discard', undefined, { cardIdx: 0 });
+    expect(mockExec).not.toHaveBeenCalledWith('discard', undefined, { cardIdxs: [0] });
   });
 
   it('shows round results during showdown', async () => {

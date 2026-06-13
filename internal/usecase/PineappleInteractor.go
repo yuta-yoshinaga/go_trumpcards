@@ -19,8 +19,10 @@ type PineappleInteractorIF interface {
 	ResetWithConfig(cfg domain.PineappleConfig, profileData []byte) string
 	// Action プレイヤーアクション実行
 	Action(action int, amount int, humanPlayMs int) string
-	// Discard ディスカード実行
+	// Discard ディスカード実行 (1枚)
 	Discard(cardIdx int) string
+	// DiscardMany ディスカード実行 (複数枚を一括: Irish Poker の2枚捨て等)
+	DiscardMany(cardIdxs []int) string
 	// GetConfig 現在の設定を取得
 	GetConfig() domain.PineappleConfig
 	// ActionLog 棋譜を出力する
@@ -74,6 +76,11 @@ func (pi *PineappleInteractor) Action(action int, amount int, humanPlayMs int) s
 // Discard ディスカード実行
 func (pi *PineappleInteractor) Discard(cardIdx int) string {
 	return execAndPresent(pi.Game, pi.pp, func() error { return pi.Game.DiscardCard(cardIdx) })
+}
+
+// DiscardMany ディスカード実行 (複数枚を一括)
+func (pi *PineappleInteractor) DiscardMany(cardIdxs []int) string {
+	return execAndPresent(pi.Game, pi.pp, func() error { return pi.Game.DiscardCards(cardIdxs) })
 }
 
 // GetConfig 現在の設定を取得

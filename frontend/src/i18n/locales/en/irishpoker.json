@@ -18,7 +18,8 @@
     "select": "Select a card to discard (2 cards total)",
     "confirm": "Discard {{card}}?",
     "confirmYes": "Confirm",
-    "confirmNo": "Cancel"
+    "confirmNo": "Cancel",
+    "selectedCount": "{{n}}/{{total}} selected"
   },
   "rebuy": {
     "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",

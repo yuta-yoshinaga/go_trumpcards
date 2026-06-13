@@ -18,6 +18,7 @@ type PineappleWebInput struct {
 	Amount      int             `json:"amount,omitempty"`
 	HumanPlayMs int             `json:"humanPlayMs,omitempty"`
 	CardIdx     *int            `json:"cardIdx,omitempty"`
+	CardIdxs    []int           `json:"cardIdxs,omitempty"`
 	CpuMetaAI   bool            `json:"cpuMetaAI,omitempty"`
 	Profile     json.RawMessage `json:"profile,omitempty"`
 }
@@ -87,6 +88,11 @@ func pineappleDispatch(bc *baseController, w http.ResponseWriter, pgi usecase.Pi
 		}
 		bc.writePresenterResponse(w, pgi.ResetWithConfig(cfg, param.Profile))
 	case "d", "discard":
+		// 複数枚指定 (Irish Poker の2枚捨て) を優先。なければ単一 cardIdx。
+		if len(param.CardIdxs) > 0 {
+			bc.writePresenterResponse(w, pgi.DiscardMany(param.CardIdxs))
+			return true
+		}
 		if !requireParam(bc, w, newDefault, param.CardIdx == nil, "param error: cardIdx is required for discard") {
 			return true
 		}

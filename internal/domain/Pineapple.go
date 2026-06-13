@@ -5,6 +5,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 )
 
 // パイナップルフェーズ定数 (Holdemと共通 + ディスカードフェーズ)
@@ -338,6 +339,14 @@ func (p *Pineapple) PlayerAction(action, amount, humanPlayMs int) error {
 
 // DiscardCard 人間プレイヤーが手札から1枚をディスカードする
 func (p *Pineapple) DiscardCard(cardIdx int) error {
+	return p.DiscardCards([]int{cardIdx})
+}
+
+// DiscardCards 人間プレイヤーが手札から複数枚を一括でディスカードする。
+// Irish Poker は 4 枚から 2 枚を一度に捨てるため複数インデックスを受け取り、
+// 高い順に取り除く (取り除きごとにインデックスがずれないようにするため)。
+// インデックスは 1 枚以上・重複不可・範囲内でなければならない。
+func (p *Pineapple) DiscardCards(cardIdxs []int) error {
 	if p.phase != PineapplePhaseDiscard {
 		return NewDomainError(ErrWrongPhase, "Discard is not allowed now.")
 	}
@@ -358,12 +367,28 @@ func (p *Pineapple) DiscardCard(cardIdx int) error {
 	}
 
 	pl := p.players[humanIdx]
-	if cardIdx < 0 || cardIdx >= pl.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "Invalid card index.")
+	if len(cardIdxs) == 0 {
+		return NewDomainError(ErrInvalidCard, "No card index supplied.")
+	}
+	// インデックス検証 (範囲・重複)
+	seen := make(map[int]bool, len(cardIdxs))
+	for _, idx := range cardIdxs {
+		if idx < 0 || idx >= pl.GetCardsSize() {
+			return NewDomainError(ErrInvalidCard, "Invalid card index.")
+		}
+		if seen[idx] {
+			return NewDomainError(ErrInvalidCard, "Duplicate card index.")
+		}
+		seen[idx] = true
 	}
 
-	p.removeCard(humanIdx, cardIdx)
-	p.appendLog(humanIdx, "discard", "discard", nil)
+	// 高い順に取り除く (低インデックスを後回しにしてズレを防ぐ)
+	sorted := append([]int(nil), cardIdxs...)
+	sort.Sort(sort.Reverse(sort.IntSlice(sorted)))
+	for _, idx := range sorted {
+		p.removeCard(humanIdx, idx)
+		p.appendLog(humanIdx, "discard", "discard", nil)
+	}
 
 	if pl.GetCardsSize() <= 2 {
 		p.discardDone[humanIdx] = true
