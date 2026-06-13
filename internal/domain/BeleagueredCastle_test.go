@@ -468,7 +468,11 @@ func TestBeleagueredCastle_Undo(t *testing.T) {
 
 func TestBeleagueredCastle_UndoToEscape(t *testing.T) {
 	t.Run("not stalemate", func(t *testing.T) {
+		// Deterministic: UndoToEscape returns 0 whenever the game is not in a
+		// stalemate. Setting the flag explicitly avoids the rare shuffled deal
+		// that is an immediate stalemate (which made this flake on CI).
 		bc := setupPlayingBeleagueredCastle()
+		bc.SetIsStalemate(false)
 		assert.Equal(t, 0, bc.UndoToEscape())
 	})
 
