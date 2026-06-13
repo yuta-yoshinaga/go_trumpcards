@@ -283,7 +283,13 @@ function SpiteAndMalicePageContent() {
           <LandscapeBanner message={t('landscapeBanner', { defaultValue: '' })} />
 
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8 space-y-4">
-            <PlayerSummary label={t('label.cpu')} player={opponent} cardWidth={cardWidth} dataTutorial="sam-opponent" />
+            <PlayerSummary
+              label={t('label.cpu')}
+              sidesLabel={t('label.cpuSides')}
+              player={opponent}
+              cardWidth={cardWidth}
+              dataTutorial="sam-opponent"
+            />
 
             <div className="flex items-center justify-center gap-2 sm:gap-4" data-tutorial="sam-foundations">
               {state.foundations.map((pile, idx) => (
@@ -387,21 +393,25 @@ function SpiteAndMalicePageContent() {
 
 function PlayerSummary({
   label,
+  sidesLabel,
   player,
   cardWidth,
   dataTutorial,
 }: {
   label: string;
+  sidesLabel: string;
   player: SpiteAndMaliceResponse['players'][number];
   cardWidth: number;
   dataTutorial: string;
 }) {
+  // Side piles render at half scale to keep the opponent strip compact on mobile.
+  const sideWidth = Math.round(cardWidth * 0.5);
   return (
     <div className="flex flex-col items-center" data-tutorial={dataTutorial}>
       <span className="text-sm text-ds-secondary mb-1">
         {label} (hand: {player.hand.length})
       </span>
-      <div className="flex gap-2">
+      <div className="flex gap-2 items-end">
         {player.goalTop ? (
           <div className="flex flex-col items-center">
             <span className="text-xs text-ds-secondary">CPU goal x{player.goalSize}</span>
@@ -410,6 +420,36 @@ function PlayerSummary({
         ) : (
           <span className="text-xs text-ds-secondary">CPU goal: 0</span>
         )}
+        <div className="flex flex-col items-center" data-testid="sam-cpu-sides">
+          <span className="text-xs text-ds-secondary">{sidesLabel}</span>
+          <div className="flex gap-1">
+            {player.sides.map((pile, i) => {
+              const top = pile.length > 0 ? pile[pile.length - 1] : undefined;
+              return (
+                <div
+                  // Fixed-length 4-pile array; index is a stable key.
+                  key={`cpu-side-${i}`}
+                  data-testid={`sam-cpu-side-${i}`}
+                  className="relative flex items-center justify-center"
+                >
+                  {top ? (
+                    <AnimatedCard card={top} width={sideWidth} />
+                  ) : (
+                    <div
+                      style={{ width: sideWidth, height: Math.round(sideWidth * 1.4) }}
+                      className="rounded border border-dashed border-game-border"
+                    />
+                  )}
+                  {pile.length > 0 && (
+                    <span className="absolute -top-1 -right-1 rounded bg-ds-surface px-1 text-[9px] text-ds-text-primary leading-tight">
+                      {pile.length}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );

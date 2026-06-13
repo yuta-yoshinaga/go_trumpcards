@@ -11,6 +11,7 @@
     "cpu": "CPU",
     "goal": "ゴール",
     "side": "サイド",
+    "cpuSides": "CPUのサイドパイル",
     "hand": "手札",
     "foundation": "ファウンデーション",
     "stock": "ストック",
