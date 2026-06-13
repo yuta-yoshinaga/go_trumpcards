@@ -366,6 +366,32 @@ describe('OmahaHiLoPage', () => {
     await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
   });
 
+  it('shows green Hi and blue Lo badges when the pot splits', async () => {
+    const splitState: OmahaResponse = {
+      ...showdownState,
+      roundResults: [
+        { ...showdownState.roundResults[0], hiWonAmount: 200, lowWonAmount: 0 },
+        { ...showdownState.roundResults[1], wonAmount: 100, hiWonAmount: 0, lowWonAmount: 100 },
+      ],
+    };
+    mockExec.mockResolvedValue(splitState);
+    renderWithProviders(<OmahaHiLoPage />);
+    await waitFor(() => expect(screen.getByTestId('omahahilo-split')).toBeInTheDocument());
+    expect(screen.getByTestId('omahahilo-hi-badge')).toHaveClass('text-ds-success');
+    expect(screen.getByTestId('omahahilo-lo-badge')).toHaveClass('text-ds-info');
+  });
+
+  it('omits the Lo badge when no low qualifies', async () => {
+    const hiOnlyState: OmahaResponse = {
+      ...showdownState,
+      roundResults: [{ ...showdownState.roundResults[0], hiWonAmount: 200, lowWonAmount: 0 }],
+    };
+    mockExec.mockResolvedValue(hiOnlyState);
+    renderWithProviders(<OmahaHiLoPage />);
+    await waitFor(() => expect(screen.getByTestId('omahahilo-hi-badge')).toBeInTheDocument());
+    expect(screen.queryByTestId('omahahilo-lo-badge')).not.toBeInTheDocument();
+  });
+
   it('does not show CPU hand name badge when CPU is folded in showdown', async () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<OmahaHiLoPage />);
