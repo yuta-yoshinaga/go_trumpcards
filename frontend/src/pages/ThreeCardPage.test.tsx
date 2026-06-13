@@ -233,6 +233,25 @@ describe('ThreeCardPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 200, 50));
   });
 
+  it('steps the ante and pair plus amounts with the chip steppers', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    // Default ante 100 → +10 → 110; pair plus 0 → +10 → 10.
+    fireEvent.click(screen.getByRole('button', { name: 'アンテ +10' }));
+    fireEvent.click(screen.getByRole('button', { name: 'ペアプラス +10' }));
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 110, 10));
+  });
+
+  it('disables the pair plus minus stepper at zero', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'ペアプラス −10' })).toBeDisabled();
+  });
+
   it('resets after end phase', async () => {
     mockExec
       .mockResolvedValueOnce(betPhaseState)
