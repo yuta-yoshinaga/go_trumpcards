@@ -133,6 +133,17 @@ describe('BaccaratPage', () => {
     expect(within(details).getByLabelText('バンカーペア')).toBeInTheDocument();
   });
 
+  it('auto-expands the side-bet details once a side bet is non-zero', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    const details = screen.getByTestId('baccarat-sidebet-details');
+    expect(details).not.toHaveAttribute('open');
+    // Setting a side bet must keep it visible (not hidden behind the collapsed summary).
+    fireEvent.change(screen.getByLabelText('プレイヤーペア'), { target: { value: '10' } });
+    expect(details).toHaveAttribute('open');
+  });
+
   it('does not expand card area with flex-1 during bet phase', async () => {
     mockExec.mockResolvedValue(betPhaseState);
     renderWithProviders(<BaccaratPage />);
