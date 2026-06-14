@@ -3,6 +3,7 @@ import type {
   DoppelkopfResponse,
   GongZhuResponse,
   HeartsResponse,
+  MusResponse,
   SheepsheadResponse,
   SpadesResponse,
   TressetteResponse,
@@ -425,6 +426,65 @@ const baseSheepsheadState: SheepsheadResponse = {
  */
 export function makeSheepsheadState(overrides?: Partial<SheepsheadResponse>): SheepsheadResponse {
   return { ...baseSheepsheadState, ...overrides };
+}
+
+/** Base Mus state used as the default for {@link makeMusState}. Defaults to a human Grande bet turn. */
+const baseMusState: MusResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 4,
+      cards: [
+        { design: 'SPADE' as const, value: 1 },
+        { design: 'CLOVER' as const, value: 12 },
+        { design: 'HEART' as const, value: 12 },
+        { design: 'DIAMOND' as const, value: 7 },
+      ],
+      teamScore: 5,
+    },
+    { id: 1, isHuman: false, cardCount: 4, cards: [], teamScore: 3 },
+    { id: 2, isHuman: false, cardCount: 4, cards: [], teamScore: 5 },
+    { id: 3, isHuman: false, cardCount: 4, cards: [], teamScore: 3 },
+  ],
+  phase: 2,
+  roundNumber: 1,
+  manoIdx: 0,
+  betTeam: -1,
+  pendingStake: 0,
+  lastBettorTeam: -1,
+  musTurn: 0,
+  discardTurn: 0,
+  musCycle: 0,
+  amarrakos: [5, 3],
+  results: [
+    { kind: 0, stake: 0, team: -1 },
+    { kind: 1, stake: 0, team: -1 },
+    { kind: 2, stake: 0, team: -1 },
+    { kind: 3, stake: 0, team: -1 },
+  ],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  humanTeam: 0,
+  isHumanTurn: true,
+  canPaso: true,
+  canEnvido: true,
+  canOrdago: true,
+  canQuiero: false,
+  canNoQuiero: false,
+  message: '',
+  config: { cpuDifficulty: 1, targetAmarrakos: 40 },
+};
+
+/**
+ * Creates a {@link MusResponse} with sensible defaults (a human Grande bet turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial MusResponse fields to override.
+ * @returns A complete MusResponse suitable for use in tests.
+ */
+export function makeMusState(overrides?: Partial<MusResponse>): MusResponse {
+  return { ...baseMusState, ...overrides };
 }
 
 /** Base Doppelkopf state used as the default for {@link makeDoppelkopfState}. Defaults to a human Play turn. */

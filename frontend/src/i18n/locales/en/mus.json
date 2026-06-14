@@ -1,0 +1,77 @@
+{
+  "phase": {
+    "mus": "Mus",
+    "discard": "Discard",
+    "grande": "Grande",
+    "chica": "Chica",
+    "pares": "Pares",
+    "juego": "Juego",
+    "showdown": "Showdown",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetAmarrakos": "Target Amarrakos",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "players": "Players",
+  "cards": "{{count}} cards",
+  "teamLabel": "Team {{n}}",
+  "yourTeam": "Your team",
+  "amarrakos": "Amarrakos",
+  "amarrakosTeam": "Team {{team}}: {{score}}",
+  "pendingStake": "Pending bet: {{amount}}",
+  "ordagoLabel": "Órdago (all-in)",
+  "musPrompt": "Call Mus (exchange) or Corte (play)?",
+  "discardPrompt": "Choose cards to exchange (none keeps all).",
+  "betPrompt": "{{round}} — your turn. Choose an action.",
+  "musButton": "Mus (exchange)",
+  "corteButton": "Corte (play)",
+  "discardButton": "Exchange",
+  "discardSelected": "Selected {{count}}",
+  "keepAll": "Keep all",
+  "bet": {
+    "paso": "Paso (pass)",
+    "envido": "Envido (bet)",
+    "ordago": "Órdago (all-in)",
+    "quiero": "Quiero (accept)",
+    "noquiero": "No Quiero (decline)"
+  },
+  "envidoAmount": "Bet amount: {{amount}}",
+  "roundResult": {
+    "title": "Betting round results",
+    "grande": "Grande",
+    "chica": "Chica",
+    "pares": "Pares",
+    "juego": "Juego",
+    "line": "{{round}}: team {{team}} +{{stake}}",
+    "undecided": "undecided"
+  },
+  "nextRound": "Next Round",
+  "hintAvailable": "Hint",
+  "hint": {
+    "mus_exchange": "Weak hand — recommend exchanging",
+    "mus_cut": "Strong hand — recommend cutting to bet",
+    "discard_low": "Exchange the unpaired low cards",
+    "bet_paso": "Weak hand — recommend passing",
+    "bet_envido": "Strong hand — recommend betting",
+    "bet_ordago": "Very strong hand — recommend going all-in",
+    "bet_quiero": "Ahead of the opponent — recommend accepting",
+    "bet_no_quiero": "Behind the opponent — recommend declining"
+  },
+  "tutorial": {
+    "info": "Mus is a Basque vying game for four players (2 vs 2). Across four rounds — Grande, Chica, Pares, Juego — teams fight for amarrakos (points); the first team to the target score wins.",
+    "mus": "First the Mus phase. If everyone calls 'Mus', you may exchange cards. When someone calls 'Corte', the exchange ends and betting begins.",
+    "discard": "When in Mus, choose the cards to exchange and press 'Exchange'. Select nothing to keep your whole hand.",
+    "bet": "Each round, choose Paso (pass), Envido (bet) or Órdago (all-in). If the opponent bets, respond with Quiero (accept) or No Quiero (decline).",
+    "amarrakos": "The amarrakos (scores) of both teams. The first team to reach the target wins.",
+    "resetButton": "Use the reset button to start a new game."
+  }
+}

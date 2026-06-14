@@ -308,6 +308,10 @@ var registry = []*Game{
 	// J + all ♦) and secret Re/Kontra teams formed by the two Q♣ holders. Casino
 	// worker (binary-size bucket only; see package doc).
 	{Name: "doppelkopf", Category: CategoryCasino, Description: "Doppelkopf (ドッペルコップ)"},
+	// Mus (ムス) is a Basque 4-player 2-team vying (betting) game on a 40-card
+	// Latin deck: four wager rounds (Grande/Chica/Pares/Juego) with paso/envido/
+	// ordago and a mus card-exchange phase. Casino worker (binary-size bucket).
+	{Name: "mus", Category: CategoryCasino, Description: "Mus (ムス)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

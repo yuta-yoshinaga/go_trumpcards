@@ -56,6 +56,7 @@ import type {
   MightyResponse,
   MississippiStudResponse,
   MonteCarloResponse,
+  MusResponse,
   NapoleonResponse,
   NertzResponse,
   OhHellResponse,
@@ -173,6 +174,7 @@ import { getMemoryHint } from '../utils/hints/memoryHint';
 import { getMightyHint } from '../utils/hints/mightyHint';
 import { getMississippiStudHint } from '../utils/hints/mississippiStudHint';
 import { getMonteCarloHint } from '../utils/hints/montecarloHint';
+import { getMusHint } from '../utils/hints/musHint';
 import { getNapoleonHint } from '../utils/hints/napoleonHint';
 import { getNertzHint } from '../utils/hints/nertzHint';
 import { getOhHellHint } from '../utils/hints/ohhellHint';
@@ -364,6 +366,7 @@ const hintFactories = {
   sixcardgolf: (s) => getSixcardgolfHint(s as SixCardGolfResponse),
   doudizhu: (s) => getDoudizhuHint(s as DoudizhuResponse),
   bidwhist: (s) => getBidWhistHint(s as BidWhistResponse),
+  mus: (s) => getMusHint(s as MusResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

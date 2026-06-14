@@ -2145,6 +2145,27 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "mus", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewMusCuiController(usecase.NewMusInteractor(
+				domain.NewDefaultMus(), new(presenter.MusCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "mus.helpTitle",
+				CommandKeys: []string{
+					"mus.helpMus",
+					"mus.helpCut",
+					"mus.helpDiscard",
+					"mus.helpPaso",
+					"mus.helpEnvido",
+					"mus.helpOrdago",
+					"mus.helpQuiero",
+					"mus.helpNoQuiero",
+					"mus.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"mus.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

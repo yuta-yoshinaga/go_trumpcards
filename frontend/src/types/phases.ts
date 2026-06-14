@@ -257,6 +257,28 @@ export const SheepsheadPhase = {
   GAME_END: 6,
 } as const;
 
+/** Mus phase constants (sync: internal/domain/Mus.go). */
+export const MusPhase = {
+  MUS: 0,
+  DISCARD: 1,
+  GRANDE: 2,
+  CHICA: 3,
+  PARES: 4,
+  JUEGO: 5,
+  SHOWDOWN: 6,
+  ROUND_END: 7,
+  GAME_END: 8,
+} as const;
+
+/** Mus betting action constants (sync: internal/domain/Mus.go). */
+export const MusBetAction = {
+  PASO: 0,
+  ENVIDO: 1,
+  ORDAGO: 2,
+  QUIERO: 3,
+  NO_QUIERO: 4,
+} as const;
+
 /** Doppelkopf phase constants (sync: internal/domain/Doppelkopf.go). */
 export const DoppelkopfPhase = {
   PLAY: 0,

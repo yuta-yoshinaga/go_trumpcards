@@ -54,6 +54,7 @@ export type GameKey =
   | 'spades'
   | 'sheepshead'
   | 'doppelkopf'
+  | 'mus'
   | 'pitch'
   | 'twotenjack'
   | 'ohhell'
@@ -174,6 +175,10 @@ const DOPPELKOPF = {
   bg: 'bg-game-bg-doppelkopf',
   footer: 'bg-game-bg-doppelkopf-dark border-white/20',
 } as const;
+const MUS = {
+  bg: 'bg-game-bg-mus',
+  footer: 'bg-game-bg-mus-dark border-white/20',
+} as const;
 
 export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Table games
@@ -221,6 +226,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   spades: BLUE,
   sheepshead: SHEEPSHEAD,
   doppelkopf: DOPPELKOPF,
+  mus: MUS,
   pitch: BLUE,
   twotenjack: BLUE,
   ohhell: BLUE,

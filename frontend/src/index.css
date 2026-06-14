@@ -45,6 +45,9 @@
   /* Doppelkopf — deep Bavarian wine-burgundy, distinct from the browns/greens/blues. */
   --color-game-bg-doppelkopf: #5a2433;
   --color-game-bg-doppelkopf-dark: #3c1722;
+  /* Mus — Basque ikurriña red-on-green, distinct from the other table felts. */
+  --color-game-bg-mus: #1f5c33;
+  --color-game-bg-mus-dark: #143d22;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;
