@@ -290,6 +290,9 @@ func (g *Doppelkopf) ResolveTrick() {
 		fmt.Sprintf("%s wins trick %d (%d pts)", g.playerName(winnerIdx), g.trickNumber, pts), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
+	// Clear the resolved trick so a spurious second ResolveTrick call cannot
+	// double-count its points (defensive — NextTrick also clears it).
+	g.currentTrick = nil
 	if g.trickNumber >= DoppelkopfTrickCount {
 		g.phase = DoppelkopfPhaseRoundEnd
 	} else {
