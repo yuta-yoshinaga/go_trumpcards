@@ -105,6 +105,7 @@ import seahaventowers from '../../../docs/manual/cui/seahaventowers.md?raw';
 import sevenbridge from '../../../docs/manual/cui/sevenbridge.md?raw';
 import sevencardstud from '../../../docs/manual/cui/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/cui/sevens.md?raw';
+import sheepshead from '../../../docs/manual/cui/sheepshead.md?raw';
 import shithead from '../../../docs/manual/cui/shithead.md?raw';
 import shortdeck from '../../../docs/manual/cui/shortdeck.md?raw';
 import sixcardgolf from '../../../docs/manual/cui/sixcardgolf.md?raw';
@@ -223,6 +224,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/sevens': sevens,
   '/shortdeck': shortdeck,
   '/spades': spades,
+  '/sheepshead': sheepshead,
   '/pitch': pitch,
   '/spanish21': spanish21,
   '/speed': speed,

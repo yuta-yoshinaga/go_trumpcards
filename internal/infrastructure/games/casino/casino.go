@@ -407,6 +407,14 @@ func init() {
 			return usecase.RestoreTressetteInteractor(data, new(presenter.TressetteWebPresenter))
 		},
 		controller.NewTressetteWebControllerWithProvider)
+	games.RegisterKVGame("sheepshead", games.CategoryCasino,
+		func() usecase.SheepsheadInteractorIF {
+			return usecase.NewSheepsheadInteractor(domain.NewDefaultSheepshead(), new(presenter.SheepsheadWebPresenter))
+		},
+		func(data []byte) (usecase.SheepsheadInteractorIF, error) {
+			return usecase.RestoreSheepsheadInteractor(data, new(presenter.SheepsheadWebPresenter))
+		},
+		controller.NewSheepsheadWebControllerWithProvider)
 	games.RegisterKVGame("tichu", games.CategoryCasino,
 		func() usecase.TichuInteractorIF {
 			return usecase.NewTichuInteractor(domain.NewDefaultTichu(), new(presenter.TichuWebPresenter))

@@ -108,6 +108,7 @@ import type {
   SevenBridgeResponse,
   SevenCardStudResponse,
   SevensResponse,
+  SheepsheadResponse,
   ShitheadConfig as ShitheadConfigType,
   ShitheadResponse,
   ShortDeckResponse,
@@ -288,6 +289,7 @@ const workerUrl: Record<string, string> = {
   easthaven: WORKER_SOLO,
   tichu: WORKER_CASINO,
   bourre: WORKER_CASINO,
+  sheepshead: WORKER_CASINO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1481,6 +1483,49 @@ export const bourreApi = {
   }) => gameExec<BourreResponse>('bourre', params),
 };
 
+/** Configuration options for Sheepshead game settings. */
+export interface SheepsheadConfigInput {
+  cpuDifficulty?: number;
+  baseChips?: number;
+  startChips?: number;
+  targetChips?: number;
+}
+
+/** Commands accepted by the Sheepshead /sheepshead/exec endpoint. */
+export type SheepsheadCommand = 'reset' | 'pick' | 'bury' | 'call' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Sheepshead /sheepshead/exec endpoint.
+ *
+ * The multi-phase flow maps each command to its own body field:
+ *   - `pick` → `{ pick: boolean }` (take or pass the blind)
+ *   - `bury` → `{ buryIndices: number[] }` (picker buries 2 cards)
+ *   - `call` → `{ callSuit: number }` (1=♠ 2=♣ 3=♥)
+ *   - `play` → `{ cardIndex: number }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const sheepsheadApi = {
+  exec: (
+    command: SheepsheadCommand,
+    opts?: {
+      pick?: boolean;
+      buryIndices?: number[];
+      callSuit?: number;
+      cardIndex?: number;
+      config?: SheepsheadConfigInput;
+    },
+  ) =>
+    gameExec<SheepsheadResponse>('sheepshead', {
+      command,
+      pick: opts?.pick,
+      buryIndices: opts?.buryIndices,
+      callSuit: opts?.callSuit,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
 /** Source or target zone for a Spider card move. */
 export interface SpiderMoveZone {
   zone: string;
@@ -2578,6 +2623,7 @@ const games = [
   'easthaven',
   'tichu',
   'bourre',
+  'sheepshead',
 ] as const;
 type Game = (typeof games)[number];
 

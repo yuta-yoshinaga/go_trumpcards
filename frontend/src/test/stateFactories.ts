@@ -2,6 +2,7 @@ import type {
   CallBreakResponse,
   GongZhuResponse,
   HeartsResponse,
+  SheepsheadResponse,
   SpadesResponse,
   TressetteResponse,
   TwoTenJackResponse,
@@ -368,4 +369,59 @@ const baseTressetteState: TressetteResponse = {
  */
 export function makeTressetteState(overrides?: Partial<TressetteResponse>): TressetteResponse {
   return { ...baseTressetteState, ...overrides };
+}
+
+/** Base Sheepshead state used as the default for {@link makeSheepsheadState}. Defaults to a human Play turn. */
+const baseSheepsheadState: SheepsheadResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 6,
+      cards: [
+        { design: 'SPADE' as const, value: 1 },
+        { design: 'DIAMOND' as const, value: 13 },
+      ],
+      trickCount: 0,
+      chips: 100,
+    },
+    { id: 1, isHuman: false, cardCount: 6, cards: [], trickCount: 0, chips: 100 },
+    { id: 2, isHuman: false, cardCount: 6, cards: [], trickCount: 0, chips: 100 },
+    { id: 3, isHuman: false, cardCount: 6, cards: [], trickCount: 0, chips: 100 },
+    { id: 4, isHuman: false, cardCount: 6, cards: [], trickCount: 0, chips: 100 },
+  ],
+  phase: 3,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 4,
+  currentTrick: [],
+  blindCount: 0,
+  buried: [],
+  pickerIdx: 0,
+  partnerIdx: -1,
+  calledSuit: 1,
+  partnerRevealed: false,
+  passCount: 0,
+  callableSuits: [],
+  playableIndices: [0, 1],
+  roundPickerPoints: 0,
+  roundMultiplier: 1,
+  roundPickerWon: false,
+  gameEndFlag: false,
+  winnerIdx: -1,
+  message: '',
+  config: { cpuDifficulty: 1, baseChips: 1, startChips: 100, targetChips: 200 },
+};
+
+/**
+ * Creates a {@link SheepsheadResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial SheepsheadResponse fields to override.
+ * @returns A complete SheepsheadResponse suitable for use in tests.
+ */
+export function makeSheepsheadState(overrides?: Partial<SheepsheadResponse>): SheepsheadResponse {
+  return { ...baseSheepsheadState, ...overrides };
 }

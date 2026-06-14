@@ -34,6 +34,7 @@
     "bigohilo": "5 Card Omaha Hi-Lo (Big O)",
     "hearts": "Hearts",
     "spades": "Spades",
+    "sheepshead": "Sheepshead",
     "pitch": "Pitch",
     "twotenjack": "Two Ten Jack",
     "memory": "Memory",
@@ -281,6 +282,15 @@
     "errorBoundaryDetails": "Show error details"
   },
   "messageCode": {
+    "sheepshead.pickPhase": "Pick phase — choose to take the blind or pass.",
+    "sheepshead.buryPhase": "You are the picker — bury two cards.",
+    "sheepshead.callPhase": "Choose a suit to call your partner.",
+    "sheepshead.playPhase.lead": "Your turn — pick a card to lead.",
+    "sheepshead.playPhase.follow": "Your turn — follow the led suit.",
+    "sheepshead.trickEnd": "Trick complete — continue.",
+    "sheepshead.roundEnd": "Round complete — go to the next round.",
+    "sheepshead.result.humanWin": "Game over! You win!",
+    "sheepshead.result.cpuWin": "Game over! CPU {{cpuId}} wins.",
     "tressette.playPhase.lead": "Your turn — pick a card to lead.",
     "tressette.playPhase.follow": "Your turn — follow the led suit.",
     "tressette.trickEnd": "Trick complete — continue.",

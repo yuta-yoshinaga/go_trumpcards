@@ -246,6 +246,17 @@ export const TressettePhase = {
   GAME_END: 3,
 } as const;
 
+/** Sheepshead phase constants (sync: internal/domain/Sheepshead.go). */
+export const SheepsheadPhase = {
+  PICK: 0,
+  BURY: 1,
+  CALL: 2,
+  PLAY: 3,
+  TRICK_END: 4,
+  ROUND_END: 5,
+  GAME_END: 6,
+} as const;
+
 /** Call Break phase constants (sync: internal/domain/CallBreak.go). */
 export const CallBreakPhase = {
   BID: 0,

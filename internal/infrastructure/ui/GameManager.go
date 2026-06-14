@@ -2104,6 +2104,28 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "sheepshead", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSheepsheadCuiController(usecase.NewSheepsheadInteractor(
+				domain.NewDefaultSheepshead(), new(presenter.SheepsheadCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "sheepshead.helpTitle",
+				CommandKeys: []string{
+					"sheepshead.helpPick",
+					"sheepshead.helpPass",
+					"sheepshead.helpBury",
+					"sheepshead.helpCall",
+					"sheepshead.helpPlay",
+					"sheepshead.helpNext",
+					"sheepshead.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys: []string{
+					"sheepshead.helpSetDifficulty",
+					"sheepshead.helpSetChips",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

@@ -104,6 +104,7 @@ import seahaventowers from '../../../docs/manual/web/seahaventowers.md?raw';
 import sevenbridge from '../../../docs/manual/web/sevenbridge.md?raw';
 import sevencardstud from '../../../docs/manual/web/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/web/sevens.md?raw';
+import sheepshead from '../../../docs/manual/web/sheepshead.md?raw';
 import shithead from '../../../docs/manual/web/shithead.md?raw';
 import shortdeck from '../../../docs/manual/web/shortdeck.md?raw';
 import sixcardgolf from '../../../docs/manual/web/sixcardgolf.md?raw';
@@ -225,6 +226,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/sevens': sevens,
   '/shortdeck': shortdeck,
   '/spades': spades,
+  '/sheepshead': sheepshead,
   '/pitch': pitch,
   '/spanish21': spanish21,
   '/speed': speed,
