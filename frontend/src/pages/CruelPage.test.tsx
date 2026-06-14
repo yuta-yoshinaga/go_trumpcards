@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { cruelApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -130,11 +130,16 @@ describe('CruelPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
 
-  it('giveup button fires giveup command', async () => {
+  it('giveup button opens a confirm dialog and only dispatches giveup after confirm', async () => {
     renderWithProviders(<CruelPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    const btn = screen.getByRole('button', { name: 'ギブアップ' });
-    btn.click();
+    mockExec.mockClear();
+    // Clicking give-up must NOT dispatch immediately — it opens a confirm dialog (#2099).
+    fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    expect(mockExec).not.toHaveBeenCalledWith('giveup');
+    expect(screen.getByText('投了確認')).toBeInTheDocument();
+    // Confirming dispatches giveup.
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
   });
 

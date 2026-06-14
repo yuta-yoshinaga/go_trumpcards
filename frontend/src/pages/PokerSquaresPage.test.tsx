@@ -167,11 +167,15 @@ describe('PokerSquaresPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('undo'));
   });
 
-  it('calls exec with giveup when give up button clicked', async () => {
+  it('give up button opens a confirm dialog and only dispatches giveup after confirm', async () => {
     mockApi.mockResolvedValue(playingState);
     renderWithProviders(<PokerSquaresPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeInTheDocument());
+    mockApi.mockClear();
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    expect(mockApi).not.toHaveBeenCalledWith('giveup');
+    expect(screen.getByText('投了確認')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('giveup'));
   });
 

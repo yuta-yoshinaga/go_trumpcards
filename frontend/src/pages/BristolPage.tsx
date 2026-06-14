@@ -60,8 +60,21 @@ export const BristolPage = withTutorial(BristolPageContent, 'bristol', BR_TUTORI
 
 /** Inner content of the Bristol page. */
 function BristolPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('bristol');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('bristol');
   const { state, loading, error, exec: execApi, retry } = useGameApi(bristolApi.exec);
   const { cardWidth, cardHeight } = useCardDimensions();
   const {
@@ -92,6 +105,13 @@ function BristolPageContent() {
   }, [execApi]);
   const handleDraw = useCallback(() => execApi('draw'), [execApi]);
   const handleGiveUp = useCallback(() => execApi('giveup'), [execApi]);
+
+  // Give-up is irreversible, so route the button through the confirm dialog —
+  // matching reset's guard (issue #2099).
+  const confirmGiveUpAction = useCallback(
+    () => requestGiveUpConfirm(handleGiveUp),
+    [requestGiveUpConfirm, handleGiveUp],
+  );
   const handleHint = useCallback(() => execApi('hint'), [execApi]);
   const handleAutoComplete = useCallback(() => execApi('autocomplete'), [execApi]);
   const handleUndo = useCallback(() => execApi('undo'), [execApi]);
@@ -163,6 +183,9 @@ function BristolPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
           <span className="text-sm text-ds-text-muted">
@@ -393,7 +416,7 @@ function BristolPageContent() {
                   <button
                     type="button"
                     className={`${btnDanger} ${focusRingWhite}`}
-                    onClick={handleGiveUp}
+                    onClick={confirmGiveUpAction}
                     disabled={loading}
                   >
                     {t('giveup')}

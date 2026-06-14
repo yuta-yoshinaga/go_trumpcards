@@ -82,8 +82,21 @@ const SPD_TUTORIAL_STEPS: TutorialStep[] = [
 export const SpiderPage = withTutorial(SpiderPageContent, 'spider', SPD_TUTORIAL_STEPS);
 /** Inner content of the Spider page, wrapped by TutorialProvider. */
 function SpiderPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('spider');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('spider');
   const { playSound } = useSound();
   const {
     state,
@@ -168,6 +181,13 @@ function SpiderPageContent() {
     handleReset();
   }, [handleReset, hideActionLog]);
 
+  // Give-up is irreversible, so route both the button and the `g` key through
+  // the confirm dialog — matching reset's guard (issue #2099).
+  const confirmGiveUpAction = useCallback(
+    () => requestGiveUpConfirm(handleGiveUp),
+    [requestGiveUpConfirm, handleGiveUp],
+  );
+
   const currentDifficulty = state?.difficulty ?? 1;
 
   const actionBindings = useMemo(
@@ -175,10 +195,10 @@ function SpiderPageContent() {
       { key: 'd', action: handleDealGuarded },
       { key: 'h', action: handleHint },
       { key: 'a', action: handleAutoComplete },
-      { key: 'g', action: handleGiveUp },
+      { key: 'g', action: confirmGiveUpAction },
       { key: 'z', action: handleUndo },
     ],
-    [handleDealGuarded, handleHint, handleAutoComplete, handleGiveUp, handleUndo],
+    [handleDealGuarded, handleHint, handleAutoComplete, confirmGiveUpAction, handleUndo],
   );
 
   useActionKeyboardNav({
@@ -215,6 +235,9 @@ function SpiderPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
           <span>
@@ -454,7 +477,7 @@ function SpiderPageContent() {
                   <button
                     type="button"
                     className={btnDanger}
-                    onClick={handleGiveUp}
+                    onClick={confirmGiveUpAction}
                     disabled={loading || isAutoCompleting}
                   >
                     {t('giveup')}

@@ -151,8 +151,21 @@ function formatCruelState(state: CruelResponse): string {
 export const CruelPage = withTutorial(CruelPageContent, 'cruel', CRUEL_TUTORIAL_STEPS);
 /** Inner content of the Cruel page. */
 function CruelPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('cruel');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('cruel');
   const { playSound } = useSound();
   const {
     state,
@@ -246,6 +259,13 @@ function CruelPageContent() {
     void apiExec('giveup');
   }, [apiExec]);
 
+  // Give-up is irreversible, so route both the button and the `g` key through
+  // the confirm dialog — matching reset's guard (issue #2099).
+  const confirmGiveUpAction = useCallback(
+    () => requestGiveUpConfirm(handleGiveUp),
+    [requestGiveUpConfirm, handleGiveUp],
+  );
+
   const handleHint = useCallback(async () => {
     try {
       const res = await cruelApi.exec('hint');
@@ -299,11 +319,11 @@ function CruelPageContent() {
     () => [
       { key: 'h', action: handleHint },
       { key: 'a', action: handleAutoComplete },
-      { key: 'g', action: handleGiveUp },
+      { key: 'g', action: confirmGiveUpAction },
       { key: 'z', action: handleUndo },
       { key: 's', action: handleShift },
     ],
-    [handleHint, handleAutoComplete, handleGiveUp, handleUndo, handleShift],
+    [handleHint, handleAutoComplete, confirmGiveUpAction, handleUndo, handleShift],
   );
 
   useActionKeyboardNav({
@@ -335,6 +355,9 @@ function CruelPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
           <span>
@@ -571,7 +594,7 @@ function CruelPageContent() {
                   >
                     {t('undo')}
                   </button>
-                  <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                  <button type="button" className={btnDanger} onClick={confirmGiveUpAction} disabled={loading}>
                     {t('giveup')}
                   </button>
                   {state.isStalemate && (

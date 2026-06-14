@@ -68,8 +68,21 @@ const COL_COUNT = 4;
 export const AcesUpPage = withTutorial(AcesUpPageContent, 'acesup', ACESUP_TUTORIAL_STEPS);
 /** Inner content of the Aces Up page, wrapped by TutorialProvider. */
 function AcesUpPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('acesup');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('acesup');
   const { playSound } = useSound();
   const {
     state,
@@ -104,21 +117,29 @@ function AcesUpPageContent() {
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const isPlayingForKbd = state?.phase === AcesUpPhase.PLAYING;
-  const actionBindings = useMemo(
-    () => [
-      { key: 'd', action: handleDraw },
-      { key: 'h', action: handleHint },
-      { key: 'g', action: handleGiveUp },
-      { key: 'z', action: handleUndo },
-    ],
-    [handleDraw, handleHint, handleGiveUp, handleUndo],
-  );
-  useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayingForKbd && !loading });
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
     handleReset();
   }, [handleReset, hideActionLog]);
+
+  // Give-up is irreversible, so route both the button and the `g` key through
+  // the confirm dialog — matching reset's guard (issue #2099).
+  const confirmGiveUpAction = useCallback(
+    () => requestGiveUpConfirm(handleGiveUp),
+    [requestGiveUpConfirm, handleGiveUp],
+  );
+
+  const actionBindings = useMemo(
+    () => [
+      { key: 'd', action: handleDraw },
+      { key: 'h', action: handleHint },
+      { key: 'g', action: confirmGiveUpAction },
+      { key: 'z', action: handleUndo },
+    ],
+    [handleDraw, handleHint, confirmGiveUpAction, handleUndo],
+  );
+  useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayingForKbd && !loading });
 
   // Drag a movable top card onto an empty column to move it (the "Move [n]" buttons
   // remain as keyboard/tap-friendly fallbacks; D&D is additive, never required).
@@ -154,6 +175,9 @@ function AcesUpPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
           <span>
@@ -339,7 +363,7 @@ function AcesUpPageContent() {
                   <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
                     {t('hint')}
                   </button>
-                  <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                  <button type="button" className={btnDanger} onClick={confirmGiveUpAction} disabled={loading}>
                     {t('giveup')}
                   </button>
                 </div>

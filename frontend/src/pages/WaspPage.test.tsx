@@ -189,11 +189,18 @@ describe('WaspPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
 
-  it('giveup button triggers giveup command', async () => {
+  it('give up button opens a confirm dialog and only dispatches giveup after confirm', async () => {
     renderWithProviders(<WaspPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    const btn = screen.getByRole('button', { name: 'ギブアップ' });
-    btn.click();
+
+    mockExec.mockClear();
+    // Clicking give-up must NOT dispatch immediately — it opens a confirm dialog (#2099).
+    fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    expect(mockExec).not.toHaveBeenCalledWith('giveup');
+    expect(screen.getByText('投了確認')).toBeInTheDocument();
+
+    // Confirming dispatches giveup.
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
   });
 
@@ -334,10 +341,15 @@ describe('WaspPage', () => {
     expect(screen.getByRole('button', { name: /棋譜|action log|アクション/i })).toBeInTheDocument();
   });
 
-  it('keyboard shortcut "g" triggers giveup', async () => {
+  it('keyboard shortcut "g" opens the give up confirm dialog in PLAYING phase', async () => {
     renderWithProviders(<WaspPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'g' });
+    expect(mockExec).not.toHaveBeenCalledWith('giveup');
+    expect(screen.getByText('投了確認')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
   });
 

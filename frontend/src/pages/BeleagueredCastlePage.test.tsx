@@ -102,6 +102,19 @@ describe('BeleagueredCastlePage', () => {
     await waitFor(() => expect(screen.queryByRole('button', { name: 'ギブアップ' })).not.toBeInTheDocument());
   });
 
+  it('giveup button opens a confirm dialog and only dispatches giveup after confirm', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(gameOverState);
+    fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    expect(mockExec).not.toHaveBeenCalledWith('giveup');
+    expect(screen.getByText('投了確認')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
+  });
+
   it('shows phase name in header for game over', async () => {
     mockExec.mockResolvedValue(gameOverState);
     renderWithProviders(<BeleagueredCastlePage />);

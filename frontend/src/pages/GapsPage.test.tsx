@@ -116,10 +116,13 @@ describe('GapsPage', () => {
     await waitFor(() => expect(mockedRun).toHaveBeenCalledWith('hint'));
   });
 
-  it('calls run giveup when give up clicked', async () => {
+  it('clicking give up button opens a confirm dialog and only dispatches giveup after confirm', async () => {
     renderWithProviders(<GapsPage />);
     const btn = await screen.findByRole('button', { name: 'ギブアップ' });
     fireEvent.click(btn);
+    expect(mockedRun).not.toHaveBeenCalledWith('giveup');
+    expect(screen.getByText('投了確認')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockedRun).toHaveBeenCalledWith('giveup'));
   });
 

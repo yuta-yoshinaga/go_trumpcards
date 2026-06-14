@@ -115,4 +115,19 @@ describe('SpiderettePage', () => {
     renderWithProviders(<SpiderettePage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
   });
+
+  it('give up button opens a confirm dialog and only dispatches giveup after confirm', async () => {
+    renderWithProviders(<SpiderettePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeInTheDocument());
+
+    mockSend.mockClear();
+    // Clicking give-up must NOT dispatch immediately — it opens a confirm dialog (#2099).
+    fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    expect(mockSend).not.toHaveBeenCalledWith('giveup');
+    expect(screen.getByText('投了確認')).toBeInTheDocument();
+
+    // Confirming dispatches giveup.
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockSend).toHaveBeenCalledWith('giveup'));
+  });
 });

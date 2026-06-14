@@ -27,6 +27,9 @@ test.describe('Accordion E2E', () => {
 
     await page.getByRole('button', { name: 'ギブアップ' }).first().click();
 
+    // Confirm the give-up in the dialog (#2099).
+    await page.getByRole('button', { name: '確認' }).click();
+
     // After giveup, the action log button should appear (end phase shows "棋譜")
     const logButton = page.getByRole('button', { name: /棋譜|action log|アクション/i });
     await expect(logButton.first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });

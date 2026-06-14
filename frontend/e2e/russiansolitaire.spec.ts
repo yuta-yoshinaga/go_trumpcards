@@ -22,6 +22,9 @@ test.describe('Russian Solitaire E2E', () => {
     const giveUpButton = page.getByRole('button', { name: 'ギブアップ' }).first();
     await expect(giveUpButton).toBeVisible({ timeout: TIMEOUT_TRANSITION });
     await giveUpButton.click();
+
+    // Confirm the give-up in the dialog (#2099).
+    await page.getByRole('button', { name: '確認' }).click();
     await expect(page.getByText('ゲームオーバー').first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
   });
 });

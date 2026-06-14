@@ -37,6 +37,9 @@ test.describe('Eight Off E2E', () => {
     const giveUpButton = page.getByRole('button', { name: 'ギブアップ' });
     await expect(giveUpButton).toBeVisible();
     await giveUpButton.click();
+
+    // Confirm the give-up in the dialog (#2099).
+    await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
     await expect(page.getByRole('button', { name: 'ヒント' })).not.toBeVisible();
