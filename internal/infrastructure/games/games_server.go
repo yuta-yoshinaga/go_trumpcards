@@ -670,6 +670,11 @@ func init() {
 			return usecase.NewDoppelkopfInteractor(domain.NewDefaultDoppelkopf(), new(presenter.DoppelkopfWebPresenter))
 		},
 		controller.NewDoppelkopfWebController)
+	BindWebControllerFor("mus",
+		func() usecase.MusInteractorIF {
+			return usecase.NewMusInteractor(domain.NewDefaultMus(), new(presenter.MusWebPresenter))
+		},
+		controller.NewMusWebController)
 	BindWebControllerFor("easthaven",
 		func() usecase.EasthavenInteractorIF {
 			return usecase.NewEasthavenInteractor(domain.NewDefaultEasthaven(), new(presenter.EasthavenWebPresenter))

@@ -423,6 +423,14 @@ func init() {
 			return usecase.RestoreDoppelkopfInteractor(data, new(presenter.DoppelkopfWebPresenter))
 		},
 		controller.NewDoppelkopfWebControllerWithProvider)
+	games.RegisterKVGame("mus", games.CategoryCasino,
+		func() usecase.MusInteractorIF {
+			return usecase.NewMusInteractor(domain.NewDefaultMus(), new(presenter.MusWebPresenter))
+		},
+		func(data []byte) (usecase.MusInteractorIF, error) {
+			return usecase.RestoreMusInteractor(data, new(presenter.MusWebPresenter))
+		},
+		controller.NewMusWebControllerWithProvider)
 	games.RegisterKVGame("tichu", games.CategoryCasino,
 		func() usecase.TichuInteractorIF {
 			return usecase.NewTichuInteractor(domain.NewDefaultTichu(), new(presenter.TichuWebPresenter))

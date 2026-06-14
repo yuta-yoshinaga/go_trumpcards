@@ -73,6 +73,7 @@ import memory from '../../../docs/manual/web/memory.md?raw';
 import mighty from '../../../docs/manual/web/mighty.md?raw';
 import mississippistud from '../../../docs/manual/web/mississippistud.md?raw';
 import montecarlo from '../../../docs/manual/web/montecarlo.md?raw';
+import mus from '../../../docs/manual/web/mus.md?raw';
 import napoleon from '../../../docs/manual/web/napoleon.md?raw';
 import nertz from '../../../docs/manual/web/nertz.md?raw';
 import oasispoker from '../../../docs/manual/web/oasispoker.md?raw';
@@ -212,6 +213,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/poker': poker,
   '/pokersquares': pokersquares,
   '/montecarlo': montecarlo,
+  '/mus': mus,
   '/contractrummy': contractrummy,
   '/ultimatetexasholdem': ultimatetexasholdem,
   '/crescent': crescent,

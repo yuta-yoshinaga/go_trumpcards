@@ -74,6 +74,7 @@ import memory from '../../../docs/manual/cui/memory.md?raw';
 import mighty from '../../../docs/manual/cui/mighty.md?raw';
 import mississippistud from '../../../docs/manual/cui/mississippistud.md?raw';
 import montecarlo from '../../../docs/manual/cui/montecarlo.md?raw';
+import mus from '../../../docs/manual/cui/mus.md?raw';
 import napoleon from '../../../docs/manual/cui/napoleon.md?raw';
 import nertz from '../../../docs/manual/cui/nertz.md?raw';
 import oasispoker from '../../../docs/manual/cui/oasispoker.md?raw';
@@ -271,6 +272,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/bourre': bourre,
   '/doudizhu': doudizhu,
   '/montecarlo': montecarlo,
+  '/mus': mus,
   '/oasispoker': oasispoker,
   '/piquet': piquet,
   '/truco': truco,

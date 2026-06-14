@@ -75,6 +75,7 @@ import type {
   MightyResponse,
   MississippiStudResponse,
   MonteCarloResponse,
+  MusResponse,
   NapoleonResponse,
   NertzConfig as NertzConfigType,
   NertzMoveZone,
@@ -292,6 +293,7 @@ const workerUrl: Record<string, string> = {
   bourre: WORKER_CASINO,
   sheepshead: WORKER_CASINO,
   doppelkopf: WORKER_CASINO,
+  mus: WORKER_CASINO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1528,6 +1530,48 @@ export const sheepsheadApi = {
     }),
 };
 
+/** Configuration options for Mus game settings. */
+export interface MusConfigInput {
+  cpuDifficulty?: number;
+  targetAmarrakos?: number;
+}
+
+/** Commands accepted by the Mus /mus/exec endpoint. */
+export type MusCommand = 'reset' | 'mus' | 'discard' | 'bet' | 'next' | 'hint' | 'log';
+
+/**
+ * API client for the Mus /mus/exec endpoint.
+ *
+ * Mus is a Basque vying (betting) game, so each command maps to its own body
+ * field rather than a card-play action:
+ *   - `mus` → `{ mus: boolean }` (true = call Mus / exchange, false = cut and bet)
+ *   - `discard` → `{ discardIndices: number[] }` (cards to exchange; empty keeps all)
+ *   - `bet` → `{ betAction: number, betAmount?: number }`
+ *     (betAction: 0=paso 1=envido 2=ordago 3=quiero 4=noquiero)
+ *   - `reset` → `{ config }`
+ *   - `next` / `hint` / `log` carry no extra fields.
+ */
+export const musApi = {
+  exec: (
+    command: MusCommand,
+    opts?: {
+      mus?: boolean;
+      discardIndices?: number[];
+      betAction?: number;
+      betAmount?: number;
+      config?: MusConfigInput;
+    },
+  ) =>
+    gameExec<MusResponse>('mus', {
+      command,
+      mus: opts?.mus,
+      discardIndices: opts?.discardIndices,
+      betAction: opts?.betAction,
+      betAmount: opts?.betAmount,
+      config: opts?.config,
+    }),
+};
+
 /** Configuration options for Doppelkopf game settings. */
 export interface DoppelkopfConfigInput {
   cpuDifficulty?: number;
@@ -2663,6 +2707,7 @@ const games = [
   'bourre',
   'sheepshead',
   'doppelkopf',
+  'mus',
 ] as const;
 type Game = (typeof games)[number];
 
