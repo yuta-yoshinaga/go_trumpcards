@@ -151,7 +151,10 @@ function BeleagueredCastlePageContent() {
 
   // Give-up is irreversible, so route both the button and the `g` key through
   // the confirm dialog — matching reset's guard (issue #2099).
-  const confirmGiveUpAction = useCallback(() => requestGiveUpConfirm(game.handleGiveUp), [requestGiveUpConfirm, game]);
+  const confirmGiveUpAction = useCallback(
+    () => requestGiveUpConfirm(game.handleGiveUp),
+    [requestGiveUpConfirm, game.handleGiveUp],
+  );
 
   const actionBindings = useMemo(
     () => [
