@@ -44,6 +44,7 @@
   "pickUpPhase": "Order up the face-up card to the dealer?",
   "callTrumpPhase": "Choose a trump suit (other than the face-up card's suit)",
   "discardPhase": "Select a card to discard",
+  "turnedDownSuit": "This suit cannot be called (it was the turned-down card)",
   "suitSpade": "♠ Spades",
   "suitClover": "♣ Clubs",
   "suitHeart": "♥ Hearts",

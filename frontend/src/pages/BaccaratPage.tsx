@@ -480,25 +480,38 @@ function BaccaratPageContent() {
                     <option value={BaccaratBetType.TIE}>{t(BET_TYPE_LABELS[BaccaratBetType.TIE])}</option>
                   </select>
                 </div>
-                {/* Side bet inputs */}
-                <ChipBetInput
-                  id="baccarat-pp-bet"
-                  label={t('sideBet.playerPair')}
-                  value={playerPairBet}
-                  onChange={setPlayerPairBet}
-                  max={state.chips}
-                  min={0}
-                  widthClass="w-20"
-                />
-                <ChipBetInput
-                  id="baccarat-bp-bet"
-                  label={t('sideBet.bankerPair')}
-                  value={bankerPairBet}
-                  onChange={setBankerPairBet}
-                  max={state.chips}
-                  min={0}
-                  widthClass="w-20"
-                />
+                {/* Side bet inputs — collapsed by default to reduce clutter for beginners, but
+                    auto-expanded when a side bet carries over from a prior round so a non-zero
+                    wager is never hidden behind the summary (and re-bet unintentionally). */}
+                <details
+                  className="bg-black/30 rounded-lg w-full max-w-sm"
+                  data-testid="baccarat-sidebet-details"
+                  open={playerPairBet > 0 || bankerPairBet > 0 || undefined}
+                >
+                  <summary className="cursor-pointer select-none px-4 py-2 text-ds-text-primary font-bold text-sm">
+                    {t('sideBet.title')}
+                  </summary>
+                  <div className="flex flex-col items-center gap-2 px-4 pb-3">
+                    <ChipBetInput
+                      id="baccarat-pp-bet"
+                      label={t('sideBet.playerPair')}
+                      value={playerPairBet}
+                      onChange={setPlayerPairBet}
+                      max={state.chips}
+                      min={0}
+                      widthClass="w-20"
+                    />
+                    <ChipBetInput
+                      id="baccarat-bp-bet"
+                      label={t('sideBet.bankerPair')}
+                      value={bankerPairBet}
+                      onChange={setBankerPairBet}
+                      max={state.chips}
+                      min={0}
+                      widthClass="w-20"
+                    />
+                  </div>
+                </details>
                 <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
                   {t('button.bet')}
                 </button>

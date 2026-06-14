@@ -466,7 +466,14 @@ function SpiderPageContent() {
                 <select
                   value={currentDifficulty}
                   onChange={(e) => {
-                    handleResetWithConfig({ difficulty: Number(e.target.value) });
+                    const difficulty = Number(e.target.value);
+                    // Mid-game the change discards progress, so confirm first (#2188);
+                    // after the game ends there is nothing to lose.
+                    if (isEnded) {
+                      handleResetWithConfig({ difficulty });
+                    } else {
+                      requestConfirm(() => handleResetWithConfig({ difficulty }));
+                    }
                   }}
                   className="bg-ds-surface-elevated text-ds-text-primary text-sm rounded px-2 py-1"
                   aria-label={t('difficulty')}

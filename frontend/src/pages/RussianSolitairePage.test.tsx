@@ -95,6 +95,37 @@ describe('RussianSolitairePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
   });
 
+  it('embeds the hint in card aria-labels instead of a text panel', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromCol: 1, cardIndex: 1, toZone: 'tableau', toCol: 4 },
+    });
+    renderWithProviders(<RussianSolitairePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // The source (♥8) and target (♠3) cards carry the hint in their aria-labels.
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /ヒント: このカードを場札 4へ移動/ })).toBeInTheDocument(),
+    );
+    expect(screen.getByRole('button', { name: /ヒント: 移動先/ })).toBeInTheDocument();
+    // The hint live region survives for screen readers but is visually hidden,
+    // so it no longer squeezes the footer on mobile. It names the card since
+    // "this card" is ambiguous when announced without focus context.
+    const liveRegion = screen.getByRole('status');
+    expect(liveRegion).toHaveClass('sr-only');
+    expect(liveRegion).toHaveTextContent('♥ 8');
+  });
+
+  it('labels the hint source with the foundation destination', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromCol: 0, cardIndex: 0, toZone: 'foundation', toCol: 0 },
+    });
+    renderWithProviders(<RussianSolitairePage />);
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /ヒント: このカードを組札へ移動/ })).toBeInTheDocument(),
+    );
+  });
+
   it('autocomplete button triggers autocomplete command when all face-up', async () => {
     const readyState: RussianSolitaireResponse = {
       ...playingState,

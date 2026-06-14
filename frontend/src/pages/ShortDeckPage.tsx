@@ -44,6 +44,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseShortdeckCommand, SHORTDECK_HELP } from '../utils/cli/commands/shortdeckCommands';
 import { formatShortdeckState } from '../utils/cli/formatters/shortdeckFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { findPlayerName } from '../utils/playerUtils';
 
 /** Short Deck Hold'em tutorial step definitions. */
 const SD_TUTORIAL_STEPS: TutorialStep[] = [
@@ -230,7 +231,7 @@ function ShortDeckPageContent() {
             </strong>
           </span>
           <span>
-            {tc('label.dealer')} <strong>Player {state?.dealerIdx ?? 0}</strong>
+            {tc('label.dealer')} <strong>{findPlayerName(state.players, state.dealerIdx)}</strong>
           </span>
           {state?.tournamentMode && (
             <span>{t('handNumber', { count: state.handCount, level: state.blindLevelHands })}</span>
@@ -360,8 +361,19 @@ function ShortDeckPageContent() {
                   {humanPlayer.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                   {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
-                    <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
+                    <span
+                      className={`inline-flex items-center gap-1 ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
+                    >
                       {humanPlayer.handName}
+                      <span
+                        data-testid="shortdeck-handname-rule"
+                        role="img"
+                        aria-label={t('rankOverrideReminder')}
+                        title={t('rankOverrideReminder')}
+                        className="cursor-help text-ds-warning"
+                      >
+                        ★
+                      </span>
                     </span>
                   )}
                 </div>

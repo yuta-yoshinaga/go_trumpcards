@@ -69,6 +69,16 @@ describe('TrucoPage', () => {
     expect(screen.getByTestId('truco-stake')).toBeInTheDocument();
   });
 
+  it('exposes the tutorial target elements for the guided tour', async () => {
+    // A card on the table so the trick area (conditionally rendered) is present.
+    mockExec.mockResolvedValue(makeState({ currentTrick: [{ playerIdx: 1, card: card('CLOVER', 4) }] }));
+    const { container } = renderWithProviders(<TrucoPage />);
+    await waitFor(() => expect(screen.getByText(/マッチ得点/)).toBeInTheDocument());
+    for (const target of ['truco-score', 'truco-trick', 'truco-hand', 'truco-call']) {
+      expect(container.querySelector(`[data-tutorial="${target}"]`)).not.toBeNull();
+    }
+  });
+
   it('shows human hand as 3 play buttons', async () => {
     renderWithProviders(<TrucoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'Play SPADE 1' })).toBeInTheDocument());

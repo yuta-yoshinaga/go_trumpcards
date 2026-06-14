@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { schnapsenApi } from '../api/gameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, SchnapsenResponse } from '../types/card';
 import { SchnapsenPage } from './SchnapsenPage';
@@ -8,6 +9,10 @@ import { SchnapsenPage } from './SchnapsenPage';
 vi.mock('../api/gameApi', () => ({
   schnapsenApi: { exec: vi.fn() },
   actionLogApi: { schnapsen: vi.fn() },
+}));
+
+vi.mock('../hooks/useGameHint', () => ({
+  useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
 }));
 
 const mockExec = vi.mocked(schnapsenApi.exec);
@@ -49,6 +54,7 @@ function makeState(overrides: Partial<SchnapsenResponse> = {}): SchnapsenRespons
 
 beforeEach(() => {
   mockExec.mockResolvedValue(makeState());
+  vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
 });
 
 describe('SchnapsenPage', () => {
@@ -159,5 +165,33 @@ describe('SchnapsenPage', () => {
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('toggles the frontend hint from the settings panel', async () => {
+    const setHintEnabled = vi.fn();
+    vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled });
+    renderWithProviders(<SchnapsenPage />);
+    await waitFor(() => expect(screen.getByText('設定')).toBeInTheDocument());
+    fireEvent.click(screen.getByText('設定')); // open the collapsed settings panel
+    fireEvent.click(screen.getByLabelText('ヒント表示'));
+    expect(setHintEnabled).toHaveBeenCalledWith(true);
+  });
+
+  it('renders the HintTooltip when the hint is enabled and available', async () => {
+    vi.mocked(useGameHint).mockReturnValue({
+      hint: { targetAction: 'play-0', reason: 'frontendHint.followSuit', confidence: 'moderate' },
+      hintEnabled: true,
+      setHintEnabled: vi.fn(),
+    });
+    renderWithProviders(<SchnapsenPage />);
+    await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
+  });
+
+  it('renders the tutorial anchor elements the guided tour targets', async () => {
+    const { container } = renderWithProviders(<SchnapsenPage />);
+    await waitFor(() => expect(screen.getByTestId('schnapsen-phase')).toBeInTheDocument());
+    for (const anchor of ['schnapsen-trump', 'schnapsen-trick', 'schnapsen-hand', 'schnapsen-actions']) {
+      expect(container.querySelector(`[data-tutorial="${anchor}"]`)).toBeInTheDocument();
+    }
   });
 });

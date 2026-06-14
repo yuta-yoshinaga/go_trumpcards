@@ -132,6 +132,35 @@ describe('AcesUpPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', 1));
   });
 
+  it('dragging a movable top card onto an empty column dispatches move', async () => {
+    const buildDataTransfer = () => {
+      const store: Record<string, string> = {};
+      return {
+        setData: (type: string, val: string) => {
+          store[type] = val;
+        },
+        getData: (type: string) => store[type] ?? '',
+        effectAllowed: '',
+        dropEffect: '',
+      };
+    };
+
+    renderWithProviders(<AcesUpPage />);
+    await waitFor(() => expect(screen.getByTestId('acesup-empty-2')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+
+    // Drag col1's movable 9♠ (the only movable top card) onto the empty col2.
+    const dataTransfer = buildDataTransfer();
+    fireEvent.dragStart(screen.getByRole('button', { name: '♠ 9' }), { dataTransfer });
+    const dropZone = screen.getByTestId('acesup-empty-2');
+    fireEvent.dragOver(dropZone, { dataTransfer });
+    fireEvent.drop(dropZone, { dataTransfer });
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', 1));
+  });
+
   it('clicking giveup button dispatches giveup', async () => {
     renderWithProviders(<AcesUpPage />);
     await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());

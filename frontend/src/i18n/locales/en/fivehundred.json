@@ -20,6 +20,7 @@
   "tricksLabel": "Tricks",
   "misereButton": "Misere",
   "openMisereButton": "Open Misere",
+  "bidValueLabel": "{{value}} pts",
   "passButton": "Pass",
   "exchangeButton": "Exchange ({{count}}/3)",
   "nominateSuit": "Suit to call with the joker:",

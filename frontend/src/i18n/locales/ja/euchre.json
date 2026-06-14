@@ -44,6 +44,7 @@
   "pickUpPhase": "ディーラーにめくり札をオーダーアップしますか？",
   "callTrumpPhase": "切り札スートを選んでください（めくり札のスート以外）",
   "discardPhase": "1枚捨てるカードを選んでください",
+  "turnedDownSuit": "このスートは選択できません（めくり札のスート）",
   "suitSpade": "♠ スペード",
   "suitClover": "♣ クラブ",
   "suitHeart": "♥ ハート",

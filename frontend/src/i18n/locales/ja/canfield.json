@@ -27,6 +27,10 @@
   "moveReserveToTableau": "リザーブ→場札",
   "moveWasteToFoundation": "ウェイスト→組札",
   "moveWasteToTableau": "ウェイスト→場札",
+  "moveWasteToCol": "捨→{{col}}",
+  "moveReserveToCol": "予→{{col}}",
+  "moveToFoundation": "→組",
+  "moveToCol": "→{{col}}",
   "moveTableauToFoundation": "場札→組札",
   "frontendHint": {
     "moveToFoundation": "組札へ移動できるカードがあります",

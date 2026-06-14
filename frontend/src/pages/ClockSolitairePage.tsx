@@ -3,6 +3,7 @@ import { clocksolitaireApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -12,6 +13,7 @@ import { HintTooltip } from '../components/hint/HintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -136,7 +138,7 @@ function ClockSolitairePageContent() {
       : t('phase.playing');
 
   if (error) return <ErrorAlert message={error} onRetry={retry} />;
-  if (!state) return null;
+  if (!state) return <GameSkeleton gameKey="clocksolitaire" layout={{ kind: 'centered', rows: [4, 5, 4] }} />;
 
   const radius = Math.min(cardWidth * 5, 180);
 
@@ -300,17 +302,26 @@ function ClockSolitairePageContent() {
 
           {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
 
+          {/* Settings */}
+          <SettingsPanel
+            title={tc('settings.title')}
+            groups={[
+              {
+                items: [
+                  {
+                    type: 'checkbox' as const,
+                    id: 'frontendHint',
+                    label: tc('hint.toggle', { ns: 'tutorial' }),
+                    checked: hintEnabled,
+                    onToggle: setHintEnabled,
+                  },
+                ],
+              },
+            ]}
+          />
+
           <GameFooter className={`${theme.footer} px-4 py-2.5`}>
             <div className="flex flex-wrap items-center gap-2">
-              <label className="flex items-center gap-1 text-ds-text-primary text-xs">
-                <input
-                  type="checkbox"
-                  checked={hintEnabled}
-                  onChange={(e) => setHintEnabled(e.target.checked)}
-                  aria-label={tc('hint.toggle', { ns: 'tutorial' })}
-                />
-                {tc('hint.toggle', { ns: 'tutorial' })}
-              </label>
               {isPlaying && (
                 <div data-tutorial="clock-controls" className="flex gap-2">
                   <button

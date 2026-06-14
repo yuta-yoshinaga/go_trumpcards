@@ -369,7 +369,11 @@ function EasthavenPageContent() {
           <span>
             {t('moveCount')}: {state.moveCount}
           </span>
-          <span data-tutorial="eh-stock">
+          <span
+            data-tutorial="eh-stock"
+            data-testid="eh-stock"
+            className={state.stockCount === 0 ? 'font-bold text-ds-warning' : undefined}
+          >
             {t('stock')}: {state.stockCount}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
@@ -448,7 +452,17 @@ function EasthavenPageContent() {
             <div className="flex gap-1 sm:gap-2 justify-center" data-tutorial="eh-tableau">
               {state.tableau.map((col, colIdx) => (
                 <div key={colIdx} className="flex flex-col items-center" style={{ width: eh.cw }}>
-                  <div className="text-game-text-muted text-xs mb-1">{colIdx}</div>
+                  {/* Once the stock is empty, flag columns still hiding a face-down card. */}
+                  <div
+                    data-testid={`eh-col-header-${colIdx}`}
+                    className={`mb-1 rounded px-1 text-game-text-muted text-xs ${
+                      state.stockCount === 0 && !autoCompleteReady && col.some((c) => !c.faceUp)
+                        ? 'bg-ds-warning/20'
+                        : ''
+                    }`}
+                  >
+                    {colIdx}
+                  </div>
                   {col.length === 0 ? (
                     <DropZone
                       onDrop={dnd.handleDrop({ zone: 'tableau', col: colIdx })}

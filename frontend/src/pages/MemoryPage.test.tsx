@@ -242,6 +242,28 @@ describe('MemoryPage', () => {
     expect(screen.getByTestId('board-visited-10')).toBeInTheDocument();
   });
 
+  it('gives a visited card a contrasting ring readable at small card sizes', async () => {
+    const seenState: MemoryResponse = {
+      ...flip1State,
+      phase: 2,
+      firstFlipPos: 5,
+      secondFlipPos: 10,
+      board: makeBoard({
+        5: { faceUp: true, card: { design: 'SPADE' as const, value: 3 } },
+        10: { faceUp: true, card: { design: 'HEART' as const, value: 7 } },
+      }),
+    };
+    mockExec.mockResolvedValueOnce(seenState);
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
+    mockExec.mockResolvedValue(flip1State);
+    fireEvent.click(screen.getByRole('button', { name: '次へ' }));
+    await waitFor(() => expect(screen.getByTestId('board-visited-5')).toBeInTheDocument());
+    expect(screen.getByTestId('board-5')).toHaveClass('ring-ds-accent');
+    // Unvisited face-down cards keep the plain back (no persistent ring).
+    expect(screen.getByTestId('board-0')).not.toHaveClass('ring-ds-accent');
+  });
+
   it('face-down cards show card back image instead of position number', async () => {
     renderWithProviders(<MemoryPage />);
     await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());

@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { daifugoApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -131,6 +131,25 @@ function DaifugoPageContent() {
   const isMobile = useIsMobile();
   const { playSound } = useSound();
 
+  // Transient toast announcing a newly-triggered rank inversion (revolution /
+  // eleven-back), on top of the background-color change which can be missed.
+  const [inversionToast, setInversionToast] = useState<'revolution' | 'elevenBack' | null>(null);
+  const prevInversion = useRef({ revolution: false, elevenBack: false });
+  const inversionToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => clearTimeout(inversionToastTimer.current ?? undefined), []);
+  useEffect(() => {
+    const rev = state?.revolutionActive ?? false;
+    const eb = state?.elevenBackActive ?? false;
+    const prev = prevInversion.current;
+    const newlyTriggered =
+      (rev && !prev.revolution && 'revolution') || (eb && !prev.elevenBack && 'elevenBack') || null;
+    prevInversion.current = { revolution: rev, elevenBack: eb };
+    if (!newlyTriggered) return;
+    setInversionToast(newlyTriggered);
+    clearTimeout(inversionToastTimer.current ?? undefined);
+    inversionToastTimer.current = setTimeout(() => setInversionToast(null), 3000);
+  }, [state?.revolutionActive, state?.elevenBackActive]);
+
   const isHumanTurnForKbd = !!state && !state.gameEndFlag && !!state.players[state.currentTurn]?.isHuman;
   const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
 
@@ -236,6 +255,16 @@ function DaifugoPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
+          {inversionToast && (
+            <div
+              data-testid="df-inversion-toast"
+              role="status"
+              aria-live="assertive"
+              className="-translate-x-1/2 motion-safe:animate-pulse-once fixed top-16 left-1/2 z-30 rounded-full border border-ds-warning bg-ds-surface px-4 py-1.5 text-ds-warning text-sm font-bold shadow-lg"
+            >
+              {t(inversionToast === 'revolution' ? 'toast.revolution' : 'toast.elevenBack')}
+            </div>
+          )}
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
             <DaifugoSettingsPanel config={configInput} onChange={handleConfigChange} />
             <ReplaySpeedSettingsPanel />

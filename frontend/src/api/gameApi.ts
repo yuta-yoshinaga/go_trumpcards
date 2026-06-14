@@ -644,9 +644,11 @@ export const sevenCardStudApi = createHoldemLikeApi<SevenCardStudResponse, Seven
 /** API client for the Razz /razz/exec endpoint. */
 export const razzApi = createHoldemLikeApi<SevenCardStudResponse, SevenCardStudConfigInput>('razz');
 
-/** Configuration options for Pineapple Poker (extends Hold'em with cardIdx for discard). */
+/** Configuration options for Pineapple Poker (extends Hold'em with cardIdx/cardIdxs for discard). */
 export interface PineappleConfigInput extends HoldemConfigInput {
   cardIdx?: number;
+  /** Multiple discard indices, submitted together (Irish Poker's 2-card discard). */
+  cardIdxs?: number[];
 }
 
 /** API client for the Pineapple Poker /pineapple/exec endpoint. */

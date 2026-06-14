@@ -35,7 +35,12 @@ export function holdemBestFive(cards: readonly Card[]): number[] | null {
   return bestIdx;
 }
 
-function compareScores(a: readonly number[], b: readonly number[]): number {
+/**
+ * Compare two lexicographic hand-score tuples (as produced by {@link scoreFive}).
+ * Returns >0 when `a` is stronger, <0 when `b` is, 0 when equal. Exported for
+ * reuse by other poker variants (e.g. Omaha's must-use-2 evaluator).
+ */
+export function compareScores(a: readonly number[], b: readonly number[]): number {
   const len = Math.max(a.length, b.length);
   for (let i = 0; i < len; i += 1) {
     const av = a[i] ?? 0;
@@ -50,7 +55,11 @@ function rankValue(card: Card): number {
   return card.value === 1 ? 14 : card.value;
 }
 
-function scoreFive(hand: readonly Card[]): number[] {
+/**
+ * Score a 5-card hand as a lexicographic tuple `[category, primary..., kickers...]`
+ * (higher is stronger). Exported for reuse by other poker variants.
+ */
+export function scoreFive(hand: readonly Card[]): number[] {
   const ranks = hand.map(rankValue).sort((x, y) => y - x);
   const suits = hand.map((c) => c.design);
   const flush = suits.every((s) => s === suits[0]);

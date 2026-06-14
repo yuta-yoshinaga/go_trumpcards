@@ -207,11 +207,14 @@ describe('RazzPage', () => {
   });
 
   // ---- info bar ----
-  it('shows pot and dealer index', async () => {
+  it('shows pot and the dealer name via playerName (CPU dealer)', async () => {
     mockExec.mockResolvedValue(thirdStreetState);
     renderWithProviders(<RazzPage />);
     await waitFor(() => expect(screen.getByText(/ポット:/)).toBeInTheDocument());
     expect(screen.getByText(/ディーラー:/)).toBeInTheDocument();
+    // Dealer renders via playerName (CPU 3), not the raw index.
+    expect(screen.getAllByText('CPU 3').length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Player 3|プレイヤー 3/)).not.toBeInTheDocument();
   });
 
   // ---- CPU players ----
@@ -741,6 +744,17 @@ describe('RazzPage', () => {
     const allSummaries = container.querySelectorAll('details summary');
     const settingsSummary = Array.from(allSummaries).find((s) => s.textContent?.includes('設定'));
     expect(settingsSummary).toBeTruthy();
+  });
+
+  it('renders settings via the standard SettingsPanel component', async () => {
+    mockExec.mockResolvedValue(initState);
+    const { container } = renderWithProviders(<RazzPage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+    // SettingsPanel items carry stable ids (the raw <details> checkboxes had none).
+    expect(container.querySelector('#frontendHint')).toBeInTheDocument();
+    expect(container.querySelector('#cpuMetaAI')).toBeInTheDocument();
+    expect(screen.getByLabelText('ヒント表示')).toBeInTheDocument();
+    expect(screen.getByLabelText('メタAI（CPUがプレイスタイルを学習）')).toBeInTheDocument();
   });
 
   // ---- CLI mode ----

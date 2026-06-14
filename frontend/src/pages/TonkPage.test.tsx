@@ -89,6 +89,81 @@ describe('TonkPage', () => {
     expect(knock.textContent).toContain('⚠️');
   });
 
+  const meldHandState = () =>
+    makeState({
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 5,
+          // Three 7s (a set) plus two unrelated cards.
+          cards: [card('SPADE', 7), card('HEART', 7), card('CLOVER', 7), card('DIAMOND', 4), card('HEART', 9)],
+          roundScore: 0,
+          cumulativeScore: 0,
+        },
+        { id: 1, isHuman: false, cardCount: 5, cards: [], roundScore: 0, cumulativeScore: 0 },
+      ],
+    });
+
+  it('highlights cards that form a meld once a discard candidate is selected', async () => {
+    mockExec.mockResolvedValue(meldHandState());
+    renderWithProviders(<TonkPage />);
+    // No highlight before a discard is chosen.
+    await waitFor(() => expect(screen.getByTestId('tonk-hand-0')).toBeInTheDocument());
+    expect(screen.getByTestId('tonk-hand-0')).not.toHaveAttribute('data-meld');
+
+    // Select the non-meld card (index 4) as the discard → the three 7s light up.
+    fireEvent.click(screen.getByTestId('tonk-hand-4'));
+    await waitFor(() => expect(screen.getByTestId('tonk-hand-0')).toHaveAttribute('data-meld', 'true'));
+    expect(screen.getByTestId('tonk-hand-1')).toHaveAttribute('data-meld', 'true');
+    expect(screen.getByTestId('tonk-hand-2')).toHaveAttribute('data-meld', 'true');
+    expect(screen.getByTestId('tonk-hand-3')).not.toHaveAttribute('data-meld');
+  });
+
+  it('shows no meld highlight when discarding a meld card breaks the set', async () => {
+    mockExec.mockResolvedValue(meldHandState());
+    renderWithProviders(<TonkPage />);
+    // Discard one of the 7s → only two 7s remain among the other four → no meld.
+    fireEvent.click(await screen.findByTestId('tonk-hand-0'));
+    await waitFor(() => expect(screen.getByTestId('tonk-hand-0')).toHaveAttribute('aria-pressed', 'true'));
+    expect(screen.getByTestId('tonk-hand-1')).not.toHaveAttribute('data-meld');
+    expect(screen.getByTestId('tonk-hand-2')).not.toHaveAttribute('data-meld');
+  });
+
+  it('highlights a run and loses it when a middle card is discarded', async () => {
+    const runHand = () =>
+      makeState({
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 5,
+            // A 4-card spade run plus one off card.
+            cards: [card('SPADE', 5), card('SPADE', 6), card('SPADE', 7), card('SPADE', 8), card('HEART', 2)],
+            roundScore: 0,
+            cumulativeScore: 0,
+          },
+          { id: 1, isHuman: false, cardCount: 5, cards: [], roundScore: 0, cumulativeScore: 0 },
+        ],
+      });
+
+    // Discard the off card (index 4) → the 5-6-7-8 run stays intact and lights up.
+    mockExec.mockResolvedValue(runHand());
+    const { unmount } = renderWithProviders(<TonkPage />);
+    fireEvent.click(await screen.findByTestId('tonk-hand-4'));
+    await waitFor(() => expect(screen.getByTestId('tonk-hand-0')).toHaveAttribute('data-meld', 'true'));
+    expect(screen.getByTestId('tonk-hand-3')).toHaveAttribute('data-meld', 'true');
+    unmount();
+
+    // Discard a middle card (index 1, the 6) → remaining 5,7,8 is not a run → no highlight.
+    mockExec.mockResolvedValue(runHand());
+    renderWithProviders(<TonkPage />);
+    fireEvent.click(await screen.findByTestId('tonk-hand-1'));
+    await waitFor(() => expect(screen.getByTestId('tonk-hand-1')).toHaveAttribute('aria-pressed', 'true'));
+    expect(screen.getByTestId('tonk-hand-0')).not.toHaveAttribute('data-meld');
+    expect(screen.getByTestId('tonk-hand-2')).not.toHaveAttribute('data-meld');
+  });
+
   it('clears the warning when opponents drop back above the threshold', async () => {
     // First render: opponent at 2 → warning on.
     mockExec.mockResolvedValueOnce(

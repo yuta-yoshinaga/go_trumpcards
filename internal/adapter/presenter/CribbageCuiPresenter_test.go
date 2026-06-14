@@ -253,3 +253,48 @@ func TestCribbageCuiPresenter_ActionLogOutput(t *testing.T) {
 		m.AssertExpectations(t)
 	})
 }
+
+func TestCribbageCuiPresenter_HintOutput(t *testing.T) {
+	p := new(presenter.CribbageCuiPresenter)
+
+	t.Run("discard hint names both crib indices", func(t *testing.T) {
+		m := new(interfaces.MockCribbageGame)
+		m.On("GetHint").Return(&domain.CribbageHint{Type: "discard", Indices: []int{0, 1}})
+		out := p.HintOutput(m)
+		assert.Contains(t, out, "0")
+		assert.Contains(t, out, "1")
+		assert.Contains(t, out, "クリブ")
+	})
+
+	t.Run("play hint names the card index", func(t *testing.T) {
+		m := new(interfaces.MockCribbageGame)
+		m.On("GetHint").Return(&domain.CribbageHint{Type: "play", Indices: []int{2}})
+		out := p.HintOutput(m)
+		assert.Contains(t, out, "2")
+		assert.Contains(t, out, "出す")
+	})
+
+	t.Run("nil hint falls back to no-hint message", func(t *testing.T) {
+		m := new(interfaces.MockCribbageGame)
+		m.On("GetHint").Return((*domain.CribbageHint)(nil))
+		assert.Contains(t, p.HintOutput(m), "ヒントはありません")
+	})
+
+	t.Run("unknown hint type falls back to no-hint message", func(t *testing.T) {
+		m := new(interfaces.MockCribbageGame)
+		m.On("GetHint").Return(&domain.CribbageHint{Type: "??"})
+		assert.Contains(t, p.HintOutput(m), "ヒントはありません")
+	})
+
+	t.Run("discard hint with short indices falls back to no-hint message", func(t *testing.T) {
+		m := new(interfaces.MockCribbageGame)
+		m.On("GetHint").Return(&domain.CribbageHint{Type: "discard", Indices: []int{0}})
+		assert.Contains(t, p.HintOutput(m), "ヒントはありません")
+	})
+
+	t.Run("play hint with no indices falls back to no-hint message", func(t *testing.T) {
+		m := new(interfaces.MockCribbageGame)
+		m.On("GetHint").Return(&domain.CribbageHint{Type: "play"})
+		assert.Contains(t, p.HintOutput(m), "ヒントはありません")
+	})
+}

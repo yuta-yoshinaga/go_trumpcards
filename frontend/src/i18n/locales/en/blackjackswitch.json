@@ -5,7 +5,8 @@
     "dealer": "Dealer",
     "hand": "Hand",
     "switched": "switched",
-    "currentHand": "current hand"
+    "currentHand": "current hand",
+    "alwaysPreview": "Always show post-switch scores"
   },
   "phase": {
     "bet": "bet",

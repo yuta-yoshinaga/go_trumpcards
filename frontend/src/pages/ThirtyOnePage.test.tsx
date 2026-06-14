@@ -119,6 +119,44 @@ describe('ThirtyOnePage', () => {
     expect(await screen.findByTestId('knock-button')).toBeDisabled();
   });
 
+  it('shows the knock countdown banner with the knocker name on the human last turn', async () => {
+    mockExec.mockResolvedValue(makeState({ knockerIdx: 1 }));
+    renderWithProviders(<ThirtyOnePage />);
+    const banner = await screen.findByTestId('knock-countdown-banner');
+    expect(banner).toHaveTextContent(/CPU 1/);
+    expect(banner).toHaveTextContent(/最後のターン/);
+  });
+
+  it('shows the active knock banner without last-turn text when it is not the human turn', async () => {
+    mockExec.mockResolvedValue(makeState({ knockerIdx: 2, currentPlayerIdx: 1 }));
+    renderWithProviders(<ThirtyOnePage />);
+    const banner = await screen.findByTestId('knock-countdown-banner');
+    expect(banner).toHaveTextContent(/CPU 2/);
+    expect(banner).not.toHaveTextContent(/最後のターン/);
+  });
+
+  it('hides the knock countdown banner at round end', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: ThirtyOnePhase.ROUND_END, knockerIdx: 1 }));
+    renderWithProviders(<ThirtyOnePage />);
+    await screen.findByTestId('next-round-button');
+    expect(screen.queryByTestId('knock-countdown-banner')).not.toBeInTheDocument();
+  });
+
+  it('names the human in the knock banner when the human is the knocker', async () => {
+    mockExec.mockResolvedValue(makeState({ knockerIdx: 0, currentPlayerIdx: 1 }));
+    renderWithProviders(<ThirtyOnePage />);
+    const banner = await screen.findByTestId('knock-countdown-banner');
+    expect(banner).toHaveTextContent(/あなた/);
+    expect(banner).not.toHaveTextContent(/最後のターン/);
+  });
+
+  it('hides the knock countdown banner at game end', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: ThirtyOnePhase.GAME_END, gameEndFlag: true, knockerIdx: 1 }));
+    renderWithProviders(<ThirtyOnePage />);
+    await waitFor(() => expect(screen.getAllByLabelText(/lives-|out/).length).toBeGreaterThan(0));
+    expect(screen.queryByTestId('knock-countdown-banner')).not.toBeInTheDocument();
+  });
+
   it('highlights the leading suit badge', async () => {
     // Default human hand: SPADE 3, HEART 5, DIAMOND 7 → DIAMOND leads.
     renderWithProviders(<ThirtyOnePage />);

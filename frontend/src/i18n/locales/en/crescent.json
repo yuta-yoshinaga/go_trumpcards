@@ -12,8 +12,12 @@
   "redealUnavailable": "No redeals remaining",
   "giveup": "Give Up",
   "empty": "Empty",
-  "foundationAriaLabel": "{{direction}} foundation {{suit}} {{count}} cards",
+  "foundationAriaLabel": "{{direction}} foundation {{suit}} {{count}} cards top {{top}}",
   "emptyFoundationAriaLabel": "Empty {{direction}} foundation ({{suit}})",
+  "direction": {
+    "asc": "Ascending",
+    "desc": "Descending"
+  },
   "landscapeBanner": "Landscape mode recommended",
   "hint": "Hint",
   "autoComplete": "Auto Complete",

@@ -127,6 +127,19 @@ func TestPineappleInteractor_Discard(t *testing.T) {
 	mg.AssertCalled(t, "DiscardCard", 2)
 }
 
+func TestPineappleInteractor_DiscardMany(t *testing.T) {
+	mg := new(interfaces.MockPineappleGame)
+	mp := new(presenter.MockPineapplePresenter)
+	pi := NewPineappleInteractor(mg, mp)
+
+	mg.On("DiscardCards", []int{1, 3}).Return(nil)
+	mp.On("Output", mg, mock.Anything).Return("discard many output")
+
+	result := pi.DiscardMany([]int{1, 3})
+	assert.Equal(t, "discard many output", result)
+	mg.AssertCalled(t, "DiscardCards", []int{1, 3})
+}
+
 func TestPineappleInteractor_Discard_Error(t *testing.T) {
 	mg := new(interfaces.MockPineappleGame)
 	mp := new(presenter.MockPineapplePresenter)

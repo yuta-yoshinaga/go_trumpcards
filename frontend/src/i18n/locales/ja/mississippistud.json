@@ -14,9 +14,7 @@
   },
   "button": {
     "bet": "アンティ",
-    "play1x": "1倍",
-    "play2x": "2倍",
-    "play3x": "3倍",
+    "playMult": "{{mult}}倍 +{{amount}}",
     "fold": "フォールド",
     "reset": "リセット"
   },

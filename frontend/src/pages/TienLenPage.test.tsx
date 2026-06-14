@@ -47,6 +47,19 @@ beforeEach(() => {
 });
 
 describe('TienLenPage', () => {
+  it('renders skeleton before first API response', () => {
+    mockExec.mockReturnValue(new Promise(() => undefined));
+    renderWithProviders(<TienLenPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('renders skeleton when fewer than 4 players are present', async () => {
+    mockExec.mockResolvedValue(makeState({ players: [player(0, true, [])] }));
+    renderWithProviders(<TienLenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<TienLenPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -65,6 +78,15 @@ describe('TienLenPage', () => {
     expect(playBtn).toBeEnabled();
     fireEvent.click(playBtn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0]));
+  });
+
+  it('disables play and shows a reason for an invalid combination', async () => {
+    renderWithProviders(<TienLenPage />);
+    // Select ♠3 + ♥5 (two different ranks) → not a legal combo.
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+    expect(screen.getByTestId('play-button')).toBeDisabled();
+    expect(screen.getByTestId('tl-invalid-combo')).toBeInTheDocument();
   });
 
   it('passes when the pass button is clicked', async () => {

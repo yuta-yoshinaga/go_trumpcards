@@ -36,6 +36,7 @@
   "scoresTotal": "累計",
   "scoresTricks": "トリック",
   "passButton": "パス",
+  "passProgress": "{{count}}/3 枚選択済み",
   "playButton": "出す",
   "nextTrick": "次のトリック",
   "nextRound": "次のラウンド",

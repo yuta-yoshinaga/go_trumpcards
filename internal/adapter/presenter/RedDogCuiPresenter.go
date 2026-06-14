@@ -86,8 +86,6 @@ func (rp *RedDogCuiPresenter) phaseStr(phase int) string {
 		return i18n.T("reddog.phaseInitialDealt")
 	case domain.RedDogPhaseSpreadDecision:
 		return i18n.T("reddog.phaseSpreadDecision")
-	case domain.RedDogPhasePairThird:
-		return i18n.T("reddog.phasePairThird")
 	case domain.RedDogPhaseEnd:
 		return i18n.T("reddog.phaseEnd")
 	default:

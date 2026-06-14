@@ -119,6 +119,22 @@ describe('MacauPage', () => {
     expect(screen.getByRole('button', { name: /引き受ける/ })).toBeInTheDocument();
   });
 
+  it('shows a penalty count badge and danger-styled draw button when penalty active', async () => {
+    mockExec.mockResolvedValue(penaltyState);
+    renderWithProviders(<MacauPage />);
+    const badge = await screen.findByTestId('penalty-badge');
+    expect(badge).toHaveTextContent('4');
+    const drawButton = screen.getByRole('button', { name: /引き受ける/ });
+    expect(drawButton.className).toContain('bg-ds-error');
+  });
+
+  it('hides the penalty badge when no penalty is active', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<MacauPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '引く' })).toBeInTheDocument());
+    expect(screen.queryByTestId('penalty-badge')).not.toBeInTheDocument();
+  });
+
   it('shows reverse direction indicator', async () => {
     mockExec.mockResolvedValue(reverseState);
     renderWithProviders(<MacauPage />);

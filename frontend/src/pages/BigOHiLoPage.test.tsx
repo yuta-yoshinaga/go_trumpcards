@@ -288,11 +288,14 @@ describe('BigOHiLoPage', () => {
   });
 
   // ---- info bar ----
-  it('shows pot and dealer index', async () => {
+  it('shows pot and the dealer name via playerName (CPU dealer)', async () => {
     mockExec.mockResolvedValue(preFlopState);
     renderWithProviders(<BigOHiLoPage />);
     await waitFor(() => expect(screen.getByText(/ポット:/)).toBeInTheDocument());
     expect(screen.getByText(/ディーラー:/)).toBeInTheDocument();
+    // Dealer renders via playerName (CPU 3), not the raw index.
+    expect(screen.getAllByText('CPU 3').length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Player 3|プレイヤー 3/)).not.toBeInTheDocument();
   });
 
   // ---- community cards ----
@@ -361,6 +364,29 @@ describe('BigOHiLoPage', () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<BigOHiLoPage />);
     await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
+  });
+
+  it('highlights exactly 2 hole + 3 board cards as the best-5 at showdown', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    const { container } = renderWithProviders(<BigOHiLoPage />);
+    await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
+    expect(container.querySelectorAll('[data-best5-hole]')).toHaveLength(2);
+    expect(container.querySelectorAll('[data-best5-board]')).toHaveLength(3);
+  });
+
+  it('shows green Hi and blue Lo split badges (Lo omitted when none qualifies)', async () => {
+    const splitState: OmahaResponse = {
+      ...showdownState,
+      roundResults: [
+        { ...showdownState.roundResults[0], hiWonAmount: 200, lowWonAmount: 0 },
+        { ...showdownState.roundResults[1], wonAmount: 100, hiWonAmount: 0, lowWonAmount: 100 },
+      ],
+    };
+    mockExec.mockResolvedValue(splitState);
+    renderWithProviders(<BigOHiLoPage />);
+    await waitFor(() => expect(screen.getByTestId('bigohilo-split')).toBeInTheDocument());
+    expect(screen.getByTestId('bigohilo-hi-badge')).toHaveClass('text-ds-success');
+    expect(screen.getByTestId('bigohilo-lo-badge')).toHaveClass('text-ds-info');
   });
 
   it('does not show CPU hand name badge when CPU is folded in showdown', async () => {

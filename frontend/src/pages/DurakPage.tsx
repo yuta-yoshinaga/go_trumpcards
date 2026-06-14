@@ -385,6 +385,8 @@ function DurakPageContent() {
                       key={`${card.design}-${card.value}-${i}`}
                       className={`cursor-pointer transition-transform ${selectedCardIdx === i ? '-translate-y-2' : ''}`}
                       onClick={() => setSelectedCardIdx(selectedCardIdx === i ? null : i)}
+                      aria-label={cardAlt(card)}
+                      aria-pressed={selectedCardIdx === i}
                     >
                       <AnimatedCard card={card} width={cardWidth} isSelected={selectedCardIdx === i} />
                     </button>

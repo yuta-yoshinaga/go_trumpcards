@@ -11,6 +11,7 @@ import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -28,6 +29,7 @@ import {
   type TienLenCliArgs,
 } from '../utils/cli/commands/tienlenCommands';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isValidTienLenCombo } from '../utils/tienLenComboValidator';
 
 // Values match the Go domain constants: 0=Normal, 1=Easy, 2=Hard
 // (see TienLenConfig.go / TienLenCuiController help text).
@@ -109,9 +111,19 @@ function TienLenPageContent() {
 
   if (!state || state.players.length < 4) {
     return (
-      <div className={`flex-1 flex items-center justify-center ${gameTheme.tienlen.bg} text-ds-text-muted`} aria-busy>
-        {tc('skeleton.loading')}
-      </div>
+      <GameSkeleton
+        gameKey="tienlen"
+        layout={{
+          kind: 'trick-taking',
+          titleBar: false,
+          opponents: 3,
+          opponentStyle: 'hand',
+          opponentHandSize: 4,
+          trickArea: true,
+          footerHandSize: 5,
+          footerButton: 'wide',
+        }}
+      />
     );
   }
 
@@ -119,7 +131,10 @@ function TienLenPageContent() {
   const humanWon = isGameEnd && state.players[0]?.rank === 1;
   const isHumanTurn = state.currentTurn === 0 && !isGameEnd;
   const human = state.players[0];
-  const canPlay = isHumanTurn && selectedIndices.length > 0;
+  const selectedCards = selectedIndices.map((i) => human.cards[i]).filter((c): c is NonNullable<typeof c> => c != null);
+  const hasValidCombo = isValidTienLenCombo(selectedCards);
+  const canPlay = isHumanTurn && selectedIndices.length > 0 && hasValidCombo;
+  const showInvalidCombo = isHumanTurn && selectedIndices.length > 0 && !hasValidCombo;
   const phaseName = isGameEnd ? t('phase.end') : t('phase.play');
 
   return (
@@ -252,6 +267,15 @@ function TienLenPageContent() {
           <ReplaySpeedSettingsPanel />
 
           <GameFooter className={`${gameTheme.tienlen.footer} px-4 py-2.5`}>
+            {showInvalidCombo && (
+              <p
+                role="status"
+                data-testid="tl-invalid-combo"
+                className="mb-1 text-center font-medium text-ds-warning text-xs"
+              >
+                {t('invalidCombo')}
+              </p>
+            )}
             <div className="flex gap-2 justify-center flex-wrap" data-tutorial="tl-play-pass">
               <button
                 type="button"

@@ -28,6 +28,11 @@ import {
   parseFiveHundredCommand,
 } from '../utils/cli/commands/fivehundredCommands';
 import type { CliGameConfig } from '../utils/cli/types';
+import {
+  FIVEHUNDRED_MISERE_VALUE,
+  FIVEHUNDRED_OPEN_MISERE_VALUE,
+  fivehundredBidValue,
+} from '../utils/fivehundredBidValue';
 
 const CPU_DIFFICULTY_SELECT = [
   { value: '0', label: 'Easy' },
@@ -352,34 +357,50 @@ function FiveHundredPageContent() {
                       type="button"
                       onClick={() => bidSuit(bidTricks, s.id)}
                       disabled={loading}
-                      className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                      data-testid={`fh-bid-suit-${s.id}`}
+                      className="flex flex-col items-center rounded-lg bg-ds-info px-3 py-1.5 text-sm text-white disabled:opacity-40"
                     >
-                      {s.glyph}
+                      <span>{s.glyph}</span>
+                      <span className="text-[10px] text-white">
+                        {t('bidValueLabel', { value: fivehundredBidValue(bidTricks, s.id) })}
+                      </span>
                     </button>
                   ))}
                   <button
                     type="button"
                     onClick={() => bidNoTrump(bidTricks)}
                     disabled={loading}
-                    className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                    data-testid="fh-bid-nt"
+                    className="flex flex-col items-center rounded-lg bg-ds-info px-3 py-1.5 text-sm text-white disabled:opacity-40"
                   >
-                    NT
+                    <span>NT</span>
+                    <span className="text-[10px] text-white">
+                      {t('bidValueLabel', { value: fivehundredBidValue(bidTricks, -1) })}
+                    </span>
                   </button>
                   <button
                     type="button"
                     onClick={bidMisere}
                     disabled={loading}
-                    className="px-3 py-2 rounded-lg bg-ds-surface text-ds-text text-sm disabled:opacity-40"
+                    data-testid="fh-bid-misere"
+                    className="flex flex-col items-center rounded-lg bg-ds-surface px-3 py-1.5 text-sm text-ds-text disabled:opacity-40"
                   >
-                    {t('misereButton')}
+                    <span>{t('misereButton')}</span>
+                    <span className="text-[10px] text-ds-text-muted">
+                      {t('bidValueLabel', { value: FIVEHUNDRED_MISERE_VALUE })}
+                    </span>
                   </button>
                   <button
                     type="button"
                     onClick={bidOpenMisere}
                     disabled={loading}
-                    className="px-3 py-2 rounded-lg bg-ds-surface text-ds-text text-sm disabled:opacity-40"
+                    data-testid="fh-bid-open-misere"
+                    className="flex flex-col items-center rounded-lg bg-ds-surface px-3 py-1.5 text-sm text-ds-text disabled:opacity-40"
                   >
-                    {t('openMisereButton')}
+                    <span>{t('openMisereButton')}</span>
+                    <span className="text-[10px] text-ds-text-muted">
+                      {t('bidValueLabel', { value: FIVEHUNDRED_OPEN_MISERE_VALUE })}
+                    </span>
                   </button>
                   <button
                     type="button"

@@ -431,6 +431,14 @@ function HeartsPageContent() {
                   {tc('button.hint')}
                 </button>
               )}
+              {isPassPhase && selectedCardIndices.length > 0 && (
+                <span
+                  data-testid="hearts-pass-progress"
+                  className="self-center rounded-full bg-ds-surface border border-ds-accent px-2.5 py-0.5 text-ds-text-primary text-xs"
+                >
+                  {t('passProgress', { count: selectedCardIndices.length })}
+                </span>
+              )}
               {isPassPhase && (
                 <button
                   type="button"

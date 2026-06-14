@@ -554,3 +554,80 @@ func TestCribbagePlayer_ResetRound(t *testing.T) {
 	assert.Equal(t, 0, p.GetRoundScore())
 	assert.Equal(t, 0, p.GetCardsSize())
 }
+
+// ---- GetHint Tests ----
+
+func TestCribbage_GetHint_DiscardPhase(t *testing.T) {
+	g := newTestCribbage()
+	setupDiscardPhase(g)
+	// Hand ♠A..♠6: keeping {3,4,5,6} scores best (15×1 + run of 4 + 4-flush = 10),
+	// so the recommended discard is indices 0 and 1 (A and 2).
+	hint := g.GetHint()
+	assert.NotNil(t, hint)
+	assert.Equal(t, "discard", hint.Type)
+	assert.Equal(t, []int{0, 1}, hint.Indices)
+}
+
+func TestCribbage_GetHint_DiscardPhase_NotHumanTurn(t *testing.T) {
+	g := newTestCribbage()
+	setupDiscardPhase(g)
+	g.SetCurrentPlayerIdx(1)
+	assert.Nil(t, g.GetHint())
+}
+
+func TestCribbage_GetHint_DiscardPhase_AlreadyDiscarded(t *testing.T) {
+	g := newTestCribbage()
+	setupDiscardPhase(g)
+	// A 4-card hand means the human already gave 2 cards to the crib.
+	g.players[0].Reset()
+	for i := 1; i <= 4; i++ {
+		g.players[0].AddCard(cCard(CardDesignSpade, i))
+	}
+	assert.Nil(t, g.GetHint())
+}
+
+func TestCribbage_GetHint_PeggingPhase_PrefersFifteen(t *testing.T) {
+	g := newTestCribbage()
+	setupPeggingPhase(g)
+	// CPU led a 5: playing the ♥10 (index 3) hits 15 for 2 points.
+	g.SetPegPlayedCards([]*Card{cCard(CardDesignHeart, 5)})
+	g.SetPegCount(5)
+	hint := g.GetHint()
+	assert.NotNil(t, hint)
+	assert.Equal(t, "play", hint.Type)
+	assert.Equal(t, []int{3}, hint.Indices)
+}
+
+func TestCribbage_GetHint_PeggingPhase_FirstLegalOnTie(t *testing.T) {
+	g := newTestCribbage()
+	setupPeggingPhase(g)
+	// Empty sequence: no play scores, so the first legal card (index 0) is suggested.
+	hint := g.GetHint()
+	assert.NotNil(t, hint)
+	assert.Equal(t, "play", hint.Type)
+	assert.Equal(t, []int{0}, hint.Indices)
+}
+
+func TestCribbage_GetHint_PeggingPhase_NoLegalPlay(t *testing.T) {
+	g := newTestCribbage()
+	setupPeggingPhase(g)
+	g.players[0].Reset()
+	g.players[0].AddCard(cCard(CardDesignHeart, 10))
+	g.SetPegCount(30) // 30 + 10 > 31 → the human can only call Go
+	assert.Nil(t, g.GetHint())
+}
+
+func TestCribbage_GetHint_PeggingPhase_NotHumanTurn(t *testing.T) {
+	g := newTestCribbage()
+	setupPeggingPhase(g)
+	g.SetCurrentPlayerIdx(1)
+	assert.Nil(t, g.GetHint())
+}
+
+func TestCribbage_GetHint_OtherPhases(t *testing.T) {
+	g := newTestCribbage()
+	for _, phase := range []CribbagePhase{CribbagePhaseCut, CribbagePhaseShow, CribbagePhaseRoundEnd, CribbagePhaseGameEnd} {
+		g.SetPhase(phase)
+		assert.Nil(t, g.GetHint())
+	}
+}

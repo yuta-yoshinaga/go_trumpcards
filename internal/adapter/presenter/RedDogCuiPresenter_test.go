@@ -135,7 +135,6 @@ func TestRedDogCuiPresenter_PhaseStr_AllBranches(t *testing.T) {
 		domain.RedDogPhaseBet:            "BET",
 		domain.RedDogPhaseInitialDealt:   "INITIAL DEALT",
 		domain.RedDogPhaseSpreadDecision: "SPREAD DECISION",
-		domain.RedDogPhasePairThird:      "PAIR THIRD",
 		domain.RedDogPhaseEnd:            "END",
 		999:                              "UNKNOWN",
 	} {

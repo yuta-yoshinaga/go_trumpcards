@@ -5,6 +5,7 @@
   "board": "Board",
   "dealerQualified": "Dealer qualifies",
   "dealerDoesNotQualify": "Dealer does not qualify",
+  "betError": "Ante must be at least 10, bets in steps of 10, and within your balance",
   "label": {
     "chips": "Chips",
     "ante": "Ante",

@@ -15,7 +15,11 @@
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
   "discard": {
     "prompt": "Discard a card.",
-    "select": "Select a card to discard (2 cards total)"
+    "select": "Select a card to discard (2 cards total)",
+    "confirm": "Discard {{card}}?",
+    "confirmYes": "Confirm",
+    "confirmNo": "Cancel",
+    "selectedCount": "{{n}}/{{total}} selected"
   },
   "rebuy": {
     "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",

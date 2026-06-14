@@ -40,9 +40,11 @@ import { gameTheme } from '../styles/gameTheme';
 import type { PineappleResponse } from '../types/card';
 import { HoldemRebuyPhaseType, PineapplePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { PINEAPPLE_HELP, parsePineappleCommand } from '../utils/cli/commands/pineappleCommands';
 import { formatPineappleState } from '../utils/cli/formatters/pineappleFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { findPlayerName } from '../utils/playerUtils';
 
 /** Pineapple Poker tutorial step definitions. */
 const PN_TUTORIAL_STEPS: TutorialStep[] = [
@@ -135,7 +137,11 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   const [learningMode, setLearningMode] = useState(false);
   const [cpuMetaAI, setCpuMetaAI] = useState(false);
   const { hint, hintEnabled, setHintEnabled } = useGameHint(variant, state);
-  const [selectedDiscard, setSelectedDiscard] = useState<number | null>(null);
+  // Indices selected for discard. Pineapple/Crazy Pineapple discard 1 (3→2);
+  // Irish Poker discards 2 (4→2). Capped at `discardCount` below.
+  const [selectedDiscards, setSelectedDiscards] = useState<number[]>([]);
+  // Two-step discard: pressing "discard" enters a confirm step before committing.
+  const [discardConfirming, setDiscardConfirming] = useState(false);
   const turnStartRef = useRef(0);
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode(variant);
@@ -171,10 +177,11 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
     }
   }, [state]);
 
-  // Reset discard selection when leaving discard phase
+  // Reset discard selection (and any pending confirm) when leaving discard phase
   useEffect(() => {
     if (!state?.isDiscardPhase) {
-      setSelectedDiscard(null);
+      setSelectedDiscards([]);
+      setDiscardConfirming(false);
     }
   }, [state?.isDiscardPhase]);
 
@@ -203,6 +210,16 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   const cpuPlayers = useMemo(() => state?.players?.filter((p) => !p.isHuman) ?? [], [state?.players]);
   const humanDiscardDone = state?.discardDone?.[humanIdx] ?? false;
   const canDiscard = isDiscardPhase && !humanDiscardDone;
+  // Cards the player must discard down to 2: Pineapple/Crazy = 1, Irish = 2.
+  const discardCount = Math.max(1, (state?.initialDealCount ?? 3) - 2);
+  const toggleDiscard = (idx: number) => {
+    if (!canDiscard) return;
+    setSelectedDiscards((prev) => {
+      if (prev.includes(idx)) return prev.filter((i) => i !== idx);
+      if (prev.length >= discardCount) return prev; // cap reached
+      return [...prev, idx];
+    });
+  };
 
   const actionBindings = useMemo(
     () => [
@@ -260,7 +277,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
             </strong>
           </span>
           <span>
-            {tc('label.dealer')} <strong>Player {state?.dealerIdx ?? 0}</strong>
+            {tc('label.dealer')} <strong>{findPlayerName(state.players, state.dealerIdx)}</strong>
           </span>
           {state?.tournamentMode && (
             <span>{t('handNumber', { count: state.handCount, level: state.blindLevelHands })}</span>
@@ -352,6 +369,16 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
 
           {/* Sticky footer: player hand + buttons */}
           <GameFooter className={`${gameTheme[variant].footer} px-5 py-3`}>
+            {/* Crazy Pineapple discards after the flop betting round (unlike plain
+                Pineapple's immediate discard) — forewarn the player during the flop bet. */}
+            {variant === 'crazypineapple' && phase === PineapplePhase.FLOP && (
+              <div
+                data-testid="cp-discard-upcoming-banner"
+                className="mb-2 rounded border border-ds-info bg-ds-surface px-3 py-1.5 text-center text-ds-info text-sm"
+              >
+                {t('discardUpcoming')}
+              </div>
+            )}
             {/* Human player */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="pn-player-hand">
@@ -384,19 +411,22 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                 </div>
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {humanPlayer.cards?.length
-                    ? humanPlayer.cards.map((card, idx) => (
-                        <button
-                          key={`${card.design}-${card.value}`}
-                          type="button"
-                          onClick={() => canDiscard && setSelectedDiscard(idx)}
-                          aria-pressed={canDiscard ? selectedDiscard === idx : undefined}
-                          className={canDiscard ? 'cursor-pointer' : 'cursor-default'}
-                          disabled={!canDiscard}
-                          style={selectedCardStyle(canDiscard && selectedDiscard === idx)}
-                        >
-                          <AnimatedCard card={card} width={cardWidth} />
-                        </button>
-                      ))
+                    ? humanPlayer.cards.map((card, idx) => {
+                        const isSelected = selectedDiscards.includes(idx);
+                        return (
+                          <button
+                            key={`${card.design}-${card.value}`}
+                            type="button"
+                            onClick={() => toggleDiscard(idx)}
+                            aria-pressed={canDiscard ? isSelected : undefined}
+                            className={canDiscard ? 'cursor-pointer' : 'cursor-default'}
+                            disabled={!canDiscard}
+                            style={selectedCardStyle(canDiscard && isSelected)}
+                          >
+                            <AnimatedCard card={card} width={cardWidth} />
+                          </button>
+                        );
+                      })
                     : !humanPlayer.folded &&
                       Array.from({ length: state?.initialDealCount ?? 3 }).map((_, i) => (
                         <AnimatedCardBack key={i} width={cardWidth} />
@@ -418,20 +448,54 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
             {/* Discard controls */}
             {canDiscard && (
               <div className="mb-2 text-center" data-testid="discard-controls" data-tutorial="pn-discard-controls">
-                <p className="text-ds-text-primary mb-2">{t('discard.select')}</p>
-                <button
-                  type="button"
-                  className={`${btnPrimary} min-w-[90px]`}
-                  disabled={loading || selectedDiscard === null}
-                  onClick={() => {
-                    if (selectedDiscard !== null) {
-                      apiExec('discard', undefined, { cardIdx: selectedDiscard });
-                      setSelectedDiscard(null);
-                    }
-                  }}
-                >
-                  {t('discard.prompt')}
-                </button>
+                {discardConfirming && selectedDiscards.length === discardCount && humanPlayer ? (
+                  <div data-testid="discard-confirm">
+                    <p className="text-ds-text-primary mb-2">
+                      {t('discard.confirm', {
+                        card: selectedDiscards.map((i) => cardAlt(humanPlayer.cards[i])).join(', '),
+                      })}
+                    </p>
+                    <div className="flex justify-center gap-2">
+                      <button
+                        type="button"
+                        className={`${btnPrimary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => {
+                          apiExec('discard', undefined, { cardIdxs: [...selectedDiscards] });
+                          setSelectedDiscards([]);
+                          setDiscardConfirming(false);
+                        }}
+                      >
+                        {t('discard.confirmYes')}
+                      </button>
+                      <button
+                        type="button"
+                        className={`${btnSecondary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => setDiscardConfirming(false)}
+                      >
+                        {t('discard.confirmNo')}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-ds-text-primary mb-2">{t('discard.select')}</p>
+                    {discardCount > 1 && (
+                      <p className="text-ds-text-muted text-xs mb-2" data-testid="discard-count">
+                        {t('discard.selectedCount', { n: selectedDiscards.length, total: discardCount })}
+                      </p>
+                    )}
+                    <button
+                      type="button"
+                      className={`${btnPrimary} min-w-[90px]`}
+                      disabled={loading || selectedDiscards.length !== discardCount}
+                      onClick={() => setDiscardConfirming(true)}
+                    >
+                      {t('discard.prompt')}
+                    </button>
+                  </>
+                )}
               </div>
             )}
 

@@ -294,3 +294,16 @@ func TestCribbageCuiController_Exec(t *testing.T) {
 		assert.Contains(t, result, "'help' でコマンド一覧を表示します。")
 	})
 }
+
+func TestCribbageCuiController_Hint(t *testing.T) {
+	mockOutput := "hint output"
+	for _, cmd := range []string{"h", "hint"} {
+		t.Run("hint command "+cmd, func(t *testing.T) {
+			m := new(mockUsecases.MockCribbageInteractor)
+			m.On("Hint").Return(mockOutput)
+			c := controller.NewCribbageCuiController(m)
+			assert.Equal(t, mockOutput, c.Exec(cmd))
+			m.AssertCalled(t, "Hint")
+		})
+	}
+}

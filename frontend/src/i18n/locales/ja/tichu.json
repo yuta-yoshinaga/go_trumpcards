@@ -1,5 +1,8 @@
 {
   "title": "ティチュー",
+  "settings": {
+    "cpuDifficulty": "CPUの難易度"
+  },
   "label": {
     "table": "場",
     "bombs": "爆弾",

@@ -53,6 +53,7 @@ function BlackJackSwitchPageContent() {
 
   const [betAmount, setBetAmount] = useState(100);
   const [switchPreview, setSwitchPreview] = useState(false);
+  const [alwaysPreview, setAlwaysPreview] = useState(false);
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
   const { state, loading, error, exec: execApi, retry } = useGameApi(blackjackswitchApi.exec);
@@ -104,7 +105,7 @@ function BlackJackSwitchPageContent() {
   const canDoubleDown = isActionPhase && currentHand && currentHand.cards.length === 2;
 
   const previewScores =
-    isSwitchPhase && switchPreview && state.hands.length >= 2
+    isSwitchPhase && (switchPreview || alwaysPreview) && state.hands.length >= 2
       ? blackjackSwitchPreviewScores(state.hands[0].cards, state.hands[1].cards)
       : null;
 
@@ -234,7 +235,22 @@ function BlackJackSwitchPageContent() {
 
           <GameFooter className={`${gameTheme.blackjackswitch.footer} px-4 pt-3`}>
             <ErrorAlert message={error} onRetry={retry} />
-            <SettingsPanel title={tc('settings.title')} groups={[]} />
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[
+                {
+                  items: [
+                    {
+                      type: 'checkbox' as const,
+                      id: 'blackjackswitch-always-preview',
+                      label: t('label.alwaysPreview'),
+                      checked: alwaysPreview,
+                      onToggle: setAlwaysPreview,
+                    },
+                  ],
+                },
+              ]}
+            />
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2">
                 <ChipBetInput
@@ -259,6 +275,9 @@ function BlackJackSwitchPageContent() {
                   onMouseLeave={() => setSwitchPreview(false)}
                   onFocus={() => setSwitchPreview(true)}
                   onBlur={() => setSwitchPreview(false)}
+                  onTouchStart={() => setSwitchPreview(true)}
+                  onTouchEnd={() => setSwitchPreview(false)}
+                  onTouchCancel={() => setSwitchPreview(false)}
                   data-testid="switch-button"
                   disabled={loading}
                 >

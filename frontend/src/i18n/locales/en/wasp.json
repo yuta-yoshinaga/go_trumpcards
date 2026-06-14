@@ -15,6 +15,7 @@
   "autoComplete": "Auto Complete",
   "undo": "Undo",
   "empty": "Empty",
+  "anyCard": "Any card",
   "gameClear": "Game Clear! Moves: {{moveCount}}",
   "gameOver": "Game Over",
   "playing": "Playing",
@@ -28,7 +29,7 @@
     "dealStock": "You can deal from the stock"
   },
   "tutorial": {
-    "tableau": "Seven columns are dealt here. Click or drag any face-up card (with everything on top of it) to move it.",
+    "tableau": "Seven columns are dealt here. Click or drag any face-up card (with everything on top of it) to move it. Wasp's signature rule: an empty column accepts any card (or pile) you like. Unlike Scorpion, this is the key to clearing the game.",
     "stock": "Stock has 3 cards. Use the Deal button to add one card to each of columns 0-2. Empty columns block deal.",
     "controls": "Action buttons: hint, give up, undo.",
     "resetButton": "Start a new game."

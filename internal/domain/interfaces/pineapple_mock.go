@@ -31,6 +31,12 @@ func (_m *MockPineappleGame) DiscardCard(cardIdx int) error {
 	return ret.Error(0)
 }
 
+// DiscardCards モック
+func (_m *MockPineappleGame) DiscardCards(cardIdxs []int) error {
+	ret := _m.Called(cardIdxs)
+	return ret.Error(0)
+}
+
 // IsDiscardPhase モック
 func (_m *MockPineappleGame) IsDiscardPhase() bool {
 	ret := _m.Called()

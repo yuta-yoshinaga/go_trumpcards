@@ -8,12 +8,11 @@
     "ante": "Ante",
     "acesUp": "Aces Up",
     "play": "Play Bet",
-    "playMultiplier": "Play Mul",
     "handRank": "Hand"
   },
   "button": {
     "bet": "Bet",
-    "play": "Play",
+    "playMult": "Play {{mult}}x",
     "fold": "Fold",
     "reset": "Reset"
   },

@@ -94,6 +94,32 @@ func TestSeahavenTowersSolver_IterationLimitReturnsTrue(t *testing.T) {
 	s := NewSeahavenTowers(NewTrumpCards(0))
 	s.Reset()
 
+	// Deterministic far-from-solved board: each of the first four columns
+	// exposes an Ace (a guaranteed foundation move → ≥1 successor at the first
+	// node), with the remaining 44 cards buried across the other columns. This
+	// guarantees the search reaches a second loop iteration regardless of
+	// shuffle, so the maxIterations=1 cap is hit (returns true, iterations > 1).
+	// (A shuffled Reset board occasionally had no move or solved within one
+	// iteration, which made this flake on CI.)
+	var tableau [SeahavenTowersTableauCnt][]*Card
+	for suit := 1; suit <= 4; suit++ {
+		// King buried, Ace exposed on top of columns 0..3.
+		tableau[suit-1] = []*Card{NewCard(suit, CardValueMax, false), NewCard(suit, 1, false)}
+	}
+	scatterCol := 4
+	for suit := 1; suit <= 4; suit++ {
+		for val := 2; val < CardValueMax; val++ {
+			tableau[scatterCol] = append(tableau[scatterCol], NewCard(suit, val, false))
+			scatterCol++
+			if scatterCol >= SeahavenTowersTableauCnt {
+				scatterCol = 4
+			}
+		}
+	}
+	s.SetTableau(tableau)
+	s.SetFreeCells([SeahavenTowersCellCnt]*Card{})
+	s.SetFoundation([SeahavenTowersFoundationCnt][]*Card{})
+
 	solver := newSeahavenTowersSolver(s)
 	solver.maxIterations = 1
 

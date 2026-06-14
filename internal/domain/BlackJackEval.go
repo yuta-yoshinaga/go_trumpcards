@@ -193,6 +193,7 @@ func (b *BlackJack) GameJudgmentForHand(handIdx int) GameResult {
 
 // resolvePayouts 全ハンドの精算
 func (b *BlackJack) resolvePayouts() {
+	b.bonusKeys = nil // 当ラウンド分のボーナスを再集計
 	dealerScore := b.dealer.GetScore()
 	dealerBJ := b.dealer.GetCardsSize() == 2 && dealerScore == 21
 
@@ -214,6 +215,7 @@ func (b *BlackJack) resolvePayouts() {
 		bonus := b.payoutHandWithVariant(b.player, hand, hand.IsFromSplit(), result)
 		if bonus != nil {
 			b.appendLog(i, "bonus", bonus.NameKey, nil)
+			b.bonusKeys = append(b.bonusKeys, bonus.NameKey)
 		}
 	}
 }

@@ -256,11 +256,14 @@ describe('ShortDeckPage', () => {
   });
 
   // ---- info bar ----
-  it('shows pot and dealer index', async () => {
+  it('shows pot and the dealer name via playerName (CPU dealer)', async () => {
     mockExec.mockResolvedValue(preFlopState);
     renderWithProviders(<ShortDeckPage />);
     await waitFor(() => expect(screen.getByText(/ポット:/)).toBeInTheDocument());
     expect(screen.getByText(/ディーラー:/)).toBeInTheDocument();
+    // Dealer renders via playerName (CPU 3), not the raw index.
+    expect(screen.getAllByText('CPU 3').length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Player 3|プレイヤー 3/)).not.toBeInTheDocument();
   });
 
   // ---- community cards ----
@@ -327,6 +330,14 @@ describe('ShortDeckPage', () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<ShortDeckPage />);
     await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
+  });
+
+  it('appends the Short Deck rank-override marker to the human hand-name badge at showdown', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<ShortDeckPage />);
+    const marker = await screen.findByTestId('shortdeck-handname-rule');
+    expect(marker).toHaveAttribute('title', 'ショートデック特殊ルール：フラッシュ > フルハウス');
+    expect(marker).toHaveAttribute('aria-label', 'ショートデック特殊ルール：フラッシュ > フルハウス');
   });
 
   it('shows CPU cards face-up during showdown when not folded', async () => {

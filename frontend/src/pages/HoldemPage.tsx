@@ -44,6 +44,7 @@ import { HOLDEM_HELP, parseHoldemCommand } from '../utils/cli/commands/holdemCom
 import { formatHoldemState } from '../utils/cli/formatters/holdemFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { holdemBestFive } from '../utils/holdemBestFive';
+import { findPlayerName } from '../utils/playerUtils';
 
 /** Texas Hold'em tutorial step definitions. */
 const HE_TUTORIAL_STEPS: TutorialStep[] = [
@@ -253,7 +254,7 @@ function HoldemPageContent() {
             </strong>
           </span>
           <span>
-            {tc('label.dealer')} <strong>Player {state?.dealerIdx ?? 0}</strong>
+            {tc('label.dealer')} <strong>{findPlayerName(state.players, state.dealerIdx)}</strong>
           </span>
           {state?.tournamentMode && (
             <span>{t('handNumber', { count: state.handCount, level: state.blindLevelHands })}</span>

@@ -345,7 +345,7 @@ function CanfieldPageContent() {
                           onClick={() => handleMoveWasteToTableau(i)}
                           disabled={!topWaste || loading}
                         >
-                          W→{i}
+                          {t('moveWasteToCol', { col: i })}
                         </button>
                         <button
                           type="button"
@@ -353,7 +353,7 @@ function CanfieldPageContent() {
                           onClick={() => handleMoveReserveToTableau(i)}
                           disabled={!topReserve || loading}
                         >
-                          R→{i}
+                          {t('moveReserveToCol', { col: i })}
                         </button>
                         <button
                           type="button"
@@ -361,7 +361,7 @@ function CanfieldPageContent() {
                           onClick={() => handleMoveTableauToFoundation(i)}
                           disabled={col.length === 0 || loading}
                         >
-                          →F
+                          {t('moveToFoundation')}
                         </button>
                         {state.tableau.map((_, j) =>
                           j === i ? null : (
@@ -372,7 +372,7 @@ function CanfieldPageContent() {
                               onClick={() => handleMoveTableauToTableau(i, col.length - 1, j)}
                               disabled={col.length === 0 || loading}
                             >
-                              →T{j}
+                              {t('moveToCol', { col: j })}
                             </button>
                           ),
                         )}

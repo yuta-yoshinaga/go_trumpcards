@@ -15,7 +15,16 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        launchOptions: {
+          // CI runners give Chromium a tiny /dev/shm; once it fills during the
+          // long single-worker run the browser process crashes mid-test
+          // ("Target page, context or browser has been closed" — see #2369).
+          // Routing shared memory to /tmp instead removes the flaky crash.
+          args: process.env.CI ? ['--disable-dev-shm-usage'] : [],
+        },
+      },
     },
   ],
   webServer: {

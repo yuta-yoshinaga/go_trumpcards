@@ -89,6 +89,14 @@ describe('BelotePage', () => {
     expect(screen.getByRole('button', { name: 'パス' })).toBeInTheDocument();
   });
 
+  it('renders the face-up card as a card image (not text) during bidding', async () => {
+    renderWithProviders(<BelotePage />);
+    // faceUpCard is J♥ → AnimatedCard/CardImage exposes it via alt text.
+    expect(await screen.findByAltText('♥ J')).toBeInTheDocument();
+    // The old plain-text "HEART 11" rendering is gone.
+    expect(screen.queryByText(/HEART 11/)).not.toBeInTheDocument();
+  });
+
   it('dispatches orderup when "取る" is clicked', async () => {
     renderWithProviders(<BelotePage />);
     await waitFor(() => screen.getByRole('button', { name: '取る' }));

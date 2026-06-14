@@ -288,11 +288,14 @@ describe('BigOPage', () => {
   });
 
   // ---- info bar ----
-  it('shows pot and dealer index', async () => {
+  it('shows pot and the dealer name via playerName (CPU dealer)', async () => {
     mockExec.mockResolvedValue(preFlopState);
     renderWithProviders(<BigOPage />);
     await waitFor(() => expect(screen.getByText(/ポット:/)).toBeInTheDocument());
     expect(screen.getByText(/ディーラー:/)).toBeInTheDocument();
+    // Dealer renders via playerName (CPU 3), not the raw index.
+    expect(screen.getAllByText('CPU 3').length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Player 3|プレイヤー 3/)).not.toBeInTheDocument();
   });
 
   // ---- community cards ----
@@ -361,6 +364,15 @@ describe('BigOPage', () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<BigOPage />);
     await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
+  });
+
+  it('highlights exactly 2 hole + 3 board cards as the best-5 at showdown', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    const { container } = renderWithProviders(<BigOPage />);
+    await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
+    // Big O must-use-2 rule (2 of 5 hole) → exactly 2 hole and 3 board highlighted.
+    expect(container.querySelectorAll('[data-best5-hole]')).toHaveLength(2);
+    expect(container.querySelectorAll('[data-best5-board]')).toHaveLength(3);
   });
 
   it('does not show CPU hand name badge when CPU is folded in showdown', async () => {

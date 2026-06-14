@@ -14,6 +14,8 @@ type PineappleGame interface {
 	PlayerAction(action, amount, humanPlayMs int) error
 	// DiscardCard 人間プレイヤーが手札から1枚をディスカードする
 	DiscardCard(cardIdx int) error
+	// DiscardCards 人間プレイヤーが手札から複数枚を一括でディスカードする
+	DiscardCards(cardIdxs []int) error
 	// IsDiscardPhase ディスカードフェーズかどうか
 	IsDiscardPhase() bool
 	// GetPhase 現在のフェーズを取得する

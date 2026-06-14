@@ -93,6 +93,12 @@ describe('CanastaPage', () => {
     mockExec.mockResolvedValue(drawPhaseState);
   });
 
+  it('renders skeleton before first API response', () => {
+    mockExec.mockReturnValue(new Promise(() => undefined));
+    renderWithProviders(<CanastaPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<CanastaPage />);
     await waitFor(() =>

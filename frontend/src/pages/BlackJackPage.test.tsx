@@ -161,6 +161,16 @@ beforeEach(() => {
 });
 
 describe('BlackJackPage', () => {
+  it('shows the out-of-chips restart button instead of bet controls at zero chips', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, player: { chips: 0 } });
+    renderWithProviders(<BlackJackPage />);
+    const restart = await screen.findByRole('button', { name: /チップ不足/ });
+    expect(screen.queryByRole('button', { name: 'ベット' })).not.toBeInTheDocument();
+    mockExec.mockClear();
+    fireEvent.click(restart);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, expect.anything()));
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<BlackJackPage />);
@@ -258,6 +268,20 @@ describe('BlackJackPage', () => {
     mockExec.mockResolvedValue(endPhaseState);
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+  });
+
+  it('shows variant bonus badges at end phase when bonuses are present', async () => {
+    mockExec.mockResolvedValue({ ...endPhaseState, bonuses: ['spanish21.bonus.777.spade'] });
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByTestId('bj-bonus-badges')).toBeInTheDocument());
+    expect(screen.getAllByTestId('bj-bonus-badge')).toHaveLength(1);
+  });
+
+  it('shows no bonus badges at end phase without bonuses', async () => {
+    mockExec.mockResolvedValue(endPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    expect(screen.queryByTestId('bj-bonus-badges')).not.toBeInTheDocument();
   });
 
   it('shows message overlay when message is non-empty', async () => {

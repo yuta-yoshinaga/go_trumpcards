@@ -4,6 +4,7 @@ import { actionLogApi, paigowApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, PaiGowResponse } from '../types/card';
+import { cardAlt } from '../utils/cardAlt';
 import { PaiGowPage } from './PaiGowPage';
 
 vi.mock('../hooks/useGameHint');
@@ -16,6 +17,10 @@ vi.mock('../api/gameApi', () => ({
 const mockExec = vi.mocked(paigowApi.exec);
 
 const card = (design: CardDesign, value: number): Card => ({ design, value });
+
+/** The 7 SET_HANDS fixture card buttons, in deal order, located by their cardAlt names. */
+const getCardButtons = () =>
+  setHandsPhaseState.playerCards.map((c) => screen.getByRole('button', { name: cardAlt(c) }));
 
 const betPhaseState: PaiGowResponse = {
   playerCards: [],
@@ -137,7 +142,17 @@ describe('PaiGowPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
     await waitFor(() => expect(screen.getByRole('button', { name: 'セット' })).toBeInTheDocument());
     // 7 card buttons should be present
-    expect(screen.getAllByRole('button', { name: /Card \d/ }).length).toBe(7);
+    expect(getCardButtons()).toHaveLength(7);
+  });
+
+  it('labels each card button with its cardAlt name, not a raw index', async () => {
+    mockExec.mockResolvedValue(setHandsPhaseState);
+    renderWithProviders(<PaiGowPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'セット' })).toBeInTheDocument());
+    for (const c of setHandsPhaseState.playerCards) {
+      expect(screen.getByRole('button', { name: cardAlt(c) })).toHaveAttribute('aria-pressed', 'false');
+    }
+    expect(screen.queryByRole('button', { name: /Card \d/ })).not.toBeInTheDocument();
   });
 
   it('set button is disabled until 2 cards are selected', async () => {
@@ -148,7 +163,7 @@ describe('PaiGowPage', () => {
     expect(screen.getByRole('button', { name: 'セット' })).toBeDisabled();
 
     // Select 2 cards
-    const cardButtons = screen.getAllByRole('button', { name: /Card \d/ });
+    const cardButtons = getCardButtons();
     fireEvent.click(cardButtons[0]);
     fireEvent.click(cardButtons[1]);
 
@@ -161,7 +176,7 @@ describe('PaiGowPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'セット' })).toBeInTheDocument());
 
     // Pick a non-foul split: low = [C5, S3] keeps the 13 in the high hand.
-    const cardButtons = screen.getAllByRole('button', { name: /Card \d/ });
+    const cardButtons = getCardButtons();
     fireEvent.click(cardButtons[3]);
     fireEvent.click(cardButtons[5]);
 
@@ -175,7 +190,7 @@ describe('PaiGowPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'セット' })).toBeInTheDocument());
 
     // Low = [D13, S3] (top 13); high = [S10, H11, C5, H7, D9] (top 11) → foul.
-    const cardButtons = screen.getAllByRole('button', { name: /Card \d/ });
+    const cardButtons = getCardButtons();
     fireEvent.click(cardButtons[2]);
     fireEvent.click(cardButtons[5]);
 
@@ -188,7 +203,7 @@ describe('PaiGowPage', () => {
     renderWithProviders(<PaiGowPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'セット' })).toBeInTheDocument());
 
-    const cardButtons = screen.getAllByRole('button', { name: /Card \d/ });
+    const cardButtons = getCardButtons();
     fireEvent.click(cardButtons[0]);
     fireEvent.click(cardButtons[1]);
     // Deselect first card
@@ -203,7 +218,7 @@ describe('PaiGowPage', () => {
     renderWithProviders(<PaiGowPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'セット' })).toBeInTheDocument());
 
-    const cardButtons = screen.getAllByRole('button', { name: /Card \d/ });
+    const cardButtons = getCardButtons();
     fireEvent.click(cardButtons[0]);
     fireEvent.click(cardButtons[1]);
     fireEvent.click(cardButtons[2]); // should be ignored

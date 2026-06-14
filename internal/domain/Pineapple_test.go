@@ -513,3 +513,59 @@ func TestPineapple_ActionLog(t *testing.T) {
 	assert.NotNil(t, p.GetActionLog())
 	assert.Greater(t, len(p.GetActionLog()), 0)
 }
+
+// TestPineapple_DiscardCards はIrish Pokerの2枚一括ディスカードを検証する。
+func TestPineapple_DiscardCards(t *testing.T) {
+	setup := func() *Pineapple {
+		p := newTestPineapple()
+		p.phase = PineapplePhaseDiscard
+		p.discardDone = make([]bool, len(p.players))
+		for i := 1; i < len(p.players); i++ {
+			p.discardDone[i] = true // CPUは済みにして人間のみ精算対象
+		}
+		p.players[0].Reset()
+		p.players[0].AddCard(NewCard(CardDesignSpade, 1, false))  // idx0
+		p.players[0].AddCard(NewCard(CardDesignSpade, 13, false)) // idx1
+		p.players[0].AddCard(NewCard(CardDesignHeart, 2, false))  // idx2
+		p.players[0].AddCard(NewCard(CardDesignClover, 9, false)) // idx3
+		return p
+	}
+
+	t.Run("discards two cards at once down to two", func(t *testing.T) {
+		p := setup()
+		err := p.DiscardCards([]int{2, 3}) // 弱い2枚を捨てる
+		assert.NoError(t, err)
+		assert.Equal(t, 2, p.players[0].GetCardsSize())
+		assert.True(t, p.discardDone[0])
+		// 残りは A♠ と K♠
+		assert.Equal(t, 1, p.players[0].GetCard(0).GetValue())
+		assert.Equal(t, 13, p.players[0].GetCard(1).GetValue())
+	})
+
+	t.Run("rejects duplicate indices", func(t *testing.T) {
+		p := setup()
+		err := p.DiscardCards([]int{2, 2})
+		assert.Error(t, err)
+		assert.Equal(t, 4, p.players[0].GetCardsSize()) // 変化なし
+	})
+
+	t.Run("rejects out-of-range index", func(t *testing.T) {
+		p := setup()
+		err := p.DiscardCards([]int{0, 9})
+		assert.Error(t, err)
+	})
+
+	t.Run("rejects empty index list", func(t *testing.T) {
+		p := setup()
+		err := p.DiscardCards([]int{})
+		assert.Error(t, err)
+	})
+
+	t.Run("DiscardCard delegates to DiscardCards", func(t *testing.T) {
+		p := setup()
+		err := p.DiscardCard(3) // 4→3枚, まだ済みではない
+		assert.NoError(t, err)
+		assert.Equal(t, 3, p.players[0].GetCardsSize())
+		assert.False(t, p.discardDone[0])
+	})
+}

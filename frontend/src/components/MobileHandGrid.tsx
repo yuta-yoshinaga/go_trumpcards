@@ -1,6 +1,6 @@
 import { useWindowWidth } from '../hooks/useCardDimensions';
 import { useReducedMotion } from '../hooks/useReducedMotion';
-import { expansionMargin, focusRingCard, selectedCardStyle } from '../styles/cardStyles';
+import { expansionMargin, focusRingCard, highlightCardStyle, selectedCardStyle } from '../styles/cardStyles';
 import type { Card } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
 import { CardImage } from './CardImage';
@@ -42,6 +42,11 @@ interface MobileHandGridProps {
   restrictedTooltip?: string;
   /** Optional badge to render in the top-left corner of a card (e.g. game-specific role marker). */
   cardBadgeFor?: (idx: number) => { glyph: string; title: string } | null;
+  /**
+   * Optional indices to highlight as actionable (e.g. exposable cards). Highlighted
+   * cards get a warning border; the rest are dimmed when this list is provided.
+   */
+  highlightIndices?: number[];
 }
 
 /**
@@ -58,11 +63,13 @@ export function MobileHandGrid({
   validIndices,
   restrictedTooltip,
   cardBadgeFor,
+  highlightIndices,
 }: MobileHandGridProps) {
   const viewportWidth = useWindowWidth();
   const reduced = useReducedMotion();
   const buttonWidth = cardWidth + BUTTON_EXTRA;
   const isRestricted = (idx: number): boolean => validIndices != null && !validIndices.includes(idx);
+  const isHighlighted = (idx: number): boolean => highlightIndices?.includes(idx) ?? false;
 
   const useTwoRows = cards.length >= TWO_ROW_THRESHOLD;
   const splitAt = useTwoRows ? Math.ceil(cards.length / 2) : cards.length;
@@ -88,6 +95,8 @@ export function MobileHandGrid({
                 selectedIndices.includes(globalIdx) || (i > 0 && selectedIndices.includes(globalIdx - 1));
               const ml = i === 0 ? 0 : isExpanded ? expansionMargin(true, overlap) : overlap;
               const restricted = isRestricted(globalIdx);
+              const highlighted = isHighlighted(globalIdx);
+              const dimmed = highlightIndices != null && !highlighted && !isSelected && !restricted;
               return (
                 <button
                   type="button"
@@ -102,13 +111,18 @@ export function MobileHandGrid({
                   // need to reach the tooltip that explains why the card is illegal.
                   aria-disabled={restricted || undefined}
                   title={restricted ? restrictedTooltip : undefined}
-                  className={`${focusRingCard} ${restricted ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`${focusRingCard} ${restricted ? 'opacity-50 cursor-not-allowed' : ''} ${dimmed ? 'opacity-60' : ''}`}
                   style={{
                     background: 'none',
                     padding: 0,
                     borderRadius: 8,
                     position: 'relative',
-                    ...selectedCardStyle(isSelected),
+                    // Selection takes visual priority; otherwise show the highlight border.
+                    ...(isSelected
+                      ? selectedCardStyle(true)
+                      : highlighted
+                        ? highlightCardStyle()
+                        : selectedCardStyle(false)),
                     transition: 'transform 0.15s, border 0.15s, box-shadow 0.15s, margin-left 0.15s',
                     boxSizing: 'border-box',
                     marginLeft: ml,

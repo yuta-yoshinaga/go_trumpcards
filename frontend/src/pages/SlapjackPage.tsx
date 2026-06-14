@@ -250,6 +250,10 @@ function SlapjackPageContent() {
                     {t('slapjack.jackOnTop')}
                   </div>
                 )}
+                {/* Screen-reader announcement for the flash slap chance. */}
+                <div className="sr-only" aria-live="assertive" aria-atomic="true" data-testid="sj-jack-announce">
+                  {state.isTopJack ? t('slapjack.jackAnnounce') : ''}
+                </div>
               </div>
             </div>
 
@@ -315,7 +319,7 @@ function SlapjackPageContent() {
                 type="button"
                 onClick={handleStep}
                 disabled={loading || isGameEnd || !state.isHumanTurn}
-                className="px-6 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+                className="min-h-[44px] min-w-[44px] px-6 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed"
                 data-testid="step-button"
                 data-tutorial="sj-step-button"
               >
@@ -326,7 +330,7 @@ function SlapjackPageContent() {
                 type="button"
                 onClick={handleSlap}
                 disabled={loading || isGameEnd || state.centerPileSize === 0}
-                className={`px-6 py-2 rounded-lg text-white font-bold disabled:opacity-40 disabled:cursor-not-allowed ${
+                className={`min-h-[44px] min-w-[44px] px-6 py-2 rounded-lg text-white font-bold disabled:opacity-40 disabled:cursor-not-allowed ${
                   state.isTopJack
                     ? 'bg-ds-warning hover:bg-ds-warning-hover animate-pulse'
                     : 'bg-ds-error hover:bg-ds-error'

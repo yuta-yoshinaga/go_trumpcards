@@ -32,6 +32,8 @@ type ApiArgs = {
   config?: { cpuDifficulty?: number };
 };
 
+const BOURRE_PENALTY_WARN_THRESHOLD = 10;
+
 const TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="bourre-hand"]', messageKey: 'tutorial.intro', placement: 'top', advanceOn: 'next' },
   { target: '[data-tutorial="bourre-controls"]', messageKey: 'tutorial.decide', placement: 'top', advanceOn: 'next' },
@@ -309,6 +311,23 @@ function BourrePageContent() {
               </button>
             )}
           </div>
+
+          {phase === 'decide' && isHumanTurn && (
+            <p
+              data-testid="bourre-decide-summary"
+              className={`mt-1 text-center text-xs ${
+                state.pot + state.carryPot >= BOURRE_PENALTY_WARN_THRESHOLD
+                  ? 'text-ds-warning font-medium'
+                  : 'text-ds-text-muted'
+              }`}
+            >
+              {t('decideSummary', {
+                pot: state.pot,
+                penalty: state.pot + state.carryPot,
+                defaultValue: 'Pot: {{pot}} chips | Bourré penalty: {{penalty}} chips',
+              })}
+            </p>
+          )}
 
           {/* Human hand */}
           {humanPlayer && !humanPlayer.isFinished && humanPlayer.cards.length > 0 && (

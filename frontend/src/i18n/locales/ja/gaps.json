@@ -19,7 +19,6 @@
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
   "gameOver": "ゲームオーバー",
   "noHint": "ヒントはありません",
-  "hintAvailable": "ヒントがあります",
   "noRedealsLeft": "再配りはもう使えません",
   "landscapeBanner": "横向きにすると操作しやすくなります",
   "tutorial": {

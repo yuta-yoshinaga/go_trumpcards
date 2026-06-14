@@ -25,6 +25,7 @@
   "passButton": "Pass",
   "declareTrumpPrompt": "Choose a trump suit:",
   "exchangeButton": "Exchange ({{count}}/6)",
+  "kittyProgress": "Selected: {{count}} / 6",
   "playButton": "Play",
   "nextTrickButton": "Next trick",
   "nextRoundButton": "Next round",

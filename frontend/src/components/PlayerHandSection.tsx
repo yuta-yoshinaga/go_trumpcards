@@ -1,4 +1,4 @@
-import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
+import { focusRingCard, highlightCardStyle, selectedCardStyle } from '../styles/cardStyles';
 import type { Card } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
 import { MobileHandGrid } from './MobileHandGrid';
@@ -32,6 +32,12 @@ export interface PlayerHandSectionProps {
   validIndices?: number[];
   /** Tooltip surfaced on cards that are present but disabled by `validIndices`. */
   restrictedTooltip?: string;
+  /**
+   * Optional indices to visually highlight as actionable (e.g. exposable cards).
+   * Highlighted cards get a warning border; when this list is provided, the
+   * remaining (non-highlighted, non-selected) cards are dimmed to draw the eye.
+   */
+  highlightIndices?: number[];
 }
 
 /**
@@ -48,9 +54,11 @@ export function PlayerHandSection({
   dataTutorialPrefix,
   validIndices,
   restrictedTooltip,
+  highlightIndices,
 }: PlayerHandSectionProps) {
   const dataTutorial = `${dataTutorialPrefix}-player-hand`;
   const isRestricted = (idx: number): boolean => validIndices != null && !validIndices.includes(idx);
+  const isHighlighted = (idx: number): boolean => highlightIndices?.includes(idx) ?? false;
 
   if (isMobile) {
     return (
@@ -62,6 +70,7 @@ export function PlayerHandSection({
         dataTutorial={dataTutorial}
         validIndices={validIndices}
         restrictedTooltip={restrictedTooltip}
+        highlightIndices={highlightIndices}
       />
     );
   }
@@ -71,6 +80,10 @@ export function PlayerHandSection({
       {humanPlayer.cards.map((card, idx) => {
         const isSelected = selectedCardIndices.includes(idx);
         const restricted = isRestricted(idx);
+        const highlighted = isHighlighted(idx);
+        // When a highlight list is active, dim the non-highlighted (and unselected) cards.
+        // Skip already-restricted cards so the two opacity classes never collide.
+        const dimmed = highlightIndices != null && !highlighted && !isSelected && !restricted;
         return (
           <button
             type="button"
@@ -85,12 +98,13 @@ export function PlayerHandSection({
             // need to reach the tooltip that explains why the card is illegal.
             aria-disabled={restricted || undefined}
             title={restricted ? restrictedTooltip : undefined}
-            className={`transition-transform ${focusRingCard} ${restricted ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`transition-transform ${focusRingCard} ${restricted ? 'opacity-50 cursor-not-allowed' : ''} ${dimmed ? 'opacity-60' : ''}`}
             style={{
               background: 'none',
               padding: 0,
               borderRadius: 8,
-              ...selectedCardStyle(isSelected),
+              // Selection takes visual priority; otherwise show the highlight border.
+              ...(isSelected ? selectedCardStyle(true) : highlighted ? highlightCardStyle() : selectedCardStyle(false)),
               boxSizing: 'border-box',
             }}
           >

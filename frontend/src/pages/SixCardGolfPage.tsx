@@ -26,6 +26,7 @@ import type { SixCardGolfResponse, SixCardGolfSlot } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { sixCardGolfColumnScores } from '../utils/sixCardGolfColumnScores';
 
 const runner = sixcardgolfApi;
 
@@ -264,6 +265,21 @@ function SixCardGolfPageContent() {
                   />
                 ))}
               </div>
+              {player.isHuman && (phase === SCG_PHASE_ROUND_OVER || isGameEnd) && (
+                <div className="mt-1 grid grid-cols-3 gap-1" data-testid="scg-column-scores">
+                  {sixCardGolfColumnScores(player.grid).map((col, cIdx) => (
+                    <span
+                      key={cIdx}
+                      data-testid={`scg-column-score-${cIdx}`}
+                      className={`rounded px-1 py-0.5 text-center font-medium text-xs ${
+                        col.isPair ? 'bg-ds-success text-white' : 'bg-ds-surface-elevated text-ds-text-muted'
+                      }`}
+                    >
+                      {t('label.columnScore', { score: col.score })}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
 

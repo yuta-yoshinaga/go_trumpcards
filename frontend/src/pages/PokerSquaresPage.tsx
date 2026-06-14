@@ -12,7 +12,7 @@ import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { CARD_DIMENSIONS, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -56,7 +56,20 @@ export const PokerSquaresPage = withTutorial(PokerSquaresPageContent, 'pokersqua
 function PokerSquaresPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('pokersquares');
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth: baseCardWidth, isMobile } = useCardDimensions();
+  const windowWidth = useWindowWidth();
+  // On mobile the 5-column board plus its row-score column wastes horizontal
+  // space at the fixed 40px card width. Grow cards to fill the viewport width
+  // (accounting for page padding, inter-card gaps, and the row-score column),
+  // clamped to [baseCardWidth, desktop width] so they never shrink below the
+  // current size or overflow. Desktop keeps the fixed preset.
+  const PS_BOARD_CHROME_PX = 112;
+  const cardWidth = isMobile
+    ? Math.max(
+        baseCardWidth,
+        Math.min(CARD_DIMENSIONS.desktop.cardWidth, Math.floor((windowWidth - PS_BOARD_CHROME_PX) / 5)),
+      )
+    : baseCardWidth;
   const { playSound } = useSound();
   const { state, loading, error, exec: execApi, retry } = useGameApi(pokersquaresApi.exec);
   const {

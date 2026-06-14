@@ -23,6 +23,7 @@
     "end": "Result"
   },
   "sideBet": {
+    "title": "Side bets (optional)",
     "playerPair": "Player Pair",
     "bankerPair": "Banker Pair",
     "pair": "Pair",

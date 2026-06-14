@@ -92,4 +92,20 @@ describe('WhistPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, expect.any(Object)));
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
+
+  it('color-codes the human player team badge (team 0 → info)', async () => {
+    renderWithProviders(<WhistPage />);
+    const humanTeam = await screen.findByTestId('whist-human-team');
+    expect(humanTeam.querySelector('span')).toHaveClass('text-ds-info');
+  });
+
+  it('color-codes the score-table team rows (team 0 info, team 1 error)', async () => {
+    renderWithProviders(<WhistPage />);
+    await waitFor(() => expect(screen.getAllByText('チーム 0').length).toBeGreaterThan(0));
+    // Score-table cells render the team label inside a colored chip span.
+    const team0Chips = screen.getAllByText('チーム 0').filter((el) => el.className.includes('text-ds-info'));
+    const team1Chips = screen.getAllByText('チーム 1').filter((el) => el.className.includes('text-ds-error'));
+    expect(team0Chips.length).toBeGreaterThan(0);
+    expect(team1Chips.length).toBeGreaterThan(0);
+  });
 });

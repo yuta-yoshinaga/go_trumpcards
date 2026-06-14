@@ -16,6 +16,7 @@
   "round": "Round {{n}}",
   "drawPile": "Draw pile: {{count}}",
   "discardTop": "Discard",
+  "playCondition": "Playable: {{suit}} or {{rank}}",
   "cards": "{{count}} cards",
   "cumulativeScore": "Total: {{score}}",
   "roundScore": "Round: {{score}}",

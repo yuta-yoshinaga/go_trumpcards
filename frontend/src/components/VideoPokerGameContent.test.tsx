@@ -8,7 +8,11 @@ import { VideoPokerGameContent } from './VideoPokerGameContent';
 
 vi.mock('../api/gameApi', () => ({
   videopokerApi: { exec: vi.fn() },
-  actionLogApi: { videopoker: vi.fn().mockResolvedValue([]) },
+  actionLogApi: {
+    videopoker: vi.fn().mockResolvedValue([]),
+    deuceswild: vi.fn().mockResolvedValue([]),
+    jokerpoker: vi.fn().mockResolvedValue([]),
+  },
 }));
 
 const mockExec = vi.fn();
@@ -81,15 +85,15 @@ const tutorialConfig: TutorialConfig = {
   steps: [],
 };
 
-function renderContent() {
+function renderContent(gameName: 'videopoker' | 'deuceswild' | 'jokerpoker' = 'videopoker') {
   return renderWithProviders(
     <TutorialProvider config={tutorialConfig} translateMessage={(k: string) => k}>
       <VideoPokerGameContent
-        gameName="videopoker"
-        i18nNamespace="videopoker"
+        gameName={gameName}
+        i18nNamespace={gameName}
         apiExec={mockExec}
         payoutTableRows={payoutRows}
-        gamePath="/videopoker"
+        gamePath={`/${gameName}`}
         cliGameConfig={{
           parseCommand: () => ({ args: ['reset'] }),
           formatResponse: () => '',
@@ -216,11 +220,12 @@ describe('VideoPokerGameContent', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 5));
   });
 
-  it('renders payout table collapsed by default in draw phase', async () => {
+  it('renders payout table collapsed in draw phase once dismissed', async () => {
+    localStorage.setItem('paytable_open_videopoker', 'false');
     mockExec.mockResolvedValue(drawPhaseState);
     renderContent();
     await waitFor(() => expect(screen.getByText(/配当表/)).toBeInTheDocument());
-    // Payout table should be collapsed (details element should not have open attribute)
+    // Once the player has collapsed the table, it stays collapsed across phases.
     const details = screen.getByText(/配当表/).closest('details');
     expect(details).not.toHaveAttribute('open');
   });
@@ -282,5 +287,71 @@ describe('VideoPokerGameContent', () => {
     mockExec.mockResolvedValue(betPhaseState);
     renderContent();
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+  });
+
+  it('expands the payout table on first visit', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderContent();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const details = screen.getByText(/配当表/).closest('details') as HTMLDetailsElement;
+    expect(details.open).toBe(true);
+  });
+
+  it('keeps the payout table collapsed once dismissed', async () => {
+    localStorage.setItem('paytable_open_videopoker', 'false');
+    mockExec.mockResolvedValue(betPhaseState);
+    renderContent();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect((screen.getByText(/配当表/).closest('details') as HTMLDetailsElement).open).toBe(false);
+  });
+
+  it('persists the collapsed state when the payout table is toggled shut', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderContent();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const details = screen.getByText(/配当表/).closest('details') as HTMLDetailsElement;
+    details.open = false;
+    fireEvent(details, new Event('toggle'));
+    expect(localStorage.getItem('paytable_open_videopoker')).toBe('false');
+  });
+
+  it('marks twos with a WILD badge in Deuces Wild', async () => {
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      variantName: 'deuceswild',
+      hand: [card('SPADE', 2), card('HEART', 11), card('CLOVER', 2), card('DIAMOND', 8), card('SPADE', 13)],
+    });
+    renderContent('deuceswild');
+    await waitFor(() => expect(screen.getByTestId('vp-wild-badge-0')).toBeInTheDocument());
+    expect(screen.getByTestId('vp-wild-badge-2')).toBeInTheDocument();
+    // Wild status is surfaced to screen readers via the button aria-label.
+    expect(screen.getAllByRole('button', { name: /ワイルド/ })).toHaveLength(2);
+    expect(screen.queryByTestId('vp-wild-badge-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('vp-wild-badge-3')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('vp-wild-badge-4')).not.toBeInTheDocument();
+  });
+
+  it('marks jokers with a WILD badge in Joker Poker', async () => {
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      variantName: 'jokerpoker',
+      hand: [card('JOKER', 0), card('HEART', 11), card('CLOVER', 5), card('DIAMOND', 8), card('SPADE', 13)],
+    });
+    renderContent('jokerpoker');
+    await waitFor(() => expect(screen.getByTestId('vp-wild-badge-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('vp-wild-badge-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('vp-wild-badge-2')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('vp-wild-badge-3')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('vp-wild-badge-4')).not.toBeInTheDocument();
+  });
+
+  it('shows no WILD badge in Jacks or Better even on twos', async () => {
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      hand: [card('SPADE', 2), card('HEART', 11), card('CLOVER', 5), card('DIAMOND', 8), card('SPADE', 13)],
+    });
+    renderContent();
+    await waitFor(() => expect(screen.getByRole('button', { name: /ドロー/ })).toBeInTheDocument());
+    expect(screen.queryByTestId('vp-wild-badge-0')).not.toBeInTheDocument();
   });
 });

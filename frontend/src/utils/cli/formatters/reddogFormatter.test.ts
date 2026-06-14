@@ -110,7 +110,7 @@ describe('formatReddogState', () => {
   it('does not show spread in non-spread phases', () => {
     const state: RedDogResponse = {
       ...betPhaseState,
-      phase: RedDogPhase.PAIR_THIRD,
+      phase: RedDogPhase.INITIAL_DEALT,
       initialCards: [card('SPADE', 5), card('HEART', 5)],
       spread: 0,
     };

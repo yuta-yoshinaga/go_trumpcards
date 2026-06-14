@@ -12,6 +12,10 @@
   "undo": "Undo",
   "gameClear": "Game Clear! Moves: {{moveCount}}",
   "gameOver": "Game Over",
+  "result": {
+    "clear": "Cleared! Down to 1 pile in {{moveCount}} moves",
+    "gameOver": "{{pileCount}} piles left / {{moveCount}} moves"
+  },
   "playing": "Playing",
   "noHint": "No hints available",
   "hintAvailable": "Hint available",

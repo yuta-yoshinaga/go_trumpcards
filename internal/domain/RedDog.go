@@ -12,7 +12,7 @@ const (
 	RedDogPhaseBet            = 1 // ベットフェーズ
 	RedDogPhaseInitialDealt   = 2 // 初手2枚配布済み（ResolveInitial 待ち）
 	RedDogPhaseSpreadDecision = 3 // スプレッド判断フェーズ（レイズ可能）
-	RedDogPhasePairThird      = 4 // ペア時の3枚目待ちフェーズ
+	RedDogPhasePairThird      = 4 // ペア時の3枚目即時解決用の内部フェーズ（外部からは観測されない）
 	RedDogPhaseEnd            = 5 // 終了フェーズ
 )
 
@@ -135,10 +135,13 @@ func (rd *RedDog) ResolveInitial() {
 	diff := r2 - r1
 	switch diff {
 	case 0:
-		// ペア → 3枚目待ち
+		// ペア → プレイヤーの判断は介在しないため、3枚目を即引いて決着させる
+		// （PairThird で止めるとどのコマンドも受け付けずデッドエンドになる）
 		rd.spread = 0
 		rd.phase = RedDogPhasePairThird
-		rd.appendLog(-1, "pair", "initial pair, awaiting third card", nil)
+		rd.appendLog(-1, "pair", "initial pair, drawing third card", nil)
+		rd.dealThird()
+		rd.ResolveThird()
 	case 1:
 		// 連続 → プッシュ（即終了、アンテ返却）
 		rd.spread = 0

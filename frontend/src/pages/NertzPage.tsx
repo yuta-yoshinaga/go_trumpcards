@@ -331,18 +331,50 @@ function NertzPageContent() {
       ) : (
         <>
           <div className="flex-1 overflow-y-auto px-3 py-2 space-y-4">
-            <div className="bg-black/30 text-ds-text-primary p-3 rounded text-sm flex flex-wrap gap-x-4 gap-y-1">
-              <span>
-                {t('labels.round')}: {state.roundNumber}
-              </span>
-              <span>
-                {t('labels.moveCount')}: {state.moveCount}
-              </span>
-              {state.players.map((p, i) => (
-                <span key={`scoreline-${i}`}>
-                  {p.isHuman ? t('labels.you') : `${t('labels.cpu')}${i}`}: {p.score} ({p.nertzSize})
+            <div className="bg-black/30 text-ds-text-primary p-3 rounded text-sm">
+              <div className="flex flex-wrap gap-x-4 gap-y-1">
+                <span>
+                  {t('labels.round')}: {state.roundNumber}
                 </span>
-              ))}
+                <span>
+                  {t('labels.moveCount')}: {state.moveCount}
+                </span>
+              </div>
+              <div className="mt-2 space-y-1">
+                {state.players.map((p, i) => {
+                  const label = p.isHuman ? t('labels.you') : `${t('labels.cpu')}${i}`;
+                  const pct =
+                    state.targetScore > 0 ? Math.max(0, Math.min(100, (p.score / state.targetScore) * 100)) : 0;
+                  return (
+                    <div key={`scorebar-${i}`} className="flex items-center gap-2 text-xs">
+                      <span className="w-14 shrink-0">{label}</span>
+                      <div
+                        className="relative h-3 flex-1 overflow-hidden rounded bg-black/40"
+                        role="progressbar"
+                        aria-valuemin={0}
+                        aria-valuemax={state.targetScore}
+                        // WAI-ARIA requires aria-valuenow within [min, max]; clamp it
+                        // (the raw score is still shown in the numeric label).
+                        aria-valuenow={Math.max(0, Math.min(p.score, state.targetScore))}
+                        aria-label={t('labels.scoreBarAria', {
+                          player: label,
+                          score: p.score,
+                          target: state.targetScore,
+                        })}
+                      >
+                        <div
+                          data-testid={`nertz-scorebar-${i.toString()}`}
+                          className={`h-full ${p.isHuman ? 'bg-ds-success' : 'bg-ds-warning'} motion-safe:transition-[width] motion-safe:duration-300`}
+                          style={{ width: `${pct.toString()}%` }}
+                        />
+                      </div>
+                      <span className="w-12 shrink-0 text-right tabular-nums">
+                        {p.score} ({p.nertzSize})
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             <GameMessageBox

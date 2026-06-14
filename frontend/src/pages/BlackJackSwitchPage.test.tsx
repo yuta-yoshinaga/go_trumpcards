@@ -190,6 +190,41 @@ describe('BlackJackSwitchPage', () => {
     expect(screen.queryByTestId('hand-0-preview')).not.toBeInTheDocument();
   });
 
+  it('touching Switch shows then hides the preview for touch devices', async () => {
+    mockApi.mockResolvedValue(switchState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    const btn = await screen.findByTestId('switch-button');
+    expect(screen.queryByTestId('hand-0-preview')).not.toBeInTheDocument();
+    fireEvent.touchStart(btn);
+    expect(screen.getByTestId('hand-0-preview')).toHaveTextContent('20');
+    expect(screen.getByTestId('hand-1-preview')).toHaveTextContent('11');
+    fireEvent.touchEnd(btn);
+    expect(screen.queryByTestId('hand-0-preview')).not.toBeInTheDocument();
+  });
+
+  it('clears the preview when a touch is cancelled by the OS', async () => {
+    mockApi.mockResolvedValue(switchState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    const btn = await screen.findByTestId('switch-button');
+    fireEvent.touchStart(btn);
+    expect(screen.getByTestId('hand-0-preview')).toBeInTheDocument();
+    fireEvent.touchCancel(btn);
+    expect(screen.queryByTestId('hand-0-preview')).not.toBeInTheDocument();
+  });
+
+  it('keeps the preview visible without hover when "always preview" is enabled', async () => {
+    mockApi.mockResolvedValue(switchState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    await screen.findByTestId('switch-button');
+    expect(screen.queryByTestId('hand-0-preview')).not.toBeInTheDocument();
+    // Open the collapsed settings <details> first, as a real user would.
+    fireEvent.click(screen.getByText('設定'));
+    fireEvent.click(screen.getByLabelText(/常に表示|Always show/));
+    // Visible without any hover/focus.
+    expect(screen.getByTestId('hand-0-preview')).toHaveTextContent('20');
+    expect(screen.getByTestId('hand-1-preview')).toHaveTextContent('11');
+  });
+
   it('focusing Switch shows the preview for keyboard parity', async () => {
     mockApi.mockResolvedValue(switchState);
     renderWithProviders(<BlackJackSwitchPage />);

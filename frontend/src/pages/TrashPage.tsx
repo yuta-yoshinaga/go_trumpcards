@@ -228,6 +228,10 @@ function TrashPageContent() {
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8 space-y-4">
             <PlayerRow
               label={t('label.cpu')}
+              badge={t('label.cpuOpen', {
+                open: state.players[1].slots.filter((s) => s.faceUp).length,
+                total: state.players[1].slots.length,
+              })}
               slots={state.players[1].slots}
               cardWidth={cardWidth}
               highlightFaceDown={false}
@@ -310,6 +314,7 @@ function TrashPageContent() {
 
 function PlayerRow({
   label,
+  badge,
   slots,
   cardWidth,
   highlightFaceDown,
@@ -318,6 +323,8 @@ function PlayerRow({
   pendingTargetIdx,
 }: {
   label: string;
+  /** Optional progress indicator rendered next to the label (e.g. "3/10 枚オープン"). */
+  badge?: string;
   slots: TrashSlot[];
   cardWidth: number;
   highlightFaceDown: boolean;
@@ -328,7 +335,14 @@ function PlayerRow({
 }) {
   return (
     <div className="flex flex-col items-center" data-tutorial={dataTutorial}>
-      <span className="text-sm text-ds-secondary mb-1">{label}</span>
+      <span className="text-sm text-ds-secondary mb-1">
+        {label}
+        {badge && (
+          <span className="ml-2 px-1.5 py-0.5 rounded bg-ds-surface/70 text-xs text-ds-secondary whitespace-nowrap">
+            {badge}
+          </span>
+        )}
+      </span>
       <div className="grid grid-cols-5 gap-1 sm:gap-2">
         {slots.map((slot, idx) => {
           const key = `${idx}-${slot.faceUp ? `${slot.card?.design}-${slot.card?.value}` : 'face-down'}`;

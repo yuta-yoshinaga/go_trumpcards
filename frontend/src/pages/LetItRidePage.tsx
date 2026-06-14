@@ -146,6 +146,10 @@ function LetItRidePageContent() {
     execApi('reset');
   };
 
+  // Bets at risk in the decision/end phases: each live bet stakes `betAmount`.
+  const activeBetCount = [state.bet1Active, state.bet2Active, state.bet3Active].filter(Boolean).length;
+  const currentRisk = state.betAmount * activeBetCount;
+
   const phaseName = isBetPhase
     ? t('phase.bet')
     : isFirstDecision
@@ -272,16 +276,29 @@ function LetItRidePageContent() {
             )}
 
             {!isBetPhase && (
-              <div className="flex justify-center gap-4 text-ds-text-primary text-sm mb-2" data-testid="bet-status">
-                <span>
-                  {t('label.bet1')}: {state.bet1Active ? t('label.active') : t('label.pulled')}
-                </span>
-                <span>
-                  {t('label.bet2')}: {state.bet2Active ? t('label.active') : t('label.pulled')}
-                </span>
-                <span>
-                  {t('label.bet3')}: {state.bet3Active ? t('label.active') : t('label.pulled')}
-                </span>
+              <div className="mb-2" data-testid="bet-status">
+                <div className="flex justify-center gap-3">
+                  {[
+                    { key: 'bet1', label: t('label.bet1'), active: state.bet1Active },
+                    { key: 'bet2', label: t('label.bet2'), active: state.bet2Active },
+                    { key: 'bet3', label: t('label.bet3'), active: state.bet3Active },
+                  ].map((bet) => (
+                    <div
+                      key={bet.key}
+                      data-testid={`bet-box-${bet.key}`}
+                      className={`flex flex-col items-center rounded px-3 py-1 text-ds-text-primary text-sm ${
+                        bet.active ? 'ring-1 ring-ds-success' : 'opacity-40'
+                      }`}
+                    >
+                      <span>{bet.label}</span>
+                      <span className="font-bold">{state.betAmount}</span>
+                      <span className="text-xs">{bet.active ? t('label.active') : t('label.pulled')}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-1 text-center text-ds-text-primary text-sm" data-testid="current-risk">
+                  {t('label.currentRisk')}: {currentRisk}
+                </div>
               </div>
             )}
 

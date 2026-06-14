@@ -21,7 +21,9 @@
     "knocked": "Knocked!",
     "out": "OUT",
     "suitScores": "Suit totals",
-    "selectCard": "Select a card to discard"
+    "selectCard": "Select a card to discard",
+    "knockBannerLastTurn": "{{knocker}} knocked — this is your last turn",
+    "knockBannerActive": "{{knocker}} knocked"
   },
   "settings": {
     "cpuDifficulty": "CPU Difficulty",

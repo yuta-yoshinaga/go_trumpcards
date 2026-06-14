@@ -718,14 +718,94 @@ describe('KlondikePage', () => {
     expect(label).toBeInTheDocument();
   });
 
-  it('changing draw mode resets game with config', async () => {
+  it('changing draw mode mid-game asks for confirmation before resetting', async () => {
     renderWithProviders(<KlondikePage />);
     await waitFor(() => expect(screen.getByLabelText('ドローモード')).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue({ ...playingState, drawCount: 3 });
     fireEvent.change(screen.getByLabelText('ドローモード'), { target: { value: '3' } });
+    // Mid-game: no reset until the dialog is confirmed (#2179).
+    expect(mockExec).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { drawCount: 3, scoringMode: 0 }),
+    );
+  });
+
+  it('cancelling a draw mode change keeps the current setting', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByLabelText('ドローモード')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.change(screen.getByLabelText('ドローモード'), { target: { value: '3' } });
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    expect(mockExec).not.toHaveBeenCalled();
+    // The select must revert to the still-active setting.
+    expect(screen.getByLabelText('ドローモード')).toHaveValue('1');
+  });
+
+  it('changing scoring mode mid-game asks for confirmation before resetting', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByLabelText('スコアモード')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...playingState, scoringMode: 1 });
+    fireEvent.change(screen.getByLabelText('スコアモード'), { target: { value: '1' } });
+    expect(mockExec).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { drawCount: 1, scoringMode: 1 }),
+    );
+  });
+
+  it('changing draw mode on a fresh deal resets without confirmation', async () => {
+    mockExec.mockResolvedValue({ ...playingState, moveCount: 0 });
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByLabelText('ドローモード')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...playingState, drawCount: 3 });
+    fireEvent.change(screen.getByLabelText('ドローモード'), { target: { value: '3' } });
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { drawCount: 3, scoringMode: 0 }),
+    );
+  });
+
+  it('cancelling a scoring mode change keeps the current setting', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByLabelText('スコアモード')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.change(screen.getByLabelText('スコアモード'), { target: { value: '1' } });
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    expect(mockExec).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('スコアモード')).toHaveValue('0');
+  });
+
+  it('changing scoring mode after game end resets without confirmation', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByLabelText('スコアモード')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...playingState, scoringMode: 1 });
+    fireEvent.change(screen.getByLabelText('スコアモード'), { target: { value: '1' } });
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { drawCount: 1, scoringMode: 1 }),
+    );
+  });
+
+  it('changing draw mode after game end resets without confirmation', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByLabelText('ドローモード')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...playingState, drawCount: 3 });
+    fireEvent.change(screen.getByLabelText('ドローモード'), { target: { value: '3' } });
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { drawCount: 3, scoringMode: 0 }),
     );
@@ -806,19 +886,6 @@ describe('KlondikePage', () => {
   it('renders timer', async () => {
     renderWithProviders(<KlondikePage />);
     await waitFor(() => expect(screen.getByText(/タイム: 00:00/)).toBeInTheDocument());
-  });
-
-  it('changing scoring mode resets game with config', async () => {
-    renderWithProviders(<KlondikePage />);
-    await waitFor(() => expect(screen.getByLabelText('スコアモード')).toBeInTheDocument());
-
-    mockExec.mockClear();
-    mockExec.mockResolvedValue({ ...playingState, scoringMode: 1 });
-    fireEvent.change(screen.getByLabelText('スコアモード'), { target: { value: '1' } });
-
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { drawCount: 1, scoringMode: 1 }),
-    );
   });
 
   it('shows total score on game clear in Vegas mode', async () => {

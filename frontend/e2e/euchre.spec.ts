@@ -65,8 +65,9 @@ test.describe('Euchre E2E', () => {
       // Pass (call trump phase)
       if (passVisible && !playVisible && !discardVisible) {
         interactions++;
-        // Try to select a suit button if visible, otherwise pass
-        const suitButton = page.getByRole('button', { name: /♠|♣|♥|♦/ }).first();
+        // Try to select an enabled suit button if visible, otherwise pass
+        // (the turned-down card's suit renders as a disabled button).
+        const suitButton = page.getByRole('button', { name: /♠|♣|♥|♦/, disabled: false }).first();
         const suitVisible = await suitButton.isVisible();
         if (suitVisible) {
           await suitButton.click();

@@ -391,9 +391,12 @@ describe('NapoleonPage', () => {
     await waitFor(() => expect(screen.getByAltText('\u2660 A')).toBeInTheDocument());
 
     fireEvent.click(screen.getByAltText('\u2660 A').closest('button') as HTMLButtonElement);
+    // With one card selected the exchange button shows the dynamic "\u2660 A \u3092\u6368\u3066\u308b" label.
+    const exchangeBtn = screen.getByRole('button', { name: /\u3092\u6368\u3066\u308b/ });
+    expect(exchangeBtn).toHaveTextContent('\u2660 A');
     mockExec.mockClear();
     mockExec.mockResolvedValue(playPhaseState);
-    fireEvent.click(screen.getByRole('button', { name: '\u4ea4\u63db' }));
+    fireEvent.click(exchangeBtn);
 
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('exchange', undefined, undefined, undefined, undefined, 0),

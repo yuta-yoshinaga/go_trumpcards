@@ -194,6 +194,16 @@ describe('PineapplePage', () => {
     await waitFor(() => expect(screen.getByText('初期化中')).toBeInTheDocument());
   });
 
+  it('shows pot and the dealer name via playerName (CPU dealer)', async () => {
+    mockExec.mockResolvedValue(preFlopState); // dealerIdx 3 → CPU
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByText(/ポット:/)).toBeInTheDocument());
+    expect(screen.getByText(/ディーラー:/)).toBeInTheDocument();
+    // Dealer renders via playerName (CPU 3), not the raw index.
+    expect(screen.getAllByText('CPU 3').length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Player 3|プレイヤー 3/)).not.toBeInTheDocument();
+  });
+
   it('shows betting controls during pre-flop when it is human turn', async () => {
     mockExec.mockResolvedValue(preFlopState);
     renderWithProviders(<PineapplePage />);
@@ -225,8 +235,31 @@ describe('PineapplePage', () => {
     // Now discard button should be enabled
     await waitFor(() => expect(discardBtn).not.toBeDisabled());
 
+    // Pressing discard now opens an inline confirm step rather than committing immediately.
     fireEvent.click(discardBtn);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', undefined, { cardIdx: 0 }));
+    expect(mockExec).not.toHaveBeenCalledWith('discard', undefined, { cardIdxs: [0] });
+    expect(screen.getByTestId('discard-confirm')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: '確定' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', undefined, { cardIdxs: [0] }));
+  });
+
+  it('cancels the discard confirm step and returns to selection', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    mockExec.mockClear(); // isolate from prior tests' discard calls (beforeEach doesn't clear history)
+
+    const cardButtons = screen.getAllByRole('button').filter((btn) => btn.getAttribute('aria-pressed') !== null);
+    fireEvent.click(cardButtons[0]);
+    fireEvent.click(screen.getByRole('button', { name: '1枚捨ててください。' }));
+    expect(screen.getByTestId('discard-confirm')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    // Back to selection; nothing discarded.
+    expect(screen.queryByTestId('discard-confirm')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '1枚捨ててください。' })).toBeInTheDocument();
+    expect(mockExec).not.toHaveBeenCalledWith('discard', undefined, { cardIdxs: [0] });
   });
 
   it('shows round results during showdown', async () => {

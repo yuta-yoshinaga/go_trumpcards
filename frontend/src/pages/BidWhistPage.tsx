@@ -253,6 +253,25 @@ function BidWhistPageContent() {
               </div>
             </div>
 
+            {/* Kitty exchange progress */}
+            {isHumanExchange && (
+              <div className="mx-auto mb-2 max-w-xs" data-testid="kitty-progress">
+                <div className="mb-1 text-center text-ds-text-muted text-xs">
+                  {t('kittyProgress', { count: selectedCardIndices.length })}
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-ds-surface-elevated">
+                  <div
+                    className={
+                      selectedCardIndices.length === 6
+                        ? 'h-full rounded-full transition-all bg-ds-success'
+                        : 'h-full rounded-full transition-all bg-ds-info'
+                    }
+                    style={{ width: `${(Math.min(selectedCardIndices.length, 6) * 100) / 6}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Human hand */}
             <div className="text-center" data-tutorial="bw-hand">
               <div className="text-xs text-ds-text-muted mb-1">

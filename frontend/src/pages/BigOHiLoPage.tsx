@@ -43,6 +43,8 @@ import type { TutorialStep } from '../types/tutorial';
 import { OMAHA_HELP, parseOmahaCommand } from '../utils/cli/commands/omahaCommands';
 import { formatOmahaState } from '../utils/cli/formatters/omahaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { omahaBestFive } from '../utils/omahaBestFive';
+import { findPlayerName } from '../utils/playerUtils';
 
 /** 5 Card Omaha Hi-Lo (Big O) tutorial step definitions. */
 const BIGOHL_TUTORIAL_STEPS: TutorialStep[] = [
@@ -163,6 +165,14 @@ function BigOHiLoPageContent() {
   const isActive = phase >= OmahaPhase.PRE_FLOP && phase <= OmahaPhase.RIVER;
   const isShowdown = phase === OmahaPhase.SHOWDOWN || phase === OmahaPhase.END;
   const humanPlayer = state?.players?.find((p) => p.isHuman);
+  // At showdown, highlight the human's winning 5 cards under the must-use-2 rule.
+  const showdownBest5 = useMemo(() => {
+    const empty = { holeSet: new Set<number>(), boardSet: new Set<number>() };
+    if (!isShowdown || !humanPlayer || humanPlayer.folded) return empty;
+    const best = omahaBestFive(humanPlayer.cards ?? [], state?.communityCards ?? []);
+    if (!best) return empty;
+    return { holeSet: new Set(best.holeIdx), boardSet: new Set(best.boardIdx) };
+  }, [isShowdown, humanPlayer, state?.communityCards]);
   const humanFolded = humanPlayer?.folded ?? false;
   const humanAllIn = humanPlayer?.allIn ?? false;
   const canAct = isActive && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
@@ -231,7 +241,7 @@ function BigOHiLoPageContent() {
             </strong>
           </span>
           <span>
-            {tc('label.dealer')} <strong>Player {state?.dealerIdx ?? 0}</strong>
+            {tc('label.dealer')} <strong>{findPlayerName(state.players, state.dealerIdx)}</strong>
           </span>
           {state?.tournamentMode && (
             <span>{t('handNumber', { count: state.handCount, level: state.blindLevelHands })}</span>
@@ -253,14 +263,21 @@ function BigOHiLoPageContent() {
                   <div className="text-ds-text-primary text-lg mb-1.5">{t('communityCards')}</div>
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
-                      ? state.communityCards.map((card) => (
-                          <AnimatedCard
-                            key={`${card.design}-${card.value}`}
-                            card={card}
-                            width={cardWidth}
-                            style={placeholderCardStyle}
-                          />
-                        ))
+                      ? state.communityCards.map((card, idx) => {
+                          const inBest = showdownBest5.boardSet.has(idx);
+                          const dim = showdownBest5.boardSet.size > 0 && !inBest;
+                          return (
+                            <div
+                              key={`${card.design}-${card.value}`}
+                              className={`transition-all ${
+                                inBest ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse' : ''
+                              } ${dim ? 'opacity-50' : ''}`}
+                              data-best5-board={inBest || undefined}
+                            >
+                              <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                            </div>
+                          );
+                        })
                       : Array.from({ length: 5 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                   </div>
                 </>
@@ -318,6 +335,44 @@ function BigOHiLoPageContent() {
             {/* Round results */}
             {isShowdown && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}
 
+            {/* Hi/Lo split breakdown: green Hi badges + blue Lo badges (Lo omitted when nobody qualifies) */}
+            {isShowdown &&
+              (() => {
+                // A won amount is non-negative, so a truthy value means "> 0".
+                const hiWinners = state.roundResults.flatMap((r) =>
+                  r.hiWonAmount ? [{ name: findPlayerName(state.players, r.playerIdx), amount: r.hiWonAmount }] : [],
+                );
+                const loWinners = state.roundResults.flatMap((r) =>
+                  r.lowWonAmount ? [{ name: findPlayerName(state.players, r.playerIdx), amount: r.lowWonAmount }] : [],
+                );
+                if (hiWinners.length === 0 && loWinners.length === 0) return null;
+                return (
+                  <div className="mb-2 text-center text-sm" data-testid="bigohilo-split">
+                    <div className="mb-1 text-ds-text-muted">{t('hiLo.title')}</div>
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {hiWinners.map((w) => (
+                        <span
+                          key={`hi-${w.name}`}
+                          data-testid="bigohilo-hi-badge"
+                          className="inline-block rounded border border-ds-success bg-ds-surface px-2 py-0.5 text-ds-success"
+                        >
+                          {t('hiLo.hi')}: {t('hiLo.winner', { name: w.name, amount: w.amount })}
+                        </span>
+                      ))}
+                      {loWinners.map((w) => (
+                        <span
+                          key={`lo-${w.name}`}
+                          data-testid="bigohilo-lo-badge"
+                          className="inline-block rounded border border-ds-info bg-ds-surface px-2 py-0.5 text-ds-info"
+                        >
+                          {t('hiLo.lo')}: {t('hiLo.winner', { name: w.name, amount: w.amount })}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
             {/* Action log */}
             <ActionLogSection
               isEndPhase={!!state?.gameEndFlag}
@@ -369,14 +424,21 @@ function BigOHiLoPageContent() {
                 </div>
                 <div className="flex flex-wrap gap-1.5 mb-2" data-tutorial="bohl-combination-rule">
                   {humanPlayer.cards?.length
-                    ? humanPlayer.cards.map((card) => (
-                        <AnimatedCard
-                          key={`${card.design}-${card.value}`}
-                          card={card}
-                          width={cardWidth}
-                          style={placeholderCardStyle}
-                        />
-                      ))
+                    ? humanPlayer.cards.map((card, idx) => {
+                        const inBest = showdownBest5.holeSet.has(idx);
+                        const dim = showdownBest5.holeSet.size > 0 && !inBest;
+                        return (
+                          <div
+                            key={`${card.design}-${card.value}`}
+                            className={`transition-all ${
+                              inBest ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse' : ''
+                            } ${dim ? 'opacity-50' : ''}`}
+                            data-best5-hole={inBest || undefined}
+                          >
+                            <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                          </div>
+                        );
+                      })
                     : !humanPlayer.folded &&
                       Array.from({ length: 5 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                 </div>

@@ -108,10 +108,14 @@ func TestRedDog_Bet_PairThenMatch_Win(t *testing.T) {
 		cd{domain.CardDesignSpade, 7},
 		cd{domain.CardDesignClover, 7},
 	))
-	rd.ResolveInitial()
-	assert.Equal(t, domain.RedDogPhasePairThird, rd.GetPhase())
+	// Pre-seed the third card: dealThird keeps an existing card, making the
+	// pair branch's immediate resolution deterministic.
 	rd.SetThirdCard(domain.NewCard(domain.CardDesignHeart, 7, true))
-	rd.ResolveThird()
+	rd.ResolveInitial()
+	// A pair has no player decision: it must resolve in the same call, not
+	// park the game in PairThird (which accepts no commands).
+	assert.Equal(t, domain.RedDogPhaseEnd, rd.GetPhase())
+	assert.True(t, rd.GetGameEndFlag())
 	assert.Equal(t, domain.GameResultWin, rd.GetResult())
 	// 11:1 on ante: 100 + 100*11 = 1200
 	assert.Equal(t, 1200, rd.GetTotalPayout())
@@ -124,12 +128,29 @@ func TestRedDog_Bet_PairThenNoMatch_Push(t *testing.T) {
 		cd{domain.CardDesignSpade, 7},
 		cd{domain.CardDesignClover, 7},
 	))
-	rd.ResolveInitial()
-	assert.Equal(t, domain.RedDogPhasePairThird, rd.GetPhase())
 	rd.SetThirdCard(domain.NewCard(domain.CardDesignHeart, 9, true))
-	rd.ResolveThird()
+	rd.ResolveInitial()
+	assert.Equal(t, domain.RedDogPhaseEnd, rd.GetPhase())
+	assert.True(t, rd.GetGameEndFlag())
 	assert.Equal(t, domain.GameResultDraw, rd.GetResult())
 	assert.Equal(t, 100, rd.GetTotalPayout()) // ante refunded
+}
+
+func TestRedDog_Bet_Pair_DealsThirdFromDeck(t *testing.T) {
+	rd := domain.NewDefaultRedDog()
+	require.NoError(t, rd.Bet(100))
+	rd.SetInitialCards(makeHand(
+		cd{domain.CardDesignSpade, 7},
+		cd{domain.CardDesignClover, 7},
+	))
+	// No pre-seeded third card: the pair branch must draw one from the deck
+	// and still terminate the hand, whatever the outcome.
+	rd.ResolveInitial()
+	assert.NotNil(t, rd.GetThirdCard())
+	assert.True(t, rd.GetGameEndFlag())
+	assert.Equal(t, domain.RedDogPhaseEnd, rd.GetPhase())
+	// A pair hand can never lose: it pays 11:1 on a rank match and pushes otherwise.
+	assert.NotEqual(t, domain.GameResultLose, rd.GetResult())
 }
 
 func TestRedDog_SpreadDecision_Spread1_Win(t *testing.T) {

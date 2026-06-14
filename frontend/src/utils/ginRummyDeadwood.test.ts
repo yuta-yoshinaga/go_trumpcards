@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Card } from '../types/card';
-import { bestDeadwoodValue, calcDeadwoodValue, ginRummyCardValue } from './ginRummyDeadwood';
+import { bestDeadwoodValue, calcDeadwoodValue, ginRummyCardValue, ginRummyMeldLabel } from './ginRummyDeadwood';
 
 const c = (design: Card['design'], value: number): Card => ({ design, value });
 
@@ -57,5 +57,22 @@ describe('bestDeadwoodValue', () => {
       c('DIAMOND', 9),
     ];
     expect(bestDeadwoodValue(hand)).toBe(0);
+  });
+});
+
+describe('ginRummyMeldLabel', () => {
+  it('labels a same-rank set with the rank name', () => {
+    expect(ginRummyMeldLabel([c('SPADE', 3), c('HEART', 3), c('DIAMOND', 3)])).toBe('3');
+    expect(ginRummyMeldLabel([c('SPADE', 13), c('HEART', 13), c('CLOVER', 13)])).toBe('K');
+    expect(ginRummyMeldLabel([c('SPADE', 1), c('HEART', 1), c('CLOVER', 1)])).toBe('A');
+  });
+
+  it('labels a same-suit run with the suit symbol and low-high range', () => {
+    expect(ginRummyMeldLabel([c('SPADE', 5), c('SPADE', 3), c('SPADE', 4)])).toBe('♠ 3-5');
+    expect(ginRummyMeldLabel([c('HEART', 1), c('HEART', 2), c('HEART', 3)])).toBe('♥ A-3');
+  });
+
+  it('returns an empty string for an empty meld', () => {
+    expect(ginRummyMeldLabel([])).toBe('');
   });
 });

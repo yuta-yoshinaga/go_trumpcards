@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
@@ -291,41 +292,51 @@ interface PlayerCardProps {
 }
 
 function PlayerCard({ label, player, carteBlanche }: PlayerCardProps) {
+  const { t } = useTranslation('piquet');
   if (!player) return null;
   return (
     <div className="rounded border border-white/20 p-2 mx-2 text-sm">
       <div className="flex items-center justify-between">
         <span className="font-bold">{label}</span>
-        {carteBlanche ? <span className="text-ds-warning">★ carte blanche</span> : null}
+        {carteBlanche ? <span className="text-ds-warning">{t('carteBlanche')}</span> : null}
       </div>
       <div className="text-xs opacity-80">
-        hand: {player.cardCount} | tricks: {player.trickCount} | round: {player.roundScore} | match: {player.matchScore}
+        {t('playerStats', {
+          hand: player.cardCount,
+          tricks: player.trickCount,
+          round: player.roundScore,
+          match: player.matchScore,
+        })}
       </div>
     </div>
   );
 }
 
 function DeclarationList({ results, elderIdx }: { results: PiquetDeclaration[]; elderIdx: number }) {
+  const { t } = useTranslation('piquet');
   const youngerIdx = elderIdx === 0 ? 1 : 0;
   return (
     <div className="rounded border border-white/20 p-2 mx-2 text-sm">
-      <div className="mb-1 font-bold">Declarations</div>
-      {results.map((r) => (
-        <div key={`decl-${r.kind}-${r.winner}-${r.score}`} className="text-xs">
-          {declKindLabel(r.kind)}:{' '}
-          {r.score === 0
-            ? 'tied'
-            : `player ${r.scoredBy === elderIdx ? 'E' : r.scoredBy === youngerIdx ? 'Y' : '?'} +${r.score}`}
-        </div>
-      ))}
+      <div className="mb-1 font-bold">{t('declarationsList')}</div>
+      {results.map((r) => {
+        const playerLabel =
+          r.scoredBy === elderIdx ? t('roleElder') : r.scoredBy === youngerIdx ? t('roleYounger') : '?';
+        return (
+          <div key={`decl-${r.kind}-${r.winner}-${r.score}`} className="text-xs">
+            {declKindLabel(r.kind)}:{' '}
+            {r.score === 0 ? t('declTied') : t('declScored', { player: playerLabel, score: r.score })}
+          </div>
+        );
+      })}
     </div>
   );
 }
 
 function TrickView({ trick }: { trick: PiquetResponse['currentTrick'] }) {
+  const { t } = useTranslation('piquet');
   return (
     <div className="rounded border border-white/20 p-2 mx-2 text-sm">
-      <div className="mb-1 font-bold">Trick</div>
+      <div className="mb-1 font-bold">{t('trickHeader')}</div>
       <div className="flex gap-2">
         {trick.map((tc, i) => (
           <div

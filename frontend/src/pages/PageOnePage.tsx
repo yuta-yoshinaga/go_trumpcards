@@ -30,7 +30,8 @@ import { gameTheme } from '../styles/gameTheme';
 import type { PageOneResponse } from '../types/card';
 import { PageOnePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { cardAlt } from '../utils/cardAlt';
+import { cardAlt, suitSymbol } from '../utils/cardAlt';
+import { valueName } from '../utils/cardUtils';
 import { PAGEONE_HELP, parsePageoneCommand } from '../utils/cli/commands/pageoneCommands';
 import { formatPageoneState } from '../utils/cli/formatters/pageoneFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -224,6 +225,12 @@ function PageOnePageContent() {
                     <AnimatedCard card={state.discardTop} width={cardWidth} />
                     <div className="text-ds-text-muted text-sm">
                       <div>{t('discardTop')}</div>
+                      <div className="text-xs text-ds-accent mt-0.5">
+                        {t('playCondition', {
+                          suit: suitSymbol(state.discardTop.design),
+                          rank: valueName(state.discardTop.value),
+                        })}
+                      </div>
                     </div>
                   </div>
                 )}

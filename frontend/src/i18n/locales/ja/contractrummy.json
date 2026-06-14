@@ -23,6 +23,8 @@
   "submitContract": "コントラクトを場に出す",
   "meldExtra": "追加メルド",
   "layoff": "レイオフ",
+  "meldAria": "{{player}}のメルド{{meld}}",
+  "layoffTargetSummary": "→ レイオフ先: {{player}} メルド{{meld}}",
   "discard": "カードを捨てる",
   "nextRound": "次のラウンドへ",
   "viewLog": "棋譜を表示",

@@ -110,6 +110,57 @@ describe('WarPage', () => {
     expect(screen.getAllByText(/2/).length).toBeGreaterThan(0);
   });
 
+  it('highlights the winner card and dims the loser when the player wins a round', async () => {
+    mockExec.mockResolvedValueOnce({
+      ...baseState,
+      phase: WarPhase.RESOLVED,
+      playerRevealed: { design: 'SPADE', value: 13 },
+      cpuRevealed: { design: 'HEART', value: 5 },
+      lastWinnerIdx: 0,
+    });
+    renderWithProviders(<WarPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ K')).toBeInTheDocument());
+    expect(screen.getByAltText('♠ K')).toHaveClass('ring-ds-success');
+    expect(screen.getByAltText('♥ 5')).toHaveClass('opacity-60');
+  });
+
+  it('highlights the CPU card when the CPU wins a round', async () => {
+    mockExec.mockResolvedValueOnce({
+      ...baseState,
+      phase: WarPhase.RESOLVED,
+      playerRevealed: { design: 'SPADE', value: 3 },
+      cpuRevealed: { design: 'HEART', value: 9 },
+      lastWinnerIdx: 1,
+    });
+    renderWithProviders(<WarPage />);
+    await waitFor(() => expect(screen.getByAltText('♥ 9')).toBeInTheDocument());
+    expect(screen.getByAltText('♥ 9')).toHaveClass('ring-ds-success');
+    expect(screen.getByAltText('♠ 3')).toHaveClass('opacity-60');
+  });
+
+  it('marks both cards with a warning ring during a war', async () => {
+    mockExec.mockResolvedValueOnce(warPhaseState);
+    renderWithProviders(<WarPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ 7')).toBeInTheDocument());
+    expect(screen.getByAltText('♠ 7')).toHaveClass('ring-ds-warning');
+    expect(screen.getByAltText('♥ 7')).toHaveClass('ring-ds-warning');
+  });
+
+  it('shows no emphasis during the reveal phase', async () => {
+    mockExec.mockResolvedValueOnce({
+      ...baseState,
+      playerRevealed: { design: 'SPADE', value: 4 },
+      cpuRevealed: { design: 'HEART', value: 8 },
+    });
+    renderWithProviders(<WarPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ 4')).toBeInTheDocument());
+    for (const alt of ['♠ 4', '♥ 8']) {
+      expect(screen.getByAltText(alt)).not.toHaveClass('ring-ds-success');
+      expect(screen.getByAltText(alt)).not.toHaveClass('ring-ds-warning');
+      expect(screen.getByAltText(alt)).not.toHaveClass('opacity-60');
+    }
+  });
+
   it('disables step button on game end', async () => {
     mockExec.mockResolvedValueOnce(gameEndState);
     renderWithProviders(<WarPage />);

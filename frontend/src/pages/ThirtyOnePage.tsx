@@ -315,6 +315,18 @@ function ThirtyOnePageContent() {
               </div>
             </div>
 
+            {state.knockerIdx >= 0 && !isGameEnd && !isRoundEnd && (
+              <div
+                role="status"
+                data-testid="knock-countdown-banner"
+                className="rounded-lg bg-ds-warning/20 border border-ds-warning px-3 py-1.5 text-center text-ds-warning text-sm font-medium"
+              >
+                {t(isHumanTurn ? 'label.knockBannerLastTurn' : 'label.knockBannerActive', {
+                  knocker: state.knockerIdx === 0 ? tc('player.you') : tc('player.cpu', { id: state.knockerIdx }),
+                })}
+              </div>
+            )}
+
             <GameMessageBox
               message={state.message}
               messageCode={state.messageCode}

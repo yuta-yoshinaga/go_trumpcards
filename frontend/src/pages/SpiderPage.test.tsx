@@ -294,14 +294,38 @@ describe('SpiderPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
-  it('changing difficulty resets game with config', async () => {
+  it('changing difficulty mid-game asks for confirmation before resetting', async () => {
     renderWithProviders(<SpiderPage />);
     await waitFor(() => expect(screen.getByLabelText('難易度')).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue({ ...playingState, difficulty: 2 });
     fireEvent.change(screen.getByLabelText('難易度'), { target: { value: '2' } });
+    // Mid-game: no reset until the dialog is confirmed (#2188).
+    expect(mockExec).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { difficulty: 2 }));
+  });
+
+  it('cancelling the difficulty change does not reset', async () => {
+    renderWithProviders(<SpiderPage />);
+    await waitFor(() => expect(screen.getByLabelText('難易度')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.change(screen.getByLabelText('難易度'), { target: { value: '4' } });
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('changing difficulty after game end resets without confirmation', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<SpiderPage />);
+    await waitFor(() => expect(screen.getByLabelText('難易度')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...playingState, difficulty: 2 });
+    fireEvent.change(screen.getByLabelText('難易度'), { target: { value: '2' } });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { difficulty: 2 }));
   });
 

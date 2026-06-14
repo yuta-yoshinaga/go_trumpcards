@@ -47,6 +47,7 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 
 	resObj.PerfectPairsBet = bj.GetPerfectPairsBet()
 	resObj.TwentyOnePlus3Bet = bj.Get21Plus3Bet()
+	resObj.Bonuses = bj.GetBonusKeys()
 
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = bjp.buildMessage(bj, lastErr)
 

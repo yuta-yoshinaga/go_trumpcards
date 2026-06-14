@@ -23,6 +23,7 @@
     "end": "結果"
   },
   "sideBet": {
+    "title": "サイドベット（任意）",
     "playerPair": "プレイヤーペア",
     "bankerPair": "バンカーペア",
     "pair": "ペア",

@@ -146,6 +146,28 @@ describe('SlapjackPage', () => {
     const slap = screen.getByTestId('slap-button');
     expect(slap).not.toBeDisabled();
     expect(slap.className).toMatch(/animate-pulse/);
+    // Buttons meet the full WCAG 2.5.5 44x44px tap-target minimum.
+    expect(slap.className).toContain('min-h-[44px]');
+    expect(slap.className).toContain('min-w-[44px]');
+    const step = screen.getByTestId('step-button');
+    expect(step.className).toContain('min-h-[44px]');
+    expect(step.className).toContain('min-w-[44px]');
+  });
+
+  it('announces the slap chance via an atomic assertive live region when a Jack is on top', async () => {
+    mockExec.mockResolvedValueOnce(jackOnTopState);
+    renderWithProviders(<SlapjackPage />);
+    const announce = await screen.findByTestId('sj-jack-announce');
+    expect(announce).toHaveAttribute('aria-live', 'assertive');
+    expect(announce).toHaveAttribute('aria-atomic', 'true');
+    expect(announce).toHaveTextContent('ジャックが出ました');
+  });
+
+  it('keeps the live region empty when no Jack is on top', async () => {
+    mockExec.mockResolvedValueOnce(baseState);
+    renderWithProviders(<SlapjackPage />);
+    const announce = await screen.findByTestId('sj-jack-announce');
+    expect(announce).toHaveTextContent('');
   });
 
   it('renders the game-end state with both buttons disabled when human wins', async () => {

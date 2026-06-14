@@ -60,6 +60,33 @@ describe('GongZhuPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '公開しない' })).toBeInTheDocument());
   });
 
+  it('highlights the exposable cards during the expose phase', async () => {
+    // Human hand has 2 cards; only index 0 is exposable so index 1 is the dimmed one.
+    mockExec.mockResolvedValue(makeGongZhuState({ phase: 0, trickNumber: 0, exposableIndices: [0] }));
+    const { container } = renderWithProviders(<GongZhuPage />);
+    const hand = await waitFor(() => {
+      const el = container.querySelector('[data-tutorial="gz-player-hand"]');
+      if (!el) throw new Error('hand not rendered yet');
+      return el as HTMLElement;
+    });
+    const cards = hand.querySelectorAll('button');
+    // The exposable card (idx 0) carries the warning glow.
+    expect((cards[0] as HTMLElement).style.boxShadow).toContain('rgba(232, 146, 58');
+    // The non-exposable card (idx 1) is dimmed.
+    expect(cards[1]).toHaveClass('opacity-60');
+  });
+
+  it('does not dim any card when there are no exposable cards', async () => {
+    mockExec.mockResolvedValue(makeGongZhuState({ phase: 0, trickNumber: 0, exposableIndices: [] }));
+    const { container } = renderWithProviders(<GongZhuPage />);
+    const hand = await waitFor(() => {
+      const el = container.querySelector('[data-tutorial="gz-player-hand"]');
+      if (!el) throw new Error('hand not rendered yet');
+      return el as HTMLElement;
+    });
+    for (const card of hand.querySelectorAll('button')) expect(card).not.toHaveClass('opacity-60');
+  });
+
   it('expose button dispatches expose with empty selection', async () => {
     mockExec.mockResolvedValue(exposePhaseState);
     renderWithProviders(<GongZhuPage />);

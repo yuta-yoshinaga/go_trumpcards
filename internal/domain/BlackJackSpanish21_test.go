@@ -233,3 +233,34 @@ func TestSpanish21SetConfigSwitchesVariant(t *testing.T) {
 	assert.Equal(t, BJVariantSpanish21, v.Name)
 	assert.True(t, bj.deckCountChanged, "variant change should trigger deck rebuild")
 }
+
+// TestSpanish21BonusKeysCapturedOnResolve は resolvePayouts がボーナス成立時に
+// GetBonusKeys へキーを記録すること、およびボーナスなしの再精算でクリアされることを検証する。
+func TestSpanish21BonusKeysCapturedOnResolve(t *testing.T) {
+	bj := NewSpanish21BlackJack()
+
+	// 5-card 21 (2+3+4+5+7) で勝利 → fivecard21 ボーナス成立
+	hand := NewBlackJackHand()
+	hand.AddCard(NewCard(CardDesignSpade, 2, false))
+	hand.AddCard(NewCard(CardDesignClover, 3, false))
+	hand.AddCard(NewCard(CardDesignHeart, 4, false))
+	hand.AddCard(NewCard(CardDesignDiamond, 5, false))
+	hand.AddCard(NewCard(CardDesignSpade, 7, false))
+	hand.SetBet(100)
+	bj.playerHands = []*BlackJackHand{hand}
+	// ディーラーは 17 (10+7): プレイヤー21 が勝つが BJ ではない
+	bj.dealer.AddCard(NewCard(CardDesignClover, 10, false))
+	bj.dealer.AddCard(NewCard(CardDesignDiamond, 7, false))
+
+	bj.resolvePayouts()
+	assert.Equal(t, []string{"spanish21.bonus.fivecard21"}, bj.GetBonusKeys())
+
+	// ボーナスなしの通常ハンドで再精算 → クリアされる
+	plain := NewBlackJackHand()
+	plain.AddCard(NewCard(CardDesignSpade, 10, false))
+	plain.AddCard(NewCard(CardDesignClover, 9, false)) // 19, 勝ち, ボーナスなし
+	plain.SetBet(100)
+	bj.playerHands = []*BlackJackHand{plain}
+	bj.resolvePayouts()
+	assert.Empty(t, bj.GetBonusKeys())
+}

@@ -126,3 +126,37 @@ describe('PlayerHandSection (validIndices)', () => {
     for (const btn of buttons) expect(btn).not.toHaveAttribute('aria-disabled');
   });
 });
+
+describe('PlayerHandSection (highlightIndices)', () => {
+  // JSDOM drops the CSS var from the `border` shorthand, so assert on the
+  // parseable boxShadow glow, which is distinct per state:
+  //   highlight = rgba(232, 146, 58, …) (warning), selection = rgba(59, 130, 246, …) (blue).
+  it('gives highlighted cards a warning glow and dims the rest on desktop', () => {
+    render(<PlayerHandSection {...baseProps} isMobile={false} highlightIndices={[1, 3]} />);
+    const buttons = screen.getAllByRole('button');
+    expect(buttons[1].style.boxShadow).toContain('rgba(232, 146, 58');
+    expect(buttons[3].style.boxShadow).toContain('rgba(232, 146, 58');
+    expect(buttons[0]).toHaveClass('opacity-60');
+    expect(buttons[1]).not.toHaveClass('opacity-60');
+  });
+
+  it('keeps the selection glow on a card that is both selected and highlighted', () => {
+    render(<PlayerHandSection {...baseProps} isMobile={false} highlightIndices={[0]} selectedCardIndices={[0]} />);
+    const buttons = screen.getAllByRole('button');
+    // Selection wins over highlight, and a selected card is never dimmed.
+    expect(buttons[0].style.boxShadow).toContain('rgba(59, 130, 246');
+    expect(buttons[0]).not.toHaveClass('opacity-60');
+  });
+
+  it('highlights and dims on mobile too', () => {
+    render(<PlayerHandSection {...baseProps} isMobile={true} highlightIndices={[2]} />);
+    const buttons = screen.getAllByRole('button');
+    expect(buttons[2].style.boxShadow).toContain('rgba(232, 146, 58');
+    expect(buttons[0]).toHaveClass('opacity-60');
+  });
+
+  it('applies no highlight or dimming when highlightIndices is undefined', () => {
+    render(<PlayerHandSection {...baseProps} isMobile={false} />);
+    for (const btn of screen.getAllByRole('button')) expect(btn).not.toHaveClass('opacity-60');
+  });
+});

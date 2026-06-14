@@ -43,6 +43,8 @@ import type { TutorialStep } from '../types/tutorial';
 import { OMAHA_HELP, parseOmahaCommand } from '../utils/cli/commands/omahaCommands';
 import { formatOmahaState } from '../utils/cli/formatters/omahaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { omahaBestFive } from '../utils/omahaBestFive';
+import { findPlayerName } from '../utils/playerUtils';
 
 /** Omaha Hold'em tutorial step definitions. */
 const OH_TUTORIAL_STEPS: TutorialStep[] = [
@@ -161,6 +163,17 @@ function OmahaPageContent() {
   const isActive = phase >= OmahaPhase.PRE_FLOP && phase <= OmahaPhase.RIVER;
   const isShowdown = phase === OmahaPhase.SHOWDOWN || phase === OmahaPhase.END;
   const humanPlayer = state?.players?.find((p) => p.isHuman);
+  // At showdown, highlight the human's winning 5 cards under Omaha's
+  // must-use-exactly-2-hole + 3-board rule (dim the rest).
+  const showdownBest5 = useMemo(() => {
+    const empty = { holeSet: new Set<number>(), boardSet: new Set<number>() };
+    if (!isShowdown || !humanPlayer || humanPlayer.folded) return empty;
+    const hole = humanPlayer.cards ?? [];
+    const board = state?.communityCards ?? [];
+    const best = omahaBestFive(hole, board);
+    if (!best) return empty;
+    return { holeSet: new Set(best.holeIdx), boardSet: new Set(best.boardIdx) };
+  }, [isShowdown, humanPlayer, state?.communityCards]);
   const humanFolded = humanPlayer?.folded ?? false;
   const humanAllIn = humanPlayer?.allIn ?? false;
   const canAct = isActive && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
@@ -229,7 +242,7 @@ function OmahaPageContent() {
             </strong>
           </span>
           <span>
-            {tc('label.dealer')} <strong>Player {state?.dealerIdx ?? 0}</strong>
+            {tc('label.dealer')} <strong>{findPlayerName(state.players, state.dealerIdx)}</strong>
           </span>
           {state?.tournamentMode && (
             <span>{t('handNumber', { count: state.handCount, level: state.blindLevelHands })}</span>
@@ -251,14 +264,21 @@ function OmahaPageContent() {
                   <div className="text-ds-text-primary text-lg mb-1.5">{t('communityCards')}</div>
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
-                      ? state.communityCards.map((card) => (
-                          <AnimatedCard
-                            key={`${card.design}-${card.value}`}
-                            card={card}
-                            width={cardWidth}
-                            style={placeholderCardStyle}
-                          />
-                        ))
+                      ? state.communityCards.map((card, idx) => {
+                          const inBest = showdownBest5.boardSet.has(idx);
+                          const dim = showdownBest5.boardSet.size > 0 && !inBest;
+                          return (
+                            <div
+                              key={`${card.design}-${card.value}`}
+                              className={`transition-all ${
+                                inBest ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse' : ''
+                              } ${dim ? 'opacity-50' : ''}`}
+                              data-best5-board={inBest || undefined}
+                            >
+                              <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                            </div>
+                          );
+                        })
                       : Array.from({ length: 5 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                   </div>
                 </>
@@ -367,14 +387,21 @@ function OmahaPageContent() {
                 </div>
                 <div className="flex flex-wrap gap-1.5 mb-2" data-tutorial="oh-combination-rule">
                   {humanPlayer.cards?.length
-                    ? humanPlayer.cards.map((card) => (
-                        <AnimatedCard
-                          key={`${card.design}-${card.value}`}
-                          card={card}
-                          width={cardWidth}
-                          style={placeholderCardStyle}
-                        />
-                      ))
+                    ? humanPlayer.cards.map((card, idx) => {
+                        const inBest = showdownBest5.holeSet.has(idx);
+                        const dim = showdownBest5.holeSet.size > 0 && !inBest;
+                        return (
+                          <div
+                            key={`${card.design}-${card.value}`}
+                            className={`transition-all ${
+                              inBest ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse' : ''
+                            } ${dim ? 'opacity-50' : ''}`}
+                            data-best5-hole={inBest || undefined}
+                          >
+                            <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                          </div>
+                        );
+                      })
                     : !humanPlayer.folded &&
                       Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                 </div>

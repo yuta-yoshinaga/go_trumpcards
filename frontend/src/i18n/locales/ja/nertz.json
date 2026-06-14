@@ -4,6 +4,7 @@
     "round": "ラウンド",
     "moveCount": "手数",
     "score": "スコア",
+    "scoreBarAria": "{{player}}: {{score}} / {{target}}点",
     "you": "あなた",
     "cpu": "CPU",
     "nertz": "ナッツ",

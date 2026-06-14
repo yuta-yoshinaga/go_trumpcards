@@ -77,6 +77,17 @@ describe('RedDogPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset'));
   });
 
+  it('falls back to the initial-dealt phase label', async () => {
+    mockApi.mockResolvedValue({
+      ...betState,
+      phase: RedDogPhase.INITIAL_DEALT,
+      initialCards: [card('SPADE', 5), card('HEART', 10)],
+      ante: 100,
+    });
+    renderWithProviders(<RedDogPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('初手公開'));
+  });
+
   it('renders bet phase with bet button', async () => {
     mockApi.mockResolvedValue(betState);
     renderWithProviders(<RedDogPage />);

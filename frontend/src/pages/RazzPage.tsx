@@ -7,6 +7,7 @@ import { CpuActionLog } from '../components/CpuActionLog';
 import { CpuActionToast } from '../components/CpuActionToast';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -37,6 +38,7 @@ import type { SevenCardStudResponse } from '../types/card';
 import { SevenCardStudPhase, SevenCardStudRebuyPhaseType } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { findPlayerName } from '../utils/playerUtils';
 
 /** Razz tutorial step definitions. */
 const RAZZ_TUTORIAL_STEPS: TutorialStep[] = [
@@ -266,10 +268,7 @@ function RazzPageContent() {
             </strong>
           </span>
           <span>
-            {tc('label.dealer')}{' '}
-            <strong>
-              {tc('label.player')} {state?.dealerIdx ?? 0}
-            </strong>
+            {tc('label.dealer')} <strong>{findPlayerName(state.players, state.dealerIdx)}</strong>
           </span>
           {state?.tournamentMode && (
             <span>{t('handNumber', { count: state.handCount, level: state.anteLevelHands })}</span>
@@ -357,6 +356,31 @@ function RazzPageContent() {
               hideActionLog={hideActionLog}
             />
           </div>
+
+          {/* Settings */}
+          <SettingsPanel
+            title={tc('settings.title')}
+            groups={[
+              {
+                items: [
+                  {
+                    type: 'checkbox' as const,
+                    id: 'frontendHint',
+                    label: tc('hint.toggle', { ns: 'tutorial' }),
+                    checked: hintEnabled,
+                    onToggle: setHintEnabled,
+                  },
+                  {
+                    type: 'checkbox' as const,
+                    id: 'cpuMetaAI',
+                    label: t('settings.cpuMetaAI'),
+                    checked: cpuMetaAI,
+                    onToggle: setCpuMetaAI,
+                  },
+                ],
+              },
+            ]}
+          />
 
           {/* Sticky footer: player hand + buttons */}
           <GameFooter className={`${gameTheme.razz.footer} px-5 py-3`}>
@@ -523,22 +547,6 @@ function RazzPageContent() {
               </div>
             )}
 
-            {/* Settings + Reset */}
-            <details className="mb-1">
-              <summary className="cursor-pointer select-none text-ds-text-primary text-sm font-bold py-1">
-                {tc('settings.title')}
-              </summary>
-              <div className="flex items-center gap-3 py-1">
-                <label className="text-ds-text-primary text-sm flex items-center gap-1">
-                  <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
-                  {tc('hint.toggle', { ns: 'tutorial' })}
-                </label>
-                <label className="text-ds-text-primary text-sm flex items-center gap-1">
-                  <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
-                  {t('settings.cpuMetaAI')}
-                </label>
-              </div>
-            </details>
             <GameResetButton
               isGameEnd={phase === SevenCardStudPhase.SHOWDOWN || phase === SevenCardStudPhase.END}
               onReset={handleManualReset}

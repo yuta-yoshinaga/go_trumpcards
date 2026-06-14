@@ -36,6 +36,21 @@ export function playableCardStyle(isPlayable: boolean): React.CSSProperties {
 }
 
 /**
+ * Return inline styles for a card highlighted as an actionable option (e.g. an
+ * exposable card in Gong Zhu). Uses the warning accent so it reads distinctly
+ * from the blue selection border. Applied via inline style (not a Tailwind
+ * `ring`) because the selection styles set `boxShadow` inline, which would
+ * otherwise override a class-based ring.
+ */
+export function highlightCardStyle(): React.CSSProperties {
+  return {
+    border: '3px solid var(--color-ds-warning)',
+    boxShadow: '0 0 8px rgba(232, 146, 58, 0.45)',
+    transition: 'border 0.15s, box-shadow 0.15s',
+  };
+}
+
+/**
  * Return adjusted overlap margin for a card that is adjacent to a selected card on mobile.
  * Reduces the negative overlap by EXPANSION_GAP_PX, effectively widening the visible area.
  * Returns the original overlap when the card is not adjacent to a selection.

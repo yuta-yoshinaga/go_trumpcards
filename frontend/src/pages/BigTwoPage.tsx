@@ -11,6 +11,7 @@ import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useBigTwoGame } from '../hooks/useBigTwoGame';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -107,9 +108,19 @@ function BigTwoPageContent() {
 
   if (!state || state.players.length < 4) {
     return (
-      <div className={`flex-1 flex items-center justify-center ${gameTheme.bigtwo.bg} text-ds-text-muted`} aria-busy>
-        {tc('skeleton.loading')}
-      </div>
+      <GameSkeleton
+        gameKey="bigtwo"
+        layout={{
+          kind: 'trick-taking',
+          titleBar: false,
+          opponents: 3,
+          opponentStyle: 'hand',
+          opponentHandSize: 4,
+          trickArea: true,
+          footerHandSize: 5,
+          footerButton: 'wide',
+        }}
+      />
     );
   }
 

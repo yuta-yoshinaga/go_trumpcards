@@ -122,4 +122,38 @@ describe('BidWhistPage', () => {
     fireEvent.click(await screen.findByTestId('play-button'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0 }));
   });
+
+  it('shows the kitty selection progress and fills the bar at six cards', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        declarerIdx: 0,
+        players: [
+          player(0, true, sixCards, { isDeclarer: true }),
+          player(1, false, []),
+          player(2, false, []),
+          player(3, false, []),
+        ],
+      }),
+    );
+    renderWithProviders(<BidWhistPage />);
+    const progress = await screen.findByTestId('kitty-progress');
+    expect(progress).toHaveTextContent('0 / 6');
+    // Bar is not yet full → info colour, no success colour.
+    expect(progress.querySelector('.bg-ds-success')).toBeNull();
+
+    // Select all six cards → counter reaches 6/6 and the bar turns success.
+    for (let i = 0; i < 6; i++) {
+      fireEvent.click(screen.getByTestId(`hand-card-${i}`));
+    }
+    expect(progress).toHaveTextContent('6 / 6');
+    expect(progress.querySelector('.bg-ds-success')).not.toBeNull();
+  });
+
+  it('hides the kitty progress outside the exchange phase', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 3, currentPlayerIdx: 0 }));
+    renderWithProviders(<BidWhistPage />);
+    await screen.findByTestId('hand-card-0');
+    expect(screen.queryByTestId('kitty-progress')).not.toBeInTheDocument();
+  });
 });

@@ -155,21 +155,36 @@ describe('FourCardPokerPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 100, 0));
   });
 
-  it('renders action phase with play and fold buttons', async () => {
+  it('renders action phase with per-multiplier play buttons and fold', async () => {
     mockExec.mockResolvedValue(actionPhaseState);
     renderWithProviders(<FourCardPokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('play-1x')).toBeInTheDocument());
+    expect(screen.getByTestId('play-2x')).toBeInTheDocument();
+    expect(screen.getByTestId('play-3x')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
+    // The select-box multiplier control is gone.
+    expect(screen.queryByLabelText(/プレイ倍率/)).not.toBeInTheDocument();
   });
 
-  it('sends play command with selected multiplier', async () => {
+  it('sends play command with the chosen multiplier button', async () => {
     mockExec.mockResolvedValue(actionPhaseState);
     renderWithProviders(<FourCardPokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ' })).toBeInTheDocument());
-
-    fireEvent.change(screen.getByLabelText(/プレイ倍率/), { target: { value: '3' } });
-    fireEvent.click(screen.getByRole('button', { name: 'プレイ' }));
+    fireEvent.click(await screen.findByTestId('play-1x'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, undefined, 1));
+    fireEvent.click(screen.getByTestId('play-2x'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, undefined, 2));
+    fireEvent.click(screen.getByTestId('play-3x'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, undefined, 3));
+  });
+
+  it('plays via the 1/2/3 keyboard shortcuts', async () => {
+    mockExec.mockResolvedValue(actionPhaseState);
+    renderWithProviders(<FourCardPokerPage />);
+    await screen.findByTestId('play-1x');
+    for (const key of ['1', '2', '3'] as const) {
+      fireEvent.keyDown(document, { key });
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, undefined, Number(key)));
+    }
   });
 
   it('sends fold command', async () => {

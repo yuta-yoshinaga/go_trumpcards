@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { montecarloApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -166,7 +166,7 @@ describe('MonteCarloPage', () => {
     expect(partner.className).toContain('animate-pulse');
   });
 
-  it('falls back to warning ring on adjacent cells with a different rank', async () => {
+  it('dims adjacent cells with a different rank instead of ringing them', async () => {
     // Build a board where two adjacent cells (0,0) and (1,0) hold different ranks.
     const board = emptyBoard();
     board[0][0] = { card: card('SPADE', 7) };
@@ -179,7 +179,36 @@ describe('MonteCarloPage', () => {
 
     const neighbor = screen.getByTestId('mc-cell-1-0');
     expect(neighbor).not.toHaveAttribute('data-pair-match');
-    expect(neighbor.className).toContain('ring-ds-warning');
+    expect(neighbor.className).toContain('opacity-60');
     expect(neighbor.className).not.toContain('animate-pulse');
+  });
+
+  it('lifts a matching adjacent pair candidate and shows a transient success toast on removal', async () => {
+    vi.useFakeTimers();
+    try {
+      const board = emptyBoard();
+      board[0][0] = { card: card('SPADE', 7) };
+      board[1][0] = { card: card('HEART', 7) }; // adjacent, same rank
+      mockExec.mockResolvedValue({ ...playingState, board });
+      renderWithProviders(<MonteCarloPage />);
+      // Use vi.waitFor (not RTL waitFor) here: RTL's waitFor relies on real timers
+      // and would hang under vi.useFakeTimers().
+      await vi.waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+      fireEvent.click(screen.getByTestId('mc-cell-0-0'));
+      const match = screen.getByTestId('mc-cell-1-0');
+      expect(match).toHaveAttribute('data-pair-match', 'true');
+      expect(match.className).toContain('-translate-y-1');
+
+      // Removing the valid pair flashes the toast, which auto-dismisses after 1s.
+      fireEvent.click(match);
+      expect(screen.getByTestId('mc-pair-toast')).toBeInTheDocument();
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+      expect(screen.queryByTestId('mc-pair-toast')).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

@@ -299,6 +299,15 @@ describe('EuchrePage', () => {
     });
   });
 
+  it('shows the turned-down suit as a disabled, explained button', async () => {
+    mockExec.mockResolvedValue(callTrumpPhaseState); // faceUpCard is HEART
+    renderWithProviders(<EuchrePage />);
+    const heart = await screen.findByRole('button', { name: '♥ ハート' });
+    expect(heart).toBeDisabled();
+    expect(heart).toHaveAttribute('title', 'このスートは選択できません（めくり札のスート）');
+    expect(screen.getByRole('button', { name: '♠ スペード' })).toBeEnabled();
+  });
+
   it('renders discard phase with discard button', async () => {
     mockExec.mockResolvedValue(discardPhaseState);
     renderWithProviders(<EuchrePage />);

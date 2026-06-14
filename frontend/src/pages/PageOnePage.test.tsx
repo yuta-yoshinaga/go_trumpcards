@@ -91,6 +91,19 @@ describe('PageOnePage', () => {
     });
   });
 
+  it('shows the play-condition badge under the discard top', async () => {
+    renderWithProviders(<PageOnePage />);
+    // discardTop is ♥7 → playable cards are hearts or 7s.
+    await waitFor(() => expect(screen.getByText('出せる条件: ♥ または 7')).toBeInTheDocument());
+  });
+
+  it('hides the play-condition badge when the discard pile is empty', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, discardTop: null });
+    renderWithProviders(<PageOnePage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+    expect(screen.queryByText(/出せる条件/)).not.toBeInTheDocument();
+  });
+
   it('does not show play/draw buttons when not human turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<PageOnePage />);

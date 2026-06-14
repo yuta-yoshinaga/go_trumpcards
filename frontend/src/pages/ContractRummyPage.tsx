@@ -96,6 +96,14 @@ function ContractRummyPageContent() {
   const isPlayPhase = isHumanTurn && state?.phase === CR_PHASE.PLAY;
   const isRoundEnd = state?.phase === CR_PHASE.ROUND_END;
 
+  // Human-readable label for the currently selected layoff target meld, if any.
+  const layoffTargetPlayer = layoffTarget ? state?.players.find((p) => p.id === layoffTarget.playerIdx) : undefined;
+  const layoffTargetLabel = layoffTargetPlayer
+    ? layoffTargetPlayer.isHuman
+      ? tc('player.you')
+      : tc('player.cpu', { id: layoffTargetPlayer.id })
+    : null;
+
   const toggleCard = useCallback((idx: number) => {
     setSelectedCards((prev) => (prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]));
   }, []);
@@ -275,24 +283,33 @@ function ContractRummyPageContent() {
             </div>
             {p.melds.length > 0 && (
               <div className="mt-2">
-                {p.melds.map((m, mi) => (
-                  <button
-                    type="button"
-                    key={`${p.id}-${mi}`}
-                    onClick={() => {
-                      if (humanPlayer?.contractMet && p.contractMet) {
-                        setLayoffTarget({ playerIdx: p.id, meldIdx: mi });
-                      }
-                    }}
-                    className={`flex flex-wrap gap-1 mb-1 px-1 rounded ${focusRingWhite} ${
-                      layoffTarget?.playerIdx === p.id && layoffTarget?.meldIdx === mi ? 'ring-2 ring-ds-warning' : ''
-                    }`}
-                  >
-                    {m.cards.map((c, ci) => (
-                      <AnimatedCard key={`${p.id}-${mi}-${ci}`} card={c} width={cardWidth * 0.6} />
-                    ))}
-                  </button>
-                ))}
+                {p.melds.map((m, mi) => {
+                  const isLayoffTarget = layoffTarget?.playerIdx === p.id && layoffTarget?.meldIdx === mi;
+                  const playerLabel = p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id });
+                  // The meld is only a selectable layoff target once both contracts are met.
+                  const canLayoff = humanPlayer?.contractMet === true && p.contractMet;
+                  return (
+                    <button
+                      type="button"
+                      key={`${p.id}-${mi}`}
+                      onClick={() => {
+                        if (canLayoff) {
+                          setLayoffTarget({ playerIdx: p.id, meldIdx: mi });
+                        }
+                      }}
+                      aria-label={t('meldAria', { player: playerLabel, meld: mi + 1 })}
+                      // Only expose the toggle semantics when the meld is actually actionable.
+                      aria-pressed={canLayoff ? isLayoffTarget : undefined}
+                      className={`flex flex-wrap gap-1 mb-1 px-1 rounded ${focusRingWhite} ${
+                        isLayoffTarget ? 'ring-2 ring-ds-warning bg-ds-warning/20' : ''
+                      }`}
+                    >
+                      {m.cards.map((c, ci) => (
+                        <AnimatedCard key={`${p.id}-${mi}-${ci}`} card={c} width={cardWidth * 0.6} />
+                      ))}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -412,6 +429,11 @@ function ContractRummyPageContent() {
             requestConfirm={requestConfirm}
             loading={loading}
           />
+          {layoffTarget && layoffTargetLabel && (
+            <span data-testid="cr-layoff-target" className="text-xs text-ds-warning font-medium">
+              {t('layoffTargetSummary', { player: layoffTargetLabel, meld: layoffTarget.meldIdx + 1 })}
+            </span>
+          )}
         </div>
       </GameFooter>
     </GamePageShell>

@@ -41,6 +41,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
+import { btnDanger } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BlackJackResponse } from '../types/card';
@@ -472,6 +473,22 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
               </div>
             )}
 
+            {/* Variant bonus badges (Spanish 21): 7-7-7 / 6-7-8 / 5+card 21 achievements. */}
+            {phase === BjPhase.END && (state?.bonuses?.length ?? 0) > 0 && (
+              <div className="mb-2 flex flex-wrap justify-center gap-1" data-testid="bj-bonus-badges">
+                {state?.bonuses?.map((key, i) => (
+                  <span
+                    // Multi-hand rounds can repeat the same bonus key, so include the index.
+                    key={`${key}-${i}`}
+                    data-testid="bj-bonus-badge"
+                    className="rounded-full border border-ds-warning bg-ds-surface px-3 py-0.5 text-ds-warning text-sm font-bold motion-safe:animate-pulse-once"
+                  >
+                    🎉 {t(key.replace(/^spanish21\./, ''))}
+                  </span>
+                ))}
+              </div>
+            )}
+
             {/* Hint banner */}
             {hintEnabled && suggestedAction !== BJ_SUGGEST_NONE && (
               <div className="mb-2">
@@ -504,7 +521,12 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
 
             {/* Phase-based buttons */}
             <div className="text-center">
-              {phase === BjPhase.BET && (
+              {phase === BjPhase.BET && playerChips <= 0 && (
+                <button type="button" className={btnDanger} onClick={handleReset} disabled={loading}>
+                  {t('outOfChips')}
+                </button>
+              )}
+              {phase === BjPhase.BET && playerChips > 0 && (
                 <>
                   <div data-tutorial="bj-bet-controls">
                     <BjBetPhaseControls

@@ -33,7 +33,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { GINRUMMY_HELP, parseGinrummyCommand } from '../utils/cli/commands/ginrummyCommands';
 import { formatGinrummyState } from '../utils/cli/formatters/ginrummyFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { bestDeadwoodValue, GIN_RUMMY_KNOCK_THRESHOLD } from '../utils/ginRummyDeadwood';
+import { bestDeadwoodValue, GIN_RUMMY_KNOCK_THRESHOLD, ginRummyMeldLabel } from '../utils/ginRummyDeadwood';
 import { playerName } from '../utils/playerUtils';
 
 const GINRUMMY_PHASE_KEYS: Readonly<Record<number, string>> = {
@@ -276,14 +276,22 @@ function GinRummyPageContent() {
                   <div className="my-3 p-2 rounded bg-black/30">
                     <div className="text-ds-text-muted text-sm mb-1">{t('knockerMelds')}</div>
                     {state.knockerMelds.map((meld, meldIdx) => (
-                      <div key={`meld-${meldIdx}`} className="flex flex-wrap gap-1 mb-1">
-                        {meld.cards.map((card, cardIdx) => (
-                          <AnimatedCard
-                            key={`meld-${meldIdx}-${card.design}-${card.value}-${cardIdx}`}
-                            card={card}
-                            width={cardWidth * 0.7}
-                          />
-                        ))}
+                      <div key={`meld-${meldIdx}`} className="mb-1">
+                        <span
+                          data-testid={`gr-meld-badge-${meldIdx}`}
+                          className="inline-block rounded border border-ds-secondary px-1.5 py-0.5 text-ds-text-primary text-xs mb-0.5"
+                        >
+                          {ginRummyMeldLabel(meld.cards)}
+                        </span>
+                        <div className="flex flex-wrap gap-1">
+                          {meld.cards.map((card, cardIdx) => (
+                            <AnimatedCard
+                              key={`meld-${meldIdx}-${card.design}-${card.value}-${cardIdx}`}
+                              card={card}
+                              width={cardWidth * 0.7}
+                            />
+                          ))}
+                        </div>
                       </div>
                     ))}
                   </div>

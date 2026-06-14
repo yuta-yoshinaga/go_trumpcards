@@ -66,6 +66,21 @@ describe('CassinoPage', () => {
     expect(screen.getByTestId('hand-card-2')).toBeInTheDocument();
   });
 
+  it('renders the human and CPU stat lines via i18n (no hardcoded 枚/pt)', async () => {
+    const players = [
+      { id: 0, isHuman: true, cardCount: 3, cards: [], capturedCount: 5, sweepCount: 2, totalScore: 7 },
+      { id: 1, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, sweepCount: 0, totalScore: 3 },
+      { id: 2, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, sweepCount: 0, totalScore: 0 },
+      { id: 3, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, sweepCount: 0, totalScore: 0 },
+    ];
+    mockExec.mockResolvedValue(makeState({ players }));
+    renderWithProviders(<CassinoPage />);
+    // ja label.humanStats: "手札3枚 / 捕獲5枚 / スイープ2 / 累計7pt"
+    await waitFor(() => expect(screen.getByText(/手札3枚.*捕獲5枚.*スイープ2.*累計7pt/)).toBeInTheDocument());
+    // ja label.cpuStats for CPU 1: "4枚 / 3pt"
+    expect(screen.getByText(/4枚 \/ 3pt/)).toBeInTheDocument();
+  });
+
   it('renders table cards', async () => {
     renderWithProviders(<CassinoPage />);
     await waitFor(() => expect(screen.getByTestId('table-card-0')).toBeInTheDocument());

@@ -83,13 +83,16 @@ describe('CallBreakPage', () => {
     });
   });
 
-  it('renders bid phase with bid button and input', async () => {
+  it('renders bid phase with a 1-13 bid button group', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<CallBreakPage />);
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'ビッド' })).toBeInTheDocument();
-      expect(screen.getByLabelText('bid-input')).toBeInTheDocument();
     });
+    // 13 selectable bid options, defaulting to 1 pressed.
+    expect(screen.getByTestId('bid-option-1')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('bid-option-13')).toBeInTheDocument();
+    expect(screen.queryByLabelText('bid-input')).not.toBeInTheDocument();
   });
 
   it('shows bid phase instruction when human bid turn', async () => {
@@ -112,8 +115,9 @@ describe('CallBreakPage', () => {
     renderWithProviders(<CallBreakPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ビッド' })).toBeInTheDocument());
 
-    const input = screen.getByLabelText('bid-input');
-    fireEvent.change(input, { target: { value: '5' } });
+    // Select bid 5 from the button group.
+    fireEvent.click(screen.getByTestId('bid-option-5'));
+    expect(screen.getByTestId('bid-option-5')).toHaveAttribute('aria-pressed', 'true');
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(playPhaseState);

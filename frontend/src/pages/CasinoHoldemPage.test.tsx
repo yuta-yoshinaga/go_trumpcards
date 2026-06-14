@@ -163,6 +163,28 @@ describe('CasinoHoldemPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 200, 10));
   });
 
+  it('shows a validation error and disables Bet for a non-multiple-of-10 ante', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<CasinoHoldemPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    fireEvent.change(screen.getByLabelText('アンテ'), { target: { value: '15' } });
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ベット' })).toBeDisabled();
+  });
+
+  it('steps the ante up and down with the stepper buttons', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<CasinoHoldemPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    const ante = screen.getByLabelText('アンテ') as HTMLInputElement;
+    fireEvent.click(screen.getByRole('button', { name: 'アンテ +10' }));
+    expect(ante.value).toBe('110');
+    fireEvent.click(screen.getByRole('button', { name: 'アンテ −10' }));
+    expect(ante.value).toBe('100');
+  });
+
   it('shows network error', async () => {
     mockApi.mockResolvedValueOnce(betPhaseState).mockRejectedValueOnce(new Error('Network'));
     renderWithProviders(<CasinoHoldemPage />);

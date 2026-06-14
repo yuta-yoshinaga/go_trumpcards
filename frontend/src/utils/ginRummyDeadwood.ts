@@ -1,7 +1,24 @@
 import type { Card } from '../types/card';
+import { suitSymbol } from './cardAlt';
+import { valueName } from './cardUtils';
 
 /** Backend's GinRummyKnockThreshold (10). */
 export const GIN_RUMMY_KNOCK_THRESHOLD = 10;
+
+/**
+ * Short type label for a Gin Rummy meld, derived from its cards (no API change):
+ * a same-rank set yields the rank (e.g. `7`, `K`); a same-suit run yields the
+ * suit symbol with its low–high range (e.g. `♠ 3-5`). Returns `''` for an empty
+ * meld. Used as a header badge so players can spot layoff targets quickly.
+ */
+export function ginRummyMeldLabel(cards: readonly Card[]): string {
+  if (cards.length === 0) return '';
+  const first = cards[0];
+  const sameRank = cards.every((c) => c.value === first.value);
+  if (sameRank) return valueName(first.value); // set
+  const sorted = cards.map((c) => c.value).sort((a, b) => a - b); // run
+  return `${suitSymbol(first.design)} ${valueName(sorted[0])}-${valueName(sorted[sorted.length - 1])}`;
+}
 
 /** Gin Rummy card value (A=1, 2-9=face, 10/J/Q/K=10). */
 export function ginRummyCardValue(card: Card): number {

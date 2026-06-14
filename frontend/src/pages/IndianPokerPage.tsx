@@ -38,6 +38,7 @@ import { INDIANPOKER_HELP, parseIndianpokerCommand } from '../utils/cli/commands
 import { formatIndianpokerState } from '../utils/cli/formatters/indianpokerFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { computeIndianPokerEquity } from '../utils/indianPokerEquity';
+import { findPlayerName } from '../utils/playerUtils';
 
 /** Indian Poker tutorial step definitions. */
 const IP_TUTORIAL_STEPS: TutorialStep[] = [
@@ -214,7 +215,7 @@ function IndianPokerPageContent() {
       }
       headerEnd={
         <span>
-          {tc('label.dealer')} <strong>Player {state.dealerIdx ?? 0}</strong>
+          {tc('label.dealer')} <strong>{findPlayerName(state.players, state.dealerIdx)}</strong>
         </span>
       }
     >

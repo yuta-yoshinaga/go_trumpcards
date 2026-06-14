@@ -130,3 +130,9 @@ func (p *CribbageWebPresenter) buildMessage(g interfaces.CribbageGame, lastErr e
 func (p *CribbageWebPresenter) ActionLogOutput(g interfaces.CribbageGame) string {
 	return actionLogOutputJSON(g)
 }
+
+// HintOutput ヒント出力。Web GUI は useGameHint のフロントエンドヒントを使うため、
+// サーバーヒントは状態出力をそのまま返す（Web ルートからは呼ばれない）。
+func (p *CribbageWebPresenter) HintOutput(g interfaces.CribbageGame) string {
+	return p.Output(g, nil)
+}

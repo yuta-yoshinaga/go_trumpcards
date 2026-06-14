@@ -3,6 +3,7 @@
   "helpDiscard": "  d <idx,idx>          クリブに2枚捨てる",
   "helpPeg": "  p <idx>              ペギングでカードを出す",
   "helpGo": "  go                   Goを宣言する",
+  "helpHint": "  h                    ヒント",
   "helpShowNext": "  sn                   次のスコア計算",
   "helpNextRound": "  nr                   次のラウンドへ",
   "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
@@ -26,5 +27,7 @@
   "showLabelPone": "非ディーラー手札",
   "showLabelDealer": "ディーラー手札",
   "showLabelCrib": "クリブ",
-  "showDetailLine": "  {{label}}: {{total}}点 (15s={{fifteens}}, ペア={{pairs}}, ラン={{runs}}, フラッシュ={{flush}}, ノブ={{nobs}})"
+  "showDetailLine": "  {{label}}: {{total}}点 (15s={{fifteens}}, ペア={{pairs}}, ラン={{runs}}, フラッシュ={{flush}}, ノブ={{nobs}})",
+  "hintDiscard": "ヒント: インデックス {{i}} と {{j}} をクリブに捨てるのがおすすめです。",
+  "hintPlay": "ヒント: インデックス {{i}} のカードを出すのがおすすめです。"
 }

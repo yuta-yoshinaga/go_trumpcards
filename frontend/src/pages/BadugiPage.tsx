@@ -40,6 +40,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { BADUGI_HELP, parseBadugiCommand } from '../utils/cli/commands/badugiCommands';
 import { formatBadugiState } from '../utils/cli/formatters/badugiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { findPlayerName } from '../utils/playerUtils';
 
 /** Badugi tutorial step definitions. */
 const BG_TUTORIAL_STEPS: TutorialStep[] = [
@@ -219,7 +220,7 @@ function BadugiPageContent() {
       headerEnd={
         <>
           <span>
-            {tc('label.dealer')} <strong>Player {state?.dealerIdx ?? 0}</strong>
+            {tc('label.dealer')} <strong>{findPlayerName(state.players, state.dealerIdx)}</strong>
           </span>
           <span className="text-xs bg-black/20 text-ds-text-primary px-2 py-0.5 rounded">
             {drawIndex === 0 ? t('preDrawLabel') : t('drawBadge', { n: drawIndex })}

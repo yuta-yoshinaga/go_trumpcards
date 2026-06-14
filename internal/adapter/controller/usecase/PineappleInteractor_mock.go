@@ -37,6 +37,12 @@ func (_m *MockPineappleInteractor) Discard(cardIdx int) string {
 	return ret.Get(0).(string)
 }
 
+// DiscardMany モック
+func (_m *MockPineappleInteractor) DiscardMany(cardIdxs []int) string {
+	ret := _m.Called(cardIdxs)
+	return ret.Get(0).(string)
+}
+
 // GetConfig モック
 func (_m *MockPineappleInteractor) GetConfig() domain.PineappleConfig {
 	ret := _m.Called()

@@ -86,12 +86,14 @@ describe('SpadesPage', () => {
     });
   });
 
-  it('renders bid phase with bid button and input', async () => {
+  it('renders bid phase with a bid value button group and a Nil button', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<SpadesPage />);
     await waitFor(() => {
       expect(screen.getByRole('button', { name: '\u30d3\u30c3\u30c9' })).toBeInTheDocument();
-      expect(screen.getByLabelText('bid-input')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '\u30cb\u30eb' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '1' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '13' })).toBeInTheDocument();
     });
   });
 
@@ -110,19 +112,34 @@ describe('SpadesPage', () => {
     expect(screen.queryByText(/\u30d3\u30c3\u30c9\u3092\u5ba3\u8a00/)).not.toBeInTheDocument();
   });
 
-  it('calls bid command when bid button is clicked', async () => {
+  it('calls bid command with the selected value button', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<SpadesPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '\u30d3\u30c3\u30c9' })).toBeInTheDocument());
 
-    const input = screen.getByLabelText('bid-input');
-    fireEvent.change(input, { target: { value: '5' } });
+    fireEvent.click(screen.getByRole('button', { name: '5' }));
+    expect(screen.getByRole('button', { name: '5' })).toHaveAttribute('aria-pressed', 'true');
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(playPhaseState);
     fireEvent.click(screen.getByRole('button', { name: '\u30d3\u30c3\u30c9' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', 5));
+  });
+
+  it('bids zero via the Nil button', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<SpadesPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '\u30d3\u30c3\u30c9' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: '\u30cb\u30eb' }));
+    expect(screen.getByRole('button', { name: '\u30cb\u30eb' })).toHaveAttribute('aria-pressed', 'true');
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: '\u30d3\u30c3\u30c9' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', 0));
   });
 
   it('play button disabled when not 1 card selected', async () => {
@@ -501,7 +518,7 @@ describe('SpadesPage', () => {
   it('does not show bid controls in play phase', async () => {
     renderWithProviders(<SpadesPage />);
     await waitFor(() => expect(screen.getByText('\u30b9\u30b3\u30a2')).toBeInTheDocument());
-    expect(screen.queryByLabelText('bid-input')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '\u30cb\u30eb' })).not.toBeInTheDocument();
   });
 
   it('disables buttons while loading', async () => {

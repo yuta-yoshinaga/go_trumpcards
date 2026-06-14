@@ -24,6 +24,7 @@
   "discardPile": "捨て札: {{count}}枚",
   "pozzetto": "ポゼット: 残り{{count}}山",
   "tookPozzetto": "ポゼット獲得済",
+  "pozzettoTakenBanner": "{{player}} がポゼットを獲得！",
   "frozen": "フリーズ中",
   "melds": "メルド",
   "red3s": "赤3",

@@ -111,11 +111,9 @@ function RedDogPageContent() {
     ? t('phase.bet')
     : state.phase === RedDogPhase.SPREAD_DECISION
       ? t('phase.spreadDecision')
-      : state.phase === RedDogPhase.PAIR_THIRD
-        ? t('phase.pairThird')
-        : isEndPhase
-          ? t('phase.end')
-          : t('phase.initialDealt');
+      : isEndPhase
+        ? t('phase.end')
+        : t('phase.initialDealt');
 
   return (
     <GamePageShell

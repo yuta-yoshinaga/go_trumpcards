@@ -30,6 +30,8 @@ type CribbageInteractorIF interface {
 	GetConfig() domain.CribbageConfig
 	// ActionLog 棋譜を出力する
 	ActionLog() string
+	// Hint ヒント取得
+	Hint() string
 }
 
 // CribbageInteractor クリベッジインタラクタークラス
@@ -42,6 +44,11 @@ type CribbageInteractor struct {
 func NewCribbageInteractor(g interfaces.CribbageGame, gp presenter.CribbagePresenter) *CribbageInteractor {
 	mustNotNil("CribbageInteractor", map[string]any{"g": g, "gp": gp})
 	return &CribbageInteractor{GameBase: GameBase[interfaces.CribbageGame]{Game: g}, gp: gp}
+}
+
+// Hint ヒント取得
+func (ci *CribbageInteractor) Hint() string {
+	return ci.gp.HintOutput(ci.Game)
 }
 
 // Reset ゲーム初期化

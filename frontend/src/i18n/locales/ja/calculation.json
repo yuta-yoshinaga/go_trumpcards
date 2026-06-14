@@ -24,6 +24,7 @@
   "nextRankBadge": "次:{{rank}}",
   "nextRankAria": "次に置くべきカード {{rank}}",
   "upcomingRanksTooltip": "今後の必要カード: {{sequence}}",
+  "wasteRanksTooltip": "ウェイスト{{idx}}（上3枚）: {{ranks}}",
   "foundationCompleteAria": "完成",
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
   "gameOver": "ゲームオーバー",

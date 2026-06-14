@@ -244,3 +244,7 @@ Key routing rules:
 - Architecture review → invoke plan-eng-review
 - Save progress, checkpoint, resume → invoke checkpoint
 - Code quality, health check → invoke health
+- Per-game improvement proposals → GitHub issues ("各ゲームの改善提案", "全ゲームのissueを作って") → invoke game-improve
+- New-game candidates → GitHub issues ("追加した方が良いゲームを提案", "新規ゲーム候補をissueに") → invoke propose-games
+- Implement a single GitHub issue end-to-end ("issueに着手して", "#NNNN を対応して", "implement issue #N") → invoke improve-issue (explicit `/improve-issue <#>`)
+- Clear a whole batch of improvement issues, lowest-effort first ("issueバッチを片付けて", "#NNNN〜#MMMM を全部対応", "残りの改善issueを全部やって") → invoke improve-batch (explicit `/improve-batch <range>`)

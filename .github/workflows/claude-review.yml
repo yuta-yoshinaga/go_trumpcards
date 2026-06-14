@@ -2,31 +2,71 @@ name: Claude Code PR Review
 
 on:
   pull_request:
-    types: [opened]
+    types: [opened, reopened]
     branches-ignore:
       - master
   issue_comment:
     types: [created]
 
 jobs:
-  claude-review:
+  # Automatic review fired by simply opening (or reopening) a PR.
+  # claude-code-action only reviews autonomously when given a `prompt`; without
+  # one it stays in mention mode and does nothing on a pull_request event.
+  auto-review:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    if: >
-      github.event_name == 'pull_request' ||
-      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude'))
-
     permissions:
       contents: write
       pull-requests: write
       issues: write
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - name: Run Claude Code Action
+      - name: Run Claude Code Action (auto review)
+        uses: anthropics/claude-code-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # track_progress makes the action create and maintain a tracking
+          # comment, so the review is reliably posted (without it the job ran
+          # but sometimes posted nothing — permission denials / no buffered
+          # comments). This is the official automatic-review mechanism.
+          track_progress: true
+          # Tools the review needs to read the diff and post inline + summary.
+          claude_args: |
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            Review this pull request. Inspect the diff (e.g. `gh pr diff`), then assess:
+            - Correctness bugs and missed edge cases
+            - Security issues
+            - Performance concerns
+            - Maintainability and adherence to the project's conventions (see CLAUDE.md)
+            Use inline comments for specific issues and a top-level comment for the
+            overall summary grouped by severity. Clearly flag anything that must be
+            fixed before merge. If the change looks good, say so briefly.
+
+  # Interactive response when someone mentions @claude on a PR or issue comment.
+  # No prompt here: the action reads the comment as its instruction.
+  mention-review:
+    if: github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Run Claude Code Action (mention)
         uses: anthropics/claude-code-action@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

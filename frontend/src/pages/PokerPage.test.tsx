@@ -186,11 +186,14 @@ describe('PokerPage', () => {
   });
 
   // ---- info bar ----
-  it('shows pot and dealer index', async () => {
+  it('shows pot and the dealer name via playerName (CPU dealer)', async () => {
     mockExec.mockResolvedValue(dealState);
     renderWithProviders(<PokerPage />);
     await waitFor(() => expect(screen.getByText(/ポット:/)).toBeInTheDocument());
     expect(screen.getByText(/ディーラー:/)).toBeInTheDocument();
+    // Dealer renders via playerName (CPU 3), not the raw index.
+    expect(screen.getAllByText('CPU 3').length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Player 3|プレイヤー 3/)).not.toBeInTheDocument();
   });
 
   it('shows joker count when jokerCount > 0', async () => {
@@ -584,6 +587,17 @@ describe('PokerPage', () => {
     renderWithProviders(<PokerPage />);
     await waitFor(() => expect(screen.getByText(/あなたの手札/)).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: 'スタンド' })).not.toBeInTheDocument();
+  });
+
+  it('disables the exchange button until a card is selected', async () => {
+    mockExec.mockResolvedValue(exchangeState);
+    renderWithProviders(<PokerPage />);
+    const exchangeBtn = await screen.findByRole('button', { name: '交換' });
+    // Nothing selected yet: stand is the only enabled action.
+    expect(exchangeBtn).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'スタンド' })).toBeEnabled();
+    fireEvent.click(screen.getByAltText('♠ A'));
+    expect(exchangeBtn).toBeEnabled();
   });
 
   it('calls exchange with selected indices', async () => {
@@ -1336,6 +1350,19 @@ describe('PokerPage', () => {
       });
 
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith('exchange', [0]));
+    });
+
+    it('Enter key does nothing when no cards are selected', async () => {
+      mockExec.mockResolvedValue(exchangeState);
+      renderWithProviders(<PokerPage />);
+      await waitFor(() => expect(screen.getByText('交換するカードを選んでください')).toBeInTheDocument());
+      mockExec.mockClear();
+
+      await act(async () => {
+        fireEvent.keyDown(document, { key: 'Enter' });
+      });
+
+      expect(mockExec).not.toHaveBeenCalled();
     });
 
     it('Escape key clears selection', async () => {

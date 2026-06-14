@@ -246,6 +246,14 @@ function PigsTailPageContent() {
                 messageParams={state.messageParams}
               />
             )}
+
+            {/* Action log */}
+            <ActionLogSection
+              isEndPhase={isGameEnd}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
           </div>
 
           {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
@@ -285,13 +293,6 @@ function PigsTailPageContent() {
               </button>
             </div>
           </GameFooter>
-
-          <ActionLogSection
-            isEndPhase={isGameEnd}
-            actionLog={actionLog}
-            showActionLog={showActionLog}
-            hideActionLog={hideActionLog}
-          />
         </>
       )}
     </GamePageShell>
