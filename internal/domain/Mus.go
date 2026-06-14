@@ -125,10 +125,11 @@ type Mus struct {
 	amarrakos   [MusTeamCnt]int // チーム別累積点
 	results     [MusRoundCnt]MusRoundResult
 	// Mus / Discard フェーズ
-	musTurn     int // 現在宣言中のプレイヤー
-	musAgreed   int // これまで Mus に同意した人数
-	musCycle    int // Mus 交換の繰り返し回数
-	discardTurn int // 現在交換中のプレイヤー
+	musTurn     int     // 現在宣言中のプレイヤー
+	musAgreed   int     // これまで Mus に同意した人数
+	musCycle    int     // Mus 交換の繰り返し回数
+	discardTurn int     // 現在交換中のプレイヤー
+	discarded   []*Card // このラウンドの捨て札 (山札枯渇時の再シャッフル用)
 	// 賭けフェーズ
 	betTeam        int  // 現在アクションするチーム
 	pendingStake   int  // 応答待ちの賭け額 (0=保留中の賭けなし)
@@ -192,6 +193,7 @@ func (g *Mus) startRound() {
 		g.results[i].Team = -1
 	}
 	g.musCycle = 0
+	g.discarded = nil
 	for _, p := range g.players {
 		p.ResetRound()
 	}
@@ -298,12 +300,16 @@ func (g *Mus) validateDiscard(indices []int) error {
 func (g *Mus) applyDiscard(indices []int) {
 	p := g.players[g.discardTurn]
 	if len(indices) > 0 {
-		p.RemoveCards(indices)
+		removed := p.RemoveCards(indices)
+		// 引き直し: 山札優先、尽きたら捨て札パイル (このターンの捨て札は除外)
+		// を再シャッフルして補充する。これにより手札が常に 4 枚に保たれる。
 		for i := 0; i < len(indices); i++ {
-			if c := g.trumpCards.DrawCard(); c != nil {
+			if c := g.drawForExchange(); c != nil {
 				p.AddCard(c)
 			}
 		}
+		// 自分の捨て札は引き直し後にパイルへ加える (同一ターンで引き戻さないため)。
+		g.discarded = append(g.discarded, removed...)
 		musSortHand(p)
 	}
 	g.appendLog(g.discardTurn, "discard",
@@ -316,6 +322,24 @@ func (g *Mus) applyDiscard(indices []int) {
 		return
 	}
 	g.discardTurn = (g.discardTurn + 1) % MusPlayerCnt
+}
+
+// drawForExchange 引き直し用に 1 枚引く。山札が尽きたら捨て札パイルを
+// 再シャッフルして補充する (40 枚デッキでも手札が 4 枚未満にならない)。
+func (g *Mus) drawForExchange() *Card {
+	if c := g.trumpCards.DrawCard(); c != nil {
+		return c
+	}
+	if len(g.discarded) == 0 {
+		return nil
+	}
+	// 捨て札パイルをシャッフルして 1 枚取り出す。
+	rand.Shuffle(len(g.discarded), func(i, j int) {
+		g.discarded[i], g.discarded[j] = g.discarded[j], g.discarded[i]
+	})
+	c := g.discarded[len(g.discarded)-1]
+	g.discarded = g.discarded[:len(g.discarded)-1]
+	return c
 }
 
 // --- Betting ---
@@ -430,6 +454,10 @@ func (g *Mus) resolveBet(action, amount int) error {
 		g.betTeam = 1 - g.betTeam
 		return nil
 	case MusActionEnvido:
+		if g.pendingStake < 0 {
+			// オルダゴには Quiero / NoQuiero でしか応答できない。
+			return NewDomainError(ErrInvalidPlay, "オルダゴにはエンビードできません")
+		}
 		if amount < 1 {
 			amount = 2
 		}
@@ -736,8 +764,8 @@ func musJuegoKey(points int) int {
 			return 1000
 		case 32:
 			return 999
-		default: // 33..40 → 40 が 992, 33 が 985 の順 (40>39>..>33)
-			return 950 + points // 40→990, 33→983: 高い点ほど強い
+		default: // 33..40 → 40 が 990, 33 が 983 の順 (40>39>..>33)
+			return 950 + points // 高い点ほど強い
 		}
 	}
 	return points // Punto: 30 が最大 30
@@ -1109,6 +1137,7 @@ type musJSON struct {
 	PendingStake   int                         `json:"pk"`
 	LastBettorTeam int                         `json:"lb"`
 	FirstActorPaso bool                        `json:"fp"`
+	Discarded      []*Card                     `json:"ds"`
 	GameEndFlag    bool                        `json:"ge"`
 	WinnerTeam     int                         `json:"wt"`
 	ActionLog      []*ActionLogEntry           `json:"al"`
@@ -1133,17 +1162,22 @@ func (g *Mus) MarshalJSON() ([]byte, error) {
 		PendingStake:   g.pendingStake,
 		LastBettorTeam: g.lastBettorTeam,
 		FirstActorPaso: g.firstActorPaso,
+		Discarded:      g.discarded,
 		GameEndFlag:    g.gameEndFlag,
 		WinnerTeam:     g.winnerTeam,
 		ActionLog:      g.actionLog,
 	})
 }
 
-// musMaxSliceLen caps slice sizes during deserialisation.
-const musMaxSliceLen = 1000
+// musMaxSliceLen caps slice sizes during deserialisation. Set well above the
+// largest realistic action-log length so a long game still loads.
+const musMaxSliceLen = 5000
 
 // errMusOversized is the single sentinel error for oversized input arrays.
 var errMusOversized = errors.New("mus: input array exceeds maximum allowed size")
+
+// errMusInvalidPlayers is returned when restored state lacks exactly MusPlayerCnt players.
+var errMusInvalidPlayers = errors.New("mus: invalid player count")
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (g *Mus) UnmarshalJSON(data []byte) error {
@@ -1153,6 +1187,14 @@ func (g *Mus) UnmarshalJSON(data []byte) error {
 	}
 	if len(j.Players) > musMaxSliceLen || len(j.ActionLog) > musMaxSliceLen {
 		return errMusOversized
+	}
+	// A real Mus game always has exactly MusPlayerCnt players; reject otherwise
+	// so the fixed-index player access below cannot panic on malformed input.
+	if len(j.Players) != MusPlayerCnt {
+		return errMusInvalidPlayers
+	}
+	if err := j.Config.Validate(); err != nil {
+		return err
 	}
 	g.trumpCards = j.TrumpCards
 	if g.trumpCards == nil {
@@ -1176,6 +1218,7 @@ func (g *Mus) UnmarshalJSON(data []byte) error {
 	g.pendingStake = j.PendingStake
 	g.lastBettorTeam = j.LastBettorTeam
 	g.firstActorPaso = j.FirstActorPaso
+	g.discarded = j.Discarded
 	g.gameEndFlag = j.GameEndFlag
 	g.winnerTeam = j.WinnerTeam
 	g.actionLog = j.ActionLog

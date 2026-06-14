@@ -241,6 +241,24 @@ func TestMus_OrdagoEndsGame(t *testing.T) {
 	}
 }
 
+func TestMus_EnvidoRejectedAfterOrdago(t *testing.T) {
+	g := newMusGame(true)
+	g.SetPhase(MusPhaseGrande)
+	g.SetManoIdx(0)
+	g.startBetRound()
+	_ = g.resolveBet(MusActionOrdago, 0) // team0 ordago → pendingStake = -1
+	if g.GetPendingStake() != -1 {
+		t.Fatalf("pending stake should be -1 (ordago), got %d", g.GetPendingStake())
+	}
+	// Responding team may only quiero/noquiero — envido must be rejected.
+	if err := g.resolveBet(MusActionEnvido, 4); err == nil {
+		t.Error("envido over an ordago should be rejected")
+	}
+	if g.GetPendingStake() != -1 {
+		t.Error("ordago state must be unchanged after a rejected envido")
+	}
+}
+
 func TestMus_ParesSkippedWhenNoPairs(t *testing.T) {
 	g := newMusGame(true)
 	g.SetManoIdx(0)

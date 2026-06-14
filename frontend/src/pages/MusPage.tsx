@@ -70,8 +70,8 @@ const ROUND_NAME_KEYS: Readonly<Record<number, string>> = {
   [MusPhase.JUEGO]: 'juego',
 };
 
-/** Maps a result `kind` (0..3) to its i18n round-name key. */
-const RESULT_KIND_KEYS: Readonly<Record<number, string>> = {
+/** Maps a round index (0..3) in `results` to its i18n round-name key. */
+const ROUND_INDEX_KEYS: Readonly<Record<number, string>> = {
   0: 'grande',
   1: 'chica',
   2: 'pares',
@@ -249,7 +249,7 @@ function MusPageContent() {
                   r.team >= 0 ? (
                     <div key={`result-${i}`}>
                       {t('roundResult.line', {
-                        round: t(`roundResult.${RESULT_KIND_KEYS[r.kind] ?? r.kind}`),
+                        round: t(`roundResult.${ROUND_INDEX_KEYS[i] ?? i}`),
                         team: r.team,
                         stake: r.stake,
                       })}
