@@ -1,0 +1,57 @@
+{
+  "phase": {
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetPoints": "目標点数",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "trick": "トリック {{n}}",
+  "trump": "切り札: {{suit}}",
+  "cards": "{{count}}枚",
+  "tricks": "{{count}}トリック",
+  "currentTrick": "現在のトリック",
+  "players": "プレイヤー",
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "yourTeam": "あなたのチーム",
+  "team": {
+    "a": "チームA",
+    "b": "チームB"
+  },
+  "teamScore": "{{team}}: {{score}}点",
+  "playButton": "出す",
+  "declareMarriage": "結婚宣言 {{suit}}",
+  "declareTute": "Tute 宣言",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド",
+  "roundResult": {
+    "title": "ラウンド結果",
+    "teamA": "チームAの獲得点: {{points}}",
+    "teamB": "チームBの獲得点: {{points}}"
+  },
+  "hintAvailable": "ヒント",
+  "hint": {
+    "lead_low": "低い札でリードして温存することを推奨",
+    "follow_win": "得点があるので勝てる札で取りに行く",
+    "follow_duck": "取れない／取る価値がないのでダック推奨",
+    "discard_low": "フォローできないので低い札を捨てる",
+    "declare_marriage": "結婚宣言でボーナス点を獲得する",
+    "declare_tute": "Tute 宣言で即勝利！"
+  },
+  "tutorial": {
+    "trickDisplay": "現在のトリックです。リードされたスートにマストフォロー。切り札のスートが最強です。",
+    "playerHand": "あなたの手札です。出せるカードをクリックして選びます。",
+    "playButton": "カードを選んだら、このボタンで出します。同じスートの K+Q を持っていれば「結婚宣言」でボーナス点。4枚の K または Q が揃えば「Tute 宣言」で即勝利です。",
+    "info": "A=11, 3=10, K=4, Q=3, J=2。チームA(席0・2)対チームB(席1・3)で得点を奪い合い、先に目標点に達したチームの勝ちです。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}

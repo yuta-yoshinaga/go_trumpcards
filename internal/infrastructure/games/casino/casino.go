@@ -431,6 +431,14 @@ func init() {
 			return usecase.RestoreMusInteractor(data, new(presenter.MusWebPresenter))
 		},
 		controller.NewMusWebControllerWithProvider)
+	games.RegisterKVGame("tute", games.CategoryCasino,
+		func() usecase.TuteInteractorIF {
+			return usecase.NewTuteInteractor(domain.NewDefaultTute(), new(presenter.TuteWebPresenter))
+		},
+		func(data []byte) (usecase.TuteInteractorIF, error) {
+			return usecase.RestoreTuteInteractor(data, new(presenter.TuteWebPresenter))
+		},
+		controller.NewTuteWebControllerWithProvider)
 	games.RegisterKVGame("tichu", games.CategoryCasino,
 		func() usecase.TichuInteractorIF {
 			return usecase.NewTichuInteractor(domain.NewDefaultTichu(), new(presenter.TichuWebPresenter))

@@ -138,6 +138,7 @@ import type {
   TriPeaksResponse,
   TrucoConfig,
   TrucoResponse,
+  TuteResponse,
   TwoTenJackResponse,
   UltimateTexasHoldemResponse,
   VideoPokerResponse,
@@ -294,6 +295,7 @@ const workerUrl: Record<string, string> = {
   sheepshead: WORKER_CASINO,
   doppelkopf: WORKER_CASINO,
   mus: WORKER_CASINO,
+  tute: WORKER_CASINO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1608,6 +1610,42 @@ export const doppelkopfApi = {
     }),
 };
 
+/** Configuration options for Tute game settings. */
+export interface TuteConfigInput {
+  cpuDifficulty?: number;
+  targetPoints?: number;
+}
+
+/** Commands accepted by the Tute /tute/exec endpoint. */
+export type TuteCommand = 'reset' | 'play' | 'marriage' | 'tute' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Tute /tute/exec endpoint.
+ *
+ * Tute is a Spanish 4-player (2 vs 2) trump trick-taker. The play actions are:
+ *   - `play` → `{ cardIndex: number }`
+ *   - `marriage` → `{ suit: number }` (declare a King+Queen marriage; 1=♠ 2=♣ 3=♥ 4=♦)
+ *   - `tute` → no extra fields (declare four Kings or four Queens for an instant win)
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const tuteApi = {
+  exec: (
+    command: TuteCommand,
+    opts?: {
+      cardIndex?: number;
+      suit?: number;
+      config?: TuteConfigInput;
+    },
+  ) =>
+    gameExec<TuteResponse>('tute', {
+      command,
+      cardIndex: opts?.cardIndex,
+      suit: opts?.suit,
+      config: opts?.config,
+    }),
+};
+
 /** Source or target zone for a Spider card move. */
 export interface SpiderMoveZone {
   zone: string;
@@ -2708,6 +2746,7 @@ const games = [
   'sheepshead',
   'doppelkopf',
   'mus',
+  'tute',
 ] as const;
 type Game = (typeof games)[number];
 

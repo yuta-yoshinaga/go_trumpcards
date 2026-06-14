@@ -220,7 +220,8 @@
     "truco": "A South American / Spanish mind game. Raise the stakes mid-trick and test your opponent's nerve with bluffs.",
     "sheepshead": "A Bavarian 5-player trick-taker. The 'picker' takes the blind and calls a suit to bind a hidden partner, then both fight for points around the trump Queens and Jacks. Dense strategy.",
     "doppelkopf": "A German classic for four in partnerships. The two players holding both ♣Q form 'Re', the rest 'Kontra' — but the teams stay hidden at the start. Fight for 240 points with a unique trump order topped by the ♥10 (Dulle).",
-    "mus": "A Basque vying game for four (2 vs 2). Across four rounds — Grande, Chica, Pares, Juego — bluff and trade cards to win amarrakos without showing your hand, with an Órdago all-in for a sudden-death swing."
+    "mus": "A Basque vying game for four (2 vs 2). Across four rounds — Grande, Chica, Pares, Juego — bluff and trade cards to win amarrakos without showing your hand, with an Órdago all-in for a sudden-death swing.",
+    "tute": "A Spanish classic for four in partnerships (2 vs 2). A trump trick-taker on the 40-card deck: hold both K+Q of a suit to declare a 'marriage' for bonus points, or collect four Kings or four Queens to declare 'Tute' for an instant win."
   },
   "stretch_blurb": {
     "blackjack": "The 21 instinct may be obvious — but the betting decisions surprise.",
@@ -357,6 +358,7 @@
     "truco": "Strong hand or weak, one call sends the points soaring. Read and bluff your way to 15.",
     "sheepshead": "A hidden-partner battle where you may not know who's on your side. For strategists who love deep reads.",
     "doppelkopf": "Germany's serious partnership trick-taker, played while probing for your hidden allies — with Re/Kontra calls to raise the stakes.",
-    "mus": "A bluffing duel where hands stay hidden. Team up and gamble big with Órdago — a Basque classic for lovers of mind games."
+    "mus": "A bluffing duel where hands stay hidden. Team up and gamble big with Órdago — a Basque classic for lovers of mind games.",
+    "tute": "A partnership trump trick-taker where marriages and a 'Tute' call can swing the score fast — a Spanish classic for two-team play."
   }
 }

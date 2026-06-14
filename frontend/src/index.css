@@ -48,6 +48,9 @@
   /* Mus — Basque ikurriña red-on-green, distinct from the other table felts. */
   --color-game-bg-mus: #1f5c33;
   --color-game-bg-mus-dark: #143d22;
+  /* Tute — Spanish flamenco red-ochre, distinct from the other table felts. */
+  --color-game-bg-tute: #7a2e1e;
+  --color-game-bg-tute-dark: #521e13;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;

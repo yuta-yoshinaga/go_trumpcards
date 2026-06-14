@@ -104,6 +104,7 @@ import type {
   TrashResponse,
   TressetteResponse,
   TriPeaksResponse,
+  TuteResponse,
   TwoTenJackResponse,
   UltimateTexasHoldemResponse,
   VideoPokerResponse,
@@ -223,6 +224,7 @@ import { getTienLenHint } from '../utils/hints/tienlenHint';
 import { getTrashHint } from '../utils/hints/trashHint';
 import { getTressetteHint } from '../utils/hints/tressetteHint';
 import { getTriPeaksHint } from '../utils/hints/tripeaksHint';
+import { getTuteHint } from '../utils/hints/tuteHint';
 import { getTwoTenJackHint } from '../utils/hints/twotenjackHint';
 import { getUltimateTexasHoldemHint } from '../utils/hints/ultimateTexasHoldemHint';
 import { getVideoPokerHint } from '../utils/hints/videopokerHint';
@@ -367,6 +369,7 @@ const hintFactories = {
   doudizhu: (s) => getDoudizhuHint(s as DoudizhuResponse),
   bidwhist: (s) => getBidWhistHint(s as BidWhistResponse),
   mus: (s) => getMusHint(s as MusResponse),
+  tute: (s) => getTuteHint(s as TuteResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

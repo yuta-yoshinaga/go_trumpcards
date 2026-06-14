@@ -130,6 +130,7 @@ import trash from '../../../docs/manual/cui/trash.md?raw';
 import tressette from '../../../docs/manual/cui/tressette.md?raw';
 import tripeaks from '../../../docs/manual/cui/tripeaks.md?raw';
 import truco from '../../../docs/manual/cui/truco.md?raw';
+import tute from '../../../docs/manual/cui/tute.md?raw';
 import twotenjack from '../../../docs/manual/cui/twotenjack.md?raw';
 import ultimatetexasholdem from '../../../docs/manual/cui/ultimatetexasholdem.md?raw';
 import videopoker from '../../../docs/manual/cui/videopoker.md?raw';
@@ -228,6 +229,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/spades': spades,
   '/sheepshead': sheepshead,
   '/doppelkopf': doppelkopf,
+  '/tute': tute,
   '/pitch': pitch,
   '/spanish21': spanish21,
   '/speed': speed,
