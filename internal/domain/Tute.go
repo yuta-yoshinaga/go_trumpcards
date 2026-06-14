@@ -324,7 +324,8 @@ func (g *Tute) ResolveTrick() {
 		fmt.Sprintf("%s wins trick %d (+%d%s)", g.playerName(winnerIdx), g.trickNumber, pts, bonus), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
-	g.currentTrick = nil
+	// Keep currentTrick intact through TrickEnd so the resolved trick stays
+	// visible; NextTrick clears it before the next trick begins. (#2482 review)
 	if g.trickNumber >= TuteTrickCount {
 		g.phase = TutePhaseRoundEnd
 	} else {

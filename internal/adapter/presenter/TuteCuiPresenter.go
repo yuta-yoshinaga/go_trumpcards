@@ -13,6 +13,14 @@ import (
 )
 
 // tutePlayerStr returns the display string for a single Tute player.
+// tuteSuitSymbol maps a suit constant (1-4) to its glyph for CUI display.
+func tuteSuitSymbol(suit int) string {
+	if suit < 1 || suit > 4 {
+		return "?"
+	}
+	return []string{"", "♠", "♣", "♥", "♦"}[suit]
+}
+
 func tutePlayerStr(g interfaces.TuteGame, idx int) string {
 	player := g.GetPlayer(idx)
 	if player == nil {
@@ -43,7 +51,7 @@ func (p *TuteCuiPresenter) Output(g interfaces.TuteGame, lastErr error) string {
 		b.WriteString(i18n.Tf("tute.round",
 			"round", strconv.Itoa(g.GetRoundNumber()),
 			"trick", strconv.Itoa(g.GetTrickNumber()),
-			"trump", strconv.Itoa(g.GetTrumpSuit())) + "\n")
+			"trump", tuteSuitSymbol(g.GetTrumpSuit())) + "\n")
 
 		for i := 0; i < g.GetPlayerCnt(); i++ {
 			b.WriteString(tutePlayerStr(g, i))
