@@ -415,6 +415,14 @@ func init() {
 			return usecase.RestoreSheepsheadInteractor(data, new(presenter.SheepsheadWebPresenter))
 		},
 		controller.NewSheepsheadWebControllerWithProvider)
+	games.RegisterKVGame("doppelkopf", games.CategoryCasino,
+		func() usecase.DoppelkopfInteractorIF {
+			return usecase.NewDoppelkopfInteractor(domain.NewDefaultDoppelkopf(), new(presenter.DoppelkopfWebPresenter))
+		},
+		func(data []byte) (usecase.DoppelkopfInteractorIF, error) {
+			return usecase.RestoreDoppelkopfInteractor(data, new(presenter.DoppelkopfWebPresenter))
+		},
+		controller.NewDoppelkopfWebControllerWithProvider)
 	games.RegisterKVGame("tichu", games.CategoryCasino,
 		func() usecase.TichuInteractorIF {
 			return usecase.NewTichuInteractor(domain.NewDefaultTichu(), new(presenter.TichuWebPresenter))

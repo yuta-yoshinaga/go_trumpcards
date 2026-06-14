@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した133種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した134種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -152,6 +152,7 @@ Go + Clean Architecture で実装した133種類のトランプゲーム。CLI �
 | ビッド・ホイスト (Bid Whist) | `bidwhist` | [CUI](docs/manual/cui/bidwhist.md) / [Web](docs/manual/web/bidwhist.md) |
 | トレセッテ (Tressette) | `tressette` | [CUI](docs/manual/cui/tressette.md) / [Web](docs/manual/web/tressette.md) |
 | シープスヘッド (Sheepshead) | `sheepshead` | [CUI](docs/manual/cui/sheepshead.md) / [Web](docs/manual/web/sheepshead.md) |
+| ドッペルコップ (Doppelkopf) | `doppelkopf` | [CUI](docs/manual/cui/doppelkopf.md) / [Web](docs/manual/web/doppelkopf.md) |
 
 ## Demo
 

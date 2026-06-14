@@ -303,6 +303,11 @@ var registry = []*Game{
 	// secret picker/partner formed via a called Ace. Casino worker (binary-size
 	// bucket only; see package doc).
 	{Name: "sheepshead", Category: CategoryCasino, Description: "Sheepshead (シープスヘッド)"},
+	// Doppelkopf (ドッペルコップ) is a German 4-player partnership trick-taking
+	// game on a doubled 48-card deck with a fixed trump (♥10 Dulle + all Q + all
+	// J + all ♦) and secret Re/Kontra teams formed by the two Q♣ holders. Casino
+	// worker (binary-size bucket only; see package doc).
+	{Name: "doppelkopf", Category: CategoryCasino, Description: "Doppelkopf (ドッペルコップ)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

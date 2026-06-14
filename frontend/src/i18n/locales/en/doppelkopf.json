@@ -1,0 +1,61 @@
+{
+  "phase": {
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetChips": "Target Chips",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "chips": "{{count}} chips",
+  "currentTrick": "Current Trick",
+  "players": "Players",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "yourTeam": "Your team",
+  "team": {
+    "re": "Re",
+    "kontra": "Kontra",
+    "hidden": "(hidden)"
+  },
+  "soloRe": "Solo Re (holds both ♣Q)",
+  "teamsRevealed": "Teams revealed",
+  "announced": "Announced",
+  "playButton": "Play",
+  "announceRe": "Announce Re",
+  "announceKontra": "Announce Kontra",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "roundResult": {
+    "title": "Round Result",
+    "rePoints": "Re team points: {{points}}",
+    "reWon": "Re team won",
+    "reLost": "Re team lost (Kontra won)",
+    "gamePoints": "Game points: {{points}}"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "lead_low": "Lead a low card to preserve strength",
+    "follow_win": "There are points on the table — take the trick",
+    "follow_duck": "Can't or shouldn't win — duck",
+    "discard_low": "Can't follow — discard a low card"
+  },
+  "tutorial": {
+    "trickDisplay": "This is the current trick. You must follow the led suit. Trumps rank ♥10 (Dulle) > all Queens > all Jacks > all Diamonds.",
+    "playerHand": "Your hand. Click a playable card to select it.",
+    "playButton": "Once a card is selected, play it with this button.",
+    "announce": "The two players holding ♣Q form the 'Re' team; the other two are 'Kontra'. During the first trick you may announce Re/Kontra to raise the stakes.",
+    "info": "A=11, 10=10, K=4, Q=3, J=2. Of the 240 total points, the Re team wins by taking 121 or more. Chips move with each round's result.",
+    "resetButton": "Use the reset button to start a new game."
+  }
+}

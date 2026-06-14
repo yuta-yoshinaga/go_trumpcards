@@ -27,6 +27,7 @@ import type {
   CruelResponse,
   DaifugoResponse,
   DeuceToSevenResponse,
+  DoppelkopfResponse,
   DoubtResponse,
   DoudizhuResponse,
   DragonTigerResponse,
@@ -141,6 +142,7 @@ import { getCruelHint } from '../utils/hints/cruelHint';
 import { getDaifugoHint } from '../utils/hints/daifugoHint';
 import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
 import { getDeuceToSevenHint } from '../utils/hints/deuceToSevenHint';
+import { getDoppelkopfHint } from '../utils/hints/doppelkopfHint';
 import { getDoubtHint } from '../utils/hints/doubtHint';
 import { getDoudizhuHint } from '../utils/hints/doudizhuHint';
 import { getDragontigerHint } from '../utils/hints/dragontigerHint';
@@ -338,6 +340,7 @@ const hintFactories = {
   calculation: (s) => getCalculationHint(s as CalculationResponse),
   sevenbridge: (s) => getSevenbridgeHint(s as SevenBridgeResponse),
   sheepshead: (s) => getSheepsheadHint(s as SheepsheadResponse),
+  doppelkopf: (s) => getDoppelkopfHint(s as DoppelkopfResponse),
   trash: (s) => getTrashHint(s as TrashResponse),
   president: (s) => getPresidentHint(s as PresidentResponse),
   cassino: (s) => getCassinoHint(s as CassinoResponse),

@@ -42,6 +42,7 @@ import type {
   DaifugoConfigInput,
   DaifugoResponse,
   DeuceToSevenResponse,
+  DoppelkopfResponse,
   DoubtConfig,
   DoubtResponse,
   DoudizhuResponse,
@@ -290,6 +291,7 @@ const workerUrl: Record<string, string> = {
   tichu: WORKER_CASINO,
   bourre: WORKER_CASINO,
   sheepshead: WORKER_CASINO,
+  doppelkopf: WORKER_CASINO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1526,6 +1528,42 @@ export const sheepsheadApi = {
     }),
 };
 
+/** Configuration options for Doppelkopf game settings. */
+export interface DoppelkopfConfigInput {
+  cpuDifficulty?: number;
+  baseChips?: number;
+  startChips?: number;
+  targetChips?: number;
+}
+
+/** Commands accepted by the Doppelkopf /doppelkopf/exec endpoint. */
+export type DoppelkopfCommand = 'reset' | 'play' | 'announce' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Doppelkopf /doppelkopf/exec endpoint.
+ *
+ * Doppelkopf is a plain trick-taking flow (no pick/bury/call). The only extra
+ * action beyond playing a card is `announce` (Re/Kontra, first trick only):
+ *   - `play` → `{ cardIndex: number }`
+ *   - `announce` → no extra fields (declares Re or Kontra based on the human's team)
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const doppelkopfApi = {
+  exec: (
+    command: DoppelkopfCommand,
+    opts?: {
+      cardIndex?: number;
+      config?: DoppelkopfConfigInput;
+    },
+  ) =>
+    gameExec<DoppelkopfResponse>('doppelkopf', {
+      command,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
 /** Source or target zone for a Spider card move. */
 export interface SpiderMoveZone {
   zone: string;
@@ -2624,6 +2662,7 @@ const games = [
   'tichu',
   'bourre',
   'sheepshead',
+  'doppelkopf',
 ] as const;
 type Game = (typeof games)[number];
 

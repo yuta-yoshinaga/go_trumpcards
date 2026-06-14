@@ -42,6 +42,9 @@
   /* Sheepshead — Bavarian farmhouse brown, distinct from the casino greens/blues. */
   --color-game-bg-sheepshead: #4a3b22;
   --color-game-bg-sheepshead-dark: #322715;
+  /* Doppelkopf — deep Bavarian wine-burgundy, distinct from the browns/greens/blues. */
+  --color-game-bg-doppelkopf: #5a2433;
+  --color-game-bg-doppelkopf-dark: #3c1722;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;

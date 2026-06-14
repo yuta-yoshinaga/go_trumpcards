@@ -42,6 +42,7 @@ import cruel from '../../../docs/manual/cui/cruel.md?raw';
 import daifugo from '../../../docs/manual/cui/daifugo.md?raw';
 import deuceswild from '../../../docs/manual/cui/deuceswild.md?raw';
 import deucetoseven from '../../../docs/manual/cui/deucetoseven.md?raw';
+import doppelkopf from '../../../docs/manual/cui/doppelkopf.md?raw';
 import doubt from '../../../docs/manual/cui/doubt.md?raw';
 import doudizhu from '../../../docs/manual/cui/doudizhu.md?raw';
 import dragontiger from '../../../docs/manual/cui/dragontiger.md?raw';
@@ -225,6 +226,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/shortdeck': shortdeck,
   '/spades': spades,
   '/sheepshead': sheepshead,
+  '/doppelkopf': doppelkopf,
   '/pitch': pitch,
   '/spanish21': spanish21,
   '/speed': speed,

@@ -665,6 +665,11 @@ func init() {
 			return usecase.NewSheepsheadInteractor(domain.NewDefaultSheepshead(), new(presenter.SheepsheadWebPresenter))
 		},
 		controller.NewSheepsheadWebController)
+	BindWebControllerFor("doppelkopf",
+		func() usecase.DoppelkopfInteractorIF {
+			return usecase.NewDoppelkopfInteractor(domain.NewDefaultDoppelkopf(), new(presenter.DoppelkopfWebPresenter))
+		},
+		controller.NewDoppelkopfWebController)
 	BindWebControllerFor("easthaven",
 		func() usecase.EasthavenInteractorIF {
 			return usecase.NewEasthavenInteractor(domain.NewDefaultEasthaven(), new(presenter.EasthavenWebPresenter))
