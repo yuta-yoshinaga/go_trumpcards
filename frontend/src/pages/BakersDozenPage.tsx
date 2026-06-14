@@ -75,8 +75,21 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
 
 /** Inner content of the Baker's Dozen page, wrapped by TutorialProvider. */
 function BakersDozenPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('bakersdozen');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('bakersdozen');
   const { playSound } = useSound();
   const {
     state,
@@ -167,14 +180,21 @@ function BakersDozenPageContent() {
     handleReset();
   }, [handleReset, hideActionLog]);
 
+  // Give-up is irreversible, so route both the button and the `g` key through
+  // the confirm dialog — matching reset's guard (issue #2099).
+  const confirmGiveUpAction = useCallback(
+    () => requestGiveUpConfirm(handleGiveUp),
+    [requestGiveUpConfirm, handleGiveUp],
+  );
+
   const actionBindings = useMemo(
     () => [
       { key: 'h', action: handleHint },
       { key: 'a', action: handleAutoComplete },
-      { key: 'g', action: handleGiveUp },
+      { key: 'g', action: confirmGiveUpAction },
       { key: 'z', action: handleUndo },
     ],
-    [handleHint, handleAutoComplete, handleGiveUp, handleUndo],
+    [handleHint, handleAutoComplete, confirmGiveUpAction, handleUndo],
   );
 
   useActionKeyboardNav({
@@ -208,6 +228,9 @@ function BakersDozenPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
           <span className="text-sm text-ds-text-muted">
@@ -467,7 +490,7 @@ function BakersDozenPageContent() {
                   <button
                     type="button"
                     className={btnDanger}
-                    onClick={handleGiveUp}
+                    onClick={confirmGiveUpAction}
                     disabled={loading || isAutoCompleting}
                   >
                     {t('giveup')}

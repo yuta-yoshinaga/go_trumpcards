@@ -1,0 +1,81 @@
+{
+  "phase": {
+    "pick": "ピック",
+    "bury": "埋め札",
+    "call": "パートナー指名",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetChips": "目標チップ",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "trick": "トリック {{n}}",
+  "cards": "{{count}}枚",
+  "tricks": "{{count}}トリック",
+  "chips": "{{count}}チップ",
+  "currentTrick": "現在のトリック",
+  "blind": "ブラインド",
+  "blindCount": "ブラインド: {{count}}枚",
+  "picker": "ピッカー",
+  "partner": "パートナー",
+  "partnerHidden": "（未公開）",
+  "calledSuit": "呼びスート",
+  "none": "なし",
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "players": "プレイヤー",
+  "pickPrompt": "ブラインドを取りますか、それともパスしますか？",
+  "buryPrompt": "あなたがピッカーです。埋める2枚のカードを選んでください。",
+  "callPrompt": "パートナーを呼ぶスートを選んでください。",
+  "pickButton": "ピックする",
+  "passButton": "パスする",
+  "buryButton": "埋める",
+  "burySelected": "選択 {{count}}/2",
+  "callButton": "{{suit}}を呼ぶ",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド",
+  "suit": {
+    "spade": "♠ スペード",
+    "club": "♣ クラブ",
+    "heart": "♥ ハート"
+  },
+  "roundResult": {
+    "title": "ラウンド結果",
+    "pickerPoints": "ピッカー側の得点: {{points}}",
+    "multiplier": "倍率: x{{multiplier}}",
+    "pickerWon": "ピッカー側の勝ち",
+    "pickerLost": "ピッカー側の負け",
+    "buried": "埋め札"
+  },
+  "passCount": "パス: {{count}}人",
+  "hintAvailable": "ヒント",
+  "hint": {
+    "pick_take": "強い手なのでブラインドを取ることを推奨",
+    "pick_pass": "手が弱いのでパスを推奨",
+    "bury_low": "得点の低いカードを埋めることを推奨",
+    "call_suit": "このスートを呼ぶことを推奨",
+    "lead_low": "低い札でリードして温存することを推奨",
+    "discard_low": "フォローできないので低い札を捨てる",
+    "follow_win": "得点があるので勝てる札で取りに行く",
+    "follow_duck": "取れない／取る価値がないのでダック推奨"
+  },
+  "tutorial": {
+    "pick": "まずはピックフェーズ。ブラインドの2枚を取って「ピッカー」になるか、パスするかを選びます。",
+    "bury": "ピッカーになったら、手札から2枚を選んで埋めます。埋めたカードの得点はあなたのものになります。",
+    "call": "呼びスートを選び、そのエースを持つプレイヤーが隠れたパートナーになります。",
+    "trickDisplay": "現在のトリックです。リードされたスートにフォローし、切り札（女王・ジャック・ダイヤ）が強さを決めます。",
+    "playerHand": "あなたの手札です。出せるカードをクリックして選びます。",
+    "playButton": "カードを選んだら、このボタンで出します。",
+    "info": "得点はA=11, 10=10, K=4, Q=3, J=2。合計120点のうち、ピッカー側が61点以上取れば勝ちです。チップは勝敗で移動します。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}

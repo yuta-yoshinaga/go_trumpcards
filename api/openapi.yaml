@@ -277,6 +277,16 @@ tags:
     description: Six Card Golf (シックスカードゴルフ) - 2-4 player golf-style game on a standard 52-card deck; each player holds a 2x3 grid of six cards (two face-up at start). On a turn, draw from the stock or discard pile and either swap a grid card or discard. The round ends when a grid is fully face-up; lowest total score wins, with vertical pairs of equal rank scoring zero.
   - name: bakersgame
     description: Baker's Game (ベーカーズゲーム) - single-player FreeCell variant on a standard 52-card deck; identical layout to FreeCell (8 tableau columns, 4 free cells, 4 foundations Ace-to-King by suit) except tableau builds **same-suit descending** instead of alternating colors, making it harder. Only Kings move to an empty column; supermove limit = (1 + emptyFreeCells) x 2^(emptyTableauCols).
+  - name: sheepshead
+    description: Sheepshead (シープスヘッド) - 5-player Wisconsin/German trick-taking game on a 32-card deck (A,7,8,9,10,J,Q,K × 4 suits); 6 cards each plus a 2-card blind; 14 fixed trumps (Q♣>Q♠>Q♥>Q♦>J♣>J♠>J♥>J♦>A♦>10♦>K♦>9♦>8♦>7♦); picker takes blind and buries 2, calls a fail-suit Ace to name a secret partner; picker team needs 61+ of 120 card points to win; Schneider (≤30) doubles, Schwarz (0 tricks) triples the chip stake
+  - name: doppelkopf
+    description: Doppelkopf (ドッペルコップ) - 4-player German trick-taking game on a 48-card doubled deck (9,10,J,Q,K,A × 4 suits × 2 copies); 12 cards each; 26 fixed trumps (♥10/Dulle>Q♣>Q♠>Q♥>Q♦>J♣>J♠>J♥>J♦>A♦>10♦>K♦>9♦, each ×2); two Q♣ holders secretly form the Re team; identical cards played in same trick resolved by play order (first wins); Re team needs 121+ of 240 card points to win; Re/Kontra announcements in trick 1 double the stake
+  - name: mus
+    description: Mus (ムス) - 4-player Basque/Spanish vying game on a 40-card Latin deck (A,2-7,Sota,Caballo,Rey × 4 suits); 4 cards each; 2 teams (seats 0&2 vs 1&3); Mus phase (discard/redraw up to 3 times) then four betting rounds Grande (highest hand)>Chica (lowest hand)>Pares (pairs)>Juego (31+ points); bets via Paso/Envido/Ordago with Quiero/No Quiero responses; first team to target amarrakos (default 40) wins
+  - name: tute
+    description: Tute (トゥーテ) - 4-player Spanish trick-taking game on a 40-card Latin deck (A,2-7,Sota,Caballo,Rey × 4 suits); 10 cards each; 2 teams (seats 0&2 vs 1&3); trump set by last dealt card; must-follow trick play, rank order A>3>Rey>Caballo>Sota>7>6>5>4>2; card points A=11, 3=10, Rey=4, Caballo=3, Sota=2 (total 120 + last trick +10); cante (marriage) declaration on lead scores +20 (non-trump) or +40 (trump); holding all 4 Reys or all 4 Caballos allows a Tute declaration for an instant game win; first team to 121 wins
+  - name: sueca
+    description: Sueca (スエカ) - 4-player Portuguese/Brazilian trick-taking game on a 40-card Latin deck (A,2-7,Sota/Caballo/Rei × 4 suits); 10 cards each; 2 teams (seats 0&2 vs 1&3); trump set by last dealt card; must-follow trick play, distinctive rank order A>7>Rei>Valete/Sota>Dama/Caballo>6>5>4>3>2; card points A=11, 7=10, Rei=4, Valete/Sota=3, Dama/Caballo=2 (total 120); no marriages/declarations — pure 10-trick play; round winner earns 1 game point (61-90 pts), 2 (91-119 pts), or 4 (120 pts sweep); 60-60 draw earns no points; first team to target (default 4) game points wins the match
 
 paths:
   /blackjack/exec:
@@ -12318,6 +12328,445 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BourreResponse'
+
+  /sheepshead/exec:
+    post:
+      tags:
+        - sheepshead
+      summary: Execute a Sheepshead game command
+      description: |
+        Send a command to advance a Sheepshead session identified by `sessionId`.
+        Sheepshead is a 5-player (1 human + 4 CPU) Wisconsin/German trick-taking game
+        on a 32-card deck (A,7,8,9,10,J,Q,K × 4 suits). Each player receives 6 cards
+        and the remaining 2 form the blind. Fixed trump (14 cards) strongest to weakest:
+        Q♣ > Q♠ > Q♥ > Q♦ > J♣ > J♠ > J♥ > J♦ > A♦ > 10♦ > K♦ > 9♦ > 8♦ > 7♦.
+        Fail suits (♣♠♥) keep only A,10,K,9,8,7. Card points: A=11, 10=10, K=4, Q=3,
+        J=2, 9/8/7=0 (total 120). The picker buries 2 cards face-down (which count
+        toward their team), calls a fail-suit Ace to name a secret partner, then plays
+        6 tricks. Picker team wins with 61+ points. Schneider (loser ≤30) doubles,
+        Schwarz (loser takes 0 tricks) triples the chip stake.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Pick      | `0`   | Each player picks up the blind or passes |
+        | Bury      | `1`   | Picker takes blind and buries 2 cards |
+        | Call      | `2`   | Picker calls a fail-suit Ace to name secret partner |
+        | Play      | `3`   | Six tricks played under must-follow rules |
+        | TrickEnd  | `4`   | Trick resolved; advance with `next` |
+        | RoundEnd  | `5`   | Round scored; chips settled; advance with `nextround` |
+        | GameEnd   | `6`   | A player reached the target chip count |
+
+        | Command           | Aliases    | Description |
+        |-------------------|------------|-------------|
+        | `reset`           | `r`        | Start / restart the game (optional `config`) |
+        | `pick`            | `p`        | Pick up the blind (Pick phase) |
+        | `pass`            |            | Pass the blind (Pick phase) |
+        | `bury`            | `b`        | Bury 2 cards by `cardIndices` (Bury phase) |
+        | `call`            | `c`        | Call a fail-suit Ace by `suit` (Call phase; 1=♠ 2=♣ 3=♥) |
+        | `play`            |            | Play a card by `cardIndex` (Play phase) |
+        | `next`            | `n`        | Advance to the next trick |
+        | `nextround`       | `nr`       | Settle chips and start the next round |
+        | `setdifficulty`   | `sd`       | Set CPU difficulty (requires `difficulty` 0-2) |
+        | `setbasechips`    | `sb`       | Set base chip stake (requires `amount`) |
+        | `hint`            | `h`        | Get a suggested move |
+        | `log`             | `l`        | View action log |
+      operationId: sheepsheadExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SheepsheadRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              pick:
+                summary: Pick up the blind
+                value:
+                  command: pick
+                  sessionId: my-session-001
+              bury:
+                summary: Bury cards at hand indices 0 and 1
+                value:
+                  command: bury
+                  cardIndices: [0, 1]
+                  sessionId: my-session-001
+              call:
+                summary: Call spades (suit 1)
+                value:
+                  command: call
+                  suit: 1
+                  sessionId: my-session-001
+              play:
+                summary: Play the card at hand index 0
+                value:
+                  command: play
+                  cardIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SheepsheadResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SheepsheadResponse'
+
+  /doppelkopf/exec:
+    post:
+      tags:
+        - doppelkopf
+      summary: Execute a Doppelkopf game command
+      description: |
+        Send a command to advance a Doppelkopf session identified by `sessionId`.
+        Doppelkopf is a 4-player (1 human + 3 CPU) German trick-taking game
+        on a 48-card doubled deck (9,10,J,Q,K,A × 4 suits × 2 copies each).
+        Each player receives 12 cards. Fixed trump (26 cards) strongest to weakest:
+        ♥10 (Dulle) > Q♣ > Q♠ > Q♥ > Q♦ > J♣ > J♠ > J♥ > J♦ > A♦ > 10♦ > K♦ > 9♦.
+        Fail suits (♣♠♥) keep only A,10,K,9 (♥ keeps A,K,9 since ♥10 is trump).
+        Card points: A=11, 10=10, K=4, Q=3, J=2, 9=0 (total 240). The two Q♣ holders
+        secretly form the Re team; the other two are Kontra. Re team wins with 121+
+        points. Re/Kontra may be announced during the 1st trick (×2 stake each).
+        Identical cards played in the same trick are resolved by play order (first wins).
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Play      | `0`   | Twelve tricks played under must-follow rules |
+        | TrickEnd  | `1`   | Trick resolved; advance with `next` |
+        | RoundEnd  | `2`   | Round scored; chips settled; advance with `nextround` |
+        | GameEnd   | `3`   | A player reached the target chip count |
+
+        | Command           | Aliases    | Description |
+        |-------------------|------------|-------------|
+        | `reset`           | `r`        | Start / restart the game (optional `config`) |
+        | `play`            |            | Play a card by `cardIndex` (Play phase) |
+        | `announce`        | `a`        | Announce Re or Kontra during trick 1 (Play phase) |
+        | `next`            | `n`        | Advance to the next trick |
+        | `nextround`       | `nr`       | Settle chips and start the next round |
+        | `setdifficulty`   | `sd`       | Set CPU difficulty (requires `difficulty` 0-2) |
+        | `setbasechips`    | `sb`       | Set base chip stake (requires `amount`) |
+        | `log`             | `l`        | View action log |
+      operationId: doppelkopfExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DoppelkopfRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play the card at hand index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+              announce:
+                summary: Announce Re or Kontra during trick 1
+                value:
+                  command: announce
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DoppelkopfResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DoppelkopfResponse'
+
+  /mus/exec:
+    post:
+      tags:
+        - mus
+      summary: Execute a Mus game command
+      description: |
+        Send a command to advance a Mus session identified by `sessionId`.
+        Mus is a 4-player (1 human + 3 CPU) Basque/Spanish vying (betting) game on
+        a 40-card Latin deck (A,2-7,Sota,Caballo,Rey × 4 suits). Players sit in two
+        fixed teams: seats 0&2 (human is seat 0) vs seats 1&3. Each player holds 4 cards.
+
+        **Mus phase**: each player declares Mus (wants to exchange cards) or Corte
+        (start betting). All four agreeing triggers a discard-and-redraw cycle, repeated
+        up to 3 times. One Corte ends the phase immediately.
+
+        **Betting rounds** (in order): Grande (highest hand) → Chica (lowest hand) →
+        Pares (pairs; Duples>Medias>Par) → Juego (31+ card points; if nobody qualifies
+        it becomes Punto = closest to 30).
+
+        **Hand values for Juego**: Sota/Caballo/Rey=10, A=1, others=face. Best Juego
+        rank: 31 > 32 > 40 > 39 > ... > 33.
+
+        **Betting actions**: Paso (pass), Envido N (bet N points), Ordago (all-in;
+        accepted = immediate showdown deciding the whole game), Quiero (accept bet),
+        No Quiero (decline; bettor gets +1 amarrako). Both teams Paso defers +1 to showdown.
+
+        **Scoring**: amarrakos; first team to reach the target (default 40) wins.
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Mus        | `0`   | Mus/Corte declaration phase |
+        | Discard    | `1`   | Each player discards and redraws |
+        | Grande     | `2`   | Betting on highest hand |
+        | Chica      | `3`   | Betting on lowest hand |
+        | Pares      | `4`   | Betting on pair combinations |
+        | Juego      | `5`   | Betting on 31+ point hands (or Punto) |
+        | Showdown   | `6`   | Hands revealed and amarrakos settled |
+        | GameEnd    | `7`   | A team reached the target amarrakos |
+
+        | Command         | Aliases      | Description |
+        |-----------------|--------------|-------------|
+        | `reset`         | `r`          | Start / restart the game (optional `config`) |
+        | `mus`           | `m`          | Declare Mus (Mus phase) |
+        | `corte`         | `c`, `cut`   | Declare Corte — start betting (Mus phase) |
+        | `discard`       | `d`          | Discard cards by `cardIndices` (Discard phase) |
+        | `paso`          |              | Pass this betting round |
+        | `envido`        | `e`          | Bet N points (requires `amount`) |
+        | `ordago`        |              | Bet the whole game |
+        | `quiero`        |              | Accept the current bet |
+        | `noquiero`      | `nq`         | Decline the current bet |
+        | `next`          | `n`          | Advance to the next phase |
+        | `setdifficulty` | `sd`         | Set CPU difficulty (requires `difficulty` 0-2) |
+        | `log`           | `l`          | View action log |
+      operationId: musExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MusRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              mus:
+                summary: Declare Mus (want to exchange cards)
+                value:
+                  command: mus
+                  sessionId: my-session-001
+              corte:
+                summary: Declare Corte (start betting)
+                value:
+                  command: corte
+                  sessionId: my-session-001
+              discard:
+                summary: Discard cards at hand indices 0 and 2
+                value:
+                  command: discard
+                  cardIndices: [0, 2]
+                  sessionId: my-session-001
+              envido:
+                summary: Bet 5 points
+                value:
+                  command: envido
+                  amount: 5
+                  sessionId: my-session-001
+              ordago:
+                summary: Bet the whole game
+                value:
+                  command: ordago
+                  sessionId: my-session-001
+              quiero:
+                summary: Accept the current bet
+                value:
+                  command: quiero
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MusResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MusResponse'
+
+  /tute/exec:
+    post:
+      tags:
+        - tute
+      summary: Execute a Tute game command
+      description: |
+        Send a command to advance a Tute session identified by `sessionId`.
+        Tute is a 4-player (1 human + 3 CPU) Spanish trick-taking game on a
+        40-card Latin deck (A,2–7,Sota,Caballo,Rey × 4 suits).
+        Each player receives 10 cards. Players sit in two fixed teams:
+        seats 0&2 (human is seat 0) vs seats 1&3.
+        The trump suit is set by the suit of the last card dealt.
+        Must-follow trick play: follow the led suit if able; otherwise any card.
+        Trick winner = highest trump if any trump played, else highest led-suit card.
+        Rank order within a suit (strongest to weakest): A > 3 > Rey(K) > Caballo(Q) > Sota(J) > 7 > 6 > 5 > 4 > 2.
+        Card points: A=11, 3=10, Rey=4, Caballo=3, Sota=2, others=0 (total 120).
+        The last (10th) trick awards an additional +10 points.
+        **Cante (marriage)**: on lead, a player holding the Rey and Caballo of the same suit
+        may declare a cante — +20 pts for a non-trump suit, +40 pts for the trump suit.
+        Each suit can be declared once per round.
+        **Tute**: holding all four Reys OR all four Caballos allows a player to declare
+        "Tute" for an immediate game win.
+        Cumulative scores accumulate across rounds; first team to the target (default 121) wins.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Play      | `0`   | Ten tricks played under must-follow rules |
+        | TrickEnd  | `1`   | Trick resolved; advance with `next` |
+        | RoundEnd  | `2`   | Round scored; advance with `nextround` |
+        | GameEnd   | `3`   | A team reached the target score |
+
+        | Command           | Aliases                | Description |
+        |-------------------|------------------------|-------------|
+        | `reset`           | `r`                    | Start / restart the game (optional `config`) |
+        | `play`            |                        | Play a card by `cardIndex` (Play phase) |
+        | `marriage`        | `m`                    | Declare cante by `suit` while on lead (Play phase) |
+        | `tute`            |                        | Declare Tute for an instant game win |
+        | `next`            | `n`                    | Advance to the next trick |
+        | `nextround`       | `nr`                   | Score the round and start the next |
+        | `setdifficulty`   | `sd`                   | Set CPU difficulty (requires `difficulty` 0-2) |
+        | `log`             | `l`                    | View action log |
+      operationId: tuteExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TuteRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play the card at hand index 3
+                value:
+                  command: play
+                  cardIndex: 3
+                  sessionId: my-session-001
+              marriage:
+                summary: Declare cante (marriage) in the hearts suit
+                value:
+                  command: marriage
+                  suit: 3
+                  sessionId: my-session-001
+              tute:
+                summary: Declare Tute for an instant win
+                value:
+                  command: tute
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TuteResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TuteResponse'
+
+  /sueca/exec:
+    post:
+      tags:
+        - sueca
+      summary: Execute a Sueca game command
+      description: |
+        Send a command to advance a Sueca session identified by `sessionId`.
+        Sueca is a 4-player (1 human + 3 CPU) Portuguese/Brazilian trick-taking game on a
+        40-card Latin deck (A,2–7,Sota/Caballo/Rei × 4 suits).
+        Each player receives 10 cards. Players sit in two fixed teams:
+        seats 0&2 (human is seat 0) vs seats 1&3.
+        The trump suit is set by the suit of the last card dealt.
+        Must-follow trick play: follow the led suit if able; otherwise any card.
+        Trick winner = highest trump if any trump played, else highest led-suit card.
+        Rank order within a suit (strongest to weakest): A > 7 > Rei(K) > Valete/Sota(J) > Dama/Caballo(Q) > 6 > 5 > 4 > 3 > 2.
+        Card points: A=11, 7=10, Rei=4, Valete/Sota=3, Dama/Caballo=2, others=0 (total 120).
+        No marriages or special declarations — pure trick play over 10 tricks.
+        Round scoring: the team with more card points wins; 61-90 points earns 1 game point,
+        91-119 earns 2, 120 (all tricks) earns 4; 60-60 is a draw and neither team scores.
+        Game points accumulate across rounds; the first team to the target (default 4) wins the match.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Play      | `0`   | Ten tricks played under must-follow rules |
+        | TrickEnd  | `1`   | Trick resolved; advance with `next` |
+        | RoundEnd  | `2`   | Round scored; advance with `nextround` |
+        | GameEnd   | `3`   | A team reached the target game points |
+
+        | Command           | Aliases                | Description |
+        |-------------------|------------------------|-------------|
+        | `reset`           | `r`                    | Start / restart the game (optional `config`) |
+        | `play`            | `p`                    | Play a card by `cardIndex` (Play phase) |
+        | `next`            | `n`                    | Advance to the next trick |
+        | `nextround`       | `nr`                   | Score the round and start the next |
+        | `setdifficulty`   | `sd`                   | Set CPU difficulty (requires `difficulty` 0-2) |
+        | `log`             | `l`                    | View action log |
+      operationId: suecaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuecaRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play the card at hand index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+              next:
+                summary: Advance to the next trick
+                value:
+                  command: next
+                  sessionId: my-session-001
+              nextround:
+                summary: Score the round and continue
+                value:
+                  command: nextround
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuecaResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuecaResponse'
 
 components:
   schemas:
@@ -26391,3 +26840,804 @@ components:
         messageParams:
           type: object
           additionalProperties: true
+
+    # -------------------------------------------------------------------------
+    # Sheepshead types
+    # -------------------------------------------------------------------------
+    SheepsheadRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `pick` (`p`), `pass`,
+            `bury` (`b`), `call` (`c`), `play`, `next` (`n`), `nextround` (`nr`),
+            `setdifficulty` (`sd`), `setbasechips` (`sb`), `hint` (`h`), `log` (`l`).
+          enum: [reset, r, pick, p, pass, bury, b, call, c, play, next, n, nextround, nr, setdifficulty, sd, setbasechips, sb, hint, h, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Hand index of the card to play. Required for the `play` command.
+          example: 0
+        cardIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices of two cards to bury. Required for the `bury` command.
+          example: [0, 1]
+        suit:
+          type: integer
+          description: Fail-suit to call (1=♠, 2=♣, 3=♥). Required for the `call` command.
+          minimum: 1
+          maximum: 3
+          example: 1
+        difficulty:
+          type: integer
+          description: CPU difficulty level for `setdifficulty`. 0=Easy, 1=Normal, 2=Hard.
+          minimum: 0
+          maximum: 2
+        amount:
+          type: integer
+          description: Base chip stake for `setbasechips`. Must be a positive integer.
+          minimum: 1
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            baseChips:
+              type: integer
+              minimum: 1
+            targetChips:
+              type: integer
+              minimum: 1
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    SheepsheadResponse:
+      type: object
+      description: Current state of the Sheepshead game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              trickCount:
+                type: integer
+              chips:
+                type: integer
+                description: Current chip count for this player
+        phase:
+          type: integer
+          description: "Game phase: 0=Pick, 1=Bury, 2=Call, 3=Play, 4=TrickEnd, 5=RoundEnd, 6=GameEnd"
+          enum: [0, 1, 2, 3, 4, 5, 6]
+          example: 0
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        blindCount:
+          type: integer
+          description: Number of cards currently in the blind (2 before pick, 0 after bury)
+        buried:
+          type: array
+          description: The 2 buried cards (visible only after round end)
+          items:
+            $ref: '#/components/schemas/Card'
+        pickerIdx:
+          type: integer
+          description: Index of the player who picked up the blind (-1 if not yet decided)
+        partnerIdx:
+          type: integer
+          description: Index of the secret partner (-1 until revealed)
+        calledSuit:
+          type: integer
+          description: "Fail-suit called by the picker (1=♠, 2=♣, 3=♥, 0=none)"
+        partnerRevealed:
+          type: boolean
+          description: True once the partner has played the called Ace
+        passCount:
+          type: integer
+          description: Number of players who have passed the blind in the current round
+        callableSuits:
+          type: array
+          items:
+            type: integer
+          description: Fail-suit indices the picker may legally call (suits not in the picker's hand)
+        playableIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices the human may legally play (must-follow filtered)
+        roundPickerPoints:
+          type: integer
+          description: Card points accumulated by the picker team this round (including buried)
+        roundMultiplier:
+          type: integer
+          description: "Chip stake multiplier for this round: 1=normal, 2=Schneider, 3=Schwarz"
+        roundPickerWon:
+          type: boolean
+          description: True if the picker team won the round (available at RoundEnd/GameEnd)
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: Index of the player who reached the target chip count (-1 if undecided)
+        hint:
+          type: object
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties: true
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            baseChips:
+              type: integer
+            targetChips:
+              type: integer
+
+    # -------------------------------------------------------------------------
+    # Doppelkopf types
+    # -------------------------------------------------------------------------
+    DoppelkopfRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `play`, `announce` (`a`),
+            `next` (`n`), `nextround` (`nr`), `setdifficulty` (`sd`),
+            `setbasechips` (`sb`), `log` (`l`).
+          enum: [reset, r, play, announce, a, next, n, nextround, nr, setdifficulty, sd, setbasechips, sb, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Hand index of the card to play. Required for the `play` command.
+          example: 0
+        difficulty:
+          type: integer
+          description: CPU difficulty level for `setdifficulty`. 0=Easy, 1=Normal, 2=Hard.
+          minimum: 0
+          maximum: 2
+        amount:
+          type: integer
+          description: Base chip stake for `setbasechips`. Must be a positive integer.
+          minimum: 1
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            baseChips:
+              type: integer
+              minimum: 1
+            targetChips:
+              type: integer
+              minimum: 1
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    DoppelkopfResponse:
+      type: object
+      description: Current state of the Doppelkopf game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              trickCount:
+                type: integer
+              chips:
+                type: integer
+                description: Current chip count for this player
+        phase:
+          type: integer
+          description: "Game phase: 0=Play, 1=TrickEnd, 2=RoundEnd, 3=GameEnd"
+          enum: [0, 1, 2, 3]
+          example: 0
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        reTeam:
+          type: array
+          items:
+            type: integer
+          description: Indices of Re team members (revealed at round end; partial during play if Re announced)
+        soloRe:
+          type: boolean
+          description: True if one player holds both Q♣ (solo Re vs 3 Kontra)
+        teamsRevealed:
+          type: boolean
+          description: True once both teams are fully public (end of round)
+        reAnnounced:
+          type: boolean
+          description: True if Re has been announced this round
+        kontraAnnounced:
+          type: boolean
+          description: True if Kontra has been announced this round
+        canAnnounce:
+          type: boolean
+          description: True if the human player may still announce during this trick (trick 1 only)
+        youAreRe:
+          type: boolean
+          description: True if the human player is on the Re team
+        playableIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices the human may legally play (must-follow filtered)
+        roundRePoints:
+          type: integer
+          description: Card points accumulated by the Re team this round
+        roundReWon:
+          type: boolean
+          description: True if the Re team won the round (available at RoundEnd/GameEnd)
+        roundGamePoints:
+          type: integer
+          description: Game points awarded to the winning side this round (before chip settlement)
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: Index of the player who reached the target chip count (-1 if undecided)
+        hint:
+          type: object
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            baseChips:
+              type: integer
+            targetChips:
+              type: integer
+
+    # -------------------------------------------------------------------------
+    # Mus types
+    # -------------------------------------------------------------------------
+    MusRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `mus` (`m`), `corte` (`c`, `cut`),
+            `discard` (`d`), `paso`, `envido` (`e`), `ordago`, `quiero`, `noquiero` (`nq`),
+            `next` (`n`), `setdifficulty` (`sd`), `log` (`l`).
+          enum: [reset, r, mus, m, corte, c, cut, discard, d, paso, envido, e, ordago, quiero, noquiero, nq, next, n, setdifficulty, sd, log, l]
+          example: reset
+        cardIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices of cards to discard. Required for the `discard` command (0-4 cards).
+          example: [0, 2]
+        amount:
+          type: integer
+          description: Bet amount in amarrakos for `envido`. Must be a positive integer.
+          minimum: 1
+        difficulty:
+          type: integer
+          description: CPU difficulty level for `setdifficulty`. 0=Easy, 1=Normal, 2=Hard.
+          minimum: 0
+          maximum: 2
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            targetAmarrakos:
+              type: integer
+              minimum: 1
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    MusResponse:
+      type: object
+      description: Current state of the Mus game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              teamId:
+                type: integer
+                description: "Team index: 0 = seats 0&2, 1 = seats 1&3"
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 0=Mus, 1=Discard, 2=Grande, 3=Chica, 4=Pares, 5=Juego, 6=Showdown, 7=GameEnd"
+          enum: [0, 1, 2, 3, 4, 5, 6, 7]
+          example: 0
+        roundNumber:
+          type: integer
+        manoIdx:
+          type: integer
+          description: Seat index of the current Mano (first player in this round)
+        betTeam:
+          type: integer
+          description: "Team index that placed the current pending bet (-1 = none)"
+        pendingStake:
+          type: integer
+          description: Current bet amount on the table (0 when no active bet)
+        lastBettorTeam:
+          type: integer
+          description: Team index of the last team to bet or raise (-1 = none)
+        musTurn:
+          type: integer
+          description: Seat index of the player whose Mus/Corte declaration is pending
+        discardTurn:
+          type: integer
+          description: Seat index of the player who should discard next (-1 = not in Discard phase)
+        musCycle:
+          type: integer
+          description: Number of completed Mus exchange cycles so far (0-3)
+        amarrakos:
+          type: array
+          items:
+            type: integer
+          description: Amarrakos score for each team [team0, team1]
+        results:
+          type: array
+          description: Per-betting-round showdown results (available at Showdown/GameEnd)
+          items:
+            type: object
+            properties:
+              roundName:
+                type: string
+                description: "Name of the betting round (grande, chica, pares, juego, punto)"
+              winnerTeam:
+                type: integer
+              pointsAwarded:
+                type: integer
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: Index of the winning team (-1 if undecided)
+        humanTeam:
+          type: integer
+          description: Team index of the human player (always 0)
+        isHumanTurn:
+          type: boolean
+        canPaso:
+          type: boolean
+          description: True when the human may play Paso
+        canEnvido:
+          type: boolean
+          description: True when the human may play Envido
+        canOrdago:
+          type: boolean
+          description: True when the human may play Ordago
+        canQuiero:
+          type: boolean
+          description: True when the human may play Quiero (a bet is pending)
+        canNoQuiero:
+          type: boolean
+          description: True when the human may play No Quiero (a bet is pending)
+        hint:
+          type: object
+          properties:
+            action:
+              type: string
+              description: "Suggested action (e.g. paso, envido, ordago, quiero, noquiero)"
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            targetAmarrakos:
+              type: integer
+
+    # -------------------------------------------------------------------------
+    # Tute types
+    # -------------------------------------------------------------------------
+    TuteRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `play`, `marriage` (`m`),
+            `tute`, `next` (`n`), `nextround` (`nr`), `setdifficulty` (`sd`), `log` (`l`).
+          enum: [reset, r, play, marriage, m, tute, next, n, nextround, nr, setdifficulty, sd, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Hand index of the card to play. Required for the `play` command.
+          example: 0
+        suit:
+          type: integer
+          description: |
+            Suit to use for the `marriage` command. 1=♠ (Spades), 2=♣ (Clubs),
+            3=♥ (Hearts), 4=♦ (Diamonds).
+          minimum: 1
+          maximum: 4
+          example: 3
+        difficulty:
+          type: integer
+          description: CPU difficulty level for `setdifficulty`. 0=Easy, 1=Normal, 2=Hard.
+          minimum: 0
+          maximum: 2
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            targetPoints:
+              type: integer
+              minimum: 1
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    TuteResponse:
+      type: object
+      description: Current state of the Tute game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              trickCount:
+                type: integer
+              teamId:
+                type: integer
+                description: "Team membership: 0 = seats 0 & 2, 1 = seats 1 & 3"
+        phase:
+          type: integer
+          description: "Game phase: 0=Play, 1=TrickEnd, 2=RoundEnd, 3=GameEnd"
+          enum: [0, 1, 2, 3]
+          example: 0
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        trumpSuit:
+          type: integer
+          description: "Current trump suit: 1=♠, 2=♣, 3=♥, 4=♦"
+          minimum: 1
+          maximum: 4
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        declaredSuits:
+          type: array
+          items:
+            type: integer
+          description: Suit indices for which a cante has already been declared this round
+        teamScores:
+          type: array
+          items:
+            type: integer
+          description: Cumulative points for each team across rounds (index 0 = Team A seats 0&2, 1 = Team B seats 1&3)
+        roundTeamPoints:
+          type: array
+          items:
+            type: integer
+          description: Card points accumulated by each team in the current round (before last-trick bonus)
+        canDeclareMarriage:
+          type: boolean
+          description: True if the human player is on lead and holds a Rey+Caballo pair not yet declared
+        canDeclareTute:
+          type: boolean
+          description: True if the human player holds all four Reys or all four Caballos
+        playableIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices the human may legally play (must-follow filtered)
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: Index of the winning team (-1 if undecided)
+        isHumanTurn:
+          type: boolean
+        hint:
+          type: object
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            targetPoints:
+              type: integer
+
+    SuecaRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `play` (`p`),
+            `next` (`n`), `nextround` (`nr`), `setdifficulty` (`sd`), `log` (`l`).
+          enum: [reset, r, play, p, next, n, nextround, nr, setdifficulty, sd, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Hand index of the card to play. Required for the `play` command.
+          example: 0
+        difficulty:
+          type: integer
+          description: CPU difficulty level for `setdifficulty`. 0=Easy, 1=Normal, 2=Hard.
+          minimum: 0
+          maximum: 2
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            targetGamePoints:
+              type: integer
+              minimum: 1
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    SuecaResponse:
+      type: object
+      description: Current state of the Sueca game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              trickCount:
+                type: integer
+              teamGamePoints:
+                type: integer
+                description: Cumulative game points of this player's team
+        phase:
+          type: integer
+          description: "Game phase: 0=Play, 1=TrickEnd, 2=RoundEnd, 3=GameEnd"
+          enum: [0, 1, 2, 3]
+          example: 0
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        trumpSuit:
+          type: integer
+          description: "Current trump suit: 1=♠, 2=♣, 3=♥, 4=♦"
+          minimum: 1
+          maximum: 4
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        teamGamePoints:
+          type: array
+          items:
+            type: integer
+          description: Cumulative game points per team (index 0 = Team A seats 0&2, 1 = Team B seats 1&3)
+        roundCardPoints:
+          type: array
+          items:
+            type: integer
+          description: Card points accumulated by each team in the current round
+        roundWinnerTeam:
+          type: integer
+          description: Index of the team that won the most card points in the last round (-1 if draw or not yet resolved)
+        roundGamePoints:
+          type: integer
+          description: Game points awarded to the round winner (1, 2, or 4; 0 on a 60-60 draw)
+        playableIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices the human may legally play (must-follow filtered)
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: Index of the winning team (-1 if undecided)
+        isHumanTurn:
+          type: boolean
+        hint:
+          type: object
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            targetGamePoints:
+              type: integer

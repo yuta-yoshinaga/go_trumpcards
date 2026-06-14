@@ -218,14 +218,19 @@ describe('SpiderPage', () => {
     expect(screen.getByTestId('autocomplete-button')).toBeDisabled();
   });
 
-  it('clicking give up button dispatches giveup', async () => {
+  it('give up button opens a confirm dialog and only dispatches giveup after confirm', async () => {
     renderWithProviders(<SpiderPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(gameOverState);
+    // Clicking give-up must NOT dispatch immediately — it opens a confirm dialog (#2099).
     fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    expect(mockExec).not.toHaveBeenCalledWith('giveup');
+    expect(screen.getByText('投了確認')).toBeInTheDocument();
 
+    // Confirming dispatches giveup.
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
   });
 

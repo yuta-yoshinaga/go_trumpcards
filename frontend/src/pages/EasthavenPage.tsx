@@ -170,8 +170,21 @@ function formatEasthavenState(state: EasthavenResponse): string {
 export const EasthavenPage = withTutorial(EasthavenPageContent, 'easthaven', EH_TUTORIAL_STEPS);
 /** Inner content of the Easthaven page. */
 function EasthavenPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('easthaven');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('easthaven');
   const { playSound } = useSound();
   const {
     state,
@@ -272,6 +285,13 @@ function EasthavenPageContent() {
     void apiExec('giveup');
   }, [apiExec]);
 
+  // Give-up is irreversible, so route both the button and the `g` key through
+  // the confirm dialog — matching reset's guard (issue #2099).
+  const confirmGiveUpAction = useCallback(
+    () => requestGiveUpConfirm(handleGiveUp),
+    [requestGiveUpConfirm, handleGiveUp],
+  );
+
   const handleHint = useCallback(async () => {
     const res = await easthavenApi.exec('hint');
     setState((prev) => (prev ? { ...prev, hint: res.hint } : prev));
@@ -324,11 +344,11 @@ function EasthavenPageContent() {
     () => [
       { key: 'h', action: handleHint },
       { key: 'a', action: handleAutoComplete },
-      { key: 'g', action: handleGiveUp },
+      { key: 'g', action: confirmGiveUpAction },
       { key: 'z', action: handleUndo },
       { key: 'd', action: handleDealGuarded },
     ],
-    [handleHint, handleAutoComplete, handleGiveUp, handleUndo, handleDealGuarded],
+    [handleHint, handleAutoComplete, confirmGiveUpAction, handleUndo, handleDealGuarded],
   );
 
   useActionKeyboardNav({
@@ -364,6 +384,9 @@ function EasthavenPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
           <span>
@@ -632,7 +655,7 @@ function EasthavenPageContent() {
                   >
                     {t('undo')}
                   </button>
-                  <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                  <button type="button" className={btnDanger} onClick={confirmGiveUpAction} disabled={loading}>
                     {t('giveup')}
                   </button>
                   {state.isStalemate && (

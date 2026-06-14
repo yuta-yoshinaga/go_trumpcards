@@ -41,6 +41,7 @@ import cruel from '../../../docs/manual/web/cruel.md?raw';
 import daifugo from '../../../docs/manual/web/daifugo.md?raw';
 import deuceswild from '../../../docs/manual/web/deuceswild.md?raw';
 import deucetoseven from '../../../docs/manual/web/deucetoseven.md?raw';
+import doppelkopf from '../../../docs/manual/web/doppelkopf.md?raw';
 import doubt from '../../../docs/manual/web/doubt.md?raw';
 import doudizhu from '../../../docs/manual/web/doudizhu.md?raw';
 import dragontiger from '../../../docs/manual/web/dragontiger.md?raw';
@@ -72,6 +73,7 @@ import memory from '../../../docs/manual/web/memory.md?raw';
 import mighty from '../../../docs/manual/web/mighty.md?raw';
 import mississippistud from '../../../docs/manual/web/mississippistud.md?raw';
 import montecarlo from '../../../docs/manual/web/montecarlo.md?raw';
+import mus from '../../../docs/manual/web/mus.md?raw';
 import napoleon from '../../../docs/manual/web/napoleon.md?raw';
 import nertz from '../../../docs/manual/web/nertz.md?raw';
 import oasispoker from '../../../docs/manual/web/oasispoker.md?raw';
@@ -104,6 +106,7 @@ import seahaventowers from '../../../docs/manual/web/seahaventowers.md?raw';
 import sevenbridge from '../../../docs/manual/web/sevenbridge.md?raw';
 import sevencardstud from '../../../docs/manual/web/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/web/sevens.md?raw';
+import sheepshead from '../../../docs/manual/web/sheepshead.md?raw';
 import shithead from '../../../docs/manual/web/shithead.md?raw';
 import shortdeck from '../../../docs/manual/web/shortdeck.md?raw';
 import sixcardgolf from '../../../docs/manual/web/sixcardgolf.md?raw';
@@ -115,6 +118,7 @@ import speed from '../../../docs/manual/web/speed.md?raw';
 import spider from '../../../docs/manual/web/spider.md?raw';
 import spiderette from '../../../docs/manual/web/spiderette.md?raw';
 import spiteandmalice from '../../../docs/manual/web/spiteandmalice.md?raw';
+import sueca from '../../../docs/manual/web/sueca.md?raw';
 import tarneeb from '../../../docs/manual/web/tarneeb.md?raw';
 import texasholdembonus from '../../../docs/manual/web/texasholdembonus.md?raw';
 import thirtyone from '../../../docs/manual/web/thirtyone.md?raw';
@@ -126,6 +130,7 @@ import trash from '../../../docs/manual/web/trash.md?raw';
 import tressette from '../../../docs/manual/web/tressette.md?raw';
 import tripeaks from '../../../docs/manual/web/tripeaks.md?raw';
 import truco from '../../../docs/manual/web/truco.md?raw';
+import tute from '../../../docs/manual/web/tute.md?raw';
 import twotenjack from '../../../docs/manual/web/twotenjack.md?raw';
 import ultimatetexasholdem from '../../../docs/manual/web/ultimatetexasholdem.md?raw';
 import videopoker from '../../../docs/manual/web/videopoker.md?raw';
@@ -210,6 +215,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/poker': poker,
   '/pokersquares': pokersquares,
   '/montecarlo': montecarlo,
+  '/mus': mus,
   '/contractrummy': contractrummy,
   '/ultimatetexasholdem': ultimatetexasholdem,
   '/crescent': crescent,
@@ -225,6 +231,10 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/sevens': sevens,
   '/shortdeck': shortdeck,
   '/spades': spades,
+  '/sheepshead': sheepshead,
+  '/doppelkopf': doppelkopf,
+  '/sueca': sueca,
+  '/tute': tute,
   '/pitch': pitch,
   '/spanish21': spanish21,
   '/speed': speed,

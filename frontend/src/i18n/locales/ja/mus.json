@@ -1,0 +1,77 @@
+{
+  "phase": {
+    "mus": "ムス",
+    "discard": "交換",
+    "grande": "グランデ",
+    "chica": "チカ",
+    "pares": "パレス",
+    "juego": "フエゴ",
+    "showdown": "ショーダウン",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetAmarrakos": "目標アマラコ",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "players": "プレイヤー",
+  "cards": "{{count}}枚",
+  "teamLabel": "チーム {{n}}",
+  "yourTeam": "あなたのチーム",
+  "amarrakos": "アマラコ",
+  "amarrakosTeam": "チーム{{team}}: {{score}}点",
+  "pendingStake": "保留中の賭け: {{amount}}",
+  "ordagoLabel": "オルダゴ（全賭け）",
+  "musPrompt": "ムス（交換）にしますか、それともコルテ（勝負）にしますか？",
+  "discardPrompt": "交換するカードを選んでください（なければ全保持）。",
+  "betPrompt": "{{round}} ― あなたの番です。アクションを選んでください。",
+  "musButton": "ムス（交換）",
+  "corteButton": "コルテ（勝負）",
+  "discardButton": "交換する",
+  "discardSelected": "選択 {{count}}枚",
+  "keepAll": "全保持",
+  "bet": {
+    "paso": "パソ（パス）",
+    "envido": "エンビード（賭け）",
+    "ordago": "オルダゴ（全賭け）",
+    "quiero": "キエロ（受ける）",
+    "noquiero": "ノキエロ（降りる）"
+  },
+  "envidoAmount": "賭け額: {{amount}}",
+  "roundResult": {
+    "title": "賭けラウンド結果",
+    "grande": "グランデ",
+    "chica": "チカ",
+    "pares": "パレス",
+    "juego": "フエゴ",
+    "line": "{{round}}: チーム{{team}} +{{stake}}",
+    "undecided": "未決着"
+  },
+  "nextRound": "次のラウンド",
+  "hintAvailable": "ヒント",
+  "hint": {
+    "mus_exchange": "手が弱い ― 交換を推奨",
+    "mus_cut": "手が強い ― 賭け開始を推奨",
+    "discard_low": "ペアでない低い札を交換することを推奨",
+    "bet_paso": "手が弱い ― パスを推奨",
+    "bet_envido": "手が強い ― 賭けを推奨",
+    "bet_ordago": "手が非常に強い ― 全賭けを推奨",
+    "bet_quiero": "相手に勝っている ― 受けることを推奨",
+    "bet_no_quiero": "相手に負けている ― 降りることを推奨"
+  },
+  "tutorial": {
+    "info": "ムスはバスク地方発祥の4人制（2対2）の賭けゲーム。グランデ・チカ・パレス・フエゴの4ラウンドでアマラコ（点）を奪い合い、目標点に先に到達したチームが勝ちます。",
+    "mus": "まずムスフェーズ。全員が「ムス」なら手札を交換できます。誰かが「コルテ」を宣言すると交換は終わり、賭けが始まります。",
+    "discard": "ムスになったら、交換したいカードを選んで「交換する」を押します。何も選ばなければ全て保持します。",
+    "bet": "各ラウンドで、パソ（パス）・エンビード（賭け）・オルダゴ（全賭け）を選びます。相手が賭けたらキエロ（受ける）かノキエロ（降りる）で応じます。",
+    "amarrakos": "両チームのアマラコ（点数）です。目標点に先に到達したチームの勝ちです。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}

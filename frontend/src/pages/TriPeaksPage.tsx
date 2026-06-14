@@ -82,8 +82,21 @@ const TP_TUTORIAL_STEPS: TutorialStep[] = [
 export const TriPeaksPage = withTutorial(TriPeaksPageContent, 'tripeaks', TP_TUTORIAL_STEPS);
 /** Inner content of the TriPeaks page, wrapped by TutorialProvider. */
 function TriPeaksPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('tripeaks');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('tripeaks');
   const { playSound } = useSound();
   const {
     state,
@@ -123,14 +136,21 @@ function TriPeaksPageContent() {
 
   const isPlayingForKbd = state?.phase === TriPeaksPhase.PLAYING;
 
+  // Give-up is irreversible, so route both the button and the `g` key through
+  // the confirm dialog — matching reset's guard (issue #2099).
+  const confirmGiveUpAction = useCallback(
+    () => requestGiveUpConfirm(handleGiveUp),
+    [requestGiveUpConfirm, handleGiveUp],
+  );
+
   const actionBindings = useMemo(
     () => [
       { key: 'd', action: handleDraw },
       { key: 'h', action: handleHint },
-      { key: 'g', action: handleGiveUp },
+      { key: 'g', action: confirmGiveUpAction },
       { key: 'z', action: handleUndo },
     ],
-    [handleDraw, handleHint, handleGiveUp, handleUndo],
+    [handleDraw, handleHint, confirmGiveUpAction, handleUndo],
   );
 
   useActionKeyboardNav({
@@ -179,6 +199,9 @@ function TriPeaksPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
           <span>
@@ -375,7 +398,7 @@ function TriPeaksPageContent() {
                   <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
                     {t('hint')}
                   </button>
-                  <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                  <button type="button" className={btnDanger} onClick={confirmGiveUpAction} disabled={loading}>
                     {t('giveup')}
                   </button>
                 </div>

@@ -298,6 +298,27 @@ var registry = []*Game{
 	// Bourré fuses poker-style ante/draw betting with must-follow trick-taking.
 	// Category is purely a binary-size bucket here (see package doc).
 	{Name: "bourre", Category: CategoryCasino, Description: "Bourré (ブーレ)"},
+	// Sheepshead (シープスヘッド) is a German-American 5-player trick-taking game
+	// with a fixed-trump system (all Queens + all Jacks + all Diamonds) and a
+	// secret picker/partner formed via a called Ace. Casino worker (binary-size
+	// bucket only; see package doc).
+	{Name: "sheepshead", Category: CategoryCasino, Description: "Sheepshead (シープスヘッド)"},
+	// Doppelkopf (ドッペルコップ) is a German 4-player partnership trick-taking
+	// game on a doubled 48-card deck with a fixed trump (♥10 Dulle + all Q + all
+	// J + all ♦) and secret Re/Kontra teams formed by the two Q♣ holders. Casino
+	// worker (binary-size bucket only; see package doc).
+	{Name: "doppelkopf", Category: CategoryCasino, Description: "Doppelkopf (ドッペルコップ)"},
+	// Mus (ムス) is a Basque 4-player 2-team vying (betting) game on a 40-card
+	// Latin deck: four wager rounds (Grande/Chica/Pares/Juego) with paso/envido/
+	// ordago and a mus card-exchange phase. Casino worker (binary-size bucket).
+	{Name: "mus", Category: CategoryCasino, Description: "Mus (ムス)"},
+	// Tute (トゥーテ) is a Spanish 40-card trump trick-taking game for 4 players
+	// (2v2) with K+Q marriage declarations (cante) and a 4-King/4-Queen instant
+	// win. Casino worker (binary-size bucket).
+	{Name: "tute", Category: CategoryCasino, Description: "Tute (トゥーテ)"},
+	// Sueca (スエカ) is a Portuguese/Brazilian 40-card trump trick-taking game for
+	// 4 players (2v2) with A=11/7=10 scoring. Casino worker (binary-size bucket).
+	{Name: "sueca", Category: CategoryCasino, Description: "Sueca (スエカ)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

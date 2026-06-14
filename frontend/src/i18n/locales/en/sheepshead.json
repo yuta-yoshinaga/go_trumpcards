@@ -1,0 +1,81 @@
+{
+  "phase": {
+    "pick": "Pick",
+    "bury": "Bury",
+    "call": "Call Partner",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetChips": "Target Chips",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "chips": "{{count}} chips",
+  "currentTrick": "Current Trick",
+  "blind": "Blind",
+  "blindCount": "Blind: {{count}} cards",
+  "picker": "Picker",
+  "partner": "Partner",
+  "partnerHidden": "(hidden)",
+  "calledSuit": "Called suit",
+  "none": "none",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "players": "Players",
+  "pickPrompt": "Take the blind, or pass?",
+  "buryPrompt": "You are the picker. Choose two cards to bury.",
+  "callPrompt": "Choose a suit to call your partner.",
+  "pickButton": "Pick",
+  "passButton": "Pass",
+  "buryButton": "Bury",
+  "burySelected": "Selected {{count}}/2",
+  "callButton": "Call {{suit}}",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "suit": {
+    "spade": "♠ Spades",
+    "club": "♣ Clubs",
+    "heart": "♥ Hearts"
+  },
+  "roundResult": {
+    "title": "Round Result",
+    "pickerPoints": "Picker team points: {{points}}",
+    "multiplier": "Multiplier: x{{multiplier}}",
+    "pickerWon": "Picker team won",
+    "pickerLost": "Picker team lost",
+    "buried": "Buried"
+  },
+  "passCount": "Passed: {{count}}",
+  "hintAvailable": "Hint",
+  "hint": {
+    "pick_take": "Strong hand — recommend taking the blind",
+    "pick_pass": "Weak hand — recommend passing",
+    "bury_low": "Bury the low-point cards",
+    "call_suit": "Recommend calling this suit",
+    "lead_low": "Lead a low card to conserve points",
+    "discard_low": "Cannot follow — discard a low card",
+    "follow_win": "Points on the table — win with a higher card",
+    "follow_duck": "Cannot/should not win — duck"
+  },
+  "tutorial": {
+    "pick": "First, the Pick phase. Take the two blind cards to become the 'picker', or pass.",
+    "bury": "As the picker, choose two cards from your hand to bury. Their points count for you.",
+    "call": "Choose a called suit; whoever holds that ace becomes your hidden partner.",
+    "trickDisplay": "The current trick. Follow the led suit; trumps (Queens, Jacks, diamonds) decide strength.",
+    "playerHand": "Your hand. Click a card to select it.",
+    "playButton": "After selecting a card, play it with this button.",
+    "info": "Card points: A=11, 10=10, K=4, Q=3, J=2. Of the 120 total, the picker team wins by taking 61+. Chips move on each result.",
+    "resetButton": "Use the reset button to start a new game."
+  }
+}

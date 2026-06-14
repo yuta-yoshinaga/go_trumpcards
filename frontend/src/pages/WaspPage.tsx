@@ -148,8 +148,21 @@ function formatWaspState(state: WaspResponse): string {
 export const WaspPage = withTutorial(WaspPageContent, 'wasp', SC_TUTORIAL_STEPS);
 /** Inner content of the Wasp page. */
 function WaspPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('wasp');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('wasp');
   const { playSound } = useSound();
   const {
     state,
@@ -237,6 +250,13 @@ function WaspPageContent() {
     void apiCall('giveup');
   }, [apiCall]);
 
+  // Give-up is irreversible, so route both the button and the `g` key through
+  // the confirm dialog — matching reset's guard (issue #2099).
+  const confirmGiveUpAction = useCallback(
+    () => requestGiveUpConfirm(handleGiveUp),
+    [requestGiveUpConfirm, handleGiveUp],
+  );
+
   const handleHint = useCallback(() => {
     void apiCall('hint');
   }, [apiCall]);
@@ -288,11 +308,11 @@ function WaspPageContent() {
     () => [
       { key: 'h', action: handleHint },
       { key: 'a', action: handleAutoComplete },
-      { key: 'g', action: handleGiveUp },
+      { key: 'g', action: confirmGiveUpAction },
       { key: 'z', action: handleUndo },
       { key: 'd', action: handleDealGuarded },
     ],
-    [handleHint, handleAutoComplete, handleGiveUp, handleUndo, handleDealGuarded],
+    [handleHint, handleAutoComplete, confirmGiveUpAction, handleUndo, handleDealGuarded],
   );
 
   useActionKeyboardNav({
@@ -327,6 +347,9 @@ function WaspPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
           <span>
@@ -521,7 +544,7 @@ function WaspPageContent() {
                   >
                     {t('undo')}
                   </button>
-                  <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                  <button type="button" className={btnDanger} onClick={confirmGiveUpAction} disabled={loading}>
                     {t('giveup')}
                   </button>
                   {state.isStalemate && (

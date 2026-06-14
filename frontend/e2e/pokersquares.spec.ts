@@ -34,6 +34,9 @@ test.describe('Poker Squares E2E', () => {
     const giveUpButton = page.getByRole('button', { name: 'ギブアップ' });
     await expect(giveUpButton).toBeVisible({ timeout: TIMEOUT_TRANSITION });
     await giveUpButton.click();
+
+    // Confirm the give-up in the dialog (#2099).
+    await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
     // After give up, playing buttons should not be visible

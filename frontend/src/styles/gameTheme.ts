@@ -52,6 +52,11 @@ export type GameKey =
   // Trick-taking
   | 'hearts'
   | 'spades'
+  | 'sheepshead'
+  | 'doppelkopf'
+  | 'mus'
+  | 'tute'
+  | 'sueca'
   | 'pitch'
   | 'twotenjack'
   | 'ohhell'
@@ -164,6 +169,26 @@ const BRIGHT_GREEN = {
   bg: 'bg-game-bg-green-bright',
   footer: 'bg-game-bg-green-bright-dark border-white/20',
 } as const;
+const SHEEPSHEAD = {
+  bg: 'bg-game-bg-sheepshead',
+  footer: 'bg-game-bg-sheepshead-dark border-white/20',
+} as const;
+const DOPPELKOPF = {
+  bg: 'bg-game-bg-doppelkopf',
+  footer: 'bg-game-bg-doppelkopf-dark border-white/20',
+} as const;
+const MUS = {
+  bg: 'bg-game-bg-mus',
+  footer: 'bg-game-bg-mus-dark border-white/20',
+} as const;
+const TUTE = {
+  bg: 'bg-game-bg-tute',
+  footer: 'bg-game-bg-tute-dark border-white/20',
+} as const;
+const SUECA = {
+  bg: 'bg-game-bg-sueca',
+  footer: 'bg-game-bg-sueca-dark border-white/20',
+} as const;
 
 export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Table games
@@ -209,6 +234,11 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Trick-taking
   hearts: BLUE,
   spades: BLUE,
+  sheepshead: SHEEPSHEAD,
+  doppelkopf: DOPPELKOPF,
+  mus: MUS,
+  tute: TUTE,
+  sueca: SUECA,
   pitch: BLUE,
   twotenjack: BLUE,
   ohhell: BLUE,

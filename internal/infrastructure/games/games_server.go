@@ -660,6 +660,31 @@ func init() {
 			return usecase.NewTressetteInteractor(domain.NewDefaultTressette(), new(presenter.TressetteWebPresenter))
 		},
 		controller.NewTressetteWebController)
+	BindWebControllerFor("sheepshead",
+		func() usecase.SheepsheadInteractorIF {
+			return usecase.NewSheepsheadInteractor(domain.NewDefaultSheepshead(), new(presenter.SheepsheadWebPresenter))
+		},
+		controller.NewSheepsheadWebController)
+	BindWebControllerFor("doppelkopf",
+		func() usecase.DoppelkopfInteractorIF {
+			return usecase.NewDoppelkopfInteractor(domain.NewDefaultDoppelkopf(), new(presenter.DoppelkopfWebPresenter))
+		},
+		controller.NewDoppelkopfWebController)
+	BindWebControllerFor("mus",
+		func() usecase.MusInteractorIF {
+			return usecase.NewMusInteractor(domain.NewDefaultMus(), new(presenter.MusWebPresenter))
+		},
+		controller.NewMusWebController)
+	BindWebControllerFor("tute",
+		func() usecase.TuteInteractorIF {
+			return usecase.NewTuteInteractor(domain.NewDefaultTute(), new(presenter.TuteWebPresenter))
+		},
+		controller.NewTuteWebController)
+	BindWebControllerFor("sueca",
+		func() usecase.SuecaInteractorIF {
+			return usecase.NewSuecaInteractor(domain.NewDefaultSueca(), new(presenter.SuecaWebPresenter))
+		},
+		controller.NewSuecaWebController)
 	BindWebControllerFor("easthaven",
 		func() usecase.EasthavenInteractorIF {
 			return usecase.NewEasthavenInteractor(domain.NewDefaultEasthaven(), new(presenter.EasthavenWebPresenter))

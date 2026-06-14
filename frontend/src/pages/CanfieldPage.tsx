@@ -66,8 +66,21 @@ const CF_TUTORIAL_STEPS: TutorialStep[] = [
 export const CanfieldPage = withTutorial(CanfieldPageContent, 'canfield', CF_TUTORIAL_STEPS);
 /** Inner content of the Canfield page. */
 function CanfieldPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('canfield');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('canfield');
   const { state, loading, error, exec: execApi, retry } = useGameApi(canfieldApi.exec);
   const { cardWidth, cardHeight } = useCardDimensions();
   const {
@@ -97,6 +110,13 @@ function CanfieldPageContent() {
   const handleReset = useCallback(() => execApi('reset'), [execApi]);
   const handleDraw = useCallback(() => execApi('draw'), [execApi]);
   const handleGiveUp = useCallback(() => execApi('giveup'), [execApi]);
+
+  // Give-up is irreversible, so route both the button and the `g` key through
+  // the confirm dialog — matching reset's guard (issue #2099).
+  const confirmGiveUpAction = useCallback(
+    () => requestGiveUpConfirm(handleGiveUp),
+    [requestGiveUpConfirm, handleGiveUp],
+  );
   const handleHint = useCallback(() => execApi('hint'), [execApi]);
   const handleAutoComplete = useCallback(() => execApi('autocomplete'), [execApi]);
   const handleUndo = useCallback(() => execApi('undo'), [execApi]);
@@ -171,6 +191,9 @@ function CanfieldPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
           <span className="text-sm text-ds-text-muted">
@@ -447,7 +470,7 @@ function CanfieldPageContent() {
                   <button
                     type="button"
                     className={`${btnDanger} ${focusRingWhite}`}
-                    onClick={handleGiveUp}
+                    onClick={confirmGiveUpAction}
                     disabled={loading}
                   >
                     {t('giveup')}

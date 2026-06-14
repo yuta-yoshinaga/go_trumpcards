@@ -168,11 +168,14 @@ describe('ScorpionPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
 
-  it('giveup button triggers giveup command', async () => {
+  it('give up button opens a confirm dialog and only dispatches giveup after confirm', async () => {
     renderWithProviders(<ScorpionPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    const btn = screen.getByRole('button', { name: 'ギブアップ' });
-    btn.click();
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    expect(mockExec).not.toHaveBeenCalledWith('giveup');
+    expect(screen.getByText('投了確認')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
   });
 
@@ -300,10 +303,14 @@ describe('ScorpionPage', () => {
     expect(screen.getByRole('button', { name: /棋譜|action log|アクション/i })).toBeInTheDocument();
   });
 
-  it('keyboard shortcut "g" triggers giveup', async () => {
+  it('keyboard shortcut "g" opens the give up confirm dialog in PLAYING phase', async () => {
     renderWithProviders(<ScorpionPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'g' });
+    expect(mockExec).not.toHaveBeenCalledWith('giveup');
+    expect(screen.getByText('投了確認')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
   });
 

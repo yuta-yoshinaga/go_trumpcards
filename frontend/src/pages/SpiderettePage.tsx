@@ -57,8 +57,21 @@ const TABLEAU_COLS = 7;
 export const SpiderettePage = withTutorial(SpiderettePageContent, 'spiderette', SPDT_TUTORIAL_STEPS);
 
 function SpiderettePageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('spiderette');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('spiderette');
   const { playSound } = useSound();
   const game = useSpideretteGame();
   const {
@@ -114,15 +127,22 @@ function SpiderettePageContent() {
     handleReset();
   }, [handleReset, hideActionLog]);
 
+  // Give-up is irreversible, so route both the button and the `g` key through
+  // the confirm dialog — matching reset's guard (issue #2099).
+  const confirmGiveUpAction = useCallback(
+    () => requestGiveUpConfirm(handleGiveUp),
+    [requestGiveUpConfirm, handleGiveUp],
+  );
+
   const actionBindings = useMemo(
     () => [
       { key: 'd', action: handleDealGuarded },
       { key: 'h', action: handleHint },
       { key: 'a', action: handleAutoComplete },
-      { key: 'g', action: handleGiveUp },
+      { key: 'g', action: confirmGiveUpAction },
       { key: 'z', action: handleUndo },
     ],
-    [handleDealGuarded, handleHint, handleAutoComplete, handleGiveUp, handleUndo],
+    [handleDealGuarded, handleHint, handleAutoComplete, confirmGiveUpAction, handleUndo],
   );
 
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayingForKbd && !loading });
@@ -164,6 +184,9 @@ function SpiderettePageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
           <span>
@@ -357,7 +380,12 @@ function SpiderettePageContent() {
               >
                 {t('autoComplete')}
               </button>
-              <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading || isAutoCompleting}>
+              <button
+                type="button"
+                className={btnDanger}
+                onClick={confirmGiveUpAction}
+                disabled={loading || isAutoCompleting}
+              >
                 {t('giveup')}
               </button>
             </div>

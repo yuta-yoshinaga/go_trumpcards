@@ -1077,6 +1077,393 @@ export interface TressetteResponse extends BaseGameResponse {
   hint?: TressetteHint;
 }
 
+// --- Sheepshead ---
+
+/** Sheepshead game phase (0=Pick 1=Bury 2=Call 3=Play 4=TrickEnd 5=RoundEnd 6=GameEnd). */
+export type SheepsheadPhase = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
+/** A Sheepshead player's public/own state. Cards are non-empty only for the human. */
+export interface SheepsheadPlayer {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  trickCount: number;
+  chips: number;
+}
+
+/** A card played into the current Sheepshead trick. */
+export interface SheepsheadTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Sheepshead game configuration. */
+export interface SheepsheadConfig {
+  cpuDifficulty: number;
+  baseChips: number;
+  startChips: number;
+  targetChips: number;
+}
+
+/** A suggested hint for Sheepshead, computed by the backend. */
+export interface SheepsheadHint {
+  cardIndices: number[];
+  /** Suggested called suit (0=none, 1=♠, 2=♣, 3=♥). Relevant in the Call phase. */
+  suit: number;
+  /** Whether the hint recommends picking the blind (Pick phase). */
+  pick: boolean;
+  reason: string;
+}
+
+/** Full Sheepshead game state returned from the API. */
+export interface SheepsheadResponse extends BaseGameResponse {
+  players: SheepsheadPlayer[];
+  phase: SheepsheadPhase;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  leadPlayerIdx: number;
+  dealerIdx: number;
+  currentTrick: SheepsheadTrickCard[];
+  /** Number of cards in the blind (only the count is exposed during the Pick phase). */
+  blindCount: number;
+  /** The two buried cards; empty until RoundEnd/GameEnd. */
+  buried: Card[];
+  /** Index of the picker, or -1 until decided. */
+  pickerIdx: number;
+  /** Index of the picker's partner, or -1 until revealed/round end. */
+  partnerIdx: number;
+  /** Called partner suit (0=none, 1=♠, 2=♣, 3=♥). */
+  calledSuit: number;
+  /** Whether the partner has been revealed. */
+  partnerRevealed: boolean;
+  /** Number of players who have passed in the Pick phase. */
+  passCount: number;
+  /** Suits the picker may call this turn (non-empty only in the Call phase). */
+  callableSuits: number[];
+  /** Indices in the human's hand that are legal to play (non-empty on human Play turn). */
+  playableIndices: number[];
+  /** Card points captured by the picker's team this round. */
+  roundPickerPoints: number;
+  /** Score multiplier applied to this round's result. */
+  roundMultiplier: number;
+  /** Whether the picker's team won the round. */
+  roundPickerWon: boolean;
+  gameEndFlag: boolean;
+  /** Winning player index, or -1 until the game ends. */
+  winnerIdx: number;
+  hint?: SheepsheadHint | null;
+  config: SheepsheadConfig;
+}
+
+// --- Mus ---
+
+/**
+ * Mus game phase
+ * (0=Mus 1=Discard 2=Grande 3=Chica 4=Pares 5=Juego 6=Showdown 7=RoundEnd 8=GameEnd).
+ */
+export type MusPhaseValue = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+
+/**
+ * A Mus player's public/own state. `cards` is populated for the human at all
+ * times and for opponents only once the phase reaches Showdown (>=6).
+ */
+export interface MusPlayer {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  /** The score (amarrakos) of the team this player belongs to. */
+  teamScore: number;
+}
+
+/**
+ * Result of one of the four betting rounds (Grande / Chica / Pares / Juego).
+ * `kind` identifies the round, `stake` the amarrakos awarded, `team` the winner.
+ */
+export interface MusRoundResult {
+  kind: number;
+  stake: number;
+  team: number;
+}
+
+/** Mus game configuration. */
+export interface MusConfig {
+  cpuDifficulty: number;
+  targetAmarrakos: number;
+}
+
+/** A suggested hint for Mus, computed by the backend. */
+export interface MusHint {
+  /** Whether the hint recommends calling Mus / exchanging (Mus phase). */
+  mus: boolean;
+  /** Suggested bet action (0=paso 1=envido 2=ordago 3=quiero 4=noquiero). */
+  action: number;
+  /** Suggested Envido amount. */
+  amount: number;
+  /** Suggested card indices to discard (Discard phase). */
+  indices: number[];
+  /** i18n reason suffix identifier. */
+  reason: string;
+}
+
+/** Full Mus game state returned from the API. */
+export interface MusResponse extends BaseGameResponse {
+  players: MusPlayer[];
+  phase: MusPhaseValue;
+  roundNumber: number;
+  /** Index of the mano (lead) player. */
+  manoIdx: number;
+  /** Team that currently holds the active bet, or -1 when none. */
+  betTeam: number;
+  /** Pending stake amount (-1=ordago/all-in, 0=none). */
+  pendingStake: number;
+  /** Team that placed the most recent bet, or -1. */
+  lastBettorTeam: number;
+  /** Index of the player to act in the Mus phase. */
+  musTurn: number;
+  /** Index of the player to act in the Discard phase. */
+  discardTurn: number;
+  /** Number of Mus/exchange cycles completed this round. */
+  musCycle: number;
+  /** Team amarrakos (scores) — [team0, team1]. */
+  amarrakos: number[];
+  /** Per-round results indexed by Grande/Chica/Pares/Juego. */
+  results: MusRoundResult[];
+  gameEndFlag: boolean;
+  /** Winning team index, or -1 until the game ends. */
+  winnerTeam: number;
+  /** Team the human player belongs to, or -1 when none. */
+  humanTeam: number;
+  /** Whether it is currently the human's turn to act. */
+  isHumanTurn: boolean;
+  /** Whether the Paso bet action is legal for the human right now. */
+  canPaso: boolean;
+  /** Whether the Envido bet action is legal for the human right now. */
+  canEnvido: boolean;
+  /** Whether the Ordago (all-in) bet action is legal for the human right now. */
+  canOrdago: boolean;
+  /** Whether the Quiero (accept) bet action is legal for the human right now. */
+  canQuiero: boolean;
+  /** Whether the No Quiero (decline) bet action is legal for the human right now. */
+  canNoQuiero: boolean;
+  hint?: MusHint | null;
+  config: MusConfig;
+}
+
+// --- Doppelkopf ---
+
+/** Doppelkopf game phase (0=Play 1=TrickEnd 2=RoundEnd 3=GameEnd). */
+export type DoppelkopfPhaseValue = 0 | 1 | 2 | 3;
+
+/** A Doppelkopf player's public/own state. Cards are non-empty only for the human. */
+export interface DoppelkopfPlayer {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  trickCount: number;
+  chips: number;
+  /** Whether this player is on the Re team. False until teams are revealed. */
+  isRe: boolean;
+}
+
+/** A card played into the current Doppelkopf trick. */
+export interface DoppelkopfTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Doppelkopf game configuration. */
+export interface DoppelkopfConfig {
+  cpuDifficulty: number;
+  baseChips: number;
+  startChips: number;
+  targetChips: number;
+}
+
+/** A suggested hint for Doppelkopf, computed by the backend. */
+export interface DoppelkopfHint {
+  cardIndices: number[];
+  reason: string;
+}
+
+/** Full Doppelkopf game state returned from the API. */
+export interface DoppelkopfResponse extends BaseGameResponse {
+  players: DoppelkopfPlayer[];
+  phase: DoppelkopfPhaseValue;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  leadPlayerIdx: number;
+  dealerIdx: number;
+  currentTrick: DoppelkopfTrickCard[];
+  /** Each player's Re-team membership; all false until teams are revealed (4 elements). */
+  reTeam: boolean[];
+  /** Whether one player holds both ♣Q (a solo Re). */
+  soloRe: boolean;
+  /** Whether the Re/Kontra teams have been revealed. */
+  teamsRevealed: boolean;
+  /** Whether Re has been announced this round. */
+  reAnnounced: boolean;
+  /** Whether Kontra has been announced this round. */
+  kontraAnnounced: boolean;
+  /** Whether the human may announce Re/Kontra right now (first trick only). */
+  canAnnounce: boolean;
+  /** Whether the human is on the Re team. Always known, even before reveal. */
+  youAreRe: boolean;
+  /** Indices in the human's hand that are legal to play (non-empty on human Play turn). */
+  playableIndices: number[];
+  /** Card points captured by the Re team this round. */
+  roundRePoints: number;
+  /** Whether the Re team won the round. */
+  roundReWon: boolean;
+  /** Game points awarded for this round. */
+  roundGamePoints: number;
+  gameEndFlag: boolean;
+  /** Winning player index, or -1 until the game ends. */
+  winnerIdx: number;
+  hint?: DoppelkopfHint | null;
+  config: DoppelkopfConfig;
+}
+
+// --- Tute ---
+
+/** Tute game phase (0=Play 1=TrickEnd 2=RoundEnd 3=GameEnd). */
+export type TutePhaseValue = 0 | 1 | 2 | 3;
+
+/** A Tute player's public/own state. Cards are non-empty only for the human. */
+export interface TutePlayer {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  trickCount: number;
+  /** Cumulative score of the team this player belongs to. */
+  teamScore: number;
+}
+
+/** A card played into the current Tute trick. */
+export interface TuteTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Tute game configuration. */
+export interface TuteConfig {
+  cpuDifficulty: number;
+  targetPoints: number;
+}
+
+/** A suggested hint for Tute, computed by the backend. */
+export interface TuteHint {
+  cardIndices: number[];
+  /** Suggested marriage-declaration suit (0=none, 1=♠ 2=♣ 3=♥ 4=♦). */
+  marriage: number;
+  /** i18n reason suffix identifier. */
+  reason: string;
+}
+
+/** Full Tute game state returned from the API. */
+export interface TuteResponse extends BaseGameResponse {
+  players: TutePlayer[];
+  phase: TutePhaseValue;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  leadPlayerIdx: number;
+  dealerIdx: number;
+  /** Trump suit (1=♠ 2=♣ 3=♥ 4=♦). */
+  trumpSuit: number;
+  currentTrick: TuteTrickCard[];
+  /** Declared-marriage suits; valid indices 1-4 (index 0 unused, 5 elements). */
+  declaredSuits: boolean[];
+  /** Team scores — [team0, team1]. */
+  teamScores: number[];
+  /** Card points captured per team this round — [team0, team1]. */
+  roundTeamPoints: number[];
+  /** Whether the human may declare a marriage (K+Q) right now. */
+  canDeclareMarriage: boolean;
+  /** Whether the human may declare Tute (four Kings or four Queens) for an instant win. */
+  canDeclareTute: boolean;
+  /** Indices in the human's hand that are legal to play (non-empty on human Play turn). */
+  playableIndices: number[];
+  gameEndFlag: boolean;
+  /** Winning team index, or -1 until the game ends. */
+  winnerTeam: number;
+  /** Whether it is currently the human's turn to act. */
+  isHumanTurn: boolean;
+  hint?: TuteHint | null;
+  config: TuteConfig;
+}
+
+// --- Sueca ---
+
+/** Sueca game phase (0=Play 1=TrickEnd 2=RoundEnd 3=GameEnd). */
+export type SuecaPhaseValue = 0 | 1 | 2 | 3;
+
+/** A Sueca player's public/own state. Cards are non-empty only for the human. */
+export interface SuecaPlayer {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  trickCount: number;
+  /** Cumulative game points of the team this player belongs to. */
+  teamGamePoints: number;
+}
+
+/** A card played into the current Sueca trick. */
+export interface SuecaTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Sueca game configuration. */
+export interface SuecaConfig {
+  cpuDifficulty: number;
+  targetGamePoints: number;
+}
+
+/** A suggested hint for Sueca, computed by the backend. */
+export interface SuecaHint {
+  cardIndices: number[];
+  /** i18n reason suffix identifier. */
+  reason: string;
+}
+
+/** Full Sueca game state returned from the API. */
+export interface SuecaResponse extends BaseGameResponse {
+  players: SuecaPlayer[];
+  phase: SuecaPhaseValue;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  leadPlayerIdx: number;
+  dealerIdx: number;
+  /** Trump suit (1=♠ 2=♣ 3=♥ 4=♦). */
+  trumpSuit: number;
+  currentTrick: SuecaTrickCard[];
+  /** Cumulative game points per team — [team0, team1]. */
+  teamGamePoints: number[];
+  /** Card points captured per team this round — [team0, team1]. */
+  roundCardPoints: number[];
+  /** Winning team of the most recent round, or -1 when undecided/draw. */
+  roundWinnerTeam: number;
+  /** Game points awarded for the most recent round. */
+  roundGamePoints: number;
+  /** Indices in the human's hand that are legal to play (non-empty on human Play turn). */
+  playableIndices: number[];
+  gameEndFlag: boolean;
+  /** Winning team index, or -1 until the game ends. */
+  winnerTeam: number;
+  /** Whether it is currently the human's turn to act. */
+  isHumanTurn: boolean;
+  hint?: SuecaHint | null;
+  config: SuecaConfig;
+}
+
 // --- Spades ---
 
 /** Spades player data with bid, scores, and bags. */

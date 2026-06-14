@@ -68,8 +68,21 @@ export const OsmosisPage = withTutorial(OsmosisPageContent, 'osmosis', OS_TUTORI
 
 /** Inner content of the Osmosis page. */
 function OsmosisPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('osmosis');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('osmosis');
   const { state, loading, error, exec: execApi, retry } = useGameApi(osmosisApi.exec);
   const { cardWidth, cardHeight } = useCardDimensions();
   const {
@@ -100,6 +113,13 @@ function OsmosisPageContent() {
   }, [execApi]);
   const handleDraw = useCallback(() => execApi('draw'), [execApi]);
   const handleGiveUp = useCallback(() => execApi('giveup'), [execApi]);
+
+  // Give-up is irreversible, so route both the button and the `g` key through
+  // the confirm dialog — matching reset's guard (issue #2099).
+  const confirmGiveUpAction = useCallback(
+    () => requestGiveUpConfirm(handleGiveUp),
+    [requestGiveUpConfirm, handleGiveUp],
+  );
   const handleHint = useCallback(() => execApi('hint'), [execApi]);
   const handleAutoComplete = useCallback(() => execApi('autocomplete'), [execApi]);
   const handleUndo = useCallback(() => execApi('undo'), [execApi]);
@@ -158,6 +178,9 @@ function OsmosisPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
           <span className="text-sm text-ds-text-muted">
@@ -382,7 +405,7 @@ function OsmosisPageContent() {
                   <button
                     type="button"
                     className={`${btnDanger} ${focusRingWhite}`}
-                    onClick={handleGiveUp}
+                    onClick={confirmGiveUpAction}
                     disabled={loading}
                   >
                     {t('giveup')}

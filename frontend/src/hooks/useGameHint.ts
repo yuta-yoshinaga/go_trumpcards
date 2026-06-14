@@ -27,6 +27,7 @@ import type {
   CruelResponse,
   DaifugoResponse,
   DeuceToSevenResponse,
+  DoppelkopfResponse,
   DoubtResponse,
   DoudizhuResponse,
   DragonTigerResponse,
@@ -55,6 +56,7 @@ import type {
   MightyResponse,
   MississippiStudResponse,
   MonteCarloResponse,
+  MusResponse,
   NapoleonResponse,
   NertzResponse,
   OhHellResponse,
@@ -82,6 +84,7 @@ import type {
   SevenBridgeResponse,
   SevenCardStudResponse,
   SevensResponse,
+  SheepsheadResponse,
   ShitheadResponse,
   ShortDeckResponse,
   SixCardGolfResponse,
@@ -92,6 +95,7 @@ import type {
   SpideretteResponse,
   SpiderResponse,
   SpiteAndMaliceResponse,
+  SuecaResponse,
   TarneebResponse,
   TexasHoldemBonusResponse,
   ThirtyOneResponse,
@@ -101,6 +105,7 @@ import type {
   TrashResponse,
   TressetteResponse,
   TriPeaksResponse,
+  TuteResponse,
   TwoTenJackResponse,
   UltimateTexasHoldemResponse,
   VideoPokerResponse,
@@ -140,6 +145,7 @@ import { getCruelHint } from '../utils/hints/cruelHint';
 import { getDaifugoHint } from '../utils/hints/daifugoHint';
 import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
 import { getDeuceToSevenHint } from '../utils/hints/deuceToSevenHint';
+import { getDoppelkopfHint } from '../utils/hints/doppelkopfHint';
 import { getDoubtHint } from '../utils/hints/doubtHint';
 import { getDoudizhuHint } from '../utils/hints/doudizhuHint';
 import { getDragontigerHint } from '../utils/hints/dragontigerHint';
@@ -170,6 +176,7 @@ import { getMemoryHint } from '../utils/hints/memoryHint';
 import { getMightyHint } from '../utils/hints/mightyHint';
 import { getMississippiStudHint } from '../utils/hints/mississippiStudHint';
 import { getMonteCarloHint } from '../utils/hints/montecarloHint';
+import { getMusHint } from '../utils/hints/musHint';
 import { getNapoleonHint } from '../utils/hints/napoleonHint';
 import { getNertzHint } from '../utils/hints/nertzHint';
 import { getOhHellHint } from '../utils/hints/ohhellHint';
@@ -198,6 +205,7 @@ import { getScorpionHint } from '../utils/hints/scorpionHint';
 import { getSeahavenTowersHint } from '../utils/hints/seahavenTowersHint';
 import { getSevenbridgeHint } from '../utils/hints/sevenbridgeHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
+import { getSheepsheadHint } from '../utils/hints/sheepsheadHint';
 import { getShitheadHint } from '../utils/hints/shitheadHint';
 import { getShortDeckHint } from '../utils/hints/shortdeckHint';
 import { getSixcardgolfHint } from '../utils/hints/sixcardgolfHint';
@@ -208,6 +216,7 @@ import { getSpeedHint } from '../utils/hints/speedHint';
 import { getSpideretteHint } from '../utils/hints/spideretteHint';
 import { getSpiderHint } from '../utils/hints/spiderHint';
 import { getSpiteAndMaliceHint } from '../utils/hints/spiteAndMaliceHint';
+import { getSuecaHint } from '../utils/hints/suecaHint';
 import { getTarneebHint } from '../utils/hints/tarneebHint';
 import { getTexasHoldemBonusHint } from '../utils/hints/texasHoldemBonusHint';
 import { getThirtyOneHint } from '../utils/hints/thirtyoneHint';
@@ -217,6 +226,7 @@ import { getTienLenHint } from '../utils/hints/tienlenHint';
 import { getTrashHint } from '../utils/hints/trashHint';
 import { getTressetteHint } from '../utils/hints/tressetteHint';
 import { getTriPeaksHint } from '../utils/hints/tripeaksHint';
+import { getTuteHint } from '../utils/hints/tuteHint';
 import { getTwoTenJackHint } from '../utils/hints/twotenjackHint';
 import { getUltimateTexasHoldemHint } from '../utils/hints/ultimateTexasHoldemHint';
 import { getVideoPokerHint } from '../utils/hints/videopokerHint';
@@ -335,6 +345,8 @@ const hintFactories = {
   accordion: (s) => getAccordionHint(s as AccordionResponse),
   calculation: (s) => getCalculationHint(s as CalculationResponse),
   sevenbridge: (s) => getSevenbridgeHint(s as SevenBridgeResponse),
+  sheepshead: (s) => getSheepsheadHint(s as SheepsheadResponse),
+  doppelkopf: (s) => getDoppelkopfHint(s as DoppelkopfResponse),
   trash: (s) => getTrashHint(s as TrashResponse),
   president: (s) => getPresidentHint(s as PresidentResponse),
   cassino: (s) => getCassinoHint(s as CassinoResponse),
@@ -358,6 +370,9 @@ const hintFactories = {
   sixcardgolf: (s) => getSixcardgolfHint(s as SixCardGolfResponse),
   doudizhu: (s) => getDoudizhuHint(s as DoudizhuResponse),
   bidwhist: (s) => getBidWhistHint(s as BidWhistResponse),
+  mus: (s) => getMusHint(s as MusResponse),
+  tute: (s) => getTuteHint(s as TuteResponse),
+  sueca: (s) => getSuecaHint(s as SuecaResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

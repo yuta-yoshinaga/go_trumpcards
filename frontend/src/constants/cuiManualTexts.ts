@@ -42,6 +42,7 @@ import cruel from '../../../docs/manual/cui/cruel.md?raw';
 import daifugo from '../../../docs/manual/cui/daifugo.md?raw';
 import deuceswild from '../../../docs/manual/cui/deuceswild.md?raw';
 import deucetoseven from '../../../docs/manual/cui/deucetoseven.md?raw';
+import doppelkopf from '../../../docs/manual/cui/doppelkopf.md?raw';
 import doubt from '../../../docs/manual/cui/doubt.md?raw';
 import doudizhu from '../../../docs/manual/cui/doudizhu.md?raw';
 import dragontiger from '../../../docs/manual/cui/dragontiger.md?raw';
@@ -73,6 +74,7 @@ import memory from '../../../docs/manual/cui/memory.md?raw';
 import mighty from '../../../docs/manual/cui/mighty.md?raw';
 import mississippistud from '../../../docs/manual/cui/mississippistud.md?raw';
 import montecarlo from '../../../docs/manual/cui/montecarlo.md?raw';
+import mus from '../../../docs/manual/cui/mus.md?raw';
 import napoleon from '../../../docs/manual/cui/napoleon.md?raw';
 import nertz from '../../../docs/manual/cui/nertz.md?raw';
 import oasispoker from '../../../docs/manual/cui/oasispoker.md?raw';
@@ -105,6 +107,7 @@ import seahaventowers from '../../../docs/manual/cui/seahaventowers.md?raw';
 import sevenbridge from '../../../docs/manual/cui/sevenbridge.md?raw';
 import sevencardstud from '../../../docs/manual/cui/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/cui/sevens.md?raw';
+import sheepshead from '../../../docs/manual/cui/sheepshead.md?raw';
 import shithead from '../../../docs/manual/cui/shithead.md?raw';
 import shortdeck from '../../../docs/manual/cui/shortdeck.md?raw';
 import sixcardgolf from '../../../docs/manual/cui/sixcardgolf.md?raw';
@@ -116,6 +119,7 @@ import speed from '../../../docs/manual/cui/speed.md?raw';
 import spider from '../../../docs/manual/cui/spider.md?raw';
 import spiderette from '../../../docs/manual/cui/spiderette.md?raw';
 import spiteandmalice from '../../../docs/manual/cui/spiteandmalice.md?raw';
+import sueca from '../../../docs/manual/cui/sueca.md?raw';
 import tarneeb from '../../../docs/manual/cui/tarneeb.md?raw';
 import texasholdembonus from '../../../docs/manual/cui/texasholdembonus.md?raw';
 import thirtyone from '../../../docs/manual/cui/thirtyone.md?raw';
@@ -127,6 +131,7 @@ import trash from '../../../docs/manual/cui/trash.md?raw';
 import tressette from '../../../docs/manual/cui/tressette.md?raw';
 import tripeaks from '../../../docs/manual/cui/tripeaks.md?raw';
 import truco from '../../../docs/manual/cui/truco.md?raw';
+import tute from '../../../docs/manual/cui/tute.md?raw';
 import twotenjack from '../../../docs/manual/cui/twotenjack.md?raw';
 import ultimatetexasholdem from '../../../docs/manual/cui/ultimatetexasholdem.md?raw';
 import videopoker from '../../../docs/manual/cui/videopoker.md?raw';
@@ -223,6 +228,10 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/sevens': sevens,
   '/shortdeck': shortdeck,
   '/spades': spades,
+  '/sheepshead': sheepshead,
+  '/doppelkopf': doppelkopf,
+  '/sueca': sueca,
+  '/tute': tute,
   '/pitch': pitch,
   '/spanish21': spanish21,
   '/speed': speed,
@@ -267,6 +276,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/bourre': bourre,
   '/doudizhu': doudizhu,
   '/montecarlo': montecarlo,
+  '/mus': mus,
   '/oasispoker': oasispoker,
   '/piquet': piquet,
   '/truco': truco,

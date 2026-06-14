@@ -1,0 +1,122 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { tuteApi } from '../api/gameApi';
+import { renderWithProviders } from '../test/renderWithProviders';
+import { makeTuteState } from '../test/stateFactories';
+import { TutePage } from './TutePage';
+
+vi.mock('../api/gameApi', () => ({
+  tuteApi: { exec: vi.fn() },
+  actionLogApi: { tute: vi.fn() },
+}));
+
+const mockExec = vi.mocked(tuteApi.exec);
+
+const playPhaseState = makeTuteState();
+const marriageState = makeTuteState({ canDeclareMarriage: true });
+const tuteDeclState = makeTuteState({ canDeclareTute: true });
+const trickEndState = makeTuteState({
+  phase: 1,
+  currentTrick: [
+    { playerIdx: 0, card: { design: 'HEART', value: 12 } },
+    { playerIdx: 1, card: { design: 'CLOVER', value: 13 } },
+  ],
+});
+const roundEndState = makeTuteState({ phase: 2, roundTeamPoints: [70, 60] });
+const gameEndState = makeTuteState({
+  phase: 3,
+  gameEndFlag: true,
+  winnerTeam: 0,
+  message: 'ゲーム終了！ あなたのチームの勝ち！',
+});
+const cpuTurnState = makeTuteState({ currentPlayerIdx: 1 });
+
+beforeEach(() => {
+  mockExec.mockReset();
+  mockExec.mockResolvedValue(playPhaseState);
+});
+
+describe('TutePage', () => {
+  it('renders skeleton when no state', () => {
+    mockExec.mockReturnValue(new Promise(() => undefined));
+    renderWithProviders(<TutePage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('calls reset on mount with the default config', async () => {
+    renderWithProviders(<TutePage />);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', {
+        config: { cpuDifficulty: 1, targetPoints: 121 },
+      }),
+    );
+  });
+
+  it('renders the play phase with the human cards', async () => {
+    renderWithProviders(<TutePage />);
+    await waitFor(() => {
+      expect(screen.getByAltText('♥ Q')).toBeInTheDocument();
+      expect(screen.getByAltText('♠ A')).toBeInTheDocument();
+    });
+  });
+
+  it('selecting a card then playing dispatches play', async () => {
+    renderWithProviders(<TutePage />);
+    const card = await screen.findByAltText('♥ Q');
+    fireEvent.click(card);
+    const playBtn = await screen.findByRole('button', { name: '出す' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(playBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0 }));
+  });
+
+  it('shows marriage declaration buttons when allowed and dispatches a suit', async () => {
+    mockExec.mockResolvedValue(marriageState);
+    renderWithProviders(<TutePage />);
+    const heartBtn = await screen.findByRole('button', { name: '結婚宣言 ♥' });
+    fireEvent.click(heartBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('marriage', { suit: 3 }));
+  });
+
+  it('shows the Tute declaration button when allowed and dispatches', async () => {
+    mockExec.mockResolvedValue(tuteDeclState);
+    renderWithProviders(<TutePage />);
+    const tuteBtn = await screen.findByRole('button', { name: 'Tute 宣言' });
+    fireEvent.click(tuteBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('tute'));
+  });
+
+  it('does not show declaration buttons when not allowed', async () => {
+    renderWithProviders(<TutePage />);
+    await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: /結婚宣言/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Tute 宣言' })).not.toBeInTheDocument();
+  });
+
+  it('renders trick end with the next trick button', async () => {
+    mockExec.mockResolvedValue(trickEndState);
+    renderWithProviders(<TutePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+  });
+
+  it('renders round end with the next round button and the round result', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<TutePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
+    expect(screen.getByText('ラウンド結果')).toBeInTheDocument();
+  });
+
+  it('renders the game end message', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<TutePage />);
+    await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたのチームの勝ち！')).toBeInTheDocument());
+  });
+
+  it('does not show the play button on a CPU turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<TutePage />);
+    await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
+  });
+});

@@ -2104,6 +2104,100 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "sheepshead", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSheepsheadCuiController(usecase.NewSheepsheadInteractor(
+				domain.NewDefaultSheepshead(), new(presenter.SheepsheadCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "sheepshead.helpTitle",
+				CommandKeys: []string{
+					"sheepshead.helpPick",
+					"sheepshead.helpPass",
+					"sheepshead.helpBury",
+					"sheepshead.helpCall",
+					"sheepshead.helpPlay",
+					"sheepshead.helpNext",
+					"sheepshead.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys: []string{
+					"sheepshead.helpSetDifficulty",
+					"sheepshead.helpSetChips",
+				},
+			})
+	}},
+	{Name: "doppelkopf", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewDoppelkopfCuiController(usecase.NewDoppelkopfInteractor(
+				domain.NewDefaultDoppelkopf(), new(presenter.DoppelkopfCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "doppelkopf.helpTitle",
+				CommandKeys: []string{
+					"doppelkopf.helpPlay",
+					"doppelkopf.helpAnnounce",
+					"doppelkopf.helpNext",
+					"doppelkopf.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys: []string{
+					"doppelkopf.helpSetDifficulty",
+					"doppelkopf.helpSetChips",
+				},
+			})
+	}},
+	{Name: "mus", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewMusCuiController(usecase.NewMusInteractor(
+				domain.NewDefaultMus(), new(presenter.MusCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "mus.helpTitle",
+				CommandKeys: []string{
+					"mus.helpMus",
+					"mus.helpCut",
+					"mus.helpDiscard",
+					"mus.helpPaso",
+					"mus.helpEnvido",
+					"mus.helpOrdago",
+					"mus.helpQuiero",
+					"mus.helpNoQuiero",
+					"mus.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"mus.helpSetDifficulty"},
+			})
+	}},
+	{Name: "tute", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewTuteCuiController(usecase.NewTuteInteractor(
+				domain.NewDefaultTute(), new(presenter.TuteCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "tute.helpTitle",
+				CommandKeys: []string{
+					"tute.helpPlay",
+					"tute.helpMarriage",
+					"tute.helpTute",
+					"tute.helpNext",
+					"tute.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"tute.helpSetDifficulty"},
+			})
+	}},
+	{Name: "sueca", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSuecaCuiController(usecase.NewSuecaInteractor(
+				domain.NewDefaultSueca(), new(presenter.SuecaCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "sueca.helpTitle",
+				CommandKeys: []string{
+					"sueca.helpPlay",
+					"sueca.helpNext",
+					"sueca.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"sueca.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

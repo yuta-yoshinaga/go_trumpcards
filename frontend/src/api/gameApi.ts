@@ -42,6 +42,7 @@ import type {
   DaifugoConfigInput,
   DaifugoResponse,
   DeuceToSevenResponse,
+  DoppelkopfResponse,
   DoubtConfig,
   DoubtResponse,
   DoudizhuResponse,
@@ -74,6 +75,7 @@ import type {
   MightyResponse,
   MississippiStudResponse,
   MonteCarloResponse,
+  MusResponse,
   NapoleonResponse,
   NertzConfig as NertzConfigType,
   NertzMoveZone,
@@ -108,6 +110,7 @@ import type {
   SevenBridgeResponse,
   SevenCardStudResponse,
   SevensResponse,
+  SheepsheadResponse,
   ShitheadConfig as ShitheadConfigType,
   ShitheadResponse,
   ShortDeckResponse,
@@ -122,6 +125,7 @@ import type {
   SpiderResponse,
   SpiteAndMaliceMoveZone,
   SpiteAndMaliceResponse,
+  SuecaResponse,
   TarneebResponse,
   TexasHoldemBonusResponse,
   ThirtyOneResponse,
@@ -135,6 +139,7 @@ import type {
   TriPeaksResponse,
   TrucoConfig,
   TrucoResponse,
+  TuteResponse,
   TwoTenJackResponse,
   UltimateTexasHoldemResponse,
   VideoPokerResponse,
@@ -288,6 +293,11 @@ const workerUrl: Record<string, string> = {
   easthaven: WORKER_SOLO,
   tichu: WORKER_CASINO,
   bourre: WORKER_CASINO,
+  sheepshead: WORKER_CASINO,
+  doppelkopf: WORKER_CASINO,
+  mus: WORKER_CASINO,
+  tute: WORKER_CASINO,
+  sueca: WORKER_CASINO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1481,6 +1491,196 @@ export const bourreApi = {
   }) => gameExec<BourreResponse>('bourre', params),
 };
 
+/** Configuration options for Sheepshead game settings. */
+export interface SheepsheadConfigInput {
+  cpuDifficulty?: number;
+  baseChips?: number;
+  startChips?: number;
+  targetChips?: number;
+}
+
+/** Commands accepted by the Sheepshead /sheepshead/exec endpoint. */
+export type SheepsheadCommand = 'reset' | 'pick' | 'bury' | 'call' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Sheepshead /sheepshead/exec endpoint.
+ *
+ * The multi-phase flow maps each command to its own body field:
+ *   - `pick` → `{ pick: boolean }` (take or pass the blind)
+ *   - `bury` → `{ buryIndices: number[] }` (picker buries 2 cards)
+ *   - `call` → `{ callSuit: number }` (1=♠ 2=♣ 3=♥)
+ *   - `play` → `{ cardIndex: number }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const sheepsheadApi = {
+  exec: (
+    command: SheepsheadCommand,
+    opts?: {
+      pick?: boolean;
+      buryIndices?: number[];
+      callSuit?: number;
+      cardIndex?: number;
+      config?: SheepsheadConfigInput;
+    },
+  ) =>
+    gameExec<SheepsheadResponse>('sheepshead', {
+      command,
+      pick: opts?.pick,
+      buryIndices: opts?.buryIndices,
+      callSuit: opts?.callSuit,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Mus game settings. */
+export interface MusConfigInput {
+  cpuDifficulty?: number;
+  targetAmarrakos?: number;
+}
+
+/** Commands accepted by the Mus /mus/exec endpoint. */
+export type MusCommand = 'reset' | 'mus' | 'discard' | 'bet' | 'next' | 'hint' | 'log';
+
+/**
+ * API client for the Mus /mus/exec endpoint.
+ *
+ * Mus is a Basque vying (betting) game, so each command maps to its own body
+ * field rather than a card-play action:
+ *   - `mus` → `{ mus: boolean }` (true = call Mus / exchange, false = cut and bet)
+ *   - `discard` → `{ discardIndices: number[] }` (cards to exchange; empty keeps all)
+ *   - `bet` → `{ betAction: number, betAmount?: number }`
+ *     (betAction: 0=paso 1=envido 2=ordago 3=quiero 4=noquiero)
+ *   - `reset` → `{ config }`
+ *   - `next` / `hint` / `log` carry no extra fields.
+ */
+export const musApi = {
+  exec: (
+    command: MusCommand,
+    opts?: {
+      mus?: boolean;
+      discardIndices?: number[];
+      betAction?: number;
+      betAmount?: number;
+      config?: MusConfigInput;
+    },
+  ) =>
+    gameExec<MusResponse>('mus', {
+      command,
+      mus: opts?.mus,
+      discardIndices: opts?.discardIndices,
+      betAction: opts?.betAction,
+      betAmount: opts?.betAmount,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Doppelkopf game settings. */
+export interface DoppelkopfConfigInput {
+  cpuDifficulty?: number;
+  baseChips?: number;
+  startChips?: number;
+  targetChips?: number;
+}
+
+/** Commands accepted by the Doppelkopf /doppelkopf/exec endpoint. */
+export type DoppelkopfCommand = 'reset' | 'play' | 'announce' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Doppelkopf /doppelkopf/exec endpoint.
+ *
+ * Doppelkopf is a plain trick-taking flow (no pick/bury/call). The only extra
+ * action beyond playing a card is `announce` (Re/Kontra, first trick only):
+ *   - `play` → `{ cardIndex: number }`
+ *   - `announce` → no extra fields (declares Re or Kontra based on the human's team)
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const doppelkopfApi = {
+  exec: (
+    command: DoppelkopfCommand,
+    opts?: {
+      cardIndex?: number;
+      config?: DoppelkopfConfigInput;
+    },
+  ) =>
+    gameExec<DoppelkopfResponse>('doppelkopf', {
+      command,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Sueca game settings. */
+export interface SuecaConfigInput {
+  cpuDifficulty?: number;
+  targetGamePoints?: number;
+}
+
+/** Commands accepted by the Sueca /sueca/exec endpoint. */
+export type SuecaCommand = 'reset' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Sueca /sueca/exec endpoint.
+ *
+ * Sueca is a Portuguese/Brazilian 4-player (2 vs 2) trump trick-taker. The only
+ * play action is playing a card; there are no declarations.
+ *   - `play` → `{ cardIndex: number }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const suecaApi = {
+  exec: (
+    command: SuecaCommand,
+    opts?: {
+      cardIndex?: number;
+      config?: SuecaConfigInput;
+    },
+  ) =>
+    gameExec<SuecaResponse>('sueca', {
+      command,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Tute game settings. */
+export interface TuteConfigInput {
+  cpuDifficulty?: number;
+  targetPoints?: number;
+}
+
+/** Commands accepted by the Tute /tute/exec endpoint. */
+export type TuteCommand = 'reset' | 'play' | 'marriage' | 'tute' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Tute /tute/exec endpoint.
+ *
+ * Tute is a Spanish 4-player (2 vs 2) trump trick-taker. The play actions are:
+ *   - `play` → `{ cardIndex: number }`
+ *   - `marriage` → `{ suit: number }` (declare a King+Queen marriage; 1=♠ 2=♣ 3=♥ 4=♦)
+ *   - `tute` → no extra fields (declare four Kings or four Queens for an instant win)
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const tuteApi = {
+  exec: (
+    command: TuteCommand,
+    opts?: {
+      cardIndex?: number;
+      suit?: number;
+      config?: TuteConfigInput;
+    },
+  ) =>
+    gameExec<TuteResponse>('tute', {
+      command,
+      cardIndex: opts?.cardIndex,
+      suit: opts?.suit,
+      config: opts?.config,
+    }),
+};
+
 /** Source or target zone for a Spider card move. */
 export interface SpiderMoveZone {
   zone: string;
@@ -2578,6 +2778,11 @@ const games = [
   'easthaven',
   'tichu',
   'bourre',
+  'sheepshead',
+  'doppelkopf',
+  'mus',
+  'tute',
+  'sueca',
 ] as const;
 type Game = (typeof games)[number];
 

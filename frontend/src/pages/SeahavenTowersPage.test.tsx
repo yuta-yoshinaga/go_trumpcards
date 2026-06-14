@@ -152,6 +152,18 @@ describe('SeahavenTowersPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
 
+  it('give up button opens a confirm dialog and only dispatches giveup after confirm', async () => {
+    renderWithProviders(<SeahavenTowersPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(gameOverState);
+    fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    expect(mockExec).not.toHaveBeenCalledWith('giveup');
+    expect(screen.getByText('投了確認')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
+  });
+
   it('renders game-clear state', async () => {
     mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<SeahavenTowersPage />);

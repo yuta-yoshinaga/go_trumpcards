@@ -75,8 +75,21 @@ const EO_TUTORIAL_STEPS: TutorialStep[] = [
 export const EightOffPage = withTutorial(EightOffPageContent, 'eightoff', EO_TUTORIAL_STEPS);
 /** Inner content of the Eight Off page, wrapped by TutorialProvider. */
 function EightOffPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('eightoff');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('eightoff');
   const { playSound } = useSound();
   const {
     state,
@@ -135,14 +148,21 @@ function EightOffPageContent() {
     handleReset();
   }, [handleReset, hideActionLog]);
 
+  // Give-up is irreversible, so route both the button and the `g` key through
+  // the confirm dialog — matching reset's guard (issue #2099).
+  const confirmGiveUpAction = useCallback(
+    () => requestGiveUpConfirm(handleGiveUp),
+    [requestGiveUpConfirm, handleGiveUp],
+  );
+
   const actionBindings = useMemo(
     () => [
       { key: 'h', action: handleHint },
       { key: 'a', action: handleAutoComplete },
-      { key: 'g', action: handleGiveUp },
+      { key: 'g', action: confirmGiveUpAction },
       { key: 'z', action: handleUndo },
     ],
-    [handleHint, handleAutoComplete, handleGiveUp, handleUndo],
+    [handleHint, handleAutoComplete, confirmGiveUpAction, handleUndo],
   );
 
   useActionKeyboardNav({
@@ -194,6 +214,9 @@ function EightOffPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
           <span>
@@ -515,7 +538,7 @@ function EightOffPageContent() {
                   <button
                     type="button"
                     className={btnDanger}
-                    onClick={handleGiveUp}
+                    onClick={confirmGiveUpAction}
                     disabled={loading || isAutoCompleting}
                   >
                     {t('giveup')}

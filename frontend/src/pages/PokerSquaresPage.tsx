@@ -54,8 +54,21 @@ const POKERSQUARES_TUTORIAL_STEPS: TutorialStep[] = [
 export const PokerSquaresPage = withTutorial(PokerSquaresPageContent, 'pokersquares', POKERSQUARES_TUTORIAL_STEPS);
 /** Inner content of the Poker Squares page, wrapped by TutorialProvider. */
 function PokerSquaresPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('pokersquares');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('pokersquares');
   const { cardWidth: baseCardWidth, isMobile } = useCardDimensions();
   const windowWidth = useWindowWidth();
   // On mobile the 5-column board plus its row-score column wastes horizontal
@@ -145,8 +158,15 @@ function PokerSquaresPageContent() {
     execApi('place', row, col);
   };
   const handleUndo = () => execApi('undo');
-  const handleGiveUp = () => execApi('giveup');
+  const handleGiveUp = useCallback(() => execApi('giveup'), [execApi]);
   const handleReset = useCallback(() => execApi('reset'), [execApi]);
+
+  // Give-up is irreversible, so route both the button and the `g` key through
+  // the confirm dialog — matching reset's guard (issue #2099).
+  const confirmGiveUpAction = useCallback(
+    () => requestGiveUpConfirm(handleGiveUp),
+    [requestGiveUpConfirm, handleGiveUp],
+  );
   const handleManualReset = useCallback(() => {
     hideActionLog();
     handleReset();
@@ -165,6 +185,9 @@ function PokerSquaresPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
           {state && (
@@ -382,7 +405,7 @@ function PokerSquaresPageContent() {
                   >
                     {t('button.undo')}
                   </button>
-                  <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                  <button type="button" className={btnDanger} onClick={confirmGiveUpAction} disabled={loading}>
                     {t('button.giveup')}
                   </button>
                 </>

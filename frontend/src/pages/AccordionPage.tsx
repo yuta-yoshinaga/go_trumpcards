@@ -110,8 +110,21 @@ function formatAccordionState(state: AccordionResponse): string {
 export const AccordionPage = withTutorial(AccordionPageContent, 'accordion', AC_TUTORIAL_STEPS);
 /** Inner content of the Accordion page. */
 function AccordionPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('accordion');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('accordion');
   const { playSound } = useSound();
   const {
     state,
@@ -165,6 +178,13 @@ function AccordionPageContent() {
   const handleGiveUp = useCallback(() => {
     void apiCall('giveup');
   }, [apiCall]);
+
+  // Give-up is irreversible, so route both the button and the `g` key through
+  // the confirm dialog — matching reset's guard (issue #2099).
+  const confirmGiveUpAction = useCallback(
+    () => requestGiveUpConfirm(handleGiveUp),
+    [requestGiveUpConfirm, handleGiveUp],
+  );
 
   const handleHint = useCallback(() => {
     void apiCall('hint');
@@ -246,10 +266,10 @@ function AccordionPageContent() {
       { key: '3', action: () => mergeFromSelection(3) },
       { key: 'u', action: handleUndo },
       { key: 'h', action: handleHint },
-      { key: 'g', action: handleGiveUp },
+      { key: 'g', action: confirmGiveUpAction },
       { key: 'Escape', action: () => setSelectedIdx(null) },
     ],
-    [moveSelection, mergeFromSelection, handleUndo, handleHint, handleGiveUp],
+    [moveSelection, mergeFromSelection, handleUndo, handleHint, confirmGiveUpAction],
   );
   useActionKeyboardNav({
     bindings: accordionBindings,
@@ -278,6 +298,9 @@ function AccordionPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
           <span>
@@ -427,7 +450,7 @@ function AccordionPageContent() {
                   >
                     {t('undo')}
                   </button>
-                  <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                  <button type="button" className={btnDanger} onClick={confirmGiveUpAction} disabled={loading}>
                     {t('giveup')}
                   </button>
                   {state.isStalemate && (
