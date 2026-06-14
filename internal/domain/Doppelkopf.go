@@ -450,7 +450,9 @@ func (g *Doppelkopf) trickWinner() int {
 	winnerIdx := g.currentTrick[0].PlayerIdx
 	winnerStrength := dkStrength(g.currentTrick[0].Card)
 	for _, tc := range g.currentTrick[1:] {
-		if dkSuitID(tc.Card) != leadSuit {
+		// 勝負に絡むのは「切り札」または「リードスートに従った札」のみ。
+		// フェイルがリードされても切り札を出せば勝てる (切り札 > フェイル)。
+		if !dkIsTrump(tc.Card) && dkSuitID(tc.Card) != leadSuit {
 			continue
 		}
 		// 厳密に強い場合のみ更新 → 同強なら先出しが勝つ。
