@@ -578,8 +578,9 @@ func (g *Sheepshead) trickWinner() int {
 	winnerIdx := g.currentTrick[0].PlayerIdx
 	winnerStrength := sheepsheadStrength(g.currentTrick[0].Card)
 	for _, tc := range g.currentTrick[1:] {
-		// リードスートに従った札のみ勝負に絡む (切り札はスート ID が共通)。
-		if sheepsheadSuitID(tc.Card) != leadSuit {
+		// 勝負に絡むのは「切り札」または「リードスートに従った札」のみ。
+		// フェイルがリードされても切り札を出せば勝てる (切り札 > フェイル)。
+		if !sheepsheadIsTrump(tc.Card) && sheepsheadSuitID(tc.Card) != leadSuit {
 			continue
 		}
 		if s := sheepsheadStrength(tc.Card); s > winnerStrength {

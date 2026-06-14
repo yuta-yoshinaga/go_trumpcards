@@ -298,13 +298,12 @@ func TestSheepshead_MustFollowSuit(t *testing.T) {
 	g.SetPhase(SheepsheadPhasePlay)
 	g.SetPickerIdx(0)
 	g.SetPartnerIdx(-1)
-	g.SetCurrentPlayerIdx(1)
-	g.SetLeadPlayerIdx(0)
-	// リード: クラブ A (フェイル ♣)。
-	g.SetCurrentTrick([]*SheepsheadTrickCard{{PlayerIdx: 0, Card: ssCard(CardDesignClover, 1)}})
-	// プレイヤー1 はクラブを持つ → クラブ以外は不可。
-	ssSetHand(g.GetPlayer(1), ssCard(CardDesignClover, 10), ssCard(CardDesignSpade, 10))
-	g.SetCurrentPlayerIdx(1)
+	g.SetCurrentPlayerIdx(0) // 人間 (player 0) が追従する
+	g.SetLeadPlayerIdx(3)
+	// リード: クラブ A (フェイル ♣) を player 3 が出す。
+	g.SetCurrentTrick([]*SheepsheadTrickCard{{PlayerIdx: 3, Card: ssCard(CardDesignClover, 1)}})
+	// 人間はクラブを持つ → クラブ以外は不可。
+	ssSetHand(g.GetPlayer(0), ssCard(CardDesignClover, 10), ssCard(CardDesignSpade, 10))
 	if err := g.PlayerPlay(1); err == nil { // spade を出そうとする
 		t.Error("expected must-follow error")
 	}
