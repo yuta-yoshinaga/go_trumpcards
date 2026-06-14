@@ -12,6 +12,14 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// suecaSuitSymbol maps a suit constant (1-4) to its glyph for CUI display.
+func suecaSuitSymbol(suit int) string {
+	if suit < 1 || suit > 4 {
+		return "?"
+	}
+	return []string{"", "♠", "♣", "♥", "♦"}[suit]
+}
+
 func suecaPlayerStr(g interfaces.SuecaGame, idx int) string {
 	player := g.GetPlayer(idx)
 	if player == nil {
@@ -42,7 +50,7 @@ func (p *SuecaCuiPresenter) Output(g interfaces.SuecaGame, lastErr error) string
 		b.WriteString(i18n.Tf("sueca.round",
 			"round", strconv.Itoa(g.GetRoundNumber()),
 			"trick", strconv.Itoa(g.GetTrickNumber()),
-			"trump", strconv.Itoa(g.GetTrumpSuit())) + "\n")
+			"trump", suecaSuitSymbol(g.GetTrumpSuit())) + "\n")
 
 		for i := 0; i < g.GetPlayerCnt(); i++ {
 			b.WriteString(suecaPlayerStr(g, i))

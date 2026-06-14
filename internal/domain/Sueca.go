@@ -225,7 +225,8 @@ func (g *Sueca) ResolveTrick() {
 		fmt.Sprintf("%s wins trick %d (+%d)", g.playerName(winnerIdx), g.trickNumber, pts), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
-	g.currentTrick = nil
+	// Keep currentTrick intact through TrickEnd so the resolved trick stays
+	// visible; NextTrick clears it before the next trick begins. (#2483 review)
 	if g.trickNumber >= SuecaTrickCount {
 		g.phase = SuecaPhaseRoundEnd
 	} else {
