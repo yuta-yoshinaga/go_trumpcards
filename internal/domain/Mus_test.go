@@ -641,7 +641,7 @@ func TestMus_CpuWantsMusEasyRandom(t *testing.T) {
 	g.musCycle = 0
 	musWeakHand(g, 1) // weak so the easy random branch is reached
 	sawTrue, sawFalse := false, false
-	for i := 0; i < 1000 && !(sawTrue && sawFalse); i++ {
+	for i := 0; i < 1000 && (!sawTrue || !sawFalse); i++ {
 		if g.cpuWantsMus(1) {
 			sawTrue = true
 		} else {
