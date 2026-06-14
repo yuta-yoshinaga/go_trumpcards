@@ -73,8 +73,21 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
 }
 
 function BeleagueredCastlePageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('beleagueredcastle');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('beleagueredcastle');
   const { playSound } = useSound();
   const game = useBeleagueredCastleGame();
   const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
@@ -136,14 +149,18 @@ function BeleagueredCastlePageContent() {
     game.handleReset();
   }, [game, hideActionLog]);
 
+  // Give-up is irreversible, so route both the button and the `g` key through
+  // the confirm dialog — matching reset's guard (issue #2099).
+  const confirmGiveUpAction = useCallback(() => requestGiveUpConfirm(game.handleGiveUp), [requestGiveUpConfirm, game]);
+
   const actionBindings = useMemo(
     () => [
       { key: 'h', action: game.handleHint },
       { key: 'a', action: game.handleAutoComplete },
-      { key: 'g', action: game.handleGiveUp },
+      { key: 'g', action: confirmGiveUpAction },
       { key: 'z', action: game.handleUndo },
     ],
-    [game],
+    [game, confirmGiveUpAction],
   );
 
   useActionKeyboardNav({
@@ -255,6 +272,9 @@ function BeleagueredCastlePageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
           <span className="text-sm text-ds-text-muted">
@@ -413,7 +433,7 @@ function BeleagueredCastlePageContent() {
                   <button
                     type="button"
                     className={btnDanger}
-                    onClick={game.handleGiveUp}
+                    onClick={confirmGiveUpAction}
                     disabled={loading || isAutoCompleting}
                   >
                     {t('giveup')}

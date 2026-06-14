@@ -59,8 +59,21 @@ export const MonteCarloPage = withTutorial(MonteCarloPageContent, 'montecarlo', 
 
 /** Inner content of the Monte Carlo Solitaire page. */
 function MonteCarloPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('montecarlo');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('montecarlo');
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
   const { state, loading, error, exec: execApi, retry } = useGameApi(montecarloApi.exec);
@@ -137,6 +150,13 @@ function MonteCarloPageContent() {
     setSelected(null);
   }, [execApi]);
 
+  // Give-up is irreversible, so route both the button and the `g` key through
+  // the confirm dialog — matching reset's guard (issue #2099).
+  const confirmGiveUpAction = useCallback(
+    () => requestGiveUpConfirm(handleGiveUp),
+    [requestGiveUpConfirm, handleGiveUp],
+  );
+
   const handleManualReset = useCallback(() => {
     hideActionLog();
     void execApi('reset');
@@ -159,6 +179,9 @@ function MonteCarloPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
       headerExtra={
         state && (
           <span className="font-mono text-xs">
@@ -325,7 +348,7 @@ function MonteCarloPageContent() {
                   >
                     {t('button.undo')}
                   </button>
-                  <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                  <button type="button" className={btnDanger} onClick={confirmGiveUpAction} disabled={loading}>
                     {t('button.giveup')}
                   </button>
                 </>

@@ -143,8 +143,21 @@ function formatRussianSolitaireState(state: RussianSolitaireResponse): string {
 export const RussianSolitairePage = withTutorial(RussianSolitairePageContent, 'russiansolitaire', RS_TUTORIAL_STEPS);
 /** Inner content of the Russian Solitaire page. */
 function RussianSolitairePageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('russiansolitaire');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('russiansolitaire');
   const { playSound } = useSound();
   const {
     state,
@@ -234,6 +247,13 @@ function RussianSolitairePageContent() {
     void apiExec('giveup');
   }, [apiExec]);
 
+  // Give-up is irreversible, so route both the button and the `g` key through
+  // the confirm dialog — matching reset's guard (issue #2099).
+  const confirmGiveUpAction = useCallback(
+    () => requestGiveUpConfirm(handleGiveUp),
+    [requestGiveUpConfirm, handleGiveUp],
+  );
+
   const handleHint = useCallback(async () => {
     const res = await russianSolitaireApi.exec('hint');
     setState((prev) => (prev ? { ...prev, hint: res.hint } : prev));
@@ -286,10 +306,10 @@ function RussianSolitairePageContent() {
     () => [
       { key: 'h', action: handleHint },
       { key: 'a', action: handleAutoComplete },
-      { key: 'g', action: handleGiveUp },
+      { key: 'g', action: confirmGiveUpAction },
       { key: 'z', action: handleUndo },
     ],
-    [handleHint, handleAutoComplete, handleGiveUp, handleUndo],
+    [handleHint, handleAutoComplete, confirmGiveUpAction, handleUndo],
   );
 
   useActionKeyboardNav({
@@ -332,6 +352,9 @@ function RussianSolitairePageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
           <span>
@@ -576,7 +599,7 @@ function RussianSolitairePageContent() {
                   >
                     {t('undo')}
                   </button>
-                  <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                  <button type="button" className={btnDanger} onClick={confirmGiveUpAction} disabled={loading}>
                     {t('giveup')}
                   </button>
                   {state.isStalemate && (

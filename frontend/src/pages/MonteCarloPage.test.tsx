@@ -112,11 +112,14 @@ describe('MonteCarloPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('deal'));
   });
 
-  it('giveup button fires giveup command', async () => {
+  it('giveup button opens a confirm dialog and only dispatches giveup after confirm', async () => {
     renderWithProviders(<MonteCarloPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
-    screen.getByRole('button', { name: 'ギブアップ' }).click();
+    fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    expect(mockExec).not.toHaveBeenCalledWith('giveup');
+    expect(screen.getByText('投了確認')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
   });
 

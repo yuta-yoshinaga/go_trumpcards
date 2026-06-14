@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { osmosisApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -137,10 +137,14 @@ describe('OsmosisPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
 
-  it('giveup button triggers giveup command', async () => {
+  it('giveup button opens a confirm dialog and only dispatches giveup after confirm', async () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    screen.getByRole('button', { name: 'ギブアップ' }).click();
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    expect(mockExec).not.toHaveBeenCalledWith('giveup');
+    expect(screen.getByText('投了確認')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
   });
 

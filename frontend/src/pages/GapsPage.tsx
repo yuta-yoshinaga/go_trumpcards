@@ -65,8 +65,21 @@ const GAPS_TUTORIAL_STEPS: TutorialStep[] = [
 export const GapsPage = withTutorial(GapsPageContent, 'gaps', GAPS_TUTORIAL_STEPS);
 
 function GapsPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('gaps');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('gaps');
   const apiRun = gapsApi.exec;
   const { state, loading, error, exec: run, retry } = useGameApi(apiRun);
 
@@ -103,6 +116,13 @@ function GapsPageContent() {
     void run('hint');
   }, [run]);
 
+  // Give-up is irreversible, so route both the button and the `g` key through
+  // the confirm dialog — matching reset's guard (issue #2099).
+  const confirmGiveUpAction = useCallback(
+    () => requestGiveUpConfirm(handleGiveUp),
+    [requestGiveUpConfirm, handleGiveUp],
+  );
+
   const dispatchMove = useCallback(
     (source: GapsMoveZone, target: GapsMoveZone) => {
       void run('move', source, target);
@@ -136,6 +156,9 @@ function GapsPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
           <span>
@@ -300,7 +323,7 @@ function GapsPageContent() {
               <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
                 {t('hint')}
               </button>
-              <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+              <button type="button" className={btnDanger} onClick={confirmGiveUpAction} disabled={loading}>
                 {t('giveup')}
               </button>
             </div>

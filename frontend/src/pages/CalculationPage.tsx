@@ -185,8 +185,21 @@ function formatCalculationState(state: CalculationResponse): string {
 
 export const CalculationPage = withTutorial(CalculationPageContent, 'calculation', CA_TUTORIAL_STEPS);
 function CalculationPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('calculation');
+  const {
+    t,
+    tc,
+    actionLog,
+    showActionLog,
+    hideActionLog,
+    confirmOpen,
+    requestConfirm,
+    confirmReset,
+    cancelReset,
+    giveUpConfirmOpen,
+    requestGiveUpConfirm,
+    confirmGiveUp,
+    cancelGiveUp,
+  } = useGamePageSetup('calculation');
   const { playSound } = useSound();
   const {
     state,
@@ -240,6 +253,13 @@ function CalculationPageContent() {
     void runApi('giveup');
     setSource(null);
   }, [runApi]);
+
+  // Give-up is irreversible, so route both the button and the `g` key through
+  // the confirm dialog — matching reset's guard (issue #2099).
+  const confirmGiveUpAction = useCallback(
+    () => requestGiveUpConfirm(handleGiveUp),
+    [requestGiveUpConfirm, handleGiveUp],
+  );
 
   const handleHint = useCallback(() => {
     void runApi('hint');
@@ -337,6 +357,9 @@ function CalculationPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      giveUpConfirmOpen={giveUpConfirmOpen}
+      confirmGiveUp={confirmGiveUp}
+      cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
           <span>
@@ -587,7 +610,7 @@ function CalculationPageContent() {
                   >
                     {t('autoComplete')}
                   </button>
-                  <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                  <button type="button" className={btnDanger} onClick={confirmGiveUpAction} disabled={loading}>
                     {t('giveup')}
                   </button>
                   {state.isStalemate && (
