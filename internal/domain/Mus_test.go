@@ -425,6 +425,362 @@ func TestMus_JSONRoundTrip(t *testing.T) {
 	}
 }
 
+// musWeakHand returns four low, non-pairing, non-figure, sub-juego cards so the
+// holder has no Pares and no Juego (used to drive cpuWantsMus / weak strength).
+func musWeakHand(g *Mus, idx int) {
+	musSetHand(g.GetPlayer(idx), musCard(1, 1), musCard(2, 2), musCard(3, 3), musCard(4, 5)) // A 2 3 5 = 11
+}
+
+// musStrongGrande gives the player the strongest possible Grande hand (K K Q Q).
+func musStrongGrande(g *Mus, idx int) {
+	musSetHand(g.GetPlayer(idx), musCard(1, 13), musCard(2, 13), musCard(3, 12), musCard(4, 12))
+}
+
+func TestMus_TeamStrengthWinTieLose(t *testing.T) {
+	g := newMusGame(false)
+	g.SetManoIdx(0)
+	// Grande (ri=0). team0 = players 0,2; team1 = players 1,3.
+	// Win: team0 strong, team1 weak.
+	musStrongGrande(g, 0)
+	musWeakHand(g, 2)
+	musWeakHand(g, 1)
+	musWeakHand(g, 3)
+	if s := g.teamStrength(0, 0); s != 80 {
+		t.Errorf("winning team strength = %d, want 80", s)
+	}
+	if s := g.teamStrength(1, 0); s != 25 {
+		t.Errorf("losing team strength = %d, want 25", s)
+	}
+	// Tie: both teams identical best hands.
+	musStrongGrande(g, 0)
+	musStrongGrande(g, 1)
+	musWeakHand(g, 2)
+	musWeakHand(g, 3)
+	if s := g.teamStrength(0, 0); s != 50 {
+		t.Errorf("tied team strength = %d, want 50", s)
+	}
+}
+
+func TestMus_CpuBetLeadStrongBets(t *testing.T) {
+	g := newMusGame(false)
+	g.SetManoIdx(0)
+	g.SetPhase(MusPhaseGrande)
+	g.startBetRound()     // pendingStake = 0, betTeam = team0
+	musStrongGrande(g, 0) // team0 strong
+	musWeakHand(g, 2)
+	musWeakHand(g, 1)
+	musWeakHand(g, 3)
+	g.SetBetTeam(0)
+	action, amount := g.cpuBet()
+	if action != MusActionEnvido || amount != 2 {
+		t.Errorf("strong lead = (%d,%d), want envido 2", action, amount)
+	}
+}
+
+func TestMus_CpuBetLeadWeakPasses(t *testing.T) {
+	g := newMusGame(false)
+	g.SetManoIdx(0)
+	g.SetPhase(MusPhaseGrande)
+	g.startBetRound()
+	musWeakHand(g, 0) // team0 weak
+	musWeakHand(g, 2)
+	musStrongGrande(g, 1) // team1 strong → team0 loses
+	musWeakHand(g, 3)
+	g.SetBetTeam(0)
+	if action, _ := g.cpuBet(); action != MusActionPaso {
+		t.Errorf("weak lead action = %d, want paso", action)
+	}
+}
+
+func TestMus_CpuBetRespondRaiseQuieroNoQuiero(t *testing.T) {
+	g := newMusGame(false)
+	cfg := g.GetConfig()
+	cfg.CpuDifficulty = MusCpuDifficultyNormal
+	g.SetConfig(cfg)
+	g.SetManoIdx(0)
+	g.SetPhase(MusPhaseGrande)
+	g.startBetRound()
+	// team0 strong, team1 weak.
+	musStrongGrande(g, 0)
+	musWeakHand(g, 2)
+	musWeakHand(g, 1)
+	musWeakHand(g, 3)
+
+	// Strong responder, small pending stake, normal difficulty → raise.
+	g.SetBetTeam(0)
+	g.SetPendingStake(2)
+	if action, amount := g.cpuBet(); action != MusActionEnvido || amount != 4 {
+		t.Errorf("strong respond = (%d,%d), want envido 4 (raise)", action, amount)
+	}
+
+	// Weak responder facing a bet → noquiero (strength 25 < 50).
+	g.SetBetTeam(1)
+	g.SetPendingStake(2)
+	if action, _ := g.cpuBet(); action != MusActionNoQuiero {
+		t.Errorf("weak respond action = %d, want noquiero", action)
+	}
+}
+
+func TestMus_CpuBetRespondMidStrengthQuiero(t *testing.T) {
+	g := newMusGame(false)
+	g.SetManoIdx(0)
+	g.SetPhase(MusPhaseGrande)
+	g.startBetRound()
+	// Tie (both teams equal) → strength 50 → quiero when not raise-eligible.
+	musStrongGrande(g, 0)
+	musStrongGrande(g, 1)
+	musWeakHand(g, 2)
+	musWeakHand(g, 3)
+	g.SetBetTeam(0)
+	g.SetPendingStake(2) // pending >= small but strength 50 (<75) → just accept
+	if action, _ := g.cpuBet(); action != MusActionQuiero {
+		t.Errorf("mid-strength respond action = %d, want quiero", action)
+	}
+}
+
+func TestMus_CpuBetRespondRaiseCapped(t *testing.T) {
+	g := newMusGame(false)
+	cfg := g.GetConfig()
+	cfg.CpuDifficulty = MusCpuDifficultyNormal
+	g.SetConfig(cfg)
+	g.SetManoIdx(0)
+	g.SetPhase(MusPhaseGrande)
+	g.startBetRound()
+	musStrongGrande(g, 0)
+	musWeakHand(g, 2)
+	musWeakHand(g, 1)
+	musWeakHand(g, 3)
+	g.SetBetTeam(0)
+	g.SetPendingStake(10) // >= cap → strong team accepts instead of raising
+	if action, _ := g.cpuBet(); action != MusActionQuiero {
+		t.Errorf("capped raise action = %d, want quiero", action)
+	}
+}
+
+func TestMus_CpuBetRespondEasyNoRaise(t *testing.T) {
+	g := newMusGame(false)
+	cfg := g.GetConfig()
+	cfg.CpuDifficulty = MusCpuDifficultyEasy
+	g.SetConfig(cfg)
+	g.SetManoIdx(0)
+	g.SetPhase(MusPhaseGrande)
+	g.startBetRound()
+	musStrongGrande(g, 0)
+	musWeakHand(g, 2)
+	musWeakHand(g, 1)
+	musWeakHand(g, 3)
+	g.SetBetTeam(0)
+	g.SetPendingStake(2) // strong, but easy difficulty never raises → quiero
+	if action, _ := g.cpuBet(); action != MusActionQuiero {
+		t.Errorf("easy strong respond action = %d, want quiero", action)
+	}
+}
+
+func TestMus_CpuBetOrdagoResponse(t *testing.T) {
+	g := newMusGame(false)
+	g.SetManoIdx(0)
+	g.SetPhase(MusPhaseGrande)
+	g.startBetRound()
+	musStrongGrande(g, 0)
+	musWeakHand(g, 2)
+	musWeakHand(g, 1)
+	musWeakHand(g, 3)
+
+	// Strong (>=80) team facing an ordago → quiero.
+	g.SetBetTeam(0)
+	g.SetPendingStake(-1)
+	if action, _ := g.cpuBet(); action != MusActionQuiero {
+		t.Errorf("strong ordago response = %d, want quiero", action)
+	}
+
+	// Weak team facing an ordago → noquiero.
+	g.SetBetTeam(1)
+	g.SetPendingStake(-1)
+	if action, _ := g.cpuBet(); action != MusActionNoQuiero {
+		t.Errorf("weak ordago response = %d, want noquiero", action)
+	}
+}
+
+func TestMus_CpuWantsMusHasParesOrJuego(t *testing.T) {
+	g := newMusGame(false)
+	cfg := g.GetConfig()
+	cfg.CpuDifficulty = MusCpuDifficultyNormal
+	g.SetConfig(cfg)
+	g.musCycle = 0
+
+	// Has a pair → never wants mus.
+	musSetHand(g.GetPlayer(1), musCard(1, 13), musCard(2, 13), musCard(3, 1), musCard(4, 2))
+	if g.cpuWantsMus(1) {
+		t.Error("with pair, CPU should not want mus")
+	}
+
+	// Has juego (>=31) → never wants mus.
+	musSetHand(g.GetPlayer(1), musCard(1, 13), musCard(2, 13), musCard(3, 12), musCard(4, 1)) // 10+10+10+1=31
+	if g.cpuWantsMus(1) {
+		t.Error("with juego, CPU should not want mus")
+	}
+
+	// Weak hand, normal difficulty → always wants mus.
+	musWeakHand(g, 1)
+	if !g.cpuWantsMus(1) {
+		t.Error("weak hand on normal difficulty should want mus")
+	}
+
+	// Max cycles reached → never wants mus regardless of hand.
+	g.musCycle = MusMaxMusCycles
+	if g.cpuWantsMus(1) {
+		t.Error("at max mus cycles, CPU should not want mus")
+	}
+}
+
+func TestMus_CpuWantsMusEasyRandom(t *testing.T) {
+	g := newMusGame(false)
+	cfg := g.GetConfig()
+	cfg.CpuDifficulty = MusCpuDifficultyEasy
+	g.SetConfig(cfg)
+	g.musCycle = 0
+	musWeakHand(g, 1) // weak so the easy random branch is reached
+	sawTrue, sawFalse := false, false
+	for i := 0; i < 1000 && !(sawTrue && sawFalse); i++ {
+		if g.cpuWantsMus(1) {
+			sawTrue = true
+		} else {
+			sawFalse = true
+		}
+	}
+	if !sawTrue || !sawFalse {
+		t.Errorf("easy random mus should yield both outcomes: true=%v false=%v", sawTrue, sawFalse)
+	}
+}
+
+func TestMus_CpuDiscardIndices(t *testing.T) {
+	g := newMusGame(false)
+	// Pair of Kings (figures, kept) + two low non-pairing cards (discarded).
+	musSetHand(g.GetPlayer(1), musCard(1, 13), musCard(2, 13), musCard(3, 2), musCard(4, 5))
+	idx := g.cpuDiscardIndices(1)
+	// Hand order as added: [K,K,2,5] → low non-pair cards at indices 2,3.
+	if len(idx) != 2 {
+		t.Fatalf("discard indices = %v, want 2 low cards", idx)
+	}
+	for _, j := range idx {
+		if j < 2 {
+			t.Errorf("should not discard a figure/pair card at index %d", j)
+		}
+	}
+
+	// All four cards form two pairs (figures) → discard nothing.
+	musSetHand(g.GetPlayer(1), musCard(1, 13), musCard(2, 13), musCard(3, 12), musCard(4, 12))
+	if got := g.cpuDiscardIndices(1); len(got) != 0 {
+		t.Errorf("strong hand discard = %v, want empty", got)
+	}
+}
+
+func TestMus_GetResultOutOfRange(t *testing.T) {
+	g := newMusGame(true)
+	for _, ri := range []int{-1, MusRoundCnt, 99} {
+		if r := g.GetResult(ri); r.Team != -1 {
+			t.Errorf("GetResult(%d) = %+v, want Team -1 sentinel", ri, r)
+		}
+	}
+}
+
+func TestMus_GetPlayerOutOfRange(t *testing.T) {
+	g := newMusGame(true)
+	if g.GetPlayer(-1) != nil || g.GetPlayer(MusPlayerCnt) != nil {
+		t.Error("GetPlayer out of range should return nil")
+	}
+	if g.GetPlayer(0) == nil {
+		t.Error("GetPlayer(0) should return a player")
+	}
+}
+
+func TestMus_IsHumanTurnNonInteractivePhases(t *testing.T) {
+	g := newMusGame(true)
+	g.SetPhase(MusPhaseDiscard)
+	g.SetDiscardTurn(0)
+	if !g.IsHumanTurn() {
+		t.Error("human discard turn should be human")
+	}
+	g.SetDiscardTurn(1)
+	if g.IsHumanTurn() {
+		t.Error("CPU discard turn should not be human")
+	}
+	for _, ph := range []MusPhase{MusPhaseShowdown, MusPhaseRoundEnd, MusPhaseGameEnd} {
+		g.SetPhase(ph)
+		if g.IsHumanTurn() {
+			t.Errorf("phase %v should not be a human turn", ph)
+		}
+	}
+}
+
+func TestMus_HintNonHumanReturnsNil(t *testing.T) {
+	g := newMusGame(false) // no human player
+	g.Reset()
+	if h := g.GetHint(); h != nil {
+		t.Errorf("all-CPU game should have no hint, got %+v", h)
+	}
+}
+
+func TestMus_HintDiscardPhase(t *testing.T) {
+	g := newMusGame(true)
+	g.Reset()
+	g.SetPhase(MusPhaseDiscard)
+	g.SetDiscardTurn(0)
+	musSetHand(g.GetPlayer(0), musCard(1, 13), musCard(2, 13), musCard(3, 2), musCard(4, 5))
+	h := g.GetHint()
+	if h == nil || h.Reason != "discard_low" {
+		t.Errorf("discard hint = %+v, want discard_low", h)
+	}
+}
+
+func TestMus_HintNotMyTurnReturnsNil(t *testing.T) {
+	g := newMusGame(true)
+	g.Reset()
+	// Mus phase but it's a CPU's turn.
+	g.SetPhase(MusPhaseMus)
+	g.SetMusTurn(1)
+	if h := g.GetHint(); h != nil {
+		t.Errorf("mus hint should be nil when not human turn, got %+v", h)
+	}
+	// Discard phase but it's a CPU's turn.
+	g.SetPhase(MusPhaseDiscard)
+	g.SetDiscardTurn(1)
+	if h := g.GetHint(); h != nil {
+		t.Errorf("discard hint should be nil when not human turn, got %+v", h)
+	}
+	// Betting phase but it's team1's (CPU) turn.
+	g.SetPhase(MusPhaseGrande)
+	g.SetBetTeam(1)
+	if h := g.GetHint(); h != nil {
+		t.Errorf("bet hint should be nil when not human turn, got %+v", h)
+	}
+}
+
+func TestMus_ActionNameAll(t *testing.T) {
+	cases := map[int]string{
+		MusActionPaso:     "paso",
+		MusActionEnvido:   "envido",
+		MusActionOrdago:   "ordago",
+		MusActionQuiero:   "quiero",
+		MusActionNoQuiero: "no_quiero",
+		99:                "?",
+	}
+	for action, want := range cases {
+		if got := musActionName(action); got != want {
+			t.Errorf("musActionName(%d) = %q, want %q", action, got, want)
+		}
+	}
+}
+
+func TestMus_RoundNameAll(t *testing.T) {
+	wants := []string{"Grande", "Chica", "Pares", "Juego", "?"}
+	for ri, want := range wants {
+		if got := musRoundName(ri); got != want {
+			t.Errorf("musRoundName(%d) = %q, want %q", ri, got, want)
+		}
+	}
+}
+
 func TestMus_UnmarshalOversized(t *testing.T) {
 	var g Mus
 	bad := `{"al":[`
