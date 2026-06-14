@@ -82,6 +82,7 @@ import type {
   SevenBridgeResponse,
   SevenCardStudResponse,
   SevensResponse,
+  SheepsheadResponse,
   ShitheadResponse,
   ShortDeckResponse,
   SixCardGolfResponse,
@@ -198,6 +199,7 @@ import { getScorpionHint } from '../utils/hints/scorpionHint';
 import { getSeahavenTowersHint } from '../utils/hints/seahavenTowersHint';
 import { getSevenbridgeHint } from '../utils/hints/sevenbridgeHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
+import { getSheepsheadHint } from '../utils/hints/sheepsheadHint';
 import { getShitheadHint } from '../utils/hints/shitheadHint';
 import { getShortDeckHint } from '../utils/hints/shortdeckHint';
 import { getSixcardgolfHint } from '../utils/hints/sixcardgolfHint';
@@ -335,6 +337,7 @@ const hintFactories = {
   accordion: (s) => getAccordionHint(s as AccordionResponse),
   calculation: (s) => getCalculationHint(s as CalculationResponse),
   sevenbridge: (s) => getSevenbridgeHint(s as SevenBridgeResponse),
+  sheepshead: (s) => getSheepsheadHint(s as SheepsheadResponse),
   trash: (s) => getTrashHint(s as TrashResponse),
   president: (s) => getPresidentHint(s as PresidentResponse),
   cassino: (s) => getCassinoHint(s as CassinoResponse),

@@ -34,6 +34,7 @@
     "bigohilo": "5カードオマハ ハイロー (Big O)",
     "hearts": "ハーツ",
     "spades": "スペード",
+    "sheepshead": "シープスヘッド",
     "pitch": "ピッチ",
     "twotenjack": "ツーテンジャック",
     "memory": "神経衰弱",
@@ -281,6 +282,15 @@
     "errorBoundaryDetails": "エラーの詳細を表示"
   },
   "messageCode": {
+    "sheepshead.pickPhase": "ピックフェーズ — ブラインドを取るか、パスするか選んでください。",
+    "sheepshead.buryPhase": "あなたがピッカーです — 埋める2枚を選んでください。",
+    "sheepshead.callPhase": "パートナーを呼ぶスートを選んでください。",
+    "sheepshead.playPhase.lead": "あなたの番です — リードするカードを選んでください。",
+    "sheepshead.playPhase.follow": "あなたの番です — リードスートに従ってカードを選んでください。",
+    "sheepshead.trickEnd": "トリック終了 — 次へ進んでください。",
+    "sheepshead.roundEnd": "ラウンド終了 — 次のラウンドへ進んでください。",
+    "sheepshead.result.humanWin": "ゲーム終了！ あなたの勝ちです！",
+    "sheepshead.result.cpuWin": "ゲーム終了！ CPU {{cpuId}} の勝ちです。",
     "tressette.playPhase.lead": "あなたの番です — リードするカードを選んでください。",
     "tressette.playPhase.follow": "あなたの番です — リードスートに従ってカードを選んでください。",
     "tressette.trickEnd": "トリック終了 — 次へ進んでください。",

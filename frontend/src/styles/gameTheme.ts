@@ -52,6 +52,7 @@ export type GameKey =
   // Trick-taking
   | 'hearts'
   | 'spades'
+  | 'sheepshead'
   | 'pitch'
   | 'twotenjack'
   | 'ohhell'
@@ -164,6 +165,10 @@ const BRIGHT_GREEN = {
   bg: 'bg-game-bg-green-bright',
   footer: 'bg-game-bg-green-bright-dark border-white/20',
 } as const;
+const SHEEPSHEAD = {
+  bg: 'bg-game-bg-sheepshead',
+  footer: 'bg-game-bg-sheepshead-dark border-white/20',
+} as const;
 
 export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Table games
@@ -209,6 +214,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Trick-taking
   hearts: BLUE,
   spades: BLUE,
+  sheepshead: SHEEPSHEAD,
   pitch: BLUE,
   twotenjack: BLUE,
   ohhell: BLUE,

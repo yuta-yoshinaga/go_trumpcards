@@ -298,6 +298,11 @@ var registry = []*Game{
 	// Bourré fuses poker-style ante/draw betting with must-follow trick-taking.
 	// Category is purely a binary-size bucket here (see package doc).
 	{Name: "bourre", Category: CategoryCasino, Description: "Bourré (ブーレ)"},
+	// Sheepshead (シープスヘッド) is a German-American 5-player trick-taking game
+	// with a fixed-trump system (all Queens + all Jacks + all Diamonds) and a
+	// secret picker/partner formed via a called Ace. Casino worker (binary-size
+	// bucket only; see package doc).
+	{Name: "sheepshead", Category: CategoryCasino, Description: "Sheepshead (シープスヘッド)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

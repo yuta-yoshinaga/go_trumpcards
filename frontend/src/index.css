@@ -39,6 +39,9 @@
   --color-game-bg-blue-dark: #101c3a;
   --color-game-bg-revolution: #5a1717;
   --color-game-bg-revolution-dark: #3c0f0f;
+  /* Sheepshead — Bavarian farmhouse brown, distinct from the casino greens/blues. */
+  --color-game-bg-sheepshead: #4a3b22;
+  --color-game-bg-sheepshead-dark: #322715;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;

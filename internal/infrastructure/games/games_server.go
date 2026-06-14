@@ -660,6 +660,11 @@ func init() {
 			return usecase.NewTressetteInteractor(domain.NewDefaultTressette(), new(presenter.TressetteWebPresenter))
 		},
 		controller.NewTressetteWebController)
+	BindWebControllerFor("sheepshead",
+		func() usecase.SheepsheadInteractorIF {
+			return usecase.NewSheepsheadInteractor(domain.NewDefaultSheepshead(), new(presenter.SheepsheadWebPresenter))
+		},
+		controller.NewSheepsheadWebController)
 	BindWebControllerFor("easthaven",
 		func() usecase.EasthavenInteractorIF {
 			return usecase.NewEasthavenInteractor(domain.NewDefaultEasthaven(), new(presenter.EasthavenWebPresenter))
