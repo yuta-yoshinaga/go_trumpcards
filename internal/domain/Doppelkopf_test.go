@@ -175,6 +175,20 @@ func TestDoppelkopf_TrumpBeatsFailLead(t *testing.T) {
 	}
 }
 
+func TestDoppelkopf_TrickTopStrengthGuard(t *testing.T) {
+	g := newDKGame(false)
+	g.SetCurrentTrick([]*DoppelkopfTrickCard{
+		{PlayerIdx: 0, Card: dkCard(CardDesignClover, 1)},
+	})
+	// A winner not present in the current trick must yield the sentinel, not panic.
+	if got := g.trickTopStrength(99); got != -1<<30 {
+		t.Errorf("trickTopStrength(absent) = %d, want sentinel", got)
+	}
+	if got := g.trickTopStrength(0); got != dkStrength(dkCard(CardDesignClover, 1)) {
+		t.Errorf("trickTopStrength(0) = %d, want A♣ strength", got)
+	}
+}
+
 func TestDoppelkopf_MustFollowSuit(t *testing.T) {
 	g := newDKGame(true) // human is player 0
 	g.SetPhase(DoppelkopfPhasePlay)

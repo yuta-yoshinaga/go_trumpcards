@@ -312,6 +312,20 @@ func TestSheepshead_MustFollowSuit(t *testing.T) {
 	}
 }
 
+func TestSheepshead_TrickTopStrengthGuard(t *testing.T) {
+	g := newSSGame(false)
+	g.SetCurrentTrick([]*SheepsheadTrickCard{
+		{PlayerIdx: 0, Card: ssCard(CardDesignClover, 1)},
+	})
+	// A winner not present in the current trick yields the sentinel, not a panic.
+	if got := g.trickTopStrength(99); got != -1<<30 {
+		t.Errorf("trickTopStrength(absent) = %d, want sentinel", got)
+	}
+	if got := g.trickTopStrength(0); got != sheepsheadStrength(ssCard(CardDesignClover, 1)) {
+		t.Errorf("trickTopStrength(0) = %d, want A♣ strength", got)
+	}
+}
+
 func TestSheepshead_TrickWinnerTrumpBeatsFail(t *testing.T) {
 	g := newSSGame(false)
 	g.SetPhase(SheepsheadPhaseTrickEnd)
