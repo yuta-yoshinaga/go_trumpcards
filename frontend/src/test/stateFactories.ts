@@ -7,6 +7,7 @@ import type {
   SheepsheadResponse,
   SpadesResponse,
   TressetteResponse,
+  TuteResponse,
   TwoTenJackResponse,
 } from '../types/card';
 
@@ -539,4 +540,56 @@ const baseDoppelkopfState: DoppelkopfResponse = {
  */
 export function makeDoppelkopfState(overrides?: Partial<DoppelkopfResponse>): DoppelkopfResponse {
   return { ...baseDoppelkopfState, ...overrides };
+}
+
+/** Base Tute state used as the default for {@link makeTuteState}. Defaults to a human Play turn. */
+const baseTuteState: TuteResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 10,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      teamScore: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 10, cards: [], trickCount: 0, teamScore: 0 },
+    { id: 2, isHuman: false, cardCount: 10, cards: [], trickCount: 0, teamScore: 0 },
+    { id: 3, isHuman: false, cardCount: 10, cards: [], trickCount: 0, teamScore: 0 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  trumpSuit: 4,
+  currentTrick: [],
+  declaredSuits: [false, false, false, false, false],
+  teamScores: [0, 0],
+  roundTeamPoints: [0, 0],
+  canDeclareMarriage: false,
+  canDeclareTute: false,
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 121 },
+};
+
+/**
+ * Creates a {@link TuteResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial TuteResponse fields to override.
+ * @returns A complete TuteResponse suitable for use in tests.
+ */
+export function makeTuteState(overrides?: Partial<TuteResponse>): TuteResponse {
+  return { ...baseTuteState, ...overrides };
 }

@@ -1,0 +1,57 @@
+{
+  "phase": {
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetPoints": "Target Points",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "trump": "Trump: {{suit}}",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "currentTrick": "Current Trick",
+  "players": "Players",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "yourTeam": "Your team",
+  "team": {
+    "a": "Team A",
+    "b": "Team B"
+  },
+  "teamScore": "{{team}}: {{score}} pts",
+  "playButton": "Play",
+  "declareMarriage": "Marriage {{suit}}",
+  "declareTute": "Declare Tute",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "roundResult": {
+    "title": "Round Result",
+    "teamA": "Team A points: {{points}}",
+    "teamB": "Team B points: {{points}}"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "lead_low": "Lead a low card to preserve strength",
+    "follow_win": "There are points on the table — take the trick",
+    "follow_duck": "Can't or shouldn't win — duck",
+    "discard_low": "Can't follow — discard a low card",
+    "declare_marriage": "Declare a marriage for bonus points",
+    "declare_tute": "Declare Tute for an instant win!"
+  },
+  "tutorial": {
+    "trickDisplay": "This is the current trick. You must follow the led suit. Trump cards are strongest.",
+    "playerHand": "Your hand. Click a playable card to select it.",
+    "playButton": "Once a card is selected, play it with this button. Holding both K+Q of a suit lets you 'declare a marriage' for bonus points; four Kings or four Queens lets you 'declare Tute' for an instant win.",
+    "info": "A=11, 3=10, K=4, Q=3, J=2. Team A (seats 0 & 2) vs Team B (seats 1 & 3) fight for points; the first team to reach the target wins.",
+    "resetButton": "Use the reset button to start a new game."
+  }
+}

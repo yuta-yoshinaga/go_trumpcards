@@ -675,6 +675,11 @@ func init() {
 			return usecase.NewMusInteractor(domain.NewDefaultMus(), new(presenter.MusWebPresenter))
 		},
 		controller.NewMusWebController)
+	BindWebControllerFor("tute",
+		func() usecase.TuteInteractorIF {
+			return usecase.NewTuteInteractor(domain.NewDefaultTute(), new(presenter.TuteWebPresenter))
+		},
+		controller.NewTuteWebController)
 	BindWebControllerFor("easthaven",
 		func() usecase.EasthavenInteractorIF {
 			return usecase.NewEasthavenInteractor(domain.NewDefaultEasthaven(), new(presenter.EasthavenWebPresenter))

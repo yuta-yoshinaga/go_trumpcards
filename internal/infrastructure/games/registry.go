@@ -312,6 +312,10 @@ var registry = []*Game{
 	// Latin deck: four wager rounds (Grande/Chica/Pares/Juego) with paso/envido/
 	// ordago and a mus card-exchange phase. Casino worker (binary-size bucket).
 	{Name: "mus", Category: CategoryCasino, Description: "Mus (ムス)"},
+	// Tute (トゥーテ) is a Spanish 40-card trump trick-taking game for 4 players
+	// (2v2) with K+Q marriage declarations (cante) and a 4-King/4-Queen instant
+	// win. Casino worker (binary-size bucket).
+	{Name: "tute", Category: CategoryCasino, Description: "Tute (トゥーテ)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

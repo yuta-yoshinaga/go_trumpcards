@@ -129,6 +129,7 @@ import trash from '../../../docs/manual/web/trash.md?raw';
 import tressette from '../../../docs/manual/web/tressette.md?raw';
 import tripeaks from '../../../docs/manual/web/tripeaks.md?raw';
 import truco from '../../../docs/manual/web/truco.md?raw';
+import tute from '../../../docs/manual/web/tute.md?raw';
 import twotenjack from '../../../docs/manual/web/twotenjack.md?raw';
 import ultimatetexasholdem from '../../../docs/manual/web/ultimatetexasholdem.md?raw';
 import videopoker from '../../../docs/manual/web/videopoker.md?raw';
@@ -231,6 +232,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/spades': spades,
   '/sheepshead': sheepshead,
   '/doppelkopf': doppelkopf,
+  '/tute': tute,
   '/pitch': pitch,
   '/spanish21': spanish21,
   '/speed': speed,

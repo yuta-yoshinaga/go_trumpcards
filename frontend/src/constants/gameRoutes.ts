@@ -379,6 +379,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 4, 4, 3], skill: [2, 4, 5, 3], social: [1, 3, 5, 2, 5], theme: [2, 5, 2, 1, 4, 2] },
       },
       {
+        path: '/tute',
+        labelKey: 'nav.tute',
+        icon: '🇪🇸',
+        page: 'Tute',
+        profile: { mood: [2, 3, 4, 3], skill: [3, 4, 4, 2], social: [1, 3, 5, 3, 4], theme: [2, 4, 2, 1, 3, 2] },
+      },
+      {
         path: '/pitch',
         labelKey: 'nav.pitch',
         icon: '🎯',

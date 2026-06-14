@@ -2166,6 +2166,23 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"mus.helpSetDifficulty"},
 			})
 	}},
+	{Name: "tute", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewTuteCuiController(usecase.NewTuteInteractor(
+				domain.NewDefaultTute(), new(presenter.TuteCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "tute.helpTitle",
+				CommandKeys: []string{
+					"tute.helpPlay",
+					"tute.helpMarriage",
+					"tute.helpTute",
+					"tute.helpNext",
+					"tute.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"tute.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
