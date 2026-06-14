@@ -539,6 +539,16 @@ func (g *Doppelkopf) indexOfPlayerInTrick(playerIdx int) int {
 	return -1
 }
 
+// trickTopStrength 現在のトリック勝者 winnerIdx の札の強さを返す。防御的に、
+// 勝者がトリック内に見つからない場合は極小値を返す (負インデックスでのパニック回避)。
+func (g *Doppelkopf) trickTopStrength(winnerIdx int) int {
+	idx := g.indexOfPlayerInTrick(winnerIdx)
+	if idx < 0 {
+		return -1 << 30
+	}
+	return dkStrength(g.currentTrick[idx].Card)
+}
+
 // findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)。
 func (g *Doppelkopf) findHumanIdx() int {
 	for i, p := range g.players {
@@ -822,7 +832,7 @@ func (g *Doppelkopf) playHintReason(playerIdx, chosenIdx int) string {
 		return "discard_low"
 	}
 	winnerIdx := g.trickWinner()
-	topStrength := dkStrength(g.currentTrick[g.indexOfPlayerInTrick(winnerIdx)].Card)
+	topStrength := g.trickTopStrength(winnerIdx)
 	if dkStrength(card) > topStrength {
 		return "follow_win"
 	}
@@ -873,7 +883,7 @@ func (g *Doppelkopf) cpuPlaySmart(playerIdx int, valid []int) int {
 
 	leadSuit := dkSuitID(g.currentTrick[0].Card)
 	winnerIdx := g.trickWinner()
-	topStrength := dkStrength(g.currentTrick[g.indexOfPlayerInTrick(winnerIdx)].Card)
+	topStrength := g.trickTopStrength(winnerIdx)
 	partnerWinning := g.reTeam[playerIdx] == g.reTeam[winnerIdx]
 	trickPts := 0
 	for _, tc := range g.currentTrick {

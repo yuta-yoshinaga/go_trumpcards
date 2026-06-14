@@ -150,6 +150,45 @@ func TestDoppelkopf_TrickWinnerHighFail(t *testing.T) {
 	}
 }
 
+func TestDoppelkopf_TrumpBeatsFailLead(t *testing.T) {
+	// A fail suit is led; a player void in it overruffs with trump. The trump
+	// must win even though its suit ID (trump) differs from the lead suit.
+	g := newDKGame(false)
+	g.SetCurrentTrick([]*DoppelkopfTrickCard{
+		{PlayerIdx: 0, Card: dkCard(CardDesignClover, 1)},   // A♣ fail lead
+		{PlayerIdx: 1, Card: dkCard(CardDesignDiamond, 13)}, // K♦ trump
+		{PlayerIdx: 2, Card: dkCard(CardDesignClover, 10)},  // 10♣ fail
+		{PlayerIdx: 3, Card: dkCard(CardDesignClover, 9)},   // 9♣ fail
+	})
+	if w := g.trickWinner(); w != 1 {
+		t.Errorf("winner = %d, want 1 (K♦ trump beats the ♣ fail lead)", w)
+	}
+	// And the Dulle (♥10) beats a lower trump played earlier.
+	g.SetCurrentTrick([]*DoppelkopfTrickCard{
+		{PlayerIdx: 0, Card: dkCard(CardDesignClover, 1)},  // A♣ fail lead
+		{PlayerIdx: 1, Card: dkCard(CardDesignDiamond, 1)}, // A♦ trump
+		{PlayerIdx: 2, Card: dkCard(CardDesignHeart, 10)},  // Dulle (top trump)
+		{PlayerIdx: 3, Card: dkCard(CardDesignSpade, 12)},  // Q♠ trump
+	})
+	if w := g.trickWinner(); w != 2 {
+		t.Errorf("winner = %d, want 2 (Dulle is the highest trump)", w)
+	}
+}
+
+func TestDoppelkopf_TrickTopStrengthGuard(t *testing.T) {
+	g := newDKGame(false)
+	g.SetCurrentTrick([]*DoppelkopfTrickCard{
+		{PlayerIdx: 0, Card: dkCard(CardDesignClover, 1)},
+	})
+	// A winner not present in the current trick must yield the sentinel, not panic.
+	if got := g.trickTopStrength(99); got != -1<<30 {
+		t.Errorf("trickTopStrength(absent) = %d, want sentinel", got)
+	}
+	if got := g.trickTopStrength(0); got != dkStrength(dkCard(CardDesignClover, 1)) {
+		t.Errorf("trickTopStrength(0) = %d, want A♣ strength", got)
+	}
+}
+
 func TestDoppelkopf_MustFollowSuit(t *testing.T) {
 	g := newDKGame(true) // human is player 0
 	g.SetPhase(DoppelkopfPhasePlay)
