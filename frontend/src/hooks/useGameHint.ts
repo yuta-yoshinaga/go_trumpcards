@@ -95,6 +95,7 @@ import type {
   SpideretteResponse,
   SpiderResponse,
   SpiteAndMaliceResponse,
+  SuecaResponse,
   TarneebResponse,
   TexasHoldemBonusResponse,
   ThirtyOneResponse,
@@ -215,6 +216,7 @@ import { getSpeedHint } from '../utils/hints/speedHint';
 import { getSpideretteHint } from '../utils/hints/spideretteHint';
 import { getSpiderHint } from '../utils/hints/spiderHint';
 import { getSpiteAndMaliceHint } from '../utils/hints/spiteAndMaliceHint';
+import { getSuecaHint } from '../utils/hints/suecaHint';
 import { getTarneebHint } from '../utils/hints/tarneebHint';
 import { getTexasHoldemBonusHint } from '../utils/hints/texasHoldemBonusHint';
 import { getThirtyOneHint } from '../utils/hints/thirtyoneHint';
@@ -370,6 +372,7 @@ const hintFactories = {
   bidwhist: (s) => getBidWhistHint(s as BidWhistResponse),
   mus: (s) => getMusHint(s as MusResponse),
   tute: (s) => getTuteHint(s as TuteResponse),
+  sueca: (s) => getSuecaHint(s as SuecaResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

@@ -295,6 +295,14 @@ export const TutePhase = {
   GAME_END: 3,
 } as const;
 
+/** Sueca phase constants (sync: internal/domain/Sueca.go). */
+export const SuecaPhase = {
+  PLAY: 0,
+  TRICK_END: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Call Break phase constants (sync: internal/domain/CallBreak.go). */
 export const CallBreakPhase = {
   BID: 0,

@@ -125,6 +125,7 @@ import type {
   SpiderResponse,
   SpiteAndMaliceMoveZone,
   SpiteAndMaliceResponse,
+  SuecaResponse,
   TarneebResponse,
   TexasHoldemBonusResponse,
   ThirtyOneResponse,
@@ -296,6 +297,7 @@ const workerUrl: Record<string, string> = {
   doppelkopf: WORKER_CASINO,
   mus: WORKER_CASINO,
   tute: WORKER_CASINO,
+  sueca: WORKER_CASINO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1610,6 +1612,39 @@ export const doppelkopfApi = {
     }),
 };
 
+/** Configuration options for Sueca game settings. */
+export interface SuecaConfigInput {
+  cpuDifficulty?: number;
+  targetGamePoints?: number;
+}
+
+/** Commands accepted by the Sueca /sueca/exec endpoint. */
+export type SuecaCommand = 'reset' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Sueca /sueca/exec endpoint.
+ *
+ * Sueca is a Portuguese/Brazilian 4-player (2 vs 2) trump trick-taker. The only
+ * play action is playing a card; there are no declarations.
+ *   - `play` → `{ cardIndex: number }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const suecaApi = {
+  exec: (
+    command: SuecaCommand,
+    opts?: {
+      cardIndex?: number;
+      config?: SuecaConfigInput;
+    },
+  ) =>
+    gameExec<SuecaResponse>('sueca', {
+      command,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
 /** Configuration options for Tute game settings. */
 export interface TuteConfigInput {
   cpuDifficulty?: number;
@@ -2747,6 +2782,7 @@ const games = [
   'doppelkopf',
   'mus',
   'tute',
+  'sueca',
 ] as const;
 type Game = (typeof games)[number];
 

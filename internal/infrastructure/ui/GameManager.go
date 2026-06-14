@@ -2183,6 +2183,21 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"tute.helpSetDifficulty"},
 			})
 	}},
+	{Name: "sueca", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSuecaCuiController(usecase.NewSuecaInteractor(
+				domain.NewDefaultSueca(), new(presenter.SuecaCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "sueca.helpTitle",
+				CommandKeys: []string{
+					"sueca.helpPlay",
+					"sueca.helpNext",
+					"sueca.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"sueca.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

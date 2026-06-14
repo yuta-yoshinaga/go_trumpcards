@@ -119,6 +119,7 @@ import speed from '../../../docs/manual/cui/speed.md?raw';
 import spider from '../../../docs/manual/cui/spider.md?raw';
 import spiderette from '../../../docs/manual/cui/spiderette.md?raw';
 import spiteandmalice from '../../../docs/manual/cui/spiteandmalice.md?raw';
+import sueca from '../../../docs/manual/cui/sueca.md?raw';
 import tarneeb from '../../../docs/manual/cui/tarneeb.md?raw';
 import texasholdembonus from '../../../docs/manual/cui/texasholdembonus.md?raw';
 import thirtyone from '../../../docs/manual/cui/thirtyone.md?raw';
@@ -229,6 +230,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/spades': spades,
   '/sheepshead': sheepshead,
   '/doppelkopf': doppelkopf,
+  '/sueca': sueca,
   '/tute': tute,
   '/pitch': pitch,
   '/spanish21': spanish21,

@@ -51,6 +51,9 @@
   /* Tute — Spanish flamenco red-ochre, distinct from the other table felts. */
   --color-game-bg-tute: #7a2e1e;
   --color-game-bg-tute-dark: #521e13;
+  /* Sueca — Portuguese/Brazilian deep emerald with a gold lean, distinct from Mus's green. */
+  --color-game-bg-sueca: #0f6b4f;
+  --color-game-bg-sueca-dark: #0a4733;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;
