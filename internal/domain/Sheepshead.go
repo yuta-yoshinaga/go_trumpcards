@@ -721,6 +721,16 @@ func (g *Sheepshead) indexOfPlayerInTrick(playerIdx int) int {
 	return -1
 }
 
+// trickTopStrength 現在のトリック勝者 winnerIdx の札の強さを返す。防御的に、
+// 勝者がトリック内に見つからない場合は極小値を返す (パニック回避)。
+func (g *Sheepshead) trickTopStrength(winnerIdx int) int {
+	idx := g.indexOfPlayerInTrick(winnerIdx)
+	if idx < 0 {
+		return -1 << 30
+	}
+	return sheepsheadStrength(g.currentTrick[idx].Card)
+}
+
 // --- Card classification ---
 
 // sheepsheadIsTrump 切り札 (全 Q, 全 J, ダイヤ全札) か。
@@ -1037,7 +1047,7 @@ func (g *Sheepshead) playHintReason(playerIdx, chosenIdx int) string {
 		return "discard_low"
 	}
 	winnerIdx := g.trickWinner()
-	topStrength := sheepsheadStrength(g.currentTrick[g.indexOfPlayerInTrick(winnerIdx)].Card)
+	topStrength := g.trickTopStrength(winnerIdx)
 	if sheepsheadStrength(card) > topStrength {
 		return "follow_win"
 	}
@@ -1136,7 +1146,7 @@ func (g *Sheepshead) cpuPlaySmart(playerIdx int, valid []int) int {
 
 	leadSuit := sheepsheadSuitID(g.currentTrick[0].Card)
 	winnerIdx := g.trickWinner()
-	topStrength := sheepsheadStrength(g.currentTrick[g.indexOfPlayerInTrick(winnerIdx)].Card)
+	topStrength := g.trickTopStrength(winnerIdx)
 	partnerWinning := g.cpuSameTeam(playerIdx, winnerIdx)
 	trickPts := 0
 	for _, tc := range g.currentTrick {
