@@ -118,6 +118,7 @@ import speed from '../../../docs/manual/web/speed.md?raw';
 import spider from '../../../docs/manual/web/spider.md?raw';
 import spiderette from '../../../docs/manual/web/spiderette.md?raw';
 import spiteandmalice from '../../../docs/manual/web/spiteandmalice.md?raw';
+import sueca from '../../../docs/manual/web/sueca.md?raw';
 import tarneeb from '../../../docs/manual/web/tarneeb.md?raw';
 import texasholdembonus from '../../../docs/manual/web/texasholdembonus.md?raw';
 import thirtyone from '../../../docs/manual/web/thirtyone.md?raw';
@@ -232,6 +233,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/spades': spades,
   '/sheepshead': sheepshead,
   '/doppelkopf': doppelkopf,
+  '/sueca': sueca,
   '/tute': tute,
   '/pitch': pitch,
   '/spanish21': spanish21,

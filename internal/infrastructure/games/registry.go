@@ -316,6 +316,9 @@ var registry = []*Game{
 	// (2v2) with K+Q marriage declarations (cante) and a 4-King/4-Queen instant
 	// win. Casino worker (binary-size bucket).
 	{Name: "tute", Category: CategoryCasino, Description: "Tute (トゥーテ)"},
+	// Sueca (スエカ) is a Portuguese/Brazilian 40-card trump trick-taking game for
+	// 4 players (2v2) with A=11/7=10 scoring. Casino worker (binary-size bucket).
+	{Name: "sueca", Category: CategoryCasino, Description: "Sueca (スエカ)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

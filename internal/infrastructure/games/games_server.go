@@ -680,6 +680,11 @@ func init() {
 			return usecase.NewTuteInteractor(domain.NewDefaultTute(), new(presenter.TuteWebPresenter))
 		},
 		controller.NewTuteWebController)
+	BindWebControllerFor("sueca",
+		func() usecase.SuecaInteractorIF {
+			return usecase.NewSuecaInteractor(domain.NewDefaultSueca(), new(presenter.SuecaWebPresenter))
+		},
+		controller.NewSuecaWebController)
 	BindWebControllerFor("easthaven",
 		func() usecase.EasthavenInteractorIF {
 			return usecase.NewEasthavenInteractor(domain.NewDefaultEasthaven(), new(presenter.EasthavenWebPresenter))

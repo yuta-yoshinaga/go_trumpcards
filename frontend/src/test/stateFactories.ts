@@ -6,6 +6,7 @@ import type {
   MusResponse,
   SheepsheadResponse,
   SpadesResponse,
+  SuecaResponse,
   TressetteResponse,
   TuteResponse,
   TwoTenJackResponse,
@@ -592,4 +593,55 @@ const baseTuteState: TuteResponse = {
  */
 export function makeTuteState(overrides?: Partial<TuteResponse>): TuteResponse {
   return { ...baseTuteState, ...overrides };
+}
+
+/** Base Sueca state used as the default for {@link makeSuecaState}. Defaults to a human Play turn. */
+const baseSuecaState: SuecaResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 10,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      teamGamePoints: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 10, cards: [], trickCount: 0, teamGamePoints: 0 },
+    { id: 2, isHuman: false, cardCount: 10, cards: [], trickCount: 0, teamGamePoints: 0 },
+    { id: 3, isHuman: false, cardCount: 10, cards: [], trickCount: 0, teamGamePoints: 0 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  trumpSuit: 4,
+  currentTrick: [],
+  teamGamePoints: [0, 0],
+  roundCardPoints: [0, 0],
+  roundWinnerTeam: -1,
+  roundGamePoints: 0,
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetGamePoints: 4 },
+};
+
+/**
+ * Creates a {@link SuecaResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial SuecaResponse fields to override.
+ * @returns A complete SuecaResponse suitable for use in tests.
+ */
+export function makeSuecaState(overrides?: Partial<SuecaResponse>): SuecaResponse {
+  return { ...baseSuecaState, ...overrides };
 }
