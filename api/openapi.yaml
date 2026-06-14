@@ -279,6 +279,8 @@ tags:
     description: Baker's Game (ベーカーズゲーム) - single-player FreeCell variant on a standard 52-card deck; identical layout to FreeCell (8 tableau columns, 4 free cells, 4 foundations Ace-to-King by suit) except tableau builds **same-suit descending** instead of alternating colors, making it harder. Only Kings move to an empty column; supermove limit = (1 + emptyFreeCells) x 2^(emptyTableauCols).
   - name: sheepshead
     description: Sheepshead (シープスヘッド) - 5-player Wisconsin/German trick-taking game on a 32-card deck (A,7,8,9,10,J,Q,K × 4 suits); 6 cards each plus a 2-card blind; 14 fixed trumps (Q♣>Q♠>Q♥>Q♦>J♣>J♠>J♥>J♦>A♦>10♦>K♦>9♦>8♦>7♦); picker takes blind and buries 2, calls a fail-suit Ace to name a secret partner; picker team needs 61+ of 120 card points to win; Schneider (≤30) doubles, Schwarz (0 tricks) triples the chip stake
+  - name: doppelkopf
+    description: Doppelkopf (ドッペルコップ) - 4-player German trick-taking game on a 48-card doubled deck (9,10,J,Q,K,A × 4 suits × 2 copies); 12 cards each; 26 fixed trumps (♥10/Dulle>Q♣>Q♠>Q♥>Q♦>J♣>J♠>J♥>J♦>A♦>10♦>K♦>9♦, each ×2); two Q♣ holders secretly form the Re team; identical cards played in same trick resolved by play order (first wins); Re team needs 121+ of 240 card points to win; Re/Kontra announcements in trick 1 double the stake
 
 paths:
   /blackjack/exec:
@@ -12411,6 +12413,78 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SheepsheadResponse'
+
+  /doppelkopf/exec:
+    post:
+      tags:
+        - doppelkopf
+      summary: Execute a Doppelkopf game command
+      description: |
+        Send a command to advance a Doppelkopf session identified by `sessionId`.
+        Doppelkopf is a 4-player (1 human + 3 CPU) German trick-taking game
+        on a 48-card doubled deck (9,10,J,Q,K,A × 4 suits × 2 copies each).
+        Each player receives 12 cards. Fixed trump (26 cards) strongest to weakest:
+        ♥10 (Dulle) > Q♣ > Q♠ > Q♥ > Q♦ > J♣ > J♠ > J♥ > J♦ > A♦ > 10♦ > K♦ > 9♦.
+        Fail suits (♣♠♥) keep only A,10,K,9 (♥ keeps A,K,9 since ♥10 is trump).
+        Card points: A=11, 10=10, K=4, Q=3, J=2, 9=0 (total 240). The two Q♣ holders
+        secretly form the Re team; the other two are Kontra. Re team wins with 121+
+        points. Re/Kontra may be announced during the 1st trick (×2 stake each).
+        Identical cards played in the same trick are resolved by play order (first wins).
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Play      | `0`   | Twelve tricks played under must-follow rules |
+        | TrickEnd  | `1`   | Trick resolved; advance with `next` |
+        | RoundEnd  | `2`   | Round scored; chips settled; advance with `nextround` |
+        | GameEnd   | `3`   | A player reached the target chip count |
+
+        | Command           | Aliases    | Description |
+        |-------------------|------------|-------------|
+        | `reset`           | `r`        | Start / restart the game (optional `config`) |
+        | `play`            |            | Play a card by `cardIndex` (Play phase) |
+        | `announce`        | `a`        | Announce Re or Kontra during trick 1 (Play phase) |
+        | `next`            | `n`        | Advance to the next trick |
+        | `nextround`       | `nr`       | Settle chips and start the next round |
+        | `setdifficulty`   | `sd`       | Set CPU difficulty (requires `difficulty` 0-2) |
+        | `setbasechips`    | `sb`       | Set base chip stake (requires `amount`) |
+        | `log`             | `l`        | View action log |
+      operationId: doppelkopfExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DoppelkopfRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play the card at hand index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+              announce:
+                summary: Announce Re or Kontra during trick 1
+                value:
+                  command: announce
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DoppelkopfResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DoppelkopfResponse'
 
 components:
   schemas:
@@ -26657,6 +26731,168 @@ components:
         messageParams:
           type: object
           additionalProperties: true
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            baseChips:
+              type: integer
+            targetChips:
+              type: integer
+
+    # -------------------------------------------------------------------------
+    # Doppelkopf types
+    # -------------------------------------------------------------------------
+    DoppelkopfRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `play`, `announce` (`a`),
+            `next` (`n`), `nextround` (`nr`), `setdifficulty` (`sd`),
+            `setbasechips` (`sb`), `log` (`l`).
+          enum: [reset, r, play, announce, a, next, n, nextround, nr, setdifficulty, sd, setbasechips, sb, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Hand index of the card to play. Required for the `play` command.
+          example: 0
+        difficulty:
+          type: integer
+          description: CPU difficulty level for `setdifficulty`. 0=Easy, 1=Normal, 2=Hard.
+          minimum: 0
+          maximum: 2
+        amount:
+          type: integer
+          description: Base chip stake for `setbasechips`. Must be a positive integer.
+          minimum: 1
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            baseChips:
+              type: integer
+              minimum: 1
+            targetChips:
+              type: integer
+              minimum: 1
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    DoppelkopfResponse:
+      type: object
+      description: Current state of the Doppelkopf game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              trickCount:
+                type: integer
+              chips:
+                type: integer
+                description: Current chip count for this player
+        phase:
+          type: integer
+          description: "Game phase: 0=Play, 1=TrickEnd, 2=RoundEnd, 3=GameEnd"
+          enum: [0, 1, 2, 3]
+          example: 0
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        reTeam:
+          type: array
+          items:
+            type: integer
+          description: Indices of Re team members (revealed at round end; partial during play if Re announced)
+        soloRe:
+          type: boolean
+          description: True if one player holds both Q♣ (solo Re vs 3 Kontra)
+        teamsRevealed:
+          type: boolean
+          description: True once both teams are fully public (end of round)
+        reAnnounced:
+          type: boolean
+          description: True if Re has been announced this round
+        kontraAnnounced:
+          type: boolean
+          description: True if Kontra has been announced this round
+        canAnnounce:
+          type: boolean
+          description: True if the human player may still announce during this trick (trick 1 only)
+        youAreRe:
+          type: boolean
+          description: True if the human player is on the Re team
+        playableIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices the human may legally play (must-follow filtered)
+        roundRePoints:
+          type: integer
+          description: Card points accumulated by the Re team this round
+        roundReWon:
+          type: boolean
+          description: True if the Re team won the round (available at RoundEnd/GameEnd)
+        roundGamePoints:
+          type: integer
+          description: Game points awarded to the winning side this round (before chip settlement)
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: Index of the player who reached the target chip count (-1 if undecided)
+        hint:
+          type: object
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
         config:
           type: object
           properties:

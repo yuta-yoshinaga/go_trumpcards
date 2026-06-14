@@ -1,5 +1,6 @@
 import type {
   CallBreakResponse,
+  DoppelkopfResponse,
   GongZhuResponse,
   HeartsResponse,
   SheepsheadResponse,
@@ -424,4 +425,58 @@ const baseSheepsheadState: SheepsheadResponse = {
  */
 export function makeSheepsheadState(overrides?: Partial<SheepsheadResponse>): SheepsheadResponse {
   return { ...baseSheepsheadState, ...overrides };
+}
+
+/** Base Doppelkopf state used as the default for {@link makeDoppelkopfState}. Defaults to a human Play turn. */
+const baseDoppelkopfState: DoppelkopfResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 12,
+      cards: [
+        { design: 'HEART' as const, value: 10 },
+        { design: 'DIAMOND' as const, value: 13 },
+      ],
+      trickCount: 0,
+      chips: 20,
+      isRe: false,
+    },
+    { id: 1, isHuman: false, cardCount: 12, cards: [], trickCount: 0, chips: 20, isRe: false },
+    { id: 2, isHuman: false, cardCount: 12, cards: [], trickCount: 0, chips: 20, isRe: false },
+    { id: 3, isHuman: false, cardCount: 12, cards: [], trickCount: 0, chips: 20, isRe: false },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  currentTrick: [],
+  reTeam: [false, false, false, false],
+  soloRe: false,
+  teamsRevealed: false,
+  reAnnounced: false,
+  kontraAnnounced: false,
+  canAnnounce: true,
+  youAreRe: true,
+  playableIndices: [0, 1],
+  roundRePoints: 0,
+  roundReWon: false,
+  roundGamePoints: 0,
+  gameEndFlag: false,
+  winnerIdx: -1,
+  message: '',
+  config: { cpuDifficulty: 1, baseChips: 2, startChips: 20, targetChips: 40 },
+};
+
+/**
+ * Creates a {@link DoppelkopfResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial DoppelkopfResponse fields to override.
+ * @returns A complete DoppelkopfResponse suitable for use in tests.
+ */
+export function makeDoppelkopfState(overrides?: Partial<DoppelkopfResponse>): DoppelkopfResponse {
+  return { ...baseDoppelkopfState, ...overrides };
 }

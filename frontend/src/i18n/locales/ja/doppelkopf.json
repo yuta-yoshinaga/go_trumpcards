@@ -1,0 +1,61 @@
+{
+  "phase": {
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetChips": "目標チップ",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "trick": "トリック {{n}}",
+  "cards": "{{count}}枚",
+  "tricks": "{{count}}トリック",
+  "chips": "{{count}}チップ",
+  "currentTrick": "現在のトリック",
+  "players": "プレイヤー",
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "yourTeam": "あなたのチーム",
+  "team": {
+    "re": "Re",
+    "kontra": "Kontra",
+    "hidden": "（未公開）"
+  },
+  "soloRe": "ソロRe（♣Q 2枚持ち）",
+  "teamsRevealed": "チーム公開",
+  "announced": "宣言済み",
+  "playButton": "出す",
+  "announceRe": "Re を宣言",
+  "announceKontra": "Kontra を宣言",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド",
+  "roundResult": {
+    "title": "ラウンド結果",
+    "rePoints": "Re側の得点: {{points}}",
+    "reWon": "Re側の勝ち",
+    "reLost": "Re側の負け（Kontra側の勝ち）",
+    "gamePoints": "ゲームポイント: {{points}}"
+  },
+  "hintAvailable": "ヒント",
+  "hint": {
+    "lead_low": "低い札でリードして温存することを推奨",
+    "follow_win": "得点があるので勝てる札で取りに行く",
+    "follow_duck": "取れない／取る価値がないのでダック推奨",
+    "discard_low": "フォローできないので低い札を捨てる"
+  },
+  "tutorial": {
+    "trickDisplay": "現在のトリックです。リードされたスートにマストフォロー。切り札は ♥10(Dulle) > 全Q > 全J > ダイヤ全札 の順に強くなります。",
+    "playerHand": "あなたの手札です。出せるカードをクリックして選びます。",
+    "playButton": "カードを選んだら、このボタンで出します。",
+    "announce": "♣Q を持つ2人が「Re」チーム、残り2人が「Kontra」チームです。第1トリック中なら Re/Kontra を宣言してスコアを上げられます。",
+    "info": "A=11, 10=10, K=4, Q=3, J=2。合計240点のうち、Re側が121点以上取れば勝ちです。チップは勝敗で移動します。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}

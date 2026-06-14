@@ -2126,6 +2126,25 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "doppelkopf", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewDoppelkopfCuiController(usecase.NewDoppelkopfInteractor(
+				domain.NewDefaultDoppelkopf(), new(presenter.DoppelkopfCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "doppelkopf.helpTitle",
+				CommandKeys: []string{
+					"doppelkopf.helpPlay",
+					"doppelkopf.helpAnnounce",
+					"doppelkopf.helpNext",
+					"doppelkopf.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys: []string{
+					"doppelkopf.helpSetDifficulty",
+					"doppelkopf.helpSetChips",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

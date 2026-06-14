@@ -257,6 +257,14 @@ export const SheepsheadPhase = {
   GAME_END: 6,
 } as const;
 
+/** Doppelkopf phase constants (sync: internal/domain/Doppelkopf.go). */
+export const DoppelkopfPhase = {
+  PLAY: 0,
+  TRICK_END: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Call Break phase constants (sync: internal/domain/CallBreak.go). */
 export const CallBreakPhase = {
   BID: 0,
