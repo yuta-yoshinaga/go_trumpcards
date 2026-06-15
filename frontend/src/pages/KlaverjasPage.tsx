@@ -126,7 +126,7 @@ function KlaverjasPageContent() {
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const humanIdx = state.players.findIndex((p) => p.isHuman);
-  const isHumanTurn = state.currentPlayerIdx === humanIdx;
+  const isHumanTurn = state.isHumanTurn;
 
   const isPlayPhase = state.phase === KlaverjasPhase.PLAY;
   const isTrickEnd = state.phase === KlaverjasPhase.TRICK_END;

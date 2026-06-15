@@ -27,7 +27,7 @@ const gameEndState = makeKlaverjasState({
   winnerTeam: 0,
   message: 'ゲーム終了！ あなたのチームの勝ち！',
 });
-const cpuTurnState = makeKlaverjasState({ currentPlayerIdx: 1 });
+const cpuTurnState = makeKlaverjasState({ currentPlayerIdx: 1, isHumanTurn: false });
 
 beforeEach(() => {
   mockExec.mockReset();

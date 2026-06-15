@@ -297,24 +297,22 @@ func (g *Klaverjas) validatePlay(playerIdx int, card *Card) error {
 		return nil
 	}
 	leadSuit := g.currentTrick[0].Card.GetDesign()
+	hasLeadSuit := g.playerHasSuit(playerIdx, leadSuit)
 	// リードスートを持っていれば必ず従う。
-	if card.GetDesign() == leadSuit {
-		return nil
-	}
-	if g.playerHasSuit(playerIdx, leadSuit) {
+	if hasLeadSuit && card.GetDesign() != leadSuit {
 		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
 	}
 	// リードスートのボイド: 切り札を持っていれば切り札を出す義務がある。
-	if !g.playerHasSuit(playerIdx, g.trumpSuit) {
-		return nil // 切り札なし → 何でも捨てられる
-	}
-	if card.GetDesign() != g.trumpSuit {
+	if !hasLeadSuit && g.playerHasSuit(playerIdx, g.trumpSuit) && card.GetDesign() != g.trumpSuit {
 		return NewDomainError(ErrInvalidPlay, "切り札を出してください")
 	}
-	// 既に切り札が出ていれば、追い越せる切り札があるなら追い越す義務がある。
+	// 切り札を出す場合、追い越せる切り札があるなら追い越す義務がある。
+	// (リードスート自体が切り札のケースでも判定が漏れないよう、ここで一括検証する)
 	highest := g.highestTrumpStrengthInTrick()
-	if highest >= 0 && g.trumpStrength(card.GetValue()) <= highest && g.canOvertrump(playerIdx, highest) {
-		return NewDomainError(ErrInvalidPlay, "より強い切り札で追い越してください")
+	if highest >= 0 && card.GetDesign() == g.trumpSuit {
+		if g.trumpStrength(card.GetValue()) <= highest && g.canOvertrump(playerIdx, highest) {
+			return NewDomainError(ErrInvalidPlay, "より強い切り札で追い越してください")
+		}
 	}
 	return nil
 }
@@ -523,37 +521,38 @@ func klaverjasHandRoem(p *KlaverjasPlayer) int {
 				seq = append(seq, klaverjasSeqRank(c.GetValue()))
 			}
 		}
-		total += klaverjasLongestRunPoints(seq)
+		total += klaverjasRunPoints(seq)
 	}
 	return total
 }
 
-// klaverjasLongestRunPoints 連続ランク列から Roem 点 (3=20, 4+=50) を求める。
-func klaverjasLongestRunPoints(seqRanks []int) int {
+// klaverjasRunPoints 連続ランク列から Roem 点を求める。同一スート内に独立した
+// 連続列が複数あれば、それぞれを加算する (3 枚=20, 4 枚以上=50)。
+func klaverjasRunPoints(seqRanks []int) int {
 	if len(seqRanks) < 3 {
 		return 0
 	}
 	s := append([]int(nil), seqRanks...)
 	sort.Ints(s)
-	best, run := 1, 1
+	total, run := 0, 1
+	scoreRun := func(n int) {
+		switch {
+		case n >= 4:
+			total += 50
+		case n == 3:
+			total += 20
+		}
+	}
 	for i := 1; i < len(s); i++ {
 		if s[i] == s[i-1]+1 {
 			run++
-			if run > best {
-				best = run
-			}
 		} else if s[i] != s[i-1] {
+			scoreRun(run)
 			run = 1
 		}
 	}
-	switch {
-	case best >= 4:
-		return 50
-	case best == 3:
-		return 20
-	default:
-		return 0
-	}
+	scoreRun(run)
+	return total
 }
 
 // --- Misc helpers ---

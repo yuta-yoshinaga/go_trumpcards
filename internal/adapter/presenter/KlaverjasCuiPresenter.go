@@ -12,12 +12,15 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// klaverjasSuitSymbols maps a suit constant (1-4) to its glyph for CUI display.
+var klaverjasSuitSymbols = [...]string{"?", "♠", "♣", "♥", "♦"}
+
 // klaverjasSuitSymbol maps a suit constant (1-4) to its glyph for CUI display.
 func klaverjasSuitSymbol(suit int) string {
 	if suit < 1 || suit > 4 {
 		return "?"
 	}
-	return []string{"", "♠", "♣", "♥", "♦"}[suit]
+	return klaverjasSuitSymbols[suit]
 }
 
 func klaverjasPlayerStr(g interfaces.KlaverjasGame, idx int) string {

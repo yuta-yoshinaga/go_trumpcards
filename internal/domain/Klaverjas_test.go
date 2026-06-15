@@ -170,6 +170,35 @@ func TestKlaverjas_RoemDetection(t *testing.T) {
 	}
 }
 
+func TestKlaverjas_MustOvertrumpOnTrumpLead(t *testing.T) {
+	// When the lead suit IS the trump suit, a player holding a higher trump must
+	// still overtrump — playing a lower trump is illegal (regression: the lead==trump
+	// case previously bypassed the overtrump check).
+	g := newKlavGame(true)
+	g.SetPhase(KlaverjasPhasePlay)
+	g.SetTrumpSuit(CardDesignDiamond)
+	g.SetCurrentPlayerIdx(0)
+	g.SetCurrentTrick([]*KlaverjasTrickCard{{PlayerIdx: 3, Card: klavCard(CardDesignDiamond, 9)}}) // 9♦ trump lead
+	klavSetHand(g.GetPlayer(0), klavCard(CardDesignDiamond, 11), klavCard(CardDesignDiamond, 7))   // J♦ beats, 7♦ does not
+	if err := g.PlayerPlay(1); err == nil {                                                        // 7♦ — must overtrump with J♦
+		t.Error("expected must-overtrump error when a higher trump is held on a trump lead")
+	}
+	if err := g.PlayerPlay(0); err != nil { // J♦ overtrumps the led 9♦
+		t.Fatalf("overtrump-on-trump-lead play err: %v", err)
+	}
+}
+
+func TestKlaverjas_RoemMultipleRunsSameSuit(t *testing.T) {
+	// Two disjoint runs in the same suit each score: 7-8-9 (20) + J-Q-K (20) = 40.
+	p := NewKlaverjasPlayer(false)
+	klavSetHand(p,
+		klavCard(CardDesignSpade, 7), klavCard(CardDesignSpade, 8), klavCard(CardDesignSpade, 9),
+		klavCard(CardDesignSpade, 11), klavCard(CardDesignSpade, 12), klavCard(CardDesignSpade, 13))
+	if r := klaverjasHandRoem(p); r != 40 {
+		t.Errorf("two same-suit runs roem = %d, want 40", r)
+	}
+}
+
 func TestKlaverjas_ResolveTrickPointsAndLastBonus(t *testing.T) {
 	g := newKlavGame(false)
 	g.SetTrumpSuit(CardDesignDiamond)
