@@ -142,8 +142,9 @@ func (p *FortyFivesWebPresenter) winnerMessage(g interfaces.FortyFivesGame) (str
 	if humanTeam >= 0 && winnerTeam == humanTeam {
 		return "ゲーム終了！ あなたのチームの勝ち！", "fortyfives.result.humanWin", nil
 	}
-	params := map[string]string{"team": fmt.Sprintf("%d", winnerTeam)}
-	return fmt.Sprintf("ゲーム終了！ チーム%dの勝ち！", winnerTeam), "fortyfives.result.cpuWin", params
+	teamName := fortyFivesTeamLabel(winnerTeam)
+	params := map[string]string{"team": teamName}
+	return fmt.Sprintf("ゲーム終了！ チーム%sの勝ち！", teamName), "fortyfives.result.cpuWin", params
 }
 
 // HintOutput ヒント情報をJSON出力する

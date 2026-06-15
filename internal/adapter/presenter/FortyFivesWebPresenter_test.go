@@ -163,7 +163,7 @@ func TestFortyFivesWebPresenter_Output(t *testing.T) {
 		var resObj controller.FortyFivesWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 		assert.Equal(t, "fortyfives.result.cpuWin", resObj.MessageCode)
-		assert.Equal(t, map[string]string{"team": "1"}, resObj.MessageParams)
+		assert.Equal(t, map[string]string{"team": "B"}, resObj.MessageParams)
 	})
 
 	t.Run("team scores propagated to players", func(t *testing.T) {
