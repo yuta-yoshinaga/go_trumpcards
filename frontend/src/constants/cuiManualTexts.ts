@@ -71,6 +71,7 @@ import klaverjas from '../../../docs/manual/cui/klaverjas.md?raw';
 import klondike from '../../../docs/manual/cui/klondike.md?raw';
 import letitride from '../../../docs/manual/cui/letitride.md?raw';
 import macau from '../../../docs/manual/cui/macau.md?raw';
+import manille from '../../../docs/manual/cui/manille.md?raw';
 import memory from '../../../docs/manual/cui/memory.md?raw';
 import mighty from '../../../docs/manual/cui/mighty.md?raw';
 import mississippistud from '../../../docs/manual/cui/mississippistud.md?raw';
@@ -200,6 +201,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/klondike': klondike,
   '/letitride': letitride,
   '/macau': macau,
+  '/manille': manille,
   '/memory': memory,
   '/mighty': mighty,
   '/napoleon': napoleon,

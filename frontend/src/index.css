@@ -57,6 +57,9 @@
   /* Klaverjas — Dutch burnt-orange (Oranje), distinct from every felt and red game. */
   --color-game-bg-klaverjas: #b3541e;
   --color-game-bg-klaverjas-dark: #7a3813;
+  /* Manille — French/Belgian royal bleu (brighter & cooler than BLUE's navy). */
+  --color-game-bg-manille: #2451a8;
+  --color-game-bg-manille-dark: #18356f;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;

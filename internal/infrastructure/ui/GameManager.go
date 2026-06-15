@@ -2213,6 +2213,21 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"klaverjas.helpSetDifficulty"},
 			})
 	}},
+	{Name: "manille", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewManilleCuiController(usecase.NewManilleInteractor(
+				domain.NewDefaultManille(), new(presenter.ManilleCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "manille.helpTitle",
+				CommandKeys: []string{
+					"manille.helpPlay",
+					"manille.helpNext",
+					"manille.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"manille.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

@@ -223,7 +223,8 @@
     "mus": "A Basque vying game for four (2 vs 2). Across four rounds — Grande, Chica, Pares, Juego — bluff and trade cards to win amarrakos without showing your hand, with an Órdago all-in for a sudden-death swing.",
     "tute": "A Spanish classic for four in partnerships (2 vs 2). A trump trick-taker on the 40-card deck: hold both K+Q of a suit to declare a 'marriage' for bonus points, or collect four Kings or four Queens to declare 'Tute' for an instant win.",
     "sueca": "The national trick-taker of Portugal and Brazil. Four players (2 vs 2) play a 40-card deck with must-follow trump play. There are no declarations at all — just chase the high-value Aces (11) and Sevens (10) and take the majority of the 120 card points with your partner.",
-    "klaverjas": "The national trick-taker of the Netherlands. Four players (2 vs 2) play a 32-card deck with must-follow play and forced overtrumping. The trump Jack (20) and Nine (14) rule, and runs and marriages earn Roem (bonus). Partner up and battle over card points plus Roem in this deep, demanding game."
+    "klaverjas": "The national trick-taker of the Netherlands. Four players (2 vs 2) play a 32-card deck with must-follow play and forced overtrumping. The trump Jack (20) and Nine (14) rule, and runs and marriages earn Roem (bonus). Partner up and battle over card points plus Roem in this deep, demanding game.",
+    "manille": "A traditional French/Belgian trump trick-taker. Four players (2 vs 2) play a 32-card deck where the 10 (Manille) is the strongest card and the Ace (Manillon) is second. Trump is the suit of the last dealt card; must-follow play forces you to trump unless your partner already holds the trick. No declarations — just chase card points with your partner."
   },
   "stretch_blurb": {
     "blackjack": "The 21 instinct may be obvious — but the betting decisions surprise.",
@@ -363,6 +364,7 @@
     "mus": "A bluffing duel where hands stay hidden. Team up and gamble big with Órdago — a Basque classic for lovers of mind games.",
     "tute": "A partnership trump trick-taker where marriages and a 'Tute' call can swing the score fast — a Spanish classic for two-team play.",
     "sueca": "A clean, declaration-free trump trick-taker. Partner up and fight over card points with must-follow play — the national game of Portugal and Brazil.",
-    "klaverjas": "A serious Dutch trump trick-taker with forced overtrumping and Roem bonuses. Partner up and fight over card points in a step-up of strategic depth."
+    "klaverjas": "A serious Dutch trump trick-taker with forced overtrumping and Roem bonuses. Partner up and fight over card points in a step-up of strategic depth.",
+    "manille": "A French/Belgian trump trick-taker with a twist: the 10 is the strongest card. Partner up and fight over card points in this clean, declaration-free classic."
   }
 }

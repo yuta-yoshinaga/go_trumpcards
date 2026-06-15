@@ -323,6 +323,7 @@ var registry = []*Game{
 	// 4 players (2v2) with the J(20)>9(14) trump rank and Roem melds. Casino
 	// worker (binary-size bucket).
 	{Name: "klaverjas", Category: CategoryClassic, Description: "Klaverjas (クラヴァヤス)"},
+	{Name: "manille", Category: CategoryClassic, Description: "Manille (マニーユ)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

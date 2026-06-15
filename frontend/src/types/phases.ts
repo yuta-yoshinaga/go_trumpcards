@@ -311,6 +311,14 @@ export const KlaverjasPhase = {
   GAME_END: 3,
 } as const;
 
+/** Manille phase constants (sync: internal/domain/Manille.go). */
+export const ManillePhase = {
+  PLAY: 0,
+  TRICK_END: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Call Break phase constants (sync: internal/domain/CallBreak.go). */
 export const CallBreakPhase = {
   BID: 0,

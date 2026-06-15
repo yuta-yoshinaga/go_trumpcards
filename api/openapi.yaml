@@ -289,6 +289,8 @@ tags:
     description: Sueca (スエカ) - 4-player Portuguese/Brazilian trick-taking game on a 40-card Latin deck (A,2-7,Sota/Caballo/Rei × 4 suits); 10 cards each; 2 teams (seats 0&2 vs 1&3); trump set by last dealt card; must-follow trick play, distinctive rank order A>7>Rei>Valete/Sota>Dama/Caballo>6>5>4>3>2; card points A=11, 7=10, Rei=4, Valete/Sota=3, Dama/Caballo=2 (total 120); no marriages/declarations — pure 10-trick play; round winner earns 1 game point (61-90 pts), 2 (91-119 pts), or 4 (120 pts sweep); 60-60 draw earns no points; first team to target (default 4) game points wins the match
   - name: klaverjas
     description: Klaverjas (クラヴァヤス) - 4-player Dutch Jass-family trick-taking game on a 32-card deck (7,8,9,10,J,Q,K,A × 4 suits); 8 cards each; 2 teams (seats 0&2 vs 1&3); trump set by last dealt card; Jass ranking — trump J(Jas)>9(Nel)>A>10>K>Q>8>7, non-trump A>10>K>Q>J>9>8>7; trump card points J=20, 9=14, A=11, 10=10, K=4, Q=3, 8=0, 7=0; non-trump A=11, 10=10, K=4, Q=3, J=2, others=0 (total 152); last trick +10 bonus; Klaverjas obligation — must follow led suit, if void must trump, if trump on table must overtrump when able; Roem (melds) auto-detected at round start (3-card run=20, 4-card run=50, four-of-a-kind excl 7s/8s=100); scores accumulate; first team to target (default 1501) wins
+  - name: manille
+    description: Manille (マニーユ) - 4-player Belgian/French trick-taking game on a 32-card deck (7,8,9,10,J,Q,K,A × 4 suits); 8 cards each; 2 teams (seats 0&2 vs 1&3); trump set by last dealt card; reversed rank — 10(Manille)>A(Manillon)>K>Q>J>9>8>7 within every suit; card points 10=5, A=4, K=3, Q=2, J=1, 9/8/7=0 (total 60); must-follow + trump-conservation exemption when partner is already winning the trick; no overtrump obligation; no melds, no bidding, no last-trick bonus; card points accumulate; first team to target (default 101) wins
 
 paths:
   /blackjack/exec:
@@ -12850,6 +12852,86 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KlaverjasResponse'
+
+  /manille/exec:
+    post:
+      tags:
+        - manille
+      summary: Execute a Manille game command
+      description: |
+        Send a command to advance a Manille session identified by `sessionId`.
+        Manille is a 4-player (1 human + 3 CPU) Belgian/French trick-taking game on a
+        32-card deck (7,8,9,10,J,Q,K,A × 4 suits).
+        Each player receives 8 cards. Players sit in two fixed teams:
+        seats 0&2 (human is seat 0) vs seats 1&3.
+        The trump suit is set by the suit of the last card dealt.
+        Reversed rank (signature of Manille): within every suit, the strength order
+        (strongest to weakest) is 10(Manille) > A(Manillon) > K > Q > J > 9 > 8 > 7.
+        The same order applies inside the trump suit and inside each non-trump suit.
+        Card points: 10=5, A=4, K=3, Q=2, J=1, 9=0, 8=0, 7=0 (total 60 across all suits).
+        Must-follow + trump-conservation exemption: players must follow the led suit if able;
+        if void and the partner is not already winning the trick, they must play a trump if held;
+        if void and the partner is already winning the trick, they may keep their trumps and discard freely.
+        No overtrump obligation. No melds, no bidding, no last-trick bonus.
+        Card points accumulate across rounds; the first team to reach the target (default 101) wins the match.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Play      | `0`   | Eight tricks played under Manille follow rules |
+        | TrickEnd  | `1`   | Trick resolved; advance with `next` |
+        | RoundEnd  | `2`   | Round scored (card points); advance with `nextround` |
+        | GameEnd   | `3`   | A team reached the target score |
+
+        | Command           | Aliases                | Description |
+        |-------------------|------------------------|-------------|
+        | `reset`           | `r`                    | Start / restart the game (optional `config`) |
+        | `play`            | `p`                    | Play a card by `cardIndex` (Play phase) |
+        | `next`            | `n`                    | Advance to the next trick |
+        | `nextround`       | `nr`                   | Score the round and start the next |
+        | `setdifficulty`   | `sd`                   | Set CPU difficulty (requires `difficulty` 0-2) |
+        | `log`             | `l`                    | View action log |
+      operationId: manilleExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ManilleRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play the card at hand index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+              next:
+                summary: Advance to the next trick
+                value:
+                  command: next
+                  sessionId: my-session-001
+              nextround:
+                summary: Score the round and continue
+                value:
+                  command: nextround
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManilleResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManilleResponse'
 
 components:
   schemas:
@@ -27836,6 +27918,140 @@ components:
           items:
             type: integer
           description: Hand indices the human may legally play (Klaverjas obligation filtered)
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: Index of the winning team (-1 if undecided)
+        isHumanTurn:
+          type: boolean
+        hint:
+          type: object
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            targetScore:
+              type: integer
+
+    ManilleRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `play` (`p`),
+            `next` (`n`), `nextround` (`nr`), `setdifficulty` (`sd`), `log` (`l`).
+          enum: [reset, r, play, p, next, n, nextround, nr, setdifficulty, sd, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Hand index of the card to play. Required for the `play` command.
+          example: 0
+        difficulty:
+          type: integer
+          description: CPU difficulty level for `setdifficulty`. 0=Easy, 1=Normal, 2=Hard.
+          minimum: 0
+          maximum: 2
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            targetScore:
+              type: integer
+              minimum: 1
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    ManilleResponse:
+      type: object
+      description: Current state of the Manille game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              trickCount:
+                type: integer
+              teamScore:
+                type: integer
+                description: Cumulative score of this player's team
+        phase:
+          type: integer
+          description: "Game phase: 0=Play, 1=TrickEnd, 2=RoundEnd, 3=GameEnd"
+          enum: [0, 1, 2, 3]
+          example: 0
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        trumpSuit:
+          type: integer
+          description: "Current trump suit: 1=♠, 2=♣, 3=♥, 4=♦"
+          minimum: 1
+          maximum: 4
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        teamScores:
+          type: array
+          items:
+            type: integer
+          description: Cumulative scores per team (index 0 = Team A seats 0&2, 1 = Team B seats 1&3)
+        roundCardPoints:
+          type: array
+          items:
+            type: integer
+          description: Card points accumulated by each team in the current round
+        playableIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices the human may legally play (Manille follow rules filtered)
         gameEndFlag:
           type: boolean
         winnerTeam:

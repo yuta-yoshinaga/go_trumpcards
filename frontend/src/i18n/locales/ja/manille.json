@@ -1,0 +1,53 @@
+{
+  "phase": {
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetPoints": "目標ポイント",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "trick": "トリック {{n}}",
+  "trump": "切り札: {{suit}}",
+  "cards": "{{count}}枚",
+  "tricks": "{{count}}トリック",
+  "currentTrick": "現在のトリック",
+  "players": "プレイヤー",
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "yourTeam": "あなたのチーム",
+  "team": {
+    "a": "チームA",
+    "b": "チームB"
+  },
+  "teamScore": "{{team}}: {{score}}点",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド",
+  "roundResult": {
+    "title": "ラウンド結果",
+    "teamA": "チームAのカード点: {{points}}",
+    "teamB": "チームBのカード点: {{points}}"
+  },
+  "hintAvailable": "ヒント",
+  "hint": {
+    "lead_low": "低い札でリードして温存することを推奨",
+    "follow_win": "得点があるので勝てる札で取りに行く",
+    "follow_duck": "取れない／取る価値がないのでダック推奨",
+    "discard_low": "フォローできないので低い札を捨てる"
+  },
+  "tutorial": {
+    "trickDisplay": "現在のトリックです。リードされたスートにマストフォロー。フォローできないときは原則として切り札を出さなければなりませんが、相棒が既にそのトリックを取っている場合は切らなくても構いません。",
+    "playerHand": "あなたの手札です。出せるカードをクリックして選びます。",
+    "playButton": "カードを選んだら、このボタンで出します。マニーユに宣言はなく、行動はカードを出すことだけです。",
+    "info": "10(マニーユ)が最強、A(マニヨン)が次点、その後はK>Q>J>9>8>7。点数は 10=5, A=4, K=3, Q=2, J=1（合計60点）。切り札はラストに配られたカードのスートです。チームA(席0・2)対チームB(席1・3)でカード点を奪い合い、先に目標ポイント(初期値101)へ達したチームの勝ちです。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}

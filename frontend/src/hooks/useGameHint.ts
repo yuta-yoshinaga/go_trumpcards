@@ -53,6 +53,7 @@ import type {
   KlondikeResponse,
   LetItRideResponse,
   MacauResponse,
+  ManilleResponse,
   MemoryResponse,
   MightyResponse,
   MississippiStudResponse,
@@ -174,6 +175,7 @@ import { getKlaverjasHint } from '../utils/hints/klaverjasHint';
 import { getKlondikeHint } from '../utils/hints/klondikeHint';
 import { getLetitrideHint } from '../utils/hints/letitrideHint';
 import { getMacauHint } from '../utils/hints/macauHint';
+import { getManilleHint } from '../utils/hints/manilleHint';
 import { getMemoryHint } from '../utils/hints/memoryHint';
 import { getMightyHint } from '../utils/hints/mightyHint';
 import { getMississippiStudHint } from '../utils/hints/mississippiStudHint';
@@ -376,6 +378,7 @@ const hintFactories = {
   tute: (s) => getTuteHint(s as TuteResponse),
   sueca: (s) => getSuecaHint(s as SuecaResponse),
   klaverjas: (s) => getKlaverjasHint(s as KlaverjasResponse),
+  manille: (s) => getManilleHint(s as ManilleResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

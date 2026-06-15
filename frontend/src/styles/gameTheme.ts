@@ -58,6 +58,7 @@ export type GameKey =
   | 'tute'
   | 'sueca'
   | 'klaverjas'
+  | 'manille'
   | 'pitch'
   | 'twotenjack'
   | 'ohhell'
@@ -194,6 +195,10 @@ const KLAVERJAS = {
   bg: 'bg-game-bg-klaverjas',
   footer: 'bg-game-bg-klaverjas-dark border-white/20',
 } as const;
+const MANILLE = {
+  bg: 'bg-game-bg-manille',
+  footer: 'bg-game-bg-manille-dark border-white/20',
+} as const;
 
 export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Table games
@@ -245,6 +250,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   tute: TUTE,
   sueca: SUECA,
   klaverjas: KLAVERJAS,
+  manille: MANILLE,
   pitch: BLUE,
   twotenjack: BLUE,
   ohhell: BLUE,
