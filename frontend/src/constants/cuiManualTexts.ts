@@ -98,6 +98,7 @@ import piquet from '../../../docs/manual/cui/piquet.md?raw';
 import pitch from '../../../docs/manual/cui/pitch.md?raw';
 import poker from '../../../docs/manual/cui/poker.md?raw';
 import pokersquares from '../../../docs/manual/cui/pokersquares.md?raw';
+import preference from '../../../docs/manual/cui/preference.md?raw';
 import president from '../../../docs/manual/cui/president.md?raw';
 import pyramid from '../../../docs/manual/cui/pyramid.md?raw';
 import razz from '../../../docs/manual/cui/razz.md?raw';
@@ -212,6 +213,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/knockoutwhist': knockoutwhist,
   '/solowhist': solowhist,
   '/nap': nap,
+  '/preference': preference,
   '/memory': memory,
   '/mighty': mighty,
   '/napoleon': napoleon,

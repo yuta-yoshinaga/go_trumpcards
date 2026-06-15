@@ -720,6 +720,11 @@ func init() {
 			return usecase.NewNapInteractor(domain.NewDefaultNap(), new(presenter.NapWebPresenter))
 		},
 		controller.NewNapWebController)
+	BindWebControllerFor("preference",
+		func() usecase.PreferenceInteractorIF {
+			return usecase.NewPreferenceInteractor(domain.NewDefaultPreference(), new(presenter.PreferenceWebPresenter))
+		},
+		controller.NewPreferenceWebController)
 	BindWebControllerFor("easthaven",
 		func() usecase.EasthavenInteractorIF {
 			return usecase.NewEasthavenInteractor(domain.NewDefaultEasthaven(), new(presenter.EasthavenWebPresenter))

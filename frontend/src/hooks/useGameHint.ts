@@ -76,6 +76,7 @@ import type {
   PitchResponse,
   PokerResponse,
   PokerSquaresResponse,
+  PreferenceResponse,
   PresidentResponse,
   PyramidResponse,
   RedDogResponse,
@@ -204,6 +205,7 @@ import { getPinochleHint } from '../utils/hints/pinochleHint';
 import { getPitchHint } from '../utils/hints/pitchHint';
 import { getPokerHint } from '../utils/hints/pokerHint';
 import { getPokersquaresHint } from '../utils/hints/pokersquaresHint';
+import { getPreferenceHint } from '../utils/hints/preferenceHint';
 import { getPresidentHint } from '../utils/hints/presidentHint';
 import { getPyramidHint } from '../utils/hints/pyramidHint';
 import { getRazzHint } from '../utils/hints/razzHint';
@@ -394,6 +396,7 @@ const hintFactories = {
   knockoutwhist: (s) => getKnockoutWhistHint(s as KnockoutWhistResponse),
   solowhist: (s) => getSoloWhistHint(s as SoloWhistResponse),
   nap: (s) => getNapHint(s as NapResponse),
+  preference: (s) => getPreferenceHint(s as PreferenceResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

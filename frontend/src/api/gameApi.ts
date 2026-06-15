@@ -101,6 +101,7 @@ import type {
   PitchResponse,
   PokerResponse,
   PokerSquaresResponse,
+  PreferenceResponse,
   PresidentResponse,
   PyramidResponse,
   RedDogResponse,
@@ -312,6 +313,7 @@ const workerUrl: Record<string, string> = {
   knockoutwhist: WORKER_CLASSIC,
   solowhist: WORKER_CLASSIC,
   nap: WORKER_CLASSIC,
+  preference: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1868,6 +1870,43 @@ export const soloWhistApi = {
     }),
 };
 
+/** Configuration options for Préférence game settings. */
+export interface PreferenceConfigInput {
+  cpuDifficulty?: number;
+  targetPoints?: number;
+}
+
+/** Commands accepted by the Préférence /preference/exec endpoint. */
+export type PreferenceCommand = 'reset' | 'bid' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Préférence /preference/exec endpoint.
+ *
+ * Préférence is a Russian/Austrian 3-player 32-card trick-taker with a bidding
+ * phase. Each player bids once (Pass/Six/Misère/Seven/Eight); the highest bidder
+ * is the declarer who plays alone against the other 2 defenders.
+ *   - `bid` → `{ bid: number }` (0=Pass 1=Six 2=Misère 3=Seven 4=Eight)
+ *   - `play` → `{ cardIndex: number }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const preferenceApi = {
+  exec: (
+    command: PreferenceCommand,
+    opts?: {
+      bid?: number;
+      cardIndex?: number;
+      config?: PreferenceConfigInput;
+    },
+  ) =>
+    gameExec<PreferenceResponse>('preference', {
+      command,
+      bid: opts?.bid,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
 /** Configuration options for Nap (Napoleon) game settings. */
 export interface NapConfigInput {
   cpuDifficulty?: number;
@@ -3050,6 +3089,7 @@ const games = [
   'knockoutwhist',
   'solowhist',
   'nap',
+  'preference',
 ] as const;
 type Game = (typeof games)[number];
 

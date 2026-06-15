@@ -64,6 +64,7 @@ export type GameKey =
   | 'knockoutwhist'
   | 'solowhist'
   | 'nap'
+  | 'preference'
   | 'pitch'
   | 'twotenjack'
   | 'ohhell'
@@ -224,6 +225,10 @@ const NAP = {
   bg: 'bg-game-bg-nap',
   footer: 'bg-game-bg-nap-dark border-white/20',
 } as const;
+const PREFERENCE = {
+  bg: 'bg-game-bg-preference',
+  footer: 'bg-game-bg-preference-dark border-white/20',
+} as const;
 
 export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Table games
@@ -281,6 +286,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   knockoutwhist: KNOCKOUTWHIST,
   solowhist: SOLOWHIST,
   nap: NAP,
+  preference: PREFERENCE,
   pitch: BLUE,
   twotenjack: BLUE,
   ohhell: BLUE,

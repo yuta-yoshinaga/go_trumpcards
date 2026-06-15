@@ -2307,6 +2307,23 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"nap.helpSetDifficulty"},
 			})
 	}},
+	{Name: "preference", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPreferenceCuiController(usecase.NewPreferenceInteractor(
+				domain.NewDefaultPreference(), new(presenter.PreferenceCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "preference.helpTitle",
+				CommandKeys: []string{
+					"preference.helpBid",
+					"preference.helpPass",
+					"preference.helpPlay",
+					"preference.helpNext",
+					"preference.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"preference.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

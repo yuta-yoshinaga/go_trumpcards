@@ -9,6 +9,7 @@ import type {
   MariasResponse,
   MusResponse,
   NapResponse,
+  PreferenceResponse,
   SedmaResponse,
   SheepsheadResponse,
   SoloWhistResponse,
@@ -956,6 +957,59 @@ const baseSoloWhistState: SoloWhistResponse = {
  */
 export function makeSoloWhistState(overrides?: Partial<SoloWhistResponse>): SoloWhistResponse {
   return { ...baseSoloWhistState, ...overrides };
+}
+
+/** Base Préférence state used as the default for {@link makePreferenceState}. A 3-player Russian bidding trick-taker; defaults to a human Bid turn. */
+const basePreferenceState: PreferenceResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 10,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      score: 0,
+      isDeclarer: false,
+    },
+    { id: 1, isHuman: false, cardCount: 10, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+    { id: 2, isHuman: false, cardCount: 10, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 2,
+  declarerIdx: -1,
+  contract: 0,
+  trumpSuit: 0,
+  bids: [0, 0, 0],
+  currentTrick: [],
+  playerScores: [0, 0, 0],
+  roundTricks: [0, 0, 0],
+  playableIndices: [],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: false,
+  isHumanBidTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 30 },
+};
+
+/**
+ * Creates a {@link PreferenceResponse} with sensible defaults (a human Bid turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial PreferenceResponse fields to override.
+ * @returns A complete PreferenceResponse suitable for use in tests.
+ */
+export function makePreferenceState(overrides?: Partial<PreferenceResponse>): PreferenceResponse {
+  return { ...basePreferenceState, ...overrides };
 }
 
 /** Base Nap (Napoleon) state used as the default for {@link makeNapState}. Defaults to a human Bid turn. */
