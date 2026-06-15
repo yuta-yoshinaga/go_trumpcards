@@ -1,0 +1,54 @@
+{
+  "phase": {
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetPoints": "目標ポイント",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "trick": "トリック {{n}}",
+  "trump": "切り札: {{suit}}",
+  "cards": "{{count}}枚",
+  "tricks": "{{count}}トリック",
+  "currentTrick": "現在のトリック",
+  "players": "プレイヤー",
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "yourTeam": "あなたのチーム",
+  "team": {
+    "a": "チームA",
+    "b": "チームB"
+  },
+  "teamScore": "{{team}}: {{score}}点",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド",
+  "roundResult": {
+    "title": "ラウンド結果",
+    "teamA": "チームAのカード点: {{points}}",
+    "teamB": "チームBのカード点: {{points}}",
+    "roem": "Roem(ボーナス): A={{roemA}} B={{roemB}}"
+  },
+  "hintAvailable": "ヒント",
+  "hint": {
+    "lead_low": "低い札でリードして温存することを推奨",
+    "follow_win": "得点があるので勝てる札で取りに行く",
+    "follow_duck": "取れない／取る価値がないのでダック推奨",
+    "discard_low": "フォローできないので低い札を捨てる"
+  },
+  "tutorial": {
+    "trickDisplay": "現在のトリックです。リードされたスートにマストフォロー。切り札では強制的に追い越さなければなりません。",
+    "playerHand": "あなたの手札です。出せるカードをクリックして選びます。",
+    "playButton": "カードを選んだら、このボタンで出します。クラヴァヤスに宣言はなく、行動はカードを出すことだけです。",
+    "info": "J(切り札)=20, 9(切り札)=14, A=11, 10=10, K=4, Q=3, J=2。連続札やマリッジでRoem(ボーナス)が付きます。チームA(席0・2)対チームB(席1・3)でカード点+Roemを奪い合い、先に目標ポイントへ達したチームの勝ちです。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}

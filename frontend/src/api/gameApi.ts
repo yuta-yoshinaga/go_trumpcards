@@ -68,6 +68,7 @@ import type {
   HighCardFlushResponse,
   HoldemResponse,
   IndianPokerResponse,
+  KlaverjasResponse,
   KlondikeResponse,
   LetItRideResponse,
   MacauResponse,
@@ -298,6 +299,7 @@ const workerUrl: Record<string, string> = {
   mus: WORKER_CASINO,
   tute: WORKER_CASINO,
   sueca: WORKER_CASINO,
+  klaverjas: WORKER_CASINO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1645,6 +1647,39 @@ export const suecaApi = {
     }),
 };
 
+/** Configuration options for Klaverjas game settings. */
+export interface KlaverjasConfigInput {
+  cpuDifficulty?: number;
+  targetPoints?: number;
+}
+
+/** Commands accepted by the Klaverjas /klaverjas/exec endpoint. */
+export type KlaverjasCommand = 'reset' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Klaverjas /klaverjas/exec endpoint.
+ *
+ * Klaverjas is a Dutch 4-player (2 vs 2) trump trick-taker with Roem (run/marriage)
+ * bonuses. The only play action is playing a card; there are no declarations.
+ *   - `play` → `{ cardIndex: number }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const klaverjasApi = {
+  exec: (
+    command: KlaverjasCommand,
+    opts?: {
+      cardIndex?: number;
+      config?: KlaverjasConfigInput;
+    },
+  ) =>
+    gameExec<KlaverjasResponse>('klaverjas', {
+      command,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
 /** Configuration options for Tute game settings. */
 export interface TuteConfigInput {
   cpuDifficulty?: number;
@@ -2783,6 +2818,7 @@ const games = [
   'mus',
   'tute',
   'sueca',
+  'klaverjas',
 ] as const;
 type Game = (typeof games)[number];
 

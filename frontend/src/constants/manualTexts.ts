@@ -66,6 +66,7 @@ import holdem from '../../../docs/manual/web/holdem.md?raw';
 import indianpoker from '../../../docs/manual/web/indianpoker.md?raw';
 import irishpoker from '../../../docs/manual/web/irishpoker.md?raw';
 import jokerpoker from '../../../docs/manual/web/jokerpoker.md?raw';
+import klaverjas from '../../../docs/manual/web/klaverjas.md?raw';
 import klondike from '../../../docs/manual/web/klondike.md?raw';
 import letitride from '../../../docs/manual/web/letitride.md?raw';
 import macau from '../../../docs/manual/web/macau.md?raw';
@@ -234,6 +235,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/sheepshead': sheepshead,
   '/doppelkopf': doppelkopf,
   '/sueca': sueca,
+  '/klaverjas': klaverjas,
   '/tute': tute,
   '/pitch': pitch,
   '/spanish21': spanish21,
