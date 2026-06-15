@@ -1,0 +1,71 @@
+{
+  "phase": {
+    "bid": "Bid",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetPoints": "Target Chips",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "trump": "Trump: {{suit}}",
+  "noTrump": "none",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "currentTrick": "Current Trick",
+  "trickEmpty": "(no cards yet)",
+  "players": "Players",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "declarerBadge": "Declarer",
+  "score": "Chips: {{score}}",
+  "playerScore": "{{name}}: {{score}} chips",
+  "contract": "Contract: {{contract}}",
+  "contractUndecided": "Contract: undecided",
+  "declarerLine": "Declarer: {{name}} — {{contract}}",
+  "bidLabel": "Bid",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "target": "Target: {{points}} chips",
+  "bidPrompt": "Place a bid (only a higher bid is allowed):",
+  "bid": {
+    "pass": "Pass",
+    "two": "Two",
+    "three": "Three",
+    "four": "Four",
+    "nap": "Nap"
+  },
+  "contractName": {
+    "pass": "Pass",
+    "two": "Two (2 tricks)",
+    "three": "Three (3 tricks)",
+    "four": "Four (4 tricks)",
+    "nap": "Nap (all 5 tricks, high stakes)"
+  },
+  "roundResult": {
+    "title": "Round Result",
+    "tricks": "{{name}} tricks: {{count}}"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "lead_high": "Lead a high card to take the trick",
+    "follow_win": "Win this trick",
+    "follow_duck": "Cannot/should not win — duck",
+    "discard_low": "Cannot follow suit — discard a low card"
+  },
+  "tutorial": {
+    "info": "Round, contract (declarer and declared trick count), trump, and each player's chips are shown here. The first player to reach the target chips (default 20) wins. The ★ marks the declarer.",
+    "trick": "Cards played to the current trick appear here. You must follow the led suit, ace high. The highest card wins the trick. There are 5 tricks in all.",
+    "hand": "This is your hand (5 cards). During play, click a playable card and press Play.",
+    "actions": "In the bidding phase, buttons appear for Pass / Two (2 tricks) / Three (3 tricks) / Four (4 tricks) / Nap (all 5 tricks, high stakes). Only a bid higher than the current highest is selectable. The highest bidder becomes the declarer, picks trump, and leads. Make the bid to win chips (a successful Nap wins 10 chips); miss it and the opponents each win the bid value (a failed Nap costs 5 chips each)."
+  }
+}

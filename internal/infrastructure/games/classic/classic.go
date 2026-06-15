@@ -327,4 +327,12 @@ func init() {
 			return usecase.RestoreKnockoutWhistInteractor(data, new(presenter.KnockoutWhistWebPresenter))
 		},
 		controller.NewKnockoutWhistWebControllerWithProvider)
+	games.RegisterKVGame("nap", games.CategoryClassic,
+		func() usecase.NapInteractorIF {
+			return usecase.NewNapInteractor(domain.NewDefaultNap(), new(presenter.NapWebPresenter))
+		},
+		func(data []byte) (usecase.NapInteractorIF, error) {
+			return usecase.RestoreNapInteractor(data, new(presenter.NapWebPresenter))
+		},
+		controller.NewNapWebControllerWithProvider)
 }

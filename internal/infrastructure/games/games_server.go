@@ -715,6 +715,11 @@ func init() {
 			return usecase.NewKnockoutWhistInteractor(domain.NewDefaultKnockoutWhist(), new(presenter.KnockoutWhistWebPresenter))
 		},
 		controller.NewKnockoutWhistWebController)
+	BindWebControllerFor("nap",
+		func() usecase.NapInteractorIF {
+			return usecase.NewNapInteractor(domain.NewDefaultNap(), new(presenter.NapWebPresenter))
+		},
+		controller.NewNapWebController)
 	BindWebControllerFor("easthaven",
 		func() usecase.EasthavenInteractorIF {
 			return usecase.NewEasthavenInteractor(domain.NewDefaultEasthaven(), new(presenter.EasthavenWebPresenter))

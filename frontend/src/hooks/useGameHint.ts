@@ -62,6 +62,7 @@ import type {
   MonteCarloResponse,
   MusResponse,
   NapoleonResponse,
+  NapResponse,
   NertzResponse,
   OhHellResponse,
   OldMaidResponse,
@@ -187,6 +188,7 @@ import { getMightyHint } from '../utils/hints/mightyHint';
 import { getMississippiStudHint } from '../utils/hints/mississippiStudHint';
 import { getMonteCarloHint } from '../utils/hints/montecarloHint';
 import { getMusHint } from '../utils/hints/musHint';
+import { getNapHint } from '../utils/hints/napHint';
 import { getNapoleonHint } from '../utils/hints/napoleonHint';
 import { getNertzHint } from '../utils/hints/nertzHint';
 import { getOhHellHint } from '../utils/hints/ohhellHint';
@@ -391,6 +393,7 @@ const hintFactories = {
   sedma: (s) => getSedmaHint(s as SedmaResponse),
   knockoutwhist: (s) => getKnockoutWhistHint(s as KnockoutWhistResponse),
   solowhist: (s) => getSoloWhistHint(s as SoloWhistResponse),
+  nap: (s) => getNapHint(s as NapResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

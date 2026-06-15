@@ -8,6 +8,7 @@ import type {
   ManilleResponse,
   MariasResponse,
   MusResponse,
+  NapResponse,
   SedmaResponse,
   SheepsheadResponse,
   SoloWhistResponse,
@@ -955,4 +956,58 @@ const baseSoloWhistState: SoloWhistResponse = {
  */
 export function makeSoloWhistState(overrides?: Partial<SoloWhistResponse>): SoloWhistResponse {
   return { ...baseSoloWhistState, ...overrides };
+}
+
+/** Base Nap (Napoleon) state used as the default for {@link makeNapState}. Defaults to a human Bid turn. */
+const baseNapState: NapResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 5,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      score: 0,
+      isDeclarer: false,
+    },
+    { id: 1, isHuman: false, cardCount: 5, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+    { id: 2, isHuman: false, cardCount: 5, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+    { id: 3, isHuman: false, cardCount: 5, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  declarerIdx: -1,
+  contract: 0,
+  trumpSuit: 0,
+  bids: [0, 0, 0, 0],
+  currentTrick: [],
+  playerScores: [0, 0, 0, 0],
+  roundTricks: [0, 0, 0, 0],
+  playableIndices: [],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: false,
+  isHumanBidTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 20 },
+};
+
+/**
+ * Creates a {@link NapResponse} with sensible defaults (a human Bid turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial NapResponse fields to override.
+ * @returns A complete NapResponse suitable for use in tests.
+ */
+export function makeNapState(overrides?: Partial<NapResponse>): NapResponse {
+  return { ...baseNapState, ...overrides };
 }

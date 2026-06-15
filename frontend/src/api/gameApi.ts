@@ -81,6 +81,7 @@ import type {
   MonteCarloResponse,
   MusResponse,
   NapoleonResponse,
+  NapResponse,
   NertzConfig as NertzConfigType,
   NertzMoveZone,
   NertzResponse,
@@ -310,6 +311,7 @@ const workerUrl: Record<string, string> = {
   sedma: WORKER_CLASSIC,
   knockoutwhist: WORKER_CLASSIC,
   solowhist: WORKER_CLASSIC,
+  nap: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1866,6 +1868,43 @@ export const soloWhistApi = {
     }),
 };
 
+/** Configuration options for Nap (Napoleon) game settings. */
+export interface NapConfigInput {
+  cpuDifficulty?: number;
+  targetPoints?: number;
+}
+
+/** Commands accepted by the Nap /nap/exec endpoint. */
+export type NapCommand = 'reset' | 'bid' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Nap (Napoleon) /nap/exec endpoint.
+ *
+ * Nap is a British 4-player 5-card gambling trick-taker with a bidding phase.
+ * Each player bids once (Pass/Two/Three/Four/Nap = how many of the 5 tricks they
+ * will take); the highest bidder becomes the declarer who picks trump and leads.
+ *   - `bid` → `{ bid: number }` (0=Pass 2=Two 3=Three 4=Four 5=Nap)
+ *   - `play` → `{ cardIndex: number }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const napApi = {
+  exec: (
+    command: NapCommand,
+    opts?: {
+      bid?: number;
+      cardIndex?: number;
+      config?: NapConfigInput;
+    },
+  ) =>
+    gameExec<NapResponse>('nap', {
+      command,
+      bid: opts?.bid,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
 /** Configuration options for Tute game settings. */
 export interface TuteConfigInput {
   cpuDifficulty?: number;
@@ -3010,6 +3049,7 @@ const games = [
   'sedma',
   'knockoutwhist',
   'solowhist',
+  'nap',
 ] as const;
 type Game = (typeof games)[number];
 

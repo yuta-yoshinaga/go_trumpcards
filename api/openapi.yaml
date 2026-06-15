@@ -299,6 +299,8 @@ tags:
     description: Solo Whist (ソロ・ホイスト) - 4-player British trick-taking game on a standard 52-card deck (A,2-10,J,Q,K × 4 suits); 13 cards each, 13 tricks per round; bidding phase first (Pass/Solo/Misère/Abundance, order lowest-to-highest); highest bidder becomes the Declarer and plays alone vs 3 Defenders; trump = Declarer's longest suit for Solo/Abundance (auto-declared); Misère has no trump; rank A>K>Q>J>10>9>8>7>6>5>4>3>2; must-follow rule — follow led suit if able; Declarer wins contract value (Solo=2, Misère=3, Abundance=4 game pts) on success; each Defender wins that value on failure; first to target (default 21 game pts) wins
   - name: knockoutwhist
     description: Knockout Whist (ノックアウト・ホイスト) — 4-player British survival trick-taking game on a standard 52-card deck (A,2-10,J,Q,K × 4 suits); hand size shrinks each round (round 1 = 7 cards, round 2 = 6 cards, …, round 7 = 1 card; handSize = 8 − roundNumber); rank A>K>Q>J>10>9>8>7>6>5>4>3>2; trump = previous round winner's longest suit (auto-selected; round-1 leader is player to dealer's left); must-follow — follow led suit if able, else any card; highest trump wins, else highest led-suit card wins; Dogbone rule — a player who wins zero tricks spends 1 Dogbone token (each player starts with 1) to survive the round; if a player has no Dogbone left and wins zero tricks they are eliminated; last player remaining wins (or the winner of the final 1-card round)
+  - name: nap
+    description: Nap / Napoleon (ナップ) — 4-player British trick-taking gambling game on a standard 52-card deck (A,2-10,J,Q,K × 4 suits); 5 cards each, 5 tricks per round; rank A>K>Q>J>10>9>8>7>6>5>4>3>2; bidding phase first (Pass/Two/Three/Four/Nap, order lowest-to-highest); highest bidder becomes the Declarer and plays alone vs 3 Defenders; trump = Declarer's longest suit (auto-declared); Declarer leads the first trick; must-follow rule — follow led suit if able; chip scoring — Two/Three/Four pay face value on success and face value each to Defenders on failure; Nap pays 10 on success and 5 each to Defenders on failure; first to target (default 20 chips) wins
 
 paths:
   /blackjack/exec:
@@ -13279,6 +13281,104 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KnockoutWhistResponse'
+
+  /nap/exec:
+    post:
+      tags:
+        - nap
+      summary: Execute a Nap (Napoleon) game command
+      description: |
+        Send a command to advance a Nap session identified by `sessionId`.
+        Nap (Napoleon) is a 4-player (1 human + 3 CPU) British trick-taking gambling game on a
+        standard 52-card deck (A,2-10,J,Q,K × 4 suits). Each player is dealt 5 cards and
+        5 tricks are played per round.
+        Rank (strongest to weakest): A > K > Q > J > 10 > 9 > 8 > 7 > 6 > 5 > 4 > 3 > 2.
+        Bidding phase: starting from the dealer's left, each player bids once choosing from
+        Pass / Two (≥2 tricks, value 2) / Three (≥3 tricks, value 3) /
+        Four (≥4 tricks, value 4) / Nap (all 5 tricks, success value 10, failure value 5).
+        A non-pass bid must outrank the current highest (Pass < Two < Three < Four < Nap).
+        The highest bidder becomes the Declarer and plays alone against the three Defenders.
+        If everyone passes, the round is void and redealt.
+        Trump: the Declarer's longest suit is auto-declared as trump (simplified).
+        The Declarer leads the first trick of each round.
+        Must-follow: players must follow the led suit if able; otherwise any card may be played.
+        Highest trump wins; if no trump, highest card of the led suit wins.
+        Chip scoring: Declarer wins at least bid tricks → gains contract value chips
+        (Two=2, Three=3, Four=4, Nap=10); Declarer fails → each Defender gains contract value
+        (Two/Three/Four) or 5 chips (failed Nap).
+        Match: first player to reach the target (default 20 chips) wins.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Bid       | `0`   | Bidding phase; each player bids once |
+        | Play      | `1`   | Five tricks played under must-follow rules |
+        | TrickEnd  | `2`   | Trick resolved; advance with `next` |
+        | RoundEnd  | `3`   | Round scored; advance with `nextround` |
+        | GameEnd   | `4`   | A player reached the target chip count |
+
+        | Command           | Aliases                | Description |
+        |-------------------|------------------------|-------------|
+        | `reset`           | `r`                    | Start / restart the game (optional `config`) |
+        | `bid`             | —                      | Place a bid (requires `bidType` 0=Pass 2=Two 3=Three 4=Four 5=Nap) |
+        | `pass`            | —                      | Pass the bid (equivalent to `bid` with bidType 0) |
+        | `play`            | —                      | Play a card by `cardIndex` (Play phase) |
+        | `next`            | `n`                    | Advance to the next trick |
+        | `nextround`       | `nr`                   | Score the round and start the next |
+        | `setdifficulty`   | `sd`                   | Set CPU difficulty (requires `difficulty` 0-2) |
+        | `log`             | `l`                    | View action log |
+      operationId: napExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NapRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Bid Three (bidType 3)
+                value:
+                  command: bid
+                  bidType: 3
+                  sessionId: my-session-001
+              pass:
+                summary: Pass the bid
+                value:
+                  command: pass
+                  sessionId: my-session-001
+              play:
+                summary: Play the card at hand index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+              next:
+                summary: Advance to the next trick
+                value:
+                  command: next
+                  sessionId: my-session-001
+              nextround:
+                summary: Score the round and continue
+                value:
+                  command: nextround
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NapResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NapResponse'
 
 components:
   schemas:
@@ -28988,4 +29088,158 @@ components:
           type: object
           properties:
             cpuDifficulty:
+              type: integer
+
+    NapRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `bid`, `pass`,
+            `play`, `next` (`n`), `nextround` (`nr`), `setdifficulty` (`sd`), `log` (`l`).
+          enum: [reset, r, bid, pass, play, next, n, nextround, nr, setdifficulty, sd, log, l]
+          example: reset
+        bidType:
+          type: integer
+          description: Bid contract type for the `bid` command. 0=Pass, 2=Two, 3=Three, 4=Four, 5=Nap.
+          enum: [0, 2, 3, 4, 5]
+        cardIndex:
+          type: integer
+          description: Hand index of the card to play. Required for the `play` command.
+          example: 0
+        difficulty:
+          type: integer
+          description: CPU difficulty level for `setdifficulty`. 0=Easy, 1=Normal, 2=Hard.
+          minimum: 0
+          maximum: 2
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            targetScore:
+              type: integer
+              minimum: 1
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    NapResponse:
+      type: object
+      description: Current state of the Nap game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              isDeclarer:
+                type: boolean
+                description: True if this player is the Declarer for the current round
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              score:
+                type: integer
+                description: Cumulative chip count for this player
+        phase:
+          type: integer
+          description: "Game phase: 0=Bid, 1=Play, 2=TrickEnd, 3=RoundEnd, 4=GameEnd"
+          enum: [0, 1, 2, 3, 4]
+          example: 0
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        declarerIdx:
+          type: integer
+          description: Index of the Declarer player for the current round (-1 if not yet determined)
+        contract:
+          type: integer
+          description: "Current contract bid: 0=None/Pass, 2=Two, 3=Three, 4=Four, 5=Nap"
+          enum: [0, 2, 3, 4, 5]
+        trumpSuit:
+          type: integer
+          description: "Current trump suit: 1=Spades, 2=Clubs, 3=Hearts, 4=Diamonds (0 if not yet determined)"
+          minimum: 0
+          maximum: 4
+        bids:
+          type: array
+          items:
+            type: integer
+          description: Bid placed by each player in seat order (0=Pass, 2=Two, 3=Three, 4=Four, 5=Nap; -1=not yet bid)
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        playerScores:
+          type: array
+          items:
+            type: integer
+          description: Cumulative chip count per player (index = player seat)
+        roundTricks:
+          type: array
+          items:
+            type: integer
+          description: Number of tricks won by each player in the current round (index = player seat)
+        playableIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices the human may legally play (must-follow filtered)
+        gameEndFlag:
+          type: boolean
+        winnerPlayer:
+          type: integer
+          description: Index of the winning player (-1 if undecided)
+        isHumanTurn:
+          type: boolean
+        isHumanBidTurn:
+          type: boolean
+          description: True when it is the human's turn to bid
+        hint:
+          type: object
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            targetScore:
               type: integer
