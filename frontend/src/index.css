@@ -60,6 +60,9 @@
   /* Manille — French/Belgian royal bleu (brighter & cooler than BLUE's navy). */
   --color-game-bg-manille: #2451a8;
   --color-game-bg-manille-dark: #18356f;
+  /* Mariáš — Czech/Slovak Bohemian-garnet crimson, distinct from Tute's brown-red and Klaverjas's orange. */
+  --color-game-bg-marias: #8c1c3a;
+  --color-game-bg-marias-dark: #5e1226;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;

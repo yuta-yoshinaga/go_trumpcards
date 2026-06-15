@@ -295,4 +295,12 @@ func init() {
 			return usecase.RestoreManilleInteractor(data, new(presenter.ManilleWebPresenter))
 		},
 		controller.NewManilleWebControllerWithProvider)
+	games.RegisterKVGame("marias", games.CategoryClassic,
+		func() usecase.MariasInteractorIF {
+			return usecase.NewMariasInteractor(domain.NewDefaultMarias(), new(presenter.MariasWebPresenter))
+		},
+		func(data []byte) (usecase.MariasInteractorIF, error) {
+			return usecase.RestoreMariasInteractor(data, new(presenter.MariasWebPresenter))
+		},
+		controller.NewMariasWebControllerWithProvider)
 }

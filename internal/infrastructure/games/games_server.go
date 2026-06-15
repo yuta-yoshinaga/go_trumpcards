@@ -695,6 +695,11 @@ func init() {
 			return usecase.NewManilleInteractor(domain.NewDefaultManille(), new(presenter.ManilleWebPresenter))
 		},
 		controller.NewManilleWebController)
+	BindWebControllerFor("marias",
+		func() usecase.MariasInteractorIF {
+			return usecase.NewMariasInteractor(domain.NewDefaultMarias(), new(presenter.MariasWebPresenter))
+		},
+		controller.NewMariasWebController)
 	BindWebControllerFor("easthaven",
 		func() usecase.EasthavenInteractorIF {
 			return usecase.NewEasthavenInteractor(domain.NewDefaultEasthaven(), new(presenter.EasthavenWebPresenter))

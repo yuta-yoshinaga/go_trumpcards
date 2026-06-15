@@ -5,6 +5,7 @@ import type {
   HeartsResponse,
   KlaverjasResponse,
   ManilleResponse,
+  MariasResponse,
   MusResponse,
   SheepsheadResponse,
   SpadesResponse,
@@ -745,4 +746,56 @@ const baseManilleState: ManilleResponse = {
  */
 export function makeManilleState(overrides?: Partial<ManilleResponse>): ManilleResponse {
   return { ...baseManilleState, ...overrides };
+}
+
+/** Base Mariáš state used as the default for {@link makeMariasState}. Defaults to a human Play turn. */
+const baseMariasState: MariasResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 10,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      score: 0,
+      isSoloist: true,
+    },
+    { id: 1, isHuman: false, cardCount: 10, cards: [], trickCount: 0, score: 0, isSoloist: false },
+    { id: 2, isHuman: false, cardCount: 10, cards: [], trickCount: 0, score: 0, isSoloist: false },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 2,
+  soloistIdx: 0,
+  trumpSuit: 3,
+  currentTrick: [],
+  playerScores: [0, 0, 0],
+  roundCardPoints: [0, 0, 0],
+  roundMarriage: [0, 0, 0],
+  lastTrickWinner: -1,
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 10 },
+};
+
+/**
+ * Creates a {@link MariasResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial MariasResponse fields to override.
+ * @returns A complete MariasResponse suitable for use in tests.
+ */
+export function makeMariasState(overrides?: Partial<MariasResponse>): MariasResponse {
+  return { ...baseMariasState, ...overrides };
 }

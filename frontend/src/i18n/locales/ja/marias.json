@@ -1,0 +1,56 @@
+{
+  "phase": {
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetPoints": "目標ポイント",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "trick": "トリック {{n}}",
+  "trump": "切り札: {{suit}}",
+  "cards": "{{count}}枚",
+  "tricks": "{{count}}トリック",
+  "currentTrick": "現在のトリック",
+  "players": "プレイヤー",
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "role": {
+    "soloist": "ソリスト",
+    "defender": "ディフェンダー"
+  },
+  "soloistBadge": "ソリスト",
+  "score": "得点: {{score}}",
+  "playerScore": "{{name}}: {{score}}点",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド",
+  "target": "目標: {{points}}点",
+  "lastTrickBonus": "ラストトリック +10",
+  "roundResult": {
+    "title": "ラウンド結果",
+    "cardPoints": "{{name}} カード点: {{points}}",
+    "marriage": "{{name}} マリッジ: {{points}}"
+  },
+  "hintAvailable": "ヒント",
+  "hint": {
+    "lead_low": "低い札でリードして温存することを推奨",
+    "follow_win": "得点があるので勝てる札で取りに行く",
+    "follow_duck": "取れない／取る価値がないのでダック推奨",
+    "discard_low": "フォローできないので低い札を捨てる"
+  },
+  "tutorial": {
+    "trickDisplay": "現在のトリックです。リードされたスートにマストフォロー。フォローできないときは切り札を出さなければなりません。強さは A>10>K>Q>J>9>8>7。",
+    "playerHand": "あなたの手札です。出せるカードをクリックして選びます。配られた手札に同スートのK+Qがあるとマリッジとして20点（切り札なら40点）が入ります。",
+    "playButton": "カードを選んだら、このボタンで出します。マリアーシュに宣言はなく、行動はカードを出すことだけです。",
+    "info": "毎ラウンド交代するソリスト1人が、2人のディフェンダーを相手に戦います（★がソリスト）。切り札はソリストの最長スートが自動で選ばれます。点数は A=11, 10=10, K=4, Q=3, J=2（合計120点）。最後の10トリック目を取ると+10点。ソリスト側がディフェンダー合計を上回ればソリストの勝ち、負けるとディフェンダーの得点は2倍。先に目標ポイント（初期値10）へ達したプレイヤーの勝ちです。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}

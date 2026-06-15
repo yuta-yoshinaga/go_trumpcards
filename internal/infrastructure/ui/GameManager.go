@@ -2228,6 +2228,21 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"manille.helpSetDifficulty"},
 			})
 	}},
+	{Name: "marias", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewMariasCuiController(usecase.NewMariasInteractor(
+				domain.NewDefaultMarias(), new(presenter.MariasCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "marias.helpTitle",
+				CommandKeys: []string{
+					"marias.helpPlay",
+					"marias.helpNext",
+					"marias.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"marias.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

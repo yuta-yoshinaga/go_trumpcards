@@ -54,6 +54,7 @@ import type {
   LetItRideResponse,
   MacauResponse,
   ManilleResponse,
+  MariasResponse,
   MemoryResponse,
   MightyResponse,
   MississippiStudResponse,
@@ -176,6 +177,7 @@ import { getKlondikeHint } from '../utils/hints/klondikeHint';
 import { getLetitrideHint } from '../utils/hints/letitrideHint';
 import { getMacauHint } from '../utils/hints/macauHint';
 import { getManilleHint } from '../utils/hints/manilleHint';
+import { getMariasHint } from '../utils/hints/mariasHint';
 import { getMemoryHint } from '../utils/hints/memoryHint';
 import { getMightyHint } from '../utils/hints/mightyHint';
 import { getMississippiStudHint } from '../utils/hints/mississippiStudHint';
@@ -379,6 +381,7 @@ const hintFactories = {
   sueca: (s) => getSuecaHint(s as SuecaResponse),
   klaverjas: (s) => getKlaverjasHint(s as KlaverjasResponse),
   manille: (s) => getManilleHint(s as ManilleResponse),
+  marias: (s) => getMariasHint(s as MariasResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */
