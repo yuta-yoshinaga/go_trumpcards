@@ -215,9 +215,9 @@ var registry = []*Game{
 	{Name: "sixcardgolf", Category: CategoryClassic},
 	// Dou Dizhu is bucketed into the casino worker purely for binary-size
 	// balancing (#2126). Category is only a size bucket.
-	{Name: "doudizhu", Category: CategoryCasino},
+	{Name: "doudizhu", Category: CategoryClassic},
 	{Name: "truco", Category: CategoryClassic},
-	{Name: "scopa", Category: CategoryCasino},
+	{Name: "scopa", Category: CategoryClassic},
 	{Name: "acesup", Category: CategorySolo},
 	// Barbu is a classic compendium trick-taking game, but it is bucketed into
 	// the solo worker because the classic worker is at the 1 MB gzip free-tier
@@ -286,7 +286,7 @@ var registry = []*Game{
 	// the classic worker, but that worker is at the 1 MB gzip free-tier limit, so
 	// Tichu is bucketed into the casino worker. Category is purely a binary-size
 	// bucket here (see package doc).
-	{Name: "tichu", Category: CategoryCasino},
+	{Name: "tichu", Category: CategoryClassic},
 	// Baker's Game is FreeCell's same-suit ancestor; it reuses the FreeCell
 	// engine (domain.NewDefaultBakersGame) and ships in the solo worker.
 	{Name: "bakersgame", Category: CategorySolo},

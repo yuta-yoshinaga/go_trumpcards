@@ -351,4 +351,29 @@ func init() {
 			return usecase.RestoreSpoilFiveInteractor(data, new(presenter.SpoilFiveWebPresenter))
 		},
 		controller.NewSpoilFiveWebControllerWithProvider)
+	games.RegisterKVGame("doudizhu", games.CategoryClassic,
+		func() usecase.DoudizhuInteractorIF {
+			return usecase.NewDoudizhuInteractor(domain.NewDefaultDoudizhu(), new(presenter.DoudizhuWebPresenter))
+		},
+		func(data []byte) (usecase.DoudizhuInteractorIF, error) {
+			return usecase.RestoreDoudizhuInteractor(data, new(presenter.DoudizhuWebPresenter))
+		},
+		controller.NewDoudizhuWebControllerWithProvider)
+	games.RegisterKVGame("tichu", games.CategoryClassic,
+		func() usecase.TichuInteractorIF {
+			return usecase.NewTichuInteractor(domain.NewDefaultTichu(), new(presenter.TichuWebPresenter))
+		},
+		func(data []byte) (usecase.TichuInteractorIF, error) {
+			return usecase.RestoreTichuInteractor(data, new(presenter.TichuWebPresenter))
+		},
+		controller.NewTichuWebControllerWithProvider)
+	games.RegisterKVGame("scopa", games.CategoryClassic,
+		func() usecase.ScopaInteractorIF {
+			return usecase.NewScopaInteractor(domain.NewDefaultScopa(), new(presenter.ScopaWebPresenter))
+		},
+		func(data []byte) (usecase.ScopaInteractorIF, error) {
+			return usecase.RestoreScopaInteractor(data, new(presenter.ScopaWebPresenter))
+		},
+		controller.NewScopaWebControllerWithProvider)
+
 }

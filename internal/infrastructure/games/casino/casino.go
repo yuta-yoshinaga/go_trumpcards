@@ -321,14 +321,6 @@ func init() {
 	// Scopa is a classic fishing game, but it is bucketed into the casino
 	// worker because the classic worker is at the 1 MB gzip free-tier limit.
 	// Workers are pure binary-size partitions with no user-facing meaning.
-	games.RegisterKVGame("scopa", games.CategoryCasino,
-		func() usecase.ScopaInteractorIF {
-			return usecase.NewScopaInteractor(domain.NewDefaultScopa(), new(presenter.ScopaWebPresenter))
-		},
-		func(data []byte) (usecase.ScopaInteractorIF, error) {
-			return usecase.RestoreScopaInteractor(data, new(presenter.ScopaWebPresenter))
-		},
-		controller.NewScopaWebControllerWithProvider)
 	games.RegisterKVGame("mighty", games.CategoryCasino,
 		func() usecase.MightyInteractorIF {
 			return usecase.NewMightyInteractor(domain.NewDefaultMighty(), new(presenter.MightyWebPresenter))
@@ -373,15 +365,6 @@ func init() {
 			return usecase.RestoreTarneebInteractor(data, new(presenter.TarneebWebPresenter))
 		},
 		controller.NewTarneebWebControllerWithProvider)
-
-	games.RegisterKVGame("doudizhu", games.CategoryCasino,
-		func() usecase.DoudizhuInteractorIF {
-			return usecase.NewDoudizhuInteractor(domain.NewDefaultDoudizhu(), new(presenter.DoudizhuWebPresenter))
-		},
-		func(data []byte) (usecase.DoudizhuInteractorIF, error) {
-			return usecase.RestoreDoudizhuInteractor(data, new(presenter.DoudizhuWebPresenter))
-		},
-		controller.NewDoudizhuWebControllerWithProvider)
 
 	games.RegisterKVGame("belote", games.CategoryCasino,
 		func() usecase.BeloteInteractorIF {
@@ -447,14 +430,6 @@ func init() {
 			return usecase.RestoreSuecaInteractor(data, new(presenter.SuecaWebPresenter))
 		},
 		controller.NewSuecaWebControllerWithProvider)
-	games.RegisterKVGame("tichu", games.CategoryCasino,
-		func() usecase.TichuInteractorIF {
-			return usecase.NewTichuInteractor(domain.NewDefaultTichu(), new(presenter.TichuWebPresenter))
-		},
-		func(data []byte) (usecase.TichuInteractorIF, error) {
-			return usecase.RestoreTichuInteractor(data, new(presenter.TichuWebPresenter))
-		},
-		controller.NewTichuWebControllerWithProvider)
 	games.RegisterKVGame("bourre", games.CategoryCasino,
 		func() usecase.BourreInteractorIF {
 			return usecase.NewBourreInteractor(domain.NewDefaultBourre(), new(presenter.BourreWebPresenter))
