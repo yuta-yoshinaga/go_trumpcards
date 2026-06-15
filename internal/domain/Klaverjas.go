@@ -103,6 +103,16 @@ func NewDefaultKlaverjas() *Klaverjas {
 // KlaverjasTeamOf プレイヤーが属するチーム (0 = 席0&2, 1 = 席1&3)
 func KlaverjasTeamOf(playerIdx int) int { return playerIdx % KlaverjasTeamCnt }
 
+// klaverjasTeamName チーム番号を表示名 (A/B) に変換する。
+// (共有ヘルパー teamName は casino ワーカー専用ファイル定義のため、classic
+// ワーカーでコンパイルできるよう Klaverjas 内に持つ)
+func klaverjasTeamName(team int) string {
+	if team == 0 {
+		return "A"
+	}
+	return "B"
+}
+
 // Reset ゲーム初期化
 func (g *Klaverjas) Reset() {
 	g.gameEndFlag = false
@@ -285,7 +295,7 @@ func (g *Klaverjas) ScoreRound() {
 		g.gameEndFlag = true
 		g.winnerTeam = leader
 		g.phase = KlaverjasPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("Team %s wins the match!", teamName(leader)), nil)
+		g.appendLog(-1, "game_end", fmt.Sprintf("Team %s wins the match!", klaverjasTeamName(leader)), nil)
 	}
 }
 
