@@ -303,4 +303,12 @@ func init() {
 			return usecase.RestoreMariasInteractor(data, new(presenter.MariasWebPresenter))
 		},
 		controller.NewMariasWebControllerWithProvider)
+	games.RegisterKVGame("sedma", games.CategoryClassic,
+		func() usecase.SedmaInteractorIF {
+			return usecase.NewSedmaInteractor(domain.NewDefaultSedma(), new(presenter.SedmaWebPresenter))
+		},
+		func(data []byte) (usecase.SedmaInteractorIF, error) {
+			return usecase.RestoreSedmaInteractor(data, new(presenter.SedmaWebPresenter))
+		},
+		controller.NewSedmaWebControllerWithProvider)
 }

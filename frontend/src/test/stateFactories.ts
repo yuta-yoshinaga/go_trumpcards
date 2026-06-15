@@ -7,6 +7,7 @@ import type {
   ManilleResponse,
   MariasResponse,
   MusResponse,
+  SedmaResponse,
   SheepsheadResponse,
   SpadesResponse,
   SuecaResponse,
@@ -746,6 +747,54 @@ const baseManilleState: ManilleResponse = {
  */
 export function makeManilleState(overrides?: Partial<ManilleResponse>): ManilleResponse {
   return { ...baseManilleState, ...overrides };
+}
+
+/** Base Sedma state used as the default for {@link makeSedmaState}. Defaults to a human Play turn. No trump suit. */
+const baseSedmaState: SedmaResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 8,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      teamScore: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 8, cards: [], trickCount: 0, teamScore: 0 },
+    { id: 2, isHuman: false, cardCount: 8, cards: [], trickCount: 0, teamScore: 0 },
+    { id: 3, isHuman: false, cardCount: 8, cards: [], trickCount: 0, teamScore: 0 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  currentTrick: [],
+  teamScores: [0, 0],
+  roundCardPoints: [0, 0],
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 101 },
+};
+
+/**
+ * Creates a {@link SedmaResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial SedmaResponse fields to override.
+ * @returns A complete SedmaResponse suitable for use in tests.
+ */
+export function makeSedmaState(overrides?: Partial<SedmaResponse>): SedmaResponse {
+  return { ...baseSedmaState, ...overrides };
 }
 
 /** Base Mariáš state used as the default for {@link makeMariasState}. Defaults to a human Play turn. */

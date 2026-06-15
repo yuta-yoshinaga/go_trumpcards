@@ -2243,6 +2243,21 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"marias.helpSetDifficulty"},
 			})
 	}},
+	{Name: "sedma", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSedmaCuiController(usecase.NewSedmaInteractor(
+				domain.NewDefaultSedma(), new(presenter.SedmaCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "sedma.helpTitle",
+				CommandKeys: []string{
+					"sedma.helpPlay",
+					"sedma.helpNext",
+					"sedma.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"sedma.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

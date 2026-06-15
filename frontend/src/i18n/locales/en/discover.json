@@ -225,7 +225,8 @@
     "sueca": "The national trick-taker of Portugal and Brazil. Four players (2 vs 2) play a 40-card deck with must-follow trump play. There are no declarations at all — just chase the high-value Aces (11) and Sevens (10) and take the majority of the 120 card points with your partner.",
     "klaverjas": "The national trick-taker of the Netherlands. Four players (2 vs 2) play a 32-card deck with must-follow play and forced overtrumping. The trump Jack (20) and Nine (14) rule, and runs and marriages earn Roem (bonus). Partner up and battle over card points plus Roem in this deep, demanding game.",
     "manille": "A traditional French/Belgian trump trick-taker. Four players (2 vs 2) play a 32-card deck where the 10 (Manille) is the strongest card and the Ace (Manillon) is second. Trump is the suit of the last dealt card; must-follow play forces you to trump unless your partner already holds the trick. No declarations — just chase card points with your partner.",
-    "marias": "The national trick-taker of Czechia and Slovakia. Three players battle over a 32-card deck where one rotating Soloist plays alone against the 2 Defenders. Trump is the Soloist's longest suit (auto); rank runs A>10>K>Q>J>9>8>7, and a King+Queen of one suit scores a marriage (20, or 40 if trump). The final-trick +10 bonus and the doubled Defender scores on a Soloist loss keep every hand tense."
+    "marias": "The national trick-taker of Czechia and Slovakia. Three players battle over a 32-card deck where one rotating Soloist plays alone against the 2 Defenders. Trump is the Soloist's longest suit (auto); rank runs A>10>K>Q>J>9>8>7, and a King+Queen of one suit scores a marriage (20, or 40 if trump). The final-trick +10 bonus and the doubled Defender scores on a Soloist loss keep every hand tense.",
+    "sedma": "A Czech/Slovak no-trump capture trick-taker on a 32-card deck. Four players in two teams play with no follow obligation — any card is legal. A card captures the trick when its rank matches the lead or it is a 7 (wild), and the last to capture wins. Aces and 10s are worth 10 points each, plus +10 for the last trick. The fun is in hoarding your 7s to steal point-rich tricks."
   },
   "stretch_blurb": {
     "blackjack": "The 21 instinct may be obvious — but the betting decisions surprise.",
@@ -367,6 +368,7 @@
     "sueca": "A clean, declaration-free trump trick-taker. Partner up and fight over card points with must-follow play — the national game of Portugal and Brazil.",
     "klaverjas": "A serious Dutch trump trick-taker with forced overtrumping and Roem bonuses. Partner up and fight over card points in a step-up of strategic depth.",
     "manille": "A French/Belgian trump trick-taker with a twist: the 10 is the strongest card. Partner up and fight over card points in this clean, declaration-free classic.",
-    "marias": "A Czech/Slovak three-player trick-taker where a rotating Soloist takes on the other two. Marriages and a final-trick bonus drive this tense one-vs-all classic."
+    "marias": "A Czech/Slovak three-player trick-taker where a rotating Soloist takes on the other two. Marriages and a final-trick bonus drive this tense one-vs-all classic.",
+    "sedma": "A Czech/Slovak no-trump capture trick-taker. Play any card, capture with a rank match or a 7, and time your wild 7s to steal the point-rich tricks in this 4-player, 2-team classic."
   }
 }

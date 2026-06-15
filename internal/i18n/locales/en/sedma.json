@@ -1,0 +1,21 @@
+{
+  "helpTitle": "Sedma",
+  "helpPlay": "  play <idx>               play a card",
+  "helpNext": "  n                         go to next trick",
+  "helpNextRound": "  nr                        go to next round",
+  "helpSetDifficulty": "  sd [0-2]                  CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "round": "Round: {{round}}  Trick: {{trick}}",
+  "playerLine": "{{name}}: {{cards}} cards  Team score: {{teamScore}}  Tricks: {{tricks}}",
+  "gameEnd": "Game over! Team {{team}} wins the match!",
+  "promptPlay": "Turn: {{name}}",
+  "promptPlayHelp": "play <idx> ... play a card (match the lead rank or play a 7 to capture the trick; A and 10 are worth 10 points each)",
+  "promptTrickEnd": "Trick complete",
+  "promptTrickEndHelp": "n / next ... go to the next trick",
+  "promptRoundEnd": "Round complete (Team A: {{ptsA}} card pts, Team B: {{ptsB}} card pts)",
+  "promptRoundEndHelp": "nr / nextround ... go to the next round",
+  "hintNone": "No hint available.",
+  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintReasonLeadLow": "Lead a low card to conserve points",
+  "hintReasonCapture": "Capture the trick (same rank or a 7)",
+  "hintReasonDiscardLow": "Cannot/should not capture — discard a low card"
+}

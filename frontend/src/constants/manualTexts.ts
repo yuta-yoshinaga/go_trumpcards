@@ -106,6 +106,7 @@ import schnapsen from '../../../docs/manual/web/schnapsen.md?raw';
 import scopa from '../../../docs/manual/web/scopa.md?raw';
 import scorpion from '../../../docs/manual/web/scorpion.md?raw';
 import seahaventowers from '../../../docs/manual/web/seahaventowers.md?raw';
+import sedma from '../../../docs/manual/web/sedma.md?raw';
 import sevenbridge from '../../../docs/manual/web/sevenbridge.md?raw';
 import sevencardstud from '../../../docs/manual/web/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/web/sevens.md?raw';
@@ -197,6 +198,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/macau': macau,
   '/manille': manille,
   '/marias': marias,
+  '/sedma': sedma,
   '/memory': memory,
   '/mighty': mighty,
   '/napoleon': napoleon,
