@@ -767,6 +767,9 @@ var errKnockoutWhistInvalidPlayers = errors.New("knockoutwhist: invalid player c
 // errKnockoutWhistInvalidTrick is returned when a restored trick card or its card is nil.
 var errKnockoutWhistInvalidTrick = errors.New("knockoutwhist: invalid trick card")
 
+// errKnockoutWhistInvalidState is returned when a restored index/state field is out of range.
+var errKnockoutWhistInvalidState = errors.New("knockoutwhist: invalid state values in json")
+
 // UnmarshalJSON implements json.Unmarshaler.
 func (g *KnockoutWhist) UnmarshalJSON(data []byte) error {
 	var j knockoutWhistJSON
@@ -785,8 +788,22 @@ func (g *KnockoutWhist) UnmarshalJSON(data []byte) error {
 			return errKnockoutWhistInvalidPlayers
 		}
 	}
+	// Bounds-check restored indices/state so corrupted or tampered KV data
+	// cannot trigger out-of-range panics or negative-modulo turn advancement.
+	if j.CurrentPlayerIdx < 0 || j.CurrentPlayerIdx >= KnockoutWhistPlayerCnt ||
+		j.LeadPlayerIdx < 0 || j.LeadPlayerIdx >= KnockoutWhistPlayerCnt ||
+		j.DealerIdx < 0 || j.DealerIdx >= KnockoutWhistPlayerCnt ||
+		j.RoundWinnerIdx < -1 || j.RoundWinnerIdx >= KnockoutWhistPlayerCnt ||
+		j.WinnerPlayer < -1 || j.WinnerPlayer >= KnockoutWhistPlayerCnt ||
+		j.TrumpSuit < 1 || j.TrumpSuit > 4 ||
+		j.RoundNumber < 1 || j.RoundNumber > KnockoutWhistMaxRounds ||
+		j.HandSize < 1 || j.HandSize > KnockoutWhistMaxRounds ||
+		j.TrickNumber < 1 || j.TrickNumber > KnockoutWhistMaxRounds ||
+		j.Phase < KnockoutWhistPhasePlay || j.Phase > KnockoutWhistPhaseGameEnd {
+		return errKnockoutWhistInvalidState
+	}
 	for _, tc := range j.CurrentTrick {
-		if tc == nil || tc.Card == nil {
+		if tc == nil || tc.Card == nil || tc.PlayerIdx < 0 || tc.PlayerIdx >= KnockoutWhistPlayerCnt {
 			return errKnockoutWhistInvalidTrick
 		}
 	}
