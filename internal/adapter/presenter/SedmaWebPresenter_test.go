@@ -146,7 +146,7 @@ func TestSedmaWebPresenter_Output(t *testing.T) {
 		var resObj controller.SedmaWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 		assert.Equal(t, "sedma.result.cpuWin", resObj.MessageCode)
-		assert.Equal(t, map[string]string{"team": "1"}, resObj.MessageParams)
+		assert.Equal(t, map[string]string{"team": "B"}, resObj.MessageParams)
 	})
 
 	t.Run("team scores propagated to players", func(t *testing.T) {

@@ -61,7 +61,7 @@ func (p *SedmaCuiPresenter) Output(g interfaces.SedmaGame, lastErr error) string
 			winnerTeam := g.GetWinnerTeam()
 			var winnerStr string
 			if winnerTeam >= 0 {
-				winnerStr = strconv.Itoa(winnerTeam)
+				winnerStr = domain.SedmaTeamName(winnerTeam)
 			}
 			banner := i18n.Tf("sedma.gameEnd", "team", winnerStr)
 			b.WriteString(color.Green(banner) + "\n")

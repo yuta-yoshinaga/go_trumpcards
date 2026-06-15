@@ -99,8 +99,8 @@ func NewDefaultSedma() *Sedma {
 // SedmaTeamOf プレイヤーが属するチーム (0 = 席0&2, 1 = 席1&3)
 func SedmaTeamOf(playerIdx int) int { return playerIdx % SedmaTeamCnt }
 
-// sedmaTeamName チーム番号を表示名 (A/B) に変換する (classic ワーカーで自己完結)。
-func sedmaTeamName(team int) string {
+// SedmaTeamName チーム番号を表示名 (A/B) に変換する (classic ワーカーで自己完結)。
+func SedmaTeamName(team int) string {
 	if team == 0 {
 		return "A"
 	}
@@ -267,7 +267,7 @@ func (g *Sedma) ScoreRound() {
 		g.gameEndFlag = true
 		g.winnerTeam = leader
 		g.phase = SedmaPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("Team %s wins the match!", sedmaTeamName(leader)), nil)
+		g.appendLog(-1, "game_end", fmt.Sprintf("Team %s wins the match!", SedmaTeamName(leader)), nil)
 	}
 }
 

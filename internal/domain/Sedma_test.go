@@ -121,6 +121,34 @@ func TestSedma_TrickWinnerLastCaptureWins(t *testing.T) {
 	}
 }
 
+func TestSedma_TrickWinnerSevenLeadOnlySevenCaptures(t *testing.T) {
+	// Lead is itself a 7: only another 7 captures it (a King does not).
+	g := newSedGame(false)
+	g.SetCurrentTrick([]*SedmaTrickCard{
+		{PlayerIdx: 0, Card: sedCard(CardDesignClover, 7)},
+		{PlayerIdx: 1, Card: sedCard(CardDesignHeart, 13)},
+		{PlayerIdx: 2, Card: sedCard(CardDesignSpade, 7)},
+		{PlayerIdx: 3, Card: sedCard(CardDesignDiamond, 8)},
+	})
+	if w := g.trickWinner(); w != 2 {
+		t.Errorf("trick winner = %d, want 2 (only a 7 captures a 7 lead)", w)
+	}
+}
+
+func TestSedma_TrickWinnerSevenLeadNoCapture(t *testing.T) {
+	// Lead 7, nobody else plays a 7 -> the lead player keeps the trick.
+	g := newSedGame(false)
+	g.SetCurrentTrick([]*SedmaTrickCard{
+		{PlayerIdx: 0, Card: sedCard(CardDesignClover, 7)},
+		{PlayerIdx: 1, Card: sedCard(CardDesignHeart, 13)},
+		{PlayerIdx: 2, Card: sedCard(CardDesignSpade, 1)},
+		{PlayerIdx: 3, Card: sedCard(CardDesignDiamond, 8)},
+	})
+	if w := g.trickWinner(); w != 0 {
+		t.Errorf("trick winner = %d, want 0 (7 lead, no other 7)", w)
+	}
+}
+
 func TestSedma_AnyCardIsPlayable(t *testing.T) {
 	g := newSedGame(true)
 	g.SetPhase(SedmaPhasePlay)
