@@ -84,6 +84,7 @@ import type {
   ScopaResponse,
   ScorpionResponse,
   SeahavenTowersResponse,
+  SedmaResponse,
   SevenBridgeResponse,
   SevenCardStudResponse,
   SevensResponse,
@@ -209,6 +210,7 @@ import { getSchnapsenHint } from '../utils/hints/schnapsenHint';
 import { getScopaHint } from '../utils/hints/scopaHint';
 import { getScorpionHint } from '../utils/hints/scorpionHint';
 import { getSeahavenTowersHint } from '../utils/hints/seahavenTowersHint';
+import { getSedmaHint } from '../utils/hints/sedmaHint';
 import { getSevenbridgeHint } from '../utils/hints/sevenbridgeHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
 import { getSheepsheadHint } from '../utils/hints/sheepsheadHint';
@@ -382,6 +384,7 @@ const hintFactories = {
   klaverjas: (s) => getKlaverjasHint(s as KlaverjasResponse),
   manille: (s) => getManilleHint(s as ManilleResponse),
   marias: (s) => getMariasHint(s as MariasResponse),
+  sedma: (s) => getSedmaHint(s as SedmaResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

@@ -319,6 +319,14 @@ export const ManillePhase = {
   GAME_END: 3,
 } as const;
 
+/** Sedma phase constants (sync: internal/domain/Sedma.go). */
+export const SedmaPhase = {
+  PLAY: 0,
+  TRICK_END: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Mariáš phase constants (sync: internal/domain/Marias.go). */
 export const MariasPhase = {
   PLAY: 0,

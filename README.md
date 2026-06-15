@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した140種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した141種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -159,6 +159,7 @@ Go + Clean Architecture で実装した140種類のトランプゲーム。CLI �
 | クラヴァヤス (Klaverjas) | `klaverjas` | [CUI](docs/manual/cui/klaverjas.md) / [Web](docs/manual/web/klaverjas.md) |
 | マニーユ (Manille) | `manille` | [CUI](docs/manual/cui/manille.md) / [Web](docs/manual/web/manille.md) |
 | マリアーシュ (Mariáš) | `marias` | [CUI](docs/manual/cui/marias.md) / [Web](docs/manual/web/marias.md) |
+| セドマ (Sedma) | `sedma` | [CUI](docs/manual/cui/sedma.md) / [Web](docs/manual/web/sedma.md) |
 
 ## Demo
 

@@ -107,6 +107,7 @@ import schnapsen from '../../../docs/manual/cui/schnapsen.md?raw';
 import scopa from '../../../docs/manual/cui/scopa.md?raw';
 import scorpion from '../../../docs/manual/cui/scorpion.md?raw';
 import seahaventowers from '../../../docs/manual/cui/seahaventowers.md?raw';
+import sedma from '../../../docs/manual/cui/sedma.md?raw';
 import sevenbridge from '../../../docs/manual/cui/sevenbridge.md?raw';
 import sevencardstud from '../../../docs/manual/cui/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/cui/sevens.md?raw';
@@ -204,6 +205,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/macau': macau,
   '/manille': manille,
   '/marias': marias,
+  '/sedma': sedma,
   '/memory': memory,
   '/mighty': mighty,
   '/napoleon': napoleon,
