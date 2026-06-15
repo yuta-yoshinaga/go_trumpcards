@@ -97,6 +97,7 @@ import piquet from '../../../docs/manual/web/piquet.md?raw';
 import pitch from '../../../docs/manual/web/pitch.md?raw';
 import poker from '../../../docs/manual/web/poker.md?raw';
 import pokersquares from '../../../docs/manual/web/pokersquares.md?raw';
+import preference from '../../../docs/manual/web/preference.md?raw';
 import president from '../../../docs/manual/web/president.md?raw';
 import pyramid from '../../../docs/manual/web/pyramid.md?raw';
 import razz from '../../../docs/manual/web/razz.md?raw';
@@ -205,6 +206,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/knockoutwhist': knockoutwhist,
   '/solowhist': solowhist,
   '/nap': nap,
+  '/preference': preference,
   '/memory': memory,
   '/mighty': mighty,
   '/napoleon': napoleon,

@@ -335,4 +335,12 @@ func init() {
 			return usecase.RestoreNapInteractor(data, new(presenter.NapWebPresenter))
 		},
 		controller.NewNapWebControllerWithProvider)
+	games.RegisterKVGame("preference", games.CategoryClassic,
+		func() usecase.PreferenceInteractorIF {
+			return usecase.NewPreferenceInteractor(domain.NewDefaultPreference(), new(presenter.PreferenceWebPresenter))
+		},
+		func(data []byte) (usecase.PreferenceInteractorIF, error) {
+			return usecase.RestorePreferenceInteractor(data, new(presenter.PreferenceWebPresenter))
+		},
+		controller.NewPreferenceWebControllerWithProvider)
 }

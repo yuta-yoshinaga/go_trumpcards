@@ -360,6 +360,24 @@ export const SoloWhistContract = {
   ABUNDANCE: 3,
 } as const;
 
+/** Préférence phase constants (sync: internal/domain/Preference.go). */
+export const PreferencePhase = {
+  BID: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/** Préférence contract constants (sync: internal/domain/Preference.go). Outranking order is Pass < Six < Misère < Seven < Eight. */
+export const PreferenceContract = {
+  PASS: 0,
+  SIX: 1,
+  MISERE: 2,
+  SEVEN: 3,
+  EIGHT: 4,
+} as const;
+
 /** Nap (Napoleon) phase constants (sync: internal/domain/Nap.go). */
 export const NapPhase = {
   BID: 0,
