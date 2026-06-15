@@ -1,0 +1,50 @@
+{
+  "phase": {
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "trump": "Trump {{suit}}",
+  "pot": "Pot {{n}}",
+  "target": "Target {{n}}",
+  "cards": "{{count}} cards",
+  "roundTricks": "{{count}} round tricks",
+  "score": "{{count}} pts",
+  "currentTrick": "Current Trick",
+  "players": "Players",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "leader": "Leader",
+  "roundWinner": "Round winner",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "roundResult": {
+    "title": "Round Result",
+    "winner": "Round winner: {{name}} takes the pot",
+    "spoil": "Spoil (流局)! Nobody reached 3 tricks — the pot carries to the next round"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "lead_high": "Lead a high card to take the trick",
+    "take_trick": "Win this trick (3 tricks takes the pot)",
+    "discard_low": "Can't win — discard a low card"
+  },
+  "tutorial": {
+    "trickDisplay": "This is the current trick. You must follow the lead suit, but the three top trumps — the trump 5, trump J, and ♥A (always a trump) — may be held back (Reneging). Trump beats non-trump, ranked 5 > J > ♥A > A > K > Q > other trumps.",
+    "playerHand": "This is your hand (5 cards). Click any card to select it. Trump is set by the turned-up card on the table.",
+    "playButton": "Once a card is selected, play it with this button. The player who plays the strongest card wins the trick.",
+    "info": "Five players compete for a pot each round. The first player to win 3 of the 5 tricks takes the pot immediately. If nobody reaches 3 tricks the round is a Spoil (流局) and the pot carries to the next round. The first player to reach the target score (30 by default) wins the match.",
+    "resetButton": "Use the reset button to start a new game."
+  }
+}

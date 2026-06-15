@@ -126,6 +126,7 @@ import speed from '../../../docs/manual/web/speed.md?raw';
 import spider from '../../../docs/manual/web/spider.md?raw';
 import spiderette from '../../../docs/manual/web/spiderette.md?raw';
 import spiteandmalice from '../../../docs/manual/web/spiteandmalice.md?raw';
+import spoilfive from '../../../docs/manual/web/spoilfive.md?raw';
 import sueca from '../../../docs/manual/web/sueca.md?raw';
 import tarneeb from '../../../docs/manual/web/tarneeb.md?raw';
 import texasholdembonus from '../../../docs/manual/web/texasholdembonus.md?raw';
@@ -204,6 +205,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/marias': marias,
   '/sedma': sedma,
   '/knockoutwhist': knockoutwhist,
+  '/spoilfive': spoilfive,
   '/solowhist': solowhist,
   '/nap': nap,
   '/preference': preference,

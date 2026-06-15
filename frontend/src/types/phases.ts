@@ -343,6 +343,14 @@ export const KnockoutWhistPhase = {
   GAME_END: 3,
 } as const;
 
+/** Spoil Five phase constants (sync: internal/domain/SpoilFive.go). */
+export const SpoilFivePhase = {
+  PLAY: 0,
+  TRICK_END: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Solo Whist phase constants (sync: internal/domain/SoloWhist.go). */
 export const SoloWhistPhase = {
   BID: 0,
