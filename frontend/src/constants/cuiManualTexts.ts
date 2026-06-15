@@ -67,6 +67,7 @@ import holdem from '../../../docs/manual/cui/holdem.md?raw';
 import indianpoker from '../../../docs/manual/cui/indianpoker.md?raw';
 import irishpoker from '../../../docs/manual/cui/irishpoker.md?raw';
 import jokerpoker from '../../../docs/manual/cui/jokerpoker.md?raw';
+import klaverjas from '../../../docs/manual/cui/klaverjas.md?raw';
 import klondike from '../../../docs/manual/cui/klondike.md?raw';
 import letitride from '../../../docs/manual/cui/letitride.md?raw';
 import macau from '../../../docs/manual/cui/macau.md?raw';
@@ -231,6 +232,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/sheepshead': sheepshead,
   '/doppelkopf': doppelkopf,
   '/sueca': sueca,
+  '/klaverjas': klaverjas,
   '/tute': tute,
   '/pitch': pitch,
   '/spanish21': spanish21,

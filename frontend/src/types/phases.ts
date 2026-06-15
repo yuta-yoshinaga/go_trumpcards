@@ -303,6 +303,14 @@ export const SuecaPhase = {
   GAME_END: 3,
 } as const;
 
+/** Klaverjas phase constants (sync: internal/domain/Klaverjas.go). */
+export const KlaverjasPhase = {
+  PLAY: 0,
+  TRICK_END: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Call Break phase constants (sync: internal/domain/CallBreak.go). */
 export const CallBreakPhase = {
   BID: 0,

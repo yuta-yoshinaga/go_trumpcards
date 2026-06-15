@@ -54,6 +54,9 @@
   /* Sueca — Portuguese/Brazilian deep emerald with a gold lean, distinct from Mus's green. */
   --color-game-bg-sueca: #0f6b4f;
   --color-game-bg-sueca-dark: #0a4733;
+  /* Klaverjas — Dutch burnt-orange (Oranje), distinct from every felt and red game. */
+  --color-game-bg-klaverjas: #b3541e;
+  --color-game-bg-klaverjas-dark: #7a3813;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;

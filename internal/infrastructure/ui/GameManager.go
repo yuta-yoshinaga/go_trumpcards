@@ -2198,6 +2198,21 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"sueca.helpSetDifficulty"},
 			})
 	}},
+	{Name: "klaverjas", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewKlaverjasCuiController(usecase.NewKlaverjasInteractor(
+				domain.NewDefaultKlaverjas(), new(presenter.KlaverjasCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "klaverjas.helpTitle",
+				CommandKeys: []string{
+					"klaverjas.helpPlay",
+					"klaverjas.helpNext",
+					"klaverjas.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"klaverjas.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
