@@ -134,8 +134,8 @@ func TestRegistryMatchesCLI(t *testing.T) {
 // games.Descriptions), so an empty entry silently ships a blank row.
 func TestRegistryHasDescriptionForEach(t *testing.T) {
 	for _, g := range games.All() {
-		if strings.TrimSpace(g.Description) == "" {
-			t.Errorf("game %q has empty Description in games.registry", g.Name)
+		if strings.TrimSpace(games.Description(g.Name)) == "" {
+			t.Errorf("game %q has empty Description in gameDescriptions", g.Name)
 		}
 	}
 }
