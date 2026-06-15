@@ -272,6 +272,8 @@ func (g *Manille) ScoreRound() {
 		g.phase = ManillePhaseGameEnd
 		g.appendLog(-1, "game_end", fmt.Sprintf("Team %s wins the match!", manilleTeamName(leader)), nil)
 	}
+	// 加算済みのラウンド点をクリアして二重計上を防ぐ (冪等性)。
+	g.roundCardPts = [ManilleTeamCnt]int{}
 }
 
 // --- Trick / play helpers ---
@@ -753,6 +755,9 @@ var errManilleOversized = errors.New("manille: input array exceeds maximum allow
 // errManilleInvalidPlayers is returned when restored state lacks exactly ManillePlayerCnt players.
 var errManilleInvalidPlayers = errors.New("manille: invalid player count")
 
+// errManilleInvalidTrick is returned when a restored trick card or its card is nil.
+var errManilleInvalidTrick = errors.New("manille: invalid trick card")
+
 // UnmarshalJSON implements json.Unmarshaler.
 func (g *Manille) UnmarshalJSON(data []byte) error {
 	var j manilleJSON
@@ -765,6 +770,16 @@ func (g *Manille) UnmarshalJSON(data []byte) error {
 	}
 	if len(j.Players) != ManillePlayerCnt {
 		return errManilleInvalidPlayers
+	}
+	for _, p := range j.Players {
+		if p == nil {
+			return errManilleInvalidPlayers
+		}
+	}
+	for _, tc := range j.CurrentTrick {
+		if tc == nil || tc.Card == nil {
+			return errManilleInvalidTrick
+		}
 	}
 	if err := j.Config.Validate(); err != nil {
 		return err

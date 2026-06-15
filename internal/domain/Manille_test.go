@@ -281,4 +281,8 @@ func TestManille_UnmarshalErrors(t *testing.T) {
 	if err := g.UnmarshalJSON([]byte(`not json`)); err == nil {
 		t.Error("expected json syntax error")
 	}
+	// A 4-element players array with a nil entry is rejected.
+	if err := g.UnmarshalJSON([]byte(`{"ps":[null,null,null,null]}`)); err == nil {
+		t.Error("expected nil-player error")
+	}
 }
