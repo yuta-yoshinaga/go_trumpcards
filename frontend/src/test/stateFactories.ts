@@ -4,6 +4,7 @@ import type {
   GongZhuResponse,
   HeartsResponse,
   KlaverjasResponse,
+  ManilleResponse,
   MusResponse,
   SheepsheadResponse,
   SpadesResponse,
@@ -695,4 +696,53 @@ const baseKlaverjasState: KlaverjasResponse = {
  */
 export function makeKlaverjasState(overrides?: Partial<KlaverjasResponse>): KlaverjasResponse {
   return { ...baseKlaverjasState, ...overrides };
+}
+
+/** Base Manille state used as the default for {@link makeManilleState}. Defaults to a human Play turn. */
+const baseManilleState: ManilleResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 8,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      teamScore: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 8, cards: [], trickCount: 0, teamScore: 0 },
+    { id: 2, isHuman: false, cardCount: 8, cards: [], trickCount: 0, teamScore: 0 },
+    { id: 3, isHuman: false, cardCount: 8, cards: [], trickCount: 0, teamScore: 0 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  trumpSuit: 4,
+  currentTrick: [],
+  teamScores: [0, 0],
+  roundCardPoints: [0, 0],
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 101 },
+};
+
+/**
+ * Creates a {@link ManilleResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial ManilleResponse fields to override.
+ * @returns A complete ManilleResponse suitable for use in tests.
+ */
+export function makeManilleState(overrides?: Partial<ManilleResponse>): ManilleResponse {
+  return { ...baseManilleState, ...overrides };
 }

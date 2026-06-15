@@ -400,6 +400,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 3, 5, 2], skill: [2, 4, 5, 2], social: [1, 3, 5, 3, 5], theme: [2, 4, 2, 1, 3, 2] },
       },
       {
+        path: '/manille',
+        labelKey: 'nav.manille',
+        icon: '🇫🇷',
+        page: 'Manille',
+        profile: { mood: [2, 3, 4, 3], skill: [3, 4, 4, 2], social: [1, 3, 5, 3, 4], theme: [2, 4, 2, 1, 3, 2] },
+      },
+      {
         path: '/pitch',
         labelKey: 'nav.pitch',
         icon: '🎯',

@@ -287,4 +287,12 @@ func init() {
 			return usecase.RestoreKlaverjasInteractor(data, new(presenter.KlaverjasWebPresenter))
 		},
 		controller.NewKlaverjasWebControllerWithProvider)
+	games.RegisterKVGame("manille", games.CategoryClassic,
+		func() usecase.ManilleInteractorIF {
+			return usecase.NewManilleInteractor(domain.NewDefaultManille(), new(presenter.ManilleWebPresenter))
+		},
+		func(data []byte) (usecase.ManilleInteractorIF, error) {
+			return usecase.RestoreManilleInteractor(data, new(presenter.ManilleWebPresenter))
+		},
+		controller.NewManilleWebControllerWithProvider)
 }

@@ -1,0 +1,22 @@
+{
+  "helpTitle": "マニーユ (Manille)",
+  "helpPlay": "  play <idx>               カードを出す",
+  "helpNext": "  n                         次のトリックへ",
+  "helpNextRound": "  nr                        次のラウンドへ",
+  "helpSetDifficulty": "  sd [0-2]                  CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "round": "ラウンド: {{round}}  トリック: {{trick}}  切り札: {{trump}}",
+  "playerLine": "{{name}}: {{cards}}枚  チーム得点: {{teamScore}}  トリック: {{tricks}}",
+  "gameEnd": "ゲーム終了！チーム{{team}}がマッチ勝利！",
+  "promptPlay": "手番: {{name}}",
+  "promptPlayHelp": "play <idx>・・・カードを出す（10=マニーユが最強・A=マニヨンが次点／マストフォロー）",
+  "promptTrickEnd": "トリック終了",
+  "promptTrickEndHelp": "n / next・・・次のトリックへ",
+  "promptRoundEnd": "ラウンド終了（チームA: {{ptsA}}点, チームB: {{ptsB}}点）",
+  "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
+  "hintNone": "ヒントはありません。",
+  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintReasonLeadLow": "低い札でリードして温存する",
+  "hintReasonFollowWin": "得点があるので勝ちに行く",
+  "hintReasonFollowDuck": "取れない／取る価値がないのでダック",
+  "hintReasonDiscardLow": "フォローできないので低い札を捨てる"
+}
