@@ -72,6 +72,9 @@
   /* Knockout Whist — British pub-quiz royal-purple, distinct from every other felt (survival/elimination drama). */
   --color-game-bg-knockoutwhist: #4a1d6e;
   --color-game-bg-knockoutwhist-dark: #2f1247;
+  /* Nap (Napoleon) — British gambling-parlour deep wine/burgundy, distinct from Solo Whist's green and every other felt. */
+  --color-game-bg-nap: #6e1f2e;
+  --color-game-bg-nap-dark: #47131e;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;

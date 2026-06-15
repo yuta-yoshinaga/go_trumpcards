@@ -360,6 +360,24 @@ export const SoloWhistContract = {
   ABUNDANCE: 3,
 } as const;
 
+/** Nap (Napoleon) phase constants (sync: internal/domain/Nap.go). */
+export const NapPhase = {
+  BID: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/** Nap (Napoleon) contract / bid constants (sync: internal/domain/Nap.go). The value equals the declared trick count. */
+export const NapContract = {
+  PASS: 0,
+  TWO: 2,
+  THREE: 3,
+  FOUR: 4,
+  NAP: 5,
+} as const;
+
 /** Call Break phase constants (sync: internal/domain/CallBreak.go). */
 export const CallBreakPhase = {
   BID: 0,

@@ -79,6 +79,7 @@ import mighty from '../../../docs/manual/cui/mighty.md?raw';
 import mississippistud from '../../../docs/manual/cui/mississippistud.md?raw';
 import montecarlo from '../../../docs/manual/cui/montecarlo.md?raw';
 import mus from '../../../docs/manual/cui/mus.md?raw';
+import nap from '../../../docs/manual/cui/nap.md?raw';
 import napoleon from '../../../docs/manual/cui/napoleon.md?raw';
 import nertz from '../../../docs/manual/cui/nertz.md?raw';
 import oasispoker from '../../../docs/manual/cui/oasispoker.md?raw';
@@ -210,6 +211,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/sedma': sedma,
   '/knockoutwhist': knockoutwhist,
   '/solowhist': solowhist,
+  '/nap': nap,
   '/memory': memory,
   '/mighty': mighty,
   '/napoleon': napoleon,

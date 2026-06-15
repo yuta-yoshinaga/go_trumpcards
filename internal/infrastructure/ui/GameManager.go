@@ -2290,6 +2290,23 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"knockoutwhist.helpSetDifficulty"},
 			})
 	}},
+	{Name: "nap", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewNapCuiController(usecase.NewNapInteractor(
+				domain.NewDefaultNap(), new(presenter.NapCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "nap.helpTitle",
+				CommandKeys: []string{
+					"nap.helpBid",
+					"nap.helpPass",
+					"nap.helpPlay",
+					"nap.helpNext",
+					"nap.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"nap.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

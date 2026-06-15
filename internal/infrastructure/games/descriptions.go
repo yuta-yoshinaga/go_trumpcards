@@ -153,6 +153,7 @@ var gameDescriptions = map[string]string{
 	"sedma":               "Sedma (セドマ)",
 	"solowhist":           "Solo Whist (ソロ・ホイスト)",
 	"knockoutwhist":       "Knockout Whist (ノックアウト・ホイスト)",
+	"nap":                 "Nap / Napoleon (ナップ)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).
