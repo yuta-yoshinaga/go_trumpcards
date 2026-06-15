@@ -4,6 +4,7 @@ import type {
   GongZhuResponse,
   HeartsResponse,
   KlaverjasResponse,
+  KnockoutWhistResponse,
   ManilleResponse,
   MariasResponse,
   MusResponse,
@@ -848,6 +849,58 @@ const baseMariasState: MariasResponse = {
  */
 export function makeMariasState(overrides?: Partial<MariasResponse>): MariasResponse {
   return { ...baseMariasState, ...overrides };
+}
+
+/** Base Knockout Whist state used as the default for {@link makeKnockoutWhistState}. Defaults to a human Play turn (round 1, 7-card hand). */
+const baseKnockoutWhistState: KnockoutWhistResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 7,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      eliminated: false,
+      dogbones: 1,
+      roundTricks: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 7, cards: [], trickCount: 0, eliminated: false, dogbones: 1, roundTricks: 0 },
+    { id: 2, isHuman: false, cardCount: 7, cards: [], trickCount: 0, eliminated: false, dogbones: 1, roundTricks: 0 },
+    { id: 3, isHuman: false, cardCount: 7, cards: [], trickCount: 0, eliminated: false, dogbones: 1, roundTricks: 0 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  handSize: 7,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  trumpSuit: 3,
+  roundWinnerIdx: -1,
+  currentTrick: [],
+  activeCount: 4,
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1 },
+};
+
+/**
+ * Creates a {@link KnockoutWhistResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial KnockoutWhistResponse fields to override.
+ * @returns A complete KnockoutWhistResponse suitable for use in tests.
+ */
+export function makeKnockoutWhistState(overrides?: Partial<KnockoutWhistResponse>): KnockoutWhistResponse {
+  return { ...baseKnockoutWhistState, ...overrides };
 }
 
 /** Base Solo Whist state used as the default for {@link makeSoloWhistState}. Defaults to a human Bid turn. */

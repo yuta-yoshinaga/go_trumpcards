@@ -1,0 +1,23 @@
+{
+  "helpTitle": "ノックアウト・ホイスト (Knockout Whist)",
+  "helpPlay": "  play <idx>               カードを出す",
+  "helpNext": "  n                         次のトリックへ",
+  "helpNextRound": "  nr                        次のラウンドへ",
+  "helpSetDifficulty": "  sd [0-2]                  CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "round": "ラウンド: {{round}}  手札: {{handSize}}枚  トリック: {{trick}}  切り札: {{trump}}",
+  "playerLine": "{{name}}: {{cards}}枚  今ラウンドのトリック: {{roundTricks}}  Dogbone: {{dogbones}}",
+  "playerLineEliminated": "{{name}}: 脱落",
+  "gameEnd": "ゲーム終了！{{name}}が生き残ってマッチ勝利！",
+  "promptPlay": "手番: {{name}}",
+  "promptPlayHelp": "play <idx>・・・カードを出す（リードスートにマストフォロー／切り札は非切り札より強い／生き残るには1トリック以上獲得が必要）",
+  "promptTrickEnd": "トリック終了",
+  "promptTrickEndHelp": "n / next・・・次のトリックへ",
+  "promptRoundEnd": "ラウンド終了（残り{{active}}人）",
+  "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ（0トリックのプレイヤーはDogboneを消費／使い切ると脱落。手札は1枚ずつ減る）",
+  "hintNone": "ヒントはありません。",
+  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintReasonLeadHigh": "高い札でリードしてトリックを取りにいく",
+  "hintReasonFollowWin": "トリックを取って生き残る（トリック数が重要）",
+  "hintReasonFollowDuck": "取れないのでリードスートの低い札で受ける",
+  "hintReasonDiscardLow": "リードに従えないので低い札を捨てる"
+}

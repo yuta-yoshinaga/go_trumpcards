@@ -421,6 +421,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [3, 4, 3, 3], skill: [4, 4, 3, 2], social: [1, 3, 5, 4, 3], theme: [2, 4, 2, 1, 2, 3] },
       },
       {
+        path: '/knockoutwhist',
+        labelKey: 'nav.knockoutwhist',
+        icon: '🇬🇧',
+        page: 'KnockoutWhist',
+        profile: { mood: [2, 4, 3, 4], skill: [4, 4, 2, 3], social: [1, 3, 5, 4, 3], theme: [3, 3, 3, 1, 2, 2] },
+      },
+      {
         path: '/pitch',
         labelKey: 'nav.pitch',
         icon: '🎯',

@@ -319,4 +319,12 @@ func init() {
 			return usecase.RestoreSoloWhistInteractor(data, new(presenter.SoloWhistWebPresenter))
 		},
 		controller.NewSoloWhistWebControllerWithProvider)
+	games.RegisterKVGame("knockoutwhist", games.CategoryClassic,
+		func() usecase.KnockoutWhistInteractorIF {
+			return usecase.NewKnockoutWhistInteractor(domain.NewDefaultKnockoutWhist(), new(presenter.KnockoutWhistWebPresenter))
+		},
+		func(data []byte) (usecase.KnockoutWhistInteractorIF, error) {
+			return usecase.RestoreKnockoutWhistInteractor(data, new(presenter.KnockoutWhistWebPresenter))
+		},
+		controller.NewKnockoutWhistWebControllerWithProvider)
 }
