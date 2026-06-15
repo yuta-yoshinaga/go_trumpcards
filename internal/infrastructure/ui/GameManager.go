@@ -2324,6 +2324,21 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"preference.helpSetDifficulty"},
 			})
 	}},
+	{Name: "spoilfive", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSpoilFiveCuiController(usecase.NewSpoilFiveInteractor(
+				domain.NewDefaultSpoilFive(), new(presenter.SpoilFiveCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "spoilfive.helpTitle",
+				CommandKeys: []string{
+					"spoilfive.helpPlay",
+					"spoilfive.helpNext",
+					"spoilfive.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"spoilfive.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

@@ -14,6 +14,7 @@ import type {
   SheepsheadResponse,
   SoloWhistResponse,
   SpadesResponse,
+  SpoilFiveResponse,
   SuecaResponse,
   TressetteResponse,
   TuteResponse,
@@ -903,6 +904,58 @@ const baseKnockoutWhistState: KnockoutWhistResponse = {
  */
 export function makeKnockoutWhistState(overrides?: Partial<KnockoutWhistResponse>): KnockoutWhistResponse {
   return { ...baseKnockoutWhistState, ...overrides };
+}
+
+/** Base Spoil Five state used as the default for {@link makeSpoilFiveState}. Defaults to a human Play turn (round 1, 5-card hand, 5 players). */
+const baseSpoilFiveState: SpoilFiveResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 5,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      score: 0,
+      roundTricks: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 5, cards: [], trickCount: 0, score: 0, roundTricks: 0 },
+    { id: 2, isHuman: false, cardCount: 5, cards: [], trickCount: 0, score: 0, roundTricks: 0 },
+    { id: 3, isHuman: false, cardCount: 5, cards: [], trickCount: 0, score: 0, roundTricks: 0 },
+    { id: 4, isHuman: false, cardCount: 5, cards: [], trickCount: 0, score: 0, roundTricks: 0 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 4,
+  trumpSuit: 3,
+  pot: 5,
+  roundWinnerIdx: -1,
+  currentTrick: [],
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 30 },
+};
+
+/**
+ * Creates a {@link SpoilFiveResponse} with sensible defaults (a human Play turn,
+ * 5 players, a 5-card hand, and a pot). Any field can be overridden via the
+ * `overrides` parameter.
+ *
+ * @param overrides - Partial SpoilFiveResponse fields to override.
+ * @returns A complete SpoilFiveResponse suitable for use in tests.
+ */
+export function makeSpoilFiveState(overrides?: Partial<SpoilFiveResponse>): SpoilFiveResponse {
+  return { ...baseSpoilFiveState, ...overrides };
 }
 
 /** Base Solo Whist state used as the default for {@link makeSoloWhistState}. Defaults to a human Bid turn. */

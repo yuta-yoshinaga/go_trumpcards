@@ -1,0 +1,111 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { spoilFiveApi } from '../api/gameApi';
+import { renderWithProviders } from '../test/renderWithProviders';
+import { makeSpoilFiveState } from '../test/stateFactories';
+import { SpoilFivePage } from './SpoilFivePage';
+
+vi.mock('../api/gameApi', () => ({
+  spoilFiveApi: { exec: vi.fn() },
+  actionLogApi: { spoilfive: vi.fn() },
+}));
+
+const mockExec = vi.mocked(spoilFiveApi.exec);
+
+const playPhaseState = makeSpoilFiveState();
+const trickEndState = makeSpoilFiveState({
+  phase: 1,
+  currentTrick: [
+    { playerIdx: 0, card: { design: 'HEART', value: 12 } },
+    { playerIdx: 1, card: { design: 'CLOVER', value: 7 } },
+  ],
+});
+const roundEndState = makeSpoilFiveState({ phase: 2, roundWinnerIdx: 0 });
+const spoilState = makeSpoilFiveState({ phase: 2, roundWinnerIdx: -1, pot: 10 });
+const gameEndState = makeSpoilFiveState({
+  phase: 3,
+  gameEndFlag: true,
+  winnerPlayer: 0,
+  message: 'ゲーム終了！ あなたの勝ち！',
+});
+const cpuTurnState = makeSpoilFiveState({ currentPlayerIdx: 1, isHumanTurn: false });
+
+beforeEach(() => {
+  mockExec.mockReset();
+  mockExec.mockResolvedValue(playPhaseState);
+});
+
+describe('SpoilFivePage', () => {
+  it('renders skeleton when no state', () => {
+    mockExec.mockReturnValue(new Promise(() => undefined));
+    renderWithProviders(<SpoilFivePage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('calls reset on mount with the default config', async () => {
+    renderWithProviders(<SpoilFivePage />);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', {
+        config: { cpuDifficulty: 1 },
+      }),
+    );
+  });
+
+  it('renders the play phase with the human cards', async () => {
+    renderWithProviders(<SpoilFivePage />);
+    await waitFor(() => {
+      expect(screen.getByAltText('♥ Q')).toBeInTheDocument();
+      expect(screen.getByAltText('♠ A')).toBeInTheDocument();
+    });
+  });
+
+  it('selecting a card then playing dispatches play', async () => {
+    renderWithProviders(<SpoilFivePage />);
+    const card = await screen.findByAltText('♥ Q');
+    fireEvent.click(card);
+    const playBtn = await screen.findByRole('button', { name: '出す' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(playBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0 }));
+  });
+
+  it('renders trick end with the next trick button', async () => {
+    mockExec.mockResolvedValue(trickEndState);
+    renderWithProviders(<SpoilFivePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+  });
+
+  it('renders round end with the next round button and the round result', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<SpoilFivePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
+    expect(screen.getByText('ラウンド結果')).toBeInTheDocument();
+  });
+
+  it('renders the Spoil (流局) message on a spoiled round', async () => {
+    mockExec.mockResolvedValue(spoilState);
+    renderWithProviders(<SpoilFivePage />);
+    await waitFor(() => expect(screen.getByText(/流局/)).toBeInTheDocument());
+  });
+
+  it('renders the game end message', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<SpoilFivePage />);
+    await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたの勝ち！')).toBeInTheDocument());
+  });
+
+  it('does not show the play button on a CPU turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<SpoilFivePage />);
+    await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
+  });
+
+  it('renders five player panels with pot and trump', async () => {
+    renderWithProviders(<SpoilFivePage />);
+    await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
+    expect(screen.getByText(/ポット/)).toBeInTheDocument();
+    expect(screen.getByText(/切り札/)).toBeInTheDocument();
+  });
+});

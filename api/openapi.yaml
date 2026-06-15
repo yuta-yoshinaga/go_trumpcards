@@ -303,6 +303,8 @@ tags:
     description: Nap / Napoleon (ナップ) — 4-player British trick-taking gambling game on a standard 52-card deck (A,2-10,J,Q,K × 4 suits); 5 cards each, 5 tricks per round; rank A>K>Q>J>10>9>8>7>6>5>4>3>2; bidding phase first (Pass/Two/Three/Four/Nap, order lowest-to-highest); highest bidder becomes the Declarer and plays alone vs 3 Defenders; trump = Declarer's longest suit (auto-declared); Declarer leads the first trick; must-follow rule — follow led suit if able; chip scoring — Two/Three/Four pay face value on success and face value each to Defenders on failure; Nap pays 10 on success and 5 each to Defenders on failure; first to target (default 20 chips) wins
   - name: preference
     description: Préférence (プレフェランス) — 3-player Central/Eastern European trick-taking game on a 32-card deck (7,8,9,10,J,Q,K,A × 4 suits); 10 cards each, 10 tricks per round; rank A>K>Q>J>10>9>8>7; bidding phase first (Pass/Six/Misère/Seven/Eight, order lowest-to-highest); highest bidder becomes the Declarer and plays alone vs 2 Defenders; trump = Declarer's longest suit for Six/Seven/Eight (auto-declared); Misère has no trump; must-follow rule — follow led suit if able; Declarer gains contract value (Six=6, Seven=7, Eight=8, Misère=10 pts) on success; each Defender gains that value on failure; talon exchange omitted and pool bookkeeping replaced by simple cumulative points (simplified); first to target (default 30 pts) wins
+  - name: spoilfive
+    description: Spoil Five / Maw (スポイル・ファイブ) — 5-player Irish traditional trick-taking game on a standard 52-card deck (A,2-10,J,Q,K × 4 suits); 5 cards each, 5 tricks per round; trump determined by turn-up card from remainder of deck; fixed top trumps in order — trump 5 (Five Fingers) > trump J > ♥A (Ace of Hearts, always top trump regardless of trump suit) > trump A > trump K > trump Q > other trumps > led-suit cards; reneging — the three top trumps are exempt from must-follow and may be held back even when trump is led; must-follow otherwise; race to 3 — first player to win 3 tricks wins the round and takes the pot (each player antes each round); spoil — if no player reaches 3 tricks the pot carries over to the next round; first to target (default 30 pts) wins; pip-order red/black rank reversal and Jink bonus omitted (simplified)
 
 paths:
   /blackjack/exec:
@@ -13480,6 +13482,87 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PreferenceResponse'
+
+  /spoilfive/exec:
+    post:
+      tags:
+        - spoilfive
+      summary: Execute a Spoil Five game command
+      description: |
+        Send a command to advance a Spoil Five session identified by `sessionId`.
+        Spoil Five is a 5-player (1 human + 4 CPU) Irish traditional trick-taking game
+        on a standard 52-card deck (A,2-10,J,Q,K × 4 suits).
+        Each player is dealt 5 cards and 5 tricks are played per round.
+        Trump is determined by the turn-up card from the remainder of the deck after dealing.
+        Fixed top trumps (strongest to weakest): trump 5 (Five Fingers) > trump J >
+        ♥A (Ace of Hearts, always a top trump regardless of trump suit) >
+        trump A > trump K > trump Q > remaining trumps > led-suit cards.
+        Reneging: the three top trumps (trump 5, trump J, ♥A) are exempt from must-follow
+        and may be held back even when trump is led.
+        Must-follow otherwise: follow the led suit if able; if void follow with a trump if able.
+        Highest trump wins the trick; if no trump was played, highest card of the led suit wins.
+        Race to 3: the first player to win 3 tricks in a round takes the pot (all player antes).
+        Spoil: if no player reaches 3 tricks the pot carries over to the next round.
+        Match: first player to reach the target (default 30 points) wins.
+        Pip-order red/black rank reversal and Jink all-5-tricks bonus are omitted (simplified).
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Play       | `0`   | Tricks played under must-follow and reneging rules |
+        | TrickEnd   | `1`   | Trick resolved; advance with `next` |
+        | RoundEnd   | `2`   | Round scored (pot awarded or carried over); advance with `nextround` |
+        | GameEnd    | `3`   | A player reached the target score |
+
+        | Command           | Aliases                | Description |
+        |-------------------|------------------------|-------------|
+        | `reset`           | `r`                    | Start / restart the game (optional `config`) |
+        | `play`            | —                      | Play a card by `cardIndex` (Play phase) |
+        | `next`            | `n`                    | Advance to the next trick |
+        | `nextround`       | `nr`                   | Score the round and start the next |
+        | `setdifficulty`   | `sd`                   | Set CPU difficulty (requires `difficulty` 0-2) |
+        | `log`             | `l`                    | View action log |
+      operationId: spoilFiveExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpoilFiveRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play the card at hand index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+              next:
+                summary: Advance to the next trick
+                value:
+                  command: next
+                  sessionId: my-session-001
+              nextround:
+                summary: Score the round and continue
+                value:
+                  command: nextround
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpoilFiveResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpoilFiveResponse'
 
 components:
   schemas:
@@ -29387,6 +29470,142 @@ components:
           type: string
           description: Client-generated session identifier (max 256 characters)
           example: my-session-001
+
+    SpoilFiveRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `play`,
+            `next` (`n`), `nextround` (`nr`), `setdifficulty` (`sd`), `log` (`l`).
+          enum: [reset, r, play, next, n, nextround, nr, setdifficulty, sd, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Hand index of the card to play. Required for the `play` command.
+          example: 0
+        difficulty:
+          type: integer
+          description: CPU difficulty level for `setdifficulty`. 0=Easy, 1=Normal, 2=Hard.
+          minimum: 0
+          maximum: 2
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            targetScore:
+              type: integer
+              minimum: 1
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    SpoilFiveResponse:
+      type: object
+      description: Current state of the Spoil Five game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              score:
+                type: integer
+                description: Accumulated pot winnings for this player
+              roundTricks:
+                type: integer
+                description: Number of tricks won by this player in the current round
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 0=Play, 1=TrickEnd, 2=RoundEnd, 3=GameEnd"
+          enum: [0, 1, 2, 3]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Current round number (starts at 1)
+        trickNumber:
+          type: integer
+          description: Current trick number within the round (1-5)
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        leadPlayerIdx:
+          type: integer
+          description: Index of the player who led the current trick
+        dealerIdx:
+          type: integer
+          description: Index of the current dealer
+        trumpSuit:
+          type: integer
+          description: "Current trump suit: 1=Spades, 2=Clubs, 3=Hearts, 4=Diamonds"
+          minimum: 1
+          maximum: 4
+        pot:
+          type: integer
+          description: Current pot total (accumulates on spoil)
+        roundWinnerIdx:
+          type: integer
+          description: Index of the player who won 3 tricks this round (-1 if spoiled or in progress)
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        playableIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices the human may legally play (must-follow and reneging rules applied)
+        gameEndFlag:
+          type: boolean
+        winnerPlayer:
+          type: integer
+          description: Index of the winning player (-1 if undecided)
+        isHumanTurn:
+          type: boolean
+        hint:
+          type: object
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            targetScore:
+              type: integer
 
     PreferenceResponse:
       type: object

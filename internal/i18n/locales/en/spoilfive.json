@@ -1,0 +1,22 @@
+{
+  "helpTitle": "Spoil Five",
+  "helpPlay": "  play <idx>               play a card",
+  "helpNext": "  n                         go to next trick",
+  "helpNextRound": "  nr                        go to next round",
+  "helpSetDifficulty": "  sd [0-2]                  CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "round": "Round: {{round}}  Trick: {{trick}}  Trump: {{trump}}  Pot: {{pot}}",
+  "playerLine": "{{name}}: {{cards}} cards  Round tricks: {{roundTricks}}  Score: {{score}}",
+  "gameEnd": "Game over! {{name}} reaches the target and wins the match!",
+  "promptPlay": "Turn: {{name}}",
+  "promptPlayHelp": "play <idx> ... play a card (must follow suit, but the top three trumps — trump 5, trump J, ♥A — may be held back: Reneging. Win 3 tricks to take the pot)",
+  "promptTrickEnd": "Trick complete",
+  "promptTrickEndHelp": "n / next ... go to the next trick",
+  "promptRoundEnd": "Round complete — {{name}} takes the pot of {{pot}}",
+  "promptSpoil": "Spoiled! No one won 3 tricks — the pot of {{pot}} carries over to the next round",
+  "promptRoundEndHelp": "nr / nextround ... go to the next round",
+  "hintNone": "No hint available.",
+  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintReasonLeadHigh": "Lead a high card to seize the trick",
+  "hintReasonTakeTrick": "Play to win this trick (3 tricks takes the pot)",
+  "hintReasonDiscardLow": "Cannot win — discard a low card"
+}

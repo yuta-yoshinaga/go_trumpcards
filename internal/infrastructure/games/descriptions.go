@@ -155,6 +155,7 @@ var gameDescriptions = map[string]string{
 	"knockoutwhist":       "Knockout Whist (ノックアウト・ホイスト)",
 	"nap":                 "Nap / Napoleon (ナップ)",
 	"preference":          "Préférence (プレフェランス)",
+	"spoilfive":           "Spoil Five / Maw (スポイル・ファイブ)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

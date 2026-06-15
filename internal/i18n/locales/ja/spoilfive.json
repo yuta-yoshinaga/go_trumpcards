@@ -1,0 +1,22 @@
+{
+  "helpTitle": "スポイル・ファイブ (Spoil Five)",
+  "helpPlay": "  play <idx>               カードを出す",
+  "helpNext": "  n                         次のトリックへ",
+  "helpNextRound": "  nr                        次のラウンドへ",
+  "helpSetDifficulty": "  sd [0-2]                  CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "round": "ラウンド: {{round}}  トリック: {{trick}}  切り札: {{trump}}  ポット: {{pot}}",
+  "playerLine": "{{name}}: {{cards}}枚  今ラウンドのトリック: {{roundTricks}}  得点: {{score}}",
+  "gameEnd": "ゲーム終了！{{name}}が目標点に到達してマッチ勝利！",
+  "promptPlay": "手番: {{name}}",
+  "promptPlayHelp": "play <idx>・・・カードを出す（マストフォロー。ただし上位3枚の切り札＝切り札の5・切り札のJ・♥Aは温存可＝Reneging。3トリック獲得でポットを獲得）",
+  "promptTrickEnd": "トリック終了",
+  "promptTrickEndHelp": "n / next・・・次のトリックへ",
+  "promptRoundEnd": "ラウンド終了 — {{name}}がポット{{pot}}を獲得",
+  "promptSpoil": "流局 (Spoil)！誰も3トリックに届かず、ポット{{pot}}は次ラウンドへ持ち越し",
+  "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
+  "hintNone": "ヒントはありません。",
+  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintReasonLeadHigh": "高い札でリードしてトリックを取りにいく",
+  "hintReasonTakeTrick": "このトリックを取りにいく（3トリックでポット獲得）",
+  "hintReasonDiscardLow": "取れないので低い札を捨てる"
+}

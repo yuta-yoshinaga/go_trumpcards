@@ -103,6 +103,7 @@ import type {
   SpideretteResponse,
   SpiderResponse,
   SpiteAndMaliceResponse,
+  SpoilFiveResponse,
   SuecaResponse,
   TarneebResponse,
   TexasHoldemBonusResponse,
@@ -232,6 +233,7 @@ import { getSpeedHint } from '../utils/hints/speedHint';
 import { getSpideretteHint } from '../utils/hints/spideretteHint';
 import { getSpiderHint } from '../utils/hints/spiderHint';
 import { getSpiteAndMaliceHint } from '../utils/hints/spiteAndMaliceHint';
+import { getSpoilFiveHint } from '../utils/hints/spoilFiveHint';
 import { getSuecaHint } from '../utils/hints/suecaHint';
 import { getTarneebHint } from '../utils/hints/tarneebHint';
 import { getTexasHoldemBonusHint } from '../utils/hints/texasHoldemBonusHint';
@@ -394,6 +396,7 @@ const hintFactories = {
   marias: (s) => getMariasHint(s as MariasResponse),
   sedma: (s) => getSedmaHint(s as SedmaResponse),
   knockoutwhist: (s) => getKnockoutWhistHint(s as KnockoutWhistResponse),
+  spoilfive: (s) => getSpoilFiveHint(s as SpoilFiveResponse),
   solowhist: (s) => getSoloWhistHint(s as SoloWhistResponse),
   nap: (s) => getNapHint(s as NapResponse),
   preference: (s) => getPreferenceHint(s as PreferenceResponse),

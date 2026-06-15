@@ -725,6 +725,11 @@ func init() {
 			return usecase.NewPreferenceInteractor(domain.NewDefaultPreference(), new(presenter.PreferenceWebPresenter))
 		},
 		controller.NewPreferenceWebController)
+	BindWebControllerFor("spoilfive",
+		func() usecase.SpoilFiveInteractorIF {
+			return usecase.NewSpoilFiveInteractor(domain.NewDefaultSpoilFive(), new(presenter.SpoilFiveWebPresenter))
+		},
+		controller.NewSpoilFiveWebController)
 	BindWebControllerFor("easthaven",
 		func() usecase.EasthavenInteractorIF {
 			return usecase.NewEasthavenInteractor(domain.NewDefaultEasthaven(), new(presenter.EasthavenWebPresenter))

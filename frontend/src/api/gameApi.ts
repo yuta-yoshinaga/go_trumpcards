@@ -133,6 +133,7 @@ import type {
   SpiderResponse,
   SpiteAndMaliceMoveZone,
   SpiteAndMaliceResponse,
+  SpoilFiveResponse,
   SuecaResponse,
   TarneebResponse,
   TexasHoldemBonusResponse,
@@ -311,6 +312,7 @@ const workerUrl: Record<string, string> = {
   marias: WORKER_CLASSIC,
   sedma: WORKER_CLASSIC,
   knockoutwhist: WORKER_CLASSIC,
+  spoilfive: WORKER_CLASSIC,
   solowhist: WORKER_CLASSIC,
   nap: WORKER_CLASSIC,
   preference: WORKER_CLASSIC,
@@ -1833,6 +1835,41 @@ export const knockoutWhistApi = {
     }),
 };
 
+/** Configuration options for Spoil Five game settings (CPU difficulty only — target points are fixed server-side). */
+export interface SpoilFiveConfigInput {
+  cpuDifficulty?: number;
+}
+
+/** Commands accepted by the Spoil Five /spoilfive/exec endpoint. */
+export type SpoilFiveCommand = 'reset' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Spoil Five /spoilfive/exec endpoint.
+ *
+ * Spoil Five (Maw) is an Irish play-only trick-taker for 5 players on a 52-card
+ * deck (5 cards each). Trump is a turned-up card; the trump 5, trump J, and ♥A
+ * are the fixed top trumps and may be held back (Reneging). The first player to
+ * win 3 of the 5 tricks takes the pot; otherwise the round is a Spoil (流局) and
+ * the pot carries over. First player to targetPoints wins the match.
+ *   - `play` → `{ cardIndex: number }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const spoilFiveApi = {
+  exec: (
+    command: SpoilFiveCommand,
+    opts?: {
+      cardIndex?: number;
+      config?: SpoilFiveConfigInput;
+    },
+  ) =>
+    gameExec<SpoilFiveResponse>('spoilfive', {
+      command,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
 /** Configuration options for Solo Whist game settings. */
 export interface SoloWhistConfigInput {
   cpuDifficulty?: number;
@@ -3087,6 +3124,7 @@ const games = [
   'marias',
   'sedma',
   'knockoutwhist',
+  'spoilfive',
   'solowhist',
   'nap',
   'preference',

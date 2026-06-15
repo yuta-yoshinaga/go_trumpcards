@@ -343,4 +343,12 @@ func init() {
 			return usecase.RestorePreferenceInteractor(data, new(presenter.PreferenceWebPresenter))
 		},
 		controller.NewPreferenceWebControllerWithProvider)
+	games.RegisterKVGame("spoilfive", games.CategoryClassic,
+		func() usecase.SpoilFiveInteractorIF {
+			return usecase.NewSpoilFiveInteractor(domain.NewDefaultSpoilFive(), new(presenter.SpoilFiveWebPresenter))
+		},
+		func(data []byte) (usecase.SpoilFiveInteractorIF, error) {
+			return usecase.RestoreSpoilFiveInteractor(data, new(presenter.SpoilFiveWebPresenter))
+		},
+		controller.NewSpoilFiveWebControllerWithProvider)
 }
