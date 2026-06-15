@@ -1006,11 +1006,3 @@ func (g *TwentyNine) UnmarshalJSON(data []byte) error {
 	g.actionLog = j.ActionLog
 	return nil
 }
-
-// twentyNineBidName 入札種別の表示名を返す。
-func twentyNineBidName(b TwentyNineBid) string {
-	if b == TwentyNineBidPass {
-		return "Pass"
-	}
-	return fmt.Sprintf("%d", int(b))
-}
