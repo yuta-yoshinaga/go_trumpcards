@@ -66,6 +66,9 @@
   /* Sedma — Czech/Slovak deep teal-pine, distinct from Sueca's lighter felt-green and every other game. */
   --color-game-bg-sedma: #0d5c5c;
   --color-game-bg-sedma-dark: #093e3e;
+  /* Solo Whist — British racing-green felt with a club-room navy undertone, distinct from every other felt. */
+  --color-game-bg-solowhist: #1f4d3a;
+  --color-game-bg-solowhist-dark: #143324;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;

@@ -61,6 +61,7 @@ export type GameKey =
   | 'manille'
   | 'marias'
   | 'sedma'
+  | 'solowhist'
   | 'pitch'
   | 'twotenjack'
   | 'ohhell'
@@ -209,6 +210,10 @@ const SEDMA = {
   bg: 'bg-game-bg-sedma',
   footer: 'bg-game-bg-sedma-dark border-white/20',
 } as const;
+const SOLOWHIST = {
+  bg: 'bg-game-bg-solowhist',
+  footer: 'bg-game-bg-solowhist-dark border-white/20',
+} as const;
 
 export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Table games
@@ -263,6 +268,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   manille: MANILLE,
   marias: MARIAS,
   sedma: SEDMA,
+  solowhist: SOLOWHIST,
   pitch: BLUE,
   twotenjack: BLUE,
   ohhell: BLUE,

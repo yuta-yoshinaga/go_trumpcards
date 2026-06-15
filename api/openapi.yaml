@@ -295,6 +295,8 @@ tags:
     description: Mariáš (マリアーシュ) - 3-player Czech/Slovak trick-taking game on a 32-card German-suited deck (7,8,9,10,J,Q,K,A × 4 suits); 10 cards each (2-card talon unused in simplified impl); no fixed teams — each round one Soloist (forehand, rotates) vs two Defenders; trump = Soloist's longest suit (auto-declared); rank A>10>K>Q>J>9>8>7 for all suits; card points A=11, 10=10, K=4, Q=3, J=2, 9/8/7=0 (total 120); marriages — K+Q same suit at deal scores 20 (40 for trump); must-follow + forced trump when void; last-trick +10 bonus; Soloist wins round (gains 2 game pts) if total > Defenders' combined total, else each Defender gains 2 game pts; first to target (default 10 game pts) wins
   - name: sedma
     description: Sedma (セドマ) - 4-player Czech/Slovak capture trick-taking game on a 32-card deck (7,8,9,10,J,Q,K,A × 4 suits); 8 cards each; 2 teams (seats 0&2 vs 1&3); no trump suit; no follow obligation — any card may be played freely; a card captures the trick if its rank matches the lead card's rank OR it is a 7 (wild); the last player in play order to capture wins the trick; if nobody after the lead captures, the lead player wins; card points A=10, 10=10, others=0 (total 80); last-trick +10 bonus; card points accumulate; first team to target (default 101) wins
+  - name: solowhist
+    description: Solo Whist (ソロ・ホイスト) - 4-player British trick-taking game on a standard 52-card deck (A,2-10,J,Q,K × 4 suits); 13 cards each, 13 tricks per round; bidding phase first (Pass/Solo/Misère/Abundance, order lowest-to-highest); highest bidder becomes the Declarer and plays alone vs 3 Defenders; trump = Declarer's longest suit for Solo/Abundance (auto-declared); Misère has no trump; rank A>K>Q>J>10>9>8>7>6>5>4>3>2; must-follow rule — follow led suit if able; Declarer wins contract value (Solo=2, Misère=3, Abundance=4 game pts) on success; each Defender wins that value on failure; first to target (default 21 game pts) wins
 
 paths:
   /blackjack/exec:
@@ -13100,6 +13102,103 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SedmaResponse'
+
+  /solowhist/exec:
+    post:
+      tags:
+        - solowhist
+      summary: Execute a Solo Whist game command
+      description: |
+        Send a command to advance a Solo Whist session identified by `sessionId`.
+        Solo Whist is a 4-player (1 human + 3 CPU) British trick-taking game on a standard
+        52-card deck (A,2-10,J,Q,K × 4 suits). Each player is dealt 13 cards and 13 tricks
+        are played per round.
+        Rank (strongest to weakest): A > K > Q > J > 10 > 9 > 8 > 7 > 6 > 5 > 4 > 3 > 2.
+        Bidding phase: starting from the dealer's left, each player bids once choosing from
+        Pass / Solo (≥8 tricks, value 2) / Misère (0 tricks, no trump, value 3) /
+        Abundance (≥9 tricks, value 4). A non-pass bid must outrank the current highest
+        (Pass < Solo < Misère < Abundance). The highest bidder becomes the Declarer and
+        plays alone against the three Defenders. If everyone passes, the round is void and
+        redealt. The traditional Prop & Cop two-player alliance is omitted.
+        Trump: for Solo and Abundance the Declarer's longest suit is auto-declared as trump
+        (simplified). Misère has no trump.
+        Must-follow: players must follow the led suit if able; otherwise any card may be played.
+        Highest trump wins; if no trump, highest card of the led suit wins.
+        Scoring: Declarer fulfils contract → gains contract value game points;
+        Declarer fails → each Defender gains contract value game points.
+        Match: first player to reach the target (default 21 game points) wins.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Bid       | `0`   | Bidding phase; each player bids once |
+        | Play      | `1`   | Thirteen tricks played under must-follow rules |
+        | TrickEnd  | `2`   | Trick resolved; advance with `next` |
+        | RoundEnd  | `3`   | Round scored; advance with `nextround` |
+        | GameEnd   | `4`   | A player reached the target game points |
+
+        | Command           | Aliases                | Description |
+        |-------------------|------------------------|-------------|
+        | `reset`           | `r`                    | Start / restart the game (optional `config`) |
+        | `bid`             | —                      | Place a bid (requires `bidType` 0=Pass 1=Solo 2=Misère 3=Abundance) |
+        | `pass`            | —                      | Pass the bid (equivalent to `bid` with bidType 0) |
+        | `play`            | —                      | Play a card by `cardIndex` (Play phase) |
+        | `next`            | `n`                    | Advance to the next trick |
+        | `nextround`       | `nr`                   | Score the round and start the next |
+        | `setdifficulty`   | `sd`                   | Set CPU difficulty (requires `difficulty` 0-2) |
+        | `log`             | `l`                    | View action log |
+      operationId: soloWhistExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SoloWhistRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Bid Solo (bidType 1)
+                value:
+                  command: bid
+                  bidType: 1
+                  sessionId: my-session-001
+              pass:
+                summary: Pass the bid
+                value:
+                  command: pass
+                  sessionId: my-session-001
+              play:
+                summary: Play the card at hand index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+              next:
+                summary: Advance to the next trick
+                value:
+                  command: next
+                  sessionId: my-session-001
+              nextround:
+                summary: Score the round and continue
+                value:
+                  command: nextround
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SoloWhistResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SoloWhistResponse'
 
 components:
   schemas:
@@ -28502,6 +28601,161 @@ components:
           description: Index of the winning team (-1 if undecided)
         isHumanTurn:
           type: boolean
+        hint:
+          type: object
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            targetScore:
+              type: integer
+
+    SoloWhistRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `bid`, `pass`,
+            `play`, `next` (`n`), `nextround` (`nr`), `setdifficulty` (`sd`), `log` (`l`).
+          enum: [reset, r, bid, pass, play, next, n, nextround, nr, setdifficulty, sd, log, l]
+          example: reset
+        bidType:
+          type: integer
+          description: Bid contract type for the `bid` command. 0=Pass, 1=Solo, 2=Misère, 3=Abundance.
+          minimum: 0
+          maximum: 3
+        cardIndex:
+          type: integer
+          description: Hand index of the card to play. Required for the `play` command.
+          example: 0
+        difficulty:
+          type: integer
+          description: CPU difficulty level for `setdifficulty`. 0=Easy, 1=Normal, 2=Hard.
+          minimum: 0
+          maximum: 2
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            targetScore:
+              type: integer
+              minimum: 1
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    SoloWhistResponse:
+      type: object
+      description: Current state of the Solo Whist game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              isDeclarer:
+                type: boolean
+                description: True if this player is the Declarer for the current round
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              score:
+                type: integer
+                description: Cumulative game points for this player
+        phase:
+          type: integer
+          description: "Game phase: 0=Bid, 1=Play, 2=TrickEnd, 3=RoundEnd, 4=GameEnd"
+          enum: [0, 1, 2, 3, 4]
+          example: 0
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        declarerIdx:
+          type: integer
+          description: Index of the Declarer player for the current round (-1 if not yet determined)
+        contract:
+          type: integer
+          description: "Current contract: 0=None/Pass, 1=Solo, 2=Misère, 3=Abundance"
+          enum: [0, 1, 2, 3]
+        trumpSuit:
+          type: integer
+          description: "Current trump suit: 1=Spades, 2=Clubs, 3=Hearts, 4=Diamonds (0 for Misère / no trump)"
+          minimum: 0
+          maximum: 4
+        bids:
+          type: array
+          items:
+            type: integer
+          description: Bid placed by each player in seat order (0=Pass, 1=Solo, 2=Misère, 3=Abundance; -1=not yet bid)
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        playerScores:
+          type: array
+          items:
+            type: integer
+          description: Cumulative game points per player (index = player seat)
+        roundTricks:
+          type: array
+          items:
+            type: integer
+          description: Number of tricks won by each player in the current round (index = player seat)
+        playableIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices the human may legally play (must-follow filtered)
+        gameEndFlag:
+          type: boolean
+        winnerPlayer:
+          type: integer
+          description: Index of the winning player (-1 if undecided)
+        isHumanTurn:
+          type: boolean
+        isHumanBidTurn:
+          type: boolean
+          description: True when it is the human's turn to bid
         hint:
           type: object
           properties:
