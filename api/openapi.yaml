@@ -297,6 +297,8 @@ tags:
     description: Sedma (セドマ) - 4-player Czech/Slovak capture trick-taking game on a 32-card deck (7,8,9,10,J,Q,K,A × 4 suits); 8 cards each; 2 teams (seats 0&2 vs 1&3); no trump suit; no follow obligation — any card may be played freely; a card captures the trick if its rank matches the lead card's rank OR it is a 7 (wild); the last player in play order to capture wins the trick; if nobody after the lead captures, the lead player wins; card points A=10, 10=10, others=0 (total 80); last-trick +10 bonus; card points accumulate; first team to target (default 101) wins
   - name: solowhist
     description: Solo Whist (ソロ・ホイスト) - 4-player British trick-taking game on a standard 52-card deck (A,2-10,J,Q,K × 4 suits); 13 cards each, 13 tricks per round; bidding phase first (Pass/Solo/Misère/Abundance, order lowest-to-highest); highest bidder becomes the Declarer and plays alone vs 3 Defenders; trump = Declarer's longest suit for Solo/Abundance (auto-declared); Misère has no trump; rank A>K>Q>J>10>9>8>7>6>5>4>3>2; must-follow rule — follow led suit if able; Declarer wins contract value (Solo=2, Misère=3, Abundance=4 game pts) on success; each Defender wins that value on failure; first to target (default 21 game pts) wins
+  - name: knockoutwhist
+    description: Knockout Whist (ノックアウト・ホイスト) — 4-player British survival trick-taking game on a standard 52-card deck (A,2-10,J,Q,K × 4 suits); hand size shrinks each round (round 1 = 7 cards, round 2 = 6 cards, …, round 7 = 1 card; handSize = 8 − roundNumber); rank A>K>Q>J>10>9>8>7>6>5>4>3>2; trump = previous round winner's longest suit (auto-selected; round-1 leader is player to dealer's left); must-follow — follow led suit if able, else any card; highest trump wins, else highest led-suit card wins; Dogbone rule — a player who wins zero tricks spends 1 Dogbone token (each player starts with 1) to survive the round; if a player has no Dogbone left and wins zero tricks they are eliminated; last player remaining wins (or the winner of the final 1-card round)
 
 paths:
   /blackjack/exec:
@@ -13199,6 +13201,84 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SoloWhistResponse'
+
+  /knockoutwhist/exec:
+    post:
+      tags:
+        - knockoutwhist
+      summary: Execute a Knockout Whist game command
+      description: |
+        Send a command to advance a Knockout Whist session identified by `sessionId`.
+        Knockout Whist is a 4-player (1 human + 3 CPU) British survival trick-taking game
+        on a standard 52-card deck (A,2-10,J,Q,K × 4 suits).
+        Hand size decreases each round: round 1 deals 7 cards, round 2 deals 6, …,
+        round 7 deals 1 (handSize = 8 − roundNumber).
+        Rank (highest to lowest): A > K > Q > J > 10 > 9 > 8 > 7 > 6 > 5 > 4 > 3 > 2.
+        Trump is determined automatically from the previous round winner's longest suit;
+        the round-1 leader is the player to the dealer's left.
+        Must-follow: players must follow the led suit if able; otherwise any card may be played.
+        Highest trump wins; if no trump was played, the highest card of the led suit wins.
+        Dogbone rule: a player who wins zero tricks in a round must spend one Dogbone token
+        (each player starts with 1) to survive; if no token remains the player is eliminated.
+        The last player remaining wins (or the winner of the final 1-card round).
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Play       | `0`   | Tricks played under must-follow rules |
+        | TrickEnd   | `1`   | Trick resolved; advance with `next` |
+        | RoundEnd   | `2`   | Round scored; apply Dogbone/elimination; advance with `nextround` |
+        | GameEnd    | `3`   | One player remains (or final round winner determined) |
+
+        | Command           | Aliases                | Description |
+        |-------------------|------------------------|-------------|
+        | `reset`           | `r`                    | Start / restart the game (optional `config`) |
+        | `play`            | —                      | Play a card by `cardIndex` (Play phase) |
+        | `next`            | `n`                    | Advance to the next trick |
+        | `nextround`       | `nr`                   | Score the round and start the next |
+        | `setdifficulty`   | `sd`                   | Set CPU difficulty (requires `difficulty` 0-2) |
+        | `log`             | `l`                    | View action log |
+      operationId: knockoutWhistExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KnockoutWhistRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play the card at hand index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+              next:
+                summary: Advance to the next trick
+                value:
+                  command: next
+                  sessionId: my-session-001
+              nextround:
+                summary: Score the round and continue
+                value:
+                  command: nextround
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnockoutWhistResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnockoutWhistResponse'
 
 components:
   schemas:
@@ -28775,4 +28855,137 @@ components:
             cpuDifficulty:
               type: integer
             targetScore:
+              type: integer
+
+    KnockoutWhistRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `play`,
+            `next` (`n`), `nextround` (`nr`), `setdifficulty` (`sd`), `log` (`l`).
+          enum: [reset, r, play, next, n, nextround, nr, setdifficulty, sd, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Hand index of the card to play. Required for the `play` command.
+          example: 0
+        difficulty:
+          type: integer
+          description: CPU difficulty level for `setdifficulty`. 0=Easy, 1=Normal, 2=Hard.
+          minimum: 0
+          maximum: 2
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    KnockoutWhistResponse:
+      type: object
+      description: Current state of the Knockout Whist game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              eliminated:
+                type: boolean
+                description: True if this player has been knocked out
+              dogbones:
+                type: integer
+                description: Number of Dogbone tokens remaining for this player
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              roundTricks:
+                type: integer
+                description: Number of tricks won by this player in the current round
+        phase:
+          type: integer
+          description: "Game phase: 0=Play, 1=TrickEnd, 2=RoundEnd, 3=GameEnd"
+          enum: [0, 1, 2, 3]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Current round number (starts at 1)
+        handSize:
+          type: integer
+          description: Number of cards dealt this round (= 8 - roundNumber)
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        trumpSuit:
+          type: integer
+          description: "Current trump suit: 1=Spades, 2=Clubs, 3=Hearts, 4=Diamonds"
+          minimum: 1
+          maximum: 4
+        roundWinnerIdx:
+          type: integer
+          description: Index of the player who won the most tricks last round (-1 if round 1)
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        activeCount:
+          type: integer
+          description: Number of players still in the game (not eliminated)
+        playableIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices the human may legally play (must-follow filtered)
+        gameEndFlag:
+          type: boolean
+        winnerPlayer:
+          type: integer
+          description: Index of the winning player (-1 if undecided)
+        isHumanTurn:
+          type: boolean
+        hint:
+          type: object
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
               type: integer

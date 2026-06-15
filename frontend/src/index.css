@@ -69,6 +69,9 @@
   /* Solo Whist — British racing-green felt with a club-room navy undertone, distinct from every other felt. */
   --color-game-bg-solowhist: #1f4d3a;
   --color-game-bg-solowhist-dark: #143324;
+  /* Knockout Whist — British pub-quiz royal-purple, distinct from every other felt (survival/elimination drama). */
+  --color-game-bg-knockoutwhist: #4a1d6e;
+  --color-game-bg-knockoutwhist-dark: #2f1247;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;

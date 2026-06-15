@@ -51,6 +51,7 @@ import type {
   IndianPokerResponse,
   KlaverjasResponse,
   KlondikeResponse,
+  KnockoutWhistResponse,
   LetItRideResponse,
   MacauResponse,
   ManilleResponse,
@@ -176,6 +177,7 @@ import { getIrishPokerHint } from '../utils/hints/irishPokerHint';
 import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
 import { getKlaverjasHint } from '../utils/hints/klaverjasHint';
 import { getKlondikeHint } from '../utils/hints/klondikeHint';
+import { getKnockoutWhistHint } from '../utils/hints/knockoutWhistHint';
 import { getLetitrideHint } from '../utils/hints/letitrideHint';
 import { getMacauHint } from '../utils/hints/macauHint';
 import { getManilleHint } from '../utils/hints/manilleHint';
@@ -387,6 +389,7 @@ const hintFactories = {
   manille: (s) => getManilleHint(s as ManilleResponse),
   marias: (s) => getMariasHint(s as MariasResponse),
   sedma: (s) => getSedmaHint(s as SedmaResponse),
+  knockoutwhist: (s) => getKnockoutWhistHint(s as KnockoutWhistResponse),
   solowhist: (s) => getSoloWhistHint(s as SoloWhistResponse),
 } satisfies Record<string, HintFn>;
 

@@ -2275,6 +2275,21 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"solowhist.helpSetDifficulty"},
 			})
 	}},
+	{Name: "knockoutwhist", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewKnockoutWhistCuiController(usecase.NewKnockoutWhistInteractor(
+				domain.NewDefaultKnockoutWhist(), new(presenter.KnockoutWhistCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "knockoutwhist.helpTitle",
+				CommandKeys: []string{
+					"knockoutwhist.helpPlay",
+					"knockoutwhist.helpNext",
+					"knockoutwhist.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"knockoutwhist.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

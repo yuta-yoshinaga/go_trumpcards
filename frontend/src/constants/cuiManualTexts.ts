@@ -69,6 +69,7 @@ import irishpoker from '../../../docs/manual/cui/irishpoker.md?raw';
 import jokerpoker from '../../../docs/manual/cui/jokerpoker.md?raw';
 import klaverjas from '../../../docs/manual/cui/klaverjas.md?raw';
 import klondike from '../../../docs/manual/cui/klondike.md?raw';
+import knockoutwhist from '../../../docs/manual/cui/knockoutwhist.md?raw';
 import letitride from '../../../docs/manual/cui/letitride.md?raw';
 import macau from '../../../docs/manual/cui/macau.md?raw';
 import manille from '../../../docs/manual/cui/manille.md?raw';
@@ -207,6 +208,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/manille': manille,
   '/marias': marias,
   '/sedma': sedma,
+  '/knockoutwhist': knockoutwhist,
   '/solowhist': solowhist,
   '/memory': memory,
   '/mighty': mighty,

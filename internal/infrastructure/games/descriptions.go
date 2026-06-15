@@ -152,6 +152,7 @@ var gameDescriptions = map[string]string{
 	"marias":              "Mariáš (マリアーシュ)",
 	"sedma":               "Sedma (セドマ)",
 	"solowhist":           "Solo Whist (ソロ・ホイスト)",
+	"knockoutwhist":       "Knockout Whist (ノックアウト・ホイスト)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).
