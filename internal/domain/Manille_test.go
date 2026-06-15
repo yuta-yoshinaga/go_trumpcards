@@ -117,14 +117,15 @@ func TestManille_PartnerWinningTrumpExemption(t *testing.T) {
 	g := newManGame(true)
 	g.SetPhase(ManillePhasePlay)
 	g.SetTrumpSuit(CardDesignDiamond)
-	g.SetCurrentPlayerIdx(2)
-	// Lead by p1; partner p0 (same team as p2) plays the winning 10♣. p2 is void
-	// in clubs but holds a trump — the partner-winning exemption lets p2 discard.
+	g.SetCurrentPlayerIdx(0) // human plays last in this trick
+	// Trick led by p1; the human's partner p2 (team 0) is currently winning with 10♣.
+	// The human is void in clubs but holds a trump — partner-winning exemption lets them discard.
 	g.SetCurrentTrick([]*ManilleTrickCard{
-		{PlayerIdx: 1, Card: manCard(CardDesignClover, 13)},
-		{PlayerIdx: 0, Card: manCard(CardDesignClover, 10)},
+		{PlayerIdx: 1, Card: manCard(CardDesignClover, 7)},
+		{PlayerIdx: 2, Card: manCard(CardDesignClover, 10)},
+		{PlayerIdx: 3, Card: manCard(CardDesignClover, 8)},
 	})
-	manSetHand(g.GetPlayer(2), manCard(CardDesignHeart, 7), manCard(CardDesignDiamond, 8))
+	manSetHand(g.GetPlayer(0), manCard(CardDesignHeart, 7), manCard(CardDesignDiamond, 8))
 	if err := g.PlayerPlay(0); err != nil { // discard heart while partner winning — allowed
 		t.Fatalf("partner-winning exemption should allow discard, got: %v", err)
 	}
@@ -134,10 +135,14 @@ func TestManille_MustTrumpWhenOpponentWinning(t *testing.T) {
 	g := newManGame(true)
 	g.SetPhase(ManillePhasePlay)
 	g.SetTrumpSuit(CardDesignDiamond)
-	g.SetCurrentPlayerIdx(1)
-	// p0 (opponent of p1) leads/wins with 10♣. p1 void in clubs, holds a trump → must trump.
-	g.SetCurrentTrick([]*ManilleTrickCard{{PlayerIdx: 0, Card: manCard(CardDesignClover, 10)}})
-	manSetHand(g.GetPlayer(1), manCard(CardDesignHeart, 7), manCard(CardDesignDiamond, 8))
+	g.SetCurrentPlayerIdx(0) // human plays last
+	// Opponent p1 (team 1) is winning with 10♣. Human is void in clubs but holds a trump → must trump.
+	g.SetCurrentTrick([]*ManilleTrickCard{
+		{PlayerIdx: 1, Card: manCard(CardDesignClover, 10)},
+		{PlayerIdx: 2, Card: manCard(CardDesignClover, 7)},
+		{PlayerIdx: 3, Card: manCard(CardDesignClover, 8)},
+	})
+	manSetHand(g.GetPlayer(0), manCard(CardDesignHeart, 7), manCard(CardDesignDiamond, 8))
 	if err := g.PlayerPlay(0); err == nil { // heart discard while opponent winning and holding trump
 		t.Error("expected must-trump error when opponent is winning")
 	}
