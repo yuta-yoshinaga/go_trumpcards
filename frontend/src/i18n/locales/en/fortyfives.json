@@ -1,0 +1,65 @@
+{
+  "phase": {
+    "bid": "Bid",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetPoints": "Target Points",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "trump": "Trump: {{suit}}",
+  "noTrump": "none",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "currentTrick": "Current Trick",
+  "trickEmpty": "(no cards yet)",
+  "players": "Players",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "team": {
+    "a": "Team A",
+    "b": "Team B"
+  },
+  "yourTeam": "Your Team",
+  "teamScore": "{{team}}: {{score}} pts",
+  "declarerBadge": "Declarer",
+  "contractUndecided": "Declarer: undecided",
+  "contractLine": "Declarer: {{name}} ({{team}}) — {{contract}}",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "target": "Target: {{points}} pts",
+  "bidPrompt": "Place a bid (only a higher bid is allowed):",
+  "bid": {
+    "pass": "Pass",
+    "fifteen": "15",
+    "twenty": "20",
+    "twentyfive": "25 (Jink)"
+  },
+  "roundResult": {
+    "title": "Round Result",
+    "teamA": "Team A: {{points}} pts",
+    "teamB": "Team B: {{points}} pts"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "lead_high": "Lead a strong card to win the trick",
+    "take_trick": "Win this trick",
+    "discard_low": "Cannot win — discard a low card"
+  },
+  "tutorial": {
+    "info": "Round, declarer (team and contract value), trump, and each team's score are shown here. The first team to reach the target points (default 45) wins. The ★ marks the declarer.",
+    "trick": "Cards played to the current trick appear here. Follow the led suit. The top trumps (trump 5 > trump J > ♥A > trump A …) are exempt from following (Reneging). The highest card wins the trick.",
+    "hand": "This is your hand. During play, click a playable card and press Play.",
+    "actions": "In the bidding phase, buttons appear for Pass / 15 / 20 / 25 (Jink). Only a bid higher than the current highest is selectable. The highest bidder's team declares trump and plays five tricks. Each trick is worth 5 points. Make the contract to score, miss it to lose your bid. A 25 Jink wins instantly if you take all five tricks."
+  }
+}

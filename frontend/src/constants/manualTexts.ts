@@ -52,6 +52,7 @@ import eightoff from '../../../docs/manual/web/eightoff.md?raw';
 import euchre from '../../../docs/manual/web/euchre.md?raw';
 import fiftyone from '../../../docs/manual/web/fiftyone.md?raw';
 import fivehundred from '../../../docs/manual/web/fivehundred.md?raw';
+import fortyfives from '../../../docs/manual/web/fortyfives.md?raw';
 import fortythieves from '../../../docs/manual/web/fortythieves.md?raw';
 import fourcardpoker from '../../../docs/manual/web/fourcardpoker.md?raw';
 import freecell from '../../../docs/manual/web/freecell.md?raw';
@@ -207,6 +208,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/knockoutwhist': knockoutwhist,
   '/spoilfive': spoilfive,
   '/solowhist': solowhist,
+  '/fortyfives': fortyfives,
   '/nap': nap,
   '/preference': preference,
   '/memory': memory,

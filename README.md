@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した146種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した147種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -165,6 +165,7 @@ Go + Clean Architecture で実装した146種類のトランプゲーム。CLI �
 | スポイル・ファイブ (Spoil Five / Maw) | `spoilfive` | [CUI](docs/manual/cui/spoilfive.md) / [Web](docs/manual/web/spoilfive.md) |
 | ナップ (Nap / Napoleon) | `nap` | [CUI](docs/manual/cui/nap.md) / [Web](docs/manual/web/nap.md) |
 | プレフェランス (Préférence) | `preference` | [CUI](docs/manual/cui/preference.md) / [Web](docs/manual/web/preference.md) |
+| フォーティファイブズ (Auction Forty-Fives) | `fortyfives` | [CUI](docs/manual/cui/fortyfives.md) / [Web](docs/manual/web/fortyfives.md) |
 
 ## Demo
 

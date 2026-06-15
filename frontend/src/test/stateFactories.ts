@@ -1,6 +1,7 @@
 import type {
   CallBreakResponse,
   DoppelkopfResponse,
+  FortyFivesResponse,
   GongZhuResponse,
   HeartsResponse,
   KlaverjasResponse,
@@ -1010,6 +1011,60 @@ const baseSoloWhistState: SoloWhistResponse = {
  */
 export function makeSoloWhistState(overrides?: Partial<SoloWhistResponse>): SoloWhistResponse {
   return { ...baseSoloWhistState, ...overrides };
+}
+
+/** Base Auction Forty-Fives state used as the default for {@link makeFortyFivesState}. A 4-player 2-team bidding trick-taker; defaults to a human Bid turn. */
+const baseFortyFivesState: FortyFivesResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 5,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      teamScore: 0,
+      isDeclarer: false,
+    },
+    { id: 1, isHuman: false, cardCount: 5, cards: [], trickCount: 0, teamScore: 0, isDeclarer: false },
+    { id: 2, isHuman: false, cardCount: 5, cards: [], trickCount: 0, teamScore: 0, isDeclarer: false },
+    { id: 3, isHuman: false, cardCount: 5, cards: [], trickCount: 0, teamScore: 0, isDeclarer: false },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  declarerIdx: -1,
+  contract: 0,
+  trumpSuit: 0,
+  bids: [0, 0, 0, 0],
+  currentTrick: [],
+  teamScores: [0, 0],
+  roundTeamPoints: [0, 0],
+  playableIndices: [],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  isHumanTurn: false,
+  isHumanBidTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 45 },
+};
+
+/**
+ * Creates a {@link FortyFivesResponse} with sensible defaults (a human Bid turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial FortyFivesResponse fields to override.
+ * @returns A complete FortyFivesResponse suitable for use in tests.
+ */
+export function makeFortyFivesState(overrides?: Partial<FortyFivesResponse>): FortyFivesResponse {
+  return { ...baseFortyFivesState, ...overrides };
 }
 
 /** Base Préférence state used as the default for {@link makePreferenceState}. A 3-player Russian bidding trick-taker; defaults to a human Bid turn. */

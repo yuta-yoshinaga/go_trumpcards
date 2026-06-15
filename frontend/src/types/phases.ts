@@ -368,6 +368,15 @@ export const SoloWhistContract = {
   ABUNDANCE: 3,
 } as const;
 
+/** Auction Forty-Fives phase constants (sync: internal/domain/FortyFives.go). */
+export const FortyFivesPhase = {
+  BID: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Préférence phase constants (sync: internal/domain/Preference.go). */
 export const PreferencePhase = {
   BID: 0,
