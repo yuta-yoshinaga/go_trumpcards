@@ -299,7 +299,7 @@ const workerUrl: Record<string, string> = {
   mus: WORKER_CASINO,
   tute: WORKER_CASINO,
   sueca: WORKER_CASINO,
-  klaverjas: WORKER_CASINO,
+  klaverjas: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {

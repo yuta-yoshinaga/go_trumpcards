@@ -279,4 +279,12 @@ func init() {
 			return usecase.RestoreTrucoInteractor(data, new(presenter.TrucoWebPresenter))
 		},
 		controller.NewTrucoWebControllerWithProvider)
+	games.RegisterKVGame("klaverjas", games.CategoryClassic,
+		func() usecase.KlaverjasInteractorIF {
+			return usecase.NewKlaverjasInteractor(domain.NewDefaultKlaverjas(), new(presenter.KlaverjasWebPresenter))
+		},
+		func(data []byte) (usecase.KlaverjasInteractorIF, error) {
+			return usecase.RestoreKlaverjasInteractor(data, new(presenter.KlaverjasWebPresenter))
+		},
+		controller.NewKlaverjasWebControllerWithProvider)
 }
