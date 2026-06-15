@@ -29,6 +29,7 @@
   "hintNone": "ヒントはありません。",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
   "hintReasonLeadLow": "低い札でリードして温存する",
+  "hintReasonLeadHigh": "強い札でリードして主導権を握る",
   "hintReasonFollowWin": "このトリックを取りに行く",
   "hintReasonFollowDuck": "取れない／取る価値がないのでダック",
   "hintReasonDiscardLow": "フォローできないので低い札を捨てる",

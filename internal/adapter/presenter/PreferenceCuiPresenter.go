@@ -161,6 +161,7 @@ func (p *PreferenceCuiPresenter) HintOutput(g interfaces.PreferenceGame) string 
 // preferenceHintReasonKeys maps Préférence-specific hint-reason identifiers to i18n keys.
 var preferenceHintReasonKeys = map[string]string{
 	"lead_low":    "preference.hintReasonLeadLow",
+	"lead_high":   "preference.hintReasonLeadHigh",
 	"follow_win":  "preference.hintReasonFollowWin",
 	"follow_duck": "preference.hintReasonFollowDuck",
 	"discard_low": "preference.hintReasonDiscardLow",

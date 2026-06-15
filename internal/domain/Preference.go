@@ -730,6 +730,10 @@ func (g *Preference) GetHint() *PreferenceHint {
 // playHintReason プレイヒントの理由キーを判定する。
 func (g *Preference) playHintReason(playerIdx, chosenIdx int) string {
 	if len(g.currentTrick) == 0 {
+		// 宣言者 (Misère 以外) はリードで強い札を出して主導権を握る。
+		if playerIdx == g.declarerIdx && g.contract != PreferenceBidMisere {
+			return "lead_high"
+		}
 		return "lead_low"
 	}
 	card := g.players[playerIdx].GetCard(chosenIdx)

@@ -29,6 +29,7 @@
   "hintNone": "No hint available.",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
   "hintReasonLeadLow": "Lead a low card to conserve strength",
+  "hintReasonLeadHigh": "Lead a strong card to seize the initiative",
   "hintReasonFollowWin": "Win this trick",
   "hintReasonFollowDuck": "Cannot/should not win — duck",
   "hintReasonDiscardLow": "Cannot follow suit — discard a low card",

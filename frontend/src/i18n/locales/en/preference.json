@@ -58,6 +58,7 @@
   "hintAvailable": "Hint",
   "hint": {
     "lead_low": "Lead a low card to conserve strength",
+    "lead_high": "Lead a strong card to seize the initiative",
     "follow_win": "Win this trick",
     "follow_duck": "Cannot/should not win — duck",
     "discard_low": "Cannot follow suit — discard a low card"
