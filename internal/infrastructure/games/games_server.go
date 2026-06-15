@@ -705,6 +705,11 @@ func init() {
 			return usecase.NewSedmaInteractor(domain.NewDefaultSedma(), new(presenter.SedmaWebPresenter))
 		},
 		controller.NewSedmaWebController)
+	BindWebControllerFor("solowhist",
+		func() usecase.SoloWhistInteractorIF {
+			return usecase.NewSoloWhistInteractor(domain.NewDefaultSoloWhist(), new(presenter.SoloWhistWebPresenter))
+		},
+		controller.NewSoloWhistWebController)
 	BindWebControllerFor("easthaven",
 		func() usecase.EasthavenInteractorIF {
 			return usecase.NewEasthavenInteractor(domain.NewDefaultEasthaven(), new(presenter.EasthavenWebPresenter))

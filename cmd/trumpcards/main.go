@@ -1427,7 +1427,7 @@ func printGamesJSON(category string, w io.Writer) error {
 		out = append(out, entry{
 			Name:        g.Name,
 			Category:    cat,
-			Description: g.Description,
+			Description: games.Description(g.Name),
 			Aliases:     al,
 		})
 	}

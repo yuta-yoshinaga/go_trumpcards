@@ -311,4 +311,12 @@ func init() {
 			return usecase.RestoreSedmaInteractor(data, new(presenter.SedmaWebPresenter))
 		},
 		controller.NewSedmaWebControllerWithProvider)
+	games.RegisterKVGame("solowhist", games.CategoryClassic,
+		func() usecase.SoloWhistInteractorIF {
+			return usecase.NewSoloWhistInteractor(domain.NewDefaultSoloWhist(), new(presenter.SoloWhistWebPresenter))
+		},
+		func(data []byte) (usecase.SoloWhistInteractorIF, error) {
+			return usecase.RestoreSoloWhistInteractor(data, new(presenter.SoloWhistWebPresenter))
+		},
+		controller.NewSoloWhistWebControllerWithProvider)
 }

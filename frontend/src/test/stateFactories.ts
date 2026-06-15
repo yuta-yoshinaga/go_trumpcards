@@ -9,6 +9,7 @@ import type {
   MusResponse,
   SedmaResponse,
   SheepsheadResponse,
+  SoloWhistResponse,
   SpadesResponse,
   SuecaResponse,
   TressetteResponse,
@@ -847,4 +848,58 @@ const baseMariasState: MariasResponse = {
  */
 export function makeMariasState(overrides?: Partial<MariasResponse>): MariasResponse {
   return { ...baseMariasState, ...overrides };
+}
+
+/** Base Solo Whist state used as the default for {@link makeSoloWhistState}. Defaults to a human Bid turn. */
+const baseSoloWhistState: SoloWhistResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 13,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      score: 0,
+      isDeclarer: false,
+    },
+    { id: 1, isHuman: false, cardCount: 13, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+    { id: 2, isHuman: false, cardCount: 13, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+    { id: 3, isHuman: false, cardCount: 13, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  declarerIdx: -1,
+  contract: 0,
+  trumpSuit: 0,
+  bids: [0, 0, 0, 0],
+  currentTrick: [],
+  playerScores: [0, 0, 0, 0],
+  roundTricks: [0, 0, 0, 0],
+  playableIndices: [],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: false,
+  isHumanBidTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 21 },
+};
+
+/**
+ * Creates a {@link SoloWhistResponse} with sensible defaults (a human Bid turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial SoloWhistResponse fields to override.
+ * @returns A complete SoloWhistResponse suitable for use in tests.
+ */
+export function makeSoloWhistState(overrides?: Partial<SoloWhistResponse>): SoloWhistResponse {
+  return { ...baseSoloWhistState, ...overrides };
 }

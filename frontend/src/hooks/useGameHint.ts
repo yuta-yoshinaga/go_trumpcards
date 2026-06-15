@@ -94,6 +94,7 @@ import type {
   SixCardGolfResponse,
   SkatResponse,
   SlapjackResponse,
+  SoloWhistResponse,
   SpadesResponse,
   SpeedResponse,
   SpideretteResponse,
@@ -219,6 +220,7 @@ import { getShortDeckHint } from '../utils/hints/shortdeckHint';
 import { getSixcardgolfHint } from '../utils/hints/sixcardgolfHint';
 import { getSkatHint } from '../utils/hints/skatHint';
 import { getSlapjackHint } from '../utils/hints/slapjackHint';
+import { getSoloWhistHint } from '../utils/hints/soloWhistHint';
 import { getSpadesHint } from '../utils/hints/spadesHint';
 import { getSpeedHint } from '../utils/hints/speedHint';
 import { getSpideretteHint } from '../utils/hints/spideretteHint';
@@ -385,6 +387,7 @@ const hintFactories = {
   manille: (s) => getManilleHint(s as ManilleResponse),
   marias: (s) => getMariasHint(s as MariasResponse),
   sedma: (s) => getSedmaHint(s as SedmaResponse),
+  solowhist: (s) => getSoloWhistHint(s as SoloWhistResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

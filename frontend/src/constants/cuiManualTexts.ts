@@ -117,6 +117,7 @@ import shortdeck from '../../../docs/manual/cui/shortdeck.md?raw';
 import sixcardgolf from '../../../docs/manual/cui/sixcardgolf.md?raw';
 import skat from '../../../docs/manual/cui/skat.md?raw';
 import slapjack from '../../../docs/manual/cui/slapjack.md?raw';
+import solowhist from '../../../docs/manual/cui/solowhist.md?raw';
 import spades from '../../../docs/manual/cui/spades.md?raw';
 import spanish21 from '../../../docs/manual/cui/spanish21.md?raw';
 import speed from '../../../docs/manual/cui/speed.md?raw';
@@ -206,6 +207,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/manille': manille,
   '/marias': marias,
   '/sedma': sedma,
+  '/solowhist': solowhist,
   '/memory': memory,
   '/mighty': mighty,
   '/napoleon': napoleon,

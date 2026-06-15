@@ -2258,6 +2258,23 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"sedma.helpSetDifficulty"},
 			})
 	}},
+	{Name: "solowhist", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSoloWhistCuiController(usecase.NewSoloWhistInteractor(
+				domain.NewDefaultSoloWhist(), new(presenter.SoloWhistCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "solowhist.helpTitle",
+				CommandKeys: []string{
+					"solowhist.helpBid",
+					"solowhist.helpPass",
+					"solowhist.helpPlay",
+					"solowhist.helpNext",
+					"solowhist.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"solowhist.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

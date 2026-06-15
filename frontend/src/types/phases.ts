@@ -335,6 +335,23 @@ export const MariasPhase = {
   GAME_END: 3,
 } as const;
 
+/** Solo Whist phase constants (sync: internal/domain/SoloWhist.go). */
+export const SoloWhistPhase = {
+  BID: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/** Solo Whist contract constants (sync: internal/domain/SoloWhist.go). */
+export const SoloWhistContract = {
+  PASS: 0,
+  SOLO: 1,
+  MISERE: 2,
+  ABUNDANCE: 3,
+} as const;
+
 /** Call Break phase constants (sync: internal/domain/CallBreak.go). */
 export const CallBreakPhase = {
   BID: 0,
