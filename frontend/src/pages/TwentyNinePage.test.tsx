@@ -1,0 +1,155 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { twentyNineApi } from '../api/gameApi';
+import { renderWithProviders } from '../test/renderWithProviders';
+import { makeTwentyNineState } from '../test/stateFactories';
+import { TwentyNinePage } from './TwentyNinePage';
+
+vi.mock('../api/gameApi', () => ({
+  twentyNineApi: { exec: vi.fn() },
+  actionLogApi: { twentynine: vi.fn() },
+}));
+
+const mockExec = vi.mocked(twentyNineApi.exec);
+
+// Default fixture: a human bid turn (bid phase).
+const bidPhaseState = makeTwentyNineState();
+// A human play turn with playable cards (so the play control is shown). Trump is revealed.
+const playPhaseState = makeTwentyNineState({
+  phase: 1,
+  declarerIdx: 0,
+  contract: 20,
+  trumpSuit: 3,
+  trumpRevealed: true,
+  isHumanBidTurn: false,
+  isHumanTurn: true,
+  playableIndices: [0, 1, 2],
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 8,
+      cards: [
+        { design: 'HEART', value: 12 },
+        { design: 'HEART', value: 13 },
+        { design: 'SPADE', value: 1 },
+      ],
+      trickCount: 0,
+      teamScore: 0,
+      isDeclarer: true,
+    },
+    { id: 1, isHuman: false, cardCount: 8, cards: [], trickCount: 0, teamScore: 0, isDeclarer: false },
+    { id: 2, isHuman: false, cardCount: 8, cards: [], trickCount: 0, teamScore: 0, isDeclarer: false },
+    { id: 3, isHuman: false, cardCount: 8, cards: [], trickCount: 0, teamScore: 0, isDeclarer: false },
+  ],
+});
+const cpuTurnState = makeTwentyNineState({
+  phase: 1,
+  declarerIdx: 1,
+  isHumanBidTurn: false,
+  isHumanTurn: false,
+  currentPlayerIdx: 1,
+});
+const trickEndState = makeTwentyNineState({ phase: 2, isHumanBidTurn: false });
+const roundEndState = makeTwentyNineState({ phase: 3, isHumanBidTurn: false, roundTeamPoints: [18, 11] });
+const gameEndState = makeTwentyNineState({
+  phase: 4,
+  isHumanBidTurn: false,
+  gameEndFlag: true,
+  winnerTeam: 0,
+  message: 'ゲーム終了！ あなたのチームの勝ち！',
+});
+
+beforeEach(() => {
+  mockExec.mockReset();
+  mockExec.mockResolvedValue(bidPhaseState);
+});
+
+describe('TwentyNinePage', () => {
+  it('renders skeleton when no state', () => {
+    mockExec.mockReturnValue(new Promise(() => undefined));
+    renderWithProviders(<TwentyNinePage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('calls reset on mount with the default config', async () => {
+    renderWithProviders(<TwentyNinePage />);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', {
+        config: { cpuDifficulty: 1, targetPoints: 6 },
+      }),
+    );
+  });
+
+  it('shows bid buttons on a human bid turn', async () => {
+    renderWithProviders(<TwentyNinePage />);
+    await waitFor(() => expect(screen.getByTestId('bid-0')).toBeInTheDocument());
+    expect(screen.getByTestId('bid-16')).toBeInTheDocument();
+    expect(screen.getByTestId('bid-20')).toBeInTheDocument();
+    expect(screen.getByTestId('bid-24')).toBeInTheDocument();
+    expect(screen.getByTestId('bid-28')).toBeInTheDocument();
+  });
+
+  it('dispatches a bid when a bid button is clicked', async () => {
+    renderWithProviders(<TwentyNinePage />);
+    const bid16 = await screen.findByTestId('bid-16');
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(bidPhaseState);
+    fireEvent.click(bid16);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bid: 16 }));
+  });
+
+  it('disables bids that do not beat the current highest bid', async () => {
+    mockExec.mockResolvedValue(makeTwentyNineState({ bids: [20, 0, 0, 0] }));
+    renderWithProviders(<TwentyNinePage />);
+    // Highest bid is 20: 16 and 20 are disabled, 24/28 and Pass (0) are enabled.
+    await waitFor(() => expect(screen.getByTestId('bid-16')).toBeDisabled());
+    expect(screen.getByTestId('bid-20')).toBeDisabled();
+    expect(screen.getByTestId('bid-24')).toBeEnabled();
+    expect(screen.getByTestId('bid-28')).toBeEnabled();
+    expect(screen.getByTestId('bid-0')).toBeEnabled();
+  });
+
+  it('hides the trump suit until it is revealed', async () => {
+    // Bid-phase fixture has trumpRevealed false; the trump should read "非公開" (hidden).
+    renderWithProviders(<TwentyNinePage />);
+    await waitFor(() => expect(screen.getByText(/切り札: 非公開/)).toBeInTheDocument());
+  });
+
+  it('renders the play phase with the human cards and the declarer badge', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<TwentyNinePage />);
+    await waitFor(() => {
+      expect(screen.getByAltText('♥ Q')).toBeInTheDocument();
+      expect(screen.getByAltText('♠ A')).toBeInTheDocument();
+    });
+    expect(screen.getByText('落札者')).toBeInTheDocument();
+  });
+
+  it('does not show the play button on a CPU turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<TwentyNinePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('bid-0')).not.toBeInTheDocument();
+  });
+
+  it('renders trick end with the next trick button', async () => {
+    mockExec.mockResolvedValue(trickEndState);
+    renderWithProviders(<TwentyNinePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+  });
+
+  it('renders round end with the next round button and the round result', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<TwentyNinePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
+    expect(screen.getByText('ラウンド結果（カード点）')).toBeInTheDocument();
+  });
+
+  it('renders the game end message', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<TwentyNinePage />);
+    await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたのチームの勝ち！')).toBeInTheDocument());
+  });
+});

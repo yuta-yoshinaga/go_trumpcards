@@ -2215,6 +2215,23 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"fortyfives.helpSetDifficulty"},
 			})
 	}},
+	{Name: "twentynine", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewTwentyNineCuiController(usecase.NewTwentyNineInteractor(
+				domain.NewDefaultTwentyNine(), new(presenter.TwentyNineCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "twentynine.helpTitle",
+				CommandKeys: []string{
+					"twentynine.helpBid",
+					"twentynine.helpPass",
+					"twentynine.helpPlay",
+					"twentynine.helpNext",
+					"twentynine.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"twentynine.helpSetDifficulty"},
+			})
+	}},
 	{Name: "klaverjas", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewKlaverjasCuiController(usecase.NewKlaverjasInteractor(

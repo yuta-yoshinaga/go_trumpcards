@@ -1,0 +1,68 @@
+{
+  "phase": {
+    "bid": "ビッド",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetPoints": "目標ゲーム点",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "trick": "トリック {{n}}",
+  "trump": "切り札: {{suit}}",
+  "noTrump": "なし",
+  "hiddenTrump": "非公開",
+  "cards": "{{count}}枚",
+  "tricks": "{{count}}トリック",
+  "currentTrick": "現在のトリック",
+  "trickEmpty": "(まだカードがありません)",
+  "players": "プレイヤー",
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "team": {
+    "a": "チームA",
+    "b": "チームB"
+  },
+  "yourTeam": "あなたのチーム",
+  "teamScore": "{{team}}: {{score}}点",
+  "declarerBadge": "落札者",
+  "contractUndecided": "落札者: 未決定",
+  "contractLine": "落札者: {{name}}（{{team}}） — {{contract}}",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド",
+  "target": "目標: {{points}}ゲーム点",
+  "bidPrompt": "入札してください（上回る入札のみ可）:",
+  "bid": {
+    "pass": "パス",
+    "sixteen": "16",
+    "twenty": "20",
+    "twentyfour": "24",
+    "twentyeight": "28"
+  },
+  "roundResult": {
+    "title": "ラウンド結果（カード点）",
+    "teamA": "チームA: {{points}}点",
+    "teamB": "チームB: {{points}}点"
+  },
+  "hintAvailable": "ヒント",
+  "hint": {
+    "lead_low": "強い札を温存するため低い札でリードする",
+    "follow_win": "上の札を出してこのトリックを取りに行く",
+    "follow_duck": "安く取れないので低い札で受け流す",
+    "discard_low": "フォローできないので低い札を捨てる"
+  },
+  "tutorial": {
+    "info": "ここにラウンド・落札者（チームと契約値）・切り札（公開されるまで「非公開」）・各チームのゲーム点が表示されます。先に目標ゲーム点（初期値6）へ達したチームの勝ちです。★が落札者です。",
+    "trick": "場に出されたカードがここに並びます。リードスートにマストフォロー。フォローできなくなった瞬間に非公開の切り札が公開されます。カード点はJ=3・9=2・A=1・10=1で、最終トリック+1の計29点。トリックの強さはJ>9>A>10>K>Q>8>7で、切り札はプレーン札に勝ちます。",
+    "hand": "あなたの手札です。プレイ時は出せるカードをクリックして「出す」を押します。",
+    "actions": "入札フェーズでは、パス／16／20／24／28のボタンが出ます。現在の最高入札を上回る入札のみ選べます。最高入札者のチームが切り札を非公開で選び、8トリックを戦います。獲得カード点が契約値以上なら入札チームに+1ゲーム点、未達なら相手チームに+1。先に目標ゲーム点へ達したチームの勝ちです。"
+  }
+}

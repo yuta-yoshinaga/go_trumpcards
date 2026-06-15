@@ -141,6 +141,7 @@ import tressette from '../../../docs/manual/web/tressette.md?raw';
 import tripeaks from '../../../docs/manual/web/tripeaks.md?raw';
 import truco from '../../../docs/manual/web/truco.md?raw';
 import tute from '../../../docs/manual/web/tute.md?raw';
+import twentynine from '../../../docs/manual/web/twentynine.md?raw';
 import twotenjack from '../../../docs/manual/web/twotenjack.md?raw';
 import ultimatetexasholdem from '../../../docs/manual/web/ultimatetexasholdem.md?raw';
 import videopoker from '../../../docs/manual/web/videopoker.md?raw';
@@ -211,6 +212,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/fortyfives': fortyfives,
   '/nap': nap,
   '/preference': preference,
+  '/twentynine': twentynine,
   '/memory': memory,
   '/mighty': mighty,
   '/napoleon': napoleon,

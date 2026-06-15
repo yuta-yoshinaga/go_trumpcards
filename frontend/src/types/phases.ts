@@ -377,6 +377,15 @@ export const FortyFivesPhase = {
   GAME_END: 4,
 } as const;
 
+/** Twenty-Nine (29) phase constants (sync: internal/domain/TwentyNine.go). */
+export const TwentyNinePhase = {
+  BID: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Préférence phase constants (sync: internal/domain/Preference.go). */
 export const PreferencePhase = {
   BID: 0,
