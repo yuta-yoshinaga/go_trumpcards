@@ -38,6 +38,7 @@ import type {
   EuchreResponse,
   FiftyOneResponse,
   FiveHundredResponse,
+  FortyFivesResponse,
   FourCardPokerResponse,
   FreeCellResponse,
   GapsResponse,
@@ -165,6 +166,7 @@ import { getEightOffHint } from '../utils/hints/eightoffHint';
 import { getEuchreHint } from '../utils/hints/euchreHint';
 import { getFiftyOneHint } from '../utils/hints/fiftyoneHint';
 import { getFiveHundredHint } from '../utils/hints/fivehundredHint';
+import { getFortyFivesHint } from '../utils/hints/fortyFivesHint';
 import { getFourCardPokerHint } from '../utils/hints/fourcardpokerHint';
 import { getFreeCellHint } from '../utils/hints/freecellHint';
 import { getGapsHint } from '../utils/hints/gapsHint';
@@ -398,6 +400,7 @@ const hintFactories = {
   knockoutwhist: (s) => getKnockoutWhistHint(s as KnockoutWhistResponse),
   spoilfive: (s) => getSpoilFiveHint(s as SpoilFiveResponse),
   solowhist: (s) => getSoloWhistHint(s as SoloWhistResponse),
+  fortyfives: (s) => getFortyFivesHint(s as FortyFivesResponse),
   nap: (s) => getNapHint(s as NapResponse),
   preference: (s) => getPreferenceHint(s as PreferenceResponse),
 } satisfies Record<string, HintFn>;

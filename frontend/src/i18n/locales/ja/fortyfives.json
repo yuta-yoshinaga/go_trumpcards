@@ -1,0 +1,65 @@
+{
+  "phase": {
+    "bid": "ビッド",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetPoints": "目標ポイント",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "trick": "トリック {{n}}",
+  "trump": "切り札: {{suit}}",
+  "noTrump": "なし",
+  "cards": "{{count}}枚",
+  "tricks": "{{count}}トリック",
+  "currentTrick": "現在のトリック",
+  "trickEmpty": "(まだカードがありません)",
+  "players": "プレイヤー",
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "team": {
+    "a": "チームA",
+    "b": "チームB"
+  },
+  "yourTeam": "あなたのチーム",
+  "teamScore": "{{team}}: {{score}}点",
+  "declarerBadge": "落札者",
+  "contractUndecided": "落札者: 未決定",
+  "contractLine": "落札者: {{name}}（{{team}}） — {{contract}}",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド",
+  "target": "目標: {{points}}点",
+  "bidPrompt": "入札してください（上回る入札のみ可）:",
+  "bid": {
+    "pass": "パス",
+    "fifteen": "15",
+    "twenty": "20",
+    "twentyfive": "25 (Jink)"
+  },
+  "roundResult": {
+    "title": "ラウンド結果",
+    "teamA": "チームA: {{points}}点",
+    "teamB": "チームB: {{points}}点"
+  },
+  "hintAvailable": "ヒント",
+  "hint": {
+    "lead_high": "強い札でリードしてトリックを取りに行く",
+    "take_trick": "このトリックを取りに行く",
+    "discard_low": "取れないので低い札を捨てる"
+  },
+  "tutorial": {
+    "info": "ここにラウンド・落札者（チームと契約値）・切り札・各チームの得点が表示されます。先に目標ポイント（初期値45）へ達したチームの勝ちです。★が落札者です。",
+    "trick": "場に出されたカードがここに並びます。リードスートにマストフォロー。最強の切り札（切り札の5＞切り札のJ＞♥A＞切り札のA…）はフォロー免除（リネージ）。最強のカードを出したプレイヤーがトリックを取ります。",
+    "hand": "あなたの手札です。プレイ時は出せるカードをクリックして「出す」を押します。",
+    "actions": "入札フェーズでは、パス／15／20／25（Jink）のボタンが出ます。現在の最高入札を上回る入札のみ選べます。最高入札者のチームが切り札を宣言し、5トリックを戦います。各トリックは5点。契約達成で得点、失敗で入札値ぶんマイナス。25 Jinkは全トリック取得で即勝利です。"
+  }
+}

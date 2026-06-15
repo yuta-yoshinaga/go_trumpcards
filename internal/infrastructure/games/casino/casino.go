@@ -430,6 +430,14 @@ func init() {
 			return usecase.RestoreSuecaInteractor(data, new(presenter.SuecaWebPresenter))
 		},
 		controller.NewSuecaWebControllerWithProvider)
+	games.RegisterKVGame("fortyfives", games.CategoryCasino,
+		func() usecase.FortyFivesInteractorIF {
+			return usecase.NewFortyFivesInteractor(domain.NewDefaultFortyFives(), new(presenter.FortyFivesWebPresenter))
+		},
+		func(data []byte) (usecase.FortyFivesInteractorIF, error) {
+			return usecase.RestoreFortyFivesInteractor(data, new(presenter.FortyFivesWebPresenter))
+		},
+		controller.NewFortyFivesWebControllerWithProvider)
 	games.RegisterKVGame("bourre", games.CategoryCasino,
 		func() usecase.BourreInteractorIF {
 			return usecase.NewBourreInteractor(domain.NewDefaultBourre(), new(presenter.BourreWebPresenter))

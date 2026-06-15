@@ -685,6 +685,11 @@ func init() {
 			return usecase.NewSuecaInteractor(domain.NewDefaultSueca(), new(presenter.SuecaWebPresenter))
 		},
 		controller.NewSuecaWebController)
+	BindWebControllerFor("fortyfives",
+		func() usecase.FortyFivesInteractorIF {
+			return usecase.NewFortyFivesInteractor(domain.NewDefaultFortyFives(), new(presenter.FortyFivesWebPresenter))
+		},
+		controller.NewFortyFivesWebController)
 	BindWebControllerFor("klaverjas",
 		func() usecase.KlaverjasInteractorIF {
 			return usecase.NewKlaverjasInteractor(domain.NewDefaultKlaverjas(), new(presenter.KlaverjasWebPresenter))

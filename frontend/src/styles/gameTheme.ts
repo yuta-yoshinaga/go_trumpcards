@@ -64,6 +64,7 @@ export type GameKey =
   | 'knockoutwhist'
   | 'spoilfive'
   | 'solowhist'
+  | 'fortyfives'
   | 'nap'
   | 'preference'
   | 'pitch'
@@ -226,6 +227,10 @@ const SOLOWHIST = {
   bg: 'bg-game-bg-solowhist',
   footer: 'bg-game-bg-solowhist-dark border-white/20',
 } as const;
+const FORTYFIVES = {
+  bg: 'bg-game-bg-fortyfives',
+  footer: 'bg-game-bg-fortyfives-dark border-white/20',
+} as const;
 const NAP = {
   bg: 'bg-game-bg-nap',
   footer: 'bg-game-bg-nap-dark border-white/20',
@@ -291,6 +296,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   knockoutwhist: KNOCKOUTWHIST,
   spoilfive: SPOILFIVE,
   solowhist: SOLOWHIST,
+  fortyfives: FORTYFIVES,
   nap: NAP,
   preference: PREFERENCE,
   pitch: BLUE,

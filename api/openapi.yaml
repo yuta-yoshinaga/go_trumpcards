@@ -305,6 +305,8 @@ tags:
     description: Préférence (プレフェランス) — 3-player Central/Eastern European trick-taking game on a 32-card deck (7,8,9,10,J,Q,K,A × 4 suits); 10 cards each, 10 tricks per round; rank A>K>Q>J>10>9>8>7; bidding phase first (Pass/Six/Misère/Seven/Eight, order lowest-to-highest); highest bidder becomes the Declarer and plays alone vs 2 Defenders; trump = Declarer's longest suit for Six/Seven/Eight (auto-declared); Misère has no trump; must-follow rule — follow led suit if able; Declarer gains contract value (Six=6, Seven=7, Eight=8, Misère=10 pts) on success; each Defender gains that value on failure; talon exchange omitted and pool bookkeeping replaced by simple cumulative points (simplified); first to target (default 30 pts) wins
   - name: spoilfive
     description: Spoil Five / Maw (スポイル・ファイブ) — 5-player Irish traditional trick-taking game on a standard 52-card deck (A,2-10,J,Q,K × 4 suits); 5 cards each, 5 tricks per round; trump determined by turn-up card from remainder of deck; fixed top trumps in order — trump 5 (Five Fingers) > trump J > ♥A (Ace of Hearts, always top trump regardless of trump suit) > trump A > trump K > trump Q > other trumps > led-suit cards; reneging — the three top trumps are exempt from must-follow and may be held back even when trump is led; must-follow otherwise; race to 3 — first player to win 3 tricks wins the round and takes the pot (each player antes each round); spoil — if no player reaches 3 tricks the pot carries over to the next round; first to target (default 30 pts) wins; pip-order red/black rank reversal and Jink bonus omitted (simplified)
+  - name: fortyfives
+    description: Auction Forty-Fives (フォーティファイブズ) — 4-player 2-team Irish/Nova Scotian trick-taking game on a standard 52-card deck (A,2-10,J,Q,K × 4 suits); 5 cards each, 5 tricks per round; teams are seats 0&2 vs seats 1&3; bidding phase first (Pass/15/20/25, order lowest-to-highest); highest bidder's team becomes the bid team and their longest suit is auto-declared trump (card-exchange omitted); fixed top trumps (Spoil Five family) — trump 5 > trump J > ♥A (always top trump) > trump A > trump K > trump Q > other trumps > led-suit cards; reneging — the three top trumps are exempt from must-follow; must-follow otherwise; each trick scores 5 pts to the winning team; bid team adds its trick points if it meets the bid, else loses the bid value; non-bid team always adds trick points won; Jink — bidding 25 and winning all 5 tricks is an instant match win; first team to reach 45 pts wins; honor-card bonuses and red/black pip-order rank reversal omitted (simplified)
 
 paths:
   /blackjack/exec:
@@ -13563,6 +13565,110 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SpoilFiveResponse'
+
+  /fortyfives/exec:
+    post:
+      tags:
+        - fortyfives
+      summary: Execute an Auction Forty-Fives game command
+      description: |
+        Send a command to advance an Auction Forty-Fives session identified by `sessionId`.
+        Auction Forty-Fives is a 4-player 2-team (1 human + 3 CPU) Irish/Nova Scotian trick-taking
+        game on a standard 52-card deck (A,2-10,J,Q,K × 4 suits).
+        Teams are seats 0&2 (human is seat 0) vs seats 1&3.
+        Each player is dealt 5 cards and 5 tricks are played per round.
+        Bidding phase: starting from the dealer's left, each player bids once choosing from
+        Pass / 15 / 20 / 25. A non-pass bid must outrank the current highest (15 < 20 < 25).
+        The highest bidder's team becomes the bid team; the bidder's longest suit is
+        auto-declared as trump (card-exchange step omitted).
+        If everyone passes the round is void and redealt.
+        Fixed top trumps (Spoil Five family, strongest to weakest regardless of rank):
+        trump 5 (Five Fingers) > trump J (Knave of Trump) >
+        ♥A (Ace of Hearts, always a top trump regardless of trump suit) >
+        trump A > trump K > trump Q > other trumps > led-suit cards.
+        Reneging: the three top trumps (trump 5, trump J, ♥A) are exempt from must-follow
+        and may be held back even when trump is led.
+        Must-follow otherwise: follow the led suit if able; if void any card may be played.
+        Highest trump wins the trick; if no trump was played, highest card of the led suit wins.
+        Trick winner leads the next trick.
+        Scoring: each trick scores 5 points to the winning team (maximum 25 per round).
+        Bid team adds its trick points if it meets the bid, else loses the bid value.
+        Non-bid team always adds trick points won.
+        Jink: bidding 25 and winning all 5 tricks is an instant match win.
+        Match: first team to reach 45 points wins.
+        Honor-card bonuses for trump J / ♥A and red/black pip-order rank reversal are omitted (simplified).
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Bid        | `0`   | Bidding phase; each player bids once |
+        | Play       | `1`   | Five tricks played under must-follow and reneging rules |
+        | TrickEnd   | `2`   | Trick resolved; advance with `next` |
+        | RoundEnd   | `3`   | Round scored; advance with `nextround` |
+        | GameEnd    | `4`   | A team reached 45 points or scored a Jink |
+
+        | Command           | Aliases                | Description |
+        |-------------------|------------------------|-------------|
+        | `reset`           | `r`                    | Start / restart the game (optional `config`) |
+        | `bid`             | —                      | Place a bid (requires `bidValue` 0=Pass 15 20 25) |
+        | `pass`            | —                      | Pass the bid (equivalent to `bid` with bidValue 0) |
+        | `play`            | —                      | Play a card by `cardIndex` (Play phase) |
+        | `next`            | `n`                    | Advance to the next trick |
+        | `nextround`       | `nr`                   | Score the round and start the next |
+        | `setdifficulty`   | `sd`                   | Set CPU difficulty (requires `difficulty` 0-2) |
+        | `log`             | `l`                    | View action log |
+      operationId: fortyFivesExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FortyFivesRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Bid 20 points
+                value:
+                  command: bid
+                  bidValue: 20
+                  sessionId: my-session-001
+              pass:
+                summary: Pass the bid
+                value:
+                  command: pass
+                  sessionId: my-session-001
+              play:
+                summary: Play the card at hand index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+              next:
+                summary: Advance to the next trick
+                value:
+                  command: next
+                  sessionId: my-session-001
+              nextround:
+                summary: Score the round and continue
+                value:
+                  command: nextround
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FortyFivesResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FortyFivesResponse'
 
 components:
   schemas:
@@ -29586,6 +29692,165 @@ components:
           description: Index of the winning player (-1 if undecided)
         isHumanTurn:
           type: boolean
+        hint:
+          type: object
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            targetScore:
+              type: integer
+
+    FortyFivesRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `bid`, `pass`,
+            `play`, `next` (`n`), `nextround` (`nr`), `setdifficulty` (`sd`), `log` (`l`).
+          enum: [reset, r, bid, pass, play, next, n, nextround, nr, setdifficulty, sd, log, l]
+          example: reset
+        bidValue:
+          type: integer
+          description: Bid value for the `bid` command. 0=Pass, 15, 20, or 25.
+          enum: [0, 15, 20, 25]
+        cardIndex:
+          type: integer
+          description: Hand index of the card to play. Required for the `play` command.
+          example: 0
+        difficulty:
+          type: integer
+          description: CPU difficulty level for `setdifficulty`. 0=Easy, 1=Normal, 2=Hard.
+          minimum: 0
+          maximum: 2
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            targetScore:
+              type: integer
+              minimum: 1
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    FortyFivesResponse:
+      type: object
+      description: Current state of the Auction Forty-Fives game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              isDeclarer:
+                type: boolean
+                description: True if this player placed the winning bid for the current round
+              teamScore:
+                type: integer
+                description: Cumulative team score for the team this player belongs to
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 0=Bid, 1=Play, 2=TrickEnd, 3=RoundEnd, 4=GameEnd"
+          enum: [0, 1, 2, 3, 4]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Current round number (starts at 1)
+        trickNumber:
+          type: integer
+          description: Current trick number within the round (1-5)
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        leadPlayerIdx:
+          type: integer
+          description: Index of the player who led the current trick
+        dealerIdx:
+          type: integer
+          description: Index of the current dealer
+        declarerIdx:
+          type: integer
+          description: Index of the player who placed the winning bid (-1 if not yet determined)
+        contract:
+          type: integer
+          description: "Bid value of the winning bid: 0=None/Pass, 15, 20, or 25"
+          enum: [0, 15, 20, 25]
+        trumpSuit:
+          type: integer
+          description: "Current trump suit: 1=Spades, 2=Clubs, 3=Hearts, 4=Diamonds (0 if not yet determined)"
+          minimum: 0
+          maximum: 4
+        bids:
+          type: array
+          items:
+            type: integer
+          description: Bid placed by each player in seat order (0=Pass, 15, 20, 25; -1=not yet bid)
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        teamScores:
+          type: array
+          items:
+            type: integer
+          description: Cumulative team scores — index 0 is teamA (seats 0&2), index 1 is teamB (seats 1&3)
+        roundTeamPoints:
+          type: array
+          items:
+            type: integer
+          description: Trick points won by each team in the current round — index 0 is teamA, index 1 is teamB
+        playableIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices the human may legally play (must-follow and reneging rules applied)
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: Index of the winning team (0=teamA, 1=teamB; -1 if undecided)
+        isHumanTurn:
+          type: boolean
+        isHumanBidTurn:
+          type: boolean
+          description: True when it is the human's turn to bid
         hint:
           type: object
           properties:
