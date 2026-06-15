@@ -73,6 +73,7 @@ import type {
   LetItRideResponse,
   MacauResponse,
   ManilleResponse,
+  MariasResponse,
   MemoryResponse,
   MightyResponse,
   MississippiStudResponse,
@@ -302,6 +303,7 @@ const workerUrl: Record<string, string> = {
   sueca: WORKER_CASINO,
   klaverjas: WORKER_CLASSIC,
   manille: WORKER_CLASSIC,
+  marias: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1716,6 +1718,41 @@ export const manilleApi = {
     }),
 };
 
+/** Configuration options for Mariáš game settings. */
+export interface MariasConfigInput {
+  cpuDifficulty?: number;
+  targetPoints?: number;
+}
+
+/** Commands accepted by the Mariáš /marias/exec endpoint. */
+export type MariasCommand = 'reset' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Mariáš /marias/exec endpoint.
+ *
+ * Mariáš is a Czech/Slovak 3-player 32-card trump trick-taker. A rotating
+ * Soloist plays alone against the 2 Defenders; trump is the Soloist's longest
+ * suit (auto). The only play action is playing a card (must follow, trump when
+ * void); there are no declarations.
+ *   - `play` → `{ cardIndex: number }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const mariasApi = {
+  exec: (
+    command: MariasCommand,
+    opts?: {
+      cardIndex?: number;
+      config?: MariasConfigInput;
+    },
+  ) =>
+    gameExec<MariasResponse>('marias', {
+      command,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
 /** Configuration options for Tute game settings. */
 export interface TuteConfigInput {
   cpuDifficulty?: number;
@@ -2856,6 +2893,7 @@ const games = [
   'sueca',
   'klaverjas',
   'manille',
+  'marias',
 ] as const;
 type Game = (typeof games)[number];
 

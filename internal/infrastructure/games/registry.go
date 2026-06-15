@@ -324,6 +324,7 @@ var registry = []*Game{
 	// worker (binary-size bucket).
 	{Name: "klaverjas", Category: CategoryClassic, Description: "Klaverjas (クラヴァヤス)"},
 	{Name: "manille", Category: CategoryClassic, Description: "Manille (マニーユ)"},
+	{Name: "marias", Category: CategoryClassic, Description: "Mariáš (マリアーシュ)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

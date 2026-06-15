@@ -71,6 +71,7 @@ import klondike from '../../../docs/manual/web/klondike.md?raw';
 import letitride from '../../../docs/manual/web/letitride.md?raw';
 import macau from '../../../docs/manual/web/macau.md?raw';
 import manille from '../../../docs/manual/web/manille.md?raw';
+import marias from '../../../docs/manual/web/marias.md?raw';
 import memory from '../../../docs/manual/web/memory.md?raw';
 import mighty from '../../../docs/manual/web/mighty.md?raw';
 import mississippistud from '../../../docs/manual/web/mississippistud.md?raw';
@@ -195,6 +196,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/letitride': letitride,
   '/macau': macau,
   '/manille': manille,
+  '/marias': marias,
   '/memory': memory,
   '/mighty': mighty,
   '/napoleon': napoleon,

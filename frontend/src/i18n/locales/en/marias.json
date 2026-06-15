@@ -1,0 +1,56 @@
+{
+  "phase": {
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetPoints": "Target Points",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "trump": "Trump: {{suit}}",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "currentTrick": "Current Trick",
+  "players": "Players",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "role": {
+    "soloist": "Soloist",
+    "defender": "Defender"
+  },
+  "soloistBadge": "Soloist",
+  "score": "Score: {{score}}",
+  "playerScore": "{{name}}: {{score}} pts",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "target": "Target: {{points}} pts",
+  "lastTrickBonus": "Last trick +10",
+  "roundResult": {
+    "title": "Round Result",
+    "cardPoints": "{{name}} card points: {{points}}",
+    "marriage": "{{name}} marriage: {{points}}"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "lead_low": "Lead a low card to conserve points",
+    "follow_win": "Points on the table — win the trick",
+    "follow_duck": "Cannot/should not win — duck",
+    "discard_low": "Cannot follow suit — discard a low card"
+  },
+  "tutorial": {
+    "trickDisplay": "This is the current trick. You must follow the led suit. When void you must trump. Rank order is A>10>K>Q>J>9>8>7.",
+    "playerHand": "This is your hand. Click a playable card to select it. A King + Queen of the same suit in your dealt hand score a marriage worth 20 points (40 if trump).",
+    "playButton": "Once a card is selected, play it with this button. Mariáš has no declarations — the only action is playing a card.",
+    "info": "Each round a rotating Soloist (★) plays alone against the 2 Defenders. Trump is the Soloist's longest suit, chosen automatically. Points: A=11, 10=10, K=4, Q=3, J=2 (120 total). Winning the final 10th trick scores +10. The Soloist wins the round if their side outscores the 2 Defenders; on a Soloist loss each Defender scores double. The first player to reach the target points (default 10) wins the match.",
+    "resetButton": "Use the reset button to start a new game."
+  }
+}
