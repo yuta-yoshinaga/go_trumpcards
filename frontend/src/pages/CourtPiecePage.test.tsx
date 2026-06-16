@@ -1,0 +1,136 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { courtPieceApi } from '../api/gameApi';
+import { renderWithProviders } from '../test/renderWithProviders';
+import { makeCourtPieceState } from '../test/stateFactories';
+import { CourtPiecePage } from './CourtPiecePage';
+
+vi.mock('../api/gameApi', () => ({
+  courtPieceApi: { exec: vi.fn() },
+  actionLogApi: { courtpiece: vi.fn() },
+}));
+
+const mockExec = vi.mocked(courtPieceApi.exec);
+
+// Default fixture: a human trump-declaration turn (the human at seat 0 is the caller).
+const trumpPhaseState = makeCourtPieceState();
+// A human play turn (currentPlayerIdx is the human). Trump declared.
+const playPhaseState = makeCourtPieceState({
+  phase: 1,
+  trumpSuit: 3,
+  currentPlayerIdx: 0,
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      team: 0,
+      cardCount: 13,
+      cards: [
+        { design: 'HEART', value: 12 },
+        { design: 'HEART', value: 13 },
+        { design: 'SPADE', value: 1 },
+      ],
+      roundScore: 0,
+      cumulativeScore: 0,
+      trickCount: 0,
+    },
+    { id: 1, isHuman: false, team: 1, cardCount: 13, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+    { id: 2, isHuman: false, team: 0, cardCount: 13, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+    { id: 3, isHuman: false, team: 1, cardCount: 13, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+  ],
+});
+const cpuTurnState = makeCourtPieceState({ phase: 1, trumpSuit: 3, currentPlayerIdx: 1 });
+const trickEndState = makeCourtPieceState({ phase: 2, trumpSuit: 3 });
+const roundEndState = makeCourtPieceState({
+  phase: 3,
+  trumpSuit: 3,
+  lastRoundCourt: true,
+  players: [
+    { id: 0, isHuman: true, team: 0, cardCount: 0, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 4 },
+    { id: 1, isHuman: false, team: 1, cardCount: 0, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 2 },
+    { id: 2, isHuman: false, team: 0, cardCount: 0, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 3 },
+    { id: 3, isHuman: false, team: 1, cardCount: 0, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 4 },
+  ],
+});
+const gameEndState = makeCourtPieceState({
+  phase: 4,
+  gameEndFlag: true,
+  winnerTeam: 0,
+  message: 'ゲーム終了！ あなたのチームの勝ち！',
+});
+
+beforeEach(() => {
+  mockExec.mockReset();
+  mockExec.mockResolvedValue(trumpPhaseState);
+});
+
+describe('CourtPiecePage', () => {
+  it('renders skeleton when no state', () => {
+    mockExec.mockReturnValue(new Promise(() => undefined));
+    renderWithProviders(<CourtPiecePage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('calls reset on mount with the default config', async () => {
+    renderWithProviders(<CourtPiecePage />);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', {
+        config: { cpuDifficulty: 1, pointLimit: 7 },
+      }),
+    );
+  });
+
+  it('shows trump suit buttons on a human trump-declaration turn', async () => {
+    renderWithProviders(<CourtPiecePage />);
+    await waitFor(() => expect(screen.getByTestId('trump-1')).toBeInTheDocument());
+    expect(screen.getByTestId('trump-2')).toBeInTheDocument();
+    expect(screen.getByTestId('trump-3')).toBeInTheDocument();
+    expect(screen.getByTestId('trump-4')).toBeInTheDocument();
+  });
+
+  it('dispatches a trump declaration when a suit button is clicked', async () => {
+    renderWithProviders(<CourtPiecePage />);
+    const trump3 = await screen.findByTestId('trump-3');
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(trumpPhaseState);
+    fireEvent.click(trump3);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('trump', { trumpSuit: 3 }));
+  });
+
+  it('renders the play phase with the human cards and the caller badge', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<CourtPiecePage />);
+    await waitFor(() => {
+      expect(screen.getByAltText('♥ Q')).toBeInTheDocument();
+      expect(screen.getByAltText('♠ A')).toBeInTheDocument();
+    });
+    expect(screen.getByText('コーラー')).toBeInTheDocument();
+  });
+
+  it('does not show the play button on a CPU turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<CourtPiecePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('trump-1')).not.toBeInTheDocument();
+  });
+
+  it('renders trick end with the next trick button', async () => {
+    mockExec.mockResolvedValue(trickEndState);
+    renderWithProviders(<CourtPiecePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+  });
+
+  it('renders round end with the next round button and the round result', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<CourtPiecePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
+    expect(screen.getByText('ラウンド結果（獲得トリック）')).toBeInTheDocument();
+  });
+
+  it('renders the game end message', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<CourtPiecePage />);
+    await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたのチームの勝ち！')).toBeInTheDocument());
+  });
+});

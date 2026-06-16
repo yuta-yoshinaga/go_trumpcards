@@ -328,6 +328,11 @@ var registry = []*Game{
 	{Name: "nap", Category: CategoryClassic},
 	{Name: "preference", Category: CategoryClassic},
 	{Name: "spoilfive", Category: CategoryClassic},
+	// Court Piece (コートピース / Rang / Hokm) is a Pakistani/Iranian 4-player
+	// (2v2) trick-taking game where the caller declares trump after peeking at
+	// the first 5 cards; 7+ tricks wins the round (Sar), consecutive wins score
+	// a Court bonus. Casino worker (binary-size bucket).
+	{Name: "courtpiece", Category: CategoryCasino},
 }
 
 // All returns a value-level copy of the registry in canonical order.

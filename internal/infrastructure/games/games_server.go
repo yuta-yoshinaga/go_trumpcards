@@ -755,4 +755,9 @@ func init() {
 			return usecase.NewBourreInteractor(domain.NewDefaultBourre(), new(presenter.BourreWebPresenter))
 		},
 		controller.NewBourreWebController)
+	BindWebControllerFor("courtpiece",
+		func() usecase.CourtPieceInteractorIF {
+			return usecase.NewCourtPieceInteractor(domain.NewDefaultCourtPiece(), new(presenter.CourtPieceWebPresenter))
+		},
+		controller.NewCourtPieceWebController)
 }

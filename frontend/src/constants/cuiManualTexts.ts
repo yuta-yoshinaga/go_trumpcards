@@ -34,6 +34,7 @@ import cassino from '../../../docs/manual/cui/cassino.md?raw';
 import chinesepoker from '../../../docs/manual/cui/chinesepoker.md?raw';
 import clocksolitaire from '../../../docs/manual/cui/clocksolitaire.md?raw';
 import contractrummy from '../../../docs/manual/cui/contractrummy.md?raw';
+import courtpiece from '../../../docs/manual/cui/courtpiece.md?raw';
 import crazyeights from '../../../docs/manual/cui/crazyeights.md?raw';
 import crazypineapple from '../../../docs/manual/cui/crazypineapple.md?raw';
 import crescent from '../../../docs/manual/cui/crescent.md?raw';
@@ -220,6 +221,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/nap': nap,
   '/preference': preference,
   '/twentynine': twentynine,
+  '/courtpiece': courtpiece,
   '/memory': memory,
   '/mighty': mighty,
   '/napoleon': napoleon,

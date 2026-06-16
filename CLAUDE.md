@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Go implementations of 148 trump card game algorithms (blackjack, poker, hearts, klondike, baccarat, ...). Run `go run ./cmd/trumpcards games --short` for the canonical list. Clean Architecture with CLI and Web GUI (React + Go REST API).
+Go implementations of 149 trump card game algorithms (blackjack, poker, hearts, klondike, baccarat, ...). Run `go run ./cmd/trumpcards games --short` for the canonical list. Clean Architecture with CLI and Web GUI (React + Go REST API).
 
 ## Requirements
 
@@ -131,7 +131,7 @@ Games are deployed to Cloudflare Workers as WASM binaries via TinyGo. Three work
 
 | Worker | Entry point | Games |
 |--------|-------------|-------|
-| **casino** | `cmd/workers/casino/main.go` | Table & poker games (blackjack, baccarat, poker, holdem, omaha, omahahilo, bigo, bigohilo, shortdeck, pineapple, crazypineapple, irishpoker, indianpoker, videopoker, deuceswild, jokerpoker, threecard, fourcardpoker, caribbeanstud, texasholdembonus, ultimatetexasholdem, mississippistud, sevencardstud, paigow, chinesepoker, letitride, reddog, razz, badugi, deucetoseven, spanish21, casinowar, dragontiger, blackjackswitch, oasispoker, russianpoker, casinoholdem, highcardflush, yaniv, tressette, bourre, napoleon, mighty, bridge, skat, belote, tarneeb, sheepshead, doppelkopf, mus, tute, sueca, fortyfives, twentynine) |
+| **casino** | `cmd/workers/casino/main.go` | Table & poker games (blackjack, baccarat, poker, holdem, omaha, omahahilo, bigo, bigohilo, shortdeck, pineapple, crazypineapple, irishpoker, indianpoker, videopoker, deuceswild, jokerpoker, threecard, fourcardpoker, caribbeanstud, texasholdembonus, ultimatetexasholdem, mississippistud, sevencardstud, paigow, chinesepoker, letitride, reddog, razz, badugi, deucetoseven, spanish21, casinowar, dragontiger, blackjackswitch, oasispoker, russianpoker, casinoholdem, highcardflush, yaniv, tressette, bourre, napoleon, mighty, bridge, skat, belote, tarneeb, sheepshead, doppelkopf, mus, tute, sueca, fortyfives, twentynine, courtpiece) |
 | **classic** | `cmd/workers/classic/main.go` | Trick-taking, matching & fishing (hearts, spades, pitch, twotenjack, callbreak, briscola, oldmaid, doubt, daifugo, bigtwo, sevens, crazyeights, ohhell, speed, gofish, pinochle, pigtail, durak, war, fiftyone, whist, pageone, trash, president, cassino, spiteandmalice, shithead, nertz, slapjack, egyptianratscrew, tonk, sixcardgolf, truco, klaverjas, manille, marias, sedma, solowhist, knockoutwhist, nap, preference, spoilfive, doudizhu, tichu, scopa) |
 | **solo** | `cmd/workers/solo/main.go` | Solitaire & rummy (klondike, freecell, seahaventowers, cruel, spider, spiderette, pyramid, tripeaks, memory, ginrummy, canasta, cribbage, golf, clocksolitaire, fortythieves, canfield, yukon, russiansolitaire, scorpion, wasp, accordion, pokersquares, montecarlo, contractrummy, calculation, bakersdozen, beleagueredcastle, sevenbridge, crescent, gaps, rummy500, eightoff, penguin, acesup, barbu, macau, thirtyone, tienlen, osmosis, fivehundred, schnapsen, burraco, gongzhu, bristol, bidwhist, easthaven, bakersgame, euchre, piquet) |
 
