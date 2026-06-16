@@ -87,6 +87,9 @@
   /* Twenty-Nine (29) — Indian/Bangladeshi marigold-saffron deepening to terracotta, a warm spice-orange felt distinct from Forty-Fives' bronze-gold and Nap's wine. */
   --color-game-bg-twentynine: #b5651d;
   --color-game-bg-twentynine-dark: #7a4212;
+  /* Court Piece (Rang) — a regal South-Asian indigo-violet "royal court" felt, distinct from Twenty-Nine's spice-orange and Preference's teal. */
+  --color-game-bg-courtpiece: #4b3f72;
+  --color-game-bg-courtpiece-dark: #2e2649;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;

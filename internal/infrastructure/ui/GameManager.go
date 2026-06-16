@@ -2373,6 +2373,22 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"spoilfive.helpSetDifficulty"},
 			})
 	}},
+	{Name: "courtpiece", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCourtPieceCuiController(usecase.NewCourtPieceInteractor(
+				domain.NewDefaultCourtPiece(), new(presenter.CourtPieceCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "courtpiece.helpTitle",
+				CommandKeys: []string{
+					"courtpiece.helpTrump",
+					"courtpiece.helpPlay",
+					"courtpiece.helpNext",
+					"courtpiece.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"courtpiece.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

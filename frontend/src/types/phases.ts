@@ -386,6 +386,15 @@ export const TwentyNinePhase = {
   GAME_END: 4,
 } as const;
 
+/** Court Piece (Rang) phase constants (sync: internal/domain/CourtPiece.go). */
+export const CourtPiecePhase = {
+  TRUMP_DECLARATION: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Préférence phase constants (sync: internal/domain/Preference.go). */
 export const PreferencePhase = {
   BID: 0,

@@ -22,6 +22,7 @@ import type {
   CasinoWarResponse,
   CassinoResponse,
   ClockSolitaireResponse,
+  CourtPieceResponse,
   CrazyEightsResponse,
   CribbageResponse,
   CruelResponse,
@@ -149,6 +150,7 @@ import { getCasinoHoldemHint } from '../utils/hints/casinoholdemHint';
 import { getCasinowarHint } from '../utils/hints/casinowarHint';
 import { getCassinoHint } from '../utils/hints/cassinoHint';
 import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
+import { getCourtPieceHint } from '../utils/hints/courtPieceHint';
 import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
 import { getCrazyPineappleHint } from '../utils/hints/crazyPineappleHint';
 import { getCribbageHint } from '../utils/hints/cribbageHint';
@@ -406,6 +408,7 @@ const hintFactories = {
   nap: (s) => getNapHint(s as NapResponse),
   preference: (s) => getPreferenceHint(s as PreferenceResponse),
   twentynine: (s) => getTwentyNineHint(s as TwentyNineResponse),
+  courtpiece: (s) => getCourtPieceHint(s as CourtPieceResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

@@ -1,0 +1,68 @@
+{
+  "phase": {
+    "trumpDeclaration": "Trump Declaration",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "pointLimit": "Target Points",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "trump": "Trump: {{suit}}",
+  "noTrump": "undeclared",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "currentTrick": "Current Trick",
+  "trickEmpty": "(no cards yet)",
+  "players": "Players",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "team": {
+    "a": "Team A",
+    "b": "Team B"
+  },
+  "yourTeam": "Your Team",
+  "teamScore": "{{team}}: {{score}} pts",
+  "callerBadge": "Caller",
+  "callerUndecided": "Caller: undecided",
+  "callerLine": "Caller: {{name}} ({{team}})",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "target": "Target: {{points}} pts",
+  "trumpPrompt": "Declare a trump suit:",
+  "suit": {
+    "spade": "♠ Spades",
+    "club": "♣ Clubs",
+    "heart": "♥ Hearts",
+    "diamond": "♦ Diamonds"
+  },
+  "roundResult": {
+    "title": "Round Result (tricks won)",
+    "teamA": "Team A: {{tricks}} tricks",
+    "teamB": "Team B: {{tricks}} tricks",
+    "court": "A Court (sweep / consecutive-win bonus) was scored!"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "trump_longest": "Declare your longest suit as trump",
+    "lead_strong": "Lead a strong card to win the trick",
+    "follow_suit": "Follow the led suit",
+    "trump_cut": "Trump in to capture this trick",
+    "discard_high": "Cannot follow — discard a high card you don't need"
+  },
+  "tutorial": {
+    "info": "Round, caller (Hakim), trump suit, and each team's points are shown here. A team taking 7 or more of the 13 tricks wins the round and scores a Sar (+1 point). Sweeping all tricks or winning consecutive rounds adds a Court bonus (+2). The first team to the target points (default 7) wins.",
+    "trick": "Cards played to the current trick appear here. Follow the led suit. Trumps beat plain cards, and within a suit the order is A > K > Q > J > ... > 2.",
+    "hand": "This is your hand. During play, click a playable card and press Play.",
+    "actions": "In the trump-declaration phase, if you are the caller declare a trump with the ♠♣♥♦ buttons. During play, pick a playable card and press Play, then advance with Next Trick / Next Round between tricks and rounds."
+  }
+}

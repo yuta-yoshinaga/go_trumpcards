@@ -1,5 +1,6 @@
 import type {
   CallBreakResponse,
+  CourtPieceResponse,
   DoppelkopfResponse,
   FortyFivesResponse,
   GongZhuResponse,
@@ -1121,6 +1122,57 @@ const baseTwentyNineState: TwentyNineResponse = {
  */
 export function makeTwentyNineState(overrides?: Partial<TwentyNineResponse>): TwentyNineResponse {
   return { ...baseTwentyNineState, ...overrides };
+}
+
+/** Base Court Piece (Rang) state used as the default for {@link makeCourtPieceState}. A 4-player 2-team called-trump trick-taker; defaults to a human TrumpDeclaration turn (the human is the caller). */
+const baseCourtPieceState: CourtPieceResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      team: 0,
+      cardCount: 13,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      roundScore: 0,
+      cumulativeScore: 0,
+      trickCount: 0,
+    },
+    { id: 1, isHuman: false, team: 1, cardCount: 13, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+    { id: 2, isHuman: false, team: 0, cardCount: 13, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+    { id: 3, isHuman: false, team: 1, cardCount: 13, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  callerIdx: 0,
+  trumpSuit: 0,
+  currentTrick: [],
+  teamScores: [0, 0],
+  consecutiveWins: 0,
+  lastWinnerTeam: -1,
+  lastRoundCourt: false,
+  gameEndFlag: false,
+  winnerTeam: -1,
+  leadPlayerIdx: 0,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, pointLimit: 7 },
+};
+
+/**
+ * Creates a {@link CourtPieceResponse} with sensible defaults (a human
+ * TrumpDeclaration turn). Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial CourtPieceResponse fields to override.
+ * @returns A complete CourtPieceResponse suitable for use in tests.
+ */
+export function makeCourtPieceState(overrides?: Partial<CourtPieceResponse>): CourtPieceResponse {
+  return { ...baseCourtPieceState, ...overrides };
 }
 
 /** Base Préférence state used as the default for {@link makePreferenceState}. A 3-player Russian bidding trick-taker; defaults to a human Bid turn. */

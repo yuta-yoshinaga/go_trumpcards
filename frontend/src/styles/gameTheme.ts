@@ -68,6 +68,7 @@ export type GameKey =
   | 'nap'
   | 'preference'
   | 'twentynine'
+  | 'courtpiece'
   | 'pitch'
   | 'twotenjack'
   | 'ohhell'
@@ -240,6 +241,10 @@ const TWENTYNINE = {
   bg: 'bg-game-bg-twentynine',
   footer: 'bg-game-bg-twentynine-dark border-white/20',
 } as const;
+const COURTPIECE = {
+  bg: 'bg-game-bg-courtpiece',
+  footer: 'bg-game-bg-courtpiece-dark border-white/20',
+} as const;
 const PREFERENCE = {
   bg: 'bg-game-bg-preference',
   footer: 'bg-game-bg-preference-dark border-white/20',
@@ -305,6 +310,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   nap: NAP,
   preference: PREFERENCE,
   twentynine: TWENTYNINE,
+  courtpiece: COURTPIECE,
   pitch: BLUE,
   twotenjack: BLUE,
   ohhell: BLUE,

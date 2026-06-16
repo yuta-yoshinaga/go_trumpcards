@@ -454,5 +454,13 @@ func init() {
 			return usecase.RestoreBourreInteractor(data, new(presenter.BourreWebPresenter))
 		},
 		controller.NewBourreWebControllerWithProvider)
+	games.RegisterKVGame("courtpiece", games.CategoryCasino,
+		func() usecase.CourtPieceInteractorIF {
+			return usecase.NewCourtPieceInteractor(domain.NewDefaultCourtPiece(), new(presenter.CourtPieceWebPresenter))
+		},
+		func(data []byte) (usecase.CourtPieceInteractorIF, error) {
+			return usecase.RestoreCourtPieceInteractor(data, new(presenter.CourtPieceWebPresenter))
+		},
+		controller.NewCourtPieceWebControllerWithProvider)
 
 }

@@ -158,6 +158,7 @@ var gameDescriptions = map[string]string{
 	"nap":                 "Nap / Napoleon (ナップ)",
 	"preference":          "Préférence (プレフェランス)",
 	"spoilfive":           "Spoil Five / Maw (スポイル・ファイブ)",
+	"courtpiece":          "Court Piece / Rang (コートピース)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

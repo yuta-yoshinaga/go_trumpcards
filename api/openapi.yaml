@@ -309,6 +309,8 @@ tags:
     description: Auction Forty-Fives (フォーティファイブズ) — 4-player 2-team Irish/Nova Scotian trick-taking game on a standard 52-card deck (A,2-10,J,Q,K × 4 suits); 5 cards each, 5 tricks per round; teams are seats 0&2 vs seats 1&3; bidding phase first (Pass/15/20/25, order lowest-to-highest); highest bidder's team becomes the bid team and their longest suit is auto-declared trump (card-exchange omitted); fixed top trumps (Spoil Five family) — trump 5 > trump J > ♥A (always top trump) > trump A > trump K > trump Q > other trumps > led-suit cards; reneging — the three top trumps are exempt from must-follow; must-follow otherwise; each trick scores 5 pts to the winning team; bid team adds its trick points if it meets the bid, else loses the bid value; non-bid team always adds trick points won; Jink — bidding 25 and winning all 5 tricks is an instant match win; first team to reach 45 pts wins; honor-card bonuses and red/black pip-order rank reversal omitted (simplified)
   - name: twentynine
     description: Twenty-Nine / 29 (トゥエンティナイン) — 4-player 2-team South Asian trick-taking game on a 32-card deck (7,8,9,10,J,Q,K,A × 4 suits); 8 cards each, 8 tricks per round; teams are seats 0&2 vs seats 1&3; bidding phase first (Pass/16/20/24/28, order lowest-to-highest); highest bidder's team becomes the bid team and their longest suit is auto-declared trump; hidden trump — trump suit is not revealed until a player cannot follow the led suit and plays an off-suit card; card rank within a suit J > 9 > A > 10 > K > Q > 8 > 7 (trump beats all non-trump); must-follow otherwise; card points J=3, 9=2, A=1, 10=1 (28 total); last trick awards +1 point (29 total contested); bid team scores 1 game point if it meets its bid, else non-bid team scores 1 game point; first team to reach 6 game points wins
+  - name: courtpiece
+    description: Court Piece / Rang (コートピース) — 4-player 2-team Pakistani/Iranian trick-taking game on a standard 52-card deck (2-10,J,Q,K,A × 4 suits); 13 cards each, 13 tricks per round; teams are seats 0&2 vs seats 1&3; the caller (Hakim) is dealt the first 5 cards, peeks, and immediately declares a trump suit (1=♠ 2=♣ 3=♥ 4=♦) before the remaining cards are dealt; the caller leads the first trick; card rank within a suit A > K > Q > J > 10 > … > 2 (trump beats all non-trump); must-follow otherwise; highest trump wins the trick, else highest card of the led suit; a team taking 7 or more of the 13 tricks wins the round (Sar) and scores 1 point; winning consecutive rounds or sweeping all 13 tricks earns a Court bonus (+2 points); the winning team keeps the caller role, on a loss the caller passes to the next seat; first team to reach the point limit (default 7) wins
 
 paths:
   /blackjack/exec:
@@ -13774,6 +13776,98 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TwentyNineResponse'
+
+  /courtpiece/exec:
+    post:
+      tags:
+        - courtpiece
+      summary: Execute a Court Piece game command
+      description: |
+        Send a command to advance a Court Piece session identified by `sessionId`.
+        Court Piece / Rang is a 4-player 2-team (1 human + 3 CPU) Pakistani/Iranian
+        trick-taking game on a standard 52-card deck (2-10,J,Q,K,A × 4 suits).
+        Teams are seats 0&2 (human is seat 0) vs seats 1&3.
+        Each player is dealt 13 cards and 13 tricks are played per round.
+        Trump declaration: the caller (Hakim) is dealt the first 5 cards, peeks at them,
+        and immediately declares a trump suit (1=Spades, 2=Clubs, 3=Hearts, 4=Diamonds).
+        The remaining cards are then dealt and the caller leads the first trick.
+        Card rank within a suit (strongest to weakest): A > K > Q > J > 10 > … > 2.
+        Trump beats all non-trump; within a suit this rank order decides.
+        Must-follow: follow the led suit if able; if void any card may be played.
+        Highest trump wins the trick; if no trump was played, highest card of the led suit wins.
+        Trick winner leads the next trick.
+        Scoring: a team that takes 7 or more of the 13 tricks wins the round (Sar) and scores 1 point.
+        Winning consecutive rounds, or sweeping all 13 tricks, earns a Court bonus (+2 points).
+        The winning team keeps the caller role; on a loss the caller passes to the next seat.
+        Match: first team to reach the point limit (default 7) wins.
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Trump      | `0`   | Caller declares the trump suit |
+        | Play       | `1`   | Thirteen tricks played under must-follow rules |
+        | TrickEnd   | `2`   | Trick resolved; advance with `next` |
+        | RoundEnd   | `3`   | Round scored; advance with `nextround` |
+        | GameEnd    | `4`   | A team reached the point limit |
+
+        | Command           | Aliases                | Description |
+        |-------------------|------------------------|-------------|
+        | `reset`           | `r`                    | Start / restart the game (optional `config`) |
+        | `trump`           | `t`                    | Declare trump (requires `trumpSuit` 1-4; caller only) |
+        | `play`            | `p`                    | Play a card by `cardIndex` (Play phase) |
+        | `next`            | `n`                    | Advance to the next trick |
+        | `nextround`       | `nr`                   | Score the round and start the next |
+        | `hint`            | `h`                    | Request a play hint |
+        | `setdifficulty`   | `sd`                   | Set CPU difficulty (requires `difficulty` 0-2) |
+        | `setlimit`        | `sl`                   | Set the match point limit (requires `limit`) |
+        | `log`             | `l`                    | View action log |
+      operationId: courtPieceExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourtPieceRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              trump:
+                summary: Declare hearts as trump
+                value:
+                  command: trump
+                  trumpSuit: 3
+                  sessionId: my-session-001
+              play:
+                summary: Play the card at hand index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+              next:
+                summary: Advance to the next trick
+                value:
+                  command: next
+                  sessionId: my-session-001
+              nextround:
+                summary: Score the round and continue
+                value:
+                  command: nextround
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourtPieceResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourtPieceResponse'
 
 components:
   schemas:
@@ -30118,6 +30212,158 @@ components:
         isHumanBidTurn:
           type: boolean
           description: True when it is the human's turn to bid
+        hint:
+          type: object
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            targetScore:
+              type: integer
+
+    CourtPieceRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `trump` (`t`), `play` (`p`),
+            `next` (`n`), `nextround` (`nr`), `hint` (`h`), `setdifficulty` (`sd`),
+            `setlimit` (`sl`), `log` (`l`).
+          enum: [reset, r, trump, t, play, p, next, n, nextround, nr, hint, h, setdifficulty, sd, setlimit, sl, log, l]
+          example: reset
+        trumpSuit:
+          type: integer
+          description: Trump suit for the `trump` command. 1=Spades, 2=Clubs, 3=Hearts, 4=Diamonds.
+          enum: [1, 2, 3, 4]
+        cardIndex:
+          type: integer
+          description: Hand index of the card to play. Required for the `play` command.
+          example: 0
+        difficulty:
+          type: integer
+          description: CPU difficulty level for `setdifficulty`. 0=Easy, 1=Normal, 2=Hard.
+          minimum: 0
+          maximum: 2
+        limit:
+          type: integer
+          description: Match point limit for `setlimit`.
+          minimum: 1
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            targetScore:
+              type: integer
+              minimum: 1
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    CourtPieceResponse:
+      type: object
+      description: Current state of the Court Piece game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              isCaller:
+                type: boolean
+                description: True if this player is the caller (Hakim) for the current round
+              teamScore:
+                type: integer
+                description: Cumulative match points for the team this player belongs to
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 0=Trump, 1=Play, 2=TrickEnd, 3=RoundEnd, 4=GameEnd"
+          enum: [0, 1, 2, 3, 4]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Current round number (starts at 1)
+        trickNumber:
+          type: integer
+          description: Current trick number within the round (1-13)
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        leadPlayerIdx:
+          type: integer
+          description: Index of the player who led the current trick
+        callerIdx:
+          type: integer
+          description: Index of the caller (Hakim) for the current round
+        trumpSuit:
+          type: integer
+          description: "Current trump suit: 1=Spades, 2=Clubs, 3=Hearts, 4=Diamonds (0 if not yet declared)"
+          minimum: 0
+          maximum: 4
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        teamScores:
+          type: array
+          items:
+            type: integer
+          description: Cumulative match points — index 0 is teamA (seats 0&2), index 1 is teamB (seats 1&3)
+        roundTrickCounts:
+          type: array
+          items:
+            type: integer
+          description: Tricks won by each team in the current round — index 0 is teamA, index 1 is teamB
+        playableIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices the human may legally play (must-follow rule applied)
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: Index of the winning team (0=teamA, 1=teamB; -1 if undecided)
+        isHumanTurn:
+          type: boolean
+        isHumanTrumpTurn:
+          type: boolean
+          description: True when it is the human caller's turn to declare trump
         hint:
           type: object
           properties:

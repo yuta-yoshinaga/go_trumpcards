@@ -547,6 +547,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [3, 4, 5, 2], skill: [2, 3, 5, 2], social: [1, 2, 5, 4, 5], theme: [2, 4, 1, 1, 3, 3] },
       },
       {
+        path: '/courtpiece',
+        labelKey: 'nav.courtpiece',
+        icon: '👑',
+        page: 'CourtPiece',
+        profile: { mood: [3, 4, 5, 2], skill: [2, 3, 5, 2], social: [1, 2, 5, 4, 5], theme: [2, 4, 1, 1, 3, 3] },
+      },
+      {
         path: '/piquet',
         labelKey: 'nav.piquet',
         icon: '🎴',
