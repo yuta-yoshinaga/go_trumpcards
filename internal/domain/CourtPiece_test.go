@@ -305,4 +305,14 @@ func TestCourtPiece_UnmarshalRejectsInvalidState(t *testing.T) {
 	// Malformed JSON.
 	var bad2 domain.CourtPiece
 	assert.Error(t, bad2.UnmarshalJSON([]byte(`not json`)))
+
+	// Out-of-range team on a player must be rejected.
+	tamperedTeam := strings.Replace(string(data), `"tm":1`, `"tm":9`, 1)
+	require.NotEqual(t, string(data), tamperedTeam)
+	var bad3 domain.CourtPiece
+	assert.Error(t, bad3.UnmarshalJSON([]byte(tamperedTeam)))
+
+	// Wrong player count must be rejected.
+	var bad4 domain.CourtPiece
+	assert.Error(t, bad4.UnmarshalJSON([]byte(`{"ps":[null,null]}`)))
 }

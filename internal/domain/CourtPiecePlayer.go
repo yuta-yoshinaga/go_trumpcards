@@ -74,6 +74,9 @@ func (p *CourtPiecePlayer) UnmarshalJSON(data []byte) error {
 	if j.TrickHolder != nil {
 		p.TrickHolder = *j.TrickHolder
 	}
+	if j.Team < 0 || j.Team >= CourtPieceTeamCnt {
+		return errCourtPieceInvalidState
+	}
 	p.team = j.Team
 	return nil
 }

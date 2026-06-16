@@ -845,7 +845,9 @@ func (c *CourtPiece) cpuPlayHard(playerIdx int, valid []int) int {
 	p := c.players[playerIdx]
 	if len(c.currentTrick) == 0 {
 		bestIdx := valid[0]
-		bestScore := -1
+		// Seed below any achievable score: a trump card scores rank*2-30 (can be
+		// negative), so -1 would wrongly reject an all-trump hand.
+		bestScore := -1000
 		for _, idx := range valid {
 			card := p.GetCard(idx)
 			score := courtPieceRank(card.GetValue()) * 2
@@ -891,7 +893,9 @@ func (c *CourtPiece) cpuPlayHard(playerIdx int, valid []int) int {
 		}
 	}
 	bestIdx := valid[0]
-	bestScore := -1
+	// Seed below any achievable score: a trump discard scores rank-100 (negative),
+	// so -1 would wrongly reject an all-trump hand and always discard valid[0].
+	bestScore := -1000
 	for _, idx := range valid {
 		card := p.GetCard(idx)
 		score := courtPieceRank(card.GetValue())
@@ -1066,6 +1070,14 @@ func (c *CourtPiece) UnmarshalJSON(data []byte) error {
 	if len(j.Players) > courtPieceMaxSliceLen || len(j.CurrentTrick) > courtPieceMaxSliceLen ||
 		len(j.ActionLog) > courtPieceMaxActionLogLen {
 		return errCourtPieceInvalidState
+	}
+	if len(j.Players) != CourtPiecePlayerCnt {
+		return errCourtPieceInvalidState
+	}
+	for _, p := range j.Players {
+		if p == nil {
+			return errCourtPieceInvalidState
+		}
 	}
 	if j.CurrentPlayerIdx < -1 || j.CurrentPlayerIdx >= CourtPiecePlayerCnt ||
 		j.CallerIdx < 0 || j.CallerIdx >= CourtPiecePlayerCnt ||
