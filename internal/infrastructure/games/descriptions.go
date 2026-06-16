@@ -148,6 +148,7 @@ var gameDescriptions = map[string]string{
 	"tute":                "Tute (トゥーテ)",
 	"sueca":               "Sueca (スエカ)",
 	"fortyfives":          "Auction Forty-Fives (フォーティファイブズ)",
+	"twentynine":          "Twenty-Nine / 29 (トゥエンティナイン)",
 	"klaverjas":           "Klaverjas (クラヴァヤス)",
 	"manille":             "Manille (マニーユ)",
 	"marias":              "Mariáš (マリアーシュ)",

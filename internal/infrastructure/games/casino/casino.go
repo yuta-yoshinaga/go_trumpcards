@@ -438,6 +438,14 @@ func init() {
 			return usecase.RestoreFortyFivesInteractor(data, new(presenter.FortyFivesWebPresenter))
 		},
 		controller.NewFortyFivesWebControllerWithProvider)
+	games.RegisterKVGame("twentynine", games.CategoryCasino,
+		func() usecase.TwentyNineInteractorIF {
+			return usecase.NewTwentyNineInteractor(domain.NewDefaultTwentyNine(), new(presenter.TwentyNineWebPresenter))
+		},
+		func(data []byte) (usecase.TwentyNineInteractorIF, error) {
+			return usecase.RestoreTwentyNineInteractor(data, new(presenter.TwentyNineWebPresenter))
+		},
+		controller.NewTwentyNineWebControllerWithProvider)
 	games.RegisterKVGame("bourre", games.CategoryCasino,
 		func() usecase.BourreInteractorIF {
 			return usecase.NewBourreInteractor(domain.NewDefaultBourre(), new(presenter.BourreWebPresenter))

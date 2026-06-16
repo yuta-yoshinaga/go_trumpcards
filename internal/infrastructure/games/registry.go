@@ -315,6 +315,7 @@ var registry = []*Game{
 	// 4 players (2v2) with A=11/7=10 scoring. Casino worker (binary-size bucket).
 	{Name: "sueca", Category: CategoryCasino},
 	{Name: "fortyfives", Category: CategoryCasino},
+	{Name: "twentynine", Category: CategoryCasino},
 	// Klaverjas (クラヴァヤス) is a Dutch Jass-family trump trick-taking game for
 	// 4 players (2v2) with the J(20)>9(14) trump rank and Roem melds. Casino
 	// worker (binary-size bucket).

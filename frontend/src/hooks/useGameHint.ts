@@ -116,6 +116,7 @@ import type {
   TressetteResponse,
   TriPeaksResponse,
   TuteResponse,
+  TwentyNineResponse,
   TwoTenJackResponse,
   UltimateTexasHoldemResponse,
   VideoPokerResponse,
@@ -247,6 +248,7 @@ import { getTrashHint } from '../utils/hints/trashHint';
 import { getTressetteHint } from '../utils/hints/tressetteHint';
 import { getTriPeaksHint } from '../utils/hints/tripeaksHint';
 import { getTuteHint } from '../utils/hints/tuteHint';
+import { getTwentyNineHint } from '../utils/hints/twentyNineHint';
 import { getTwoTenJackHint } from '../utils/hints/twotenjackHint';
 import { getUltimateTexasHoldemHint } from '../utils/hints/ultimateTexasHoldemHint';
 import { getVideoPokerHint } from '../utils/hints/videopokerHint';
@@ -403,6 +405,7 @@ const hintFactories = {
   fortyfives: (s) => getFortyFivesHint(s as FortyFivesResponse),
   nap: (s) => getNapHint(s as NapResponse),
   preference: (s) => getPreferenceHint(s as PreferenceResponse),
+  twentynine: (s) => getTwentyNineHint(s as TwentyNineResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

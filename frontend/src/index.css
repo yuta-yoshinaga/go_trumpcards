@@ -84,6 +84,9 @@
   /* Préférence — imperial-Russian petrol/teal felt with a gilt undertone, distinct from every other felt (Austro-Russian salon game). */
   --color-game-bg-preference: #14474a;
   --color-game-bg-preference-dark: #0c2e30;
+  /* Twenty-Nine (29) — Indian/Bangladeshi marigold-saffron deepening to terracotta, a warm spice-orange felt distinct from Forty-Fives' bronze-gold and Nap's wine. */
+  --color-game-bg-twentynine: #b5651d;
+  --color-game-bg-twentynine-dark: #7a4212;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;

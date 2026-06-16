@@ -307,6 +307,8 @@ tags:
     description: Spoil Five / Maw (スポイル・ファイブ) — 5-player Irish traditional trick-taking game on a standard 52-card deck (A,2-10,J,Q,K × 4 suits); 5 cards each, 5 tricks per round; trump determined by turn-up card from remainder of deck; fixed top trumps in order — trump 5 (Five Fingers) > trump J > ♥A (Ace of Hearts, always top trump regardless of trump suit) > trump A > trump K > trump Q > other trumps > led-suit cards; reneging — the three top trumps are exempt from must-follow and may be held back even when trump is led; must-follow otherwise; race to 3 — first player to win 3 tricks wins the round and takes the pot (each player antes each round); spoil — if no player reaches 3 tricks the pot carries over to the next round; first to target (default 30 pts) wins; pip-order red/black rank reversal and Jink bonus omitted (simplified)
   - name: fortyfives
     description: Auction Forty-Fives (フォーティファイブズ) — 4-player 2-team Irish/Nova Scotian trick-taking game on a standard 52-card deck (A,2-10,J,Q,K × 4 suits); 5 cards each, 5 tricks per round; teams are seats 0&2 vs seats 1&3; bidding phase first (Pass/15/20/25, order lowest-to-highest); highest bidder's team becomes the bid team and their longest suit is auto-declared trump (card-exchange omitted); fixed top trumps (Spoil Five family) — trump 5 > trump J > ♥A (always top trump) > trump A > trump K > trump Q > other trumps > led-suit cards; reneging — the three top trumps are exempt from must-follow; must-follow otherwise; each trick scores 5 pts to the winning team; bid team adds its trick points if it meets the bid, else loses the bid value; non-bid team always adds trick points won; Jink — bidding 25 and winning all 5 tricks is an instant match win; first team to reach 45 pts wins; honor-card bonuses and red/black pip-order rank reversal omitted (simplified)
+  - name: twentynine
+    description: Twenty-Nine / 29 (トゥエンティナイン) — 4-player 2-team South Asian trick-taking game on a 32-card deck (7,8,9,10,J,Q,K,A × 4 suits); 8 cards each, 8 tricks per round; teams are seats 0&2 vs seats 1&3; bidding phase first (Pass/16/20/24/28, order lowest-to-highest); highest bidder's team becomes the bid team and their longest suit is auto-declared trump; hidden trump — trump suit is not revealed until a player cannot follow the led suit and plays an off-suit card; card rank within a suit J > 9 > A > 10 > K > Q > 8 > 7 (trump beats all non-trump); must-follow otherwise; card points J=3, 9=2, A=1, 10=1 (28 total); last trick awards +1 point (29 total contested); bid team scores 1 game point if it meets its bid, else non-bid team scores 1 game point; first team to reach 6 game points wins
 
 paths:
   /blackjack/exec:
@@ -13669,6 +13671,109 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FortyFivesResponse'
+
+  /twentynine/exec:
+    post:
+      tags:
+        - twentynine
+      summary: Execute a Twenty-Nine game command
+      description: |
+        Send a command to advance a Twenty-Nine session identified by `sessionId`.
+        Twenty-Nine is a 4-player 2-team (1 human + 3 CPU) South Asian trick-taking
+        game on a 32-card deck (7,8,9,10,J,Q,K,A × 4 suits).
+        Teams are seats 0&2 (human is seat 0) vs seats 1&3.
+        Each player is dealt 8 cards and 8 tricks are played per round.
+        Bidding phase: starting from the dealer's left, each player bids once choosing from
+        Pass / 16 / 20 / 24 / 28. A non-pass bid must outrank the current highest (16 < 20 < 24 < 28).
+        The highest bidder's team becomes the bid team; the bidder's longest suit is
+        auto-declared as trump.
+        If everyone passes the round is void and redealt.
+        Hidden trump: the trump suit is not revealed at the start of the round.
+        It is exposed automatically the moment any player cannot follow the led suit
+        and plays an off-suit card.
+        Card rank within a suit (strongest to weakest): J > 9 > A > 10 > K > Q > 8 > 7.
+        Trump beats all non-trump; within a suit this rank order decides.
+        Must-follow: follow the led suit if able; if void any card may be played.
+        Highest trump wins the trick; if no trump was played, highest card of the led suit wins.
+        Trick winner leads the next trick.
+        Card points: J=3, 9=2, A=1, 10=1 (28 total across the deck).
+        The team that wins the last trick (trick 8) gains an additional +1 point,
+        making the total contested points per deal 29.
+        Scoring: if the bid team captures at least its bid in card points it wins the deal
+        and scores 1 game point; otherwise the non-bid team scores 1 game point.
+        Match: first team to reach 6 game points wins.
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Bid        | `0`   | Bidding phase; each player bids once |
+        | Play       | `1`   | Eight tricks played under must-follow rules |
+        | TrickEnd   | `2`   | Trick resolved; advance with `next` |
+        | RoundEnd   | `3`   | Round scored; advance with `nextround` |
+        | GameEnd    | `4`   | A team reached 6 game points |
+
+        | Command           | Aliases                | Description |
+        |-------------------|------------------------|-------------|
+        | `reset`           | `r`                    | Start / restart the game (optional `config`) |
+        | `bid`             | —                      | Place a bid (requires `bidValue` 0=Pass 16 20 24 28) |
+        | `pass`            | —                      | Pass the bid (equivalent to `bid` with bidValue 0) |
+        | `play`            | —                      | Play a card by `cardIndex` (Play phase) |
+        | `next`            | `n`                    | Advance to the next trick |
+        | `nextround`       | `nr`                   | Score the round and start the next |
+        | `setdifficulty`   | `sd`                   | Set CPU difficulty (requires `difficulty` 0-2) |
+        | `log`             | `l`                    | View action log |
+      operationId: twentyNineExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TwentyNineRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Bid 20 points
+                value:
+                  command: bid
+                  bidValue: 20
+                  sessionId: my-session-001
+              pass:
+                summary: Pass the bid
+                value:
+                  command: pass
+                  sessionId: my-session-001
+              play:
+                summary: Play the card at hand index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+              next:
+                summary: Advance to the next trick
+                value:
+                  command: next
+                  sessionId: my-session-001
+              nextround:
+                summary: Score the round and continue
+                value:
+                  command: nextround
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TwentyNineResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TwentyNineResponse'
 
 components:
   schemas:
@@ -29841,6 +29946,168 @@ components:
           items:
             type: integer
           description: Hand indices the human may legally play (must-follow and reneging rules applied)
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: Index of the winning team (0=teamA, 1=teamB; -1 if undecided)
+        isHumanTurn:
+          type: boolean
+        isHumanBidTurn:
+          type: boolean
+          description: True when it is the human's turn to bid
+        hint:
+          type: object
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            targetScore:
+              type: integer
+
+    TwentyNineRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `bid`, `pass`,
+            `play`, `next` (`n`), `nextround` (`nr`), `setdifficulty` (`sd`), `log` (`l`).
+          enum: [reset, r, bid, pass, play, next, n, nextround, nr, setdifficulty, sd, log, l]
+          example: reset
+        bidValue:
+          type: integer
+          description: Bid value for the `bid` command. 0=Pass, 16, 20, 24, or 28.
+          enum: [0, 16, 20, 24, 28]
+        cardIndex:
+          type: integer
+          description: Hand index of the card to play. Required for the `play` command.
+          example: 0
+        difficulty:
+          type: integer
+          description: CPU difficulty level for `setdifficulty`. 0=Easy, 1=Normal, 2=Hard.
+          minimum: 0
+          maximum: 2
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            targetScore:
+              type: integer
+              minimum: 1
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    TwentyNineResponse:
+      type: object
+      description: Current state of the Twenty-Nine game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              isDeclarer:
+                type: boolean
+                description: True if this player placed the winning bid for the current round
+              teamScore:
+                type: integer
+                description: Cumulative game points for the team this player belongs to
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 0=Bid, 1=Play, 2=TrickEnd, 3=RoundEnd, 4=GameEnd"
+          enum: [0, 1, 2, 3, 4]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Current round number (starts at 1)
+        trickNumber:
+          type: integer
+          description: Current trick number within the round (1-8)
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        leadPlayerIdx:
+          type: integer
+          description: Index of the player who led the current trick
+        dealerIdx:
+          type: integer
+          description: Index of the current dealer
+        declarerIdx:
+          type: integer
+          description: Index of the player who placed the winning bid (-1 if not yet determined)
+        contract:
+          type: integer
+          description: "Bid value of the winning bid: 0=None/Pass, 16, 20, 24, or 28"
+          enum: [0, 16, 20, 24, 28]
+        trumpSuit:
+          type: integer
+          description: "Current trump suit: 1=Spades, 2=Clubs, 3=Hearts, 4=Diamonds (0 if not yet determined)"
+          minimum: 0
+          maximum: 4
+        trumpRevealed:
+          type: boolean
+          description: True once the hidden trump suit has been revealed during play
+        bids:
+          type: array
+          items:
+            type: integer
+          description: Bid placed by each player in seat order (0=Pass, 16, 20, 24, 28; -1=not yet bid)
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        teamScores:
+          type: array
+          items:
+            type: integer
+          description: Cumulative game points — index 0 is teamA (seats 0&2), index 1 is teamB (seats 1&3)
+        roundTeamPoints:
+          type: array
+          items:
+            type: integer
+          description: Card points won by each team in the current round — index 0 is teamA, index 1 is teamB
+        playableIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices the human may legally play (must-follow rule applied)
         gameEndFlag:
           type: boolean
         winnerTeam:
