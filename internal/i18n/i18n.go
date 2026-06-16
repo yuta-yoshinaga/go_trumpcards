@@ -1,15 +1,10 @@
 package i18n
 
 import (
-	"embed"
 	"encoding/json"
 	"io/fs"
 	"strings"
 )
-
-//go:embed locales/ja
-//go:embed locales/en
-var localesFS embed.FS
 
 // QuitSentinel is the internal protocol value returned by controllers on quit.
 const QuitSentinel = "bye."
@@ -45,7 +40,7 @@ func SetLang(lang string) {
 		lang = "ja"
 	}
 	currentLang = lang
-	translations = loadTranslations(localesFS, lang)
+	translations = loadLocale(lang)
 }
 
 // Lang returns the currently active language.
@@ -121,5 +116,5 @@ func loadTranslations(fsys fs.FS, lang string) map[string]string {
 func init() {
 	// Pre-load Japanese translations so T/Tf work correctly even if SetLang
 	// is never called (e.g. in tests that don't set a language).
-	translations = loadTranslations(localesFS, "ja")
+	translations = loadLocale("ja")
 }
