@@ -230,10 +230,15 @@ func (g *TwentyNine) CpuBid() {
 	_ = g.applyBid(idx, g.cpuChooseBid(idx))
 }
 
+// twentyNineIsValidBid は bid が許可された入札定数のいずれかであるかを返す。
+func twentyNineIsValidBid(bid TwentyNineBid) bool {
+	return bid == TwentyNineBidPass || bid == TwentyNineBidSixteen || bid == TwentyNineBidTwenty ||
+		bid == TwentyNineBidTwentyFour || bid == TwentyNineBidTwentyEight
+}
+
 // applyBid 入札を記録し、次の入札者へ進める。全員入札したら契約を確定する。
 func (g *TwentyNine) applyBid(idx int, bid TwentyNineBid) error {
-	if bid != TwentyNineBidPass && bid != TwentyNineBidSixteen && bid != TwentyNineBidTwenty &&
-		bid != TwentyNineBidTwentyFour && bid != TwentyNineBidTwentyEight {
+	if !twentyNineIsValidBid(bid) {
 		return NewDomainError(ErrInvalidPlay, "入札値が不正です")
 	}
 	high, _ := g.highestBid()
@@ -972,6 +977,18 @@ func (g *TwentyNine) UnmarshalJSON(data []byte) error {
 	for _, tc := range j.CurrentTrick {
 		if tc == nil || tc.Card == nil || tc.PlayerIdx < 0 || tc.PlayerIdx >= TwentyNinePlayerCnt {
 			return errTwentyNineInvalidTrick
+		}
+	}
+	// Bids is a fixed-size array, so no DoS size cap is needed; validate each
+	// element (and the resolved contract) against the allowed bid constants so
+	// a tampered payload cannot inject an out-of-range bid that bypasses the
+	// scoring rules.
+	if !twentyNineIsValidBid(j.Contract) {
+		return errTwentyNineInvalidState
+	}
+	for _, b := range j.Bids {
+		if !twentyNineIsValidBid(b) {
+			return errTwentyNineInvalidState
 		}
 	}
 	if err := j.Config.Validate(); err != nil {

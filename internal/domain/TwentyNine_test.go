@@ -4,6 +4,7 @@ package domain
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 )
 
@@ -314,5 +315,31 @@ func TestTwentyNine_UnmarshalErrors(t *testing.T) {
 	}
 	if err := g.UnmarshalJSON([]byte(`{"ps":[null,null,null,null]}`)); err == nil {
 		t.Error("expected nil-player error")
+	}
+}
+
+func TestTwentyNine_UnmarshalRejectsInvalidBid(t *testing.T) {
+	base := newTnGame(true)
+	base.Reset()
+	data, err := json.Marshal(base)
+	if err != nil {
+		t.Fatalf("marshal err: %v", err)
+	}
+	// Inject an out-of-range bid value (99 is not a valid TwentyNineBid constant).
+	tampered := strings.Replace(string(data), `"bd":[0,0,0,0]`, `"bd":[99,0,0,0]`, 1)
+	if tampered == string(data) {
+		t.Fatalf("test setup: expected to find the default bid array in %s", data)
+	}
+	var g TwentyNine
+	if err := g.UnmarshalJSON([]byte(tampered)); err == nil {
+		t.Error("expected invalid-bid error")
+	}
+	// A tampered contract value must also be rejected.
+	tampered2 := strings.Replace(string(data), `"co":0`, `"co":7`, 1)
+	if tampered2 != string(data) {
+		var g2 TwentyNine
+		if err := g2.UnmarshalJSON([]byte(tampered2)); err == nil {
+			t.Error("expected invalid-contract error")
+		}
 	}
 }
