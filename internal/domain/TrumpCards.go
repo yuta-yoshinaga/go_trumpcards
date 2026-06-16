@@ -239,6 +239,28 @@ func NewTrumpCardsSchnapsen() *TrumpCards {
 	return t
 }
 
+// NewTrumpCardsBezique ベジーク用64枚デッキコンストラクタ
+// A,7,8,9,10,J,Q,K (値: 1,7,8,9,10,11,12,13) × 4スート × 2セット = 64枚
+// 2-6 を除外し、32枚パックを2組重ねる。
+func NewTrumpCardsBezique() *TrumpCards {
+	beziqueValues := []int{1, 7, 8, 9, 10, 11, 12, 13} // A,7,8,9,10,J,Q,K
+	suits := []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond}
+	totalCards := len(beziqueValues) * len(suits) * 2 // 64
+
+	t := new(TrumpCards)
+	t.deckCnt = totalCards
+	t.deck = make([]*Card, 0, totalCards)
+	for range 2 {
+		for _, suit := range suits {
+			for _, val := range beziqueValues {
+				t.deck = append(t.deck, NewCard(suit, val, false))
+			}
+		}
+	}
+	t.deckInit()
+	return t
+}
+
 // ShortDeckValues はショートデック(6+)の札値 A,6-K。デッキ構築 (core) と
 // 役判定 (casino) の両方が参照するため、untagged な core ファイルに置く (#2126)。
 var ShortDeckValues = []int{1, 6, 7, 8, 9, 10, 11, 12, 13}

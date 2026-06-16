@@ -395,6 +395,14 @@ export const CourtPiecePhase = {
   GAME_END: 4,
 } as const;
 
+/** Bezique phase constants (sync: internal/domain/Bezique.go). */
+export const BeziquePhase = {
+  PLAY: 0,
+  MELD: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Préférence phase constants (sync: internal/domain/Preference.go). */
 export const PreferencePhase = {
   BID: 0,

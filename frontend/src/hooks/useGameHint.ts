@@ -7,6 +7,7 @@ import type {
   BarbuResponse,
   BeleagueredCastleResponse,
   BeloteResponse,
+  BeziqueResponse,
   BidWhistResponse,
   BigTwoResponse,
   BlackJackResponse,
@@ -135,6 +136,7 @@ import { getBakersdozenHint } from '../utils/hints/bakersdozenHint';
 import { getBarbuHint } from '../utils/hints/barbuHint';
 import { getBeleagueredcastleHint } from '../utils/hints/beleagueredcastleHint';
 import { getBeloteHint } from '../utils/hints/beloteHint';
+import { getBeziqueHint } from '../utils/hints/beziqueHint';
 import { getBidWhistHint } from '../utils/hints/bidwhistHint';
 import { getBigTwoHint } from '../utils/hints/bigtwoHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
@@ -409,6 +411,7 @@ const hintFactories = {
   preference: (s) => getPreferenceHint(s as PreferenceResponse),
   twentynine: (s) => getTwentyNineHint(s as TwentyNineResponse),
   courtpiece: (s) => getCourtPieceHint(s as CourtPieceResponse),
+  bezique: (s) => getBeziqueHint(s as BeziqueResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

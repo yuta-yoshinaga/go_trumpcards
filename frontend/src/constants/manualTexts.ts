@@ -11,6 +11,7 @@ import bakersgame from '../../../docs/manual/web/bakersgame.md?raw';
 import barbu from '../../../docs/manual/web/barbu.md?raw';
 import beleagueredcastle from '../../../docs/manual/web/beleagueredcastle.md?raw';
 import belote from '../../../docs/manual/web/belote.md?raw';
+import bezique from '../../../docs/manual/web/bezique.md?raw';
 import bidwhist from '../../../docs/manual/web/bidwhist.md?raw';
 import bigo from '../../../docs/manual/web/bigo.md?raw';
 import bigohilo from '../../../docs/manual/web/bigohilo.md?raw';
@@ -157,6 +158,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/': blackjack,
   '/baccarat': baccarat,
   '/belote': belote,
+  '/bezique': bezique,
   '/bridge': bridge,
   '/burraco': burraco,
   '/calculation': calculation,

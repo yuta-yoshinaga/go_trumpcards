@@ -311,6 +311,8 @@ tags:
     description: Twenty-Nine / 29 (トゥエンティナイン) — 4-player 2-team South Asian trick-taking game on a 32-card deck (7,8,9,10,J,Q,K,A × 4 suits); 8 cards each, 8 tricks per round; teams are seats 0&2 vs seats 1&3; bidding phase first (Pass/16/20/24/28, order lowest-to-highest); highest bidder's team becomes the bid team and their longest suit is auto-declared trump; hidden trump — trump suit is not revealed until a player cannot follow the led suit and plays an off-suit card; card rank within a suit J > 9 > A > 10 > K > Q > 8 > 7 (trump beats all non-trump); must-follow otherwise; card points J=3, 9=2, A=1, 10=1 (28 total); last trick awards +1 point (29 total contested); bid team scores 1 game point if it meets its bid, else non-bid team scores 1 game point; first team to reach 6 game points wins
   - name: courtpiece
     description: Court Piece / Rang (コートピース) — 4-player 2-team Pakistani/Iranian trick-taking game on a standard 52-card deck (2-10,J,Q,K,A × 4 suits); 13 cards each, 13 tricks per round; teams are seats 0&2 vs seats 1&3; the caller (Hakim) is dealt the first 5 cards, peeks, and immediately declares a trump suit (1=♠ 2=♣ 3=♥ 4=♦) before the remaining cards are dealt; the caller leads the first trick; card rank within a suit A > K > Q > J > 10 > … > 2 (trump beats all non-trump); must-follow otherwise; highest trump wins the trick, else highest card of the led suit; a team taking 7 or more of the 13 tricks wins the round (Sar) and scores 1 point; winning consecutive rounds or sweeping all 13 tricks earns a Court bonus (+2 points); the winning team keeps the caller role, on a loss the caller passes to the next seat; first team to reach the point limit (default 7) wins
+  - name: bezique
+    description: Bezique (ベジーク) — 2-player French declaration trick-taking game, the direct ancestor of Pinochle, on a 64-card deck (A,7,8,9,10,J,Q,K × 4 suits × 2 copies); 8 cards each; the next card off the stock is turned up to set the trump suit; trick rank A > 10 > K > Q > J > 9 > 8 > 7 (trump beats all non-trump); Phase 1 (while the stock lasts) — no follow requirement, the trick winner may declare one meld for points or decline, then both draw 1 card (winner first); melds — Marriage (K+Q same suit)=20, Royal Marriage (trump K+Q)=40, Bezique (♠Q+♦J)=40, four Aces=100, four Kings=80, four Queens=60, four Jacks=40; Phase 2 (after the stock is exhausted) — strict must-follow (follow led suit, win if able, else trump if void), no melds, last-trick winner +10; captured card points A=11, 10=10, K=4, Q=3, J=2, 9/8/7=0; meld points, card points, and the last-trick bonus accumulate across deals; first player to reach the target (default 1000) wins
 
 paths:
   /blackjack/exec:
@@ -13868,6 +13870,97 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CourtPieceResponse'
+
+  /bezique/exec:
+    post:
+      tags:
+        - bezique
+      summary: Execute a Bezique game command
+      description: |
+        Send a command to advance a Bezique session identified by `sessionId`.
+        Bezique is a 2-player (1 human vs 1 CPU) French declaration trick-taking game,
+        the direct ancestor of Pinochle, on a 64-card deck (A,7,8,9,10,J,Q,K × 4 suits × 2 copies).
+        Each player is dealt 8 cards; the next card off the stock is turned up to set the trump suit,
+        and the rest forms the stock.
+        Trick rank within a suit (strongest to weakest): A > 10 > K > Q > J > 9 > 8 > 7.
+        Trump beats all non-trump; within a suit this rank order decides.
+        Phase 1 (while the stock lasts): tricks have no follow requirement; after winning a trick,
+        the winner may declare one meld for points (or decline), then both players draw 1 card (winner first).
+        Melds: Marriage (K+Q same suit)=20, Royal Marriage (trump K+Q)=40, Bezique (Queen of Spades + Jack of Diamonds)=40,
+        four Aces=100, four Kings=80, four Queens=60, four Jacks=40.
+        Phase 2 (after the stock is exhausted): strict must-follow (follow the led suit, win if able,
+        otherwise trump if void); no melds; the winner of the last trick gains +10.
+        Captured card points: A=11, 10=10, K=4, Q=3, J=2, 9/8/7=0.
+        Scoring: meld points, card points, and the last-trick bonus accumulate across deals;
+        the first player to reach the target (default 1000) wins.
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Play       | `0`   | Play a card to the current trick |
+        | Meld       | `1`   | Trick winner declares one meld or skips (Phase 1 only) |
+        | TrickEnd   | `2`   | Trick resolved; advance with `next` |
+        | RoundEnd   | `3`   | Deal scored; advance with `nextround` |
+        | GameEnd    | `4`   | A player reached the target score |
+
+        | Command           | Aliases                | Description |
+        |-------------------|------------------------|-------------|
+        | `reset`           | `r`                    | Start / restart the game (optional `config`) |
+        | `play`            | `p`                    | Play a card by `cardIndex` (Play phase) |
+        | `meld`            | `m`                    | Declare a meld by `meldIndex` (Meld phase; winner only) |
+        | `skip`            | `s`                    | Decline to declare a meld (Meld phase) |
+        | `next`            | `n`, `nextround`       | Advance to the next trick or deal |
+        | `hint`            | `h`                    | Request a play hint |
+        | `setdifficulty`   | `sd`                   | Set CPU difficulty (requires `difficulty` 0-2) |
+        | `settarget`       | `st`                   | Set the target score (requires `target`) |
+        | `log`             | `l`                    | View action log |
+      operationId: beziqueExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BeziqueRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play the card at hand index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+              meld:
+                summary: Declare the meld at list index 0
+                value:
+                  command: meld
+                  meldIndex: 0
+                  sessionId: my-session-001
+              skip:
+                summary: Decline to declare a meld
+                value:
+                  command: skip
+                  sessionId: my-session-001
+              next:
+                summary: Advance to the next trick or deal
+                value:
+                  command: next
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeziqueResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeziqueResponse'
 
 components:
   schemas:
@@ -30364,6 +30457,162 @@ components:
         isHumanTrumpTurn:
           type: boolean
           description: True when it is the human caller's turn to declare trump
+        hint:
+          type: object
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            targetScore:
+              type: integer
+
+    BeziqueRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `play` (`p`), `meld` (`m`),
+            `skip` (`s`), `next` (`n`, `nextround`), `hint` (`h`), `setdifficulty` (`sd`),
+            `settarget` (`st`), `log` (`l`).
+          enum: [reset, r, play, p, meld, m, skip, s, next, n, nextround, hint, h, setdifficulty, sd, settarget, st, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Hand index of the card to play. Required for the `play` command.
+          example: 0
+        meldIndex:
+          type: integer
+          description: List index of the meld to declare. Required for the `meld` command.
+          example: 0
+        difficulty:
+          type: integer
+          description: CPU difficulty level for `setdifficulty`. 0=Easy, 1=Normal, 2=Hard.
+          minimum: 0
+          maximum: 2
+        target:
+          type: integer
+          description: Target score for `settarget`.
+          minimum: 1
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            targetScore:
+              type: integer
+              minimum: 1
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    BeziqueResponse:
+      type: object
+      description: Current state of the Bezique game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              score:
+                type: integer
+                description: Cumulative match score for this player
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 0=Play, 1=Meld, 2=TrickEnd, 3=RoundEnd, 4=GameEnd"
+          enum: [0, 1, 2, 3, 4]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Current deal number (starts at 1)
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        leadPlayerIdx:
+          type: integer
+          description: Index of the player who led the current trick
+        trumpSuit:
+          type: integer
+          description: "Trump suit: 1=Spades, 2=Clubs, 3=Hearts, 4=Diamonds (0 if not yet set)"
+          minimum: 0
+          maximum: 4
+        stockCount:
+          type: integer
+          description: Number of cards remaining in the stock (0 in Phase 2)
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        scores:
+          type: array
+          items:
+            type: integer
+          description: Cumulative match scores — index 0 is the human, index 1 is the CPU
+        availableMelds:
+          type: array
+          description: Melds the trick winner may declare (Meld phase only)
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: Meld name (e.g. Marriage, Royal Marriage, Bezique, Four Aces)
+              points:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+        playableIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices the human may legally play (must-follow rule applied in Phase 2)
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: Index of the winning player (0=human, 1=CPU; -1 if undecided)
+        isHumanTurn:
+          type: boolean
+        isHumanMeldTurn:
+          type: boolean
+          description: True when it is the human's turn to declare a meld
         hint:
           type: object
           properties:

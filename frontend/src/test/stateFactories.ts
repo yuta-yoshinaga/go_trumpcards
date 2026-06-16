@@ -1,4 +1,5 @@
 import type {
+  BeziqueResponse,
   CallBreakResponse,
   CourtPieceResponse,
   DoppelkopfResponse,
@@ -1173,6 +1174,57 @@ const baseCourtPieceState: CourtPieceResponse = {
  */
 export function makeCourtPieceState(overrides?: Partial<CourtPieceResponse>): CourtPieceResponse {
   return { ...baseCourtPieceState, ...overrides };
+}
+
+/** Base Bezique state used as the default for {@link makeBeziqueState}. A 2-player melding trick-taker; defaults to a human Play turn with stock remaining (phase 1). */
+const baseBeziqueState: BeziqueResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 9,
+      cards: [
+        { design: 'SPADE' as const, value: 12 },
+        { design: 'DIAMOND' as const, value: 11 },
+        { design: 'HEART' as const, value: 1 },
+      ],
+      roundScore: 0,
+      cumulativeScore: 0,
+      trickCount: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 9, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+  ],
+  dealPoints: [0, 0],
+  matchScore: [0, 0],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 1,
+  trumpSuit: 3,
+  trumpCard: { design: 'HEART' as const, value: 7 },
+  currentTrick: [],
+  stockRemaining: 30,
+  isEndgame: false,
+  availableMelds: [],
+  gameEndFlag: false,
+  winnerIdx: -1,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetScore: 1000 },
+};
+
+/**
+ * Creates a {@link BeziqueResponse} with sensible defaults (a human Play turn,
+ * phase 1, stock remaining). Any field can be overridden via the `overrides`
+ * parameter.
+ *
+ * @param overrides - Partial BeziqueResponse fields to override.
+ * @returns A complete BeziqueResponse suitable for use in tests.
+ */
+export function makeBeziqueState(overrides?: Partial<BeziqueResponse>): BeziqueResponse {
+  return { ...baseBeziqueState, ...overrides };
 }
 
 /** Base Préférence state used as the default for {@link makePreferenceState}. A 3-player Russian bidding trick-taker; defaults to a human Bid turn. */

@@ -333,6 +333,11 @@ var registry = []*Game{
 	// the first 5 cards; 7+ tricks wins the round (Sar), consecutive wins score
 	// a Court bonus. Casino worker (binary-size bucket).
 	{Name: "courtpiece", Category: CategoryCasino},
+	// Bezique (ベジーク) is a French 2-player declaration trick game (the ancestor
+	// of Pinochle) using a 64-card deck. Trick winners declare melds (marriages,
+	// Bezique = ♠Q+♦J, four-of-a-kind); after the stock empties play becomes
+	// strict must-follow. Classic worker (binary-size bucket — casino was full).
+	{Name: "bezique", Category: CategoryClassic},
 }
 
 // All returns a value-level copy of the registry in canonical order.
