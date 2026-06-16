@@ -69,6 +69,7 @@ export type GameKey =
   | 'preference'
   | 'twentynine'
   | 'courtpiece'
+  | 'bezique'
   | 'pitch'
   | 'twotenjack'
   | 'ohhell'
@@ -249,6 +250,10 @@ const PREFERENCE = {
   bg: 'bg-game-bg-preference',
   footer: 'bg-game-bg-preference-dark border-white/20',
 } as const;
+const BEZIQUE = {
+  bg: 'bg-game-bg-bezique',
+  footer: 'bg-game-bg-bezique-dark border-white/20',
+} as const;
 
 export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Table games
@@ -311,6 +316,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   preference: PREFERENCE,
   twentynine: TWENTYNINE,
   courtpiece: COURTPIECE,
+  bezique: BEZIQUE,
   pitch: BLUE,
   twotenjack: BLUE,
   ohhell: BLUE,

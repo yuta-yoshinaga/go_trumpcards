@@ -2389,6 +2389,22 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"courtpiece.helpSetDifficulty"},
 			})
 	}},
+	{Name: "bezique", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBeziqueCuiController(usecase.NewBeziqueInteractor(
+				domain.NewDefaultBezique(), new(presenter.BeziqueCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "bezique.helpTitle",
+				CommandKeys: []string{
+					"bezique.helpPlay",
+					"bezique.helpMeld",
+					"bezique.helpSkip",
+					"bezique.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"bezique.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

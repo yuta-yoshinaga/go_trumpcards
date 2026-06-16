@@ -375,5 +375,13 @@ func init() {
 			return usecase.RestoreScopaInteractor(data, new(presenter.ScopaWebPresenter))
 		},
 		controller.NewScopaWebControllerWithProvider)
+	games.RegisterKVGame("bezique", games.CategoryClassic,
+		func() usecase.BeziqueInteractorIF {
+			return usecase.NewBeziqueInteractor(domain.NewDefaultBezique(), new(presenter.BeziqueWebPresenter))
+		},
+		func(data []byte) (usecase.BeziqueInteractorIF, error) {
+			return usecase.RestoreBeziqueInteractor(data, new(presenter.BeziqueWebPresenter))
+		},
+		controller.NewBeziqueWebControllerWithProvider)
 
 }

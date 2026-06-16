@@ -90,6 +90,9 @@
   /* Court Piece (Rang) — a regal South-Asian indigo-violet "royal court" felt, distinct from Twenty-Nine's spice-orange and Preference's teal. */
   --color-game-bg-courtpiece: #4b3f72;
   --color-game-bg-courtpiece-dark: #2e2649;
+  /* Bezique — a deep romantic wine-burgundy felt evoking the classic ♠Q+♦J pairing, distinct from Court Piece's royal indigo. */
+  --color-game-bg-bezique: #5c1f33;
+  --color-game-bg-bezique-dark: #3a1320;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;

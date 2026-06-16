@@ -760,4 +760,9 @@ func init() {
 			return usecase.NewCourtPieceInteractor(domain.NewDefaultCourtPiece(), new(presenter.CourtPieceWebPresenter))
 		},
 		controller.NewCourtPieceWebController)
+	BindWebControllerFor("bezique",
+		func() usecase.BeziqueInteractorIF {
+			return usecase.NewBeziqueInteractor(domain.NewDefaultBezique(), new(presenter.BeziqueWebPresenter))
+		},
+		controller.NewBeziqueWebController)
 }

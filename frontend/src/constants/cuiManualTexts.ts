@@ -12,6 +12,7 @@ import bakersgame from '../../../docs/manual/cui/bakersgame.md?raw';
 import barbu from '../../../docs/manual/cui/barbu.md?raw';
 import beleagueredcastle from '../../../docs/manual/cui/beleagueredcastle.md?raw';
 import belote from '../../../docs/manual/cui/belote.md?raw';
+import bezique from '../../../docs/manual/cui/bezique.md?raw';
 import bidwhist from '../../../docs/manual/cui/bidwhist.md?raw';
 import bigo from '../../../docs/manual/cui/bigo.md?raw';
 import bigohilo from '../../../docs/manual/cui/bigohilo.md?raw';
@@ -158,6 +159,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/': blackjack,
   '/baccarat': baccarat,
   '/belote': belote,
+  '/bezique': bezique,
   '/bridge': bridge,
   '/burraco': burraco,
   '/calculation': calculation,
