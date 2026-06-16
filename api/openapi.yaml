@@ -313,6 +313,8 @@ tags:
     description: Court Piece / Rang (コートピース) — 4-player 2-team Pakistani/Iranian trick-taking game on a standard 52-card deck (2-10,J,Q,K,A × 4 suits); 13 cards each, 13 tricks per round; teams are seats 0&2 vs seats 1&3; the caller (Hakim) is dealt the first 5 cards, peeks, and immediately declares a trump suit (1=♠ 2=♣ 3=♥ 4=♦) before the remaining cards are dealt; the caller leads the first trick; card rank within a suit A > K > Q > J > 10 > … > 2 (trump beats all non-trump); must-follow otherwise; highest trump wins the trick, else highest card of the led suit; a team taking 7 or more of the 13 tricks wins the round (Sar) and scores 1 point; winning consecutive rounds or sweeping all 13 tricks earns a Court bonus (+2 points); the winning team keeps the caller role, on a loss the caller passes to the next seat; first team to reach the point limit (default 7) wins
   - name: bezique
     description: Bezique (ベジーク) — 2-player French declaration trick-taking game, the direct ancestor of Pinochle, on a 64-card deck (A,7,8,9,10,J,Q,K × 4 suits × 2 copies); 8 cards each; the next card off the stock is turned up to set the trump suit; trick rank A > 10 > K > Q > J > 9 > 8 > 7 (trump beats all non-trump); Phase 1 (while the stock lasts) — no follow requirement, the trick winner may declare one meld for points or decline, then both draw 1 card (winner first); melds — Marriage (K+Q same suit)=20, Royal Marriage (trump K+Q)=40, Bezique (♠Q+♦J)=40, four Aces=100, four Kings=80, four Queens=60, four Jacks=40; Phase 2 (after the stock is exhausted) — strict must-follow (follow led suit, win if able, else trump if void), no melds, last-trick winner +10; captured card points A=11, 10=10, K=4, Q=3, J=2, 9/8/7=0; meld points, card points, and the last-trick bonus accumulate across deals; first player to reach the target (default 1000) wins
+  - name: ecarte
+    description: Écarté (エカルテ) — 2-player French trick-taking game on a 32-card deck (A,7,8,9,10,J,Q,K × 4 suits); 5 cards each; the next card off the stock is turned up to set the trump suit (if it is a King the dealer scores +1); trick rank K > Q > J > A > 10 > 9 > 8 > 7 (trump beats all non-trump); Exchange phase — the elder (non-dealer) proposes an exchange or stands, and if proposed the dealer accepts or refuses; on accept both players discard any number of cards and draw replacements, then the elder again proposes or stands until the elder stands, the dealer refuses, or the stock is exhausted; if the dealer refuses and then fails to take 3 tricks the elder gains +1 (refusal penalty); Play phase — 5 tricks with strict must-follow under trump (follow the led suit, win if able, else trump if void); holding the trump King in hand scores +1 (declared automatically); scoring — 3 or 4 tricks = 1 point, sweeping all 5 (the Vole) = 2 points; match scores accumulate across deals; first player to reach the target (default 5) wins
 
 paths:
   /blackjack/exec:
@@ -13961,6 +13963,105 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BeziqueResponse'
+
+  /ecarte/exec:
+    post:
+      tags:
+        - ecarte
+      summary: Execute an Écarté game command
+      description: |
+        Send a command to advance an Écarté session identified by `sessionId`.
+        Écarté is a 2-player (1 human vs 1 CPU) French trick-taking game on a
+        32-card deck (A,7,8,9,10,J,Q,K × 4 suits). Each player is dealt 5 cards;
+        the next card off the stock is turned up to set the trump suit (if it is a
+        King the dealer scores +1), and the rest forms the stock.
+        Trick rank within a suit (strongest to weakest): K > Q > J > A > 10 > 9 > 8 > 7.
+        Trump beats all non-trump; within a suit this rank order decides.
+        Exchange phase: the elder (non-dealer) proposes an exchange or stands; if proposed,
+        the dealer accepts or refuses. On accept, both players discard any number of cards and
+        draw replacements from the stock, then the elder again proposes or stands; this repeats
+        until the elder stands, the dealer refuses, or the stock is exhausted. If the dealer
+        refuses and then fails to take 3 tricks that deal, the elder gains +1 (refusal penalty).
+        Play phase: 5 tricks with strict must-follow under trump (follow the led suit, win if able,
+        otherwise trump if void). Holding the trump King in hand scores +1 (declared automatically).
+        Scoring: taking 3 or 4 tricks = 1 point; sweeping all 5 tricks (the Vole) = 2 points.
+        Match scores accumulate across deals; the first player to reach the target (default 5) wins.
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Exchange   | `0`   | Elder proposes or stands; dealer accepts or refuses; discard and redraw |
+        | Play       | `1`   | Play a card to the current trick |
+        | RoundEnd   | `2`   | Deal scored; advance with `nextround` |
+        | GameEnd    | `3`   | A player reached the target score |
+
+        | Command           | Aliases                | Description |
+        |-------------------|------------------------|-------------|
+        | `reset`           | `r`                    | Start / restart the game (optional `config`) |
+        | `propose`         | `pr`                   | Propose an exchange (elder; Exchange phase) |
+        | `stand`           | `st`                   | Decline to exchange and play as dealt (elder; Exchange phase) |
+        | `accept`          | `a`                    | Accept the proposed exchange (dealer; Exchange phase) |
+        | `refuse`          | `rf`                   | Refuse the proposed exchange (dealer; Exchange phase) |
+        | `discard`         | `d`                    | Discard cards by `discardIndices` and redraw (after accept) |
+        | `play`            | `p`                    | Play a card by `cardIndex` (Play phase) |
+        | `next`            | `n`, `nextround`       | Advance to the next trick or deal |
+        | `hint`            | `h`                    | Request a play hint |
+        | `setdifficulty`   | `sd`                   | Set CPU difficulty (requires `difficulty` 0-2) |
+        | `settarget`       | `tg`                   | Set the target score (requires `target`) |
+        | `log`             | `l`                    | View action log |
+      operationId: ecarteExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EcarteRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              propose:
+                summary: Propose an exchange (elder)
+                value:
+                  command: propose
+                  sessionId: my-session-001
+              accept:
+                summary: Accept the proposed exchange (dealer)
+                value:
+                  command: accept
+                  accept: true
+                  sessionId: my-session-001
+              discard:
+                summary: Discard the cards at hand indices 3 and 4 and redraw
+                value:
+                  command: discard
+                  discardIndices: [3, 4]
+                  sessionId: my-session-001
+              play:
+                summary: Play the card at hand index 0
+                value:
+                  command: play
+                  cardIndex: 0
+                  sessionId: my-session-001
+              next:
+                summary: Advance to the next trick or deal
+                value:
+                  command: next
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcarteResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcarteResponse'
 
 components:
   schemas:
@@ -30613,6 +30714,167 @@ components:
         isHumanMeldTurn:
           type: boolean
           description: True when it is the human's turn to declare a meld
+        hint:
+          type: object
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            targetScore:
+              type: integer
+
+    EcarteRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `propose` (`pr`), `stand` (`st`),
+            `accept` (`a`), `refuse` (`rf`), `discard` (`d`), `play` (`p`),
+            `next` (`n`, `nextround`), `hint` (`h`), `setdifficulty` (`sd`),
+            `settarget` (`tg`), `log` (`l`).
+          enum: [reset, r, propose, pr, stand, st, accept, a, refuse, rf, discard, d, play, p, next, n, nextround, hint, h, setdifficulty, sd, settarget, tg, log, l]
+          example: reset
+        accept:
+          type: boolean
+          description: Dealer's response to a proposed exchange. True accepts, false refuses (used with the `accept`/`refuse` commands).
+          example: true
+        cardIndex:
+          type: integer
+          description: Hand index of the card to play. Required for the `play` command.
+          example: 0
+        discardIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices of the cards to discard and redraw. Used with the `discard` command.
+          example: [3, 4]
+        difficulty:
+          type: integer
+          description: CPU difficulty level for `setdifficulty`. 0=Easy, 1=Normal, 2=Hard.
+          minimum: 0
+          maximum: 2
+        target:
+          type: integer
+          description: Target score for `settarget`.
+          minimum: 1
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            targetScore:
+              type: integer
+              minimum: 1
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    EcarteResponse:
+      type: object
+      description: Current state of the Écarté game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              score:
+                type: integer
+                description: Cumulative match score for this player
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 0=Exchange, 1=Play, 2=RoundEnd, 3=GameEnd"
+          enum: [0, 1, 2, 3]
+          example: 0
+        negStep:
+          type: integer
+          description: "Exchange negotiation step: 0=elder to propose/stand, 1=dealer to accept/refuse, 2=both to discard/redraw"
+        roundNumber:
+          type: integer
+          description: Current deal number (starts at 1)
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        leadPlayerIdx:
+          type: integer
+          description: Index of the player who led the current trick
+        dealerIdx:
+          type: integer
+          description: Index of the dealer for the current deal (the elder is the other player)
+        trumpSuit:
+          type: integer
+          description: "Trump suit: 1=Spades, 2=Clubs, 3=Hearts, 4=Diamonds (0 if not yet set)"
+          minimum: 0
+          maximum: 4
+        trumpCard:
+          $ref: '#/components/schemas/Card'
+        stockRemaining:
+          type: integer
+          description: Number of cards remaining in the stock
+        refusalByDealer:
+          type: boolean
+          description: True when the dealer refused the elder's exchange proposal this deal (arms the refusal penalty)
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        dealPoints:
+          type: array
+          items:
+            type: integer
+          description: Tricks taken so far this deal — index 0 is the human, index 1 is the CPU
+        matchScore:
+          type: array
+          items:
+            type: integer
+          description: Cumulative match scores — index 0 is the human, index 1 is the CPU
+        validPlays:
+          type: array
+          items:
+            type: integer
+          description: Hand indices the human may legally play (must-follow rule applied in the Play phase)
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: Index of the winning player (0=human, 1=CPU; -1 if undecided)
+        isHumanTurn:
+          type: boolean
         hint:
           type: object
           properties:

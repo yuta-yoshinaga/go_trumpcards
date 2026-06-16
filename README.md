@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した150種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した151種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -169,6 +169,7 @@ Go + Clean Architecture で実装した150種類のトランプゲーム。CLI �
 | トゥエンティナイン (Twenty-Nine / 29) | `twentynine` | [CUI](docs/manual/cui/twentynine.md) / [Web](docs/manual/web/twentynine.md) |
 | コートピース (Court Piece / Rang) | `courtpiece` | [CUI](docs/manual/cui/courtpiece.md) / [Web](docs/manual/web/courtpiece.md) |
 | ベジーク (Bezique) | `bezique` | [CUI](docs/manual/cui/bezique.md) / [Web](docs/manual/web/bezique.md) |
+| エカルテ (Écarté) | `ecarte` | [CUI](docs/manual/cui/ecarte.md) / [Web](docs/manual/web/ecarte.md) |
 
 ## Demo
 

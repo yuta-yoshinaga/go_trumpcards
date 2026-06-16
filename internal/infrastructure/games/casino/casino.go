@@ -462,5 +462,13 @@ func init() {
 			return usecase.RestoreCourtPieceInteractor(data, new(presenter.CourtPieceWebPresenter))
 		},
 		controller.NewCourtPieceWebControllerWithProvider)
+	games.RegisterKVGame("ecarte", games.CategoryCasino,
+		func() usecase.EcarteInteractorIF {
+			return usecase.NewEcarteInteractor(domain.NewDefaultEcarte(), new(presenter.EcarteWebPresenter))
+		},
+		func(data []byte) (usecase.EcarteInteractorIF, error) {
+			return usecase.RestoreEcarteInteractor(data, new(presenter.EcarteWebPresenter))
+		},
+		controller.NewEcarteWebControllerWithProvider)
 
 }

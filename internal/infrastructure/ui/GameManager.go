@@ -2405,6 +2405,23 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"bezique.helpSetDifficulty"},
 			})
 	}},
+	{Name: "ecarte", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewEcarteCuiController(usecase.NewEcarteInteractor(
+				domain.NewDefaultEcarte(), new(presenter.EcarteCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "ecarte.helpTitle",
+				CommandKeys: []string{
+					"ecarte.helpPropose",
+					"ecarte.helpStand",
+					"ecarte.helpDiscard",
+					"ecarte.helpPlay",
+					"ecarte.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"ecarte.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

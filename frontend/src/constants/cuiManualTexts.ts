@@ -50,6 +50,7 @@ import doudizhu from '../../../docs/manual/cui/doudizhu.md?raw';
 import dragontiger from '../../../docs/manual/cui/dragontiger.md?raw';
 import durak from '../../../docs/manual/cui/durak.md?raw';
 import easthaven from '../../../docs/manual/cui/easthaven.md?raw';
+import ecarte from '../../../docs/manual/cui/ecarte.md?raw';
 import egyptianratscrew from '../../../docs/manual/cui/egyptianratscrew.md?raw';
 import eightoff from '../../../docs/manual/cui/eightoff.md?raw';
 import euchre from '../../../docs/manual/cui/euchre.md?raw';
@@ -160,6 +161,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/baccarat': baccarat,
   '/belote': belote,
   '/bezique': bezique,
+  '/ecarte': ecarte,
   '/bridge': bridge,
   '/burraco': burraco,
   '/calculation': calculation,

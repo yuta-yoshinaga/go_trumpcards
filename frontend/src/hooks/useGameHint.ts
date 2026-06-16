@@ -35,6 +35,7 @@ import type {
   DragonTigerResponse,
   DurakResponse,
   EasthavenResponse,
+  EcarteResponse,
   EgyptianRatscrewResponse,
   EightOffResponse,
   EuchreResponse,
@@ -166,6 +167,7 @@ import { getDoudizhuHint } from '../utils/hints/doudizhuHint';
 import { getDragontigerHint } from '../utils/hints/dragontigerHint';
 import { getDurakHint } from '../utils/hints/durakHint';
 import { getEasthavenHint } from '../utils/hints/easthavenHint';
+import { getEcarteHint } from '../utils/hints/ecarteHint';
 import { getEgyptianRatscrewHint } from '../utils/hints/egyptianratscrewHint';
 import { getEightOffHint } from '../utils/hints/eightoffHint';
 import { getEuchreHint } from '../utils/hints/euchreHint';
@@ -412,6 +414,7 @@ const hintFactories = {
   twentynine: (s) => getTwentyNineHint(s as TwentyNineResponse),
   courtpiece: (s) => getCourtPieceHint(s as CourtPieceResponse),
   bezique: (s) => getBeziqueHint(s as BeziqueResponse),
+  ecarte: (s) => getEcarteHint(s as EcarteResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

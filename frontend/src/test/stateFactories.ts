@@ -3,6 +3,7 @@ import type {
   CallBreakResponse,
   CourtPieceResponse,
   DoppelkopfResponse,
+  EcarteResponse,
   FortyFivesResponse,
   GongZhuResponse,
   HeartsResponse,
@@ -1225,6 +1226,59 @@ const baseBeziqueState: BeziqueResponse = {
  */
 export function makeBeziqueState(overrides?: Partial<BeziqueResponse>): BeziqueResponse {
   return { ...baseBeziqueState, ...overrides };
+}
+
+/** Base Écarté state used as the default for {@link makeEcarteState}. A 2-player French trick game; defaults to a human Exchange turn at the ElderDecide sub-step (phase 0). */
+const baseEcarteState: EcarteResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 5,
+      cards: [
+        { design: 'SPADE' as const, value: 13 },
+        { design: 'DIAMOND' as const, value: 11 },
+        { design: 'HEART' as const, value: 1 },
+      ],
+      roundScore: 0,
+      cumulativeScore: 0,
+      trickCount: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 5, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+  ],
+  dealPoints: [0, 0],
+  matchScore: [0, 0],
+  phase: 0,
+  negStep: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  dealerIdx: 1,
+  elderIdx: 0,
+  leadPlayerIdx: 0,
+  trumpSuit: 3,
+  trumpCard: { design: 'HEART' as const, value: 13 },
+  currentTrick: [],
+  stockRemaining: 22,
+  refusalByDealer: false,
+  validPlays: [],
+  gameEndFlag: false,
+  winnerIdx: -1,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetScore: 5 },
+};
+
+/**
+ * Creates an {@link EcarteResponse} with sensible defaults (a human Exchange
+ * turn at the ElderDecide sub-step, phase 0). Any field can be overridden via
+ * the `overrides` parameter.
+ *
+ * @param overrides - Partial EcarteResponse fields to override.
+ * @returns A complete EcarteResponse suitable for use in tests.
+ */
+export function makeEcarteState(overrides?: Partial<EcarteResponse>): EcarteResponse {
+  return { ...baseEcarteState, ...overrides };
 }
 
 /** Base Préférence state used as the default for {@link makePreferenceState}. A 3-player Russian bidding trick-taker; defaults to a human Bid turn. */
