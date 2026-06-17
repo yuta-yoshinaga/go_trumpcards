@@ -96,6 +96,20 @@ func TestEscoba_PlaceWhenNoFifteen(t *testing.T) {
 	assert.Equal(t, 2, len(e.GetTableCards()))
 }
 
+func TestEscoba_ForcedCapture(t *testing.T) {
+	// A 15-combo (K=10 + 5) exists on the table, so laying (nil) is illegal and
+	// must not consume the played card.
+	e := newTestEscoba(true)
+	e.SetPhase(domain.EscobaPhasePlayerTurn)
+	e.SetCurrentTurn(0)
+	e.SetTableCards([]*domain.Card{ebCard(domain.CardDesignSpade, 5)})
+	ebSetHand(e.GetPlayer(0), ebCard(domain.CardDesignHeart, 13), ebCard(domain.CardDesignClover, 2))
+	e.GetPlayer(1).AddCard(ebCard(domain.CardDesignSpade, 1))
+	assert.Error(t, e.PlayerPlay(0, nil)) // must capture the K+5 -> error
+	assert.Equal(t, 2, e.GetPlayer(0).GetCardsSize(), "hand card must not be lost on a rejected lay")
+	assert.Equal(t, 1, len(e.GetTableCards()))
+}
+
 func TestEscoba_EscobaSweep(t *testing.T) {
 	e := newTestEscoba(true)
 	e.SetPhase(domain.EscobaPhasePlayerTurn)
