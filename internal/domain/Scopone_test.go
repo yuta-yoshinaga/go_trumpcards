@@ -160,6 +160,57 @@ func TestScopone_FullCpuGame(t *testing.T) {
 	assert.GreaterOrEqual(t, s.GetTeamScore(s.GetWinnerTeam()), s.GetConfig().TargetScore)
 }
 
+func TestScopone_GettersAndConfig(t *testing.T) {
+	s := newTestScopone(true)
+	s.Reset()
+	assert.Equal(t, 0, s.GetDealerIdx())
+	assert.Equal(t, 1, s.GetRoundNumber())
+	assert.Equal(t, -1, s.GetLastCaptureIdx())
+	assert.Equal(t, 0, s.GetTeamScore(9)) // out of range
+	assert.NotNil(t, s.GetActionLog())
+	assert.True(t, s.IsHumanTurn() || !s.IsHumanTurn())
+	cfg := domain.ScoponeConfig{CpuDifficulty: domain.ScoponeCpuDifficultyHard, TargetScore: 21}
+	s.SetConfig(cfg)
+	assert.Equal(t, cfg, s.GetConfig())
+	// NextRound is a no-op outside roundEnd.
+	s.SetPhase(domain.ScoponePhasePlayerTurn)
+	r := s.GetRoundNumber()
+	s.NextRound()
+	assert.Equal(t, r, s.GetRoundNumber())
+	// GetValidCaptures out-of-range hand index.
+	assert.Nil(t, s.GetValidCaptures(99))
+}
+
+func TestScopone_CpuDumpsWhenNoCapture(t *testing.T) {
+	s := newTestScopone(false) // all CPU
+	s.SetPhase(domain.ScoponePhasePlayerTurn)
+	s.SetCurrentTurn(0)
+	s.SetTableCards([]*domain.Card{spCard(domain.CardDesignSpade, 1)}) // a 1 on the table
+	// CPU hand has no card that captures a lone 1 (no 1, and no sum to 1) -> must place lowest.
+	spSetHand(s.GetPlayer(0), spCard(domain.CardDesignClover, 9), spCard(domain.CardDesignHeart, 5))
+	s.GetPlayer(1).AddCard(spCard(domain.CardDesignSpade, 8))
+	s.CpuPlay()
+	// One card was placed -> table grew to 2.
+	assert.Equal(t, 2, len(s.GetTableCards()))
+	assert.Equal(t, 1, s.GetCurrentTurn())
+}
+
+func TestScopone_TieAwardsNoCardPoint(t *testing.T) {
+	s := newTestScopone(true)
+	s.SetCurrentTurn(0)
+	s.SetPhase(domain.ScoponePhasePlayerTurn)
+	// Give team 0 (seat 0) and team 1 (seat 1) equal captured piles -> most-cards ties = no point.
+	s.GetPlayer(0).AddCaptured([]*domain.Card{spCard(domain.CardDesignSpade, 2), spCard(domain.CardDesignSpade, 3)})
+	s.GetPlayer(1).AddCaptured([]*domain.Card{spCard(domain.CardDesignClover, 2), spCard(domain.CardDesignClover, 3)})
+	// Final play: seat 0 places its last card (no capture) -> all hands empty -> finishRound.
+	s.SetTableCards(nil)
+	spSetHand(s.GetPlayer(0), spCard(domain.CardDesignHeart, 9))
+	require.NoError(t, s.PlayerPlay(0, nil))
+	// Cards are 3-3 (after seat0's placed card goes to nobody's pile / leftover): neither team gets
+	// a card point from a tie; settebello is absent here, so both teams score 0 this round.
+	assert.Equal(t, s.GetTeamScore(0), s.GetTeamScore(1))
+}
+
 func TestScopone_JSONRoundTrip(t *testing.T) {
 	s := newTestScopone(true)
 	s.Reset()

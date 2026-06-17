@@ -43,3 +43,12 @@ func TestScoponeCuiPresenter_ActionLogOutput(t *testing.T) {
 		t.Error("expected non-empty action log output")
 	}
 }
+
+func TestScoponeCuiPresenter_OutputGameEnd(t *testing.T) {
+	p := &presenter.ScoponeCuiPresenter{}
+	s := spPlayedOutScopone(t) // all-CPU game driven to game end (defined in the web presenter test)
+	out := p.Output(s, nil)
+	if out == "" {
+		t.Fatal("expected non-empty output at game end")
+	}
+}
