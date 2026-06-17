@@ -252,3 +252,138 @@ func TestEcarte_UnmarshalRejectsInvalid(t *testing.T) {
 	var bad3 domain.Ecarte
 	assert.Error(t, bad3.UnmarshalJSON([]byte(`not json`)))
 }
+
+func TestEcarte_ExchangeWrongPhaseErrors(t *testing.T) {
+	e := newTestEcarte(true)
+	e.Reset()
+	e.SetDealerIdx(1)                  // elder = 0
+	e.SetPhase(domain.EcartePhasePlay) // not Exchange
+	e.SetCurrentPlayerIdx(0)
+	assert.ErrorIs(t, e.PlayerPropose(), domain.ErrWrongPhase)
+	assert.ErrorIs(t, e.PlayerStand(), domain.ErrWrongPhase)
+	assert.ErrorIs(t, e.PlayerRespond(true), domain.ErrWrongPhase)
+	assert.ErrorIs(t, e.PlayerDiscard([]int{0}), domain.ErrWrongPhase)
+
+	// Wrong negStep within Exchange.
+	e.SetPhase(domain.EcartePhaseExchange)
+	e.SetNegStep(domain.EcarteNegElderDecide)
+	e.SetCurrentPlayerIdx(0)
+	assert.ErrorIs(t, e.PlayerRespond(true), domain.ErrWrongPhase) // respond only at DealerRespond
+	assert.ErrorIs(t, e.PlayerDiscard([]int{0}), domain.ErrWrongPhase)
+}
+
+func TestEcarte_ExchangeNotHumanTurn(t *testing.T) {
+	e := newTestEcarte(false) // all CPU
+	e.Reset()
+	e.SetPhase(domain.EcartePhaseExchange)
+	e.SetNegStep(domain.EcarteNegElderDecide)
+	assert.ErrorIs(t, e.PlayerPropose(), domain.ErrNotHumanTurn)
+	assert.ErrorIs(t, e.PlayerStand(), domain.ErrNotHumanTurn)
+}
+
+func TestEcarte_RespondAcceptGoesToDiscard(t *testing.T) {
+	e := newTestEcarte(true)
+	e.Reset() // dealer = 0 (human), elder = 1
+	e.SetPhase(domain.EcartePhaseExchange)
+	e.SetNegStep(domain.EcarteNegDealerRespond)
+	e.SetCurrentPlayerIdx(0) // dealer responds
+	require.NoError(t, e.PlayerRespond(true))
+	assert.Equal(t, domain.EcarteNegElderDiscard, e.GetNegStep())
+	assert.Equal(t, e.GetElderIdx(), e.GetCurrentPlayerIdx())
+}
+
+func TestEcarte_RespondRefuseStartsPlayAndFlags(t *testing.T) {
+	e := newTestEcarte(true)
+	e.Reset()
+	e.SetPhase(domain.EcartePhaseExchange)
+	e.SetNegStep(domain.EcarteNegDealerRespond)
+	e.SetCurrentPlayerIdx(0)
+	require.NoError(t, e.PlayerRespond(false))
+	assert.True(t, e.IsRefusalByDealer())
+	assert.Equal(t, domain.EcartePhasePlay, e.GetPhase())
+}
+
+func TestEcarte_PlayErrors(t *testing.T) {
+	e := newTestEcarte(true)
+	e.Reset()
+	e.SetPhase(domain.EcartePhaseExchange)
+	assert.ErrorIs(t, e.PlayerPlay(0), domain.ErrWrongPhase)
+	e.SetPhase(domain.EcartePhasePlay)
+	e.SetCurrentPlayerIdx(0)
+	ecSetHand(e.GetPlayer(0), ecCard(domain.CardDesignSpade, 7))
+	assert.Error(t, e.PlayerPlay(99)) // out of range
+}
+
+func TestEcarte_StandAwardsTrumpKing(t *testing.T) {
+	e := newTestEcarte(true)
+	e.Reset()
+	e.SetDealerIdx(1) // elder = 0
+	e.SetPhase(domain.EcartePhaseExchange)
+	e.SetNegStep(domain.EcarteNegElderDecide)
+	e.SetCurrentPlayerIdx(0)
+	e.SetTrumpSuit(domain.CardDesignSpade)
+	ecSetHand(e.GetPlayer(0), ecCard(domain.CardDesignSpade, 13), ecCard(domain.CardDesignHeart, 7)) // holds K♠
+	ecSetHand(e.GetPlayer(1), ecCard(domain.CardDesignClover, 9))
+	e.SetDealPoints(0, 0) // clear any turned-King bonus from the random deal
+	e.SetDealPoints(1, 0)
+	require.NoError(t, e.PlayerStand())
+	assert.Equal(t, domain.EcartePhasePlay, e.GetPhase())
+	assert.Equal(t, 1, e.GetDealPoints(0)) // +1 for holding the trump King
+	assert.Equal(t, 0, e.GetDealPoints(1))
+}
+
+func TestEcarte_ValidPlayIndicesAndHint(t *testing.T) {
+	e := newTestEcarte(true)
+	e.SetPhase(domain.EcartePhasePlay)
+	e.SetTrumpSuit(domain.CardDesignSpade)
+	e.SetCurrentPlayerIdx(0)
+	e.SetCurrentTrick(nil)
+	ecSetHand(e.GetPlayer(0), ecCard(domain.CardDesignHeart, 13), ecCard(domain.CardDesignClover, 9))
+	// Leading: every card is legal.
+	assert.Len(t, e.GetValidPlayIndices(0), 2)
+	h := e.GetHint()
+	require.NotNil(t, h)
+	require.NotNil(t, h.CardIndex)
+	// Out-of-range / wrong-phase guards.
+	assert.Nil(t, e.GetValidPlayIndices(9))
+	e.SetPhase(domain.EcartePhaseExchange)
+	assert.Nil(t, e.GetValidPlayIndices(0))
+}
+
+func TestEcarte_HintExchangeDiscardStep(t *testing.T) {
+	e := newTestEcarte(true)
+	e.Reset()
+	e.SetDealerIdx(1) // elder = 0
+	e.SetPhase(domain.EcartePhaseExchange)
+	e.SetNegStep(domain.EcarteNegElderDiscard)
+	e.SetCurrentPlayerIdx(0)
+	h := e.GetHint()
+	require.NotNil(t, h)
+	assert.Equal(t, "discard", h.Action)
+}
+
+func TestEcarte_NextRoundFromRoundEnd(t *testing.T) {
+	e := newTestEcarte(false)
+	e.SetPhase(domain.EcartePhaseRoundEnd)
+	e.SetMatchScore(0, 2)
+	e.SetMatchScore(1, 1)
+	r := e.GetRoundNumber()
+	e.NextRound()
+	assert.Equal(t, r+1, e.GetRoundNumber())
+	assert.Equal(t, domain.EcartePhaseExchange, e.GetPhase())
+	// NextRound is a no-op outside RoundEnd.
+	e.SetPhase(domain.EcartePhasePlay)
+	e.NextRound()
+	assert.Equal(t, domain.EcartePhasePlay, e.GetPhase())
+}
+
+func TestEcarte_CpuExchangeNegotiationRunsToPlay(t *testing.T) {
+	e := newTestEcarte(false) // all CPU
+	e.Reset()
+	guard := 0
+	for e.GetPhase() == domain.EcartePhaseExchange && guard < 1000 {
+		guard++
+		e.CpuExchange()
+	}
+	assert.Equal(t, domain.EcartePhasePlay, e.GetPhase())
+}
