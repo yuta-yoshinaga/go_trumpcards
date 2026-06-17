@@ -107,8 +107,23 @@ func TestEscoba_EscobaSweep(t *testing.T) {
 	assert.Equal(t, 1, e.GetPlayer(0).GetScopaCount())
 }
 
+// newDrainedEscoba builds a game whose stock is already empty, so that emptying
+// all hands triggers finishRound (Escoba's round ends only when hands AND stock
+// are exhausted).
+func newDrainedEscoba() *domain.Escoba {
+	d := domain.NewTrumpCardsScopa()
+	for d.GetRemainingCount() > 0 {
+		d.DrawCard()
+	}
+	players := make([]*domain.ScopaPlayer, domain.EscobaPlayerCnt)
+	for i := range players {
+		players[i] = domain.NewScopaPlayer(i == 0)
+	}
+	return domain.NewEscoba(d, players, domain.DefaultEscobaConfig())
+}
+
 func TestEscoba_RoundScoring(t *testing.T) {
-	e := newTestEscoba(true)
+	e := newDrainedEscoba()
 	e.SetCurrentTurn(0)
 	e.SetPhase(domain.EscobaPhasePlayerTurn)
 	// Pre-load seat 0 with the A♠, 7♠, several oros and sevens, lots of cards.
