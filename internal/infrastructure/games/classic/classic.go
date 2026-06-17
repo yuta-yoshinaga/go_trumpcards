@@ -391,5 +391,13 @@ func init() {
 			return usecase.RestoreScoponeInteractor(data, new(presenter.ScoponeWebPresenter))
 		},
 		controller.NewScoponeWebControllerWithProvider)
+	games.RegisterKVGame("escoba", games.CategoryClassic,
+		func() usecase.EscobaInteractorIF {
+			return usecase.NewEscobaInteractor(domain.NewDefaultEscoba(), new(presenter.EscobaWebPresenter))
+		},
+		func(data []byte) (usecase.EscobaInteractorIF, error) {
+			return usecase.RestoreEscobaInteractor(data, new(presenter.EscobaWebPresenter))
+		},
+		controller.NewEscobaWebControllerWithProvider)
 
 }

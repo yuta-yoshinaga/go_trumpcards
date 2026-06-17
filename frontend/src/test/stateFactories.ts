@@ -4,6 +4,7 @@ import type {
   CourtPieceResponse,
   DoppelkopfResponse,
   EcarteResponse,
+  EscobaResponse,
   FortyFivesResponse,
   GongZhuResponse,
   HeartsResponse,
@@ -1543,4 +1544,54 @@ const baseScoponeState: ScoponeResponse = {
  */
 export function makeScoponeState(overrides?: Partial<ScoponeResponse>): ScoponeResponse {
   return { ...baseScoponeState, ...overrides };
+}
+
+/** Base Escoba state used as the default for {@link makeEscobaState}. Defaults to a human play turn. */
+const baseEscobaState: EscobaResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      handCount: 3,
+      cards: [
+        { design: 'SPADE' as const, value: 7 },
+        { design: 'HEART' as const, value: 5 },
+        { design: 'DIAMOND' as const, value: 11 },
+      ],
+      capturedCount: 0,
+      escobaCount: 0,
+      score: 0,
+    },
+    { id: 1, isHuman: false, handCount: 3, cards: [], capturedCount: 0, escobaCount: 0, score: 0 },
+    { id: 2, isHuman: false, handCount: 3, cards: [], capturedCount: 0, escobaCount: 0, score: 0 },
+    { id: 3, isHuman: false, handCount: 3, cards: [], capturedCount: 0, escobaCount: 0, score: 0 },
+  ],
+  tableCards: [
+    { design: 'SPADE' as const, value: 4 },
+    { design: 'HEART' as const, value: 4 },
+  ],
+  phase: 'playerTurn',
+  roundNumber: 1,
+  currentTurn: 0,
+  dealerIdx: 3,
+  stockRemaining: 28,
+  lastCaptureIdx: -1,
+  winnerIdx: -1,
+  gameEndFlag: false,
+  isHumanTurn: true,
+  handCaptures: [[[0, 1]], [], []],
+  lastRoundDetail: null,
+  config: { cpuDifficulty: 1, targetScore: 10 },
+  message: '',
+};
+
+/**
+ * Creates an {@link EscobaResponse} with sensible defaults (a human play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial EscobaResponse fields to override.
+ * @returns A complete EscobaResponse suitable for use in tests.
+ */
+export function makeEscobaState(overrides?: Partial<EscobaResponse>): EscobaResponse {
+  return { ...baseEscobaState, ...overrides };
 }

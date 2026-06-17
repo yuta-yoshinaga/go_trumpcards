@@ -2473,6 +2473,20 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"scopone.helpSetDifficulty"},
 			})
 	}},
+	{Name: "escoba", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewEscobaCuiController(usecase.NewEscobaInteractor(
+				domain.NewDefaultEscoba(), new(presenter.EscobaCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "escoba.helpTitle",
+				CommandKeys: []string{
+					"escoba.helpPlay",
+					"escoba.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"escoba.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

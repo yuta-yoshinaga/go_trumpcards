@@ -785,4 +785,9 @@ func init() {
 			return usecase.NewScoponeInteractor(domain.NewDefaultScopone(), new(presenter.ScoponeWebPresenter))
 		},
 		controller.NewScoponeWebController)
+	BindWebControllerFor("escoba",
+		func() usecase.EscobaInteractorIF {
+			return usecase.NewEscobaInteractor(domain.NewDefaultEscoba(), new(presenter.EscobaWebPresenter))
+		},
+		controller.NewEscobaWebController)
 }
