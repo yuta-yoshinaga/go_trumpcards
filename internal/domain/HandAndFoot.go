@@ -1394,10 +1394,15 @@ func (g *HandAndFoot) UnmarshalJSON(data []byte) error {
 	if j.Phase < HandAndFootPhaseDraw || j.Phase > HandAndFootPhaseGameEnd {
 		return fmt.Errorf("handandfoot: invalid phase")
 	}
-	if j.Players != nil && len(j.Players) != HandAndFootPlayerCnt {
+	if len(j.Players) != HandAndFootPlayerCnt {
 		return fmt.Errorf("handandfoot: invalid player count")
 	}
-	if len(j.Players) > 0 && (j.CurrentPlayerIdx < 0 || j.CurrentPlayerIdx >= len(j.Players)) {
+	for _, p := range j.Players {
+		if p == nil {
+			return fmt.Errorf("handandfoot: player cannot be nil")
+		}
+	}
+	if j.CurrentPlayerIdx < 0 || j.CurrentPlayerIdx >= len(j.Players) {
 		return fmt.Errorf("handandfoot: current player index out of range")
 	}
 	if j.WinnerTeam < -1 || j.WinnerTeam >= HandAndFootTeamCnt {

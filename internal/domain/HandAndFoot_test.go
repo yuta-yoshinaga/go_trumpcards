@@ -38,7 +38,7 @@ func newTestHandAndFootWithDifficulty(d domain.HandAndFootCpuDifficulty) *domain
 	return domain.NewHandAndFoot(domain.NewTrumpCardsWithDecks(4, 8), players, cfg)
 }
 
-func hafCard(d domain.CardDesign, v int) *domain.Card {
+func hafCard(d, v int) *domain.Card {
 	return domain.NewCard(d, v, false)
 }
 
