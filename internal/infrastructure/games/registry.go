@@ -338,6 +338,10 @@ var registry = []*Game{
 	// Bezique = ♠Q+♦J, four-of-a-kind); after the stock empties play becomes
 	// strict must-follow. Classic worker (binary-size bucket — casino was full).
 	{Name: "bezique", Category: CategoryClassic},
+	// Écarté (エカルテ) is a French 2-player trick game (32-card deck) with an
+	// exchange-negotiation phase (propose/accept/refuse/discard), King-of-trump
+	// and Vole bonuses, then 5 strict-follow tricks. Casino worker bucket.
+	{Name: "ecarte", Category: CategoryCasino},
 }
 
 // All returns a value-level copy of the registry in canonical order.

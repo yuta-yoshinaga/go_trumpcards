@@ -1,0 +1,61 @@
+{
+  "phase": {
+    "exchange": "Exchange",
+    "play": "Play",
+    "roundEnd": "Deal End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetScore": "Target Score",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "deal": "Deal {{n}}",
+  "trick": "Trick {{n}}",
+  "trump": "Trump: {{suit}}",
+  "trumpCard": "Trump card: {{card}}",
+  "stock": "Stock: {{count}}",
+  "noTrump": "undeclared",
+  "exchangeNotice": "Exchange phase — the elder chooses Propose or Stand; if proposed, the dealer Accepts or Refuses. After accepting, choose cards to discard and draw replacements.",
+  "currentTrick": "Current Trick",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "matchScoreTitle": "Score",
+  "scoreLine": "{{name}}: match {{match}} / deal {{deal}} / {{tricks}} tricks",
+  "playButton": "Play",
+  "proposeButton": "Propose",
+  "standButton": "Stand",
+  "acceptButton": "Accept",
+  "refuseButton": "Refuse",
+  "discardPrompt": "Choose cards to discard:",
+  "discardButton": "Exchange ({{count}})",
+  "nextRound": "Next Deal",
+  "target": "Target: {{points}} pts",
+  "roundResult": {
+    "title": "Deal Result (points won)",
+    "line": "{{name}}: {{points}} pts"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "propose": "Weak hand — propose an exchange",
+    "stand": "Strong hand — stand and play",
+    "accept": "Your hand is also weak — accept the exchange",
+    "refuse": "Your hand is strong — refuse the exchange",
+    "discard": "Discard low, non-scoring cards and draw replacements",
+    "lead_trump": "Lead a trump to capture the trick",
+    "lead_high": "Lead a high card to win the trick",
+    "lead_low": "Lead a low card",
+    "follow_cut": "Trump in to capture this trick",
+    "follow_win": "Play a card that wins this trick",
+    "follow_dump": "Cannot win — discard a card you don't need"
+  },
+  "tutorial": {
+    "info": "Deal, trump suit (and the trump card), the stock count, and each player's match / deal score are shown here. Écarté is a 2-player French trick game played with a 32-card deck. The first player to reach the target score (default 5) wins.",
+    "trick": "Cards played to the current trick appear here. During play it is strict must-follow (follow suit and win if able, otherwise trump). The rank order is K>Q>J>A>10>9>8>7.",
+    "hand": "This is your hand. During play, click a card and press Play. In the Exchange phase, select the cards you want to discard and press Exchange.",
+    "actions": "In the Exchange phase the elder (non-dealer) chooses Propose or Stand; if proposed, the dealer Accepts or Refuses. After accepting, each player discards any number of cards and draws replacements, repeating until the stock empties. Then 5 tricks are played: 3+ tricks scores 1 point, all 5 (Vole) scores 2. Press Next Deal between deals and games."
+  }
+}

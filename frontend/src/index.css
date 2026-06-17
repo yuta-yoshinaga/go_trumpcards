@@ -93,6 +93,9 @@
   /* Bezique — a deep romantic wine-burgundy felt evoking the classic ♠Q+♦J pairing, distinct from Court Piece's royal indigo. */
   --color-game-bg-bezique: #5c1f33;
   --color-game-bg-bezique-dark: #3a1320;
+  /* Écarté — a refined French café-green felt, distinct from Bezique's wine-burgundy and Court Piece's royal indigo. */
+  --color-game-bg-ecarte: #1f4d3a;
+  --color-game-bg-ecarte-dark: #133023;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;

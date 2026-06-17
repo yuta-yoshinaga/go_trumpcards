@@ -765,4 +765,9 @@ func init() {
 			return usecase.NewBeziqueInteractor(domain.NewDefaultBezique(), new(presenter.BeziqueWebPresenter))
 		},
 		controller.NewBeziqueWebController)
+	BindWebControllerFor("ecarte",
+		func() usecase.EcarteInteractorIF {
+			return usecase.NewEcarteInteractor(domain.NewDefaultEcarte(), new(presenter.EcarteWebPresenter))
+		},
+		controller.NewEcarteWebController)
 }

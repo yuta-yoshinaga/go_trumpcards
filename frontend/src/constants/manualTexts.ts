@@ -49,6 +49,7 @@ import doudizhu from '../../../docs/manual/web/doudizhu.md?raw';
 import dragontiger from '../../../docs/manual/web/dragontiger.md?raw';
 import durak from '../../../docs/manual/web/durak.md?raw';
 import easthaven from '../../../docs/manual/web/easthaven.md?raw';
+import ecarte from '../../../docs/manual/web/ecarte.md?raw';
 import egyptianratscrew from '../../../docs/manual/web/egyptianratscrew.md?raw';
 import eightoff from '../../../docs/manual/web/eightoff.md?raw';
 import euchre from '../../../docs/manual/web/euchre.md?raw';
@@ -159,6 +160,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/baccarat': baccarat,
   '/belote': belote,
   '/bezique': bezique,
+  '/ecarte': ecarte,
   '/bridge': bridge,
   '/burraco': burraco,
   '/calculation': calculation,

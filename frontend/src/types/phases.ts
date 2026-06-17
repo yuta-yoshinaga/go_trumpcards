@@ -403,6 +403,22 @@ export const BeziquePhase = {
   GAME_END: 3,
 } as const;
 
+/** Écarté phase constants (sync: internal/domain/Ecarte.go). */
+export const EcartePhase = {
+  EXCHANGE: 0,
+  PLAY: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/** Écarté Exchange-phase negotiation sub-step constants (sync: internal/domain/Ecarte.go). */
+export const EcarteNegStep = {
+  ELDER_DECIDE: 0,
+  DEALER_RESPOND: 1,
+  ELDER_DISCARD: 2,
+  DEALER_DISCARD: 3,
+} as const;
+
 /** Préférence phase constants (sync: internal/domain/Preference.go). */
 export const PreferencePhase = {
   BID: 0,

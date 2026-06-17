@@ -160,6 +160,7 @@ var gameDescriptions = map[string]string{
 	"spoilfive":           "Spoil Five / Maw (スポイル・ファイブ)",
 	"courtpiece":          "Court Piece / Rang (コートピース)",
 	"bezique":             "Bezique (ベジーク)",
+	"ecarte":              "Écarté (エカルテ)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).
