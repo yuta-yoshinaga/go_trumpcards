@@ -10,21 +10,22 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
-// threeCardBragCategoryLabel は役カテゴリ定数を i18n キーに変換する。
+// threeCardBragCategoryLabel は役カテゴリ定数を短い役名キーに変換する。フロントエンドは
+// この値を `hand.<key>` として i18n 参照する (locales/{ja,en}/threecardbrag.json の hand.* に対応)。
 func threeCardBragCategoryLabel(category int) string {
 	switch category {
 	case domain.ThreeCardBragPrial:
-		return "threecardbrag.handPrial"
+		return "prial"
 	case domain.ThreeCardBragRunningFlush:
-		return "threecardbrag.handRunningFlush"
+		return "runningflush"
 	case domain.ThreeCardBragRun:
-		return "threecardbrag.handRun"
+		return "run"
 	case domain.ThreeCardBragFlush:
-		return "threecardbrag.handFlush"
+		return "flush"
 	case domain.ThreeCardBragPair:
-		return "threecardbrag.handPair"
+		return "pair"
 	case domain.ThreeCardBragHighCard:
-		return "threecardbrag.handHighCard"
+		return "highcard"
 	default:
 		return ""
 	}

@@ -20,6 +20,7 @@ import type {
   SpadesResponse,
   SpoilFiveResponse,
   SuecaResponse,
+  TeenPattiResponse,
   ThreeCardBragResponse,
   TressetteResponse,
   TuteResponse,
@@ -1331,6 +1332,59 @@ const baseThreeCardBragState: ThreeCardBragResponse = {
  */
 export function makeThreeCardBragState(overrides?: Partial<ThreeCardBragResponse>): ThreeCardBragResponse {
   return { ...baseThreeCardBragState, ...overrides };
+}
+
+/** Base Teen Patti state used as the default for {@link makeTeenPattiState}. The Indian variant of Three Card Brag; a 4-player vying game that defaults to a human Betting turn (phase 0). */
+const baseTeenPattiState: TeenPattiResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      chips: 100,
+      seen: false,
+      folded: false,
+      out: false,
+      roundBet: 1,
+      cardCount: 3,
+      cards: [
+        { design: 'SPADE' as const, value: 13 },
+        { design: 'SPADE' as const, value: 12 },
+        { design: 'SPADE' as const, value: 11 },
+      ],
+    },
+    { id: 1, isHuman: false, chips: 100, seen: false, folded: false, out: false, roundBet: 1, cardCount: 3, cards: [] },
+    { id: 2, isHuman: false, chips: 100, seen: false, folded: false, out: false, roundBet: 1, cardCount: 3, cards: [] },
+    { id: 3, isHuman: false, chips: 100, seen: false, folded: false, out: false, roundBet: 1, cardCount: 3, cards: [] },
+  ],
+  pot: 4,
+  stake: 1,
+  phase: 0,
+  roundNumber: 1,
+  dealerIdx: 3,
+  currentPlayerIdx: 0,
+  roundWinnerIdx: -1,
+  matchWinnerIdx: -1,
+  isShowdown: false,
+  canShow: false,
+  canRequestSideShow: false,
+  sideShowRequester: -1,
+  sideShowTarget: -1,
+  gameEndFlag: false,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, ante: 1, startingChips: 100 },
+};
+
+/**
+ * Creates a {@link TeenPattiResponse} with sensible defaults (a human Betting
+ * turn, phase 0). Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial TeenPattiResponse fields to override.
+ * @returns A complete TeenPattiResponse suitable for use in tests.
+ */
+export function makeTeenPattiState(overrides?: Partial<TeenPattiResponse>): TeenPattiResponse {
+  return { ...baseTeenPattiState, ...overrides };
 }
 
 /** Base Préférence state used as the default for {@link makePreferenceState}. A 3-player Russian bidding trick-taker; defaults to a human Bid turn. */

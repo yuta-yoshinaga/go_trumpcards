@@ -347,6 +347,11 @@ var registry = []*Game{
 	// the ranking Prial > Running Flush > Run > Flush > Pair > High Card. Casino
 	// worker bucket.
 	{Name: "threecardbrag", Category: CategoryCasino},
+	// Teen Patti (ティーンパッティ) is the South-Asian version of Three Card Brag:
+	// 4-player Blind/Seen betting on a 52-card deck, sharing Brag's 3-card hand
+	// ranking, plus a Side Show (request a private hand comparison with the
+	// previous Seen player). Casino worker bucket.
+	{Name: "teenpatti", Category: CategoryCasino},
 }
 
 // All returns a value-level copy of the registry in canonical order.

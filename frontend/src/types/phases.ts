@@ -427,6 +427,15 @@ export const ThreeCardBragPhase = {
   GAME_END: 3,
 } as const;
 
+/** Teen Patti phase constants (sync: internal/domain/TeenPatti.go). */
+export const TeenPattiPhase = {
+  BETTING: 0,
+  SIDE_SHOW: 1,
+  SHOWDOWN: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Préférence phase constants (sync: internal/domain/Preference.go). */
 export const PreferencePhase = {
   BID: 0,

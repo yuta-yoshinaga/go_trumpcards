@@ -1,0 +1,76 @@
+{
+  "phase": {
+    "betting": "Betting",
+    "sideShow": "Side Show",
+    "showdown": "Showdown",
+    "roundEnd": "Deal End",
+    "gameEnd": "Game Over"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "ante": "Ante",
+    "startingChips": "Starting Chips",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "deal": "Deal {{n}}",
+  "pot": "Pot: {{amount}}",
+  "stake": "Stake: {{amount}}",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "chips": "Chips: {{amount}}",
+  "roundBet": "Bet: {{amount}}",
+  "cards": "{{count}} cards",
+  "handLabel": "Your hand",
+  "currentTurn": "Current turn: {{name}}",
+  "playersTitle": "Players",
+  "badge": {
+    "blind": "Blind",
+    "seen": "Seen",
+    "folded": "Folded",
+    "out": "Out"
+  },
+  "hand": {
+    "trail": "Trail (three of a kind)",
+    "puresequence": "Pure Sequence (straight flush)",
+    "sequence": "Sequence (straight)",
+    "color": "Color (flush)",
+    "pair": "Pair",
+    "highcard": "High Card"
+  },
+  "seeButton": "See",
+  "betButton": "Bet ({{amount}})",
+  "raiseButton": "Raise ({{amount}})",
+  "raisePrompt": "Raise to:",
+  "foldButton": "Fold",
+  "showButton": "Show",
+  "sideShowButton": "Side Show",
+  "acceptButton": "Accept",
+  "declineButton": "Decline",
+  "nextRound": "Next Deal",
+  "betNotice": "Your turn — choose See, Bet, Raise or Fold.",
+  "sideShowPending": "{{requester}} requested a Side Show with {{target}}. Accept or decline.",
+  "roundResult": {
+    "title": "Deal Result",
+    "winner": "{{name}} wins the pot of {{pot}}."
+  },
+  "matchWinner": "{{name}} wins the match!",
+  "hintAvailable": "Hint",
+  "hint": {
+    "see": "Look at your hand before deciding",
+    "bet": "Call the stake to stay in the deal",
+    "raise": "Strong hand — raise the stake to apply pressure",
+    "fold": "Weak hand — fold to limit your losses",
+    "show": "Force a showdown to settle the deal",
+    "sideshow": "Request a Side Show to privately compare hands with the previous Seen player"
+  },
+  "tutorial": {
+    "info": "Here you'll see the deal number, the pot, the current stake, and each player's chips and status (Blind / Seen / Folded / Out). Teen Patti is the Indian variant of Three Card Brag, a 4-player vying game played with a 52-card deck and 3 cards each.",
+    "players": "Each player's chip balance and status. Lose all your chips and you're eliminated; the last player with chips wins the match.",
+    "hand": "Your 3 cards. Looking at your hand (See) turns you from Blind to Seen, after which your bets cost double. Hand ranking is Trail > Pure Sequence > Sequence > Color > Pair > High Card.",
+    "bet": "On your turn choose See (look at your hand), Bet (call the stake), Raise (increase the stake), or Fold. A Seen player can request a Side Show (a private hand comparison) with the previous Seen player, who then accepts or declines. When two players remain you can Show to force a showdown.",
+    "resetButton": "Reset the game and start over from the beginning."
+  }
+}

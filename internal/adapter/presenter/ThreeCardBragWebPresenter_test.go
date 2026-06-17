@@ -93,7 +93,7 @@ func TestThreeCardBragWebPresenter_Output(t *testing.T) {
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 		assert.Equal(t, "threecardbrag.showdownPhase", resObj.MessageCode)
 		assert.Len(t, resObj.Players[1].Cards, 3)
-		assert.Equal(t, "threecardbrag.handPrial", resObj.Players[1].HandName)
+		assert.Equal(t, "prial", resObj.Players[1].HandName)
 		assert.Len(t, resObj.Players[2].Cards, 0)
 	})
 

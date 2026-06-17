@@ -134,6 +134,7 @@ import spiteandmalice from '../../../docs/manual/cui/spiteandmalice.md?raw';
 import spoilfive from '../../../docs/manual/cui/spoilfive.md?raw';
 import sueca from '../../../docs/manual/cui/sueca.md?raw';
 import tarneeb from '../../../docs/manual/cui/tarneeb.md?raw';
+import teenpatti from '../../../docs/manual/cui/teenpatti.md?raw';
 import texasholdembonus from '../../../docs/manual/cui/texasholdembonus.md?raw';
 import thirtyone from '../../../docs/manual/cui/thirtyone.md?raw';
 import threecard from '../../../docs/manual/cui/threecard.md?raw';
@@ -269,6 +270,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/thirtyone': thirtyone,
   '/threecard': threecard,
   '/threecardbrag': threecardbrag,
+  '/teenpatti': teenpatti,
   '/tonk': tonk,
   '/tripeaks': tripeaks,
   '/twotenjack': twotenjack,

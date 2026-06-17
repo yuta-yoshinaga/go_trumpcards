@@ -181,6 +181,19 @@ func TestThreeCardBrag_FullCpuGame(t *testing.T) {
 	assert.Equal(t, g.GetConfig().StartingChips*domain.ThreeCardBragPlayerCnt, total)
 }
 
+func TestThreeCardBrag_StartDealEndsWhenTooFewCanAnte(t *testing.T) {
+	g := newTestBrag(false)
+	g.Reset()
+	g.SetPhase(domain.ThreeCardBragPhaseRoundEnd)
+	g.GetPlayer(1).SetChips(0)
+	g.GetPlayer(2).SetChips(0)
+	g.GetPlayer(3).SetChips(0)
+	g.NextRound()
+	assert.True(t, g.GetGameEndFlag())
+	assert.Equal(t, domain.ThreeCardBragPhaseGameEnd, g.GetPhase())
+	assert.Equal(t, 0, g.GetMatchWinnerIdx())
+}
+
 func TestThreeCardBrag_JSONRoundTrip(t *testing.T) {
 	g := newTestBrag(true)
 	g.Reset()
