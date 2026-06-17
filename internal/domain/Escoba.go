@@ -202,6 +202,10 @@ func (e *Escoba) applyPlay(playerIdx, handIdx int, tableIdxs []int) error {
 		if !e.isValidCapture(handCard, tableIdxs) {
 			return NewDomainError(ErrInvalidPlay, "selected table cards do not sum to 15 with the played card")
 		}
+	} else if len(EscobaCaptures(handCard, e.tableCards)) > 0 {
+		// Escoba は強制捕獲。合計 15 を作れる組が場にある場合、
+		// 単に場に置く (Lay) ことは許されない。
+		return NewDomainError(ErrInvalidPlay, "must capture: a combination summing to 15 exists on the table")
 	}
 
 	_ = player.RemoveCard(handIdx)
