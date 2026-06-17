@@ -52,6 +52,7 @@ import easthaven from '../../../docs/manual/web/easthaven.md?raw';
 import ecarte from '../../../docs/manual/web/ecarte.md?raw';
 import egyptianratscrew from '../../../docs/manual/web/egyptianratscrew.md?raw';
 import eightoff from '../../../docs/manual/web/eightoff.md?raw';
+import escoba from '../../../docs/manual/web/escoba.md?raw';
 import euchre from '../../../docs/manual/web/euchre.md?raw';
 import fiftyone from '../../../docs/manual/web/fiftyone.md?raw';
 import fivehundred from '../../../docs/manual/web/fivehundred.md?raw';
@@ -296,6 +297,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/cassino': cassino,
   '/scopa': scopa,
   '/scopone': scopone,
+  '/escoba': escoba,
   '/barbu': barbu,
   '/spiteandmalice': spiteandmalice,
   '/skat': skat,

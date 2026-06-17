@@ -357,6 +357,11 @@ var registry = []*Game{
 	// value, scoring carte/denari/sevens/settebello/scopa per team. Classic worker
 	// bucket — it reuses Scopa's (classic) capture & scoring helpers.
 	{Name: "scopone", Category: CategoryClassic},
+	// Escoba (エスコバ) is a Spanish 4-player free-for-all capture game in the
+	// Scopa family: capture table cards summing to exactly 15 (figures J/Q/K =
+	// 8/9/10), with Escoba sweeps and Espada/Oro/seven scoring. Classic worker
+	// bucket — it reuses Scopa's (classic) subset-sum capture helper.
+	{Name: "escoba", Category: CategoryClassic},
 }
 
 // All returns a value-level copy of the registry in canonical order.

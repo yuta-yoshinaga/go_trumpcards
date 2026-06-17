@@ -72,6 +72,8 @@ tags:
     description: Scopa (スコパ) game
   - name: scopone
     description: Scopone (スコポーネ) game
+  - name: escoba
+    description: Escoba (エスコバ) — Spanish 4-player free-for-all sum-to-15 capture game
   - name: barbu
     description: Barbu (バルブ) — French compendium trick-taking game (7 contracts, 28 deals)
   - name: macau
@@ -8980,6 +8982,72 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ScoponeResponse'
+
+  /escoba/exec:
+    post:
+      tags:
+        - escoba
+      summary: Execute an Escoba game command
+      description: |
+        Send a command to advance the Escoba (エスコバ) game session
+        identified by `sessionId`. Escoba is the Spanish 4-player
+        free-for-all (no teams) member of the Scopa family (1 human + 3 CPU)
+        on a 40-card deck (the 8/9/10 are removed; J=8, Q=9, K=10). Each
+        player is dealt 3 cards and 4 cards are dealt face-up to the table;
+        further packs of 3 are dealt from the stock once all hands are empty.
+        Play one hand card to capture the subset of table cards whose values
+        plus the played card sum to exactly 15, otherwise lay the card.
+        Clearing the table earns an `escoba` bonus. Scoring is per player
+        toward the target (default 10) via most cards, most espadas (♠),
+        most 7s, most oros (♦), each escoba, and capturing the A♠ and 7♠.
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset`         | `r`  | Start / restart a game |
+        | `next`          | `n`  | Start the next round |
+        | `play`          | `p`  | Play a hand card to capture table cards or lay it |
+        | `setdifficulty` | `sd` | Set CPU difficulty (0-2) |
+        | `settarget`     | `st` | Set the target score |
+        | `log`           | `l`  | View action log |
+      operationId: escobaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EscobaRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play hand card 0 to capture table cards 1 and 3 (sum to 15)
+                value:
+                  command: play
+                  handIndex: 0
+                  tableIndices: [1, 3]
+                  sessionId: my-session-001
+              lay:
+                summary: Lay hand card 2 on the table (no capture)
+                value:
+                  command: play
+                  handIndex: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EscobaResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EscobaResponse'
 
   /barbu/exec:
     post:
@@ -26384,6 +26452,161 @@ components:
             gained:
               type: object
               additionalProperties:
+                type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    EscobaRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: Escoba command. Accepted values. `reset` (`r`), `next` (`n`), `play` (`p`), `setdifficulty` (`sd`), `settarget` (`st`), `log` (`l`).
+          enum: [reset, r, next, n, play, p, setdifficulty, sd, settarget, st, log, l]
+          example: play
+        handIndex:
+          type: integer
+          description: Hand card index to play (for the `play` command).
+          example: 0
+        tableIndices:
+          type: array
+          description: >
+            Table card indices to capture with the played card (for the `play`
+            command). The played card plus the selected table cards must sum to 15.
+          items:
+            type: integer
+          example: [1, 3]
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            targetScore:
+              type: integer
+              description: Score required to win the match.
+              example: 10
+            cpuDifficulty:
+              type: integer
+              description: CPU difficulty (0=easy, 1=normal, 2=hard).
+              minimum: 0
+              maximum: 2
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    EscobaResponse:
+      type: object
+      description: Current state of the Escoba game
+      properties:
+        players:
+          type: array
+          description: All players in the game (1 human + 3 CPU); free-for-all, no teams.
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              isHuman: { type: boolean }
+              handCount: { type: integer }
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              capturedCount: { type: integer }
+              escobaCount: { type: integer }
+              score: { type: integer }
+        currentTurn:
+          type: integer
+        tableCards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        stockRemaining:
+          type: integer
+          description: Number of cards left in the stock to be re-dealt.
+        winnerIdx:
+          type: integer
+          description: Winning player index, or -1 if the match is not over.
+        gameEndFlag:
+          type: boolean
+        phase:
+          type: string
+          description: Current game phase (playerTurn, roundEnd, gameEnd).
+        config:
+          type: object
+          properties:
+            targetScore: { type: integer }
+            cpuDifficulty: { type: integer }
+        cpuActions:
+          type: array
+          description: Actions taken by the CPUs since the last human action.
+          items:
+            type: object
+            properties:
+              playerIdx: { type: integer }
+              playedCard:
+                nullable: true
+                $ref: '#/components/schemas/Card'
+              capturedCards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              isEscoba: { type: boolean }
+        humanAction:
+          type: object
+          nullable: true
+          properties:
+            playerIdx: { type: integer }
+            playedCard:
+              nullable: true
+              $ref: '#/components/schemas/Card'
+            capturedCards:
+              type: array
+              items:
+                $ref: '#/components/schemas/Card'
+            isEscoba: { type: boolean }
+        lastRoundDetail:
+          type: object
+          nullable: true
+          description: Per-point scoring breakdown of the last completed round (per-player arrays indexed by player).
+          properties:
+            cards:
+              type: array
+              items:
+                type: integer
+            espadas:
+              type: array
+              items:
+                type: integer
+            sevens:
+              type: array
+              items:
+                type: integer
+            oros:
+              type: array
+              items:
+                type: integer
+            escobas:
+              type: array
+              items:
+                type: integer
+            aceEspada:
+              type: integer
+              description: Player index that captured the A♠, or -1.
+            seteEspada:
+              type: integer
+              description: Player index that captured the 7♠, or -1.
+            gained:
+              type: array
+              items:
                 type: integer
         message:
           type: string
