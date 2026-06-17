@@ -850,6 +850,15 @@ export const CanastaPhase = {
   GAME_END: 4,
 } as const;
 
+/** Hand and Foot phase constants (sync: internal/domain/HandAndFoot.go). */
+export const HandAndFootPhase = {
+  DRAW: 0,
+  MELD: 1,
+  DISCARD: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Burraco phase constants (sync: internal/domain/Burraco.go). */
 export const BurracoPhase = {
   DRAW: 0,

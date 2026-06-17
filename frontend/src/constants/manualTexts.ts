@@ -65,6 +65,7 @@ import ginrummy from '../../../docs/manual/web/ginrummy.md?raw';
 import gofish from '../../../docs/manual/web/gofish.md?raw';
 import golf from '../../../docs/manual/web/golf.md?raw';
 import gongzhu from '../../../docs/manual/web/gongzhu.md?raw';
+import handandfoot from '../../../docs/manual/web/handandfoot.md?raw';
 import hearts from '../../../docs/manual/web/hearts.md?raw';
 import highcardflush from '../../../docs/manual/web/highcardflush.md?raw';
 import holdem from '../../../docs/manual/web/holdem.md?raw';
@@ -171,6 +172,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/burraco': burraco,
   '/calculation': calculation,
   '/canasta': canasta,
+  '/handandfoot': handandfoot,
   '/canfield': canfield,
   '/osmosis': osmosis,
   '/bristol': bristol,

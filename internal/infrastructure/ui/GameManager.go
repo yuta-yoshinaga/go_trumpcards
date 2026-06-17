@@ -2487,6 +2487,28 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"escoba.helpSetDifficulty"},
 			})
 	}},
+	{Name: "handandfoot", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewHandAndFootCuiController(usecase.NewHandAndFootInteractor(
+				domain.NewDefaultHandAndFoot(), new(presenter.HandAndFootCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "handandfoot.helpTitle",
+				CommandKeys: []string{
+					"handandfoot.helpDrawStock",
+					"handandfoot.helpDrawDiscard",
+					"handandfoot.helpMeld",
+					"handandfoot.helpSkipMeld",
+					"handandfoot.helpDiscard",
+					"handandfoot.helpGoOut",
+					"handandfoot.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys: []string{
+					"handandfoot.helpSetDifficulty",
+					"handandfoot.helpSetLimit",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

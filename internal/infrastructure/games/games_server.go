@@ -790,4 +790,9 @@ func init() {
 			return usecase.NewEscobaInteractor(domain.NewDefaultEscoba(), new(presenter.EscobaWebPresenter))
 		},
 		controller.NewEscobaWebController)
+	BindWebControllerFor("handandfoot",
+		func() usecase.HandAndFootInteractorIF {
+			return usecase.NewHandAndFootInteractor(domain.NewDefaultHandAndFoot(), new(presenter.HandAndFootWebPresenter))
+		},
+		controller.NewHandAndFootWebController)
 }

@@ -82,6 +82,8 @@ tags:
     description: Spanish 21 (スパニッシュ21) — BlackJack variant with 48-card deck and bonus payouts
   - name: canasta
     description: Canasta (カナスタ) game
+  - name: handandfoot
+    description: Hand and Foot (ハンド・アンド・フット) — 4-player team Canasta variant
   - name: burraco
     description: Burraco (ブラーコ) — Canasta-derived rummy with pozzetto reserve hands
   - name: pinochle
@@ -2610,6 +2612,93 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CanastaResponse'
+
+  /handandfoot/exec:
+    post:
+      tags:
+        - handandfoot
+      summary: Execute a Hand and Foot game command
+      description: |
+        Send a command to advance the Hand and Foot (ハンド・アンド・フット) game
+        session identified by `sessionId`.  Hand and Foot is a 4-player /
+        2-team Canasta variant using 4 decks + 8 jokers (216 cards).  Each
+        player is dealt a 22-card hand plus a face-down 13-card foot picked up
+        after the hand is exhausted.  Wild cards (2s and Jokers) can substitute
+        in melds.  Melds are shared per team.  Canasta = 7+ card meld (red /
+        clean without wilds, black / dirty with wilds).  Going out requires the
+        team to hold at least 1 red canasta and 1 black canasta.  First team to
+        reach the point limit wins.
+
+        The game proceeds through these phases:
+
+        | Phase        | Value | Description |
+        |--------------|-------|-------------|
+        | Draw         | `0`   | Draw from stock or pick up discard pile |
+        | Meld         | `1`   | Meld cards or skip |
+        | Discard      | `2`   | Discard a card or go out |
+        | RoundEnd     | `3`   | Round scored; advance with `nextround` |
+        | GameEnd      | `4`   | A team reached the point limit |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `drawstock`    | `ds`    | Draw a card from the stock pile |
+        | `drawdiscard`  | `dd`    | Pick up the discard pile (requires `naturalPairIndices`) |
+        | `meld`         | `m`     | Meld cards (requires `meldGroups`) |
+        | `skipmeld`     | `sm`    | Skip meld phase |
+        | `discard`      | `d`     | Discard a card (requires `cardIndex`) |
+        | `goout`        | `go`    | Go out (requires 1 red and 1 black canasta) |
+        | `nextround`    | `nr`    | Score the round and start the next |
+        | `log`          | `l`     | View action log |
+      operationId: handAndFootExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HandAndFootRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              drawstock:
+                summary: Draw from stock pile
+                value:
+                  command: drawstock
+                  sessionId: my-session-001
+              drawdiscard:
+                summary: Pick up discard pile with natural pair at indices 0 and 1
+                value:
+                  command: drawdiscard
+                  naturalPairIndices: [0, 1]
+                  sessionId: my-session-001
+              meld:
+                summary: Meld cards at indices 0, 1, 2
+                value:
+                  command: meld
+                  meldGroups: [[0, 1, 2]]
+                  sessionId: my-session-001
+              discard:
+                summary: Discard card at index 2
+                value:
+                  command: discard
+                  cardIndex: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandAndFootResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HandAndFootResponse'
 
   /burraco/exec:
     post:
@@ -20982,6 +21071,166 @@ components:
         winnerIdx:
           type: integer
           description: Index of the match winner (-1 if not ended)
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+        message:
+          type: string
+          description: Game status message
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Hand and Foot types
+    # -------------------------------------------------------------------------
+    HandAndFootRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `drawstock` (`ds`),
+            `drawdiscard` (`dd`), `meld` (`m`), `skipmeld` (`sm`),
+            `discard` (`d`), `goout` (`go`), `nextround` (`nr`), `log` (`l`).
+          enum: [reset, r, drawstock, ds, drawdiscard, dd, meld, m, skipmeld, sm, discard, d, goout, go, nextround, nr, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Index of the card to discard.  Required for `discard` command.
+          example: 2
+        naturalPairIndices:
+          type: array
+          description: Indices of two natural cards matching the discard top.  Required for `drawdiscard` command.
+          items:
+            type: integer
+          example: [0, 1]
+        meldGroups:
+          type: array
+          description: Groups of card indices to meld.  Required for `meld` command.
+          items:
+            type: array
+            items:
+              type: integer
+          example: [[0, 1, 2]]
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            pointLimit:
+              type: integer
+              minimum: 1
+              maximum: 100000
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    HandAndFootResponse:
+      type: object
+      description: Current state of the Hand and Foot game
+      properties:
+        players:
+          type: array
+          description: Array of player objects
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              team:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              footCount:
+                type: integer
+              inFoot:
+                type: boolean
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+        teams:
+          type: array
+          description: Per-team melds and red 3s
+          items:
+            type: object
+            properties:
+              team:
+                type: integer
+              melds:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    cards:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Card'
+                    isNatural:
+                      type: boolean
+                    isCanasta:
+                      type: boolean
+                    rank:
+                      type: integer
+              red3Count:
+                type: integer
+              red3s:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 0 = Draw, 1 = Meld, 2 = Discard, 3 = RoundEnd, 4 = GameEnd"
+          enum: [0, 1, 2, 3, 4]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Current round number
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        discardTop:
+          description: The top card of the discard pile
+          $ref: '#/components/schemas/Card'
+        drawPileCount:
+          type: integer
+          description: Number of cards remaining in the stock pile
+        discardPileCount:
+          type: integer
+          description: Number of cards in the discard pile
+        isFrozen:
+          type: boolean
+          description: Whether the discard pile is frozen
+        gameEndFlag:
+          type: boolean
+          description: Whether the match has ended
+        winnerTeam:
+          type: integer
+          description: Index of the winning team (-1 if not ended)
         config:
           type: object
           properties:

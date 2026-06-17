@@ -69,6 +69,7 @@ import type {
   GoFishResponse,
   GolfResponse,
   GongZhuResponse,
+  HandAndFootResponse,
   HeartsResponse,
   HighCardFlushResponse,
   HoldemResponse,
@@ -244,6 +245,7 @@ const workerUrl: Record<string, string> = {
   memory: WORKER_SOLO,
   ginrummy: WORKER_SOLO,
   canasta: WORKER_SOLO,
+  handandfoot: WORKER_SOLO,
   burraco: WORKER_SOLO,
   cribbage: WORKER_SOLO,
   golf: WORKER_SOLO,
@@ -1280,6 +1282,30 @@ export const canastaApi = {
     meldGroups?: number[][],
   ) =>
     gameExec<CanastaResponse>('canasta', {
+      command,
+      cardIndex,
+      config,
+      naturalPairIndices,
+      meldGroups,
+    }),
+};
+
+/** Configuration options for Hand and Foot game settings. */
+export interface HandAndFootConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Hand and Foot /handandfoot/exec endpoint. */
+export const handandfootApi = {
+  exec: (
+    command: 'reset' | 'drawstock' | 'drawdiscard' | 'meld' | 'skipmeld' | 'discard' | 'goout' | 'nextround' | 'log',
+    cardIndex?: number,
+    config?: HandAndFootConfigInput,
+    naturalPairIndices?: number[],
+    meldGroups?: number[][],
+  ) =>
+    gameExec<HandAndFootResponse>('handandfoot', {
       command,
       cardIndex,
       config,
@@ -3388,6 +3414,7 @@ const games = [
   'crazyeights',
   'ginrummy',
   'canasta',
+  'handandfoot',
   'burraco',
   'spider',
   'indianpoker',
