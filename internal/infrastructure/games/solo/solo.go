@@ -422,4 +422,13 @@ func init() {
 		},
 		controller.NewEasthavenWebControllerWithProvider)
 
+	games.RegisterKVGame("handandfoot", games.CategorySolo,
+		func() usecase.HandAndFootInteractorIF {
+			return usecase.NewHandAndFootInteractor(domain.NewDefaultHandAndFoot(), new(presenter.HandAndFootWebPresenter))
+		},
+		func(data []byte) (usecase.HandAndFootInteractorIF, error) {
+			return usecase.RestoreHandAndFootInteractor(data, new(presenter.HandAndFootWebPresenter))
+		},
+		controller.NewHandAndFootWebControllerWithProvider)
+
 }

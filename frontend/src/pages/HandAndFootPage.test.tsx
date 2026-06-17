@@ -1,0 +1,230 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { handandfootApi } from '../api/gameApi';
+import { renderWithProviders } from '../test/renderWithProviders';
+import type { HandAndFootPlayerData, HandAndFootResponse, HandAndFootTeamData } from '../types/card';
+import { HandAndFootPage } from './HandAndFootPage';
+
+vi.mock('../api/gameApi', () => ({
+  handandfootApi: { exec: vi.fn() },
+  actionLogApi: { handandfoot: vi.fn() },
+}));
+const mockExec = vi.mocked(handandfootApi.exec);
+
+const basePlayers: HandAndFootPlayerData[] = [
+  {
+    id: 0,
+    team: 0,
+    isHuman: true,
+    cardCount: 15,
+    cards: [
+      { design: 'SPADE', value: 7 },
+      { design: 'CLOVER', value: 7 },
+      { design: 'HEART', value: 7 },
+      { design: 'SPADE', value: 10 },
+      { design: 'CLOVER', value: 10 },
+    ],
+    footCount: 11,
+    inFoot: false,
+    roundScore: 0,
+    cumulativeScore: 0,
+  },
+  {
+    id: 1,
+    team: 1,
+    isHuman: false,
+    cardCount: 15,
+    cards: [],
+    footCount: 11,
+    inFoot: false,
+    roundScore: 0,
+    cumulativeScore: 0,
+  },
+];
+
+const baseTeams: HandAndFootTeamData[] = [
+  { team: 0, melds: [], red3Count: 0, red3s: [] },
+  { team: 1, melds: [], red3Count: 0, red3s: [] },
+];
+
+const drawPhaseState: HandAndFootResponse = {
+  players: basePlayers,
+  teams: baseTeams,
+  phase: 0,
+  roundNumber: 1,
+  currentPlayerIdx: 0,
+  discardTop: { design: 'SPADE', value: 5 },
+  drawPileCount: 67,
+  discardPileCount: 1,
+  isFrozen: false,
+  gameEndFlag: false,
+  winnerTeam: -1,
+  message: '',
+  messageCode: 'handandfoot.drawPhase',
+  config: { cpuDifficulty: 1, pointLimit: 5000 },
+};
+
+const meldPhaseState: HandAndFootResponse = {
+  ...drawPhaseState,
+  phase: 1,
+  messageCode: 'handandfoot.meldPhase',
+};
+
+const discardPhaseState: HandAndFootResponse = {
+  ...drawPhaseState,
+  phase: 2,
+  messageCode: 'handandfoot.discardPhase',
+};
+
+const roundEndState: HandAndFootResponse = {
+  ...drawPhaseState,
+  phase: 3,
+  messageCode: 'handandfoot.roundEnd',
+};
+
+const gameEndState: HandAndFootResponse = {
+  ...drawPhaseState,
+  phase: 4,
+  gameEndFlag: true,
+  winnerTeam: 0,
+};
+
+describe('HandAndFootPage', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockExec.mockResolvedValue(drawPhaseState);
+  });
+
+  it('renders skeleton before first API response', () => {
+    mockExec.mockReturnValue(new Promise(() => undefined));
+    renderWithProviders(<HandAndFootPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('calls reset on mount', async () => {
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+        cpuDifficulty: 1,
+        pointLimit: 5000,
+      }),
+    );
+  });
+
+  it('shows draw phase buttons', async () => {
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument();
+  });
+
+  it('calls drawstock command when button clicked', async () => {
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(meldPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawstock'));
+  });
+
+  it('shows meld phase buttons', async () => {
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'メルドする' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'スキップ' })).toBeInTheDocument();
+  });
+
+  it('calls skipmeld command when skip button clicked', async () => {
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'スキップ' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(discardPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'スキップ' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('skipmeld'));
+  });
+
+  it('shows discard phase buttons', async () => {
+    mockExec.mockResolvedValue(discardPhaseState);
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '捨てる' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '上がる' })).toBeInTheDocument();
+  });
+
+  it('shows next round button at round end', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
+  });
+
+  it('shows win celebration at game end', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+  });
+
+  it('shows 次のゲーム at game-end and fires reset directly (no confirm)', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+        cpuDifficulty: 1,
+        pointLimit: 5000,
+      }),
+    );
+    expect(screen.queryByRole('button', { name: '確認' })).not.toBeInTheDocument();
+  });
+
+  it('shows the disabled reason for draw-from-discard when no cards are selected', async () => {
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument());
+    const reason = screen.getByTestId('hf-draw-discard-reason');
+    expect(reason).toHaveTextContent('手札からトップカードと同ランクの2枚を選択してください');
+  });
+
+  it('renders the frozen badge and reason when the discard pile is frozen', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, isFrozen: true });
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByTestId('hf-frozen-badge')).toBeInTheDocument());
+    expect(screen.getByTestId('hf-draw-discard-reason')).toHaveTextContent(
+      'フリーズ中はワイルドカードでの代用ができません',
+    );
+  });
+
+  it('switches the reason to selectOneMore once the player selects one card', async () => {
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByTestId('hf-draw-discard-reason')).toBeInTheDocument());
+    const handCards = screen.getAllByRole('button', { pressed: false }).filter((b) => b.hasAttribute('aria-pressed'));
+    fireEvent.click(handCards[0]);
+    expect(screen.getByTestId('hf-draw-discard-reason')).toHaveTextContent('もう1枚選択してください');
+  });
+
+  it('clears the reason and enables the draw button when exactly 2 cards are selected', async () => {
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument());
+    const handCards = screen.getAllByRole('button', { pressed: false }).filter((b) => b.hasAttribute('aria-pressed'));
+    fireEvent.click(handCards[0]);
+    fireEvent.click(handCards[1]);
+    expect(screen.queryByTestId('hf-draw-discard-reason')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '捨て札を取る' })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: '捨て札を取る' })).not.toHaveAttribute('aria-describedby');
+  });
+
+  it('warns when more than 2 cards are selected', async () => {
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument());
+    const handCards = screen.getAllByRole('button', { pressed: false }).filter((b) => b.hasAttribute('aria-pressed'));
+    fireEvent.click(handCards[0]);
+    fireEvent.click(handCards[1]);
+    fireEvent.click(handCards[2]);
+    expect(screen.getByTestId('hf-draw-discard-reason')).toHaveTextContent('選択は2枚までです');
+    expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeDisabled();
+  });
+
+  afterEach(() => {
+    localStorage.clear();
+  });
+});

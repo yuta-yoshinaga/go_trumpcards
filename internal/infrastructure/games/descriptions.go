@@ -165,6 +165,7 @@ var gameDescriptions = map[string]string{
 	"teenpatti":           "Teen Patti (ティーンパッティ)",
 	"scopone":             "Scopone (スコポーネ)",
 	"escoba":              "Escoba (エスコバ)",
+	"handandfoot":         "Hand and Foot (ハンド・アンド・フット)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

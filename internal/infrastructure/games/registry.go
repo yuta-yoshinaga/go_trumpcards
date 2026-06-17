@@ -362,6 +362,10 @@ var registry = []*Game{
 	// 8/9/10), with Escoba sweeps and Espada/Oro/seven scoring. Classic worker
 	// bucket — it reuses Scopa's (classic) subset-sum capture helper.
 	{Name: "escoba", Category: CategoryClassic},
+	// Hand and Foot: Canasta-family two-stage game (each player holds a "hand"
+	// and a "foot"), 4 players / 2 teams, 216-card deck (4 decks + 8 jokers).
+	// Solo worker bucket — it reuses Canasta's (solo) meld/canasta/red-3 helpers.
+	{Name: "handandfoot", Category: CategorySolo},
 }
 
 // All returns a value-level copy of the registry in canonical order.
