@@ -2440,6 +2440,25 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"threecardbrag.helpSetDifficulty"},
 			})
 	}},
+	{Name: "teenpatti", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewTeenPattiCuiController(usecase.NewTeenPattiInteractor(
+				domain.NewDefaultTeenPatti(), new(presenter.TeenPattiCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "teenpatti.helpTitle",
+				CommandKeys: []string{
+					"teenpatti.helpSee",
+					"teenpatti.helpBet",
+					"teenpatti.helpRaise",
+					"teenpatti.helpFold",
+					"teenpatti.helpShow",
+					"teenpatti.helpSideShow",
+					"teenpatti.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"teenpatti.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

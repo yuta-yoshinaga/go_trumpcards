@@ -575,6 +575,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [3, 4, 4, 5], skill: [1, 2, 4, 3], social: [1, 4, 5, 3, 5], theme: [2, 4, 1, 5, 2, 2] },
       },
       {
+        path: '/teenpatti',
+        labelKey: 'nav.teenpatti',
+        icon: '🎴',
+        page: 'TeenPatti',
+        profile: { mood: [3, 4, 4, 5], skill: [1, 2, 4, 3], social: [1, 4, 5, 3, 5], theme: [2, 4, 1, 5, 2, 2] },
+      },
+      {
         path: '/piquet',
         labelKey: 'nav.piquet',
         icon: '🎴',

@@ -99,6 +99,9 @@
   /* Three Card Brag — a smoky slate-teal betting-parlour felt, distinct from Écarté's café-green and the poker greens. */
   --color-game-bg-threecardbrag: #1c4a4d;
   --color-game-bg-threecardbrag-dark: #112e30;
+  /* Teen Patti — a warm Indian saffron-spiced maroon felt, distinct from Three Card Brag's slate-teal. */
+  --color-game-bg-teenpatti: #5a2333;
+  --color-game-bg-teenpatti-dark: #3a141f;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;

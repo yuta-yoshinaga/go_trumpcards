@@ -140,6 +140,7 @@ import type {
   SpoilFiveResponse,
   SuecaResponse,
   TarneebResponse,
+  TeenPattiResponse,
   TexasHoldemBonusResponse,
   ThirtyOneResponse,
   ThreeCardBragResponse,
@@ -204,6 +205,7 @@ const workerUrl: Record<string, string> = {
   deucetoseven: WORKER_CASINO,
   ecarte: WORKER_CASINO,
   threecardbrag: WORKER_CASINO,
+  teenpatti: WORKER_CASINO,
   calculation: WORKER_SOLO,
   hearts: WORKER_CLASSIC,
   spades: WORKER_CLASSIC,
@@ -2172,6 +2174,60 @@ export const threeCardBragApi = {
     }),
 };
 
+/** Configuration options for Teen Patti game settings. */
+export interface TeenPattiConfigInput {
+  cpuDifficulty?: number;
+  ante?: number;
+  startingChips?: number;
+}
+
+/** Commands accepted by the Teen Patti /teenpatti/exec endpoint. */
+export type TeenPattiCommand =
+  | 'reset'
+  | 'see'
+  | 'bet'
+  | 'raise'
+  | 'fold'
+  | 'show'
+  | 'sideshow'
+  | 'respond'
+  | 'next'
+  | 'hint'
+  | 'log'
+  | 'config';
+
+/**
+ * API client for the Teen Patti /teenpatti/exec endpoint.
+ *
+ * Teen Patti is the Indian variant of Three Card Brag — a 4-player vying game
+ * with chips and a pot. On the human's turn: `see` (reveal, Blind→Seen), `bet`
+ * (call the stake), `raise` (with `raiseStake`), `fold`, `show` (when allowed),
+ * or `sideshow` (request a private hand comparison with the previous Seen
+ * player). When a Side Show is requested of the human, `respond` (with
+ * `accept`) accepts or declines it. `next` advances to the following deal;
+ * `reset` / `config` apply the config.
+ *   - `raise` → `{ raiseStake: number }`
+ *   - `respond` → `{ accept: boolean }`
+ *   - `reset` / `config` → `{ config }`
+ *   - `see` / `bet` / `fold` / `show` / `sideshow` / `next` / `hint` / `log` carry no extra fields.
+ */
+export const teenPattiApi = {
+  exec: (
+    command: TeenPattiCommand,
+    opts?: {
+      raiseStake?: number;
+      accept?: boolean;
+      config?: TeenPattiConfigInput;
+    },
+  ) =>
+    gameExec<TeenPattiResponse>('teenpatti', {
+      command,
+      raiseStake: opts?.raiseStake,
+      accept: opts?.accept,
+      config: opts?.config,
+    }),
+};
+
 /** Configuration options for Préférence game settings. */
 export interface PreferenceConfigInput {
   cpuDifficulty?: number;
@@ -3399,6 +3455,7 @@ const games = [
   'bezique',
   'ecarte',
   'threecardbrag',
+  'teenpatti',
 ] as const;
 type Game = (typeof games)[number];
 

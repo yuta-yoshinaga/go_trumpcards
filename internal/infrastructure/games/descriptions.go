@@ -162,6 +162,7 @@ var gameDescriptions = map[string]string{
 	"bezique":             "Bezique (ベジーク)",
 	"ecarte":              "Écarté (エカルテ)",
 	"threecardbrag":       "Three Card Brag (スリーカード・ブラグ)",
+	"teenpatti":           "Teen Patti (ティーンパッティ)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

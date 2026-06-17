@@ -478,5 +478,13 @@ func init() {
 			return usecase.RestoreThreeCardBragInteractor(data, new(presenter.ThreeCardBragWebPresenter))
 		},
 		controller.NewThreeCardBragWebControllerWithProvider)
+	games.RegisterKVGame("teenpatti", games.CategoryCasino,
+		func() usecase.TeenPattiInteractorIF {
+			return usecase.NewTeenPattiInteractor(domain.NewDefaultTeenPatti(), new(presenter.TeenPattiWebPresenter))
+		},
+		func(data []byte) (usecase.TeenPattiInteractorIF, error) {
+			return usecase.RestoreTeenPattiInteractor(data, new(presenter.TeenPattiWebPresenter))
+		},
+		controller.NewTeenPattiWebControllerWithProvider)
 
 }

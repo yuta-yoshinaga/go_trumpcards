@@ -133,6 +133,7 @@ import spiteandmalice from '../../../docs/manual/web/spiteandmalice.md?raw';
 import spoilfive from '../../../docs/manual/web/spoilfive.md?raw';
 import sueca from '../../../docs/manual/web/sueca.md?raw';
 import tarneeb from '../../../docs/manual/web/tarneeb.md?raw';
+import teenpatti from '../../../docs/manual/web/teenpatti.md?raw';
 import texasholdembonus from '../../../docs/manual/web/texasholdembonus.md?raw';
 import thirtyone from '../../../docs/manual/web/thirtyone.md?raw';
 import threecard from '../../../docs/manual/web/threecard.md?raw';
@@ -163,6 +164,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/bezique': bezique,
   '/ecarte': ecarte,
   '/threecardbrag': threecardbrag,
+  '/teenpatti': teenpatti,
   '/bridge': bridge,
   '/burraco': burraco,
   '/calculation': calculation,

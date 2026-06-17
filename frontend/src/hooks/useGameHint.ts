@@ -110,6 +110,7 @@ import type {
   SpoilFiveResponse,
   SuecaResponse,
   TarneebResponse,
+  TeenPattiResponse,
   TexasHoldemBonusResponse,
   ThirtyOneResponse,
   ThreeCardBragResponse,
@@ -246,6 +247,7 @@ import { getSpiteAndMaliceHint } from '../utils/hints/spiteAndMaliceHint';
 import { getSpoilFiveHint } from '../utils/hints/spoilFiveHint';
 import { getSuecaHint } from '../utils/hints/suecaHint';
 import { getTarneebHint } from '../utils/hints/tarneebHint';
+import { getTeenPattiHint } from '../utils/hints/teenPattiHint';
 import { getTexasHoldemBonusHint } from '../utils/hints/texasHoldemBonusHint';
 import { getThirtyOneHint } from '../utils/hints/thirtyoneHint';
 import { getThreeCardBragHint } from '../utils/hints/threeCardBragHint';
@@ -418,6 +420,7 @@ const hintFactories = {
   bezique: (s) => getBeziqueHint(s as BeziqueResponse),
   ecarte: (s) => getEcarteHint(s as EcarteResponse),
   threecardbrag: (s) => getThreeCardBragHint(s as ThreeCardBragResponse),
+  teenpatti: (s) => getTeenPattiHint(s as TeenPattiResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

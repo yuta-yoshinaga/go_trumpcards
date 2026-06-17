@@ -775,4 +775,9 @@ func init() {
 			return usecase.NewThreeCardBragInteractor(domain.NewDefaultThreeCardBrag(), new(presenter.ThreeCardBragWebPresenter))
 		},
 		controller.NewThreeCardBragWebController)
+	BindWebControllerFor("teenpatti",
+		func() usecase.TeenPattiInteractorIF {
+			return usecase.NewTeenPattiInteractor(domain.NewDefaultTeenPatti(), new(presenter.TeenPattiWebPresenter))
+		},
+		controller.NewTeenPattiWebController)
 }
