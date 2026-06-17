@@ -627,8 +627,18 @@ func TestHandAndFoot_Scoring_RoundEnd(t *testing.T) {
 	g := newTestHandAndFoot()
 	g.Reset()
 	hafSetupDiscard(g, 0)
+	// Reset() deals 140 cards and auto-lays any red 3s into the team piles, and
+	// leaves each player holding a 13-card foot. Clear ALL of that dealt state so
+	// the scoring scenario below is deterministic (otherwise red-3 bonuses and
+	// uncleared-foot penalties leak in and make this test shuffle-dependent).
+	g.SetTeamRed3s(0, nil)
+	g.SetTeamRed3s(1, nil)
+	for i := 0; i < 4; i++ {
+		hafSetHand(g.GetPlayer(i))
+		g.GetPlayer(i).SetFoot(nil)
+		g.GetPlayer(i).SetInFoot(true)
+	}
 	p := g.GetPlayer(0)
-	p.SetInFoot(true)
 	// team 0: red canasta of 8s (7×10=70 + 500), black canasta of 9s (6 nat ×10 + 1 joker 50 = 110 + 300)
 	red := hafCanastaMeld(8, 7, true)
 	black := &domain.CanastaMeld{
@@ -641,11 +651,6 @@ func TestHandAndFoot_Scoring_RoundEnd(t *testing.T) {
 		IsNatural: false,
 	}
 	g.SetTeamMelds(0, []*domain.CanastaMeld{red, black})
-	// empty other players' hands/foot so opponents don't have penalties messing things
-	for i := 1; i < 4; i++ {
-		hafSetHand(g.GetPlayer(i))
-		g.GetPlayer(i).SetFoot(nil)
-	}
 	hafSetHand(p, hafCard(domain.CardDesignClover, 5)) // discard this 1 card, go out
 
 	err := g.PlayerGoOut()

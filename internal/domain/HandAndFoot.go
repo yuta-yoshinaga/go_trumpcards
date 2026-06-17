@@ -1261,6 +1261,14 @@ func (g *HandAndFoot) GetTeamRed3s(team int) []*Card {
 	return g.teamRed3s[team]
 }
 
+// SetTeamRed3s 指定チームの赤3を設定 (テスト用)
+func (g *HandAndFoot) SetTeamRed3s(team int, red3s []*Card) {
+	if team < 0 || team >= HandAndFootTeamCnt {
+		return
+	}
+	g.teamRed3s[team] = red3s
+}
+
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *HandAndFoot) IsHumanTurn() bool {
 	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
