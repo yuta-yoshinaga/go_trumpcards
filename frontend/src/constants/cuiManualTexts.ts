@@ -112,6 +112,7 @@ import russianpoker from '../../../docs/manual/cui/russianpoker.md?raw';
 import russiansolitaire from '../../../docs/manual/cui/russiansolitaire.md?raw';
 import schnapsen from '../../../docs/manual/cui/schnapsen.md?raw';
 import scopa from '../../../docs/manual/cui/scopa.md?raw';
+import scopone from '../../../docs/manual/cui/scopone.md?raw';
 import scorpion from '../../../docs/manual/cui/scorpion.md?raw';
 import seahaventowers from '../../../docs/manual/cui/seahaventowers.md?raw';
 import sedma from '../../../docs/manual/cui/sedma.md?raw';
@@ -291,6 +292,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/president': president,
   '/cassino': cassino,
   '/scopa': scopa,
+  '/scopone': scopone,
   '/barbu': barbu,
   '/spiteandmalice': spiteandmalice,
   '/skat': skat,

@@ -115,6 +115,7 @@ import type {
   SchnapsenConfig,
   SchnapsenResponse,
   ScopaResponse,
+  ScoponeResponse,
   ScorpionResponse,
   SeahavenTowersResponse,
   SedmaResponse,
@@ -304,6 +305,7 @@ const workerUrl: Record<string, string> = {
   doudizhu: WORKER_CLASSIC,
   truco: WORKER_CLASSIC,
   scopa: WORKER_CLASSIC,
+  scopone: WORKER_CLASSIC,
   barbu: WORKER_SOLO,
   macau: WORKER_SOLO,
   gongzhu: WORKER_SOLO,
@@ -3125,6 +3127,28 @@ export const scopaApi = {
     gameExec<ScopaResponse>('scopa', { command, ...(params ?? {}) }),
 };
 
+/** Configuration options for Scopone game settings. */
+export interface ScoponeConfigInput {
+  targetScore?: number;
+  cpuDifficulty?: number;
+}
+
+/** Command verbs accepted by the Scopone /scopone/exec endpoint (short forms). */
+export type ScoponeCommand = 'r' | 'n' | 'p' | 'log';
+
+/** Extra payload fields for the Scopone /scopone/exec endpoint. */
+export interface ScoponeExecParams {
+  handIndex?: number;
+  tableIndices?: number[];
+  config?: ScoponeConfigInput;
+}
+
+/** API client for the Scopone /scopone/exec endpoint. */
+export const scoponeApi = {
+  exec: (command: ScoponeCommand, params?: ScoponeExecParams) =>
+    gameExec<ScoponeResponse>('scopone', { command, ...(params ?? {}) }),
+};
+
 /** Configuration options for Barbu game settings. */
 export interface BarbuConfigInput {
   cpuDifficulty?: number;
@@ -3383,6 +3407,7 @@ const games = [
   'president',
   'cassino',
   'scopa',
+  'scopone',
   'barbu',
   'macau',
   'bristol',

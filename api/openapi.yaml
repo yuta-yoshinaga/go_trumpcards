@@ -70,6 +70,8 @@ tags:
     description: Cassino (カッシーノ) game
   - name: scopa
     description: Scopa (スコパ) game
+  - name: scopone
+    description: Scopone (スコポーネ) game
   - name: barbu
     description: Barbu (バルブ) — French compendium trick-taking game (7 contracts, 28 deals)
   - name: macau
@@ -8913,6 +8915,71 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ScopaResponse'
+
+  /scopone/exec:
+    post:
+      tags:
+        - scopone
+      summary: Execute a Scopone game command
+      description: |
+        Send a command to advance the Scopone (スコポーネ) game session
+        identified by `sessionId`. Scopone is the 4-player, 2-team partnership
+        form of Scopa (1 human + 3 CPU) on the same 40-card deck (the 8/9/10
+        are removed). Seats 0 and 2 form one team and seats 1 and 3 the other.
+        All 40 cards are dealt out (10 each) with no initial table cards and no
+        stock. Play one hand card to capture table cards of equal value or
+        summing to it (a single exact match is forced when one exists),
+        otherwise lay the card. Clearing the table earns a `scopa` bonus.
+        Scoring is per team toward the target (default 11) via cards (carte),
+        diamonds (denari), the 7♦ (settebello), most 7s, and scope.
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset`         | `r`  | Start / restart a game |
+        | `next`          | `n`  | Start the next round |
+        | `play`          | `p`  | Play a hand card to capture table cards or lay it |
+        | `setdifficulty` | `sd` | Set CPU difficulty (0-2) |
+        | `settarget`     | `st` | Set the target score |
+        | `log`           | `l`  | View action log |
+      operationId: scoponeExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScoponeRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play hand card 0 to capture table cards 1 and 3
+                value:
+                  command: play
+                  handIndex: 0
+                  tableIndices: [1, 3]
+                  sessionId: my-session-001
+              lay:
+                summary: Lay hand card 2 on the table (no capture)
+                value:
+                  command: play
+                  handIndex: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScoponeResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScoponeResponse'
 
   /barbu/exec:
     post:
@@ -26148,6 +26215,154 @@ components:
           type: object
           nullable: true
           description: Per-point scoring breakdown of the last completed round.
+          properties:
+            cards:
+              type: object
+              additionalProperties:
+                type: integer
+            diamonds:
+              type: object
+              additionalProperties:
+                type: integer
+            sevens:
+              type: object
+              additionalProperties:
+                type: integer
+            hasSetteBello: { type: integer }
+            scopas:
+              type: object
+              additionalProperties:
+                type: integer
+            gained:
+              type: object
+              additionalProperties:
+                type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    ScoponeRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: Scopone command. Accepted values. `reset` (`r`), `next` (`n`), `play` (`p`), `setdifficulty` (`sd`), `settarget` (`st`), `log` (`l`).
+          enum: [reset, r, next, n, play, p, setdifficulty, sd, settarget, st, log, l]
+          example: play
+        handIndex:
+          type: integer
+          description: Hand card index to play (for the `play` command).
+          example: 0
+        tableIndices:
+          type: array
+          description: >
+            Table card indices to capture with the played card (for the `play`
+            command). When a single exact match exists it is forced.
+          items:
+            type: integer
+          example: [1, 3]
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            targetScore:
+              type: integer
+              description: Score required to win the match.
+              example: 11
+            cpuDifficulty:
+              type: integer
+              description: CPU difficulty (0=easy, 1=normal, 2=hard).
+              minimum: 0
+              maximum: 2
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    ScoponeResponse:
+      type: object
+      description: Current state of the Scopone game
+      properties:
+        players:
+          type: array
+          description: All players in the game (1 human + 3 CPU). Seats 0+2 vs 1+3.
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              isHuman: { type: boolean }
+              team: { type: integer }
+              handCount: { type: integer }
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              capturedCount: { type: integer }
+              scopaCount: { type: integer }
+        currentTurn:
+          type: integer
+        tableCards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        teamScores:
+          type: array
+          description: Cumulative score for each team (index = team number).
+          items:
+            type: integer
+        winnerTeam:
+          type: integer
+          description: Winning team index, or -1 if the match is not over.
+        gameEndFlag:
+          type: boolean
+        phase:
+          type: string
+          description: Current game phase (playerTurn, roundEnd, gameEnd).
+        config:
+          type: object
+          properties:
+            targetScore: { type: integer }
+            cpuDifficulty: { type: integer }
+        cpuActions:
+          type: array
+          description: Actions taken by the CPUs since the last human action.
+          items:
+            type: object
+            properties:
+              playerIdx: { type: integer }
+              playedCard:
+                nullable: true
+                $ref: '#/components/schemas/Card'
+              capturedCards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              isScopa: { type: boolean }
+        humanAction:
+          type: object
+          nullable: true
+          properties:
+            playerIdx: { type: integer }
+            playedCard:
+              nullable: true
+              $ref: '#/components/schemas/Card'
+            capturedCards:
+              type: array
+              items:
+                $ref: '#/components/schemas/Card'
+            isScopa: { type: boolean }
+        lastRoundDetail:
+          type: object
+          nullable: true
+          description: Per-point scoring breakdown of the last completed round (keyed by team).
           properties:
             cards:
               type: object

@@ -1,0 +1,19 @@
+{
+  "helpTitle": "Scopone",
+  "helpPlay": "  p <h> [t...]             play hand h (capture table cards t..., or lay if none given)",
+  "helpNext": "  n                        start the next round",
+  "helpSetDifficulty": "  sd [0-2]                 CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "helpSetTarget": "  st <n>                   target score (default 11)",
+  "teamScoreLine": "Team scores: Team 0 {{t0}}pt / Team 1 {{t1}}pt",
+  "roundLine": "Round {{round}}",
+  "playerLine": "{{name}} (T{{team}}): hand {{hand}} / captured {{captured}} / scopa {{scopa}}",
+  "tableLine": "Table: {{cards}}",
+  "tableEmpty": "Table: empty",
+  "gameEnd": "Game over!",
+  "winnerLine": "Winning team: Team {{team}}",
+  "roundEnd": "Round over.",
+  "scoreDetailLine": "  Team {{team}}: cards {{cards}} / diamonds {{diamonds}} / 7s {{sevens}} / scopas {{scopas}} -> {{gained}}pt",
+  "promptNext": "n to start the next round",
+  "promptCurrentTurn": "Current turn: {{name}} (Team {{team}})",
+  "promptHelp": "p <hand> [table...] to capture or lay / n for the next round"
+}

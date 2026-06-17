@@ -163,6 +163,7 @@ var gameDescriptions = map[string]string{
 	"ecarte":              "Écarté (エカルテ)",
 	"threecardbrag":       "Three Card Brag (スリーカード・ブラグ)",
 	"teenpatti":           "Teen Patti (ティーンパッティ)",
+	"scopone":             "Scopone (スコポーネ)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

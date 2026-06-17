@@ -111,6 +111,7 @@ import russianpoker from '../../../docs/manual/web/russianpoker.md?raw';
 import russiansolitaire from '../../../docs/manual/web/russiansolitaire.md?raw';
 import schnapsen from '../../../docs/manual/web/schnapsen.md?raw';
 import scopa from '../../../docs/manual/web/scopa.md?raw';
+import scopone from '../../../docs/manual/web/scopone.md?raw';
 import scorpion from '../../../docs/manual/web/scorpion.md?raw';
 import seahaventowers from '../../../docs/manual/web/seahaventowers.md?raw';
 import sedma from '../../../docs/manual/web/sedma.md?raw';
@@ -294,6 +295,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/president': president,
   '/cassino': cassino,
   '/scopa': scopa,
+  '/scopone': scopone,
   '/barbu': barbu,
   '/spiteandmalice': spiteandmalice,
   '/skat': skat,

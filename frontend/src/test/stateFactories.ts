@@ -14,6 +14,7 @@ import type {
   MusResponse,
   NapResponse,
   PreferenceResponse,
+  ScoponeResponse,
   SedmaResponse,
   SheepsheadResponse,
   SoloWhistResponse,
@@ -1492,4 +1493,54 @@ const baseNapState: NapResponse = {
  */
 export function makeNapState(overrides?: Partial<NapResponse>): NapResponse {
   return { ...baseNapState, ...overrides };
+}
+
+/** Base Scopone state used as the default for {@link makeScoponeState}. Defaults to a human play turn. */
+const baseScoponeState: ScoponeResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      team: 0,
+      handCount: 3,
+      cards: [
+        { design: 'SPADE' as const, value: 3 },
+        { design: 'HEART' as const, value: 5 },
+        { design: 'DIAMOND' as const, value: 7 },
+      ],
+      capturedCount: 0,
+      scopaCount: 0,
+    },
+    { id: 1, isHuman: false, team: 1, handCount: 3, cards: [], capturedCount: 0, scopaCount: 0 },
+    { id: 2, isHuman: false, team: 0, handCount: 3, cards: [], capturedCount: 0, scopaCount: 0 },
+    { id: 3, isHuman: false, team: 1, handCount: 3, cards: [], capturedCount: 0, scopaCount: 0 },
+  ],
+  tableCards: [
+    { design: 'SPADE' as const, value: 2 },
+    { design: 'HEART' as const, value: 5 },
+  ],
+  phase: 'playerTurn',
+  roundNumber: 1,
+  currentTurn: 0,
+  dealerIdx: 3,
+  teamScores: [0, 0],
+  lastCaptureIdx: -1,
+  winnerTeam: -1,
+  gameEndFlag: false,
+  isHumanTurn: true,
+  handCaptures: [[[1]], [], []],
+  lastRoundDetail: null,
+  config: { cpuDifficulty: 1, targetScore: 11 },
+  message: '',
+};
+
+/**
+ * Creates a {@link ScoponeResponse} with sensible defaults (a human play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial ScoponeResponse fields to override.
+ * @returns A complete ScoponeResponse suitable for use in tests.
+ */
+export function makeScoponeState(overrides?: Partial<ScoponeResponse>): ScoponeResponse {
+  return { ...baseScoponeState, ...overrides };
 }

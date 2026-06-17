@@ -352,6 +352,11 @@ var registry = []*Game{
 	// ranking, plus a Side Show (request a private hand comparison with the
 	// previous Seen player). Casino worker bucket.
 	{Name: "teenpatti", Category: CategoryCasino},
+	// Scopone (スコポーネ) is the 4-player, 2-team "scientific" version of Scopa:
+	// all 40 cards are dealt at once and captured by summing to the played card's
+	// value, scoring carte/denari/sevens/settebello/scopa per team. Classic worker
+	// bucket — it reuses Scopa's (classic) capture & scoring helpers.
+	{Name: "scopone", Category: CategoryClassic},
 }
 
 // All returns a value-level copy of the registry in canonical order.
