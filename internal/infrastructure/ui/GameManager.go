@@ -2422,6 +2422,24 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"ecarte.helpSetDifficulty"},
 			})
 	}},
+	{Name: "threecardbrag", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewThreeCardBragCuiController(usecase.NewThreeCardBragInteractor(
+				domain.NewDefaultThreeCardBrag(), new(presenter.ThreeCardBragCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "threecardbrag.helpTitle",
+				CommandKeys: []string{
+					"threecardbrag.helpSee",
+					"threecardbrag.helpBet",
+					"threecardbrag.helpRaise",
+					"threecardbrag.helpFold",
+					"threecardbrag.helpShow",
+					"threecardbrag.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"threecardbrag.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

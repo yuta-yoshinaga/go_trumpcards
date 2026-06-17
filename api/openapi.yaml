@@ -315,6 +315,8 @@ tags:
     description: Bezique (ベジーク) — 2-player French declaration trick-taking game, the direct ancestor of Pinochle, on a 64-card deck (A,7,8,9,10,J,Q,K × 4 suits × 2 copies); 8 cards each; the next card off the stock is turned up to set the trump suit; trick rank A > 10 > K > Q > J > 9 > 8 > 7 (trump beats all non-trump); Phase 1 (while the stock lasts) — no follow requirement, the trick winner may declare one meld for points or decline, then both draw 1 card (winner first); melds — Marriage (K+Q same suit)=20, Royal Marriage (trump K+Q)=40, Bezique (♠Q+♦J)=40, four Aces=100, four Kings=80, four Queens=60, four Jacks=40; Phase 2 (after the stock is exhausted) — strict must-follow (follow led suit, win if able, else trump if void), no melds, last-trick winner +10; captured card points A=11, 10=10, K=4, Q=3, J=2, 9/8/7=0; meld points, card points, and the last-trick bonus accumulate across deals; first player to reach the target (default 1000) wins
   - name: ecarte
     description: Écarté (エカルテ) — 2-player French trick-taking game on a 32-card deck (A,7,8,9,10,J,Q,K × 4 suits); 5 cards each; the next card off the stock is turned up to set the trump suit (if it is a King the dealer scores +1); trick rank K > Q > J > A > 10 > 9 > 8 > 7 (trump beats all non-trump); Exchange phase — the elder (non-dealer) proposes an exchange or stands, and if proposed the dealer accepts or refuses; on accept both players discard any number of cards and draw replacements, then the elder again proposes or stands until the elder stands, the dealer refuses, or the stock is exhausted; if the dealer refuses and then fails to take 3 tricks the elder gains +1 (refusal penalty); Play phase — 5 tricks with strict must-follow under trump (follow the led suit, win if able, else trump if void); holding the trump King in hand scores +1 (declared automatically); scoring — 3 or 4 tricks = 1 point, sweeping all 5 (the Vole) = 2 points; match scores accumulate across deals; first player to reach the target (default 5) wins
+  - name: threecardbrag
+    description: Three Card Brag (スリーカード・ブラグ) — 4-player English vying (betting) game, one of the ancestors of poker, on a standard 52-card deck; each player antes into the pot and is dealt 3 cards; every player is either Blind (has not looked at their hand) or Seen (has looked), and a Blind player may see their hand at any time to become Seen; Blind players stake at half the Seen rate (implementation Blind = stake, Seen = 2 * stake); on your turn you may bet (call the current stake), raise (increase the stake), or fold (drop out, forfeiting your contribution); when only two players remain a Seen player may pay 2 * stake to call a show (showdown) — the stronger hand takes the pot and on a tie the player who called the show loses; if everyone but one player folds the last remaining player wins the pot without a showdown; hand ranking (strongest to weakest) Prial (three of a kind) > Running Flush (straight flush) > Run (straight) > Flush > Pair > High Card; special cases — 3-3-3 is the highest Prial and A-2-3 is the highest Run; a player whose chips run out is eliminated, and the last player still holding chips is the match winner
 
 paths:
   /blackjack/exec:
@@ -14062,6 +14064,107 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/EcarteResponse'
+
+  /threecardbrag/exec:
+    post:
+      tags:
+        - threecardbrag
+      summary: Execute a Three Card Brag game command
+      description: |
+        Send a command to advance a Three Card Brag session identified by `sessionId`.
+        Three Card Brag is a 4-player (1 human + 3 CPU) English vying (betting) game on a
+        standard 52-card deck and one of the ancestors of poker. Each player antes into the
+        pot and is dealt 3 cards. Every player is either Blind (has not looked at their hand)
+        or Seen (has looked); a Blind player may `see` their hand at any time to become Seen.
+        Blind players stake at half the Seen rate (implementation: Blind = stake, Seen = 2 x stake).
+        Betting phase: on your turn you may `bet` (call the current stake), `raise` (increase the
+        stake), or `fold` (drop out, forfeiting your contribution). When only two players remain,
+        a Seen player may pay 2 x stake to call a `show` (showdown): the stronger hand takes the pot
+        and on a tie the player who called the show loses. If everyone but one player folds, the last
+        remaining player wins the pot without a showdown.
+        Hand ranking (strongest to weakest): Prial (three of a kind) > Running Flush (straight flush)
+        > Run (straight) > Flush > Pair > High Card. Special cases: 3-3-3 is the highest Prial and
+        A-2-3 is the highest Run. A player whose chips run out is eliminated; the last player still
+        holding chips is the match winner.
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Betting    | `0`   | See, bet, raise, fold; or show when two players remain |
+        | Showdown   | `1`   | Hands compared; the stronger hand takes the pot |
+        | RoundEnd   | `2`   | Deal scored; advance with `nextround` |
+        | GameEnd    | `3`   | Only one player still holds chips |
+
+        | Command           | Aliases                | Description |
+        |-------------------|------------------------|-------------|
+        | `reset`           | `r`                    | Start / restart the game (optional `config`) |
+        | `see`             | `s`                    | Look at your hand and become Seen (Blind only) |
+        | `bet`             | `b`                    | Call the current stake |
+        | `raise`           | `rs`                   | Raise the stake by `raiseStake`, then call |
+        | `fold`            | `f`                    | Drop out of the current deal |
+        | `show`            | `sh`                   | Call a showdown (Seen player, two players remaining) |
+        | `next`            | `n`, `nextround`       | Advance to the next deal |
+        | `hint`            | `h`                    | Request an action hint |
+        | `setdifficulty`   | `sd`                   | Set CPU difficulty (requires `difficulty` 0-2) |
+        | `setante`         | `sa`                   | Set the ante (requires `ante`) |
+        | `setchips`        | `sc`                   | Set the starting chips (requires `startingChips`) |
+        | `log`             | `l`                    | View action log |
+      operationId: threeCardBragExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ThreeCardBragRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              see:
+                summary: Look at your hand (become Seen)
+                value:
+                  command: see
+                  sessionId: my-session-001
+              bet:
+                summary: Call the current stake
+                value:
+                  command: bet
+                  sessionId: my-session-001
+              raise:
+                summary: Raise the stake by 10, then call
+                value:
+                  command: raise
+                  raiseStake: 10
+                  sessionId: my-session-001
+              fold:
+                summary: Drop out of the current deal
+                value:
+                  command: fold
+                  sessionId: my-session-001
+              show:
+                summary: Call a showdown (two players remaining)
+                value:
+                  command: show
+                  sessionId: my-session-001
+              next:
+                summary: Advance to the next deal
+                value:
+                  command: next
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThreeCardBragResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThreeCardBragResponse'
 
 components:
   schemas:
@@ -31006,4 +31109,150 @@ components:
             cpuDifficulty:
               type: integer
             targetScore:
+              type: integer
+
+    ThreeCardBragRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `see` (`s`), `bet` (`b`),
+            `raise` (`rs`), `fold` (`f`), `show` (`sh`), `next` (`n`, `nextround`),
+            `hint` (`h`), `setdifficulty` (`sd`), `setante` (`sa`), `setchips` (`sc`),
+            `log` (`l`).
+          enum: [reset, r, see, s, bet, b, raise, rs, fold, f, show, sh, next, n, nextround, hint, h, setdifficulty, sd, setante, sa, setchips, sc, log, l]
+          example: bet
+        raiseStake:
+          type: integer
+          description: Amount to raise the stake by. Required for the `raise` command.
+          minimum: 1
+          example: 10
+        difficulty:
+          type: integer
+          description: CPU difficulty level for `setdifficulty`. 0=Easy, 1=Normal, 2=Hard.
+          minimum: 0
+          maximum: 2
+        ante:
+          type: integer
+          description: Ante paid into the pot at the start of each deal, for `setante`.
+          minimum: 1
+        startingChips:
+          type: integer
+          description: Number of chips each player starts with, for `setchips`.
+          minimum: 1
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            ante:
+              type: integer
+              minimum: 1
+            startingChips:
+              type: integer
+              minimum: 1
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    ThreeCardBragResponse:
+      type: object
+      description: Current state of the Three Card Brag game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              chips:
+                type: integer
+                description: Chips this player currently holds
+              seen:
+                type: boolean
+                description: True if the player has looked at their hand (Seen); false if still Blind
+              folded:
+                type: boolean
+                description: True if the player has folded out of the current deal
+              out:
+                type: boolean
+                description: True if the player has been eliminated from the match (out of chips)
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                description: The player's 3 cards (revealed only for the human when Seen, or at showdown)
+                items:
+                  $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 0=Betting, 1=Showdown, 2=RoundEnd, 3=GameEnd"
+          enum: [0, 1, 2, 3]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Current deal number (starts at 1)
+        pot:
+          type: integer
+          description: Total chips currently in the pot
+        stake:
+          type: integer
+          description: Current per-action stake (a Blind player pays this, a Seen player pays double)
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        dealerIdx:
+          type: integer
+          description: Index of the dealer for the current deal
+        isShowdown:
+          type: boolean
+          description: True when a showdown is being resolved this deal
+        canShow:
+          type: boolean
+          description: True when the human (Seen, two players remaining) may call a show
+        roundWinnerIdx:
+          type: integer
+          description: Index of the player who won the current/last deal (-1 if undecided)
+        matchWinnerIdx:
+          type: integer
+          description: Index of the match winner (last player with chips; -1 if undecided)
+        validActions:
+          type: array
+          items:
+            type: string
+          description: Action commands the human may legally issue this turn (e.g. see, bet, raise, fold, show)
+        gameEndFlag:
+          type: boolean
+        isHumanTurn:
+          type: boolean
+        hint:
+          type: object
+          properties:
+            action:
+              type: string
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            ante:
+              type: integer
+            startingChips:
               type: integer

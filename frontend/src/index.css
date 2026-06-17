@@ -96,6 +96,9 @@
   /* Écarté — a refined French café-green felt, distinct from Bezique's wine-burgundy and Court Piece's royal indigo. */
   --color-game-bg-ecarte: #1f4d3a;
   --color-game-bg-ecarte-dark: #133023;
+  /* Three Card Brag — a smoky slate-teal betting-parlour felt, distinct from Écarté's café-green and the poker greens. */
+  --color-game-bg-threecardbrag: #1c4a4d;
+  --color-game-bg-threecardbrag-dark: #112e30;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;

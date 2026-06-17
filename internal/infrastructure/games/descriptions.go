@@ -161,6 +161,7 @@ var gameDescriptions = map[string]string{
 	"courtpiece":          "Court Piece / Rang (コートピース)",
 	"bezique":             "Bezique (ベジーク)",
 	"ecarte":              "Écarté (エカルテ)",
+	"threecardbrag":       "Three Card Brag (スリーカード・ブラグ)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

@@ -470,5 +470,13 @@ func init() {
 			return usecase.RestoreEcarteInteractor(data, new(presenter.EcarteWebPresenter))
 		},
 		controller.NewEcarteWebControllerWithProvider)
+	games.RegisterKVGame("threecardbrag", games.CategoryCasino,
+		func() usecase.ThreeCardBragInteractorIF {
+			return usecase.NewThreeCardBragInteractor(domain.NewDefaultThreeCardBrag(), new(presenter.ThreeCardBragWebPresenter))
+		},
+		func(data []byte) (usecase.ThreeCardBragInteractorIF, error) {
+			return usecase.RestoreThreeCardBragInteractor(data, new(presenter.ThreeCardBragWebPresenter))
+		},
+		controller.NewThreeCardBragWebControllerWithProvider)
 
 }
