@@ -780,4 +780,9 @@ func init() {
 			return usecase.NewTeenPattiInteractor(domain.NewDefaultTeenPatti(), new(presenter.TeenPattiWebPresenter))
 		},
 		controller.NewTeenPattiWebController)
+	BindWebControllerFor("scopone",
+		func() usecase.ScoponeInteractorIF {
+			return usecase.NewScoponeInteractor(domain.NewDefaultScopone(), new(presenter.ScoponeWebPresenter))
+		},
+		controller.NewScoponeWebController)
 }

@@ -2459,6 +2459,20 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"teenpatti.helpSetDifficulty"},
 			})
 	}},
+	{Name: "scopone", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewScoponeCuiController(usecase.NewScoponeInteractor(
+				domain.NewDefaultScopone(), new(presenter.ScoponeCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "scopone.helpTitle",
+				CommandKeys: []string{
+					"scopone.helpPlay",
+					"scopone.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"scopone.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

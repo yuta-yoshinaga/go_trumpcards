@@ -1,0 +1,58 @@
+{
+  "nav": {
+    "scopone": "Scopone"
+  },
+  "skeleton": {
+    "loading": "Loading..."
+  },
+  "phase": {
+    "play": "Playing",
+    "playerTurn": "Your Turn",
+    "roundEnd": "Round End",
+    "gameEnd": "Game Over",
+    "end": "Game Over"
+  },
+  "label": {
+    "tableCards": "Table",
+    "tableEmpty": "No table cards",
+    "teamScores": "Team Scores",
+    "team": "Team {{team}}",
+    "yourTeam": "Your Team",
+    "cpuStats": "Hand {{cards}} / Captured {{captured}} / Scopa {{scopa}}",
+    "humanStats": "Hand {{cards}} / Captured {{captured}} / Scopa {{scopa}}",
+    "teamScore": "Team {{team}}: {{score}} pt"
+  },
+  "button": {
+    "take": "Take",
+    "lay": "Lay",
+    "nextRound": "Next Round",
+    "reset": "Reset"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetScore": "Target Score"
+  },
+  "result": {
+    "win": "Win",
+    "lose": "Lose",
+    "draw": "Draw",
+    "scores": "Game over. Team {{winnerTeam}} wins ({{scores}})"
+  },
+  "roundDetail": {
+    "title": "Round Score Breakdown",
+    "cards": "Most cards",
+    "diamonds": "Most diamonds",
+    "sevens": "Most sevens",
+    "settebello": "Settebello (7♦)",
+    "scopas": "Scopa",
+    "gained": "Points gained"
+  },
+  "tutorial": {
+    "cpuArea": "Other players' team, hand count, and captures.",
+    "tableCards": "Table cards. Capture a single matching card or a subset summing to your hand card.",
+    "playerHand": "Your hand. Select a card to act.",
+    "actions": "Choose Take (with table cards selected) or Lay (with none selected).",
+    "resetButton": "Reset the game."
+  }
+}
