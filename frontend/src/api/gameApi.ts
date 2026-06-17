@@ -142,6 +142,7 @@ import type {
   TarneebResponse,
   TexasHoldemBonusResponse,
   ThirtyOneResponse,
+  ThreeCardBragResponse,
   ThreeCardResponse,
   TichuResponse,
   TienLenConfigInput,
@@ -202,6 +203,7 @@ const workerUrl: Record<string, string> = {
   badugi: WORKER_CASINO,
   deucetoseven: WORKER_CASINO,
   ecarte: WORKER_CASINO,
+  threecardbrag: WORKER_CASINO,
   calculation: WORKER_SOLO,
   hearts: WORKER_CLASSIC,
   spades: WORKER_CLASSIC,
@@ -2124,6 +2126,52 @@ export const ecarteApi = {
     }),
 };
 
+/** Configuration options for Three Card Brag game settings. */
+export interface ThreeCardBragConfigInput {
+  cpuDifficulty?: number;
+  ante?: number;
+  startingChips?: number;
+}
+
+/** Commands accepted by the Three Card Brag /threecardbrag/exec endpoint. */
+export type ThreeCardBragCommand =
+  | 'reset'
+  | 'see'
+  | 'bet'
+  | 'raise'
+  | 'fold'
+  | 'show'
+  | 'next'
+  | 'hint'
+  | 'log'
+  | 'config';
+
+/**
+ * API client for the Three Card Brag /threecardbrag/exec endpoint.
+ *
+ * Three Card Brag is a 4-player British vying game (poker ancestor) with chips
+ * and a pot. On the human's turn: `see` (reveal, Blind→Seen), `bet` (call the
+ * stake), `raise` (with `raiseStake`), `fold`, or `show` (when allowed). `next`
+ * advances to the following deal; `reset` / `config` apply the config.
+ *   - `raise` → `{ raiseStake: number }`
+ *   - `reset` / `config` → `{ config }`
+ *   - `see` / `bet` / `fold` / `show` / `next` / `hint` / `log` carry no extra fields.
+ */
+export const threeCardBragApi = {
+  exec: (
+    command: ThreeCardBragCommand,
+    opts?: {
+      raiseStake?: number;
+      config?: ThreeCardBragConfigInput;
+    },
+  ) =>
+    gameExec<ThreeCardBragResponse>('threecardbrag', {
+      command,
+      raiseStake: opts?.raiseStake,
+      config: opts?.config,
+    }),
+};
+
 /** Configuration options for Préférence game settings. */
 export interface PreferenceConfigInput {
   cpuDifficulty?: number;
@@ -3350,6 +3398,7 @@ const games = [
   'courtpiece',
   'bezique',
   'ecarte',
+  'threecardbrag',
 ] as const;
 type Game = (typeof games)[number];
 

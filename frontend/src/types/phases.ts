@@ -419,6 +419,14 @@ export const EcarteNegStep = {
   DEALER_DISCARD: 3,
 } as const;
 
+/** Three Card Brag phase constants (sync: internal/domain/ThreeCardBrag.go). */
+export const ThreeCardBragPhase = {
+  BETTING: 0,
+  SHOWDOWN: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Préférence phase constants (sync: internal/domain/Preference.go). */
 export const PreferencePhase = {
   BID: 0,

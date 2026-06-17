@@ -342,6 +342,11 @@ var registry = []*Game{
 	// exchange-negotiation phase (propose/accept/refuse/discard), King-of-trump
 	// and Vole bonuses, then 5 strict-follow tricks. Casino worker bucket.
 	{Name: "ecarte", Category: CategoryCasino},
+	// Three Card Brag (スリーカード・ブラグ) is a British 3-card vying/betting game
+	// (an ancestor of poker) for 4 players with Blind/Seen betting, ante/pot, and
+	// the ranking Prial > Running Flush > Run > Flush > Pair > High Card. Casino
+	// worker bucket.
+	{Name: "threecardbrag", Category: CategoryCasino},
 }
 
 // All returns a value-level copy of the registry in canonical order.

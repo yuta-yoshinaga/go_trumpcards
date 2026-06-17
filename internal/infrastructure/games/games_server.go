@@ -770,4 +770,9 @@ func init() {
 			return usecase.NewEcarteInteractor(domain.NewDefaultEcarte(), new(presenter.EcarteWebPresenter))
 		},
 		controller.NewEcarteWebController)
+	BindWebControllerFor("threecardbrag",
+		func() usecase.ThreeCardBragInteractorIF {
+			return usecase.NewThreeCardBragInteractor(domain.NewDefaultThreeCardBrag(), new(presenter.ThreeCardBragWebPresenter))
+		},
+		controller.NewThreeCardBragWebController)
 }

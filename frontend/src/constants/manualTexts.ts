@@ -136,6 +136,7 @@ import tarneeb from '../../../docs/manual/web/tarneeb.md?raw';
 import texasholdembonus from '../../../docs/manual/web/texasholdembonus.md?raw';
 import thirtyone from '../../../docs/manual/web/thirtyone.md?raw';
 import threecard from '../../../docs/manual/web/threecard.md?raw';
+import threecardbrag from '../../../docs/manual/web/threecardbrag.md?raw';
 import tichu from '../../../docs/manual/web/tichu.md?raw';
 import tienlen from '../../../docs/manual/web/tienlen.md?raw';
 import tonk from '../../../docs/manual/web/tonk.md?raw';
@@ -161,6 +162,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/belote': belote,
   '/bezique': bezique,
   '/ecarte': ecarte,
+  '/threecardbrag': threecardbrag,
   '/bridge': bridge,
   '/burraco': burraco,
   '/calculation': calculation,

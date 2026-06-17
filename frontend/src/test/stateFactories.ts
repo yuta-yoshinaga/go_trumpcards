@@ -20,6 +20,7 @@ import type {
   SpadesResponse,
   SpoilFiveResponse,
   SuecaResponse,
+  ThreeCardBragResponse,
   TressetteResponse,
   TuteResponse,
   TwentyNineResponse,
@@ -1279,6 +1280,57 @@ const baseEcarteState: EcarteResponse = {
  */
 export function makeEcarteState(overrides?: Partial<EcarteResponse>): EcarteResponse {
   return { ...baseEcarteState, ...overrides };
+}
+
+/** Base Three Card Brag state used as the default for {@link makeThreeCardBragState}. A 4-player British vying game; defaults to a human Betting turn (phase 0). */
+const baseThreeCardBragState: ThreeCardBragResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      chips: 100,
+      seen: false,
+      folded: false,
+      out: false,
+      roundBet: 1,
+      cardCount: 3,
+      cards: [
+        { design: 'SPADE' as const, value: 13 },
+        { design: 'SPADE' as const, value: 12 },
+        { design: 'SPADE' as const, value: 11 },
+      ],
+    },
+    { id: 1, isHuman: false, chips: 100, seen: false, folded: false, out: false, roundBet: 1, cardCount: 3, cards: [] },
+    { id: 2, isHuman: false, chips: 100, seen: false, folded: false, out: false, roundBet: 1, cardCount: 3, cards: [] },
+    { id: 3, isHuman: false, chips: 100, seen: false, folded: false, out: false, roundBet: 1, cardCount: 3, cards: [] },
+  ],
+  pot: 4,
+  stake: 1,
+  phase: 0,
+  roundNumber: 1,
+  dealerIdx: 3,
+  currentPlayerIdx: 0,
+  roundWinnerIdx: -1,
+  matchWinnerIdx: -1,
+  isShowdown: false,
+  canShow: false,
+  gameEndFlag: false,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, ante: 1, startingChips: 100 },
+};
+
+/**
+ * Creates a {@link ThreeCardBragResponse} with sensible defaults (a human
+ * Betting turn, phase 0). Any field can be overridden via the `overrides`
+ * parameter.
+ *
+ * @param overrides - Partial ThreeCardBragResponse fields to override.
+ * @returns A complete ThreeCardBragResponse suitable for use in tests.
+ */
+export function makeThreeCardBragState(overrides?: Partial<ThreeCardBragResponse>): ThreeCardBragResponse {
+  return { ...baseThreeCardBragState, ...overrides };
 }
 
 /** Base Préférence state used as the default for {@link makePreferenceState}. A 3-player Russian bidding trick-taker; defaults to a human Bid turn. */

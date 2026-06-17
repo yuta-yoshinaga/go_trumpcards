@@ -112,6 +112,7 @@ import type {
   TarneebResponse,
   TexasHoldemBonusResponse,
   ThirtyOneResponse,
+  ThreeCardBragResponse,
   ThreeCardResponse,
   TichuResponse,
   TienLenResponse,
@@ -247,6 +248,7 @@ import { getSuecaHint } from '../utils/hints/suecaHint';
 import { getTarneebHint } from '../utils/hints/tarneebHint';
 import { getTexasHoldemBonusHint } from '../utils/hints/texasHoldemBonusHint';
 import { getThirtyOneHint } from '../utils/hints/thirtyoneHint';
+import { getThreeCardBragHint } from '../utils/hints/threeCardBragHint';
 import { getThreeCardHint } from '../utils/hints/threecardHint';
 import { getTichuHint } from '../utils/hints/tichuHint';
 import { getTienLenHint } from '../utils/hints/tienlenHint';
@@ -415,6 +417,7 @@ const hintFactories = {
   courtpiece: (s) => getCourtPieceHint(s as CourtPieceResponse),
   bezique: (s) => getBeziqueHint(s as BeziqueResponse),
   ecarte: (s) => getEcarteHint(s as EcarteResponse),
+  threecardbrag: (s) => getThreeCardBragHint(s as ThreeCardBragResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

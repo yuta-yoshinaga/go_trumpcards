@@ -137,6 +137,7 @@ import tarneeb from '../../../docs/manual/cui/tarneeb.md?raw';
 import texasholdembonus from '../../../docs/manual/cui/texasholdembonus.md?raw';
 import thirtyone from '../../../docs/manual/cui/thirtyone.md?raw';
 import threecard from '../../../docs/manual/cui/threecard.md?raw';
+import threecardbrag from '../../../docs/manual/cui/threecardbrag.md?raw';
 import tichu from '../../../docs/manual/cui/tichu.md?raw';
 import tienlen from '../../../docs/manual/cui/tienlen.md?raw';
 import tonk from '../../../docs/manual/cui/tonk.md?raw';
@@ -267,6 +268,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/spiderette': spiderette,
   '/thirtyone': thirtyone,
   '/threecard': threecard,
+  '/threecardbrag': threecardbrag,
   '/tonk': tonk,
   '/tripeaks': tripeaks,
   '/twotenjack': twotenjack,

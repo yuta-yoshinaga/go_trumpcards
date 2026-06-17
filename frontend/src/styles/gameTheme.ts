@@ -71,6 +71,7 @@ export type GameKey =
   | 'courtpiece'
   | 'bezique'
   | 'ecarte'
+  | 'threecardbrag'
   | 'pitch'
   | 'twotenjack'
   | 'ohhell'
@@ -259,6 +260,10 @@ const ECARTE = {
   bg: 'bg-game-bg-ecarte',
   footer: 'bg-game-bg-ecarte-dark border-white/20',
 } as const;
+const THREECARDBRAG = {
+  bg: 'bg-game-bg-threecardbrag',
+  footer: 'bg-game-bg-threecardbrag-dark border-white/20',
+} as const;
 
 export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Table games
@@ -323,6 +328,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   courtpiece: COURTPIECE,
   bezique: BEZIQUE,
   ecarte: ECARTE,
+  threecardbrag: THREECARDBRAG,
   pitch: BLUE,
   twotenjack: BLUE,
   ohhell: BLUE,
