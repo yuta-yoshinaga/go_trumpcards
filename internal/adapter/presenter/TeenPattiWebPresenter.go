@@ -10,21 +10,22 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
-// teenPattiCategoryLabel は役カテゴリ定数を i18n キーに変換する (Brag と共有)。
+// teenPattiCategoryLabel は役カテゴリ定数を短い役名キーに変換する。フロントエンドは
+// この値を `hand.<key>` として i18n 参照する (locales/{ja,en}/teenpatti.json の hand.* に対応)。
 func teenPattiCategoryLabel(category int) string {
 	switch category {
 	case domain.ThreeCardBragPrial:
-		return "teenpatti.handPrial"
+		return "trail"
 	case domain.ThreeCardBragRunningFlush:
-		return "teenpatti.handRunningFlush"
+		return "puresequence"
 	case domain.ThreeCardBragRun:
-		return "teenpatti.handRun"
+		return "sequence"
 	case domain.ThreeCardBragFlush:
-		return "teenpatti.handFlush"
+		return "color"
 	case domain.ThreeCardBragPair:
-		return "teenpatti.handPair"
+		return "pair"
 	case domain.ThreeCardBragHighCard:
-		return "teenpatti.handHighCard"
+		return "highcard"
 	default:
 		return ""
 	}

@@ -214,6 +214,21 @@ func TestTeenPatti_FullCpuGame(t *testing.T) {
 	assert.Equal(t, g.GetConfig().StartingChips*domain.TeenPattiPlayerCnt, total)
 }
 
+func TestTeenPatti_StartDealEndsWhenTooFewCanAnte(t *testing.T) {
+	g := newTestTeenPatti(false)
+	g.Reset()
+	// Only seat 0 can afford the next ante -> the new deal must end the match,
+	// not start a one-player betting loop.
+	g.SetPhase(domain.TeenPattiPhaseRoundEnd)
+	g.GetPlayer(1).SetChips(0)
+	g.GetPlayer(2).SetChips(0)
+	g.GetPlayer(3).SetChips(0)
+	g.NextRound()
+	assert.True(t, g.GetGameEndFlag())
+	assert.Equal(t, domain.TeenPattiPhaseGameEnd, g.GetPhase())
+	assert.Equal(t, 0, g.GetMatchWinnerIdx())
+}
+
 func TestTeenPatti_JSONRoundTrip(t *testing.T) {
 	g := newTestTeenPatti(true)
 	g.Reset()

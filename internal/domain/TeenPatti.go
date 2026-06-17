@@ -137,6 +137,14 @@ func (g *TeenPatti) startDeal() {
 			p.SetOut(true)
 		}
 	}
+	// アンティを払えるプレイヤーが 1 人以下なら試合終了 (1 人だけのベッティングループを防ぐ)。
+	if g.aliveCount() <= 1 {
+		g.gameEndFlag = true
+		g.phase = TeenPattiPhaseGameEnd
+		g.matchWinnerIdx = g.firstAlive()
+		g.appendLog(g.matchWinnerIdx, "game_end", fmt.Sprintf("%s wins the match", g.playerName(g.matchWinnerIdx)), nil)
+		return
+	}
 	g.trumpCards.Replenish()
 	g.trumpCards.Shuffle()
 	// アンティ徴収 + 配札。

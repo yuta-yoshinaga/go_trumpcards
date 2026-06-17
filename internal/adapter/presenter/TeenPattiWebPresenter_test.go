@@ -115,7 +115,7 @@ func TestTeenPattiWebPresenter_Output(t *testing.T) {
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 		assert.Equal(t, "teenpatti.showdownPhase", resObj.MessageCode)
 		assert.Len(t, resObj.Players[1].Cards, 3)
-		assert.Equal(t, "teenpatti.handPrial", resObj.Players[1].HandName)
+		assert.Equal(t, "trail", resObj.Players[1].HandName)
 		assert.Len(t, resObj.Players[2].Cards, 0)
 	})
 
