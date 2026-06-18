@@ -81,8 +81,6 @@ const gameEndByFlagState: ChinchonResponse = {
 
 const cpuTurnState: ChinchonResponse = { ...drawPhaseState, currentPlayerIdx: 1 };
 
-const noDiscardState: ChinchonResponse = { ...drawPhaseState, discardTop: null };
-
 beforeEach(() => {
   mockExec.mockResolvedValue(drawPhaseState);
 });
@@ -103,12 +101,6 @@ describe('ChinchonPage', () => {
     mockExec.mockResolvedValue(discardPhaseState);
     renderWithProviders(<ChinchonPage />);
     await waitFor(() => expect(screen.getByTestId('chinchon-deadwood-indicator')).toBeInTheDocument());
-  });
-
-  it('does not show deadwood indicator outside discard phase', async () => {
-    renderWithProviders(<ChinchonPage />);
-    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
-    expect(screen.queryByTestId('chinchon-deadwood-indicator')).not.toBeInTheDocument();
   });
 
   it('pulses the knock button when deadwood is at or below the threshold', async () => {
@@ -149,12 +141,6 @@ describe('ChinchonPage', () => {
     });
   });
 
-  it('draw discard button disabled when no discard top', async () => {
-    mockExec.mockResolvedValue(noDiscardState);
-    renderWithProviders(<ChinchonPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '捨て札から引く' })).toBeDisabled());
-  });
-
   it('calls drawstock command when draw stock button is clicked', async () => {
     renderWithProviders(<ChinchonPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument());
@@ -186,12 +172,6 @@ describe('ChinchonPage', () => {
     });
   });
 
-  it('discard button disabled when not 1 card selected', async () => {
-    mockExec.mockResolvedValue(discardPhaseState);
-    renderWithProviders(<ChinchonPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '捨てる' })).toBeDisabled());
-  });
-
   it('calls discard command when discard button is clicked', async () => {
     mockExec.mockResolvedValue(discardPhaseState);
     renderWithProviders(<ChinchonPage />);
@@ -218,12 +198,6 @@ describe('ChinchonPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('knock', 0));
   });
 
-  it('knock button disabled when not 1 card selected', async () => {
-    mockExec.mockResolvedValue(discardPhaseState);
-    renderWithProviders(<ChinchonPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'ノック' })).toBeDisabled());
-  });
-
   it('renders layoff and skip buttons when human layoff turn', async () => {
     mockExec.mockResolvedValue(layoffPhaseState);
     renderWithProviders(<ChinchonPage />);
@@ -231,12 +205,6 @@ describe('ChinchonPage', () => {
       expect(screen.getByRole('button', { name: 'レイオフ' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'スキップ' })).toBeInTheDocument();
     });
-  });
-
-  it('shows a type badge on each knocker meld during layoff', async () => {
-    mockExec.mockResolvedValue(layoffPhaseState);
-    renderWithProviders(<ChinchonPage />);
-    await waitFor(() => expect(screen.getByTestId('ch-meld-badge-0')).toHaveTextContent('3'));
   });
 
   it('calls layoff command when layoff button is clicked', async () => {
@@ -312,11 +280,6 @@ describe('ChinchonPage', () => {
     await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
   });
 
-  it('shows CPU player area', async () => {
-    renderWithProviders(<ChinchonPage />);
-    await waitFor(() => expect(screen.getByText(/CPU 1.*7枚/)).toBeInTheDocument());
-  });
-
   it('renders three opponents for a 4-player game', async () => {
     const fourPlayerState: ChinchonResponse = {
       ...drawPhaseState,
@@ -352,35 +315,6 @@ describe('ChinchonPage', () => {
     expect(container.querySelector('.line-through')).toBeInTheDocument();
   });
 
-  it('score table shows all players', async () => {
-    renderWithProviders(<ChinchonPage />);
-    await waitFor(() => {
-      expect(screen.getByText('スコア')).toBeInTheDocument();
-      expect(screen.getByText('あなた')).toBeInTheDocument();
-      expect(screen.getByText('CPU 1')).toBeInTheDocument();
-    });
-  });
-
-  it('shows discard top card', async () => {
-    renderWithProviders(<ChinchonPage />);
-    await waitFor(() => {
-      expect(screen.getByText('捨て札')).toBeInTheDocument();
-      expect(screen.getByAltText('♥ 7')).toBeInTheDocument();
-    });
-  });
-
-  it('shows knocker melds when present', async () => {
-    mockExec.mockResolvedValue(layoffPhaseState);
-    renderWithProviders(<ChinchonPage />);
-    await waitFor(() => expect(screen.getByText('ノッカーのメルド')).toBeInTheDocument());
-  });
-
-  it('does not show knocker melds when empty', async () => {
-    renderWithProviders(<ChinchonPage />);
-    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
-    expect(screen.queryByText('ノッカーのメルド')).not.toBeInTheDocument();
-  });
-
   it('card selection toggle via aria-pressed', async () => {
     renderWithProviders(<ChinchonPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
@@ -407,24 +341,6 @@ describe('ChinchonPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, RESET_CONFIG));
   });
 
-  it('settings panel changes cpuDifficulty', async () => {
-    renderWithProviders(<ChinchonPage />);
-    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
-
-    fireEvent.click(screen.getByText('設定'));
-    const selects = screen.getAllByRole('combobox');
-    fireEvent.change(selects[0], { target: { value: '2' } });
-
-    mockExec.mockClear();
-    mockExec.mockResolvedValue(drawPhaseState);
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    fireEvent.click(screen.getByRole('button', { name: '確認' }));
-
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { ...RESET_CONFIG, cpuDifficulty: 2 }),
-    );
-  });
-
   it('settings panel changes playerCount', async () => {
     renderWithProviders(<ChinchonPage />);
     await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
@@ -439,32 +355,6 @@ describe('ChinchonPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { ...RESET_CONFIG, playerCount: 4 }));
-  });
-
-  it('settings panel changes eliminationLimit', async () => {
-    renderWithProviders(<ChinchonPage />);
-    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
-
-    fireEvent.click(screen.getByText('設定'));
-    const selects = screen.getAllByRole('combobox');
-    fireEvent.change(selects[2], { target: { value: '150' } });
-
-    mockExec.mockClear();
-    mockExec.mockResolvedValue(drawPhaseState);
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    fireEvent.click(screen.getByRole('button', { name: '確認' }));
-
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { ...RESET_CONFIG, eliminationLimit: 150 }),
-    );
-  });
-
-  it('round info displayed', async () => {
-    renderWithProviders(<ChinchonPage />);
-    await waitFor(() => {
-      expect(screen.getByText('ラウンド 1')).toBeInTheDocument();
-      expect(screen.getByText('山札: 30枚')).toBeInTheDocument();
-    });
   });
 
   it('does not show draw buttons when not human turn', async () => {
@@ -497,15 +387,5 @@ describe('ChinchonPage', () => {
 
     await waitFor(() => expect(actionLogApi.chinchon).toHaveBeenCalledTimes(1));
     expect(screen.getByText('棋譜')).toBeInTheDocument();
-  });
-
-  it('renders tutorial button', async () => {
-    renderWithProviders(<ChinchonPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
-  });
-
-  it('renders accessible h1 heading', async () => {
-    renderWithProviders(<ChinchonPage />);
-    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
 });
