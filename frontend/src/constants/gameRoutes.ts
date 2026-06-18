@@ -582,6 +582,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [3, 4, 4, 5], skill: [1, 2, 4, 3], social: [1, 4, 5, 3, 5], theme: [2, 4, 1, 5, 2, 2] },
       },
       {
+        path: '/spoons',
+        labelKey: 'nav.spoons',
+        icon: '🥄',
+        page: 'Spoons',
+        profile: { mood: [5, 5, 2, 4], skill: [4, 3, 1, 2], social: [1, 5, 5, 2, 5], theme: [3, 2, 1, 2, 5, 2] },
+      },
+      {
         path: '/piquet',
         labelKey: 'nav.piquet',
         icon: '🎴',

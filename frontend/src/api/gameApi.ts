@@ -145,6 +145,7 @@ import type {
   SpiteAndMaliceMoveZone,
   SpiteAndMaliceResponse,
   SpoilFiveResponse,
+  SpoonsResponse,
   SuecaResponse,
   TarneebResponse,
   TeenPattiResponse,
@@ -214,6 +215,7 @@ const workerUrl: Record<string, string> = {
   ecarte: WORKER_CASINO,
   threecardbrag: WORKER_CASINO,
   teenpatti: WORKER_CASINO,
+  spoons: WORKER_CASINO,
   calculation: WORKER_SOLO,
   hearts: WORKER_CLASSIC,
   spades: WORKER_CLASSIC,
@@ -2334,6 +2336,42 @@ export const teenPattiApi = {
     }),
 };
 
+/** Configuration options for Spoons game settings. */
+export interface SpoonsConfigInput {
+  cpuDifficulty?: number;
+}
+
+/** Commands accepted by the Spoons /spoons/exec endpoint. */
+export type SpoonsCommand = 'reset' | 'pass' | 'grab' | 'next' | 'log';
+
+/**
+ * API client for the Spoons /spoons/exec endpoint.
+ *
+ * Spoons is a 4-player pass-and-grab speed game. On the Pass phase the human
+ * picks one of their four cards to pass to the next player (`pass` →
+ * `{ cardIndex }`). When someone collects four of a kind the Grab window opens;
+ * everyone races to `grab` a spoon — the one who misses out gains a letter
+ * (S-P-O-O-N-S). `next` advances to the following round; `reset` applies the
+ * config (CPU difficulty); `log` fetches the action log.
+ *   - `pass` → `{ cardIndex: number }`
+ *   - `reset` → `{ config }`
+ *   - `grab` / `next` / `log` carry no extra fields.
+ */
+export const spoonsApi = {
+  exec: (
+    command: SpoonsCommand,
+    opts?: {
+      cardIndex?: number;
+      config?: SpoonsConfigInput;
+    },
+  ) =>
+    gameExec<SpoonsResponse>('spoons', {
+      command,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
 /** Configuration options for Préférence game settings. */
 export interface PreferenceConfigInput {
   cpuDifficulty?: number;
@@ -3658,6 +3696,7 @@ const games = [
   'ecarte',
   'threecardbrag',
   'teenpatti',
+  'spoons',
 ] as const;
 type Game = (typeof games)[number];
 

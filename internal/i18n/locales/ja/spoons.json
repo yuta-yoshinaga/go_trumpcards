@@ -1,0 +1,25 @@
+{
+  "helpTitle": "Spoons (スプーン)",
+  "helpPass": "  p <n>, pass <n>      手札 n 番を次のプレイヤーへ渡す",
+  "helpGrab": "  g, grab              スプーンを掴む",
+  "helpNext": "  n, next              次のラウンドへ進む",
+  "helpSetDifficulty": "  sd <n>               CPU難易度 (0=Easy, 1=Normal, 2=Hard) を設定してリセット",
+  "labelHuman": "あなた",
+  "labelCpu": "CPU",
+  "roundLine": "ラウンド{{round}}  残りスプーン: {{spoons}}本",
+  "lettersLabel": "[{{letters}}]",
+  "hasSpoon": "スプーン獲得",
+  "playerEliminated": "{{name}}: 脱落 (SPOONS)",
+  "cpuHandLine": "{{name}}: 手札{{count}}枚",
+  "promptPass": "あなたの番です。p <n> で渡す札を選んでください",
+  "promptCpuTurn": "CPU がカードを回しています...",
+  "promptGrab": "誰かがフォーカードを揃えました！ g (grab) でスプーンを掴んでください！",
+  "promptNextRound": "ラウンド終了。n (next) で次のラウンドへ進みます",
+  "roundLoser": "{{name}} はスプーンを取れず、文字を1つ取りました",
+  "winHuman": "あなたの勝ちです！",
+  "winCpu": "{{name}} の勝ちです...",
+  "result": {
+    "humanWin": "あなたの勝ちです！",
+    "cpuWin": "CPUの勝ちです..."
+  }
+}

@@ -102,6 +102,9 @@
   /* Teen Patti — a warm Indian saffron-spiced maroon felt, distinct from Three Card Brag's slate-teal. */
   --color-game-bg-teenpatti: #5a2333;
   --color-game-bg-teenpatti-dark: #3a141f;
+  /* Spoons — a lively party-table indigo-violet, distinct from the casino felts; evokes the fast hand-grab energy. */
+  --color-game-bg-spoons: #3a2e63;
+  --color-game-bg-spoons-dark: #241b40;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;

@@ -2614,6 +2614,20 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "spoons", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSpoonsCuiController(usecase.NewSpoonsInteractor(
+				domain.NewDefaultSpoons(), new(presenter.SpoonsCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "spoons.helpTitle",
+				CommandKeys: []string{
+					"spoons.helpPass",
+					"spoons.helpGrab",
+					"spoons.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

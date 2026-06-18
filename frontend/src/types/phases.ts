@@ -436,6 +436,14 @@ export const TeenPattiPhase = {
   GAME_END: 4,
 } as const;
 
+/** Spoons phase constants (sync: internal/domain/Spoons.go). */
+export const SpoonsPhase = {
+  PASS: 0,
+  GRAB: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Préférence phase constants (sync: internal/domain/Preference.go). */
 export const PreferencePhase = {
   BID: 0,

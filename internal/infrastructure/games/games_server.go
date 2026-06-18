@@ -820,4 +820,9 @@ func init() {
 			return usecase.NewMaoInteractor(domain.NewDefaultMao(), new(presenter.MaoWebPresenter))
 		},
 		controller.NewMaoWebController)
+	BindWebControllerFor("spoons",
+		func() usecase.SpoonsInteractorIF {
+			return usecase.NewSpoonsInteractor(domain.NewDefaultSpoons(), new(presenter.SpoonsWebPresenter))
+		},
+		controller.NewSpoonsWebController)
 }
