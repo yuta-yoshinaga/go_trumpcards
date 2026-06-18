@@ -517,22 +517,72 @@ func TestKalooki_StockRecycle(t *testing.T) {
 }
 
 func TestKalooki_CpuPlay_FullGameTerminates(t *testing.T) {
-	g := NewDefaultKalooki()
-	g.Reset()
-	// Make all players CPU to force a fully automatic game.
-	for i := 0; i < g.GetPlayerCnt(); i++ {
-		g.GetPlayer(i).GamePlayer = NewGamePlayer(false)
-	}
-	for iter := 0; iter < 200000; iter++ {
-		phase := g.GetPhase()
-		if g.GetGameEndFlag() || phase == KalookiPhaseRoundEnd || phase == KalookiPhaseGameEnd {
-			break
+	// Run fully-automatic games across every difficulty and player count so the
+	// CPU draw/meld/layoff/discard strategy branches are exercised. NextRound is
+	// driven on RoundEnd so the game reaches GameEnd (finalize) via CPU play.
+	for _, diff := range []KalookiCpuDifficulty{KalookiCpuDifficultyEasy, KalookiCpuDifficultyNormal, KalookiCpuDifficultyHard} {
+		for pc := 2; pc <= 4; pc++ {
+			players := make([]*KalookiPlayer, pc)
+			for i := range players {
+				players[i] = NewKalookiPlayer(false) // all CPU
+			}
+			cfg := DefaultKalookiConfig()
+			cfg.CpuDifficulty = diff
+			cfg.PlayerCount = pc
+			g := NewKalooki(NewTrumpCardsWithDecks(2, 2), players, cfg)
+			g.Reset()
+			ended := false
+			for iter := 0; iter < 200000; iter++ {
+				if g.GetGameEndFlag() {
+					ended = true
+					break
+				}
+				if g.GetPhase() == KalookiPhaseRoundEnd {
+					g.NextRound()
+					continue
+				}
+				g.CpuPlay()
+			}
+			if !ended {
+				t.Errorf("diff=%d pc=%d: full-CPU game did not terminate", diff, pc)
+			}
+			if g.GetPhase() != KalookiPhaseGameEnd {
+				t.Errorf("diff=%d pc=%d: phase = %d, want GameEnd", diff, pc, g.GetPhase())
+			}
 		}
-		g.CpuPlay()
 	}
-	phase := g.GetPhase()
-	if phase != KalookiPhaseRoundEnd && phase != KalookiPhaseGameEnd {
-		t.Errorf("full-CPU game did not terminate, phase = %d", phase)
+}
+
+func TestKalooki_RunValidation(t *testing.T) {
+	run := func(vals ...*Card) bool { return kalookiIsRun(vals) }
+	// Valid same-suit run.
+	if !run(klCard(CardDesignSpade, 4), klCard(CardDesignSpade, 5), klCard(CardDesignSpade, 6)) {
+		t.Error("4-5-6 of spades should be a run")
+	}
+	// Joker fills a gap.
+	if !run(klCard(CardDesignSpade, 4), klJoker(), klCard(CardDesignSpade, 6)) {
+		t.Error("4-joker-6 should be a run")
+	}
+	// Mixed suits not a run.
+	if run(klCard(CardDesignSpade, 4), klCard(CardDesignHeart, 5), klCard(CardDesignSpade, 6)) {
+		t.Error("mixed-suit must not be a run")
+	}
+	// All jokers not a run.
+	if run(klJoker(), klJoker(), klJoker()) {
+		t.Error("all-joker must not be a run")
+	}
+	// Duplicate ranks not a run.
+	if run(klCard(CardDesignSpade, 4), klCard(CardDesignSpade, 4), klCard(CardDesignSpade, 5)) {
+		t.Error("duplicate rank must not be a run")
+	}
+	// Run capped at 13 cards: 12 naturals + 2 jokers = 14 must be rejected.
+	long := make([]*Card, 0, 14)
+	for v := 1; v <= 12; v++ {
+		long = append(long, klCard(CardDesignSpade, v))
+	}
+	long = append(long, klJoker(), klJoker())
+	if kalookiIsRun(long) {
+		t.Error("a 14-card run must be rejected (max 13)")
 	}
 }
 
