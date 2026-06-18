@@ -458,4 +458,13 @@ func init() {
 		},
 		controller.NewKalookiWebControllerWithProvider)
 
+	games.RegisterKVGame("threethirteen", games.CategorySolo,
+		func() usecase.ThreeThirteenInteractorIF {
+			return usecase.NewThreeThirteenInteractor(domain.NewDefaultThreeThirteen(), new(presenter.ThreeThirteenWebPresenter))
+		},
+		func(data []byte) (usecase.ThreeThirteenInteractorIF, error) {
+			return usecase.RestoreThreeThirteenInteractor(data, new(presenter.ThreeThirteenWebPresenter))
+		},
+		controller.NewThreeThirteenWebControllerWithProvider)
+
 }

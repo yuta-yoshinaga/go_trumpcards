@@ -567,6 +567,14 @@ export const ChinchonPhase = {
   GAME_END: 4,
 } as const;
 
+/** Three Thirteen phase constants (sync: internal/domain/ThreeThirteen.go). */
+export const ThreeThirteenPhase = {
+  DRAW: 0,
+  DISCARD: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Tonk phase constants (sync: internal/domain/Tonk.go). */
 export const TonkPhase = {
   DRAW: 0,

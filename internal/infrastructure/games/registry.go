@@ -381,6 +381,11 @@ var registry = []*Game{
 	// requirement); jokers are wild and a meld containing one scores 1.5×. Solo
 	// worker bucket — it reuses the Contract Rummy meld/layoff structure.
 	{Name: "kalooki", Category: CategorySolo},
+	// Three Thirteen: American progressive rummy, 2–4 players, two 52-card decks
+	// (104 cards). Eleven rounds deal 3..13 cards; the rank equal to the deal
+	// count is wild that round. Lowest cumulative deadwood after round 11 wins.
+	// Solo worker bucket — it reuses the Gin Rummy meld/deadwood approach.
+	{Name: "threethirteen", Category: CategorySolo},
 }
 
 // All returns a value-level copy of the registry in canonical order.

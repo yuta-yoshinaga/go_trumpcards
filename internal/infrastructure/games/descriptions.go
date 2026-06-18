@@ -169,6 +169,7 @@ var gameDescriptions = map[string]string{
 	"conquian":            "Conquian (コンキャン)",
 	"chinchon":            "Chinchón (チンチョン)",
 	"kalooki":             "Kalooki (カルーキ)",
+	"threethirteen":       "Three Thirteen (スリー・サーティーン)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

@@ -810,4 +810,9 @@ func init() {
 			return usecase.NewKalookiInteractor(domain.NewDefaultKalooki(), new(presenter.KalookiWebPresenter))
 		},
 		controller.NewKalookiWebController)
+	BindWebControllerFor("threethirteen",
+		func() usecase.ThreeThirteenInteractorIF {
+			return usecase.NewThreeThirteenInteractor(domain.NewDefaultThreeThirteen(), new(presenter.ThreeThirteenWebPresenter))
+		},
+		controller.NewThreeThirteenWebController)
 }

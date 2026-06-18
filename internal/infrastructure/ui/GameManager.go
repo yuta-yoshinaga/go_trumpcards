@@ -2572,6 +2572,26 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "threethirteen", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewThreeThirteenCuiController(usecase.NewThreeThirteenInteractor(
+				domain.NewDefaultThreeThirteen(), new(presenter.ThreeThirteenCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "threethirteen.helpTitle",
+				CommandKeys: []string{
+					"threethirteen.helpDrawStock",
+					"threethirteen.helpDrawDiscard",
+					"threethirteen.helpDiscard",
+					"threethirteen.helpKnock",
+					"threethirteen.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys: []string{
+					"threethirteen.helpSetDifficulty",
+					"threethirteen.helpSetPlayers",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

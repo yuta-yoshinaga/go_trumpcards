@@ -66,6 +66,8 @@ tags:
     description: Conquian (コンキャン) game
   - name: chinchon
     description: Chinchon (チンチョン) game
+  - name: threethirteen
+    description: Three Thirteen (スリー・サーティーン) game
   - name: sevenbridge
     description: Seven Bridge (セブンブリッジ) game
   - name: president
@@ -2538,6 +2540,91 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChinchonResponse'
+
+  /threethirteen/exec:
+    post:
+      tags:
+        - threethirteen
+      summary: Execute a Three Thirteen game command
+      description: |
+        Send a command to advance the Three Thirteen (スリー・サーティーン) game
+        session identified by `sessionId`. Three Thirteen is a draw-and-discard
+        knock Rummy played by 2 to 4 players over 11 rounds with two standard
+        52-card decks (104 cards). In round R (1 to 11) each player is dealt
+        R+2 cards, and rank R+2 is wild for that round. Draw from the stock or
+        discard, then discard one card; if your remaining hand fully melds
+        (deadwood 0) you may discard and knock. Melds are sets (3+ same rank)
+        and runs (3+ consecutive same suit); the round's wild rank substitutes
+        for any card. After a knock the other players take one final turn, then
+        deadwood is scored and added to each player's cumulative total. After
+        round 11 the lowest cumulative score wins.
+
+        The game proceeds through these phases:
+
+        | Phase        | Value | Description |
+        |--------------|-------|-------------|
+        | Draw         | `0`   | Draw a card from stock or discard pile |
+        | Discard      | `1`   | Discard a card or knock |
+        | RoundEnd     | `2`   | Round scored; advance with `nextround` |
+        | GameEnd      | `3`   | Round 11 complete; lowest score wins |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `drawstock`    | `ds`    | Draw a card from the stock pile |
+        | `drawdiscard`  | `dd`    | Draw the top card from the discard pile |
+        | `discard`      | `d`     | Discard a card (requires `cardIndex`) |
+        | `knock`        | `k`     | Discard a card and knock (requires `cardIndex`) |
+        | `nextround`    | `nr`    | Score the round and start the next |
+        | `log`          | `l`     | View action log |
+      operationId: threeThirteenExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ThreeThirteenRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              drawstock:
+                summary: Draw from stock pile
+                value:
+                  command: drawstock
+                  sessionId: my-session-001
+              drawdiscard:
+                summary: Draw from discard pile
+                value:
+                  command: drawdiscard
+                  sessionId: my-session-001
+              discard:
+                summary: Discard card at index 2
+                value:
+                  command: discard
+                  cardIndex: 2
+                  sessionId: my-session-001
+              knock:
+                summary: Knock (discard card at index 2)
+                value:
+                  command: knock
+                  cardIndex: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThreeThirteenResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThreeThirteenResponse'
 
   /conquian/exec:
     post:
@@ -20673,6 +20760,119 @@ components:
             knockThreshold:
               type: integer
             eliminationLimit:
+              type: integer
+        message:
+          type: string
+          description: Game status message
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    ThreeThirteenRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `drawstock` (`ds`),
+            `drawdiscard` (`dd`), `discard` (`d`), `knock` (`k`),
+            `nextround` (`nr`), `log` (`l`).
+          enum: [reset, r, drawstock, ds, drawdiscard, dd, discard, d, knock, k, nextround, nr, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Index of the card to discard or knock with.  Required for `discard` and `knock` commands.
+          example: 2
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            playerCount:
+              type: integer
+              minimum: 2
+              maximum: 4
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    ThreeThirteenResponse:
+      type: object
+      description: Current state of the Three Thirteen game
+      properties:
+        players:
+          type: array
+          description: Array of player objects
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              deadwood:
+                type: integer
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+        phase:
+          type: integer
+          description: "Game phase: 0 = Draw, 1 = Discard, 2 = RoundEnd, 3 = GameEnd"
+          enum: [0, 1, 2, 3]
+          example: 0
+        round:
+          type: integer
+          description: Current round number (1 to 11)
+        wildRank:
+          type: integer
+          description: The wild card rank for the current round
+        dealCount:
+          type: integer
+          description: Number of cards dealt to each player this round
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        knockerIdx:
+          type: integer
+          description: Index of the player who knocked (-1 if not applicable)
+        discardTop:
+          description: The top card of the discard pile
+          $ref: '#/components/schemas/Card'
+        drawPileCount:
+          type: integer
+          description: Number of cards remaining in the stock pile
+        gameEndFlag:
+          type: boolean
+          description: Whether the match has ended
+        winnerIdx:
+          type: integer
+          description: Index of the match winner (-1 if not ended)
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            playerCount:
               type: integer
         message:
           type: string
