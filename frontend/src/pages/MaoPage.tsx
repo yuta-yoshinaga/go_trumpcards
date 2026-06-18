@@ -135,8 +135,8 @@ function MaoPageContent() {
   const { handleCommand } = useCliGame(gameExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const isPlayPhaseForKbd = state?.phase === MaoPhase.PLAY;
-  const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
-  const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
+  const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players?.[state.currentPlayerIdx]?.isHuman === true;
+  const humanCardCountForKbd = state?.players?.find((p) => p.isHuman)?.cards?.length ?? 0;
 
   const confirmAction = useCallback(() => {
     handlePlay();
