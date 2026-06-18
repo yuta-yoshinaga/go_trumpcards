@@ -32,6 +32,7 @@ import caribbeanstud from '../../../docs/manual/cui/caribbeanstud.md?raw';
 import casinoholdem from '../../../docs/manual/cui/casinoholdem.md?raw';
 import casinowar from '../../../docs/manual/cui/casinowar.md?raw';
 import cassino from '../../../docs/manual/cui/cassino.md?raw';
+import chinchon from '../../../docs/manual/cui/chinchon.md?raw';
 import chinesepoker from '../../../docs/manual/cui/chinesepoker.md?raw';
 import clocksolitaire from '../../../docs/manual/cui/clocksolitaire.md?raw';
 import conquian from '../../../docs/manual/cui/conquian.md?raw';
@@ -210,6 +211,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/seahaventowers': seahaventowers,
   '/ginrummy': ginrummy,
   '/conquian': conquian,
+  '/chinchon': chinchon,
   '/rummy500': rummy500,
   '/gofish': gofish,
   '/golf': golf,

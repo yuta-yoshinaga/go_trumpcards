@@ -1,0 +1,146 @@
+//go:build test
+
+package presenter_test
+
+import (
+	"errors"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+)
+
+func makeChinchonPlayers() []*domain.ChinchonPlayer {
+	return []*domain.ChinchonPlayer{
+		domain.NewChinchonPlayer(true),
+		domain.NewChinchonPlayer(false),
+	}
+}
+
+func setupChinchonCuiMock(phase domain.ChinchonPhase, ended bool, winner int) (*interfaces.MockChinchonGame, []*domain.ChinchonPlayer) {
+	m := new(interfaces.MockChinchonGame)
+	players := makeChinchonPlayers()
+	m.On("GetRoundNumber").Return(1)
+	m.On("GetDrawPileCount").Return(20)
+	m.On("GetDiscardTop").Return((*domain.Card)(nil))
+	m.On("GetGameEndFlag").Return(ended)
+	m.On("GetPhase").Return(phase)
+	m.On("GetCurrentPlayerIdx").Return(0)
+	m.On("GetWinnerIdx").Return(winner)
+	m.On("GetKnockerIdx").Return(-1)
+	m.On("GetKnockerMelds").Return(([][]*domain.Card)(nil))
+	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	m.On("GetPlayerCnt").Return(2)
+	m.On("GetPlayer", 0).Return(players[0])
+	m.On("GetPlayer", 1).Return(players[1])
+	return m, players
+}
+
+func TestChinchonCuiPresenter_Output(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.ChinchonCuiPresenter)
+
+	t.Run("draw phase shows header and hand", func(t *testing.T) {
+		m, players := setupChinchonCuiMock(domain.ChinchonPhaseDraw, false, -1)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "Chinchón (チンチョン)")
+		assert.Contains(t, result, "ラウンド: 1")
+	})
+
+	t.Run("discard phase prompt", func(t *testing.T) {
+		m, players := setupChinchonCuiMock(domain.ChinchonPhaseDiscard, false, -1)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		result := p.Output(m, nil)
+		assert.NotEmpty(t, result)
+	})
+
+	t.Run("layoff phase shows knocker melds", func(t *testing.T) {
+		m := new(interfaces.MockChinchonGame)
+		players := makeChinchonPlayers()
+		m.On("GetRoundNumber").Return(1)
+		m.On("GetDrawPileCount").Return(20)
+		m.On("GetDiscardTop").Return((*domain.Card)(nil))
+		m.On("GetGameEndFlag").Return(false)
+		m.On("GetPhase").Return(domain.ChinchonPhaseLayoff)
+		m.On("GetCurrentPlayerIdx").Return(1)
+		m.On("GetWinnerIdx").Return(-1)
+		m.On("GetKnockerIdx").Return(0)
+		m.On("GetKnockerMelds").Return([][]*domain.Card{{
+			domain.NewCard(domain.CardDesignSpade, 1, false),
+			domain.NewCard(domain.CardDesignSpade, 2, false),
+			domain.NewCard(domain.CardDesignSpade, 3, false),
+		}})
+		m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+		m.On("GetPlayerCnt").Return(2)
+		m.On("GetPlayer", 0).Return(players[0])
+		m.On("GetPlayer", 1).Return(players[1])
+		result := p.Output(m, nil)
+		assert.NotEmpty(t, result)
+	})
+
+	t.Run("discard top is displayed", func(t *testing.T) {
+		m, _ := setupChinchonCuiMock(domain.ChinchonPhaseDraw, false, -1)
+		m.ExpectedCalls = nil
+		players := makeChinchonPlayers()
+		m.On("GetRoundNumber").Return(1)
+		m.On("GetDrawPileCount").Return(20)
+		m.On("GetDiscardTop").Return(domain.NewCard(domain.CardDesignClover, 7, false))
+		m.On("GetGameEndFlag").Return(false)
+		m.On("GetPhase").Return(domain.ChinchonPhaseDraw)
+		m.On("GetCurrentPlayerIdx").Return(0)
+		m.On("GetWinnerIdx").Return(-1)
+		m.On("GetKnockerIdx").Return(-1)
+		m.On("GetKnockerMelds").Return(([][]*domain.Card)(nil))
+		m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+		m.On("GetPlayerCnt").Return(2)
+		m.On("GetPlayer", 0).Return(players[0])
+		m.On("GetPlayer", 1).Return(players[1])
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "捨て札")
+	})
+
+	t.Run("eliminated player tagged", func(t *testing.T) {
+		m, players := setupChinchonCuiMock(domain.ChinchonPhaseDraw, false, -1)
+		players[1].SetEliminated(true)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "脱落")
+	})
+
+	t.Run("round end prompt", func(t *testing.T) {
+		m, _ := setupChinchonCuiMock(domain.ChinchonPhaseRoundEnd, false, -1)
+		result := p.Output(m, nil)
+		assert.NotEmpty(t, result)
+	})
+
+	t.Run("game end with winner", func(t *testing.T) {
+		m, _ := setupChinchonCuiMock(domain.ChinchonPhaseGameEnd, true, 0)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ゲーム終了")
+	})
+
+	t.Run("game end no winner", func(t *testing.T) {
+		m, _ := setupChinchonCuiMock(domain.ChinchonPhaseGameEnd, true, -1)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "勝者なし")
+	})
+
+	t.Run("error block", func(t *testing.T) {
+		m, _ := setupChinchonCuiMock(domain.ChinchonPhaseDraw, false, -1)
+		result := p.Output(m, errors.New("boom"))
+		assert.Contains(t, result, "boom")
+	})
+}
+
+func TestChinchonCuiPresenter_ActionLogOutput(t *testing.T) {
+	m, _ := setupChinchonCuiMock(domain.ChinchonPhaseDraw, false, -1)
+	p := new(presenter.ChinchonCuiPresenter)
+	assert.NotPanics(t, func() { p.ActionLogOutput(m) })
+}

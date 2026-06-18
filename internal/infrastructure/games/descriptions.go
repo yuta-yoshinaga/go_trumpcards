@@ -167,6 +167,7 @@ var gameDescriptions = map[string]string{
 	"escoba":              "Escoba (エスコバ)",
 	"handandfoot":         "Hand and Foot (ハンド・アンド・フット)",
 	"conquian":            "Conquian (コンキャン)",
+	"chinchon":            "Chinchón (チンチョン)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

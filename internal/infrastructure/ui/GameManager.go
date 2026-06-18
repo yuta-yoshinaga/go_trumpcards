@@ -2529,6 +2529,27 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "chinchon", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewChinchonCuiController(usecase.NewChinchonInteractor(
+				domain.NewDefaultChinchon(), new(presenter.ChinchonCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "chinchon.helpTitle",
+				CommandKeys: []string{
+					"chinchon.helpDrawStock",
+					"chinchon.helpDrawDiscard",
+					"chinchon.helpDiscard",
+					"chinchon.helpKnock",
+					"chinchon.helpLayoff",
+					"chinchon.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys: []string{
+					"chinchon.helpSetDifficulty",
+					"chinchon.helpSetPlayers",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

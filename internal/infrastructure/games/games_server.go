@@ -800,4 +800,9 @@ func init() {
 			return usecase.NewConquianInteractor(domain.NewDefaultConquian(), new(presenter.ConquianWebPresenter))
 		},
 		controller.NewConquianWebController)
+	BindWebControllerFor("chinchon",
+		func() usecase.ChinchonInteractorIF {
+			return usecase.NewChinchonInteractor(domain.NewDefaultChinchon(), new(presenter.ChinchonWebPresenter))
+		},
+		controller.NewChinchonWebController)
 }
