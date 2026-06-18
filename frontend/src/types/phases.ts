@@ -550,6 +550,14 @@ export const GinRummyPhase = {
   GAME_END: 4,
 } as const;
 
+/** Conquian phase constants (sync: internal/domain/Conquian.go). */
+export const ConquianPhase = {
+  DRAW: 0,
+  MELD: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Tonk phase constants (sync: internal/domain/Tonk.go). */
 export const TonkPhase = {
   DRAW: 0,

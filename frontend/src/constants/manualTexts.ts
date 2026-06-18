@@ -33,6 +33,7 @@ import casinowar from '../../../docs/manual/web/casinowar.md?raw';
 import cassino from '../../../docs/manual/web/cassino.md?raw';
 import chinesepoker from '../../../docs/manual/web/chinesepoker.md?raw';
 import clocksolitaire from '../../../docs/manual/web/clocksolitaire.md?raw';
+import conquian from '../../../docs/manual/web/conquian.md?raw';
 import contractrummy from '../../../docs/manual/web/contractrummy.md?raw';
 import courtpiece from '../../../docs/manual/web/courtpiece.md?raw';
 import crazyeights from '../../../docs/manual/web/crazyeights.md?raw';
@@ -204,6 +205,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/penguin': penguin,
   '/seahaventowers': seahaventowers,
   '/ginrummy': ginrummy,
+  '/conquian': conquian,
   '/gofish': gofish,
   '/golf': golf,
   '/acesup': acesup,

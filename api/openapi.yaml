@@ -62,6 +62,8 @@ tags:
     description: Page One (ページワン) game
   - name: ginrummy
     description: Gin Rummy (ジンラミー) game
+  - name: conquian
+    description: Conquian (コンキャン) game
   - name: sevenbridge
     description: Seven Bridge (セブンブリッジ) game
   - name: president
@@ -2439,6 +2441,89 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GinRummyResponse'
+
+  /conquian/exec:
+    post:
+      tags:
+        - conquian
+      summary: Execute a Conquian game command
+      description: |
+        Send a command to advance the Conquian (コンキャン) game session
+        identified by `sessionId`. Conquian is the Mexican ancestor of Rummy
+        played by 2 players with a 40-card Latin deck (each suit minus 8, 9, 10).
+        10 cards are dealt to each player. On your turn draw from the stock or
+        discard, then lay down table melds and discard one card. A card taken
+        from the discard pile must be used in a meld immediately. Melds are sets
+        (3+ same rank) and runs (3+ consecutive same suit, where 7 and J are
+        adjacent). The first player to meld out their whole hand wins the round;
+        first to the target wins (default 3) wins the match.
+
+        The game proceeds through these phases:
+
+        | Phase        | Value | Description |
+        |--------------|-------|-------------|
+        | Draw         | `0`   | Draw a card from stock or discard pile |
+        | Meld         | `1`   | Lay down melds then discard a card |
+        | RoundEnd     | `2`   | Round scored; advance with `nextround` |
+        | GameEnd      | `3`   | A player reached the target wins |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `drawstock`    | `ds`    | Draw a card from the stock pile |
+        | `drawdiscard`  | `dd`    | Draw the top card from the discard pile |
+        | `meld`         | `m`     | Lay down melds (requires `meldGroups`) |
+        | `discard`      | `d`     | Discard a card (requires `cardIndex`) |
+        | `nextround`    | `nr`    | Score the round and start the next |
+        | `log`          | `l`     | View action log |
+      operationId: conquianExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConquianRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              drawstock:
+                summary: Draw from stock pile
+                value:
+                  command: drawstock
+                  sessionId: my-session-001
+              drawdiscard:
+                summary: Draw from discard pile
+                value:
+                  command: drawdiscard
+                  sessionId: my-session-001
+              meld:
+                summary: Lay down a meld of cards at indices 0, 1, 2
+                value:
+                  command: meld
+                  meldGroups: [[0, 1, 2]]
+                  sessionId: my-session-001
+              discard:
+                summary: Discard card at index 2
+                value:
+                  command: discard
+                  cardIndex: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConquianResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConquianResponse'
 
   /sevenbridge/exec:
     post:
@@ -20306,6 +20391,131 @@ components:
             cpuDifficulty:
               type: integer
             pointLimit:
+              type: integer
+        message:
+          type: string
+          description: Game status message
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    ConquianRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `drawstock` (`ds`),
+            `drawdiscard` (`dd`), `meld` (`m`), `discard` (`d`),
+            `nextround` (`nr`), `log` (`l`).
+          enum: [reset, r, drawstock, ds, drawdiscard, dd, meld, m, discard, d, nextround, nr, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Index of the card to discard.  Required for the `discard` command.
+          example: 2
+        meldGroups:
+          type: array
+          description: Groups of card indices to lay down as melds.  Required for the `meld` command.
+          items:
+            type: array
+            items:
+              type: integer
+          example: [[0, 1, 2]]
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            targetWins:
+              type: integer
+              minimum: 1
+              maximum: 100
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    ConquianResponse:
+      type: object
+      description: Current state of the Conquian game
+      properties:
+        players:
+          type: array
+          description: Array of player objects
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              melds:
+                type: array
+                description: Player's face-up table melds (array of card groups)
+                items:
+                  type: object
+                  properties:
+                    cards:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Card'
+              wins:
+                type: integer
+                description: Number of rounds this player has won
+        phase:
+          type: integer
+          description: "Game phase: 0 = Draw, 1 = Meld, 2 = RoundEnd, 3 = GameEnd"
+          enum: [0, 1, 2, 3]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Current round number
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        discardTop:
+          description: The top card of the discard pile
+          $ref: '#/components/schemas/Card'
+        drawPileCount:
+          type: integer
+          description: Number of cards remaining in the stock pile
+        gameEndFlag:
+          type: boolean
+          description: Whether the match has ended
+        winnerIdx:
+          type: integer
+          description: Index of the match winner (-1 if not ended or drawn)
+        roundWinnerIdx:
+          type: integer
+          description: Index of the round winner (-1 if not applicable)
+        tookDiscard:
+          type: boolean
+          description: Whether the player drew the discard top and must use it in a meld
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            targetWins:
               type: integer
         message:
           type: string

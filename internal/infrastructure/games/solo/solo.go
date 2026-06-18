@@ -431,4 +431,13 @@ func init() {
 		},
 		controller.NewHandAndFootWebControllerWithProvider)
 
+	games.RegisterKVGame("conquian", games.CategorySolo,
+		func() usecase.ConquianInteractorIF {
+			return usecase.NewConquianInteractor(domain.NewDefaultConquian(), new(presenter.ConquianWebPresenter))
+		},
+		func(data []byte) (usecase.ConquianInteractorIF, error) {
+			return usecase.RestoreConquianInteractor(data, new(presenter.ConquianWebPresenter))
+		},
+		controller.NewConquianWebControllerWithProvider)
+
 }

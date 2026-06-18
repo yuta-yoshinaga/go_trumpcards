@@ -34,6 +34,7 @@ import type {
   CassinoResponse,
   ChinesePokerResponse,
   ClockSolitaireResponse,
+  ConquianResponse,
   ContractRummyResponse,
   CourtPieceResponse,
   CrazyEightsResponse,
@@ -244,6 +245,7 @@ const workerUrl: Record<string, string> = {
   tripeaks: WORKER_SOLO,
   memory: WORKER_SOLO,
   ginrummy: WORKER_SOLO,
+  conquian: WORKER_SOLO,
   canasta: WORKER_SOLO,
   handandfoot: WORKER_SOLO,
   burraco: WORKER_SOLO,
@@ -1169,6 +1171,28 @@ export const ginrummyApi = {
       cardIndex,
       cardIndices,
       config,
+    }),
+};
+
+/** Configuration options for Conquian game settings. */
+export interface ConquianConfigInput {
+  cpuDifficulty?: number;
+  targetWins?: number;
+}
+
+/** API client for the Conquian /conquian/exec endpoint. */
+export const conquianApi = {
+  exec: (
+    command: 'reset' | 'drawstock' | 'drawdiscard' | 'meld' | 'discard' | 'nextround' | 'log',
+    cardIndex?: number,
+    config?: ConquianConfigInput,
+    meldGroups?: number[][],
+  ) =>
+    gameExec<ConquianResponse>('conquian', {
+      command,
+      cardIndex,
+      config,
+      meldGroups,
     }),
 };
 
@@ -3413,6 +3437,7 @@ const games = [
   'baccarat',
   'crazyeights',
   'ginrummy',
+  'conquian',
   'canasta',
   'handandfoot',
   'burraco',

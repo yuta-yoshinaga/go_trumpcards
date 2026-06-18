@@ -795,4 +795,9 @@ func init() {
 			return usecase.NewHandAndFootInteractor(domain.NewDefaultHandAndFoot(), new(presenter.HandAndFootWebPresenter))
 		},
 		controller.NewHandAndFootWebController)
+	BindWebControllerFor("conquian",
+		func() usecase.ConquianInteractorIF {
+			return usecase.NewConquianInteractor(domain.NewDefaultConquian(), new(presenter.ConquianWebPresenter))
+		},
+		controller.NewConquianWebController)
 }

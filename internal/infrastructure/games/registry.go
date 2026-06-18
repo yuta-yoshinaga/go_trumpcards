@@ -366,6 +366,11 @@ var registry = []*Game{
 	// and a "foot"), 4 players / 2 teams, 216-card deck (4 decks + 8 jokers).
 	// Solo worker bucket — it reuses Canasta's (solo) meld/canasta/red-3 helpers.
 	{Name: "handandfoot", Category: CategorySolo},
+	// Conquian: the Mexican 2-player ancestor of rummy. 40-card Latin deck
+	// (standard 52 minus 8/9/10), table melds (sets + runs with 7–J adjacency),
+	// forced use of a taken discard, win by melding out the whole hand. Solo
+	// worker bucket — it reuses Gin Rummy's (untagged) meld helpers.
+	{Name: "conquian", Category: CategorySolo},
 }
 
 // All returns a value-level copy of the registry in canonical order.
