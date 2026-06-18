@@ -360,7 +360,7 @@ function ConquianPageContent() {
                     type="button"
                     className={btnPrimary}
                     onClick={handleMeldSelected}
-                    disabled={loading || selectedCardIndices.length < 3}
+                    disabled={loading || (selectedCardIndices.length !== 1 && selectedCardIndices.length < 3)}
                     data-tutorial="cq-meld-button"
                   >
                     {t('meldButton')}

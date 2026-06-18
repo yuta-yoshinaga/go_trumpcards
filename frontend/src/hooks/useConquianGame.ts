@@ -46,7 +46,8 @@ export function useConquianGame() {
   }, [gameExec]);
 
   const handleMeldSelected = useCallback(() => {
-    if (selectedCardIndices.length < 3) return;
+    // 1 card extends an existing table meld; 3+ cards lay a new set/run.
+    if (selectedCardIndices.length !== 1 && selectedCardIndices.length < 3) return;
     gameExec('meld', undefined, undefined, [selectedCardIndices]);
   }, [gameExec, selectedCardIndices]);
 
