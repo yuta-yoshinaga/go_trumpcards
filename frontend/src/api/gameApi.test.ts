@@ -9,6 +9,7 @@ import {
   blackjackswitchApi,
   canfieldApi,
   casinoholdemApi,
+  chinchonApi,
   conquianApi,
   crazyeightsApi,
   daifugoApi,
@@ -2739,6 +2740,84 @@ describe('gameApi', () => {
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(conquianApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
+  describe('chinchonApi.exec', () => {
+    const payload = {
+      players: [],
+      phase: 0,
+      roundNumber: 1,
+      currentPlayerIdx: 0,
+      discardTop: null,
+      drawPileCount: 0,
+      gameEndFlag: false,
+      winnerIdx: -1,
+      knockerIdx: -1,
+      knockerMelds: [],
+      message: '',
+      config: { cpuDifficulty: 1, playerCount: 2, knockThreshold: 5, eliminationLimit: 100 },
+    };
+
+    it('calls the correct URL with reset command and config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await chinchonApi.exec('reset', undefined, {
+        cpuDifficulty: 1,
+        playerCount: 2,
+        knockThreshold: 5,
+        eliminationLimit: 100,
+      });
+      expect(mockFetch).toHaveBeenCalledWith('/chinchon/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          cardIndex: undefined,
+          cardIndices: undefined,
+          config: { cpuDifficulty: 1, playerCount: 2, knockThreshold: 5, eliminationLimit: 100 },
+          sessionId,
+        }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with knock command and cardIndex', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await chinchonApi.exec('knock', 3);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/chinchon/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'knock',
+            cardIndex: 3,
+            cardIndices: undefined,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with layoff command and cardIndices', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await chinchonApi.exec('layoff', undefined, undefined, [0, 2]);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/chinchon/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'layoff',
+            cardIndex: undefined,
+            cardIndices: [0, 2],
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(chinchonApi.exec('reset')).rejects.toThrow('HTTP error: 500');
     });
   });
 

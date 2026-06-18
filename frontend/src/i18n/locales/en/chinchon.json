@@ -1,0 +1,55 @@
+{
+  "phase": {
+    "draw": "Draw",
+    "discard": "Discard",
+    "layoff": "Lay Off",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "playerCount": "Players",
+    "eliminationLimit": "Elimination Limit",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "drawPile": "Draw pile: {{count}} cards",
+  "discardTop": "Discard",
+  "cards": "{{count}} cards",
+  "cumulativeScore": "Total: {{score}}",
+  "roundScore": "Round: {{score}}",
+  "eliminated": "Out",
+  "scores": "Scores",
+  "scoresPlayer": "Player",
+  "scoresRound": "Round",
+  "scoresTotal": "Total",
+  "drawStockButton": "Draw Stock",
+  "drawDiscardButton": "Draw Discard",
+  "discardButton": "Discard",
+  "knockButton": "Knock",
+  "deadwoodLabel": "Deadwood: {{score}} pts (knock ≤ {{threshold}})",
+  "layoffButton": "Lay Off",
+  "skipLayoffButton": "Skip",
+  "nextRound": "Next Round",
+  "drawPhase": "Draw a card from the stock or discard pile",
+  "discardPhase": "Discard a card, or discard it and knock",
+  "layoffPhase": "Lay off cards onto the knocker's melds",
+  "roundEnd": "Round over",
+  "knockerMelds": "Knocker's Melds",
+  "chinchon": "Chinchón!",
+  "result": {
+    "humanWin": "You win!",
+    "cpuWin": "CPU {{cpuId}} wins!"
+  },
+  "tutorial": {
+    "drawArea": "Draw a card from the stock pile or discard pile.",
+    "playerHand": "This is your hand. Form melds (3+ same rank, or 3+ same-suit runs) to reduce deadwood.",
+    "discardButton": "Discard one card from your hand.",
+    "knockButton": "When your deadwood is at or below the limit, pick the card to discard and knock.",
+    "scoreTable": "Player scores are shown here.",
+    "resetButton": "Press the reset button to start a new game."
+  }
+}

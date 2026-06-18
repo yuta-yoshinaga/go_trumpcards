@@ -371,6 +371,11 @@ var registry = []*Game{
 	// forced use of a taken discard, win by melding out the whole hand. Solo
 	// worker bucket — it reuses Gin Rummy's (untagged) meld helpers.
 	{Name: "conquian", Category: CategorySolo},
+	// Chinchón: Spanish/Argentine 7-card rummy in the Gin Rummy family. 40-card
+	// Latin deck (no 8/9/10), draw/knock/layoff with deadwood scoring, plus the
+	// "Chinchón" instant win (7 consecutive cards of one suit). Solo worker
+	// bucket — it reuses Gin Rummy's (untagged) meld/deadwood helpers.
+	{Name: "chinchon", Category: CategorySolo},
 }
 
 // All returns a value-level copy of the registry in canonical order.

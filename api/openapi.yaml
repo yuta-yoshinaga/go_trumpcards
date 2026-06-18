@@ -64,6 +64,8 @@ tags:
     description: Gin Rummy (ジンラミー) game
   - name: conquian
     description: Conquian (コンキャン) game
+  - name: chinchon
+    description: Chinchon (チンチョン) game
   - name: sevenbridge
     description: Seven Bridge (セブンブリッジ) game
   - name: president
@@ -2441,6 +2443,99 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GinRummyResponse'
+
+  /chinchon/exec:
+    post:
+      tags:
+        - chinchon
+      summary: Execute a Chinchon game command
+      description: |
+        Send a command to advance the Chinchon (チンチョン) game session
+        identified by `sessionId`. Chinchon is a Spanish Gin Rummy relative
+        played by 2 to 4 players with a 40-card Latin deck (each suit minus
+        8, 9, 10). 7 cards are dealt to each player. Draw from stock or
+        discard, then discard a card, or discard a card and knock. Melds are
+        sets (3+ same rank) and runs (3+ consecutive same suit, where 7 and J
+        are adjacent). Knock when post-discard deadwood is at or below the
+        knock threshold (default 5); opponents then lay off onto the knocker's
+        melds. Lowest deadwood wins the round. A player whose cumulative score
+        exceeds the elimination limit (default 100) is out; the last player
+        standing wins. A same-suit run of all 7 cards wins the match instantly.
+
+        The game proceeds through these phases:
+
+        | Phase        | Value | Description |
+        |--------------|-------|-------------|
+        | Draw         | `0`   | Draw a card from stock or discard pile |
+        | Discard      | `1`   | Discard a card or knock |
+        | Layoff       | `2`   | Opponents lay off cards on knocker's melds |
+        | RoundEnd     | `3`   | Round scored; advance with `nextround` |
+        | GameEnd      | `4`   | One player remains, or a Chinchon wins |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `drawstock`    | `ds`    | Draw a card from the stock pile |
+        | `drawdiscard`  | `dd`    | Draw the top card from the discard pile |
+        | `discard`      | `d`     | Discard a card (requires `cardIndex`) |
+        | `knock`        | `k`     | Discard a card and knock (requires `cardIndex`) |
+        | `layoff`       | `lo`    | Lay off cards on knocker's melds (requires `cardIndices`) |
+        | `nextround`    | `nr`    | Score the round and start the next |
+        | `log`          | `l`     | View action log |
+      operationId: chinchonExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChinchonRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              drawstock:
+                summary: Draw from stock pile
+                value:
+                  command: drawstock
+                  sessionId: my-session-001
+              drawdiscard:
+                summary: Draw from discard pile
+                value:
+                  command: drawdiscard
+                  sessionId: my-session-001
+              discard:
+                summary: Discard card at index 2
+                value:
+                  command: discard
+                  cardIndex: 2
+                  sessionId: my-session-001
+              knock:
+                summary: Knock (discard card at index 2)
+                value:
+                  command: knock
+                  cardIndex: 2
+                  sessionId: my-session-001
+              layoff:
+                summary: Lay off cards at indices 0 and 3
+                value:
+                  command: layoff
+                  cardIndices: [0, 3]
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChinchonResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChinchonResponse'
 
   /conquian/exec:
     post:
@@ -20391,6 +20486,141 @@ components:
             cpuDifficulty:
               type: integer
             pointLimit:
+              type: integer
+        message:
+          type: string
+          description: Game status message
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    ChinchonRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `drawstock` (`ds`),
+            `drawdiscard` (`dd`), `discard` (`d`), `knock` (`k`),
+            `layoff` (`lo`), `nextround` (`nr`), `log` (`l`).
+          enum: [reset, r, drawstock, ds, drawdiscard, dd, discard, d, knock, k, layoff, lo, nextround, nr, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Index of the card to discard or knock with.  Required for `discard` and `knock` commands.
+          example: 2
+        cardIndices:
+          type: array
+          description: Card indices for `layoff` command.
+          items:
+            type: integer
+          example: [0, 3]
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            playerCount:
+              type: integer
+              minimum: 2
+              maximum: 4
+            knockThreshold:
+              type: integer
+              minimum: 0
+              maximum: 60
+            eliminationLimit:
+              type: integer
+              minimum: 1
+              maximum: 1000
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    ChinchonResponse:
+      type: object
+      description: Current state of the Chinchon game
+      properties:
+        players:
+          type: array
+          description: Array of player objects
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+              eliminated:
+                type: boolean
+        phase:
+          type: integer
+          description: "Game phase: 0 = Draw, 1 = Discard, 2 = Layoff, 3 = RoundEnd, 4 = GameEnd"
+          enum: [0, 1, 2, 3, 4]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Current round number
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        discardTop:
+          description: The top card of the discard pile
+          $ref: '#/components/schemas/Card'
+        drawPileCount:
+          type: integer
+          description: Number of cards remaining in the stock pile
+        gameEndFlag:
+          type: boolean
+          description: Whether the match has ended
+        winnerIdx:
+          type: integer
+          description: Index of the match winner (-1 if not ended)
+        knockerIdx:
+          type: integer
+          description: Index of the player who knocked (-1 if not applicable)
+        knockerMelds:
+          type: array
+          description: "Knocker's melds (array of card groups), used as layoff targets"
+          items:
+            type: object
+            properties:
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            playerCount:
+              type: integer
+            knockThreshold:
+              type: integer
+            eliminationLimit:
               type: integer
         message:
           type: string

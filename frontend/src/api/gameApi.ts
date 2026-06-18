@@ -32,6 +32,7 @@ import type {
   CasinoHoldemResponse,
   CasinoWarResponse,
   CassinoResponse,
+  ChinchonResponse,
   ChinesePokerResponse,
   ClockSolitaireResponse,
   ConquianResponse,
@@ -246,6 +247,7 @@ const workerUrl: Record<string, string> = {
   memory: WORKER_SOLO,
   ginrummy: WORKER_SOLO,
   conquian: WORKER_SOLO,
+  chinchon: WORKER_SOLO,
   canasta: WORKER_SOLO,
   handandfoot: WORKER_SOLO,
   burraco: WORKER_SOLO,
@@ -1167,6 +1169,30 @@ export const ginrummyApi = {
     cardIndices?: number[],
   ) =>
     gameExec<GinRummyResponse>('ginrummy', {
+      command,
+      cardIndex,
+      cardIndices,
+      config,
+    }),
+};
+
+/** Configuration options for Chinchón game settings. */
+export interface ChinchonConfigInput {
+  cpuDifficulty?: number;
+  playerCount?: number;
+  knockThreshold?: number;
+  eliminationLimit?: number;
+}
+
+/** API client for the Chinchón /chinchon/exec endpoint. */
+export const chinchonApi = {
+  exec: (
+    command: 'reset' | 'drawstock' | 'drawdiscard' | 'discard' | 'knock' | 'layoff' | 'nextround' | 'log',
+    cardIndex?: number,
+    config?: ChinchonConfigInput,
+    cardIndices?: number[],
+  ) =>
+    gameExec<ChinchonResponse>('chinchon', {
       command,
       cardIndex,
       cardIndices,
@@ -3438,6 +3464,7 @@ const games = [
   'crazyeights',
   'ginrummy',
   'conquian',
+  'chinchon',
   'canasta',
   'handandfoot',
   'burraco',

@@ -83,6 +83,12 @@ jobs:
 
       - name: Run frontend tests with coverage
         working-directory: frontend
+        # The Vitest v8-coverage run accumulates heap across the growing test
+        # suite (150+ game pages) and exceeds Node's default ~4 GB limit on the
+        # runner. Raise the heap (ubuntu-latest has 16 GB); inherited by the
+        # forked test workers via NODE_OPTIONS.
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
         run: bun run test:coverage
 
       - name: Upload frontend coverage to Codecov

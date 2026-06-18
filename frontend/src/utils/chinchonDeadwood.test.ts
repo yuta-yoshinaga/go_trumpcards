@@ -1,0 +1,78 @@
+import { describe, expect, it } from 'vitest';
+import type { Card } from '../types/card';
+import {
+  bestChinchonDeadwoodValue,
+  calcChinchonDeadwoodValue,
+  chinchonCardValue,
+  chinchonMeldLabel,
+  chinchonRankPosition,
+} from './chinchonDeadwood';
+
+const c = (design: Card['design'], value: number): Card => ({ design, value });
+
+describe('chinchonRankPosition', () => {
+  it('maps A-7 to 1-7 and J/Q/K to 8/9/10 (7 and J adjacent)', () => {
+    expect(chinchonRankPosition(1)).toBe(1);
+    expect(chinchonRankPosition(7)).toBe(7);
+    expect(chinchonRankPosition(11)).toBe(8);
+    expect(chinchonRankPosition(12)).toBe(9);
+    expect(chinchonRankPosition(13)).toBe(10);
+  });
+
+  it('returns 0 for ranks absent from the 40-card deck', () => {
+    expect(chinchonRankPosition(8)).toBe(0);
+    expect(chinchonRankPosition(10)).toBe(0);
+  });
+});
+
+describe('chinchonCardValue', () => {
+  it('scores A=1, face value 2-7, J/Q/K=10', () => {
+    expect(chinchonCardValue(c('SPADE', 1))).toBe(1);
+    expect(chinchonCardValue(c('SPADE', 5))).toBe(5);
+    expect(chinchonCardValue(c('SPADE', 11))).toBe(10);
+    expect(chinchonCardValue(c('SPADE', 13))).toBe(10);
+  });
+});
+
+describe('calcChinchonDeadwoodValue', () => {
+  it('sums card values', () => {
+    expect(calcChinchonDeadwoodValue([c('SPADE', 11), c('HEART', 1)])).toBe(11);
+  });
+});
+
+describe('chinchonMeldLabel', () => {
+  it('returns empty string for empty meld', () => {
+    expect(chinchonMeldLabel([])).toBe('');
+  });
+
+  it('labels a same-rank set with the rank', () => {
+    expect(chinchonMeldLabel([c('SPADE', 5), c('HEART', 5), c('CLOVER', 5)])).toBe('5');
+  });
+
+  it('labels a 7-J-Q run across the 7/J gap', () => {
+    const label = chinchonMeldLabel([c('SPADE', 7), c('SPADE', 11), c('SPADE', 12)]);
+    expect(label).toContain('7');
+    expect(label).toContain('Q');
+  });
+});
+
+describe('bestChinchonDeadwoodValue', () => {
+  it('returns 0 for an empty hand', () => {
+    expect(bestChinchonDeadwoodValue([])).toBe(0);
+  });
+
+  it('returns full value when no meld exists', () => {
+    expect(bestChinchonDeadwoodValue([c('SPADE', 11), c('HEART', 1)])).toBe(11);
+  });
+
+  it('removes a same-suit run spanning the 7/J gap from the deadwood', () => {
+    // ♠7-J-Q run (positions 7,8,9) + lone ♥A → deadwood = 1
+    const hand = [c('SPADE', 7), c('SPADE', 11), c('SPADE', 12), c('HEART', 1)];
+    expect(bestChinchonDeadwoodValue(hand)).toBe(1);
+  });
+
+  it('removes a same-rank set from the deadwood', () => {
+    const hand = [c('SPADE', 5), c('HEART', 5), c('CLOVER', 5), c('DIAMOND', 11)];
+    expect(bestChinchonDeadwoodValue(hand)).toBe(10);
+  });
+});

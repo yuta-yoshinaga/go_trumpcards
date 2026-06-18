@@ -440,4 +440,13 @@ func init() {
 		},
 		controller.NewConquianWebControllerWithProvider)
 
+	games.RegisterKVGame("chinchon", games.CategorySolo,
+		func() usecase.ChinchonInteractorIF {
+			return usecase.NewChinchonInteractor(domain.NewDefaultChinchon(), new(presenter.ChinchonWebPresenter))
+		},
+		func(data []byte) (usecase.ChinchonInteractorIF, error) {
+			return usecase.RestoreChinchonInteractor(data, new(presenter.ChinchonWebPresenter))
+		},
+		controller.NewChinchonWebControllerWithProvider)
+
 }

@@ -558,6 +558,15 @@ export const ConquianPhase = {
   GAME_END: 3,
 } as const;
 
+/** Chinchón phase constants (sync: internal/domain/Chinchon.go). */
+export const ChinchonPhase = {
+  DRAW: 0,
+  DISCARD: 1,
+  LAYOFF: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Tonk phase constants (sync: internal/domain/Tonk.go). */
 export const TonkPhase = {
   DRAW: 0,
