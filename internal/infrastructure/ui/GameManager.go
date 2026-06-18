@@ -2592,6 +2592,28 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "mao", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewMaoCuiController(usecase.NewMaoInteractor(
+				domain.NewDefaultMao(), new(presenter.MaoCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "mao.helpTitle",
+				CommandKeys: []string{
+					"mao.helpPlay",
+					"mao.helpDraw",
+					"mao.helpSuit",
+					"mao.helpDeclare",
+					"mao.helpDeclareWord",
+					"mao.helpSkipDeclare",
+					"mao.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys: []string{
+					"mao.helpSetDifficulty",
+					"mao.helpSetLimit",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

@@ -82,6 +82,7 @@ import knockoutwhist from '../../../docs/manual/cui/knockoutwhist.md?raw';
 import letitride from '../../../docs/manual/cui/letitride.md?raw';
 import macau from '../../../docs/manual/cui/macau.md?raw';
 import manille from '../../../docs/manual/cui/manille.md?raw';
+import mao from '../../../docs/manual/cui/mao.md?raw';
 import marias from '../../../docs/manual/cui/marias.md?raw';
 import memory from '../../../docs/manual/cui/memory.md?raw';
 import mighty from '../../../docs/manual/cui/mighty.md?raw';
@@ -230,6 +231,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/letitride': letitride,
   '/macau': macau,
   '/manille': manille,
+  '/mao': mao,
   '/marias': marias,
   '/sedma': sedma,
   '/knockoutwhist': knockoutwhist,

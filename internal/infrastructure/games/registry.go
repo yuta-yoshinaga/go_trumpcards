@@ -386,6 +386,11 @@ var registry = []*Game{
 	// count is wild that round. Lowest cumulative deadwood after round 11 wins.
 	// Solo worker bucket — it reuses the Gin Rummy meld/deadwood approach.
 	{Name: "threethirteen", Category: CategorySolo},
+	// Mao: a Crazy Eights / Macau–style shedding game with a secret "hidden
+	// rule" the human must infer (penalties for non-compliance, a half-hint
+	// after three correct follows). 4 players, 52-card deck, magic cards
+	// (8 wild, A skip, 2 draw-two). Solo worker bucket — it builds on Macau.
+	{Name: "mao", Category: CategorySolo},
 }
 
 // All returns a value-level copy of the registry in canonical order.

@@ -1,0 +1,62 @@
+{
+  "phase": {
+    "play": "Play",
+    "chooseSuit": "Choose Suit",
+    "mustDeclare": "Declare Mao",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "pointLimit": "Target Score",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "drawPile": "Stock: {{count}}",
+  "direction": "Direction: {{dir}}",
+  "discardTop": "Discard",
+  "chosenSuit": "Chosen suit",
+  "cards": "{{count}} cards",
+  "cumulativeScore": "Total: {{score}}",
+  "roundScore": "Round: {{score}}",
+  "scores": "Scores",
+  "scoresPlayer": "Player",
+  "scoresRound": "Round",
+  "scoresTotal": "Total",
+  "playButton": "Play",
+  "drawButton": "Draw",
+  "takePenaltyButton": "Take {{count}}",
+  "declareButton": "Mao!",
+  "skipDeclareButton": "Don't declare",
+  "nextRound": "Next round",
+  "suitSpade": "♠ Spade",
+  "suitClover": "♣ Clover",
+  "suitHeart": "♥ Heart",
+  "suitDiamond": "♦ Diamond",
+  "penaltyBanner": "Draw penalty: {{count}}! Stack a 2 or take them",
+  "compliance": "Compliance: {{count}}/{{total}}",
+  "rulePenalty": "⚠ penalty (reason undisclosed)",
+  "awaitingWord": "Maybe you should say something?",
+  "ruleHintLabel": "Hint",
+  "sayWordButton": "Say word",
+  "sayWordPlaceholder": "Type the word to say…",
+  "playPhase": "Play a card or draw from the stock",
+  "chooseSuitPhase": "Choose a suit",
+  "mustDeclarePhase": "One card left! Declare \"Mao!\"",
+  "roundEnd": "Round complete",
+  "result": {
+    "humanWin": "You win!",
+    "cpuWin": "CPU {{cpuId}} wins!"
+  },
+  "tutorial": {
+    "discardPile": "The top of the discard pile. Play a card of the same suit or rank.",
+    "playerHand": "Your hand. Click a card to select it.",
+    "playDraw": "Play a card or draw one from the stock.",
+    "magicCards": "Magic cards: 2=draw two (stackable), A=skip, 8=wild.",
+    "hiddenRule": "This game has a secret hidden rule. Break it and you get a penalty with no explanation. Comply 3 times correctly to unlock a vague hint. Say a word when you think the rule requires it.",
+    "resetButton": "Use the reset button to start a new game."
+  }
+}

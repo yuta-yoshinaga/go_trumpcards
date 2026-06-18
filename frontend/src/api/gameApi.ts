@@ -83,6 +83,7 @@ import type {
   LetItRideResponse,
   MacauResponse,
   ManilleResponse,
+  MaoResponse,
   MariasResponse,
   MemoryResponse,
   MightyResponse,
@@ -320,6 +321,7 @@ const workerUrl: Record<string, string> = {
   escoba: WORKER_CLASSIC,
   barbu: WORKER_SOLO,
   macau: WORKER_SOLO,
+  mao: WORKER_SOLO,
   gongzhu: WORKER_SOLO,
   bristol: WORKER_SOLO,
   bidwhist: WORKER_SOLO,
@@ -3318,6 +3320,36 @@ export const macauApi = {
     }),
 };
 
+/** Configuration options for Mao game settings. */
+export interface MaoConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/**
+ * API client for the Mao /mao/exec endpoint.
+ *
+ * Mao is a Crazy Eights-style shedding game with a secret hidden rule. The
+ * `declareword` command carries the player's compliance utterance (`word`);
+ * the server never reveals the rule itself.
+ */
+export const maoApi = {
+  exec: (
+    command: 'reset' | 'play' | 'draw' | 'suit' | 'declare' | 'skipdeclare' | 'declareword' | 'nextround',
+    cardIndex?: number,
+    suit?: number,
+    config?: MaoConfigInput,
+    word?: string,
+  ) =>
+    gameExec<MaoResponse>('mao', {
+      command,
+      cardIndex,
+      suit,
+      config,
+      word,
+    }),
+};
+
 export type { BakersDozenMoveZone, BeleagueredCastleMoveZone, CrescentMoveZone, FortyThievesMoveZone };
 
 /** API client for the Whist /whist/exec endpoint. */
@@ -3553,6 +3585,7 @@ const games = [
   'escoba',
   'barbu',
   'macau',
+  'mao',
   'bristol',
   'bidwhist',
   'spanish21',

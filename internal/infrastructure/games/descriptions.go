@@ -170,6 +170,7 @@ var gameDescriptions = map[string]string{
 	"chinchon":            "Chinchón (チンチョン)",
 	"kalooki":             "Kalooki (カルーキ)",
 	"threethirteen":       "Three Thirteen (スリー・サーティーン)",
+	"mao":                 "Mao (マオ)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

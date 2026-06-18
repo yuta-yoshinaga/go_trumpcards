@@ -815,4 +815,9 @@ func init() {
 			return usecase.NewThreeThirteenInteractor(domain.NewDefaultThreeThirteen(), new(presenter.ThreeThirteenWebPresenter))
 		},
 		controller.NewThreeThirteenWebController)
+	BindWebControllerFor("mao",
+		func() usecase.MaoInteractorIF {
+			return usecase.NewMaoInteractor(domain.NewDefaultMao(), new(presenter.MaoWebPresenter))
+		},
+		controller.NewMaoWebController)
 }
