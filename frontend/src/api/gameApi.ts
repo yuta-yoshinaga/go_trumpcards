@@ -151,6 +151,7 @@ import type {
   ThirtyOneResponse,
   ThreeCardBragResponse,
   ThreeCardResponse,
+  ThreeThirteenResponse,
   TichuResponse,
   TienLenConfigInput,
   TienLenResponse,
@@ -249,6 +250,7 @@ const workerUrl: Record<string, string> = {
   ginrummy: WORKER_SOLO,
   conquian: WORKER_SOLO,
   chinchon: WORKER_SOLO,
+  threethirteen: WORKER_SOLO,
   canasta: WORKER_SOLO,
   handandfoot: WORKER_SOLO,
   burraco: WORKER_SOLO,
@@ -1198,6 +1200,26 @@ export const chinchonApi = {
       command,
       cardIndex,
       cardIndices,
+      config,
+    }),
+};
+
+/** Configuration options for Three Thirteen game settings. */
+export interface ThreeThirteenConfigInput {
+  cpuDifficulty?: number;
+  playerCount?: number;
+}
+
+/** API client for the Three Thirteen /threethirteen/exec endpoint. */
+export const threethirteenApi = {
+  exec: (
+    command: 'reset' | 'drawstock' | 'drawdiscard' | 'discard' | 'knock' | 'nextround' | 'log',
+    cardIndex?: number,
+    config?: ThreeThirteenConfigInput,
+  ) =>
+    gameExec<ThreeThirteenResponse>('threethirteen', {
+      command,
+      cardIndex,
       config,
     }),
 };
@@ -3481,6 +3503,7 @@ const games = [
   'ginrummy',
   'conquian',
   'chinchon',
+  'threethirteen',
   'canasta',
   'handandfoot',
   'burraco',

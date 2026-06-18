@@ -145,6 +145,7 @@ import texasholdembonus from '../../../docs/manual/cui/texasholdembonus.md?raw';
 import thirtyone from '../../../docs/manual/cui/thirtyone.md?raw';
 import threecard from '../../../docs/manual/cui/threecard.md?raw';
 import threecardbrag from '../../../docs/manual/cui/threecardbrag.md?raw';
+import threethirteen from '../../../docs/manual/cui/threethirteen.md?raw';
 import tichu from '../../../docs/manual/cui/tichu.md?raw';
 import tienlen from '../../../docs/manual/cui/tienlen.md?raw';
 import tonk from '../../../docs/manual/cui/tonk.md?raw';
@@ -214,6 +215,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/ginrummy': ginrummy,
   '/conquian': conquian,
   '/chinchon': chinchon,
+  '/threethirteen': threethirteen,
   '/rummy500': rummy500,
   '/gofish': gofish,
   '/golf': golf,

@@ -1123,6 +1123,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [3, 3, 4, 3], skill: [3, 5, 4, 3], social: [1, 3, 5, 3, 4], theme: [3, 2, 4, 2, 3, 2] },
       },
       {
+        path: '/threethirteen',
+        labelKey: 'nav.threethirteen',
+        icon: '🔢',
+        page: 'ThreeThirteen',
+        profile: { mood: [3, 3, 4, 3], skill: [3, 5, 4, 3], social: [1, 3, 5, 3, 4], theme: [3, 2, 4, 2, 3, 2] },
+      },
+      {
         path: '/tonk',
         labelKey: 'nav.tonk',
         icon: '🎯',

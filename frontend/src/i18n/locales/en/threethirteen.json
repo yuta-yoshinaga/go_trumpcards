@@ -1,0 +1,50 @@
+{
+  "phase": {
+    "draw": "Draw",
+    "discard": "Discard",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "playerCount": "Players",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}/11",
+  "wildRank": "Wild: {{rank}}",
+  "dealCount": "Hand size: {{count}}",
+  "drawPile": "Draw pile: {{count}} cards",
+  "discardTop": "Discard",
+  "cards": "{{count}} cards",
+  "cumulativeScore": "Total: {{score}}",
+  "roundScore": "Round: {{score}}",
+  "deadwood": "Deadwood: {{score}}",
+  "scores": "Scores",
+  "scoresPlayer": "Player",
+  "scoresRound": "Round",
+  "scoresTotal": "Total",
+  "drawStockButton": "Draw Stock",
+  "drawDiscardButton": "Draw Discard",
+  "discardButton": "Discard",
+  "knockButton": "Knock",
+  "deadwoodLabel": "Deadwood: {{score}} pts",
+  "nextRound": "Next Round",
+  "drawPhase": "Draw a card from the stock or discard pile",
+  "discardPhase": "Discard a card, or discard it and knock",
+  "roundEnd": "Round over",
+  "result": {
+    "humanWin": "You win!",
+    "cpuWin": "CPU {{cpuId}} wins!"
+  },
+  "tutorial": {
+    "drawArea": "Draw a card from the stock pile or discard pile.",
+    "playerHand": "This is your hand. Form melds (3+ same rank, or 3+ same-suit runs) using this round's wild rank to reduce deadwood.",
+    "discardButton": "Discard one card from your hand.",
+    "knockButton": "When your whole hand melds, pick the card to discard and knock.",
+    "scoreTable": "Player scores are shown here. The lowest cumulative score wins.",
+    "resetButton": "Press the reset button to start a new game."
+  }
+}

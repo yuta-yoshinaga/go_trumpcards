@@ -34,6 +34,7 @@ import {
   slapjackApi,
   spadesApi,
   spiderApi,
+  threethirteenApi,
   tripeaksApi,
   twoTenJackApi,
 } from './gameApi';
@@ -2818,6 +2819,61 @@ describe('gameApi', () => {
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(chinchonApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
+  describe('threethirteenApi.exec', () => {
+    const payload = {
+      players: [],
+      phase: 0,
+      round: 1,
+      wildRank: 3,
+      dealCount: 3,
+      currentPlayerIdx: 0,
+      knockerIdx: -1,
+      discardTop: null,
+      drawPileCount: 0,
+      gameEndFlag: false,
+      winnerIdx: -1,
+      message: '',
+      config: { cpuDifficulty: 1, playerCount: 2 },
+    };
+
+    it('calls the correct URL with reset command and config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await threethirteenApi.exec('reset', undefined, { cpuDifficulty: 1, playerCount: 2 });
+      expect(mockFetch).toHaveBeenCalledWith('/threethirteen/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          cardIndex: undefined,
+          config: { cpuDifficulty: 1, playerCount: 2 },
+          sessionId,
+        }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with knock command and cardIndex', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await threethirteenApi.exec('knock', 3);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/threethirteen/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'knock',
+            cardIndex: 3,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(threethirteenApi.exec('reset')).rejects.toThrow('HTTP error: 500');
     });
   });
 
