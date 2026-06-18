@@ -2550,6 +2550,28 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "kalooki", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewKalookiCuiController(usecase.NewKalookiInteractor(
+				domain.NewDefaultKalooki(), new(presenter.KalookiCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "kalooki.helpTitle",
+				CommandKeys: []string{
+					"kalooki.helpDrawStock",
+					"kalooki.helpDrawDiscard",
+					"kalooki.helpMeld",
+					"kalooki.helpLayoff",
+					"kalooki.helpDiscard",
+					"kalooki.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys: []string{
+					"kalooki.helpSetDifficulty",
+					"kalooki.helpSetPlayers",
+					"kalooki.helpSetThreshold",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

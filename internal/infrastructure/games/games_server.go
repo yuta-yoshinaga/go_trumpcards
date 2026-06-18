@@ -805,4 +805,9 @@ func init() {
 			return usecase.NewChinchonInteractor(domain.NewDefaultChinchon(), new(presenter.ChinchonWebPresenter))
 		},
 		controller.NewChinchonWebController)
+	BindWebControllerFor("kalooki",
+		func() usecase.KalookiInteractorIF {
+			return usecase.NewKalookiInteractor(domain.NewDefaultKalooki(), new(presenter.KalookiWebPresenter))
+		},
+		controller.NewKalookiWebController)
 }

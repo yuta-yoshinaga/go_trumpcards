@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した158種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した159種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -128,6 +128,7 @@ Go + Clean Architecture で実装した158種類のトランプゲーム。CLI �
 | ブラックジャック・スイッチ (Blackjack Switch) | `blackjackswitch` | [CUI](docs/manual/cui/blackjackswitch.md) / [Web](docs/manual/web/blackjackswitch.md) |
 | モンテカルロ・ソリティア (Monte Carlo Solitaire) | `montecarlo` | [CUI](docs/manual/cui/montecarlo.md) / [Web](docs/manual/web/montecarlo.md) |
 | コントラクトラミー (Contract Rummy) | `contractrummy` | [CUI](docs/manual/cui/contractrummy.md) / [Web](docs/manual/web/contractrummy.md) |
+| カルーキ (Kalooki) | `kalooki` | [CUI](docs/manual/cui/kalooki.md) / [Web](docs/manual/web/kalooki.md) |
 | アルティメット・テキサスホールデム (Ultimate Texas Hold'em) | `ultimatetexasholdem` | [CUI](docs/manual/cui/ultimatetexasholdem.md) / [Web](docs/manual/web/ultimatetexasholdem.md) |
 | クレセント・ソリティア (Crescent Solitaire) | `crescent` | [CUI](docs/manual/cui/crescent.md) / [Web](docs/manual/web/crescent.md) |
 | ミシシッピ・スタッド (Mississippi Stud) | `mississippistud` | [CUI](docs/manual/cui/mississippistud.md) / [Web](docs/manual/web/mississippistud.md) |

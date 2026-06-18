@@ -376,6 +376,11 @@ var registry = []*Game{
 	// "Chinchón" instant win (7 consecutive cards of one suit). Solo worker
 	// bucket — it reuses Gin Rummy's (untagged) meld/deadwood helpers.
 	{Name: "chinchon", Category: CategorySolo},
+	// Kalooki: Jamaican/British joker-wild rummy, 2–4 players, two 52-card decks
+	// plus 2 jokers (106 cards). First melds must total ≥51 points (opening
+	// requirement); jokers are wild and a meld containing one scores 1.5×. Solo
+	// worker bucket — it reuses the Contract Rummy meld/layoff structure.
+	{Name: "kalooki", Category: CategorySolo},
 }
 
 // All returns a value-level copy of the registry in canonical order.

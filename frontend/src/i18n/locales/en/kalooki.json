@@ -1,0 +1,43 @@
+{
+  "title": "Kalooki",
+  "phase": {
+    "draw": "Draw",
+    "meld": "Meld",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "playerCount": "Players",
+    "openingThreshold": "Opening Points",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "openingLabel": "Opening points",
+  "openingHint": "Your first meld(s) must total at least {{n}} points",
+  "stockLabel": "Stock",
+  "discardLabel": "Discard",
+  "yourHand": "Your hand",
+  "cards": "Cards",
+  "scoreLabel": "Total",
+  "openedBadge": "Opened",
+  "groupsBuilt": "Groups built",
+  "drawStock": "Draw from stock",
+  "drawDiscard": "Take discard",
+  "addGroup": "Add group",
+  "removeLastGroup": "Remove last group",
+  "meld": "Lay down meld",
+  "layoff": "Lay off",
+  "meldAria": "{{player}}'s meld {{meld}}",
+  "layoffTargetSummary": "→ Lay-off target: {{player}} meld {{meld}}",
+  "discard": "Discard a card",
+  "nextRound": "Next round",
+  "viewLog": "View log",
+  "tutorial": {
+    "table": "Each player lays melds (sets/runs) face up on the table. Your first meld must meet the opening points shown at the top.",
+    "hand": "Pick cards from your hand to build meld groups. Jokers act as wild cards.",
+    "actions": "Draw → meld/lay off → discard one card, in that order."
+  }
+}
