@@ -1,0 +1,47 @@
+{
+  "phase": {
+    "draw": "Draw",
+    "meld": "Meld",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetWins": "Target Wins",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "drawPile": "Draw pile: {{count}} cards",
+  "discardTop": "Discard",
+  "cards": "{{count}} cards",
+  "wins": "Wins: {{count}}",
+  "scores": "Wins",
+  "scoresPlayer": "Player",
+  "scoresWins": "Wins",
+  "melds": "Melds",
+  "tableMelds": "Table Melds",
+  "drawStockButton": "Draw Stock",
+  "drawDiscardButton": "Draw Discard",
+  "meldButton": "Meld",
+  "discardButton": "Discard",
+  "nextRound": "Next Round",
+  "drawPhase": "Draw a card from the stock or discard pile",
+  "meldPhase": "Lay down melds, then discard a card",
+  "forcedUse": "A card taken from the discard pile must be used in a meld",
+  "roundEnd": "Round over",
+  "result": {
+    "humanWin": "You win!",
+    "cpuWin": "CPU {{cpuId}} wins!"
+  },
+  "tutorial": {
+    "drawArea": "Draw a card from the stock or discard pile. A card taken from the discard must be melded immediately.",
+    "playerHand": "This is your hand. Form sets (3+ same rank) or runs (3+ consecutive same suit).",
+    "meldButton": "Lay the selected cards onto the table. Meld out your entire hand to win.",
+    "discardButton": "After melding, discard one card from your hand.",
+    "scoreTable": "Each player's rounds won are shown here.",
+    "resetButton": "Press the reset button to start a new game."
+  }
+}

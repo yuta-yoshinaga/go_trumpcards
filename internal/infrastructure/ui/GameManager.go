@@ -2509,6 +2509,26 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "conquian", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewConquianCuiController(usecase.NewConquianInteractor(
+				domain.NewDefaultConquian(), new(presenter.ConquianCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "conquian.helpTitle",
+				CommandKeys: []string{
+					"conquian.helpDrawStock",
+					"conquian.helpDrawDiscard",
+					"conquian.helpMeld",
+					"conquian.helpDiscard",
+					"conquian.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys: []string{
+					"conquian.helpSetDifficulty",
+					"conquian.helpSetWins",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

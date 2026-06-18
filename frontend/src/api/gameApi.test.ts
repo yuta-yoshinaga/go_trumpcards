@@ -9,6 +9,7 @@ import {
   blackjackswitchApi,
   canfieldApi,
   casinoholdemApi,
+  conquianApi,
   crazyeightsApi,
   daifugoApi,
   doubtApi,
@@ -2665,6 +2666,79 @@ describe('gameApi', () => {
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(ginrummyApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
+  describe('conquianApi.exec', () => {
+    const payload = {
+      players: [],
+      phase: 0,
+      roundNumber: 1,
+      currentPlayerIdx: 0,
+      discardTop: null,
+      drawPileCount: 0,
+      gameEndFlag: false,
+      winnerIdx: -1,
+      roundWinnerIdx: -1,
+      tookDiscard: false,
+      message: '',
+      config: { cpuDifficulty: 1, targetWins: 3 },
+    };
+
+    it('calls the correct URL with reset command and config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await conquianApi.exec('reset', undefined, { cpuDifficulty: 1, targetWins: 3 });
+      expect(mockFetch).toHaveBeenCalledWith('/conquian/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          cardIndex: undefined,
+          config: { cpuDifficulty: 1, targetWins: 3 },
+          meldGroups: undefined,
+          sessionId,
+        }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with discard command and cardIndex', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await conquianApi.exec('discard', 3);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/conquian/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'discard',
+            cardIndex: 3,
+            config: undefined,
+            meldGroups: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with meld command and meldGroups', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await conquianApi.exec('meld', undefined, undefined, [[0, 1, 2]]);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/conquian/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'meld',
+            cardIndex: undefined,
+            config: undefined,
+            meldGroups: [[0, 1, 2]],
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(conquianApi.exec('reset')).rejects.toThrow('HTTP error: 500');
     });
   });
 

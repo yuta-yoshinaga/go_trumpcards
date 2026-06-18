@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した156種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した157種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -47,6 +47,7 @@ Go + Clean Architecture で実装した156種類のトランプゲーム。CLI �
 | ツーテンジャック (Two Ten Jack) | `twotenjack` | [CUI](docs/manual/cui/twotenjack.md) / [Web](docs/manual/web/twotenjack.md) |
 | クレイジーエイト (Crazy Eights) | `crazyeights` | [CUI](docs/manual/cui/crazyeights.md) / [Web](docs/manual/web/crazyeights.md) |
 | ジンラミー (Gin Rummy) | `ginrummy` | [CUI](docs/manual/cui/ginrummy.md) / [Web](docs/manual/web/ginrummy.md) |
+| コンキャン (Conquian) | `conquian` | [CUI](docs/manual/cui/conquian.md) / [Web](docs/manual/web/conquian.md) |
 | カナスタ (Canasta) | `canasta` | [CUI](docs/manual/cui/canasta.md) / [Web](docs/manual/web/canasta.md) |
 | ハンド・アンド・フット (Hand and Foot) | `handandfoot` | [CUI](docs/manual/cui/handandfoot.md) / [Web](docs/manual/web/handandfoot.md) |
 | ブラーコ (Burraco) | `burraco` | [CUI](docs/manual/cui/burraco.md) / [Web](docs/manual/web/burraco.md) |
