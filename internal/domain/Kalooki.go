@@ -840,6 +840,9 @@ func kalookiIsRun(cards []*Card) bool {
 		// 全部ジョーカー: ランとしては無効
 		return false
 	}
+	// aceVariants 内でソートされるが、kalookiRunFits のソート済み前提を明示的に
+	// 担保するためここでもソートしておく（レイオフで末尾追加された場合に備える）。
+	sort.Ints(naturals)
 	for _, variant := range aceVariants(naturals) {
 		if kalookiRunFits(variant, jokers) {
 			return true
@@ -857,6 +860,10 @@ func kalookiRunFits(sortedNaturals []int, jokers int) bool {
 		}
 	}
 	if len(sortedNaturals) == 0 {
+		return false
+	}
+	// ランは1スート最大13枚（A〜K）。自然牌＋ジョーカーがこれを超える組は不正。
+	if len(sortedNaturals)+jokers > 13 {
 		return false
 	}
 	// 端から端までを埋めるのに必要なジョーカー数
