@@ -345,7 +345,7 @@ func (g *Chinchon) PlayerKnock(cardIndex int) error {
 	}
 
 	testCards := cardsExcludingIndex(player, cardIndex)
-	_, deadwood := FindBestMelds(testCards)
+	_, deadwood := chinchonFindBestMelds(testCards)
 	deadwoodValue := CalcDeadwoodValue(deadwood)
 	if deadwoodValue > g.config.KnockThreshold {
 		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("デッドウッドが%d点以下でないとノックできません（現在%d点）", g.config.KnockThreshold, deadwoodValue))
@@ -359,7 +359,7 @@ func (g *Chinchon) PlayerKnock(cardIndex int) error {
 func (g *Chinchon) executeKnock(idx, cardIndex int) {
 	player := g.players[idx]
 	testCards := cardsExcludingIndex(player, cardIndex)
-	melds, deadwood := FindBestMelds(testCards)
+	melds, deadwood := chinchonFindBestMelds(testCards)
 	deadwoodValue := CalcDeadwoodValue(deadwood)
 
 	discarded := player.RemoveCard(cardIndex)
@@ -441,7 +441,7 @@ func (g *Chinchon) advanceLayoff() {
 // canLayoff カードがノッカーのメルドにレイオフ可能か
 func (g *Chinchon) canLayoff(card *Card) bool {
 	for _, meld := range g.knockerMelds {
-		if canAddToMeld(meld, card) {
+		if chinchonCanAddToMeld(meld, card) {
 			return true
 		}
 	}
@@ -451,7 +451,7 @@ func (g *Chinchon) canLayoff(card *Card) bool {
 // layoffCard カードをノッカーのメルドに追加する
 func (g *Chinchon) layoffCard(card *Card) {
 	for i, meld := range g.knockerMelds {
-		if canAddToMeld(meld, card) {
+		if chinchonCanAddToMeld(meld, card) {
 			g.knockerMelds[i] = append(meld, card)
 			return
 		}
@@ -472,7 +472,7 @@ func (g *Chinchon) scoreRound() {
 			deadwoodValue = CalcDeadwoodValue(g.knockerDeadwood)
 		} else {
 			cards := handCards(p)
-			_, dw := FindBestMelds(cards)
+			_, dw := chinchonFindBestMelds(cards)
 			deadwoodValue = CalcDeadwoodValue(dw)
 		}
 		p.SetRoundScore(deadwoodValue)
@@ -602,8 +602,8 @@ func (g *Chinchon) cpuDraw() {
 	if len(g.discardPile) > 0 {
 		top := g.discardPile[len(g.discardPile)-1]
 		hand := handCards(g.players[idx])
-		_, dwWithout := FindBestMelds(hand)
-		_, dwWith := FindBestMelds(append(append([]*Card{}, hand...), top))
+		_, dwWithout := chinchonFindBestMelds(hand)
+		_, dwWith := chinchonFindBestMelds(append(append([]*Card{}, hand...), top))
 		if CalcDeadwoodValue(dwWith) < CalcDeadwoodValue(dwWithout) {
 			g.doDrawDiscard(idx)
 			return
@@ -624,7 +624,7 @@ func (g *Chinchon) cpuDiscardOrKnock() {
 	bestDiscardIdx := 0
 	bestDeadwood := -1
 	for i := 0; i < player.GetCardsSize(); i++ {
-		_, dw := FindBestMelds(cardsExcludingIndex(player, i))
+		_, dw := chinchonFindBestMelds(cardsExcludingIndex(player, i))
 		dwVal := CalcDeadwoodValue(dw)
 		if bestDeadwood < 0 || dwVal < bestDeadwood {
 			bestDeadwood = dwVal
@@ -958,4 +958,49 @@ func (g *Chinchon) UnmarshalJSON(data []byte) error {
 		g.layoffQueue = make([]int, 0)
 	}
 	return nil
+}
+
+// chinchonRemapValue は 8/9/10 を除いた40枚デッキのランクを連続位置
+// (A=1..7=7, J=8, Q=9, K=10) に写像したカードを返す。Gin Rummy の値ベースの
+// ラン検出が ♠7-♠J を隣接として扱えるようにするための内部表現。
+func chinchonRemapValue(c *Card) *Card {
+	return NewCard(c.GetDesign(), chinchonRankPosition(c.GetValue()), false)
+}
+
+// chinchonFindBestMelds は FindBestMelds を 40枚デッキのランク隣接 (7-J 隣接)
+// で実行するラッパー。各カードを連続位置に写像してから Gin Rummy のメルド探索を
+// 呼び出し、結果のメルド・デッドウッドを元のカードに写し戻す。デッドウッドの
+// 点数計算は呼び出し側が元のカードに対して行うため正しい点数が得られる。
+func chinchonFindBestMelds(cards []*Card) (melds [][]*Card, deadwood []*Card) {
+	remap := make([]*Card, len(cards))
+	back := make(map[*Card]*Card, len(cards))
+	for i, c := range cards {
+		rc := chinchonRemapValue(c)
+		remap[i] = rc
+		back[rc] = c
+	}
+	rMelds, rDead := FindBestMelds(remap)
+	melds = make([][]*Card, len(rMelds))
+	for i, m := range rMelds {
+		grp := make([]*Card, len(m))
+		for j, rc := range m {
+			grp[j] = back[rc]
+		}
+		melds[i] = grp
+	}
+	deadwood = make([]*Card, len(rDead))
+	for i, rc := range rDead {
+		deadwood[i] = back[rc]
+	}
+	return melds, deadwood
+}
+
+// chinchonCanAddToMeld は canAddToMeld を 40枚デッキのランク隣接で実行する
+// ラッパー。メルドと追加カードを連続位置に写像してから判定する。
+func chinchonCanAddToMeld(meld []*Card, card *Card) bool {
+	rMeld := make([]*Card, len(meld))
+	for i, c := range meld {
+		rMeld[i] = chinchonRemapValue(c)
+	}
+	return canAddToMeld(rMeld, chinchonRemapValue(card))
 }
