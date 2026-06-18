@@ -285,8 +285,7 @@ func (g *Mao) PlayerPlay(cardIndex int) error {
 		return ErrNotHumanTurn
 	}
 
-	// 直前のプレイで宣言待ちだったが別のアクションをした → ルール違反ペナルティ
-	g.resolvePendingWord(g.currentPlayerIdx, false)
+	g.rulePenaltyFlag = false
 
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
@@ -298,8 +297,12 @@ func (g *Mao) PlayerPlay(cardIndex int) error {
 		return NewDomainError(ErrInvalidPlay, "そのカードは出せません")
 	}
 
-	g.rulePenaltyFlag = false
+	// 選択カードを先に取り除く。宣言待ちペナルティは手札を引いて並べ替えるため、
+	// 取り除きを後に回すと cardIndex が指すカードがずれてしまう。
 	played := player.RemoveCard(cardIndex)
+	// 直前のプレイで宣言待ちだったが別のアクションをした → ルール違反ペナルティ。
+	// (rulePenaltyFlag は上で false に戻した後なので、ここでの違反が正しく残る)
+	g.resolvePendingWord(g.currentPlayerIdx, false)
 	humanTriggered := g.ruleTriggered(played)
 	g.playCard(g.currentPlayerIdx, played)
 	// 人間のプレイがトリガーを発火させた場合は宣言待ちにする。

@@ -243,7 +243,10 @@ func TestMao_PlaySkipAdvancesTwo(t *testing.T) {
 	g.SetChosenSuit(-1)
 	g.SetDirection(1)
 	g.SetDiscardPile([]*Card{maoCard(CardDesignSpade, 5)})
-	maoSetHand(g.GetPlayer(0), maoCard(CardDesignSpade, MaoSkipValue), maoCard(CardDesignHeart, 9))
+	// Three cards so that after playing the skip the hand still has 2 cards —
+	// otherwise dropping to 1 card would enter MustDeclare and the turn would
+	// not advance, masking the skip behaviour under test.
+	maoSetHand(g.GetPlayer(0), maoCard(CardDesignSpade, MaoSkipValue), maoCard(CardDesignHeart, 9), maoCard(CardDesignClover, 4))
 
 	require.NoError(t, g.PlayerPlay(0))
 	// player 0 -> skip player 1 -> player 2
