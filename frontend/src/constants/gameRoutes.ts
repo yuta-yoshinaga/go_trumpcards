@@ -1200,6 +1200,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 3, 5, 2], skill: [2, 4, 5, 1], social: [1, 3, 5, 2, 4], theme: [2, 3, 3, 1, 2, 2] },
       },
       {
+        path: '/kalooki',
+        labelKey: 'nav.kalooki',
+        icon: '🃏',
+        page: 'Kalooki',
+        profile: { mood: [2, 3, 5, 2], skill: [2, 4, 5, 1], social: [1, 3, 5, 2, 4], theme: [2, 3, 3, 1, 2, 2] },
+      },
+      {
         path: '/rummy500',
         labelKey: 'nav.rummy500',
         icon: '🥃',

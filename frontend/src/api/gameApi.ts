@@ -76,6 +76,7 @@ import type {
   HighCardFlushResponse,
   HoldemResponse,
   IndianPokerResponse,
+  KalookiResponse,
   KlaverjasResponse,
   KlondikeResponse,
   KnockoutWhistResponse,
@@ -287,6 +288,7 @@ const workerUrl: Record<string, string> = {
   blackjackswitch: WORKER_CASINO,
   montecarlo: WORKER_SOLO,
   contractrummy: WORKER_SOLO,
+  kalooki: WORKER_SOLO,
   ultimatetexasholdem: WORKER_CASINO,
   crescent: WORKER_SOLO,
   mississippistud: WORKER_CASINO,
@@ -3426,6 +3428,20 @@ export const contractrummyApi = {
   ) => gameExec<ContractRummyResponse>('contractrummy', { command, ...(params ?? {}) }),
 };
 
+/** API client for the Kalooki /kalooki/exec endpoint. */
+export const kalookiApi = {
+  exec: (
+    command: 'reset' | 'drawstock' | 'drawdiscard' | 'meld' | 'layoff' | 'discard' | 'nextround' | 'log',
+    params?: {
+      cardIndex?: number;
+      meldGroups?: number[][];
+      targetPlayerIdx?: number;
+      meldIdx?: number;
+      config?: { cpuDifficulty?: number; playerCount?: number; openingThreshold?: number };
+    },
+  ) => gameExec<KalookiResponse>('kalooki', { command, ...(params ?? {}) }),
+};
+
 const games = [
   'blackjack',
   'poker',
@@ -3534,6 +3550,7 @@ const games = [
   'blackjackswitch',
   'montecarlo',
   'contractrummy',
+  'kalooki',
   'ultimatetexasholdem',
   'crescent',
   'mississippistud',

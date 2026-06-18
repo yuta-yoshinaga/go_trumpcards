@@ -449,4 +449,13 @@ func init() {
 		},
 		controller.NewChinchonWebControllerWithProvider)
 
+	games.RegisterKVGame("kalooki", games.CategorySolo,
+		func() usecase.KalookiInteractorIF {
+			return usecase.NewKalookiInteractor(domain.NewDefaultKalooki(), new(presenter.KalookiWebPresenter))
+		},
+		func(data []byte) (usecase.KalookiInteractorIF, error) {
+			return usecase.RestoreKalookiInteractor(data, new(presenter.KalookiWebPresenter))
+		},
+		controller.NewKalookiWebControllerWithProvider)
+
 }

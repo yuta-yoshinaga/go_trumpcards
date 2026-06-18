@@ -231,6 +231,8 @@ tags:
     description: Monte Carlo Solitaire (モンテカルロ・ソリティア) game - 5x5 grid solitaire; remove 8-direction adjacent same-rank pairs, then deal to compress the board top-left and refill from the stock; clear all 52 cards to win
   - name: contractrummy
     description: Contract Rummy (コントラクトラミー) game - 3-player rummy (1 human + 2 CPU) over 7 progressive rounds; each round has a fixed contract (sets / runs) the player must lay before going out; lowest cumulative penalty across rounds wins
+  - name: kalooki
+    description: Kalooki (カルーキ) game - Contract Rummy-style table-meld rummy for 2-4 players (1 human + 1-3 CPU) using a 106-card 2-deck plus 2 jokers, 13 cards dealt each; first meld must total at least the opening threshold (default 51), jokers are wild (joker melds score 1.5x), lay off onto any player's melds after opening, go out to win the round, lowest cumulative score wins
   - name: ultimatetexasholdem
     description: Ultimate Texas Hold'em (アルティメット・テキサスホールデム) game - single-player vs dealer Texas Hold'em variant with Ante + equal Blind wagers, optional Trips side bet, and one-shot Play raise at Pre-flop (3x / 4x), Flop (2x) or River (1x); dealer must qualify with a pair or better
   - name: crescent
@@ -10911,6 +10913,56 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ContractRummyResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+
+  /kalooki/exec:
+    post:
+      tags:
+        - kalooki
+      summary: Execute a Kalooki game command
+      description: |
+        Send a command to advance the Kalooki (カルーキ) game session
+        identified by `sessionId`. 2-4 players (1 human + 1-3 CPU) play with a
+        106-card 2-deck plus 2 jokers; 13 cards are dealt to each player. On a
+        turn a player draws (stock or top-of-discard), optionally melds or lays
+        off, then discards one card. A player's first meld(s) must total at
+        least the opening threshold (default 51 points). After opening, a
+        player may lay off onto any player's melds. Jokers are wild and a meld
+        containing a joker scores 1.5x. Going out wins the round; remaining
+        deadwood scores as penalty and the lowest cumulative score wins.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Draw      | `0`   | Draw from stock or take the discard top |
+        | Meld      | `1`   | Optional meld / layoff, then discard |
+        | RoundEnd  | `2`   | Round finished, awaiting `nextround` |
+        | GameEnd   | `3`   | Game finished |
+
+        | Command          | Aliases       | Description |
+        |------------------|---------------|-------------|
+        | `reset`          | `r`           | Start / restart a game |
+        | `drawstock`      | `ds`          | Draw a card from the stock |
+        | `drawdiscard`    | `dd`          | Take the top of the discard pile |
+        | `meld`           | `m`           | Lay down one meld group (`meldGroups` required) |
+        | `layoff`         | `lo`          | Add one card to any player's meld (`targetPlayerIdx`, `meldIdx`, `cardIndex` required) |
+        | `discard`        | `d`           | Discard one card to end the turn (`cardIndex` required) |
+        | `nextround`      | `nr`          | Advance to the next round |
+        | `log`            | `log`         | View action log |
+      operationId: kalookiExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KalookiRequest'
+      responses:
+        '200':
+          description: Updated game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KalookiResponse'
         '400':
           description: Bad request (unsupported command, missing/invalid parameters, or session error)
 
@@ -27897,6 +27949,148 @@ components:
             cpuDifficulty:
               type: integer
             failContractPenalty:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    # -------------------------------------------------------------------------
+    # Kalooki
+    # -------------------------------------------------------------------------
+    KalookiRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: Game command. Accepted values include `reset`, `drawstock`, `drawdiscard`, `meld`, `layoff`, `discard`, `nextround`, `log`, plus their short aliases.
+          enum: [r, reset, ds, drawstock, dd, drawdiscard, m, meld, lo, layoff, d, discard, nr, nextround, log]
+          example: drawstock
+        cardIndex:
+          type: integer
+          description: Index in the human player's hand (used by `discard` and `layoff`).
+        meldGroups:
+          type: array
+          description: Outer index = one meld group; inner array = card indices in the human player's hand forming that meld. Used by `meld`.
+          items:
+            type: array
+            items:
+              type: integer
+        targetPlayerIdx:
+          type: integer
+          description: Target player index for `layoff` (may be any player after opening).
+        meldIdx:
+          type: integer
+          description: Target meld index on the target player for `layoff`.
+        config:
+          type: object
+          description: Optional config to apply on `reset`.
+          properties:
+            playerCount:
+              type: integer
+              description: Total number of players (2-4).
+            openingPoints:
+              type: integer
+              description: Minimum point total required to open with the first meld(s) (default 51).
+            cpuDifficulty:
+              type: integer
+              description: 0=Easy, 1=Normal, 2=Hard.
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    KalookiMeld:
+      type: object
+      description: A meld laid on the table.
+      properties:
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        hasJoker:
+          type: boolean
+          description: Whether the meld contains a joker (joker melds score 1.5x).
+
+    KalookiPlayerOutput:
+      type: object
+      description: Player state for Kalooki.
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        melds:
+          type: array
+          items:
+            $ref: '#/components/schemas/KalookiMeld'
+        opened:
+          type: boolean
+          description: Whether the player has met the opening threshold.
+        roundScore:
+          type: integer
+        cumulativeScore:
+          type: integer
+
+    KalookiResponse:
+      type: object
+      description: Current state of the Kalooki game.
+      required:
+        - players
+        - phase
+        - currentPlayerIdx
+        - drawPileCount
+        - gameEndFlag
+        - winnerIdx
+        - roundWinnerIdx
+        - config
+        - message
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/KalookiPlayerOutput'
+        phase:
+          type: integer
+          description: 0=Draw, 1=Meld, 2=RoundEnd, 3=GameEnd.
+        roundNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        discardTop:
+          $ref: '#/components/schemas/Card'
+        drawPileCount:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+        roundWinnerIdx:
+          type: integer
+        openingPoints:
+          type: integer
+          description: Minimum point total required to open (default 51).
+        config:
+          type: object
+          properties:
+            playerCount:
+              type: integer
+            openingPoints:
+              type: integer
+            cpuDifficulty:
               type: integer
         message:
           type: string

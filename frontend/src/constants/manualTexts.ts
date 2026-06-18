@@ -74,6 +74,7 @@ import holdem from '../../../docs/manual/web/holdem.md?raw';
 import indianpoker from '../../../docs/manual/web/indianpoker.md?raw';
 import irishpoker from '../../../docs/manual/web/irishpoker.md?raw';
 import jokerpoker from '../../../docs/manual/web/jokerpoker.md?raw';
+import kalooki from '../../../docs/manual/web/kalooki.md?raw';
 import klaverjas from '../../../docs/manual/web/klaverjas.md?raw';
 import klondike from '../../../docs/manual/web/klondike.md?raw';
 import knockoutwhist from '../../../docs/manual/web/knockoutwhist.md?raw';
@@ -256,6 +257,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/montecarlo': montecarlo,
   '/mus': mus,
   '/contractrummy': contractrummy,
+  '/kalooki': kalooki,
   '/ultimatetexasholdem': ultimatetexasholdem,
   '/crescent': crescent,
   '/mississippistud': mississippistud,

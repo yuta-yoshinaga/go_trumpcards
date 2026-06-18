@@ -168,6 +168,7 @@ var gameDescriptions = map[string]string{
 	"handandfoot":         "Hand and Foot (ハンド・アンド・フット)",
 	"conquian":            "Conquian (コンキャン)",
 	"chinchon":            "Chinchón (チンチョン)",
+	"kalooki":             "Kalooki (カルーキ)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).
