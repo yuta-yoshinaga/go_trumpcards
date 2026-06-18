@@ -468,18 +468,20 @@ func TestKalooki_NextRound_NoOpWhenNotRoundEnd(t *testing.T) {
 }
 
 func TestKalooki_FinalizeGameEnd_WinnerIsRoundWinner(t *testing.T) {
+	// PlayerDiscard is human-only (seat 0); the human empties their hand to go
+	// out, becomes the round winner, and NextRound promotes them to game winner.
 	g := newTestKalooki()
-	g.SetCurrentPlayerIdx(2)
+	g.SetCurrentPlayerIdx(0)
 	g.SetPhase(KalookiPhaseMeld)
-	p := g.GetPlayer(2)
+	p := g.GetPlayer(0)
 	p.SetHasOpened(true)
 	klSetHand(p, []*Card{klCard(CardDesignSpade, 5)})
 	if err := g.PlayerDiscard(0); err != nil {
 		t.Fatalf("discard error: %v", err)
 	}
 	g.NextRound()
-	if g.GetWinnerIdx() != 2 {
-		t.Errorf("winner = %d, want 2 (round winner)", g.GetWinnerIdx())
+	if g.GetWinnerIdx() != 0 {
+		t.Errorf("winner = %d, want 0 (round winner)", g.GetWinnerIdx())
 	}
 }
 
