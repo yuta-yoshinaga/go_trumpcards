@@ -467,4 +467,13 @@ func init() {
 		},
 		controller.NewThreeThirteenWebControllerWithProvider)
 
+	games.RegisterKVGame("mao", games.CategorySolo,
+		func() usecase.MaoInteractorIF {
+			return usecase.NewMaoInteractor(domain.NewDefaultMao(), new(presenter.MaoWebPresenter))
+		},
+		func(data []byte) (usecase.MaoInteractorIF, error) {
+			return usecase.RestoreMaoInteractor(data, new(presenter.MaoWebPresenter))
+		},
+		controller.NewMaoWebControllerWithProvider)
+
 }

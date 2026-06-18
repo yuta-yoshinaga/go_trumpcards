@@ -541,6 +541,15 @@ export const MacauPhase = {
   GAME_END: 4,
 } as const;
 
+/** Mao phase constants (sync: internal/domain/Mao.go). */
+export const MaoPhase = {
+  PLAY: 0,
+  CHOOSE_SUIT: 1,
+  MUST_DECLARE: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Gin Rummy phase constants (sync: internal/domain/GinRummy.go). */
 export const GinRummyPhase = {
   DRAW: 0,

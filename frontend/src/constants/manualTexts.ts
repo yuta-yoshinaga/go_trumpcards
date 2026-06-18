@@ -81,6 +81,7 @@ import knockoutwhist from '../../../docs/manual/web/knockoutwhist.md?raw';
 import letitride from '../../../docs/manual/web/letitride.md?raw';
 import macau from '../../../docs/manual/web/macau.md?raw';
 import manille from '../../../docs/manual/web/manille.md?raw';
+import mao from '../../../docs/manual/web/mao.md?raw';
 import marias from '../../../docs/manual/web/marias.md?raw';
 import memory from '../../../docs/manual/web/memory.md?raw';
 import mighty from '../../../docs/manual/web/mighty.md?raw';
@@ -224,6 +225,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/letitride': letitride,
   '/macau': macau,
   '/manille': manille,
+  '/mao': mao,
   '/marias': marias,
   '/sedma': sedma,
   '/knockoutwhist': knockoutwhist,

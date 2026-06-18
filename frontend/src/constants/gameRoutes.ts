@@ -735,6 +735,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [4, 5, 1, 5], skill: [5, 3, 1, 4], social: [1, 3, 5, 5, 2], theme: [2, 2, 3, 4, 2, 3] },
       },
       {
+        path: '/mao',
+        labelKey: 'nav.mao',
+        icon: '🤫',
+        page: 'Mao',
+        profile: { mood: [4, 5, 2, 5], skill: [4, 4, 3, 4], social: [1, 3, 5, 5, 2], theme: [2, 2, 4, 4, 3, 4] },
+      },
+      {
         path: '/speed',
         labelKey: 'nav.speed',
         icon: '⚡',
