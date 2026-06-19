@@ -221,8 +221,9 @@ func TestFiveCardStud_BettingRound(t *testing.T) {
 	require.NoError(t, s.PlayerAction(FiveCardStudActionCall, 0, 0))
 	assert.Equal(t, 2, s.GetCurrentTurn())
 
-	// Player 2 raises.
-	require.NoError(t, s.PlayerAction(FiveCardStudActionRaise, cfg.SmallBet*2, 0))
+	// Player 2 raises by one small bet (the amount is the raise increment, added
+	// on top of calling the outstanding 5), so the outstanding bet becomes 10.
+	require.NoError(t, s.PlayerAction(FiveCardStudActionRaise, cfg.SmallBet, 0))
 	assert.Equal(t, cfg.SmallBet*2, s.GetLastBet())
 	assert.Equal(t, 3, s.GetCurrentTurn())
 
