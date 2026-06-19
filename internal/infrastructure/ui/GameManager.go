@@ -2735,6 +2735,25 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                    action log"},
 			})
 	}},
+	{Name: "openfacechinese", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewOpenFaceChineseCuiController(usecase.NewOpenFaceChineseInteractor(
+				domain.NewDefaultOpenFaceChinese(), new(presenter.OpenFaceChineseCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "openfacechinese.helpTitle",
+				CommandKeys: []string{
+					"openfacechinese.helpPlace",
+					"openfacechinese.helpFront",
+					"openfacechinese.helpMiddle",
+					"openfacechinese.helpBack",
+					"openfacechinese.helpNextRound",
+				},
+				SettingKeys: []string{
+					"openfacechinese.helpSetDifficulty",
+					"openfacechinese.helpSetPlayers",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

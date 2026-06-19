@@ -855,4 +855,9 @@ func init() {
 			return usecase.NewFaroInteractor(domain.NewDefaultFaro(), new(presenter.FaroWebPresenter))
 		},
 		controller.NewFaroWebController)
+	BindWebControllerFor("openfacechinese",
+		func() usecase.OpenFaceChineseInteractorIF {
+			return usecase.NewOpenFaceChineseInteractor(domain.NewDefaultOpenFaceChinese(), new(presenter.OpenFaceChineseWebPresenter))
+		},
+		controller.NewOpenFaceChineseWebController)
 }

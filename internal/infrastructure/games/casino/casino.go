@@ -550,4 +550,13 @@ func init() {
 		},
 		controller.NewFaroWebControllerWithProvider)
 
+	games.RegisterKVGame("openfacechinese", games.CategoryCasino,
+		func() usecase.OpenFaceChineseInteractorIF {
+			return usecase.NewOpenFaceChineseInteractor(domain.NewDefaultOpenFaceChinese(), new(presenter.OpenFaceChineseWebPresenter))
+		},
+		func(data []byte) (usecase.OpenFaceChineseInteractorIF, error) {
+			return usecase.RestoreOpenFaceChineseInteractor(data, new(presenter.OpenFaceChineseWebPresenter))
+		},
+		controller.NewOpenFaceChineseWebControllerWithProvider)
+
 }

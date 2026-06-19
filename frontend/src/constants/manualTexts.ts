@@ -101,6 +101,7 @@ import ohhell from '../../../docs/manual/web/ohhell.md?raw';
 import oldmaid from '../../../docs/manual/web/oldmaid.md?raw';
 import omaha from '../../../docs/manual/web/omaha.md?raw';
 import omahahilo from '../../../docs/manual/web/omahahilo.md?raw';
+import openfacechinese from '../../../docs/manual/web/openfacechinese.md?raw';
 import osmosis from '../../../docs/manual/web/osmosis.md?raw';
 import pageone from '../../../docs/manual/web/pageone.md?raw';
 import paigow from '../../../docs/manual/web/paigow.md?raw';
@@ -185,6 +186,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/cuckoo': cuckoo,
   '/cuarenta': cuarenta,
   '/faro': faro,
+  '/openfacechinese': openfacechinese,
   '/pishti': pishti,
   '/bridge': bridge,
   '/burraco': burraco,

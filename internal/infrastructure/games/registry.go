@@ -425,6 +425,13 @@ var registry = []*Game{
 	// turns of two (losing card then winning card), with a half-collect on
 	// splits and a final 3-card call. Casino worker bucket.
 	{Name: "faro", Category: CategoryCasino},
+	// Open Face Chinese Poker (OFC): a modern Chinese-poker variant. Players
+	// receive cards and place them one at a time into three rows (top/middle/
+	// bottom) face-up with no rearranging; rows must rank bottom >= middle >=
+	// top or the hand fouls. Royalties reward strong rows and QQ+ on top earns
+	// Fantasyland. Reuses Chinese Poker's row evaluation + royalty helpers, so
+	// it shares the casino worker bucket.
+	{Name: "openfacechinese", Category: CategoryCasino},
 }
 
 // All returns a value-level copy of the registry in canonical order.
