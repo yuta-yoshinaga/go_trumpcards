@@ -401,6 +401,11 @@ var registry = []*Game{
 	// your team declares "Kemps!" for a point — or the opponents call
 	// "Counter-Kemps!" to steal it. First team to 5 wins. Casino worker bucket.
 	{Name: "kemps", Category: CategoryCasino},
+	// Cuckoo (Chase the Ace / Ranter-Go-Round): a European life-survival game.
+	// 4 players each hold one card and 3 lives; on your turn keep or swap with
+	// your neighbour (a King holder may refuse). The lowest card each round
+	// loses a life; last player standing wins. Casino worker bucket.
+	{Name: "cuckoo", Category: CategoryCasino},
 }
 
 // All returns a value-level copy of the registry in canonical order.

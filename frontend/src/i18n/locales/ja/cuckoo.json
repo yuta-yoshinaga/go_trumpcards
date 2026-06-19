@@ -1,0 +1,46 @@
+{
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "round": "ラウンド {{n}}",
+  "dealer": "親",
+  "stock": "山札: {{count}}枚",
+  "playersTitle": "プレイヤー",
+  "lives": "ライフ",
+  "eliminated": "脱落",
+  "kingRevealed": "キング公開",
+  "yourCard": "あなたのカード",
+  "hidden": "？",
+  "turnNotice": "あなたの番です — キープするか隣と交換してください。",
+  "keepButton": "キープ",
+  "swapButton": "交換",
+  "swapDealerButton": "山札と交換",
+  "refuseNotice": "誰かがあなたと交換しようとしています。",
+  "refuseButton": "拒否（キングを見せる）",
+  "acceptButton": "受け入れる",
+  "nextRound": "次のラウンドへ",
+  "roundLoser": "{{name}} が最も低いカードでライフを失いました。",
+  "roundLosersTitle": "今ラウンドの敗者",
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "easy": "やさしい",
+    "normal": "ふつう",
+    "hard": "むずかしい",
+    "initialLives": "初期ライフ"
+  },
+  "phase": {
+    "turn": "手番",
+    "refuse": "拒否",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "win": "あなたの勝利です！",
+  "lose": "{{name}} の勝利です。",
+  "tutorial": {
+    "info": "ラウンド数・親・山札の枚数がここに表示されます。",
+    "players": "各プレイヤーのライフ（♥）と脱落・手番の状態が表示されます。最後の1人になるまで生き残りましょう。",
+    "card": "あなたのカードです。最も低いカードを持っているとライフを失います。",
+    "actions": "あなたの番では「キープ」か「交換」を選びます。キングを持っていれば、隣からの交換を「拒否」できます。",
+    "resetButton": "このボタンでいつでもゲームをリセットできます。"
+  }
+}

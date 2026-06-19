@@ -444,6 +444,14 @@ export const SpoonsPhase = {
   GAME_END: 3,
 } as const;
 
+/** Cuckoo phase constants (sync: internal/domain/Cuckoo.go). */
+export const CuckooPhase = {
+  TURN: 0,
+  REFUSE: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Kemps phase constants (sync: internal/domain/Kemps.go). */
 export const KempsPhase = {
   EXCHANGE: 0,
