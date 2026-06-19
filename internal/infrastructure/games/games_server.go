@@ -835,4 +835,9 @@ func init() {
 			return usecase.NewCuckooInteractor(domain.NewDefaultCuckoo(), new(presenter.CuckooWebPresenter))
 		},
 		controller.NewCuckooWebController)
+	BindWebControllerFor("pishti",
+		func() usecase.PishtiInteractorIF {
+			return usecase.NewPishtiInteractor(domain.NewDefaultPishti(), new(presenter.PishtiWebPresenter))
+		},
+		controller.NewPishtiWebController)
 }

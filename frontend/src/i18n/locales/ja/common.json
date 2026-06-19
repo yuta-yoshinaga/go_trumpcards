@@ -183,7 +183,8 @@
     "belote": "ベロート",
     "rummy500": "ラミー 500",
     "bigtwo": "大老二",
-    "tienlen": "ティエンレン"
+    "tienlen": "ティエンレン",
+    "pishti": "ピシュティ"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -799,7 +800,8 @@
     "whist.playPhase.lead": "リードしてください",
     "whist.playPhase.follow": "カードを出してください",
     "whist.trickEnd": "トリック終了",
-    "whist.roundEnd": "ラウンド終了"
+    "whist.roundEnd": "ラウンド終了",
+    "pishti.result.scores": "ゲーム終了。スコア: {{scores}}"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

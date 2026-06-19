@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した164種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した165種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -183,6 +183,7 @@ Go + Clean Architecture で実装した164種類のトランプゲーム。CLI �
 | スプーン (Spoons) | `spoons` | [CUI](docs/manual/cui/spoons.md) / [Web](docs/manual/web/spoons.md) |
 | ケムプス (Kemps) | `kemps` | [CUI](docs/manual/cui/kemps.md) / [Web](docs/manual/web/kemps.md) |
 | カッコー (Cuckoo) | `cuckoo` | [CUI](docs/manual/cui/cuckoo.md) / [Web](docs/manual/web/cuckoo.md) |
+| ピシュティ (Pişti) | `pishti` | [CUI](docs/manual/cui/pishti.md) / [Web](docs/manual/web/pishti.md) |
 
 ## Demo
 

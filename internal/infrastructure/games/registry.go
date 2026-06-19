@@ -406,6 +406,10 @@ var registry = []*Game{
 	// your neighbour (a King holder may refuse). The lowest card each round
 	// loses a life; last player standing wins. Casino worker bucket.
 	{Name: "cuckoo", Category: CategoryCasino},
+	// Pişti: a popular Turkish fishing/capture game. 2–4 players; play a card
+	// matching the pile top (or any Jack) to capture the whole pile. Matching a
+	// lone card scores a Pişti (+10; +20 for Jack-on-Jack). Casino worker bucket.
+	{Name: "pishti", Category: CategoryCasino},
 }
 
 // All returns a value-level copy of the registry in canonical order.

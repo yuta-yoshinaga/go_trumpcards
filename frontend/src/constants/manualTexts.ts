@@ -106,6 +106,7 @@ import pigtail from '../../../docs/manual/web/pigtail.md?raw';
 import pineapple from '../../../docs/manual/web/pineapple.md?raw';
 import pinochle from '../../../docs/manual/web/pinochle.md?raw';
 import piquet from '../../../docs/manual/web/piquet.md?raw';
+import pishti from '../../../docs/manual/web/pishti.md?raw';
 import pitch from '../../../docs/manual/web/pitch.md?raw';
 import poker from '../../../docs/manual/web/poker.md?raw';
 import pokersquares from '../../../docs/manual/web/pokersquares.md?raw';
@@ -179,6 +180,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/spoons': spoons,
   '/kemps': kemps,
   '/cuckoo': cuckoo,
+  '/pishti': pishti,
   '/bridge': bridge,
   '/burraco': burraco,
   '/calculation': calculation,

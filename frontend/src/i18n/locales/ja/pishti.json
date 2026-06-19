@@ -1,0 +1,40 @@
+{
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "deck": "山札: {{count}}枚",
+  "playersTitle": "プレイヤー",
+  "captured": "捕獲 {{count}}枚",
+  "pisti": "Pişti {{count}}点",
+  "finalScore": "{{score}}点",
+  "pile": "場",
+  "pileTop": "場の一番上",
+  "pileCount": "{{count}}枚",
+  "pileEmpty": "場札なし",
+  "yourHand": "あなたの手札",
+  "turnNotice": "あなたの番です — 手札を1枚選んで場に出してください。",
+  "playButton": "出す",
+  "nextGame": "次のゲームへ",
+  "finalScoresTitle": "最終得点",
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "easy": "やさしい",
+    "normal": "ふつう",
+    "hard": "むずかしい",
+    "playerCount": "プレイヤー数"
+  },
+  "phase": {
+    "play": "プレイ",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "win": "あなたの勝利です！",
+  "lose": "{{name}} の勝利です。",
+  "tutorial": {
+    "info": "山札の残り枚数と各プレイヤーの捕獲状況がここに表示されます。",
+    "players": "各プレイヤーの手札枚数・捕獲枚数・Pişti ボーナスが表示されます。",
+    "pile": "場の中央です。一番上のカードと場札の枚数が表示されます。",
+    "hand": "あなたの手札です。カードをクリックすると場に出せます。同ランクまたはジャックで場札を捕獲できます。",
+    "resetButton": "このボタンでいつでもゲームをリセットできます。"
+  }
+}
