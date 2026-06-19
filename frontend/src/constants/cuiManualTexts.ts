@@ -60,6 +60,7 @@ import eightoff from '../../../docs/manual/cui/eightoff.md?raw';
 import escoba from '../../../docs/manual/cui/escoba.md?raw';
 import euchre from '../../../docs/manual/cui/euchre.md?raw';
 import fiftyone from '../../../docs/manual/cui/fiftyone.md?raw';
+import fivecardstud from '../../../docs/manual/cui/fivecardstud.md?raw';
 import fivehundred from '../../../docs/manual/cui/fivehundred.md?raw';
 import fortyfives from '../../../docs/manual/cui/fortyfives.md?raw';
 import fortythieves from '../../../docs/manual/cui/fortythieves.md?raw';
@@ -273,6 +274,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/deucetoseven': deucetoseven,
   '/reddog': reddog,
   '/sevencardstud': sevencardstud,
+  '/fivecardstud': fivecardstud,
   '/sevens': sevens,
   '/shortdeck': shortdeck,
   '/spades': spades,

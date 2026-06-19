@@ -532,4 +532,13 @@ func init() {
 		},
 		controller.NewCuarentaWebControllerWithProvider)
 
+	games.RegisterKVGame("fivecardstud", games.CategoryCasino,
+		func() usecase.FiveCardStudInteractorIF {
+			return usecase.NewFiveCardStudInteractor(domain.NewDefaultFiveCardStud(), new(presenter.FiveCardStudWebPresenter))
+		},
+		func(data []byte) (usecase.FiveCardStudInteractorIF, error) {
+			return usecase.RestoreFiveCardStudInteractor(data, new(presenter.FiveCardStudWebPresenter))
+		},
+		controller.NewFiveCardStudWebControllerWithProvider)
+
 }

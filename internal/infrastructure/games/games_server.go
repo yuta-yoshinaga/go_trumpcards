@@ -845,4 +845,9 @@ func init() {
 			return usecase.NewCuarentaInteractor(domain.NewDefaultCuarenta(), new(presenter.CuarentaWebPresenter))
 		},
 		controller.NewCuarentaWebController)
+	BindWebControllerFor("fivecardstud",
+		func() usecase.FiveCardStudInteractorIF {
+			return usecase.NewFiveCardStudInteractor(domain.NewDefaultFiveCardStud(), new(presenter.FiveCardStudWebPresenter))
+		},
+		controller.NewFiveCardStudWebController)
 }

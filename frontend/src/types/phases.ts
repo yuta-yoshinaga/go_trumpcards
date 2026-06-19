@@ -1000,6 +1000,25 @@ export const SevenCardStudRebuyPhaseType = {
   ADDON: 2,
 } as const;
 
+/** Five Card Stud phase constants (sync: internal/domain/FiveCardStud.go). */
+export const FiveCardStudPhase = {
+  INIT: 0,
+  SECOND_STREET: 1,
+  THIRD_STREET: 2,
+  FOURTH_STREET: 3,
+  FIFTH_STREET: 4,
+  SHOWDOWN: 5,
+  END: 6,
+  REBUY: 7,
+} as const;
+
+/** Five Card Stud rebuy phase type constants (sync: internal/domain/FiveCardStud.go). */
+export const FiveCardStudRebuyPhaseType = {
+  NONE: 0,
+  REBUY: 1,
+  ADDON: 2,
+} as const;
+
 /** Clock Solitaire phase constants (sync: internal/domain/ClockSolitaire.go). */
 export const ClockSolitairePhase = {
   PLAYING: 0,

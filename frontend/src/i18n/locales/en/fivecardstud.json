@@ -1,0 +1,57 @@
+{
+  "phase": {
+    "secondStreet": "Second Street",
+    "thirdStreet": "Third Street",
+    "fourthStreet": "Fourth Street",
+    "fifthStreet": "Fifth Street",
+    "showdown": "Showdown",
+    "end": "Result",
+    "init": "Initializing",
+    "rebuy": "Rebuy/Addon"
+  },
+  "doorCards": "Door Cards",
+  "holeCards": "Hole Cards",
+  "yourHand": "Your Hand",
+  "anteBringIn": "Ante/Bring-in",
+  "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
+  "rebuy": {
+    "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",
+    "accept": "Rebuy",
+    "skip": "Skip"
+  },
+  "addon": {
+    "prompt": "Addon? ({{chips}} chips)",
+    "accept": "Addon",
+    "skip": "Skip"
+  },
+  "muck": {
+    "prompt": "Muck or show your hand.",
+    "muck": "Muck",
+    "show": "Show"
+  },
+  "stats": {
+    "vpip": "VPIP",
+    "vpipTooltip": "VPIP (Voluntarily Put In Pot): % of hands where player voluntarily put chips in the pot",
+    "pfr": "PFR",
+    "pfrTooltip": "PFR (Pre-Flop Raise): % of hands where player raised in the first round",
+    "threeBet": "3Bet",
+    "threeBetTooltip": "3Bet: % of hands where player re-raised an opponent's raise",
+    "af": "AF",
+    "afTooltip": "AF (Aggression Factor): ratio of aggressive actions (bet/raise) to passive actions (call)"
+  },
+  "settings": {
+    "cpuMetaAI": "Meta-AI (CPU learns your play style)"
+  },
+  "tutorial": {
+    "playerHand": "Your hole card and door cards. Make the best 5-card hand.",
+    "actionButtons": "Choose your action: Bet, Call, Raise, Fold, or All In.",
+    "potDisplay": "Shows the current pot size and ante levels.",
+    "cpuArea": "CPU opponent information. Cards are revealed at showdown.",
+    "resetButton": "Press the reset button to start a new game."
+  },
+  "hint": {
+    "strongHandRank": "Strong hand — raise recommended",
+    "decentHandRank": "Decent hand — call recommended",
+    "weakHandRank": "Weak hand — fold recommended"
+  }
+}
