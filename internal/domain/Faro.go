@@ -508,8 +508,8 @@ func (f *Faro) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// faroErrInput はデシリアライズ時の共通入力検証エラー。
-var faroErrInput = fmt.Errorf("faro: invalid serialized state")
+// errFaroInput はデシリアライズ時の共通入力検証エラー。
+var errFaroInput = fmt.Errorf("faro: invalid serialized state")
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (f *Faro) UnmarshalJSON(data []byte) error {
@@ -521,26 +521,26 @@ func (f *Faro) UnmarshalJSON(data []byte) error {
 		j.Config = DefaultFaroConfig()
 	}
 	if j.Phase < FaroPhaseBetting || j.Phase > FaroPhaseGameEnd {
-		return faroErrInput
+		return errFaroInput
 	}
 	if j.TurnsPlayed < 0 || j.TurnsPlayed > FaroTurnsPerDeal {
-		return faroErrInput
+		return errFaroInput
 	}
 	if len(j.Bets) > faroMaxSliceLen || len(j.CallOrder) > faroMaxSliceLen ||
 		len(j.CallCards) > faroMaxSliceLen || len(j.ActionLog) > faroMaxSliceLen {
-		return faroErrInput
+		return errFaroInput
 	}
 	for rank, b := range j.Bets {
 		if rank < FaroMinRank || rank > FaroMaxRank {
-			return faroErrInput
+			return errFaroInput
 		}
 		if b == nil || b.Amount < 0 {
-			return faroErrInput
+			return errFaroInput
 		}
 	}
 	for _, r := range j.CallOrder {
 		if r < FaroMinRank || r > FaroMaxRank {
-			return faroErrInput
+			return errFaroInput
 		}
 	}
 	f.config = j.Config

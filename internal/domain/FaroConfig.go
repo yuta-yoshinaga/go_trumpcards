@@ -58,11 +58,7 @@ type faroConfigJSON struct {
 
 // MarshalJSON implements json.Marshaler.
 func (c FaroConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(faroConfigJSON{
-		StartChips: c.StartChips,
-		MinBet:     c.MinBet,
-		MaxBet:     c.MaxBet,
-	})
+	return json.Marshal(faroConfigJSON(c))
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
