@@ -523,4 +523,13 @@ func init() {
 		},
 		controller.NewPishtiWebControllerWithProvider)
 
+	games.RegisterKVGame("cuarenta", games.CategoryCasino,
+		func() usecase.CuarentaInteractorIF {
+			return usecase.NewCuarentaInteractor(domain.NewDefaultCuarenta(), new(presenter.CuarentaWebPresenter))
+		},
+		func(data []byte) (usecase.CuarentaInteractorIF, error) {
+			return usecase.RestoreCuarentaInteractor(data, new(presenter.CuarentaWebPresenter))
+		},
+		controller.NewCuarentaWebControllerWithProvider)
+
 }

@@ -410,6 +410,10 @@ var registry = []*Game{
 	// matching the pile top (or any Jack) to capture the whole pile. Matching a
 	// lone card scores a Pişti (+10; +20 for Jack-on-Jack). Casino worker bucket.
 	{Name: "pishti", Category: CategoryCasino},
+	// Cuarenta: the national card game of Ecuador. 4 players in 2 teams, 40-card
+	// deck (no 8/9/10); capture by rank with caída/ronda/limpia bonuses, first
+	// team to 40 points wins. Casino worker bucket (reuses Scopa's 40-card deck).
+	{Name: "cuarenta", Category: CategoryCasino},
 }
 
 // All returns a value-level copy of the registry in canonical order.

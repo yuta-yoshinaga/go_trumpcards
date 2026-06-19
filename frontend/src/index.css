@@ -114,6 +114,9 @@
   /* Pişti — a deep Anatolian terracotta-red felt evoking the Turkish coffeehouse fishing game, distinct from the casino greens. */
   --color-game-bg-pishti: #6b2f2a;
   --color-game-bg-pishti-dark: #461d1a;
+  /* Cuarenta — a warm Andean ochre-gold felt evoking the Ecuadorian national capture game, distinct from the casino greens. */
+  --color-game-bg-cuarenta: #6b5320;
+  --color-game-bg-cuarenta-dark: #463614;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;

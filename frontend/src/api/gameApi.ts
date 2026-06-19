@@ -43,6 +43,7 @@ import type {
   CrescentResponse,
   CribbageResponse,
   CruelResponse,
+  CuarentaResponse,
   CuckooResponse,
   DaifugoConfigInput,
   DaifugoResponse,
@@ -222,6 +223,7 @@ const workerUrl: Record<string, string> = {
   kemps: WORKER_CASINO,
   cuckoo: WORKER_CASINO,
   pishti: WORKER_CASINO,
+  cuarenta: WORKER_CASINO,
   calculation: WORKER_SOLO,
   hearts: WORKER_CLASSIC,
   spades: WORKER_CLASSIC,
@@ -2484,6 +2486,36 @@ export const pishtiApi = {
     }),
 };
 
+/** Configuration options for Cuarenta game settings. */
+export interface CuarentaConfigInput {
+  cpuDifficulty?: number;
+  targetScore?: number;
+}
+
+/** Commands accepted by the Cuarenta /cuarenta/exec endpoint. */
+export type CuarentaCommand = 'reset' | 'play' | 'next' | 'log';
+
+/**
+ * API client for the Cuarenta /cuarenta/exec endpoint.
+ *
+ * Cuarenta is an Ecuadorian 4-player, 2-team capture game played with a 40-card
+ * deck (no 8/9/10). On your turn you `play` a hand card (`play` → `{ handIndex }`):
+ * it captures all same-rank table cards (with caída / ronda / limpia bonuses) or
+ * is laid on the table. `next` starts the next round, `reset` applies the config
+ * (CPU difficulty, target score), and `log` fetches the action log.
+ *   - `play` → `{ handIndex: number }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `log` carry no extra fields.
+ */
+export const cuarentaApi = {
+  exec: (command: CuarentaCommand, opts?: { handIndex?: number; config?: CuarentaConfigInput }) =>
+    gameExec<CuarentaResponse>('cuarenta', {
+      command,
+      handIndex: opts?.handIndex,
+      config: opts?.config,
+    }),
+};
+
 /** Configuration options for Préférence game settings. */
 export interface PreferenceConfigInput {
   cpuDifficulty?: number;
@@ -3812,6 +3844,7 @@ const games = [
   'kemps',
   'cuckoo',
   'pishti',
+  'cuarenta',
 ] as const;
 type Game = (typeof games)[number];
 

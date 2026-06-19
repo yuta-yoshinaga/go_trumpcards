@@ -343,6 +343,8 @@ tags:
     description: Cuckoo (カッコー) — a 4-player life-survival game (also known as Chase the Ace or Ranter-Go-Round) on a standard 52-card deck; each player holds exactly one card and starts with 3 lives (default); during the Turn phase a player either keeps their card or swaps it with a neighbour, while the dealer swaps with the stock instead of a neighbour; during the Refuse phase a player holding a King may refuse an incoming swap by revealing the King, blocking the exchange; after every player has acted the holder(s) of the lowest card lose a life (ties mean all tied holders lose one); a player reduced to 0 lives is eliminated and the last player standing wins; CPU difficulties Easy, Normal, Hard; commands keep (k), swap (s), refuse (rf), accept (ac), nextround (nr), setdifficulty (sd), log (l), reset (r); phases Turn (0), Refuse (1), RoundEnd (2), GameEnd (3); config cpuDifficulty (0 Easy, 1 Normal, 2 Hard) and initialLives (default 3)
   - name: pishti
     description: Pişti (ピシュティ) — a Turkish 2-4 player capture (fishing) game on a standard 52-card deck; each player is dealt 4 cards and plays one onto a central pile in turn; playing a card that matches the rank of the pile's top card, or playing a Jack (wild), captures the whole pile; capturing a lone card scores a Pişti (10 points; 20 for a Jack played onto a single Jack); hands are re-dealt 4 at a time until the stock runs out; final scoring most cards 3, each Ace 1, 2 of clubs 2, 10 of diamonds 3, each Jack 1, plus Pişti bonuses, and the highest total wins; CPU difficulties Easy, Normal, Hard; commands play (p, with handIndex), next (n), setdifficulty (sd), setplayers (sp), log (l), reset (r); phases play, roundEnd, gameEnd; config playerCnt (2-4, default 4) and cpuDifficulty (0 Easy, 1 Normal, 2 Hard)
+  - name: cuarenta
+    description: Cuarenta (クアレンタ) — a 4-player, 2-team Ecuadorian capture (fishing) game on a 40-card Spanish-style deck (the 8s, 9s and 10s are removed); teams are seats 0 and 2 (Team A) versus seats 1 and 3 (Team B); each player is dealt 5 cards and 4 cards are placed on the central table; on your turn you play one card, and if it matches the rank of any table card you capture all same-rank table cards (and may chain via ronda when 3 or more of a rank appear), otherwise the card is laid on the table; bonuses (all additive) are caída plus 2 (immediately capturing the very card the previous player just laid), limpia plus 1 (clearing the entire table), and ronda plus 1 per extra card beyond 2 (capturing a run of 3 or more of a rank); hands are re-dealt 5 at a time until the stock runs out, then the team that captured more than 20 of the 40 cards (the majority) gets a plus 6 most cards bonus; the first team to reach the target score (default 40) wins; CPU difficulties Easy, Normal, Hard; commands play (p, with handIndex), next (n), setdifficulty (sd), log (l), reset (r); phases play, roundEnd, gameEnd; config targetScore (default 40) and cpuDifficulty (0 Easy, 1 Normal, 2 Hard)
 
 paths:
   /blackjack/exec:
@@ -15258,6 +15260,83 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PishtiResponse'
+
+  /cuarenta/exec:
+    post:
+      tags:
+        - cuarenta
+      summary: Execute a Cuarenta game command
+      description: |
+        Send a command to advance a Cuarenta session identified by `sessionId`.
+        Cuarenta is a 4-player, 2-team (1 human + 3 CPU) Ecuadorian capture (fishing)
+        game on a 40-card Spanish-style deck (the 8s, 9s and 10s are removed). Teams are
+        seats 0 and 2 (Team A) versus seats 1 and 3 (Team B). Each player is dealt 5
+        cards and 4 cards are placed on the central table. On your turn you play one card,
+        and if it matches the rank of any table card you capture all same-rank table cards
+        (chaining via ronda when 3 or more of a rank appear), otherwise the card is laid
+        on the table. Bonuses are caída (2 for capturing the card just laid), limpia (1
+        for clearing the table), and ronda (1 per extra card beyond 2). Hands are re-dealt
+        5 at a time until the stock runs out, then the team holding more than 20 of the 40
+        cards earns a 6-point most cards bonus, and the first team to the target score
+        (default 40) wins.
+
+        | Phase    | Value      | Description |
+        |----------|------------|-------------|
+        | play     | `play`     | Players take turns playing a hand card onto the table |
+        | roundEnd | `roundEnd` | A deal was scored; the next deal is dealt automatically |
+        | gameEnd  | `gameEnd`  | A team reached the target score and final scores are computed |
+
+        | Command         | Aliases | Description |
+        |-----------------|---------|-------------|
+        | `reset`         | `r`     | Start / restart the game (optional `config`) |
+        | `play`          | `p`     | Play hand card `handIndex` onto the table |
+        | `next`          | `n`     | Start the next round after one ends |
+        | `setdifficulty` | `sd`    | Set CPU difficulty (`config.cpuDifficulty` 0 Easy, 1 Normal, 2 Hard) |
+        | `log`           | `l`     | View action log |
+      operationId: cuarentaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CuarentaRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play the first hand card
+                value:
+                  command: play
+                  handIndex: 0
+                  sessionId: my-session-001
+              next:
+                summary: Start the next round
+                value:
+                  command: next
+                  sessionId: my-session-001
+              setdifficulty:
+                summary: Set CPU difficulty to Hard
+                value:
+                  command: setdifficulty
+                  config:
+                    cpuDifficulty: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CuarentaResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CuarentaResponse'
 
 components:
   schemas:
@@ -34085,6 +34164,158 @@ components:
             playerCnt:
               type: integer
               description: Number of players (2-4)
+            cpuDifficulty:
+              type: integer
+              description: CPU difficulty (0 Easy, 1 Normal, 2 Hard)
+        message:
+          type: string
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    CuarentaRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `play` (`p`), `next` (`n`),
+            `setdifficulty` (`sd`), `log` (`l`).
+          enum: [reset, r, play, p, next, n, setdifficulty, sd, log, l]
+          example: play
+        handIndex:
+          type: integer
+          description: Index of the hand card to play onto the table (used with `play`).
+          minimum: 0
+        config:
+          type: object
+          description: Optional game configuration (used with `reset`, `setdifficulty`).
+          properties:
+            targetScore:
+              type: integer
+              description: Score needed to win the match (default 40)
+              minimum: 1
+            cpuDifficulty:
+              type: integer
+              description: CPU difficulty (0 Easy, 1 Normal, 2 Hard)
+              minimum: 0
+              maximum: 2
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    CuarentaResponse:
+      type: object
+      description: Current state of the Cuarenta game
+      properties:
+        phase:
+          type: integer
+          description: "Game phase: 0 Play, 1 RoundEnd, 2 GameEnd"
+          enum: [0, 1, 2]
+          example: 0
+        currentTurn:
+          type: integer
+          description: Index of the player whose turn it is
+        tableCards:
+          type: array
+          description: All cards currently on the central table
+          items:
+            $ref: '#/components/schemas/Card'
+        lastCaptureIdx:
+          type: integer
+          description: Seat index of the most recent capturer, or -1
+        gameEndFlag:
+          type: boolean
+        remainingDeck:
+          type: integer
+          description: Number of cards remaining in the stock
+        roundWinners:
+          type: array
+          description: Winning team indices (may tie), empty until the match ends
+          items:
+            type: integer
+        teamScores:
+          type: array
+          description: Match scores indexed by team (0 Team A, 1 Team B)
+          items:
+            type: integer
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              team:
+                type: integer
+                description: Team index (0 Team A, 1 Team B)
+              cardCount:
+                type: integer
+                description: Number of cards currently in hand
+              cards:
+                type: array
+                description: The player's hand cards (populated only for the human)
+                items:
+                  $ref: '#/components/schemas/Card'
+              capturedCount:
+                type: integer
+                description: Total number of cards captured so far this round
+        humanAction:
+          type: object
+          nullable: true
+          description: The human's most recent play action, or null
+          properties:
+            playerIdx:
+              type: integer
+            playedCard:
+              $ref: '#/components/schemas/Card'
+            capturedCards:
+              type: array
+              items:
+                $ref: '#/components/schemas/Card'
+            isCaida:
+              type: boolean
+            isLimpia:
+              type: boolean
+            rondaBonus:
+              type: integer
+        cpuActions:
+          type: array
+          description: CPU play actions since the last human play
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              playedCard:
+                $ref: '#/components/schemas/Card'
+              capturedCards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              isCaida:
+                type: boolean
+              isLimpia:
+                type: boolean
+              rondaBonus:
+                type: integer
+        config:
+          type: object
+          properties:
+            targetScore:
+              type: integer
+              description: Score needed to win the match (default 40)
             cpuDifficulty:
               type: integer
               description: CPU difficulty (0 Easy, 1 Normal, 2 Hard)

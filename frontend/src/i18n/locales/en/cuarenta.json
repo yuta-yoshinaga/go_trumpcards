@@ -1,0 +1,42 @@
+{
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "deck": "Stock: {{count}}",
+  "playersTitle": "Players",
+  "team": "Team {{name}}",
+  "teamScore": "{{name}}: {{score}} / {{target}}",
+  "captured": "captured {{count}}",
+  "table": "Table",
+  "tableCount": "{{count}} cards",
+  "tableEmpty": "Table is empty",
+  "lastPlays": "Last plays",
+  "laidDown": "laid down",
+  "caida": "¡Caída! +2",
+  "ronda": "¡Ronda! +{{bonus}}",
+  "limpia": "¡Limpia! +1",
+  "yourHand": "Your hand",
+  "turnNotice": "Your turn — pick a card to play.",
+  "playButton": "Play",
+  "nextRound": "Next round",
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU difficulty",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "phase": {
+    "play": "Play",
+    "roundEnd": "Round end",
+    "gameEnd": "Game over"
+  },
+  "win": "Your team wins!",
+  "lose": "Team {{name}} wins.",
+  "tutorial": {
+    "info": "The number of cards left in the stock is shown here.",
+    "teams": "The two teams ({0,2}=A / {1,3}=B) show their running scores and the target (40).",
+    "table": "The central table. Play a same-rank card to capture all matching table cards.",
+    "hand": "Your hand. Click a card to play it — capture same-rank cards, or lay it on the table.",
+    "resetButton": "Use this button to reset the game at any time."
+  }
+}

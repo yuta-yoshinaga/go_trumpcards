@@ -1,0 +1,22 @@
+{
+  "helpTitle": "Cuarenta",
+  "helpPlay": "  p <h>                    play hand h (capture same-rank cards, or lay if none)",
+  "helpNext": "  n                        start the next round",
+  "helpSetDifficulty": "  sd [0-2]                 CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "teamScoreLine": "Team {{team}}: {{score}} pts",
+  "playerLine": "{{name}} (Team {{team}}): hand {{hand}} / captured {{captured}}",
+  "tableLine": "Table: {{cards}}",
+  "tableEmpty": "Table: empty",
+  "humanActionLine": "Your move: {{text}}",
+  "cpuActionsHeader": "[CPU moves]",
+  "cpuActionLine": "  {{name}}: {{text}}",
+  "actionCapture": "capture played={{played}} captured={{count}}{{suffix}}",
+  "actionCaidaSuffix": " (caida! +2)",
+  "actionRondaSuffix": " (ronda! +{{bonus}})",
+  "actionLimpiaSuffix": " (limpia! +1)",
+  "actionLay": "lay {{played}}",
+  "gameEnd": "Game over!",
+  "scoreEntry": "  Team {{team}}: {{score}} pts",
+  "promptCurrentTurn": "Turn: {{name}}",
+  "promptHelp": "p <hand> to capture or lay / n for next round"
+}

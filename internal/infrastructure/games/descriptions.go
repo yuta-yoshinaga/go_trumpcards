@@ -175,6 +175,7 @@ var gameDescriptions = map[string]string{
 	"kemps":               "Kemps (ケムプス)",
 	"cuckoo":              "Cuckoo (カッコー)",
 	"pishti":              "Pişti (ピシュティ)",
+	"cuarenta":            "Cuarenta (クアレンタ)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

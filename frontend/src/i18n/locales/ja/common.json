@@ -184,7 +184,8 @@
     "rummy500": "ラミー 500",
     "bigtwo": "大老二",
     "tienlen": "ティエンレン",
-    "pishti": "ピシュティ"
+    "pishti": "ピシュティ",
+    "cuarenta": "クアレンタ"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -801,7 +802,8 @@
     "whist.playPhase.follow": "カードを出してください",
     "whist.trickEnd": "トリック終了",
     "whist.roundEnd": "ラウンド終了",
-    "pishti.result.scores": "ゲーム終了。スコア: {{scores}}"
+    "pishti.result.scores": "ゲーム終了。スコア: {{scores}}",
+    "cuarenta.result.scores": "ゲーム終了。スコア: {{scores}}"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",
