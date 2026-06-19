@@ -183,7 +183,8 @@
     "belote": "Belote",
     "rummy500": "Rummy 500",
     "bigtwo": "Big Two",
-    "tienlen": "Tien Len"
+    "tienlen": "Tien Len",
+    "pishti": "Pişti"
   },
   "sound": {
     "mute": "Mute sound",
@@ -799,7 +800,8 @@
     "whist.playPhase.lead": "Lead a card",
     "whist.playPhase.follow": "Play a card",
     "whist.trickEnd": "Trick ended",
-    "whist.roundEnd": "Round ended"
+    "whist.roundEnd": "Round ended",
+    "pishti.result.scores": "Game over. Scores: {{scores}}"
   },
   "manual": {
     "ariaLabel": "Game Manual",

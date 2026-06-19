@@ -111,6 +111,9 @@
   /* Cuckoo — a warm earthy ranter-go-round amber-brown, evoking the candlelit fireside survival game, distinct from the casino felts. */
   --color-game-bg-cuckoo: #5a3a1f;
   --color-game-bg-cuckoo-dark: #3a2413;
+  /* Pişti — a deep Anatolian terracotta-red felt evoking the Turkish coffeehouse fishing game, distinct from the casino greens. */
+  --color-game-bg-pishti: #6b2f2a;
+  --color-game-bg-pishti-dark: #461d1a;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;

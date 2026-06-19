@@ -1,0 +1,297 @@
+import { useEffect, useMemo, useState } from 'react';
+import { pishtiApi } from '../api/gameApi';
+import { ActionLogSection } from '../components/ActionLogSection';
+import { CardImage } from '../components/CardImage';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
+import { SettingsPanel } from '../components/common/SettingsPanel';
+import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
+import { GameMessageBox } from '../components/GameMessageBox';
+import { GamePageShell } from '../components/GamePageShell';
+import { GameResetButton } from '../components/GameResetButton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
+import { withTutorial } from '../components/tutorial/withTutorial';
+import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
+import { useGameApi } from '../hooks/useGameApi';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { usePhaseNames } from '../hooks/usePhaseNames';
+import { btnSuccess } from '../styles/buttonStyles';
+import { lgCardAreaConstraint } from '../styles/gameStyles';
+import { gameTheme } from '../styles/gameTheme';
+import type { PishtiResponse } from '../types/card';
+import type { TutorialStep } from '../types/tutorial';
+import { PISHTI_HELP, parsePishtiCommand } from '../utils/cli/commands/pishtiCommands';
+import { formatPishtiState } from '../utils/cli/formatters/pishtiFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
+
+/** CPU difficulty options for the Pişti settings panel. */
+const CPU_DIFFICULTY_OPTIONS = [
+  { value: 0, label: 'easy' },
+  { value: 1, label: 'normal' },
+  { value: 2, label: 'hard' },
+];
+
+/** Player-count options for the Pişti settings panel. */
+const PLAYER_COUNT_OPTIONS = [2, 3, 4];
+
+/** Pişti tutorial step definitions. */
+const PISHTI_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="pishti-info"]',
+    messageKey: 'tutorial.info',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="pishti-players"]',
+    messageKey: 'tutorial.players',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="pishti-pile"]',
+    messageKey: 'tutorial.pile',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="pishti-hand"]',
+    messageKey: 'tutorial.hand',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="pishti-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
+/** Maps the backend Pişti phase strings to i18n phase-label keys. */
+const PISHTI_PHASE_KEYS: Readonly<Record<string, string>> = {
+  play: 'play',
+  roundEnd: 'roundEnd',
+  gameEnd: 'gameEnd',
+};
+
+/** Renders the Pişti game page: a 2-4 player Turkish capture (fishing) game. */
+export const PishtiPage = withTutorial(PishtiPageContent, 'pishti', PISHTI_TUTORIAL_STEPS);
+
+/** Inner content of the Pişti page, wrapped by TutorialProvider. */
+function PishtiPageContent() {
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('pishti');
+  const { state, loading, error, exec, retry } = useGameApi(pishtiApi.exec);
+
+  const [cpuDifficulty, setCpuDifficulty] = useState(1);
+  const [playerCnt, setPlayerCnt] = useState(4);
+
+  // Fetch a fresh game on mount.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
+  useEffect(() => {
+    exec('reset');
+  }, []);
+
+  const handleDifficultyChange = (value: string) => {
+    const level = Number(value);
+    setCpuDifficulty(level);
+    exec('reset', { config: { cpuDifficulty: level, playerCnt } });
+  };
+
+  const handlePlayerCountChange = (value: string) => {
+    const count = Number(value);
+    setPlayerCnt(count);
+    exec('reset', { config: { cpuDifficulty, playerCnt: count } });
+  };
+
+  // CLI mode
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('pishti');
+  const cliConfig: CliGameConfig<PishtiResponse, Parameters<typeof pishtiApi.exec>> = useMemo(
+    () => ({
+      gameName: 'pishti',
+      parseCommand: parsePishtiCommand,
+      formatResponse: formatPishtiState,
+      helpText: PISHTI_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
+
+  const { cardWidth } = useCardDimensions();
+  const phaseNames = usePhaseNames('pishti', PISHTI_PHASE_KEYS);
+
+  if (!state)
+    return <GameSkeleton gameKey="pishti" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 4 }} />;
+
+  const humanPlayer = state.players.find((p) => p.isHuman);
+  const isGameEnd = state.phase === 'gameEnd' || state.gameEndFlag;
+  const isHumanTurn = state.phase === 'play' && state.currentTurn === 0 && !isGameEnd;
+  const humanWon = isGameEnd && state.winners.includes(0);
+
+  const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
+
+  const handleManualReset = () => {
+    hideActionLog();
+    exec('reset', { config: { cpuDifficulty, playerCnt } });
+  };
+
+  return (
+    <GamePageShell
+      title={tc('nav.pishti')}
+      gameThemeBg={gameTheme.pishti.bg}
+      phaseName={phaseNames[state.phase]}
+      isHumanTurn={isHumanTurn && !isGameEnd}
+      gamePath="/pishti"
+      gameEndFlag={isGameEnd}
+      winShow={humanWon}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
+    >
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <SettingsPanel
+            title={t('settings.title')}
+            groups={[
+              {
+                items: [
+                  {
+                    type: 'select',
+                    id: 'cpuDifficulty',
+                    label: t('settings.cpuDifficulty'),
+                    value: cpuDifficulty,
+                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+                      value: o.value,
+                      label: t(`settings.${o.label}`),
+                    })),
+                    onSelect: handleDifficultyChange,
+                  },
+                  {
+                    type: 'select',
+                    id: 'playerCnt',
+                    label: t('settings.playerCount'),
+                    value: playerCnt,
+                    options: PLAYER_COUNT_OPTIONS.map((n) => ({ value: n, label: String(n) })),
+                    onSelect: handlePlayerCountChange,
+                  },
+                ],
+              },
+            ]}
+          />
+
+          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            <div className="text-ds-text-primary text-center mb-2" data-tutorial="pishti-info">
+              <span>{t('deck', { count: state.remainingDeck })}</span>
+            </div>
+
+            {/* Players (hand / captured / Pişti bonus / current turn) */}
+            <div className="mb-2 p-2 rounded bg-black/30" data-tutorial="pishti-players">
+              <div className="mb-1 text-ds-text-primary text-sm">{t('playersTitle')}</div>
+              {state.players.map((p) => (
+                <div
+                  key={`player-${p.id}`}
+                  className={`text-sm py-0.5 flex items-center gap-3 ${
+                    p.id === state.currentTurn && !isGameEnd ? 'text-ds-warning' : 'text-ds-text-muted'
+                  } ${p.isHuman ? 'font-semibold' : ''}`}
+                >
+                  <span>{playerLabel(p.id, p.isHuman)}</span>
+                  <span>{t('captured', { count: p.capturedCount })}</span>
+                  {p.pistiBonus > 0 && <span className="text-ds-accent">{t('pisti', { count: p.pistiBonus })}</span>}
+                  {isGameEnd && (
+                    <span className="text-ds-text-primary">{t('finalScore', { score: p.finalScore })}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Center pile */}
+            <div className="mb-2 p-3 rounded bg-black/20 text-center" data-tutorial="pishti-pile">
+              <div className="text-ds-text-muted text-xs mb-1">
+                {t('pile')} — {t('pileCount', { count: state.pileCount })}
+              </div>
+              {state.pileTop ? (
+                <div className="flex justify-center">
+                  <CardImage card={state.pileTop} width={cardWidth} />
+                </div>
+              ) : (
+                <div className="text-ds-text-muted text-sm">{t('pileEmpty')}</div>
+              )}
+            </div>
+
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+
+            <ActionLogSection
+              isEndPhase={isGameEnd}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+          </div>
+
+          {/* Footer */}
+          <GameFooter className={`${gameTheme.pishti.footer} px-4 py-2.5`}>
+            <div className="mb-2" data-tutorial="pishti-hand">
+              <div className="text-ds-text-muted text-xs mb-1">{t('yourHand')}</div>
+              <div className="flex flex-wrap gap-2">
+                {humanPlayer?.cards.map((c, i) => (
+                  <button
+                    key={`hand-${i}`}
+                    type="button"
+                    onClick={() => isHumanTurn && exec('play', { handIndex: i })}
+                    disabled={!isHumanTurn || loading}
+                    className={`rounded transition-all ${
+                      isHumanTurn ? 'cursor-pointer hover:opacity-90 hover:-translate-y-1' : 'cursor-default'
+                    }`}
+                    data-testid={`hand-card-${i}`}
+                    aria-label={t('playButton')}
+                  >
+                    <CardImage card={c} width={cardWidth} />
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            {isHumanTurn && <div className="text-ds-text-muted text-xs mb-2">{t('turnNotice')}</div>}
+
+            <div className="flex flex-wrap gap-2 items-center">
+              {isGameEnd && (
+                <span className="text-ds-text-primary text-sm font-semibold mr-1">
+                  {humanWon
+                    ? t('win')
+                    : t('lose', { name: playerLabel(state.winners[0] ?? -1, state.winners[0] === 0) })}
+                </span>
+              )}
+              {isGameEnd && (
+                <button type="button" className={btnSuccess} onClick={() => exec('next')} disabled={loading}>
+                  {t('nextGame')}
+                </button>
+              )}
+
+              <GameResetButton
+                isGameEnd={isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="pishti-reset-button"
+              />
+            </div>
+          </GameFooter>
+        </>
+      )}
+    </GamePageShell>
+  );
+}

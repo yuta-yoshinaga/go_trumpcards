@@ -107,6 +107,7 @@ import pigtail from '../../../docs/manual/cui/pigtail.md?raw';
 import pineapple from '../../../docs/manual/cui/pineapple.md?raw';
 import pinochle from '../../../docs/manual/cui/pinochle.md?raw';
 import piquet from '../../../docs/manual/cui/piquet.md?raw';
+import pishti from '../../../docs/manual/cui/pishti.md?raw';
 import pitch from '../../../docs/manual/cui/pitch.md?raw';
 import poker from '../../../docs/manual/cui/poker.md?raw';
 import pokersquares from '../../../docs/manual/cui/pokersquares.md?raw';
@@ -291,6 +292,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/spoons': spoons,
   '/kemps': kemps,
   '/cuckoo': cuckoo,
+  '/pishti': pishti,
   '/tonk': tonk,
   '/tripeaks': tripeaks,
   '/twotenjack': twotenjack,

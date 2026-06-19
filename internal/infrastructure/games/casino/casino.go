@@ -514,4 +514,13 @@ func init() {
 		},
 		controller.NewCuckooWebControllerWithProvider)
 
+	games.RegisterKVGame("pishti", games.CategoryCasino,
+		func() usecase.PishtiInteractorIF {
+			return usecase.NewPishtiInteractor(domain.NewDefaultPishti(), new(presenter.PishtiWebPresenter))
+		},
+		func(data []byte) (usecase.PishtiInteractorIF, error) {
+			return usecase.RestorePishtiInteractor(data, new(presenter.PishtiWebPresenter))
+		},
+		controller.NewPishtiWebControllerWithProvider)
+
 }

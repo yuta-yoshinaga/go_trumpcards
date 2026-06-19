@@ -2665,6 +2665,23 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "pishti", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPishtiCuiController(usecase.NewPishtiInteractor(
+				domain.NewDefaultPishti(), new(presenter.PishtiCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "pishti.helpTitle",
+				CommandKeys: []string{
+					"pishti.helpPlay",
+					"pishti.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys: []string{
+					"pishti.helpSetDifficulty",
+					"pishti.helpSetPlayers",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

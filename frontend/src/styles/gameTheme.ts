@@ -76,6 +76,7 @@ export type GameKey =
   | 'spoons'
   | 'kemps'
   | 'cuckoo'
+  | 'pishti'
   | 'pitch'
   | 'twotenjack'
   | 'ohhell'
@@ -292,6 +293,10 @@ const CUCKOO = {
   bg: 'bg-game-bg-cuckoo',
   footer: 'bg-game-bg-cuckoo-dark border-white/20',
 } as const;
+const PISHTI = {
+  bg: 'bg-game-bg-pishti',
+  footer: 'bg-game-bg-pishti-dark border-white/20',
+} as const;
 
 export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Table games
@@ -361,6 +366,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   spoons: SPOONS,
   kemps: KEMPS,
   cuckoo: CUCKOO,
+  pishti: PISHTI,
   pitch: BLUE,
   twotenjack: BLUE,
   ohhell: BLUE,
