@@ -225,7 +225,7 @@ const workerUrl: Record<string, string> = {
   teenpatti: WORKER_CASINO,
   spoons: WORKER_CASINO,
   kemps: WORKER_CASINO,
-  cuckoo: WORKER_CASINO,
+  cuckoo: WORKER_CLASSIC,
   pishti: WORKER_CASINO,
   cuarenta: WORKER_CASINO,
   faro: WORKER_CASINO,

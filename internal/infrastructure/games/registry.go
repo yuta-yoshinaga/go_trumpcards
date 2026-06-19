@@ -405,7 +405,7 @@ var registry = []*Game{
 	// 4 players each hold one card and 3 lives; on your turn keep or swap with
 	// your neighbour (a King holder may refuse). The lowest card each round
 	// loses a life; last player standing wins. Casino worker bucket.
-	{Name: "cuckoo", Category: CategoryCasino},
+	{Name: "cuckoo", Category: CategoryClassic},
 	// Pişti: a popular Turkish fishing/capture game. 2–4 players; play a card
 	// matching the pile top (or any Jack) to capture the whole pile. Matching a
 	// lone card scores a Pişti (+10; +20 for Jack-on-Jack). Casino worker bucket.

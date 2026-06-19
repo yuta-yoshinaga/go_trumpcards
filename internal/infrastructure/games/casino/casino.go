@@ -505,15 +505,6 @@ func init() {
 		},
 		controller.NewKempsWebControllerWithProvider)
 
-	games.RegisterKVGame("cuckoo", games.CategoryCasino,
-		func() usecase.CuckooInteractorIF {
-			return usecase.NewCuckooInteractor(domain.NewDefaultCuckoo(), new(presenter.CuckooWebPresenter))
-		},
-		func(data []byte) (usecase.CuckooInteractorIF, error) {
-			return usecase.RestoreCuckooInteractor(data, new(presenter.CuckooWebPresenter))
-		},
-		controller.NewCuckooWebControllerWithProvider)
-
 	games.RegisterKVGame("pishti", games.CategoryCasino,
 		func() usecase.PishtiInteractorIF {
 			return usecase.NewPishtiInteractor(domain.NewDefaultPishti(), new(presenter.PishtiWebPresenter))

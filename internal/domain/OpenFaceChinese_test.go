@@ -146,10 +146,11 @@ func TestOpenFaceChinese_ValidRows(t *testing.T) {
 
 func TestOpenFaceChinese_RoyaltyAndFantasyland(t *testing.T) {
 	p := NewOpenFaceChinesePlayer(true)
-	// front: trip Queens → fantasyland + royalty; back: flush; middle: trips.
+	// front: trip Queens → fantasyland + royalty; middle: trip Kings (>= front);
+	// back: spade flush (>= middle). Rows stay valid (back >= middle >= front).
 	ofcFillRows(p,
 		[]*Card{ofcCard(CardDesignSpade, 12), ofcCard(CardDesignHeart, 12), ofcCard(CardDesignClover, 12)},
-		[]*Card{ofcCard(CardDesignSpade, 9), ofcCard(CardDesignHeart, 9), ofcCard(CardDesignClover, 9), ofcCard(CardDesignDiamond, 6), ofcCard(CardDesignSpade, 7)},
+		[]*Card{ofcCard(CardDesignSpade, 13), ofcCard(CardDesignHeart, 13), ofcCard(CardDesignClover, 13), ofcCard(CardDesignDiamond, 6), ofcCard(CardDesignSpade, 7)},
 		[]*Card{ofcCard(CardDesignSpade, 1), ofcCard(CardDesignSpade, 10), ofcCard(CardDesignSpade, 8), ofcCard(CardDesignSpade, 5), ofcCard(CardDesignSpade, 3)},
 	)
 	if !ofcValidRows(p) {
@@ -184,8 +185,11 @@ func TestOpenFaceChinese_CompareScoreScoop(t *testing.T) {
 		[]*Card{ofcCard(CardDesignSpade, 13), ofcCard(CardDesignHeart, 13), ofcCard(CardDesignClover, 13), ofcCard(CardDesignDiamond, 6), ofcCard(CardDesignSpade, 7)},
 		[]*Card{ofcCard(CardDesignSpade, 1), ofcCard(CardDesignSpade, 10), ofcCard(CardDesignSpade, 8), ofcCard(CardDesignSpade, 5), ofcCard(CardDesignSpade, 3)},
 	)
+	// b's front is a 9-high non-pair, non-straight, non-flush hand so a's pair of
+	// Aces wins the front row (in 3-card poker a straight would beat a pair, so
+	// avoid consecutive ranks here). b's middle/back are weak high-card hands.
 	ofcFillRows(b,
-		[]*Card{ofcCard(CardDesignSpade, 2), ofcCard(CardDesignHeart, 3), ofcCard(CardDesignClover, 4)},
+		[]*Card{ofcCard(CardDesignSpade, 2), ofcCard(CardDesignHeart, 5), ofcCard(CardDesignClover, 9)},
 		[]*Card{ofcCard(CardDesignSpade, 5), ofcCard(CardDesignHeart, 6), ofcCard(CardDesignClover, 7), ofcCard(CardDesignDiamond, 8), ofcCard(CardDesignSpade, 10)},
 		[]*Card{ofcCard(CardDesignHeart, 2), ofcCard(CardDesignDiamond, 4), ofcCard(CardDesignClover, 6), ofcCard(CardDesignHeart, 9), ofcCard(CardDesignDiamond, 11)},
 	)

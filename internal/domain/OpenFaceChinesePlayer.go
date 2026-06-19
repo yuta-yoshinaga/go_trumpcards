@@ -100,18 +100,6 @@ func (p *OpenFaceChinesePlayer) SetFantasyland(v bool) { p.fantasyland = v }
 // SetTotalScore マッチ累積得点を設定（テスト用）
 func (p *OpenFaceChinesePlayer) SetTotalScore(v int) { p.totalScore = v }
 
-// rowSlots 配置可能な段サイズ上限を返す。
-func ofcRowCap(row int) int {
-	switch row {
-	case OpenFaceChineseRowFront:
-		return OpenFaceChineseFrontSize
-	case OpenFaceChineseRowMiddle:
-		return OpenFaceChineseMiddleSize
-	default:
-		return OpenFaceChineseBackSize
-	}
-}
-
 // placedCount 既に配置済みのカード総数を返す。
 func (p *OpenFaceChinesePlayer) placedCount() int {
 	return len(p.front) + len(p.middle) + len(p.back)

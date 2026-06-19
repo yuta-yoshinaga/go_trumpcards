@@ -464,9 +464,10 @@ func ofcCompareScore(a, b *OpenFaceChinesePlayer) int {
 		wins--
 	}
 	score := wins
-	if wins == 3 {
+	switch wins {
+	case 3:
 		score += 3 // スクープ
-	} else if wins == -3 {
+	case -3:
 		score -= 3
 	}
 	return score
