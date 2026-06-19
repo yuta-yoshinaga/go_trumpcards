@@ -105,6 +105,9 @@
   /* Spoons — a lively party-table indigo-violet, distinct from the casino felts; evokes the fast hand-grab energy. */
   --color-game-bg-spoons: #3a2e63;
   --color-game-bg-spoons-dark: #241b40;
+  /* Kemps — a cooperative teal-green table evoking secret-signal teamwork, distinct from the casino felts. */
+  --color-game-bg-kemps: #1f4d4a;
+  --color-game-bg-kemps-dark: #133331;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;

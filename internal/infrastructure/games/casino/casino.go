@@ -496,4 +496,13 @@ func init() {
 		},
 		controller.NewSpoonsWebControllerWithProvider)
 
+	games.RegisterKVGame("kemps", games.CategoryCasino,
+		func() usecase.KempsInteractorIF {
+			return usecase.NewKempsInteractor(domain.NewDefaultKemps(), new(presenter.KempsWebPresenter))
+		},
+		func(data []byte) (usecase.KempsInteractorIF, error) {
+			return usecase.RestoreKempsInteractor(data, new(presenter.KempsWebPresenter))
+		},
+		controller.NewKempsWebControllerWithProvider)
+
 }

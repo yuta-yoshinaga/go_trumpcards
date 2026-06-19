@@ -1,0 +1,53 @@
+{
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "round": "Round {{n}}",
+  "targetScore": "Target: {{count}} pts",
+  "teamA": "Team A",
+  "teamB": "Team B",
+  "playersTitle": "Players",
+  "fieldLabel": "Field",
+  "fieldNotice": "Pick a field card to swap with.",
+  "handLabel": "Your hand",
+  "handNotice": "Your turn — first pick one hand card to swap.",
+  "selectHandCard": "Select hand card",
+  "swapButton": "Swap with this card",
+  "passButton": "Pass (no swap)",
+  "signalLabel": "Your secret signal:",
+  "signal": {
+    "sound": "Sound (cough)",
+    "blink": "Blink"
+  },
+  "badge": {
+    "fourOfAKind": "four of a kind!"
+  },
+  "partnerSignaling": "Your partner is signaling! Declare Kemps!",
+  "opponentSignaling": "Someone on the opposing team may be signaling…",
+  "kempsButton": "Kemps!",
+  "counterButton": "Counter-Kemps! ({{name}})",
+  "declineButton": "Decline",
+  "nextRound": "Next round",
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU difficulty",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "phase": {
+    "exchange": "Exchange",
+    "declare": "Declare",
+    "roundEnd": "Round end",
+    "gameEnd": "Game over"
+  },
+  "win": "Your team wins!",
+  "lose": "{{name}} wins.",
+  "tutorial": {
+    "info": "The round number, both team scores, and the target score are shown here.",
+    "field": "The shared four-card field. Pick a hand card, then click a field card to swap.",
+    "hand": "Your four cards. Collect four of a kind to win the round.",
+    "signal": "Set your secret signal (Sound / Blink). Your partner uses it to tell you they have four of a kind.",
+    "declare": "When four of a kind is made, the declare window opens. Declare Kemps! to score, or Counter-Kemps! if you spot an opponent's signal.",
+    "resetButton": "Use this button to reset the game at any time."
+  }
+}

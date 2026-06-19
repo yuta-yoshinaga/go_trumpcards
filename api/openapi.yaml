@@ -337,6 +337,8 @@ tags:
     description: Teen Patti (ティーンパッティ) — the Indian version of Three Card Brag, a 4-player vying (betting) game on a standard 52-card deck; each player antes the boot into the pot and is dealt 3 cards; every player is either Blind (has not looked at their hand) or Seen (has looked), and a Blind player may see their hand at any time to become Seen; Blind players stake at half the Seen rate (implementation Blind = stake, Seen = 2 * stake); on your turn you may bet (call the current stake), raise (increase the stake), or fold (drop out, forfeiting your contribution); side show (Teen Patti's distinguishing mechanic) — when three or more players remain a Seen player may request a side show against the previous Seen player, who may accept (the weaker of the two folds; on a tie the requester folds) or decline (play continues); when only two players remain a Seen player may pay 2 * stake to call a show (showdown) — the stronger hand takes the pot and on a tie the player who called the show loses; if everyone but one player folds the last remaining player wins the pot without a showdown; hand ranking (strongest to weakest) Trail/Trio (three of a kind) > Pure Sequence (straight flush) > Sequence (straight) > Color (flush) > Pair > High Card, sharing Three Card Brag's hand evaluation; a player whose chips run out is eliminated, and the last player still holding chips is the match winner
   - name: spoons
     description: Spoons (スプーン) — a 4-player American pass-and-grab speed/party game on a standard 52-card deck; each player is dealt 4 cards and one fewer spoon than the number of players is placed in the centre (3 spoons for 4 players); during the Pass phase a feeder draws from the draw pile and every player passes one card to the next player, trying to collect four of a kind; the instant any player completes four of a kind they grab a spoon and the grab window opens, and everyone races to grab one of the remaining spoons so that exactly one player is left without one; the player who misses out gains a letter in the sequence S-P-O-O-N-S, and collecting all six letters eliminates that player (removing one spoon); the last player standing wins; CPU difficulties Easy (slow, often misses the grab), Normal (standard), Hard (fast, rarely misses); commands pass (p), grab (g), next (n), setdifficulty (sd), log (l), reset (r); phases Pass (0), Grab (1), RoundEnd (2), GameEnd (3)
+  - name: kemps
+    description: Kemps (ケムプス) — a 4-player, 2-team matching game on a standard 52-card deck built around secret signals; each player holds 4 cards and four cards are placed face-up on a shared field; during the Exchange phase a player swaps one hand card for a field card (or passes), racing to collect four of a kind; the human sets a secret signal type (0 Sound, 1 Blink); when a team completes four of a kind the Declare window opens and the team may declare Kemps for a point, while the opposing team may call Counter-Kemps against a seat to steal it (plus 1 on a correct read, minus 1 if wrong); teams are even seats (Team A, with the human at seat 0) versus odd seats (Team B), and the human partner is seat 2; the first team to the target score (default 5) wins; CPU difficulties Easy (slow, rarely reads signals), Normal (standard), Hard (fast, often reads signals); commands swap (s), pass (p), signal (sig), kemps (k), counter (c), next (n), setdifficulty (sd), log (l), reset (r); phases Exchange (0), Declare (1), RoundEnd (2), GameEnd (3)
 
 paths:
   /blackjack/exec:
@@ -15004,6 +15006,92 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SpoonsResponse'
+
+  /kemps/exec:
+    post:
+      tags:
+        - kemps
+      summary: Execute a Kemps game command
+      description: |
+        Send a command to advance a Kemps session identified by `sessionId`.
+        Kemps is a 4-player (1 human + 3 CPU), 2-team matching game on a standard
+        52-card deck built around secret signals. Each player holds 4 cards and four
+        cards sit face-up on a shared field. During the Exchange phase a player swaps
+        one hand card for a field card (or passes), racing to collect four of a kind.
+        The human sets a secret signal type (0=Sound, 1=Blink). When a team completes
+        four of a kind the Declare window opens: the team may declare Kemps for a point,
+        while the opposing team may call Counter-Kemps against a seat to steal it
+        (+1 on a correct read, -1 if wrong). Even seats form Team A (with the human at
+        seat 0); the human partner is seat 2. The first team to the target score
+        (default 5) wins.
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Exchange | `0`   | Players swap a hand card for a field card each turn |
+        | Declare  | `1`   | Four of a kind was made; declare Kemps or Counter-Kemps |
+        | RoundEnd | `2`   | The round was scored; advance with `next` |
+        | GameEnd  | `3`   | A team reached the target score |
+
+        | Command         | Aliases | Description |
+        |-----------------|---------|-------------|
+        | `reset`         | `r`     | Start / restart the game (optional `config`) |
+        | `swap`          | `s`     | Swap hand card `handIndex` with field card `fieldIndex` |
+        | `pass`          | `p`     | Skip the swap (or decline in the declare window) |
+        | `signal`        | `sig`   | Set the human secret signal type (`signalType` 0=Sound, 1=Blink) |
+        | `kemps`         | `k`     | Declare Kemps |
+        | `counter`       | `c`     | Declare Counter-Kemps against opponent `targetSeat` |
+        | `next`          | `n`     | Advance to the next round |
+        | `log`           | `l`     | View action log |
+      operationId: kempsExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KempsRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              swap:
+                summary: Swap hand card 1 with field card 2
+                value:
+                  command: swap
+                  handIndex: 1
+                  fieldIndex: 2
+                  sessionId: my-session-001
+              signal:
+                summary: Set the secret signal to Blink
+                value:
+                  command: signal
+                  signalType: 1
+                  sessionId: my-session-001
+              kemps:
+                summary: Declare Kemps
+                value:
+                  command: kemps
+                  sessionId: my-session-001
+              counter:
+                summary: Counter-Kemps against seat 1
+                value:
+                  command: counter
+                  targetSeat: 1
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KempsResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KempsResponse'
 
 components:
   schemas:
@@ -33470,6 +33558,139 @@ components:
                 type: boolean
         cpuDifficulty:
           type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+
+    KempsRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `swap` (`s`), `pass` (`p`),
+            `signal` (`sig`), `kemps` (`k`), `counter` (`c`), `next` (`n`), `log` (`l`).
+          enum: [reset, r, swap, s, pass, p, signal, sig, kemps, k, counter, c, next, n, log, l]
+          example: swap
+        handIndex:
+          type: integer
+          description: Index of the hand card to swap. Required for the `swap` command.
+          minimum: 0
+          example: 1
+        fieldIndex:
+          type: integer
+          description: Index of the field card to swap with. Required for the `swap` command.
+          minimum: 0
+          example: 2
+        signalType:
+          type: integer
+          description: Secret signal type to set (0=Sound, 1=Blink). Required for the `signal` command.
+          minimum: 0
+          maximum: 1
+          example: 1
+        targetSeat:
+          type: integer
+          description: Opponent seat to call Counter-Kemps against. Required for the `counter` command.
+          minimum: 0
+          example: 1
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            targetScore:
+              type: integer
+              description: Team score required to win (default 5)
+              minimum: 1
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    KempsResponse:
+      type: object
+      description: Current state of the Kemps game
+      properties:
+        phase:
+          type: integer
+          description: "Game phase: 0=Exchange, 1=Declare, 2=RoundEnd, 3=GameEnd"
+          enum: [0, 1, 2, 3]
+          example: 0
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: Winning team (0 or 1), or -1 until the game ends
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        isHumanTurn:
+          type: boolean
+        teamScores:
+          type: array
+          description: Team scores indexed by team number (Team A = index 0)
+          items:
+            type: integer
+        field:
+          type: array
+          description: The shared field of cards available to swap with
+          items:
+            $ref: '#/components/schemas/Card'
+        signalType:
+          type: integer
+          description: The human secret signal type (0=Sound, 1=Blink)
+        partnerSignaling:
+          type: boolean
+          description: Whether the human partner is currently signaling (human-only cue)
+        opponentSignaling:
+          type: boolean
+          description: Whether an opponent may be signaling (vague human-only cue)
+        fourHolderIdx:
+          type: integer
+          description: Seat index that completed four of a kind, or -1
+        roundResult:
+          type: integer
+          description: "Round result code: 0=none, 1=Kemps, 2=Counter, 3=CounterFail, 4=Miss"
+        roundWinnerTeam:
+          type: integer
+          description: Team that won the most recent round, or -1
+        roundNumber:
+          type: integer
+          description: Current round number (starts at 1)
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              isHuman:
+                type: boolean
+              team:
+                type: integer
+                description: Team number (0=Team A, 1=Team B)
+              handSize:
+                type: integer
+              hand:
+                type: array
+                description: The player's cards (populated only for the human)
+                items:
+                  $ref: '#/components/schemas/Card'
+              hasFourOfAKind:
+                type: boolean
+                description: Whether this player holds four of a kind (human only)
+        cpuDifficulty:
+          type: integer
+        targetScore:
+          type: integer
+          description: Team score required to win (default 5)
         message:
           type: string
         messageCode:

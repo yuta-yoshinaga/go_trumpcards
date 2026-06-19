@@ -396,6 +396,11 @@ var registry = []*Game{
 	// one of the N-1 spoons. Missing out earns a letter (S-P-O-O-N-S); six
 	// letters eliminates you, last player standing wins. Casino worker bucket.
 	{Name: "spoons", Category: CategoryCasino},
+	// Kemps: 4-player, 2-team matching game. Swap cards through a shared field
+	// until you collect four of a kind, then your partner signals secretly and
+	// your team declares "Kemps!" for a point — or the opponents call
+	// "Counter-Kemps!" to steal it. First team to 5 wins. Casino worker bucket.
+	{Name: "kemps", Category: CategoryCasino},
 }
 
 // All returns a value-level copy of the registry in canonical order.
