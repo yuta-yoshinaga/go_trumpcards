@@ -830,4 +830,9 @@ func init() {
 			return usecase.NewKempsInteractor(domain.NewDefaultKemps(), new(presenter.KempsWebPresenter))
 		},
 		controller.NewKempsWebController)
+	BindWebControllerFor("cuckoo",
+		func() usecase.CuckooInteractorIF {
+			return usecase.NewCuckooInteractor(domain.NewDefaultCuckoo(), new(presenter.CuckooWebPresenter))
+		},
+		controller.NewCuckooWebController)
 }

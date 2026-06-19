@@ -43,6 +43,7 @@ import type {
   CrescentResponse,
   CribbageResponse,
   CruelResponse,
+  CuckooResponse,
   DaifugoConfigInput,
   DaifugoResponse,
   DeuceToSevenResponse,
@@ -218,6 +219,7 @@ const workerUrl: Record<string, string> = {
   teenpatti: WORKER_CASINO,
   spoons: WORKER_CASINO,
   kemps: WORKER_CASINO,
+  cuckoo: WORKER_CASINO,
   calculation: WORKER_SOLO,
   hearts: WORKER_CLASSIC,
   spades: WORKER_CLASSIC,
@@ -2421,6 +2423,34 @@ export const kempsApi = {
     }),
 };
 
+/** Configuration options for Cuckoo game settings. */
+export interface CuckooConfigInput {
+  cpuDifficulty?: number;
+  initialLives?: number;
+}
+
+/** Commands accepted by the Cuckoo /cuckoo/exec endpoint. */
+export type CuckooCommand = 'reset' | 'keep' | 'swap' | 'refuse' | 'accept' | 'nextround' | 'log';
+
+/**
+ * API client for the Cuckoo /cuckoo/exec endpoint.
+ *
+ * Cuckoo (a.k.a. Chase the Ace / Ranter-Go-Round) is a 4-player life-survival
+ * game. On your turn you `keep` your card or `swap` it with your neighbour (the
+ * dealer swaps with the stock). When you hold a King and someone tries to swap
+ * into you, `refuse` reveals the King to block it or `accept` allows the swap.
+ * `nextround` advances after the lowest card loses a life; `reset` applies the
+ * config (CPU difficulty, initial lives); `log` fetches the action log. None of
+ * the play commands carry extra fields — only `reset` takes a `config`.
+ */
+export const cuckooApi = {
+  exec: (command: CuckooCommand, opts?: { config?: CuckooConfigInput }) =>
+    gameExec<CuckooResponse>('cuckoo', {
+      command,
+      config: opts?.config,
+    }),
+};
+
 /** Configuration options for Préférence game settings. */
 export interface PreferenceConfigInput {
   cpuDifficulty?: number;
@@ -3747,6 +3777,7 @@ const games = [
   'teenpatti',
   'spoons',
   'kemps',
+  'cuckoo',
 ] as const;
 type Game = (typeof games)[number];
 

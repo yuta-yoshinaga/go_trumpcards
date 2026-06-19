@@ -2645,6 +2645,26 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                    action log"},
 			})
 	}},
+	{Name: "cuckoo", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCuckooCuiController(usecase.NewCuckooInteractor(
+				domain.NewDefaultCuckoo(), new(presenter.CuckooCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "cuckoo.helpTitle",
+				CommandKeys: []string{
+					"cuckoo.helpKeep",
+					"cuckoo.helpSwap",
+					"cuckoo.helpRefuse",
+					"cuckoo.helpAccept",
+					"cuckoo.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys: []string{
+					"cuckoo.helpSetDifficulty",
+					"cuckoo.helpSetLives",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
