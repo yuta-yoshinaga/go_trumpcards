@@ -94,8 +94,11 @@ func (ci *CuarentaInteractor) runCpuTurns() {
 			return
 		}
 		ci.Game.CpuPlay()
-		if !ci.Game.GetGameEndFlag() && ci.Game.GetPhase() != int(domain.CuarentaPhasePlay) {
-			ci.Game.NextRound()
+		// Stop at a non-Play phase (e.g. RoundEnd) so the player can see the
+		// round result. The frontend advances explicitly via the NextRound
+		// command rather than auto-skipping the score screen.
+		if ci.Game.GetPhase() != int(domain.CuarentaPhasePlay) {
+			return
 		}
 	}
 }
