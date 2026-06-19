@@ -59,6 +59,7 @@ import egyptianratscrew from '../../../docs/manual/cui/egyptianratscrew.md?raw';
 import eightoff from '../../../docs/manual/cui/eightoff.md?raw';
 import escoba from '../../../docs/manual/cui/escoba.md?raw';
 import euchre from '../../../docs/manual/cui/euchre.md?raw';
+import faro from '../../../docs/manual/cui/faro.md?raw';
 import fiftyone from '../../../docs/manual/cui/fiftyone.md?raw';
 import fivecardstud from '../../../docs/manual/cui/fivecardstud.md?raw';
 import fivehundred from '../../../docs/manual/cui/fivehundred.md?raw';
@@ -296,6 +297,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/kemps': kemps,
   '/cuckoo': cuckoo,
   '/cuarenta': cuarenta,
+  '/faro': faro,
   '/pishti': pishti,
   '/tonk': tonk,
   '/tripeaks': tripeaks,

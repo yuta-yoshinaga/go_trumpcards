@@ -186,7 +186,8 @@
     "bigtwo": "Big Two",
     "tienlen": "Tien Len",
     "pishti": "Pişti",
-    "cuarenta": "Cuarenta"
+    "cuarenta": "Cuarenta",
+    "faro": "Faro"
   },
   "sound": {
     "mute": "Mute sound",
@@ -804,7 +805,10 @@
     "whist.trickEnd": "Trick ended",
     "whist.roundEnd": "Round ended",
     "pishti.result.scores": "Game over. Scores: {{scores}}",
-    "cuarenta.result.scores": "Game over. Scores: {{scores}}"
+    "cuarenta.result.scores": "Game over. Scores: {{scores}}",
+    "faro.result.callWon": "Call won!",
+    "faro.result.callLost": "Call lost.",
+    "faro.result.gameEnd": "Out of chips. Game over."
   },
   "manual": {
     "ariaLabel": "Game Manual",

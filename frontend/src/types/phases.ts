@@ -1362,3 +1362,12 @@ export const CuarentaPhase = {
   ROUND_END: 1,
   GAME_END: 2,
 } as const;
+
+/** Faro phase constants (sync: internal/domain/Faro.go). */
+export const FaroPhase = {
+  BETTING: 1,
+  TURN: 2,
+  CALL: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;

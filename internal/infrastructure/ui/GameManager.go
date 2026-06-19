@@ -2718,6 +2718,23 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "faro", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewFaroCuiController(usecase.NewFaroInteractor(
+				domain.NewDefaultFaro(), new(presenter.FaroCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "faro.helpTitle",
+				CommandKeys: []string{
+					"faro.helpBet",
+					"faro.helpClearBet",
+					"faro.helpClearAll",
+					"faro.helpDeal",
+					"faro.helpCall",
+					"faro.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

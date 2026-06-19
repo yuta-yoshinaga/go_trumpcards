@@ -117,6 +117,9 @@
   /* Cuarenta — a warm Andean ochre-gold felt evoking the Ecuadorian national capture game, distinct from the casino greens. */
   --color-game-bg-cuarenta: #6b5320;
   --color-game-bg-cuarenta-dark: #463614;
+  /* Faro — a deep saloon-burgundy felt evoking the 19th-century American banking game, distinct from the casino greens. */
+  --color-game-bg-faro: #5e1f33;
+  --color-game-bg-faro-dark: #3e1322;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;

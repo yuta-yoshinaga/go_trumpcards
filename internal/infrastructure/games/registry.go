@@ -420,6 +420,11 @@ var registry = []*Game{
 	// worker bucket — it reuses Seven Card Stud's betting structure + the poker
 	// hand evaluator.
 	{Name: "fivecardstud", Category: CategoryCasino},
+	// Faro: a 19th-century American banking game. The player places chips on a
+	// 13-rank layout (a copper bets the rank to lose); the bank deals cards in
+	// turns of two (losing card then winning card), with a half-collect on
+	// splits and a final 3-card call. Casino worker bucket.
+	{Name: "faro", Category: CategoryCasino},
 }
 
 // All returns a value-level copy of the registry in canonical order.

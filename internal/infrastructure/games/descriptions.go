@@ -177,6 +177,7 @@ var gameDescriptions = map[string]string{
 	"pishti":              "Pişti (ピシュティ)",
 	"cuarenta":            "Cuarenta (クアレンタ)",
 	"fivecardstud":        "Five Card Stud (ファイブカードスタッド)",
+	"faro":                "Faro (ファロ)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).
