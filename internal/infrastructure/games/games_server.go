@@ -825,4 +825,9 @@ func init() {
 			return usecase.NewSpoonsInteractor(domain.NewDefaultSpoons(), new(presenter.SpoonsWebPresenter))
 		},
 		controller.NewSpoonsWebController)
+	BindWebControllerFor("kemps",
+		func() usecase.KempsInteractorIF {
+			return usecase.NewKempsInteractor(domain.NewDefaultKemps(), new(presenter.KempsWebPresenter))
+		},
+		controller.NewKempsWebController)
 }

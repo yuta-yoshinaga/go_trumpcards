@@ -444,6 +444,20 @@ export const SpoonsPhase = {
   GAME_END: 3,
 } as const;
 
+/** Kemps phase constants (sync: internal/domain/Kemps.go). */
+export const KempsPhase = {
+  EXCHANGE: 0,
+  DECLARE: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/** Kemps signal type constants (sync: internal/domain/KempsConfig.go). 0=Sound, 1=Blink. */
+export const KempsSignal = {
+  SOUND: 0,
+  BLINK: 1,
+} as const;
+
 /** Préférence phase constants (sync: internal/domain/Preference.go). */
 export const PreferencePhase = {
   BID: 0,

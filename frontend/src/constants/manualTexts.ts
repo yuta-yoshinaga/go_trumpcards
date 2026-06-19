@@ -75,6 +75,7 @@ import indianpoker from '../../../docs/manual/web/indianpoker.md?raw';
 import irishpoker from '../../../docs/manual/web/irishpoker.md?raw';
 import jokerpoker from '../../../docs/manual/web/jokerpoker.md?raw';
 import kalooki from '../../../docs/manual/web/kalooki.md?raw';
+import kemps from '../../../docs/manual/web/kemps.md?raw';
 import klaverjas from '../../../docs/manual/web/klaverjas.md?raw';
 import klondike from '../../../docs/manual/web/klondike.md?raw';
 import knockoutwhist from '../../../docs/manual/web/knockoutwhist.md?raw';
@@ -175,6 +176,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/threecardbrag': threecardbrag,
   '/teenpatti': teenpatti,
   '/spoons': spoons,
+  '/kemps': kemps,
   '/bridge': bridge,
   '/burraco': burraco,
   '/calculation': calculation,

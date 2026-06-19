@@ -1,0 +1,53 @@
+{
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "round": "ラウンド {{n}}",
+  "targetScore": "目標: {{count}}点",
+  "teamA": "チームA",
+  "teamB": "チームB",
+  "playersTitle": "プレイヤー",
+  "fieldLabel": "場のカード",
+  "fieldNotice": "交換する場のカードを選んでください。",
+  "handLabel": "あなたの手札",
+  "handNotice": "あなたの番です — まず交換したい手札を1枚選んでください。",
+  "selectHandCard": "手札を選ぶ",
+  "swapButton": "このカードと交換",
+  "passButton": "パス（交換しない）",
+  "signalLabel": "あなたの秘密のシグナル:",
+  "signal": {
+    "sound": "音（咳払い）",
+    "blink": "瞬き"
+  },
+  "badge": {
+    "fourOfAKind": "フォーオブアカインド成立"
+  },
+  "partnerSignaling": "パートナーが合図を送っています！「ケムプス！」を宣言しましょう。",
+  "opponentSignaling": "相手チームの誰かが合図しているかもしれません…。",
+  "kempsButton": "ケムプス！",
+  "counterButton": "カウンター・ケムプス！（{{name}}）",
+  "declineButton": "宣言しない",
+  "nextRound": "次のラウンドへ",
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "easy": "やさしい",
+    "normal": "ふつう",
+    "hard": "むずかしい"
+  },
+  "phase": {
+    "exchange": "交換",
+    "declare": "宣言",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "win": "あなたのチームの勝利です！",
+  "lose": "{{name}} の勝利です。",
+  "tutorial": {
+    "info": "ラウンド数・両チームの得点・目標点がここに表示されます。",
+    "field": "全員が共有する4枚の場のカードです。手札を選んでから場のカードをクリックして交換します。",
+    "hand": "あなたの4枚の手札です。同じランクを4枚（フォーオブアカインド）集めるのが目標です。",
+    "signal": "あなたの秘密のシグナル（音／瞬き）を設定します。パートナーがこの合図でフォーオブアカインドを知らせます。",
+    "declare": "フォーオブアカインドが揃うと宣言ウィンドウが開きます。「ケムプス！」で得点、相手の合図を見抜いたら「カウンター・ケムプス！」で横取りできます。",
+    "resetButton": "このボタンでいつでもゲームをリセットできます。"
+  }
+}
