@@ -179,15 +179,17 @@ func (g *Pishti) dealInitialPile() {
 		}
 		g.state.pile = append(g.state.pile, card)
 	}
-	// 一番上がジャックの間、山札から 1 枚引いて末尾 (一番上) に積む。
-	// これにより引いた非ジャック札が上に来て、ジャックは山の下に潜る。
-	// 引いた札もジャックなら更に引き直す。山札が尽きたらジャックのまま開始。
-	for pishtiIsJack(g.pileTop()) {
-		next := g.trumpCards.DrawCard()
-		if next == nil {
-			break
+	// 一番上がジャックなら、場札内の非ジャック札と入れ替えて上に出す。
+	// 山札からは引かない (引くと総配布枚数が減り、最終ラウンドの配布が偏って
+	// しまうため)。場札が全てジャックの稀なケースはそのまま開始する。
+	if pishtiIsJack(g.pileTop()) {
+		top := len(g.state.pile) - 1
+		for i := top - 1; i >= 0; i-- {
+			if !pishtiIsJack(g.state.pile[i]) {
+				g.state.pile[i], g.state.pile[top] = g.state.pile[top], g.state.pile[i]
+				break
+			}
 		}
-		g.state.pile = append(g.state.pile, next)
 	}
 	g.appendLog(-1, "deal", fmt.Sprintf("dealt %d pile cards", len(g.state.pile)), append([]*Card(nil), g.state.pile...))
 }
