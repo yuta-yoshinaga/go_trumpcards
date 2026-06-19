@@ -59,13 +59,15 @@ func TestCuarentaTeamOf(t *testing.T) {
 // TestCuarenta_RankCapture は同ランク捕獲を検証する。
 func TestCuarenta_RankCapture(t *testing.T) {
 	g := cuNewGame(DefaultCuarentaConfig())
-	// human (seat 0) holds a 5; table has two 5s and a 7.
+	// human (seat 0) holds a 5 (plus a spare 6 so the round does not end on this
+	// play and trigger the leftover-sweep); table has two 5s and a 7.
 	g.players[0].Reset()
 	g.players[0].AddCard(cuCard(CardDesignSpade, 5))
+	g.players[0].AddCard(cuCard(CardDesignSpade, 6))
 	g.round.tableCards = []*Card{cuCard(CardDesignHeart, 5), cuCard(CardDesignClover, 5), cuCard(CardDesignDiamond, 7)}
 	g.round.currentTurn = 0
 	g.round.phase = CuarentaPhasePlay
-	// drain deck and give others empty hands so it doesn't redeal.
+	// give others empty hands so it doesn't redeal.
 	for i := 1; i < CuarentaPlayerCnt; i++ {
 		g.players[i].Reset()
 	}
@@ -74,8 +76,9 @@ func TestCuarenta_RankCapture(t *testing.T) {
 	if err := g.PlayerPlay(0); err != nil {
 		t.Fatalf("PlayerPlay returned error: %v", err)
 	}
-	// the two 5s captured; the 7 remains (but round ends, last-take gives it to capturer).
-	if g.GetPlayer(0).CapturedCount() != 3 { // played 5 + two table 5s
+	// only the rank-5 capture: played 5 + two table 5s = 3; the 7 stays on the
+	// table (the human still holds the 6, so the round has not ended yet).
+	if g.GetPlayer(0).CapturedCount() != 3 {
 		t.Fatalf("captured count = %d, want 3", g.GetPlayer(0).CapturedCount())
 	}
 }
