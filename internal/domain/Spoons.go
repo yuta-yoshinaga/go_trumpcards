@@ -121,6 +121,9 @@ func (g *Spoons) SetRand(r *rand.Rand) {
 // Reset はゲーム全体を初期化して新しいゲームを開始する。
 func (g *Spoons) Reset() {
 	for _, p := range g.players {
+		if p == nil {
+			continue
+		}
 		p.SetLetters(0)
 		p.SetEliminated(false)
 	}
@@ -168,6 +171,9 @@ func (g *Spoons) dealRound() {
 	}
 
 	for _, p := range g.players {
+		if p == nil {
+			continue
+		}
 		p.Reset()
 		p.SetHasSpoon(false)
 	}

@@ -18,8 +18,6 @@
   "roundLoser": "{{name}} はスプーンを取れず、文字を1つ取りました",
   "winHuman": "あなたの勝ちです！",
   "winCpu": "{{name}} の勝ちです...",
-  "result": {
-    "humanWin": "あなたの勝ちです！",
-    "cpuWin": "CPUの勝ちです..."
-  }
+  "result.humanWin": "あなたの勝ちです！",
+  "result.cpuWin": "CPUの勝ちです..."
 }

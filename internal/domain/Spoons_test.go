@@ -113,10 +113,13 @@ func TestSpoons_HumanPassCompletesFourOfAKind(t *testing.T) {
 
 	// 9 (index 3) を渡せば 7 が 4 枚残りフォーオブアカインド成立。
 	require.NoError(t, g.PlayerPass(3))
-	assert.Equal(t, SpoonsPhaseGrab, g.GetPhase())
-	assert.True(t, g.IsGrabWindowOpen())
+	// 人間がフォーオブアカインドを揃えた瞬間にスプーンを掴み、最初の取得者となる
+	// (どちらも決定的)。
 	assert.Equal(t, 0, g.GetFirstGrabberIdx())
 	assert.True(t, g.GetPlayer(0).GetHasSpoon())
+	// 人間が掴んだ後、残りスプーンを CPU が奪い合う。取りこぼしは乱数なので、まだ
+	// グラブ中か既にラウンドが解決済みかのどちらも正当。
+	assert.Contains(t, []SpoonsPhase{SpoonsPhaseGrab, SpoonsPhaseRoundEnd}, g.GetPhase())
 }
 
 func TestSpoons_PlayerPassErrors(t *testing.T) {
