@@ -1336,3 +1336,10 @@ export const Rummy500Phase = {
   ROUND_END: 2,
   GAME_END: 3,
 } as const;
+
+/** Cuarenta phase constants (sync: internal/domain/Cuarenta.go). */
+export const CuarentaPhase = {
+  PLAY: 0,
+  ROUND_END: 1,
+  GAME_END: 2,
+} as const;

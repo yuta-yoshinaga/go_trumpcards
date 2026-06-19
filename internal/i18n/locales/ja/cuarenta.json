@@ -1,0 +1,22 @@
+{
+  "helpTitle": "Cuarenta (クアレンタ)",
+  "helpPlay": "  p <h>                    手札hを出す (同ランクを捕獲、無ければ場に置く)",
+  "helpNext": "  n                        次のラウンドを開始する",
+  "helpSetDifficulty": "  sd [0-2]                 CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "teamScoreLine": "チーム{{team}}: {{score}}点",
+  "playerLine": "{{name}} (チーム{{team}}): 手札{{hand}}枚 / 捕獲{{captured}}枚",
+  "tableLine": "場: {{cards}}",
+  "tableEmpty": "場: なし",
+  "humanActionLine": "あなたの行動: {{text}}",
+  "cpuActionsHeader": "[CPUの行動]",
+  "cpuActionLine": "  {{name}}: {{text}}",
+  "actionCapture": "捕獲 played={{played}} captured={{count}}枚{{suffix}}",
+  "actionCaidaSuffix": " (カイーダ!+2)",
+  "actionRondaSuffix": " (ロンダ!+{{bonus}})",
+  "actionLimpiaSuffix": " (リンピア!+1)",
+  "actionLay": "場に置く {{played}}",
+  "gameEnd": "ゲーム終了！",
+  "scoreEntry": "  チーム{{team}}: {{score}}点",
+  "promptCurrentTurn": "手番: {{name}}",
+  "promptHelp": "p <hand> で捕獲または場に置く / n で次のラウンド"
+}

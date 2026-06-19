@@ -2682,6 +2682,22 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "cuarenta", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCuarentaCuiController(usecase.NewCuarentaInteractor(
+				domain.NewDefaultCuarenta(), new(presenter.CuarentaCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "cuarenta.helpTitle",
+				CommandKeys: []string{
+					"cuarenta.helpPlay",
+					"cuarenta.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys: []string{
+					"cuarenta.helpSetDifficulty",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

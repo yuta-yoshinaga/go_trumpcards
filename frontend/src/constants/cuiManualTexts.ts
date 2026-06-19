@@ -43,6 +43,7 @@ import crazypineapple from '../../../docs/manual/cui/crazypineapple.md?raw';
 import crescent from '../../../docs/manual/cui/crescent.md?raw';
 import cribbage from '../../../docs/manual/cui/cribbage.md?raw';
 import cruel from '../../../docs/manual/cui/cruel.md?raw';
+import cuarenta from '../../../docs/manual/cui/cuarenta.md?raw';
 import cuckoo from '../../../docs/manual/cui/cuckoo.md?raw';
 import daifugo from '../../../docs/manual/cui/daifugo.md?raw';
 import deuceswild from '../../../docs/manual/cui/deuceswild.md?raw';
@@ -292,6 +293,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/spoons': spoons,
   '/kemps': kemps,
   '/cuckoo': cuckoo,
+  '/cuarenta': cuarenta,
   '/pishti': pishti,
   '/tonk': tonk,
   '/tripeaks': tripeaks,

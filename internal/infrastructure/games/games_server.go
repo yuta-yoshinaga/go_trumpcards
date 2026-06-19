@@ -840,4 +840,9 @@ func init() {
 			return usecase.NewPishtiInteractor(domain.NewDefaultPishti(), new(presenter.PishtiWebPresenter))
 		},
 		controller.NewPishtiWebController)
+	BindWebControllerFor("cuarenta",
+		func() usecase.CuarentaInteractorIF {
+			return usecase.NewCuarentaInteractor(domain.NewDefaultCuarenta(), new(presenter.CuarentaWebPresenter))
+		},
+		controller.NewCuarentaWebController)
 }
