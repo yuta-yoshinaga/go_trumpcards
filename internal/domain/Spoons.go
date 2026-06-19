@@ -183,6 +183,9 @@ func (g *Spoons) dealRound() {
 
 	// 生存者へ SpoonsHandSize 枚ずつ配る。
 	for _, idx := range active {
+		if g.players[idx] == nil {
+			continue
+		}
 		for n := 0; n < SpoonsHandSize; n++ {
 			c := g.popDraw()
 			if c != nil {
@@ -312,6 +315,9 @@ func (g *Spoons) PlayerPass(cardIndex int) error {
 	}
 	g.receiveIncoming(0)
 	p := g.players[0]
+	if p == nil {
+		return ErrInvalidPlay
+	}
 	if cardIndex < 0 || cardIndex >= p.GetCardsSize() {
 		return ErrInvalidCard
 	}
@@ -330,6 +336,9 @@ func (g *Spoons) PlayerGrabSpoon() error {
 		return ErrWrongPhase
 	}
 	human := g.players[0]
+	if human == nil {
+		return ErrInvalidPlay
+	}
 	if human.GetEliminated() || human.GetHasSpoon() || g.spoonsRemaining <= 0 {
 		return ErrInvalidPlay
 	}
@@ -572,7 +581,7 @@ func (g *Spoons) endGame(winner int) {
 	g.phase = SpoonsPhaseGameEnd
 	g.winnerIdx = winner
 	g.grabWindowOpen = false
-	if winner >= 0 && winner < SpoonsPlayerCnt {
+	if winner >= 0 && winner < SpoonsPlayerCnt && g.players[winner] != nil {
 		g.players[winner].SetIsFinished(true)
 	}
 	g.appendLog(winner, "gameEnd", "game over", nil)
