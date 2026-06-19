@@ -429,6 +429,22 @@ func (g *Cuckoo) endRound() {
 			g.appendLog(i, "lose_life", fmt.Sprintf("%s loses a life (lowest: %d)", g.playerName(i), lowest), nil)
 		}
 	}
+
+	// 総崩れ防止のタイブレーク: 残った全員が最低値で並び、このラウンドで全員が
+	// 脱落すると勝者が決まらなくなる。その場合は並んだ中からスート最強の 1 人を
+	// 生き残らせ、単独勝者を保証する (サドンデス)。
+	if g.activeCount() == 0 && len(g.roundLosers) > 0 {
+		survivor := g.roundLosers[0]
+		for _, i := range g.roundLosers {
+			si, ci := g.players[survivor].Card(), g.players[i].Card()
+			if ci != nil && (si == nil || ci.GetDesign() > si.GetDesign()) {
+				survivor = i
+			}
+		}
+		g.players[survivor].SetLives(1)
+		g.appendLog(survivor, "survive", fmt.Sprintf("%s survives the tie-break", g.playerName(survivor)), nil)
+	}
+
 	g.finishRound()
 }
 
@@ -710,6 +726,20 @@ func (g *Cuckoo) UnmarshalJSON(data []byte) error {
 	}
 	if j.DealerIdx < 0 || j.DealerIdx >= CuckooPlayerCnt {
 		return fmt.Errorf("cuckoo: dealer index out of range: %d", j.DealerIdx)
+	}
+	if j.WinnerIdx < -1 || j.WinnerIdx >= CuckooPlayerCnt {
+		return fmt.Errorf("cuckoo: winner index out of range: %d", j.WinnerIdx)
+	}
+	if j.PendingSwapFrom < -1 || j.PendingSwapFrom >= CuckooPlayerCnt {
+		return fmt.Errorf("cuckoo: pending swap from index out of range: %d", j.PendingSwapFrom)
+	}
+	if j.PendingSwapTo < -1 || j.PendingSwapTo >= CuckooPlayerCnt {
+		return fmt.Errorf("cuckoo: pending swap to index out of range: %d", j.PendingSwapTo)
+	}
+	for _, idx := range j.RoundLosers {
+		if idx < 0 || idx >= CuckooPlayerCnt {
+			return fmt.Errorf("cuckoo: round loser index out of range: %d", idx)
+		}
 	}
 
 	g.trumpCards = j.TrumpCards
