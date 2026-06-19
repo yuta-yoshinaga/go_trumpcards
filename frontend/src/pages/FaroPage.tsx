@@ -143,16 +143,16 @@ function FaroPageContent() {
     exec('next');
   };
 
-  /** Three ranks left for the call, derived from the called cards. */
-  const callRanks = state.callCards.map((c) => c.value);
-
-  /** Toggle a rank into / out of the call-order sequence. */
-  const toggleCallRank = (rank: number) => {
-    setCallOrder((prev) => (prev.includes(rank) ? prev.filter((r) => r !== rank) : [...prev, rank]));
+  /** Toggle a call card (tracked by its index) into / out of the predicted order.
+   * Tracking by index — not rank — keeps selection correct when the three
+   * remaining cards share a rank (e.g. two 5s and a 9). */
+  const toggleCallCard = (idx: number) => {
+    setCallOrder((prev) => (prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]));
   };
 
   const submitCall = () => {
-    exec('call', { order: callOrder });
+    // Map the picked card indices to their ranks (the order the backend expects).
+    exec('call', { order: callOrder.map((i) => state.callCards[i].value) });
     setCallOrder([]);
   };
 
@@ -293,23 +293,24 @@ function FaroPageContent() {
                   ))}
                 </div>
                 <div className="flex flex-wrap justify-center gap-2 mb-2">
-                  {callRanks.map((rank) => {
-                    const pos = callOrder.indexOf(rank);
+                  {state.callCards.map((card, i) => {
+                    const pos = callOrder.indexOf(i);
+                    const isSelected = pos >= 0;
                     return (
                       <button
-                        key={`call-rank-${rank}`}
+                        key={`call-rank-${card.value}-${i}`}
                         type="button"
-                        onClick={() => toggleCallRank(rank)}
+                        onClick={() => toggleCallCard(i)}
                         disabled={loading}
                         className={`px-3 py-2 rounded border text-sm font-semibold transition-all ${
-                          pos >= 0
+                          isSelected
                             ? 'border-ds-warning bg-ds-warning/20 text-ds-warning'
                             : 'border-white/30 bg-black/30 text-ds-text-primary'
                         }`}
-                        data-testid={`call-rank-${rank}`}
+                        data-testid={`call-rank-${card.value}-${i}`}
                       >
-                        {rankLabel(rank)}
-                        {pos >= 0 ? ` (${t('callSlot', { n: pos + 1 })})` : ''}
+                        {rankLabel(card.value)}
+                        {isSelected ? ` (${t('callSlot', { n: pos + 1 })})` : ''}
                       </button>
                     );
                   })}
@@ -319,7 +320,7 @@ function FaroPageContent() {
                     type="button"
                     className={btnPrimary}
                     onClick={submitCall}
-                    disabled={loading || callOrder.length !== callRanks.length}
+                    disabled={loading || callOrder.length !== state.callCards.length}
                   >
                     {t('callButton')}
                   </button>

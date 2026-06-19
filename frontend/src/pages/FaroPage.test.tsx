@@ -152,10 +152,10 @@ describe('FaroPage', () => {
   it('submits a call once all three ranks are ordered', async () => {
     mockExec.mockResolvedValue(callState);
     renderWithProviders(<FaroPage />);
-    await screen.findByTestId('call-rank-3');
-    fireEvent.click(screen.getByTestId('call-rank-3'));
-    fireEvent.click(screen.getByTestId('call-rank-9'));
-    fireEvent.click(screen.getByTestId('call-rank-12'));
+    await screen.findByTestId('call-rank-3-0');
+    fireEvent.click(screen.getByTestId('call-rank-3-0'));
+    fireEvent.click(screen.getByTestId('call-rank-9-1'));
+    fireEvent.click(screen.getByTestId('call-rank-12-2'));
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: 'コールする' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', { order: [3, 9, 12] }));
