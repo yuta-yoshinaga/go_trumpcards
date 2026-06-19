@@ -62,6 +62,7 @@ import type {
   EscobaResponse,
   EuchreResponse,
   FiftyOneResponse,
+  FiveCardStudResponse,
   FiveHundredResponse,
   FortyFivesResponse,
   FortyThievesMoveZone,
@@ -213,6 +214,7 @@ const workerUrl: Record<string, string> = {
   crazypineapple: WORKER_CASINO,
   irishpoker: WORKER_CASINO,
   sevencardstud: WORKER_CASINO,
+  fivecardstud: WORKER_CASINO,
   razz: WORKER_CASINO,
   badugi: WORKER_CASINO,
   deucetoseven: WORKER_CASINO,
@@ -708,6 +710,30 @@ export interface SevenCardStudConfigInput {
 
 /** API client for the Seven Card Stud /sevencardstud/exec endpoint. */
 export const sevenCardStudApi = createHoldemLikeApi<SevenCardStudResponse, SevenCardStudConfigInput>('sevencardstud');
+
+/** Configuration options for Five Card Stud game settings. */
+export interface FiveCardStudConfigInput {
+  ante?: number;
+  bringIn?: number;
+  smallBet?: number;
+  bigBet?: number;
+  tournamentMode?: boolean;
+  anteLevelHands?: number;
+  anteMultiplier?: number;
+  bettingLimit?: number;
+  tableSize?: number;
+  rebuyEnabled?: boolean;
+  rebuyMaxCount?: number;
+  rebuyChips?: number;
+  rebuyPeriodHands?: number;
+  addonEnabled?: boolean;
+  addonChips?: number;
+  addonAfterHand?: number;
+  cpuMetaAI?: boolean;
+}
+
+/** API client for the Five Card Stud /fivecardstud/exec endpoint. */
+export const fiveCardStudApi = createHoldemLikeApi<FiveCardStudResponse, FiveCardStudConfigInput>('fivecardstud');
 
 /** API client for the Razz /razz/exec endpoint. */
 export const razzApi = createHoldemLikeApi<SevenCardStudResponse, SevenCardStudConfigInput>('razz');
@@ -3698,6 +3724,7 @@ const games = [
   'crazypineapple',
   'irishpoker',
   'sevencardstud',
+  'fivecardstud',
   'razz',
   'badugi',
   'deucetoseven',

@@ -142,6 +142,8 @@ tags:
     description: Pig's Tail (ぶたのしっぽ) game
   - name: sevencardstud
     description: Seven Card Stud (セブンカード・スタッド) game
+  - name: fivecardstud
+    description: Five Card Stud (ファイブカード・スタッド) game
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -5553,6 +5555,113 @@ paths:
                 summary: Skip addon
                 value:
                   command: skipaddon
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SevenCardStudResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SevenCardStudResponse'
+              examples:
+                paramError:
+                  value:
+                    players: []
+                    pot: 0
+                    sidePots: []
+                    dealerIdx: 0
+                    currentTurn: 0
+                    phase: 0
+                    gameEndFlag: false
+                    lastBet: 0
+                    minRaise: 0
+                    roundResults: []
+                    cpuActions: []
+                    message: param error.
+
+
+  /fivecardstud/exec:
+    post:
+      tags:
+        - fivecardstud
+      summary: Execute a Five Card Stud game command
+      description: |
+        Send a command to advance the Five Card Stud game session identified by
+        `sessionId`.  Five Card Stud is poker's oldest stud variant with no
+        community cards.  Each player receives 1 face-down hole card and 1
+        face-up door card on Second Street, then 1 face-up card each on Third,
+        Fourth, and Fifth Street (5 cards total, 1 down + 4 up).  Uses antes and
+        bring-in (lowest door card) instead of blinds.  Betting order changes
+        each street based on best visible hand (door cards).  Best 5-card hand
+        wins.
+
+        The game supports configurable table sizes: 2-max through 6-max
+        (default 4, i.e., 1 human + 3 CPU).
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Init       | `0`   | Before any cards are dealt |
+        | SecondSt   | `1`   | 1 hole card + 1 door card; first betting round (bring-in) |
+        | ThirdSt    | `2`   | 3rd card (face-up); betting round |
+        | FourthSt   | `3`   | 4th card (face-up); betting round |
+        | FifthSt    | `4`   | 5th card (face-up); final betting round |
+        | Showdown   | `5`   | Hands evaluated; winners determined |
+        | End        | `6`   | Round complete; results displayed |
+        | Rebuy      | `7`   | Rebuy/addon decision phase |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `fold`  | `f`     | Fold and forfeit the pot |
+        | `check` | `ck`    | Pass without betting (only when no outstanding bet) |
+        | `call`  | `c`     | Match the current bet |
+        | `bet`   | `b`     | Place a bet (use `amount`) |
+        | `raise` | `ra`    | Raise by a specified amount on top of calling (use `amount`) |
+        | `allin` | `a`     | Go all-in with all remaining chips |
+        | `rebuy` | `rb`    | Buy back chips during rebuy period |
+        | `skiprebuy` | `sr` | Skip rebuy opportunity |
+        | `addon` | `ad`    | Add chips (one-time addon purchase) |
+        | `skipaddon` | `sa` | Skip addon opportunity |
+        | `muck`  | `m`     | Muck (hide) hand at showdown |
+        | `show`  | `sh`    | Show hand at showdown |
+        | `log`   | `l`     | View action log |
+        | `quit`  | `q`     | End the session |
+      operationId: fivecardstudExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SevenCardStudRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              fold:
+                summary: Fold
+                value:
+                  command: fold
+                  sessionId: my-session-001
+              call:
+                summary: Call
+                value:
+                  command: call
+                  sessionId: my-session-001
+              bet:
+                summary: Place a bet of 40
+                value:
+                  command: bet
+                  amount: 40
                   sessionId: my-session-001
       responses:
         '200':

@@ -2698,6 +2698,26 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "fivecardstud", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewFiveCardStudCuiController(usecase.NewFiveCardStudInteractor(
+				domain.NewDefaultFiveCardStud(), new(presenter.FiveCardStudCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "fivecardstud.helpTitle",
+				CommandKeys: []string{
+					"fivecardstud.helpFold",
+					"fivecardstud.helpCheck",
+					"fivecardstud.helpCall",
+					"fivecardstud.helpBet",
+					"fivecardstud.helpRaise",
+					"fivecardstud.helpAllIn",
+				},
+				SettingKeys: []string{
+					"fivecardstud.helpBettingLimit",
+					"fivecardstud.helpTournament",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

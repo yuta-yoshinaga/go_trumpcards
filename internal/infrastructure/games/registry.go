@@ -414,6 +414,12 @@ var registry = []*Game{
 	// deck (no 8/9/10); capture by rank with caída/ronda/limpia bonuses, first
 	// team to 40 points wins. Casino worker bucket (reuses Scopa's 40-card deck).
 	{Name: "cuarenta", Category: CategoryCasino},
+	// Five Card Stud: one of the oldest stud poker variants. 2–6 players, one
+	// face-down hole card plus four face-up cards dealt over four betting
+	// streets (bring-in on the lowest up-card), standard poker showdown. Casino
+	// worker bucket — it reuses Seven Card Stud's betting structure + the poker
+	// hand evaluator.
+	{Name: "fivecardstud", Category: CategoryCasino},
 }
 
 // All returns a value-level copy of the registry in canonical order.
