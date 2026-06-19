@@ -541,4 +541,13 @@ func init() {
 		},
 		controller.NewFiveCardStudWebControllerWithProvider)
 
+	games.RegisterKVGame("faro", games.CategoryCasino,
+		func() usecase.FaroInteractorIF {
+			return usecase.NewFaroInteractor(domain.NewDefaultFaro(), new(presenter.FaroWebPresenter))
+		},
+		func(data []byte) (usecase.FaroInteractorIF, error) {
+			return usecase.RestoreFaroInteractor(data, new(presenter.FaroWebPresenter))
+		},
+		controller.NewFaroWebControllerWithProvider)
+
 }

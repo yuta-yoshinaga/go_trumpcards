@@ -186,7 +186,8 @@
     "bigtwo": "大老二",
     "tienlen": "ティエンレン",
     "pishti": "ピシュティ",
-    "cuarenta": "クアレンタ"
+    "cuarenta": "クアレンタ",
+    "faro": "ファロ"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -804,7 +805,10 @@
     "whist.trickEnd": "トリック終了",
     "whist.roundEnd": "ラウンド終了",
     "pishti.result.scores": "ゲーム終了。スコア: {{scores}}",
-    "cuarenta.result.scores": "ゲーム終了。スコア: {{scores}}"
+    "cuarenta.result.scores": "ゲーム終了。スコア: {{scores}}",
+    "faro.result.callWon": "コール的中！",
+    "faro.result.callLost": "コール外れ。",
+    "faro.result.gameEnd": "チップが尽きました。ゲーム終了です。"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

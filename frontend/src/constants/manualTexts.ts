@@ -58,6 +58,7 @@ import egyptianratscrew from '../../../docs/manual/web/egyptianratscrew.md?raw';
 import eightoff from '../../../docs/manual/web/eightoff.md?raw';
 import escoba from '../../../docs/manual/web/escoba.md?raw';
 import euchre from '../../../docs/manual/web/euchre.md?raw';
+import faro from '../../../docs/manual/web/faro.md?raw';
 import fiftyone from '../../../docs/manual/web/fiftyone.md?raw';
 import fivecardstud from '../../../docs/manual/web/fivecardstud.md?raw';
 import fivehundred from '../../../docs/manual/web/fivehundred.md?raw';
@@ -183,6 +184,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/kemps': kemps,
   '/cuckoo': cuckoo,
   '/cuarenta': cuarenta,
+  '/faro': faro,
   '/pishti': pishti,
   '/bridge': bridge,
   '/burraco': burraco,

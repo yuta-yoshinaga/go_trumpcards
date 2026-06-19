@@ -347,6 +347,8 @@ tags:
     description: Pişti (ピシュティ) — a Turkish 2-4 player capture (fishing) game on a standard 52-card deck; each player is dealt 4 cards and plays one onto a central pile in turn; playing a card that matches the rank of the pile's top card, or playing a Jack (wild), captures the whole pile; capturing a lone card scores a Pişti (10 points; 20 for a Jack played onto a single Jack); hands are re-dealt 4 at a time until the stock runs out; final scoring most cards 3, each Ace 1, 2 of clubs 2, 10 of diamonds 3, each Jack 1, plus Pişti bonuses, and the highest total wins; CPU difficulties Easy, Normal, Hard; commands play (p, with handIndex), next (n), setdifficulty (sd), setplayers (sp), log (l), reset (r); phases play, roundEnd, gameEnd; config playerCnt (2-4, default 4) and cpuDifficulty (0 Easy, 1 Normal, 2 Hard)
   - name: cuarenta
     description: Cuarenta (クアレンタ) — a 4-player, 2-team Ecuadorian capture (fishing) game on a 40-card Spanish-style deck (the 8s, 9s and 10s are removed); teams are seats 0 and 2 (Team A) versus seats 1 and 3 (Team B); each player is dealt 5 cards and 4 cards are placed on the central table; on your turn you play one card, and if it matches the rank of any table card you capture all same-rank table cards (and may chain via ronda when 3 or more of a rank appear), otherwise the card is laid on the table; bonuses (all additive) are caída plus 2 (immediately capturing the very card the previous player just laid), limpia plus 1 (clearing the entire table), and ronda plus 1 per extra card beyond 2 (capturing a run of 3 or more of a rank); hands are re-dealt 5 at a time until the stock runs out, then the team that captured more than 20 of the 40 cards (the majority) gets a plus 6 most cards bonus; the first team to reach the target score (default 40) wins; CPU difficulties Easy, Normal, Hard; commands play (p, with handIndex), next (n), setdifficulty (sd), log (l), reset (r); phases play, roundEnd, gameEnd; config targetScore (default 40) and cpuDifficulty (0 Easy, 1 Normal, 2 Hard)
+  - name: faro
+    description: Faro (ファロ) — a 19th-century American single-player-vs-bank banking game on a standard 52-card deck with a 13-rank layout (A is 1 to K is 13); in the Betting phase the player places chips on ranks and a copper bet wagers a rank to lose rather than win; the bank burns the soda (first card) and deals turns of two cards, where the first (losing) card rank is collected by the bank and the second (winning) card rank is paid 1 to 1; when both cards share a rank (a split) the bank takes half of that rank stake; the final three cards may be called by predicting their order, paying 4 to 1 for a correct call; play continues until the player runs out of chips; commands bet (b, with rank, amount and copper), clearBet (cb, with rank), clearAll (ca), deal (d), call (with order), next (n), log (l), reset (r); phases 1 Betting, 2 Turn, 3 Call, 4 RoundEnd, 5 GameEnd
 
 paths:
   /blackjack/exec:
@@ -15446,6 +15448,86 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CuarentaResponse'
+
+  /faro/exec:
+    post:
+      tags:
+        - faro
+      summary: Execute a Faro game command
+      description: |
+        Send a command to advance a Faro session identified by `sessionId`.
+        Faro is a single-player-vs-bank banking game on a standard 52-card deck with a
+        13-rank layout (A is 1 to K is 13). In the Betting phase the player places chips on
+        ranks; a copper bet wagers a rank to lose rather than win. The bank burns the soda
+        (first card) and deals turns of two cards, where the first (losing) card rank is
+        collected by the bank and the second (winning) card rank is paid 1 to 1. When both
+        cards share a rank (a split) the bank takes half of that rank stake. The final
+        three cards may be called by predicting their order, paying 4 to 1 for a correct
+        call. Play continues until the player runs out of chips.
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Betting  | `1`   | The player places chip bets on the rank layout |
+        | Turn     | `2`   | The bank deals turns of two cards (loser then winner) |
+        | Call     | `3`   | The final three cards may be called for a 4 to 1 payout |
+        | RoundEnd | `4`   | The deal is scored; the next deal awaits |
+        | GameEnd  | `5`   | The player ran out of chips |
+
+        | Command    | Aliases | Description |
+        |------------|---------|-------------|
+        | `reset`    | `r`     | Start / restart the game |
+        | `bet`      | `b`     | Place a chip bet (`rank`, `amount`, `copper`) |
+        | `clearBet` | `cb`    | Clear the bet on a `rank` |
+        | `clearAll` | `ca`    | Clear all bets |
+        | `deal`     | `d`     | Deal one turn (two cards) |
+        | `call`     |         | Predict the `order` of the final three cards |
+        | `next`     | `n`     | Start the next deal after one ends |
+        | `log`      | `l`     | View action log |
+      operationId: faroExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FaroRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 100 chips on rank 7 (Seven)
+                value:
+                  command: bet
+                  rank: 7
+                  amount: 100
+                  copper: false
+                  sessionId: my-session-001
+              deal:
+                summary: Deal one turn
+                value:
+                  command: deal
+                  sessionId: my-session-001
+              call:
+                summary: Call the order of the final three cards
+                value:
+                  command: call
+                  order: [3, 9, 12]
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FaroResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FaroResponse'
 
 components:
   schemas:
@@ -34428,6 +34510,124 @@ components:
             cpuDifficulty:
               type: integer
               description: CPU difficulty (0 Easy, 1 Normal, 2 Hard)
+        message:
+          type: string
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    FaroRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `bet` (`b`), `clearBet` (`cb`),
+            `clearAll` (`ca`), `deal` (`d`), `call`, `next` (`n`), `log` (`l`).
+          enum: [reset, r, bet, b, clearBet, cb, clearAll, ca, deal, d, call, next, n, log, l]
+          example: bet
+        rank:
+          type: integer
+          description: Layout rank to bet on or clear (1 is A to 13 is K); used with `bet` and `clearBet`.
+          minimum: 1
+          maximum: 13
+        amount:
+          type: integer
+          description: Chip amount to wager (used with `bet`).
+          minimum: 1
+        copper:
+          type: boolean
+          description: When true the bet wagers the rank to lose rather than win (used with `bet`).
+        order:
+          type: array
+          description: Predicted order of the final three ranks (used with `call`); empty to skip the call.
+          items:
+            type: integer
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    FaroResponse:
+      type: object
+      description: Current state of the Faro game
+      properties:
+        phase:
+          type: integer
+          description: "Game phase: 1 Betting, 2 Turn, 3 Call, 4 RoundEnd, 5 GameEnd"
+          enum: [1, 2, 3, 4, 5]
+          example: 1
+        chips:
+          type: integer
+          description: The player's remaining bankroll in chips
+        bets:
+          type: array
+          description: Chips currently placed on the layout, one entry per wagered rank
+          items:
+            type: object
+            properties:
+              rank:
+                type: integer
+                description: Rank the chip is placed on (1 is A to 13 is K)
+              amount:
+                type: integer
+                description: Wagered chip amount
+              copper:
+                type: boolean
+                description: When true the bet wagers the rank to lose
+        soda:
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          nullable: true
+          description: The burned soda card (first card of the deal), or null before the deal
+        losingCard:
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          nullable: true
+          description: The most recent turn's losing card (first turned), or null
+        winningCard:
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          nullable: true
+          description: The most recent turn's winning card (second turned), or null
+        split:
+          type: boolean
+          description: True when the last turn was a split (both cards the same rank)
+        turnsPlayed:
+          type: integer
+          description: Number of turns dealt so far this round
+        turnsTotal:
+          type: integer
+          description: Total number of turns in a full round
+        remaining:
+          type: integer
+          description: Number of cards still left in the dealing box
+        callCards:
+          type: array
+          description: The final three cards available to call (populated during the Call phase)
+          items:
+            $ref: '#/components/schemas/Card'
+        callOrder:
+          type: array
+          description: The player's predicted order for the called cards (rank values), empty when none
+          items:
+            type: integer
+        callWon:
+          type: boolean
+          description: True when the most recent call was correct (paid 4 to 1)
+        totalPayout:
+          type: integer
+          description: Net chip change for the just-finished round
+        gameEndFlag:
+          type: boolean
         message:
           type: string
         messageCode:

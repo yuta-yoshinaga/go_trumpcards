@@ -1,0 +1,187 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { faroApi } from '../api/gameApi';
+import { renderWithProviders } from '../test/renderWithProviders';
+import type { Card, FaroResponse } from '../types/card';
+import { FaroPage } from './FaroPage';
+
+vi.mock('../api/gameApi', () => ({
+  faroApi: { exec: vi.fn() },
+  actionLogApi: { faro: vi.fn() },
+}));
+
+const mockExec = vi.mocked(faroApi.exec);
+
+const card = (design: Card['design'], value: number): Card => ({ design, value });
+
+function makeState(overrides: Partial<FaroResponse> = {}): FaroResponse {
+  return {
+    phase: 1,
+    chips: 1000,
+    bets: [],
+    soda: null,
+    losingCard: null,
+    winningCard: null,
+    split: false,
+    turnsPlayed: 0,
+    turnsTotal: 25,
+    remaining: 52,
+    callCards: [],
+    callOrder: [],
+    callWon: false,
+    totalPayout: 0,
+    gameEndFlag: false,
+    message: '',
+    ...overrides,
+  };
+}
+
+const bettingState = makeState();
+const turnState = makeState({
+  phase: 2,
+  bets: [{ rank: 7, amount: 100, copper: false }],
+  losingCard: card('SPADE', 3),
+  winningCard: card('HEART', 7),
+  turnsPlayed: 1,
+  remaining: 49,
+});
+const splitState = makeState({
+  phase: 2,
+  losingCard: card('SPADE', 5),
+  winningCard: card('HEART', 5),
+  split: true,
+});
+const callState = makeState({
+  phase: 3,
+  callCards: [card('SPADE', 3), card('HEART', 9), card('DIAMOND', 12)],
+});
+const roundEndWinState = makeState({ phase: 4, totalPayout: 200, chips: 1200 });
+const gameEndState = makeState({ phase: 5, gameEndFlag: true, chips: 0 });
+
+beforeEach(() => {
+  mockExec.mockReset();
+  mockExec.mockResolvedValue(bettingState);
+});
+
+describe('FaroPage', () => {
+  it('renders skeleton when no state', () => {
+    mockExec.mockReturnValue(new Promise(() => undefined));
+    renderWithProviders(<FaroPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('calls reset on mount', async () => {
+    renderWithProviders(<FaroPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('shows the chips and remaining cards', async () => {
+    renderWithProviders(<FaroPage />);
+    await waitFor(() => expect(screen.getByText(/チップ: 1000/)).toBeInTheDocument());
+    expect(screen.getByText(/残り: 52枚/)).toBeInTheDocument();
+  });
+
+  it('renders the 13-rank betting layout', async () => {
+    renderWithProviders(<FaroPage />);
+    await waitFor(() => expect(screen.getByTestId('rank-1')).toBeInTheDocument());
+    expect(screen.getByTestId('rank-13')).toBeInTheDocument();
+  });
+
+  it('places a bet when a rank is clicked during betting', async () => {
+    renderWithProviders(<FaroPage />);
+    const rankBtn = await screen.findByTestId('rank-7');
+    mockExec.mockClear();
+    fireEvent.click(rankBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', { rank: 7, amount: 10, copper: false }));
+  });
+
+  it('selects a chip amount and bets with it', async () => {
+    renderWithProviders(<FaroPage />);
+    await screen.findByTestId('rank-7');
+    fireEvent.click(screen.getByTestId('chip-100'));
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('rank-7'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', { rank: 7, amount: 100, copper: false }));
+  });
+
+  it('toggles copper and bets to lose', async () => {
+    renderWithProviders(<FaroPage />);
+    await screen.findByTestId('rank-7');
+    fireEvent.click(screen.getByTestId('copper-toggle'));
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('rank-7'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', { rank: 7, amount: 10, copper: true }));
+  });
+
+  it('shows the no-bets message when no chips are placed', async () => {
+    renderWithProviders(<FaroPage />);
+    await waitFor(() => expect(screen.getByText('まだベットがありません。')).toBeInTheDocument());
+  });
+
+  it('lists a placed bet and clears it', async () => {
+    mockExec.mockResolvedValue(makeState({ bets: [{ rank: 7, amount: 100, copper: false }] }));
+    renderWithProviders(<FaroPage />);
+    const clearBtn = await screen.findByTestId('clear-bet-7');
+    mockExec.mockClear();
+    fireEvent.click(clearBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('clearBet', { rank: 7 }));
+  });
+
+  it('deals a turn from the deal button', async () => {
+    renderWithProviders(<FaroPage />);
+    const dealBtn = await screen.findByTestId('deal-button');
+    mockExec.mockClear();
+    fireEvent.click(dealBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('deal'));
+  });
+
+  it('reveals the losing and winning cards of the last turn', async () => {
+    mockExec.mockResolvedValue(turnState);
+    renderWithProviders(<FaroPage />);
+    await waitFor(() => expect(screen.getByText('直前のターン')).toBeInTheDocument());
+    expect(screen.getByText('負け札（バンク回収）')).toBeInTheDocument();
+    expect(screen.getByText('勝ち札（1:1配当）')).toBeInTheDocument();
+  });
+
+  it('shows the split indicator on a split turn', async () => {
+    mockExec.mockResolvedValue(splitState);
+    renderWithProviders(<FaroPage />);
+    await waitFor(() => expect(screen.getByText('スプリット（バンクが半分回収）')).toBeInTheDocument());
+  });
+
+  it('submits a call once all three ranks are ordered', async () => {
+    mockExec.mockResolvedValue(callState);
+    renderWithProviders(<FaroPage />);
+    await screen.findByTestId('call-rank-3');
+    fireEvent.click(screen.getByTestId('call-rank-3'));
+    fireEvent.click(screen.getByTestId('call-rank-9'));
+    fireEvent.click(screen.getByTestId('call-rank-12'));
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'コールする' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', { order: [3, 9, 12] }));
+  });
+
+  it('skips the call without an order', async () => {
+    mockExec.mockResolvedValue(callState);
+    renderWithProviders(<FaroPage />);
+    const skipBtn = await screen.findByRole('button', { name: 'コールせずに終える' });
+    mockExec.mockClear();
+    fireEvent.click(skipBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', { order: [] }));
+  });
+
+  it('shows a next button at round end and dispatches next', async () => {
+    mockExec.mockResolvedValue(roundEndWinState);
+    renderWithProviders(<FaroPage />);
+    const nextBtn = await screen.findByTestId('next-button');
+    mockExec.mockClear();
+    fireEvent.click(nextBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
+  });
+
+  it('shows the game-over message when out of chips', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<FaroPage />);
+    await waitFor(() => expect(screen.getByText('チップが尽きました。ゲーム終了です。')).toBeInTheDocument());
+  });
+});
