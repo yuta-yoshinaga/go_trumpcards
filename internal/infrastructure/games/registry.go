@@ -391,6 +391,11 @@ var registry = []*Game{
 	// after three correct follows). 4 players, 52-card deck, magic cards
 	// (8 wild, A skip, 2 draw-two). Solo worker bucket — it builds on Macau.
 	{Name: "mao", Category: CategorySolo},
+	// Spoons: American party speed game. 4 players, 52-card deck; pass cards
+	// around until someone collects four of a kind, then everyone races to grab
+	// one of the N-1 spoons. Missing out earns a letter (S-P-O-O-N-S); six
+	// letters eliminates you, last player standing wins. Casino worker bucket.
+	{Name: "spoons", Category: CategoryCasino},
 }
 
 // All returns a value-level copy of the registry in canonical order.

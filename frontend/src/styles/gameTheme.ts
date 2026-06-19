@@ -73,6 +73,7 @@ export type GameKey =
   | 'ecarte'
   | 'threecardbrag'
   | 'teenpatti'
+  | 'spoons'
   | 'pitch'
   | 'twotenjack'
   | 'ohhell'
@@ -277,6 +278,10 @@ const TEENPATTI = {
   bg: 'bg-game-bg-teenpatti',
   footer: 'bg-game-bg-teenpatti-dark border-white/20',
 } as const;
+const SPOONS = {
+  bg: 'bg-game-bg-spoons',
+  footer: 'bg-game-bg-spoons-dark border-white/20',
+} as const;
 
 export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Table games
@@ -343,6 +348,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   ecarte: ECARTE,
   threecardbrag: THREECARDBRAG,
   teenpatti: TEENPATTI,
+  spoons: SPOONS,
   pitch: BLUE,
   twotenjack: BLUE,
   ohhell: BLUE,

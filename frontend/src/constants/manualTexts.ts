@@ -138,6 +138,7 @@ import spider from '../../../docs/manual/web/spider.md?raw';
 import spiderette from '../../../docs/manual/web/spiderette.md?raw';
 import spiteandmalice from '../../../docs/manual/web/spiteandmalice.md?raw';
 import spoilfive from '../../../docs/manual/web/spoilfive.md?raw';
+import spoons from '../../../docs/manual/web/spoons.md?raw';
 import sueca from '../../../docs/manual/web/sueca.md?raw';
 import tarneeb from '../../../docs/manual/web/tarneeb.md?raw';
 import teenpatti from '../../../docs/manual/web/teenpatti.md?raw';
@@ -173,6 +174,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/ecarte': ecarte,
   '/threecardbrag': threecardbrag,
   '/teenpatti': teenpatti,
+  '/spoons': spoons,
   '/bridge': bridge,
   '/burraco': burraco,
   '/calculation': calculation,
