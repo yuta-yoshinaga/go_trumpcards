@@ -17,7 +17,6 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -73,9 +72,9 @@ const PISHTI_TUTORIAL_STEPS: TutorialStep[] = [
 
 /** Maps the backend Pişti phase strings to i18n phase-label keys. */
 const PISHTI_PHASE_KEYS: Readonly<Record<string, string>> = {
-  play: 'play',
-  roundEnd: 'roundEnd',
-  gameEnd: 'gameEnd',
+  play: 'phase.play',
+  roundEnd: 'phase.roundEnd',
+  gameEnd: 'phase.gameEnd',
 };
 
 /** Renders the Pişti game page: a 2-4 player Turkish capture (fishing) game. */
@@ -122,10 +121,11 @@ function PishtiPageContent() {
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const { cardWidth } = useCardDimensions();
-  const phaseNames = usePhaseNames('pishti', PISHTI_PHASE_KEYS);
 
   if (!state)
     return <GameSkeleton gameKey="pishti" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 4 }} />;
+
+  const phaseName = t(PISHTI_PHASE_KEYS[state.phase] ?? '');
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isGameEnd = state.phase === 'gameEnd' || state.gameEndFlag;
@@ -143,7 +143,7 @@ function PishtiPageContent() {
     <GamePageShell
       title={tc('nav.pishti')}
       gameThemeBg={gameTheme.pishti.bg}
-      phaseName={phaseNames[state.phase]}
+      phaseName={phaseName}
       isHumanTurn={isHumanTurn && !isGameEnd}
       gamePath="/pishti"
       gameEndFlag={isGameEnd}
