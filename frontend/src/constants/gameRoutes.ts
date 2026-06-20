@@ -798,6 +798,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [4, 5, 2, 5], skill: [4, 4, 3, 4], social: [1, 3, 5, 5, 2], theme: [2, 2, 4, 4, 3, 4] },
       },
       {
+        path: '/russianbank',
+        labelKey: 'nav.russianbank',
+        icon: '🏦',
+        page: 'RussianBank',
+        profile: { mood: [3, 5, 2, 5], skill: [5, 4, 2, 4], social: [1, 3, 5, 5, 2], theme: [2, 2, 3, 5, 2, 3] },
+      },
+      {
         path: '/speed',
         labelKey: 'nav.speed',
         icon: '⚡',

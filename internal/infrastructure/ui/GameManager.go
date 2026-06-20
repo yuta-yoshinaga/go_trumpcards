@@ -2754,6 +2754,24 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "russianbank", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewRussianBankCuiController(usecase.NewRussianBankInteractor(
+				domain.NewDefaultRussianBank(), new(presenter.RussianBankCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "russianbank.helpTitle",
+				CommandKeys: []string{
+					"russianbank.helpFoundation",
+					"russianbank.helpTableau",
+					"russianbank.helpDiscard",
+					"russianbank.helpStop",
+					"russianbank.helpUndo",
+				},
+				SettingKeys: []string{
+					"russianbank.helpSetDifficulty",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

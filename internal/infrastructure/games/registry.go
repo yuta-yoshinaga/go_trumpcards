@@ -433,6 +433,12 @@ var registry = []*Game{
 	// Fantasyland. Reuses Chinese Poker's row evaluation + royalty helpers, so
 	// it shares the casino worker bucket.
 	{Name: "openfacechinese", Category: CategoryCasino},
+	// Russian Bank (Crapette): 2-player competitive solitaire on two decks.
+	// Each player races to empty their 13-card reserve onto 8 shared
+	// foundations (A-up by suit) and 4 shared tableau columns (alternating
+	// colour, descending), discarding from hand to end a turn. Catch the CPU
+	// leaving a forced foundation move with "stop". Solo worker bucket.
+	{Name: "russianbank", Category: CategorySolo},
 }
 
 // All returns a value-level copy of the registry in canonical order.
