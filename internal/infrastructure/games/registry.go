@@ -394,8 +394,9 @@ var registry = []*Game{
 	// Spoons: American party speed game. 4 players, 52-card deck; pass cards
 	// around until someone collects four of a kind, then everyone races to grab
 	// one of the N-1 spoons. Missing out earns a letter (S-P-O-O-N-S); six
-	// letters eliminates you, last player standing wins. Casino worker bucket.
-	{Name: "spoons", Category: CategoryCasino},
+	// letters eliminates you, last player standing wins. Classic worker bucket
+	// (binary-size bucket — casino was full).
+	{Name: "spoons", Category: CategoryClassic},
 	// Kemps: 4-player, 2-team matching game. Swap cards through a shared field
 	// until you collect four of a kind, then your partner signals secretly and
 	// your team declares "Kemps!" for a point — or the opponents call

@@ -223,7 +223,7 @@ const workerUrl: Record<string, string> = {
   ecarte: WORKER_CASINO,
   threecardbrag: WORKER_CASINO,
   teenpatti: WORKER_CASINO,
-  spoons: WORKER_CASINO,
+  spoons: WORKER_CLASSIC,
   kemps: WORKER_CASINO,
   cuckoo: WORKER_CLASSIC,
   pishti: WORKER_CASINO,

@@ -487,15 +487,6 @@ func init() {
 		},
 		controller.NewTeenPattiWebControllerWithProvider)
 
-	games.RegisterKVGame("spoons", games.CategoryCasino,
-		func() usecase.SpoonsInteractorIF {
-			return usecase.NewSpoonsInteractor(domain.NewDefaultSpoons(), new(presenter.SpoonsWebPresenter))
-		},
-		func(data []byte) (usecase.SpoonsInteractorIF, error) {
-			return usecase.RestoreSpoonsInteractor(data, new(presenter.SpoonsWebPresenter))
-		},
-		controller.NewSpoonsWebControllerWithProvider)
-
 	games.RegisterKVGame("kemps", games.CategoryCasino,
 		func() usecase.KempsInteractorIF {
 			return usecase.NewKempsInteractor(domain.NewDefaultKemps(), new(presenter.KempsWebPresenter))

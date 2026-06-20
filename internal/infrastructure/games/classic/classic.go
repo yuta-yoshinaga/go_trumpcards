@@ -407,5 +407,13 @@ func init() {
 			return usecase.RestoreCuckooInteractor(data, new(presenter.CuckooWebPresenter))
 		},
 		controller.NewCuckooWebControllerWithProvider)
+	games.RegisterKVGame("spoons", games.CategoryClassic,
+		func() usecase.SpoonsInteractorIF {
+			return usecase.NewSpoonsInteractor(domain.NewDefaultSpoons(), new(presenter.SpoonsWebPresenter))
+		},
+		func(data []byte) (usecase.SpoonsInteractorIF, error) {
+			return usecase.RestoreSpoonsInteractor(data, new(presenter.SpoonsWebPresenter))
+		},
+		controller.NewSpoonsWebControllerWithProvider)
 
 }
