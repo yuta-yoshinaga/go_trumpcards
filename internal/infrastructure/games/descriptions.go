@@ -180,6 +180,7 @@ var gameDescriptions = map[string]string{
 	"faro":                "Faro (ファロ)",
 	"openfacechinese":     "Open Face Chinese Poker / OFC (オープンフェイス・チャイニーズポーカー)",
 	"russianbank":         "Russian Bank / Crapette (ロシアンバンク/クラペット)",
+	"labellelucie":        "La Belle Lucie (ラ・ベル・ルーシー)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

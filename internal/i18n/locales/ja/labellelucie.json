@@ -1,0 +1,14 @@
+{
+  "helpTitle": "ラ・ベル・ルーシー (La Belle Lucie)",
+  "helpMove": "  m <from> <to|f>      扇 from のトップを扇 to / ファウンデーション(f) へ",
+  "helpRedeal": "  rd / redeal          集めてシャッフルし配り直す (最大3回)",
+  "helpAutoComplete": "  ac                   出せる札を自動で出し切る",
+  "helpUndo": "  u / undo             直近の手を取り消す",
+  "helpGiveUp": "  g / giveup           投了する",
+  "foundationLabel": "ファウンデーション{{idx}}:",
+  "fanLabel": "扇{{idx}}:",
+  "redealsLine": "残りシャッフル: {{count}}",
+  "hintToFan": "扇{{idx}}",
+  "hintToFoundation": "ファウンデーション",
+  "hintLine": "[HINT: 扇{{from}} を {{to}} へ]"
+}

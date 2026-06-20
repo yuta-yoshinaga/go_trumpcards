@@ -485,4 +485,13 @@ func init() {
 		},
 		controller.NewRussianBankWebControllerWithProvider)
 
+	games.RegisterKVGame("labellelucie", games.CategorySolo,
+		func() usecase.LaBelleLucieInteractorIF {
+			return usecase.NewLaBelleLucieInteractor(domain.NewDefaultLaBelleLucie(), new(presenter.LaBelleLucieWebPresenter))
+		},
+		func(data []byte) (usecase.LaBelleLucieInteractorIF, error) {
+			return usecase.RestoreLaBelleLucieInteractor(data, new(presenter.LaBelleLucieWebPresenter))
+		},
+		controller.NewLaBelleLucieWebControllerWithProvider)
+
 }

@@ -645,6 +645,11 @@ func init() {
 			return usecase.NewRussianBankInteractor(domain.NewDefaultRussianBank(), new(presenter.RussianBankWebPresenter))
 		},
 		controller.NewRussianBankWebController)
+	BindWebControllerFor("labellelucie",
+		func() usecase.LaBelleLucieInteractorIF {
+			return usecase.NewLaBelleLucieInteractor(domain.NewDefaultLaBelleLucie(), new(presenter.LaBelleLucieWebPresenter))
+		},
+		controller.NewLaBelleLucieWebController)
 	BindWebControllerFor("gongzhu",
 		func() usecase.GongZhuInteractorIF {
 			return usecase.NewGongZhuInteractor(domain.NewDefaultGongZhu(), new(presenter.GongZhuWebPresenter))

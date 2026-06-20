@@ -122,6 +122,7 @@ import razz from '../../../docs/manual/cui/razz.md?raw';
 import reddog from '../../../docs/manual/cui/reddog.md?raw';
 import rummy500 from '../../../docs/manual/cui/rummy500.md?raw';
 import russianbank from '../../../docs/manual/cui/russianbank.md?raw';
+import labellelucie from '../../../docs/manual/cui/labellelucie.md?raw';
 import russianpoker from '../../../docs/manual/cui/russianpoker.md?raw';
 import russiansolitaire from '../../../docs/manual/cui/russiansolitaire.md?raw';
 import schnapsen from '../../../docs/manual/cui/schnapsen.md?raw';
@@ -302,6 +303,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/faro': faro,
   '/openfacechinese': openfacechinese,
   '/russianbank': russianbank,
+  '/labellelucie': labellelucie,
   '/pishti': pishti,
   '/tonk': tonk,
   '/tripeaks': tripeaks,

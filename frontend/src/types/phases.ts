@@ -201,6 +201,13 @@ export const BristolPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** La Belle Lucie phase values mirroring the Go `LaBelleLuciePhase` enum. */
+export const LaBelleLuciePhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** FreeCell phase constants (sync: internal/domain/FreeCell.go). */
 export const FreeCellPhase = {
   PLAYING: 0,
