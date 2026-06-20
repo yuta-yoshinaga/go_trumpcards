@@ -640,6 +640,11 @@ func init() {
 			return usecase.NewMacauInteractor(domain.NewDefaultMacau(), new(presenter.MacauWebPresenter))
 		},
 		controller.NewMacauWebController)
+	BindWebControllerFor("russianbank",
+		func() usecase.RussianBankInteractorIF {
+			return usecase.NewRussianBankInteractor(domain.NewDefaultRussianBank(), new(presenter.RussianBankWebPresenter))
+		},
+		controller.NewRussianBankWebController)
 	BindWebControllerFor("gongzhu",
 		func() usecase.GongZhuInteractorIF {
 			return usecase.NewGongZhuInteractor(domain.NewDefaultGongZhu(), new(presenter.GongZhuWebPresenter))

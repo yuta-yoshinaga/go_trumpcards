@@ -120,6 +120,7 @@ import pyramid from '../../../docs/manual/web/pyramid.md?raw';
 import razz from '../../../docs/manual/web/razz.md?raw';
 import reddog from '../../../docs/manual/web/reddog.md?raw';
 import rummy500 from '../../../docs/manual/web/rummy500.md?raw';
+import russianbank from '../../../docs/manual/web/russianbank.md?raw';
 import russianpoker from '../../../docs/manual/web/russianpoker.md?raw';
 import russiansolitaire from '../../../docs/manual/web/russiansolitaire.md?raw';
 import schnapsen from '../../../docs/manual/web/schnapsen.md?raw';
@@ -187,6 +188,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/cuarenta': cuarenta,
   '/faro': faro,
   '/openfacechinese': openfacechinese,
+  '/russianbank': russianbank,
   '/pishti': pishti,
   '/bridge': bridge,
   '/burraco': burraco,

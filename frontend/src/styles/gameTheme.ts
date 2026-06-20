@@ -81,6 +81,7 @@ export type GameKey =
   | 'cuarenta'
   | 'faro'
   | 'openfacechinese'
+  | 'russianbank'
   | 'pitch'
   | 'twotenjack'
   | 'ohhell'
@@ -383,6 +384,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   cuarenta: CUARENTA,
   faro: FARO,
   openfacechinese: CASINO,
+  russianbank: GREEN,
   pitch: BLUE,
   twotenjack: BLUE,
   ohhell: BLUE,

@@ -1378,3 +1378,10 @@ export const OpenFaceChinesePhase = {
   ROUND_END: 1,
   GAME_END: 2,
 } as const;
+
+/** Russian Bank (Crapette) phase values mirroring the Go `RussianBankPhase` enum. */
+export const RussianBankPhase = {
+  IDLE: 0,
+  PLAYING: 1,
+  GAME_END: 2,
+} as const;

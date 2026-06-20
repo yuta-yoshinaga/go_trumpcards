@@ -351,6 +351,8 @@ tags:
     description: Faro (ファロ) — a 19th-century American single-player-vs-bank banking game on a standard 52-card deck with a 13-rank layout (A is 1 to K is 13); in the Betting phase the player places chips on ranks and a copper bet wagers a rank to lose rather than win; the bank burns the soda (first card) and deals turns of two cards, where the first (losing) card rank is collected by the bank and the second (winning) card rank is paid 1 to 1; when both cards share a rank (a split) the bank takes half of that rank stake; the final three cards may be called by predicting their order, paying 4 to 1 for a correct call; play continues until the player runs out of chips; commands bet (b, with rank, amount and copper), clearBet (cb, with rank), clearAll (ca), deal (d), call (with order), next (n), log (l), reset (r); phases 1 Betting, 2 Turn, 3 Call, 4 RoundEnd, 5 GameEnd
   - name: openfacechinese
     description: Open Face Chinese Poker / OFC (オープンフェイス・チャイニーズポーカー) — a solo-vs-CPU 2 to 4 player game on a standard 52-card deck blending solitaire and poker; cards are dealt one at a time and each must be committed immediately to one of three rows, Top (front, 3 cards), Middle (5 cards) or Bottom (back, 5 cards), and once placed a card cannot be moved; the three rows must rank in non-decreasing strength from Top to Bottom or the hand is fouled and scores nothing for the round; correctly placed strong rows earn royalty bonuses and a premium Top row (a pair of Queens or better) qualifies for Fantasyland; each round the rows are compared row by row against the other players, scoring points for every row won plus royalties, and the highest cumulative total after the target number of rounds wins; commands place (p, with row where 0 is front, 1 is middle, 2 is back; aliases front/f, middle/m, back/b), nextround (nr), setdifficulty (sd), setplayers (sp), log (l), reset (r); phases 0 Placing, 1 RoundEnd, 2 GameEnd
+  - name: russianbank
+    description: Russian Bank / Crapette (ロシアンバンク/クラペット) — a 2-player competitive solitaire on two 52-card decks (104 cards) played 1 human vs 1 CPU; each player owns a 13-card reserve (stock) and a hand (talon), and the board has 8 shared foundations (built up A to K by suit) plus 4 shared tableau columns (built down in alternating colour; an empty column accepts any card); on your turn you make as many legal moves as you like from your reserve or waste tops, a tableau column top, or the opponent's reserve or waste tops onto the shared foundations and tableau, and when out of moves you discard one hand card to your waste to end the turn; if the CPU ends its turn leaving a forced foundation move you may call stop to catch the lapse; the first player to empty their reserve wins (if both are stuck the player with fewer reserve cards wins); commands pf with source to a foundation, mt with source and column to a tableau, d discard, s stop, u undo, sd setdifficulty, hint, log (l), reset (r), where source is r own reserve, w own waste, or opponent reserve, ow opponent waste, t0 to t3 tableau columns; phases 0 Idle, 1 Playing, 2 GameEnd
 
 paths:
   /blackjack/exec:
@@ -15596,6 +15598,85 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OpenFaceChineseResponse'
+
+  /russianbank/exec:
+    post:
+      tags:
+        - russianbank
+      summary: Execute a Russian Bank (Crapette) game command
+      description: |
+        Send a command to advance a Russian Bank (Crapette) session identified by
+        `sessionId`. Russian Bank is a 2-player competitive solitaire on two decks where
+        each player races to empty their 13-card reserve onto 8 shared foundations
+        (built up A to K by suit) and 4 shared tableau columns (built down in alternating
+        colour). Move sources are identified by `zone` (0 reserve, 1 waste, 2 tableau),
+        `fromOpp` (true for the opponent's pile), and `col` (the tableau column). When out
+        of moves, `d` discards a hand card to end the turn. Catch a CPU lapse with `s`.
+
+        | Phase   | Value | Description |
+        |---------|-------|-------------|
+        | Idle    | `0`   | Before the first deal |
+        | Playing | `1`   | Players take turns making moves |
+        | GameEnd | `2`   | A player emptied their reserve (or stalemate) |
+
+        | Command | Description |
+        |---------|-------------|
+        | `reset` | Start / restart the game |
+        | `pf`    | Move `zone`/`fromOpp`/`col` source to any valid foundation |
+        | `mt`    | Move source to tableau column `toCol` |
+        | `d`     | Discard a hand card and end the turn |
+        | `s`     | Call stop on the CPU's missed forced move |
+        | `u`     | Undo the last move |
+        | `hint`  | Request a move hint |
+        | `log`   | View action log |
+      operationId: russianBankExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RussianBankRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              toFoundation:
+                summary: Move the reserve top to a foundation
+                value:
+                  command: pf
+                  zone: 0
+                  fromOpp: false
+                  col: 0
+                  sessionId: my-session-001
+              toTableau:
+                summary: Move the waste top to tableau column 2
+                value:
+                  command: mt
+                  zone: 1
+                  fromOpp: false
+                  col: 0
+                  toCol: 2
+                  sessionId: my-session-001
+              discard:
+                summary: Discard a hand card to end the turn
+                value:
+                  command: d
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RussianBankResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RussianBankResponse'
 components:
   schemas:
     # -------------------------------------------------------------------------
@@ -34826,6 +34907,162 @@ components:
             playerCount:
               type: integer
             targetRounds:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    RussianBankRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `pf` (move source to a foundation),
+            `mt` (move source to tableau `toCol`), `d` (discard / end turn), `s` (stop),
+            `u` (undo), `hint`, `log` (`l`).
+          enum: [reset, r, pf, mt, d, s, u, hint, log, l]
+          example: pf
+        zone:
+          type: integer
+          description: Move source zone (0 reserve, 1 waste, 2 tableau); used with `pf` and `mt`.
+          minimum: 0
+          maximum: 2
+        fromOpp:
+          type: boolean
+          description: True to take the source from the opponent's pile (reserve or waste).
+        col:
+          type: integer
+          description: Source tableau column (used when zone is 2).
+          minimum: 0
+          maximum: 3
+        toCol:
+          type: integer
+          description: Destination tableau column; used with `mt`.
+          minimum: 0
+          maximum: 3
+        config:
+          type: object
+          description: Optional game configuration.
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    RussianBankResponse:
+      type: object
+      description: Current state of the Russian Bank (Crapette) game
+      properties:
+        phase:
+          type: integer
+          description: "Game phase: 0 Idle, 1 Playing, 2 GameEnd"
+          enum: [0, 1, 2]
+          example: 1
+        currentPlayerIdx:
+          type: integer
+          description: Seat index whose turn it currently is
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: Winning seat index, or -1 for a draw
+        isHumanTurn:
+          type: boolean
+          description: True when it is the human player's turn
+        canCallStop:
+          type: boolean
+          description: True when the human may call stop on the CPU
+        canUndo:
+          type: boolean
+          description: True when the human's last move can be undone
+        moveCount:
+          type: integer
+          description: Total moves played so far
+        tableau:
+          type: array
+          description: The 4 shared tableau columns (top card is last)
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        foundations:
+          type: array
+          description: The 8 shared foundations (A-up by suit; top card is last)
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        hint:
+          type: object
+          nullable: true
+          description: Optional move hint (present only on a hint request)
+          properties:
+            zone:
+              type: integer
+              description: Source zone (0 reserve, 1 waste, 2 tableau)
+            fromOpponent:
+              type: boolean
+            col:
+              type: integer
+              description: Source tableau column
+            toFoundation:
+              type: boolean
+              description: True when the destination is a foundation
+            toCol:
+              type: integer
+              description: Destination tableau column when toFoundation is false
+        players:
+          type: array
+          description: One entry per player (index 0 is the human)
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                description: Seat index (0 is the human)
+              isHuman:
+                type: boolean
+              reserveCount:
+                type: integer
+                description: Cards left in the reserve (empty it to win)
+              reserveTop:
+                allOf:
+                  - $ref: '#/components/schemas/Card'
+                nullable: true
+                description: Top reserve card (face up), if any
+              handCount:
+                type: integer
+                description: Face-down cards left in hand
+              wasteCount:
+                type: integer
+              wasteTop:
+                allOf:
+                  - $ref: '#/components/schemas/Card'
+                nullable: true
+                description: Top waste card, if any
+              stopPoints:
+                type: integer
+                description: Times this player caught the opponent with stop
+        config:
+          type: object
+          description: Echoed game configuration
+          properties:
+            cpuDifficulty:
               type: integer
         message:
           type: string

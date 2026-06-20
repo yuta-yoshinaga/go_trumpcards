@@ -1,0 +1,181 @@
+//go:build !js || !wasm || solo
+
+package domain
+
+import (
+	"encoding/json"
+	"errors"
+	"math/rand"
+)
+
+// --- Undo (人間の単一/多段ステップ) ---
+
+// CanUndo Undo 可能なスナップショットがあるか。
+func (g *RussianBank) CanUndo() bool { return len(g.history) > 0 }
+
+// takeSnapshot 移動前の状態を保存する。人間 (seat 0) の手番中のみ記録する。
+func (g *RussianBank) takeSnapshot() {
+	if g.current != 0 || g.phase != RussianBankPhasePlaying {
+		return
+	}
+	b, err := json.Marshal(g)
+	if err != nil {
+		return
+	}
+	g.history = append(g.history, &russianBankSnapshot{stateJSON: b})
+}
+
+// Undo 直近の人間の 1 手を取り消す。
+func (g *RussianBank) Undo() error {
+	if len(g.history) == 0 {
+		return errors.New("russianbank: nothing to undo")
+	}
+	snap := g.history[len(g.history)-1]
+	rest := g.history[:len(g.history)-1]
+	if err := json.Unmarshal(snap.stateJSON, g); err != nil {
+		return err
+	}
+	g.history = rest
+	return nil
+}
+
+// --- CPU 手番 ---
+
+// RunCpuTurn CPU の手番を自動で進める。current が CPU かつ Playing のときのみ動作。
+// 取りこぼし (強制ファウンデーション手の見逃し) は難易度に応じて確率的に発生し、
+// 人間の stop を誘発する。
+func (g *RussianBank) RunCpuTurn() {
+	if g.phase != RussianBankPhasePlaying || !g.players[g.current].IsCPU() {
+		return
+	}
+	miss := g.cpuMissChance()
+	for g.phase == RussianBankPhasePlaying {
+		if miss > 0 && g.hasForcedFoundationMove(g.current) && rand.Float64() < miss {
+			break // わざと強制手を残して手番を終える
+		}
+		m, ok := g.bestCpuMove()
+		if !ok {
+			break
+		}
+		g.applyCpuMove(m)
+		if g.phase != RussianBankPhasePlaying {
+			return // 勝利 / 停滞で決着
+		}
+	}
+	g.Discard() // 手札を 1 枚捨てて (または詰みならパスして) 手番終了
+}
+
+// cpuMissChance 難易度ごとの取りこぼし発生確率。
+func (g *RussianBank) cpuMissChance() float64 {
+	switch g.config.CpuDifficulty {
+	case RussianBankCpuDifficultyEasy:
+		return 0.45
+	case RussianBankCpuDifficultyHard:
+		return 0
+	default:
+		return 0.15
+	}
+}
+
+// bestCpuMove CPU が指す最善手を返す。自分のリザーブ/廃札を減らす手と
+// ファウンデーション手のみを候補とし (タブロー間の振動や相手を利する手は除外)、
+// 単調にリザーブ/廃札が減るため必ず有限手で終わる。
+func (g *RussianBank) bestCpuMove() (rbMove, bool) {
+	best := rbMove{}
+	bestScore := 0
+	found := false
+	for _, m := range g.enumerateMoves() {
+		if !g.cpuBeneficial(m) {
+			continue
+		}
+		if s := g.scoreMove(m); !found || s > bestScore {
+			best, bestScore, found = m, s, true
+		}
+	}
+	return best, found
+}
+
+// cpuBeneficial CPU が指してよい (進展する) 手か。
+func (g *RussianBank) cpuBeneficial(m rbMove) bool {
+	if m.src.FromOpponent {
+		return false // 相手のリザーブ/廃札を減らす手は利敵
+	}
+	if m.toFnd {
+		return true // ファウンデーション手は常に進展
+	}
+	// タブロー手は自分のリザーブ/廃札を減らす場合のみ採用 (タブロー間振動を除外)。
+	return m.src.Zone == RussianBankZoneReserve || m.src.Zone == RussianBankZoneWaste
+}
+
+// applyCpuMove 列挙済みの手を適用する。
+func (g *RussianBank) applyCpuMove(m rbMove) {
+	if m.toFnd {
+		_ = g.MoveToFoundation(m.src)
+		return
+	}
+	_ = g.MoveToTableau(m.src, m.toCol)
+}
+
+// --- JSON (状態の永続化 / KV ワーカー復元) ---
+
+// russianBankJSON は RussianBank の JSON ワイヤ形式。decks は配り切ると空になるため保存しない。
+type russianBankJSON struct {
+	Players     []*RussianBankPlayer              `json:"pl"`
+	Tableau     [RussianBankTableauCnt][]*Card    `json:"tb"`
+	Foundations [RussianBankFoundationCnt][]*Card `json:"fd"`
+	Config      RussianBankConfig                 `json:"cf"`
+	Phase       RussianBankPhase                  `json:"ph"`
+	Current     int                               `json:"cu"`
+	Winner      int                               `json:"wn"`
+	MoveCount   int                               `json:"mc"`
+	PassStreak  int                               `json:"ks"`
+	StopPoints  [RussianBankPlayerCnt]int         `json:"sp"`
+	ActionLog   []*ActionLogEntry                 `json:"al"`
+}
+
+// MarshalJSON implements json.Marshaler. history は永続化対象外。
+func (g *RussianBank) MarshalJSON() ([]byte, error) {
+	return json.Marshal(russianBankJSON{
+		Players:     g.players,
+		Tableau:     g.tableau,
+		Foundations: g.foundations,
+		Config:      g.config,
+		Phase:       g.phase,
+		Current:     g.current,
+		Winner:      g.winner,
+		MoveCount:   g.moveCount,
+		PassStreak:  g.passStreak,
+		StopPoints:  g.stopPoints,
+		ActionLog:   g.actionLog,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (g *RussianBank) UnmarshalJSON(data []byte) error {
+	var j russianBankJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Players) != RussianBankPlayerCnt {
+		return errRussianBank
+	}
+	if len(j.ActionLog) > russianBankMaxSliceLen {
+		return errRussianBank
+	}
+	if j.Current < 0 || j.Current >= RussianBankPlayerCnt {
+		return errRussianBank
+	}
+	g.players = j.Players
+	g.tableau = j.Tableau
+	g.foundations = j.Foundations
+	g.config = j.Config
+	g.phase = j.Phase
+	g.current = j.Current
+	g.winner = j.Winner
+	g.moveCount = j.MoveCount
+	g.passStreak = j.PassStreak
+	g.stopPoints = j.StopPoints
+	g.actionLog = j.ActionLog
+	g.history = nil
+	return nil
+}

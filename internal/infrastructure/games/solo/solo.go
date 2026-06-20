@@ -476,4 +476,13 @@ func init() {
 		},
 		controller.NewMaoWebControllerWithProvider)
 
+	games.RegisterKVGame("russianbank", games.CategorySolo,
+		func() usecase.RussianBankInteractorIF {
+			return usecase.NewRussianBankInteractor(domain.NewDefaultRussianBank(), new(presenter.RussianBankWebPresenter))
+		},
+		func(data []byte) (usecase.RussianBankInteractorIF, error) {
+			return usecase.RestoreRussianBankInteractor(data, new(presenter.RussianBankWebPresenter))
+		},
+		controller.NewRussianBankWebControllerWithProvider)
+
 }
