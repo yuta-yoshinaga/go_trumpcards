@@ -62,7 +62,7 @@ func (g *RussianBank) RunCpuTurn() {
 			return // 勝利 / 停滞で決着
 		}
 	}
-	g.Discard() // 手札を 1 枚捨てて (または詰みならパスして) 手番終了
+	_ = g.Discard() // 手札を 1 枚捨てて (または詰みならパスして) 手番終了
 }
 
 // cpuMissChance 難易度ごとの取りこぼし発生確率。

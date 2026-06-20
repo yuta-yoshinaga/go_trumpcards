@@ -485,12 +485,6 @@ func (g *RussianBank) hasForcedFoundationMove(seat int) bool {
 	return false
 }
 
-// hasAnyLegalMove 現在の手番プレイヤーに 1 つ以上の盤面手があるか
-// (Discard を除く)。
-func (g *RussianBank) hasAnyLegalMove() bool {
-	return len(g.enumerateMoves()) > 0
-}
-
 // rbMove 列挙された 1 手。
 type rbMove struct {
 	src    RussianBankSource
