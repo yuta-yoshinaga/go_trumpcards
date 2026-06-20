@@ -214,10 +214,20 @@ func TestRussianBank_JSONRoundTrip(t *testing.T) {
 	}
 }
 
-func TestRussianBank_UnmarshalRejectsBadPlayerCount(t *testing.T) {
-	g := NewDefaultRussianBank()
-	if err := json.Unmarshal([]byte(`{"pl":[],"cu":0}`), g); err == nil {
-		t.Error("expected error for wrong player count")
+func TestRussianBank_UnmarshalRejectsBadInput(t *testing.T) {
+	twoPlayers := `{"n":"You","c":false,"s":0,"r":[],"h":[],"w":[]},{"n":"CPU","c":true,"s":1,"r":[],"h":[],"w":[]}`
+	cases := map[string]string{
+		"wrong player count":   `{"pl":[],"cu":0}`,
+		"nil player":           `{"pl":[null,null],"cu":0}`,
+		"current out of range": `{"pl":[` + twoPlayers + `],"cu":9}`,
+		"invalid config":       `{"pl":[` + twoPlayers + `],"cf":{"cd":99},"cu":0}`,
+	}
+	for name, js := range cases {
+		t.Run(name, func(t *testing.T) {
+			if err := json.Unmarshal([]byte(js), NewDefaultRussianBank()); err == nil {
+				t.Errorf("expected error for %s", name)
+			}
+		})
 	}
 }
 

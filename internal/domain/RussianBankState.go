@@ -159,11 +159,19 @@ func (g *RussianBank) UnmarshalJSON(data []byte) error {
 	if len(j.Players) != RussianBankPlayerCnt {
 		return errRussianBank
 	}
+	for _, p := range j.Players {
+		if p == nil {
+			return errRussianBank // 改竄された null プレイヤーで nil 参照を防ぐ
+		}
+	}
 	if len(j.ActionLog) > russianBankMaxSliceLen {
 		return errRussianBank
 	}
 	if j.Current < 0 || j.Current >= RussianBankPlayerCnt {
 		return errRussianBank
+	}
+	if err := j.Config.Validate(); err != nil {
+		return errRussianBank // 不正な設定値の読み込みを拒否する
 	}
 	g.players = j.Players
 	g.tableau = j.Tableau
