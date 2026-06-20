@@ -59,6 +59,13 @@ function LaBelleLuciePageContent() {
     exec('reset');
   }, []);
 
+  // Clear a stale source selection whenever the board changes (redeal, undo,
+  // auto-complete) so a selected index can't point at a different fan.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: deps are the change-trigger, not read in the body.
+  useEffect(() => {
+    setSelected(null);
+  }, [state?.moveCount, state?.redealsLeft]);
+
   const phaseNames = usePhaseNames('labellelucie', LL_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
   const w = Math.round(cardWidth * 0.6);

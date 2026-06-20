@@ -148,6 +148,9 @@ func (g *LaBelleLucie) MoveFanToFan(from, to int) error {
 	if g.phase != LaBelleLuciePhasePlaying {
 		return errors.New("labellelucie: game is not in playing phase")
 	}
+	if from < 0 || from >= len(g.fans) || to < 0 || to >= len(g.fans) {
+		return errors.New("labellelucie: invalid fan index")
+	}
 	if from == to {
 		return errors.New("labellelucie: cannot move a fan onto itself")
 	}
@@ -171,6 +174,9 @@ func (g *LaBelleLucie) MoveFanToFan(from, to int) error {
 func (g *LaBelleLucie) MoveFanToFoundation(from int) error {
 	if g.phase != LaBelleLuciePhasePlaying {
 		return errors.New("labellelucie: game is not in playing phase")
+	}
+	if from < 0 || from >= len(g.fans) {
+		return errors.New("labellelucie: invalid fan index")
 	}
 	card := g.fanTop(from)
 	if card == nil {
