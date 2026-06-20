@@ -245,6 +245,79 @@ func TestRussianBank_Hint(t *testing.T) {
 	}
 }
 
+func TestRussianBank_MoveMechanics(t *testing.T) {
+	t.Run("foundation from each source", func(t *testing.T) {
+		g := newRbGame()
+		rbClearBoard(g)
+		g.current = 0
+		g.players[0].pushReserve(rbCard(CardDesignSpade, 13))  // filler so the reserve never empties (no false win)
+		g.players[0].pushReserve(rbCard(CardDesignDiamond, 1)) // own reserve A (top)
+		g.players[0].pushWaste(rbCard(CardDesignClover, 1))    // own waste A
+		g.players[1].pushReserve(rbCard(CardDesignHeart, 1))   // opp reserve A
+		g.players[1].pushWaste(rbCard(CardDesignSpade, 1))     // opp waste A
+		for _, src := range []RussianBankSource{
+			{Zone: RussianBankZoneReserve},
+			{Zone: RussianBankZoneWaste},
+			{Zone: RussianBankZoneReserve, FromOpponent: true},
+			{Zone: RussianBankZoneWaste, FromOpponent: true},
+		} {
+			if err := g.MoveToFoundation(src); err != nil {
+				t.Errorf("MoveToFoundation(%s): %v", rbSourceName(src), err)
+			}
+		}
+	})
+
+	t.Run("no valid foundation errors", func(t *testing.T) {
+		g := newRbGame()
+		rbClearBoard(g)
+		g.current = 0
+		g.players[0].pushReserve(rbCard(CardDesignDiamond, 7)) // a 7 can't start a foundation
+		if err := g.MoveToFoundation(RussianBankSource{Zone: RussianBankZoneReserve}); err == nil {
+			t.Error("expected error: a 7 cannot open a foundation")
+		}
+		// Empty source also errors.
+		if err := g.MoveToFoundation(RussianBankSource{Zone: RussianBankZoneWaste}); err == nil {
+			t.Error("expected error for empty source")
+		}
+	})
+
+	t.Run("tableau to tableau and guards", func(t *testing.T) {
+		g := newRbGame()
+		rbClearBoard(g)
+		g.current = 0
+		g.players[0].pushReserve(rbCard(CardDesignSpade, 13)) // filler so the reserve never empties
+		g.tableau[0] = []*Card{rbCard(CardDesignSpade, 8)}    // black 8
+		g.tableau[1] = []*Card{rbCard(CardDesignHeart, 9)}    // red 9
+		// black 8 onto red 9: alternating colour, descending -> legal.
+		if err := g.MoveToTableau(RussianBankSource{Zone: RussianBankZoneTableau, Col: 0}, 1); err != nil {
+			t.Errorf("tableau->tableau move: %v", err)
+		}
+		if len(g.tableau[1]) != 2 || len(g.tableau[0]) != 0 {
+			t.Errorf("unexpected tableau state: %d / %d", len(g.tableau[0]), len(g.tableau[1]))
+		}
+		// Moving a column onto itself is rejected.
+		if err := g.MoveToTableau(RussianBankSource{Zone: RussianBankZoneTableau, Col: 1}, 1); err == nil {
+			t.Error("expected error moving a column onto itself")
+		}
+		// Reserve card to an empty column is always legal.
+		g.players[0].pushReserve(rbCard(CardDesignHeart, 4))
+		if err := g.MoveToTableau(RussianBankSource{Zone: RussianBankZoneReserve}, 2); err != nil {
+			t.Errorf("reserve->empty tableau: %v", err)
+		}
+	})
+
+	t.Run("enumerateMoves sees every source", func(t *testing.T) {
+		g := newRbGame()
+		rbClearBoard(g)
+		g.current = 0
+		g.players[0].pushReserve(rbCard(CardDesignDiamond, 1))
+		g.players[1].pushReserve(rbCard(CardDesignSpade, 1))
+		if len(g.enumerateMoves()) == 0 {
+			t.Error("expected at least one enumerated move")
+		}
+	})
+}
+
 func TestRussianBank_CpuFullGameTerminates(t *testing.T) {
 	for _, diff := range []RussianBankCpuDifficulty{
 		RussianBankCpuDifficultyEasy, RussianBankCpuDifficultyNormal, RussianBankCpuDifficultyHard,

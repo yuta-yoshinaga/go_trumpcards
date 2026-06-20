@@ -77,4 +77,27 @@ func TestRussianBankCuiPresenter_Output(t *testing.T) {
 		g.Reset()
 		assert.NotEmpty(t, p.ActionLogOutput(g))
 	})
+
+	// Each board is crafted so the single best hint comes from a specific source,
+	// exercising every branch of rbHintSourceName.
+	t.Run("hint source names", func(t *testing.T) {
+		const A = `{"d":1,"v":1,"w":true}` // A spade
+		cases := []struct {
+			name string
+			js   string
+			want string
+		}{
+			{"own reserve", `{"pl":[{"n":"You","c":false,"s":0,"r":[{"d":4,"v":1,"w":true}],"h":[],"w":[]},{"n":"CPU","c":true,"s":1,"r":[],"h":[],"w":[]}],"cf":{"cd":1},"ph":1,"cu":0}`, "自リザーブ"},
+			{"own waste", `{"pl":[{"n":"You","c":false,"s":0,"r":[],"h":[],"w":[` + A + `]},{"n":"CPU","c":true,"s":1,"r":[],"h":[],"w":[]}],"cf":{"cd":1},"ph":1,"cu":0}`, "自廃札"},
+			{"opp reserve", `{"pl":[{"n":"You","c":false,"s":0,"r":[],"h":[],"w":[]},{"n":"CPU","c":true,"s":1,"r":[{"d":2,"v":1,"w":true}],"h":[],"w":[]}],"cf":{"cd":1},"ph":1,"cu":0}`, "相手リザーブ"},
+			{"opp waste", `{"pl":[{"n":"You","c":false,"s":0,"r":[],"h":[],"w":[]},{"n":"CPU","c":true,"s":1,"r":[],"h":[],"w":[{"d":3,"v":1,"w":true}]}],"cf":{"cd":1},"ph":1,"cu":0}`, "相手廃札"},
+			{"tableau", `{"pl":[{"n":"You","c":false,"s":0,"r":[],"h":[],"w":[]},{"n":"CPU","c":true,"s":1,"r":[],"h":[],"w":[]}],"tb":[[{"d":1,"v":2,"w":true}]],"fd":[[` + A + `]],"cf":{"cd":1},"ph":1,"cu":0}`, "タブロー0"},
+		}
+		for _, tc := range cases {
+			t.Run(tc.name, func(t *testing.T) {
+				g := rbState(t, tc.js)
+				assert.Contains(t, p.HintOutput(g), tc.want)
+			})
+		}
+	})
 }
