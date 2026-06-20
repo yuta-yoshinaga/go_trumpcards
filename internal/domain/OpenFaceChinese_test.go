@@ -246,6 +246,43 @@ func TestOpenFaceChinese_ScoreRoundSettlement(t *testing.T) {
 	if g.GetPlayer(1).GetRoundScore() >= 0 {
 		t.Errorf("seat 1 round score = %d, want negative", g.GetPlayer(1).GetRoundScore())
 	}
+	// 段得点もロイヤリティも対戦相手間でやり取りされるため合計は 0 (ゼロサム)。
+	if sum := g.GetPlayer(0).GetRoundScore() + g.GetPlayer(1).GetRoundScore(); sum != 0 {
+		t.Errorf("round score sum = %d, want 0 (zero-sum settlement)", sum)
+	}
+}
+
+// TestOpenFaceChinese_ScoreRoundZeroSum はロイヤリティを含む 3 人精算でも
+// 全プレイヤーの round/total スコア合計が 0 になる (相手から減点される) ことを保証する。
+func TestOpenFaceChinese_ScoreRoundZeroSum(t *testing.T) {
+	g := newOfcGame(3, true)
+	g.SetPhase(OpenFaceChinesePhasePlacing)
+	// seat 0: 上段トリップ Q (ロイヤリティ大) + 中段トリップ K + 下段フラッシュ。
+	ofcFillRows(g.GetPlayer(0),
+		[]*Card{ofcCard(CardDesignSpade, 12), ofcCard(CardDesignHeart, 12), ofcCard(CardDesignClover, 12)},
+		[]*Card{ofcCard(CardDesignSpade, 13), ofcCard(CardDesignHeart, 13), ofcCard(CardDesignClover, 13), ofcCard(CardDesignDiamond, 6), ofcCard(CardDesignSpade, 7)},
+		[]*Card{ofcCard(CardDesignSpade, 1), ofcCard(CardDesignSpade, 10), ofcCard(CardDesignSpade, 8), ofcCard(CardDesignSpade, 5), ofcCard(CardDesignSpade, 3)},
+	)
+	// seat 1: 弱いがファウルしない手。
+	ofcFillRows(g.GetPlayer(1),
+		[]*Card{ofcCard(CardDesignSpade, 2), ofcCard(CardDesignHeart, 3), ofcCard(CardDesignClover, 4)},
+		[]*Card{ofcCard(CardDesignSpade, 5), ofcCard(CardDesignHeart, 6), ofcCard(CardDesignClover, 7), ofcCard(CardDesignDiamond, 8), ofcCard(CardDesignSpade, 9)},
+		[]*Card{ofcCard(CardDesignHeart, 2), ofcCard(CardDesignDiamond, 4), ofcCard(CardDesignClover, 6), ofcCard(CardDesignHeart, 9), ofcCard(CardDesignDiamond, 11)},
+	)
+	// seat 2: 中庸な手。
+	ofcFillRows(g.GetPlayer(2),
+		[]*Card{ofcCard(CardDesignDiamond, 7), ofcCard(CardDesignHeart, 7), ofcCard(CardDesignClover, 5)},
+		[]*Card{ofcCard(CardDesignDiamond, 9), ofcCard(CardDesignHeart, 10), ofcCard(CardDesignClover, 11), ofcCard(CardDesignDiamond, 12), ofcCard(CardDesignHeart, 13)},
+		[]*Card{ofcCard(CardDesignClover, 1), ofcCard(CardDesignClover, 9), ofcCard(CardDesignClover, 10), ofcCard(CardDesignDiamond, 13), ofcCard(CardDesignHeart, 1)},
+	)
+	g.ScoreRound()
+	sum := 0
+	for i := 0; i < 3; i++ {
+		sum += g.GetPlayer(i).GetRoundScore()
+	}
+	if sum != 0 {
+		t.Errorf("3-player round score sum = %d, want 0 (zero-sum)", sum)
+	}
 }
 
 func TestOpenFaceChinese_CpuFullMatch(t *testing.T) {

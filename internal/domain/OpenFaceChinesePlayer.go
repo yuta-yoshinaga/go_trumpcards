@@ -130,6 +130,7 @@ func (p *OpenFaceChinesePlayer) placeCard(row int) error {
 		return NewDomainError(ErrInvalidPlay, "row is full")
 	}
 	card := p.pending[0]
+	p.pending[0] = nil // 参照を切って GC を妨げないようにする
 	p.pending = p.pending[1:]
 	switch row {
 	case OpenFaceChineseRowFront:

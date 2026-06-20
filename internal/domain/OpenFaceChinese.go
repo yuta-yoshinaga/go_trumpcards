@@ -284,6 +284,8 @@ func (g *OpenFaceChinese) cpuChooseRow(playerIdx int) int {
 	if g.config.CpuDifficulty == OpenFaceChineseCpuDifficultyEasy || card == nil {
 		return open[rand.Intn(len(open))]
 	}
+	// Normal と Hard はどちらも cpuPlaceSmart を用いる (意図的に同一)。
+	// 段のファウル回避を優先する貪欲戦略で、現状この 1 種類で両難易度を兼ねる。
 	return g.cpuPlaceSmart(p, card, open)
 }
 
@@ -354,19 +356,24 @@ func (g *OpenFaceChinese) scoreRound() {
 		}
 		p.roundScore = 0
 	}
-	// 総当たり段比較。
+	// 総当たり段比較とロイヤリティ精算。段得点もロイヤリティ差も対戦相手間で
+	// やり取りされるため、全プレイヤーの roundScore 合計は常に 0 になる
+	// (中国式ポーカー / OFC のゼロサム精算)。ファウル者は royalty=0 のため、
+	// 相手のロイヤリティを一方的に支払う形になる。
 	for i := 0; i < n; i++ {
 		for j := i + 1; j < n; j++ {
 			pi, pj := g.players[i], g.players[j]
-			s := ofcCompareScore(pi, pj)
-			pi.roundScore += s
-			pj.roundScore -= s
+			if pi == nil || pj == nil {
+				continue
+			}
+			delta := ofcCompareScore(pi, pj) + (pi.royalty - pj.royalty)
+			pi.roundScore += delta
+			pj.roundScore -= delta
 		}
 	}
-	// ロイヤリティを各プレイヤーの得点に加算 (n-1 相手分; 中国式ポーカーの慣習)。
 	for _, p := range g.players {
-		if !p.fouled {
-			p.roundScore += p.royalty * (n - 1)
+		if p == nil {
+			continue
 		}
 		p.totalScore += p.roundScore
 		// 次ラウンドのファンタジーランド権を判定する。
@@ -448,9 +455,9 @@ func ofcCompareScore(a, b *OpenFaceChinesePlayer) int {
 		return 6
 	}
 	wins := 0
-	if compareThreeCardHands(a.front, b.front) > 0 {
+	if c := compareThreeCardHands(a.front, b.front); c > 0 {
 		wins++
-	} else if compareThreeCardHands(a.front, b.front) < 0 {
+	} else if c < 0 {
 		wins--
 	}
 	if c := cpCompareFiveCardHands(a.middle, b.middle); c > 0 {
