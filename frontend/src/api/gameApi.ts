@@ -22,7 +22,6 @@ import type {
   BriscolaResponse,
   BristolMoveZone,
   BristolResponse,
-  LaBelleLucieResponse,
   BurracoResponse,
   CalculationMoveZone,
   CalculationResponse,
@@ -86,6 +85,7 @@ import type {
   KlaverjasResponse,
   KlondikeResponse,
   KnockoutWhistResponse,
+  LaBelleLucieResponse,
   LetItRideResponse,
   MacauResponse,
   ManilleResponse,
@@ -341,7 +341,7 @@ const workerUrl: Record<string, string> = {
   macau: WORKER_SOLO,
   mao: WORKER_SOLO,
   russianbank: WORKER_SOLO,
-  labellelucie: WORKER_SOLO,
+  labellelucie: WORKER_CLASSIC,
   gongzhu: WORKER_SOLO,
   bristol: WORKER_SOLO,
   bidwhist: WORKER_SOLO,
@@ -1096,7 +1096,7 @@ export const bristolApi = createSolitaireMoveApi<
 export const labellelucieApi = createSolitaireMoveApi<
   LaBelleLucieResponse,
   number,
-  'reset' | 'mf' | 'ff' | 'rd' | 'giveup' | 'autocomplete' | 'hint' | 'log' | 'undo' | 'undo_n'
+  'reset' | 'mf' | 'ff' | 'rd' | 'ac' | 'u' | 'undo_n' | 'giveup' | 'hint' | 'log'
 >('labellelucie');
 
 /** Source or target zone for a FreeCell card move. */

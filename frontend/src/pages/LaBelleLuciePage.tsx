@@ -21,10 +21,20 @@ import type { TutorialStep } from '../types/tutorial';
 
 /** La Belle Lucie tutorial step definitions. */
 const LL_TUTORIAL_STEPS: TutorialStep[] = [
-  { target: '[data-tutorial="ll-foundation"]', messageKey: 'tutorial.foundation', placement: 'bottom', advanceOn: 'next' },
+  {
+    target: '[data-tutorial="ll-foundation"]',
+    messageKey: 'tutorial.foundation',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
   { target: '[data-tutorial="ll-fans"]', messageKey: 'tutorial.fan', placement: 'top', advanceOn: 'next' },
   { target: '[data-tutorial="ll-redeal"]', messageKey: 'tutorial.redeal', placement: 'top', advanceOn: 'next' },
-  { target: '[data-tutorial="ll-reset-button"]', messageKey: 'tutorial.resetButton', placement: 'top', advanceOn: 'next' },
+  {
+    target: '[data-tutorial="ll-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
 ];
 
 /** Maps numeric La Belle Lucie phases to i18n phase-label keys. */
@@ -100,7 +110,11 @@ function LaBelleLuciePageContent() {
       data-testid={`fan-${idx}`}
     >
       {fan.length === 0 ? (
-        <div className="rounded border border-dashed border-white/25 bg-black/20" style={{ width: w, height: Math.round(w * 1.4) }} aria-label={t('empty')} />
+        <div
+          className="rounded border border-dashed border-white/25 bg-black/20"
+          style={{ width: w, height: Math.round(w * 1.4) }}
+          title={t('empty')}
+        />
       ) : (
         fan.map((c, i) => (
           <div key={`fan-${idx}-${i}`} style={{ marginTop: i === 0 ? 0 : -Math.round(w * 1.0) }}>
@@ -141,7 +155,10 @@ function LaBelleLuciePageContent() {
                 {pile.length > 0 ? (
                   <CardImage card={pile[pile.length - 1]} width={w} />
                 ) : (
-                  <div className="rounded border border-dashed border-white/25 bg-black/20" style={{ width: w, height: Math.round(w * 1.4) }} />
+                  <div
+                    className="rounded border border-dashed border-white/25 bg-black/20"
+                    style={{ width: w, height: Math.round(w * 1.4) }}
+                  />
                 )}
               </button>
             ))}
@@ -156,41 +173,87 @@ function LaBelleLuciePageContent() {
         <div className="mt-2 text-ds-text-muted text-xs">
           {t('redealsLeft', { count: state.redealsLeft })} · {t('moveCount', { count: state.moveCount })}
         </div>
-        {canAct && <div className="mt-1 text-ds-text-primary text-xs">{selected === null ? t('selectSource') : t('selectDestination')}</div>}
+        {canAct && (
+          <div className="mt-1 text-ds-text-primary text-xs">
+            {selected === null ? t('selectSource') : t('selectDestination')}
+          </div>
+        )}
 
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-        <ActionLogSection isEndPhase={isEnd} actionLog={actionLog} showActionLog={showActionLog} hideActionLog={hideActionLog} />
+        <ActionLogSection
+          isEndPhase={isEnd}
+          actionLog={actionLog}
+          showActionLog={showActionLog}
+          hideActionLog={hideActionLog}
+        />
       </div>
 
       <GameFooter className={`${gameTheme.labellelucie.footer} px-3 py-2.5`}>
         <ErrorAlert message={error} onRetry={retry} />
         <div className="flex flex-wrap gap-2 items-center">
           {canAct && (
-            <button type="button" className={btnWarning} onClick={() => exec('rd')} disabled={loading || state.redealsLeft <= 0} data-tutorial="ll-redeal" data-testid="redeal-button">
+            <button
+              type="button"
+              className={btnWarning}
+              onClick={() => exec('rd')}
+              disabled={loading || state.redealsLeft <= 0}
+              data-tutorial="ll-redeal"
+              data-testid="redeal-button"
+            >
               {t('redeal')}
             </button>
           )}
           {canAct && (
-            <button type="button" className={btnSuccess} onClick={() => exec('ac')} disabled={loading} data-testid="autocomplete-button">
+            <button
+              type="button"
+              className={btnSuccess}
+              onClick={() => exec('ac')}
+              disabled={loading}
+              data-testid="autocomplete-button"
+            >
               {t('autoComplete')}
             </button>
           )}
           {canAct && state.canUndo && (
-            <button type="button" className={btnSecondary} onClick={() => exec('u')} disabled={loading} data-testid="undo-button">
+            <button
+              type="button"
+              className={btnSecondary}
+              onClick={() => exec('u')}
+              disabled={loading}
+              data-testid="undo-button"
+            >
               {t('undo')}
             </button>
           )}
           {canAct && (
-            <button type="button" className={btnPrimary} onClick={() => exec('hint')} disabled={loading} data-testid="hint-button">
+            <button
+              type="button"
+              className={btnPrimary}
+              onClick={() => exec('hint')}
+              disabled={loading}
+              data-testid="hint-button"
+            >
               {t('hint')}
             </button>
           )}
           {canAct && (
-            <button type="button" className={btnSecondary} onClick={() => exec('giveup')} disabled={loading} data-testid="giveup-button">
+            <button
+              type="button"
+              className={btnSecondary}
+              onClick={() => exec('giveup')}
+              disabled={loading}
+              data-testid="giveup-button"
+            >
               {t('giveup')}
             </button>
           )}
-          <GameResetButton isGameEnd={isEnd} onReset={handleReset} requestConfirm={requestConfirm} loading={loading} dataTutorial="ll-reset-button" />
+          <GameResetButton
+            isGameEnd={isEnd}
+            onReset={handleReset}
+            requestConfirm={requestConfirm}
+            loading={loading}
+            dataTutorial="ll-reset-button"
+          />
         </div>
       </GameFooter>
     </GamePageShell>

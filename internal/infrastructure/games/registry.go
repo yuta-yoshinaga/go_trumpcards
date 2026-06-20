@@ -443,7 +443,7 @@ var registry = []*Game{
 	// 17 fans of 3 plus a single; only each fan's top card moves, building it
 	// down in suit onto another fan or up from the Ace on 4 foundations. When
 	// stuck, gather and reshuffle (up to 3 redeals). Solo worker bucket.
-	{Name: "labellelucie", Category: CategorySolo},
+	{Name: "labellelucie", Category: CategoryClassic},
 }
 
 // All returns a value-level copy of the registry in canonical order.
