@@ -108,9 +108,11 @@ func TestRussianBankInteractor_PlaysToGameEnd(t *testing.T) {
 		ti.Discard()
 	}
 	assert.True(t, g.GetGameEndFlag(), "game should reach an end state")
-	// Calling an action after game end exercises the guard + winner message path.
+	// Calling actions after game end exercises every guard + winner-message path.
 	assert.Contains(t, ti.Discard(), `"gameEndFlag":true`)
 	assert.Contains(t, ti.CallStop(), `"gameEndFlag":true`)
+	assert.Contains(t, ti.MoveToFoundation(0, false, 0), `"gameEndFlag":true`)
+	assert.Contains(t, ti.MoveToTableau(0, false, 0, 1), `"gameEndFlag":true`)
 }
 
 func TestRussianBankInteractor_WinnerMessages(t *testing.T) {
