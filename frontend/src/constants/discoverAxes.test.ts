@@ -61,7 +61,7 @@ describe('discoverAxes constants', () => {
     for (const key of AXIS_KEYS) {
       for (const q of AXES[key].questions) {
         for (const opt of q.options) {
-          expect(opt.i18nKey).toMatch(new RegExp('^option\\.' + key + '\\.'));
+          expect(opt.i18nKey).toMatch(new RegExp(`^option\\.${key}\\.`));
           expect(opt.i18nKey).not.toMatch(/^discover\./);
         }
       }

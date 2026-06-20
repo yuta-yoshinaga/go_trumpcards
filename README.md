@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した170種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した171種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -189,6 +189,7 @@ Go + Clean Architecture で実装した170種類のトランプゲーム。CLI �
 | ファロ (Faro) | `faro` | [CUI](docs/manual/cui/faro.md) / [Web](docs/manual/web/faro.md) |
 | オープンフェイス・チャイニーズポーカー (Open Face Chinese Poker / OFC) | `openfacechinese` | [CUI](docs/manual/cui/openfacechinese.md) / [Web](docs/manual/web/openfacechinese.md) |
 | ロシアンバンク / クラペット (Russian Bank / Crapette) | `russianbank` | [CUI](docs/manual/cui/russianbank.md) / [Web](docs/manual/web/russianbank.md) |
+| ラ・ベル・ルーシー (La Belle Lucie) | `labellelucie` | [CUI](docs/manual/cui/labellelucie.md) / [Web](docs/manual/web/labellelucie.md) |
 
 ## Demo
 

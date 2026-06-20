@@ -83,6 +83,7 @@ import kemps from '../../../docs/manual/web/kemps.md?raw';
 import klaverjas from '../../../docs/manual/web/klaverjas.md?raw';
 import klondike from '../../../docs/manual/web/klondike.md?raw';
 import knockoutwhist from '../../../docs/manual/web/knockoutwhist.md?raw';
+import labellelucie from '../../../docs/manual/web/labellelucie.md?raw';
 import letitride from '../../../docs/manual/web/letitride.md?raw';
 import macau from '../../../docs/manual/web/macau.md?raw';
 import manille from '../../../docs/manual/web/manille.md?raw';
@@ -189,6 +190,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/faro': faro,
   '/openfacechinese': openfacechinese,
   '/russianbank': russianbank,
+  '/labellelucie': labellelucie,
   '/pishti': pishti,
   '/bridge': bridge,
   '/burraco': burraco,

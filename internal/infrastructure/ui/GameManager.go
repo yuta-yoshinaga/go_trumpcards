@@ -2772,6 +2772,21 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "labellelucie", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewLaBelleLucieCuiController(usecase.NewLaBelleLucieInteractor(
+				domain.NewDefaultLaBelleLucie(), new(presenter.LaBelleLucieCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "labellelucie.helpTitle",
+				CommandKeys: []string{
+					"labellelucie.helpMove",
+					"labellelucie.helpRedeal",
+					"labellelucie.helpAutoComplete",
+					"labellelucie.helpUndo",
+					"labellelucie.helpGiveUp",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

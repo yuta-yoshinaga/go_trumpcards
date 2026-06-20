@@ -439,6 +439,11 @@ var registry = []*Game{
 	// colour, descending), discarding from hand to end a turn. Catch the CPU
 	// leaving a forced foundation move with "stop". Solo worker bucket.
 	{Name: "russianbank", Category: CategorySolo},
+	// La Belle Lucie: classic French fan solitaire. 52 cards are dealt into
+	// 17 fans of 3 plus a single; only each fan's top card moves, building it
+	// down in suit onto another fan or up from the Ace on 4 foundations. When
+	// stuck, gather and reshuffle (up to 3 redeals). Solo worker bucket.
+	{Name: "labellelucie", Category: CategoryClassic},
 }
 
 // All returns a value-level copy of the registry in canonical order.
