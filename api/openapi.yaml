@@ -349,6 +349,8 @@ tags:
     description: Cuarenta (クアレンタ) — a 4-player, 2-team Ecuadorian capture (fishing) game on a 40-card Spanish-style deck (the 8s, 9s and 10s are removed); teams are seats 0 and 2 (Team A) versus seats 1 and 3 (Team B); each player is dealt 5 cards and 4 cards are placed on the central table; on your turn you play one card, and if it matches the rank of any table card you capture all same-rank table cards (and may chain via ronda when 3 or more of a rank appear), otherwise the card is laid on the table; bonuses (all additive) are caída plus 2 (immediately capturing the very card the previous player just laid), limpia plus 1 (clearing the entire table), and ronda plus 1 per extra card beyond 2 (capturing a run of 3 or more of a rank); hands are re-dealt 5 at a time until the stock runs out, then the team that captured more than 20 of the 40 cards (the majority) gets a plus 6 most cards bonus; the first team to reach the target score (default 40) wins; CPU difficulties Easy, Normal, Hard; commands play (p, with handIndex), next (n), setdifficulty (sd), log (l), reset (r); phases play, roundEnd, gameEnd; config targetScore (default 40) and cpuDifficulty (0 Easy, 1 Normal, 2 Hard)
   - name: faro
     description: Faro (ファロ) — a 19th-century American single-player-vs-bank banking game on a standard 52-card deck with a 13-rank layout (A is 1 to K is 13); in the Betting phase the player places chips on ranks and a copper bet wagers a rank to lose rather than win; the bank burns the soda (first card) and deals turns of two cards, where the first (losing) card rank is collected by the bank and the second (winning) card rank is paid 1 to 1; when both cards share a rank (a split) the bank takes half of that rank stake; the final three cards may be called by predicting their order, paying 4 to 1 for a correct call; play continues until the player runs out of chips; commands bet (b, with rank, amount and copper), clearBet (cb, with rank), clearAll (ca), deal (d), call (with order), next (n), log (l), reset (r); phases 1 Betting, 2 Turn, 3 Call, 4 RoundEnd, 5 GameEnd
+  - name: openfacechinese
+    description: Open Face Chinese Poker / OFC (オープンフェイス・チャイニーズポーカー) — a solo-vs-CPU 2 to 4 player game on a standard 52-card deck blending solitaire and poker; cards are dealt one at a time and each must be committed immediately to one of three rows, Top (front, 3 cards), Middle (5 cards) or Bottom (back, 5 cards), and once placed a card cannot be moved; the three rows must rank in non-decreasing strength from Top to Bottom or the hand is fouled and scores nothing for the round; correctly placed strong rows earn royalty bonuses and a premium Top row (a pair of Queens or better) qualifies for Fantasyland; each round the rows are compared row by row against the other players, scoring points for every row won plus royalties, and the highest cumulative total after the target number of rounds wins; commands place (p, with row where 0 is front, 1 is middle, 2 is back; aliases front/f, middle/m, back/b), nextround (nr), setdifficulty (sd), setplayers (sp), log (l), reset (r); phases 0 Placing, 1 RoundEnd, 2 GameEnd
 
 paths:
   /blackjack/exec:
@@ -15529,6 +15531,71 @@ paths:
               schema:
                 $ref: '#/components/schemas/FaroResponse'
 
+  /openfacechinese/exec:
+    post:
+      tags:
+        - openfacechinese
+      summary: Execute an Open Face Chinese Poker (OFC) game command
+      description: |
+        Send a command to advance an Open Face Chinese Poker (OFC) session identified by
+        `sessionId`. OFC is a solo-vs-CPU game where each dealt card must be committed
+        immediately to one of three rows, Top (0), Middle (1) or Bottom (2), and once
+        placed a card cannot be moved. The rows must rank in non-decreasing strength from
+        Top to Bottom or the hand is fouled. Strong rows earn royalty bonuses and a premium
+        Top row qualifies for Fantasyland. Highest cumulative total after the target number
+        of rounds wins.
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Placing  | `0`   | The player commits each dealt card to a row |
+        | RoundEnd | `1`   | The round is scored; the next round awaits |
+        | GameEnd  | `2`   | The target number of rounds has been played |
+
+        | Command       | Aliases       | Description |
+        |---------------|---------------|-------------|
+        | `reset`       | `r`           | Start / restart the game |
+        | `place`       | `p`           | Place the pending card into a `row` (0 front, 1 middle, 2 back) |
+        | `nextround`   | `nr`          | Start the next round after one ends |
+        | `setdifficulty` | `sd`        | Set the CPU difficulty (0 to 2) |
+        | `setplayers`  | `sp`          | Set the player count (2 to 4) |
+        | `log`         | `l`           | View action log |
+      operationId: openFaceChineseExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenFaceChineseRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              place:
+                summary: Place the pending card on the bottom row
+                value:
+                  command: place
+                  row: 2
+                  sessionId: my-session-001
+              nextround:
+                summary: Start the next round
+                value:
+                  command: nextround
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenFaceChineseResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenFaceChineseResponse'
 components:
   schemas:
     # -------------------------------------------------------------------------
@@ -34628,6 +34695,138 @@ components:
           description: Net chip change for the just-finished round
         gameEndFlag:
           type: boolean
+        message:
+          type: string
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    OpenFaceChineseRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `place` (`p`), `nextround` (`nr`),
+            `setdifficulty` (`sd`), `setplayers` (`sp`), `hint`, `log` (`l`).
+          enum: [reset, r, place, p, nextround, nr, setdifficulty, sd, setplayers, sp, hint, log, l]
+          example: place
+        row:
+          type: integer
+          description: Row to place the pending card into (0 front, 1 middle, 2 back); used with `place`.
+          minimum: 0
+          maximum: 2
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    OpenFaceChineseResponse:
+      type: object
+      description: Current state of the Open Face Chinese Poker (OFC) game
+      properties:
+        phase:
+          type: integer
+          description: "Game phase: 0 Placing, 1 RoundEnd, 2 GameEnd"
+          enum: [0, 1, 2]
+          example: 0
+        roundNumber:
+          type: integer
+          description: 1-based round number
+        currentPlayerIdx:
+          type: integer
+          description: Seat index whose turn it currently is
+        dealerIdx:
+          type: integer
+          description: Seat index of the current dealer
+        currentCard:
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          nullable: true
+          description: The card the human must place this turn (present only on the human's turn)
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: Winning seat index, or -1 for a draw
+        isHumanTurn:
+          type: boolean
+          description: True when it is the human player's turn to place a card
+        hint:
+          type: object
+          nullable: true
+          description: Optional placement hint (present only on a hint request)
+          properties:
+            row:
+              type: integer
+              description: Suggested row (0 front, 1 middle, 2 back)
+            reason:
+              type: string
+              description: Human-readable rationale for the suggestion
+        players:
+          type: array
+          description: One entry per player
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                description: Seat index (0 is the human)
+              isHuman:
+                type: boolean
+              front:
+                type: array
+                description: Top row (up to 3 cards)
+                items:
+                  $ref: '#/components/schemas/Card'
+              middle:
+                type: array
+                description: Middle row (up to 5 cards)
+                items:
+                  $ref: '#/components/schemas/Card'
+              back:
+                type: array
+                description: Bottom row (up to 5 cards)
+                items:
+                  $ref: '#/components/schemas/Card'
+              pending:
+                type: array
+                description: The pending card(s) awaiting placement (human only; empty for CPU)
+                items:
+                  $ref: '#/components/schemas/Card'
+              roundScore:
+                type: integer
+                description: Net points scored in the just-finished round
+              royalty:
+                type: integer
+                description: Royalty bonus points earned this round
+              fouled:
+                type: boolean
+                description: True when the hand is fouled (rows not in non-decreasing strength order)
+              fantasyland:
+                type: boolean
+                description: True when the player qualified for Fantasyland
+              totalScore:
+                type: integer
+                description: Cumulative score across all rounds
+        config:
+          type: object
+          description: Echoed game configuration
+          properties:
+            cpuDifficulty:
+              type: integer
+            playerCount:
+              type: integer
+            targetRounds:
+              type: integer
         message:
           type: string
         messageCode:

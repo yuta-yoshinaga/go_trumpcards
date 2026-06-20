@@ -399,5 +399,21 @@ func init() {
 			return usecase.RestoreEscobaInteractor(data, new(presenter.EscobaWebPresenter))
 		},
 		controller.NewEscobaWebControllerWithProvider)
+	games.RegisterKVGame("cuckoo", games.CategoryClassic,
+		func() usecase.CuckooInteractorIF {
+			return usecase.NewCuckooInteractor(domain.NewDefaultCuckoo(), new(presenter.CuckooWebPresenter))
+		},
+		func(data []byte) (usecase.CuckooInteractorIF, error) {
+			return usecase.RestoreCuckooInteractor(data, new(presenter.CuckooWebPresenter))
+		},
+		controller.NewCuckooWebControllerWithProvider)
+	games.RegisterKVGame("spoons", games.CategoryClassic,
+		func() usecase.SpoonsInteractorIF {
+			return usecase.NewSpoonsInteractor(domain.NewDefaultSpoons(), new(presenter.SpoonsWebPresenter))
+		},
+		func(data []byte) (usecase.SpoonsInteractorIF, error) {
+			return usecase.RestoreSpoonsInteractor(data, new(presenter.SpoonsWebPresenter))
+		},
+		controller.NewSpoonsWebControllerWithProvider)
 
 }

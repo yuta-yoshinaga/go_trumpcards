@@ -1,0 +1,43 @@
+{
+  "round": "ラウンド: {{round}}",
+  "pendingTitle": "配られたカード",
+  "noPending": "配られるカードを待っています…",
+  "placePrompt": "このカードを置く段を選んでください。",
+  "rows": {
+    "front": "トップ（3枚）",
+    "middle": "ミドル（5枚）",
+    "back": "ボトム（5枚）"
+  },
+  "place": {
+    "front": "トップに置く",
+    "middle": "ミドルに置く",
+    "back": "ボトムに置く"
+  },
+  "you": "あなた",
+  "cpu": "CPU {{n}}",
+  "empty": "（空き）",
+  "roundScore": "ラウンド得点: {{score}}",
+  "totalScore": "累計: {{score}}",
+  "royalty": "ロイヤリティ: +{{points}}",
+  "fouled": "ファウル（無効な並び）",
+  "fantasyland": "ファンタジーランド達成！",
+  "roundEndTitle": "ラウンド終了",
+  "next": "次のラウンドへ",
+  "gameEnd": "ゲーム終了",
+  "phase": {
+    "placing": "配置",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "result": {
+    "humanWin": "ゲーム終了！ あなたの勝ち！",
+    "cpuWin": "ゲーム終了！ CPU {{player}} の勝ち！",
+    "draw": "ゲーム終了！ 引き分け！"
+  },
+  "tutorial": {
+    "info": "現在のラウンドと各プレイヤーの得点がここに表示されます。",
+    "rows": "配られたカードを3段（トップ3枚・ミドル5枚・ボトム5枚）に置いていきます。",
+    "place": "配られたカードを置く段を選びましょう。一度置いたカードは動かせません。",
+    "resetButton": "ゲームを最初からやり直すにはこのボタンを押します。"
+  }
+}

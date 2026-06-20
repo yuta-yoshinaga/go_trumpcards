@@ -178,6 +178,7 @@ var gameDescriptions = map[string]string{
 	"cuarenta":            "Cuarenta (クアレンタ)",
 	"fivecardstud":        "Five Card Stud (ファイブカードスタッド)",
 	"faro":                "Faro (ファロ)",
+	"openfacechinese":     "Open Face Chinese Poker / OFC (オープンフェイス・チャイニーズポーカー)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

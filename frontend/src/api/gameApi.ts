@@ -104,6 +104,7 @@ import type {
   OhHellResponse,
   OldMaidResponse,
   OmahaResponse,
+  OpenFaceChineseResponse,
   OsmosisResponse,
   PageOneResponse,
   PaiGowResponse,
@@ -222,12 +223,13 @@ const workerUrl: Record<string, string> = {
   ecarte: WORKER_CASINO,
   threecardbrag: WORKER_CASINO,
   teenpatti: WORKER_CASINO,
-  spoons: WORKER_CASINO,
+  spoons: WORKER_CLASSIC,
   kemps: WORKER_CASINO,
-  cuckoo: WORKER_CASINO,
+  cuckoo: WORKER_CLASSIC,
   pishti: WORKER_CASINO,
   cuarenta: WORKER_CASINO,
   faro: WORKER_CASINO,
+  openfacechinese: WORKER_CASINO,
   calculation: WORKER_SOLO,
   hearts: WORKER_CLASSIC,
   spades: WORKER_CLASSIC,
@@ -2569,6 +2571,26 @@ export const faroApi = {
     }),
 };
 
+/** Commands accepted by the Open Face Chinese Poker (OFC) /openfacechinese/exec endpoint. */
+export type OpenFaceChineseCommand = 'reset' | 'place' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Open Face Chinese Poker (OFC) /openfacechinese/exec endpoint.
+ *
+ * OFC is a solo-vs-CPU game where each dealt card must be committed to one of
+ * three rows — Top (3 cards), Middle (5 cards) or Bottom (5 cards) — and once
+ * placed a card cannot be moved. Commands:
+ *   - `place` -> `{ row }` where row is 0=Top, 1=Middle, 2=Bottom
+ *   - `reset` / `nextround` / `hint` / `log` carry no extra fields
+ */
+export const openfacechineseApi = {
+  exec: (command: OpenFaceChineseCommand, opts?: { row?: number }) =>
+    gameExec<OpenFaceChineseResponse>('openfacechinese', {
+      command,
+      row: opts?.row,
+    }),
+};
+
 /** Configuration options for Préférence game settings. */
 export interface PreferenceConfigInput {
   cpuDifficulty?: number;
@@ -3900,6 +3922,7 @@ const games = [
   'pishti',
   'cuarenta',
   'faro',
+  'openfacechinese',
 ] as const;
 type Game = (typeof games)[number];
 

@@ -394,8 +394,9 @@ var registry = []*Game{
 	// Spoons: American party speed game. 4 players, 52-card deck; pass cards
 	// around until someone collects four of a kind, then everyone races to grab
 	// one of the N-1 spoons. Missing out earns a letter (S-P-O-O-N-S); six
-	// letters eliminates you, last player standing wins. Casino worker bucket.
-	{Name: "spoons", Category: CategoryCasino},
+	// letters eliminates you, last player standing wins. Classic worker bucket
+	// (binary-size bucket — casino was full).
+	{Name: "spoons", Category: CategoryClassic},
 	// Kemps: 4-player, 2-team matching game. Swap cards through a shared field
 	// until you collect four of a kind, then your partner signals secretly and
 	// your team declares "Kemps!" for a point — or the opponents call
@@ -405,7 +406,7 @@ var registry = []*Game{
 	// 4 players each hold one card and 3 lives; on your turn keep or swap with
 	// your neighbour (a King holder may refuse). The lowest card each round
 	// loses a life; last player standing wins. Casino worker bucket.
-	{Name: "cuckoo", Category: CategoryCasino},
+	{Name: "cuckoo", Category: CategoryClassic},
 	// Pişti: a popular Turkish fishing/capture game. 2–4 players; play a card
 	// matching the pile top (or any Jack) to capture the whole pile. Matching a
 	// lone card scores a Pişti (+10; +20 for Jack-on-Jack). Casino worker bucket.
@@ -425,6 +426,13 @@ var registry = []*Game{
 	// turns of two (losing card then winning card), with a half-collect on
 	// splits and a final 3-card call. Casino worker bucket.
 	{Name: "faro", Category: CategoryCasino},
+	// Open Face Chinese Poker (OFC): a modern Chinese-poker variant. Players
+	// receive cards and place them one at a time into three rows (top/middle/
+	// bottom) face-up with no rearranging; rows must rank bottom >= middle >=
+	// top or the hand fouls. Royalties reward strong rows and QQ+ on top earns
+	// Fantasyland. Reuses Chinese Poker's row evaluation + royalty helpers, so
+	// it shares the casino worker bucket.
+	{Name: "openfacechinese", Category: CategoryCasino},
 }
 
 // All returns a value-level copy of the registry in canonical order.

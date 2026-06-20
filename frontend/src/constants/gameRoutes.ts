@@ -631,6 +631,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [5, 3, 2, 4], skill: [2, 2, 4, 1], social: [5, 2, 1, 3, 2], theme: [1, 1, 5, 1, 2, 2] },
       },
       {
+        path: '/openfacechinese',
+        labelKey: 'nav.openfacechinese',
+        icon: '🀄',
+        page: 'OpenFaceChinese',
+        profile: { mood: [3, 4, 4, 3], skill: [2, 3, 5, 2], social: [4, 3, 2, 3, 3], theme: [1, 2, 4, 1, 2, 3] },
+      },
+      {
         path: '/piquet',
         labelKey: 'nav.piquet',
         icon: '🎴',

@@ -1,0 +1,43 @@
+{
+  "round": "Round: {{round}}",
+  "pendingTitle": "Dealt card",
+  "noPending": "Waiting for the next card…",
+  "placePrompt": "Choose a row to place this card.",
+  "rows": {
+    "front": "Top (3)",
+    "middle": "Middle (5)",
+    "back": "Bottom (5)"
+  },
+  "place": {
+    "front": "Place on Top",
+    "middle": "Place on Middle",
+    "back": "Place on Bottom"
+  },
+  "you": "You",
+  "cpu": "CPU {{n}}",
+  "empty": "(empty)",
+  "roundScore": "Round score: {{score}}",
+  "totalScore": "Total: {{score}}",
+  "royalty": "Royalty: +{{points}}",
+  "fouled": "Fouled (invalid arrangement)",
+  "fantasyland": "Fantasyland reached!",
+  "roundEndTitle": "Round over",
+  "next": "Next round",
+  "gameEnd": "Game over",
+  "phase": {
+    "placing": "Placing",
+    "roundEnd": "Round end",
+    "gameEnd": "Game end"
+  },
+  "result": {
+    "humanWin": "Game over! You win!",
+    "cpuWin": "Game over! CPU {{player}} wins!",
+    "draw": "Game over! It's a draw!"
+  },
+  "tutorial": {
+    "info": "The current round and each player's score are shown here.",
+    "rows": "Place each dealt card into one of three rows (Top 3, Middle 5, Bottom 5).",
+    "place": "Pick the row to place the dealt card. Once placed, a card cannot be moved.",
+    "resetButton": "Press this button to restart the game from the beginning."
+  }
+}

@@ -1371,3 +1371,10 @@ export const FaroPhase = {
   ROUND_END: 4,
   GAME_END: 5,
 } as const;
+
+/** Open Face Chinese Poker (OFC) phase constants (sync: internal/domain/OpenFaceChinese.go). */
+export const OpenFaceChinesePhase = {
+  PLACING: 0,
+  ROUND_END: 1,
+  GAME_END: 2,
+} as const;

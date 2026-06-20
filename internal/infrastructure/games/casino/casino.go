@@ -487,15 +487,6 @@ func init() {
 		},
 		controller.NewTeenPattiWebControllerWithProvider)
 
-	games.RegisterKVGame("spoons", games.CategoryCasino,
-		func() usecase.SpoonsInteractorIF {
-			return usecase.NewSpoonsInteractor(domain.NewDefaultSpoons(), new(presenter.SpoonsWebPresenter))
-		},
-		func(data []byte) (usecase.SpoonsInteractorIF, error) {
-			return usecase.RestoreSpoonsInteractor(data, new(presenter.SpoonsWebPresenter))
-		},
-		controller.NewSpoonsWebControllerWithProvider)
-
 	games.RegisterKVGame("kemps", games.CategoryCasino,
 		func() usecase.KempsInteractorIF {
 			return usecase.NewKempsInteractor(domain.NewDefaultKemps(), new(presenter.KempsWebPresenter))
@@ -504,15 +495,6 @@ func init() {
 			return usecase.RestoreKempsInteractor(data, new(presenter.KempsWebPresenter))
 		},
 		controller.NewKempsWebControllerWithProvider)
-
-	games.RegisterKVGame("cuckoo", games.CategoryCasino,
-		func() usecase.CuckooInteractorIF {
-			return usecase.NewCuckooInteractor(domain.NewDefaultCuckoo(), new(presenter.CuckooWebPresenter))
-		},
-		func(data []byte) (usecase.CuckooInteractorIF, error) {
-			return usecase.RestoreCuckooInteractor(data, new(presenter.CuckooWebPresenter))
-		},
-		controller.NewCuckooWebControllerWithProvider)
 
 	games.RegisterKVGame("pishti", games.CategoryCasino,
 		func() usecase.PishtiInteractorIF {
@@ -549,5 +531,14 @@ func init() {
 			return usecase.RestoreFaroInteractor(data, new(presenter.FaroWebPresenter))
 		},
 		controller.NewFaroWebControllerWithProvider)
+
+	games.RegisterKVGame("openfacechinese", games.CategoryCasino,
+		func() usecase.OpenFaceChineseInteractorIF {
+			return usecase.NewOpenFaceChineseInteractor(domain.NewDefaultOpenFaceChinese(), new(presenter.OpenFaceChineseWebPresenter))
+		},
+		func(data []byte) (usecase.OpenFaceChineseInteractorIF, error) {
+			return usecase.RestoreOpenFaceChineseInteractor(data, new(presenter.OpenFaceChineseWebPresenter))
+		},
+		controller.NewOpenFaceChineseWebControllerWithProvider)
 
 }

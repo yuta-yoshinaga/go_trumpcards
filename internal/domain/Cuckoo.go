@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || classic
 
 // Package domain (Cuckoo) implements the European life-based survival game
 // Cuckoo, also known as Chase the Ace or Ranter-Go-Round.
