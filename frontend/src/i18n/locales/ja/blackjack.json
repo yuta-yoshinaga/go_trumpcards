@@ -37,6 +37,9 @@
     "continue": "続行"
   },
   "betAmount": "ベット額:",
+  "betChip.min": "最小",
+  "betChip.half": "半額",
+  "betChip.max": "全額",
   "deckCount": "デッキ数:",
   "cpuCount": "CPU人数:",
   "cpuUnit": "人",

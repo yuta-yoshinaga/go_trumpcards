@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { btnPrimary, btnSuccess, btnWarning } from '../../styles/buttonStyles';
+import { type BjQuickBetKind, bjQuickBetAmount } from '../../utils/blackjackBet';
 import { ChipBetInput } from '../common/ChipBetInput';
 import {
   BJ_COUNTING_HILO,
@@ -19,6 +20,8 @@ const VALID_SURRENDER_RULES = [0, 1, 2] as const;
 export interface BjBetPhaseControlsProps {
   betAmount: number;
   onBetAmountChange: (v: number) => void;
+  /** The player's current chip balance, used to derive quick-bet amounts. */
+  playerChips: number;
   deckCount: number;
   onDeckCountChange: (v: number) => void;
   cpuPlayerCount: number;
@@ -54,6 +57,20 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
   const { t } = useTranslation('blackjack');
   return (
     <>
+      {/* Quick-bet shortcuts derived from the player's chips */}
+      <div className="flex items-center justify-center gap-2 mb-2" data-testid="bj-quick-bet">
+        {(['min', 'half', 'max'] as BjQuickBetKind[]).map((kind) => (
+          <button
+            key={kind}
+            type="button"
+            className={`${btnPrimary} min-w-[44px] min-h-[44px] px-3 text-sm`}
+            disabled={props.loading}
+            onClick={() => props.onBetAmountChange(bjQuickBetAmount(kind, props.playerChips))}
+          >
+            {t(`betChip.${kind}`)}
+          </button>
+        ))}
+      </div>
       {/* Basic settings: bet amount, hand count */}
       <div className="flex items-center justify-center gap-2 mb-2">
         <ChipBetInput

@@ -7,6 +7,7 @@ function defaultProps(overrides?: Partial<BjBetPhaseControlsProps>): BjBetPhaseC
   return {
     betAmount: 10,
     onBetAmountChange: vi.fn(),
+    playerChips: 1000,
     deckCount: 1,
     onDeckCountChange: vi.fn(),
     cpuPlayerCount: 0,
@@ -49,6 +50,19 @@ describe('BjBetPhaseControls', () => {
     render(<BjBetPhaseControls {...defaultProps({ onBetAmountChange })} />);
     fireEvent.change(screen.getByLabelText('ベット額:'), { target: { value: '100' } });
     expect(onBetAmountChange).toHaveBeenCalledWith(100);
+  });
+
+  it('renders quick-bet chips and applies chip-derived amounts (clamped to chips)', () => {
+    const onBetAmountChange = vi.fn();
+    render(<BjBetPhaseControls {...defaultProps({ onBetAmountChange, playerChips: 1000 })} />);
+    const row = screen.getByTestId('bj-quick-bet');
+    expect(row).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '最小' }));
+    expect(onBetAmountChange).toHaveBeenLastCalledWith(10);
+    fireEvent.click(screen.getByRole('button', { name: '半額' }));
+    expect(onBetAmountChange).toHaveBeenLastCalledWith(500);
+    fireEvent.click(screen.getByRole('button', { name: '全額' }));
+    expect(onBetAmountChange).toHaveBeenLastCalledWith(1000);
   });
 
   it('renders deck count selector with provided value', () => {
