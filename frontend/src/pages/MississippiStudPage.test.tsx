@@ -160,6 +160,13 @@ describe('MississippiStudPage', () => {
     expect(screen.getByText('コミュニティカード')).toBeInTheDocument();
   });
 
+  it('shows the community reveal-count status text', async () => {
+    mockApi.mockResolvedValue(fourthStreetState); // communityRevealed [true,false,false]
+    renderWithProviders(<MississippiStudPage />);
+    await waitFor(() => expect(screen.getByTestId('community-status')).toBeInTheDocument());
+    expect(screen.getByTestId('community-status')).toHaveTextContent('開示済み: 1 / 3');
+  });
+
   it('shows bet-status with street multipliers in street phase', async () => {
     mockApi.mockResolvedValue(fourthStreetState);
     renderWithProviders(<MississippiStudPage />);
