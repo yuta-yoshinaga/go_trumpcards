@@ -44,6 +44,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { OHHELL_HELP, parseOhhellCommand } from '../utils/cli/commands/ohhellCommands';
 import { formatOhhellState } from '../utils/cli/formatters/ohhellFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { ohHellBidSummary } from '../utils/ohHellBid';
 import { playerName } from '../utils/playerUtils';
 
 /** Oh Hell tutorial step definitions. */
@@ -205,6 +206,19 @@ function OhHellPageContent() {
   const humanIdx = state.players.findIndex((p) => p.isHuman);
   const humanInCurrentTrick = state.currentTrick.some((tc) => tc.playerIdx === humanIdx);
   const showProgressChip = !isBidPhase && !isGameEnd && humanPlayer !== undefined && humanPlayer.bid >= 0;
+  // During bidding, summarize the table's placed bids vs the hand size.
+  const bidSummary = isBidPhase
+    ? ohHellBidSummary(
+        state.players.filter((p) => p.bid >= 0).map((p) => p.bid),
+        state.handSize,
+      )
+    : null;
+  const bidSummaryColors =
+    bidSummary?.kind === 'over'
+      ? badgeWarningColors
+      : bidSummary?.kind === 'exact'
+        ? badgeSuccessColors
+        : badgeInfoColors;
 
   return (
     <GamePageShell
@@ -231,6 +245,15 @@ function OhHellPageContent() {
               )}`}
             >
               {t('bidProgress', { bid: humanPlayer.bid, won: humanPlayer.trickCount })}
+            </span>
+          )}
+          {bidSummary && (
+            <span
+              data-testid="bid-total-chip"
+              className={`rounded-full px-2.5 py-1 text-xs font-medium ${bidSummaryColors}`}
+            >
+              {t('bidTotal', { total: bidSummary.total, handSize: state.handSize })}{' '}
+              {t(`bidOverUnder.${bidSummary.kind}`)}
             </span>
           )}
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
