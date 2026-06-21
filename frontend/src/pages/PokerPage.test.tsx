@@ -600,6 +600,17 @@ describe('PokerPage', () => {
     expect(exchangeBtn).toBeEnabled();
   });
 
+  it('shows the selected-count badge (updating on selection) and a stand hint', async () => {
+    mockExec.mockResolvedValue(exchangeState);
+    renderWithProviders(<PokerPage />);
+    const badge = await screen.findByTestId('pk-exchange-selected');
+    expect(badge).toHaveTextContent('選択 0 枚');
+    fireEvent.click(screen.getByAltText('♠ A'));
+    expect(badge).toHaveTextContent('選択 1 枚');
+    // A hint clarifies that standing keeps the current hand.
+    expect(screen.getByTestId('pk-stand-hint')).toBeInTheDocument();
+  });
+
   it('calls exchange with selected indices', async () => {
     mockExec.mockResolvedValue(exchangeState);
     renderWithProviders(<PokerPage />);
