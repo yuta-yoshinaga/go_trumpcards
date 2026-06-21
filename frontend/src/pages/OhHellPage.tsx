@@ -213,12 +213,6 @@ function OhHellPageContent() {
         state.handSize,
       )
     : null;
-  const bidSummaryColors =
-    bidSummary?.kind === 'over'
-      ? badgeWarningColors
-      : bidSummary?.kind === 'exact'
-        ? badgeSuccessColors
-        : badgeInfoColors;
 
   return (
     <GamePageShell
@@ -250,7 +244,13 @@ function OhHellPageContent() {
           {bidSummary && (
             <span
               data-testid="bid-total-chip"
-              className={`rounded-full px-2.5 py-1 text-xs font-medium ${bidSummaryColors}`}
+              className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                bidSummary.kind === 'over'
+                  ? badgeWarningColors
+                  : bidSummary.kind === 'exact'
+                    ? badgeSuccessColors
+                    : badgeInfoColors
+              }`}
             >
               {t('bidTotal', { total: bidSummary.total, handSize: state.handSize })}{' '}
               {t(`bidOverUnder.${bidSummary.kind}`)}

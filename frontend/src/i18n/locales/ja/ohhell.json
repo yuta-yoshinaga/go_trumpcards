@@ -34,9 +34,11 @@
   "bidNone": "未ビッド",
   "bidProgress": "宣言: {{bid}} / 獲得: {{won}}",
   "bidTotal": "総ビッド {{total}} / 手札 {{handSize}}",
-  "bidOverUnder.over": "(オーバー)",
-  "bidOverUnder.under": "(アンダー)",
-  "bidOverUnder.exact": "(ぴったり)",
+  "bidOverUnder": {
+    "over": "(オーバー)",
+    "under": "(アンダー)",
+    "exact": "(ぴったり)"
+  },
   "currentTrick": "現在のトリック",
   "scores": "スコア",
   "scoresPlayer": "プレイヤー",
