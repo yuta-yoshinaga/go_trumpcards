@@ -9,6 +9,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupGongZhuCuiMock() *interfaces.MockGongZhuGame {
@@ -59,6 +60,8 @@ func TestGongZhuCuiPresenter_Output(t *testing.T) {
 		m.On("GetExposure").Return(domain.GongZhuExposure{Pig: true})
 		result := p.Output(m, nil)
 		assert.NotEmpty(t, result)
+		// Exposure summary uses the localized point-card symbol key.
+		assert.Contains(t, result, i18n.T("gongzhu.card.spadeQueen"))
 	})
 
 	t.Run("trick end and round end prompts", func(t *testing.T) {

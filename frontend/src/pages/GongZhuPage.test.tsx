@@ -60,6 +60,15 @@ describe('GongZhuPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '公開しない' })).toBeInTheDocument());
   });
 
+  it('shows exposed point cards with localized symbols and an aria-label', async () => {
+    mockExec.mockResolvedValue(makeGongZhuState({ exposed: { pig: true, sheep: false, ace: true, doubler: false } }));
+    renderWithProviders(<GongZhuPage />);
+    const summary = await screen.findByTestId('exposure-summary');
+    expect(summary).toHaveTextContent('♠Q');
+    expect(summary).toHaveTextContent('♥A');
+    expect(summary).toHaveAttribute('aria-label');
+  });
+
   it('highlights the exposable cards during the expose phase', async () => {
     // Human hand has 2 cards; only index 0 is exposable so index 1 is the dimmed one.
     mockExec.mockResolvedValue(makeGongZhuState({ phase: 0, trickNumber: 0, exposableIndices: [0] }));
