@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した172種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した173種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -191,6 +191,7 @@ Go + Clean Architecture で実装した172種類のトランプゲーム。CLI �
 | ロシアンバンク / クラペット (Russian Bank / Crapette) | `russianbank` | [CUI](docs/manual/cui/russianbank.md) / [Web](docs/manual/web/russianbank.md) |
 | ラ・ベル・ルーシー (La Belle Lucie) | `labellelucie` | [CUI](docs/manual/cui/labellelucie.md) / [Web](docs/manual/web/labellelucie.md) |
 | シンプル・サイモン (Simple Simon) | `simplesimon` | [CUI](docs/manual/cui/simplesimon.md) / [Web](docs/manual/web/simplesimon.md) |
+| ダブル・クロンダイク (Double Klondike) | `doubleklondike` | [CUI](docs/manual/cui/doubleklondike.md) / [Web](docs/manual/web/doubleklondike.md) |
 
 ## Demo
 

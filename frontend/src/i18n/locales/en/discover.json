@@ -257,7 +257,8 @@
     "openfacechinese": "A patience-meets-poker game for 2 to 4 players against the CPU, played with a standard 52-card deck. Cards are dealt one at a time and each must be committed immediately to one of three rows — Top (3 cards), Middle (5 cards) or Bottom (5 cards) — and once placed a card can never be moved. Your rows must rank in non-decreasing strength from Top to Bottom; break that order and you foul, scoring nothing for the round. Strong rows in the right spot earn royalty bonuses, and a premium Top row (a pair of Queens or better) sends you to Fantasyland. Each round your rows are compared row-by-row against the other players, scoring points for every row you win plus royalties, and the highest cumulative total after the target number of rounds takes the game. The tension comes from committing cards blind, with no way to undo a misplacement.",
     "russianbank": "A two-deck head-to-head solitaire against the CPU. Each player races to empty their 13-card reserve onto 8 shared foundations (A→K by suit) and 4 shared tableau columns (alternating colour, descending). Out of moves? Discard a hand card to pass the turn. Catch the CPU leaving a forced move with \"Stop!\" to seize tempo.",
     "labellelucie": "A classic French fan solitaire. 52 cards are dealt into 17 fans of three; only each fan's top card moves, building down in suit onto another fan or up from the Ace on four foundations. When stuck, gather the remaining cards, shuffle and redeal — but only three times. Run out of redeals while stuck and you lose.",
-    "simplesimon": "An easier Spider-family solitaire. All 52 cards are dealt face-up into 10 columns with no stock and no free cells. Move a single top card or a same-suit descending run; a complete King-to-Ace same-suit run is removed automatically. Clear all four suits to win. Because every card is visible, it plays like a look-ahead puzzle."
+    "simplesimon": "An easier Spider-family solitaire. All 52 cards are dealt face-up into 10 columns with no stock and no free cells. Move a single top card or a same-suit descending run; a complete King-to-Ace same-suit run is removed automatically. Clear all four suits to win. Because every card is visible, it plays like a look-ahead puzzle.",
+    "doubleklondike": "Klondike played with two decks of 104 cards. Nine tableau columns and eight foundations (two per suit), with a three-card draw from the stock. Build the tableau down in alternating colours and the foundations up by suit from Ace to King; move all 104 cards to the foundations to win. The doubled deck rewards long look-ahead to avoid dead ends."
   },
   "stretch_blurb": {
     "blackjack": "The 21 instinct may be obvious — but the betting decisions surprise.",
@@ -431,6 +432,7 @@
     "openfacechinese": "Open Face Chinese Poker for 2 to 4 players vs the CPU. Cards are dealt one at a time and placed irrevocably into a Top (3), Middle (5) or Bottom (5) row. Keep the rows in non-decreasing strength or foul. Win rows against opponents, earn royalty bonuses, and chase Fantasyland with a strong Top row. Highest total after the target rounds wins.",
     "russianbank": "A two-deck head-to-head competitive solitaire vs the CPU; first to empty their reserve wins.",
     "labellelucie": "A classic fan solitaire with just three gather-and-reshuffle redeals to escape a dead end.",
-    "simplesimon": "An easier, fully-open Spider-family solitaire with no stock — a visible puzzle to solve."
+    "simplesimon": "An easier, fully-open Spider-family solitaire with no stock — a visible puzzle to solve.",
+    "doubleklondike": "Two-deck Klondike — clear 104 cards to eight foundations. An expanded solitaire needing long look-ahead."
   }
 }

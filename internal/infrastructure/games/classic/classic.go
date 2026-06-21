@@ -434,4 +434,13 @@ func init() {
 		},
 		controller.NewSimpleSimonWebControllerWithProvider)
 
+	games.RegisterKVGame("doubleklondike", games.CategoryClassic,
+		func() usecase.DoubleKlondikeInteractorIF {
+			return usecase.NewDoubleKlondikeInteractor(domain.NewDefaultDoubleKlondike(), new(presenter.DoubleKlondikeWebPresenter))
+		},
+		func(data []byte) (usecase.DoubleKlondikeInteractorIF, error) {
+			return usecase.RestoreDoubleKlondikeInteractor(data, new(presenter.DoubleKlondikeWebPresenter))
+		},
+		controller.NewDoubleKlondikeWebControllerWithProvider)
+
 }

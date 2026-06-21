@@ -1,0 +1,347 @@
+import { useEffect, useState } from 'react';
+import { doubleklondikeApi } from '../api/gameApi';
+import { ActionLogSection } from '../components/ActionLogSection';
+import { CardImage } from '../components/CardImage';
+import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
+import { GameMessageBox } from '../components/GameMessageBox';
+import { GamePageShell } from '../components/GamePageShell';
+import { GameResetButton } from '../components/GameResetButton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
+import { withTutorial } from '../components/tutorial/withTutorial';
+import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useGameApi } from '../hooks/useGameApi';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { usePhaseNames } from '../hooks/usePhaseNames';
+import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
+import { gameTheme } from '../styles/gameTheme';
+import type { Card } from '../types/card';
+import { DoubleKlondikePhase } from '../types/phases';
+import type { TutorialStep } from '../types/tutorial';
+
+/** Double Klondike tutorial step definitions. */
+const DK_TUTORIAL_STEPS: TutorialStep[] = [
+  { target: '[data-tutorial="dk-board"]', messageKey: 'tutorial.board', placement: 'top', advanceOn: 'next' },
+  { target: '[data-tutorial="dk-stock"]', messageKey: 'tutorial.stock', placement: 'bottom', advanceOn: 'next' },
+  {
+    target: '[data-tutorial="dk-controls"]',
+    messageKey: 'tutorial.actionButtons',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="dk-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
+/** Maps numeric Double Klondike phases to i18n phase-label keys. */
+const DK_PHASE_KEYS: Readonly<Record<number, string>> = {
+  [DoubleKlondikePhase.PLAYING]: 'playing',
+  [DoubleKlondikePhase.GAME_CLEAR]: 'gameClear',
+  [DoubleKlondikePhase.GAME_OVER]: 'gameOver',
+};
+
+/** A selected move source: the waste pile, or a tableau column + card index. */
+type Selection = { zone: 'waste' } | { zone: 'tableau'; col: number; idx: number };
+
+/** Renders the Double Klondike game page. */
+export const DoubleKlondikePage = withTutorial(DoubleKlondikePageContent, 'doubleklondike', DK_TUTORIAL_STEPS);
+
+/** Inner content of the Double Klondike page, wrapped by TutorialProvider. */
+function DoubleKlondikePageContent() {
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('doubleklondike');
+  const { state, loading, error, exec, retry } = useGameApi(doubleklondikeApi.exec);
+  const [selected, setSelected] = useState<Selection | null>(null);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
+  useEffect(() => {
+    exec('reset');
+  }, []);
+
+  // Clear a stale selection whenever the board changes (move, draw, undo).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: deps are the change-trigger, not read in the body.
+  useEffect(() => {
+    setSelected(null);
+  }, [state?.moveCount, state?.stockCount]);
+
+  const phaseNames = usePhaseNames('doubleklondike', DK_PHASE_KEYS);
+  const { cardWidth } = useCardDimensions();
+  const w = Math.round(cardWidth * 0.5);
+
+  if (!state) return <GameSkeleton gameKey="doubleklondike" layout={{ kind: 'tableau', topRow: 4, tableau: 9 }} />;
+
+  const isClear = state.phase === DoubleKlondikePhase.GAME_CLEAR;
+  const isEnd = isClear || state.phase === DoubleKlondikePhase.GAME_OVER;
+  const canAct = !isEnd;
+  const phaseName = phaseNames[state.phase] ?? '';
+
+  const handleReset = () => {
+    hideActionLog();
+    setSelected(null);
+    exec('reset');
+  };
+
+  // Click the stock to turn over the next three cards (or recycle the waste).
+  const clickStock = () => {
+    if (!canAct) return;
+    setSelected(null);
+    exec('d');
+  };
+
+  // Click the waste's top card: select it as a move source.
+  const clickWaste = () => {
+    if (!canAct || state.waste.length === 0) return;
+    setSelected({ zone: 'waste' });
+  };
+
+  // Click a tableau card: select it as a source, or move the current source here.
+  const clickTableauCard = (col: number, idx: number) => {
+    if (!canAct) return;
+    if (selected) {
+      if (selected.zone === 'waste') {
+        exec('mwt', { col });
+        setSelected(null);
+        return;
+      }
+      if (selected.col !== col) {
+        exec('mtt', { fromCol: selected.col, cardIndex: selected.idx, toCol: col });
+        setSelected(null);
+        return;
+      }
+    }
+    setSelected({ zone: 'tableau', col, idx });
+  };
+
+  // Click an empty tableau column: move the current source onto it.
+  const clickEmptyColumn = (col: number) => {
+    if (!canAct || !selected) return;
+    if (selected.zone === 'waste') exec('mwt', { col });
+    else exec('mtt', { fromCol: selected.col, cardIndex: selected.idx, toCol: col });
+    setSelected(null);
+  };
+
+  // Click a foundation: send the current source there (the engine picks the pile).
+  const clickFoundation = () => {
+    if (!canAct || !selected) return;
+    if (selected.zone === 'waste') exec('mwf');
+    else exec('mtf', { col: selected.col });
+    setSelected(null);
+  };
+
+  const cardH = Math.round(w * 1.4);
+
+  const renderTableau = (column: (typeof state.tableau)[number], col: number) => (
+    <div
+      key={`col-${col}`}
+      className="flex flex-col items-center rounded p-0.5"
+      style={{ minHeight: cardH }}
+      data-testid={`column-${col}`}
+    >
+      {column.length === 0 ? (
+        <button
+          type="button"
+          className="rounded border border-dashed border-white/25 bg-black/20"
+          style={{ width: w, height: cardH }}
+          onClick={canAct ? () => clickEmptyColumn(col) : undefined}
+          disabled={!canAct}
+          title={t('empty')}
+          data-testid={`column-${col}-drop`}
+        />
+      ) : (
+        column.map((tc2, i) => (
+          <button
+            type="button"
+            key={`col-${col}-${i}`}
+            className={`rounded ${selected?.zone === 'tableau' && selected.col === col && i >= selected.idx ? 'ring-2 ring-ds-warning' : ''}`}
+            style={{ marginTop: i === 0 ? 0 : -Math.round(w * 1.05) }}
+            onClick={canAct && tc2.faceUp ? () => clickTableauCard(col, i) : undefined}
+            disabled={!canAct || !tc2.faceUp}
+            data-testid={`card-${col}-${i}`}
+          >
+            {tc2.faceUp && tc2.card ? (
+              <CardImage card={tc2.card} width={w} />
+            ) : (
+              <div
+                className="rounded bg-ds-accent/70 border border-white/30 flex items-center justify-center text-white/80 text-xs"
+                style={{ width: w, height: cardH }}
+                title={t('faceDown')}
+              >
+                ##
+              </div>
+            )}
+          </button>
+        ))
+      )}
+    </div>
+  );
+
+  const wasteTop = state.waste.length > 0 ? state.waste[state.waste.length - 1] : null;
+
+  return (
+    <GamePageShell
+      title={tc('nav.doubleklondike')}
+      gameThemeBg={gameTheme.doubleklondike.bg}
+      phaseName={phaseName}
+      gamePath="/doubleklondike"
+      gameEndFlag={isEnd}
+      winShow={isClear}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+    >
+      <div className="flex-1 overflow-y-auto pt-3 px-2 lg:px-6">
+        <div className="text-ds-text-muted text-xs mb-1">
+          {t('stockCount', { count: state.stockCount })} · {t('moveCount', { count: state.moveCount })}
+        </div>
+
+        {/* Stock / waste / foundations row */}
+        <div className="flex gap-2 items-start mb-3" data-tutorial="dk-stock">
+          <button
+            type="button"
+            className="rounded border border-white/30 bg-black/30 flex items-center justify-center text-white/80 text-xs"
+            style={{ width: w, height: cardH }}
+            onClick={canAct ? clickStock : undefined}
+            disabled={!canAct}
+            title={t('stock')}
+            data-testid="stock"
+          >
+            {state.stockCount}
+          </button>
+          <button
+            type="button"
+            className={`rounded ${selected?.zone === 'waste' ? 'ring-2 ring-ds-warning' : ''}`}
+            style={{ width: w, height: cardH }}
+            onClick={canAct ? clickWaste : undefined}
+            disabled={!canAct || !wasteTop}
+            title={t('waste')}
+            data-testid="waste"
+          >
+            {wasteTop ? (
+              <CardImage card={wasteTop} width={w} />
+            ) : (
+              <div
+                className="rounded border border-dashed border-white/25 bg-black/20"
+                style={{ width: w, height: cardH }}
+              />
+            )}
+          </button>
+          <div className="ml-auto grid grid-cols-4 gap-1">
+            {state.foundation.map((f, i) => {
+              const top = f.length > 0 ? f[f.length - 1] : null;
+              return (
+                <button
+                  type="button"
+                  key={`foundation-${i}`}
+                  className="rounded"
+                  onClick={canAct ? clickFoundation : undefined}
+                  disabled={!canAct}
+                  title={t('foundation')}
+                  data-testid={`foundation-${i}`}
+                >
+                  {top ? (
+                    <CardImage card={top} width={w} />
+                  ) : (
+                    <div
+                      className="rounded border border-dashed border-white/25 bg-black/20"
+                      style={{ width: w, height: cardH }}
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-9 gap-1 items-start" data-tutorial="dk-board">
+          {state.tableau.map((column, i) => renderTableau(column, i))}
+        </div>
+        {canAct && (
+          <div className="mt-2 text-ds-text-primary text-xs">
+            {selected === null ? t('selectSource') : t('selectDestination')}
+          </div>
+        )}
+
+        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+        <ActionLogSection
+          isEndPhase={isEnd}
+          actionLog={actionLog}
+          showActionLog={showActionLog}
+          hideActionLog={hideActionLog}
+        />
+      </div>
+
+      <GameFooter className={`${gameTheme.doubleklondike.footer} px-3 py-2.5`}>
+        <ErrorAlert message={error} onRetry={retry} />
+        <div className="flex flex-wrap gap-2 items-center" data-tutorial="dk-controls">
+          {canAct && (
+            <button
+              type="button"
+              className={btnPrimary}
+              onClick={clickStock}
+              disabled={loading}
+              data-testid="draw-button"
+            >
+              {t('draw')}
+            </button>
+          )}
+          {canAct && (
+            <button
+              type="button"
+              className={btnSecondary}
+              onClick={() => exec('ac')}
+              disabled={loading}
+              data-testid="auto-button"
+            >
+              {t('auto')}
+            </button>
+          )}
+          {canAct && state.canUndo && (
+            <button
+              type="button"
+              className={btnSecondary}
+              onClick={() => exec('u')}
+              disabled={loading}
+              data-testid="undo-button"
+            >
+              {t('undo')}
+            </button>
+          )}
+          {canAct && (
+            <button
+              type="button"
+              className={btnPrimary}
+              onClick={() => exec('hint')}
+              disabled={loading}
+              data-testid="hint-button"
+            >
+              {t('hint')}
+            </button>
+          )}
+          {canAct && (
+            <button
+              type="button"
+              className={btnSecondary}
+              onClick={() => exec('g')}
+              disabled={loading}
+              data-testid="giveup-button"
+            >
+              {t('giveup')}
+            </button>
+          )}
+          <GameResetButton
+            isGameEnd={isEnd}
+            onReset={handleReset}
+            requestConfirm={requestConfirm}
+            loading={loading}
+            dataTutorial="dk-reset-button"
+          />
+        </div>
+      </GameFooter>
+    </GamePageShell>
+  );
+}

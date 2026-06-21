@@ -2800,6 +2800,22 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "doubleklondike", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewDoubleKlondikeCuiController(usecase.NewDoubleKlondikeInteractor(
+				domain.NewDefaultDoubleKlondike(), new(presenter.DoubleKlondikeCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "doubleklondike.helpTitle",
+				CommandKeys: []string{
+					"doubleklondike.helpDraw",
+					"doubleklondike.helpMoveWaste",
+					"doubleklondike.helpMoveTableau",
+					"doubleklondike.helpAuto",
+					"doubleklondike.helpUndo",
+					"doubleklondike.helpGiveUp",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

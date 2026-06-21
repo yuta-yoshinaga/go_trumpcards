@@ -182,6 +182,7 @@ var gameDescriptions = map[string]string{
 	"russianbank":         "Russian Bank / Crapette (ロシアンバンク/クラペット)",
 	"labellelucie":        "La Belle Lucie (ラ・ベル・ルーシー)",
 	"simplesimon":         "Simple Simon (シンプル・サイモン)",
+	"doubleklondike":      "Double Klondike / Gargantua (ダブル・クロンダイク/ガルガンチュア)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).
