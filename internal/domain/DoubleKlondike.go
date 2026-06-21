@@ -115,12 +115,15 @@ func dkIsBlack(c *Card) bool {
 // canPlaceOnTableau タブロー col に card を置けるか。空列は K のみ、それ以外は
 // 交互色かつ降順 (value = top-1)。
 func (g *DoubleKlondike) canPlaceOnTableau(card *Card, col int) bool {
+	if card == nil {
+		return false
+	}
 	pile := g.tableau[col]
 	if len(pile) == 0 {
 		return card.GetValue() == CardValueMax
 	}
 	top := pile[len(pile)-1]
-	if !top.FaceUp {
+	if !top.FaceUp || top.Card == nil {
 		return false
 	}
 	return dkIsBlack(card) != dkIsBlack(top.Card) && card.GetValue() == top.Card.GetValue()-1
@@ -129,6 +132,9 @@ func (g *DoubleKlondike) canPlaceOnTableau(card *Card, col int) bool {
 // canPlaceOnFoundation ファウンデーション fIdx に card を置けるか。空本は A のみ、
 // それ以外は同スートかつ昇順。
 func (g *DoubleKlondike) canPlaceOnFoundation(card *Card, fIdx int) bool {
+	if card == nil {
+		return false
+	}
 	pile := g.foundation[fIdx]
 	if len(pile) == 0 {
 		return card.GetValue() == 1
@@ -448,7 +454,13 @@ func (g *DoubleKlondike) takeSnapshot() {
 	snap := &doubleKlondikeSnapshot{phase: g.phase, moveCount: g.moveCount}
 	for i := 0; i < DoubleKlondikeTableauCnt; i++ {
 		snap.tableau[i] = make([]*DoubleKlondikeTableauCard, len(g.tableau[i]))
-		copy(snap.tableau[i], g.tableau[i])
+		for j, tc := range g.tableau[i] {
+			if tc != nil {
+				// Deep-copy: FaceUp is mutated in-place (autoFlipTableau), so a
+				// shallow pointer copy would corrupt the snapshot on Undo.
+				snap.tableau[i][j] = &DoubleKlondikeTableauCard{Card: tc.Card, FaceUp: tc.FaceUp}
+			}
+		}
 	}
 	snap.stock = make([]*Card, len(g.stock))
 	copy(snap.stock, g.stock)

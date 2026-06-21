@@ -43,6 +43,16 @@ func (g *DoubleKlondike) UnmarshalJSON(data []byte) error {
 	if len(j.Stock) > doubleKlondikeMaxSliceLen || len(j.Waste) > doubleKlondikeMaxSliceLen || len(j.ActionLog) > doubleKlondikeMaxSliceLen {
 		return errDoubleKlondike
 	}
+	for _, col := range j.Tableau {
+		if len(col) > doubleKlondikeMaxSliceLen {
+			return errDoubleKlondike
+		}
+	}
+	for _, pile := range j.Foundation {
+		if len(pile) > doubleKlondikeMaxSliceLen {
+			return errDoubleKlondike
+		}
+	}
 	if j.Phase < DoubleKlondikePhasePlaying || j.Phase > DoubleKlondikePhaseGameOver {
 		return errDoubleKlondike
 	}

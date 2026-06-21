@@ -142,6 +142,29 @@ func TestDoubleKlondike_TableauToFoundationAndFlip(t *testing.T) {
 	}
 }
 
+func TestDoubleKlondike_UndoRestoresFaceDownState(t *testing.T) {
+	g := newDkGame()
+	dkClear(g)
+	// col0: [face-down 5♣, face-up A♦]; moving the Ace auto-flips the 5♣ face up.
+	g.tableau[0] = []*DoubleKlondikeTableauCard{
+		{Card: dblkCard(CardDesignClover, 5), FaceUp: false},
+		{Card: dblkCard(CardDesignDiamond, 1), FaceUp: true},
+	}
+	if err := g.MoveTableauToFoundation(0); err != nil {
+		t.Fatalf("move A to foundation: %v", err)
+	}
+	if !g.tableau[0][0].FaceUp {
+		t.Fatal("precondition: 5♣ should have been flipped face up")
+	}
+	if err := g.Undo(); err != nil {
+		t.Fatalf("undo: %v", err)
+	}
+	// The snapshot must deep-copy the card, so the restored 5♣ is face DOWN again.
+	if len(g.tableau[0]) != 2 || g.tableau[0][0].FaceUp {
+		t.Errorf("undo should restore the 5♣ to face-down, got %+v", g.tableau[0][0])
+	}
+}
+
 func TestDoubleKlondike_TableauToTableauRun(t *testing.T) {
 	g := newDkGame()
 	dkClear(g)
