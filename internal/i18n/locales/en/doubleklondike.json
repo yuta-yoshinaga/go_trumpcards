@@ -1,0 +1,13 @@
+{
+  "helpTitle": "Double Klondike / Gargantua",
+  "helpDraw": "  d / draw              draw from the stock",
+  "helpMoveWaste": "  mwt <col> / mwf       waste -> tableau column / foundation",
+  "helpMoveTableau": "  mtt <from> <idx> <to> / mtf <col>  tableau -> tableau / tableau -> foundation",
+  "helpAuto": "  ac                    auto-play available foundation moves",
+  "helpUndo": "  u / undo              undo the last move",
+  "helpGiveUp": "  g / giveup            give up",
+  "stockLine": "Stock: {{stock}}  Waste: {{waste}}",
+  "foundationLabel": "Foundation {{idx}}:",
+  "tableauLabel": "Col {{idx}}:",
+  "hintLine": "[HINT: {{from}}{{fromCol}} -> {{to}}{{toCol}}]"
+}

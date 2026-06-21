@@ -49,6 +49,7 @@ import daifugo from '../../../docs/manual/cui/daifugo.md?raw';
 import deuceswild from '../../../docs/manual/cui/deuceswild.md?raw';
 import deucetoseven from '../../../docs/manual/cui/deucetoseven.md?raw';
 import doppelkopf from '../../../docs/manual/cui/doppelkopf.md?raw';
+import doubleklondike from '../../../docs/manual/cui/doubleklondike.md?raw';
 import doubt from '../../../docs/manual/cui/doubt.md?raw';
 import doudizhu from '../../../docs/manual/cui/doudizhu.md?raw';
 import dragontiger from '../../../docs/manual/cui/dragontiger.md?raw';
@@ -306,6 +307,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/russianbank': russianbank,
   '/labellelucie': labellelucie,
   '/simplesimon': simplesimon,
+  '/doubleklondike': doubleklondike,
   '/pishti': pishti,
   '/tonk': tonk,
   '/tripeaks': tripeaks,

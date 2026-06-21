@@ -655,6 +655,11 @@ func init() {
 			return usecase.NewSimpleSimonInteractor(domain.NewDefaultSimpleSimon(), new(presenter.SimpleSimonWebPresenter))
 		},
 		controller.NewSimpleSimonWebController)
+	BindWebControllerFor("doubleklondike",
+		func() usecase.DoubleKlondikeInteractorIF {
+			return usecase.NewDoubleKlondikeInteractor(domain.NewDefaultDoubleKlondike(), new(presenter.DoubleKlondikeWebPresenter))
+		},
+		controller.NewDoubleKlondikeWebController)
 	BindWebControllerFor("gongzhu",
 		func() usecase.GongZhuInteractorIF {
 			return usecase.NewGongZhuInteractor(domain.NewDefaultGongZhu(), new(presenter.GongZhuWebPresenter))

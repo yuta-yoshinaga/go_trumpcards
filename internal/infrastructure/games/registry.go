@@ -449,6 +449,10 @@ var registry = []*Game{
 	// descending runs, and a complete K-down-to-A same-suit run is removed.
 	// Clear all four suits to win. Classic worker bucket (solo was full).
 	{Name: "simplesimon", Category: CategoryClassic},
+	// Double Klondike (Gargantua): a two-deck Klondike. 104 cards over 9 tableau
+	// columns and 8 foundations (two A-K piles per suit); deal/draw/waste play
+	// as in Klondike. Clear all eight foundations to win. Classic worker bucket.
+	{Name: "doubleklondike", Category: CategoryClassic},
 }
 
 // All returns a value-level copy of the registry in canonical order.

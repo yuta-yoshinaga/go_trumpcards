@@ -215,6 +215,13 @@ export const SimpleSimonPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Double Klondike phase values mirroring the Go `DoubleKlondikePhase` enum. */
+export const DoubleKlondikePhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** FreeCell phase constants (sync: internal/domain/FreeCell.go). */
 export const FreeCellPhase = {
   PLAYING: 0,

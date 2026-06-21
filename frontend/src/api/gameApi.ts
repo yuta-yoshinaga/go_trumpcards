@@ -49,6 +49,7 @@ import type {
   DaifugoResponse,
   DeuceToSevenResponse,
   DoppelkopfResponse,
+  DoubleKlondikeResponse,
   DoubtConfig,
   DoubtResponse,
   DoudizhuResponse,
@@ -344,6 +345,7 @@ const workerUrl: Record<string, string> = {
   russianbank: WORKER_SOLO,
   labellelucie: WORKER_CLASSIC,
   simplesimon: WORKER_CLASSIC,
+  doubleklondike: WORKER_CLASSIC,
   gongzhu: WORKER_SOLO,
   bristol: WORKER_SOLO,
   bidwhist: WORKER_SOLO,
@@ -1109,6 +1111,37 @@ export const simplesimonApi = {
   exec: (command: SimpleSimonCommand, opts?: { fromCol?: number; cardIndex?: number; toCol?: number; n?: number }) =>
     gameExec<SimpleSimonResponse>('simplesimon', {
       command,
+      fromCol: opts?.fromCol,
+      cardIndex: opts?.cardIndex,
+      toCol: opts?.toCol,
+      n: opts?.n,
+    }),
+};
+
+/** Commands accepted by the Double Klondike /doubleklondike/exec endpoint. */
+export type DoubleKlondikeCommand =
+  | 'reset'
+  | 'd'
+  | 'mwt'
+  | 'mwf'
+  | 'mtt'
+  | 'mtf'
+  | 'g'
+  | 'ac'
+  | 'u'
+  | 'undo_n'
+  | 'hint'
+  | 'log';
+
+/** API client for the Double Klondike /doubleklondike/exec endpoint. */
+export const doubleklondikeApi = {
+  exec: (
+    command: DoubleKlondikeCommand,
+    opts?: { col?: number; fromCol?: number; cardIndex?: number; toCol?: number; n?: number },
+  ) =>
+    gameExec<DoubleKlondikeResponse>('doubleklondike', {
+      command,
+      col: opts?.col,
       fromCol: opts?.fromCol,
       cardIndex: opts?.cardIndex,
       toCol: opts?.toCol,
@@ -3979,6 +4012,7 @@ const games = [
   'russianbank',
   'labellelucie',
   'simplesimon',
+  'doubleklondike',
 ] as const;
 type Game = (typeof games)[number];
 

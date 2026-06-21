@@ -357,6 +357,8 @@ tags:
     description: La Belle Lucie (ラ・ベル・ルーシー) — a classic French single-player fan solitaire on a standard 52-card deck; the cards are dealt into 17 fans of three plus one single card, and only the top card of each fan can move; a fan top stacks onto another fan whose top is the next-higher card of the same suit (built down in suit), and an exposed Ace starts one of the 4 foundations which then build up in suit from Ace to King; when no legal move remains the player may gather all non-foundation cards, shuffle and redeal (up to 3 redeals); clearing all 52 cards to the foundations wins, while being stuck after the third redeal loses; commands mf with from and to fan indices, ff with from fan index to a foundation, rd redeal, ac autocomplete, u undo, g giveup, hint, log (l), reset (r); phases 0 Playing, 1 GameClear, 2 GameOver
   - name: simplesimon
     description: Simple Simon (シンプル・サイモン) — an easier Spider-family single-player solitaire on a standard 52-card deck; all 52 cards are dealt face-up into 10 columns (sizes 8,8,8,7,6,5,4,3,2,1) with no stock and no free cells; a column top, or a same-suit descending run, can be moved, and a card may be placed on any card one rank higher of any suit (only same-suit runs move as a group) while an empty column accepts anything; a complete King-to-Ace same-suit run is removed automatically and counts as a finished suit; clearing all four suits wins and running out of legal moves loses; commands m with fromCol, cardIndex and toCol, u undo, undo_n, g giveup, hint, log (l), reset (r); phases 0 Playing, 1 GameClear, 2 GameOver
+  - name: doubleklondike
+    description: Double Klondike (ダブル・クロンダイク) — a two-deck (104-card) Klondike single-player solitaire; cards are dealt into 9 tableau columns (1..9 cards, only the top face-up) with the rest forming a three-card-draw stock, plus 8 foundations (two per suit); the tableau builds down in alternating colours (an empty column accepts only a King) and foundations build up by suit from Ace to King; the stock turns over three cards at a time and recycles the waste when empty, and moving a tableau top auto-flips the newly exposed card; moving all 104 cards to the foundations wins while running out of legal moves loses; commands d draw, mwt with col (waste to tableau), mwf (waste to foundation), mtt with fromCol, cardIndex and toCol (tableau to tableau), mtf with col (tableau to foundation), ac autocomplete, u undo, undo_n, g giveup, hint, log (l), reset (r); phases 0 Playing, 1 GameClear, 2 GameOver
 
 paths:
   /blackjack/exec:
@@ -15813,6 +15815,77 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleSimonResponse'
+  /doubleklondike/exec:
+    post:
+      tags:
+        - doubleklondike
+      summary: Execute a Double Klondike game command
+      description: |
+        Send a command to advance a Double Klondike session identified by `sessionId`.
+        Double Klondike is a two-deck (104-card) Klondike solitaire with 9 tableau
+        columns, 8 foundations (two per suit), and a three-card-draw stock. Build the
+        tableau down in alternating colours and the foundations up by suit from Ace to
+        King. Move all 104 cards to the foundations to win.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | `0`   | Building tableau and foundations |
+        | GameClear | `1`   | All 104 cards reached the foundations |
+        | GameOver  | `2`   | No legal moves remain, or gave up |
+
+        | Command | Description |
+        |---------|-------------|
+        | `reset` | Start / restart the game |
+        | `d`     | Draw three cards from the stock |
+        | `mwt`   | Move the waste top onto tableau `col` |
+        | `mwf`   | Move the waste top to a foundation |
+        | `mtt`   | Move `fromCol` from `cardIndex` onto `toCol` |
+        | `mtf`   | Move the top of tableau `col` to a foundation |
+        | `ac`    | Auto-complete to the foundations |
+        | `u`     | Undo the last move |
+        | `undo_n`| Undo `n` moves |
+        | `g`     | Give up |
+        | `hint`  | Request a move hint |
+        | `log`   | View action log |
+      operationId: doubleKlondikeExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DoubleKlondikeRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              draw:
+                summary: Turn over three cards from the stock
+                value:
+                  command: d
+                  sessionId: my-session-001
+              moveTableau:
+                summary: Move column 1 (from its top card) onto column 0
+                value:
+                  command: mtt
+                  fromCol: 1
+                  cardIndex: 0
+                  toCol: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DoubleKlondikeResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DoubleKlondikeResponse'
 components:
   schemas:
     # -------------------------------------------------------------------------
@@ -35362,6 +35435,115 @@ components:
               type: integer
             cardIndex:
               type: integer
+            toCol:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    DoubleKlondikeRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command: `reset` (`r`), `d` (draw), `mwt`, `mwf`, `mtt`, `mtf`,
+            `ac` (autocomplete), `u` (undo), `undo_n`, `g` (giveup), `hint`, `log` (`l`).
+          enum: [reset, r, d, mwt, mwf, mtt, mtf, ac, u, undo_n, g, hint, log, l]
+          example: d
+        col:
+          type: integer
+          description: Tableau column index; used with `mwt` and `mtf`.
+          minimum: 0
+          maximum: 8
+        fromCol:
+          type: integer
+          description: Source column index; used with `mtt`.
+          minimum: 0
+          maximum: 8
+        cardIndex:
+          type: integer
+          description: Index within the source column of the first card to move; used with `mtt`.
+          minimum: 0
+        toCol:
+          type: integer
+          description: Destination column index; used with `mtt`.
+          minimum: 0
+          maximum: 8
+        n:
+          type: integer
+          description: Number of moves to undo; used with `undo_n`.
+          minimum: 1
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    DoubleKlondikeResponse:
+      type: object
+      description: Current state of the Double Klondike game
+      properties:
+        tableau:
+          type: array
+          description: The 9 tableau columns (top card is last); face-down cards hide their value
+          items:
+            type: array
+            items:
+              type: object
+              properties:
+                card:
+                  $ref: '#/components/schemas/Card'
+                faceUp:
+                  type: boolean
+        stockCount:
+          type: integer
+          description: Number of cards left in the stock
+        waste:
+          type: array
+          description: The waste pile (top card is last)
+          items:
+            $ref: '#/components/schemas/Card'
+        foundation:
+          type: array
+          description: The 8 foundations (two per suit), each built up A to K
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 0 Playing, 1 GameClear, 2 GameOver"
+          enum: [0, 1, 2]
+          example: 0
+        moveCount:
+          type: integer
+        canUndo:
+          type: boolean
+        isStalemate:
+          type: boolean
+        hint:
+          type: object
+          nullable: true
+          description: Optional move hint (present only on a hint request)
+          properties:
+            fromZone:
+              type: string
+            fromCol:
+              type: integer
+            cardIndex:
+              type: integer
+            toZone:
+              type: string
             toCol:
               type: integer
         message:
