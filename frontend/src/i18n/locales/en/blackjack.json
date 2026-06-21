@@ -38,6 +38,9 @@
     "continue": "Continue"
   },
   "betAmount": "Bet Amount:",
+  "betChip.min": "Min",
+  "betChip.half": "Half",
+  "betChip.max": "Max",
   "deckCount": "Decks:",
   "cpuCount": "CPU Players:",
   "cpuUnit": "",

@@ -532,6 +532,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
                     <BjBetPhaseControls
                       betAmount={betAmount}
                       onBetAmountChange={setBetAmount}
+                      playerChips={playerChips}
                       deckCount={state?.deckCount ?? 1}
                       onDeckCountChange={(v) => exec('setdeckcount', v)}
                       cpuPlayerCount={cpuPlayerCount}
