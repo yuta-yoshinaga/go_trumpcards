@@ -16,7 +16,7 @@ const card = (design: Card['design'], value: number): Card => ({ design, value }
 
 function makeState(overrides: Partial<BlackHoleResponse> = {}): BlackHoleResponse {
   const fans: Card[][] = Array.from({ length: 17 }, () => []);
-  fans[0] = [card('HEART', 9), card('CLUB', 6)];
+  fans[0] = [card('HEART', 9), card('CLOVER', 6)];
   fans[1] = [card('DIAMOND', 10)];
   return {
     fans,
