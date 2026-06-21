@@ -255,6 +255,8 @@ describe('CalculationPage', () => {
     renderWithProviders(<CalculationPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.getByText(/ヒントがあります/)).toBeInTheDocument();
+    // Hint uses localized zone names + index, not raw F/W symbols.
+    expect(screen.getByText(/ストック → ファンデーション 2/)).toBeInTheDocument();
   });
 
   it('renders the backend hint banner when state.hint is a waste hint', async () => {
@@ -265,7 +267,7 @@ describe('CalculationPage', () => {
     });
     renderWithProviders(<CalculationPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    expect(screen.getByText(/W0 → F1/)).toBeInTheDocument();
+    expect(screen.getByText(/ウェイスト 0 → ファンデーション 1/)).toBeInTheDocument();
   });
 
   it('renders a stalemate escape button when the game is stalled', async () => {
