@@ -268,20 +268,26 @@ function CassinoPageContent() {
                 <div className="text-center text-ds-text-muted text-sm">—</div>
               ) : (
                 <div className="flex justify-center gap-2 flex-wrap">
-                  {state.builds.map((b, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => isHumanTurn && toggleBuild(i)}
-                      disabled={!isHumanTurn}
-                      className={`px-3 py-1 rounded border text-sm ${
-                        buildIndices.includes(i) ? 'ring-2 ring-ds-info bg-ds-info/20' : 'border-white/20 bg-black/20'
-                      } ${isHumanTurn ? 'cursor-pointer' : ''}`}
-                      data-testid={`build-${i}`}
-                    >
-                      値{b.value} ({b.isMulti ? 'multi' : 'single'}) / owner:{b.ownerIdx}
-                    </button>
-                  ))}
+                  {state.builds.map((b, i) => {
+                    const kind = b.isMulti ? t('build.multi') : t('build.single');
+                    const owner = b.ownerIdx === 0 ? t('result.you') : t('result.cpu', { id: b.ownerIdx });
+                    const buildLabel = t('build.label', { value: b.value, kind, owner });
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => isHumanTurn && toggleBuild(i)}
+                        disabled={!isHumanTurn}
+                        className={`px-3 py-1 rounded border text-sm ${
+                          buildIndices.includes(i) ? 'ring-2 ring-ds-info bg-ds-info/20' : 'border-white/20 bg-black/20'
+                        } ${isHumanTurn ? 'cursor-pointer' : ''}`}
+                        data-testid={`build-${i}`}
+                        aria-label={buildLabel}
+                      >
+                        {buildLabel}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
