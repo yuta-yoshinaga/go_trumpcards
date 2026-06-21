@@ -8,6 +8,7 @@
     "totalPayout": "合計配当",
     "hand": "ハンド",
     "community": "コミュニティカード",
+    "communityStatus": "開示済み: {{revealed}} / {{total}}",
     "street3": "3rd",
     "street4": "4th",
     "street5": "5th"

@@ -220,6 +220,16 @@ function MississippiStudPageContent() {
                 ),
               )}
             </div>
+            <div
+              className="text-ds-text-muted text-xs text-center mt-1"
+              data-testid="community-status"
+              aria-live="polite"
+            >
+              {t('label.communityStatus', {
+                revealed: state.communityRevealed.filter(Boolean).length,
+                total: state.communityRevealed.length,
+              })}
+            </div>
           </div>
         )}
 
