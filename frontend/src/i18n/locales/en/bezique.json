@@ -1,0 +1,63 @@
+{
+  "phase": {
+    "play": "Play",
+    "meld": "Meld",
+    "roundEnd": "Deal End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetScore": "Target Score",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "deal": "Deal {{n}}",
+  "trick": "Trick {{n}}",
+  "trump": "Trump: {{suit}}",
+  "trumpCard": "Trump card: {{card}}",
+  "stock": "Stock: {{count}}",
+  "noTrump": "undeclared",
+  "endgameNotice": "Phase 2 (endgame) — strict must-follow. No melds. Last trick scores +10.",
+  "currentTrick": "Current Trick",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "matchScoreTitle": "Score",
+  "scoreLine": "{{name}}: match {{match}} / deal {{deal}} / {{tricks}} tricks",
+  "playButton": "Play",
+  "skipMeld": "Skip meld",
+  "nextRound": "Next Deal",
+  "target": "Target: {{points}} pts",
+  "meldPrompt": "Choose a meld to declare:",
+  "meldShort": "meld",
+  "meldName": {
+    "marriage": "Marriage (K+Q)",
+    "bezique": "Bezique (♠Q+♦J)",
+    "fourAces": "Four Aces",
+    "fourKings": "Four Kings",
+    "fourQueens": "Four Queens",
+    "fourJacks": "Four Jacks"
+  },
+  "roundResult": {
+    "title": "Deal Result (points won)",
+    "line": "{{name}}: {{points}} pts"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "lead_trump": "Lead a trump to capture the trick",
+    "lead_low": "Lead a low, non-scoring card",
+    "lead_value": "Lead a scoring card",
+    "follow_cut": "Trump in to capture this trick",
+    "follow_win": "Play a card that wins this trick",
+    "follow_dump": "Cannot win — discard a card you don't need",
+    "meld_declare": "Declare this meld to score points",
+    "meld_skip": "Skip declaring a meld this turn"
+  },
+  "tutorial": {
+    "info": "Deal, trump suit (and the trump card), the stock count, and each player's match / deal score are shown here. Bezique is a 2-player melding trick-taker and the ancestor of Pinochle. The first player to reach the target score (default 1000) wins.",
+    "trick": "Cards played to the current trick appear here. In phase 1 (while the stock remains) you may follow freely, but in phase 2 (after the stock empties) play is strict must-follow. Trumps beat plain cards.",
+    "hand": "This is your hand. During play, click a card and press Play.",
+    "actions": "When you win a trick (phase 1 only) you enter the Meld phase, where you may declare ONE meld — marriage (20), royal marriage (40), Bezique (40), four aces (100), kings (80), queens (60), or jacks (40) — or choose Skip meld. Both players then draw a card. Press Next Deal between deals and games."
+  }
+}

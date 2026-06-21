@@ -1,0 +1,64 @@
+{
+  "discardTop": "捨て札",
+  "phase": {
+    "draw": "ドロー",
+    "meld": "メルド",
+    "discard": "ディスカード",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "drawPhase": "山札からカードを引くか、捨て札の山を取ってください。",
+  "meldPhase": "メルドを出すか、スキップしてください。",
+  "discardPhase": "カードを1枚捨てるか、上がってください。",
+  "roundEnd": "ラウンド終了。次のラウンドに進んでください。",
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "pointLimit": "目標スコア",
+    "easy": "簡単",
+    "normal": "普通",
+    "hard": "難しい"
+  },
+  "round": "ラウンド {{n}}",
+  "drawPile": "山札: {{count}}枚",
+  "discardPile": "捨て札: {{count}}枚",
+  "frozen": "フリーズ中",
+  "melds": "メルド",
+  "red3s": "赤3",
+  "team": "チーム {{n}}",
+  "teamLabel": "チーム",
+  "foot": "フット",
+  "inFoot": "フット中",
+  "naturalCanasta": "ナチュラルカナスタ",
+  "mixedCanasta": "ミックスカナスタ",
+  "drawStockButton": "山札から引く",
+  "drawDiscardButton": "捨て札を取る",
+  "meldButton": "メルドする",
+  "skipMeldButton": "スキップ",
+  "discardButton": "捨てる",
+  "goOutButton": "上がる",
+  "nextRound": "次のラウンド",
+  "selectPair": "ペアを選択してください（トップカードと同ランクの2枚）",
+  "drawDiscardReason": {
+    "selectTwo": "手札からトップカードと同ランクの2枚を選択してください",
+    "frozen": "フリーズ中はワイルドカードでの代用ができません",
+    "selectOneMore": "もう1枚選択してください",
+    "tooMany": "選択は2枚までです"
+  },
+  "frozenIndicator": "❄️ フリーズ",
+  "selectMeld": "メルドするカードを選択してください",
+  "result": {
+    "humanWin": "あなたのチームの勝利！",
+    "cpuWin": "チーム {{cpuId}} の勝利！"
+  },
+  "score": {
+    "cumulative": "累積",
+    "round": "ラウンド"
+  },
+  "tutorial": {
+    "drawArea": "山札と捨て札エリアです。ここからカードを引きます。",
+    "playerHand": "あなたの手札です。メルドやディスカードするカードを選びます。",
+    "meldArea": "メルドエリアです。チームのメルドがここに表示されます。",
+    "actionButtons": "アクションボタンです。フェーズに応じた操作ができます。"
+  }
+}

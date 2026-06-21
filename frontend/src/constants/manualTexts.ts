@@ -11,10 +11,12 @@ import bakersgame from '../../../docs/manual/web/bakersgame.md?raw';
 import barbu from '../../../docs/manual/web/barbu.md?raw';
 import beleagueredcastle from '../../../docs/manual/web/beleagueredcastle.md?raw';
 import belote from '../../../docs/manual/web/belote.md?raw';
+import bezique from '../../../docs/manual/web/bezique.md?raw';
 import bidwhist from '../../../docs/manual/web/bidwhist.md?raw';
 import bigo from '../../../docs/manual/web/bigo.md?raw';
 import bigohilo from '../../../docs/manual/web/bigohilo.md?raw';
 import bigtwo from '../../../docs/manual/web/bigtwo.md?raw';
+import blackhole from '../../../docs/manual/web/blackhole.md?raw';
 import blackjack from '../../../docs/manual/web/blackjack.md?raw';
 import blackjackswitch from '../../../docs/manual/web/blackjackswitch.md?raw';
 import bourre from '../../../docs/manual/web/bourre.md?raw';
@@ -30,28 +32,39 @@ import caribbeanstud from '../../../docs/manual/web/caribbeanstud.md?raw';
 import casinoholdem from '../../../docs/manual/web/casinoholdem.md?raw';
 import casinowar from '../../../docs/manual/web/casinowar.md?raw';
 import cassino from '../../../docs/manual/web/cassino.md?raw';
+import chinchon from '../../../docs/manual/web/chinchon.md?raw';
 import chinesepoker from '../../../docs/manual/web/chinesepoker.md?raw';
 import clocksolitaire from '../../../docs/manual/web/clocksolitaire.md?raw';
+import conquian from '../../../docs/manual/web/conquian.md?raw';
 import contractrummy from '../../../docs/manual/web/contractrummy.md?raw';
+import courtpiece from '../../../docs/manual/web/courtpiece.md?raw';
 import crazyeights from '../../../docs/manual/web/crazyeights.md?raw';
 import crazypineapple from '../../../docs/manual/web/crazypineapple.md?raw';
 import crescent from '../../../docs/manual/web/crescent.md?raw';
 import cribbage from '../../../docs/manual/web/cribbage.md?raw';
 import cruel from '../../../docs/manual/web/cruel.md?raw';
+import cuarenta from '../../../docs/manual/web/cuarenta.md?raw';
+import cuckoo from '../../../docs/manual/web/cuckoo.md?raw';
 import daifugo from '../../../docs/manual/web/daifugo.md?raw';
 import deuceswild from '../../../docs/manual/web/deuceswild.md?raw';
 import deucetoseven from '../../../docs/manual/web/deucetoseven.md?raw';
 import doppelkopf from '../../../docs/manual/web/doppelkopf.md?raw';
+import doubleklondike from '../../../docs/manual/web/doubleklondike.md?raw';
 import doubt from '../../../docs/manual/web/doubt.md?raw';
 import doudizhu from '../../../docs/manual/web/doudizhu.md?raw';
 import dragontiger from '../../../docs/manual/web/dragontiger.md?raw';
 import durak from '../../../docs/manual/web/durak.md?raw';
 import easthaven from '../../../docs/manual/web/easthaven.md?raw';
+import ecarte from '../../../docs/manual/web/ecarte.md?raw';
 import egyptianratscrew from '../../../docs/manual/web/egyptianratscrew.md?raw';
 import eightoff from '../../../docs/manual/web/eightoff.md?raw';
+import escoba from '../../../docs/manual/web/escoba.md?raw';
 import euchre from '../../../docs/manual/web/euchre.md?raw';
+import faro from '../../../docs/manual/web/faro.md?raw';
 import fiftyone from '../../../docs/manual/web/fiftyone.md?raw';
+import fivecardstud from '../../../docs/manual/web/fivecardstud.md?raw';
 import fivehundred from '../../../docs/manual/web/fivehundred.md?raw';
+import fortyfives from '../../../docs/manual/web/fortyfives.md?raw';
 import fortythieves from '../../../docs/manual/web/fortythieves.md?raw';
 import fourcardpoker from '../../../docs/manual/web/fourcardpoker.md?raw';
 import freecell from '../../../docs/manual/web/freecell.md?raw';
@@ -60,20 +73,30 @@ import ginrummy from '../../../docs/manual/web/ginrummy.md?raw';
 import gofish from '../../../docs/manual/web/gofish.md?raw';
 import golf from '../../../docs/manual/web/golf.md?raw';
 import gongzhu from '../../../docs/manual/web/gongzhu.md?raw';
+import handandfoot from '../../../docs/manual/web/handandfoot.md?raw';
 import hearts from '../../../docs/manual/web/hearts.md?raw';
 import highcardflush from '../../../docs/manual/web/highcardflush.md?raw';
 import holdem from '../../../docs/manual/web/holdem.md?raw';
 import indianpoker from '../../../docs/manual/web/indianpoker.md?raw';
 import irishpoker from '../../../docs/manual/web/irishpoker.md?raw';
 import jokerpoker from '../../../docs/manual/web/jokerpoker.md?raw';
+import kalooki from '../../../docs/manual/web/kalooki.md?raw';
+import kemps from '../../../docs/manual/web/kemps.md?raw';
+import klaverjas from '../../../docs/manual/web/klaverjas.md?raw';
 import klondike from '../../../docs/manual/web/klondike.md?raw';
+import knockoutwhist from '../../../docs/manual/web/knockoutwhist.md?raw';
+import labellelucie from '../../../docs/manual/web/labellelucie.md?raw';
 import letitride from '../../../docs/manual/web/letitride.md?raw';
 import macau from '../../../docs/manual/web/macau.md?raw';
+import manille from '../../../docs/manual/web/manille.md?raw';
+import mao from '../../../docs/manual/web/mao.md?raw';
+import marias from '../../../docs/manual/web/marias.md?raw';
 import memory from '../../../docs/manual/web/memory.md?raw';
 import mighty from '../../../docs/manual/web/mighty.md?raw';
 import mississippistud from '../../../docs/manual/web/mississippistud.md?raw';
 import montecarlo from '../../../docs/manual/web/montecarlo.md?raw';
 import mus from '../../../docs/manual/web/mus.md?raw';
+import nap from '../../../docs/manual/web/nap.md?raw';
 import napoleon from '../../../docs/manual/web/napoleon.md?raw';
 import nertz from '../../../docs/manual/web/nertz.md?raw';
 import oasispoker from '../../../docs/manual/web/oasispoker.md?raw';
@@ -81,6 +104,7 @@ import ohhell from '../../../docs/manual/web/ohhell.md?raw';
 import oldmaid from '../../../docs/manual/web/oldmaid.md?raw';
 import omaha from '../../../docs/manual/web/omaha.md?raw';
 import omahahilo from '../../../docs/manual/web/omahahilo.md?raw';
+import openfacechinese from '../../../docs/manual/web/openfacechinese.md?raw';
 import osmosis from '../../../docs/manual/web/osmosis.md?raw';
 import pageone from '../../../docs/manual/web/pageone.md?raw';
 import paigow from '../../../docs/manual/web/paigow.md?raw';
@@ -89,40 +113,52 @@ import pigtail from '../../../docs/manual/web/pigtail.md?raw';
 import pineapple from '../../../docs/manual/web/pineapple.md?raw';
 import pinochle from '../../../docs/manual/web/pinochle.md?raw';
 import piquet from '../../../docs/manual/web/piquet.md?raw';
+import pishti from '../../../docs/manual/web/pishti.md?raw';
 import pitch from '../../../docs/manual/web/pitch.md?raw';
 import poker from '../../../docs/manual/web/poker.md?raw';
 import pokersquares from '../../../docs/manual/web/pokersquares.md?raw';
+import preference from '../../../docs/manual/web/preference.md?raw';
 import president from '../../../docs/manual/web/president.md?raw';
 import pyramid from '../../../docs/manual/web/pyramid.md?raw';
 import razz from '../../../docs/manual/web/razz.md?raw';
 import reddog from '../../../docs/manual/web/reddog.md?raw';
 import rummy500 from '../../../docs/manual/web/rummy500.md?raw';
+import russianbank from '../../../docs/manual/web/russianbank.md?raw';
 import russianpoker from '../../../docs/manual/web/russianpoker.md?raw';
 import russiansolitaire from '../../../docs/manual/web/russiansolitaire.md?raw';
 import schnapsen from '../../../docs/manual/web/schnapsen.md?raw';
 import scopa from '../../../docs/manual/web/scopa.md?raw';
+import scopone from '../../../docs/manual/web/scopone.md?raw';
 import scorpion from '../../../docs/manual/web/scorpion.md?raw';
 import seahaventowers from '../../../docs/manual/web/seahaventowers.md?raw';
+import sedma from '../../../docs/manual/web/sedma.md?raw';
 import sevenbridge from '../../../docs/manual/web/sevenbridge.md?raw';
 import sevencardstud from '../../../docs/manual/web/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/web/sevens.md?raw';
 import sheepshead from '../../../docs/manual/web/sheepshead.md?raw';
 import shithead from '../../../docs/manual/web/shithead.md?raw';
 import shortdeck from '../../../docs/manual/web/shortdeck.md?raw';
+import simplesimon from '../../../docs/manual/web/simplesimon.md?raw';
 import sixcardgolf from '../../../docs/manual/web/sixcardgolf.md?raw';
 import skat from '../../../docs/manual/web/skat.md?raw';
 import slapjack from '../../../docs/manual/web/slapjack.md?raw';
+import solowhist from '../../../docs/manual/web/solowhist.md?raw';
 import spades from '../../../docs/manual/web/spades.md?raw';
 import spanish21 from '../../../docs/manual/web/spanish21.md?raw';
 import speed from '../../../docs/manual/web/speed.md?raw';
 import spider from '../../../docs/manual/web/spider.md?raw';
 import spiderette from '../../../docs/manual/web/spiderette.md?raw';
 import spiteandmalice from '../../../docs/manual/web/spiteandmalice.md?raw';
+import spoilfive from '../../../docs/manual/web/spoilfive.md?raw';
+import spoons from '../../../docs/manual/web/spoons.md?raw';
 import sueca from '../../../docs/manual/web/sueca.md?raw';
 import tarneeb from '../../../docs/manual/web/tarneeb.md?raw';
+import teenpatti from '../../../docs/manual/web/teenpatti.md?raw';
 import texasholdembonus from '../../../docs/manual/web/texasholdembonus.md?raw';
 import thirtyone from '../../../docs/manual/web/thirtyone.md?raw';
 import threecard from '../../../docs/manual/web/threecard.md?raw';
+import threecardbrag from '../../../docs/manual/web/threecardbrag.md?raw';
+import threethirteen from '../../../docs/manual/web/threethirteen.md?raw';
 import tichu from '../../../docs/manual/web/tichu.md?raw';
 import tienlen from '../../../docs/manual/web/tienlen.md?raw';
 import tonk from '../../../docs/manual/web/tonk.md?raw';
@@ -131,6 +167,7 @@ import tressette from '../../../docs/manual/web/tressette.md?raw';
 import tripeaks from '../../../docs/manual/web/tripeaks.md?raw';
 import truco from '../../../docs/manual/web/truco.md?raw';
 import tute from '../../../docs/manual/web/tute.md?raw';
+import twentynine from '../../../docs/manual/web/twentynine.md?raw';
 import twotenjack from '../../../docs/manual/web/twotenjack.md?raw';
 import ultimatetexasholdem from '../../../docs/manual/web/ultimatetexasholdem.md?raw';
 import videopoker from '../../../docs/manual/web/videopoker.md?raw';
@@ -145,10 +182,27 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/': blackjack,
   '/baccarat': baccarat,
   '/belote': belote,
+  '/bezique': bezique,
+  '/ecarte': ecarte,
+  '/threecardbrag': threecardbrag,
+  '/teenpatti': teenpatti,
+  '/spoons': spoons,
+  '/kemps': kemps,
+  '/cuckoo': cuckoo,
+  '/cuarenta': cuarenta,
+  '/faro': faro,
+  '/openfacechinese': openfacechinese,
+  '/russianbank': russianbank,
+  '/labellelucie': labellelucie,
+  '/simplesimon': simplesimon,
+  '/doubleklondike': doubleklondike,
+  '/blackhole': blackhole,
+  '/pishti': pishti,
   '/bridge': bridge,
   '/burraco': burraco,
   '/calculation': calculation,
   '/canasta': canasta,
+  '/handandfoot': handandfoot,
   '/canfield': canfield,
   '/osmosis': osmosis,
   '/bristol': bristol,
@@ -180,6 +234,9 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/penguin': penguin,
   '/seahaventowers': seahaventowers,
   '/ginrummy': ginrummy,
+  '/conquian': conquian,
+  '/chinchon': chinchon,
+  '/threethirteen': threethirteen,
   '/gofish': gofish,
   '/golf': golf,
   '/acesup': acesup,
@@ -192,6 +249,18 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/klondike': klondike,
   '/letitride': letitride,
   '/macau': macau,
+  '/manille': manille,
+  '/mao': mao,
+  '/marias': marias,
+  '/sedma': sedma,
+  '/knockoutwhist': knockoutwhist,
+  '/spoilfive': spoilfive,
+  '/solowhist': solowhist,
+  '/fortyfives': fortyfives,
+  '/nap': nap,
+  '/preference': preference,
+  '/twentynine': twentynine,
+  '/courtpiece': courtpiece,
   '/memory': memory,
   '/mighty': mighty,
   '/napoleon': napoleon,
@@ -217,6 +286,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/montecarlo': montecarlo,
   '/mus': mus,
   '/contractrummy': contractrummy,
+  '/kalooki': kalooki,
   '/ultimatetexasholdem': ultimatetexasholdem,
   '/crescent': crescent,
   '/mississippistud': mississippistud,
@@ -228,12 +298,14 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/reddog': reddog,
   '/rummy500': rummy500,
   '/sevencardstud': sevencardstud,
+  '/fivecardstud': fivecardstud,
   '/sevens': sevens,
   '/shortdeck': shortdeck,
   '/spades': spades,
   '/sheepshead': sheepshead,
   '/doppelkopf': doppelkopf,
   '/sueca': sueca,
+  '/klaverjas': klaverjas,
   '/tute': tute,
   '/pitch': pitch,
   '/spanish21': spanish21,
@@ -262,6 +334,8 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/president': president,
   '/cassino': cassino,
   '/scopa': scopa,
+  '/scopone': scopone,
+  '/escoba': escoba,
   '/barbu': barbu,
   '/spiteandmalice': spiteandmalice,
   '/skat': skat,

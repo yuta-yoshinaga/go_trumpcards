@@ -1,0 +1,46 @@
+{
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "round": "ラウンド {{n}}",
+  "spoonsRemaining": "残りスプーン: {{count}}",
+  "drawPile": "山札: {{count}}",
+  "playersTitle": "プレイヤー",
+  "handLabel": "あなたの手札",
+  "passNotice": "あなたの番です — 次の人に渡すカードを1枚選んでください。",
+  "grabNotice": "フォーオブアカインド成立！ スプーンを取りましょう！",
+  "lettersLabel": "文字",
+  "badge": {
+    "eliminated": "脱落",
+    "hasSpoon": "スプーン獲得",
+    "feeder": "親"
+  },
+  "grabButton": "スプーンを取る！",
+  "passButton": "渡す",
+  "nextRound": "次のラウンドへ",
+  "roundResult": {
+    "title": "ラウンド結果",
+    "loser": "{{name}} がスプーンを取れず、文字を1つ獲得しました。"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "easy": "やさしい",
+    "normal": "ふつう",
+    "hard": "むずかしい"
+  },
+  "phase": {
+    "pass": "パス",
+    "grab": "グラブ",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "win": "あなたの勝利です！",
+  "lose": "{{name}} の勝利です。",
+  "tutorial": {
+    "info": "ラウンド数・残りスプーン数・山札の枚数がここに表示されます。",
+    "players": "各プレイヤーの文字（S-P-O-O-N-S）と脱落・スプーン獲得の状態を確認できます。",
+    "hand": "あなたの4枚の手札です。パスフェーズでは渡すカードを1枚選びます。",
+    "grab": "フォーオブアカインドが成立するとここからスプーンを奪い合います。乗り遅れた人が文字を獲得します。",
+    "resetButton": "このボタンでいつでもゲームをリセットできます。"
+  }
+}

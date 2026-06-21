@@ -1,0 +1,46 @@
+{
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "round": "Round {{n}}",
+  "spoonsRemaining": "Spoons left: {{count}}",
+  "drawPile": "Draw pile: {{count}}",
+  "playersTitle": "Players",
+  "handLabel": "Your hand",
+  "passNotice": "Your turn — pick one card to pass to the next player.",
+  "grabNotice": "Four of a kind! Grab a spoon!",
+  "lettersLabel": "letters",
+  "badge": {
+    "eliminated": "OUT",
+    "hasSpoon": "got a spoon",
+    "feeder": "feeder"
+  },
+  "grabButton": "Grab a spoon!",
+  "passButton": "Pass",
+  "nextRound": "Next round",
+  "roundResult": {
+    "title": "Round result",
+    "loser": "{{name}} missed a spoon and gained a letter."
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU difficulty",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "phase": {
+    "pass": "Pass",
+    "grab": "Grab",
+    "roundEnd": "Round end",
+    "gameEnd": "Game over"
+  },
+  "win": "You win!",
+  "lose": "{{name}} wins.",
+  "tutorial": {
+    "info": "The round number, spoons remaining, and draw pile size are shown here.",
+    "players": "Each player's letters (S-P-O-O-N-S) plus their eliminated / has-spoon status.",
+    "hand": "Your four cards. During the Pass phase, pick one card to pass on.",
+    "grab": "When someone gets four of a kind, everyone races to grab a spoon from here. Whoever misses out gains a letter.",
+    "resetButton": "Use this button to reset the game at any time."
+  }
+}

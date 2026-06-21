@@ -1,0 +1,23 @@
+{
+  "helpTitle": "Knockout Whist",
+  "helpPlay": "  play <idx>               play a card",
+  "helpNext": "  n                         go to next trick",
+  "helpNextRound": "  nr                        go to next round",
+  "helpSetDifficulty": "  sd [0-2]                  CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "round": "Round: {{round}}  Hand: {{handSize}} cards  Trick: {{trick}}  Trump: {{trump}}",
+  "playerLine": "{{name}}: {{cards}} cards  Round tricks: {{roundTricks}}  Dogbones: {{dogbones}}",
+  "playerLineEliminated": "{{name}}: KNOCKED OUT",
+  "gameEnd": "Game over! {{name}} survives and wins the match!",
+  "promptPlay": "Turn: {{name}}",
+  "promptPlayHelp": "play <idx> ... play a card (must follow the lead suit; trumps beat non-trumps; you must win at least one trick this round to survive)",
+  "promptTrickEnd": "Trick complete",
+  "promptTrickEndHelp": "n / next ... go to the next trick",
+  "promptRoundEnd": "Round complete ({{active}} players still in)",
+  "promptRoundEndHelp": "nr / nextround ... go to the next round (players with no tricks lose a dogbone or are knocked out, and hands shrink by one card)",
+  "hintNone": "No hint available.",
+  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintReasonLeadHigh": "Lead a high card to seize the trick",
+  "hintReasonFollowWin": "Win the trick to survive (trick tally matters)",
+  "hintReasonFollowDuck": "Cannot win — follow with a low card",
+  "hintReasonDiscardLow": "Cannot follow suit — discard a low card"
+}

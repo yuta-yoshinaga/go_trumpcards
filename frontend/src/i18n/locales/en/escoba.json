@@ -1,0 +1,61 @@
+{
+  "nav": {
+    "escoba": "Escoba"
+  },
+  "skeleton": {
+    "loading": "Loading..."
+  },
+  "phase": {
+    "play": "Playing",
+    "playerTurn": "Your Turn",
+    "roundEnd": "Round End",
+    "gameEnd": "Game Over",
+    "end": "Game Over"
+  },
+  "label": {
+    "tableCards": "Table",
+    "tableEmpty": "No table cards",
+    "scores": "Scores",
+    "player": "Player {{id}}",
+    "you": "You",
+    "stockRemaining": "Stock {{count}} left",
+    "cpuStats": "Hand {{cards}} / Captured {{captured}} / Escoba {{escoba}}",
+    "humanStats": "Hand {{cards}} / Captured {{captured}} / Escoba {{escoba}}",
+    "playerScore": "P{{id}}: {{score}} pt"
+  },
+  "button": {
+    "take": "Take",
+    "lay": "Lay",
+    "nextRound": "Next Round",
+    "reset": "Reset"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetScore": "Target Score"
+  },
+  "result": {
+    "win": "Win",
+    "lose": "Lose",
+    "draw": "Draw",
+    "scores": "Game over. Player {{winnerIdx}} wins ({{scores}})"
+  },
+  "roundDetail": {
+    "title": "Round Score Breakdown",
+    "cards": "Most cards",
+    "espadas": "Most espadas (♠)",
+    "sevens": "Most sevens",
+    "oros": "Most oros (♦)",
+    "escobas": "Escoba",
+    "gained": "Points gained",
+    "aceEspada": "Took the Ace♠",
+    "seteEspada": "Took the 7♠"
+  },
+  "tutorial": {
+    "cpuArea": "Other players' hand count, captures, escobas, and score.",
+    "tableCards": "Table cards. Capture a subset that, with your hand card, sums to exactly 15.",
+    "playerHand": "Your hand. Select a card to act.",
+    "actions": "Choose Take (select table cards summing to 15) or Lay (select none).",
+    "resetButton": "Reset the game."
+  }
+}

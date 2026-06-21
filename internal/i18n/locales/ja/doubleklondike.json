@@ -1,0 +1,13 @@
+{
+  "helpTitle": "ダブル・クロンダイク / ガルガンチュア (Double Klondike)",
+  "helpDraw": "  d / draw              ストックからめくる",
+  "helpMoveWaste": "  mwt <col> / mwf       ウェイスト→タブロー列 / ファウンデーション",
+  "helpMoveTableau": "  mtt <from> <idx> <to> / mtf <col>  タブロー間 / タブロー→ファウンデーション",
+  "helpAuto": "  ac                    出せる札を自動で出し切る",
+  "helpUndo": "  u / undo              直近の手を取り消す",
+  "helpGiveUp": "  g / giveup            投了する",
+  "stockLine": "ストック: {{stock}}  ウェイスト: {{waste}}",
+  "foundationLabel": "組札{{idx}}:",
+  "tableauLabel": "列{{idx}}:",
+  "hintLine": "[HINT: {{from}}{{fromCol}} → {{to}}{{toCol}}]"
+}

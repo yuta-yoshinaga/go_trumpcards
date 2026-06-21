@@ -1,0 +1,31 @@
+{
+  "phase": { "playing": "Playing", "gameClear": "Game Clear", "gameOver": "Game Over" },
+  "title": "Double Klondike",
+  "stock": "Stock",
+  "waste": "Waste",
+  "foundation": "Foundations",
+  "tableau": "Tableau",
+  "stockCount": "Stock left: {{count}}",
+  "moveCount": "Moves: {{count}}",
+  "draw": "Draw",
+  "auto": "Auto-complete",
+  "giveup": "Give up",
+  "hint": "Hint",
+  "undo": "Undo",
+  "empty": "Empty",
+  "faceDown": "Face down",
+  "selectSource": "Select a card to move (top of a tableau column or the waste)",
+  "selectDestination": "Select a destination (a tableau column or a foundation)",
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "playing": "Playing",
+  "noHint": "No hint available",
+  "hintAvailable": "A hint is available",
+  "tutorial": {
+    "board": "Klondike played with two decks (104 cards). There are 9 tableau columns, 8 foundations (two per suit), and a stock.",
+    "stock": "Click the stock to turn over three cards. When the stock is empty you can recycle the waste back into it.",
+    "rules": "Build the tableau down in alternating colours and the foundations up by suit from Ace to King. Move all 104 cards to the foundations to win.",
+    "actionButtons": "Buttons for draw, hint, undo, give up and more.",
+    "resetButton": "Start a new game."
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "deck": "Stock: {{count}}",
+  "playersTitle": "Players",
+  "captured": "captured {{count}}",
+  "pisti": "Pişti {{count}}",
+  "finalScore": "{{score}} pts",
+  "pile": "Pile",
+  "pileTop": "Pile top",
+  "pileCount": "{{count}} cards",
+  "pileEmpty": "Pile is empty",
+  "yourHand": "Your hand",
+  "turnNotice": "Your turn — pick a card to play onto the pile.",
+  "playButton": "Play",
+  "nextGame": "Next game",
+  "finalScoresTitle": "Final scores",
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU difficulty",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard",
+    "playerCount": "Players"
+  },
+  "phase": {
+    "play": "Play",
+    "roundEnd": "Round end",
+    "gameEnd": "Game over"
+  },
+  "win": "You win!",
+  "lose": "{{name}} wins.",
+  "tutorial": {
+    "info": "The remaining stock and each player's capture progress are shown here.",
+    "players": "Each player's hand size, captured count and Pişti bonus are shown.",
+    "pile": "The centre pile. The top card and pile size are shown here.",
+    "hand": "Your hand. Click a card to play it onto the pile. Capture the pile by matching the top rank or with a Jack.",
+    "resetButton": "Use this button to reset the game at any time."
+  }
+}

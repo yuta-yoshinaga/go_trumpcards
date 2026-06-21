@@ -42,6 +42,7 @@ export type GameKey =
   | 'crazypineapple'
   | 'irishpoker'
   | 'sevencardstud'
+  | 'fivecardstud'
   | 'razz'
   | 'badugi'
   | 'deucetoseven'
@@ -57,6 +58,30 @@ export type GameKey =
   | 'mus'
   | 'tute'
   | 'sueca'
+  | 'klaverjas'
+  | 'manille'
+  | 'marias'
+  | 'sedma'
+  | 'knockoutwhist'
+  | 'spoilfive'
+  | 'solowhist'
+  | 'fortyfives'
+  | 'nap'
+  | 'preference'
+  | 'twentynine'
+  | 'courtpiece'
+  | 'bezique'
+  | 'ecarte'
+  | 'threecardbrag'
+  | 'teenpatti'
+  | 'spoons'
+  | 'kemps'
+  | 'cuckoo'
+  | 'pishti'
+  | 'cuarenta'
+  | 'faro'
+  | 'openfacechinese'
+  | 'russianbank'
   | 'pitch'
   | 'twotenjack'
   | 'ohhell'
@@ -84,8 +109,11 @@ export type GameKey =
   | 'president'
   | 'cassino'
   | 'scopa'
+  | 'scopone'
+  | 'escoba'
   | 'barbu'
   | 'macau'
+  | 'mao'
   | 'sevens'
   | 'crazyeights'
   | 'pageone'
@@ -125,6 +153,10 @@ export type GameKey =
   | 'canfield'
   | 'osmosis'
   | 'bristol'
+  | 'labellelucie'
+  | 'simplesimon'
+  | 'doubleklondike'
+  | 'blackhole'
   | 'bidwhist'
   | 'yukon'
   | 'russiansolitaire'
@@ -141,16 +173,21 @@ export type GameKey =
   | 'crescent'
   // Counting/Rummy
   | 'ginrummy'
+  | 'conquian'
+  | 'chinchon'
+  | 'threethirteen'
   | 'tonk'
   | 'thirtyone'
   | 'yaniv'
   | 'gongzhu'
   | 'tressette'
   | 'canasta'
+  | 'handandfoot'
   | 'burraco'
   | 'cribbage'
   | 'sevenbridge'
   | 'contractrummy'
+  | 'kalooki'
   | 'rummy500';
 
 /** Theme classes (Tailwind) applied to the page background and footer for each game. */
@@ -189,6 +226,94 @@ const SUECA = {
   bg: 'bg-game-bg-sueca',
   footer: 'bg-game-bg-sueca-dark border-white/20',
 } as const;
+const KLAVERJAS = {
+  bg: 'bg-game-bg-klaverjas',
+  footer: 'bg-game-bg-klaverjas-dark border-white/20',
+} as const;
+const MANILLE = {
+  bg: 'bg-game-bg-manille',
+  footer: 'bg-game-bg-manille-dark border-white/20',
+} as const;
+const MARIAS = {
+  bg: 'bg-game-bg-marias',
+  footer: 'bg-game-bg-marias-dark border-white/20',
+} as const;
+const SEDMA = {
+  bg: 'bg-game-bg-sedma',
+  footer: 'bg-game-bg-sedma-dark border-white/20',
+} as const;
+const KNOCKOUTWHIST = {
+  bg: 'bg-game-bg-knockoutwhist',
+  footer: 'bg-game-bg-knockoutwhist-dark border-white/20',
+} as const;
+const SPOILFIVE = {
+  bg: 'bg-game-bg-spoilfive',
+  footer: 'bg-game-bg-spoilfive-dark border-white/20',
+} as const;
+const SOLOWHIST = {
+  bg: 'bg-game-bg-solowhist',
+  footer: 'bg-game-bg-solowhist-dark border-white/20',
+} as const;
+const FORTYFIVES = {
+  bg: 'bg-game-bg-fortyfives',
+  footer: 'bg-game-bg-fortyfives-dark border-white/20',
+} as const;
+const NAP = {
+  bg: 'bg-game-bg-nap',
+  footer: 'bg-game-bg-nap-dark border-white/20',
+} as const;
+const TWENTYNINE = {
+  bg: 'bg-game-bg-twentynine',
+  footer: 'bg-game-bg-twentynine-dark border-white/20',
+} as const;
+const COURTPIECE = {
+  bg: 'bg-game-bg-courtpiece',
+  footer: 'bg-game-bg-courtpiece-dark border-white/20',
+} as const;
+const PREFERENCE = {
+  bg: 'bg-game-bg-preference',
+  footer: 'bg-game-bg-preference-dark border-white/20',
+} as const;
+const BEZIQUE = {
+  bg: 'bg-game-bg-bezique',
+  footer: 'bg-game-bg-bezique-dark border-white/20',
+} as const;
+const ECARTE = {
+  bg: 'bg-game-bg-ecarte',
+  footer: 'bg-game-bg-ecarte-dark border-white/20',
+} as const;
+const THREECARDBRAG = {
+  bg: 'bg-game-bg-threecardbrag',
+  footer: 'bg-game-bg-threecardbrag-dark border-white/20',
+} as const;
+const TEENPATTI = {
+  bg: 'bg-game-bg-teenpatti',
+  footer: 'bg-game-bg-teenpatti-dark border-white/20',
+} as const;
+const SPOONS = {
+  bg: 'bg-game-bg-spoons',
+  footer: 'bg-game-bg-spoons-dark border-white/20',
+} as const;
+const KEMPS = {
+  bg: 'bg-game-bg-kemps',
+  footer: 'bg-game-bg-kemps-dark border-white/20',
+} as const;
+const CUCKOO = {
+  bg: 'bg-game-bg-cuckoo',
+  footer: 'bg-game-bg-cuckoo-dark border-white/20',
+} as const;
+const PISHTI = {
+  bg: 'bg-game-bg-pishti',
+  footer: 'bg-game-bg-pishti-dark border-white/20',
+} as const;
+const CUARENTA = {
+  bg: 'bg-game-bg-cuarenta',
+  footer: 'bg-game-bg-cuarenta-dark border-white/20',
+} as const;
+const FARO = {
+  bg: 'bg-game-bg-faro',
+  footer: 'bg-game-bg-faro-dark border-white/20',
+} as const;
 
 export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Table games
@@ -224,6 +349,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   crazypineapple: POKER,
   irishpoker: POKER,
   sevencardstud: POKER,
+  fivecardstud: POKER,
   razz: POKER,
   badugi: POKER,
   deucetoseven: POKER,
@@ -239,6 +365,30 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   mus: MUS,
   tute: TUTE,
   sueca: SUECA,
+  klaverjas: KLAVERJAS,
+  manille: MANILLE,
+  marias: MARIAS,
+  sedma: SEDMA,
+  knockoutwhist: KNOCKOUTWHIST,
+  spoilfive: SPOILFIVE,
+  solowhist: SOLOWHIST,
+  fortyfives: FORTYFIVES,
+  nap: NAP,
+  preference: PREFERENCE,
+  twentynine: TWENTYNINE,
+  courtpiece: COURTPIECE,
+  bezique: BEZIQUE,
+  ecarte: ECARTE,
+  threecardbrag: THREECARDBRAG,
+  teenpatti: TEENPATTI,
+  spoons: SPOONS,
+  kemps: KEMPS,
+  cuckoo: CUCKOO,
+  pishti: PISHTI,
+  cuarenta: CUARENTA,
+  faro: FARO,
+  openfacechinese: CASINO,
+  russianbank: GREEN,
   pitch: BLUE,
   twotenjack: BLUE,
   ohhell: BLUE,
@@ -266,8 +416,11 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   president: GREEN,
   cassino: GREEN,
   scopa: GREEN,
+  scopone: GREEN,
+  escoba: GREEN,
   barbu: GREEN,
   macau: GREEN,
+  mao: BLUE,
   sevens: GREEN,
   crazyeights: GREEN,
   pageone: GREEN,
@@ -307,6 +460,10 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   canfield: CASINO,
   osmosis: CASINO,
   bristol: CASINO,
+  labellelucie: GREEN,
+  simplesimon: GREEN,
+  doubleklondike: GREEN,
+  blackhole: GREEN,
   bidwhist: GREEN,
   yukon: CASINO,
   russiansolitaire: CASINO,
@@ -323,15 +480,20 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   crescent: CASINO,
   // Counting/Rummy
   ginrummy: BLUE,
+  conquian: BLUE,
+  chinchon: GREEN,
+  threethirteen: BLUE,
   tonk: BLUE,
   thirtyone: CASINO,
   yaniv: BLUE,
   gongzhu: GREEN,
   tressette: GREEN,
   canasta: BLUE,
+  handandfoot: BLUE,
   burraco: GREEN,
   cribbage: BLUE,
   sevenbridge: BLUE,
   contractrummy: BLUE,
+  kalooki: GREEN,
   rummy500: BLUE,
 };

@@ -7,6 +7,7 @@ import type {
   BarbuResponse,
   BeleagueredCastleResponse,
   BeloteResponse,
+  BeziqueResponse,
   BidWhistResponse,
   BigTwoResponse,
   BlackJackResponse,
@@ -22,6 +23,7 @@ import type {
   CasinoWarResponse,
   CassinoResponse,
   ClockSolitaireResponse,
+  CourtPieceResponse,
   CrazyEightsResponse,
   CribbageResponse,
   CruelResponse,
@@ -33,11 +35,13 @@ import type {
   DragonTigerResponse,
   DurakResponse,
   EasthavenResponse,
+  EcarteResponse,
   EgyptianRatscrewResponse,
   EightOffResponse,
   EuchreResponse,
   FiftyOneResponse,
   FiveHundredResponse,
+  FortyFivesResponse,
   FourCardPokerResponse,
   FreeCellResponse,
   GapsResponse,
@@ -49,15 +53,20 @@ import type {
   HighCardFlushResponse,
   HoldemResponse,
   IndianPokerResponse,
+  KlaverjasResponse,
   KlondikeResponse,
+  KnockoutWhistResponse,
   LetItRideResponse,
   MacauResponse,
+  ManilleResponse,
+  MariasResponse,
   MemoryResponse,
   MightyResponse,
   MississippiStudResponse,
   MonteCarloResponse,
   MusResponse,
   NapoleonResponse,
+  NapResponse,
   NertzResponse,
   OhHellResponse,
   OldMaidResponse,
@@ -71,6 +80,7 @@ import type {
   PitchResponse,
   PokerResponse,
   PokerSquaresResponse,
+  PreferenceResponse,
   PresidentResponse,
   PyramidResponse,
   RedDogResponse,
@@ -81,6 +91,7 @@ import type {
   ScopaResponse,
   ScorpionResponse,
   SeahavenTowersResponse,
+  SedmaResponse,
   SevenBridgeResponse,
   SevenCardStudResponse,
   SevensResponse,
@@ -90,15 +101,19 @@ import type {
   SixCardGolfResponse,
   SkatResponse,
   SlapjackResponse,
+  SoloWhistResponse,
   SpadesResponse,
   SpeedResponse,
   SpideretteResponse,
   SpiderResponse,
   SpiteAndMaliceResponse,
+  SpoilFiveResponse,
   SuecaResponse,
   TarneebResponse,
+  TeenPattiResponse,
   TexasHoldemBonusResponse,
   ThirtyOneResponse,
+  ThreeCardBragResponse,
   ThreeCardResponse,
   TichuResponse,
   TienLenResponse,
@@ -106,6 +121,7 @@ import type {
   TressetteResponse,
   TriPeaksResponse,
   TuteResponse,
+  TwentyNineResponse,
   TwoTenJackResponse,
   UltimateTexasHoldemResponse,
   VideoPokerResponse,
@@ -123,6 +139,7 @@ import { getBakersdozenHint } from '../utils/hints/bakersdozenHint';
 import { getBarbuHint } from '../utils/hints/barbuHint';
 import { getBeleagueredcastleHint } from '../utils/hints/beleagueredcastleHint';
 import { getBeloteHint } from '../utils/hints/beloteHint';
+import { getBeziqueHint } from '../utils/hints/beziqueHint';
 import { getBidWhistHint } from '../utils/hints/bidwhistHint';
 import { getBigTwoHint } from '../utils/hints/bigtwoHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
@@ -138,6 +155,7 @@ import { getCasinoHoldemHint } from '../utils/hints/casinoholdemHint';
 import { getCasinowarHint } from '../utils/hints/casinowarHint';
 import { getCassinoHint } from '../utils/hints/cassinoHint';
 import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
+import { getCourtPieceHint } from '../utils/hints/courtPieceHint';
 import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
 import { getCrazyPineappleHint } from '../utils/hints/crazyPineappleHint';
 import { getCribbageHint } from '../utils/hints/cribbageHint';
@@ -151,11 +169,13 @@ import { getDoudizhuHint } from '../utils/hints/doudizhuHint';
 import { getDragontigerHint } from '../utils/hints/dragontigerHint';
 import { getDurakHint } from '../utils/hints/durakHint';
 import { getEasthavenHint } from '../utils/hints/easthavenHint';
+import { getEcarteHint } from '../utils/hints/ecarteHint';
 import { getEgyptianRatscrewHint } from '../utils/hints/egyptianratscrewHint';
 import { getEightOffHint } from '../utils/hints/eightoffHint';
 import { getEuchreHint } from '../utils/hints/euchreHint';
 import { getFiftyOneHint } from '../utils/hints/fiftyoneHint';
 import { getFiveHundredHint } from '../utils/hints/fivehundredHint';
+import { getFortyFivesHint } from '../utils/hints/fortyFivesHint';
 import { getFourCardPokerHint } from '../utils/hints/fourcardpokerHint';
 import { getFreeCellHint } from '../utils/hints/freecellHint';
 import { getGapsHint } from '../utils/hints/gapsHint';
@@ -169,14 +189,19 @@ import { getHoldemHint } from '../utils/hints/holdemHint';
 import { getIndianPokerHint } from '../utils/hints/indianpokerHint';
 import { getIrishPokerHint } from '../utils/hints/irishPokerHint';
 import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
+import { getKlaverjasHint } from '../utils/hints/klaverjasHint';
 import { getKlondikeHint } from '../utils/hints/klondikeHint';
+import { getKnockoutWhistHint } from '../utils/hints/knockoutWhistHint';
 import { getLetitrideHint } from '../utils/hints/letitrideHint';
 import { getMacauHint } from '../utils/hints/macauHint';
+import { getManilleHint } from '../utils/hints/manilleHint';
+import { getMariasHint } from '../utils/hints/mariasHint';
 import { getMemoryHint } from '../utils/hints/memoryHint';
 import { getMightyHint } from '../utils/hints/mightyHint';
 import { getMississippiStudHint } from '../utils/hints/mississippiStudHint';
 import { getMonteCarloHint } from '../utils/hints/montecarloHint';
 import { getMusHint } from '../utils/hints/musHint';
+import { getNapHint } from '../utils/hints/napHint';
 import { getNapoleonHint } from '../utils/hints/napoleonHint';
 import { getNertzHint } from '../utils/hints/nertzHint';
 import { getOhHellHint } from '../utils/hints/ohhellHint';
@@ -192,6 +217,7 @@ import { getPinochleHint } from '../utils/hints/pinochleHint';
 import { getPitchHint } from '../utils/hints/pitchHint';
 import { getPokerHint } from '../utils/hints/pokerHint';
 import { getPokersquaresHint } from '../utils/hints/pokersquaresHint';
+import { getPreferenceHint } from '../utils/hints/preferenceHint';
 import { getPresidentHint } from '../utils/hints/presidentHint';
 import { getPyramidHint } from '../utils/hints/pyramidHint';
 import { getRazzHint } from '../utils/hints/razzHint';
@@ -203,6 +229,7 @@ import { getSchnapsenHint } from '../utils/hints/schnapsenHint';
 import { getScopaHint } from '../utils/hints/scopaHint';
 import { getScorpionHint } from '../utils/hints/scorpionHint';
 import { getSeahavenTowersHint } from '../utils/hints/seahavenTowersHint';
+import { getSedmaHint } from '../utils/hints/sedmaHint';
 import { getSevenbridgeHint } from '../utils/hints/sevenbridgeHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
 import { getSheepsheadHint } from '../utils/hints/sheepsheadHint';
@@ -211,15 +238,19 @@ import { getShortDeckHint } from '../utils/hints/shortdeckHint';
 import { getSixcardgolfHint } from '../utils/hints/sixcardgolfHint';
 import { getSkatHint } from '../utils/hints/skatHint';
 import { getSlapjackHint } from '../utils/hints/slapjackHint';
+import { getSoloWhistHint } from '../utils/hints/soloWhistHint';
 import { getSpadesHint } from '../utils/hints/spadesHint';
 import { getSpeedHint } from '../utils/hints/speedHint';
 import { getSpideretteHint } from '../utils/hints/spideretteHint';
 import { getSpiderHint } from '../utils/hints/spiderHint';
 import { getSpiteAndMaliceHint } from '../utils/hints/spiteAndMaliceHint';
+import { getSpoilFiveHint } from '../utils/hints/spoilFiveHint';
 import { getSuecaHint } from '../utils/hints/suecaHint';
 import { getTarneebHint } from '../utils/hints/tarneebHint';
+import { getTeenPattiHint } from '../utils/hints/teenPattiHint';
 import { getTexasHoldemBonusHint } from '../utils/hints/texasHoldemBonusHint';
 import { getThirtyOneHint } from '../utils/hints/thirtyoneHint';
+import { getThreeCardBragHint } from '../utils/hints/threeCardBragHint';
 import { getThreeCardHint } from '../utils/hints/threecardHint';
 import { getTichuHint } from '../utils/hints/tichuHint';
 import { getTienLenHint } from '../utils/hints/tienlenHint';
@@ -227,6 +258,7 @@ import { getTrashHint } from '../utils/hints/trashHint';
 import { getTressetteHint } from '../utils/hints/tressetteHint';
 import { getTriPeaksHint } from '../utils/hints/tripeaksHint';
 import { getTuteHint } from '../utils/hints/tuteHint';
+import { getTwentyNineHint } from '../utils/hints/twentyNineHint';
 import { getTwoTenJackHint } from '../utils/hints/twotenjackHint';
 import { getUltimateTexasHoldemHint } from '../utils/hints/ultimateTexasHoldemHint';
 import { getVideoPokerHint } from '../utils/hints/videopokerHint';
@@ -373,6 +405,22 @@ const hintFactories = {
   mus: (s) => getMusHint(s as MusResponse),
   tute: (s) => getTuteHint(s as TuteResponse),
   sueca: (s) => getSuecaHint(s as SuecaResponse),
+  klaverjas: (s) => getKlaverjasHint(s as KlaverjasResponse),
+  manille: (s) => getManilleHint(s as ManilleResponse),
+  marias: (s) => getMariasHint(s as MariasResponse),
+  sedma: (s) => getSedmaHint(s as SedmaResponse),
+  knockoutwhist: (s) => getKnockoutWhistHint(s as KnockoutWhistResponse),
+  spoilfive: (s) => getSpoilFiveHint(s as SpoilFiveResponse),
+  solowhist: (s) => getSoloWhistHint(s as SoloWhistResponse),
+  fortyfives: (s) => getFortyFivesHint(s as FortyFivesResponse),
+  nap: (s) => getNapHint(s as NapResponse),
+  preference: (s) => getPreferenceHint(s as PreferenceResponse),
+  twentynine: (s) => getTwentyNineHint(s as TwentyNineResponse),
+  courtpiece: (s) => getCourtPieceHint(s as CourtPieceResponse),
+  bezique: (s) => getBeziqueHint(s as BeziqueResponse),
+  ecarte: (s) => getEcarteHint(s as EcarteResponse),
+  threecardbrag: (s) => getThreeCardBragHint(s as ThreeCardBragResponse),
+  teenpatti: (s) => getTeenPattiHint(s as TeenPattiResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

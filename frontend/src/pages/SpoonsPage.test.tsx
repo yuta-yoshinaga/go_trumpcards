@@ -1,0 +1,180 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { spoonsApi } from '../api/gameApi';
+import { renderWithProviders } from '../test/renderWithProviders';
+import type { SpoonsPlayer, SpoonsResponse } from '../types/card';
+import { SpoonsPage } from './SpoonsPage';
+
+vi.mock('../api/gameApi', () => ({
+  spoonsApi: { exec: vi.fn() },
+  actionLogApi: { spoons: vi.fn() },
+}));
+
+const mockExec = vi.mocked(spoonsApi.exec);
+
+function makePlayer(overrides: Partial<SpoonsPlayer> = {}): SpoonsPlayer {
+  return {
+    name: 'CPU',
+    isHuman: false,
+    handSize: 4,
+    hand: [],
+    letters: 0,
+    eliminated: false,
+    hasSpoon: false,
+    ...overrides,
+  };
+}
+
+function makeState(overrides: Partial<SpoonsResponse> = {}): SpoonsResponse {
+  return {
+    phase: 0,
+    gameEndFlag: false,
+    winnerIdx: -1,
+    currentPlayerIdx: 0,
+    feederIdx: 0,
+    isHumanTurn: true,
+    spoonsRemaining: 3,
+    grabWindowOpen: false,
+    firstGrabberIdx: -1,
+    roundLoserIdx: -1,
+    roundNumber: 1,
+    drawPileSize: 36,
+    cpuDifficulty: 1,
+    message: '',
+    players: [
+      makePlayer({
+        name: 'You',
+        isHuman: true,
+        hand: [
+          { design: 'SPADE', value: 1 },
+          { design: 'HEART', value: 2 },
+          { design: 'CLOVER', value: 3 },
+          { design: 'DIAMOND', value: 4 },
+        ],
+      }),
+      makePlayer(),
+      makePlayer(),
+      makePlayer(),
+    ],
+    ...overrides,
+  };
+}
+
+const passState = makeState();
+const grabState = makeState({ phase: 1, grabWindowOpen: true });
+const roundEndState = makeState({ phase: 2, roundLoserIdx: 1, isHumanTurn: false });
+const gameEndState = makeState({ phase: 3, gameEndFlag: true, winnerIdx: 0, isHumanTurn: false });
+
+beforeEach(() => {
+  mockExec.mockReset();
+  mockExec.mockResolvedValue(passState);
+});
+
+describe('SpoonsPage', () => {
+  it('renders skeleton when no state', () => {
+    mockExec.mockReturnValue(new Promise(() => undefined));
+    renderWithProviders(<SpoonsPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('calls reset on mount', async () => {
+    renderWithProviders(<SpoonsPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('shows round, spoons remaining and draw pile info', async () => {
+    renderWithProviders(<SpoonsPage />);
+    await waitFor(() => expect(screen.getByText(/ラウンド 1/)).toBeInTheDocument());
+    expect(screen.getByText(/残りスプーン: 3/)).toBeInTheDocument();
+    expect(screen.getByText(/山札: 36/)).toBeInTheDocument();
+  });
+
+  it('renders the human hand as pass buttons on the human pass turn', async () => {
+    renderWithProviders(<SpoonsPage />);
+    await waitFor(() => expect(screen.getAllByRole('button', { name: '渡す' }).length).toBe(4));
+  });
+
+  it('dispatches pass with the clicked card index', async () => {
+    renderWithProviders(<SpoonsPage />);
+    const buttons = await screen.findAllByRole('button', { name: '渡す' });
+    mockExec.mockClear();
+    fireEvent.click(buttons[2]);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pass', { cardIndex: 2 }));
+  });
+
+  it('does not render pass buttons when it is not the human turn', async () => {
+    mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1, isHumanTurn: false }));
+    renderWithProviders(<SpoonsPage />);
+    await waitFor(() => expect(screen.getByText(/プレイヤー/)).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: '渡す' })).not.toBeInTheDocument();
+  });
+
+  it('shows the grab button when the grab window is open and dispatches grab', async () => {
+    mockExec.mockResolvedValue(grabState);
+    renderWithProviders(<SpoonsPage />);
+    const btn = await screen.findByRole('button', { name: 'スプーンを取る！' });
+    mockExec.mockClear();
+    fireEvent.click(btn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('grab'));
+  });
+
+  it('hides the grab button when the grab window is closed', async () => {
+    renderWithProviders(<SpoonsPage />);
+    await waitFor(() => expect(screen.getByText(/プレイヤー/)).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'スプーンを取る！' })).not.toBeInTheDocument();
+  });
+
+  it('shows the next round button at round end and dispatches next', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<SpoonsPage />);
+    const btn = await screen.findByRole('button', { name: '次のラウンドへ' });
+    mockExec.mockClear();
+    fireEvent.click(btn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
+  });
+
+  it('shows the round loser at round end', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<SpoonsPage />);
+    await waitFor(() => expect(screen.getByText(/ラウンド結果/)).toBeInTheDocument());
+  });
+
+  it('shows the win message on game end when the human wins', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<SpoonsPage />);
+    await waitFor(() => expect(screen.getByText('あなたの勝利です！')).toBeInTheDocument());
+  });
+
+  it('renders player letters and eliminated badge', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          makePlayer({ name: 'You', isHuman: true, hand: [{ design: 'SPADE', value: 1 }] }),
+          makePlayer({ eliminated: true, letters: 6 }),
+          makePlayer({ hasSpoon: true }),
+          makePlayer(),
+        ],
+      }),
+    );
+    renderWithProviders(<SpoonsPage />);
+    await waitFor(() => expect(screen.getByText(/脱落/)).toBeInTheDocument());
+    expect(screen.getByText(/スプーン獲得/)).toBeInTheDocument();
+  });
+
+  it('changes CPU difficulty via the settings panel and resets', async () => {
+    renderWithProviders(<SpoonsPage />);
+    await waitFor(() => expect(screen.getByText(/プレイヤー/)).toBeInTheDocument());
+    mockExec.mockClear();
+    const select = screen.getByLabelText('CPU難易度');
+    fireEvent.change(select, { target: { value: '2' } });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 2 } }));
+  });
+
+  it('toggles the CLI terminal', async () => {
+    renderWithProviders(<SpoonsPage />);
+    await waitFor(() => expect(screen.getByText(/プレイヤー/)).toBeInTheDocument());
+    const toggle = screen.getByRole('button', { name: /CLI/i });
+    fireEvent.click(toggle);
+    await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
+  });
+});

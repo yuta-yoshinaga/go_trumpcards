@@ -1,0 +1,38 @@
+{
+  "you": "あなた",
+  "cpu": "CPU",
+  "empty": "（空き）",
+  "stopPoints": "stop {{n}}",
+  "reserve": "リザーブ {{n}}",
+  "waste": "廃札 {{n}}",
+  "hand": "手札 {{n}}",
+  "foundationsLabel": "ファウンデーション（A→K 同スート）",
+  "tableauLabel": "共有タブロー（交互色・降順）",
+  "srcReserve": "自リザーブ",
+  "srcWaste": "自廃札",
+  "srcOppReserve": "相手リザーブ",
+  "srcOppWaste": "相手廃札",
+  "srcTableau": "タブロー{{col}}",
+  "selectedSource": "選択中: {{src}}",
+  "pickSourceHint": "動かすカード（リザーブ/廃札/タブロー）を選んでください。",
+  "toFoundation": "ファウンデーションへ",
+  "cancelSelect": "選択解除",
+  "discard": "手札を捨てて手番終了",
+  "stop": "ストップ！",
+  "undo": "元に戻す",
+  "gameEnd": "ゲーム終了",
+  "phase": {
+    "playing": "プレイ中",
+    "gameEnd": "ゲーム終了"
+  },
+  "result": {
+    "humanWin": "ゲーム終了！ あなたの勝ち！",
+    "cpuWin": "ゲーム終了！ CPU の勝ち！",
+    "draw": "ゲーム終了！ 引き分け！"
+  },
+  "tutorial": {
+    "board": "上から、ファウンデーション（A→K 同スート昇順）、共有タブロー（交互色・降順）、そして両プレイヤーのリザーブ・廃札・手札です。",
+    "controls": "動かすカードを選び、ファウンデーションかタブロー列へ置きます。打つ手が無くなったら「手札を捨てて手番終了」。CPU が強制手を取りこぼしたら「ストップ！」で咎められます。",
+    "resetButton": "ゲームを最初からやり直すにはこのボタンを押します。"
+  }
+}

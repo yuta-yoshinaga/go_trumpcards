@@ -1,0 +1,123 @@
+//go:build !js || !wasm || casino
+
+package presenter
+
+import (
+	"strconv"
+	"strings"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
+)
+
+// threeCardBragPlayerStr returns the display string for a single player.
+func threeCardBragPlayerStr(g interfaces.ThreeCardBragGame, i int) string {
+	player := g.GetPlayer(i)
+	if player == nil {
+		return ""
+	}
+	reveal := g.IsShowdown()
+	showCards := player.GetIsHuman() || (reveal && !player.GetFolded())
+
+	var b strings.Builder
+	status := threeCardBragStatusStr(player)
+	marker := ""
+	if i == g.GetCurrentPlayerIdx() && !g.GetGameEndFlag() {
+		marker = i18n.T("threecardbrag.turnMarker")
+	}
+	b.WriteString(i18n.Tf("threecardbrag.playerLine",
+		"name", cuiPlayerName(player, i),
+		"chips", strconv.Itoa(player.GetChips()),
+		"bet", strconv.Itoa(player.GetRoundBet()),
+		"status", status,
+		"marker", marker,
+	))
+	b.WriteString("\n")
+	if showCards && player.GetCardsSize() > 0 {
+		line := cuiIndexedCardListStr(player)
+		if reveal && player.GetCardsSize() == domain.ThreeCardBragHandSize {
+			line += "  (" + i18n.T(threeCardBragHandName(player)) + ")"
+		}
+		b.WriteString(line + "\n")
+	}
+	return b.String()
+}
+
+// threeCardBragStatusStr returns the seen/folded/out status label for a player.
+func threeCardBragStatusStr(player *domain.ThreeCardBragPlayer) string {
+	switch {
+	case player.GetOut():
+		return i18n.T("threecardbrag.statusOut")
+	case player.GetFolded():
+		return i18n.T("threecardbrag.statusFolded")
+	case player.GetSeen():
+		return i18n.T("threecardbrag.statusSeen")
+	default:
+		return i18n.T("threecardbrag.statusBlind")
+	}
+}
+
+// ThreeCardBragCuiPresenter renders the Three Card Brag CUI view.
+type ThreeCardBragCuiPresenter struct{}
+
+// Output renders the current game state for the active locale.
+func (p *ThreeCardBragCuiPresenter) Output(g interfaces.ThreeCardBragGame, lastErr error) string {
+	return buildCuiOutput(i18n.T("threecardbrag.helpTitle"), func(b *strings.Builder) {
+		b.WriteString(i18n.Tf("threecardbrag.roundLine",
+			"round", strconv.Itoa(g.GetRoundNumber()),
+			"pot", strconv.Itoa(g.GetPot()),
+			"stake", strconv.Itoa(g.GetStake()),
+		) + "\n")
+
+		for i := 0; i < g.GetPlayerCnt(); i++ {
+			b.WriteString(threeCardBragPlayerStr(g, i))
+		}
+
+		b.WriteString("----------\n")
+
+		cuiErrorBlock(b, lastErr)
+
+		if g.GetGameEndFlag() {
+			banner := i18n.Tf("threecardbrag.gameEnd", "player", strconv.Itoa(g.GetMatchWinnerIdx()))
+			b.WriteString(color.Green(banner) + "\n")
+			return
+		}
+
+		switch g.GetPhase() {
+		case domain.ThreeCardBragPhaseBetting:
+			b.WriteString(i18n.T("threecardbrag.promptBetting") + "\n")
+			b.WriteString(i18n.T("threecardbrag.promptBettingHelp") + "\n")
+		case domain.ThreeCardBragPhaseShowdown:
+			b.WriteString(i18n.T("threecardbrag.promptShowdown") + "\n")
+		case domain.ThreeCardBragPhaseRoundEnd:
+			winner := g.GetRoundWinnerIdx()
+			b.WriteString(i18n.Tf("threecardbrag.promptRoundEnd", "player", strconv.Itoa(winner)) + "\n")
+			b.WriteString(i18n.T("threecardbrag.promptRoundEndHelp") + "\n")
+		}
+	})
+}
+
+// HintOutput emits the current hint.
+func (p *ThreeCardBragCuiPresenter) HintOutput(g interfaces.ThreeCardBragGame) string {
+	hint := g.GetHint()
+	if hint == nil {
+		return i18n.T("threecardbrag.hintNone") + "\n"
+	}
+	reason := hintReasonStr(hint.Reason, threeCardBragHintReasonKeys)
+	return color.Yellow(i18n.Tf("threecardbrag.hint", "action", hint.Action, "reason", reason)) + "\n"
+}
+
+// threeCardBragHintReasonKeys maps hint-reason identifiers to i18n keys.
+var threeCardBragHintReasonKeys = map[string]string{
+	"see_first":   "threecardbrag.hintReasonSeeFirst",
+	"strong_hand": "threecardbrag.hintReasonStrongHand",
+	"medium_hand": "threecardbrag.hintReasonMediumHand",
+	"weak_hand":   "threecardbrag.hintReasonWeakHand",
+}
+
+// ActionLogOutput emits the action-log transcript as plain text.
+func (p *ThreeCardBragCuiPresenter) ActionLogOutput(g interfaces.ThreeCardBragGame) string {
+	return actionLogOutputText(g)
+}

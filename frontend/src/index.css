@@ -54,6 +54,72 @@
   /* Sueca — Portuguese/Brazilian deep emerald with a gold lean, distinct from Mus's green. */
   --color-game-bg-sueca: #0f6b4f;
   --color-game-bg-sueca-dark: #0a4733;
+  /* Klaverjas — Dutch burnt-orange (Oranje), distinct from every felt and red game. */
+  --color-game-bg-klaverjas: #b3541e;
+  --color-game-bg-klaverjas-dark: #7a3813;
+  /* Manille — French/Belgian royal bleu (brighter & cooler than BLUE's navy). */
+  --color-game-bg-manille: #2451a8;
+  --color-game-bg-manille-dark: #18356f;
+  /* Mariáš — Czech/Slovak Bohemian-garnet crimson, distinct from Tute's brown-red and Klaverjas's orange. */
+  --color-game-bg-marias: #8c1c3a;
+  --color-game-bg-marias-dark: #5e1226;
+  /* Sedma — Czech/Slovak deep teal-pine, distinct from Sueca's lighter felt-green and every other game. */
+  --color-game-bg-sedma: #0d5c5c;
+  --color-game-bg-sedma-dark: #093e3e;
+  /* Solo Whist — British racing-green felt with a club-room navy undertone, distinct from every other felt. */
+  --color-game-bg-solowhist: #1f4d3a;
+  --color-game-bg-solowhist-dark: #143324;
+  /* Auction Forty-Fives — Irish/Canadian deep shamrock-on-amber, a warm bronze-gold felt distinct from Solo Whist's cool green and Spoil Five's vivid emerald. */
+  --color-game-bg-fortyfives: #8a5a16;
+  --color-game-bg-fortyfives-dark: #5c3a0d;
+  /* Knockout Whist — British pub-quiz royal-purple, distinct from every other felt (survival/elimination drama). */
+  --color-game-bg-knockoutwhist: #4a1d6e;
+  --color-game-bg-knockoutwhist-dark: #2f1247;
+  /* Spoil Five (Maw) — Irish shamrock vivid emerald-green, distinct from Solo Whist's muted forest felt and Préférence's teal. */
+  --color-game-bg-spoilfive: #0b6b3a;
+  --color-game-bg-spoilfive-dark: #064523;
+  /* Nap (Napoleon) — British gambling-parlour deep wine/burgundy, distinct from Solo Whist's green and every other felt. */
+  --color-game-bg-nap: #6e1f2e;
+  --color-game-bg-nap-dark: #47131e;
+  /* Préférence — imperial-Russian petrol/teal felt with a gilt undertone, distinct from every other felt (Austro-Russian salon game). */
+  --color-game-bg-preference: #14474a;
+  --color-game-bg-preference-dark: #0c2e30;
+  /* Twenty-Nine (29) — Indian/Bangladeshi marigold-saffron deepening to terracotta, a warm spice-orange felt distinct from Forty-Fives' bronze-gold and Nap's wine. */
+  --color-game-bg-twentynine: #b5651d;
+  --color-game-bg-twentynine-dark: #7a4212;
+  /* Court Piece (Rang) — a regal South-Asian indigo-violet "royal court" felt, distinct from Twenty-Nine's spice-orange and Preference's teal. */
+  --color-game-bg-courtpiece: #4b3f72;
+  --color-game-bg-courtpiece-dark: #2e2649;
+  /* Bezique — a deep romantic wine-burgundy felt evoking the classic ♠Q+♦J pairing, distinct from Court Piece's royal indigo. */
+  --color-game-bg-bezique: #5c1f33;
+  --color-game-bg-bezique-dark: #3a1320;
+  /* Écarté — a refined French café-green felt, distinct from Bezique's wine-burgundy and Court Piece's royal indigo. */
+  --color-game-bg-ecarte: #1f4d3a;
+  --color-game-bg-ecarte-dark: #133023;
+  /* Three Card Brag — a smoky slate-teal betting-parlour felt, distinct from Écarté's café-green and the poker greens. */
+  --color-game-bg-threecardbrag: #1c4a4d;
+  --color-game-bg-threecardbrag-dark: #112e30;
+  /* Teen Patti — a warm Indian saffron-spiced maroon felt, distinct from Three Card Brag's slate-teal. */
+  --color-game-bg-teenpatti: #5a2333;
+  --color-game-bg-teenpatti-dark: #3a141f;
+  /* Spoons — a lively party-table indigo-violet, distinct from the casino felts; evokes the fast hand-grab energy. */
+  --color-game-bg-spoons: #3a2e63;
+  --color-game-bg-spoons-dark: #241b40;
+  /* Kemps — a cooperative teal-green table evoking secret-signal teamwork, distinct from the casino felts. */
+  --color-game-bg-kemps: #1f4d4a;
+  --color-game-bg-kemps-dark: #133331;
+  /* Cuckoo — a warm earthy ranter-go-round amber-brown, evoking the candlelit fireside survival game, distinct from the casino felts. */
+  --color-game-bg-cuckoo: #5a3a1f;
+  --color-game-bg-cuckoo-dark: #3a2413;
+  /* Pişti — a deep Anatolian terracotta-red felt evoking the Turkish coffeehouse fishing game, distinct from the casino greens. */
+  --color-game-bg-pishti: #6b2f2a;
+  --color-game-bg-pishti-dark: #461d1a;
+  /* Cuarenta — a warm Andean ochre-gold felt evoking the Ecuadorian national capture game, distinct from the casino greens. */
+  --color-game-bg-cuarenta: #6b5320;
+  --color-game-bg-cuarenta-dark: #463614;
+  /* Faro — a deep saloon-burgundy felt evoking the 19th-century American banking game, distinct from the casino greens. */
+  --color-game-bg-faro: #5e1f33;
+  --color-game-bg-faro-dark: #3e1322;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;

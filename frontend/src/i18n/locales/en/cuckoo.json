@@ -1,0 +1,46 @@
+{
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "round": "Round {{n}}",
+  "dealer": "Dealer",
+  "stock": "Stock: {{count}}",
+  "playersTitle": "Players",
+  "lives": "Lives",
+  "eliminated": "Out",
+  "kingRevealed": "King revealed",
+  "yourCard": "Your card",
+  "hidden": "?",
+  "turnNotice": "Your turn — keep your card or swap with your neighbour.",
+  "keepButton": "Keep",
+  "swapButton": "Swap",
+  "swapDealerButton": "Swap with stock",
+  "refuseNotice": "Someone is trying to swap with you.",
+  "refuseButton": "Refuse (reveal K)",
+  "acceptButton": "Accept",
+  "nextRound": "Next round",
+  "roundLoser": "{{name}} held the lowest card and lost a life.",
+  "roundLosersTitle": "This round's losers",
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU difficulty",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard",
+    "initialLives": "Initial lives"
+  },
+  "phase": {
+    "turn": "Turn",
+    "refuse": "Refuse",
+    "roundEnd": "Round end",
+    "gameEnd": "Game over"
+  },
+  "win": "You win!",
+  "lose": "{{name}} wins.",
+  "tutorial": {
+    "info": "The round number, dealer, and stock size are shown here.",
+    "players": "Each player's lives (♥) plus their eliminated / current-turn status. Be the last one standing.",
+    "card": "Your card. If you hold the lowest card you lose a life.",
+    "actions": "On your turn, choose Keep or Swap. If you hold a King you can Refuse an incoming swap.",
+    "resetButton": "Use this button to reset the game at any time."
+  }
+}

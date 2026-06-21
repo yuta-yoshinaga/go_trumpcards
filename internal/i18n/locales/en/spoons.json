@@ -1,0 +1,23 @@
+{
+  "helpTitle": "Spoons (スプーン)",
+  "helpPass": "  p <n>, pass <n>      pass hand card n to the next player",
+  "helpGrab": "  g, grab              grab a spoon",
+  "helpNext": "  n, next              advance to the next round",
+  "helpSetDifficulty": "  sd <n>               set CPU difficulty (0=Easy, 1=Normal, 2=Hard) and reset",
+  "labelHuman": "You",
+  "labelCpu": "CPU",
+  "roundLine": "Round {{round}}  Spoons left: {{spoons}}",
+  "lettersLabel": "[{{letters}}]",
+  "hasSpoon": "got a spoon",
+  "playerEliminated": "{{name}}: eliminated (SPOONS)",
+  "cpuHandLine": "{{name}}: {{count}} cards",
+  "promptPass": "Your turn. Use p <n> to choose a card to pass.",
+  "promptCpuTurn": "CPUs are passing cards...",
+  "promptGrab": "Someone got four of a kind! Use g (grab) to grab a spoon!",
+  "promptNextRound": "Round over. Use n (next) to start the next round.",
+  "roundLoser": "{{name}} failed to grab a spoon and took a letter",
+  "winHuman": "You win!",
+  "winCpu": "{{name}} wins...",
+  "result.humanWin": "You win!",
+  "result.cpuWin": "CPU wins..."
+}

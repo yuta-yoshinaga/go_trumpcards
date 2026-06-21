@@ -279,4 +279,168 @@ func init() {
 			return usecase.RestoreTrucoInteractor(data, new(presenter.TrucoWebPresenter))
 		},
 		controller.NewTrucoWebControllerWithProvider)
+	games.RegisterKVGame("klaverjas", games.CategoryClassic,
+		func() usecase.KlaverjasInteractorIF {
+			return usecase.NewKlaverjasInteractor(domain.NewDefaultKlaverjas(), new(presenter.KlaverjasWebPresenter))
+		},
+		func(data []byte) (usecase.KlaverjasInteractorIF, error) {
+			return usecase.RestoreKlaverjasInteractor(data, new(presenter.KlaverjasWebPresenter))
+		},
+		controller.NewKlaverjasWebControllerWithProvider)
+	games.RegisterKVGame("manille", games.CategoryClassic,
+		func() usecase.ManilleInteractorIF {
+			return usecase.NewManilleInteractor(domain.NewDefaultManille(), new(presenter.ManilleWebPresenter))
+		},
+		func(data []byte) (usecase.ManilleInteractorIF, error) {
+			return usecase.RestoreManilleInteractor(data, new(presenter.ManilleWebPresenter))
+		},
+		controller.NewManilleWebControllerWithProvider)
+	games.RegisterKVGame("marias", games.CategoryClassic,
+		func() usecase.MariasInteractorIF {
+			return usecase.NewMariasInteractor(domain.NewDefaultMarias(), new(presenter.MariasWebPresenter))
+		},
+		func(data []byte) (usecase.MariasInteractorIF, error) {
+			return usecase.RestoreMariasInteractor(data, new(presenter.MariasWebPresenter))
+		},
+		controller.NewMariasWebControllerWithProvider)
+	games.RegisterKVGame("sedma", games.CategoryClassic,
+		func() usecase.SedmaInteractorIF {
+			return usecase.NewSedmaInteractor(domain.NewDefaultSedma(), new(presenter.SedmaWebPresenter))
+		},
+		func(data []byte) (usecase.SedmaInteractorIF, error) {
+			return usecase.RestoreSedmaInteractor(data, new(presenter.SedmaWebPresenter))
+		},
+		controller.NewSedmaWebControllerWithProvider)
+	games.RegisterKVGame("solowhist", games.CategoryClassic,
+		func() usecase.SoloWhistInteractorIF {
+			return usecase.NewSoloWhistInteractor(domain.NewDefaultSoloWhist(), new(presenter.SoloWhistWebPresenter))
+		},
+		func(data []byte) (usecase.SoloWhistInteractorIF, error) {
+			return usecase.RestoreSoloWhistInteractor(data, new(presenter.SoloWhistWebPresenter))
+		},
+		controller.NewSoloWhistWebControllerWithProvider)
+	games.RegisterKVGame("knockoutwhist", games.CategoryClassic,
+		func() usecase.KnockoutWhistInteractorIF {
+			return usecase.NewKnockoutWhistInteractor(domain.NewDefaultKnockoutWhist(), new(presenter.KnockoutWhistWebPresenter))
+		},
+		func(data []byte) (usecase.KnockoutWhistInteractorIF, error) {
+			return usecase.RestoreKnockoutWhistInteractor(data, new(presenter.KnockoutWhistWebPresenter))
+		},
+		controller.NewKnockoutWhistWebControllerWithProvider)
+	games.RegisterKVGame("nap", games.CategoryClassic,
+		func() usecase.NapInteractorIF {
+			return usecase.NewNapInteractor(domain.NewDefaultNap(), new(presenter.NapWebPresenter))
+		},
+		func(data []byte) (usecase.NapInteractorIF, error) {
+			return usecase.RestoreNapInteractor(data, new(presenter.NapWebPresenter))
+		},
+		controller.NewNapWebControllerWithProvider)
+	games.RegisterKVGame("preference", games.CategoryClassic,
+		func() usecase.PreferenceInteractorIF {
+			return usecase.NewPreferenceInteractor(domain.NewDefaultPreference(), new(presenter.PreferenceWebPresenter))
+		},
+		func(data []byte) (usecase.PreferenceInteractorIF, error) {
+			return usecase.RestorePreferenceInteractor(data, new(presenter.PreferenceWebPresenter))
+		},
+		controller.NewPreferenceWebControllerWithProvider)
+	games.RegisterKVGame("spoilfive", games.CategoryClassic,
+		func() usecase.SpoilFiveInteractorIF {
+			return usecase.NewSpoilFiveInteractor(domain.NewDefaultSpoilFive(), new(presenter.SpoilFiveWebPresenter))
+		},
+		func(data []byte) (usecase.SpoilFiveInteractorIF, error) {
+			return usecase.RestoreSpoilFiveInteractor(data, new(presenter.SpoilFiveWebPresenter))
+		},
+		controller.NewSpoilFiveWebControllerWithProvider)
+	games.RegisterKVGame("doudizhu", games.CategoryClassic,
+		func() usecase.DoudizhuInteractorIF {
+			return usecase.NewDoudizhuInteractor(domain.NewDefaultDoudizhu(), new(presenter.DoudizhuWebPresenter))
+		},
+		func(data []byte) (usecase.DoudizhuInteractorIF, error) {
+			return usecase.RestoreDoudizhuInteractor(data, new(presenter.DoudizhuWebPresenter))
+		},
+		controller.NewDoudizhuWebControllerWithProvider)
+	games.RegisterKVGame("tichu", games.CategoryClassic,
+		func() usecase.TichuInteractorIF {
+			return usecase.NewTichuInteractor(domain.NewDefaultTichu(), new(presenter.TichuWebPresenter))
+		},
+		func(data []byte) (usecase.TichuInteractorIF, error) {
+			return usecase.RestoreTichuInteractor(data, new(presenter.TichuWebPresenter))
+		},
+		controller.NewTichuWebControllerWithProvider)
+	games.RegisterKVGame("scopa", games.CategoryClassic,
+		func() usecase.ScopaInteractorIF {
+			return usecase.NewScopaInteractor(domain.NewDefaultScopa(), new(presenter.ScopaWebPresenter))
+		},
+		func(data []byte) (usecase.ScopaInteractorIF, error) {
+			return usecase.RestoreScopaInteractor(data, new(presenter.ScopaWebPresenter))
+		},
+		controller.NewScopaWebControllerWithProvider)
+	games.RegisterKVGame("bezique", games.CategoryClassic,
+		func() usecase.BeziqueInteractorIF {
+			return usecase.NewBeziqueInteractor(domain.NewDefaultBezique(), new(presenter.BeziqueWebPresenter))
+		},
+		func(data []byte) (usecase.BeziqueInteractorIF, error) {
+			return usecase.RestoreBeziqueInteractor(data, new(presenter.BeziqueWebPresenter))
+		},
+		controller.NewBeziqueWebControllerWithProvider)
+	games.RegisterKVGame("scopone", games.CategoryClassic,
+		func() usecase.ScoponeInteractorIF {
+			return usecase.NewScoponeInteractor(domain.NewDefaultScopone(), new(presenter.ScoponeWebPresenter))
+		},
+		func(data []byte) (usecase.ScoponeInteractorIF, error) {
+			return usecase.RestoreScoponeInteractor(data, new(presenter.ScoponeWebPresenter))
+		},
+		controller.NewScoponeWebControllerWithProvider)
+	games.RegisterKVGame("escoba", games.CategoryClassic,
+		func() usecase.EscobaInteractorIF {
+			return usecase.NewEscobaInteractor(domain.NewDefaultEscoba(), new(presenter.EscobaWebPresenter))
+		},
+		func(data []byte) (usecase.EscobaInteractorIF, error) {
+			return usecase.RestoreEscobaInteractor(data, new(presenter.EscobaWebPresenter))
+		},
+		controller.NewEscobaWebControllerWithProvider)
+	games.RegisterKVGame("cuckoo", games.CategoryClassic,
+		func() usecase.CuckooInteractorIF {
+			return usecase.NewCuckooInteractor(domain.NewDefaultCuckoo(), new(presenter.CuckooWebPresenter))
+		},
+		func(data []byte) (usecase.CuckooInteractorIF, error) {
+			return usecase.RestoreCuckooInteractor(data, new(presenter.CuckooWebPresenter))
+		},
+		controller.NewCuckooWebControllerWithProvider)
+	games.RegisterKVGame("spoons", games.CategoryClassic,
+		func() usecase.SpoonsInteractorIF {
+			return usecase.NewSpoonsInteractor(domain.NewDefaultSpoons(), new(presenter.SpoonsWebPresenter))
+		},
+		func(data []byte) (usecase.SpoonsInteractorIF, error) {
+			return usecase.RestoreSpoonsInteractor(data, new(presenter.SpoonsWebPresenter))
+		},
+		controller.NewSpoonsWebControllerWithProvider)
+
+	games.RegisterKVGame("labellelucie", games.CategoryClassic,
+		func() usecase.LaBelleLucieInteractorIF {
+			return usecase.NewLaBelleLucieInteractor(domain.NewDefaultLaBelleLucie(), new(presenter.LaBelleLucieWebPresenter))
+		},
+		func(data []byte) (usecase.LaBelleLucieInteractorIF, error) {
+			return usecase.RestoreLaBelleLucieInteractor(data, new(presenter.LaBelleLucieWebPresenter))
+		},
+		controller.NewLaBelleLucieWebControllerWithProvider)
+
+	games.RegisterKVGame("simplesimon", games.CategoryClassic,
+		func() usecase.SimpleSimonInteractorIF {
+			return usecase.NewSimpleSimonInteractor(domain.NewDefaultSimpleSimon(), new(presenter.SimpleSimonWebPresenter))
+		},
+		func(data []byte) (usecase.SimpleSimonInteractorIF, error) {
+			return usecase.RestoreSimpleSimonInteractor(data, new(presenter.SimpleSimonWebPresenter))
+		},
+		controller.NewSimpleSimonWebControllerWithProvider)
+
+	games.RegisterKVGame("doubleklondike", games.CategoryClassic,
+		func() usecase.DoubleKlondikeInteractorIF {
+			return usecase.NewDoubleKlondikeInteractor(domain.NewDefaultDoubleKlondike(), new(presenter.DoubleKlondikeWebPresenter))
+		},
+		func(data []byte) (usecase.DoubleKlondikeInteractorIF, error) {
+			return usecase.RestoreDoubleKlondikeInteractor(data, new(presenter.DoubleKlondikeWebPresenter))
+		},
+		controller.NewDoubleKlondikeWebControllerWithProvider)
+
 }

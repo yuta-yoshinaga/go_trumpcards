@@ -1,0 +1,51 @@
+{
+  "phase": {
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetPoints": "目標ポイント",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "trick": "トリック {{n}}",
+  "cards": "{{count}}枚",
+  "tricks": "{{count}}トリック",
+  "currentTrick": "現在のトリック",
+  "players": "プレイヤー",
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "yourTeam": "あなたのチーム",
+  "team": {
+    "a": "チームA",
+    "b": "チームB"
+  },
+  "teamScore": "{{team}}: {{score}}点",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド",
+  "roundResult": {
+    "title": "ラウンド結果",
+    "teamA": "チームAのカード点: {{points}}",
+    "teamB": "チームBのカード点: {{points}}"
+  },
+  "hintAvailable": "ヒント",
+  "hint": {
+    "lead_low": "低い札でリードして温存することを推奨",
+    "capture": "同ランクまたは7で得点のあるトリックを奪取する",
+    "discard_low": "取れない／取る価値がないので低い札を捨てる"
+  },
+  "tutorial": {
+    "trickDisplay": "現在のトリックです。セドマに切り札はなく、フォローの義務もありません。どのカードでも自由に出せます。",
+    "playerHand": "あなたの手札です。出したいカードをクリックして選びます。",
+    "playButton": "カードを選んだら、このボタンで出します。リードと同じランク、または7（ワイルド）を出すとそのトリックを奪取でき、最後に奪取したプレイヤーがトリックを取ります。",
+    "info": "A（エース）と10はそれぞれ10点、最後（8番目）のトリックを取ったチームに+10点。チームA(席0・2)対チームB(席1・3)でカード点を奪い合い、先に目標ポイント(初期値101・ラウンド累積)へ達したチームの勝ちです。7を温存して得点の多いトリックを奪うのが定石です。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}

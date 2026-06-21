@@ -1,0 +1,51 @@
+{
+  "phase": {
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetPoints": "Target Points",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "currentTrick": "Current Trick",
+  "players": "Players",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "yourTeam": "Your Team",
+  "team": {
+    "a": "Team A",
+    "b": "Team B"
+  },
+  "teamScore": "{{team}}: {{score}} pts",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "roundResult": {
+    "title": "Round Result",
+    "teamA": "Team A card points: {{points}}",
+    "teamB": "Team B card points: {{points}}"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "lead_low": "Lead a low card to conserve points",
+    "capture": "Capture a point-rich trick with a rank match or a 7",
+    "discard_low": "Cannot/should not win — discard a low card"
+  },
+  "tutorial": {
+    "trickDisplay": "This is the current trick. Sedma has no trump suit and no follow obligation — you may play any card you like.",
+    "playerHand": "This is your hand. Click any card to select it.",
+    "playButton": "Once a card is selected, play it with this button. A card captures the trick when its rank matches the lead card or it is a 7 (wild); the last player to capture wins the trick.",
+    "info": "Each Ace and each 10 is worth 10 points, and the team that takes the last (8th) trick scores +10. Team A (seats 0 & 2) vs Team B (seats 1 & 3) fight over card points; the first team to reach the target (default 101, cumulative across rounds) wins. Hoard your 7s to steal point-rich tricks.",
+    "resetButton": "Use the reset button to start a new game."
+  }
+}

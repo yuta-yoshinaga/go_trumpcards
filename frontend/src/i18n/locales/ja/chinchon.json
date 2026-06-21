@@ -1,0 +1,55 @@
+{
+  "phase": {
+    "draw": "ドロー",
+    "discard": "ディスカード",
+    "layoff": "レイオフ",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "playerCount": "プレイヤー人数",
+    "eliminationLimit": "脱落点数",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "drawPile": "山札: {{count}}枚",
+  "discardTop": "捨て札",
+  "cards": "{{count}}枚",
+  "cumulativeScore": "累計: {{score}}",
+  "roundScore": "ラウンド: {{score}}",
+  "eliminated": "脱落",
+  "scores": "スコア",
+  "scoresPlayer": "プレイヤー",
+  "scoresRound": "ラウンド",
+  "scoresTotal": "累計",
+  "drawStockButton": "山札から引く",
+  "drawDiscardButton": "捨て札から引く",
+  "discardButton": "捨てる",
+  "knockButton": "ノック",
+  "deadwoodLabel": "デッドウッド: {{score}}点（ノック上限 {{threshold}}）",
+  "layoffButton": "レイオフ",
+  "skipLayoffButton": "スキップ",
+  "nextRound": "次のラウンド",
+  "drawPhase": "山札または捨て札から1枚引いてください",
+  "discardPhase": "手札から1枚捨てるか、その1枚を捨ててノックしてください",
+  "layoffPhase": "ノッカーのメルドにカードをレイオフできます",
+  "roundEnd": "ラウンド終了",
+  "knockerMelds": "ノッカーのメルド",
+  "chinchon": "チンチョン！",
+  "result": {
+    "humanWin": "あなたの勝利！",
+    "cpuWin": "CPU {{cpuId}} の勝利！"
+  },
+  "tutorial": {
+    "drawArea": "山札または捨て札から1枚引きます。",
+    "playerHand": "あなたの手札です。メルド（同ランク3枚以上、または同スート3枚以上の連番）を作りましょう。",
+    "discardButton": "不要なカードを1枚捨てます。",
+    "knockButton": "デッドウッドが上限以下なら、捨てるカードを選んでノックできます。",
+    "scoreTable": "各プレイヤーのスコアが表示されます。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}

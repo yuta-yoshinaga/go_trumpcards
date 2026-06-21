@@ -1,0 +1,9 @@
+{
+  "helpTitle": "Black Hole",
+  "helpMove": "  m <fan>              play fan <fan> top into the black hole",
+  "helpUndo": "  u / undo             undo the last move",
+  "helpGiveUp": "  g / giveup           give up",
+  "blackHoleLabel": "Black Hole:",
+  "fanLabel": "Fan {{idx}}:",
+  "hintLine": "[HINT: fan {{fan}} can be played]"
+}

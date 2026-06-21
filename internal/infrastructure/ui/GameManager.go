@@ -2198,6 +2198,637 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"sueca.helpSetDifficulty"},
 			})
 	}},
+	{Name: "fortyfives", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewFortyFivesCuiController(usecase.NewFortyFivesInteractor(
+				domain.NewDefaultFortyFives(), new(presenter.FortyFivesCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "fortyfives.helpTitle",
+				CommandKeys: []string{
+					"fortyfives.helpBid",
+					"fortyfives.helpPass",
+					"fortyfives.helpPlay",
+					"fortyfives.helpNext",
+					"fortyfives.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"fortyfives.helpSetDifficulty"},
+			})
+	}},
+	{Name: "twentynine", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewTwentyNineCuiController(usecase.NewTwentyNineInteractor(
+				domain.NewDefaultTwentyNine(), new(presenter.TwentyNineCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "twentynine.helpTitle",
+				CommandKeys: []string{
+					"twentynine.helpBid",
+					"twentynine.helpPass",
+					"twentynine.helpPlay",
+					"twentynine.helpNext",
+					"twentynine.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"twentynine.helpSetDifficulty"},
+			})
+	}},
+	{Name: "klaverjas", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewKlaverjasCuiController(usecase.NewKlaverjasInteractor(
+				domain.NewDefaultKlaverjas(), new(presenter.KlaverjasCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "klaverjas.helpTitle",
+				CommandKeys: []string{
+					"klaverjas.helpPlay",
+					"klaverjas.helpNext",
+					"klaverjas.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"klaverjas.helpSetDifficulty"},
+			})
+	}},
+	{Name: "manille", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewManilleCuiController(usecase.NewManilleInteractor(
+				domain.NewDefaultManille(), new(presenter.ManilleCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "manille.helpTitle",
+				CommandKeys: []string{
+					"manille.helpPlay",
+					"manille.helpNext",
+					"manille.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"manille.helpSetDifficulty"},
+			})
+	}},
+	{Name: "marias", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewMariasCuiController(usecase.NewMariasInteractor(
+				domain.NewDefaultMarias(), new(presenter.MariasCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "marias.helpTitle",
+				CommandKeys: []string{
+					"marias.helpPlay",
+					"marias.helpNext",
+					"marias.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"marias.helpSetDifficulty"},
+			})
+	}},
+	{Name: "sedma", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSedmaCuiController(usecase.NewSedmaInteractor(
+				domain.NewDefaultSedma(), new(presenter.SedmaCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "sedma.helpTitle",
+				CommandKeys: []string{
+					"sedma.helpPlay",
+					"sedma.helpNext",
+					"sedma.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"sedma.helpSetDifficulty"},
+			})
+	}},
+	{Name: "solowhist", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSoloWhistCuiController(usecase.NewSoloWhistInteractor(
+				domain.NewDefaultSoloWhist(), new(presenter.SoloWhistCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "solowhist.helpTitle",
+				CommandKeys: []string{
+					"solowhist.helpBid",
+					"solowhist.helpPass",
+					"solowhist.helpPlay",
+					"solowhist.helpNext",
+					"solowhist.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"solowhist.helpSetDifficulty"},
+			})
+	}},
+	{Name: "knockoutwhist", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewKnockoutWhistCuiController(usecase.NewKnockoutWhistInteractor(
+				domain.NewDefaultKnockoutWhist(), new(presenter.KnockoutWhistCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "knockoutwhist.helpTitle",
+				CommandKeys: []string{
+					"knockoutwhist.helpPlay",
+					"knockoutwhist.helpNext",
+					"knockoutwhist.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"knockoutwhist.helpSetDifficulty"},
+			})
+	}},
+	{Name: "nap", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewNapCuiController(usecase.NewNapInteractor(
+				domain.NewDefaultNap(), new(presenter.NapCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "nap.helpTitle",
+				CommandKeys: []string{
+					"nap.helpBid",
+					"nap.helpPass",
+					"nap.helpPlay",
+					"nap.helpNext",
+					"nap.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"nap.helpSetDifficulty"},
+			})
+	}},
+	{Name: "preference", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPreferenceCuiController(usecase.NewPreferenceInteractor(
+				domain.NewDefaultPreference(), new(presenter.PreferenceCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "preference.helpTitle",
+				CommandKeys: []string{
+					"preference.helpBid",
+					"preference.helpPass",
+					"preference.helpPlay",
+					"preference.helpNext",
+					"preference.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"preference.helpSetDifficulty"},
+			})
+	}},
+	{Name: "spoilfive", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSpoilFiveCuiController(usecase.NewSpoilFiveInteractor(
+				domain.NewDefaultSpoilFive(), new(presenter.SpoilFiveCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "spoilfive.helpTitle",
+				CommandKeys: []string{
+					"spoilfive.helpPlay",
+					"spoilfive.helpNext",
+					"spoilfive.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"spoilfive.helpSetDifficulty"},
+			})
+	}},
+	{Name: "courtpiece", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCourtPieceCuiController(usecase.NewCourtPieceInteractor(
+				domain.NewDefaultCourtPiece(), new(presenter.CourtPieceCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "courtpiece.helpTitle",
+				CommandKeys: []string{
+					"courtpiece.helpTrump",
+					"courtpiece.helpPlay",
+					"courtpiece.helpNext",
+					"courtpiece.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"courtpiece.helpSetDifficulty"},
+			})
+	}},
+	{Name: "bezique", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBeziqueCuiController(usecase.NewBeziqueInteractor(
+				domain.NewDefaultBezique(), new(presenter.BeziqueCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "bezique.helpTitle",
+				CommandKeys: []string{
+					"bezique.helpPlay",
+					"bezique.helpMeld",
+					"bezique.helpSkip",
+					"bezique.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"bezique.helpSetDifficulty"},
+			})
+	}},
+	{Name: "ecarte", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewEcarteCuiController(usecase.NewEcarteInteractor(
+				domain.NewDefaultEcarte(), new(presenter.EcarteCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "ecarte.helpTitle",
+				CommandKeys: []string{
+					"ecarte.helpPropose",
+					"ecarte.helpStand",
+					"ecarte.helpDiscard",
+					"ecarte.helpPlay",
+					"ecarte.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"ecarte.helpSetDifficulty"},
+			})
+	}},
+	{Name: "threecardbrag", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewThreeCardBragCuiController(usecase.NewThreeCardBragInteractor(
+				domain.NewDefaultThreeCardBrag(), new(presenter.ThreeCardBragCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "threecardbrag.helpTitle",
+				CommandKeys: []string{
+					"threecardbrag.helpSee",
+					"threecardbrag.helpBet",
+					"threecardbrag.helpRaise",
+					"threecardbrag.helpFold",
+					"threecardbrag.helpShow",
+					"threecardbrag.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"threecardbrag.helpSetDifficulty"},
+			})
+	}},
+	{Name: "teenpatti", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewTeenPattiCuiController(usecase.NewTeenPattiInteractor(
+				domain.NewDefaultTeenPatti(), new(presenter.TeenPattiCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "teenpatti.helpTitle",
+				CommandKeys: []string{
+					"teenpatti.helpSee",
+					"teenpatti.helpBet",
+					"teenpatti.helpRaise",
+					"teenpatti.helpFold",
+					"teenpatti.helpShow",
+					"teenpatti.helpSideShow",
+					"teenpatti.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"teenpatti.helpSetDifficulty"},
+			})
+	}},
+	{Name: "scopone", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewScoponeCuiController(usecase.NewScoponeInteractor(
+				domain.NewDefaultScopone(), new(presenter.ScoponeCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "scopone.helpTitle",
+				CommandKeys: []string{
+					"scopone.helpPlay",
+					"scopone.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"scopone.helpSetDifficulty"},
+			})
+	}},
+	{Name: "escoba", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewEscobaCuiController(usecase.NewEscobaInteractor(
+				domain.NewDefaultEscoba(), new(presenter.EscobaCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "escoba.helpTitle",
+				CommandKeys: []string{
+					"escoba.helpPlay",
+					"escoba.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"escoba.helpSetDifficulty"},
+			})
+	}},
+	{Name: "handandfoot", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewHandAndFootCuiController(usecase.NewHandAndFootInteractor(
+				domain.NewDefaultHandAndFoot(), new(presenter.HandAndFootCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "handandfoot.helpTitle",
+				CommandKeys: []string{
+					"handandfoot.helpDrawStock",
+					"handandfoot.helpDrawDiscard",
+					"handandfoot.helpMeld",
+					"handandfoot.helpSkipMeld",
+					"handandfoot.helpDiscard",
+					"handandfoot.helpGoOut",
+					"handandfoot.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys: []string{
+					"handandfoot.helpSetDifficulty",
+					"handandfoot.helpSetLimit",
+				},
+			})
+	}},
+	{Name: "conquian", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewConquianCuiController(usecase.NewConquianInteractor(
+				domain.NewDefaultConquian(), new(presenter.ConquianCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "conquian.helpTitle",
+				CommandKeys: []string{
+					"conquian.helpDrawStock",
+					"conquian.helpDrawDiscard",
+					"conquian.helpMeld",
+					"conquian.helpDiscard",
+					"conquian.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys: []string{
+					"conquian.helpSetDifficulty",
+					"conquian.helpSetWins",
+				},
+			})
+	}},
+	{Name: "chinchon", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewChinchonCuiController(usecase.NewChinchonInteractor(
+				domain.NewDefaultChinchon(), new(presenter.ChinchonCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "chinchon.helpTitle",
+				CommandKeys: []string{
+					"chinchon.helpDrawStock",
+					"chinchon.helpDrawDiscard",
+					"chinchon.helpDiscard",
+					"chinchon.helpKnock",
+					"chinchon.helpLayoff",
+					"chinchon.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys: []string{
+					"chinchon.helpSetDifficulty",
+					"chinchon.helpSetPlayers",
+				},
+			})
+	}},
+	{Name: "kalooki", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewKalookiCuiController(usecase.NewKalookiInteractor(
+				domain.NewDefaultKalooki(), new(presenter.KalookiCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "kalooki.helpTitle",
+				CommandKeys: []string{
+					"kalooki.helpDrawStock",
+					"kalooki.helpDrawDiscard",
+					"kalooki.helpMeld",
+					"kalooki.helpLayoff",
+					"kalooki.helpDiscard",
+					"kalooki.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys: []string{
+					"kalooki.helpSetDifficulty",
+					"kalooki.helpSetPlayers",
+					"kalooki.helpSetThreshold",
+				},
+			})
+	}},
+	{Name: "threethirteen", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewThreeThirteenCuiController(usecase.NewThreeThirteenInteractor(
+				domain.NewDefaultThreeThirteen(), new(presenter.ThreeThirteenCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "threethirteen.helpTitle",
+				CommandKeys: []string{
+					"threethirteen.helpDrawStock",
+					"threethirteen.helpDrawDiscard",
+					"threethirteen.helpDiscard",
+					"threethirteen.helpKnock",
+					"threethirteen.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys: []string{
+					"threethirteen.helpSetDifficulty",
+					"threethirteen.helpSetPlayers",
+				},
+			})
+	}},
+	{Name: "mao", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewMaoCuiController(usecase.NewMaoInteractor(
+				domain.NewDefaultMao(), new(presenter.MaoCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "mao.helpTitle",
+				CommandKeys: []string{
+					"mao.helpPlay",
+					"mao.helpDraw",
+					"mao.helpSuit",
+					"mao.helpDeclare",
+					"mao.helpDeclareWord",
+					"mao.helpSkipDeclare",
+					"mao.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys: []string{
+					"mao.helpSetDifficulty",
+					"mao.helpSetLimit",
+				},
+			})
+	}},
+	{Name: "spoons", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSpoonsCuiController(usecase.NewSpoonsInteractor(
+				domain.NewDefaultSpoons(), new(presenter.SpoonsCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "spoons.helpTitle",
+				CommandKeys: []string{
+					"spoons.helpPass",
+					"spoons.helpGrab",
+					"spoons.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+			})
+	}},
+	{Name: "kemps", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewKempsCuiController(usecase.NewKempsInteractor(
+				domain.NewDefaultKemps(), new(presenter.KempsCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "kemps.helpTitle",
+				CommandKeys: []string{
+					"kemps.helpSwap",
+					"kemps.helpPass",
+					"kemps.helpSignal",
+					"kemps.helpKemps",
+					"kemps.helpCounter",
+					"kemps.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+			})
+	}},
+	{Name: "cuckoo", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCuckooCuiController(usecase.NewCuckooInteractor(
+				domain.NewDefaultCuckoo(), new(presenter.CuckooCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "cuckoo.helpTitle",
+				CommandKeys: []string{
+					"cuckoo.helpKeep",
+					"cuckoo.helpSwap",
+					"cuckoo.helpRefuse",
+					"cuckoo.helpAccept",
+					"cuckoo.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys: []string{
+					"cuckoo.helpSetDifficulty",
+					"cuckoo.helpSetLives",
+				},
+			})
+	}},
+	{Name: "pishti", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPishtiCuiController(usecase.NewPishtiInteractor(
+				domain.NewDefaultPishti(), new(presenter.PishtiCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "pishti.helpTitle",
+				CommandKeys: []string{
+					"pishti.helpPlay",
+					"pishti.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys: []string{
+					"pishti.helpSetDifficulty",
+					"pishti.helpSetPlayers",
+				},
+			})
+	}},
+	{Name: "cuarenta", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCuarentaCuiController(usecase.NewCuarentaInteractor(
+				domain.NewDefaultCuarenta(), new(presenter.CuarentaCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "cuarenta.helpTitle",
+				CommandKeys: []string{
+					"cuarenta.helpPlay",
+					"cuarenta.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys: []string{
+					"cuarenta.helpSetDifficulty",
+				},
+			})
+	}},
+	{Name: "fivecardstud", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewFiveCardStudCuiController(usecase.NewFiveCardStudInteractor(
+				domain.NewDefaultFiveCardStud(), new(presenter.FiveCardStudCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "fivecardstud.helpTitle",
+				CommandKeys: []string{
+					"fivecardstud.helpFold",
+					"fivecardstud.helpCheck",
+					"fivecardstud.helpCall",
+					"fivecardstud.helpBet",
+					"fivecardstud.helpRaise",
+					"fivecardstud.helpAllIn",
+				},
+				SettingKeys: []string{
+					"fivecardstud.helpBettingLimit",
+					"fivecardstud.helpTournament",
+				},
+			})
+	}},
+	{Name: "faro", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewFaroCuiController(usecase.NewFaroInteractor(
+				domain.NewDefaultFaro(), new(presenter.FaroCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "faro.helpTitle",
+				CommandKeys: []string{
+					"faro.helpBet",
+					"faro.helpClearBet",
+					"faro.helpClearAll",
+					"faro.helpDeal",
+					"faro.helpCall",
+					"faro.helpNext",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+			})
+	}},
+	{Name: "openfacechinese", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewOpenFaceChineseCuiController(usecase.NewOpenFaceChineseInteractor(
+				domain.NewDefaultOpenFaceChinese(), new(presenter.OpenFaceChineseCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "openfacechinese.helpTitle",
+				CommandKeys: []string{
+					"openfacechinese.helpPlace",
+					"openfacechinese.helpFront",
+					"openfacechinese.helpMiddle",
+					"openfacechinese.helpBack",
+					"openfacechinese.helpNextRound",
+				},
+				SettingKeys: []string{
+					"openfacechinese.helpSetDifficulty",
+					"openfacechinese.helpSetPlayers",
+				},
+			})
+	}},
+	{Name: "russianbank", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewRussianBankCuiController(usecase.NewRussianBankInteractor(
+				domain.NewDefaultRussianBank(), new(presenter.RussianBankCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "russianbank.helpTitle",
+				CommandKeys: []string{
+					"russianbank.helpFoundation",
+					"russianbank.helpTableau",
+					"russianbank.helpDiscard",
+					"russianbank.helpStop",
+					"russianbank.helpUndo",
+				},
+				SettingKeys: []string{
+					"russianbank.helpSetDifficulty",
+				},
+			})
+	}},
+	{Name: "labellelucie", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewLaBelleLucieCuiController(usecase.NewLaBelleLucieInteractor(
+				domain.NewDefaultLaBelleLucie(), new(presenter.LaBelleLucieCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "labellelucie.helpTitle",
+				CommandKeys: []string{
+					"labellelucie.helpMove",
+					"labellelucie.helpRedeal",
+					"labellelucie.helpAutoComplete",
+					"labellelucie.helpUndo",
+					"labellelucie.helpGiveUp",
+				},
+			})
+	}},
+	{Name: "simplesimon", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSimpleSimonCuiController(usecase.NewSimpleSimonInteractor(
+				domain.NewDefaultSimpleSimon(), new(presenter.SimpleSimonCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "simplesimon.helpTitle",
+				CommandKeys: []string{
+					"simplesimon.helpMove",
+					"simplesimon.helpUndo",
+					"simplesimon.helpGiveUp",
+				},
+			})
+	}},
+	{Name: "doubleklondike", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewDoubleKlondikeCuiController(usecase.NewDoubleKlondikeInteractor(
+				domain.NewDefaultDoubleKlondike(), new(presenter.DoubleKlondikeCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "doubleklondike.helpTitle",
+				CommandKeys: []string{
+					"doubleklondike.helpDraw",
+					"doubleklondike.helpMoveWaste",
+					"doubleklondike.helpMoveTableau",
+					"doubleklondike.helpAuto",
+					"doubleklondike.helpUndo",
+					"doubleklondike.helpGiveUp",
+				},
+			})
+	}},
+	{Name: "blackhole", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBlackHoleCuiController(usecase.NewBlackHoleInteractor(
+				domain.NewDefaultBlackHole(), new(presenter.BlackHoleCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "blackhole.helpTitle",
+				CommandKeys: []string{
+					"blackhole.helpMove",
+					"blackhole.helpUndo",
+					"blackhole.helpGiveUp",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

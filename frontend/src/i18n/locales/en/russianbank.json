@@ -1,0 +1,38 @@
+{
+  "you": "You",
+  "cpu": "CPU",
+  "empty": "(empty)",
+  "stopPoints": "stop {{n}}",
+  "reserve": "Reserve {{n}}",
+  "waste": "Waste {{n}}",
+  "hand": "Hand {{n}}",
+  "foundationsLabel": "Foundations (A→K by suit)",
+  "tableauLabel": "Shared tableau (alternating colour, descending)",
+  "srcReserve": "your reserve",
+  "srcWaste": "your waste",
+  "srcOppReserve": "opponent reserve",
+  "srcOppWaste": "opponent waste",
+  "srcTableau": "tableau {{col}}",
+  "selectedSource": "Selected: {{src}}",
+  "pickSourceHint": "Pick a card to move (reserve / waste / tableau).",
+  "toFoundation": "To foundation",
+  "cancelSelect": "Cancel",
+  "discard": "Discard & end turn",
+  "stop": "Stop!",
+  "undo": "Undo",
+  "gameEnd": "Game over",
+  "phase": {
+    "playing": "Playing",
+    "gameEnd": "Game over"
+  },
+  "result": {
+    "humanWin": "Game over! You win!",
+    "cpuWin": "Game over! CPU wins!",
+    "draw": "Game over! It's a draw!"
+  },
+  "tutorial": {
+    "board": "From the top: foundations (A→K ascending by suit), the shared tableau (alternating colour, descending), and each player's reserve, waste and hand.",
+    "controls": "Pick a card to move, then send it to a foundation or a tableau column. When you run out of moves, discard to end your turn. If the CPU leaves a forced move, call Stop! to catch it.",
+    "resetButton": "Press this button to restart the game from the beginning."
+  }
+}

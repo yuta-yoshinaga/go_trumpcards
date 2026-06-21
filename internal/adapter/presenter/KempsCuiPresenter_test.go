@@ -1,0 +1,88 @@
+//go:build test
+
+package presenter_test
+
+import (
+	"errors"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+)
+
+func TestKempsCuiPresenter_Output(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	p := new(presenter.KempsCuiPresenter)
+
+	// i18n resolves to the ja translations in this build, so assert on the
+	// rendered Japanese text that uniquely identifies each phase.
+	t.Run("initial exchange state", func(t *testing.T) {
+		g := setupKempsTest()
+		result := p.Output(g, nil)
+		assert.Contains(t, result, "Kemps")
+		assert.Contains(t, result, "ラウンド")
+		assert.Contains(t, result, "フィールド")
+		assert.Contains(t, result, "あなたの番です")
+	})
+
+	t.Run("error", func(t *testing.T) {
+		g := setupKempsTest()
+		assert.Contains(t, p.Output(g, errors.New("oops")), "oops")
+	})
+
+	t.Run("partner signal prompt", func(t *testing.T) {
+		g := setupKempsTest()
+		kempsSetField(g, map[string]any{"ph": domain.KempsPhaseDeclare, "fh": 0})
+		out := p.Output(g, nil)
+		assert.Contains(t, out, "シグナル")
+		assert.Contains(t, out, "k で Kemps")
+	})
+
+	t.Run("opponent signal prompt", func(t *testing.T) {
+		g := setupKempsTest()
+		kempsSetField(g, map[string]any{"ph": domain.KempsPhaseDeclare, "fh": 1})
+		assert.Contains(t, p.Output(g, nil), "気配")
+	})
+
+	t.Run("round end prompt", func(t *testing.T) {
+		g := setupKempsTest()
+		kempsSetField(g, map[string]any{"ph": domain.KempsPhaseRoundEnd})
+		assert.Contains(t, p.Output(g, nil), "n (next)")
+	})
+
+	t.Run("cpu turn prompt", func(t *testing.T) {
+		g := setupKempsTest()
+		kempsSetField(g, map[string]any{"ci": 1})
+		assert.Contains(t, p.Output(g, nil), "CPU")
+	})
+
+	t.Run("human win", func(t *testing.T) {
+		g := setupKempsTest()
+		kempsSetField(g, map[string]any{"ge": true, "wt": 0, "ph": domain.KempsPhaseGameEnd})
+		assert.Contains(t, p.Output(g, nil), "あなたのチームの勝ちです")
+	})
+
+	t.Run("cpu win", func(t *testing.T) {
+		g := setupKempsTest()
+		kempsSetField(g, map[string]any{"ge": true, "wt": 1, "ph": domain.KempsPhaseGameEnd})
+		assert.Contains(t, p.Output(g, nil), "相手チームの勝ちです")
+	})
+
+	t.Run("signal type blink shown", func(t *testing.T) {
+		g := setupKempsTest()
+		g.PlayerSetSignal(int(domain.SignalBlink))
+		assert.Contains(t, p.Output(g, nil), "瞬き")
+	})
+}
+
+func TestKempsCuiPresenter_ActionLogOutput(t *testing.T) {
+	p := new(presenter.KempsCuiPresenter)
+	g := setupKempsTest()
+	assert.NotEmpty(t, p.ActionLogOutput(g))
+}

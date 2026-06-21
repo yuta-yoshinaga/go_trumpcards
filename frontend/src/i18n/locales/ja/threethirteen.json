@@ -1,0 +1,50 @@
+{
+  "phase": {
+    "draw": "ドロー",
+    "discard": "ディスカード",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "playerCount": "プレイヤー人数",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}/11",
+  "wildRank": "ワイルド: {{rank}}",
+  "dealCount": "手札枚数: {{count}}",
+  "drawPile": "山札: {{count}}枚",
+  "discardTop": "捨て札",
+  "cards": "{{count}}枚",
+  "cumulativeScore": "累計: {{score}}",
+  "roundScore": "ラウンド: {{score}}",
+  "deadwood": "デッドウッド: {{score}}",
+  "scores": "スコア",
+  "scoresPlayer": "プレイヤー",
+  "scoresRound": "ラウンド",
+  "scoresTotal": "累計",
+  "drawStockButton": "山札から引く",
+  "drawDiscardButton": "捨て札から引く",
+  "discardButton": "捨てる",
+  "knockButton": "ノック",
+  "deadwoodLabel": "デッドウッド: {{score}}点",
+  "nextRound": "次のラウンド",
+  "drawPhase": "山札または捨て札から1枚引いてください",
+  "discardPhase": "手札から1枚捨てるか、その1枚を捨ててノックしてください",
+  "roundEnd": "ラウンド終了",
+  "result": {
+    "humanWin": "あなたの勝利！",
+    "cpuWin": "CPU {{cpuId}} の勝利！"
+  },
+  "tutorial": {
+    "drawArea": "山札または捨て札から1枚引きます。",
+    "playerHand": "あなたの手札です。このラウンドのワイルドランクを使ってメルド（同ランク3枚以上、または同スート3枚以上の連番）を作りましょう。",
+    "discardButton": "不要なカードを1枚捨てます。",
+    "knockButton": "手札がすべてメルドになったら、捨てるカードを選んでノックできます。",
+    "scoreTable": "各プレイヤーのスコアが表示されます。最終的に累計が最少の人が勝ちです。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}

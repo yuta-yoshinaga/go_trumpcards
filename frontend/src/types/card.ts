@@ -1464,6 +1464,1211 @@ export interface SuecaResponse extends BaseGameResponse {
   config: SuecaConfig;
 }
 
+// --- Klaverjas ---
+
+/** Klaverjas game phase (0=Play 1=TrickEnd 2=RoundEnd 3=GameEnd). */
+export type KlaverjasPhaseValue = 0 | 1 | 2 | 3;
+
+/** A Klaverjas player's public/own state. Cards are non-empty only for the human. */
+export interface KlaverjasPlayer {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  trickCount: number;
+  /** Cumulative match score of the team this player belongs to. */
+  teamScore: number;
+}
+
+/** A card played into the current Klaverjas trick. */
+export interface KlaverjasTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Klaverjas game configuration. */
+export interface KlaverjasConfig {
+  cpuDifficulty: number;
+  targetPoints: number;
+}
+
+/** A suggested hint for Klaverjas, computed by the backend. */
+export interface KlaverjasHint {
+  cardIndices: number[];
+  /** i18n reason suffix identifier. */
+  reason: string;
+}
+
+/** Full Klaverjas game state returned from the API. */
+export interface KlaverjasResponse extends BaseGameResponse {
+  players: KlaverjasPlayer[];
+  phase: KlaverjasPhaseValue;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  leadPlayerIdx: number;
+  dealerIdx: number;
+  /** Trump suit (1=♠ 2=♣ 3=♥ 4=♦). */
+  trumpSuit: number;
+  currentTrick: KlaverjasTrickCard[];
+  /** Cumulative match scores per team — [team0, team1]. */
+  teamScores: number[];
+  /** Card points captured per team this round — [team0, team1]. */
+  roundCardPoints: number[];
+  /** Roem (run/marriage) bonus points per team this round — [team0, team1]. */
+  roundRoem: number[];
+  /** Indices in the human's hand that are legal to play (non-empty on human Play turn). */
+  playableIndices: number[];
+  gameEndFlag: boolean;
+  /** Winning team index, or -1 until the game ends. */
+  winnerTeam: number;
+  /** Whether it is currently the human's turn to act. */
+  isHumanTurn: boolean;
+  hint?: KlaverjasHint | null;
+  config: KlaverjasConfig;
+}
+
+// --- Manille ---
+
+/** Manille game phase (0=Play 1=TrickEnd 2=RoundEnd 3=GameEnd). */
+export type ManillePhaseValue = 0 | 1 | 2 | 3;
+
+/** A Manille player's public/own state. Cards are non-empty only for the human. */
+export interface ManillePlayer {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  trickCount: number;
+  /** Cumulative match score of the team this player belongs to. */
+  teamScore: number;
+}
+
+/** A card played into the current Manille trick. */
+export interface ManilleTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Manille game configuration. */
+export interface ManilleConfig {
+  cpuDifficulty: number;
+  targetPoints: number;
+}
+
+/** A suggested hint for Manille, computed by the backend. */
+export interface ManilleHint {
+  cardIndices: number[];
+  /** i18n reason suffix identifier. */
+  reason: string;
+}
+
+/** Full Manille game state returned from the API. */
+export interface ManilleResponse extends BaseGameResponse {
+  players: ManillePlayer[];
+  phase: ManillePhaseValue;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  leadPlayerIdx: number;
+  dealerIdx: number;
+  /** Trump suit (1=♠ 2=♣ 3=♥ 4=♦). */
+  trumpSuit: number;
+  currentTrick: ManilleTrickCard[];
+  /** Cumulative match scores per team — [team0, team1]. */
+  teamScores: number[];
+  /** Card points captured per team this round — [team0, team1]. */
+  roundCardPoints: number[];
+  /** Indices in the human's hand that are legal to play (non-empty on human Play turn). */
+  playableIndices: number[];
+  gameEndFlag: boolean;
+  /** Winning team index, or -1 until the game ends. */
+  winnerTeam: number;
+  /** Whether it is currently the human's turn to act. */
+  isHumanTurn: boolean;
+  hint?: ManilleHint | null;
+  config: ManilleConfig;
+}
+
+// --- Sedma ---
+
+/** Sedma game phase (0=Play 1=TrickEnd 2=RoundEnd 3=GameEnd). */
+export type SedmaPhaseValue = 0 | 1 | 2 | 3;
+
+/** A Sedma player's public/own state. Cards are non-empty only for the human. */
+export interface SedmaPlayer {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  trickCount: number;
+  /** Cumulative match score of the team this player belongs to. */
+  teamScore: number;
+}
+
+/** A card played into the current Sedma trick. */
+export interface SedmaTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Sedma game configuration. */
+export interface SedmaConfig {
+  cpuDifficulty: number;
+  targetPoints: number;
+}
+
+/** A suggested hint for Sedma, computed by the backend. */
+export interface SedmaHint {
+  cardIndices: number[];
+  /** i18n reason suffix identifier. */
+  reason: string;
+}
+
+/**
+ * Full Sedma game state returned from the API.
+ *
+ * Sedma is a Czech/Slovak no-trump capture trick-taker, so — unlike the
+ * Manille shape it mirrors — there is intentionally no `trumpSuit` field.
+ */
+export interface SedmaResponse extends BaseGameResponse {
+  players: SedmaPlayer[];
+  phase: SedmaPhaseValue;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  leadPlayerIdx: number;
+  dealerIdx: number;
+  currentTrick: SedmaTrickCard[];
+  /** Cumulative match scores per team — [team0, team1]. */
+  teamScores: number[];
+  /** Card points captured per team this round — [team0, team1]. */
+  roundCardPoints: number[];
+  /** Indices in the human's hand that are legal to play (every card is playable on the human Play turn). */
+  playableIndices: number[];
+  gameEndFlag: boolean;
+  /** Winning team index, or -1 until the game ends. */
+  winnerTeam: number;
+  /** Whether it is currently the human's turn to act. */
+  isHumanTurn: boolean;
+  hint?: SedmaHint | null;
+  config: SedmaConfig;
+}
+
+// --- Knockout Whist ---
+
+/** Knockout Whist game phase (0=Play 1=TrickEnd 2=RoundEnd 3=GameEnd). */
+export type KnockoutWhistPhaseValue = 0 | 1 | 2 | 3;
+
+/** A Knockout Whist player's public/own state. Cards are non-empty only for the human. */
+export interface KnockoutWhistPlayer {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  /** Total tricks taken across the match (cumulative). */
+  trickCount: number;
+  /** Whether this player has been knocked out of the match. */
+  eliminated: boolean;
+  /** Remaining Dogbone survival tokens (each player starts with 1). */
+  dogbones: number;
+  /** Tricks taken in the current round (resets each round). */
+  roundTricks: number;
+}
+
+/** A card played into the current Knockout Whist trick. */
+export interface KnockoutWhistTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Knockout Whist game configuration (CPU difficulty only — no target points). */
+export interface KnockoutWhistConfig {
+  cpuDifficulty: number;
+}
+
+/** A suggested hint for Knockout Whist, computed by the backend. */
+export interface KnockoutWhistHint {
+  cardIndices: number[];
+  /** i18n reason suffix identifier. */
+  reason: string;
+}
+
+/**
+ * Full Knockout Whist game state returned from the API.
+ *
+ * Knockout Whist is a British play-only survival trick-taker: each round the
+ * hand shrinks by one card, the previous round's winner's longest suit becomes
+ * trump (auto), and a player who wins zero tricks must spend a Dogbone to
+ * survive — or is eliminated. Last player standing wins.
+ */
+export interface KnockoutWhistResponse extends BaseGameResponse {
+  players: KnockoutWhistPlayer[];
+  phase: KnockoutWhistPhaseValue;
+  roundNumber: number;
+  /** Number of cards dealt this round (8 - roundNumber, down to 1). */
+  handSize: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  leadPlayerIdx: number;
+  dealerIdx: number;
+  /** Trump suit (1=♠ 2=♣ 3=♥ 4=♦). */
+  trumpSuit: number;
+  /** Seat index of the round's winner, or -1. */
+  roundWinnerIdx: number;
+  currentTrick: KnockoutWhistTrickCard[];
+  /** Number of players still in the match (not eliminated). */
+  activeCount: number;
+  /** Indices in the human's hand that are legal to play (non-empty on human Play turn). */
+  playableIndices: number[];
+  gameEndFlag: boolean;
+  /** Winning player seat index, or -1 until the game ends. */
+  winnerPlayer: number;
+  /** Whether it is currently the human's turn to act. */
+  isHumanTurn: boolean;
+  hint?: KnockoutWhistHint | null;
+  config: KnockoutWhistConfig;
+}
+
+// --- Spoil Five ---
+
+/** Spoil Five game phase (0=Play 1=TrickEnd 2=RoundEnd 3=GameEnd). */
+export type SpoilFivePhaseValue = 0 | 1 | 2 | 3;
+
+/** A Spoil Five player's public/own state. Cards are non-empty only for the human. */
+export interface SpoilFivePlayer {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  /** Total tricks taken across the match (cumulative). */
+  trickCount: number;
+  /** Match points scored so far (first to targetPoints wins). */
+  score: number;
+  /** Tricks taken in the current round (resets each round; first to 3 takes the pot). */
+  roundTricks: number;
+}
+
+/** A card played into the current Spoil Five trick. */
+export interface SpoilFiveTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Spoil Five game configuration. */
+export interface SpoilFiveConfig {
+  cpuDifficulty: number;
+  /** Match points needed to win (default 30). */
+  targetPoints: number;
+}
+
+/** A suggested hint for Spoil Five, computed by the backend. */
+export interface SpoilFiveHint {
+  cardIndices: number[];
+  /** i18n reason suffix identifier. */
+  reason: string;
+}
+
+/**
+ * Full Spoil Five game state returned from the API.
+ *
+ * Spoil Five (Maw) is an Irish play-only trick-taker for 5 players on a 52-card
+ * deck (5 cards each). Trump is the turned-up card. Fixed top trumps — the trump
+ * 5 (highest), trump J, and ♥A (always a trump) — may be held back rather than
+ * following suit (Reneging). The first player to win 3 of the 5 tricks takes the
+ * pot immediately; if nobody reaches 3 it is a Spoil (流局) and the pot carries
+ * to the next round. First player to targetPoints wins the match.
+ */
+export interface SpoilFiveResponse extends BaseGameResponse {
+  players: SpoilFivePlayer[];
+  phase: SpoilFivePhaseValue;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  leadPlayerIdx: number;
+  dealerIdx: number;
+  /** Trump suit (1=♠ 2=♣ 3=♥ 4=♦). */
+  trumpSuit: number;
+  /** Accumulated pot, awarded to the first player to win 3 tricks. */
+  pot: number;
+  /** Seat index of the round's winner, or -1 on a Spoil (流局). */
+  roundWinnerIdx: number;
+  currentTrick: SpoilFiveTrickCard[];
+  /** Indices in the human's hand that are legal to play (non-empty on human Play turn). */
+  playableIndices: number[];
+  gameEndFlag: boolean;
+  /** Winning player seat index, or -1 until the game ends. */
+  winnerPlayer: number;
+  /** Whether it is currently the human's turn to act. */
+  isHumanTurn: boolean;
+  hint?: SpoilFiveHint | null;
+  config: SpoilFiveConfig;
+}
+
+// --- Mariáš ---
+
+/** Mariáš game phase (0=Play 1=TrickEnd 2=RoundEnd 3=GameEnd). */
+export type MariasPhaseValue = 0 | 1 | 2 | 3;
+
+/** A Mariáš player's public/own state. Cards are non-empty only for the human. */
+export interface MariasPlayer {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  trickCount: number;
+  /** Cumulative match (game-point) score of this individual player. */
+  score: number;
+  /** Whether this player is the round's Soloist (plays alone vs the 2 Defenders). */
+  isSoloist: boolean;
+}
+
+/** A card played into the current Mariáš trick. */
+export interface MariasTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Mariáš game configuration. */
+export interface MariasConfig {
+  cpuDifficulty: number;
+  targetPoints: number;
+}
+
+/** A suggested hint for Mariáš, computed by the backend. */
+export interface MariasHint {
+  cardIndices: number[];
+  /** i18n reason suffix identifier. */
+  reason: string;
+}
+
+/** Full Mariáš game state returned from the API. */
+export interface MariasResponse extends BaseGameResponse {
+  players: MariasPlayer[];
+  phase: MariasPhaseValue;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  leadPlayerIdx: number;
+  dealerIdx: number;
+  /** Seat index of the round's Soloist. */
+  soloistIdx: number;
+  /** Trump suit (1=♠ 2=♣ 3=♥ 4=♦). */
+  trumpSuit: number;
+  currentTrick: MariasTrickCard[];
+  /** Cumulative match (game-point) scores per player — [p0, p1, p2]. */
+  playerScores: number[];
+  /** Card points captured per player this round — [p0, p1, p2]. */
+  roundCardPoints: number[];
+  /** Marriage (K+Q same suit) points scored per player this round — [p0, p1, p2]. */
+  roundMarriage: number[];
+  /** Seat index of the last (10th) trick winner, or -1. */
+  lastTrickWinner: number;
+  /** Indices in the human's hand that are legal to play (non-empty on human Play turn). */
+  playableIndices: number[];
+  gameEndFlag: boolean;
+  /** Winning player seat index, or -1 until the game ends. */
+  winnerPlayer: number;
+  /** Whether it is currently the human's turn to act. */
+  isHumanTurn: boolean;
+  hint?: MariasHint | null;
+  config: MariasConfig;
+}
+
+// --- Solo Whist ---
+
+/** Solo Whist game phase (0=Bid 1=Play 2=TrickEnd 3=RoundEnd 4=GameEnd). */
+export type SoloWhistPhaseValue = 0 | 1 | 2 | 3 | 4;
+
+/** A Solo Whist player's public/own state. Cards are non-empty only for the human. */
+export interface SoloWhistPlayer {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  trickCount: number;
+  /** Cumulative match score of this individual player. */
+  score: number;
+  /** Whether this player is the round's declarer (plays alone vs the 3 defenders). */
+  isDeclarer: boolean;
+}
+
+/** A card played into the current Solo Whist trick. */
+export interface SoloWhistTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Solo Whist game configuration. */
+export interface SoloWhistConfig {
+  cpuDifficulty: number;
+  targetPoints: number;
+}
+
+/** A suggested hint for Solo Whist, computed by the backend. */
+export interface SoloWhistHint {
+  cardIndices: number[];
+  /** i18n reason suffix identifier. */
+  reason: string;
+}
+
+// --- Auction Forty-Fives ---
+
+/** Auction Forty-Fives game phase (0=Bid 1=Play 2=TrickEnd 3=RoundEnd 4=GameEnd). */
+export type FortyFivesPhaseValue = 0 | 1 | 2 | 3 | 4;
+
+/** An Auction Forty-Fives player's public/own state. Cards are non-empty only for the human. */
+export interface FortyFivesPlayer {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  trickCount: number;
+  /** Cumulative match score of this player's TEAM (seats 0&2 = team 0, 1&3 = team 1). */
+  teamScore: number;
+  /** Whether this player is the round's declarer (the highest bidder). */
+  isDeclarer: boolean;
+}
+
+/** A card played into the current Auction Forty-Fives trick. */
+export interface FortyFivesTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Auction Forty-Fives game configuration. */
+export interface FortyFivesConfig {
+  cpuDifficulty: number;
+  targetPoints: number;
+}
+
+/** A suggested hint for Auction Forty-Fives, computed by the backend. */
+export interface FortyFivesHint {
+  cardIndices: number[];
+  /** i18n reason suffix identifier. */
+  reason: string;
+}
+
+/** Server response for the Auction Forty-Fives game (4 players, 2 teams). */
+export interface FortyFivesResponse extends BaseGameResponse {
+  players: FortyFivesPlayer[];
+  phase: FortyFivesPhaseValue;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  leadPlayerIdx: number;
+  dealerIdx: number;
+  /** Seat index of the round's declarer (highest bidder), or -1 before bidding resolves. */
+  declarerIdx: number;
+  /** Winning contract value (0=Pass 15 20 25). */
+  contract: number;
+  /** Trump suit (0=none during bid, else 1=♠ 2=♣ 3=♥ 4=♦). */
+  trumpSuit: number;
+  /** Each player's bid this round — [p0, p1, p2, p3]. */
+  bids: number[];
+  currentTrick: FortyFivesTrickCard[];
+  /** Cumulative match scores per team — [teamA, teamB]. */
+  teamScores: number[];
+  /** Points scored by each team this round — [teamA, teamB]. */
+  roundTeamPoints: number[];
+  /** Indices in the human's hand that are legal to play (non-empty on human Play turn). */
+  playableIndices: number[];
+  gameEndFlag: boolean;
+  /** Winning team index (0 or 1), or -1 until the game ends. */
+  winnerTeam: number;
+  /** Whether it is currently the human's turn to play a card. */
+  isHumanTurn: boolean;
+  /** Whether it is currently the human's turn to bid. */
+  isHumanBidTurn: boolean;
+  hint?: FortyFivesHint | null;
+  config: FortyFivesConfig;
+}
+
+// --- Twenty-Nine (29) ---
+
+/** Twenty-Nine (29) game phase (0=Bid 1=Play 2=TrickEnd 3=RoundEnd 4=GameEnd). */
+export type TwentyNinePhaseValue = 0 | 1 | 2 | 3 | 4;
+
+/** A Twenty-Nine (29) player's public/own state. Cards are non-empty only for the human. */
+export interface TwentyNinePlayer {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  trickCount: number;
+  /** Cumulative game-point score of this player's TEAM (seats 0&2 = team 0, 1&3 = team 1). */
+  teamScore: number;
+  /** Whether this player is the round's declarer (the winning bidder). */
+  isDeclarer: boolean;
+}
+
+/** A card played into the current Twenty-Nine (29) trick. */
+export interface TwentyNineTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Twenty-Nine (29) game configuration. */
+export interface TwentyNineConfig {
+  cpuDifficulty: number;
+  targetPoints: number;
+}
+
+/** A suggested hint for Twenty-Nine (29), computed by the backend. */
+export interface TwentyNineHint {
+  cardIndices: number[];
+  /** i18n reason suffix identifier. */
+  reason: string;
+}
+
+/** Server response for the Twenty-Nine (29) game (4 players, 2 teams, hidden trump). */
+export interface TwentyNineResponse extends BaseGameResponse {
+  players: TwentyNinePlayer[];
+  phase: TwentyNinePhaseValue;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  leadPlayerIdx: number;
+  dealerIdx: number;
+  /** Seat index of the round's declarer (winning bidder), or -1 before bidding resolves. */
+  declarerIdx: number;
+  /** Winning contract value (0=Pass 16 20 24 28). */
+  contract: number;
+  /** Trump suit (0=none/hidden during bid, else 1=♠ 2=♣ 3=♥ 4=♦). */
+  trumpSuit: number;
+  /** Whether the hidden trump suit has been revealed yet. */
+  trumpRevealed: boolean;
+  /** Each player's bid this round — [p0, p1, p2, p3]. */
+  bids: number[];
+  currentTrick: TwentyNineTrickCard[];
+  /** Cumulative game-point scores per team — [teamA, teamB]. */
+  teamScores: number[];
+  /** Card points captured by each team this round — [teamA, teamB]. */
+  roundTeamPoints: number[];
+  /** Indices in the human's hand that are legal to play (non-empty on human Play turn). */
+  playableIndices: number[];
+  gameEndFlag: boolean;
+  /** Winning team index (0 or 1), or -1 until the game ends. */
+  winnerTeam: number;
+  /** Whether it is currently the human's turn to play a card. */
+  isHumanTurn: boolean;
+  /** Whether it is currently the human's turn to bid. */
+  isHumanBidTurn: boolean;
+  hint?: TwentyNineHint | null;
+  config: TwentyNineConfig;
+}
+
+// --- Court Piece / Rang ---
+
+/** Court Piece (Rang) game phase (0=TrumpDeclaration 1=Play 2=TrickEnd 3=RoundEnd 4=GameEnd). */
+export type CourtPiecePhaseValue = 0 | 1 | 2 | 3 | 4;
+
+/** A Court Piece (Rang) player's public/own state. Cards are non-empty only for the human. */
+export interface CourtPiecePlayer {
+  id: number;
+  isHuman: boolean;
+  /** Team index (seats 0&2 = team 0, 1&3 = team 1). */
+  team: number;
+  cardCount: number;
+  cards: Card[];
+  /** Round points (tricks won this round). */
+  roundScore: number;
+  /** Cumulative game-point (Sar) score of this player's team. */
+  cumulativeScore: number;
+  trickCount: number;
+}
+
+/** A card played into the current Court Piece (Rang) trick. */
+export interface CourtPieceTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Court Piece (Rang) game configuration. */
+export interface CourtPieceConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+/** A suggested hint for Court Piece (Rang), computed by the backend. */
+export interface CourtPieceHint {
+  /** Card index to play (Play phase). */
+  cardIndex?: number;
+  /** Trump suit to declare (TrumpDeclaration phase, 1=♠ 2=♣ 3=♥ 4=♦). */
+  trumpSuit?: number;
+  /** i18n reason suffix identifier. */
+  reason: string;
+}
+
+/** Server response for the Court Piece (Rang) game (4 players, 2 teams, called trump). */
+export interface CourtPieceResponse extends BaseGameResponse {
+  players: CourtPiecePlayer[];
+  phase: CourtPiecePhaseValue;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  /** Seat index of the caller (Hakim) who declares the trump suit. */
+  callerIdx: number;
+  /** Trump suit (0=undeclared during TrumpDeclaration, else 1=♠ 2=♣ 3=♥ 4=♦). */
+  trumpSuit: number;
+  currentTrick: CourtPieceTrickCard[];
+  /** Cumulative game-point (Sar) scores per team — [teamA, teamB]. */
+  teamScores: number[];
+  /** Consecutive round wins by the {@link lastWinnerTeam} (drives the Court bonus). */
+  consecutiveWins: number;
+  /** Team that won the previous round (or -1 before any round resolves). */
+  lastWinnerTeam: number;
+  /** Whether the previous round was a Court (sweep / consecutive bonus). */
+  lastRoundCourt: boolean;
+  gameEndFlag: boolean;
+  /** Winning team index (0 or 1), or -1 until the game ends. */
+  winnerTeam: number;
+  /** Seat index of the player who led the current trick. */
+  leadPlayerIdx: number;
+  hint?: CourtPieceHint | null;
+  config: CourtPieceConfig;
+}
+
+// --- Bezique ---
+
+/** Bezique game phase (0=Play 1=Meld 2=RoundEnd 3=GameEnd). */
+export type BeziquePhaseValue = 0 | 1 | 2 | 3;
+
+/** A Bezique player's public/own state. Cards are non-empty only for the human. */
+export interface BeziquePlayer {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  /** Points scored from melds and brisques in the current deal. */
+  roundScore: number;
+  /** Cumulative match score accumulated across deals. */
+  cumulativeScore: number;
+  trickCount: number;
+}
+
+/** A card played into the current Bezique trick. */
+export interface BeziqueTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/**
+ * A meld the trick winner may declare during the Meld phase. `type` is the
+ * meld kind (0=marriage 1=Bezique 2=four aces 3=four kings 4=four queens
+ * 5=four jacks); `suit` is the marriage suit (1=♠ 2=♣ 3=♥ 4=♦, or -1 for
+ * Bezique and four-of-a-kind); `points` is the score it would award.
+ */
+export interface BeziqueMeld {
+  type: number;
+  suit: number;
+  points: number;
+}
+
+/** Bezique game configuration. */
+export interface BeziqueConfig {
+  cpuDifficulty: number;
+  targetScore: number;
+}
+
+/** A suggested hint for Bezique, computed by the backend (may carry a card index OR a meld index, where -1 = skip). */
+export interface BeziqueHint {
+  /** Card index to play (Play phase). */
+  cardIndex?: number;
+  /** Meld index to declare (Meld phase); -1 means skip the meld. */
+  meldIndex?: number;
+  /** i18n reason suffix identifier. */
+  reason: string;
+}
+
+/** Server response for the Bezique game (2 players, melds, two-phase trick play). */
+export interface BeziqueResponse extends BaseGameResponse {
+  players: BeziquePlayer[];
+  /** Points scored in the current deal, indexed by seat. */
+  dealPoints: number[];
+  /** Cumulative match score, indexed by seat. */
+  matchScore: number[];
+  phase: BeziquePhaseValue;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  leadPlayerIdx: number;
+  dealerIdx: number;
+  /** Trump suit (0=♠ 1=♣ 2=♥ 3=♦ — the deck's suit ordinal). */
+  trumpSuit: number;
+  /** The face-up card that fixed the trump (present until the stock empties). */
+  trumpCard?: Card;
+  currentTrick: BeziqueTrickCard[];
+  /** Cards remaining in the stock (phase 2 begins when this reaches 0). */
+  stockRemaining: number;
+  /** Whether the deal has entered the strict must-follow endgame (phase 2). */
+  isEndgame: boolean;
+  /** Melds the human may declare this Meld phase (empty otherwise). */
+  availableMelds: BeziqueMeld[];
+  gameEndFlag: boolean;
+  /** Winning seat index (0 or 1), or -1 until the game ends. */
+  winnerIdx: number;
+  hint?: BeziqueHint | null;
+  config: BeziqueConfig;
+}
+
+// --- Écarté ---
+
+/** Écarté game phase (0=Exchange 1=Play 2=RoundEnd 3=GameEnd). */
+export type EcartePhaseValue = 0 | 1 | 2 | 3;
+
+/**
+ * Écarté negotiation sub-step within the Exchange phase
+ * (0=ElderDecide 1=DealerRespond 2=ElderDiscard 3=DealerDiscard).
+ */
+export type EcarteNegStepValue = 0 | 1 | 2 | 3;
+
+/** An Écarté player's public/own state. Cards are non-empty only for the human. */
+export interface EcartePlayer {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  /** Points scored in the current deal. */
+  roundScore: number;
+  /** Cumulative match score accumulated across deals. */
+  cumulativeScore: number;
+  trickCount: number;
+}
+
+/** A card played into the current Écarté trick. */
+export interface EcarteTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Écarté game configuration. */
+export interface EcarteConfig {
+  cpuDifficulty: number;
+  targetScore: number;
+}
+
+/**
+ * A suggested hint for Écarté, computed by the backend. During the Play phase
+ * it carries a `cardIndex`; during the Exchange phase it carries an `action`
+ * string (e.g. `propose`, `stand`, `accept`, `refuse`, `discard`).
+ */
+export interface EcarteHint {
+  /** Card index to play (Play phase). */
+  cardIndex?: number;
+  /** Exchange-phase action identifier (Exchange phase). */
+  action?: string;
+  /** i18n reason suffix identifier. */
+  reason: string;
+}
+
+/**
+ * Full Écarté game state returned from the API.
+ *
+ * Écarté is a 2-player French 32-card trick game. Before play, an Exchange
+ * phase lets the elder (non-dealer) Propose or Stand; if proposed, the dealer
+ * Accepts or Refuses; on accept, each player discards any number of cards and
+ * draws replacements, then the elder decides again (repeating until the stock
+ * empties). Play is 5 strict must-follow tricks (rank K>Q>J>A>10>9>8>7).
+ * Winning 3+ tricks scores 1 point, all 5 (Vole) scores 2; holding the King of
+ * trump scores +1, a turned King gives the dealer +1, and a dealer who refuses
+ * then loses gives the elder +1. Scores accumulate to a target (default 5).
+ */
+export interface EcarteResponse extends BaseGameResponse {
+  players: EcartePlayer[];
+  /** Points scored in the current deal, indexed by seat. */
+  dealPoints: number[];
+  /** Cumulative match score, indexed by seat. */
+  matchScore: number[];
+  phase: EcartePhaseValue;
+  /** Exchange-phase negotiation sub-step (only meaningful in phase 0). */
+  negStep: EcarteNegStepValue;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  dealerIdx: number;
+  /** Seat index of the elder (non-dealer) player. */
+  elderIdx: number;
+  leadPlayerIdx: number;
+  /** Trump suit (1=♠ 2=♣ 3=♥ 4=♦; 0=undeclared). */
+  trumpSuit: number;
+  /** The face-up card that fixed the trump (present until the stock empties). */
+  trumpCard?: Card;
+  currentTrick: EcarteTrickCard[];
+  /** Cards remaining in the stock. */
+  stockRemaining: number;
+  /** Whether the dealer refused the most recent exchange proposal. */
+  refusalByDealer: boolean;
+  /** Indices in the human's hand that are legal to play (non-empty on human Play turn). */
+  validPlays: number[];
+  gameEndFlag: boolean;
+  /** Winning seat index (0 or 1), or -1 until the game ends. */
+  winnerIdx: number;
+  hint?: EcarteHint | null;
+  config: EcarteConfig;
+}
+
+// --- Three Card Brag ---
+
+/** Three Card Brag game phase (0=Betting 1=Showdown 2=RoundEnd 3=GameEnd). */
+export type ThreeCardBragPhaseValue = 0 | 1 | 2 | 3;
+
+/**
+ * A Three Card Brag player's public/own state. `cards` is populated for the
+ * human (once seen) and for everyone at showdown; `handName` is set only when
+ * a hand is revealed.
+ */
+export interface ThreeCardBragPlayer {
+  id: number;
+  isHuman: boolean;
+  /** Remaining chips. */
+  chips: number;
+  /** Whether the player has looked at their hand (Seen) vs still Blind. */
+  seen: boolean;
+  /** Whether the player has folded out of the current deal. */
+  folded: boolean;
+  /** Whether the player has been eliminated (busted) from the match. */
+  out: boolean;
+  /** Chips this player has wagered into the pot this deal. */
+  roundBet: number;
+  cardCount: number;
+  cards: Card[];
+  /** The hand ranking name, set once the hand is revealed. */
+  handName?: string;
+}
+
+/** Three Card Brag game configuration. */
+export interface ThreeCardBragConfig {
+  cpuDifficulty: number;
+  /** Chips put in the pot by each player at the start of a deal. */
+  ante: number;
+  /** Chips each player begins the match with. */
+  startingChips: number;
+}
+
+/**
+ * A suggested hint for Three Card Brag, computed by the backend. `action` is
+ * the suggested betting action (e.g. `see`, `bet`, `raise`, `fold`, `show`).
+ */
+export interface ThreeCardBragHint {
+  /** Suggested betting action identifier. */
+  action: string;
+  /** i18n reason suffix identifier. */
+  reason: string;
+}
+
+/**
+ * Full Three Card Brag game state returned from the API.
+ *
+ * Three Card Brag is a 4-player British vying game (an ancestor of poker)
+ * played with a 52-card deck, 3 cards each, and chips wagered into a pot. Each
+ * player is Blind or Seen; on their turn they can See (reveal, Blind→Seen), Bet
+ * (call the stake — Blind pays the stake, Seen pays double), Raise, or Fold.
+ * When two players remain a Seen player may Show to force a showdown. The last
+ * player standing in a deal wins the pot, chip-busted players are eliminated,
+ * and the last player with chips wins the match. Hand ranking is
+ * Prial > Running Flush > Run > Flush > Pair > High Card.
+ */
+export interface ThreeCardBragResponse extends BaseGameResponse {
+  players: ThreeCardBragPlayer[];
+  /** Chips currently in the pot. */
+  pot: number;
+  /** Current stake a Blind player must match to bet. */
+  stake: number;
+  phase: ThreeCardBragPhaseValue;
+  roundNumber: number;
+  dealerIdx: number;
+  currentPlayerIdx: number;
+  /** Winning seat index of the current deal, or -1 until it ends. */
+  roundWinnerIdx: number;
+  /** Winning seat index of the match, or -1 until the game ends. */
+  matchWinnerIdx: number;
+  /** Whether the deal has reached a showdown (hands revealed). */
+  isShowdown: boolean;
+  /** Whether a Seen player may Show (force a showdown) right now. */
+  canShow: boolean;
+  gameEndFlag: boolean;
+  /** Whether it is currently the human's turn to act. */
+  isHumanTurn: boolean;
+  hint?: ThreeCardBragHint | null;
+  config: ThreeCardBragConfig;
+}
+
+// --- Teen Patti ---
+
+/** Teen Patti game phase (0=Betting 1=SideShow 2=Showdown 3=RoundEnd 4=GameEnd). */
+export type TeenPattiPhaseValue = 0 | 1 | 2 | 3 | 4;
+
+/**
+ * A Teen Patti player's public/own state. `cards` is populated for the human
+ * (once seen) and for everyone at showdown; `handName` is set only when a hand
+ * is revealed.
+ */
+export interface TeenPattiPlayer {
+  id: number;
+  isHuman: boolean;
+  /** Remaining chips. */
+  chips: number;
+  /** Whether the player has looked at their hand (Seen) vs still Blind. */
+  seen: boolean;
+  /** Whether the player has folded out of the current deal. */
+  folded: boolean;
+  /** Whether the player has been eliminated (busted) from the match. */
+  out: boolean;
+  /** Chips this player has wagered into the pot this deal. */
+  roundBet: number;
+  cardCount: number;
+  cards: Card[];
+  /** The hand ranking name, set once the hand is revealed. */
+  handName?: string;
+}
+
+/** Teen Patti game configuration. */
+export interface TeenPattiConfig {
+  cpuDifficulty: number;
+  /** Chips put in the pot by each player at the start of a deal. */
+  ante: number;
+  /** Chips each player begins the match with. */
+  startingChips: number;
+}
+
+/**
+ * A suggested hint for Teen Patti, computed by the backend. `action` is the
+ * suggested betting action (e.g. `see`, `bet`, `raise`, `fold`, `show`,
+ * `sideshow`).
+ */
+export interface TeenPattiHint {
+  /** Suggested betting action identifier. */
+  action: string;
+  /** i18n reason suffix identifier. */
+  reason: string;
+}
+
+/**
+ * Full Teen Patti game state returned from the API.
+ *
+ * Teen Patti is the Indian variant of Three Card Brag — a 4-player vying game
+ * played with a 52-card deck, 3 cards each, and chips wagered into a pot. Each
+ * player is Blind or Seen; on their turn they can See (reveal, Blind→Seen), Bet
+ * (call the stake — Blind pays the stake, Seen pays double), Raise, or Fold.
+ * When two players remain a Seen player may Show to force a showdown. Teen
+ * Patti additionally lets a Seen player request a **Side Show** with the
+ * previous Seen player (a private hand comparison; the loser folds), which the
+ * target then accepts or declines. The last player standing in a deal wins the
+ * pot, chip-busted players are eliminated, and the last player with chips wins
+ * the match. Hand ranking is Trail (trio) > Pure Sequence (straight flush) >
+ * Sequence (straight) > Color (flush) > Pair > High Card.
+ */
+export interface TeenPattiResponse extends BaseGameResponse {
+  players: TeenPattiPlayer[];
+  /** Chips currently in the pot. */
+  pot: number;
+  /** Current stake a Blind player must match to bet. */
+  stake: number;
+  phase: TeenPattiPhaseValue;
+  roundNumber: number;
+  dealerIdx: number;
+  currentPlayerIdx: number;
+  /** Winning seat index of the current deal, or -1 until it ends. */
+  roundWinnerIdx: number;
+  /** Winning seat index of the match, or -1 until the game ends. */
+  matchWinnerIdx: number;
+  /** Whether the deal has reached a showdown (hands revealed). */
+  isShowdown: boolean;
+  /** Whether a Seen player may Show (force a showdown) right now. */
+  canShow: boolean;
+  /** Whether the current player may request a Side Show right now. */
+  canRequestSideShow: boolean;
+  /** Seat index that requested a Side Show, or -1 when none pending. */
+  sideShowRequester: number;
+  /** Seat index asked to accept/decline a Side Show, or -1 when none pending. */
+  sideShowTarget: number;
+  gameEndFlag: boolean;
+  /** Whether it is currently the human's turn to act. */
+  isHumanTurn: boolean;
+  hint?: TeenPattiHint | null;
+  config: TeenPattiConfig;
+}
+
+// --- Préférence ---
+
+/** Préférence game phase (0=Bid 1=Play 2=TrickEnd 3=RoundEnd 4=GameEnd). */
+export type PreferencePhaseValue = 0 | 1 | 2 | 3 | 4;
+
+/** A Préférence player's public/own state. Cards are non-empty only for the human. */
+export interface PreferencePlayer {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  trickCount: number;
+  /** Cumulative match score of this individual player. */
+  score: number;
+  /** Whether this player is the round's declarer (plays alone vs the 2 defenders). */
+  isDeclarer: boolean;
+}
+
+/** A card played into the current Préférence trick. */
+export interface PreferenceTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Préférence game configuration. */
+export interface PreferenceConfig {
+  cpuDifficulty: number;
+  targetPoints: number;
+}
+
+/** A suggested hint for Préférence, computed by the backend. */
+export interface PreferenceHint {
+  cardIndices: number[];
+  /** i18n reason suffix identifier. */
+  reason: string;
+}
+
+/** Full Préférence game state returned from the API. */
+export interface PreferenceResponse extends BaseGameResponse {
+  players: PreferencePlayer[];
+  phase: PreferencePhaseValue;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  leadPlayerIdx: number;
+  dealerIdx: number;
+  /** Seat index of the round's declarer, or -1 before bidding resolves. */
+  declarerIdx: number;
+  /** Winning contract (0=Pass 1=Six 2=Misère 3=Seven 4=Eight). */
+  contract: number;
+  /** Trump suit (0=none during bid / Misère, else 1=♠ 2=♣ 3=♥ 4=♦). */
+  trumpSuit: number;
+  /** Each player's bid this round (0-4) — [p0, p1, p2]. */
+  bids: number[];
+  currentTrick: PreferenceTrickCard[];
+  /** Cumulative match scores per player — [p0, p1, p2]. */
+  playerScores: number[];
+  /** Tricks captured per player this round — [p0, p1, p2]. */
+  roundTricks: number[];
+  /** Indices in the human's hand that are legal to play (non-empty on human Play turn). */
+  playableIndices: number[];
+  gameEndFlag: boolean;
+  /** Winning player seat index, or -1 until the game ends. */
+  winnerPlayer: number;
+  /** Whether it is currently the human's turn to play a card. */
+  isHumanTurn: boolean;
+  /** Whether it is currently the human's turn to bid. */
+  isHumanBidTurn: boolean;
+  hint?: PreferenceHint | null;
+  config: PreferenceConfig;
+}
+
+// --- Nap (Napoleon) ---
+
+/** Nap game phase (0=Bid 1=Play 2=TrickEnd 3=RoundEnd 4=GameEnd). */
+export type NapPhaseValue = 0 | 1 | 2 | 3 | 4;
+
+/** A Nap player's public/own state. Cards are non-empty only for the human. */
+export interface NapPlayer {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  trickCount: number;
+  /** Cumulative chip score of this individual player. */
+  score: number;
+  /** Whether this player is the round's declarer (plays to make the bid). */
+  isDeclarer: boolean;
+}
+
+/** A card played into the current Nap trick. */
+export interface NapTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Nap game configuration. */
+export interface NapConfig {
+  cpuDifficulty: number;
+  targetPoints: number;
+}
+
+/** A suggested hint for Nap, computed by the backend. */
+export interface NapHint {
+  cardIndices: number[];
+  /** i18n reason suffix identifier. */
+  reason: string;
+}
+
+/** Full Nap game state returned from the API. */
+export interface NapResponse extends BaseGameResponse {
+  players: NapPlayer[];
+  phase: NapPhaseValue;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  leadPlayerIdx: number;
+  dealerIdx: number;
+  /** Seat index of the round's declarer, or -1 before bidding resolves. */
+  declarerIdx: number;
+  /** Winning contract (0=Pass 2=Two 3=Three 4=Four 5=Nap; the value is the bid trick count). */
+  contract: number;
+  /** Trump suit (0 during bid, else 1=♠ 2=♣ 3=♥ 4=♦ in play). */
+  trumpSuit: number;
+  /** Each player's bid this round (0/2/3/4/5) — [p0, p1, p2, p3]. */
+  bids: number[];
+  currentTrick: NapTrickCard[];
+  /** Cumulative chip scores per player — [p0, p1, p2, p3]. */
+  playerScores: number[];
+  /** Tricks captured per player this round — [p0, p1, p2, p3]. */
+  roundTricks: number[];
+  /** Indices in the human's hand that are legal to play (non-empty on human Play turn). */
+  playableIndices: number[];
+  gameEndFlag: boolean;
+  /** Winning player seat index, or -1 until the game ends. */
+  winnerPlayer: number;
+  /** Whether it is currently the human's turn to play a card. */
+  isHumanTurn: boolean;
+  /** Whether it is currently the human's turn to bid. */
+  isHumanBidTurn: boolean;
+  hint?: NapHint | null;
+  config: NapConfig;
+}
+
+/** Full Solo Whist game state returned from the API. */
+export interface SoloWhistResponse extends BaseGameResponse {
+  players: SoloWhistPlayer[];
+  phase: SoloWhistPhaseValue;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  leadPlayerIdx: number;
+  dealerIdx: number;
+  /** Seat index of the round's declarer, or -1 before bidding resolves. */
+  declarerIdx: number;
+  /** Winning contract (0=Pass 1=Solo 2=Misère 3=Abundance). */
+  contract: number;
+  /** Trump suit (0=none for Misère, else 1=♠ 2=♣ 3=♥ 4=♦). */
+  trumpSuit: number;
+  /** Each player's bid this round (0-3) — [p0, p1, p2, p3]. */
+  bids: number[];
+  currentTrick: SoloWhistTrickCard[];
+  /** Cumulative match scores per player — [p0, p1, p2, p3]. */
+  playerScores: number[];
+  /** Tricks captured per player this round — [p0, p1, p2, p3]. */
+  roundTricks: number[];
+  /** Indices in the human's hand that are legal to play (non-empty on human Play turn). */
+  playableIndices: number[];
+  gameEndFlag: boolean;
+  /** Winning player seat index, or -1 until the game ends. */
+  winnerPlayer: number;
+  /** Whether it is currently the human's turn to play a card. */
+  isHumanTurn: boolean;
+  /** Whether it is currently the human's turn to bid. */
+  isHumanBidTurn: boolean;
+  hint?: SoloWhistHint | null;
+  config: SoloWhistConfig;
+}
+
 // --- Spades ---
 
 /** Spades player data with bid, scores, and bags. */
@@ -1745,6 +2950,55 @@ export interface MacauResponse extends BaseGameResponse {
   config: MacauConfig;
 }
 
+// --- Mao (マオ) ---
+
+/** Mao player data with scores and declaration state. */
+export interface MaoPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  roundScore: number;
+  cumulativeScore: number;
+  hasDeclared: boolean;
+}
+
+/** Mao game configuration. */
+export interface MaoConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+/**
+ * Full Mao game state returned from the API.
+ *
+ * The hidden rule is never sent to the client. Only indirect signals are
+ * exposed: {@link MaoResponse.awaitingWord} (a word may be required),
+ * {@link MaoResponse.rulePenalty} (the last action broke the hidden rule),
+ * {@link MaoResponse.correctCount} (successful compliances so far), and
+ * {@link MaoResponse.hintUnlocked}/{@link MaoResponse.ruleHint} (a vague hint,
+ * populated only after 3 correct compliances).
+ */
+export interface MaoResponse extends BaseGameResponse {
+  players: MaoPlayerData[];
+  phase: number;
+  roundNumber: number;
+  currentPlayerIdx: number;
+  discardTop: Card | null;
+  drawPileCount: number;
+  chosenSuit: number;
+  penaltyDrawCount: number;
+  direction: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  awaitingWord: boolean;
+  correctCount: number;
+  hintUnlocked: boolean;
+  ruleHint: string;
+  rulePenalty: boolean;
+  config: MaoConfig;
+}
+
 // --- Page One (ページワン) ---
 
 /** Page One player data with scores. */
@@ -2008,6 +3262,118 @@ export interface GinRummyResponse extends BaseGameResponse {
   config: GinRummyConfig;
 }
 
+// --- Conquian (コンキャン) ---
+
+/** A table meld (set or run) in Conquian. */
+export interface ConquianMeld {
+  cards: Card[];
+}
+
+/** Conquian player data with face-up table melds and rounds won. */
+export interface ConquianPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  melds: ConquianMeld[];
+  wins: number;
+}
+
+/** Conquian game configuration. */
+export interface ConquianConfig {
+  cpuDifficulty: number;
+  targetWins: number;
+}
+
+/** Full Conquian game state returned from the API. */
+export interface ConquianResponse extends BaseGameResponse {
+  players: ConquianPlayerData[];
+  phase: number;
+  roundNumber: number;
+  currentPlayerIdx: number;
+  discardTop: Card | null;
+  drawPileCount: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  roundWinnerIdx: number;
+  tookDiscard: boolean;
+  config: ConquianConfig;
+}
+
+// --- Chinchón (チンチョン) ---
+
+/** Chinchón player data with round and cumulative scores and elimination flag. */
+export interface ChinchonPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  roundScore: number;
+  cumulativeScore: number;
+  eliminated: boolean;
+}
+
+/** A meld (set or run) laid down by the knocker in Chinchón. */
+export interface ChinchonMeld {
+  cards: Card[];
+}
+
+/** Chinchón game configuration. */
+export interface ChinchonConfig {
+  cpuDifficulty: number;
+  playerCount: number;
+  knockThreshold: number;
+  eliminationLimit: number;
+}
+
+/** Full Chinchón game state returned from the API. */
+export interface ChinchonResponse extends BaseGameResponse {
+  players: ChinchonPlayerData[];
+  phase: number;
+  roundNumber: number;
+  currentPlayerIdx: number;
+  discardTop: Card | null;
+  drawPileCount: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  knockerIdx: number;
+  knockerMelds: ChinchonMeld[];
+  config: ChinchonConfig;
+}
+
+/** Three Thirteen player data with deadwood, round, and cumulative scores. */
+export interface ThreeThirteenPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  deadwood: number;
+  roundScore: number;
+  cumulativeScore: number;
+}
+
+/** Three Thirteen game configuration. */
+export interface ThreeThirteenConfig {
+  cpuDifficulty: number;
+  playerCount: number;
+}
+
+/** Full Three Thirteen game state returned from the API. */
+export interface ThreeThirteenResponse extends BaseGameResponse {
+  players: ThreeThirteenPlayerData[];
+  phase: number;
+  round: number;
+  wildRank: number;
+  dealCount: number;
+  currentPlayerIdx: number;
+  knockerIdx: number;
+  discardTop: Card | null;
+  drawPileCount: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  config: ThreeThirteenConfig;
+}
+
 // --- Memory (神経衰弱) ---
 
 /** Memory player data with pair count. */
@@ -2156,6 +3522,108 @@ export interface BristolResponse extends BaseGameResponse {
 export interface BristolMoveZone {
   zone: string;
   col?: number;
+}
+
+// --- La Belle Lucie (ラ・ベル・ルーシー) ---
+
+/** A suggested move hint in La Belle Lucie. */
+export interface LaBelleLucieHint {
+  fromFan: number;
+  toFan: number;
+  toFoundation: boolean;
+}
+
+/** Full La Belle Lucie game state returned from the API. */
+export interface LaBelleLucieResponse extends BaseGameResponse {
+  /** Fans of cards (top card is last); the count varies after a redeal. */
+  fans: Card[][];
+  /** The 4 foundations (A→K by suit). */
+  foundation: Card[][];
+  /** Remaining gather-and-reshuffle redeals (0–3). */
+  redealsLeft: number;
+  /** Current phase (0=Playing, 1=GameClear, 2=GameOver). */
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  hint?: LaBelleLucieHint;
+}
+
+// --- Simple Simon (シンプル・サイモン) ---
+
+/** A suggested move hint in Simple Simon. */
+export interface SimpleSimonHint {
+  fromCol: number;
+  cardIndex: number;
+  toCol: number;
+}
+
+/** Full Simple Simon game state returned from the API. */
+export interface SimpleSimonResponse extends BaseGameResponse {
+  /** The 10 tableau columns (top card is last). */
+  columns: Card[][];
+  /** Number of complete K-A suits removed (0-4). */
+  completedSuits: number;
+  /** Current phase (0=Playing, 1=GameClear, 2=GameOver). */
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  hint?: SimpleSimonHint;
+}
+
+// --- Double Klondike (ダブル・クロンダイク) ---
+
+/** A tableau card in Double Klondike; face-down cards hide their value. */
+export interface DoubleKlondikeTableauCard {
+  card: Card | null;
+  faceUp: boolean;
+}
+
+/** A suggested move hint in Double Klondike. */
+export interface DoubleKlondikeHint {
+  fromZone: string;
+  fromCol: number;
+  cardIndex: number;
+  toZone: string;
+  toCol: number;
+}
+
+/** Full Double Klondike game state returned from the API. */
+export interface DoubleKlondikeResponse extends BaseGameResponse {
+  /** The 9 tableau columns (top card is last). */
+  tableau: DoubleKlondikeTableauCard[][];
+  /** Cards left in the stock. */
+  stockCount: number;
+  /** The waste pile (top card is last). */
+  waste: Card[];
+  /** The 8 foundations (A-K by suit, two per suit). */
+  foundation: Card[][];
+  /** Current phase (0=Playing, 1=GameClear, 2=GameOver). */
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  hint?: DoubleKlondikeHint;
+}
+
+// --- Black Hole (ブラックホール) ---
+
+/** A suggested move hint in Black Hole. */
+export interface BlackHoleHint {
+  fan: number;
+}
+
+/** Full Black Hole game state returned from the API. */
+export interface BlackHoleResponse extends BaseGameResponse {
+  /** The 17 fans (top card is last). */
+  fans: Card[][];
+  /** The central black hole pile (top card is last). */
+  blackHole: Card[];
+  /** Current phase (0=Playing, 1=GameClear, 2=GameOver). */
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  hint?: BlackHoleHint;
 }
 
 // --- FreeCell (フリーセル) ---
@@ -3544,6 +5012,59 @@ export interface CanastaResponse extends BaseGameResponse {
   config: CanastaConfig;
 }
 
+// --- Hand and Foot (ハンド・アンド・フット) ---
+
+/** Hand and Foot game configuration. */
+export interface HandAndFootConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+/** A single team meld on the table in Hand and Foot. */
+export interface HandAndFootMeldData {
+  cards: Card[];
+  isNatural: boolean;
+  isCanasta: boolean;
+  rank: number;
+}
+
+/** Per-team meld and red-3 data in Hand and Foot. */
+export interface HandAndFootTeamData {
+  team: number;
+  melds: HandAndFootMeldData[];
+  red3Count: number;
+  red3s: Card[];
+}
+
+/** Hand and Foot player data. Melds and red 3s are held per team, not per player. */
+export interface HandAndFootPlayerData {
+  id: number;
+  team: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  footCount: number;
+  inFoot: boolean;
+  roundScore: number;
+  cumulativeScore: number;
+}
+
+/** Full Hand and Foot game state returned from the API. */
+export interface HandAndFootResponse extends BaseGameResponse {
+  players: HandAndFootPlayerData[];
+  teams: HandAndFootTeamData[];
+  phase: number;
+  roundNumber: number;
+  currentPlayerIdx: number;
+  discardTop: Card | null;
+  drawPileCount: number;
+  discardPileCount: number;
+  isFrozen: boolean;
+  gameEndFlag: boolean;
+  winnerTeam: number;
+  config: HandAndFootConfig;
+}
+
 // --- Burraco (ブラーコ) ---
 
 /** Burraco game configuration. */
@@ -3891,6 +5412,97 @@ export interface SevenCardStudResponse extends BaseGameResponse {
   maxBetAmount: number;
   roundResults: SevenCardStudResult[];
   cpuActions: SevenCardStudCpuAction[];
+  handCount: number;
+  ante: number;
+  bringIn: number;
+  smallBet: number;
+  bigBet: number;
+  tournamentMode: boolean;
+  anteLevelHands: number;
+  anteMultiplier: number;
+  tableSize: number;
+  bringInPlayerIdx: number;
+  rebuyAvailable: boolean;
+  addonAvailable: boolean;
+  rebuyCounts: number[];
+  addonUsed: boolean[];
+  rebuyEnabled: boolean;
+  addonEnabled: boolean;
+  rebuyMaxCount: number;
+  rebuyChips: number;
+  addonChips: number;
+  rebuyPeriodHands: number;
+  addonAfterHand: number;
+  rebuyPhaseType: number;
+  muckAvailable: boolean;
+  metaAI?: BettingMetaAI;
+  profile?: BettingHumanProfileData;
+}
+
+// --- Five Card Stud ---
+
+/** Player data in Five Card Stud. */
+export interface FiveCardStudPlayerData {
+  id: number;
+  isHuman: boolean;
+  holeCards: Card[];
+  doorCards: Card[];
+  chips: number;
+  currentBet: number;
+  folded: boolean;
+  allIn: boolean;
+  handRank: number;
+  handName: string;
+  bestHand: Card[];
+  playStyleName: string;
+  totalHands: number;
+  vpip: number;
+  pfr: number;
+  threeBet: number;
+  af: string;
+}
+
+/** CPU betting action in Five Card Stud. */
+export interface FiveCardStudCpuAction {
+  playerIdx: number;
+  action: number;
+  amount: number;
+}
+
+/** Five Card Stud round result for a single player. */
+export interface FiveCardStudResult {
+  playerIdx: number;
+  handRank: number;
+  handName: string;
+  kickers: string;
+  bestHand: Card[];
+  wonAmount: number;
+  mucked: boolean;
+}
+
+/** Side pot in Five Card Stud with eligible players. */
+export interface FiveCardStudSidePot {
+  amount: number;
+  eligiblePlayers: number[];
+}
+
+/** Full Five Card Stud game state returned from the API. */
+export interface FiveCardStudResponse extends BaseGameResponse {
+  players: FiveCardStudPlayerData[];
+  communityCard: Card | null;
+  pot: number;
+  sidePots: FiveCardStudSidePot[];
+  dealerIdx: number;
+  currentTurn: number;
+  phase: number;
+  gameEndFlag: boolean;
+  lastBet: number;
+  minRaise: number;
+  bettingLimit: number;
+  raiseCount: number;
+  maxBetAmount: number;
+  roundResults: FiveCardStudResult[];
+  cpuActions: FiveCardStudCpuAction[];
   handCount: number;
   ante: number;
   bringIn: number;
@@ -4919,6 +6531,107 @@ export interface ScopaResponse extends BaseGameResponse {
   lastRoundDetail: ScopaScoreDetail | null;
 }
 
+// --- Scopone (スコポーネ) ---
+
+/** Scopone player data (4 players in 2 teams). */
+export interface ScoponePlayerData {
+  id: number;
+  isHuman: boolean;
+  team: number;
+  handCount: number;
+  cards: Card[];
+  capturedCount: number;
+  scopaCount: number;
+}
+
+/** Scopone per-round score breakdown (per team, 2-element tuples). */
+export interface ScoponeScoreDetail {
+  cards: [number, number];
+  diamonds: [number, number];
+  sevens: [number, number];
+  scopas: [number, number];
+  gained: [number, number];
+  settebello: number;
+}
+
+/** Scopone game rule configuration. */
+export interface ScoponeConfig {
+  cpuDifficulty: number;
+  targetScore: number;
+}
+
+/** Full Scopone game state returned from the API. */
+export interface ScoponeResponse extends BaseGameResponse {
+  players: ScoponePlayerData[];
+  tableCards: Card[];
+  phase: string;
+  roundNumber: number;
+  currentTurn: number;
+  dealerIdx: number;
+  teamScores: number[];
+  lastCaptureIdx: number;
+  winnerTeam: number;
+  gameEndFlag: boolean;
+  isHumanTurn: boolean;
+  /** Per human hand-card index, the list of valid table-index capture sets. */
+  handCaptures: number[][][];
+  lastRoundDetail?: ScoponeScoreDetail | null;
+  config: ScoponeConfig;
+}
+
+// --- Escoba (エスコバ) ---
+
+/** Escoba player data (4 players, free-for-all / no teams). */
+export interface EscobaPlayerData {
+  id: number;
+  isHuman: boolean;
+  handCount: number;
+  cards: Card[];
+  capturedCount: number;
+  escobaCount: number;
+  score: number;
+}
+
+/**
+ * Escoba per-round score breakdown (per-player arrays, one entry per player).
+ * `aceEspada` / `seteEspada` are the player indices who took the Ace♠ and 7♠.
+ */
+export interface EscobaScoreDetail {
+  cards: number[];
+  espadas: number[];
+  sevens: number[];
+  oros: number[];
+  escobas: number[];
+  gained: number[];
+  aceEspada: number;
+  seteEspada: number;
+}
+
+/** Escoba game rule configuration. */
+export interface EscobaConfig {
+  cpuDifficulty: number;
+  targetScore: number;
+}
+
+/** Full Escoba game state returned from the API. */
+export interface EscobaResponse extends BaseGameResponse {
+  players: EscobaPlayerData[];
+  tableCards: Card[];
+  phase: string;
+  roundNumber: number;
+  currentTurn: number;
+  dealerIdx: number;
+  stockRemaining: number;
+  lastCaptureIdx: number;
+  winnerIdx: number;
+  gameEndFlag: boolean;
+  isHumanTurn: boolean;
+  /** Per human hand-card index, the list of valid table-index capture sets summing to 15. */
+  handCaptures: number[][][];
+  lastRoundDetail?: EscobaScoreDetail | null;
+  config: EscobaConfig;
+}
+
 // --- Barbu (バルブ) ---
 
 /** Per-game configuration for Barbu. */
@@ -5196,6 +6909,49 @@ export interface ContractRummyResponse extends BaseGameResponse {
   /** The current round's contract (sequence of slots to satisfy). */
   contractSlots: ContractRummyContractSlot[];
   config: ContractRummyConfig;
+}
+
+// --- Kalooki (カルーキ) ---
+
+/** Kalooki meld: a set or run of cards laid face-up on the table. */
+export interface KalookiMeld {
+  cards: Card[];
+}
+
+/** Kalooki player state with face-up table melds, opening flag, and scores. */
+export interface KalookiPlayer {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  melds: KalookiMeld[];
+  /** Whether the player has made their opening meld(s) meeting the threshold. */
+  hasOpened: boolean;
+  roundScore: number;
+  cumulativeScore: number;
+}
+
+/** Kalooki game configuration. */
+export interface KalookiConfig {
+  cpuDifficulty: number;
+  playerCount: number;
+  openingThreshold: number;
+}
+
+/** Kalooki API response. */
+export interface KalookiResponse extends BaseGameResponse {
+  players: KalookiPlayer[];
+  /** 0 = draw, 1 = meld, 2 = round end, 3 = game end. */
+  phase: number;
+  /** Minimum points required for a player's opening meld. */
+  openingThreshold: number;
+  currentPlayerIdx: number;
+  discardTop: Card | null;
+  drawPileCount: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  roundWinnerIdx: number;
+  config: KalookiConfig;
 }
 
 // --- Oasis Poker (オアシスポーカー) ---
@@ -5603,4 +7359,515 @@ export interface BourreResponse extends BaseGameResponse {
   validPlays: number[];
   results: BourreResultData[];
   config: BourreConfig;
+}
+
+// --- Spoons ---
+
+/** Spoons game phase (0=Pass 1=Grab 2=RoundEnd 3=GameEnd). */
+export type SpoonsPhaseValue = 0 | 1 | 2 | 3;
+
+/**
+ * A Spoons player's public/own state. `hand` is non-empty only for the human
+ * (seat 0); CPU hands are returned as an empty array.
+ */
+export interface SpoonsPlayer {
+  /** Display name ("あなた" / "CPU"). */
+  name: string;
+  isHuman: boolean;
+  /** Number of cards currently held. */
+  handSize: number;
+  /** The player's cards — populated only for the human. */
+  hand: Card[];
+  /** Number of S-P-O-O-N-S letters collected (0–6). */
+  letters: number;
+  /** Whether the player has been eliminated (6 letters). */
+  eliminated: boolean;
+  /** Whether the player currently holds a grabbed spoon. */
+  hasSpoon: boolean;
+}
+
+/**
+ * Full Spoons game state returned from the API.
+ *
+ * Spoons is a 4-player pass-and-grab speed game played with a 52-card deck (4
+ * cards each). Players continuously pass a card to the next player; when someone
+ * collects four of a kind they grab a spoon and everyone races for the
+ * remaining spoons (one fewer than the number of players). The player left
+ * without a spoon gains a letter — S, P, O, O, N, S. After six letters that
+ * player is eliminated; the last player standing wins.
+ */
+export interface SpoonsResponse extends BaseGameResponse {
+  phase: SpoonsPhaseValue;
+  gameEndFlag: boolean;
+  /** Winning seat index, or -1 until the game ends. */
+  winnerIdx: number;
+  /** Seat index whose turn it currently is. */
+  currentPlayerIdx: number;
+  /** Seat index of the "feeder" who draws from the draw pile this round. */
+  feederIdx: number;
+  /** Whether it is currently the human's turn to act. */
+  isHumanTurn: boolean;
+  /** Spoons still on the table to be grabbed. */
+  spoonsRemaining: number;
+  /** Whether the grab window is open (race to grab a spoon). */
+  grabWindowOpen: boolean;
+  /** Seat index of the first player to grab this round, or -1 until one grabs. */
+  firstGrabberIdx: number;
+  /** Seat index of the player who missed out this round, or -1 until decided. */
+  roundLoserIdx: number;
+  /** Current round number (1-based). */
+  roundNumber: number;
+  /** Cards remaining in the feeder's draw pile. */
+  drawPileSize: number;
+  players: SpoonsPlayer[];
+  cpuDifficulty: number;
+}
+
+/** Cuckoo phase value: 0=Turn, 1=Refuse, 2=RoundEnd, 3=GameEnd. */
+export type CuckooPhaseValue = 0 | 1 | 2 | 3;
+
+/**
+ * A single Cuckoo player as returned from the API.
+ *
+ * Four seats each hold a single card. The human (seat 0) always sees their own
+ * card; opponents' cards are `null` until they are revealed at round end or by
+ * a King reveal.
+ */
+export interface CuckooPlayer {
+  /** Seat index (0 = human). */
+  id: number;
+  isHuman: boolean;
+  /** The player's single card, or `null` while hidden / eliminated. */
+  card: Card | null;
+  /** Remaining lives (♥). 0 means eliminated. */
+  lives: number;
+  /** Whether this player has been knocked out of the game. */
+  isEliminated: boolean;
+  /** Whether this player has revealed a King to block a swap. */
+  kingRevealed: boolean;
+  /** Whether it is currently this player's turn. */
+  isCurrentTurn: boolean;
+}
+
+/**
+ * Full Cuckoo (a.k.a. Chase the Ace / Ranter-Go-Round) game state.
+ *
+ * A simple 4-player life-survival game. Each player holds one card and three
+ * lives. On your turn you keep your card or swap it with your neighbour (the
+ * dealer swaps with the stock); a King holder may refuse an incoming swap by
+ * revealing the King. After everyone acts, the holder(s) of the lowest card
+ * lose a life; at zero lives a player is eliminated. The last player standing
+ * wins.
+ */
+export interface CuckooResponse extends BaseGameResponse {
+  players: CuckooPlayer[];
+  phase: CuckooPhaseValue;
+  /** Current round number (1-based). */
+  roundNumber: number;
+  /** Seat index whose turn it currently is. */
+  currentPlayerIdx: number;
+  /** Seat index of the dealer this round. */
+  dealerIdx: number;
+  /** Cards remaining in the stock. */
+  stockCount: number;
+  gameEndFlag: boolean;
+  /** Winning seat index, or -1 until the game ends. */
+  winnerIdx: number;
+  /** Seat attempting a swap, or -1. */
+  pendingSwapFrom: number;
+  /** Target seat of a pending swap (the King holder who may refuse), or -1. */
+  pendingSwapTo: number;
+  /** The lowest card value held this round, or -1 until decided. */
+  roundLowest: number;
+  /** Seat indices that held the lowest card and lost a life this round. */
+  roundLosers: number[];
+  config: CuckooConfig;
+}
+
+/** Cuckoo configuration as returned from the API. */
+export interface CuckooConfig {
+  cpuDifficulty: number;
+  initialLives: number;
+}
+
+/**
+ * Pişti game phase, mirroring the backend `PishtiPhase` string values
+ * (internal/domain/Pishti.go). The phase is a string, not a numeric enum.
+ */
+export type PishtiPhase = 'play' | 'roundEnd' | 'gameEnd';
+
+/** A single Pişti player as returned from the API. */
+export interface PishtiPlayer {
+  /** Seat index (0 = human). */
+  id: number;
+  isHuman: boolean;
+  /** Number of cards currently in hand. */
+  cardCount: number;
+  /** The player's hand cards (populated only for the human). */
+  cards: Card[];
+  /** Total number of cards captured so far. */
+  capturedCount: number;
+  /** Accumulated Pişti bonus points. */
+  pistiBonus: number;
+  /** Final score (populated once the game ends). */
+  finalScore: number;
+}
+
+/** Pişti configuration as returned from / sent to the API. */
+export interface PishtiConfig {
+  /** Number of players (2-4). */
+  playerCnt: number;
+  /** CPU difficulty (0=Easy, 1=Normal, 2=Hard). */
+  cpuDifficulty: number;
+}
+
+/** Server response for the Pişti game (POST /pishti/exec). */
+export interface PishtiResponse extends BaseGameResponse {
+  players: PishtiPlayer[];
+  /** Seat index whose turn it currently is. */
+  currentTurn: number;
+  /** All cards currently on the central pile, bottom to top. */
+  pile: Card[];
+  /** The top card of the pile, or null when the pile is empty. */
+  pileTop: Card | null;
+  /** Number of cards on the pile. */
+  pileCount: number;
+  /** Seat index of the most recent capturer, or -1. */
+  lastCaptureIdx: number;
+  gameEndFlag: boolean;
+  /** Current game phase (a string, not a numeric enum). */
+  phase: PishtiPhase | string;
+  /** Cards remaining in the stock. */
+  remainingDeck: number;
+  /** Winning seat indices (may tie), empty until the game ends. */
+  winners: number[];
+  /** Final scores indexed by seat, empty until the game ends. */
+  finalScores: number[];
+  config: PishtiConfig;
+}
+
+/** A single Cuarenta player as returned from the API. */
+export interface CuarentaPlayer {
+  /** Seat index (0 = human; seats {0,2}=Team A, {1,3}=Team B). */
+  id: number;
+  /** Team index (0 = Team A, 1 = Team B). */
+  team: number;
+  isHuman: boolean;
+  /** Number of cards currently in hand. */
+  cardCount: number;
+  /** The player's hand cards (populated only for the human). */
+  cards: Card[];
+  /** Total number of cards captured by this player so far this round. */
+  capturedCount: number;
+}
+
+/** A single Cuarenta play action (human or CPU), describing what was captured. */
+export interface CuarentaAction {
+  /** Seat index of the acting player. */
+  playerIdx: number;
+  /** The card that was played, or null. */
+  playedCard: Card | null;
+  /** Cards captured by this play (empty when the card was laid on the table). */
+  capturedCards: Card[];
+  /** True when this play scored a caída (+2). */
+  isCaida: boolean;
+  /** True when this play cleared the table (limpia, +1). */
+  isLimpia: boolean;
+  /** Extra ronda points scored by this play (0 when none). */
+  rondaBonus: number;
+}
+
+/** Round-end scoring breakdown keyed by team index. */
+export interface CuarentaScoreDetail {
+  /** Cards captured this round, keyed by team index. */
+  capturedCount: Record<string, number>;
+  /** Caída points, keyed by team index. */
+  caida: Record<string, number>;
+  /** Ronda points, keyed by team index. */
+  ronda: Record<string, number>;
+  /** Limpia points, keyed by team index. */
+  limpia: Record<string, number>;
+  /** Team index awarded the most-cards bonus, or -1 when none. */
+  mostCards: number;
+  /** Total points gained this round, keyed by team index. */
+  gained: Record<string, number>;
+}
+
+/** Cuarenta configuration as returned from / sent to the API. */
+export interface CuarentaConfig {
+  /** Target score to win the game (default 40). */
+  targetScore: number;
+  /** CPU difficulty (0=Easy, 1=Normal, 2=Hard). */
+  cpuDifficulty: number;
+}
+
+/** Server response for the Cuarenta game (POST /cuarenta/exec). */
+export interface CuarentaResponse extends BaseGameResponse {
+  players: CuarentaPlayer[];
+  /** Seat index whose turn it currently is. */
+  currentTurn: number;
+  /** All cards currently on the central table. */
+  tableCards: Card[];
+  /** Seat index of the most recent capturer, or -1. */
+  lastCaptureIdx: number;
+  gameEndFlag: boolean;
+  /** Current game phase (0=Play, 1=RoundEnd, 2=GameEnd). */
+  phase: number;
+  /** Cumulative score per team, indexed by team. */
+  teamScores: number[];
+  /** Cards remaining in the stock. */
+  remainingDeck: number;
+  /** Winning team indices (may tie), empty until the game ends. */
+  roundWinners: number[];
+  /** CPU actions that occurred since the last human play. */
+  cpuActions: CuarentaAction[];
+  /** The human's most recent action, or null. */
+  humanAction: CuarentaAction | null;
+  /** The most recent round-end scoring breakdown, or null. */
+  lastRoundDetail: CuarentaScoreDetail | null;
+  config: CuarentaConfig;
+}
+
+/** A single chip bet placed on one rank of the Faro layout. */
+export interface FaroBet {
+  /** Rank the chip is placed on (1=A .. 13=K). */
+  rank: number;
+  /** Wagered chip amount. */
+  amount: number;
+  /** True when the bet is a "copper" — wagering the rank to lose rather than win. */
+  copper: boolean;
+}
+
+/** Server response for the Faro game (POST /faro/exec). */
+export interface FaroResponse extends BaseGameResponse {
+  /** Current phase (1=Betting, 2=Turn, 3=Call, 4=RoundEnd, 5=GameEnd). */
+  phase: number;
+  /** Player's remaining bankroll in chips. */
+  chips: number;
+  /** Chips currently placed on the layout, one entry per wagered rank. */
+  bets: FaroBet[];
+  /** The burned "soda" card (first card of the deal), or null before the deal. */
+  soda: Card | null;
+  /** The most recent turn's losing card (1st turned — bank collects), or null. */
+  losingCard: Card | null;
+  /** The most recent turn's winning card (2nd turned — pays the player), or null. */
+  winningCard: Card | null;
+  /** True when the last turn was a split (both cards the same rank — bank takes half). */
+  split: boolean;
+  /** Number of turns dealt so far this round. */
+  turnsPlayed: number;
+  /** Total number of turns in a full round. */
+  turnsTotal: number;
+  /** Number of cards still left in the dealing box. */
+  remaining: number;
+  /** The final three cards available to call (populated during the Call phase). */
+  callCards: Card[];
+  /** The player's predicted order for the called cards (rank values), empty when none. */
+  callOrder: number[];
+  /** True when the most recent call was correct (paid 4:1). */
+  callWon: boolean;
+  /** Net chip change for the just-finished round. */
+  totalPayout: number;
+  gameEndFlag: boolean;
+}
+
+/** A single player as returned from the Open Face Chinese Poker (OFC) API. */
+export interface OpenFaceChinesePlayer {
+  /** Seat index (0 = human). */
+  id: number;
+  /** True for the human player. */
+  isHuman: boolean;
+  /** Top row (up to 3 cards). */
+  front: Card[];
+  /** Middle row (up to 5 cards). */
+  middle: Card[];
+  /** Bottom row (up to 5 cards). */
+  back: Card[];
+  /** The pending card(s) awaiting placement (human only; empty for CPU). */
+  pending: Card[];
+  /** Net points scored in the just-finished round. */
+  roundScore: number;
+  /** Royalty bonus points earned this round. */
+  royalty: number;
+  /** True when the hand is fouled (rows not in non-decreasing strength order). */
+  fouled: boolean;
+  /** True when the player qualified for Fantasyland. */
+  fantasyland: boolean;
+  /** Cumulative score across all rounds. */
+  totalScore: number;
+}
+
+/** Open Face Chinese Poker (OFC) config echoed back by the server. */
+export interface OpenFaceChineseConfig {
+  cpuDifficulty: number;
+  playerCount: number;
+  targetRounds: number;
+}
+
+/** A placement hint returned by the Open Face Chinese Poker (OFC) /openfacechinese/exec endpoint. */
+export interface OpenFaceChineseHint {
+  /** Suggested row (0=front, 1=middle, 2=back). */
+  row: number;
+  /** Human-readable rationale for the suggestion. */
+  reason: string;
+}
+
+/** Server response for the Open Face Chinese Poker (OFC) game (POST /openfacechinese/exec). */
+export interface OpenFaceChineseResponse extends BaseGameResponse {
+  /** Current phase (0=Placing, 1=RoundEnd, 2=GameEnd). */
+  phase: number;
+  /** 1-based round number. */
+  roundNumber: number;
+  /** Seat index whose turn it currently is. */
+  currentPlayerIdx: number;
+  /** Seat index of the current dealer. */
+  dealerIdx: number;
+  /** The card the human must place this turn (present only on the human's turn). */
+  currentCard?: Card;
+  /** True when the game has ended. */
+  gameEndFlag: boolean;
+  /** Winning seat index, or -1 for a draw. */
+  winnerIdx: number;
+  /** True when it is the human player's turn to place a card. */
+  isHumanTurn: boolean;
+  /** Optional placement hint (present only on a hint request). */
+  hint?: OpenFaceChineseHint;
+  /** One entry per player. */
+  players: OpenFaceChinesePlayer[];
+  /** Echoed game configuration. */
+  config: OpenFaceChineseConfig;
+}
+
+/** A single Russian Bank (Crapette) player as returned from the API. */
+export interface RussianBankPlayer {
+  /** Seat index (0 = human). */
+  id: number;
+  /** True for the human player. */
+  isHuman: boolean;
+  /** Number of cards left in the reserve (the pile to empty to win). */
+  reserveCount: number;
+  /** Top reserve card (face up), if any. */
+  reserveTop?: Card;
+  /** Number of face-down cards left in hand. */
+  handCount: number;
+  /** Number of cards in the waste pile. */
+  wasteCount: number;
+  /** Top waste card, if any. */
+  wasteTop?: Card;
+  /** Number of times this player caught the opponent with "stop". */
+  stopPoints: number;
+}
+
+/** Russian Bank (Crapette) config echoed back by the server. */
+export interface RussianBankConfig {
+  cpuDifficulty: number;
+}
+
+/** A move hint returned by the Russian Bank /russianbank/exec endpoint. */
+export interface RussianBankHint {
+  /** Source zone (0=reserve, 1=waste, 2=tableau). */
+  zone: number;
+  /** True when the source is the opponent's pile. */
+  fromOpponent: boolean;
+  /** Source tableau column (when zone=tableau). */
+  col: number;
+  /** True when the destination is a foundation. */
+  toFoundation: boolean;
+  /** Destination tableau column (when toFoundation is false). */
+  toCol: number;
+}
+
+/** Server response for the Russian Bank (Crapette) game (POST /russianbank/exec). */
+export interface RussianBankResponse extends BaseGameResponse {
+  /** Current phase (0=Idle, 1=Playing, 2=GameEnd). */
+  phase: number;
+  /** Seat index whose turn it currently is. */
+  currentPlayerIdx: number;
+  /** True when the game has ended. */
+  gameEndFlag: boolean;
+  /** Winning seat index, or -1 for a draw. */
+  winnerIdx: number;
+  /** True when it is the human player's turn. */
+  isHumanTurn: boolean;
+  /** True when the human may call "stop" on the CPU. */
+  canCallStop: boolean;
+  /** True when the human's last move can be undone. */
+  canUndo: boolean;
+  /** Total moves played so far. */
+  moveCount: number;
+  /** The 4 shared tableau columns (top card is last). */
+  tableau: Card[][];
+  /** The 8 shared foundations (A-up by suit; top card is last). */
+  foundations: Card[][];
+  /** Optional move hint (present only on a hint request). */
+  hint?: RussianBankHint;
+  /** One entry per player (index 0 = human). */
+  players: RussianBankPlayer[];
+  /** Echoed game configuration. */
+  config: RussianBankConfig;
+}
+
+/** Kemps phase value: 0=Exchange, 1=Declare, 2=RoundEnd, 3=GameEnd. */
+export type KempsPhaseValue = 0 | 1 | 2 | 3;
+
+/**
+ * A single Kemps player as returned from the API.
+ *
+ * Four seats split into two teams (even seats = Team A, odd seats = Team B).
+ * Only the human (seat 0) has a populated `hand`; CPU hands are an empty array.
+ */
+export interface KempsPlayer {
+  /** Display name ("あなた" / "CPU"). */
+  name: string;
+  isHuman: boolean;
+  /** Team number (0 = Team A, 1 = Team B). */
+  team: number;
+  /** Number of cards currently held (always 4 during play). */
+  handSize: number;
+  /** The player's cards — populated only for the human. */
+  hand: Card[];
+  /** Whether this player currently holds four of a kind (human only). */
+  hasFourOfAKind: boolean;
+}
+
+/**
+ * Full Kemps game state returned from the API.
+ *
+ * Kemps is a 4-player, 2-team matching game. Each turn a player swaps one hand
+ * card for a card on the shared 4-card field, trying to collect four of a kind.
+ * When the human's partner secretly signals, the team races to declare "Kemps!"
+ * for a point; the opposing team can call "Counter-Kemps!" against a seat to
+ * steal it (−1 if wrong). First team to the target score (default 5) wins.
+ */
+export interface KempsResponse extends BaseGameResponse {
+  phase: KempsPhaseValue;
+  gameEndFlag: boolean;
+  /** Winning team (0 or 1), or -1 until the game ends. */
+  winnerTeam: number;
+  /** Seat index whose turn it currently is. */
+  currentPlayerIdx: number;
+  /** Whether it is currently the human's turn to act. */
+  isHumanTurn: boolean;
+  /** Team scores indexed by team number (Team A = index 0). */
+  teamScores: number[];
+  /** The shared field of cards available to swap with. */
+  field: Card[];
+  /** The human's secret signal type (0=Sound, 1=Blink). */
+  signalType: number;
+  /** Whether the human's partner is currently signaling (human-only cue). */
+  partnerSignaling: boolean;
+  /** Whether an opponent may be signaling (vague human-only cue). */
+  opponentSignaling: boolean;
+  /** Seat index that completed four of a kind, or -1. */
+  fourHolderIdx: number;
+  /** Round result code (0=none, 1=Kemps, 2=Counter, 3=CounterFail, 4=Miss). */
+  roundResult: number;
+  /** Team that won the most recent round, or -1. */
+  roundWinnerTeam: number;
+  /** Current round number (1-based). */
+  roundNumber: number;
+  players: KempsPlayer[];
+  cpuDifficulty: number;
+  /** Team score required to win (default 5). */
+  targetScore: number;
 }

@@ -1,0 +1,22 @@
+{
+  "helpTitle": "Klaverjas",
+  "helpPlay": "  play <idx>               play a card",
+  "helpNext": "  n                         go to next trick",
+  "helpNextRound": "  nr                        go to next round",
+  "helpSetDifficulty": "  sd [0-2]                  CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "round": "Round: {{round}}  Trick: {{trick}}  Trump: {{trump}}  Roem: A={{roemA}} B={{roemB}}",
+  "playerLine": "{{name}}: {{cards}} cards  Team score: {{teamScore}}  Tricks: {{tricks}}",
+  "gameEnd": "Game over! Team {{team}} wins the match!",
+  "promptPlay": "Turn: {{name}}",
+  "promptPlayHelp": "play <idx> ... play a card (must follow suit / overtrump)",
+  "promptTrickEnd": "Trick complete",
+  "promptTrickEndHelp": "n / next ... go to the next trick",
+  "promptRoundEnd": "Round complete (Team A: {{ptsA}} card pts, Team B: {{ptsB}} card pts)",
+  "promptRoundEndHelp": "nr / nextround ... go to the next round",
+  "hintNone": "No hint available.",
+  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintReasonLeadLow": "Lead a low card to conserve points",
+  "hintReasonFollowWin": "Points on the table — win the trick",
+  "hintReasonFollowDuck": "Cannot/should not win — duck",
+  "hintReasonDiscardLow": "Cannot follow suit — discard a low card"
+}

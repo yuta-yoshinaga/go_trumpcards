@@ -1,14 +1,32 @@
 import type {
+  BeziqueResponse,
   CallBreakResponse,
+  CourtPieceResponse,
   DoppelkopfResponse,
+  EcarteResponse,
+  EscobaResponse,
+  FortyFivesResponse,
   GongZhuResponse,
   HeartsResponse,
+  KlaverjasResponse,
+  KnockoutWhistResponse,
+  ManilleResponse,
+  MariasResponse,
   MusResponse,
+  NapResponse,
+  PreferenceResponse,
+  ScoponeResponse,
+  SedmaResponse,
   SheepsheadResponse,
+  SoloWhistResponse,
   SpadesResponse,
+  SpoilFiveResponse,
   SuecaResponse,
+  TeenPattiResponse,
+  ThreeCardBragResponse,
   TressetteResponse,
   TuteResponse,
+  TwentyNineResponse,
   TwoTenJackResponse,
 } from '../types/card';
 
@@ -644,4 +662,936 @@ const baseSuecaState: SuecaResponse = {
  */
 export function makeSuecaState(overrides?: Partial<SuecaResponse>): SuecaResponse {
   return { ...baseSuecaState, ...overrides };
+}
+
+/** Base Klaverjas state used as the default for {@link makeKlaverjasState}. Defaults to a human Play turn. */
+const baseKlaverjasState: KlaverjasResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 8,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      teamScore: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 8, cards: [], trickCount: 0, teamScore: 0 },
+    { id: 2, isHuman: false, cardCount: 8, cards: [], trickCount: 0, teamScore: 0 },
+    { id: 3, isHuman: false, cardCount: 8, cards: [], trickCount: 0, teamScore: 0 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  trumpSuit: 4,
+  currentTrick: [],
+  teamScores: [0, 0],
+  roundCardPoints: [0, 0],
+  roundRoem: [0, 0],
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 1501 },
+};
+
+/**
+ * Creates a {@link KlaverjasResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial KlaverjasResponse fields to override.
+ * @returns A complete KlaverjasResponse suitable for use in tests.
+ */
+export function makeKlaverjasState(overrides?: Partial<KlaverjasResponse>): KlaverjasResponse {
+  return { ...baseKlaverjasState, ...overrides };
+}
+
+/** Base Manille state used as the default for {@link makeManilleState}. Defaults to a human Play turn. */
+const baseManilleState: ManilleResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 8,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      teamScore: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 8, cards: [], trickCount: 0, teamScore: 0 },
+    { id: 2, isHuman: false, cardCount: 8, cards: [], trickCount: 0, teamScore: 0 },
+    { id: 3, isHuman: false, cardCount: 8, cards: [], trickCount: 0, teamScore: 0 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  trumpSuit: 4,
+  currentTrick: [],
+  teamScores: [0, 0],
+  roundCardPoints: [0, 0],
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 101 },
+};
+
+/**
+ * Creates a {@link ManilleResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial ManilleResponse fields to override.
+ * @returns A complete ManilleResponse suitable for use in tests.
+ */
+export function makeManilleState(overrides?: Partial<ManilleResponse>): ManilleResponse {
+  return { ...baseManilleState, ...overrides };
+}
+
+/** Base Sedma state used as the default for {@link makeSedmaState}. Defaults to a human Play turn. No trump suit. */
+const baseSedmaState: SedmaResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 8,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      teamScore: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 8, cards: [], trickCount: 0, teamScore: 0 },
+    { id: 2, isHuman: false, cardCount: 8, cards: [], trickCount: 0, teamScore: 0 },
+    { id: 3, isHuman: false, cardCount: 8, cards: [], trickCount: 0, teamScore: 0 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  currentTrick: [],
+  teamScores: [0, 0],
+  roundCardPoints: [0, 0],
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 101 },
+};
+
+/**
+ * Creates a {@link SedmaResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial SedmaResponse fields to override.
+ * @returns A complete SedmaResponse suitable for use in tests.
+ */
+export function makeSedmaState(overrides?: Partial<SedmaResponse>): SedmaResponse {
+  return { ...baseSedmaState, ...overrides };
+}
+
+/** Base Mariáš state used as the default for {@link makeMariasState}. Defaults to a human Play turn. */
+const baseMariasState: MariasResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 10,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      score: 0,
+      isSoloist: true,
+    },
+    { id: 1, isHuman: false, cardCount: 10, cards: [], trickCount: 0, score: 0, isSoloist: false },
+    { id: 2, isHuman: false, cardCount: 10, cards: [], trickCount: 0, score: 0, isSoloist: false },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 2,
+  soloistIdx: 0,
+  trumpSuit: 3,
+  currentTrick: [],
+  playerScores: [0, 0, 0],
+  roundCardPoints: [0, 0, 0],
+  roundMarriage: [0, 0, 0],
+  lastTrickWinner: -1,
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 10 },
+};
+
+/**
+ * Creates a {@link MariasResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial MariasResponse fields to override.
+ * @returns A complete MariasResponse suitable for use in tests.
+ */
+export function makeMariasState(overrides?: Partial<MariasResponse>): MariasResponse {
+  return { ...baseMariasState, ...overrides };
+}
+
+/** Base Knockout Whist state used as the default for {@link makeKnockoutWhistState}. Defaults to a human Play turn (round 1, 7-card hand). */
+const baseKnockoutWhistState: KnockoutWhistResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 7,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      eliminated: false,
+      dogbones: 1,
+      roundTricks: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 7, cards: [], trickCount: 0, eliminated: false, dogbones: 1, roundTricks: 0 },
+    { id: 2, isHuman: false, cardCount: 7, cards: [], trickCount: 0, eliminated: false, dogbones: 1, roundTricks: 0 },
+    { id: 3, isHuman: false, cardCount: 7, cards: [], trickCount: 0, eliminated: false, dogbones: 1, roundTricks: 0 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  handSize: 7,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  trumpSuit: 3,
+  roundWinnerIdx: -1,
+  currentTrick: [],
+  activeCount: 4,
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1 },
+};
+
+/**
+ * Creates a {@link KnockoutWhistResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial KnockoutWhistResponse fields to override.
+ * @returns A complete KnockoutWhistResponse suitable for use in tests.
+ */
+export function makeKnockoutWhistState(overrides?: Partial<KnockoutWhistResponse>): KnockoutWhistResponse {
+  return { ...baseKnockoutWhistState, ...overrides };
+}
+
+/** Base Spoil Five state used as the default for {@link makeSpoilFiveState}. Defaults to a human Play turn (round 1, 5-card hand, 5 players). */
+const baseSpoilFiveState: SpoilFiveResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 5,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      score: 0,
+      roundTricks: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 5, cards: [], trickCount: 0, score: 0, roundTricks: 0 },
+    { id: 2, isHuman: false, cardCount: 5, cards: [], trickCount: 0, score: 0, roundTricks: 0 },
+    { id: 3, isHuman: false, cardCount: 5, cards: [], trickCount: 0, score: 0, roundTricks: 0 },
+    { id: 4, isHuman: false, cardCount: 5, cards: [], trickCount: 0, score: 0, roundTricks: 0 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 4,
+  trumpSuit: 3,
+  pot: 5,
+  roundWinnerIdx: -1,
+  currentTrick: [],
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 30 },
+};
+
+/**
+ * Creates a {@link SpoilFiveResponse} with sensible defaults (a human Play turn,
+ * 5 players, a 5-card hand, and a pot). Any field can be overridden via the
+ * `overrides` parameter.
+ *
+ * @param overrides - Partial SpoilFiveResponse fields to override.
+ * @returns A complete SpoilFiveResponse suitable for use in tests.
+ */
+export function makeSpoilFiveState(overrides?: Partial<SpoilFiveResponse>): SpoilFiveResponse {
+  return { ...baseSpoilFiveState, ...overrides };
+}
+
+/** Base Solo Whist state used as the default for {@link makeSoloWhistState}. Defaults to a human Bid turn. */
+const baseSoloWhistState: SoloWhistResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 13,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      score: 0,
+      isDeclarer: false,
+    },
+    { id: 1, isHuman: false, cardCount: 13, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+    { id: 2, isHuman: false, cardCount: 13, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+    { id: 3, isHuman: false, cardCount: 13, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  declarerIdx: -1,
+  contract: 0,
+  trumpSuit: 0,
+  bids: [0, 0, 0, 0],
+  currentTrick: [],
+  playerScores: [0, 0, 0, 0],
+  roundTricks: [0, 0, 0, 0],
+  playableIndices: [],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: false,
+  isHumanBidTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 21 },
+};
+
+/**
+ * Creates a {@link SoloWhistResponse} with sensible defaults (a human Bid turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial SoloWhistResponse fields to override.
+ * @returns A complete SoloWhistResponse suitable for use in tests.
+ */
+export function makeSoloWhistState(overrides?: Partial<SoloWhistResponse>): SoloWhistResponse {
+  return { ...baseSoloWhistState, ...overrides };
+}
+
+/** Base Auction Forty-Fives state used as the default for {@link makeFortyFivesState}. A 4-player 2-team bidding trick-taker; defaults to a human Bid turn. */
+const baseFortyFivesState: FortyFivesResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 5,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      teamScore: 0,
+      isDeclarer: false,
+    },
+    { id: 1, isHuman: false, cardCount: 5, cards: [], trickCount: 0, teamScore: 0, isDeclarer: false },
+    { id: 2, isHuman: false, cardCount: 5, cards: [], trickCount: 0, teamScore: 0, isDeclarer: false },
+    { id: 3, isHuman: false, cardCount: 5, cards: [], trickCount: 0, teamScore: 0, isDeclarer: false },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  declarerIdx: -1,
+  contract: 0,
+  trumpSuit: 0,
+  bids: [0, 0, 0, 0],
+  currentTrick: [],
+  teamScores: [0, 0],
+  roundTeamPoints: [0, 0],
+  playableIndices: [],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  isHumanTurn: false,
+  isHumanBidTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 45 },
+};
+
+/**
+ * Creates a {@link FortyFivesResponse} with sensible defaults (a human Bid turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial FortyFivesResponse fields to override.
+ * @returns A complete FortyFivesResponse suitable for use in tests.
+ */
+export function makeFortyFivesState(overrides?: Partial<FortyFivesResponse>): FortyFivesResponse {
+  return { ...baseFortyFivesState, ...overrides };
+}
+
+/** Base Twenty-Nine (29) state used as the default for {@link makeTwentyNineState}. A 4-player 2-team hidden-trump bidding trick-taker; defaults to a human Bid turn. */
+const baseTwentyNineState: TwentyNineResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 8,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      teamScore: 0,
+      isDeclarer: false,
+    },
+    { id: 1, isHuman: false, cardCount: 8, cards: [], trickCount: 0, teamScore: 0, isDeclarer: false },
+    { id: 2, isHuman: false, cardCount: 8, cards: [], trickCount: 0, teamScore: 0, isDeclarer: false },
+    { id: 3, isHuman: false, cardCount: 8, cards: [], trickCount: 0, teamScore: 0, isDeclarer: false },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  declarerIdx: -1,
+  contract: 0,
+  trumpSuit: 0,
+  trumpRevealed: false,
+  bids: [0, 0, 0, 0],
+  currentTrick: [],
+  teamScores: [0, 0],
+  roundTeamPoints: [0, 0],
+  playableIndices: [],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  isHumanTurn: false,
+  isHumanBidTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 6 },
+};
+
+/**
+ * Creates a {@link TwentyNineResponse} with sensible defaults (a human Bid turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial TwentyNineResponse fields to override.
+ * @returns A complete TwentyNineResponse suitable for use in tests.
+ */
+export function makeTwentyNineState(overrides?: Partial<TwentyNineResponse>): TwentyNineResponse {
+  return { ...baseTwentyNineState, ...overrides };
+}
+
+/** Base Court Piece (Rang) state used as the default for {@link makeCourtPieceState}. A 4-player 2-team called-trump trick-taker; defaults to a human TrumpDeclaration turn (the human is the caller). */
+const baseCourtPieceState: CourtPieceResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      team: 0,
+      cardCount: 13,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      roundScore: 0,
+      cumulativeScore: 0,
+      trickCount: 0,
+    },
+    { id: 1, isHuman: false, team: 1, cardCount: 13, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+    { id: 2, isHuman: false, team: 0, cardCount: 13, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+    { id: 3, isHuman: false, team: 1, cardCount: 13, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  callerIdx: 0,
+  trumpSuit: 0,
+  currentTrick: [],
+  teamScores: [0, 0],
+  consecutiveWins: 0,
+  lastWinnerTeam: -1,
+  lastRoundCourt: false,
+  gameEndFlag: false,
+  winnerTeam: -1,
+  leadPlayerIdx: 0,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, pointLimit: 7 },
+};
+
+/**
+ * Creates a {@link CourtPieceResponse} with sensible defaults (a human
+ * TrumpDeclaration turn). Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial CourtPieceResponse fields to override.
+ * @returns A complete CourtPieceResponse suitable for use in tests.
+ */
+export function makeCourtPieceState(overrides?: Partial<CourtPieceResponse>): CourtPieceResponse {
+  return { ...baseCourtPieceState, ...overrides };
+}
+
+/** Base Bezique state used as the default for {@link makeBeziqueState}. A 2-player melding trick-taker; defaults to a human Play turn with stock remaining (phase 1). */
+const baseBeziqueState: BeziqueResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 9,
+      cards: [
+        { design: 'SPADE' as const, value: 12 },
+        { design: 'DIAMOND' as const, value: 11 },
+        { design: 'HEART' as const, value: 1 },
+      ],
+      roundScore: 0,
+      cumulativeScore: 0,
+      trickCount: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 9, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+  ],
+  dealPoints: [0, 0],
+  matchScore: [0, 0],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 1,
+  trumpSuit: 3,
+  trumpCard: { design: 'HEART' as const, value: 7 },
+  currentTrick: [],
+  stockRemaining: 30,
+  isEndgame: false,
+  availableMelds: [],
+  gameEndFlag: false,
+  winnerIdx: -1,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetScore: 1000 },
+};
+
+/**
+ * Creates a {@link BeziqueResponse} with sensible defaults (a human Play turn,
+ * phase 1, stock remaining). Any field can be overridden via the `overrides`
+ * parameter.
+ *
+ * @param overrides - Partial BeziqueResponse fields to override.
+ * @returns A complete BeziqueResponse suitable for use in tests.
+ */
+export function makeBeziqueState(overrides?: Partial<BeziqueResponse>): BeziqueResponse {
+  return { ...baseBeziqueState, ...overrides };
+}
+
+/** Base Écarté state used as the default for {@link makeEcarteState}. A 2-player French trick game; defaults to a human Exchange turn at the ElderDecide sub-step (phase 0). */
+const baseEcarteState: EcarteResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 5,
+      cards: [
+        { design: 'SPADE' as const, value: 13 },
+        { design: 'DIAMOND' as const, value: 11 },
+        { design: 'HEART' as const, value: 1 },
+      ],
+      roundScore: 0,
+      cumulativeScore: 0,
+      trickCount: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 5, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+  ],
+  dealPoints: [0, 0],
+  matchScore: [0, 0],
+  phase: 0,
+  negStep: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  dealerIdx: 1,
+  elderIdx: 0,
+  leadPlayerIdx: 0,
+  trumpSuit: 3,
+  trumpCard: { design: 'HEART' as const, value: 13 },
+  currentTrick: [],
+  stockRemaining: 22,
+  refusalByDealer: false,
+  validPlays: [],
+  gameEndFlag: false,
+  winnerIdx: -1,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetScore: 5 },
+};
+
+/**
+ * Creates an {@link EcarteResponse} with sensible defaults (a human Exchange
+ * turn at the ElderDecide sub-step, phase 0). Any field can be overridden via
+ * the `overrides` parameter.
+ *
+ * @param overrides - Partial EcarteResponse fields to override.
+ * @returns A complete EcarteResponse suitable for use in tests.
+ */
+export function makeEcarteState(overrides?: Partial<EcarteResponse>): EcarteResponse {
+  return { ...baseEcarteState, ...overrides };
+}
+
+/** Base Three Card Brag state used as the default for {@link makeThreeCardBragState}. A 4-player British vying game; defaults to a human Betting turn (phase 0). */
+const baseThreeCardBragState: ThreeCardBragResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      chips: 100,
+      seen: false,
+      folded: false,
+      out: false,
+      roundBet: 1,
+      cardCount: 3,
+      cards: [
+        { design: 'SPADE' as const, value: 13 },
+        { design: 'SPADE' as const, value: 12 },
+        { design: 'SPADE' as const, value: 11 },
+      ],
+    },
+    { id: 1, isHuman: false, chips: 100, seen: false, folded: false, out: false, roundBet: 1, cardCount: 3, cards: [] },
+    { id: 2, isHuman: false, chips: 100, seen: false, folded: false, out: false, roundBet: 1, cardCount: 3, cards: [] },
+    { id: 3, isHuman: false, chips: 100, seen: false, folded: false, out: false, roundBet: 1, cardCount: 3, cards: [] },
+  ],
+  pot: 4,
+  stake: 1,
+  phase: 0,
+  roundNumber: 1,
+  dealerIdx: 3,
+  currentPlayerIdx: 0,
+  roundWinnerIdx: -1,
+  matchWinnerIdx: -1,
+  isShowdown: false,
+  canShow: false,
+  gameEndFlag: false,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, ante: 1, startingChips: 100 },
+};
+
+/**
+ * Creates a {@link ThreeCardBragResponse} with sensible defaults (a human
+ * Betting turn, phase 0). Any field can be overridden via the `overrides`
+ * parameter.
+ *
+ * @param overrides - Partial ThreeCardBragResponse fields to override.
+ * @returns A complete ThreeCardBragResponse suitable for use in tests.
+ */
+export function makeThreeCardBragState(overrides?: Partial<ThreeCardBragResponse>): ThreeCardBragResponse {
+  return { ...baseThreeCardBragState, ...overrides };
+}
+
+/** Base Teen Patti state used as the default for {@link makeTeenPattiState}. The Indian variant of Three Card Brag; a 4-player vying game that defaults to a human Betting turn (phase 0). */
+const baseTeenPattiState: TeenPattiResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      chips: 100,
+      seen: false,
+      folded: false,
+      out: false,
+      roundBet: 1,
+      cardCount: 3,
+      cards: [
+        { design: 'SPADE' as const, value: 13 },
+        { design: 'SPADE' as const, value: 12 },
+        { design: 'SPADE' as const, value: 11 },
+      ],
+    },
+    { id: 1, isHuman: false, chips: 100, seen: false, folded: false, out: false, roundBet: 1, cardCount: 3, cards: [] },
+    { id: 2, isHuman: false, chips: 100, seen: false, folded: false, out: false, roundBet: 1, cardCount: 3, cards: [] },
+    { id: 3, isHuman: false, chips: 100, seen: false, folded: false, out: false, roundBet: 1, cardCount: 3, cards: [] },
+  ],
+  pot: 4,
+  stake: 1,
+  phase: 0,
+  roundNumber: 1,
+  dealerIdx: 3,
+  currentPlayerIdx: 0,
+  roundWinnerIdx: -1,
+  matchWinnerIdx: -1,
+  isShowdown: false,
+  canShow: false,
+  canRequestSideShow: false,
+  sideShowRequester: -1,
+  sideShowTarget: -1,
+  gameEndFlag: false,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, ante: 1, startingChips: 100 },
+};
+
+/**
+ * Creates a {@link TeenPattiResponse} with sensible defaults (a human Betting
+ * turn, phase 0). Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial TeenPattiResponse fields to override.
+ * @returns A complete TeenPattiResponse suitable for use in tests.
+ */
+export function makeTeenPattiState(overrides?: Partial<TeenPattiResponse>): TeenPattiResponse {
+  return { ...baseTeenPattiState, ...overrides };
+}
+
+/** Base Préférence state used as the default for {@link makePreferenceState}. A 3-player Russian bidding trick-taker; defaults to a human Bid turn. */
+const basePreferenceState: PreferenceResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 10,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      score: 0,
+      isDeclarer: false,
+    },
+    { id: 1, isHuman: false, cardCount: 10, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+    { id: 2, isHuman: false, cardCount: 10, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 2,
+  declarerIdx: -1,
+  contract: 0,
+  trumpSuit: 0,
+  bids: [0, 0, 0],
+  currentTrick: [],
+  playerScores: [0, 0, 0],
+  roundTricks: [0, 0, 0],
+  playableIndices: [],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: false,
+  isHumanBidTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 30 },
+};
+
+/**
+ * Creates a {@link PreferenceResponse} with sensible defaults (a human Bid turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial PreferenceResponse fields to override.
+ * @returns A complete PreferenceResponse suitable for use in tests.
+ */
+export function makePreferenceState(overrides?: Partial<PreferenceResponse>): PreferenceResponse {
+  return { ...basePreferenceState, ...overrides };
+}
+
+/** Base Nap (Napoleon) state used as the default for {@link makeNapState}. Defaults to a human Bid turn. */
+const baseNapState: NapResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 5,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      score: 0,
+      isDeclarer: false,
+    },
+    { id: 1, isHuman: false, cardCount: 5, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+    { id: 2, isHuman: false, cardCount: 5, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+    { id: 3, isHuman: false, cardCount: 5, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  declarerIdx: -1,
+  contract: 0,
+  trumpSuit: 0,
+  bids: [0, 0, 0, 0],
+  currentTrick: [],
+  playerScores: [0, 0, 0, 0],
+  roundTricks: [0, 0, 0, 0],
+  playableIndices: [],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: false,
+  isHumanBidTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 20 },
+};
+
+/**
+ * Creates a {@link NapResponse} with sensible defaults (a human Bid turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial NapResponse fields to override.
+ * @returns A complete NapResponse suitable for use in tests.
+ */
+export function makeNapState(overrides?: Partial<NapResponse>): NapResponse {
+  return { ...baseNapState, ...overrides };
+}
+
+/** Base Scopone state used as the default for {@link makeScoponeState}. Defaults to a human play turn. */
+const baseScoponeState: ScoponeResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      team: 0,
+      handCount: 3,
+      cards: [
+        { design: 'SPADE' as const, value: 3 },
+        { design: 'HEART' as const, value: 5 },
+        { design: 'DIAMOND' as const, value: 7 },
+      ],
+      capturedCount: 0,
+      scopaCount: 0,
+    },
+    { id: 1, isHuman: false, team: 1, handCount: 3, cards: [], capturedCount: 0, scopaCount: 0 },
+    { id: 2, isHuman: false, team: 0, handCount: 3, cards: [], capturedCount: 0, scopaCount: 0 },
+    { id: 3, isHuman: false, team: 1, handCount: 3, cards: [], capturedCount: 0, scopaCount: 0 },
+  ],
+  tableCards: [
+    { design: 'SPADE' as const, value: 2 },
+    { design: 'HEART' as const, value: 5 },
+  ],
+  phase: 'playerTurn',
+  roundNumber: 1,
+  currentTurn: 0,
+  dealerIdx: 3,
+  teamScores: [0, 0],
+  lastCaptureIdx: -1,
+  winnerTeam: -1,
+  gameEndFlag: false,
+  isHumanTurn: true,
+  handCaptures: [[[1]], [], []],
+  lastRoundDetail: null,
+  config: { cpuDifficulty: 1, targetScore: 11 },
+  message: '',
+};
+
+/**
+ * Creates a {@link ScoponeResponse} with sensible defaults (a human play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial ScoponeResponse fields to override.
+ * @returns A complete ScoponeResponse suitable for use in tests.
+ */
+export function makeScoponeState(overrides?: Partial<ScoponeResponse>): ScoponeResponse {
+  return { ...baseScoponeState, ...overrides };
+}
+
+/** Base Escoba state used as the default for {@link makeEscobaState}. Defaults to a human play turn. */
+const baseEscobaState: EscobaResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      handCount: 3,
+      cards: [
+        { design: 'SPADE' as const, value: 7 },
+        { design: 'HEART' as const, value: 5 },
+        { design: 'DIAMOND' as const, value: 11 },
+      ],
+      capturedCount: 0,
+      escobaCount: 0,
+      score: 0,
+    },
+    { id: 1, isHuman: false, handCount: 3, cards: [], capturedCount: 0, escobaCount: 0, score: 0 },
+    { id: 2, isHuman: false, handCount: 3, cards: [], capturedCount: 0, escobaCount: 0, score: 0 },
+    { id: 3, isHuman: false, handCount: 3, cards: [], capturedCount: 0, escobaCount: 0, score: 0 },
+  ],
+  tableCards: [
+    { design: 'SPADE' as const, value: 4 },
+    { design: 'HEART' as const, value: 4 },
+  ],
+  phase: 'playerTurn',
+  roundNumber: 1,
+  currentTurn: 0,
+  dealerIdx: 3,
+  stockRemaining: 28,
+  lastCaptureIdx: -1,
+  winnerIdx: -1,
+  gameEndFlag: false,
+  isHumanTurn: true,
+  handCaptures: [[[0, 1]], [], []],
+  lastRoundDetail: null,
+  config: { cpuDifficulty: 1, targetScore: 10 },
+  message: '',
+};
+
+/**
+ * Creates an {@link EscobaResponse} with sensible defaults (a human play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial EscobaResponse fields to override.
+ * @returns A complete EscobaResponse suitable for use in tests.
+ */
+export function makeEscobaState(overrides?: Partial<EscobaResponse>): EscobaResponse {
+  return { ...baseEscobaState, ...overrides };
 }

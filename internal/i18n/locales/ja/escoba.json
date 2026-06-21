@@ -1,0 +1,19 @@
+{
+  "helpTitle": "Escoba (エスコバ)",
+  "helpPlay": "  p <h> [t...]             手札hを出す (場札t...を捕獲、無指定で場に置く)",
+  "helpNext": "  n                        次のラウンドを開始する",
+  "helpSetDifficulty": "  sd [0-2]                 CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "helpSetTarget": "  st <n>                   目標スコア (デフォルト10)",
+  "roundLine": "ラウンド {{round}} (山札 残り{{stock}}枚)",
+  "playerLine": "{{name}}: 手札{{hand}}枚 / 捕獲{{captured}}枚 / エスコバ{{escoba}} / {{score}}点",
+  "tableLine": "場: {{cards}}",
+  "tableEmpty": "場: なし",
+  "gameEnd": "ゲーム終了！",
+  "winnerLine": "勝者: プレイヤー{{player}}",
+  "roundEnd": "ラウンド終了。",
+  "scoreDetailLine": "  P{{player}}: カード{{cards}} / 剣{{espadas}} / 7×{{sevens}} / 金貨{{oros}} / エスコバ{{escobas}} → {{gained}}点",
+  "specialLine": "  剣のA: P{{ace}} / 剣の7: P{{sete}} (-1=なし)",
+  "promptNext": "n で次のラウンドを開始する",
+  "promptCurrentTurn": "手番: {{name}}",
+  "promptHelp": "p <hand> [table...] で捕獲または場に置く / n で次のラウンド"
+}

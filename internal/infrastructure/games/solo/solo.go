@@ -422,4 +422,76 @@ func init() {
 		},
 		controller.NewEasthavenWebControllerWithProvider)
 
+	games.RegisterKVGame("handandfoot", games.CategorySolo,
+		func() usecase.HandAndFootInteractorIF {
+			return usecase.NewHandAndFootInteractor(domain.NewDefaultHandAndFoot(), new(presenter.HandAndFootWebPresenter))
+		},
+		func(data []byte) (usecase.HandAndFootInteractorIF, error) {
+			return usecase.RestoreHandAndFootInteractor(data, new(presenter.HandAndFootWebPresenter))
+		},
+		controller.NewHandAndFootWebControllerWithProvider)
+
+	games.RegisterKVGame("conquian", games.CategorySolo,
+		func() usecase.ConquianInteractorIF {
+			return usecase.NewConquianInteractor(domain.NewDefaultConquian(), new(presenter.ConquianWebPresenter))
+		},
+		func(data []byte) (usecase.ConquianInteractorIF, error) {
+			return usecase.RestoreConquianInteractor(data, new(presenter.ConquianWebPresenter))
+		},
+		controller.NewConquianWebControllerWithProvider)
+
+	games.RegisterKVGame("chinchon", games.CategorySolo,
+		func() usecase.ChinchonInteractorIF {
+			return usecase.NewChinchonInteractor(domain.NewDefaultChinchon(), new(presenter.ChinchonWebPresenter))
+		},
+		func(data []byte) (usecase.ChinchonInteractorIF, error) {
+			return usecase.RestoreChinchonInteractor(data, new(presenter.ChinchonWebPresenter))
+		},
+		controller.NewChinchonWebControllerWithProvider)
+
+	games.RegisterKVGame("kalooki", games.CategorySolo,
+		func() usecase.KalookiInteractorIF {
+			return usecase.NewKalookiInteractor(domain.NewDefaultKalooki(), new(presenter.KalookiWebPresenter))
+		},
+		func(data []byte) (usecase.KalookiInteractorIF, error) {
+			return usecase.RestoreKalookiInteractor(data, new(presenter.KalookiWebPresenter))
+		},
+		controller.NewKalookiWebControllerWithProvider)
+
+	games.RegisterKVGame("threethirteen", games.CategorySolo,
+		func() usecase.ThreeThirteenInteractorIF {
+			return usecase.NewThreeThirteenInteractor(domain.NewDefaultThreeThirteen(), new(presenter.ThreeThirteenWebPresenter))
+		},
+		func(data []byte) (usecase.ThreeThirteenInteractorIF, error) {
+			return usecase.RestoreThreeThirteenInteractor(data, new(presenter.ThreeThirteenWebPresenter))
+		},
+		controller.NewThreeThirteenWebControllerWithProvider)
+
+	games.RegisterKVGame("mao", games.CategorySolo,
+		func() usecase.MaoInteractorIF {
+			return usecase.NewMaoInteractor(domain.NewDefaultMao(), new(presenter.MaoWebPresenter))
+		},
+		func(data []byte) (usecase.MaoInteractorIF, error) {
+			return usecase.RestoreMaoInteractor(data, new(presenter.MaoWebPresenter))
+		},
+		controller.NewMaoWebControllerWithProvider)
+
+	games.RegisterKVGame("russianbank", games.CategorySolo,
+		func() usecase.RussianBankInteractorIF {
+			return usecase.NewRussianBankInteractor(domain.NewDefaultRussianBank(), new(presenter.RussianBankWebPresenter))
+		},
+		func(data []byte) (usecase.RussianBankInteractorIF, error) {
+			return usecase.RestoreRussianBankInteractor(data, new(presenter.RussianBankWebPresenter))
+		},
+		controller.NewRussianBankWebControllerWithProvider)
+
+	games.RegisterKVGame("blackhole", games.CategorySolo,
+		func() usecase.BlackHoleInteractorIF {
+			return usecase.NewBlackHoleInteractor(domain.NewDefaultBlackHole(), new(presenter.BlackHoleWebPresenter))
+		},
+		func(data []byte) (usecase.BlackHoleInteractorIF, error) {
+			return usecase.RestoreBlackHoleInteractor(data, new(presenter.BlackHoleWebPresenter))
+		},
+		controller.NewBlackHoleWebControllerWithProvider)
+
 }

@@ -1,0 +1,19 @@
+{
+  "helpTitle": "Scopone (スコポーネ)",
+  "helpPlay": "  p <h> [t...]             手札hを出す (場札t...を捕獲、無指定で場に置く)",
+  "helpNext": "  n                        次のラウンドを開始する",
+  "helpSetDifficulty": "  sd [0-2]                 CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "helpSetTarget": "  st <n>                   目標スコア (デフォルト11)",
+  "teamScoreLine": "チームスコア: チーム0 {{t0}}点 / チーム1 {{t1}}点",
+  "roundLine": "ラウンド {{round}}",
+  "playerLine": "{{name}} (T{{team}}): 手札{{hand}}枚 / 捕獲{{captured}}枚 / スコパ{{scopa}}",
+  "tableLine": "場: {{cards}}",
+  "tableEmpty": "場: なし",
+  "gameEnd": "ゲーム終了！",
+  "winnerLine": "勝利チーム: チーム{{team}}",
+  "roundEnd": "ラウンド終了。",
+  "scoreDetailLine": "  チーム{{team}}: カード{{cards}} / ダイヤ{{diamonds}} / 7×{{sevens}} / スコパ{{scopas}} → {{gained}}点",
+  "promptNext": "n で次のラウンドを開始する",
+  "promptCurrentTurn": "手番: {{name}} (チーム{{team}})",
+  "promptHelp": "p <hand> [table...] で捕獲または場に置く / n で次のラウンド"
+}

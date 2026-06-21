@@ -1,0 +1,53 @@
+{
+  "phase": {
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "handSize": "Hand {{n}}",
+  "trump": "Trump {{suit}}",
+  "activeCount": "{{n}} left",
+  "cards": "{{count}} cards",
+  "roundTricks": "{{count}} round tricks",
+  "dogbones": "Dogbone {{count}}",
+  "currentTrick": "Current Trick",
+  "players": "Players",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "eliminated": "Knocked out",
+  "leader": "Leader",
+  "roundWinner": "Round winner",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "roundResult": {
+    "title": "Round Result",
+    "winner": "Round winner: {{name}}",
+    "survived": "{{name}} spent a Dogbone to survive",
+    "eliminated": "{{name}} took zero tricks and was knocked out"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "lead_high": "Lead a high card to take the trick",
+    "follow_win": "Win the trick to survive (trick count matters)",
+    "follow_duck": "Can't win — duck with a low card of the lead suit",
+    "discard_low": "Can't follow — discard a low card"
+  },
+  "tutorial": {
+    "trickDisplay": "This is the current trick. You must follow the lead suit; trump (auto-set to the previous round winner's longest suit) beats non-trump, and the Ace is highest.",
+    "playerHand": "This is your hand. Click any card to select it. The hand shrinks by one card each round (Round 1 deals 7).",
+    "playButton": "Once a card is selected, play it with this button. The player who plays the strongest card wins the trick.",
+    "info": "Each player starts with one Dogbone token. A player who wins zero tricks in a round must spend a Dogbone to survive; with no Dogbone left, a zero-trick round eliminates them (greyed out). The last player standing wins the match.",
+    "resetButton": "Use the reset button to start a new game."
+  }
+}

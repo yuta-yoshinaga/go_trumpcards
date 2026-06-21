@@ -10,9 +10,11 @@ import type {
   BeleagueredCastleMoveZone,
   BeleagueredCastleResponse,
   BeloteResponse,
+  BeziqueResponse,
   BidWhistResponse,
   BigTwoConfigInput,
   BigTwoResponse,
+  BlackHoleResponse,
   BlackJackResponse,
   BlackJackSwitchResponse,
   BourreResponse,
@@ -31,18 +33,24 @@ import type {
   CasinoHoldemResponse,
   CasinoWarResponse,
   CassinoResponse,
+  ChinchonResponse,
   ChinesePokerResponse,
   ClockSolitaireResponse,
+  ConquianResponse,
   ContractRummyResponse,
+  CourtPieceResponse,
   CrazyEightsResponse,
   CrescentMoveZone,
   CrescentResponse,
   CribbageResponse,
   CruelResponse,
+  CuarentaResponse,
+  CuckooResponse,
   DaifugoConfigInput,
   DaifugoResponse,
   DeuceToSevenResponse,
   DoppelkopfResponse,
+  DoubleKlondikeResponse,
   DoubtConfig,
   DoubtResponse,
   DoudizhuResponse,
@@ -50,11 +58,16 @@ import type {
   DurakConfigInput,
   DurakResponse,
   EasthavenResponse,
+  EcarteResponse,
   EgyptianRatscrewResponse,
   EightOffResponse,
+  EscobaResponse,
   EuchreResponse,
+  FaroResponse,
   FiftyOneResponse,
+  FiveCardStudResponse,
   FiveHundredResponse,
+  FortyFivesResponse,
   FortyThievesMoveZone,
   FortyThievesResponse,
   FourCardPokerResponse,
@@ -64,19 +77,29 @@ import type {
   GoFishResponse,
   GolfResponse,
   GongZhuResponse,
+  HandAndFootResponse,
   HeartsResponse,
   HighCardFlushResponse,
   HoldemResponse,
   IndianPokerResponse,
+  KalookiResponse,
+  KempsResponse,
+  KlaverjasResponse,
   KlondikeResponse,
+  KnockoutWhistResponse,
+  LaBelleLucieResponse,
   LetItRideResponse,
   MacauResponse,
+  ManilleResponse,
+  MaoResponse,
+  MariasResponse,
   MemoryResponse,
   MightyResponse,
   MississippiStudResponse,
   MonteCarloResponse,
   MusResponse,
   NapoleonResponse,
+  NapResponse,
   NertzConfig as NertzConfigType,
   NertzMoveZone,
   NertzResponse,
@@ -84,6 +107,7 @@ import type {
   OhHellResponse,
   OldMaidResponse,
   OmahaResponse,
+  OpenFaceChineseResponse,
   OsmosisResponse,
   PageOneResponse,
   PaiGowResponse,
@@ -93,20 +117,25 @@ import type {
   PinochleResponse,
   PiquetConfig as PiquetConfigType,
   PiquetResponse,
+  PishtiResponse,
   PitchResponse,
   PokerResponse,
   PokerSquaresResponse,
+  PreferenceResponse,
   PresidentResponse,
   PyramidResponse,
   RedDogResponse,
   Rummy500Response,
+  RussianBankResponse,
   RussianPokerResponse,
   RussianSolitaireResponse,
   SchnapsenConfig,
   SchnapsenResponse,
   ScopaResponse,
+  ScoponeResponse,
   ScorpionResponse,
   SeahavenTowersResponse,
+  SedmaResponse,
   SevenBridgeResponse,
   SevenCardStudResponse,
   SevensResponse,
@@ -114,10 +143,12 @@ import type {
   ShitheadConfig as ShitheadConfigType,
   ShitheadResponse,
   ShortDeckResponse,
+  SimpleSimonResponse,
   SixCardGolfResponse,
   SkatConfig as SkatConfigType,
   SkatResponse,
   SlapjackResponse,
+  SoloWhistResponse,
   SpadesResponse,
   SpeedConfig,
   SpeedResponse,
@@ -125,11 +156,16 @@ import type {
   SpiderResponse,
   SpiteAndMaliceMoveZone,
   SpiteAndMaliceResponse,
+  SpoilFiveResponse,
+  SpoonsResponse,
   SuecaResponse,
   TarneebResponse,
+  TeenPattiResponse,
   TexasHoldemBonusResponse,
   ThirtyOneResponse,
+  ThreeCardBragResponse,
   ThreeCardResponse,
+  ThreeThirteenResponse,
   TichuResponse,
   TienLenConfigInput,
   TienLenResponse,
@@ -140,6 +176,7 @@ import type {
   TrucoConfig,
   TrucoResponse,
   TuteResponse,
+  TwentyNineResponse,
   TwoTenJackResponse,
   UltimateTexasHoldemResponse,
   VideoPokerResponse,
@@ -184,9 +221,20 @@ const workerUrl: Record<string, string> = {
   crazypineapple: WORKER_CASINO,
   irishpoker: WORKER_CASINO,
   sevencardstud: WORKER_CASINO,
+  fivecardstud: WORKER_CASINO,
   razz: WORKER_CASINO,
   badugi: WORKER_CASINO,
   deucetoseven: WORKER_CASINO,
+  ecarte: WORKER_CASINO,
+  threecardbrag: WORKER_CASINO,
+  teenpatti: WORKER_CASINO,
+  spoons: WORKER_CLASSIC,
+  kemps: WORKER_CASINO,
+  cuckoo: WORKER_CLASSIC,
+  pishti: WORKER_CASINO,
+  cuarenta: WORKER_CASINO,
+  faro: WORKER_CASINO,
+  openfacechinese: WORKER_CASINO,
   calculation: WORKER_SOLO,
   hearts: WORKER_CLASSIC,
   spades: WORKER_CLASSIC,
@@ -222,7 +270,11 @@ const workerUrl: Record<string, string> = {
   tripeaks: WORKER_SOLO,
   memory: WORKER_SOLO,
   ginrummy: WORKER_SOLO,
+  conquian: WORKER_SOLO,
+  chinchon: WORKER_SOLO,
+  threethirteen: WORKER_SOLO,
   canasta: WORKER_SOLO,
+  handandfoot: WORKER_SOLO,
   burraco: WORKER_SOLO,
   cribbage: WORKER_SOLO,
   golf: WORKER_SOLO,
@@ -260,6 +312,7 @@ const workerUrl: Record<string, string> = {
   blackjackswitch: WORKER_CASINO,
   montecarlo: WORKER_SOLO,
   contractrummy: WORKER_SOLO,
+  kalooki: WORKER_SOLO,
   ultimatetexasholdem: WORKER_CASINO,
   crescent: WORKER_SOLO,
   mississippistud: WORKER_CASINO,
@@ -282,22 +335,43 @@ const workerUrl: Record<string, string> = {
   penguin: WORKER_SOLO,
   chinesepoker: WORKER_CASINO,
   sixcardgolf: WORKER_CLASSIC,
-  doudizhu: WORKER_CASINO,
+  doudizhu: WORKER_CLASSIC,
   truco: WORKER_CLASSIC,
-  scopa: WORKER_CASINO,
+  scopa: WORKER_CLASSIC,
+  scopone: WORKER_CLASSIC,
+  escoba: WORKER_CLASSIC,
   barbu: WORKER_SOLO,
   macau: WORKER_SOLO,
+  mao: WORKER_SOLO,
+  russianbank: WORKER_SOLO,
+  labellelucie: WORKER_CLASSIC,
+  simplesimon: WORKER_CLASSIC,
+  doubleklondike: WORKER_CLASSIC,
+  blackhole: WORKER_SOLO,
   gongzhu: WORKER_SOLO,
   bristol: WORKER_SOLO,
   bidwhist: WORKER_SOLO,
   easthaven: WORKER_SOLO,
-  tichu: WORKER_CASINO,
+  tichu: WORKER_CLASSIC,
   bourre: WORKER_CASINO,
   sheepshead: WORKER_CASINO,
   doppelkopf: WORKER_CASINO,
   mus: WORKER_CASINO,
   tute: WORKER_CASINO,
   sueca: WORKER_CASINO,
+  klaverjas: WORKER_CLASSIC,
+  manille: WORKER_CLASSIC,
+  marias: WORKER_CLASSIC,
+  sedma: WORKER_CLASSIC,
+  knockoutwhist: WORKER_CLASSIC,
+  spoilfive: WORKER_CLASSIC,
+  solowhist: WORKER_CLASSIC,
+  fortyfives: WORKER_CASINO,
+  nap: WORKER_CLASSIC,
+  preference: WORKER_CLASSIC,
+  twentynine: WORKER_CASINO,
+  courtpiece: WORKER_CASINO,
+  bezique: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -651,6 +725,30 @@ export interface SevenCardStudConfigInput {
 /** API client for the Seven Card Stud /sevencardstud/exec endpoint. */
 export const sevenCardStudApi = createHoldemLikeApi<SevenCardStudResponse, SevenCardStudConfigInput>('sevencardstud');
 
+/** Configuration options for Five Card Stud game settings. */
+export interface FiveCardStudConfigInput {
+  ante?: number;
+  bringIn?: number;
+  smallBet?: number;
+  bigBet?: number;
+  tournamentMode?: boolean;
+  anteLevelHands?: number;
+  anteMultiplier?: number;
+  bettingLimit?: number;
+  tableSize?: number;
+  rebuyEnabled?: boolean;
+  rebuyMaxCount?: number;
+  rebuyChips?: number;
+  rebuyPeriodHands?: number;
+  addonEnabled?: boolean;
+  addonChips?: number;
+  addonAfterHand?: number;
+  cpuMetaAI?: boolean;
+}
+
+/** API client for the Five Card Stud /fivecardstud/exec endpoint. */
+export const fiveCardStudApi = createHoldemLikeApi<FiveCardStudResponse, FiveCardStudConfigInput>('fivecardstud');
+
 /** API client for the Razz /razz/exec endpoint. */
 export const razzApi = createHoldemLikeApi<SevenCardStudResponse, SevenCardStudConfigInput>('razz');
 
@@ -1000,6 +1098,72 @@ export const bristolApi = createSolitaireMoveApi<
   'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('bristol');
 
+/** API client for the La Belle Lucie /labellelucie/exec endpoint. */
+export const labellelucieApi = createSolitaireMoveApi<
+  LaBelleLucieResponse,
+  number,
+  'reset' | 'mf' | 'ff' | 'rd' | 'ac' | 'u' | 'undo_n' | 'giveup' | 'hint' | 'log'
+>('labellelucie');
+
+/** Commands accepted by the Simple Simon /simplesimon/exec endpoint. */
+export type SimpleSimonCommand = 'reset' | 'm' | 'g' | 'u' | 'undo_n' | 'hint' | 'log';
+
+/** API client for the Simple Simon /simplesimon/exec endpoint. */
+export const simplesimonApi = {
+  exec: (command: SimpleSimonCommand, opts?: { fromCol?: number; cardIndex?: number; toCol?: number; n?: number }) =>
+    gameExec<SimpleSimonResponse>('simplesimon', {
+      command,
+      fromCol: opts?.fromCol,
+      cardIndex: opts?.cardIndex,
+      toCol: opts?.toCol,
+      n: opts?.n,
+    }),
+};
+
+/** Commands accepted by the Double Klondike /doubleklondike/exec endpoint. */
+export type DoubleKlondikeCommand =
+  | 'reset'
+  | 'd'
+  | 'mwt'
+  | 'mwf'
+  | 'mtt'
+  | 'mtf'
+  | 'g'
+  | 'ac'
+  | 'u'
+  | 'undo_n'
+  | 'hint'
+  | 'log';
+
+/** API client for the Double Klondike /doubleklondike/exec endpoint. */
+export const doubleklondikeApi = {
+  exec: (
+    command: DoubleKlondikeCommand,
+    opts?: { col?: number; fromCol?: number; cardIndex?: number; toCol?: number; n?: number },
+  ) =>
+    gameExec<DoubleKlondikeResponse>('doubleklondike', {
+      command,
+      col: opts?.col,
+      fromCol: opts?.fromCol,
+      cardIndex: opts?.cardIndex,
+      toCol: opts?.toCol,
+      n: opts?.n,
+    }),
+};
+
+/** Commands accepted by the Black Hole /blackhole/exec endpoint. */
+export type BlackHoleCommand = 'reset' | 'mb' | 'g' | 'u' | 'undo_n' | 'hint' | 'log';
+
+/** API client for the Black Hole /blackhole/exec endpoint. */
+export const blackholeApi = {
+  exec: (command: BlackHoleCommand, opts?: { fan?: number; n?: number }) =>
+    gameExec<BlackHoleResponse>('blackhole', {
+      command,
+      fan: opts?.fan,
+      n: opts?.n,
+    }),
+};
+
 /** Source or target zone for a FreeCell card move. */
 export interface FreeCellMoveZone {
   zone: string;
@@ -1134,6 +1298,72 @@ export const ginrummyApi = {
     }),
 };
 
+/** Configuration options for Chinchón game settings. */
+export interface ChinchonConfigInput {
+  cpuDifficulty?: number;
+  playerCount?: number;
+  knockThreshold?: number;
+  eliminationLimit?: number;
+}
+
+/** API client for the Chinchón /chinchon/exec endpoint. */
+export const chinchonApi = {
+  exec: (
+    command: 'reset' | 'drawstock' | 'drawdiscard' | 'discard' | 'knock' | 'layoff' | 'nextround' | 'log',
+    cardIndex?: number,
+    config?: ChinchonConfigInput,
+    cardIndices?: number[],
+  ) =>
+    gameExec<ChinchonResponse>('chinchon', {
+      command,
+      cardIndex,
+      cardIndices,
+      config,
+    }),
+};
+
+/** Configuration options for Three Thirteen game settings. */
+export interface ThreeThirteenConfigInput {
+  cpuDifficulty?: number;
+  playerCount?: number;
+}
+
+/** API client for the Three Thirteen /threethirteen/exec endpoint. */
+export const threethirteenApi = {
+  exec: (
+    command: 'reset' | 'drawstock' | 'drawdiscard' | 'discard' | 'knock' | 'nextround' | 'log',
+    cardIndex?: number,
+    config?: ThreeThirteenConfigInput,
+  ) =>
+    gameExec<ThreeThirteenResponse>('threethirteen', {
+      command,
+      cardIndex,
+      config,
+    }),
+};
+
+/** Configuration options for Conquian game settings. */
+export interface ConquianConfigInput {
+  cpuDifficulty?: number;
+  targetWins?: number;
+}
+
+/** API client for the Conquian /conquian/exec endpoint. */
+export const conquianApi = {
+  exec: (
+    command: 'reset' | 'drawstock' | 'drawdiscard' | 'meld' | 'discard' | 'nextround' | 'log',
+    cardIndex?: number,
+    config?: ConquianConfigInput,
+    meldGroups?: number[][],
+  ) =>
+    gameExec<ConquianResponse>('conquian', {
+      command,
+      cardIndex,
+      config,
+      meldGroups,
+    }),
+};
+
 /** Configuration options for Rummy 500 game settings. */
 export interface Rummy500ConfigInput {
   cpuDifficulty?: number;
@@ -1244,6 +1474,30 @@ export const canastaApi = {
     meldGroups?: number[][],
   ) =>
     gameExec<CanastaResponse>('canasta', {
+      command,
+      cardIndex,
+      config,
+      naturalPairIndices,
+      meldGroups,
+    }),
+};
+
+/** Configuration options for Hand and Foot game settings. */
+export interface HandAndFootConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Hand and Foot /handandfoot/exec endpoint. */
+export const handandfootApi = {
+  exec: (
+    command: 'reset' | 'drawstock' | 'drawdiscard' | 'meld' | 'skipmeld' | 'discard' | 'goout' | 'nextround' | 'log',
+    cardIndex?: number,
+    config?: HandAndFootConfigInput,
+    naturalPairIndices?: number[],
+    meldGroups?: number[][],
+  ) =>
+    gameExec<HandAndFootResponse>('handandfoot', {
       command,
       cardIndex,
       config,
@@ -1640,6 +1894,873 @@ export const suecaApi = {
   ) =>
     gameExec<SuecaResponse>('sueca', {
       command,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Klaverjas game settings. */
+export interface KlaverjasConfigInput {
+  cpuDifficulty?: number;
+  targetPoints?: number;
+}
+
+/** Commands accepted by the Klaverjas /klaverjas/exec endpoint. */
+export type KlaverjasCommand = 'reset' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Klaverjas /klaverjas/exec endpoint.
+ *
+ * Klaverjas is a Dutch 4-player (2 vs 2) trump trick-taker with Roem (run/marriage)
+ * bonuses. The only play action is playing a card; there are no declarations.
+ *   - `play` → `{ cardIndex: number }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const klaverjasApi = {
+  exec: (
+    command: KlaverjasCommand,
+    opts?: {
+      cardIndex?: number;
+      config?: KlaverjasConfigInput;
+    },
+  ) =>
+    gameExec<KlaverjasResponse>('klaverjas', {
+      command,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Manille game settings. */
+export interface ManilleConfigInput {
+  cpuDifficulty?: number;
+  targetPoints?: number;
+}
+
+/** Commands accepted by the Manille /manille/exec endpoint. */
+export type ManilleCommand = 'reset' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Manille /manille/exec endpoint.
+ *
+ * Manille is a French/Belgian 4-player (2 vs 2) trump trick-taker. The only
+ * play action is playing a card (must follow suit / overtrump unless the
+ * partner already holds the trick); there are no declarations and no Roem.
+ *   - `play` → `{ cardIndex: number }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const manilleApi = {
+  exec: (
+    command: ManilleCommand,
+    opts?: {
+      cardIndex?: number;
+      config?: ManilleConfigInput;
+    },
+  ) =>
+    gameExec<ManilleResponse>('manille', {
+      command,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Sedma game settings. */
+export interface SedmaConfigInput {
+  cpuDifficulty?: number;
+  targetPoints?: number;
+}
+
+/** Commands accepted by the Sedma /sedma/exec endpoint. */
+export type SedmaCommand = 'reset' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Sedma /sedma/exec endpoint.
+ *
+ * Sedma is a Czech/Slovak 32-card no-trump capture trick-taker, 4 players in 2
+ * teams. There is no trump suit and no follow obligation — any card is legal.
+ * A card captures the trick if its rank equals the lead card's rank or it is a
+ * 7 (wild); the last player to capture wins the trick.
+ *   - `play` → `{ cardIndex: number }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const sedmaApi = {
+  exec: (
+    command: SedmaCommand,
+    opts?: {
+      cardIndex?: number;
+      config?: SedmaConfigInput;
+    },
+  ) =>
+    gameExec<SedmaResponse>('sedma', {
+      command,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Mariáš game settings. */
+export interface MariasConfigInput {
+  cpuDifficulty?: number;
+  targetPoints?: number;
+}
+
+/** Commands accepted by the Mariáš /marias/exec endpoint. */
+export type MariasCommand = 'reset' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Mariáš /marias/exec endpoint.
+ *
+ * Mariáš is a Czech/Slovak 3-player 32-card trump trick-taker. A rotating
+ * Soloist plays alone against the 2 Defenders; trump is the Soloist's longest
+ * suit (auto). The only play action is playing a card (must follow, trump when
+ * void); there are no declarations.
+ *   - `play` → `{ cardIndex: number }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const mariasApi = {
+  exec: (
+    command: MariasCommand,
+    opts?: {
+      cardIndex?: number;
+      config?: MariasConfigInput;
+    },
+  ) =>
+    gameExec<MariasResponse>('marias', {
+      command,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Knockout Whist game settings (CPU difficulty only — no target points). */
+export interface KnockoutWhistConfigInput {
+  cpuDifficulty?: number;
+}
+
+/** Commands accepted by the Knockout Whist /knockoutwhist/exec endpoint. */
+export type KnockoutWhistCommand = 'reset' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Knockout Whist /knockoutwhist/exec endpoint.
+ *
+ * Knockout Whist is a British play-only survival trick-taker for 4 players on a
+ * 52-card deck. Each round deals one fewer card; the previous round's winner's
+ * longest suit becomes trump (auto). Must-follow, Ace-high. A player who wins
+ * zero tricks in a round must spend a Dogbone token to survive, or is
+ * eliminated. Last player standing wins.
+ *   - `play` → `{ cardIndex: number }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const knockoutWhistApi = {
+  exec: (
+    command: KnockoutWhistCommand,
+    opts?: {
+      cardIndex?: number;
+      config?: KnockoutWhistConfigInput;
+    },
+  ) =>
+    gameExec<KnockoutWhistResponse>('knockoutwhist', {
+      command,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Spoil Five game settings (CPU difficulty only — target points are fixed server-side). */
+export interface SpoilFiveConfigInput {
+  cpuDifficulty?: number;
+}
+
+/** Commands accepted by the Spoil Five /spoilfive/exec endpoint. */
+export type SpoilFiveCommand = 'reset' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Spoil Five /spoilfive/exec endpoint.
+ *
+ * Spoil Five (Maw) is an Irish play-only trick-taker for 5 players on a 52-card
+ * deck (5 cards each). Trump is a turned-up card; the trump 5, trump J, and ♥A
+ * are the fixed top trumps and may be held back (Reneging). The first player to
+ * win 3 of the 5 tricks takes the pot; otherwise the round is a Spoil (流局) and
+ * the pot carries over. First player to targetPoints wins the match.
+ *   - `play` → `{ cardIndex: number }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const spoilFiveApi = {
+  exec: (
+    command: SpoilFiveCommand,
+    opts?: {
+      cardIndex?: number;
+      config?: SpoilFiveConfigInput;
+    },
+  ) =>
+    gameExec<SpoilFiveResponse>('spoilfive', {
+      command,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Solo Whist game settings. */
+export interface SoloWhistConfigInput {
+  cpuDifficulty?: number;
+  targetPoints?: number;
+}
+
+/** Commands accepted by the Solo Whist /solowhist/exec endpoint. */
+export type SoloWhistCommand = 'reset' | 'bid' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Solo Whist /solowhist/exec endpoint.
+ *
+ * Solo Whist is a British 4-player 52-card trick-taker with a bidding phase.
+ * Each player bids once (Pass/Solo/Misère/Abundance); the highest bidder is the
+ * declarer who plays alone against the other 3 defenders.
+ *   - `bid` → `{ bid: number }` (0=Pass 1=Solo 2=Misère 3=Abundance)
+ *   - `play` → `{ cardIndex: number }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const soloWhistApi = {
+  exec: (
+    command: SoloWhistCommand,
+    opts?: {
+      bid?: number;
+      cardIndex?: number;
+      config?: SoloWhistConfigInput;
+    },
+  ) =>
+    gameExec<SoloWhistResponse>('solowhist', {
+      command,
+      bid: opts?.bid,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Auction Forty-Fives game settings. */
+export interface FortyFivesConfigInput {
+  cpuDifficulty?: number;
+  targetPoints?: number;
+}
+
+/** Commands accepted by the Auction Forty-Fives /fortyfives/exec endpoint. */
+export type FortyFivesCommand = 'reset' | 'bid' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Auction Forty-Fives /fortyfives/exec endpoint.
+ *
+ * Auction Forty-Fives is an Irish/Canadian 4-player, 2-team trick-taker with a
+ * bidding phase. Players bid Pass/15/20/25 (Jink); the highest bidder's team
+ * declares trump and plays five tricks.
+ *   - `bid` → `{ bid: number }` (0=Pass 15 20 25)
+ *   - `play` → `{ cardIndex: number }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const fortyFivesApi = {
+  exec: (
+    command: FortyFivesCommand,
+    opts?: {
+      bid?: number;
+      cardIndex?: number;
+      config?: FortyFivesConfigInput;
+    },
+  ) =>
+    gameExec<FortyFivesResponse>('fortyfives', {
+      command,
+      bid: opts?.bid,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Twenty-Nine (29) game settings. */
+export interface TwentyNineConfigInput {
+  cpuDifficulty?: number;
+  targetPoints?: number;
+}
+
+/** Commands accepted by the Twenty-Nine (29) /twentynine/exec endpoint. */
+export type TwentyNineCommand = 'reset' | 'bid' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Twenty-Nine (29) /twentynine/exec endpoint.
+ *
+ * Twenty-Nine is an Indian/Bangladeshi 4-player, 2-team trick-taker with a
+ * bidding phase and a hidden trump. Players bid Pass/16/20/24/28; the highest
+ * bidder's team picks a hidden trump suit (revealed only mid-play) and plays
+ * eight tricks.
+ *   - `bid` → `{ bid: number }` (0=Pass 16 20 24 28)
+ *   - `play` → `{ cardIndex: number }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const twentyNineApi = {
+  exec: (
+    command: TwentyNineCommand,
+    opts?: {
+      bid?: number;
+      cardIndex?: number;
+      config?: TwentyNineConfigInput;
+    },
+  ) =>
+    gameExec<TwentyNineResponse>('twentynine', {
+      command,
+      bid: opts?.bid,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Court Piece (Rang) game settings. */
+export interface CourtPieceConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** Commands accepted by the Court Piece (Rang) /courtpiece/exec endpoint. */
+export type CourtPieceCommand = 'reset' | 'trump' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Court Piece (Rang) /courtpiece/exec endpoint.
+ *
+ * Court Piece is a 4-player, 2-team (seats 0&2 vs 1&3) trick-taker with no
+ * numeric bidding. The caller (Hakim) peeks at 5 cards and declares a trump
+ * suit; the teams then play 13 tricks. A team taking 7+ tricks wins the round
+ * (Sar = +1 point); sweeps and consecutive wins add a Court bonus (+2). The
+ * first team to reach the point limit (default 7) wins.
+ *   - `trump` → `{ trumpSuit: number }` (1=♠ 2=♣ 3=♥ 4=♦)
+ *   - `play` → `{ cardIndex: number }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const courtPieceApi = {
+  exec: (
+    command: CourtPieceCommand,
+    opts?: {
+      trumpSuit?: number;
+      cardIndex?: number;
+      config?: CourtPieceConfigInput;
+    },
+  ) =>
+    gameExec<CourtPieceResponse>('courtpiece', {
+      command,
+      trumpSuit: opts?.trumpSuit,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Bezique game settings. */
+export interface BeziqueConfigInput {
+  cpuDifficulty?: number;
+  targetScore?: number;
+}
+
+/** Commands accepted by the Bezique /bezique/exec endpoint. */
+export type BeziqueCommand = 'reset' | 'play' | 'meld' | 'skip' | 'next' | 'hint' | 'log' | 'config';
+
+/**
+ * API client for the Bezique /bezique/exec endpoint.
+ *
+ * Bezique is a 2-player ancestor of Pinochle played with a 64-card deck. In
+ * phase 1 (while stock remains) the trick winner may declare ONE meld for
+ * points (marriage 20 / royal marriage 40 / Bezique 40 / four aces 100 / kings
+ * 80 / queens 60 / jacks 40) or skip; then both draw. When the stock empties,
+ * phase 2 is strict must-follow with no melds and a +10 last-trick bonus.
+ * Scores accumulate across deals to a target (default 1000).
+ *   - `play` → `{ cardIndex: number }`
+ *   - `meld` → `{ meldIndex: number }`
+ *   - `reset` / `config` → `{ config }`
+ *   - `skip` / `next` / `hint` / `log` carry no extra fields.
+ */
+export const beziqueApi = {
+  exec: (
+    command: BeziqueCommand,
+    opts?: {
+      cardIndex?: number;
+      meldIndex?: number;
+      config?: BeziqueConfigInput;
+    },
+  ) =>
+    gameExec<BeziqueResponse>('bezique', {
+      command,
+      cardIndex: opts?.cardIndex,
+      meldIndex: opts?.meldIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Écarté game settings. */
+export interface EcarteConfigInput {
+  cpuDifficulty?: number;
+  targetScore?: number;
+}
+
+/** Commands accepted by the Écarté /ecarte/exec endpoint. */
+export type EcarteCommand =
+  | 'reset'
+  | 'propose'
+  | 'stand'
+  | 'respond'
+  | 'discard'
+  | 'play'
+  | 'next'
+  | 'hint'
+  | 'log'
+  | 'config';
+
+/**
+ * API client for the Écarté /ecarte/exec endpoint.
+ *
+ * Écarté is a 2-player French 32-card trick game with an Exchange phase. The
+ * elder (non-dealer) chooses Propose or Stand; if proposed, the dealer Accepts
+ * or Refuses; on accept, each player discards any number of cards and draws
+ * replacements, then the elder decides again (until the stock empties). Play is
+ * 5 strict must-follow tricks (rank K>Q>J>A>10>9>8>7). Scores accumulate to a
+ * target (default 5).
+ *   - `respond` → `{ accept: boolean }`
+ *   - `discard` → `{ discardIndices: number[] }`
+ *   - `play` → `{ cardIndex: number }`
+ *   - `reset` / `config` → `{ config }`
+ *   - `propose` / `stand` / `next` / `hint` / `log` carry no extra fields.
+ */
+export const ecarteApi = {
+  exec: (
+    command: EcarteCommand,
+    opts?: {
+      accept?: boolean;
+      cardIndex?: number;
+      discardIndices?: number[];
+      config?: EcarteConfigInput;
+    },
+  ) =>
+    gameExec<EcarteResponse>('ecarte', {
+      command,
+      accept: opts?.accept,
+      cardIndex: opts?.cardIndex,
+      discardIndices: opts?.discardIndices,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Three Card Brag game settings. */
+export interface ThreeCardBragConfigInput {
+  cpuDifficulty?: number;
+  ante?: number;
+  startingChips?: number;
+}
+
+/** Commands accepted by the Three Card Brag /threecardbrag/exec endpoint. */
+export type ThreeCardBragCommand =
+  | 'reset'
+  | 'see'
+  | 'bet'
+  | 'raise'
+  | 'fold'
+  | 'show'
+  | 'next'
+  | 'hint'
+  | 'log'
+  | 'config';
+
+/**
+ * API client for the Three Card Brag /threecardbrag/exec endpoint.
+ *
+ * Three Card Brag is a 4-player British vying game (poker ancestor) with chips
+ * and a pot. On the human's turn: `see` (reveal, Blind→Seen), `bet` (call the
+ * stake), `raise` (with `raiseStake`), `fold`, or `show` (when allowed). `next`
+ * advances to the following deal; `reset` / `config` apply the config.
+ *   - `raise` → `{ raiseStake: number }`
+ *   - `reset` / `config` → `{ config }`
+ *   - `see` / `bet` / `fold` / `show` / `next` / `hint` / `log` carry no extra fields.
+ */
+export const threeCardBragApi = {
+  exec: (
+    command: ThreeCardBragCommand,
+    opts?: {
+      raiseStake?: number;
+      config?: ThreeCardBragConfigInput;
+    },
+  ) =>
+    gameExec<ThreeCardBragResponse>('threecardbrag', {
+      command,
+      raiseStake: opts?.raiseStake,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Teen Patti game settings. */
+export interface TeenPattiConfigInput {
+  cpuDifficulty?: number;
+  ante?: number;
+  startingChips?: number;
+}
+
+/** Commands accepted by the Teen Patti /teenpatti/exec endpoint. */
+export type TeenPattiCommand =
+  | 'reset'
+  | 'see'
+  | 'bet'
+  | 'raise'
+  | 'fold'
+  | 'show'
+  | 'sideshow'
+  | 'respond'
+  | 'next'
+  | 'hint'
+  | 'log'
+  | 'config';
+
+/**
+ * API client for the Teen Patti /teenpatti/exec endpoint.
+ *
+ * Teen Patti is the Indian variant of Three Card Brag — a 4-player vying game
+ * with chips and a pot. On the human's turn: `see` (reveal, Blind→Seen), `bet`
+ * (call the stake), `raise` (with `raiseStake`), `fold`, `show` (when allowed),
+ * or `sideshow` (request a private hand comparison with the previous Seen
+ * player). When a Side Show is requested of the human, `respond` (with
+ * `accept`) accepts or declines it. `next` advances to the following deal;
+ * `reset` / `config` apply the config.
+ *   - `raise` → `{ raiseStake: number }`
+ *   - `respond` → `{ accept: boolean }`
+ *   - `reset` / `config` → `{ config }`
+ *   - `see` / `bet` / `fold` / `show` / `sideshow` / `next` / `hint` / `log` carry no extra fields.
+ */
+export const teenPattiApi = {
+  exec: (
+    command: TeenPattiCommand,
+    opts?: {
+      raiseStake?: number;
+      accept?: boolean;
+      config?: TeenPattiConfigInput;
+    },
+  ) =>
+    gameExec<TeenPattiResponse>('teenpatti', {
+      command,
+      raiseStake: opts?.raiseStake,
+      accept: opts?.accept,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Spoons game settings. */
+export interface SpoonsConfigInput {
+  cpuDifficulty?: number;
+}
+
+/** Commands accepted by the Spoons /spoons/exec endpoint. */
+export type SpoonsCommand = 'reset' | 'pass' | 'grab' | 'next' | 'log';
+
+/**
+ * API client for the Spoons /spoons/exec endpoint.
+ *
+ * Spoons is a 4-player pass-and-grab speed game. On the Pass phase the human
+ * picks one of their four cards to pass to the next player (`pass` →
+ * `{ cardIndex }`). When someone collects four of a kind the Grab window opens;
+ * everyone races to `grab` a spoon — the one who misses out gains a letter
+ * (S-P-O-O-N-S). `next` advances to the following round; `reset` applies the
+ * config (CPU difficulty); `log` fetches the action log.
+ *   - `pass` → `{ cardIndex: number }`
+ *   - `reset` → `{ config }`
+ *   - `grab` / `next` / `log` carry no extra fields.
+ */
+export const spoonsApi = {
+  exec: (
+    command: SpoonsCommand,
+    opts?: {
+      cardIndex?: number;
+      config?: SpoonsConfigInput;
+    },
+  ) =>
+    gameExec<SpoonsResponse>('spoons', {
+      command,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Kemps game settings. */
+export interface KempsConfigInput {
+  cpuDifficulty?: number;
+  targetScore?: number;
+}
+
+/** Commands accepted by the Kemps /kemps/exec endpoint. */
+export type KempsCommand = 'reset' | 'swap' | 'pass' | 'signal' | 'kemps' | 'counter' | 'next' | 'log';
+
+/**
+ * API client for the Kemps /kemps/exec endpoint.
+ *
+ * Kemps is a 4-player, 2-team matching game. On the Exchange phase the human
+ * swaps one hand card for a field card (`swap` → `{ handIndex, fieldIndex }`)
+ * or skips with `pass`. The human sets a secret signal type with `signal` →
+ * `{ signalType }` (0=Sound, 1=Blink). When a team completes four of a kind the
+ * Declare window opens: `kemps` declares "Kemps!" and `counter` →
+ * `{ targetSeat }` declares "Counter-Kemps!" against an opponent seat. `next`
+ * advances to the following round; `reset` applies the config; `log` fetches
+ * the action log.
+ *   - `swap` → `{ handIndex: number, fieldIndex: number }`
+ *   - `signal` → `{ signalType: number }`
+ *   - `counter` → `{ targetSeat: number }`
+ *   - `reset` → `{ config }`
+ *   - `pass` / `kemps` / `next` / `log` carry no extra fields.
+ */
+export const kempsApi = {
+  exec: (
+    command: KempsCommand,
+    opts?: {
+      handIndex?: number;
+      fieldIndex?: number;
+      signalType?: number;
+      targetSeat?: number;
+      config?: KempsConfigInput;
+    },
+  ) =>
+    gameExec<KempsResponse>('kemps', {
+      command,
+      handIndex: opts?.handIndex,
+      fieldIndex: opts?.fieldIndex,
+      signalType: opts?.signalType,
+      targetSeat: opts?.targetSeat,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Cuckoo game settings. */
+export interface CuckooConfigInput {
+  cpuDifficulty?: number;
+  initialLives?: number;
+}
+
+/** Commands accepted by the Cuckoo /cuckoo/exec endpoint. */
+export type CuckooCommand = 'reset' | 'keep' | 'swap' | 'refuse' | 'accept' | 'nextround' | 'log';
+
+/**
+ * API client for the Cuckoo /cuckoo/exec endpoint.
+ *
+ * Cuckoo (a.k.a. Chase the Ace / Ranter-Go-Round) is a 4-player life-survival
+ * game. On your turn you `keep` your card or `swap` it with your neighbour (the
+ * dealer swaps with the stock). When you hold a King and someone tries to swap
+ * into you, `refuse` reveals the King to block it or `accept` allows the swap.
+ * `nextround` advances after the lowest card loses a life; `reset` applies the
+ * config (CPU difficulty, initial lives); `log` fetches the action log. None of
+ * the play commands carry extra fields — only `reset` takes a `config`.
+ */
+export const cuckooApi = {
+  exec: (command: CuckooCommand, opts?: { config?: CuckooConfigInput }) =>
+    gameExec<CuckooResponse>('cuckoo', {
+      command,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Pişti game settings. */
+export interface PishtiConfigInput {
+  playerCnt?: number;
+  cpuDifficulty?: number;
+}
+
+/** Commands accepted by the Pişti /pishti/exec endpoint. */
+export type PishtiCommand = 'reset' | 'play' | 'next' | 'log';
+
+/**
+ * API client for the Pişti /pishti/exec endpoint.
+ *
+ * Pişti is a Turkish 2–4 player capture (fishing) game. On your turn you `play`
+ * a hand card onto the central pile (`play` → `{ handIndex }`); matching the
+ * pile's top rank, or playing a Jack, captures the whole pile, and capturing a
+ * lone card scores a Pişti bonus. `next` starts the next game after one ends;
+ * `reset` applies the config (player count, CPU difficulty); `log` fetches the
+ * action log.
+ *   - `play` → `{ handIndex: number }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `log` carry no extra fields.
+ */
+export const pishtiApi = {
+  exec: (command: PishtiCommand, opts?: { handIndex?: number; config?: PishtiConfigInput }) =>
+    gameExec<PishtiResponse>('pishti', {
+      command,
+      handIndex: opts?.handIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Cuarenta game settings. */
+export interface CuarentaConfigInput {
+  cpuDifficulty?: number;
+  targetScore?: number;
+}
+
+/** Commands accepted by the Cuarenta /cuarenta/exec endpoint. */
+export type CuarentaCommand = 'reset' | 'play' | 'next' | 'log';
+
+/**
+ * API client for the Cuarenta /cuarenta/exec endpoint.
+ *
+ * Cuarenta is an Ecuadorian 4-player, 2-team capture game played with a 40-card
+ * deck (no 8/9/10). On your turn you `play` a hand card (`play` → `{ handIndex }`):
+ * it captures all same-rank table cards (with caída / ronda / limpia bonuses) or
+ * is laid on the table. `next` starts the next round, `reset` applies the config
+ * (CPU difficulty, target score), and `log` fetches the action log.
+ *   - `play` → `{ handIndex: number }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `log` carry no extra fields.
+ */
+export const cuarentaApi = {
+  exec: (command: CuarentaCommand, opts?: { handIndex?: number; config?: CuarentaConfigInput }) =>
+    gameExec<CuarentaResponse>('cuarenta', {
+      command,
+      handIndex: opts?.handIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Commands accepted by the Faro /faro/exec endpoint. */
+export type FaroCommand = 'reset' | 'bet' | 'clearBet' | 'clearAll' | 'deal' | 'call' | 'next' | 'log';
+
+/**
+ * API client for the Faro /faro/exec endpoint.
+ *
+ * Faro is a 19th-century single-player-vs-bank banking game. The player places
+ * chips on a 13-rank layout (A=1 .. K=13) during the Betting phase, then the
+ * bank deals turns of two cards (loser then winner). Commands:
+ *   - `bet` → `{ rank, amount, copper }` (copper = bet the rank to lose)
+ *   - `clearBet` → `{ rank }`
+ *   - `clearAll` / `deal` / `next` / `log` carry no extra fields
+ *   - `call` → `{ order }` predicting the order of the final three cards (4:1)
+ */
+export const faroApi = {
+  exec: (command: FaroCommand, opts?: { rank?: number; amount?: number; copper?: boolean; order?: number[] }) =>
+    gameExec<FaroResponse>('faro', {
+      command,
+      rank: opts?.rank,
+      amount: opts?.amount,
+      copper: opts?.copper,
+      order: opts?.order,
+    }),
+};
+
+/** Commands accepted by the Open Face Chinese Poker (OFC) /openfacechinese/exec endpoint. */
+export type OpenFaceChineseCommand = 'reset' | 'place' | 'nextround' | 'hint' | 'log';
+
+/** Commands accepted by the Russian Bank /russianbank/exec endpoint. */
+export type RussianBankCommand = 'reset' | 'pf' | 'mt' | 'd' | 's' | 'u' | 'hint' | 'log';
+
+/**
+ * API client for the Open Face Chinese Poker (OFC) /openfacechinese/exec endpoint.
+ *
+ * OFC is a solo-vs-CPU game where each dealt card must be committed to one of
+ * three rows — Top (3 cards), Middle (5 cards) or Bottom (5 cards) — and once
+ * placed a card cannot be moved. Commands:
+ *   - `place` -> `{ row }` where row is 0=Top, 1=Middle, 2=Bottom
+ *   - `reset` / `nextround` / `hint` / `log` carry no extra fields
+ */
+export const openfacechineseApi = {
+  exec: (command: OpenFaceChineseCommand, opts?: { row?: number }) =>
+    gameExec<OpenFaceChineseResponse>('openfacechinese', {
+      command,
+      row: opts?.row,
+    }),
+};
+
+/** Options accepted by a Russian Bank move command. */
+export interface RussianBankMoveOpts {
+  zone?: number;
+  fromOpp?: boolean;
+  col?: number;
+  toCol?: number;
+  config?: { cpuDifficulty?: number };
+}
+
+/** API client for the Russian Bank /russianbank/exec endpoint. */
+export const russianbankApi = {
+  exec: (command: RussianBankCommand, opts?: RussianBankMoveOpts) =>
+    gameExec<RussianBankResponse>('russianbank', {
+      command,
+      zone: opts?.zone,
+      fromOpp: opts?.fromOpp,
+      col: opts?.col,
+      toCol: opts?.toCol,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Préférence game settings. */
+export interface PreferenceConfigInput {
+  cpuDifficulty?: number;
+  targetPoints?: number;
+}
+
+/** Commands accepted by the Préférence /preference/exec endpoint. */
+export type PreferenceCommand = 'reset' | 'bid' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Préférence /preference/exec endpoint.
+ *
+ * Préférence is a Russian/Austrian 3-player 32-card trick-taker with a bidding
+ * phase. Each player bids once (Pass/Six/Misère/Seven/Eight); the highest bidder
+ * is the declarer who plays alone against the other 2 defenders.
+ *   - `bid` → `{ bid: number }` (0=Pass 1=Six 2=Misère 3=Seven 4=Eight)
+ *   - `play` → `{ cardIndex: number }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const preferenceApi = {
+  exec: (
+    command: PreferenceCommand,
+    opts?: {
+      bid?: number;
+      cardIndex?: number;
+      config?: PreferenceConfigInput;
+    },
+  ) =>
+    gameExec<PreferenceResponse>('preference', {
+      command,
+      bid: opts?.bid,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Nap (Napoleon) game settings. */
+export interface NapConfigInput {
+  cpuDifficulty?: number;
+  targetPoints?: number;
+}
+
+/** Commands accepted by the Nap /nap/exec endpoint. */
+export type NapCommand = 'reset' | 'bid' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Nap (Napoleon) /nap/exec endpoint.
+ *
+ * Nap is a British 4-player 5-card gambling trick-taker with a bidding phase.
+ * Each player bids once (Pass/Two/Three/Four/Nap = how many of the 5 tricks they
+ * will take); the highest bidder becomes the declarer who picks trump and leads.
+ *   - `bid` → `{ bid: number }` (0=Pass 2=Two 3=Three 4=Four 5=Nap)
+ *   - `play` → `{ cardIndex: number }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const napApi = {
+  exec: (
+    command: NapCommand,
+    opts?: {
+      bid?: number;
+      cardIndex?: number;
+      config?: NapConfigInput;
+    },
+  ) =>
+    gameExec<NapResponse>('nap', {
+      command,
+      bid: opts?.bid,
       cardIndex: opts?.cardIndex,
       config: opts?.config,
     }),
@@ -2468,6 +3589,50 @@ export const scopaApi = {
     gameExec<ScopaResponse>('scopa', { command, ...(params ?? {}) }),
 };
 
+/** Configuration options for Scopone game settings. */
+export interface ScoponeConfigInput {
+  targetScore?: number;
+  cpuDifficulty?: number;
+}
+
+/** Command verbs accepted by the Scopone /scopone/exec endpoint (short forms). */
+export type ScoponeCommand = 'r' | 'n' | 'p' | 'log';
+
+/** Extra payload fields for the Scopone /scopone/exec endpoint. */
+export interface ScoponeExecParams {
+  handIndex?: number;
+  tableIndices?: number[];
+  config?: ScoponeConfigInput;
+}
+
+/** API client for the Scopone /scopone/exec endpoint. */
+export const scoponeApi = {
+  exec: (command: ScoponeCommand, params?: ScoponeExecParams) =>
+    gameExec<ScoponeResponse>('scopone', { command, ...(params ?? {}) }),
+};
+
+/** Configuration options for Escoba game settings. */
+export interface EscobaConfigInput {
+  targetScore?: number;
+  cpuDifficulty?: number;
+}
+
+/** Command verbs accepted by the Escoba /escoba/exec endpoint (short forms). */
+export type EscobaCommand = 'r' | 'n' | 'p' | 'log';
+
+/** Extra payload fields for the Escoba /escoba/exec endpoint. */
+export interface EscobaExecParams {
+  handIndex?: number;
+  tableIndices?: number[];
+  config?: EscobaConfigInput;
+}
+
+/** API client for the Escoba /escoba/exec endpoint. */
+export const escobaApi = {
+  exec: (command: EscobaCommand, params?: EscobaExecParams) =>
+    gameExec<EscobaResponse>('escoba', { command, ...(params ?? {}) }),
+};
+
 /** Configuration options for Barbu game settings. */
 export interface BarbuConfigInput {
   cpuDifficulty?: number;
@@ -2510,6 +3675,36 @@ export const macauApi = {
       cardIndex,
       suit,
       config,
+    }),
+};
+
+/** Configuration options for Mao game settings. */
+export interface MaoConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/**
+ * API client for the Mao /mao/exec endpoint.
+ *
+ * Mao is a Crazy Eights-style shedding game with a secret hidden rule. The
+ * `declareword` command carries the player's compliance utterance (`word`);
+ * the server never reveals the rule itself.
+ */
+export const maoApi = {
+  exec: (
+    command: 'reset' | 'play' | 'draw' | 'suit' | 'declare' | 'skipdeclare' | 'declareword' | 'nextround',
+    cardIndex?: number,
+    suit?: number,
+    config?: MaoConfigInput,
+    word?: string,
+  ) =>
+    gameExec<MaoResponse>('mao', {
+      command,
+      cardIndex,
+      suit,
+      config,
+      word,
     }),
 };
 
@@ -2645,6 +3840,20 @@ export const contractrummyApi = {
   ) => gameExec<ContractRummyResponse>('contractrummy', { command, ...(params ?? {}) }),
 };
 
+/** API client for the Kalooki /kalooki/exec endpoint. */
+export const kalookiApi = {
+  exec: (
+    command: 'reset' | 'drawstock' | 'drawdiscard' | 'meld' | 'layoff' | 'discard' | 'nextround' | 'log',
+    params?: {
+      cardIndex?: number;
+      meldGroups?: number[][];
+      targetPlayerIdx?: number;
+      meldIdx?: number;
+      config?: { cpuDifficulty?: number; playerCount?: number; openingThreshold?: number };
+    },
+  ) => gameExec<KalookiResponse>('kalooki', { command, ...(params ?? {}) }),
+};
+
 const games = [
   'blackjack',
   'poker',
@@ -2665,6 +3874,7 @@ const games = [
   'crazypineapple',
   'irishpoker',
   'sevencardstud',
+  'fivecardstud',
   'razz',
   'badugi',
   'deucetoseven',
@@ -2682,7 +3892,11 @@ const games = [
   'baccarat',
   'crazyeights',
   'ginrummy',
+  'conquian',
+  'chinchon',
+  'threethirteen',
   'canasta',
+  'handandfoot',
   'burraco',
   'spider',
   'indianpoker',
@@ -2726,8 +3940,11 @@ const games = [
   'president',
   'cassino',
   'scopa',
+  'scopone',
+  'escoba',
   'barbu',
   'macau',
+  'mao',
   'bristol',
   'bidwhist',
   'spanish21',
@@ -2748,6 +3965,7 @@ const games = [
   'blackjackswitch',
   'montecarlo',
   'contractrummy',
+  'kalooki',
   'ultimatetexasholdem',
   'crescent',
   'mississippistud',
@@ -2783,6 +4001,34 @@ const games = [
   'mus',
   'tute',
   'sueca',
+  'klaverjas',
+  'manille',
+  'marias',
+  'sedma',
+  'knockoutwhist',
+  'spoilfive',
+  'solowhist',
+  'fortyfives',
+  'nap',
+  'preference',
+  'twentynine',
+  'courtpiece',
+  'bezique',
+  'ecarte',
+  'threecardbrag',
+  'teenpatti',
+  'spoons',
+  'kemps',
+  'cuckoo',
+  'pishti',
+  'cuarenta',
+  'faro',
+  'openfacechinese',
+  'russianbank',
+  'labellelucie',
+  'simplesimon',
+  'doubleklondike',
+  'blackhole',
 ] as const;
 type Game = (typeof games)[number];
 

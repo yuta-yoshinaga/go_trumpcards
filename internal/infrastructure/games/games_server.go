@@ -640,6 +640,31 @@ func init() {
 			return usecase.NewMacauInteractor(domain.NewDefaultMacau(), new(presenter.MacauWebPresenter))
 		},
 		controller.NewMacauWebController)
+	BindWebControllerFor("russianbank",
+		func() usecase.RussianBankInteractorIF {
+			return usecase.NewRussianBankInteractor(domain.NewDefaultRussianBank(), new(presenter.RussianBankWebPresenter))
+		},
+		controller.NewRussianBankWebController)
+	BindWebControllerFor("labellelucie",
+		func() usecase.LaBelleLucieInteractorIF {
+			return usecase.NewLaBelleLucieInteractor(domain.NewDefaultLaBelleLucie(), new(presenter.LaBelleLucieWebPresenter))
+		},
+		controller.NewLaBelleLucieWebController)
+	BindWebControllerFor("simplesimon",
+		func() usecase.SimpleSimonInteractorIF {
+			return usecase.NewSimpleSimonInteractor(domain.NewDefaultSimpleSimon(), new(presenter.SimpleSimonWebPresenter))
+		},
+		controller.NewSimpleSimonWebController)
+	BindWebControllerFor("doubleklondike",
+		func() usecase.DoubleKlondikeInteractorIF {
+			return usecase.NewDoubleKlondikeInteractor(domain.NewDefaultDoubleKlondike(), new(presenter.DoubleKlondikeWebPresenter))
+		},
+		controller.NewDoubleKlondikeWebController)
+	BindWebControllerFor("blackhole",
+		func() usecase.BlackHoleInteractorIF {
+			return usecase.NewBlackHoleInteractor(domain.NewDefaultBlackHole(), new(presenter.BlackHoleWebPresenter))
+		},
+		controller.NewBlackHoleWebController)
 	BindWebControllerFor("gongzhu",
 		func() usecase.GongZhuInteractorIF {
 			return usecase.NewGongZhuInteractor(domain.NewDefaultGongZhu(), new(presenter.GongZhuWebPresenter))
@@ -685,6 +710,61 @@ func init() {
 			return usecase.NewSuecaInteractor(domain.NewDefaultSueca(), new(presenter.SuecaWebPresenter))
 		},
 		controller.NewSuecaWebController)
+	BindWebControllerFor("fortyfives",
+		func() usecase.FortyFivesInteractorIF {
+			return usecase.NewFortyFivesInteractor(domain.NewDefaultFortyFives(), new(presenter.FortyFivesWebPresenter))
+		},
+		controller.NewFortyFivesWebController)
+	BindWebControllerFor("twentynine",
+		func() usecase.TwentyNineInteractorIF {
+			return usecase.NewTwentyNineInteractor(domain.NewDefaultTwentyNine(), new(presenter.TwentyNineWebPresenter))
+		},
+		controller.NewTwentyNineWebController)
+	BindWebControllerFor("klaverjas",
+		func() usecase.KlaverjasInteractorIF {
+			return usecase.NewKlaverjasInteractor(domain.NewDefaultKlaverjas(), new(presenter.KlaverjasWebPresenter))
+		},
+		controller.NewKlaverjasWebController)
+	BindWebControllerFor("manille",
+		func() usecase.ManilleInteractorIF {
+			return usecase.NewManilleInteractor(domain.NewDefaultManille(), new(presenter.ManilleWebPresenter))
+		},
+		controller.NewManilleWebController)
+	BindWebControllerFor("marias",
+		func() usecase.MariasInteractorIF {
+			return usecase.NewMariasInteractor(domain.NewDefaultMarias(), new(presenter.MariasWebPresenter))
+		},
+		controller.NewMariasWebController)
+	BindWebControllerFor("sedma",
+		func() usecase.SedmaInteractorIF {
+			return usecase.NewSedmaInteractor(domain.NewDefaultSedma(), new(presenter.SedmaWebPresenter))
+		},
+		controller.NewSedmaWebController)
+	BindWebControllerFor("solowhist",
+		func() usecase.SoloWhistInteractorIF {
+			return usecase.NewSoloWhistInteractor(domain.NewDefaultSoloWhist(), new(presenter.SoloWhistWebPresenter))
+		},
+		controller.NewSoloWhistWebController)
+	BindWebControllerFor("knockoutwhist",
+		func() usecase.KnockoutWhistInteractorIF {
+			return usecase.NewKnockoutWhistInteractor(domain.NewDefaultKnockoutWhist(), new(presenter.KnockoutWhistWebPresenter))
+		},
+		controller.NewKnockoutWhistWebController)
+	BindWebControllerFor("nap",
+		func() usecase.NapInteractorIF {
+			return usecase.NewNapInteractor(domain.NewDefaultNap(), new(presenter.NapWebPresenter))
+		},
+		controller.NewNapWebController)
+	BindWebControllerFor("preference",
+		func() usecase.PreferenceInteractorIF {
+			return usecase.NewPreferenceInteractor(domain.NewDefaultPreference(), new(presenter.PreferenceWebPresenter))
+		},
+		controller.NewPreferenceWebController)
+	BindWebControllerFor("spoilfive",
+		func() usecase.SpoilFiveInteractorIF {
+			return usecase.NewSpoilFiveInteractor(domain.NewDefaultSpoilFive(), new(presenter.SpoilFiveWebPresenter))
+		},
+		controller.NewSpoilFiveWebController)
 	BindWebControllerFor("easthaven",
 		func() usecase.EasthavenInteractorIF {
 			return usecase.NewEasthavenInteractor(domain.NewDefaultEasthaven(), new(presenter.EasthavenWebPresenter))
@@ -700,4 +780,109 @@ func init() {
 			return usecase.NewBourreInteractor(domain.NewDefaultBourre(), new(presenter.BourreWebPresenter))
 		},
 		controller.NewBourreWebController)
+	BindWebControllerFor("courtpiece",
+		func() usecase.CourtPieceInteractorIF {
+			return usecase.NewCourtPieceInteractor(domain.NewDefaultCourtPiece(), new(presenter.CourtPieceWebPresenter))
+		},
+		controller.NewCourtPieceWebController)
+	BindWebControllerFor("bezique",
+		func() usecase.BeziqueInteractorIF {
+			return usecase.NewBeziqueInteractor(domain.NewDefaultBezique(), new(presenter.BeziqueWebPresenter))
+		},
+		controller.NewBeziqueWebController)
+	BindWebControllerFor("ecarte",
+		func() usecase.EcarteInteractorIF {
+			return usecase.NewEcarteInteractor(domain.NewDefaultEcarte(), new(presenter.EcarteWebPresenter))
+		},
+		controller.NewEcarteWebController)
+	BindWebControllerFor("threecardbrag",
+		func() usecase.ThreeCardBragInteractorIF {
+			return usecase.NewThreeCardBragInteractor(domain.NewDefaultThreeCardBrag(), new(presenter.ThreeCardBragWebPresenter))
+		},
+		controller.NewThreeCardBragWebController)
+	BindWebControllerFor("teenpatti",
+		func() usecase.TeenPattiInteractorIF {
+			return usecase.NewTeenPattiInteractor(domain.NewDefaultTeenPatti(), new(presenter.TeenPattiWebPresenter))
+		},
+		controller.NewTeenPattiWebController)
+	BindWebControllerFor("scopone",
+		func() usecase.ScoponeInteractorIF {
+			return usecase.NewScoponeInteractor(domain.NewDefaultScopone(), new(presenter.ScoponeWebPresenter))
+		},
+		controller.NewScoponeWebController)
+	BindWebControllerFor("escoba",
+		func() usecase.EscobaInteractorIF {
+			return usecase.NewEscobaInteractor(domain.NewDefaultEscoba(), new(presenter.EscobaWebPresenter))
+		},
+		controller.NewEscobaWebController)
+	BindWebControllerFor("handandfoot",
+		func() usecase.HandAndFootInteractorIF {
+			return usecase.NewHandAndFootInteractor(domain.NewDefaultHandAndFoot(), new(presenter.HandAndFootWebPresenter))
+		},
+		controller.NewHandAndFootWebController)
+	BindWebControllerFor("conquian",
+		func() usecase.ConquianInteractorIF {
+			return usecase.NewConquianInteractor(domain.NewDefaultConquian(), new(presenter.ConquianWebPresenter))
+		},
+		controller.NewConquianWebController)
+	BindWebControllerFor("chinchon",
+		func() usecase.ChinchonInteractorIF {
+			return usecase.NewChinchonInteractor(domain.NewDefaultChinchon(), new(presenter.ChinchonWebPresenter))
+		},
+		controller.NewChinchonWebController)
+	BindWebControllerFor("kalooki",
+		func() usecase.KalookiInteractorIF {
+			return usecase.NewKalookiInteractor(domain.NewDefaultKalooki(), new(presenter.KalookiWebPresenter))
+		},
+		controller.NewKalookiWebController)
+	BindWebControllerFor("threethirteen",
+		func() usecase.ThreeThirteenInteractorIF {
+			return usecase.NewThreeThirteenInteractor(domain.NewDefaultThreeThirteen(), new(presenter.ThreeThirteenWebPresenter))
+		},
+		controller.NewThreeThirteenWebController)
+	BindWebControllerFor("mao",
+		func() usecase.MaoInteractorIF {
+			return usecase.NewMaoInteractor(domain.NewDefaultMao(), new(presenter.MaoWebPresenter))
+		},
+		controller.NewMaoWebController)
+	BindWebControllerFor("spoons",
+		func() usecase.SpoonsInteractorIF {
+			return usecase.NewSpoonsInteractor(domain.NewDefaultSpoons(), new(presenter.SpoonsWebPresenter))
+		},
+		controller.NewSpoonsWebController)
+	BindWebControllerFor("kemps",
+		func() usecase.KempsInteractorIF {
+			return usecase.NewKempsInteractor(domain.NewDefaultKemps(), new(presenter.KempsWebPresenter))
+		},
+		controller.NewKempsWebController)
+	BindWebControllerFor("cuckoo",
+		func() usecase.CuckooInteractorIF {
+			return usecase.NewCuckooInteractor(domain.NewDefaultCuckoo(), new(presenter.CuckooWebPresenter))
+		},
+		controller.NewCuckooWebController)
+	BindWebControllerFor("pishti",
+		func() usecase.PishtiInteractorIF {
+			return usecase.NewPishtiInteractor(domain.NewDefaultPishti(), new(presenter.PishtiWebPresenter))
+		},
+		controller.NewPishtiWebController)
+	BindWebControllerFor("cuarenta",
+		func() usecase.CuarentaInteractorIF {
+			return usecase.NewCuarentaInteractor(domain.NewDefaultCuarenta(), new(presenter.CuarentaWebPresenter))
+		},
+		controller.NewCuarentaWebController)
+	BindWebControllerFor("fivecardstud",
+		func() usecase.FiveCardStudInteractorIF {
+			return usecase.NewFiveCardStudInteractor(domain.NewDefaultFiveCardStud(), new(presenter.FiveCardStudWebPresenter))
+		},
+		controller.NewFiveCardStudWebController)
+	BindWebControllerFor("faro",
+		func() usecase.FaroInteractorIF {
+			return usecase.NewFaroInteractor(domain.NewDefaultFaro(), new(presenter.FaroWebPresenter))
+		},
+		controller.NewFaroWebController)
+	BindWebControllerFor("openfacechinese",
+		func() usecase.OpenFaceChineseInteractorIF {
+			return usecase.NewOpenFaceChineseInteractor(domain.NewDefaultOpenFaceChinese(), new(presenter.OpenFaceChineseWebPresenter))
+		},
+		controller.NewOpenFaceChineseWebController)
 }

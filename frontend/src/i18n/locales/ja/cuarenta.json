@@ -1,0 +1,42 @@
+{
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "deck": "山札: {{count}}枚",
+  "playersTitle": "プレイヤー",
+  "team": "チーム{{name}}",
+  "teamScore": "{{name}}: {{score}} / {{target}}点",
+  "captured": "捕獲 {{count}}枚",
+  "table": "場",
+  "tableCount": "{{count}}枚",
+  "tableEmpty": "場札なし",
+  "lastPlays": "直前のプレイ",
+  "laidDown": "場に置いた",
+  "caida": "カイーダ! +2",
+  "ronda": "ロンダ! +{{bonus}}",
+  "limpia": "リンピア! +1",
+  "yourHand": "あなたの手札",
+  "turnNotice": "あなたの番です — 手札を1枚選んで出してください。",
+  "playButton": "出す",
+  "nextRound": "次のラウンドへ",
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "easy": "やさしい",
+    "normal": "ふつう",
+    "hard": "むずかしい"
+  },
+  "phase": {
+    "play": "プレイ",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "win": "あなたのチームの勝利です！",
+  "lose": "チーム{{name}} の勝利です。",
+  "tutorial": {
+    "info": "山札の残り枚数がここに表示されます。",
+    "teams": "2チーム ({0,2}=A / {1,3}=B) の累計点と目標点 (40) が表示されます。",
+    "table": "場の中央です。同ランクのカードを出すと場札をまとめて捕獲できます。",
+    "hand": "あなたの手札です。カードをクリックすると出せます。同ランクで捕獲、無ければ場に置きます。",
+    "resetButton": "このボタンでいつでもゲームをリセットできます。"
+  }
+}
