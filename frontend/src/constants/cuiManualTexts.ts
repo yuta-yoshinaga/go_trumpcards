@@ -17,6 +17,7 @@ import bidwhist from '../../../docs/manual/cui/bidwhist.md?raw';
 import bigo from '../../../docs/manual/cui/bigo.md?raw';
 import bigohilo from '../../../docs/manual/cui/bigohilo.md?raw';
 import bigtwo from '../../../docs/manual/cui/bigtwo.md?raw';
+import blackhole from '../../../docs/manual/cui/blackhole.md?raw';
 import blackjack from '../../../docs/manual/cui/blackjack.md?raw';
 import blackjackswitch from '../../../docs/manual/cui/blackjackswitch.md?raw';
 import bourre from '../../../docs/manual/cui/bourre.md?raw';
@@ -308,6 +309,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/labellelucie': labellelucie,
   '/simplesimon': simplesimon,
   '/doubleklondike': doubleklondike,
+  '/blackhole': blackhole,
   '/pishti': pishti,
   '/tonk': tonk,
   '/tripeaks': tripeaks,

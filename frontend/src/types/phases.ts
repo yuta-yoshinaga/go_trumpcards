@@ -222,6 +222,13 @@ export const DoubleKlondikePhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Black Hole phase values mirroring the Go `BlackHolePhase` enum. */
+export const BlackHolePhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** FreeCell phase constants (sync: internal/domain/FreeCell.go). */
 export const FreeCellPhase = {
   PLAYING: 0,

@@ -660,6 +660,11 @@ func init() {
 			return usecase.NewDoubleKlondikeInteractor(domain.NewDefaultDoubleKlondike(), new(presenter.DoubleKlondikeWebPresenter))
 		},
 		controller.NewDoubleKlondikeWebController)
+	BindWebControllerFor("blackhole",
+		func() usecase.BlackHoleInteractorIF {
+			return usecase.NewBlackHoleInteractor(domain.NewDefaultBlackHole(), new(presenter.BlackHoleWebPresenter))
+		},
+		controller.NewBlackHoleWebController)
 	BindWebControllerFor("gongzhu",
 		func() usecase.GongZhuInteractorIF {
 			return usecase.NewGongZhuInteractor(domain.NewDefaultGongZhu(), new(presenter.GongZhuWebPresenter))

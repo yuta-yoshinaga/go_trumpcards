@@ -2816,6 +2816,19 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "blackhole", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBlackHoleCuiController(usecase.NewBlackHoleInteractor(
+				domain.NewDefaultBlackHole(), new(presenter.BlackHoleCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "blackhole.helpTitle",
+				CommandKeys: []string{
+					"blackhole.helpMove",
+					"blackhole.helpUndo",
+					"blackhole.helpGiveUp",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

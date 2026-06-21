@@ -156,6 +156,7 @@ export type GameKey =
   | 'labellelucie'
   | 'simplesimon'
   | 'doubleklondike'
+  | 'blackhole'
   | 'bidwhist'
   | 'yukon'
   | 'russiansolitaire'
@@ -462,6 +463,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   labellelucie: GREEN,
   simplesimon: GREEN,
   doubleklondike: GREEN,
+  blackhole: GREEN,
   bidwhist: GREEN,
   yukon: CASINO,
   russiansolitaire: CASINO,

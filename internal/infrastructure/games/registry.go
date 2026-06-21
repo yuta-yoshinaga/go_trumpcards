@@ -453,6 +453,11 @@ var registry = []*Game{
 	// columns and 8 foundations (two A-K piles per suit); deal/draw/waste play
 	// as in Klondike. Clear all eight foundations to win. Classic worker bucket.
 	{Name: "doubleklondike", Category: CategoryClassic},
+	// Black Hole: a one-deck patience by David Parlett. 51 cards dealt into 17
+	// fans of three around a central foundation (the black hole) seeded with the
+	// ♠A; play a fan top whose rank is ±1 (any suit, no K-A wrap) onto the pile.
+	// Absorb all 52 cards to win. Solo worker bucket.
+	{Name: "blackhole", Category: CategorySolo},
 }
 
 // All returns a value-level copy of the registry in canonical order.

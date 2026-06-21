@@ -14,6 +14,7 @@ import type {
   BidWhistResponse,
   BigTwoConfigInput,
   BigTwoResponse,
+  BlackHoleResponse,
   BlackJackResponse,
   BlackJackSwitchResponse,
   BourreResponse,
@@ -346,6 +347,7 @@ const workerUrl: Record<string, string> = {
   labellelucie: WORKER_CLASSIC,
   simplesimon: WORKER_CLASSIC,
   doubleklondike: WORKER_CLASSIC,
+  blackhole: WORKER_SOLO,
   gongzhu: WORKER_SOLO,
   bristol: WORKER_SOLO,
   bidwhist: WORKER_SOLO,
@@ -1145,6 +1147,19 @@ export const doubleklondikeApi = {
       fromCol: opts?.fromCol,
       cardIndex: opts?.cardIndex,
       toCol: opts?.toCol,
+      n: opts?.n,
+    }),
+};
+
+/** Commands accepted by the Black Hole /blackhole/exec endpoint. */
+export type BlackHoleCommand = 'reset' | 'mb' | 'g' | 'u' | 'undo_n' | 'hint' | 'log';
+
+/** API client for the Black Hole /blackhole/exec endpoint. */
+export const blackholeApi = {
+  exec: (command: BlackHoleCommand, opts?: { fan?: number; n?: number }) =>
+    gameExec<BlackHoleResponse>('blackhole', {
+      command,
+      fan: opts?.fan,
       n: opts?.n,
     }),
 };
@@ -4013,6 +4028,7 @@ const games = [
   'labellelucie',
   'simplesimon',
   'doubleklondike',
+  'blackhole',
 ] as const;
 type Game = (typeof games)[number];
 

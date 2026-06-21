@@ -1,0 +1,9 @@
+{
+  "helpTitle": "ブラックホール (Black Hole)",
+  "helpMove": "  m <fan>              扇 fan のトップをブラックホールへ積む",
+  "helpUndo": "  u / undo             直近の手を取り消す",
+  "helpGiveUp": "  g / giveup           投了する",
+  "blackHoleLabel": "ブラックホール:",
+  "fanLabel": "扇{{idx}}:",
+  "hintLine": "[HINT: 扇{{fan}} を積めます]"
+}
