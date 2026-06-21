@@ -103,7 +103,7 @@ describe('SpiteAndMalicePage', () => {
     mockExec.mockResolvedValue({
       ...baseState,
       players: [
-        { ...baseState.players[0], hand: [card('SPADE', 5), null] },
+        { ...baseState.players[0], hand: [card('SPADE', 5), undefined] },
         { ...baseState.players[1], goalTop: null, goalSize: 0 },
       ],
     });
