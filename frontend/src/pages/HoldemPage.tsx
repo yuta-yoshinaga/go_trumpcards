@@ -32,9 +32,9 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
+import { badgeSuccessColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { placeholderCardStyle } from '../styles/cardStyles';
-import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { HoldemResponse } from '../types/card';
@@ -273,7 +273,17 @@ function HoldemPageContent() {
             {(() => {
               const communityCardsContent = (
                 <>
-                  <div className="text-ds-text-primary text-lg mb-1.5">{t('communityCards')}</div>
+                  <div className="text-ds-text-primary text-lg mb-1.5">
+                    {t('communityCards')}
+                    {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
+                      <span
+                        className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${badgeSuccessColors}`}
+                        data-testid="board-winning-hand"
+                      >
+                        {t('winningHand', { hand: humanPlayer.handName })}
+                      </span>
+                    )}
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
                       ? state.communityCards.map((card, idx) => {
@@ -377,7 +387,7 @@ function HoldemPageContent() {
                   {humanPlayer.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                   {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
-                    <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
+                    <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${badgeSuccessColors}`}>
                       {humanPlayer.handName}
                     </span>
                   )}

@@ -10,6 +10,7 @@
     "rebuy": "Rebuy/Addon"
   },
   "communityCards": "Community Cards",
+  "winningHand": "Hand: {{hand}}",
   "yourHand": "Your Hand",
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
   "rebuy": {

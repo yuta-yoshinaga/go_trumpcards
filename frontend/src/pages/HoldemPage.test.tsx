@@ -345,6 +345,27 @@ describe('HoldemPage', () => {
     await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
   });
 
+  it('shows the winning-hand label beside the board best-5 at showdown', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<HoldemPage />);
+    const label = await screen.findByTestId('board-winning-hand');
+    expect(label).toHaveTextContent('ワンペア');
+  });
+
+  it('omits the board winning-hand label when the human has folded', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      players: [
+        humanPlayer({ handName: 'ワンペア', folded: true }),
+        showdownState.players[1],
+        showdownState.players[2],
+      ],
+    });
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
+    expect(screen.queryByTestId('board-winning-hand')).not.toBeInTheDocument();
+  });
+
   it('does not show CPU hand name badge when CPU is folded in showdown', async () => {
     // CPU 2 is folded in showdownState → no hand name
     mockExec.mockResolvedValue(showdownState);
