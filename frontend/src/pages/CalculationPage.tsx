@@ -552,8 +552,8 @@ function CalculationPageContent() {
                 >
                   {t('hintAvailable')}:{' '}
                   {state.hint.fromZone === 'stock'
-                    ? `${t('stock')} → F${state.hint.foundationIdx}`
-                    : `W${state.hint.wasteIdx} → F${state.hint.foundationIdx}`}
+                    ? `${t('stock')} → ${t('foundation')} ${state.hint.foundationIdx.toString()}`
+                    : `${t('waste')} ${state.hint.wasteIdx.toString()} → ${t('foundation')} ${state.hint.foundationIdx.toString()}`}
                 </div>
               )}
               {frontendHintEnabled && frontendHint && (
