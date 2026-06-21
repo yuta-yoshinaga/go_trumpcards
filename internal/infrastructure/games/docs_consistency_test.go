@@ -80,14 +80,22 @@ func TestArchitectureDocEndpointsMatchRegistry(t *testing.T) {
 		t.Fatalf("read docs/architecture.md: %v", err)
 	}
 
+	matches := archEndpointRe.FindAllSubmatch(data, -1)
 	docNames := make(map[string]bool)
-	for _, m := range archEndpointRe.FindAllSubmatch(data, -1) {
+	for _, m := range matches {
 		docNames[string(m[1])] = true
 	}
 
 	registryNames := make(map[string]bool, len(games.All()))
 	for _, g := range games.All() {
 		registryNames[g.Name] = true
+	}
+
+	// Catch duplicate entries: the maps above dedupe, so a game listed twice
+	// would still pass the 1:1 checks below. Comparing the raw match count to
+	// the (deduped) registry size surfaces a doubled endpoint.
+	if len(matches) != len(registryNames) {
+		t.Errorf("docs/architecture.md has %d POST /<name>/exec entries but registry has %d games — check for duplicate or stray endpoint lines", len(matches), len(registryNames))
 	}
 
 	// Every registered game must have a POST /<name>/exec entry in the doc.
