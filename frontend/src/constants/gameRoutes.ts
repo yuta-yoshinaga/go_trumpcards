@@ -826,6 +826,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [4, 5, 2, 5], skill: [4, 4, 2, 4], social: [5, 1, 1, 5, 1], theme: [2, 1, 2, 5, 2, 3] },
       },
       {
+        path: '/blackhole',
+        labelKey: 'nav.blackhole',
+        icon: '🕳️',
+        page: 'BlackHole',
+        profile: { mood: [4, 5, 1, 5], skill: [3, 5, 2, 4], social: [5, 1, 1, 5, 1], theme: [2, 1, 1, 5, 2, 4] },
+      },
+      {
         path: '/speed',
         labelKey: 'nav.speed',
         icon: '⚡',

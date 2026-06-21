@@ -183,6 +183,7 @@ var gameDescriptions = map[string]string{
 	"labellelucie":        "La Belle Lucie (ラ・ベル・ルーシー)",
 	"simplesimon":         "Simple Simon (シンプル・サイモン)",
 	"doubleklondike":      "Double Klondike / Gargantua (ダブル・クロンダイク/ガルガンチュア)",
+	"blackhole":           "Black Hole (ブラックホール)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

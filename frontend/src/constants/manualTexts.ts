@@ -16,6 +16,7 @@ import bidwhist from '../../../docs/manual/web/bidwhist.md?raw';
 import bigo from '../../../docs/manual/web/bigo.md?raw';
 import bigohilo from '../../../docs/manual/web/bigohilo.md?raw';
 import bigtwo from '../../../docs/manual/web/bigtwo.md?raw';
+import blackhole from '../../../docs/manual/web/blackhole.md?raw';
 import blackjack from '../../../docs/manual/web/blackjack.md?raw';
 import blackjackswitch from '../../../docs/manual/web/blackjackswitch.md?raw';
 import bourre from '../../../docs/manual/web/bourre.md?raw';
@@ -195,6 +196,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/labellelucie': labellelucie,
   '/simplesimon': simplesimon,
   '/doubleklondike': doubleklondike,
+  '/blackhole': blackhole,
   '/pishti': pishti,
   '/bridge': bridge,
   '/burraco': burraco,

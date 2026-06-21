@@ -485,4 +485,13 @@ func init() {
 		},
 		controller.NewRussianBankWebControllerWithProvider)
 
+	games.RegisterKVGame("blackhole", games.CategorySolo,
+		func() usecase.BlackHoleInteractorIF {
+			return usecase.NewBlackHoleInteractor(domain.NewDefaultBlackHole(), new(presenter.BlackHoleWebPresenter))
+		},
+		func(data []byte) (usecase.BlackHoleInteractorIF, error) {
+			return usecase.RestoreBlackHoleInteractor(data, new(presenter.BlackHoleWebPresenter))
+		},
+		controller.NewBlackHoleWebControllerWithProvider)
+
 }

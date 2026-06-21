@@ -1,0 +1,23 @@
+{
+  "phase": { "playing": "Playing", "gameClear": "Game Clear", "gameOver": "Game Over" },
+  "title": "Black Hole",
+  "blackHole": "Black Hole",
+  "fan": "Fan",
+  "moveCount": "Moves: {{count}}",
+  "giveup": "Give up",
+  "hint": "Hint",
+  "undo": "Undo",
+  "empty": "Empty",
+  "selectSource": "Pick a fan top to absorb into the black hole (±1 rank, any suit)",
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "playing": "Playing",
+  "noHint": "No playable card",
+  "hintAvailable": "A card can be played",
+  "tutorial": {
+    "board": "The central black hole and 17 fans of three. Only the top card of each fan can be moved.",
+    "rules": "A fan top can be absorbed when its rank is one away from the black hole top (any suit, no King-Ace wrap). Absorb all 52 cards to win.",
+    "actionButtons": "Buttons for hint, undo, give up and more.",
+    "resetButton": "Start a new game."
+  }
+}
