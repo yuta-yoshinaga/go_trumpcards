@@ -88,6 +88,17 @@ describe('SpiteAndMalicePage', () => {
     await waitFor(() => expect(screen.getByText(/手数|Moves/)).toBeInTheDocument());
   });
 
+  it('localizes the hand heading, card aria-labels, and CPU goal (no raw English)', async () => {
+    renderWithProviders(<SpiteAndMalicePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // Hand card aria-labels are localized ("手札 N: ..."), not "Hand N: ...".
+    expect(screen.getByLabelText(/^手札 1:/)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/^Hand 1:/)).not.toBeInTheDocument();
+    // CPU goal count is localized, not the hardcoded "CPU goal x20".
+    expect(screen.getByText(/CPUゴール: 20/)).toBeInTheDocument();
+    expect(screen.queryByText(/CPU goal/)).not.toBeInTheDocument();
+  });
+
   it('renders the CPU side piles with a count badge on non-empty piles', async () => {
     mockExec.mockResolvedValue({
       ...baseState,

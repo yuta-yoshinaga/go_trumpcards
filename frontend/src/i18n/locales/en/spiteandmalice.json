@@ -13,6 +13,9 @@
     "side": "Side",
     "cpuSides": "CPU side piles",
     "hand": "Hand",
+    "hidden": "hidden",
+    "handCount": "hand: {{count}}",
+    "cpuGoal": "CPU goal: {{count}}",
     "foundation": "Foundation",
     "stock": "Stock",
     "completed": "Completed"
