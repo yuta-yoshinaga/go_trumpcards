@@ -57,6 +57,13 @@ describe('SevensHumanArea', () => {
     expect(screen.queryByText('出せるカードをクリック')).not.toBeInTheDocument();
   });
 
+  it('shows a must-pass hint when no card is playable on the human turn', () => {
+    // Only 7s are on the table; a lone 3 is not adjacent and there is no joker.
+    render(<SevensHumanArea {...defaultProps} player={makePlayer({ cards: [heart3], cardCount: 1 })} />);
+    expect(screen.getByTestId('sv-must-pass')).toBeInTheDocument();
+    expect(screen.queryByText('出せるカードをクリック')).not.toBeInTheDocument();
+  });
+
   it('renders card buttons with focus-visible ring class', () => {
     render(<SevensHumanArea {...defaultProps} />);
     const buttons = screen.getAllByRole('button');
