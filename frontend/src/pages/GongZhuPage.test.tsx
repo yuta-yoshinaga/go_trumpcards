@@ -61,12 +61,21 @@ describe('GongZhuPage', () => {
   });
 
   it('shows exposed point cards with localized symbols and an aria-label', async () => {
-    mockExec.mockResolvedValue(makeGongZhuState({ exposed: { pig: true, sheep: false, ace: true, doubler: false } }));
+    mockExec.mockResolvedValue(makeGongZhuState({ exposed: { pig: true, sheep: true, ace: true, doubler: true } }));
     renderWithProviders(<GongZhuPage />);
     const summary = await screen.findByTestId('exposure-summary');
     expect(summary).toHaveTextContent('♠Q');
+    expect(summary).toHaveTextContent('♦J');
     expect(summary).toHaveTextContent('♥A');
+    expect(summary).toHaveTextContent('♣10');
     expect(summary).toHaveAttribute('aria-label');
+  });
+
+  it('shows the exposed-none label when nothing is exposed', async () => {
+    mockExec.mockResolvedValue(makeGongZhuState({ exposed: { pig: false, sheep: false, ace: false, doubler: false } }));
+    renderWithProviders(<GongZhuPage />);
+    const summary = await screen.findByTestId('exposure-summary');
+    expect(summary).toHaveTextContent('なし');
   });
 
   it('highlights the exposable cards during the expose phase', async () => {
