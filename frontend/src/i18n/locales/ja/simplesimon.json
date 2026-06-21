@@ -1,0 +1,23 @@
+{
+  "phase": { "playing": "プレイ中", "gameClear": "ゲームクリア", "gameOver": "ゲームオーバー" },
+  "title": "シンプル・サイモン",
+  "completedSuits": "完成スート: {{count}} / 4",
+  "moveCount": "手数: {{count}}",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "undo": "元に戻す",
+  "empty": "空",
+  "selectSource": "動かすカード（列の最上位、または同スート降順の列）を選んでください",
+  "selectDestination": "移動先の列を選んでください",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "playing": "プレイ中",
+  "noHint": "ヒントはありません",
+  "hintAvailable": "ヒントがあります",
+  "tutorial": {
+    "columns": "10列のタブローです。各列の最上位カード、または同スート降順の連番列を移動できます。空列には何でも置けます。",
+    "rules": "同スートでK〜Aの完全な降順列が揃うと自動的に除去されます。4スート全て除去でクリアです。ストックはありません。",
+    "actionButtons": "ヒント・元に戻す・ギブアップなどの操作ボタンです。",
+    "resetButton": "新しいゲームを始めるボタンです。"
+  }
+}

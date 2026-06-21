@@ -181,6 +181,7 @@ var gameDescriptions = map[string]string{
 	"openfacechinese":     "Open Face Chinese Poker / OFC (オープンフェイス・チャイニーズポーカー)",
 	"russianbank":         "Russian Bank / Crapette (ロシアンバンク/クラペット)",
 	"labellelucie":        "La Belle Lucie (ラ・ベル・ルーシー)",
+	"simplesimon":         "Simple Simon (シンプル・サイモン)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

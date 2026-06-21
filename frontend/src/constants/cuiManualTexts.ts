@@ -137,6 +137,7 @@ import sevens from '../../../docs/manual/cui/sevens.md?raw';
 import sheepshead from '../../../docs/manual/cui/sheepshead.md?raw';
 import shithead from '../../../docs/manual/cui/shithead.md?raw';
 import shortdeck from '../../../docs/manual/cui/shortdeck.md?raw';
+import simplesimon from '../../../docs/manual/cui/simplesimon.md?raw';
 import sixcardgolf from '../../../docs/manual/cui/sixcardgolf.md?raw';
 import skat from '../../../docs/manual/cui/skat.md?raw';
 import slapjack from '../../../docs/manual/cui/slapjack.md?raw';
@@ -304,6 +305,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/openfacechinese': openfacechinese,
   '/russianbank': russianbank,
   '/labellelucie': labellelucie,
+  '/simplesimon': simplesimon,
   '/pishti': pishti,
   '/tonk': tonk,
   '/tripeaks': tripeaks,

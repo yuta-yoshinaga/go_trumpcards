@@ -136,6 +136,7 @@ import sevens from '../../../docs/manual/web/sevens.md?raw';
 import sheepshead from '../../../docs/manual/web/sheepshead.md?raw';
 import shithead from '../../../docs/manual/web/shithead.md?raw';
 import shortdeck from '../../../docs/manual/web/shortdeck.md?raw';
+import simplesimon from '../../../docs/manual/web/simplesimon.md?raw';
 import sixcardgolf from '../../../docs/manual/web/sixcardgolf.md?raw';
 import skat from '../../../docs/manual/web/skat.md?raw';
 import slapjack from '../../../docs/manual/web/slapjack.md?raw';
@@ -191,6 +192,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/openfacechinese': openfacechinese,
   '/russianbank': russianbank,
   '/labellelucie': labellelucie,
+  '/simplesimon': simplesimon,
   '/pishti': pishti,
   '/bridge': bridge,
   '/burraco': burraco,

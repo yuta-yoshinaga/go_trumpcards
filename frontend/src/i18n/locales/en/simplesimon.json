@@ -1,0 +1,23 @@
+{
+  "phase": { "playing": "Playing", "gameClear": "Game Clear", "gameOver": "Game Over" },
+  "title": "Simple Simon",
+  "completedSuits": "Completed suits: {{count}} / 4",
+  "moveCount": "Moves: {{count}}",
+  "giveup": "Give up",
+  "hint": "Hint",
+  "undo": "Undo",
+  "empty": "empty",
+  "selectSource": "Pick a card to move (a column top, or a same-suit descending run)",
+  "selectDestination": "Pick a destination column",
+  "gameClear": "Game clear! Moves: {{moveCount}}",
+  "gameOver": "Game over",
+  "playing": "Playing",
+  "noHint": "No hint available",
+  "hintAvailable": "A hint is available",
+  "tutorial": {
+    "columns": "10 tableau columns. Move a column's top card, or a same-suit descending run. Empty columns accept anything.",
+    "rules": "A complete King-to-Ace same-suit run is removed automatically. Clear all four suits to win. There is no stock.",
+    "actionButtons": "Hint, undo and give-up controls.",
+    "resetButton": "Start a new game."
+  }
+}

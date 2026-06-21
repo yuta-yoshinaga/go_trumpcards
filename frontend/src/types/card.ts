@@ -3548,6 +3548,28 @@ export interface LaBelleLucieResponse extends BaseGameResponse {
   hint?: LaBelleLucieHint;
 }
 
+// --- Simple Simon (シンプル・サイモン) ---
+
+/** A suggested move hint in Simple Simon. */
+export interface SimpleSimonHint {
+  fromCol: number;
+  cardIndex: number;
+  toCol: number;
+}
+
+/** Full Simple Simon game state returned from the API. */
+export interface SimpleSimonResponse extends BaseGameResponse {
+  /** The 10 tableau columns (top card is last). */
+  columns: Card[][];
+  /** Number of complete K-A suits removed (0-4). */
+  completedSuits: number;
+  /** Current phase (0=Playing, 1=GameClear, 2=GameOver). */
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  hint?: SimpleSimonHint;
+}
+
 // --- FreeCell (フリーセル) ---
 
 /** A suggested move hint in FreeCell. */
