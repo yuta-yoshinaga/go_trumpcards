@@ -4,8 +4,8 @@
 
 | Change type | Documents to update |
 |-------------|---------------------|
-| Add/remove a game | [`README.md`](../README.md) (Description, Run section), [`CLAUDE.md`](../CLAUDE.md) (available games list), [`docs/games.md`](games.md), Cloudflare Worker WASM registration (see [`docs/cloudflare-workers.md`](cloudflare-workers.md)) |
-| Add/remove a CLI command (`cmd/trumpcards/main.go`) | [`README.md`](../README.md) (Run section), [`CLAUDE.md`](../CLAUDE.md) (available games list) |
+| Add/remove a game | [`README.md`](../README.md) (Description, Run section), [`CLAUDE.md`](../CLAUDE.md) (game count in intro line), [`docs/games.md`](games.md), Cloudflare Worker WASM registration (see [`docs/cloudflare-workers.md`](cloudflare-workers.md)) |
+| Add/remove a CLI command (`cmd/trumpcards/main.go`) | [`README.md`](../README.md) (Run section), [`CLAUDE.md`](../CLAUDE.md) (Commands section) |
 | Add/remove a Web API endpoint | [`docs/architecture.md`](architecture.md) (Web API in Key patterns), [`api/openapi.yaml`](../api/openapi.yaml) |
 | Change request/response schema of a Web API endpoint | [`api/openapi.yaml`](../api/openapi.yaml) |
 | Change architecture or layer structure | [`README.md`](../README.md) (Architecture), [`CLAUDE.md`](../CLAUDE.md) (Architecture), [`docs/architecture.md`](architecture.md) |
@@ -16,7 +16,7 @@
 | Change game rules or game flow logic | `docs/manual/cui/<game>.md` and `docs/manual/web/<game>.md` for the affected game (follow `docs/manual/cui_template.md` / `docs/manual/web_template.md` format) |
 | Add a new game manual | Copy `docs/manual/cui_template.md` → `docs/manual/cui/<game>.md`, `docs/manual/web_template.md` → `docs/manual/web/<game>.md` and fill in game-specific content. Also import in `frontend/src/constants/manualTexts.ts` and add route mapping |
 | Change Go testing policy or mock patterns | Update Testing section in [`CLAUDE.md`](../CLAUDE.md) and [`internal/CLAUDE.md`](../internal/CLAUDE.md) |
-| Make an architectural decision that passes the ADR litmus test (see Workflow section) | Add or update an ADR in [`docs/adr/`](adr/) (written in Japanese) and update the index in [`docs/adr/README.md`](adr/README.md) |
+| Make an architectural decision that passes the ADR litmus test (see Workflow section in [`CLAUDE.md`](../CLAUDE.md#workflow--principles)) | Add or update an ADR in [`docs/adr/`](adr/) (written in Japanese) and update the index in [`docs/adr/README.md`](adr/README.md) |
 | Add/modify exported Go symbol | Ensure GoDoc comment (`// SymbolName description`) is present |
 | Add/modify exported TS symbol | Ensure TSDoc comment (`/** description */`) is present |
 | Change backend struct/interface/domain logic | Update corresponding UML diagrams in [`docs/design/backend.md`](design/backend.md) (class, sequence, state machine) |
