@@ -33,6 +33,12 @@
   "bid": "Bid {{n}}",
   "bidNone": "No bid",
   "bidProgress": "Bid: {{bid}} / Won: {{won}}",
+  "bidTotal": "Total bids {{total}} / hand {{handSize}}",
+  "bidOverUnder": {
+    "over": "(over)",
+    "under": "(under)",
+    "exact": "(exact)"
+  },
   "currentTrick": "Current Trick",
   "scores": "Scores",
   "scoresPlayer": "Player",
