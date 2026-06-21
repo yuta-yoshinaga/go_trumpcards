@@ -85,12 +85,16 @@ func (g *BlackHole) Reset() {
 		}
 		cards = append(cards, c)
 	}
-	if start == nil {
+	if start == nil && len(cards) > 0 {
 		// 念のため (♠A が見つからない構成) 先頭を中央に置く。
 		start = cards[0]
 		cards = cards[1:]
 	}
-	g.blackHole = []*Card{start}
+	if start != nil {
+		g.blackHole = []*Card{start}
+	} else {
+		g.blackHole = nil
+	}
 	g.dealFans(cards)
 	g.appendLog("deal", "新しいゲームを開始しました", nil)
 }
@@ -259,9 +263,7 @@ func (g *BlackHole) UndoN(n int) error {
 		if len(g.history) == 0 {
 			break
 		}
-		if err := g.Undo(); err != nil {
-			return err
-		}
+		_ = g.Undo() // guarded above: Undo only errors on an empty history.
 	}
 	return nil
 }
