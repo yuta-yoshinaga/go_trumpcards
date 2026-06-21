@@ -61,6 +61,49 @@ func TestDocGameCountsMatchRegistry(t *testing.T) {
 	}
 }
 
+// archEndpointRe captures the game name from every `POST /<name>/exec`
+// reference in docs/architecture.md. Game names are lowercase alphanumeric
+// (e.g. blackjack, omahahilo, deucetoseven), matching the registry Name field.
+var archEndpointRe = regexp.MustCompile(`POST /([a-z0-9]+)/exec`)
+
+// TestArchitectureDocEndpointsMatchRegistry guards the hand-maintained Web API
+// endpoint list in docs/architecture.md against the registry single source of
+// truth. That list (and its spelled-out count) drifted badly — it fell 21
+// games behind while still claiming "One hundred forty-eight endpoints" (see
+// issue #2525) — because, unlike README.md/CLAUDE.md, no test covered it. This
+// asserts a strict 1:1 mapping between registered games and the `POST
+// /<name>/exec` entries in the doc, failing CI the moment one is added or
+// removed without updating the doc.
+func TestArchitectureDocEndpointsMatchRegistry(t *testing.T) {
+	data, err := os.ReadFile(filepath.Join(repoRoot, "docs/architecture.md"))
+	if err != nil {
+		t.Fatalf("read docs/architecture.md: %v", err)
+	}
+
+	docNames := make(map[string]bool)
+	for _, m := range archEndpointRe.FindAllSubmatch(data, -1) {
+		docNames[string(m[1])] = true
+	}
+
+	registryNames := make(map[string]bool, len(games.All()))
+	for _, g := range games.All() {
+		registryNames[g.Name] = true
+	}
+
+	// Every registered game must have a POST /<name>/exec entry in the doc.
+	for name := range registryNames {
+		if !docNames[name] {
+			t.Errorf("docs/architecture.md is missing endpoint POST /%s/exec for registered game %q", name, name)
+		}
+	}
+	// No orphan endpoints: every documented endpoint must map to a real game.
+	for name := range docNames {
+		if !registryNames[name] {
+			t.Errorf("docs/architecture.md documents endpoint POST /%s/exec with no matching game in the registry", name)
+		}
+	}
+}
+
 // TestPerGameManualsMatchRegistry asserts a strict 1:1 mapping between
 // registered games and the per-game manuals under docs/manual/{cui,web}. It
 // catches both a missing manual for a freshly added game and an orphan manual
