@@ -15,7 +15,6 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { Card } from '../types/card';
 import { DoubleKlondikePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 
@@ -166,7 +165,7 @@ function DoubleKlondikePageContent() {
               <CardImage card={tc2.card} width={w} />
             ) : (
               <div
-                className="rounded bg-ds-accent/70 border border-white/30 flex items-center justify-center text-white/80 text-xs"
+                className="rounded bg-ds-accent/70 border border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
                 style={{ width: w, height: cardH }}
                 title={t('faceDown')}
               >
@@ -203,7 +202,7 @@ function DoubleKlondikePageContent() {
         <div className="flex gap-2 items-start mb-3" data-tutorial="dk-stock">
           <button
             type="button"
-            className="rounded border border-white/30 bg-black/30 flex items-center justify-center text-white/80 text-xs"
+            className="rounded border border-white/30 bg-black/30 flex items-center justify-center text-ds-text-muted text-xs"
             style={{ width: w, height: cardH }}
             onClick={canAct ? clickStock : undefined}
             disabled={!canAct}
