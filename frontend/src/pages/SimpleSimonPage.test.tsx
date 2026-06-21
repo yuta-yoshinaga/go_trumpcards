@@ -67,7 +67,7 @@ describe('SimpleSimonPage', () => {
     const srcCard = await screen.findByTestId('card-0-0');
     fireEvent.click(srcCard);
     mockExec.mockClear();
-    fireEvent.click(screen.getByTestId('column-5'));
+    fireEvent.click(screen.getByTestId('column-5-drop'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 0, cardIndex: 0, toCol: 5 }));
   });
 

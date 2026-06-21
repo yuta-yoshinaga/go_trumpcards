@@ -42,6 +42,9 @@ func (g *SimpleSimon) UnmarshalJSON(data []byte) error {
 	if j.CompletedSuits < 0 || j.CompletedSuits > SimpleSimonFoundationCnt {
 		return errSimpleSimon
 	}
+	if j.Phase < SimpleSimonPhasePlaying || j.Phase > SimpleSimonPhaseGameOver {
+		return errSimpleSimon
+	}
 	g.columns = j.Columns
 	g.completedSuits = j.CompletedSuits
 	g.phase = j.Phase

@@ -107,20 +107,21 @@ function SimpleSimonPageContent() {
   };
 
   const renderColumn = (column: Card[], col: number) => (
-    <button
-      type="button"
+    <div
       key={`col-${col}`}
       className={`flex flex-col items-center rounded p-0.5 ${selected && selected.col !== col ? 'ring-1 ring-ds-success' : ''}`}
       style={{ minHeight: Math.round(w * 1.4) }}
-      onClick={canAct ? () => clickColumn(col) : undefined}
-      disabled={!canAct}
       data-testid={`column-${col}`}
     >
       {column.length === 0 ? (
-        <div
+        <button
+          type="button"
           className="rounded border border-dashed border-white/25 bg-black/20"
           style={{ width: w, height: Math.round(w * 1.4) }}
+          onClick={canAct ? () => clickColumn(col) : undefined}
+          disabled={!canAct}
           title={t('empty')}
+          data-testid={`column-${col}-drop`}
         />
       ) : (
         column.map((c, i) => (
@@ -129,14 +130,7 @@ function SimpleSimonPageContent() {
             key={`col-${col}-${i}`}
             className={`rounded ${selected && selected.col === col && i >= selected.idx ? 'ring-2 ring-ds-warning' : ''}`}
             style={{ marginTop: i === 0 ? 0 : -Math.round(w * 1.05) }}
-            onClick={
-              canAct
-                ? (e) => {
-                    e.stopPropagation();
-                    clickCard(col, i);
-                  }
-                : undefined
-            }
+            onClick={canAct ? () => clickCard(col, i) : undefined}
             disabled={!canAct}
             data-testid={`card-${col}-${i}`}
           >
@@ -144,7 +138,7 @@ function SimpleSimonPageContent() {
           </button>
         ))
       )}
-    </button>
+    </div>
   );
 
   return (

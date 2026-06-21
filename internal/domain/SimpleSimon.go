@@ -181,6 +181,11 @@ func (g *SimpleSimon) hasAnyLegalMove() bool {
 				if to == from {
 					continue
 				}
+				// Moving an entire column onto an empty one exposes nothing and
+				// makes no progress, so it does not count as escaping a stalemate.
+				if idx == 0 && len(g.columns[to]) == 0 {
+					continue
+				}
 				if g.canPlace(card, to) {
 					return true
 				}
@@ -221,6 +226,9 @@ func (g *SimpleSimon) GetHint() *SimpleSimonHint {
 			for to := 0; to < SimpleSimonColCnt; to++ {
 				if to == from {
 					continue
+				}
+				if idx == 0 && len(g.columns[to]) == 0 {
+					continue // moving a whole column to an empty one is not progress
 				}
 				if g.canPlace(card, to) {
 					return &SimpleSimonHint{FromCol: from, CardIndex: idx, ToCol: to}
