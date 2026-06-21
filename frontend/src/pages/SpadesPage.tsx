@@ -24,6 +24,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useSpadesGame } from '../hooks/useSpadesGame';
+import { badgeInfo, badgeSuccess, badgeWarning } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -34,6 +35,7 @@ import { parseSpadesCommand, SPADES_HELP } from '../utils/cli/commands/spadesCom
 import { formatSpadesState } from '../utils/cli/formatters/spadesFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+import { spadesBidProgress } from '../utils/spadesBid';
 
 /** Spades tutorial step definitions. */
 const SP_TUTORIAL_STEPS: TutorialStep[] = [
@@ -182,6 +184,11 @@ function SpadesPageContent() {
   const isGameEnd = state.phase === SpadesPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const isHumanBidTurn = isBidPhase && state.players[state.bidPlayerIdx]?.isHuman === true;
+  // Bid-contract progress for the human player, shown during the play phase.
+  const bidProgress =
+    (isPlayPhase || isTrickEnd) && humanPlayer && humanPlayer.bid >= 0
+      ? spadesBidProgress(humanPlayer.bid, humanPlayer.trickCount)
+      : null;
 
   return (
     <GamePageShell
@@ -246,6 +253,29 @@ function SpadesPageContent() {
               <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
               <span>{state.spadesBroken ? t('spadesBroken') : t('spadesNotBroken')}</span>
             </div>
+
+            {bidProgress && (
+              <div className="text-center mb-2">
+                <span
+                  data-testid="sp-bid-progress"
+                  className={
+                    bidProgress.kind === 'nilFail'
+                      ? badgeWarning
+                      : bidProgress.kind === 'made'
+                        ? badgeSuccess
+                        : badgeInfo
+                  }
+                >
+                  {bidProgress.kind === 'remaining'
+                    ? t('bidProgress.remaining', { n: bidProgress.remaining })
+                    : bidProgress.kind === 'made'
+                      ? t('bidProgress.made', { bags: bidProgress.bags })
+                      : bidProgress.kind === 'nilFail'
+                        ? t('bidProgress.nilFail')
+                        : t('bidProgress.nilOk')}
+                </span>
+              </div>
+            )}
 
             <div className={lgTwoColGrid}>
               {/* Left: game play area */}
