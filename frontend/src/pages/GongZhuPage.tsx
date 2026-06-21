@@ -169,10 +169,10 @@ function GongZhuPageContent() {
   const exposureSummary = useMemo(() => {
     if (!state) return '';
     const parts: string[] = [];
-    if (state.exposed.pig) parts.push('♠Q');
-    if (state.exposed.sheep) parts.push('♦J');
-    if (state.exposed.ace) parts.push('♥A');
-    if (state.exposed.doubler) parts.push('♣10');
+    if (state.exposed.pig) parts.push(t('card.spadeQueen'));
+    if (state.exposed.sheep) parts.push(t('card.diamondJack'));
+    if (state.exposed.ace) parts.push(t('card.heartAce'));
+    if (state.exposed.doubler) parts.push(t('card.clubTen'));
     return parts.length > 0 ? parts.join(', ') : t('exposedNone');
   }, [state, t]);
 
@@ -248,7 +248,9 @@ function GongZhuPageContent() {
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span>{t('exposed', { cards: exposureSummary })}</span>
+              <span data-testid="exposure-summary" role="img" aria-label={t('exposed', { cards: exposureSummary })}>
+                {t('exposed', { cards: exposureSummary })}
+              </span>
             </div>
 
             <div className={lgTwoColGrid}>

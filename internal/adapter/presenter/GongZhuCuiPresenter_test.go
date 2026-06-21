@@ -9,6 +9,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupGongZhuCuiMock() *interfaces.MockGongZhuGame {
@@ -56,9 +57,14 @@ func TestGongZhuCuiPresenter_Output(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetExposure")
 		m.On("GetPhase").Return(domain.GongZhuPhaseExpose)
-		m.On("GetExposure").Return(domain.GongZhuExposure{Pig: true})
+		m.On("GetExposure").Return(domain.GongZhuExposure{Pig: true, Sheep: true, Ace: true, Doubler: true})
 		result := p.Output(m, nil)
 		assert.NotEmpty(t, result)
+		// Exposure summary uses the localized point-card symbol keys for every exposed card.
+		assert.Contains(t, result, i18n.T("gongzhu.card.spadeQueen"))
+		assert.Contains(t, result, i18n.T("gongzhu.card.diamondJack"))
+		assert.Contains(t, result, i18n.T("gongzhu.card.heartAce"))
+		assert.Contains(t, result, i18n.T("gongzhu.card.clubTen"))
 	})
 
 	t.Run("trick end and round end prompts", func(t *testing.T) {

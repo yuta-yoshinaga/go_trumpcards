@@ -60,6 +60,24 @@ describe('GongZhuPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '公開しない' })).toBeInTheDocument());
   });
 
+  it('shows exposed point cards with localized symbols and an aria-label', async () => {
+    mockExec.mockResolvedValue(makeGongZhuState({ exposed: { pig: true, sheep: true, ace: true, doubler: true } }));
+    renderWithProviders(<GongZhuPage />);
+    const summary = await screen.findByTestId('exposure-summary');
+    expect(summary).toHaveTextContent('♠Q');
+    expect(summary).toHaveTextContent('♦J');
+    expect(summary).toHaveTextContent('♥A');
+    expect(summary).toHaveTextContent('♣10');
+    expect(summary).toHaveAttribute('aria-label');
+  });
+
+  it('shows the exposed-none label when nothing is exposed', async () => {
+    mockExec.mockResolvedValue(makeGongZhuState({ exposed: { pig: false, sheep: false, ace: false, doubler: false } }));
+    renderWithProviders(<GongZhuPage />);
+    const summary = await screen.findByTestId('exposure-summary');
+    expect(summary).toHaveTextContent('なし');
+  });
+
   it('highlights the exposable cards during the expose phase', async () => {
     // Human hand has 2 cards; only index 0 is exposable so index 1 is the dimmed one.
     mockExec.mockResolvedValue(makeGongZhuState({ phase: 0, trickNumber: 0, exposableIndices: [0] }));

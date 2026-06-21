@@ -84,16 +84,16 @@ func (p *GongZhuCuiPresenter) Output(g interfaces.GongZhuGame, lastErr error) st
 func gongZhuExposureStr(ex domain.GongZhuExposure) string {
 	var parts []string
 	if ex.Pig {
-		parts = append(parts, "♠Q")
+		parts = append(parts, i18n.T("gongzhu.card.spadeQueen"))
 	}
 	if ex.Sheep {
-		parts = append(parts, "♦J")
+		parts = append(parts, i18n.T("gongzhu.card.diamondJack"))
 	}
 	if ex.Ace {
-		parts = append(parts, "♥A")
+		parts = append(parts, i18n.T("gongzhu.card.heartAce"))
 	}
 	if ex.Doubler {
-		parts = append(parts, "♣10")
+		parts = append(parts, i18n.T("gongzhu.card.clubTen"))
 	}
 	if len(parts) == 0 {
 		return i18n.T("gongzhu.exposedNone")
