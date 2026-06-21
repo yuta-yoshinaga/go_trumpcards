@@ -141,6 +141,7 @@ import type {
   ShitheadConfig as ShitheadConfigType,
   ShitheadResponse,
   ShortDeckResponse,
+  SimpleSimonResponse,
   SixCardGolfResponse,
   SkatConfig as SkatConfigType,
   SkatResponse,
@@ -342,6 +343,7 @@ const workerUrl: Record<string, string> = {
   mao: WORKER_SOLO,
   russianbank: WORKER_SOLO,
   labellelucie: WORKER_CLASSIC,
+  simplesimon: WORKER_CLASSIC,
   gongzhu: WORKER_SOLO,
   bristol: WORKER_SOLO,
   bidwhist: WORKER_SOLO,
@@ -1098,6 +1100,21 @@ export const labellelucieApi = createSolitaireMoveApi<
   number,
   'reset' | 'mf' | 'ff' | 'rd' | 'ac' | 'u' | 'undo_n' | 'giveup' | 'hint' | 'log'
 >('labellelucie');
+
+/** Commands accepted by the Simple Simon /simplesimon/exec endpoint. */
+export type SimpleSimonCommand = 'reset' | 'm' | 'g' | 'u' | 'undo_n' | 'hint' | 'log';
+
+/** API client for the Simple Simon /simplesimon/exec endpoint. */
+export const simplesimonApi = {
+  exec: (command: SimpleSimonCommand, opts?: { fromCol?: number; cardIndex?: number; toCol?: number; n?: number }) =>
+    gameExec<SimpleSimonResponse>('simplesimon', {
+      command,
+      fromCol: opts?.fromCol,
+      cardIndex: opts?.cardIndex,
+      toCol: opts?.toCol,
+      n: opts?.n,
+    }),
+};
 
 /** Source or target zone for a FreeCell card move. */
 export interface FreeCellMoveZone {
@@ -3961,6 +3978,7 @@ const games = [
   'openfacechinese',
   'russianbank',
   'labellelucie',
+  'simplesimon',
 ] as const;
 type Game = (typeof games)[number];
 

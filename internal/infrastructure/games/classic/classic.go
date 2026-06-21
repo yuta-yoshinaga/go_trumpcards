@@ -425,4 +425,13 @@ func init() {
 		},
 		controller.NewLaBelleLucieWebControllerWithProvider)
 
+	games.RegisterKVGame("simplesimon", games.CategoryClassic,
+		func() usecase.SimpleSimonInteractorIF {
+			return usecase.NewSimpleSimonInteractor(domain.NewDefaultSimpleSimon(), new(presenter.SimpleSimonWebPresenter))
+		},
+		func(data []byte) (usecase.SimpleSimonInteractorIF, error) {
+			return usecase.RestoreSimpleSimonInteractor(data, new(presenter.SimpleSimonWebPresenter))
+		},
+		controller.NewSimpleSimonWebControllerWithProvider)
+
 }

@@ -444,6 +444,11 @@ var registry = []*Game{
 	// down in suit onto another fan or up from the Ace on 4 foundations. When
 	// stuck, gather and reshuffle (up to 3 redeals). Solo worker bucket.
 	{Name: "labellelucie", Category: CategoryClassic},
+	// Simple Simon: an easier Spider-family solitaire. All 52 cards are dealt
+	// face-up into 10 columns with no stock; move single cards or same-suit
+	// descending runs, and a complete K-down-to-A same-suit run is removed.
+	// Clear all four suits to win. Classic worker bucket (solo was full).
+	{Name: "simplesimon", Category: CategoryClassic},
 }
 
 // All returns a value-level copy of the registry in canonical order.

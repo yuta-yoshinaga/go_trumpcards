@@ -2787,6 +2787,19 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "simplesimon", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSimpleSimonCuiController(usecase.NewSimpleSimonInteractor(
+				domain.NewDefaultSimpleSimon(), new(presenter.SimpleSimonCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "simplesimon.helpTitle",
+				CommandKeys: []string{
+					"simplesimon.helpMove",
+					"simplesimon.helpUndo",
+					"simplesimon.helpGiveUp",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
