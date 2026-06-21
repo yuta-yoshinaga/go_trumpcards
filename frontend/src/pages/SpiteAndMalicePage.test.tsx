@@ -99,6 +99,22 @@ describe('SpiteAndMalicePage', () => {
     expect(screen.queryByText(/CPU goal/)).not.toBeInTheDocument();
   });
 
+  it('localizes a hidden (face-down) hand card and a zero CPU goal', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      players: [
+        { ...baseState.players[0], hand: [card('SPADE', 5), null] },
+        { ...baseState.players[1], goalTop: null, goalSize: 0 },
+      ],
+    });
+    renderWithProviders(<SpiteAndMalicePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // Null hand card uses the localized hidden label.
+    expect(screen.getByLabelText(/手札 2: 非公開/)).toBeInTheDocument();
+    // Empty goal pile renders the localized zero-count label.
+    expect(screen.getByText(/CPUゴール: 0/)).toBeInTheDocument();
+  });
+
   it('renders the CPU side piles with a count badge on non-empty piles', async () => {
     mockExec.mockResolvedValue({
       ...baseState,
