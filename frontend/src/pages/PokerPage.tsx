@@ -405,6 +405,9 @@ function PokerPageContent() {
             {/* Exchange controls */}
             {canExchange && (
               <div className="text-center mb-2" data-tutorial="pk-exchange-button">
+                <div className="text-game-text-highlight text-xs mb-1" data-testid="pk-exchange-selected">
+                  {t('exchangeSelectedCount', { n: selected.length })}
+                </div>
                 <button
                   type="button"
                   className={`${btnWarning} min-w-[90px]`}
@@ -421,6 +424,9 @@ function PokerPageContent() {
                 >
                   {t('standLabel')}
                 </button>
+                <div className="text-ds-text-muted text-xs mt-1" data-testid="pk-stand-hint">
+                  {t('standHint')}
+                </div>
               </div>
             )}
 
