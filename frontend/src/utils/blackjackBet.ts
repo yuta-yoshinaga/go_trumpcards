@@ -20,10 +20,10 @@ function floorToStep(amount: number): number {
 export function bjQuickBetAmount(kind: BjQuickBetKind, playerChips: number): number {
   switch (kind) {
     case 'min':
-      return BJ_MIN_BET;
+      return Math.min(playerChips, BJ_MIN_BET);
     case 'half':
       return Math.min(playerChips, Math.max(BJ_MIN_BET, floorToStep(playerChips / 2)));
     case 'max':
-      return Math.max(BJ_MIN_BET, floorToStep(playerChips));
+      return Math.min(playerChips, Math.max(BJ_MIN_BET, floorToStep(playerChips)));
   }
 }

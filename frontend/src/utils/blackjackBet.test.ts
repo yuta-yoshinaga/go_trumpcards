@@ -17,8 +17,10 @@ describe('bjQuickBetAmount', () => {
     expect(bjQuickBetAmount('max', 255)).toBe(250);
   });
 
-  it('never exceeds the available chips (clamps half/max)', () => {
-    expect(bjQuickBetAmount('half', 15)).toBeLessThanOrEqual(15);
-    expect(bjQuickBetAmount('max', 15)).toBeLessThanOrEqual(15);
+  it('never exceeds the available chips, including below the table minimum', () => {
+    for (const kind of ['min', 'half', 'max'] as const) {
+      expect(bjQuickBetAmount(kind, 5)).toBeLessThanOrEqual(5);
+      expect(bjQuickBetAmount(kind, 15)).toBeLessThanOrEqual(15);
+    }
   });
 });
