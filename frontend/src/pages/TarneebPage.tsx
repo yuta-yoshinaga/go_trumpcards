@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { tarneebApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -138,6 +138,15 @@ function TarneebPageContent() {
   } = useGameHint('tarneeb', state);
   const { cardWidth, isMobile } = useCardDimensions();
   const [bidValue, setBidValue] = useState(7);
+  // When the human's bid turn begins, snap the pre-selected bid to the lowest legal
+  // value (minBid, but above any standing bid) so a stale selection from a prior round
+  // is never left highlighted on a now-disabled button.
+  useEffect(() => {
+    if (!state) return;
+    const biddingNow = state.phase === TarneebPhase.BID && state.players[state.bidPlayerIdx]?.isHuman === true;
+    if (!biddingNow) return;
+    setBidValue(Math.max(state.config.minBid, state.highestBid + 1));
+  }, [state]);
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('tarneeb');
   const cliConfig: CliGameConfig<TarneebResponse, Parameters<typeof tarneebApi.exec>> = useMemo(
     () => ({

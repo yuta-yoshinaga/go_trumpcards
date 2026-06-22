@@ -92,12 +92,21 @@ describe('TarneebPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', 9));
   });
 
-  it('disables bid buttons that do not beat the current highest bid', async () => {
+  it('disables bid buttons that do not beat the current highest bid and pre-selects the lowest legal bid', async () => {
     mockExec.mockResolvedValue(makeState({ highestBid: 9 }));
     renderWithProviders(<TarneebPage />);
     await waitFor(() => expect(screen.getByTestId('bid-option-9')).toBeDisabled());
     expect(screen.getByTestId('bid-option-7')).toBeDisabled();
     expect(screen.getByTestId('bid-option-10')).toBeEnabled();
+    // The effect snaps the selection to the lowest legal value (highestBid + 1 = 10).
+    expect(screen.getByTestId('bid-option-10')).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('shows no bid controls outside the human bid turn', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 3 })); // PLAY phase
+    renderWithProviders(<TarneebPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, expect.any(Object)));
+    expect(screen.queryByTestId('bid-option-7')).not.toBeInTheDocument();
   });
 
   it('passes by bidding 0', async () => {
