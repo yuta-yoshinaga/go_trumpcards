@@ -33,6 +33,7 @@
   "opponentTeam": "Opponents",
   "bidButton": "Bid",
   "passButton": "Pass",
+  "bidSelectLabel": "Select your bid",
   "playButton": "Play",
   "nextTrick": "Next trick",
   "nextRound": "Next round",
