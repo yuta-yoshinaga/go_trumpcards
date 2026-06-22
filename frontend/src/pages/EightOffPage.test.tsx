@@ -117,9 +117,9 @@ describe('EightOffPage', () => {
     mockExec.mockResolvedValue(supermoveBlockedState);
     renderWithProviders(<EightOffPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
-    const blocked = document.querySelector('[data-supermove-blocked="true"]');
-    expect(blocked).not.toBeNull();
-    const title = blocked?.getAttribute('title') ?? '';
+    const blocked = screen.getByTestId('eo-tableau-0-0');
+    expect(blocked).toHaveAttribute('data-supermove-blocked', 'true');
+    const title = blocked.getAttribute('title') ?? '';
     expect(title).toMatch(/空きフリーセル0/);
     expect(title).toMatch(/空き列0/);
   });
