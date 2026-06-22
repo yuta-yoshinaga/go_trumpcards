@@ -500,8 +500,8 @@ describe('KlondikePage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
     await waitFor(() => expect(screen.getByText(/ヒントがあります/)).toBeInTheDocument());
-    // Hint text contains both "ヒントがあります" and "ウェイスト" in the same element
-    expect(screen.getByText(/ヒントがあります/).textContent).toContain('ウェイスト');
+    // The hint band shows the source card image (not just an abstract string).
+    expect(screen.getByTestId('kl-hint-card')).toBeInTheDocument();
   });
 
   it('shows hint text from tableau after clicking hint', async () => {
