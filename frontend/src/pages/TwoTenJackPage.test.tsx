@@ -115,6 +115,19 @@ describe('TwoTenJackPage', () => {
     });
   });
 
+  it('shows a trump-selection prompt beside the suit buttons when the human declares', async () => {
+    mockExec.mockResolvedValue(declarePhaseState);
+    renderWithProviders(<TwoTenJackPage />);
+    await waitFor(() => expect(screen.getByTestId('tt-declare-prompt')).toBeInTheDocument());
+  });
+
+  it('does not show the trump-selection prompt when a CPU declares', async () => {
+    mockExec.mockResolvedValue(declarePhaseCpuState);
+    renderWithProviders(<TwoTenJackPage />);
+    await waitFor(() => expect(screen.queryByTestId('skeleton')).not.toBeInTheDocument());
+    expect(screen.queryByTestId('tt-declare-prompt')).not.toBeInTheDocument();
+  });
+
   it('dispatches declare command when a suit button is clicked', async () => {
     mockExec.mockResolvedValue(declarePhaseState);
     renderWithProviders(<TwoTenJackPage />);
