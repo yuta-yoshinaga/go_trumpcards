@@ -1,5 +1,6 @@
 {
   "title": "Texas Hold'em Bonus Poker",
+  "payoutIntro": "The ante payout is won by beating the dealer at the final hand; the bonus payout is paid independently when your first two cards form a qualifying combination (the two are judged separately).",
   "player": "Player",
   "dealer": "Dealer",
   "board": "Board",

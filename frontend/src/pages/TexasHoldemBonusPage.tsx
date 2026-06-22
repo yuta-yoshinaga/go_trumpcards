@@ -215,6 +215,9 @@ function TexasHoldemBonusPageContent() {
                     {t('payoutRef.title')}
                   </summary>
                   <div className="px-4 pb-3 text-ds-text-muted text-sm space-y-2">
+                    <p className="text-ds-info" data-testid="payout-intro">
+                      {t('payoutIntro')}
+                    </p>
                     <div>
                       <div className="font-bold text-ds-text-primary mb-1">{t('payoutRef.anteHeader')}</div>
                       <ul className="space-y-0.5">
