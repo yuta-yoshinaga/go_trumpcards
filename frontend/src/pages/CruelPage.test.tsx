@@ -123,6 +123,26 @@ describe('CruelPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
   });
 
+  it('shows the hint source and destination columns (tableau → foundation)', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromCol: 3, cardIndex: 0, toZone: 'foundation', toCol: -1 },
+    });
+    renderWithProviders(<CruelPage />);
+    const hint = await screen.findByTestId('cruel-hint');
+    expect(hint).toHaveTextContent('場札 3 → 組札');
+  });
+
+  it('shows the hint source and destination columns (tableau → tableau)', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromCol: 3, cardIndex: 0, toZone: 'tableau', toCol: 5 },
+    });
+    renderWithProviders(<CruelPage />);
+    const hint = await screen.findByTestId('cruel-hint');
+    expect(hint).toHaveTextContent('場札 3 → 場札 5');
+  });
+
   it('autocomplete button fires autocomplete command', async () => {
     renderWithProviders(<CruelPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
