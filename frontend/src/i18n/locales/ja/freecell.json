@@ -18,6 +18,7 @@
   "emptyFoundationAriaLabel": "{{suit}} ファンデーション (空)",
   "emptyFreecellAriaLabel": "フリーセル {{idx}} (空)",
   "supermoveLimitTooltip": "一度に動かせるのは{{limit}}枚までです",
+  "supermoveLimitLabel": "一括移動上限: {{limit}}枚",
   "tutorial": {
     "freeCells": "フリーセルです。一時的にカードを置ける4つのスペースです。空きセルが多いほど多くのカードを一度に移動できます。",
     "foundation": "ファウンデーションです。各スートをAからKまで順番に積み上げます。",
