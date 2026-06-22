@@ -10,6 +10,7 @@
     "rebuy": "リバイ/アドオン"
   },
   "communityCards": "コミュニティカード",
+  "winningHand": "役: {{hand}}",
   "yourHand": "あなたの手札",
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
   "rebuy": {
