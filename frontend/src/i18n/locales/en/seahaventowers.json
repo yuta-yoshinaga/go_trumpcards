@@ -6,6 +6,7 @@
   },
   "reserved": "Reserved",
   "foundation": "Foundation",
+  "supermoveLimitLabel": "Max bulk move: {{limit}} cards",
   "tableau": "Tableau",
   "giveup": "Give Up",
   "hint": "Hint",
