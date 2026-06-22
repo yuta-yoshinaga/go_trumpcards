@@ -248,13 +248,22 @@ describe('LetItRidePage', () => {
     expect(mockApi).not.toHaveBeenCalledWith('pull');
   });
 
+  it('opens the pull confirmation via the "p" keyboard shortcut', async () => {
+    mockApi.mockResolvedValue(firstDecisionState);
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'プル' })).toBeInTheDocument());
+    fireEvent.keyDown(document, { key: 'p' });
+    expect(screen.getByText('ベットを引き下げますか？')).toBeInTheDocument();
+    expect(mockApi).not.toHaveBeenCalledWith('pull');
+  });
+
   it('disables keyboard shortcuts while the pull confirmation is open', async () => {
     mockApi.mockResolvedValue(firstDecisionState);
     renderWithProviders(<LetItRidePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'プル' })).toBeInTheDocument());
     fireEvent.click(screen.getByRole('button', { name: 'プル' }));
     // With the dialog open, the 'l' shortcut must not bypass it.
-    fireEvent.keyDown(window, { key: 'l' });
+    fireEvent.keyDown(document, { key: 'l' });
     expect(mockApi).not.toHaveBeenCalledWith('letitride');
   });
 
