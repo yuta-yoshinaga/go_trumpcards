@@ -32,6 +32,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
+import { badgeInfoColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { placeholderCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
@@ -261,7 +262,17 @@ function OmahaPageContent() {
             {(() => {
               const communityCardsContent = (
                 <>
-                  <div className="text-ds-text-primary text-lg mb-1.5">{t('communityCards')}</div>
+                  <div className="text-ds-text-primary text-lg mb-1.5">
+                    {t('communityCards')}
+                    {isShowdown && humanPlayer && !humanPlayer.folded && humanPlayer.handName && (
+                      <span
+                        className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${badgeInfoColors}`}
+                        data-testid="omaha-rule-note"
+                      >
+                        {t('rule.use2of4')}
+                      </span>
+                    )}
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
                       ? state.communityCards.map((card, idx) => {
@@ -534,6 +545,11 @@ function OmahaPageContent() {
                     onChange={(e) => setLearningMode(e.target.checked)}
                   />
                 </div>
+                {learningMode && (
+                  <p className="text-ds-text-muted text-xs mb-1" data-testid="omaha-rule-hint">
+                    {t('rule.use2of4')}
+                  </p>
+                )}
                 {learningMode && state?.equity && state.potOdds != null && (
                   <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
                 )}

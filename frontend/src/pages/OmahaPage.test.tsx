@@ -366,6 +366,21 @@ describe('OmahaPage', () => {
     await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
   });
 
+  it('shows the 2-hole+3-board constraint note by the board at showdown', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<OmahaPage />);
+    expect(await screen.findByTestId('omaha-rule-note')).toBeInTheDocument();
+  });
+
+  it('shows the use-2-of-4 rule hint only when learning mode is enabled', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<OmahaPage />);
+    await waitFor(() => expect(screen.getByText('ラーニングモード')).toBeInTheDocument());
+    expect(screen.queryByTestId('omaha-rule-hint')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText('ラーニングモード'));
+    expect(screen.getByTestId('omaha-rule-hint')).toBeInTheDocument();
+  });
+
   it('highlights exactly 2 hole + 3 board cards as the best-5 at showdown', async () => {
     mockExec.mockResolvedValue(showdownState);
     const { container } = renderWithProviders(<OmahaPage />);

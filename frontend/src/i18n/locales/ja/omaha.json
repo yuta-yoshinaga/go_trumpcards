@@ -10,6 +10,9 @@
     "rebuy": "リバイ/アドオン"
   },
   "communityCards": "コミュニティカード",
+  "rule": {
+    "use2of4": "ホール2枚＋ボード3枚で構成"
+  },
   "yourHand": "あなたの手札",
   "mandatoryRule": "ルール: 手札から2枚 + 場札から3枚",
   "mandatoryRuleAria": "オマハのルール: 手札ちょうど2枚と場札ちょうど3枚を使います",
