@@ -1,6 +1,7 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { montecarloApi } from '../api/gameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, MonteCarloBoardCell, MonteCarloResponse } from '../types/card';
 import { MonteCarloPage } from './MonteCarloPage';
@@ -8,6 +9,10 @@ import { MonteCarloPage } from './MonteCarloPage';
 vi.mock('../api/gameApi', () => ({
   montecarloApi: { exec: vi.fn() },
   actionLogApi: { montecarlo: vi.fn() },
+}));
+
+vi.mock('../hooks/useGameHint', () => ({
+  useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
 }));
 
 const mockExec = vi.mocked(montecarloApi.exec);
@@ -205,6 +210,20 @@ describe('MonteCarloPage', () => {
     expect(screen.getByTestId('mc-cell-0-1')).not.toHaveAttribute('data-dimmed');
     // Empty cells are never dimmed (the `filled` guard short-circuits).
     expect(screen.getByTestId('mc-cell-4-4')).not.toHaveAttribute('data-dimmed');
+  });
+
+  it('rings the hint-suggested cells with the warning color when a hint is active', async () => {
+    // boardWithPair: ♠7 at (0,0), ♥7 at (0,1) — the removable pair the hint points at.
+    vi.mocked(useGameHint).mockReturnValue({
+      hint: { targetAction: 'remove-0-0-0-1' },
+      hintEnabled: true,
+      setHintEnabled: vi.fn(),
+    } as unknown as ReturnType<typeof useGameHint>);
+    renderWithProviders(<MonteCarloPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    expect(screen.getByTestId('mc-cell-0-0').className).toContain('ring-ds-warning');
+    expect(screen.getByTestId('mc-cell-0-1').className).toContain('ring-ds-warning');
   });
 
   it('lifts a matching adjacent pair candidate and shows a transient success toast on removal', async () => {
