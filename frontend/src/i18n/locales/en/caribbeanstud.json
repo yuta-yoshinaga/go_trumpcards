@@ -1,5 +1,7 @@
 {
   "title": "Caribbean Stud Poker",
+  "jackpotHelpTitle": "What is the jackpot?",
+  "jackpotHelp": "The jackpot side bet is optional. It pays out — regardless of whether you beat the dealer — when your hand is a flush or better (flush, full house, four of a kind, straight flush, or royal flush).",
   "player": "Player",
   "dealer": "Dealer",
   "label": {
