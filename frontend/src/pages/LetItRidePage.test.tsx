@@ -222,14 +222,28 @@ describe('LetItRidePage', () => {
     expect(breakdown).not.toHaveTextContent('ベット3:');
   });
 
-  it('calls execApi with pull when pull button clicked', async () => {
+  it('confirms before pulling, showing the return amount and new risk', async () => {
     mockApi.mockResolvedValue(firstDecisionState);
     renderWithProviders(<LetItRidePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'プル' })).toBeInTheDocument());
 
-    mockApi.mockResolvedValue(secondDecisionState);
+    // Clicking Pull opens a confirmation (does not immediately call the API).
     fireEvent.click(screen.getByRole('button', { name: 'プル' }));
+    expect(screen.getByText('ベットを引き下げますか？')).toBeInTheDocument();
+    expect(mockApi).not.toHaveBeenCalledWith('pull');
+
+    mockApi.mockResolvedValue(secondDecisionState);
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('pull'));
+  });
+
+  it('does not pull when the confirmation is cancelled', async () => {
+    mockApi.mockResolvedValue(firstDecisionState);
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'プル' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'プル' }));
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    expect(mockApi).not.toHaveBeenCalledWith('pull');
   });
 
   it('calls execApi with letitride when letitride button clicked', async () => {
