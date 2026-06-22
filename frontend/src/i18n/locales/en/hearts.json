@@ -37,6 +37,7 @@
   "scoresTricks": "Tricks",
   "passButton": "Pass",
   "passProgress": "{{count}}/3 selected",
+  "passTo": "{{direction}} → {{name}}",
   "playButton": "Play",
   "nextTrick": "Next Trick",
   "nextRound": "Next Round",

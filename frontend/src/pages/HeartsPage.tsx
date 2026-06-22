@@ -33,6 +33,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { HEARTS_HELP, parseHeartsCommand } from '../utils/cli/commands/heartsCommands';
 import { formatHeartsState } from '../utils/cli/formatters/heartsFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { heartsPassTarget } from '../utils/heartsPass';
 import { shootTheMoonAlertIdx } from '../utils/heartsShootMoonAlert';
 import { playerName } from '../utils/playerUtils';
 
@@ -262,7 +263,15 @@ function HeartsPageContent() {
                 {/* Pass direction (pass phase) */}
                 {isPassPhase && (
                   <div className="text-ds-warning text-center mb-2" data-tutorial="ht-pass-area">
-                    {t(`passDirection.${passDirectionKeys[state.passDirection]}`)}
+                    {(() => {
+                      const direction = t(`passDirection.${passDirectionKeys[state.passDirection]}`);
+                      if (state.passDirection === 3) return direction;
+                      const humanIdx = state.players.findIndex((p) => p.isHuman);
+                      const recipient = state.players[heartsPassTarget(humanIdx, state.passDirection)];
+                      return recipient
+                        ? t('passTo', { direction, name: playerName(recipient.id, recipient.isHuman) })
+                        : direction;
+                    })()}
                   </div>
                 )}
 
@@ -431,7 +440,7 @@ function HeartsPageContent() {
                   {tc('button.hint')}
                 </button>
               )}
-              {isPassPhase && selectedCardIndices.length > 0 && (
+              {isPassPhase && (
                 <span
                   data-testid="hearts-pass-progress"
                   className="self-center rounded-full bg-ds-surface border border-ds-accent px-2.5 py-0.5 text-ds-text-primary text-xs"
