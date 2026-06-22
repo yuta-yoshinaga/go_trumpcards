@@ -276,7 +276,7 @@ function FourCardPokerPageContent() {
               step={10}
               disabled={loading}
               showSteppers
-              invalid={anteInvalid}
+              invalid={anteInvalid || betInvalid}
               describedBy={betInvalid ? 'fcp-bet-error' : undefined}
             />
             <ChipBetInput
@@ -289,7 +289,7 @@ function FourCardPokerPageContent() {
               step={10}
               disabled={loading}
               showSteppers
-              invalid={acesUpInvalid}
+              invalid={acesUpInvalid || betInvalid}
               describedBy={betInvalid ? 'fcp-bet-error' : undefined}
             />
             {betInvalid && (
