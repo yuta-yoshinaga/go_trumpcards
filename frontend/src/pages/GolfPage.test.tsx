@@ -82,6 +82,13 @@ describe('GolfPage', () => {
     expect(pulseElements.length).toBeGreaterThan(0);
   });
 
+  it('rings exposed cards that are playable (±1 of the waste top)', async () => {
+    // Waste top 4; exposed bottom-row values are 1..7, so only 3 and 5 are playable.
+    renderWithProviders(<GolfPage />);
+    await waitFor(() => expect(screen.getByText('捨て札')).toBeInTheDocument());
+    expect(screen.getAllByTestId('golf-playable')).toHaveLength(2);
+  });
+
   it('offers the frontend hint toggle in the settings panel', async () => {
     renderWithProviders(<GolfPage />);
     await waitFor(() => expect(screen.getByText('捨て札')).toBeInTheDocument());
