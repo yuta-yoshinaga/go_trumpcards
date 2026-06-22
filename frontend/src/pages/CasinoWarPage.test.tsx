@@ -277,6 +277,8 @@ describe('CasinoWarPage', () => {
 
     fireEvent.click(suggest);
     await waitFor(() => expect(input.value).toBe('300'));
+    // Once the input matches the previous bet, the suggestion is redundant and hides.
+    await waitFor(() => expect(screen.queryByTestId('cw-previous-bet')).not.toBeInTheDocument());
   });
 
   it('does not suggest the previous bet before any bet is placed', async () => {
