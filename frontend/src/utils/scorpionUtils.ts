@@ -12,13 +12,15 @@ import type { KlondikeTableauCard } from '../types/card';
  */
 export function scorpionLegalTargets(
   tableau: KlondikeTableauCard[][],
-  source: { col: number; cardIndex: number },
+  source: { col?: number; cardIndex?: number },
 ): Set<number> {
   const result = new Set<number>();
-  const srcCard = tableau[source.col]?.[source.cardIndex]?.card;
+  if (source.col === undefined || source.cardIndex === undefined) return result;
+  const srcCol = source.col;
+  const srcCard = tableau[srcCol]?.[source.cardIndex]?.card;
   if (!srcCard) return result;
   tableau.forEach((col, idx) => {
-    if (idx === source.col || col.length === 0) return;
+    if (idx === srcCol || col.length === 0) return;
     const top = col[col.length - 1];
     if (top?.faceUp && top.card && top.card.design === srcCard.design && top.card.value === srcCard.value + 1) {
       result.add(idx);
