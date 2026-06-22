@@ -44,6 +44,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { PINEAPPLE_HELP, parsePineappleCommand } from '../utils/cli/commands/pineappleCommands';
 import { formatPineappleState } from '../utils/cli/formatters/pineappleFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { holdemBestFive } from '../utils/holdemBestFive';
 import { findPlayerName } from '../utils/playerUtils';
 
 /** Pineapple Poker tutorial step definitions. */
@@ -201,6 +202,24 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   const humanAllIn = humanPlayer?.allIn ?? false;
   const canAct = isActive && !humanFolded && !humanAllIn && !isDiscardPhase && state?.currentTurn === humanPlayer?.id;
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
+  // Best-5 highlight at showdown: after the discard, the hand is Hold'em-style
+  // (2 hole + 5 board), so holdemBestFive marks the winning five cards. Indices
+  // 0..1 map to the hole cards, 2..6 to the board.
+  const showdownBest5 = useMemo(() => {
+    const hole = humanPlayer?.cards ?? [];
+    const board = state?.communityCards ?? [];
+    if (!isShowdown || !humanPlayer || humanPlayer.folded || hole.length !== 2 || board.length < 5) {
+      return { holeSet: new Set<number>(), boardSet: new Set<number>() };
+    }
+    const picked = holdemBestFive([...hole, ...board.slice(0, 5)]) ?? [];
+    const holeSet = new Set<number>();
+    const boardSet = new Set<number>();
+    for (const i of picked) {
+      if (i < hole.length) holeSet.add(i);
+      else boardSet.add(i - hole.length);
+    }
+    return { holeSet, boardSet };
+  }, [isShowdown, humanPlayer, state?.communityCards]);
   const minRaise = state?.minRaise ?? 0;
   const isMuckPhase = phase === PineapplePhase.SHOWDOWN && state?.muckAvailable === true;
   const isRebuyPhase = phase === PineapplePhase.REBUY && state?.rebuyPhaseType === HoldemRebuyPhaseType.REBUY;
@@ -299,14 +318,19 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                   <div className="text-ds-text-primary text-lg mb-1.5">{t('communityCards')}</div>
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
-                      ? state.communityCards.map((card) => (
-                          <AnimatedCard
-                            key={`${card.design}-${card.value}`}
-                            card={card}
-                            width={cardWidth}
-                            style={placeholderCardStyle}
-                          />
-                        ))
+                      ? state.communityCards.map((card, idx) => {
+                          const inBest = showdownBest5.boardSet.has(idx);
+                          const dim = showdownBest5.boardSet.size > 0 && !inBest;
+                          return (
+                            <div
+                              key={`${card.design}-${card.value}`}
+                              className={`transition-all ${inBest ? '-translate-y-1 rounded-lg ring-2 ring-ds-success motion-safe:animate-pulse' : ''} ${dim ? 'opacity-50' : ''}`}
+                              data-testid={inBest ? 'pn-best5-card' : undefined}
+                            >
+                              <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                            </div>
+                          );
+                        })
                       : Array.from({ length: 5 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                   </div>
                 </>
@@ -413,15 +437,18 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                   {humanPlayer.cards?.length
                     ? humanPlayer.cards.map((card, idx) => {
                         const isSelected = selectedDiscards.includes(idx);
+                        const inBest = showdownBest5.holeSet.has(idx);
+                        const dim = showdownBest5.holeSet.size > 0 && !inBest;
                         return (
                           <button
                             key={`${card.design}-${card.value}`}
                             type="button"
                             onClick={() => toggleDiscard(idx)}
                             aria-pressed={canDiscard ? isSelected : undefined}
-                            className={canDiscard ? 'cursor-pointer' : 'cursor-default'}
+                            className={`${canDiscard ? 'cursor-pointer' : 'cursor-default'} ${inBest ? 'rounded-lg ring-2 ring-ds-success motion-safe:animate-pulse' : ''} ${dim ? 'opacity-50' : ''}`}
                             disabled={!canDiscard}
                             style={selectedCardStyle(canDiscard && isSelected)}
+                            data-testid={inBest ? 'pn-best5-card' : undefined}
                           >
                             <AnimatedCard card={card} width={cardWidth} />
                           </button>
