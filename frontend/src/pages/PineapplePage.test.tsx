@@ -268,6 +268,28 @@ describe('PineapplePage', () => {
     await waitFor(() => expect(screen.getByText('ワンペア')).toBeInTheDocument());
   });
 
+  it('highlights the winning best-5 cards at showdown', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByText('ワンペア')).toBeInTheDocument());
+    // 2 hole + 3 board cards form the best 5.
+    expect(screen.getAllByTestId('pn-best5-card').length).toBe(5);
+  });
+
+  it('does not highlight best-5 when the human has folded', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      players: [
+        humanPlayer({ handName: 'ワンペア', folded: true, cards: showdownState.players[0].cards }),
+        showdownState.players[1],
+        showdownState.players[2],
+      ],
+    });
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
+    expect(screen.queryByTestId('pn-best5-card')).not.toBeInTheDocument();
+  });
+
   it('shows reset button and triggers reset flow', async () => {
     mockExec.mockResolvedValue(preFlopState);
     renderWithProviders(<PineapplePage />);
