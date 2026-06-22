@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { fourcardpokerApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ChipBetInput } from '../components/common/ChipBetInput';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -77,12 +78,18 @@ function FourCardPokerPageContent() {
   const isActionPhase = state?.phase === FourCardPokerPhase.ACTION;
   const isEndPhase = state?.phase === FourCardPokerPhase.END;
 
+  // Bet validation (mirrors CasinoHoldem): ante is mandatory (>= 10), Aces Up is optional
+  // (>= 0), both in 10-chip increments, and the combined wager cannot exceed the balance.
+  const anteInvalid = Number.isNaN(anteAmount) || anteAmount < 10 || anteAmount % 10 !== 0;
+  const acesUpInvalid = Number.isNaN(acesUpAmount) || acesUpAmount < 0 || acesUpAmount % 10 !== 0;
+  const betInvalid = anteInvalid || acesUpInvalid || anteAmount + acesUpAmount > (state?.chips ?? 0);
+
   const actionBindings = useMemo(
     () => [
       {
         key: 'b',
         action: () => execApi('bet', anteAmount, acesUpAmount),
-        enabled: isBetPhase,
+        enabled: isBetPhase && !betInvalid,
       },
       { key: '1', action: () => execApi('play', undefined, undefined, 1), enabled: isActionPhase },
       { key: '2', action: () => execApi('play', undefined, undefined, 2), enabled: isActionPhase },
@@ -90,7 +97,7 @@ function FourCardPokerPageContent() {
       { key: 'f', action: () => execApi('fold'), enabled: isActionPhase },
       { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
     ],
-    [execApi, anteAmount, acesUpAmount, isBetPhase, isActionPhase, isEndPhase],
+    [execApi, anteAmount, acesUpAmount, isBetPhase, betInvalid, isActionPhase, isEndPhase],
   );
 
   useActionKeyboardNav({
@@ -259,37 +266,38 @@ function FourCardPokerPageContent() {
         <SettingsPanel title={t('settings.title')} groups={[]} />
         {isBetPhase && (
           <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="fcp-bet-controls">
-            <div className="flex items-center gap-2">
-              <label htmlFor="fcp-ante-amount" className="text-ds-text-primary text-sm">
-                {t('label.ante')}
-              </label>
-              <input
-                id="fcp-ante-amount"
-                type="number"
-                min={10}
-                max={state.chips}
-                step={10}
-                value={anteAmount}
-                onChange={(e) => setAnteAmount(Number(e.target.value))}
-                className="w-24 px-2 py-1 rounded text-sm"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <label htmlFor="fcp-acesup-amount" className="text-ds-text-primary text-sm">
-                {t('label.acesUp')}
-              </label>
-              <input
-                id="fcp-acesup-amount"
-                type="number"
-                min={0}
-                max={state.chips}
-                step={10}
-                value={acesUpAmount}
-                onChange={(e) => setAcesUpAmount(Number(e.target.value))}
-                className="w-24 px-2 py-1 rounded text-sm"
-              />
-            </div>
-            <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
+            <ChipBetInput
+              id="fcp-ante-amount"
+              label={t('label.ante')}
+              value={anteAmount}
+              onChange={setAnteAmount}
+              min={10}
+              max={state.chips}
+              step={10}
+              disabled={loading}
+              showSteppers
+              invalid={anteInvalid}
+              describedBy={betInvalid ? 'fcp-bet-error' : undefined}
+            />
+            <ChipBetInput
+              id="fcp-acesup-amount"
+              label={t('label.acesUp')}
+              value={acesUpAmount}
+              onChange={setAcesUpAmount}
+              min={0}
+              max={state.chips}
+              step={10}
+              disabled={loading}
+              showSteppers
+              invalid={acesUpInvalid}
+              describedBy={betInvalid ? 'fcp-bet-error' : undefined}
+            />
+            {betInvalid && (
+              <p id="fcp-bet-error" role="alert" className="text-ds-error text-xs">
+                {t('betError')}
+              </p>
+            )}
+            <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading || betInvalid}>
               {t('button.bet')}
             </button>
           </div>
