@@ -500,8 +500,8 @@ describe('KlondikePage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
     await waitFor(() => expect(screen.getByText(/ヒントがあります/)).toBeInTheDocument());
-    // Hint text contains both "ヒントがあります" and "ウェイスト" in the same element
-    expect(screen.getByText(/ヒントがあります/).textContent).toContain('ウェイスト');
+    // The hint band shows the source card image (not just an abstract string).
+    expect(screen.getByTestId('kl-hint-card')).toBeInTheDocument();
   });
 
   it('shows hint text from tableau after clicking hint', async () => {
@@ -513,6 +513,22 @@ describe('KlondikePage', () => {
 
     await waitFor(() => expect(screen.getByText(/ヒントがあります/)).toBeInTheDocument());
     expect(screen.getByText(/場札 0/)).toBeInTheDocument();
+    // The source tableau card (SPADE 13) is shown as a card image.
+    expect(screen.getByTestId('kl-hint-card')).toBeInTheDocument();
+  });
+
+  it('omits the hint card image when the source card cannot be resolved', async () => {
+    // Mount with an empty waste, then surface a waste-sourced hint → no source card.
+    mockExec.mockResolvedValueOnce(playingNoWasteState);
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    mockExec.mockResolvedValue({
+      ...playingNoWasteState,
+      hint: { fromZone: 'waste', fromCol: -1, cardIndex: -1, toZone: 'tableau', toCol: 3 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByText(/ヒントがあります/)).toBeInTheDocument());
+    expect(screen.queryByTestId('kl-hint-card')).not.toBeInTheDocument();
   });
 
   it('game clear shows action log button', async () => {
