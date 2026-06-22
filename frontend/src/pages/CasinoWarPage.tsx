@@ -251,6 +251,17 @@ function CasinoWarPageContent() {
                   onChange={setBetAmount}
                   max={state.chips}
                 />
+                {canRebet && lastBetAmount !== null && lastBetAmount !== betAmount && (
+                  <button
+                    type="button"
+                    className={btnSecondary}
+                    onClick={() => setBetAmount(lastBetAmount)}
+                    disabled={loading}
+                    data-testid="cw-previous-bet"
+                  >
+                    {t('previousBet', { amount: lastBetAmount })}
+                  </button>
+                )}
                 <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
                   {t('button.bet')}
                 </button>
