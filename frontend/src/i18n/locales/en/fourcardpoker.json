@@ -48,6 +48,7 @@
     "title": "Settings"
   },
   "betGuide": "Place ante and optional Aces Up side bet",
+  "betError": "Ante must be at least 10, bets in steps of 10, and within your balance",
   "payoutRef": {
     "title": "Paytable",
     "anteBonusHeader": "Ante Bonus (auto)",
