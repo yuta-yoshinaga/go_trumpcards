@@ -275,7 +275,7 @@ function HoldemPageContent() {
                 <>
                   <div className="text-ds-text-primary text-lg mb-1.5">
                     {t('communityCards')}
-                    {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
+                    {isShowdown && humanPlayer && !humanPlayer.folded && humanPlayer.handName && (
                       <span
                         className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${badgeSuccessColors}`}
                         data-testid="board-winning-hand"
