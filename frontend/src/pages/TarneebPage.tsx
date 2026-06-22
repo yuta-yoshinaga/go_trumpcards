@@ -404,36 +404,50 @@ function TarneebPageContent() {
                 </button>
               )}
               {isHumanBidTurn && (
-                <>
+                <div className="flex flex-col items-center gap-2">
                   {/*
-                    Valid Tarneeb bids are 0 (pass) or 7-13. The pass case is exposed via a
-                    dedicated button below, so the input range is restricted to 7-13. Out-of-range
-                    values are clamped on Bid-button click to avoid noisy backend errors.
+                    Valid Tarneeb bids are 0 (pass) or minBid..13 and must beat the current
+                    highest bid. A discrete button group (mirroring CallBreak) replaces the raw
+                    number input: out-of-range / already-beaten values are simply disabled, so no
+                    client-side clamping is needed.
                   */}
-                  <input
-                    type="number"
-                    min={state.config.minBid}
-                    max={13}
-                    value={bidValue}
-                    onChange={(e) => setBidValue(Number(e.target.value))}
-                    className="w-16 px-2 py-1 rounded bg-white/20 text-ds-text-primary text-center"
-                    aria-label="bid-input"
-                  />
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={() => {
-                      const clamped = Math.min(13, Math.max(state.config.minBid, bidValue));
-                      handleBid(clamped);
-                    }}
-                    disabled={loading || bidValue < state.config.minBid || bidValue > 13}
-                  >
-                    {t('bidButton')}
-                  </button>
-                  <button type="button" className={btnSuccess} onClick={() => handleBid(0)} disabled={loading}>
-                    {t('passButton')}
-                  </button>
-                </>
+                  <fieldset className="grid grid-cols-7 gap-1 border-0 p-0" aria-label={t('bidSelectLabel')}>
+                    {Array.from({ length: 13 - state.config.minBid + 1 }, (_, i) => i + state.config.minBid).map(
+                      (n) => (
+                        <button
+                          key={n}
+                          type="button"
+                          onClick={() => setBidValue(n)}
+                          disabled={loading || n <= state.highestBid}
+                          aria-pressed={bidValue === n}
+                          data-testid={`bid-option-${n}`}
+                          className={`h-9 w-9 rounded-lg font-medium text-sm transition-all disabled:cursor-not-allowed disabled:opacity-40 ${
+                            bidValue === n
+                              ? 'bg-ds-accent text-white ring-2 ring-ds-accent'
+                              : 'bg-white/20 text-ds-text-primary hover:bg-white/30'
+                          }`}
+                        >
+                          {n}
+                        </button>
+                      ),
+                    )}
+                  </fieldset>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={() => handleBid(bidValue)}
+                      disabled={
+                        loading || bidValue < state.config.minBid || bidValue > 13 || bidValue <= state.highestBid
+                      }
+                    >
+                      {t('bidButton')}
+                    </button>
+                    <button type="button" className={btnSuccess} onClick={() => handleBid(0)} disabled={loading}>
+                      {t('passButton')}
+                    </button>
+                  </div>
+                </div>
               )}
               {isHumanTrumpTurn && (
                 <div className="flex gap-1">
