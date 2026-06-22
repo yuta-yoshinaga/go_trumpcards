@@ -6,6 +6,7 @@
   },
   "reserved": "リザーブセル",
   "foundation": "ファンデーション",
+  "supermoveLimitLabel": "一括移動上限: {{limit}}枚",
   "tableau": "タブロー",
   "giveup": "ギブアップ",
   "hint": "ヒント",

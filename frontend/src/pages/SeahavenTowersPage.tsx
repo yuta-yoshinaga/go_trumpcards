@@ -348,6 +348,11 @@ function SeahavenTowersPageContent() {
               </div>
             </div>
 
+            {/* Max bulk-move (supermove) limit, derived from empty reserved cells */}
+            <div className="text-game-text-muted text-xs mb-2" data-testid="st-supermove-limit">
+              {t('supermoveLimitLabel', { limit: supermoveLimit })}
+            </div>
+
             {/* Tableau */}
             <div className="relative">
               <div className="flex gap-0.5 sm:gap-2 mb-3" data-tutorial="st-tableau">
