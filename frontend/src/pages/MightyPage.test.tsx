@@ -309,6 +309,21 @@ describe('MightyPage', () => {
     });
   });
 
+  it('shows no-trump extra explanation during human bid turn', async () => {
+    mockCall.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<MightyPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('mighty-notrump-explain')).toHaveTextContent(/ノートランプ加算/);
+    });
+  });
+
+  it('does not show no-trump extra explanation when cpu bid turn', async () => {
+    mockCall.mockResolvedValue(bidPhaseCpuTurnState);
+    renderWithProviders(<MightyPage />);
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    expect(screen.queryByTestId('mighty-notrump-explain')).not.toBeInTheDocument();
+  });
+
   it('does not show bid instruction when cpu bid turn', async () => {
     mockCall.mockResolvedValue(bidPhaseCpuTurnState);
     renderWithProviders(<MightyPage />);

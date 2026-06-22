@@ -365,8 +365,11 @@ function MightyPageContent() {
 
                 {/* Bid phase instruction */}
                 {isHumanBidTurn && (
-                  <div className="text-ds-warning text-center mb-2" data-tutorial="mighty-bid-controls">
-                    {t('bidPhase', { min: mightyConfig.minBid })}
+                  <div className="text-center mb-2" data-tutorial="mighty-bid-controls">
+                    <div className="text-ds-warning">{t('bidPhase', { min: state.config.minBid })}</div>
+                    <div className="text-ds-text-muted text-sm" data-testid="mighty-notrump-explain">
+                      {t('settings.noTrumpExtraExplain', { points: state.config.noTrumpExtra })}
+                    </div>
                   </div>
                 )}
 
