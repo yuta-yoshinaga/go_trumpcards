@@ -18,7 +18,8 @@
     "maxRounds": "Max rounds"
   },
   "settings": {
-    "maxRounds": "Max rounds"
+    "maxRounds": "Max rounds",
+    "maxRoundsHelp": "A cap that prevents the game from running forever through chains of wars (ties). The game ends when either player runs out of cards or the max round is reached."
   },
   "hint": {
     "flipCard": "Flip the next card",

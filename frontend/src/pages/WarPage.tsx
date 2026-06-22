@@ -294,6 +294,7 @@ function WarPageContent() {
                     type: 'select' as const,
                     id: 'maxRounds',
                     label: t('settings.maxRounds'),
+                    tooltip: t('settings.maxRoundsHelp'),
                     value: String(maxRounds),
                     options: [
                       { value: '100', label: '100' },

@@ -87,6 +87,14 @@ describe('WarPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('exposes accessible help for the max-rounds setting', async () => {
+    renderWithProviders(<WarPage />);
+    await waitFor(() => expect(screen.getByText('最大ラウンド数')).toBeInTheDocument());
+    // The (?) toggle reveals an accessible tooltip explaining the end condition.
+    fireEvent.click(screen.getByText('(?)'));
+    expect(screen.getByRole('tooltip')).toHaveTextContent('無限');
+  });
+
   it('renders pile info after state loads', async () => {
     renderWithProviders(<WarPage />);
     await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
