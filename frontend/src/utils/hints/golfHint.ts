@@ -3,7 +3,7 @@ import type { HintResult } from '../../types/hint';
 import { GolfPhase } from '../../types/phases';
 
 /** True when two Golf card values are adjacent (±1, with K-A wraparound). */
-function isAdjacentRank(v1: number, v2: number): boolean {
+export function isGolfAdjacent(v1: number, v2: number): boolean {
   const diff = Math.abs(v1 - v2);
   return diff === 1 || diff === 12;
 }
@@ -17,7 +17,7 @@ export function getGolfHint(state: GolfResponse): HintResult | null {
   if (wasteTop) {
     for (const column of state.layout) {
       const top = column.find((c) => c.exposed && !c.removed && c.card !== null);
-      if (top?.card && isAdjacentRank(top.card.value, wasteTop.value)) {
+      if (top?.card && isGolfAdjacent(top.card.value, wasteTop.value)) {
         removable++;
       }
     }
