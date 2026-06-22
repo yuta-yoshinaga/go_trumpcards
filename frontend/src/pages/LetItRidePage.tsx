@@ -134,7 +134,9 @@ function LetItRidePageContent() {
 
   useActionKeyboardNav({
     bindings: actionBindings,
-    enabled: !!state && !loading,
+    // Disable shortcuts while a confirmation dialog is open so a stray key
+    // (e.g. 'l') can't bypass the confirm.
+    enabled: !!state && !loading && !pullConfirmOpen && !confirmOpen,
   });
 
   if (!state) return <GameSkeleton gameKey="letitride" layout={{ kind: 'casino-table', sections: [3, 2] }} />;

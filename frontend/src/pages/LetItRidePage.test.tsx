@@ -230,6 +230,8 @@ describe('LetItRidePage', () => {
     // Clicking Pull opens a confirmation (does not immediately call the API).
     fireEvent.click(screen.getByRole('button', { name: 'プル' }));
     expect(screen.getByText('ベットを引き下げますか？')).toBeInTheDocument();
+    // firstDecisionState: betAmount 100, all 3 active → risk 300, newRisk 200.
+    expect(screen.getByText(/100 が戻り、総リスクは 300 → 200/)).toBeInTheDocument();
     expect(mockApi).not.toHaveBeenCalledWith('pull');
 
     mockApi.mockResolvedValue(secondDecisionState);
@@ -244,6 +246,16 @@ describe('LetItRidePage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'プル' }));
     fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
     expect(mockApi).not.toHaveBeenCalledWith('pull');
+  });
+
+  it('disables keyboard shortcuts while the pull confirmation is open', async () => {
+    mockApi.mockResolvedValue(firstDecisionState);
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'プル' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'プル' }));
+    // With the dialog open, the 'l' shortcut must not bypass it.
+    fireEvent.keyDown(window, { key: 'l' });
+    expect(mockApi).not.toHaveBeenCalledWith('letitride');
   });
 
   it('calls execApi with letitride when letitride button clicked', async () => {
