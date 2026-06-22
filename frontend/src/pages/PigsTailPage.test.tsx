@@ -123,6 +123,17 @@ describe('PigsTailPage', () => {
     expect(center).toHaveTextContent('♠A');
   });
 
+  it('falls back to "?" for a card whose design has no suit symbol', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      centerTop: { design: 'JOKER', value: 0 },
+      centerCount: 1,
+    });
+    renderWithProviders(<PigsTailPage />);
+    const center = await screen.findByTestId('pt-center-top');
+    expect(center).toHaveTextContent('?');
+  });
+
   it('draw button is disabled on game end', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<PigsTailPage />);
