@@ -13,6 +13,8 @@
   "doorCards": "ドアカード",
   "holeCards": "ホールカード",
   "yourHand": "あなたの手札",
+  "currentLow": "現在のロー: {{low}}",
+  "currentLowIncomplete": "ロー未完成（5枚揃わず）",
   "anteBringIn": "アンティ/ブリングイン",
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
   "rebuy": {

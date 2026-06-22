@@ -39,6 +39,7 @@ import { SevenCardStudPhase, SevenCardStudRebuyPhaseType } from '../types/phases
 import type { TutorialStep } from '../types/tutorial';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
+import { formatRazzLow, razzBestLow } from '../utils/razzLow';
 
 /** Razz tutorial step definitions. */
 const RAZZ_TUTORIAL_STEPS: TutorialStep[] = [
@@ -203,6 +204,11 @@ function RazzPageContent() {
   const humanAllIn = humanPlayer?.allIn ?? false;
   const canAct = isActive && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
+  // Current best Razz low from the human's known cards (door + hole), shown from 3rd street.
+  const razzLow =
+    isActive && humanPlayer && !humanPlayer.folded
+      ? razzBestLow([...(humanPlayer.doorCards ?? []), ...(humanPlayer.holeCards ?? [])])
+      : null;
   const minRaise = state?.minRaise ?? 0;
   const isMuckPhase = phase === SevenCardStudPhase.SHOWDOWN && state?.muckAvailable === true;
   const isRebuyPhase =
@@ -399,6 +405,14 @@ function RazzPageContent() {
                   )}
                   {humanPlayer.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
+                  {razzLow && (
+                    <span
+                      data-testid="razz-best-low"
+                      className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
+                    >
+                      {razzLow.complete ? t('currentLow', { low: formatRazzLow(razzLow) }) : t('currentLowIncomplete')}
+                    </span>
+                  )}
                   {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
                     <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
                       {humanPlayer.handName}
