@@ -271,7 +271,7 @@ function MonteCarloPageContent() {
                           disabled={!isPlaying || loading || !filled}
                           data-pair-match={isMatchingPair ? 'true' : undefined}
                           data-dimmed={dimmed ? 'true' : undefined}
-                          className={`p-0 border-0 bg-transparent rounded transition-transform ${focusRingWhite} ${
+                          className={`p-0 border-0 bg-transparent rounded transition ${focusRingWhite} ${
                             filled ? 'cursor-pointer' : ''
                           } ${isSelected ? 'ring-2 ring-ds-accent' : ''} ${
                             isMatchingPair ? 'ring-2 ring-ds-success animate-pulse -translate-y-1' : ''

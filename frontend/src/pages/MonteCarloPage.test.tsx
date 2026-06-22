@@ -203,6 +203,8 @@ describe('MonteCarloPage', () => {
     // The selected card and the matching pair are not dimmed.
     expect(screen.getByTestId('mc-cell-0-0')).not.toHaveAttribute('data-dimmed');
     expect(screen.getByTestId('mc-cell-0-1')).not.toHaveAttribute('data-dimmed');
+    // Empty cells are never dimmed (the `filled` guard short-circuits).
+    expect(screen.getByTestId('mc-cell-4-4')).not.toHaveAttribute('data-dimmed');
   });
 
   it('lifts a matching adjacent pair candidate and shows a transient success toast on removal', async () => {
