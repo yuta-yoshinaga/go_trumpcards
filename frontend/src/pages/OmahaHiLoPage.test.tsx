@@ -390,6 +390,37 @@ describe('OmahaHiLoPage', () => {
     renderWithProviders(<OmahaHiLoPage />);
     await waitFor(() => expect(screen.getByTestId('omahahilo-hi-badge')).toBeInTheDocument());
     expect(screen.queryByTestId('omahahilo-lo-badge')).not.toBeInTheDocument();
+    // With no qualifying low, the breakdown states that Hi scoops the pot.
+    expect(screen.getByTestId('omahahilo-hi-takes-all')).toBeInTheDocument();
+  });
+
+  it('highlights the human qualifying low and lists the low cards', async () => {
+    // Human hole A♠,K♥,10♦,5♣; board 10♠,5♥,8♦,2♣,9♥.
+    const lowState: OmahaResponse = {
+      ...showdownState,
+      roundResults: [
+        {
+          ...showdownState.roundResults[0],
+          hiWonAmount: 0,
+          lowWonAmount: 100,
+          lowBestHand: [
+            { design: 'SPADE', value: 1 },
+            { design: 'CLOVER', value: 5 },
+            { design: 'DIAMOND', value: 8 },
+            { design: 'CLOVER', value: 2 },
+            { design: 'HEART', value: 5 },
+          ],
+        },
+        { ...showdownState.roundResults[1], hiWonAmount: 200, lowWonAmount: 0 },
+      ],
+    };
+    mockExec.mockResolvedValue(lowState);
+    renderWithProviders(<OmahaHiLoPage />);
+    await waitFor(() => expect(screen.getByTestId('omahahilo-split')).toBeInTheDocument());
+    // At least one card (hole and/or board) is ringed as a low card.
+    expect(screen.getAllByTestId('omahahilo-lo-card').length).toBeGreaterThan(0);
+    // The low winner badge lists the qualifying card ranks.
+    expect(screen.getByTestId('omahahilo-lo-badge')).toHaveTextContent('A 5 8 2 5');
   });
 
   it('does not show CPU hand name badge when CPU is folded in showdown', async () => {

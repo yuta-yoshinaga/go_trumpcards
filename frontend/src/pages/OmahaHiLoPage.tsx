@@ -40,9 +40,11 @@ import { gameTheme } from '../styles/gameTheme';
 import type { OmahaResponse } from '../types/card';
 import { OmahaPhase, OmahaRebuyPhaseType } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { valueName } from '../utils/cardUtils';
 import { OMAHA_HELP, parseOmahaCommand } from '../utils/cli/commands/omahaCommands';
 import { formatOmahaState } from '../utils/cli/formatters/omahaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { lowCardIndexSets } from '../utils/omahaLowCards';
 import { findPlayerName } from '../utils/playerUtils';
 
 /** Omaha Hi-Lo (8 or Better) tutorial step definitions. */
@@ -167,6 +169,11 @@ function OmahaHiLoPageContent() {
   const humanAllIn = humanPlayer?.allIn ?? false;
   const canAct = isActive && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
+  // At showdown, highlight the human's qualifying low cards (hole + board), if any.
+  const humanLowBestHand = isShowdown
+    ? state?.roundResults?.find((r) => r.playerIdx === humanPlayer?.id)?.lowBestHand
+    : undefined;
+  const lowSets = lowCardIndexSets(humanLowBestHand, humanPlayer?.cards ?? [], state?.communityCards ?? []);
   const minRaise = state?.minRaise ?? 0;
   const isMuckPhase = phase === OmahaPhase.SHOWDOWN && state?.muckAvailable === true;
   const isRebuyPhase = phase === OmahaPhase.REBUY && state?.rebuyPhaseType === OmahaRebuyPhaseType.REBUY;
@@ -253,13 +260,18 @@ function OmahaHiLoPageContent() {
                   <div className="text-ds-text-primary text-lg mb-1.5">{t('communityCards')}</div>
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
-                      ? state.communityCards.map((card) => (
-                          <AnimatedCard
+                      ? state.communityCards.map((card, idx) => (
+                          <div
                             key={`${card.design}-${card.value}`}
-                            card={card}
-                            width={cardWidth}
-                            style={placeholderCardStyle}
-                          />
+                            className={
+                              lowSets.loBoardSet.has(idx)
+                                ? 'rounded-lg ring-2 ring-ds-info motion-safe:animate-pulse'
+                                : ''
+                            }
+                            data-testid={lowSets.loBoardSet.has(idx) ? 'omahahilo-lo-card' : undefined}
+                          >
+                            <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                          </div>
                         ))
                       : Array.from({ length: 5 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                   </div>
@@ -327,7 +339,15 @@ function OmahaHiLoPageContent() {
                   r.hiWonAmount ? [{ name: findPlayerName(state.players, r.playerIdx), amount: r.hiWonAmount }] : [],
                 );
                 const loWinners = state.roundResults.flatMap((r) =>
-                  r.lowWonAmount ? [{ name: findPlayerName(state.players, r.playerIdx), amount: r.lowWonAmount }] : [],
+                  r.lowWonAmount
+                    ? [
+                        {
+                          name: findPlayerName(state.players, r.playerIdx),
+                          amount: r.lowWonAmount,
+                          cards: (r.lowBestHand ?? []).map((card) => valueName(card.value)).join(' '),
+                        },
+                      ]
+                    : [],
                 );
                 if (hiWinners.length === 0 && loWinners.length === 0) return null;
                 return (
@@ -350,9 +370,15 @@ function OmahaHiLoPageContent() {
                           className="inline-block rounded border border-ds-info bg-ds-surface px-2 py-0.5 text-ds-info"
                         >
                           {t('hiLo.lo')}: {t('hiLo.winner', { name: w.name, amount: w.amount })}
+                          {w.cards && ` (${w.cards})`}
                         </span>
                       ))}
                     </div>
+                    {loWinners.length === 0 && hiWinners.length > 0 && (
+                      <div className="mt-1 text-xs text-ds-text-muted" data-testid="omahahilo-hi-takes-all">
+                        {t('hiLo.hiTakesAll')}
+                      </div>
+                    )}
                   </div>
                 );
               })()}
@@ -408,13 +434,16 @@ function OmahaHiLoPageContent() {
                 </div>
                 <div className="flex flex-wrap gap-1.5 mb-2" data-tutorial="ohl-combination-rule">
                   {humanPlayer.cards?.length
-                    ? humanPlayer.cards.map((card) => (
-                        <AnimatedCard
+                    ? humanPlayer.cards.map((card, idx) => (
+                        <div
                           key={`${card.design}-${card.value}`}
-                          card={card}
-                          width={cardWidth}
-                          style={placeholderCardStyle}
-                        />
+                          className={
+                            lowSets.loHoleSet.has(idx) ? 'rounded-lg ring-2 ring-ds-info motion-safe:animate-pulse' : ''
+                          }
+                          data-testid={lowSets.loHoleSet.has(idx) ? 'omahahilo-lo-card' : undefined}
+                        >
+                          <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                        </div>
                       ))
                     : !humanPlayer.folded &&
                       Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
