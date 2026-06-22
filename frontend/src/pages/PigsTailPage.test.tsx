@@ -111,6 +111,29 @@ describe('PigsTailPage', () => {
     });
   });
 
+  it('shows the center top card rank and suit (not just the suit symbol)', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      centerTop: { design: 'SPADE', value: 1 },
+      centerCount: 3,
+    });
+    renderWithProviders(<PigsTailPage />);
+    const center = await screen.findByTestId('pt-center-top');
+    // Rank (A) must be visible alongside the suit symbol.
+    expect(center).toHaveTextContent('♠A');
+  });
+
+  it('falls back to "?" for a card whose design has no suit symbol', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      centerTop: { design: 'JOKER', value: 0 },
+      centerCount: 1,
+    });
+    renderWithProviders(<PigsTailPage />);
+    const center = await screen.findByTestId('pt-center-top');
+    expect(center).toHaveTextContent('?');
+  });
+
   it('draw button is disabled on game end', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<PigsTailPage />);

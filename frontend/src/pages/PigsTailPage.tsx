@@ -20,8 +20,9 @@ import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { badgeErrorColors } from '../styles/badgeStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { PigsTailResponse } from '../types/card';
+import type { Card, PigsTailResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { valueName } from '../utils/cardUtils';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 
 const SUIT_SYMBOLS: Record<string, string> = {
@@ -30,6 +31,11 @@ const SUIT_SYMBOLS: Record<string, string> = {
   DIAMOND: '♦',
   CLOVER: '♣',
 };
+
+/** Render a center-pile card as suit symbol + rank (e.g. "♠A"), so the rank is visible. */
+function centerCardLabel(card: Card): string {
+  return `${SUIT_SYMBOLS[card.design] ?? '?'}${valueName(card.value)}`;
+}
 
 const PT_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -184,8 +190,11 @@ function PigsTailPageContent() {
                 <div className="text-xs text-ds-text-muted mb-1">
                   {t('label.center')} ({state.centerCount})
                 </div>
-                <div className="w-16 h-16 rounded-lg bg-ds-warning/60 border-2 border-ds-warning/40 flex items-center justify-center text-xl font-bold text-white">
-                  {state.centerTop ? (SUIT_SYMBOLS[state.centerTop.design] ?? '?') : '-'}
+                <div
+                  className="w-16 h-16 rounded-lg bg-ds-warning/60 border-2 border-ds-warning/40 flex items-center justify-center text-lg font-bold text-white"
+                  data-testid="pt-center-top"
+                >
+                  {state.centerTop ? centerCardLabel(state.centerTop) : '-'}
                 </div>
               </div>
             </div>
