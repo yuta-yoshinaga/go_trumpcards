@@ -145,6 +145,18 @@ describe('PaiGowPage', () => {
     expect(getCardButtons()).toHaveLength(7);
   });
 
+  it('shows an accessible foul-rule help in the set-hands phase', async () => {
+    mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(setHandsPhaseState);
+    renderWithProviders(<PaiGowPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'セット' })).toBeInTheDocument());
+    const help = screen.getByTestId('foul-rule-help');
+    expect(help).toHaveTextContent('ハイ/ローの分け方は？');
+    // A native <details>/<summary> is keyboard-focusable.
+    expect(help.querySelector('summary')).toBeInTheDocument();
+  });
+
   it('labels each card button with its cardAlt name, not a raw index', async () => {
     mockExec.mockResolvedValue(setHandsPhaseState);
     renderWithProviders(<PaiGowPage />);
