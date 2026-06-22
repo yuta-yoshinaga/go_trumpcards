@@ -332,6 +332,11 @@ function FreeCellPageContent() {
               </div>
             </div>
 
+            {/* Max bulk-move (supermove) limit, derived from empty free cells/columns */}
+            <div className="text-game-text-muted text-xs mb-2" data-testid="fc-supermove-limit">
+              {t('supermoveLimitLabel', { limit: supermoveLimit })}
+            </div>
+
             {/* Tableau */}
             <div className="relative">
               <div className="flex gap-0.5 sm:gap-2 mb-3" data-tutorial="fc-tableau">
