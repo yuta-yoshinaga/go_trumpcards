@@ -534,6 +534,23 @@ function ShortDeckPageContent() {
                 </div>
               </div>
             </details>
+            <details className="mb-1" data-testid="sd-handrank-reference">
+              <summary className="cursor-pointer select-none text-ds-text-primary text-sm font-bold py-1">
+                {t('handRank.title')}
+              </summary>
+              <ol className="list-decimal list-inside text-ds-text-muted text-xs py-1 space-y-0.5">
+                <li>{t('handRank.straightFlush')}</li>
+                <li>{t('handRank.fourOfAKind')}</li>
+                <li className="text-ds-text-primary font-semibold">{t('handRank.flush')}</li>
+                <li className="text-ds-text-primary font-semibold">{t('handRank.fullHouse')}</li>
+                <li>{t('handRank.straight')}</li>
+                <li>{t('handRank.threeOfAKind')}</li>
+                <li>{t('handRank.twoPair')}</li>
+                <li>{t('handRank.onePair')}</li>
+                <li>{t('handRank.highCard')}</li>
+              </ol>
+              <p className="text-ds-info text-xs pt-1">{t('handRank.note')}</p>
+            </details>
             <GameResetButton
               isGameEnd={phase === HoldemPhase.SHOWDOWN || phase === HoldemPhase.END}
               onReset={handleManualReset}
