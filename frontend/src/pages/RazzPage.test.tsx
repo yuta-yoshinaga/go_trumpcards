@@ -206,6 +206,29 @@ describe('RazzPage', () => {
     await waitFor(() => expect(screen.getByText('サードストリート')).toBeInTheDocument());
   });
 
+  it('shows the current best low for the human from 3rd street', async () => {
+    // Human cards A,K,10 + 5,8,3,7 → five lowest distinct = A,3,5,7,8.
+    mockExec.mockResolvedValue(thirdStreetState);
+    renderWithProviders(<RazzPage />);
+    const low = await screen.findByTestId('razz-best-low');
+    expect(low).toHaveTextContent('現在のロー: 8-7-5-3-A');
+  });
+
+  it('marks the low as incomplete when fewer than five distinct ranks are known', async () => {
+    mockExec.mockResolvedValue({
+      ...thirdStreetState,
+      players: [
+        humanPlayer({ holeCards: [{ design: 'SPADE', value: 2 }], doorCards: [{ design: 'HEART', value: 2 }] }),
+        thirdStreetState.players[1],
+        thirdStreetState.players[2],
+        thirdStreetState.players[3],
+      ],
+    });
+    renderWithProviders(<RazzPage />);
+    const low = await screen.findByTestId('razz-best-low');
+    expect(low).toHaveTextContent('未完成');
+  });
+
   // ---- info bar ----
   it('shows pot and the dealer name via playerName (CPU dealer)', async () => {
     mockExec.mockResolvedValue(thirdStreetState);
