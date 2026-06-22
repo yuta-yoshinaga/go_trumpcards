@@ -389,6 +389,43 @@ describe('BigOHiLoPage', () => {
     expect(screen.getByTestId('bigohilo-lo-badge')).toHaveClass('text-ds-info');
   });
 
+  it('highlights the human qualifying low (blue) and lists the low card ranks', async () => {
+    const lowState: OmahaResponse = {
+      ...showdownState,
+      roundResults: [
+        {
+          ...showdownState.roundResults[0],
+          hiWonAmount: 0,
+          lowWonAmount: 100,
+          lowBestHand: [
+            { design: 'SPADE', value: 1 },
+            { design: 'CLOVER', value: 5 },
+            { design: 'DIAMOND', value: 8 },
+            { design: 'CLOVER', value: 2 },
+            { design: 'HEART', value: 5 },
+          ],
+        },
+        { ...showdownState.roundResults[1], hiWonAmount: 200, lowWonAmount: 0 },
+      ],
+    };
+    mockExec.mockResolvedValue(lowState);
+    renderWithProviders(<BigOHiLoPage />);
+    await waitFor(() => expect(screen.getByTestId('bigohilo-split')).toBeInTheDocument());
+    expect(screen.getAllByTestId('bigohilo-lo-card').length).toBeGreaterThan(0);
+    expect(screen.getByTestId('bigohilo-lo-badge')).toHaveTextContent('A 5 8 2 5');
+  });
+
+  it('states Hi scoops the pot when no low qualifies', async () => {
+    const hiOnlyState: OmahaResponse = {
+      ...showdownState,
+      roundResults: [{ ...showdownState.roundResults[0], hiWonAmount: 200, lowWonAmount: 0 }],
+    };
+    mockExec.mockResolvedValue(hiOnlyState);
+    renderWithProviders(<BigOHiLoPage />);
+    await waitFor(() => expect(screen.getByTestId('bigohilo-hi-badge')).toBeInTheDocument());
+    expect(screen.getByTestId('bigohilo-hi-takes-all')).toBeInTheDocument();
+  });
+
   it('does not show CPU hand name badge when CPU is folded in showdown', async () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<BigOHiLoPage />);
