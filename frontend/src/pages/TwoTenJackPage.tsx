@@ -410,6 +410,11 @@ function TwoTenJackPageContent() {
             <ErrorAlert message={error} onRetry={retry} />
 
             <div className="flex gap-2 items-center flex-wrap" data-tutorial="tt-play-button">
+              {isHumanDeclarer && (
+                <span data-testid="tt-declare-prompt" className="text-ds-warning text-sm font-medium w-full sm:w-auto">
+                  {t('declarePrompt')}
+                </span>
+              )}
               {isHumanDeclarer &&
                 SUIT_OPTIONS.map((suit) => (
                   <button

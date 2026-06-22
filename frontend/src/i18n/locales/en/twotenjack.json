@@ -30,6 +30,7 @@
   "team0": "Your team (0,2)",
   "team1": "Opponents (1,3)",
   "declarePhase": "Declare the trump suit (♠/♣/♥/♦)",
+  "declarePrompt": "Choose trump →",
   "playButton": "Play",
   "nextTrick": "Next Trick",
   "nextRound": "Next Round",
