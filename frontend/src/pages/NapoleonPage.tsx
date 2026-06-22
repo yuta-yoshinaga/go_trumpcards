@@ -32,6 +32,7 @@ import {
 } from '../hooks/useNapoleonGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
+import { badgeInfo, badgeSuccess } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -211,6 +212,19 @@ function NapoleonPageContent() {
   const isHumanBidTurn = isBidPhase && state.players[state.bidPlayerIdx]?.isHuman === true;
   const isHumanNapoleon = isTrumpDeclaration && state.players[state.napoleonIdx]?.isHuman === true;
   const isHumanExchange = isKittyExchange && state.players[state.napoleonIdx]?.isHuman === true;
+  // Napoleon-side face-card progress toward the bid (target). The adjutant's
+  // haul is only counted once revealed, to avoid leaking their identity.
+  const napoleonFaceProgress = (() => {
+    if (!isPlayPhase || state.napoleonIdx < 0) return null;
+    const napoleon = state.players[state.napoleonIdx];
+    if (!napoleon) return null;
+    const adjutant =
+      state.adjutantRevealed && state.adjutantIdx >= 0 && state.adjutantIdx !== state.napoleonIdx
+        ? state.players[state.adjutantIdx]
+        : undefined;
+    const collected = napoleon.pictureCards + (adjutant?.pictureCards ?? 0);
+    return { collected, bid: state.highestBid, achieved: collected >= state.highestBid };
+  })();
 
   const roleBadge = (p: { isNapoleon: boolean; isAdjutant: boolean; adjutantRevealed: boolean }) => {
     if (p.isNapoleon) return ` [${t('role.napoleon')}]`;
@@ -305,6 +319,20 @@ function NapoleonPageContent() {
                 </span>
               )}
             </div>
+
+            {napoleonFaceProgress && (
+              <div className="text-center mb-2">
+                <span
+                  data-testid="np-face-progress"
+                  className={napoleonFaceProgress.achieved ? badgeSuccess : badgeInfo}
+                >
+                  {t('faceProgress', {
+                    collected: napoleonFaceProgress.collected,
+                    bid: napoleonFaceProgress.bid,
+                  })}
+                </span>
+              </div>
+            )}
 
             <div className={lgTwoColGrid}>
               {/* Left: game play area */}
