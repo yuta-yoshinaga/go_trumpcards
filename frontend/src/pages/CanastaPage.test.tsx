@@ -131,6 +131,25 @@ describe('CanastaPage', () => {
     expect(screen.getByRole('button', { name: 'スキップ' })).toBeInTheDocument();
   });
 
+  it('shows the initial-meld minimum and selected total in the meld phase', async () => {
+    mockExec.mockResolvedValue(meldPhaseState); // score 0 → min 50; hasInitMeld false
+    renderWithProviders(<CanastaPage />);
+    const info = await screen.findByTestId('ca-meld-points');
+    expect(info).toHaveTextContent('初回メルド最低点: 50');
+    expect(info).toHaveTextContent('選択合計: 0');
+  });
+
+  it('shows only the selected total once the initial meld is made', async () => {
+    mockExec.mockResolvedValue({
+      ...meldPhaseState,
+      players: [{ ...basePlayers[0], hasInitMeld: true }, basePlayers[1]],
+    });
+    renderWithProviders(<CanastaPage />);
+    const info = await screen.findByTestId('ca-meld-points');
+    expect(info).toHaveTextContent('選択合計: 0');
+    expect(info).not.toHaveTextContent('初回メルド最低点');
+  });
+
   it('calls skipmeld command when skip button clicked', async () => {
     mockExec.mockResolvedValue(meldPhaseState);
     renderWithProviders(<CanastaPage />);
