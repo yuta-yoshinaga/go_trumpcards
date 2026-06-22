@@ -14,6 +14,7 @@
     "pointLimit": "目標スコア",
     "minBid": "最低ビッド",
     "noTrumpExtra": "ノートランプ加算",
+    "noTrumpExtraExplain": "ノートランプ加算: +{{points}}点（宣言時は最低ビッドに上乗せ）",
     "easy": "Easy",
     "normal": "Normal",
     "hard": "Hard"

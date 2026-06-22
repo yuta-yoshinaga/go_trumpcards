@@ -14,6 +14,7 @@
     "pointLimit": "Target Score",
     "minBid": "Min Bid",
     "noTrumpExtra": "No-Trump Extra",
+    "noTrumpExtraExplain": "No-trump bonus: +{{points}} (added to the minimum bid when declaring no-trump)",
     "easy": "Easy",
     "normal": "Normal",
     "hard": "Hard"
