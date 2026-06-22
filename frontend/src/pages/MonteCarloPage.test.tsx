@@ -182,8 +182,27 @@ describe('MonteCarloPage', () => {
 
     const neighbor = screen.getByTestId('mc-cell-1-0');
     expect(neighbor).not.toHaveAttribute('data-pair-match');
-    expect(neighbor.className).toContain('opacity-60');
+    expect(neighbor).toHaveAttribute('data-dimmed', 'true');
+    expect(neighbor.className).toContain('opacity-40');
     expect(neighbor.className).not.toContain('animate-pulse');
+  });
+
+  it('dims non-adjacent filled cells once a first card is selected, leaving the selection lit', async () => {
+    // boardWithPair has ♠7 at (0,0), ♥7 at (0,1) (a match) and ♣5 at (2,2) (far away).
+    renderWithProviders(<MonteCarloPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    // Nothing dimmed before a selection.
+    expect(screen.getByTestId('mc-cell-2-2')).not.toHaveAttribute('data-dimmed');
+
+    fireEvent.click(screen.getByTestId('mc-cell-0-0'));
+
+    const far = screen.getByTestId('mc-cell-2-2');
+    expect(far).toHaveAttribute('data-dimmed', 'true');
+    expect(far.className).toContain('opacity-40');
+    // The selected card and the matching pair are not dimmed.
+    expect(screen.getByTestId('mc-cell-0-0')).not.toHaveAttribute('data-dimmed');
+    expect(screen.getByTestId('mc-cell-0-1')).not.toHaveAttribute('data-dimmed');
   });
 
   it('lifts a matching adjacent pair candidate and shows a transient success toast on removal', async () => {
