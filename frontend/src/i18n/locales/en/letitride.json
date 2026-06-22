@@ -1,5 +1,7 @@
 {
   "title": "Let It Ride",
+  "pullConfirmTitle": "Pull this bet?",
+  "pullConfirm": "Pull one bet: {{amount}} is returned and your total risk drops from {{risk}} to {{newRisk}}. This cannot be undone.",
   "player": "Player",
   "label": {
     "chips": "Chips",

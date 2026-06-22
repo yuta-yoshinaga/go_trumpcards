@@ -1,5 +1,7 @@
 {
   "title": "レットイットライド",
+  "pullConfirmTitle": "ベットを引き下げますか？",
+  "pullConfirm": "ベットを1口引き下げます。{{amount}} が戻り、総リスクは {{risk}} → {{newRisk}} に減ります。この操作は取り消せません。",
   "player": "プレイヤー",
   "label": {
     "chips": "チップ",
