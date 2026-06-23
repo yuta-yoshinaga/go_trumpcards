@@ -232,7 +232,9 @@ function KlaverjasPageContent() {
                 {!(isRoundEnd || isGameEnd) && (
                   <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="klaverjas-roem">
                     <div className="mb-1 text-ds-text-primary">{t('roem.title')}</div>
-                    <div>{t('roundResult.roem', { roemA: state.roundRoem[0], roemB: state.roundRoem[1] })}</div>
+                    <div>
+                      {t('roundResult.roem', { roemA: state.roundRoem[0] ?? 0, roemB: state.roundRoem[1] ?? 0 })}
+                    </div>
                   </div>
                 )}
 
