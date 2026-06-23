@@ -319,33 +319,54 @@ function TutePageContent() {
                   {t('playButton')}
                 </button>
               )}
-              {canPlay &&
-                state.canDeclareMarriage &&
-                humanPlayer &&
-                ([1, 2, 3, 4] as const)
-                  .filter((suit) => {
-                    // Only offer suits the human actually holds K+Q of and has
-                    // not already declared, so every button is a legal move.
-                    const design = (['', 'SPADE', 'CLOVER', 'HEART', 'DIAMOND'] as const)[suit];
-                    const hasK = humanPlayer.cards.some((c) => c.design === design && c.value === 13);
-                    const hasQ = humanPlayer.cards.some((c) => c.design === design && c.value === 12);
-                    return hasK && hasQ && !state.declaredSuits[suit];
-                  })
-                  .map((suit) => (
-                    <button
-                      key={suit}
-                      type="button"
-                      className={btnSecondary}
-                      onClick={() => handleDeclareMarriage(suit)}
-                      disabled={loading}
-                    >
-                      {t('declareMarriage', { suit: SUIT_SYMBOLS[suit] })}
-                    </button>
-                  ))}
-              {canPlay && state.canDeclareTute && (
-                <button type="button" className={btnSecondary} onClick={handleDeclareTute} disabled={loading}>
-                  {t('declareTute')}
-                </button>
+              {canPlay && (state.canDeclareMarriage || state.canDeclareTute) && (
+                <fieldset
+                  className="flex flex-wrap items-center gap-2 border-0 p-0 m-0"
+                  aria-label={t('declarationsLabel')}
+                  data-testid="tute-declarations"
+                >
+                  <legend className="text-xs text-ds-text-muted mr-1">{t('declarationsLabel')}</legend>
+                  {state.canDeclareMarriage &&
+                    humanPlayer &&
+                    ([1, 2, 3, 4] as const)
+                      .filter((suit) => {
+                        // Only offer suits the human actually holds K+Q of and has
+                        // not already declared, so every button is a legal move.
+                        const design = (['', 'SPADE', 'CLOVER', 'HEART', 'DIAMOND'] as const)[suit];
+                        const hasK = humanPlayer.cards.some((c) => c.design === design && c.value === 13);
+                        const hasQ = humanPlayer.cards.some((c) => c.design === design && c.value === 12);
+                        return hasK && hasQ && !state.declaredSuits[suit];
+                      })
+                      .map((suit) => (
+                        <button
+                          key={suit}
+                          type="button"
+                          className={btnSecondary}
+                          onClick={() => handleDeclareMarriage(suit)}
+                          disabled={loading}
+                        >
+                          {t('declareMarriage', { suit: SUIT_SYMBOLS[suit] })}
+                        </button>
+                      ))}
+                  {state.canDeclareTute && (
+                    <>
+                      <button
+                        type="button"
+                        className={btnSecondary}
+                        onClick={handleDeclareTute}
+                        disabled={loading}
+                        title={t('tuteHelp')}
+                        aria-describedby="tute-help-desc"
+                        data-testid="tute-declare-button"
+                      >
+                        {t('declareTute')}
+                      </button>
+                      <span id="tute-help-desc" className="sr-only">
+                        {t('tuteHelp')}
+                      </span>
+                    </>
+                  )}
+                </fieldset>
               )}
               {isTrickEnd && (
                 <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
