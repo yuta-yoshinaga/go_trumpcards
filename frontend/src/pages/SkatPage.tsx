@@ -9,6 +9,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -221,11 +222,9 @@ function SkatPageContent() {
             {state.originalSkat && state.originalSkat.length > 0 && (
               <div className="bg-black/30 text-ds-text-primary p-3 rounded">
                 <div className="text-sm mb-1">{t('skatLabel')}:</div>
-                <div className="flex gap-2">
+                <div className="flex gap-2" data-testid="skat-reveal">
                   {state.originalSkat.map((c, i) => (
-                    <span key={`skat-${i}`} className="bg-white text-black px-2 py-1 rounded">
-                      {c.design} {c.value}
-                    </span>
+                    <AnimatedCard key={`skat-${i}`} card={c} width={cardWidth} />
                   ))}
                 </div>
               </div>
