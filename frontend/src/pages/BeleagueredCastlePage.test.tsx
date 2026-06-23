@@ -121,6 +121,21 @@ describe('BeleagueredCastlePage', () => {
     await waitFor(() => expect(screen.getAllByText(/ゲームオーバー/).length).toBeGreaterThan(0));
   });
 
+  it('shows the foundation progress summary on game over', async () => {
+    mockExec.mockResolvedValue(gameOverState); // 4 aces on foundations → 4/52 (8%)
+    renderWithProviders(<BeleagueredCastlePage />);
+    const summary = await screen.findByTestId('bc-gameover-summary');
+    expect(summary).toHaveTextContent('4/52');
+    expect(summary).toHaveTextContent('8%');
+  });
+
+  it('does not show the progress summary on game clear', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    await waitFor(() => expect(screen.getAllByText(/ゲームクリア/).length).toBeGreaterThan(0));
+    expect(screen.queryByTestId('bc-gameover-summary')).not.toBeInTheDocument();
+  });
+
   it('disables the auto-complete button and shows a reason when no foundation has progressed', async () => {
     mockExec.mockResolvedValue(playingState); // foundations hold only aces
     renderWithProviders(<BeleagueredCastlePage />);
