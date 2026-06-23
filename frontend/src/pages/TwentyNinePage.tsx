@@ -280,8 +280,8 @@ function TwentyNinePageContent() {
                     data-testid="tn29-round-points"
                   >
                     <div className="mb-1 text-ds-text-primary">{t('roundPointsTitle')}</div>
-                    <div>{t('roundResult.teamA', { points: state.roundTeamPoints[0] ?? 0 })}</div>
-                    <div>{t('roundResult.teamB', { points: state.roundTeamPoints[1] ?? 0 })}</div>
+                    <div>{t('roundResult.teamA', { points: state.roundTeamPoints[0] })}</div>
+                    <div>{t('roundResult.teamB', { points: state.roundTeamPoints[1] })}</div>
                   </div>
                 )}
 
