@@ -24,7 +24,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import { computeGapsGhostHint } from '../utils/gapsGhostHint';
-import { gapsLockedPrefixLengths, gapsLockedTotal } from '../utils/gapsUtils';
+import { gapsLockedPrefixLengths } from '../utils/gapsUtils';
 
 const SUIT_SYMBOLS: Record<string, string> = {
   SPADE: '♠',
@@ -143,7 +143,8 @@ function GapsPageContent() {
   const isGameOver = state.phase === GapsPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
   const lockedPrefixLengths = gapsLockedPrefixLengths(state.grid);
-  const lockedTotal = gapsLockedTotal(state.grid);
+  // Derive the total from the already-computed per-row lengths to avoid a second board pass.
+  const lockedTotal = lockedPrefixLengths.reduce((sum, n) => sum + n, 0);
 
   return (
     <GamePageShell
