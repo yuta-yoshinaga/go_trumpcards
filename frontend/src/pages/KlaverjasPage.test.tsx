@@ -82,6 +82,29 @@ describe('KlaverjasPage', () => {
     expect(screen.getByText('ラウンド結果')).toBeInTheDocument();
   });
 
+  it('shows live Roem during play', async () => {
+    mockExec.mockResolvedValue(makeKlaverjasState({ phase: 0, roundRoem: [40, 20] }));
+    renderWithProviders(<KlaverjasPage />);
+    const roem = await screen.findByTestId('klaverjas-roem');
+    expect(roem).toHaveTextContent('40');
+    expect(roem).toHaveTextContent('20');
+  });
+
+  it('falls back to 0 Roem when the array is empty', async () => {
+    mockExec.mockResolvedValue(makeKlaverjasState({ phase: 0, roundRoem: [] }));
+    renderWithProviders(<KlaverjasPage />);
+    const roem = await screen.findByTestId('klaverjas-roem');
+    expect(roem).toHaveTextContent('A=0');
+    expect(roem).toHaveTextContent('B=0');
+  });
+
+  it('hides the live Roem block at round end (the round result repeats it)', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<KlaverjasPage />);
+    await waitFor(() => expect(screen.getByText('ラウンド結果')).toBeInTheDocument());
+    expect(screen.queryByTestId('klaverjas-roem')).not.toBeInTheDocument();
+  });
+
   it('renders the game end message', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<KlaverjasPage />);
