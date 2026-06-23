@@ -91,9 +91,16 @@ describe('CourtPiecePage', () => {
   it('shows the undeclared status and accessible labels on suit buttons during declaration', async () => {
     renderWithProviders(<CourtPiecePage />);
     await waitFor(() => expect(screen.getByTestId('cp-trump-status')).toBeInTheDocument());
-    expect(screen.getByTestId('cp-trump-status')).toHaveTextContent('未宣言');
-    // Each suit button carries a declare aria-label.
-    expect(screen.getByTestId('trump-1')).toHaveAttribute('aria-label');
+    expect(screen.getByTestId('cp-trump-status')).toHaveTextContent('切り札未宣言');
+    // Each suit button carries a declare aria-label with the interpolated suit name.
+    for (const [testId, label] of [
+      ['trump-1', '♠ スペードを切り札に宣言'],
+      ['trump-2', '♣ クラブを切り札に宣言'],
+      ['trump-3', '♥ ハートを切り札に宣言'],
+      ['trump-4', '♦ ダイヤを切り札に宣言'],
+    ] as const) {
+      expect(screen.getByTestId(testId)).toHaveAttribute('aria-label', label);
+    }
   });
 
   it('dispatches a trump declaration when a suit button is clicked', async () => {
