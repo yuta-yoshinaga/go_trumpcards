@@ -113,8 +113,10 @@ describe('FortyFivesPage', () => {
     const info = await screen.findByTestId('ff-highest-bid');
     expect(info).toHaveTextContent('20');
     expect(info).not.toHaveTextContent('まだ入札なし');
-    expect(screen.getByTestId('bid-15')).toHaveAttribute('title');
-    expect(screen.getByTestId('bid-25')).not.toHaveAttribute('title');
+    // The reason tooltip lives on the wrapping span (disabled buttons suppress native titles).
+    expect(screen.getByTestId('bid-wrap-15')).toHaveAttribute('title');
+    expect(screen.getByTestId('bid-15')).toHaveAttribute('aria-label');
+    expect(screen.getByTestId('bid-wrap-25')).not.toHaveAttribute('title');
   });
 
   it('shows "no bids yet" before anyone has bid', async () => {
