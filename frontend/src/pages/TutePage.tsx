@@ -322,7 +322,6 @@ function TutePageContent() {
               {canPlay && (state.canDeclareMarriage || state.canDeclareTute) && (
                 <fieldset
                   className="flex flex-wrap items-center gap-2 border-0 p-0 m-0"
-                  aria-label={t('declarationsLabel')}
                   data-testid="tute-declarations"
                 >
                   <legend className="text-xs text-ds-text-muted mr-1">{t('declarationsLabel')}</legend>

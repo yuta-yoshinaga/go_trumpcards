@@ -92,7 +92,8 @@ describe('TutePage', () => {
     renderWithProviders(<TutePage />);
     const group = await screen.findByTestId('tute-declarations');
     expect(group.tagName).toBe('FIELDSET');
-    expect(group).toHaveAttribute('aria-label', '宣言できる役');
+    // The <legend> names the group (no redundant aria-label).
+    expect(group.querySelector('legend')).toHaveTextContent('宣言できる役');
     const tuteBtn = screen.getByTestId('tute-declare-button');
     expect(tuteBtn).toHaveAttribute('aria-describedby', 'tute-help-desc');
     expect(document.getElementById('tute-help-desc')).toHaveTextContent(/Tute/);
