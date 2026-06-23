@@ -126,6 +126,21 @@ describe('TwentyNinePage', () => {
     expect(screen.getByText('落札者')).toBeInTheDocument();
   });
 
+  it('shows live round card points during play', async () => {
+    mockExec.mockResolvedValue(makeTwentyNineState({ phase: 1, isHumanBidTurn: false, roundTeamPoints: [12, 7] }));
+    renderWithProviders(<TwentyNinePage />);
+    const live = await screen.findByTestId('tn29-round-points');
+    expect(live).toHaveTextContent('12');
+    expect(live).toHaveTextContent('7');
+  });
+
+  it('hides the live round-points block at round end (the result block takes over)', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<TwentyNinePage />);
+    await waitFor(() => expect(screen.getByText('ラウンド結果（カード点）')).toBeInTheDocument());
+    expect(screen.queryByTestId('tn29-round-points')).not.toBeInTheDocument();
+  });
+
   it('does not show the play button on a CPU turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<TwentyNinePage />);

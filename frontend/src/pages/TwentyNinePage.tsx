@@ -272,6 +272,19 @@ function TwentyNinePageContent() {
                   </div>
                 ))}
 
+                {/* Live round card points during bidding/play (matches the CUI's roundPoints
+                    readout); the round-result block below takes over once the round ends. */}
+                {!(isRoundEnd || isGameEnd) && (
+                  <div
+                    className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                    data-testid="tn29-round-points"
+                  >
+                    <div className="mb-1 text-ds-text-primary">{t('roundPointsTitle')}</div>
+                    <div>{t('roundResult.teamA', { points: state.roundTeamPoints[0] })}</div>
+                    <div>{t('roundResult.teamB', { points: state.roundTeamPoints[1] })}</div>
+                  </div>
+                )}
+
                 {/* Round result: card points per team */}
                 {(isRoundEnd || isGameEnd) && (
                   <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">

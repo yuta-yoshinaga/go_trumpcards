@@ -31,6 +31,7 @@
     "b": "チームB"
   },
   "yourTeam": "あなたのチーム",
+  "roundPointsTitle": "現在のラウンド得点",
   "teamScore": "{{team}}: {{score}}点",
   "declarerBadge": "落札者",
   "contractUndecided": "落札者: 未決定",
