@@ -9,8 +9,10 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -553,9 +555,8 @@ function FoundationCell({
   placedBy = null,
   placedFlashKey = 0,
 }: FoundationCellProps) {
-  const cls = disabled
-    ? 'bg-ds-surface text-ds-text-muted border-ds-border-subtle'
-    : 'bg-ds-surface-elevated text-ds-text-primary border-ds-border-subtle hover:bg-ds-surface-elevated-hover';
+  const { cardWidth } = useCardDimensions();
+  const w = Math.round(cardWidth * 0.6);
   const collisionCls = collided ? 'animate-shake ring-2 ring-ds-error' : '';
   // The placement flash is a sibling overlay so we can remount *it* (via key)
   // to re-fire animate-pulse-once on back-to-back placements without
@@ -572,15 +573,22 @@ function FoundationCell({
         type="button"
         onClick={onClick}
         disabled={disabled}
-        className={`min-w-[3rem] rounded border px-2 py-2 text-sm ${cls} ${collisionCls}`}
+        className={`flex flex-col items-center rounded p-0.5 text-xs text-ds-text-muted ${collisionCls}`}
         aria-label={ariaLabel}
         data-testid={`nertz-foundation-${idx}`}
         data-collided={collided || undefined}
         data-placed-by={placedBy ?? undefined}
       >
-        <span className="block text-xs leading-none">F{idx}</span>
-        <span className="block text-base font-bold">{top ? `${suitSymbol(top.design)}${top.value}` : '—'}</span>
-        <span className="block text-xs">({size})</span>
+        <span className="block leading-none">F{idx}</span>
+        {top ? (
+          <AnimatedCard card={top} width={w} />
+        ) : (
+          <span
+            className="block rounded border border-dashed border-white/30"
+            style={{ width: w, height: Math.round(w * 1.4) }}
+          />
+        )}
+        <span className="block">({size})</span>
       </button>
       {flashOverlayClass && (
         // Remount the overlay (via key) on each new placement so the
@@ -605,20 +613,24 @@ interface CardButtonProps {
 }
 
 function CardButton({ card, label, selected, disabled, onClick }: CardButtonProps) {
-  const cls = selected
-    ? 'bg-ds-warning text-ds-text-on-accent border-ds-warning'
-    : disabled
-      ? 'bg-ds-surface text-ds-text-muted border-ds-border-subtle'
-      : 'bg-ds-surface-elevated text-ds-text-primary border-ds-border-subtle hover:bg-ds-surface-elevated-hover';
+  const { cardWidth } = useCardDimensions();
+  const w = Math.round(cardWidth * 0.6);
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`min-w-[3rem] px-2 py-2 rounded border text-sm ${cls}`}
+      className="flex flex-col items-center rounded p-0.5 text-xs text-ds-text-muted"
     >
-      <span className="block text-base font-bold">{card ? `${suitSymbol(card.design)}${card.value}` : '—'}</span>
-      <span className="block text-xs">{label}</span>
+      {card ? (
+        <AnimatedCard card={card} width={w} isSelected={selected} />
+      ) : (
+        <span
+          className="block rounded border border-dashed border-white/30"
+          style={{ width: w, height: Math.round(w * 1.4) }}
+        />
+      )}
+      <span className="block">{label}</span>
     </button>
   );
 }
@@ -633,6 +645,8 @@ interface TableauColumnProps {
 }
 
 function TableauColumn({ col, colIdx, selection, onSelectCard, onTarget, disabled }: TableauColumnProps) {
+  const { cardWidth } = useCardDimensions();
+  const w = Math.round(cardWidth * 0.6);
   if (col.length === 0) {
     return (
       <button
@@ -640,6 +654,7 @@ function TableauColumn({ col, colIdx, selection, onSelectCard, onTarget, disable
         onClick={onTarget}
         disabled={disabled}
         className="min-h-[4rem] rounded border border-dashed border-white/30 text-ds-text-muted text-xs"
+        style={{ width: w }}
       >
         —
       </button>
@@ -650,11 +665,6 @@ function TableauColumn({ col, colIdx, selection, onSelectCard, onTarget, disable
       {col.map((tc, i) => {
         const isSelected = selection?.kind === 'tableau' && selection.col === colIdx && selection.cardIndex === i;
         const isLast = i === col.length - 1;
-        const cls = isSelected
-          ? 'bg-ds-warning text-ds-text-on-accent border-ds-warning'
-          : disabled
-            ? 'bg-ds-surface text-ds-text-muted border-ds-border-subtle'
-            : 'bg-ds-surface-elevated text-ds-text-primary border-ds-border-subtle hover:bg-ds-surface-elevated-hover';
         // Dual-purpose click: the bottom card acts as a drop target when a
         // source is already selected (saves the user a second tap on an
         // empty drop zone), otherwise tapping any card selects it as the
@@ -665,29 +675,21 @@ function TableauColumn({ col, colIdx, selection, onSelectCard, onTarget, disable
             type="button"
             onClick={() => (isLast && selection && !isSelected ? onTarget() : onSelectCard(colIdx, i))}
             disabled={disabled || !tc.card}
-            className={`px-2 py-1 rounded border text-sm ${cls}`}
+            className="rounded"
           >
-            {tc.card ? `${suitSymbol(tc.card.design)}${tc.card.value}` : '?'}
+            {tc.card ? (
+              <AnimatedCard card={tc.card} width={w} isSelected={isSelected} />
+            ) : (
+              <span
+                className="block rounded border border-dashed border-white/30"
+                style={{ width: w, height: Math.round(w * 1.4) }}
+              />
+            )}
           </button>
         );
       })}
     </div>
   );
-}
-
-function suitSymbol(design: string): string {
-  switch (design) {
-    case 'SPADE':
-      return '♠';
-    case 'CLOVER':
-      return '♣';
-    case 'HEART':
-      return '♥';
-    case 'DIAMOND':
-      return '♦';
-    default:
-      return '?';
-  }
 }
 
 export type _NertzPagePlayerSnapshot = NertzPlayerData;
