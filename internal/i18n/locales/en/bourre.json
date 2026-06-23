@@ -1,6 +1,6 @@
 {
   "helpTitle": "Bourré",
-  "helpDecide": "  d [0-1]              Decide (1=play, 0=fold)",
+  "helpDecide": "  d [0-1]              Decide (1=play, 0=fold). Play and win no tricks = penalty; folding = none",
   "helpDraw": "  dr [idx...]          Discard & draw (empty = keep all)",
   "helpPlay": "  p [idx]              Play a card",
   "helpNext": "  n                    Next hand",
