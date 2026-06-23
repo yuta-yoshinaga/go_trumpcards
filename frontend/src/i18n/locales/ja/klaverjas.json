@@ -23,6 +23,7 @@
   "you": "あなた",
   "cpu": "CPU {{id}}",
   "yourTeam": "あなたのチーム",
+  "roem": { "title": "Roem(ボーナス)" },
   "team": {
     "a": "チームA",
     "b": "チームB"
