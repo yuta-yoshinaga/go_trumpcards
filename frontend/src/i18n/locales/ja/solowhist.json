@@ -37,6 +37,9 @@
   "nextRound": "次のラウンド",
   "target": "目標: {{points}}点",
   "bidPrompt": "入札してください（上回る入札のみ可）:",
+  "bidHighest": "現在の最高ビッド: {{bid}}（{{player}}）",
+  "bidNone": "まだ入札なし",
+  "bidTooLow": "現在の最高ビッドを上回る必要があります",
   "bid": {
     "pass": "パス",
     "solo": "ソロ",

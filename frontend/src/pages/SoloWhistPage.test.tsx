@@ -107,6 +107,23 @@ describe('SoloWhistPage', () => {
     expect(screen.getByTestId('bid-0')).toBeEnabled();
   });
 
+  it('shows the current highest bid and a reason tooltip on too-low bids', async () => {
+    mockExec.mockResolvedValue(makeSoloWhistState({ bids: [2, 0, 0, 0] }));
+    renderWithProviders(<SoloWhistPage />);
+    const info = await screen.findByTestId('sw-highest-bid');
+    expect(info).not.toHaveTextContent('まだ入札なし');
+    // Too-low bids carry a tooltip on the wrapping span; valid bids do not.
+    expect(screen.getByTestId('bid-wrap-1')).toHaveAttribute('title');
+    expect(screen.getByTestId('bid-1')).toHaveAttribute('aria-label');
+    expect(screen.getByTestId('bid-wrap-3')).not.toHaveAttribute('title');
+  });
+
+  it('shows "no bids yet" before anyone has bid', async () => {
+    mockExec.mockResolvedValue(makeSoloWhistState({ bids: [0, 0, 0, 0] }));
+    renderWithProviders(<SoloWhistPage />);
+    await waitFor(() => expect(screen.getByTestId('sw-highest-bid')).toHaveTextContent('まだ入札なし'));
+  });
+
   it('renders the play phase with the human cards and the declarer badge', async () => {
     mockExec.mockResolvedValue(playPhaseState);
     renderWithProviders(<SoloWhistPage />);
