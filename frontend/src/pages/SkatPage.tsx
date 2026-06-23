@@ -224,7 +224,7 @@ function SkatPageContent() {
                 <div className="text-sm mb-1">{t('skatLabel')}:</div>
                 <div className="flex gap-2" data-testid="skat-reveal">
                   {state.originalSkat.map((c, i) => (
-                    <AnimatedCard key={`skat-${i}`} card={c} width={cardWidth} />
+                    <AnimatedCard key={`skat-${i}`} card={c} width={cardWidth} dealDelay={i * 0.15} />
                   ))}
                 </div>
               </div>
