@@ -133,6 +133,25 @@ function SedmaPageContent() {
   const canPlay = isPlayPhase && isHumanTurn;
   const humanTeam = humanIdx % 2;
 
+  // One info-sidebar row per player, colour-coded by team (A = even ids = blue,
+  // B = odd ids = red), matching the trick display's ally/opponent relationship.
+  // Shared by the mobile (<details>) and desktop layouts.
+  const renderPlayerRow = (p: (typeof state.players)[number]) => {
+    const team = p.id % 2;
+    return (
+      <div
+        key={p.id}
+        data-testid={`sedma-player-${p.id}`}
+        data-team={team}
+        className={`text-ds-text-muted text-sm py-0.5 border-l-2 pl-1 ${
+          team === 0 ? 'border-ds-info' : 'border-ds-error'
+        }`}
+      >
+        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
+      </div>
+    );
+  };
+
   const handleManualReset = () => {
     hideActionLog();
     reset();
@@ -222,28 +241,15 @@ function SedmaPageContent() {
                   </div>
                 </div>
 
-                {/* Players: cards / tricks */}
+                {/* Players: cards / tricks, colour-coded by 2-vs-2 team. Shared renderer for
+                    both layouts so the team-colour logic lives in one place. */}
                 {isMobile ? (
                   <details className="mb-2 p-2 rounded bg-black/30">
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
-                    <div className="mt-1">
-                      {state.players.map((p) => (
-                        <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                          {t('tricks', { count: p.trickCount })}
-                        </div>
-                      ))}
-                    </div>
+                    <div className="mt-1">{state.players.map(renderPlayerRow)}</div>
                   </details>
                 ) : (
-                  <div className="mb-2 p-2 rounded bg-black/30">
-                    {state.players.map((p) => (
-                      <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                        {t('tricks', { count: p.trickCount })}
-                      </div>
-                    ))}
-                  </div>
+                  <div className="mb-2 p-2 rounded bg-black/30">{state.players.map(renderPlayerRow)}</div>
                 )}
 
                 {/* Round result */}
