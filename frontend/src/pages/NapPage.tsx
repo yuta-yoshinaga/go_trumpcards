@@ -154,10 +154,9 @@ function NapPageContent() {
 
   // The current highest (non-pass) bid; a new non-pass bid must beat it.
   const highestBid = Math.max(0, ...state.bids);
-  const highestBidderIdx = highestBid > 0 ? state.bids.indexOf(highestBid) : -1;
+  const highestBidder = highestBid > 0 ? state.players[state.bids.indexOf(highestBid)] : undefined;
   const highestBidLabelKey = BIDS.find((b) => b.value === highestBid)?.key;
-  const highestBidderName =
-    highestBidderIdx >= 0 ? playerName(highestBidderIdx, state.players[highestBidderIdx]?.isHuman === true) : '';
+  const highestBidderName = highestBidder ? playerName(highestBidder.id, highestBidder.isHuman) : '';
 
   const contractName =
     state.declarerIdx >= 0 ? t(`contractName.${CONTRACT_KEYS[state.contract] ?? 'pass'}`) : t('contractUndecided');
