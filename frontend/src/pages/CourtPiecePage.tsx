@@ -318,6 +318,9 @@ function CourtPiecePageContent() {
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="courtpiece-action-buttons">
               {isTrumpPhase && isHumanTrumpTurn && (
                 <>
+                  <span className="text-xs font-bold text-ds-warning self-center mr-1" data-testid="cp-trump-status">
+                    {t('trumpUndeclared')}
+                  </span>
                   <span className="text-xs text-ds-text-muted self-center mr-1">{t('trumpPrompt')}</span>
                   {TRUMP_SUIT_OPTIONS.map((s) => (
                     <button
@@ -326,6 +329,7 @@ function CourtPiecePageContent() {
                       className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
                       onClick={() => handleDeclareTrump(s.value)}
                       disabled={loading}
+                      aria-label={t('declareTrumpAria', { suit: t(s.key) })}
                       data-testid={`trump-${s.value}`}
                     >
                       {t(s.key)}

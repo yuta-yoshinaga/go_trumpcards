@@ -39,6 +39,8 @@
   "nextRound": "次のラウンド",
   "target": "目標: {{points}}ポイント",
   "trumpPrompt": "切り札スートを宣言してください:",
+  "trumpUndeclared": "切り札未宣言",
+  "declareTrumpAria": "{{suit}}を切り札に宣言",
   "suit": {
     "spade": "♠ スペード",
     "club": "♣ クラブ",
