@@ -163,9 +163,11 @@ function PiquetPageContent() {
             {human.cards.map((c, i) => {
               const selected = selectedDiscards.includes(i);
               const highlighted = activeHighlight?.cardIndices.includes(i) ?? false;
+              // Highlight ring lives on the AnimatedCard wrapper so it tracks the lift; the
+              // selection lift/glow is driven by AnimatedCard's isSelected (Framer Motion).
               const ringClass = highlighted
                 ? activeHighlight?.won
-                  ? 'ring-2 ring-ds-success -translate-y-1'
+                  ? 'ring-2 ring-ds-success'
                   : 'ring-2 ring-ds-error'
                 : '';
               const handlePlay = () => game.handlePlay(i);
@@ -175,11 +177,11 @@ function PiquetPageContent() {
                   key={`hand-${i}-${c.design}-${c.value}`}
                   type="button"
                   aria-pressed={humanCanExchange ? selected : undefined}
-                  className={`rounded transition-transform ${selected ? 'ring-2 ring-ds-warning -translate-y-1' : ''} ${ringClass}`}
+                  className="rounded"
                   onClick={handleClick}
                   disabled={handleClick == null}
                 >
-                  <AnimatedCard card={c} width={cardWidth} />
+                  <AnimatedCard card={c} width={cardWidth} isSelected={selected} wrapperClassName={ringClass} />
                 </button>
               );
             })}
