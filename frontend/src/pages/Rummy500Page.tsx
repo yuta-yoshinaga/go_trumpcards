@@ -92,8 +92,9 @@ function Rummy500PageContent() {
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
   // The lay-off destination is chosen solely by clicking a meld on the board above; null
-  // means nothing is selected yet, so the Lay off button stays disabled.
-  const [layoffTarget, setLayoffTarget] = useState<{ owner: number; meldIdx: number } | null>(null);
+  // means nothing is selected yet, so the Lay off button stays disabled. The owner's
+  // display name is captured here (where isHuman is in scope) for the footer label.
+  const [layoffTarget, setLayoffTarget] = useState<{ owner: number; meldIdx: number; ownerName: string } | null>(null);
 
   const phaseNames = usePhaseNames('rummy500', RUMMY500_PHASE_KEYS);
 
@@ -220,7 +221,13 @@ function Rummy500PageContent() {
                         <button
                           type="button"
                           key={`meld-${p.id}-${mIdx}`}
-                          onClick={() => setLayoffTarget({ owner: p.id, meldIdx: mIdx })}
+                          onClick={() =>
+                            setLayoffTarget((prev) =>
+                              prev?.owner === p.id && prev.meldIdx === mIdx
+                                ? null
+                                : { owner: p.id, meldIdx: mIdx, ownerName: playerName(p.id, p.isHuman) },
+                            )
+                          }
                           aria-pressed={isLayoffTarget}
                           aria-label={t('layoffMeldTarget', { owner: playerName(p.id, p.isHuman), idx: mIdx })}
                           data-testid={`layoff-meld-${p.id}-${mIdx}`}
@@ -319,20 +326,20 @@ function Rummy500PageContent() {
               <div className="flex items-center gap-1 text-xs text-ds-text-muted">
                 <span data-testid="r5-layoff-target">
                   {layoffTarget
-                    ? t('layoffTargetLabel', {
-                        owner: playerName(layoffTarget.owner, state.players[layoffTarget.owner]?.isHuman ?? false),
-                        idx: layoffTarget.meldIdx,
-                      })
+                    ? t('layoffTargetLabel', { owner: layoffTarget.ownerName, idx: layoffTarget.meldIdx })
                     : t('layoffTargetNone')}
                 </span>
                 <button
                   type="button"
                   className={btnSecondary}
-                  onClick={() => {
-                    if (!layoffTarget) return;
-                    handleLayoff(layoffTarget.owner, layoffTarget.meldIdx);
-                    setLayoffTarget(null);
-                  }}
+                  onClick={
+                    layoffTarget
+                      ? () => {
+                          handleLayoff(layoffTarget.owner, layoffTarget.meldIdx);
+                          setLayoffTarget(null);
+                        }
+                      : undefined
+                  }
                   disabled={loading || layoffTarget === null || selectedCardIndices.length !== 1}
                 >
                   {t('layoffButton')}

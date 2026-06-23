@@ -153,6 +153,14 @@ describe('Rummy500Page', () => {
     await waitFor(() => expect(screen.getByTestId('layoff-meld-1-0')).toHaveAttribute('aria-pressed', 'true'));
     // The selected meld is now described in the footer text.
     expect(screen.getByTestId('r5-layoff-target')).toHaveTextContent('#0');
+
+    // Clicking the same meld again toggles the selection off.
+    fireEvent.click(screen.getByTestId('layoff-meld-1-0'));
+    await waitFor(() => expect(screen.getByTestId('layoff-meld-1-0')).toHaveAttribute('aria-pressed', 'false'));
+    expect(screen.getByTestId('r5-layoff-target')).toHaveTextContent(/上のメルドをクリック/);
+    // Re-select for the lay-off flow below.
+    fireEvent.click(screen.getByTestId('layoff-meld-1-0'));
+    await waitFor(() => expect(screen.getByTestId('layoff-meld-1-0')).toHaveAttribute('aria-pressed', 'true'));
     // Still disabled until exactly one hand card is chosen.
     expect(screen.getByRole('button', { name: 'レイオフ' })).toBeDisabled();
 
