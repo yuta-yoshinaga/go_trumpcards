@@ -93,6 +93,13 @@ describe('FiveHundredPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bidKind: 1, bidTricks: 6, bidSuit: 1 }));
   });
 
+  it('shows a visible label associated with the trick-count selector', async () => {
+    renderWithProviders(<FiveHundredPage />);
+    const label = await screen.findByTestId('fh-tricks-label');
+    expect(label).toHaveTextContent('トリック数を選択');
+    expect(label).toHaveAttribute('for', 'fh-bid-tricks');
+  });
+
   it('shows the Avondale score under each bid button (6 = ♠40 / ♥100 / NT120)', async () => {
     renderWithProviders(<FiveHundredPage />);
     expect(await screen.findByTestId('fh-bid-suit-1')).toHaveTextContent('40'); // 6♠
@@ -105,7 +112,7 @@ describe('FiveHundredPage', () => {
   it('updates suit/NT scores live when the trick count changes (7♠=140, 7NT=220)', async () => {
     renderWithProviders(<FiveHundredPage />);
     await screen.findByTestId('fh-bid-suit-1');
-    fireEvent.change(screen.getByLabelText('トリック数'), { target: { value: '7' } });
+    fireEvent.change(screen.getByLabelText(/トリック数を選択/), { target: { value: '7' } });
     expect(screen.getByTestId('fh-bid-suit-1')).toHaveTextContent('140'); // 7♠
     expect(screen.getByTestId('fh-bid-nt')).toHaveTextContent('220'); // 7NT
   });

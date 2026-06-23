@@ -339,8 +339,15 @@ function FiveHundredPageContent() {
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="fh-actions">
               {isHumanBidTurn && (
                 <>
+                  <label
+                    htmlFor="fh-bid-tricks"
+                    className="text-xs text-ds-text-muted self-center"
+                    data-testid="fh-tricks-label"
+                  >
+                    {t('selectTricks')}
+                  </label>
                   <select
-                    aria-label={t('tricksLabel')}
+                    id="fh-bid-tricks"
                     value={bidTricks}
                     onChange={(e) => setBidTricks(Number.parseInt(e.target.value, 10))}
                     className="rounded px-2 py-2 text-sm text-ds-text bg-ds-surface"
