@@ -137,6 +137,24 @@ function ManillePageContent() {
   const humanTeam = humanIdx % 2;
   const trumpSymbol = SUIT_SYMBOLS[state.trumpSuit] ?? '?';
 
+  // One info-sidebar row per player; same-team members are emphasised. Shared by the
+  // mobile (<details>) and desktop layouts so the highlight logic lives in one place.
+  const renderPlayerRow = (p: (typeof state.players)[number]) => {
+    const isMyTeam = p.id % 2 === humanTeam;
+    return (
+      <div
+        key={p.id}
+        data-testid={`manille-player-${p.id}`}
+        data-own-team={isMyTeam ? 'true' : undefined}
+        className={`text-sm py-0.5 ${
+          isMyTeam ? 'font-bold text-ds-text-primary border-l-2 border-ds-accent pl-1' : 'text-ds-text-muted'
+        }`}
+      >
+        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
+      </div>
+    );
+  };
+
   const handleManualReset = () => {
     hideActionLog();
     reset();
@@ -227,52 +245,15 @@ function ManillePageContent() {
                   </div>
                 </div>
 
-                {/* Players: cards / tricks */}
+                {/* Players: cards / tricks. Same-team members (p.id % 2 === humanTeam) are
+                    emphasised so the 2-vs-2 partnership is visible. Shared by both layouts. */}
                 {isMobile ? (
                   <details className="mb-2 p-2 rounded bg-black/30">
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
-                    <div className="mt-1">
-                      {state.players.map((p) => {
-                        const isMyTeam = p.id % 2 === humanTeam;
-                        return (
-                          <div
-                            key={p.id}
-                            data-testid={`manille-player-${p.id}`}
-                            data-own-team={isMyTeam ? 'true' : undefined}
-                            className={`text-sm py-0.5 ${
-                              isMyTeam
-                                ? 'font-bold text-ds-text-primary border-l-2 border-ds-accent pl-1'
-                                : 'text-ds-text-muted'
-                            }`}
-                          >
-                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                            {t('tricks', { count: p.trickCount })}
-                          </div>
-                        );
-                      })}
-                    </div>
+                    <div className="mt-1">{state.players.map(renderPlayerRow)}</div>
                   </details>
                 ) : (
-                  <div className="mb-2 p-2 rounded bg-black/30">
-                    {state.players.map((p) => {
-                      const isMyTeam = p.id % 2 === humanTeam;
-                      return (
-                        <div
-                          key={p.id}
-                          data-testid={`manille-player-${p.id}`}
-                          data-own-team={isMyTeam ? 'true' : undefined}
-                          className={`text-sm py-0.5 ${
-                            isMyTeam
-                              ? 'font-bold text-ds-text-primary border-l-2 border-ds-accent pl-1'
-                              : 'text-ds-text-muted'
-                          }`}
-                        >
-                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                          {t('tricks', { count: p.trickCount })}
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <div className="mb-2 p-2 rounded bg-black/30">{state.players.map(renderPlayerRow)}</div>
                 )}
 
                 {/* Round result */}
