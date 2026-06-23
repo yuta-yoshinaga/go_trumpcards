@@ -63,7 +63,9 @@ describe('DoubleKlondikePage', () => {
     renderWithProviders(<DoubleKlondikePage />);
     // makeState seeds a face-down card at tableau[1][0].
     await waitFor(() => expect(screen.getByTestId('column-1')).toBeInTheDocument());
-    expect(screen.getAllByAltText('カード裏面').length).toBeGreaterThan(0);
+    // Assert by the locale-independent card-back image src.
+    const cardBacks = screen.queryAllByRole('img').filter((img) => img.getAttribute('src') === '/images/z01.png');
+    expect(cardBacks.length).toBeGreaterThan(0);
     expect(screen.queryByText('##')).not.toBeInTheDocument();
   });
 
