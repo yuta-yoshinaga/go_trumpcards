@@ -232,22 +232,46 @@ function ManillePageContent() {
                   <details className="mb-2 p-2 rounded bg-black/30">
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
                     <div className="mt-1">
-                      {state.players.map((p) => (
-                        <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                          {t('tricks', { count: p.trickCount })}
-                        </div>
-                      ))}
+                      {state.players.map((p) => {
+                        const isMyTeam = p.id % 2 === humanTeam;
+                        return (
+                          <div
+                            key={p.id}
+                            data-testid={`manille-player-${p.id}`}
+                            data-own-team={isMyTeam ? 'true' : undefined}
+                            className={`text-sm py-0.5 ${
+                              isMyTeam
+                                ? 'font-bold text-ds-text-primary border-l-2 border-ds-accent pl-1'
+                                : 'text-ds-text-muted'
+                            }`}
+                          >
+                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                            {t('tricks', { count: p.trickCount })}
+                          </div>
+                        );
+                      })}
                     </div>
                   </details>
                 ) : (
                   <div className="mb-2 p-2 rounded bg-black/30">
-                    {state.players.map((p) => (
-                      <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                        {t('tricks', { count: p.trickCount })}
-                      </div>
-                    ))}
+                    {state.players.map((p) => {
+                      const isMyTeam = p.id % 2 === humanTeam;
+                      return (
+                        <div
+                          key={p.id}
+                          data-testid={`manille-player-${p.id}`}
+                          data-own-team={isMyTeam ? 'true' : undefined}
+                          className={`text-sm py-0.5 ${
+                            isMyTeam
+                              ? 'font-bold text-ds-text-primary border-l-2 border-ds-accent pl-1'
+                              : 'text-ds-text-muted'
+                          }`}
+                        >
+                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                          {t('tricks', { count: p.trickCount })}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
 

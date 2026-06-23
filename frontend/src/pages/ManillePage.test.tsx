@@ -94,4 +94,14 @@ describe('ManillePage', () => {
     await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
   });
+
+  it('highlights the human player and their partner (same team) in the player list', async () => {
+    renderWithProviders(<ManillePage />);
+    // Human is player 0 → team 0. Even ids (0, 2) are own team; odd ids (1, 3) are opponents.
+    await waitFor(() => expect(screen.getByTestId('manille-player-0')).toBeInTheDocument());
+    expect(screen.getByTestId('manille-player-0')).toHaveAttribute('data-own-team', 'true');
+    expect(screen.getByTestId('manille-player-2')).toHaveAttribute('data-own-team', 'true');
+    expect(screen.getByTestId('manille-player-1')).not.toHaveAttribute('data-own-team');
+    expect(screen.getByTestId('manille-player-3')).not.toHaveAttribute('data-own-team');
+  });
 });
