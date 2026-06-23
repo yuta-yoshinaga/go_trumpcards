@@ -107,6 +107,15 @@ describe('PenguinPage', () => {
     expect(fourElements.length).toBeGreaterThanOrEqual(1);
   });
 
+  it('shows a base-rank legend near the foundation with the wraparound rule', async () => {
+    renderWithProviders(<PenguinPage />);
+    const legend = await screen.findByTestId('pg-base-rank-legend');
+    // baseRank 4 → starts at 4, ends at 3 (rank below).
+    expect(legend).toHaveTextContent('4');
+    expect(legend).toHaveTextContent('3');
+    expect(legend).toHaveTextContent(/折り返し/);
+  });
+
   it('renders foundation with cards', async () => {
     mockExec.mockResolvedValue(withFoundationState);
     renderWithProviders(<PenguinPage />);

@@ -13,6 +13,7 @@
   "undo": "Undo",
   "moveCount": "Moves",
   "baseRank": "Base Rank",
+  "baseRankLegend": "This deal starts at {{rank}}; the rank below it ({{prev}}) comes last (K wraps to A)",
   "empty": "Empty",
   "hintAvailable": "Hint",
   "foundationAriaLabel": "{{suit}} Foundation ({{cardCount}} cards)",
