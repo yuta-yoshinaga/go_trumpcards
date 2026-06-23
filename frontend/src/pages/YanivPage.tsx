@@ -274,13 +274,10 @@ function YanivPageContent() {
                 {tc('player.you')} · {t('label.score')}: {human.score} · {t('label.hand')}:{' '}
                 <span
                   data-testid="hand-total-badge"
-                  className={
-                    human.handTotal <= 5
-                      ? 'inline-block rounded px-1.5 font-bold bg-ds-success text-white'
-                      : human.handTotal <= 10
-                        ? 'inline-block rounded px-1.5 font-bold bg-ds-warning/40'
-                        : 'inline-block rounded px-1.5 font-bold'
-                  }
+                  title={t('handTotalHelp')}
+                  className={`inline-block rounded px-1.5 font-bold ${
+                    human.handTotal <= 5 ? 'bg-ds-success text-white' : human.handTotal <= 10 ? 'bg-ds-warning/40' : ''
+                  }`}
                 >
                   {human.handTotal}
                 </span>
