@@ -556,7 +556,7 @@ function FoundationCell({
   placedFlashKey = 0,
 }: FoundationCellProps) {
   const { cardWidth } = useCardDimensions();
-  const w = Math.round(cardWidth * 0.6);
+  const w = Math.max(44, Math.round(cardWidth * 0.6));
   const collisionCls = collided ? 'animate-shake ring-2 ring-ds-error' : '';
   // The placement flash is a sibling overlay so we can remount *it* (via key)
   // to re-fire animate-pulse-once on back-to-back placements without
@@ -573,7 +573,7 @@ function FoundationCell({
         type="button"
         onClick={onClick}
         disabled={disabled}
-        className={`flex flex-col items-center rounded p-0.5 text-xs text-ds-text-muted ${collisionCls}`}
+        className={`flex flex-col items-center rounded p-0.5 text-xs text-ds-text-muted disabled:opacity-50 ${collisionCls}`}
         aria-label={ariaLabel}
         data-testid={`nertz-foundation-${idx}`}
         data-collided={collided || undefined}
@@ -614,13 +614,13 @@ interface CardButtonProps {
 
 function CardButton({ card, label, selected, disabled, onClick }: CardButtonProps) {
   const { cardWidth } = useCardDimensions();
-  const w = Math.round(cardWidth * 0.6);
+  const w = Math.max(44, Math.round(cardWidth * 0.6));
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="flex flex-col items-center rounded p-0.5 text-xs text-ds-text-muted"
+      className="flex flex-col items-center rounded p-0.5 text-xs text-ds-text-muted disabled:opacity-50"
     >
       {card ? (
         <AnimatedCard card={card} width={w} isSelected={selected} />
@@ -646,7 +646,7 @@ interface TableauColumnProps {
 
 function TableauColumn({ col, colIdx, selection, onSelectCard, onTarget, disabled }: TableauColumnProps) {
   const { cardWidth } = useCardDimensions();
-  const w = Math.round(cardWidth * 0.6);
+  const w = Math.max(44, Math.round(cardWidth * 0.6));
   if (col.length === 0) {
     return (
       <button
@@ -675,7 +675,7 @@ function TableauColumn({ col, colIdx, selection, onSelectCard, onTarget, disable
             type="button"
             onClick={() => (isLast && selection && !isSelected ? onTarget() : onSelectCard(colIdx, i))}
             disabled={disabled || !tc.card}
-            className="rounded"
+            className="rounded disabled:opacity-50"
           >
             {tc.card ? (
               <AnimatedCard card={tc.card} width={w} isSelected={isSelected} />

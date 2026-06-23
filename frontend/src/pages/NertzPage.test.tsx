@@ -116,6 +116,41 @@ describe('NertzPage', () => {
     expect(screen.getByRole('button', { name: '35' })).toBeInTheDocument();
   });
 
+  it('selects a tableau card on click and renders empty columns as placeholders', async () => {
+    const foundations = Array.from({ length: 8 }, () => ({ suit: -1, size: 0, top: null }));
+    // One foundation carries a top card (covers the foundation card-image branch).
+    foundations[0] = { suit: 3, size: 1, top: { design: 'HEART', value: 1 } } as (typeof foundations)[number];
+    const withEmptyCol = {
+      ...playingState,
+      foundations,
+      players: [
+        {
+          ...playingState.players[0],
+          // A selectable card, an empty column, and a face-down (null) cell.
+          tableau: [
+            [{ card: { design: 'SPADE' as const, value: 5 }, faceUp: true }],
+            [],
+            [{ card: null, faceUp: false }],
+            [],
+          ],
+        },
+        playingState.players[1],
+      ],
+    };
+    mockExec.mockResolvedValue(withEmptyCol);
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    const card = await screen.findByAltText('♠ 5');
+    // Clicking selects the card (re-renders the AnimatedCard with isSelected=true).
+    fireEvent.click(card);
+    expect(screen.getByAltText('♠ 5')).toBeInTheDocument();
+    // The foundation with a top card shows its image (♥ A).
+    expect(screen.getByAltText('♥ A')).toBeInTheDocument();
+  });
+
   it('renders per-player score progress bars scaled to the target score', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
