@@ -39,6 +39,8 @@
   "nextRound": "Next Round",
   "target": "Target: {{points}} pts",
   "trumpPrompt": "Declare a trump suit:",
+  "trumpUndeclared": "Trump not yet declared",
+  "declareTrumpAria": "Declare {{suit}} as trump",
   "suit": {
     "spade": "♠ Spades",
     "club": "♣ Clubs",

@@ -88,6 +88,14 @@ describe('CourtPiecePage', () => {
     expect(screen.getByTestId('trump-4')).toBeInTheDocument();
   });
 
+  it('shows the undeclared status and accessible labels on suit buttons during declaration', async () => {
+    renderWithProviders(<CourtPiecePage />);
+    await waitFor(() => expect(screen.getByTestId('cp-trump-status')).toBeInTheDocument());
+    expect(screen.getByTestId('cp-trump-status')).toHaveTextContent('未宣言');
+    // Each suit button carries a declare aria-label.
+    expect(screen.getByTestId('trump-1')).toHaveAttribute('aria-label');
+  });
+
   it('dispatches a trump declaration when a suit button is clicked', async () => {
     renderWithProviders(<CourtPiecePage />);
     const trump3 = await screen.findByTestId('trump-3');
