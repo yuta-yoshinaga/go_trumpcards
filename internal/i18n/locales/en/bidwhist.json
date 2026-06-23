@@ -24,7 +24,7 @@
   "dirDowntown": "Downtown",
   "dirNoTrump": "No Trump",
   "promptBid": "{{name}}'s bid",
-  "promptBidHelp": "b <tricks> <dir> to bid / pa to pass",
+  "promptBidHelp": "b <tricks> <dir> to bid (tricks 1-7) / pa to pass",
   "promptTrump": "Declare a trump suit",
   "promptTrumpHelp": "t <suit> (1=S 2=C 3=H 4=D)",
   "promptKittyExchange": "The kitty has been added to your hand. Discard six cards",

@@ -19,6 +19,7 @@
   "currentTrick": "現在のトリック",
   "trickEmpty": "(まだカードがありません)",
   "tricksLabel": "目標トリック数",
+  "selectTricks": "トリック数を選択 (1-7):",
   "dirUptown": "アップタウン",
   "dirDowntown": "ダウンタウン",
   "dirNoTrump": "ノートランプ",
