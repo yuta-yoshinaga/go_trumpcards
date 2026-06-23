@@ -87,6 +87,18 @@ describe('TutePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('tute'));
   });
 
+  it('groups declarations in a labelled fieldset and describes the Tute button', async () => {
+    mockExec.mockResolvedValue(tuteDeclState);
+    renderWithProviders(<TutePage />);
+    const group = await screen.findByTestId('tute-declarations');
+    expect(group.tagName).toBe('FIELDSET');
+    // The <legend> names the group (no redundant aria-label).
+    expect(group.querySelector('legend')).toHaveTextContent('宣言できる役');
+    const tuteBtn = screen.getByTestId('tute-declare-button');
+    expect(tuteBtn).toHaveAttribute('aria-describedby', 'tute-help-desc');
+    expect(document.getElementById('tute-help-desc')).toHaveTextContent(/Tute/);
+  });
+
   it('does not show declaration buttons when not allowed', async () => {
     renderWithProviders(<TutePage />);
     await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
