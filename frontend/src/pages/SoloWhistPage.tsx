@@ -352,8 +352,11 @@ function SoloWhistPageContent() {
                 <>
                   <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>
                   <span className="text-xs text-ds-text-muted self-center mr-1" data-testid="sw-highest-bid">
-                    {highestBid > 0 && highestBidLabelKey
-                      ? t('bidHighest', { bid: t(highestBidLabelKey), player: highestBidderName })
+                    {highestBid > 0
+                      ? t('bidHighest', {
+                          bid: highestBidLabelKey ? t(highestBidLabelKey) : highestBid,
+                          player: highestBidderName,
+                        })
                       : t('bidNone')}
                   </span>
                   {BIDS.map((b) => {
