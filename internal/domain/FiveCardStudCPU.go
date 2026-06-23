@@ -74,6 +74,7 @@ func (s *FiveCardStud) cpuDecide(idx int) (int, int) {
 		if maxBetAmount > 0 && amount > maxBetAmount {
 			amount = maxBetAmount
 		}
+		action, amount = s.legalizeClampedAction(action, amount, callAmount)
 		if maxRaises > 0 && s.raiseCount >= maxRaises {
 			if action == FiveCardStudActionRaise || action == FiveCardStudActionBet {
 				if callAmount > 0 {
@@ -120,6 +121,7 @@ func (s *FiveCardStud) cpuDecide(idx int) (int, int) {
 	if maxBetAmount > 0 && amount > maxBetAmount {
 		amount = maxBetAmount
 	}
+	action, amount = s.legalizeClampedAction(action, amount, callAmount)
 	if maxRaises > 0 && s.raiseCount >= maxRaises {
 		if action == FiveCardStudActionRaise || action == FiveCardStudActionBet {
 			if callAmount > 0 {
@@ -129,6 +131,23 @@ func (s *FiveCardStud) cpuDecide(idx int) (int, int) {
 		}
 	}
 	return action, amount
+}
+
+// legalizeClampedAction demotes an aggressive action whose amount was clamped below the
+// legal minimum to a legal alternative. In pot-limit games the pot-size cap
+// (maxBetAmount = pot + lastBet) can fall below the table minimum bet/raise when the pot
+// is small, which would otherwise produce an illegal "bet below the minimum" action. In
+// that case the CPU calls when facing a bet, or checks when opening.
+func (s *FiveCardStud) legalizeClampedAction(action, amount, callAmount int) (int, int) {
+	belowMin := (action == FiveCardStudActionBet && amount < s.currentBetSize()) ||
+		(action == FiveCardStudActionRaise && amount < s.minRaise)
+	if !belowMin {
+		return action, amount
+	}
+	if callAmount > 0 {
+		return FiveCardStudActionCall, 0
+	}
+	return FiveCardStudActionCheck, 0
 }
 
 // evalThirdStreetStrength 開始ストリートのハンド強度評価 (0-100)

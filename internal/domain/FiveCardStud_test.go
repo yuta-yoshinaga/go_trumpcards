@@ -1287,6 +1287,39 @@ func TestFiveCardStud_FullCPUGame_PotLimit(t *testing.T) {
 	}
 }
 
+func TestFiveCardStud_legalizeClampedAction(t *testing.T) {
+	cfg := DefaultFiveCardStudConfig() // SmallBet 5, BigBet 10
+	// Second/third street → the minimum bet is SmallBet (5).
+	s := &FiveCardStud{config: cfg, phase: FiveCardStudPhaseSecondStreet, minRaise: 5}
+
+	// A bet clamped below the minimum (pot-limit small-pot case) becomes a check when opening.
+	action, amount := s.legalizeClampedAction(FiveCardStudActionBet, 3, 0)
+	assert.Equal(t, FiveCardStudActionCheck, action)
+	assert.Equal(t, 0, amount)
+
+	// A bet clamped below the minimum while facing a wager becomes a call.
+	action, _ = s.legalizeClampedAction(FiveCardStudActionBet, 3, 4)
+	assert.Equal(t, FiveCardStudActionCall, action)
+
+	// A legal bet (>= SmallBet) is left untouched.
+	action, amount = s.legalizeClampedAction(FiveCardStudActionBet, 5, 0)
+	assert.Equal(t, FiveCardStudActionBet, action)
+	assert.Equal(t, 5, amount)
+
+	// A raise clamped below the minimum raise becomes a call when facing a wager.
+	action, _ = s.legalizeClampedAction(FiveCardStudActionRaise, 2, 4)
+	assert.Equal(t, FiveCardStudActionCall, action)
+
+	// A legal raise (>= minRaise) is left untouched.
+	action, amount = s.legalizeClampedAction(FiveCardStudActionRaise, 5, 4)
+	assert.Equal(t, FiveCardStudActionRaise, action)
+	assert.Equal(t, 5, amount)
+
+	// Non-aggressive actions pass through unchanged.
+	action, _ = s.legalizeClampedAction(FiveCardStudActionFold, 0, 4)
+	assert.Equal(t, FiveCardStudActionFold, action)
+}
+
 func TestFiveCardStud_FullCPUGame_Tournament(t *testing.T) {
 	cfg := DefaultFiveCardStudConfig()
 	cfg.TableSize = 3
