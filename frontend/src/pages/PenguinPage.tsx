@@ -315,15 +315,6 @@ function PenguinPageContent() {
 
               {/* Foundation piles */}
               <div className="flex flex-col items-center">
-                <div
-                  className="text-game-text-muted text-[10px] mb-1 max-w-[12rem] text-center"
-                  data-testid="pg-base-rank-legend"
-                >
-                  {t('baseRankLegend', {
-                    rank: baseRankLabel(state.baseRank),
-                    prev: prevRankLabel(state.baseRank),
-                  })}
-                </div>
                 <div className="flex gap-2" data-tutorial="pg-foundation">
                   {state.foundation.map((pile: Card[], idx: number) => {
                     const foundationZone: PenguinMoveZone = { zone: 'foundation', col: idx };
@@ -371,6 +362,15 @@ function PenguinPageContent() {
                         </DropZone>
                       </div>
                     );
+                  })}
+                </div>
+                <div
+                  className="text-game-text-muted text-[10px] mt-1 max-w-[12rem] text-center"
+                  data-testid="pg-base-rank-legend"
+                >
+                  {t('baseRankLegend', {
+                    rank: baseRankLabel(state.baseRank),
+                    prev: prevRankLabel(state.baseRank),
                   })}
                 </div>
               </div>
