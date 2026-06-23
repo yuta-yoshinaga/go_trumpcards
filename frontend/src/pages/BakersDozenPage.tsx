@@ -302,14 +302,22 @@ function BakersDozenPageContent() {
               {state.tableau.map((col, colIdx) => {
                 const tableauColZone: BakersDozenMoveZone = { zone: 'tableau', col: colIdx };
                 const isColumnSelected = selectedTableauCol === colIdx;
+                // A column with a single card is one move away from being emptied — and in
+                // Baker's Dozen an empty column can never be refilled. Mark it persistently
+                // (before any selection) so the player can plan around it.
+                const isOneCardCol = col.length === 1;
                 return (
                   <div
                     key={`col-${colIdx.toString()}`}
                     ref={isColumnSelected ? selectedColRef : null}
                     // On mobile keep each column at its computed width and let the row scroll;
                     // on desktop the columns flex to fill the available width as before.
-                    className={isMobile ? 'shrink-0' : 'flex-1 min-w-0'}
+                    className={`${isMobile ? 'shrink-0' : 'flex-1 min-w-0'}${
+                      isOneCardCol ? ' rounded ring-1 ring-ds-warning/40 ring-dashed' : ''
+                    }`}
                     style={isMobile ? { width: bd.cw } : undefined}
+                    title={isOneCardCol ? t('lastCardWarning') : undefined}
+                    data-testid={isOneCardCol ? `bd-onecard-col-${colIdx}` : undefined}
                   >
                     <DropZone
                       isDropTarget={dnd.isDropTarget(tableauColZone)}
