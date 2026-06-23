@@ -9,6 +9,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -19,8 +20,9 @@ import { useShitheadGame } from '../hooks/useShitheadGame';
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { Card, CardDesign, ShitheadConfig, ShitheadResponse } from '../types/card';
+import type { Card, ShitheadConfig, ShitheadResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseShitheadCommand, SHITHEAD_HELP } from '../utils/cli/commands/shitheadCommands';
 import { formatShitheadState } from '../utils/cli/formatters/shitheadFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -60,7 +62,7 @@ function ShitheadPageContent() {
     useGamePageSetup('shithead');
   const { state, loading, error, selectedCardIndices, toggleCard, handlePlay, handlePickup, retry, dispatch } =
     useShitheadGame();
-  const { isMobile: _isMobile } = useCardDimensions();
+  const { cardWidth } = useCardDimensions();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('shithead', state);
   const cliMode = useCliMode('shithead');
   const cliConfig: CliGameConfig<ShitheadResponse, Parameters<typeof shitheadApi.exec>> = useMemo(
@@ -169,7 +171,11 @@ function ShitheadPageContent() {
                     '—'
                   ) : (
                     <>
-                      <span>{describeTopCard(state.discardPile)}</span>
+                      <AnimatedCard
+                        card={state.discardPile[state.discardPile.length - 1]}
+                        width={Math.round(cardWidth * 0.7)}
+                      />
+                      <span className="sr-only">{cardAlt(state.discardPile[state.discardPile.length - 1])}</span>
                       {(() => {
                         const topValue = state.discardPile[state.discardPile.length - 1]?.value ?? 0;
                         const badge = magicLookup.badgeFor(topValue);
@@ -291,29 +297,6 @@ function ShitheadPageContent() {
   );
 }
 
-/** Returns a textual description of the top discard card. */
-function describeTopCard(pile: Card[]): string {
-  const top = pile[pile.length - 1];
-  if (!top) return '—';
-  return `${suitSymbol(top.design)}${top.value}`;
-}
-
-/** Returns a Unicode suit symbol for the given suit identifier. */
-function suitSymbol(design: CardDesign): string {
-  switch (design) {
-    case 'SPADE':
-      return '♠';
-    case 'CLOVER':
-      return '♣';
-    case 'HEART':
-      return '♥';
-    case 'DIAMOND':
-      return '♦';
-    default:
-      return '?';
-  }
-}
-
 interface CardRowProps {
   label: string;
   cards: Card[];
@@ -353,19 +336,15 @@ function buildMagicLookup(config: ShitheadConfig, t: (key: string) => string): M
   };
 }
 
-/** Row of selectable cards with index labels. */
+/** Row of selectable cards rendered as real card images. */
 function CardRow({ label, cards, selectable, selected, onToggle, magic, rowKey }: CardRowProps) {
+  const { cardWidth } = useCardDimensions();
   return (
     <div className="space-y-1">
       <div className="text-xs uppercase tracking-wide text-ds-text-muted">{label}</div>
       <div className="flex flex-wrap gap-2">
         {cards.map((c, i) => {
           const isSelected = selected.includes(i);
-          const cls = isSelected
-            ? 'bg-ds-warning text-ds-text-on-accent border-ds-warning'
-            : selectable
-              ? 'bg-ds-surface-elevated text-ds-text-primary border-ds-border-subtle hover:bg-ds-surface-elevated-hover'
-              : 'bg-ds-surface text-ds-text-muted border-ds-border-subtle';
           const badge = magic.badgeFor(c.value);
           const title = magic.titleFor(c.value);
           return (
@@ -375,11 +354,14 @@ function CardRow({ label, cards, selectable, selected, onToggle, magic, rowKey }
               disabled={!selectable}
               onClick={() => onToggle(i)}
               title={title || undefined}
+              aria-label={cardAlt(c)}
+              aria-pressed={selectable ? isSelected : undefined}
               data-magic-rank={badge ? c.value : undefined}
-              className={`relative min-w-[3rem] px-2 py-2 rounded border text-sm ${cls}`}
+              className={`relative rounded transition-transform ${
+                isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
+              } ${selectable ? 'cursor-pointer' : 'cursor-default'}`}
             >
-              <span className="block leading-none">{suitSymbol(c.design)}</span>
-              <span className="block text-base font-bold">{c.value}</span>
+              <AnimatedCard card={c} width={cardWidth} />
               {badge && (
                 <>
                   <span

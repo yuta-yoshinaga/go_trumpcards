@@ -131,8 +131,8 @@ describe('ShitheadPage', () => {
       </MemoryRouter>,
     );
     await waitFor(() => expect(screen.getByRole('button', { name: /出す/ })).toBeInTheDocument());
-    // Click the first hand card (button labelled with suit + value)
-    const cardButtons = screen.getAllByRole('button').filter((b) => /^♠|♥|♦|♣/.test(b.textContent ?? ''));
+    // Selectable hand cards are the buttons that expose aria-pressed.
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.hasAttribute('aria-pressed'));
     expect(cardButtons.length).toBeGreaterThan(0);
     fireEvent.click(cardButtons[0]);
     mockExec.mockClear();
@@ -248,7 +248,7 @@ describe('ShitheadPage', () => {
         <ShitheadPage />
       </MemoryRouter>,
     );
-    await waitFor(() => expect(screen.getByText('5')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /出す/ })).toBeInTheDocument());
     expect(screen.queryByTestId('sh-magic-badge-2-2')).not.toBeInTheDocument();
   });
 
@@ -288,7 +288,7 @@ describe('ShitheadPage', () => {
     expect(screen.getByText('リセット: 次のプレイヤーは何でも出せます')).toBeInTheDocument();
   });
 
-  it('shows ? for joker design in discard pile description', async () => {
+  it('renders a joker discard top as a card image with an accessible label', async () => {
     mockExec.mockResolvedValue({
       ...humanTurnState,
       discardPile: [{ design: 'JOKER', value: 0 }],
@@ -298,9 +298,8 @@ describe('ShitheadPage', () => {
         <ShitheadPage />
       </MemoryRouter>,
     );
-    await waitFor(() => {
-      const matches = screen.getAllByText(/\?0/);
-      expect(matches.length).toBeGreaterThan(0);
-    });
+    // The discard top is now a card image; the joker carries an accessible 'ジョーカー' label.
+    await waitFor(() => expect(screen.getAllByText('ジョーカー').length).toBeGreaterThan(0));
+    expect(screen.queryByText(/\?0/)).not.toBeInTheDocument();
   });
 });
