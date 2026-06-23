@@ -145,6 +145,9 @@ function FortyFivesPageContent() {
 
   // The current highest (non-pass) bid; a new non-pass bid must beat it.
   const highestBid = Math.max(0, ...state.bids);
+  // Look up the holder via the players array (playerName expects a player id, not an index).
+  const highestBidder = highestBid > 0 ? state.players[state.bids.indexOf(highestBid)] : undefined;
+  const highestBidderName = highestBidder ? playerName(highestBidder.id, highestBidder.isHuman) : '';
 
   const contractLabel = state.contract === 0 ? t('contractUndecided') : String(state.contract);
 
@@ -325,9 +328,13 @@ function FortyFivesPageContent() {
               {isBidPhase && isHumanBidTurn && (
                 <>
                   <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>
+                  <span className="text-xs text-ds-text-muted self-center mr-1" data-testid="ff-highest-bid">
+                    {highestBid > 0 ? t('bidHighest', { bid: highestBid, player: highestBidderName }) : t('bidNone')}
+                  </span>
                   {BIDS.map((b) => {
                     // Pass (0) is always allowed; a non-pass bid must beat the current highest.
-                    const disabled = loading || (b.value !== 0 && b.value <= highestBid);
+                    const tooLow = b.value !== 0 && b.value <= highestBid;
+                    const disabled = loading || tooLow;
                     return (
                       <button
                         key={b.value}
@@ -335,6 +342,8 @@ function FortyFivesPageContent() {
                         className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
                         onClick={() => handleBid(b.value)}
                         disabled={disabled}
+                        aria-disabled={disabled}
+                        title={tooLow ? t('bidDisabledReason', { currentBid: highestBid }) : undefined}
                         data-testid={`bid-${b.value}`}
                       >
                         {t(b.key)}
