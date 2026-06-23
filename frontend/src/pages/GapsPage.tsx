@@ -24,7 +24,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import { computeGapsGhostHint } from '../utils/gapsGhostHint';
-import { gapsLockedPrefixLengths } from '../utils/gapsUtils';
+import { gapsLockedPrefixLengths, gapsLockedTotal } from '../utils/gapsUtils';
 
 const SUIT_SYMBOLS: Record<string, string> = {
   SPADE: '♠',
@@ -143,6 +143,7 @@ function GapsPageContent() {
   const isGameOver = state.phase === GapsPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
   const lockedPrefixLengths = gapsLockedPrefixLengths(state.grid);
+  const lockedTotal = gapsLockedTotal(state.grid);
 
   return (
     <GamePageShell
@@ -317,8 +318,13 @@ function GapsPageContent() {
                 className={btnPrimary}
                 onClick={handleRedeal}
                 disabled={loading || state.redealsRemaining <= 0}
+                data-testid="gaps-redeal-button"
               >
-                {t('redeal')} ({state.redealsUsed}/{state.redealsUsed + state.redealsRemaining})
+                {t('redealKeepLabel', {
+                  used: state.redealsUsed,
+                  total: state.redealsUsed + state.redealsRemaining,
+                  locked: lockedTotal,
+                })}
               </button>
               <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
                 {t('hint')}
