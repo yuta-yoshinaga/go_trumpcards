@@ -109,6 +109,23 @@ describe('NapPage', () => {
     expect(screen.getByTestId('bid-0')).toBeEnabled();
   });
 
+  it('shows the current highest bid and a too-low tooltip on disabled bids', async () => {
+    mockExec.mockResolvedValue(makeNapState({ bids: [3, 0, 0, 0] }));
+    renderWithProviders(<NapPage />);
+    const info = await screen.findByTestId('nap-highest-bid');
+    // A real highest bid is shown (not the "no bids yet" placeholder).
+    expect(info).not.toHaveTextContent('まだ入札なし');
+    // Too-low bids carry a tooltip; valid bids do not.
+    expect(screen.getByTestId('bid-2')).toHaveAttribute('title');
+    expect(screen.getByTestId('bid-4')).not.toHaveAttribute('title');
+  });
+
+  it('shows "no bids yet" before anyone has bid', async () => {
+    mockExec.mockResolvedValue(makeNapState({ bids: [0, 0, 0, 0] }));
+    renderWithProviders(<NapPage />);
+    await waitFor(() => expect(screen.getByTestId('nap-highest-bid')).toHaveTextContent('まだ入札なし'));
+  });
+
   it('renders the play phase with the human cards and the declarer badge', async () => {
     mockExec.mockResolvedValue(playPhaseState);
     renderWithProviders(<NapPage />);
