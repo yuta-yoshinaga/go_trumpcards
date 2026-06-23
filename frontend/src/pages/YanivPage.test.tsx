@@ -84,6 +84,13 @@ describe('YanivPage', () => {
     expect(yanivBtn.className).toContain('animate-pulse');
   });
 
+  it('explains the Yaniv threshold on the hand-total badge via a tooltip', async () => {
+    renderWithProviders(<YanivPage />);
+    const badge = await screen.findByTestId('hand-total-badge');
+    expect(badge).toHaveAttribute('title');
+    expect(badge.getAttribute('title')).toMatch(/5/);
+  });
+
   it('soft-highlights the hand-total badge in warning color when total is 6-10', async () => {
     mockExec.mockResolvedValue(
       makeState({

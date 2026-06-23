@@ -12,7 +12,7 @@
   "playerLine": "{{name}}: 失点 {{score}}  手札 {{cards}}枚  手札合計 {{total}}",
   "gameEnd": "ゲーム終了! {{name}} の勝ち!",
   "promptDiscard": "{{name}} の番です (ディスカードフェーズ)",
-  "promptDiscardHelp": "d <idx...>: カードを捨てる",
+  "promptDiscardHelp": "d <idx...>: カードを捨てる（手札合計5以下でヤニブ宣言可）",
   "promptYanivHelp": "y: Yaniv を宣言 (手札合計が5以下)",
   "promptDraw": "{{name}} の番です (ドローフェーズ)",
   "promptDrawHelpStock": "ds: 山札から引く",

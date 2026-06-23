@@ -12,7 +12,7 @@
   "playerLine": "{{name}}: penalty {{score}}  cards {{cards}}  hand total {{total}}",
   "gameEnd": "Game over! {{name}} wins!",
   "promptDiscard": "{{name}} to act (discard phase)",
-  "promptDiscardHelp": "d <idx...>: discard cards",
+  "promptDiscardHelp": "d <idx...>: discard cards (declare Yaniv when total <= 5)",
   "promptYanivHelp": "y: declare Yaniv (hand total <= 5)",
   "promptDraw": "{{name}} to act (draw phase)",
   "promptDrawHelpStock": "ds: draw from stock",

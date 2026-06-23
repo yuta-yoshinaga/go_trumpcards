@@ -274,6 +274,7 @@ function YanivPageContent() {
                 {tc('player.you')} · {t('label.score')}: {human.score} · {t('label.hand')}:{' '}
                 <span
                   data-testid="hand-total-badge"
+                  title={t('handTotalHelp')}
                   className={
                     human.handTotal <= 5
                       ? 'inline-block rounded px-1.5 font-bold bg-ds-success text-white'
