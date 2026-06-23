@@ -37,6 +37,9 @@
   "nextRound": "Next Round",
   "target": "Target: {{points}} chips",
   "bidPrompt": "Place a bid (only a higher bid is allowed):",
+  "bidHighest": "Highest bid: {{bid}} ({{player}})",
+  "bidNone": "No bids yet",
+  "bidTooLow": "Must beat the current highest bid of {{bid}}",
   "bid": {
     "pass": "Pass",
     "two": "Two",

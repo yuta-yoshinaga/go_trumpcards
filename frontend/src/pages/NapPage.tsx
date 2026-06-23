@@ -154,6 +154,10 @@ function NapPageContent() {
 
   // The current highest (non-pass) bid; a new non-pass bid must beat it.
   const highestBid = Math.max(0, ...state.bids);
+  const highestBidderIdx = highestBid > 0 ? state.bids.indexOf(highestBid) : -1;
+  const highestBidLabelKey = BIDS.find((b) => b.value === highestBid)?.key;
+  const highestBidderName =
+    highestBidderIdx >= 0 ? playerName(highestBidderIdx, state.players[highestBidderIdx]?.isHuman === true) : '';
 
   const contractName =
     state.declarerIdx >= 0 ? t(`contractName.${CONTRACT_KEYS[state.contract] ?? 'pass'}`) : t('contractUndecided');
@@ -354,9 +358,15 @@ function NapPageContent() {
               {isBidPhase && isHumanBidTurn && (
                 <>
                   <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>
+                  <span className="text-xs text-ds-text-muted self-center mr-1" data-testid="nap-highest-bid">
+                    {highestBid > 0 && highestBidLabelKey
+                      ? t('bidHighest', { bid: t(highestBidLabelKey), player: highestBidderName })
+                      : t('bidNone')}
+                  </span>
                   {BIDS.map((b) => {
                     // Pass (0) is always allowed; a non-pass bid must beat the current highest.
-                    const disabled = loading || (b.value !== NapContract.PASS && b.value <= highestBid);
+                    const tooLow = b.value !== NapContract.PASS && b.value <= highestBid;
+                    const disabled = loading || tooLow;
                     return (
                       <button
                         key={b.value}
@@ -364,6 +374,10 @@ function NapPageContent() {
                         className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
                         onClick={() => handleBid(b.value)}
                         disabled={disabled}
+                        aria-disabled={disabled}
+                        title={
+                          tooLow ? t('bidTooLow', { bid: highestBidLabelKey ? t(highestBidLabelKey) : '' }) : undefined
+                        }
                         data-testid={`bid-${b.value}`}
                       >
                         {t(b.key)}
