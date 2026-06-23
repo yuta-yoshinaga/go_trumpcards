@@ -107,6 +107,24 @@ describe('FortyFivesPage', () => {
     expect(screen.getByTestId('bid-0')).toBeEnabled();
   });
 
+  it('shows the current highest bid and a reason tooltip on too-low bids', async () => {
+    mockExec.mockResolvedValue(makeFortyFivesState({ bids: [20, 0, 0, 0] }));
+    renderWithProviders(<FortyFivesPage />);
+    const info = await screen.findByTestId('ff-highest-bid');
+    expect(info).toHaveTextContent('20');
+    expect(info).not.toHaveTextContent('まだ入札なし');
+    // The reason tooltip lives on the wrapping span (disabled buttons suppress native titles).
+    expect(screen.getByTestId('bid-wrap-15')).toHaveAttribute('title');
+    expect(screen.getByTestId('bid-15')).toHaveAttribute('aria-label');
+    expect(screen.getByTestId('bid-wrap-25')).not.toHaveAttribute('title');
+  });
+
+  it('shows "no bids yet" before anyone has bid', async () => {
+    mockExec.mockResolvedValue(makeFortyFivesState({ bids: [0, 0, 0, 0] }));
+    renderWithProviders(<FortyFivesPage />);
+    await waitFor(() => expect(screen.getByTestId('ff-highest-bid')).toHaveTextContent('まだ入札なし'));
+  });
+
   it('renders the play phase with the human cards and the declarer badge', async () => {
     mockExec.mockResolvedValue(playPhaseState);
     renderWithProviders(<FortyFivesPage />);
