@@ -316,7 +316,6 @@ function BakersDozenPageContent() {
                       isOneCardCol ? ' rounded ring-1 ring-ds-warning/40 ring-dashed' : ''
                     }`}
                     style={isMobile ? { width: bd.cw } : undefined}
-                    title={isOneCardCol ? t('lastCardWarning') : undefined}
                     data-testid={isOneCardCol ? `bd-onecard-col-${colIdx}` : undefined}
                   >
                     <DropZone

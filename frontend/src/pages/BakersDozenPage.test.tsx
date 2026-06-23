@@ -97,7 +97,8 @@ describe('BakersDozenPage', () => {
     // Column 1 holds a single card → flagged before any selection.
     const oneCardCol = await screen.findByTestId('bd-onecard-col-1');
     expect(oneCardCol.className).toContain('ring-dashed');
-    expect(oneCardCol).toHaveAttribute('title', 'この列は二度と使えなくなります');
+    // The tooltip lives on the (interactive) card button, not the wrapper div.
+    expect(screen.getByTestId('bd-last-card-1')).toHaveAttribute('title', 'この列は二度と使えなくなります');
     // Column 0 (2 cards) and empty columns are not flagged.
     expect(screen.queryByTestId('bd-onecard-col-0')).not.toBeInTheDocument();
     expect(screen.queryByTestId('bd-onecard-col-2')).not.toBeInTheDocument();
