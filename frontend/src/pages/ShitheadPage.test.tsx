@@ -298,8 +298,8 @@ describe('ShitheadPage', () => {
         <ShitheadPage />
       </MemoryRouter>,
     );
-    // The discard top is now a card image; the joker carries an accessible 'ジョーカー' label.
-    await waitFor(() => expect(screen.getAllByText('ジョーカー').length).toBeGreaterThan(0));
+    // The discard top is now a card image; the joker img carries an accessible 'ジョーカー' alt.
+    await waitFor(() => expect(screen.getAllByAltText('ジョーカー').length).toBeGreaterThan(0));
     expect(screen.queryByText(/\?0/)).not.toBeInTheDocument();
   });
 });

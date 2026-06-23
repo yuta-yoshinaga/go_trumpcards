@@ -19,10 +19,10 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useShitheadGame } from '../hooks/useShitheadGame';
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
+import { focusRingCard } from '../styles/cardStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, ShitheadConfig, ShitheadResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
-import { cardAlt } from '../utils/cardAlt';
 import { parseShitheadCommand, SHITHEAD_HELP } from '../utils/cli/commands/shitheadCommands';
 import { formatShitheadState } from '../utils/cli/formatters/shitheadFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -175,7 +175,6 @@ function ShitheadPageContent() {
                         card={state.discardPile[state.discardPile.length - 1]}
                         width={Math.round(cardWidth * 0.7)}
                       />
-                      <span className="sr-only">{cardAlt(state.discardPile[state.discardPile.length - 1])}</span>
                       {(() => {
                         const topValue = state.discardPile[state.discardPile.length - 1]?.value ?? 0;
                         const badge = magicLookup.badgeFor(topValue);
@@ -354,10 +353,9 @@ function CardRow({ label, cards, selectable, selected, onToggle, magic, rowKey }
               disabled={!selectable}
               onClick={() => onToggle(i)}
               title={title || undefined}
-              aria-label={cardAlt(c)}
               aria-pressed={selectable ? isSelected : undefined}
               data-magic-rank={badge ? c.value : undefined}
-              className={`relative rounded transition-transform ${
+              className={`relative rounded transition-transform ${focusRingCard} ${
                 isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
               } ${selectable ? 'cursor-pointer' : 'cursor-default'}`}
             >
