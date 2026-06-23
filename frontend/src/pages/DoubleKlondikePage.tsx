@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { doubleklondikeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
-import { CardImage } from '../components/CardImage';
+import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -161,17 +161,7 @@ function DoubleKlondikePageContent() {
             disabled={!canAct || !tc2.faceUp}
             data-testid={`card-${col}-${i}`}
           >
-            {tc2.faceUp && tc2.card ? (
-              <CardImage card={tc2.card} width={w} />
-            ) : (
-              <div
-                className="rounded bg-ds-accent/70 border border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
-                style={{ width: w, height: cardH }}
-                title={t('faceDown')}
-              >
-                ##
-              </div>
-            )}
+            {tc2.faceUp && tc2.card ? <CardImage card={tc2.card} width={w} /> : <CardBack width={w} />}
           </button>
         ))
       )}
