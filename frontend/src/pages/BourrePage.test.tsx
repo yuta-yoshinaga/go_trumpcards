@@ -102,6 +102,14 @@ describe('BourrePage', () => {
     expect(summary).not.toHaveClass('text-ds-warning');
   });
 
+  it('decide phase: summary clarifies the penalty only applies when playing, via tooltip', async () => {
+    renderWithProviders(<BourrePage />);
+    const summary = await screen.findByTestId('bourre-decide-summary');
+    // The visible text explains folding avoids the penalty.
+    expect(summary).toHaveTextContent(/降りれば罰金なし/);
+    expect(summary).toHaveAttribute('title');
+  });
+
   it('decide phase: penalty includes carryPot', async () => {
     mockExec.mockResolvedValue(makeState({ pot: 25, carryPot: 5 }));
     renderWithProviders(<BourrePage />);

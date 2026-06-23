@@ -1,6 +1,7 @@
 {
   "title": "Bourré",
-  "decideSummary": "Pot: {{pot}} chips | Bourré penalty: {{penalty}} chips",
+  "decideSummary": "Pot: {{pot}} chips | Play and win no tricks: {{penalty}}-chip penalty (folding avoids it)",
+  "decideSummaryHelp": "If you play and take zero tricks you are 'bourréd' and pay {{penalty}} chips. Folding incurs no penalty.",
   "label": {
     "pot": "Pot",
     "carry": "Carry",
