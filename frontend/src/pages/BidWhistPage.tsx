@@ -352,6 +352,9 @@ function BidWhistPageContent() {
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="bw-actions">
               {isHumanBidTurn && (
                 <>
+                  <span className="text-xs text-ds-text-muted self-center" data-testid="bw-tricks-label">
+                    {t('selectTricks')}
+                  </span>
                   <select
                     aria-label={t('tricksLabel')}
                     value={bidTricks}

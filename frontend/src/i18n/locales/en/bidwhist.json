@@ -19,6 +19,7 @@
   "currentTrick": "Current trick",
   "trickEmpty": "(no cards yet)",
   "tricksLabel": "Target tricks",
+  "selectTricks": "Select tricks (1-7):",
   "dirUptown": "Uptown",
   "dirDowntown": "Downtown",
   "dirNoTrump": "No Trump",
