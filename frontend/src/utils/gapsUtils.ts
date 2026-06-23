@@ -19,6 +19,18 @@ export function gapsLockedPrefixLengths(grid: readonly (readonly (Card | null)[]
   return grid.map((row) => lockedPrefixLengthForRow(row));
 }
 
+/**
+ * Total number of locked (redeal-surviving) cards across the whole board — the
+ * sum of every row's locked prefix length. Used to tell the player how many
+ * cards a redeal will preserve before they spend one.
+ *
+ * @param grid - The Gaps board.
+ * @returns The total locked-card count.
+ */
+export function gapsLockedTotal(grid: readonly (readonly (Card | null)[])[]): number {
+  return gapsLockedPrefixLengths(grid).reduce((sum, n) => sum + n, 0);
+}
+
 function lockedPrefixLengthForRow(row: readonly (Card | null)[]): number {
   let locked = 0;
   for (let c = 0; c < row.length; c++) {

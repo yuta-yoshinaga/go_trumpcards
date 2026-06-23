@@ -101,6 +101,14 @@ describe('GapsPage', () => {
     await waitFor(() => expect(mockedRun).toHaveBeenCalledWith('redeal'));
   });
 
+  it('shows how many locked cards a redeal will keep', async () => {
+    // makeGrid: 4 rows each a full 2..13 run → 4 × 12 = 48 locked cards.
+    renderWithProviders(<GapsPage />);
+    const btn = await screen.findByTestId('gaps-redeal-button');
+    expect(btn).toHaveTextContent('(0/3)');
+    expect(btn).toHaveTextContent('48');
+  });
+
   it('calls run undo when undo clicked', async () => {
     mockedRun.mockResolvedValue({ ...playingState, canUndo: true });
     renderWithProviders(<GapsPage />);

@@ -9,6 +9,7 @@
   "redealsRemaining": "再配り残り",
   "undo": "元に戻す",
   "redeal": "再配り",
+  "redealKeepLabel": "再配り ({{used}}/{{total}}) — {{locked}}枚維持",
   "giveup": "ギブアップ",
   "hint": "ヒント",
   "gap": "空き",

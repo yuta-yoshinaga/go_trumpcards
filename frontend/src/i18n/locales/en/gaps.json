@@ -9,6 +9,7 @@
   "redealsRemaining": "Redeals left",
   "undo": "Undo",
   "redeal": "Redeal",
+  "redealKeepLabel": "Redeal ({{used}}/{{total}}) — keeps {{locked}}",
   "giveup": "Give Up",
   "hint": "Hint",
   "gap": "Gap",
