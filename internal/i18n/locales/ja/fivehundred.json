@@ -25,7 +25,7 @@
   "bidMisere": "ミゼール ({{value}})",
   "bidOpenMisere": "オープンミゼール ({{value}})",
   "promptBid": "{{name}} のビッドです",
-  "promptBidHelp": "b <tricks> <suit> / bnt <tricks> / m / om / pa",
+  "promptBidHelp": "b <tricks> <suit> / bnt <tricks> / m / om / pa (tricks は 6-10)",
   "promptKittyExchange": "キティを手札に加えました。3枚捨ててください",
   "promptKittyExchangeHelp": "e <i> <j> <k>",
   "promptCurrentPlayer": "{{name}} の番です",

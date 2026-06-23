@@ -25,7 +25,7 @@
   "bidMisere": "Misere ({{value}})",
   "bidOpenMisere": "Open Misere ({{value}})",
   "promptBid": "{{name}} to bid",
-  "promptBidHelp": "b <tricks> <suit> / bnt <tricks> / m / om / pa",
+  "promptBidHelp": "b <tricks> <suit> / bnt <tricks> / m / om / pa (tricks 6-10)",
   "promptKittyExchange": "Kitty added to your hand. Discard 3 cards.",
   "promptKittyExchangeHelp": "e <i> <j> <k>",
   "promptCurrentPlayer": "{{name}}'s turn",
