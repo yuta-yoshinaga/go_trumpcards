@@ -98,7 +98,9 @@
     "playerHand": "This is your hand. Check the total point value of your cards.",
     "actionButtons": "Choose Hit (draw a card) or Stand (keep your hand). The goal is to get close to 21.",
     "resultMessage": "The game result is displayed here. Check the outcome and chips won or lost.",
-    "resetButton": "Press the reset button to start a new game."
+    "resetButton": "Press the reset button to start a new game.",
+    "payoutRef": "Spanish 21 uses a 48-card deck with the 10s removed. Open this payout table to see that a player 21 always wins and that 5/6/7-card 21s pay bonuses.",
+    "bonusBadges": "When a bonus hand lands — 5/6/7-card 21, 6-7-8, or 7-7-7 — its badge appears here."
   },
   "hintReason": {
     "hitReason": "Your total is low — hit recommended",
