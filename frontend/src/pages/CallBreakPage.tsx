@@ -485,6 +485,11 @@ function CallBreakPageContent() {
                       </button>
                     ))}
                   </fieldset>
+                  {/* Announce the current bid selection to screen readers, since the
+                      grid's aria-pressed alone isn't read back as a running value. */}
+                  <span className="sr-only" role="status" aria-live="polite" data-testid="cb-bid-selected">
+                    {t('bidSelected', { n: bidValue })}
+                  </span>
                   <button type="button" className={btnPrimary} onClick={() => handleBid(bidValue)} disabled={loading}>
                     {t('bidButton')}
                   </button>

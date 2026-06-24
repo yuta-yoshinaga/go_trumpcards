@@ -118,6 +118,8 @@ describe('CallBreakPage', () => {
     // Select bid 5 from the button group.
     fireEvent.click(screen.getByTestId('bid-option-5'));
     expect(screen.getByTestId('bid-option-5')).toHaveAttribute('aria-pressed', 'true');
+    // The live region reflects the current selection for screen readers.
+    expect(screen.getByTestId('cb-bid-selected')).toHaveTextContent('5');
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(playPhaseState);

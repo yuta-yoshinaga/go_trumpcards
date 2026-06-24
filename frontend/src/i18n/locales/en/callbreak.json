@@ -75,5 +75,6 @@
     "followSuit": "Follow the led suit",
     "mustTrumpWithSpade": "Void: must trump with a spade",
     "discardLowest": "Discard your lowest card"
-  }
+  },
+  "bidSelected": "Selected bid: {{n}}"
 }
