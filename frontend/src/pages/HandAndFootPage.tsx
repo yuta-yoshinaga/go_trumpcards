@@ -375,7 +375,8 @@ function HandAndFootPageContent() {
                     </button>
                     <button
                       type="button"
-                      className={btnPrimary}
+                      className={`${btnPrimary} ${state.isFrozen ? 'motion-safe:animate-pulse ring-2 ring-ds-info' : ''}`}
+                      data-frozen={state.isFrozen || undefined}
                       onClick={handleDrawDiscard}
                       disabled={loading || selectedCardIndices.length !== 2}
                       title={drawDiscardReason || undefined}

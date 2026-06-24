@@ -117,6 +117,21 @@ describe('HandAndFootPage', () => {
     expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument();
   });
 
+  it('pulses the draw-from-discard button when the discard pile is frozen', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, isFrozen: true });
+    renderWithProviders(<HandAndFootPage />);
+    const btn = await screen.findByRole('button', { name: '捨て札を取る' });
+    expect(btn).toHaveAttribute('data-frozen', 'true');
+    expect(btn.className).toMatch(/animate-pulse/);
+  });
+
+  it('does not pulse the draw-from-discard button when not frozen', async () => {
+    renderWithProviders(<HandAndFootPage />);
+    const btn = await screen.findByRole('button', { name: '捨て札を取る' });
+    expect(btn).not.toHaveAttribute('data-frozen');
+    expect(btn.className).not.toMatch(/animate-pulse/);
+  });
+
   it('calls drawstock command when button clicked', async () => {
     renderWithProviders(<HandAndFootPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument());
