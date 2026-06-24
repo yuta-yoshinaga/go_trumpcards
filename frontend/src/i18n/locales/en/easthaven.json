@@ -39,5 +39,6 @@
   },
   "nav": {
     "easthaven": "Easthaven"
-  }
+  },
+  "moveHereAriaLabel": "Empty tableau column {{col}} (move here)"
 }

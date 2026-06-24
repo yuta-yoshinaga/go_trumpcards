@@ -224,6 +224,30 @@ describe('EasthavenPage', () => {
     );
   });
 
+  it('toggles the empty-column aria-label when a source is selected', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [
+        [{ card: card('SPADE', 13), faceUp: true }],
+        [{ card: card('HEART', 8), faceUp: true }],
+        [{ card: card('CLOVER', 5), faceUp: true }],
+        [{ card: card('DIAMOND', 10), faceUp: true }],
+        [{ card: card('SPADE', 3), faceUp: true }],
+        [{ card: card('HEART', 7), faceUp: true }],
+        [], // empty column 6
+      ],
+    });
+    renderWithProviders(<EasthavenPage />);
+    const emptyCol = await screen.findByTestId('eh-empty-col-6');
+    // No source selected → plain "empty" label.
+    expect(emptyCol.getAttribute('aria-label')).not.toContain('ここに移動');
+    // Selecting a source switches it to a "move here" prompt.
+    screen.getByRole('button', { name: '♠ K' }).click();
+    await waitFor(() =>
+      expect(screen.getByTestId('eh-empty-col-6').getAttribute('aria-label')).toContain('ここに移動'),
+    );
+  });
+
   it('selecting a card then a foundation fires a foundation move', async () => {
     renderWithProviders(<EasthavenPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
