@@ -225,7 +225,7 @@ function EcartePageContent() {
               <div className="text-center mb-2">
                 <div className="text-ds-text-muted text-sm font-semibold">{t('exchangeNotice')}</div>
                 <div className="text-ds-accent text-xs mt-0.5" data-testid="ecarte-neg-step">
-                  {t('negStepLabel', { step: t(ECARTE_NEG_STEP_KEYS[state.negStep] ?? 'negStep.elderDecide') })}
+                  {t('negStepLabel', { step: t(ECARTE_NEG_STEP_KEYS[state.negStep]) })}
                 </div>
               </div>
             )}
