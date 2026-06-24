@@ -16,6 +16,7 @@
   "trick": "Trick {{n}}",
   "trump": "Trump {{suit}}",
   "pot": "Pot {{n}}",
+  "potIncrease": "+{{n}}",
   "target": "Target {{n}}",
   "cards": "{{count}} cards",
   "roundTricks": "{{count}} round tricks",

@@ -70,6 +70,17 @@ describe('SpoilFivePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0 }));
   });
 
+  it('shows a transient +NN pot delta when the pot grows', async () => {
+    renderWithProviders(<SpoilFivePage />);
+    const card = await screen.findByAltText('♥ Q');
+    fireEvent.click(card);
+    const playBtn = await screen.findByRole('button', { name: '出す' });
+    mockExec.mockResolvedValue(spoilState); // pot 5 -> 10
+    fireEvent.click(playBtn);
+    const delta = await screen.findByTestId('spoilfive-pot-delta');
+    expect(delta).toHaveTextContent('+5');
+  });
+
   it('renders trick end with the next trick button', async () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<SpoilFivePage />);
