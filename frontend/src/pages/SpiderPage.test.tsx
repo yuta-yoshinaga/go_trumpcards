@@ -136,6 +136,22 @@ describe('SpiderPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('deal'));
   });
 
+  it('announces and flashes when a new suit is completed', async () => {
+    const filled: SpiderResponse = {
+      ...playingState,
+      tableau: makeTableau(Array.from({ length: 10 }, () => [{ card: card('SPADE', 13), faceUp: true }])),
+    };
+    mockExec.mockResolvedValue(filled); // completedSuits 0
+    renderWithProviders(<SpiderPage />);
+    await waitFor(() => expect(screen.getAllByRole('button', { name: '配る' }).length).toBeGreaterThanOrEqual(1));
+    expect(screen.queryByTestId('spd-suit-complete')).not.toBeInTheDocument();
+
+    mockExec.mockResolvedValue({ ...filled, completedSuits: 1 });
+    const dealButtons = screen.getAllByRole('button', { name: '配る' });
+    fireEvent.click(dealButtons[dealButtons.length - 1]);
+    await waitFor(() => expect(screen.getByTestId('spd-suit-complete')).toBeInTheDocument());
+  });
+
   it('clicking deal with empty columns triggers shake on empty placeholders and skips API', async () => {
     // playingState has empty columns 2..9
     renderWithProviders(<SpiderPage />);

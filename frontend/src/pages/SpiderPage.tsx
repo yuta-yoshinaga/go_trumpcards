@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { SpiderMoveZone, spiderApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { AutoCompleteReadyBadge } from '../components/AutoCompleteReadyBadge';
@@ -206,6 +206,23 @@ function SpiderPageContent() {
     enabled: !!isPlayingForKbd && !loading,
   });
 
+  // Announce + sound a fanfare cue whenever a new K→A suit is completed, so the
+  // mid-game progress (not just the final win) gives feedback. The count text is
+  // an aria-live region, so screen readers hear it too.
+  const [suitJustCompleted, setSuitJustCompleted] = useState(false);
+  const prevCompletedRef = useRef<number | null>(null);
+  useEffect(() => {
+    const completed = state?.completedSuits ?? 0;
+    const prev = prevCompletedRef.current;
+    prevCompletedRef.current = completed;
+    if (prev != null && completed > prev) {
+      setSuitJustCompleted(true);
+      playSound('cardPlace');
+      const id = setTimeout(() => setSuitJustCompleted(false), 2500);
+      return () => clearTimeout(id);
+    }
+  }, [state?.completedSuits, playSound]);
+
   if (!state) return <GameSkeleton gameKey="spider" layout={{ kind: 'tableau', topRow: 3, tableau: 10 }} />;
 
   const isPlaying = state.phase === SpiderPhase.PLAYING;
@@ -250,9 +267,16 @@ function SpiderPageContent() {
         </>
       }
       headerEnd={
-        <span className="ml-3" data-tutorial="spd-completed-suits">
-          {t('completed')}: {state.completedSuits}/8
-        </span>
+        <>
+          <span className="ml-3" role="status" data-tutorial="spd-completed-suits">
+            {t('completed')}: {state.completedSuits}/8
+          </span>
+          {/* Dedicated live region for the completion flash: keeping it separate
+              from the counter means its removal never re-reads the counter text. */}
+          <span className="ml-1 text-ds-success font-semibold" role="status">
+            {suitJustCompleted ? <span data-testid="spd-suit-complete">{t('suitCompleted')}</span> : null}
+          </span>
+        </>
       }
     >
       {cliEnabled ? (
