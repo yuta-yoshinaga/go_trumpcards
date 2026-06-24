@@ -299,7 +299,8 @@
   },
   "card": {
     "back": "Card back",
-    "joker": "Joker"
+    "joker": "Joker",
+    "play": "Play {{card}}"
   },
   "label": {
     "result": "Result:",
