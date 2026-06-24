@@ -16,7 +16,8 @@
     "center": "場札",
     "cards": "枚",
     "penalty": "ペナルティ！",
-    "safe": "セーフ"
+    "safe": "セーフ",
+    "recentCenter": "直近のしっぽ"
   },
   "tutorial": {
     "circleArea": "これが山札です。カードが裏向きで円状に並んでいます。",

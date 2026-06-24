@@ -134,6 +134,29 @@ describe('PigsTailPage', () => {
     expect(center).toHaveTextContent('?');
   });
 
+  it('accumulates a recent-center history strip across draws', async () => {
+    mockExec.mockResolvedValue({ ...baseState, centerTop: { design: 'SPADE', value: 1 }, centerCount: 3 });
+    renderWithProviders(<PigsTailPage />);
+    const strip = await screen.findByTestId('pt-center-history');
+    expect(strip).toHaveTextContent('♠A');
+
+    mockExec.mockResolvedValue({ ...baseState, centerTop: { design: 'HEART', value: 3 }, centerCount: 4 });
+    fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
+    await waitFor(() => expect(screen.getByTestId('pt-center-history')).toHaveTextContent('♥3'));
+    // The earlier center top is still part of the tail.
+    expect(screen.getByTestId('pt-center-history')).toHaveTextContent('♠A');
+  });
+
+  it('clears the center history when the pile is collected (centerCount 0)', async () => {
+    mockExec.mockResolvedValue({ ...baseState, centerTop: { design: 'SPADE', value: 1 }, centerCount: 3 });
+    renderWithProviders(<PigsTailPage />);
+    await screen.findByTestId('pt-center-history');
+
+    mockExec.mockResolvedValue({ ...baseState, centerTop: null, centerCount: 0 });
+    fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
+    await waitFor(() => expect(screen.queryByTestId('pt-center-history')).not.toBeInTheDocument());
+  });
+
   it('draw button is disabled on game end', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<PigsTailPage />);
