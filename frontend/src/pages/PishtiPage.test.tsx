@@ -113,6 +113,30 @@ describe('PishtiPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { handIndex: 1 }));
   });
 
+  it('celebrates a Pişti when the bonus total rises (+10)', async () => {
+    renderWithProviders(<PishtiPage />);
+    const cardBtn = await screen.findByTestId('hand-card-1');
+    expect(screen.queryByTestId('pishti-celebration')).not.toBeInTheDocument();
+    // The play resolves a state where the human just scored a +10 Pişti.
+    mockExec.mockResolvedValueOnce(
+      makeState({ players: [makePlayer({ id: 0, isHuman: true, pistiBonus: 10 }), ...playState.players.slice(1)] }),
+    );
+    fireEvent.click(cardBtn);
+    const badge = await screen.findByTestId('pishti-celebration');
+    expect(badge).toHaveTextContent('+10');
+  });
+
+  it('marks a Jack Pişti as +20', async () => {
+    renderWithProviders(<PishtiPage />);
+    const cardBtn = await screen.findByTestId('hand-card-1');
+    mockExec.mockResolvedValueOnce(
+      makeState({ players: [makePlayer({ id: 0, isHuman: true, pistiBonus: 20 }), ...playState.players.slice(1)] }),
+    );
+    fireEvent.click(cardBtn);
+    const badge = await screen.findByTestId('pishti-celebration');
+    expect(badge).toHaveTextContent('+20');
+  });
+
   it('shows the empty-pile label when the pile is empty', async () => {
     mockExec.mockResolvedValue(emptyPileState);
     renderWithProviders(<PishtiPage />);

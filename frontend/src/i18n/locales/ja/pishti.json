@@ -5,6 +5,8 @@
   "playersTitle": "プレイヤー",
   "captured": "捕獲 {{count}}枚",
   "pisti": "Pişti {{count}}点",
+  "pistiCelebration": "PİŞTİ +10!",
+  "pistiCelebrationJack": "PİŞTİ +20! (J)",
   "finalScore": "{{score}}点",
   "pile": "場",
   "pileTop": "場の一番上",

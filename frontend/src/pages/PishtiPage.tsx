@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { pishtiApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -17,6 +17,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useSound } from '../providers/SoundProvider';
 import { btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -121,6 +122,26 @@ function PishtiPageContent() {
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
+
+  // Celebrate a Pişti the instant the total bonus rises — the +10/+20 capture is
+  // the game's highlight but was easy to miss amid fast CPU turns (#2692).
+  const [pistiCelebration, setPistiCelebration] = useState<{ key: number; jack: boolean } | null>(null);
+  const prevPistiTotalRef = useRef<number | null>(null);
+  const pistiTotal = state ? state.players.reduce((sum, p) => sum + p.pistiBonus, 0) : 0;
+  useEffect(() => {
+    if (prevPistiTotalRef.current === null) {
+      prevPistiTotalRef.current = pistiTotal;
+      return;
+    }
+    const delta = pistiTotal - prevPistiTotalRef.current;
+    prevPistiTotalRef.current = pistiTotal;
+    if (delta > 0) {
+      // A Jack Pişti scores 20, a normal one 10.
+      setPistiCelebration((prev) => ({ key: (prev?.key ?? 0) + 1, jack: delta >= 20 }));
+      playSound('chipClick', { pitchVariation: 0.1 });
+    }
+  }, [pistiTotal, playSound]);
 
   if (!state)
     return <GameSkeleton gameKey="pishti" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 4 }} />;
@@ -213,7 +234,19 @@ function PishtiPageContent() {
             </div>
 
             {/* Center pile */}
-            <div className="mb-2 p-3 rounded bg-black/20 text-center" data-tutorial="pishti-pile">
+            <div className="relative mb-2 p-3 rounded bg-black/20 text-center" data-tutorial="pishti-pile">
+              {pistiCelebration && (
+                <div
+                  key={pistiCelebration.key}
+                  className="absolute inset-x-0 -top-2 z-10 flex justify-center motion-safe:animate-bounce pointer-events-none"
+                  role="status"
+                  data-testid="pishti-celebration"
+                >
+                  <span className="rounded-full bg-ds-accent px-3 py-0.5 text-sm font-bold text-ds-text-on-accent shadow-lg">
+                    {pistiCelebration.jack ? t('pistiCelebrationJack') : t('pistiCelebration')}
+                  </span>
+                </div>
+              )}
               <div className="text-ds-text-muted text-xs mb-1">
                 {t('pile')} — {t('pileCount', { count: state.pileCount })}
               </div>
