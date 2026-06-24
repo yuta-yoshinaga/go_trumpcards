@@ -369,34 +369,42 @@ function UltimateTexasHoldemPageContent() {
             const strength = utHoldemPreflopStrength(state.playerHand);
             const strong = strength === 'strong';
             const moderate = strength === 'moderate';
+            // Spell out *why* a raise size is recommended so beginners understand the
+            // ring/pulse affordance instead of guessing (#2617).
+            const strengthColor = strong ? 'text-ds-success' : moderate ? 'text-ds-warning' : 'text-ds-text-muted';
             return (
-              <div
-                className="flex justify-center gap-2 pb-2"
-                data-tutorial="uth-pre-flop-buttons"
-                data-preflop-strength={strength}
-              >
-                <button
-                  type="button"
-                  className={`${btnSuccess} ${strong ? 'ring-2 ring-ds-warning animate-pulse' : ''}`}
-                  onClick={() => handlePlay(4)}
-                  disabled={loading}
-                  data-testid="play-4x"
+              <>
+                <p className={`text-center text-sm font-medium pb-1 ${strengthColor}`} data-testid="uth-preflop-eval">
+                  {t(`preflopEval.${strength}`)}
+                </p>
+                <div
+                  className="flex justify-center gap-2 pb-2"
+                  data-tutorial="uth-pre-flop-buttons"
+                  data-preflop-strength={strength}
                 >
-                  {t('button.play4x')}
-                </button>
-                <button
-                  type="button"
-                  className={`${btnSuccess} ${moderate ? 'ring-2 ring-ds-warning animate-pulse' : ''}`}
-                  onClick={() => handlePlay(3)}
-                  disabled={loading}
-                  data-testid="play-3x"
-                >
-                  {t('button.play3x')}
-                </button>
-                <button type="button" className={btnSecondary} onClick={handleCheck} disabled={loading}>
-                  {t('button.check')}
-                </button>
-              </div>
+                  <button
+                    type="button"
+                    className={`${btnSuccess} ${strong ? 'ring-2 ring-ds-warning animate-pulse' : ''}`}
+                    onClick={() => handlePlay(4)}
+                    disabled={loading}
+                    data-testid="play-4x"
+                  >
+                    {t('button.play4x')}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${btnSuccess} ${moderate ? 'ring-2 ring-ds-warning animate-pulse' : ''}`}
+                    onClick={() => handlePlay(3)}
+                    disabled={loading}
+                    data-testid="play-3x"
+                  >
+                    {t('button.play3x')}
+                  </button>
+                  <button type="button" className={btnSecondary} onClick={handleCheck} disabled={loading}>
+                    {t('button.check')}
+                  </button>
+                </div>
+              </>
             );
           })()}
         {isFlopPhase && (

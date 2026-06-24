@@ -364,4 +364,23 @@ describe('UltimateTexasHoldemPage', () => {
     expect(screen.getByTestId('play-4x').className).not.toContain('animate-pulse');
     expect(screen.getByTestId('play-3x').className).not.toContain('animate-pulse');
   });
+
+  it('shows a colored pre-flop strength evaluation matching the recommended raise', async () => {
+    // A + suited K (preFlopState default) → strong.
+    mockApi.mockResolvedValue(preFlopState);
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    const strongEval = await screen.findByTestId('uth-preflop-eval');
+    expect(strongEval).toHaveTextContent('強い手札 → 4× 推奨');
+    expect(strongEval.className).toContain('text-ds-success');
+
+    // K-7 offsuit → moderate.
+    mockApi.mockResolvedValue({ ...preFlopState, playerHand: [card('SPADE', 13), card('HEART', 7)] });
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    await waitFor(() => {
+      const evals = screen.getAllByTestId('uth-preflop-eval');
+      const moderate = evals[evals.length - 1];
+      expect(moderate).toHaveTextContent('微妙な手札 → 3× 推奨');
+      expect(moderate.className).toContain('text-ds-warning');
+    });
+  });
 });
