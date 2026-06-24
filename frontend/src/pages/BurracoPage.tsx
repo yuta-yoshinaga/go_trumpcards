@@ -445,6 +445,11 @@ function BurracoPageContent() {
             <div className="flex gap-2 items-center flex-wrap" data-tutorial="ca-actions">
               {isDrawPhase && isHumanTurn && (
                 <div className="flex gap-2 flex-col">
+                  {state?.isFrozen && (
+                    <div role="status" data-testid="ca-draw-freeze-guide" className="text-xs text-ds-warning">
+                      {t('drawFreezeGuide')}
+                    </div>
+                  )}
                   <div className="flex gap-2">
                     <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
                       {t('drawStockButton')}

@@ -31,6 +31,7 @@
   "naturalBurraco": "ナチュラルブラーコ",
   "mixedBurraco": "ミックスブラーコ",
   "drawStockButton": "山札から引く",
+  "drawFreezeGuide": "捨て札はフリーズ中: 上の1枚しか取れず、ワイルドカードで取り込むことはできません。",
   "drawDiscardButton": "捨て札を取る",
   "meldButton": "メルドする",
   "skipMeldButton": "スキップ",

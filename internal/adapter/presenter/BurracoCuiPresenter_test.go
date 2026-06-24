@@ -69,6 +69,8 @@ func TestBurracoCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "[フリーズ]")
+		// The draw prompt warns about the freeze constraint (top-only, no wild pickup).
+		assert.Contains(t, result, "フリーズ中: 上の1枚のみ")
 	})
 
 	t.Run("discard top shown", func(t *testing.T) {

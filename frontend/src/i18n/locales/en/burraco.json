@@ -31,6 +31,7 @@
   "naturalBurraco": "Natural Burraco",
   "mixedBurraco": "Mixed Burraco",
   "drawStockButton": "Draw from stock",
+  "drawFreezeGuide": "Discard pile is frozen: you may take only the top card, and wild cards cannot be used to pick it up.",
   "drawDiscardButton": "Pick up discard",
   "meldButton": "Meld",
   "skipMeldButton": "Skip",
