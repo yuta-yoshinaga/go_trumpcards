@@ -120,6 +120,15 @@ describe('VideoPokerGameContent', () => {
     expect(screen.getByRole('button', { name: /ディール/ })).toBeInTheDocument();
   });
 
+  it('bets the maximum (5) and deals when Bet Max is clicked', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderContent();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '最大ベット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 5));
+  });
+
   it('renders draw phase with hold toggles', async () => {
     mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(drawPhaseState);
     renderContent();
