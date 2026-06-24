@@ -204,6 +204,14 @@ function FaroPageContent() {
             {/* 13-rank betting layout */}
             <div className="mb-3 p-3 rounded bg-black/20" data-tutorial="faro-layout">
               <div className="text-ds-text-muted text-xs mb-2 text-center">{t('layoutTitle')}</div>
+              {isBetting && copper && (
+                <div
+                  className="mb-2 text-center text-xs font-semibold text-ds-accent rounded bg-ds-accent/15 py-1"
+                  data-testid="faro-copper-mode"
+                >
+                  🪙 {t('copperModeHint')}
+                </div>
+              )}
               <div className="grid grid-cols-7 gap-2 justify-items-center">
                 {RANKS.map((rank) => {
                   const bet = betFor(rank);
@@ -214,13 +222,22 @@ function FaroPageContent() {
                       onClick={() => isBetting && exec('bet', { rank, amount: chipAmount, copper })}
                       disabled={!isBetting || loading}
                       className={`relative w-12 h-14 rounded border text-lg font-bold transition-all ${
-                        bet
-                          ? 'border-ds-warning bg-ds-warning/20 text-ds-warning'
-                          : 'border-white/30 bg-black/30 text-ds-text-primary'
+                        bet?.copper
+                          ? 'border-ds-accent bg-ds-accent/20 text-ds-accent'
+                          : bet
+                            ? 'border-ds-warning bg-ds-warning/20 text-ds-warning'
+                            : 'border-white/30 bg-black/30 text-ds-text-primary'
                       } ${isBetting ? 'cursor-pointer hover:border-ds-warning hover:-translate-y-0.5' : 'cursor-default opacity-80'}`}
                       data-testid={`rank-${rank}`}
-                      aria-label={`${t('rankName')} ${rankLabel(rank)}`}
+                      aria-label={`${t('rankName')} ${rankLabel(rank)}${bet?.copper ? ` (${t('copperTag')})` : ''}`}
                     >
+                      {/* Copper bets (betting on the rank to lose) are marked with a coin icon + accent
+                          colour so they read differently from normal win bets at a glance (#2695). */}
+                      {bet?.copper && (
+                        <span className="absolute -top-1 -right-1 text-[10px]" aria-hidden="true">
+                          🪙
+                        </span>
+                      )}
                       {rankLabel(rank)}
                       {bet && (
                         <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[10px] whitespace-nowrap">
