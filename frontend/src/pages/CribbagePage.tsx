@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { cribbageApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -92,6 +93,7 @@ function pegCenter(pct: number): string {
 
 /** Inline peg board showing score progress, with front + rear pegs to surface the most recent jump. */
 function PegBoard({ scores, pointLimit }: { scores: { name: string; score: number }[]; pointLimit: number }) {
+  const { t } = useTranslation('cribbage');
   const prevScoresRef = useRef<number[]>(scores.map((s) => s.score));
   // Read the previous score for the rear-peg position before we overwrite the ref.
   const prevScores = prevScoresRef.current;
@@ -108,7 +110,7 @@ function PegBoard({ scores, pointLimit }: { scores: { name: string; score: numbe
     return out;
   }, [pointLimit]);
   return (
-    <section className="my-2 p-2 rounded bg-black/30" aria-label="peg-board" data-testid="peg-board">
+    <section className="my-2 p-2 rounded bg-black/30" aria-label={t('pegBoardAria')} data-testid="peg-board">
       {scores.map((p, idx) => {
         const pct = Math.min((p.score / pointLimit) * 100, 100);
         const prev = prevScores[idx] ?? p.score;
@@ -116,12 +118,17 @@ function PegBoard({ scores, pointLimit }: { scores: { name: string; score: numbe
         const tone = idx === 0 ? 'bg-ds-warning' : 'bg-ds-info';
         return (
           <div key={idx} className="mb-1">
-            <div className="flex justify-between text-ds-text-muted text-xs mb-0.5">
+            {/* Visual score row is decorative; the sr-only summary below carries
+                the same info as a single readable phrase for screen readers. */}
+            <div className="flex justify-between text-ds-text-muted text-xs mb-0.5" aria-hidden="true">
               <span>{p.name}</span>
               <span>
                 {p.score}/{pointLimit}
               </span>
             </div>
+            <span className="sr-only" data-testid={`peg-score-summary-${idx}`}>
+              {t('scoreSummary', { name: p.name, score: p.score, limit: pointLimit })}
+            </span>
             <div className="relative w-full h-3 bg-white/10 rounded-full overflow-visible">
               {ticks.map((v) => (
                 <div

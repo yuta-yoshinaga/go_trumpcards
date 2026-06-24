@@ -542,11 +542,16 @@ describe('CribbagePage', () => {
     expect(screen.queryByAltText('\u2666 K')).not.toBeInTheDocument();
   });
 
-  it('shows peg board', async () => {
+  it('shows peg board with a localized label and screen-reader score summaries', async () => {
     renderWithProviders(<CribbagePage />);
     await waitFor(() => {
-      expect(screen.getByLabelText('peg-board')).toBeInTheDocument();
+      expect(screen.getByTestId('peg-board')).toBeInTheDocument();
     });
+    // aria-label is localized (no longer the literal "peg-board").
+    expect(screen.getByLabelText('ペグボード（得点）')).toBeInTheDocument();
+    expect(screen.queryByLabelText('peg-board')).not.toBeInTheDocument();
+    // Each player has an sr-only score/goal summary.
+    expect(screen.getByTestId('peg-score-summary-0')).toHaveTextContent('/ 121 点');
   });
 
   it('renders the rear-peg trail after the player score jumps', async () => {

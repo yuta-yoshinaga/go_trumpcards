@@ -77,5 +77,7 @@
     "peggingArea": "交互にカードを出して31を目指します。",
     "pegBoard": "各プレイヤーのスコアが表示されます。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
-  }
+  },
+  "pegBoardAria": "ペグボード（得点）",
+  "scoreSummary": "{{name}}: {{score}} / {{limit}} 点"
 }
