@@ -147,6 +147,31 @@ describe('PigsTailPage', () => {
     expect(screen.getByTestId('pt-center-history')).toHaveTextContent('♠A');
   });
 
+  it('does not duplicate the center history when the top card is unchanged', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      centerTop: { design: 'SPADE', value: 1 },
+      centerCount: 3,
+      circleCount: 52,
+    });
+    renderWithProviders(<PigsTailPage />);
+    const strip = await screen.findByTestId('pt-center-history');
+    expect(strip.children).toHaveLength(1);
+
+    // A fresh draw signature (circleCount changed) but the same center top must
+    // not append a duplicate entry.
+    mockExec.mockResolvedValue({
+      ...baseState,
+      centerTop: { design: 'SPADE', value: 1 },
+      centerCount: 3,
+      circleCount: 51,
+    });
+    fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
+    await waitFor(() => expect(screen.getByText((_, el) => el?.textContent === '山札: 51')).toBeInTheDocument());
+    expect(screen.getByTestId('pt-center-history').children).toHaveLength(1);
+  });
+
   it('clears the center history when the pile is collected (centerCount 0)', async () => {
     mockExec.mockResolvedValue({ ...baseState, centerTop: { design: 'SPADE', value: 1 }, centerCount: 3 });
     renderWithProviders(<PigsTailPage />);
