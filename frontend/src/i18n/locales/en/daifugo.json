@@ -105,5 +105,6 @@
     "revolutionChance": "You have 4 of a kind — consider a revolution",
     "playStronger": "You can beat the table — play a stronger card",
     "passNoPlay": "No cards strong enough — pass"
-  }
+  },
+  "countMismatch": "Select {{count}} card(s) to match the table"
 }

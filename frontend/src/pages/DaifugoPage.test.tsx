@@ -273,6 +273,53 @@ describe('DaifugoPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0]));
   });
 
+  it('warns and disables play when the selection count does not match the table', async () => {
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      tableCards: [
+        { design: 'HEART', value: 6 },
+        { design: 'DIAMOND', value: 6 },
+      ],
+    });
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♠ 3')); // 1 card selected, table needs 2
+    expect(screen.getByTestId('daifugo-count-warning')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '選択して出す' })).toBeDisabled();
+  });
+
+  it('allows play when the selection count matches the table', async () => {
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      tableCards: [
+        { design: 'HEART', value: 6 },
+        { design: 'DIAMOND', value: 6 },
+      ],
+    });
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByAltText('♥ 5')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♥ 5'));
+    fireEvent.click(screen.getByAltText('♦ 5')); // 2 cards = table count
+    expect(screen.queryByTestId('daifugo-count-warning')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '選択して出す' })).not.toBeDisabled();
+  });
+
+  it('does not show the count warning during a pending action', async () => {
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      tableCards: [
+        { design: 'HEART', value: 6 },
+        { design: 'DIAMOND', value: 6 },
+      ],
+      pendingAction: 'sevenPass',
+      pendingActionTarget: 1,
+    });
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♠ 3')); // mismatching count, but pending → gated off
+    expect(screen.queryByTestId('daifugo-count-warning')).not.toBeInTheDocument();
+  });
+
   it('shows human action log after play', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<DaifugoPage />);
