@@ -266,4 +266,14 @@ describe('CrescentPage', () => {
       window.dispatchEvent(new Event('resize'));
     }
   });
+
+  it('renders a [0]..[15] column-number badge above each tableau pile', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<CrescentPage />);
+    await waitFor(() => expect(screen.getByTestId('crescent-col-badge-0')).toBeInTheDocument());
+    expect(screen.getByTestId('crescent-col-badge-0')).toHaveTextContent('[0]');
+    expect(screen.getByTestId('crescent-col-badge-15')).toHaveTextContent('[15]');
+    // The badge is decorative — it must not add to the SR card label noise.
+    expect(screen.getByTestId('crescent-col-badge-7')).toHaveAttribute('aria-hidden', 'true');
+  });
 });
