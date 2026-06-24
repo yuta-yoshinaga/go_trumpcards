@@ -308,14 +308,24 @@ function FiveCardStudPageContent() {
                   <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
                   <div className="flex flex-wrap gap-1 mb-1">
                     {p.doorCards?.length
-                      ? p.doorCards.map((card) => (
-                          <AnimatedCard
-                            key={`${card.design}-${card.value}`}
-                            card={card}
-                            width={cardWidth}
-                            style={placeholderCardStyle}
-                          />
-                        ))
+                      ? p.doorCards.map((card, i, arr) =>
+                          i === arr.length - 1 ? (
+                            <span
+                              key={`${card.design}-${card.value}`}
+                              className="inline-block rounded ring-2 ring-ds-accent motion-safe:animate-pulse"
+                              data-testid={`latest-door-cpu-${p.id}`}
+                            >
+                              <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                            </span>
+                          ) : (
+                            <AnimatedCard
+                              key={`${card.design}-${card.value}`}
+                              card={card}
+                              width={cardWidth}
+                              style={placeholderCardStyle}
+                            />
+                          ),
+                        )
                       : !p.folded &&
                         Array.from({ length: doorCount }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                   </div>
@@ -397,14 +407,24 @@ function FiveCardStudPageContent() {
                 <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
                 <div className="flex flex-wrap gap-1.5 mb-1">
                   {humanPlayer.doorCards?.length
-                    ? humanPlayer.doorCards.map((card) => (
-                        <AnimatedCard
-                          key={`${card.design}-${card.value}`}
-                          card={card}
-                          width={cardWidth}
-                          style={placeholderCardStyle}
-                        />
-                      ))
+                    ? humanPlayer.doorCards.map((card, i, arr) =>
+                        i === arr.length - 1 ? (
+                          <span
+                            key={`${card.design}-${card.value}`}
+                            className="inline-block rounded ring-2 ring-ds-accent motion-safe:animate-pulse"
+                            data-testid="latest-door-human"
+                          >
+                            <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                          </span>
+                        ) : (
+                          <AnimatedCard
+                            key={`${card.design}-${card.value}`}
+                            card={card}
+                            width={cardWidth}
+                            style={placeholderCardStyle}
+                          />
+                        ),
+                      )
                     : !humanPlayer.folded &&
                       Array.from({ length: doorCount }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                 </div>
