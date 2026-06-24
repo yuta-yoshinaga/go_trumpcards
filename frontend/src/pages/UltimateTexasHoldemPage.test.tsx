@@ -364,4 +364,28 @@ describe('UltimateTexasHoldemPage', () => {
     expect(screen.getByTestId('play-4x').className).not.toContain('animate-pulse');
     expect(screen.getByTestId('play-3x').className).not.toContain('animate-pulse');
   });
+
+  it('shows a strong pre-flop evaluation in success color (A + suited K → 4×)', async () => {
+    mockApi.mockResolvedValue(preFlopState);
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    const evalText = await screen.findByTestId('uth-preflop-eval');
+    expect(evalText).toHaveTextContent('強い手札 → 4× 推奨');
+    expect(evalText.className).toContain('text-ds-success');
+  });
+
+  it('shows a moderate pre-flop evaluation in warning color (K-7 offsuit → 3×)', async () => {
+    mockApi.mockResolvedValue({ ...preFlopState, playerHand: [card('SPADE', 13), card('HEART', 7)] });
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    const evalText = await screen.findByTestId('uth-preflop-eval');
+    expect(evalText).toHaveTextContent('微妙な手札 → 3× 推奨');
+    expect(evalText.className).toContain('text-ds-warning');
+  });
+
+  it('shows a weak pre-flop evaluation in muted color (7-2 offsuit → check)', async () => {
+    mockApi.mockResolvedValue({ ...preFlopState, playerHand: [card('SPADE', 7), card('HEART', 2)] });
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    const evalText = await screen.findByTestId('uth-preflop-eval');
+    expect(evalText).toHaveTextContent('弱い手札 → チェック推奨');
+    expect(evalText.className).toContain('text-ds-text-muted');
+  });
 });

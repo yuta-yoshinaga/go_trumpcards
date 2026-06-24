@@ -59,6 +59,11 @@
     "title": "Settings"
   },
   "betGuide": "Set the Ante (the Blind matches automatically). Trips is an optional side bet.",
+  "preflopEval": {
+    "strong": "Assessment: strong hand → 4× recommended",
+    "moderate": "Assessment: marginal hand → 3× recommended",
+    "weak": "Assessment: weak hand → Check recommended"
+  },
   "payoutRef": {
     "title": "Payouts",
     "blindHeader": "Blind (only when player wins with a Straight or better; otherwise pushes or lost)",
