@@ -363,6 +363,7 @@ function BakersGamePageContent() {
                               disabled={!isPlaying || loading || !selectedSource}
                               style={{ height: cardHeight }}
                               className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                              aria-label={t('emptyTableauColumnAriaLabel', { idx: String(colIdx) })}
                             >
                               K
                             </button>

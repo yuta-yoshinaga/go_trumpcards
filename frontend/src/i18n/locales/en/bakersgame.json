@@ -33,5 +33,6 @@
     "freeCellsFilling": "Free cells are almost full — try to clear some",
     "useEmptyColumn": "An empty column is available — use it for reorganization",
     "useFreeCells": "Consider moving a card to a free cell to open up moves"
-  }
+  },
+  "emptyTableauColumnAriaLabel": "Empty tableau column {{idx}} (move target)"
 }
