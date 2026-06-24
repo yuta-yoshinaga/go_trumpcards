@@ -283,6 +283,73 @@ describe('PineapplePage', () => {
     expect(preview).toHaveTextContent('ワンペア');
   });
 
+  it('evaluates the best five when the board has more than three cards', async () => {
+    const irishRiverState: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 4,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 1 },
+            { design: 'DIAMOND', value: 5 },
+            { design: 'CLOVER', value: 8 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      // Five board cards → kept(2) + board(5) = 7, so holdemBestFive picks the best 5.
+      communityCards: [
+        { design: 'SPADE', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+        { design: 'CLOVER', value: 2 },
+        { design: 'HEART', value: 9 },
+      ],
+      discardDone: [false, true, true, true],
+    };
+    mockIrishExec.mockResolvedValue(irishRiverState);
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♦ 5').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♣ 8').closest('button') as HTMLButtonElement);
+    const preview = await screen.findByTestId('irishpoker-discard-preview');
+    expect(preview).toHaveTextContent('ワンペア');
+  });
+
+  it('shows kept cards without a hand badge when the board is too small to evaluate', async () => {
+    const irishNoBoardState: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 4,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 1 },
+            { design: 'DIAMOND', value: 5 },
+            { design: 'CLOVER', value: 8 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [], // fewer than 3 board cards → no hand can be formed
+      discardDone: [false, true, true, true],
+    };
+    mockIrishExec.mockResolvedValue(irishNoBoardState);
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♦ 5').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♣ 8').closest('button') as HTMLButtonElement);
+    const preview = await screen.findByTestId('irishpoker-discard-preview');
+    // Kept cards are shown, but no tentative-hand badge.
+    expect(preview).toHaveTextContent('残す札');
+    expect(preview).not.toHaveTextContent('暫定役');
+  });
+
   it('does not show the Irish Poker discard preview for the Pineapple variant', async () => {
     mockExec.mockResolvedValue(discardState);
     renderWithProviders(<PineapplePage />);
