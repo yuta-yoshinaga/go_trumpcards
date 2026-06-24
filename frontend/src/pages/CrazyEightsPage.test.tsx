@@ -117,6 +117,25 @@ describe('CrazyEightsPage', () => {
     });
   });
 
+  it('highlights legal cards and dims illegal ones on the human turn', async () => {
+    // Discard top ♥7; hand has ♥J (legal — same suit) and ♠A (illegal).
+    renderWithProviders(<CrazyEightsPage />);
+    const legal = await screen.findByLabelText('♥ J');
+    const illegal = screen.getByLabelText('♠ A');
+    expect(legal).toHaveAttribute('data-legal', 'true');
+    expect(legal.className).toContain('ring-ds-success');
+    expect(illegal).toHaveAttribute('data-legal', 'false');
+    expect(illegal.className).toContain('opacity-50');
+    expect(illegal).toHaveAttribute('title', 'このカードは出せません（スート・数字・8 のいずれも不一致）');
+  });
+
+  it('does not mark card legality on a CPU turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<CrazyEightsPage />);
+    const card = await screen.findByLabelText('♥ J');
+    expect(card).not.toHaveAttribute('data-legal');
+  });
+
   it('renders play and draw buttons when human turn', async () => {
     renderWithProviders(<CrazyEightsPage />);
     await waitFor(() => {
