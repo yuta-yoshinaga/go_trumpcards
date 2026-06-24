@@ -76,9 +76,9 @@ export interface ChinchonDeadwoodBreakdown {
 /** Breakdown of which cards remain as deadwood in the best meld split, for a
  * per-card hint like "5 + 3 + 2 = 10". */
 export function chinchonDeadwoodBreakdown(hand: readonly Card[]): ChinchonDeadwoodBreakdown {
-  const deadwood = search(hand.map((card, idx) => ({ idx, card }))).deadwood.map((d) => d.card);
-  const values = deadwood.map(chinchonCardValue);
-  return { cards: deadwood, values, total: values.reduce((a, b) => a + b, 0) };
+  const best = search(hand.map((card, idx) => ({ idx, card })));
+  const cards = best.deadwood.map((d) => d.card);
+  return { cards, values: cards.map(chinchonCardValue), total: best.value };
 }
 
 function search(remaining: IndexedCard[]): { value: number; deadwood: IndexedCard[] } {
