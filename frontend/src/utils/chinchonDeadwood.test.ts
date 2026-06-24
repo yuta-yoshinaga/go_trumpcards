@@ -4,6 +4,7 @@ import {
   bestChinchonDeadwoodValue,
   calcChinchonDeadwoodValue,
   chinchonCardValue,
+  chinchonDeadwoodBreakdown,
   chinchonMeldLabel,
   chinchonRankPosition,
 } from './chinchonDeadwood';
@@ -74,5 +75,21 @@ describe('bestChinchonDeadwoodValue', () => {
   it('removes a same-rank set from the deadwood', () => {
     const hand = [c('SPADE', 5), c('HEART', 5), c('CLOVER', 5), c('DIAMOND', 11)];
     expect(bestChinchonDeadwoodValue(hand)).toBe(10);
+  });
+});
+
+describe('chinchonDeadwoodBreakdown', () => {
+  it('lists the leftover deadwood cards and their values after the best meld split', () => {
+    // ♠5-♥5-♣5 set melds away; ♦K(10) and ♥3(3) are deadwood.
+    const hand = [c('SPADE', 5), c('HEART', 5), c('CLOVER', 5), c('DIAMOND', 13), c('HEART', 3)];
+    const bd = chinchonDeadwoodBreakdown(hand);
+    expect(bd.total).toBe(13);
+    expect([...bd.values].sort((a, b) => a - b)).toEqual([3, 10]);
+    expect(bd.cards).toHaveLength(2);
+  });
+
+  it('returns an empty breakdown when every card melds', () => {
+    const hand = [c('SPADE', 5), c('HEART', 5), c('CLOVER', 5)];
+    expect(chinchonDeadwoodBreakdown(hand)).toEqual({ cards: [], values: [], total: 0 });
   });
 });

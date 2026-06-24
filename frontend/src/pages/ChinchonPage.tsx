@@ -33,7 +33,11 @@ import type { ChinchonResponse } from '../types/card';
 import { ChinchonPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
-import { bestChinchonDeadwoodValue, chinchonMeldLabel } from '../utils/chinchonDeadwood';
+import {
+  type ChinchonDeadwoodBreakdown,
+  chinchonDeadwoodBreakdown,
+  chinchonMeldLabel,
+} from '../utils/chinchonDeadwood';
 import { CHINCHON_HELP, parseChinchonCommand } from '../utils/cli/commands/chinchonCommands';
 import { formatChinchonState } from '../utils/cli/formatters/chinchonFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -167,25 +171,26 @@ function ChinchonPageContent() {
   // a card is selected we project that discard; otherwise show the best-case
   // deadwood across all single discards (a knockability hint).
   const knockThreshold = state?.config.knockThreshold ?? chinchonConfig.knockThreshold;
-  const liveDeadwood = useMemo<number | null>(() => {
-    if (!state) return null;
-    if (state.phase !== ChinchonPhase.DISCARD) return null;
+  // Breakdown of the deadwood that would remain after the chosen discard (or the
+  // best discard when 0/2+ cards are selected), used for both the score and the
+  // per-card "5 + 3 + 2 = 10" hint.
+  const liveDeadwoodBreakdown = useMemo<ChinchonDeadwoodBreakdown | null>(() => {
+    if (!state || state.phase !== ChinchonPhase.DISCARD) return null;
     const human = state.players.find((p) => p.isHuman);
-    if (!human) return null;
+    if (!human || human.cards.length === 0) return null;
     const cards = human.cards;
-    if (cards.length === 0) return null;
     if (selectedCardIndices.length === 1) {
-      const drop = selectedCardIndices[0];
-      return bestChinchonDeadwoodValue(cards.filter((_, i) => i !== drop));
+      return chinchonDeadwoodBreakdown(cards.filter((_, i) => i !== selectedCardIndices[0]));
     }
-    let best = Number.POSITIVE_INFINITY;
+    let best: ChinchonDeadwoodBreakdown | null = null;
     for (let i = 0; i < cards.length; i++) {
-      const dv = bestChinchonDeadwoodValue(cards.filter((_, j) => j !== i));
-      if (dv < best) best = dv;
-      if (best === 0) break;
+      const bd = chinchonDeadwoodBreakdown(cards.filter((_, j) => j !== i));
+      if (best === null || bd.total < best.total) best = bd;
+      if (best.total === 0) break;
     }
-    return Number.isFinite(best) ? best : null;
+    return best;
   }, [state, selectedCardIndices]);
+  const liveDeadwood = liveDeadwoodBreakdown?.total ?? null;
   const canKnockNow = liveDeadwood != null && liveDeadwood <= knockThreshold;
 
   if (!state)
@@ -386,6 +391,13 @@ function ChinchonPageContent() {
                 className={`text-xs font-bold mb-1 ${canKnockNow ? 'text-ds-success' : 'text-ds-text-muted'}`}
               >
                 {t('deadwoodLabel', { score: liveDeadwood, threshold: knockThreshold })}
+              </div>
+            )}
+            {liveDeadwoodBreakdown != null && liveDeadwoodBreakdown.cards.length > 0 && (
+              <div data-testid="chinchon-deadwood-breakdown" className="text-[10px] text-ds-text-muted mb-1">
+                {t('deadwoodBreakdown', {
+                  breakdown: `${liveDeadwoodBreakdown.values.join(' + ')} = ${liveDeadwoodBreakdown.total}`,
+                })}
               </div>
             )}
             {humanPlayer && (
