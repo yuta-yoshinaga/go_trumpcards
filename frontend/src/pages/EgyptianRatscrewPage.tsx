@@ -244,8 +244,25 @@ function EgyptianRatscrewPageContent() {
                   {t('label.pileCount', { count: state.centerPileSize })}
                 </div>
                 {state.chanceRemaining > 0 && (
-                  <div className="text-xs text-ds-warning mt-1">
-                    {t('label.chanceRemaining', { count: state.chanceRemaining })}
+                  <div className="mt-1 flex flex-col items-center gap-0.5" data-testid="er-chance-row">
+                    {/* Dot row: one filled pip per remaining flip. Keyed on the count so it
+                        re-mounts and re-pulses each time a chance is consumed (#2608). */}
+                    <div
+                      key={`chance-${state.chanceRemaining}`}
+                      className="flex items-center justify-center gap-1 animate-pulse"
+                      aria-hidden="true"
+                    >
+                      {Array.from({ length: state.chanceRemaining }, (_, i) => `dot${i}`).map((id) => (
+                        <span key={id} className="inline-block h-2 w-2 rounded-full bg-ds-warning" />
+                      ))}
+                    </div>
+                    <div className="text-xs text-ds-warning" role="status">
+                      {t('label.chanceRemaining', { count: state.chanceRemaining })}
+                      {' — '}
+                      {t('chanceResponder', {
+                        player: state.isHumanTurn ? tc('player.you') : tc('player.cpu', { id: state.currentTurnIdx }),
+                      })}
+                    </div>
                   </div>
                 )}
                 <div className="mt-2">

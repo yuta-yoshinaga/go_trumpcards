@@ -17,6 +17,7 @@
     "pileCount": "場に{{count}}枚",
     "chanceRemaining": "残りチャンス: {{count}}"
   },
+  "chanceResponder": "応答: {{player}}",
   "settings": {
     "cpuDifficulty": "CPU難易度",
     "difficulty": {

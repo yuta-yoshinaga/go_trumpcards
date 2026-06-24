@@ -189,6 +189,17 @@ describe('EgyptianRatscrewPage', () => {
     expect(screen.getAllByText(/2/).length).toBeGreaterThan(0);
   });
 
+  it('renders a dot per remaining chance and names the responding player', async () => {
+    // chanceRemaining 2, currentTurnIdx 1 (CPU) on this fixture.
+    mockExec.mockResolvedValueOnce(chanceState);
+    renderWithProviders(<EgyptianRatscrewPage />);
+    const row = await screen.findByTestId('er-chance-row');
+    // One decorative pip per remaining flip.
+    expect(row.querySelectorAll('span.rounded-full')).toHaveLength(2);
+    // Responder label identifies the CPU (currentTurnIdx 1, isHumanTurn false).
+    expect(row).toHaveTextContent('応答: CPU 1');
+  });
+
   it('reset settings select fires reset with cpuDifficulty config', async () => {
     renderWithProviders(<EgyptianRatscrewPage />);
     await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
