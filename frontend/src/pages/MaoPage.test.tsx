@@ -10,6 +10,14 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { mao: vi.fn() },
 }));
 
+const mockPlaySound = vi.fn();
+const mockSoundValue = { playSound: mockPlaySound, muted: false, toggleMute: vi.fn() };
+vi.mock('../providers/SoundProvider', () => ({
+  SoundProvider: ({ children }: { children: React.ReactNode }) => children,
+  useSound: () => mockSoundValue,
+  useOptionalSound: () => mockSoundValue,
+}));
+
 const mockExec = vi.mocked(maoApi.exec);
 
 const playPhaseState: MaoResponse = {
@@ -60,8 +68,11 @@ const gameEndState: MaoResponse = {
   message: 'Game end!',
 };
 const penaltyState: MaoResponse = { ...playPhaseState, penaltyDrawCount: 4 };
+const rulePenaltyState: MaoResponse = { ...playPhaseState, rulePenalty: true };
 
 beforeEach(() => {
+  mockExec.mockReset();
+  mockPlaySound.mockReset();
   mockExec.mockResolvedValue(playPhaseState);
 });
 
@@ -104,6 +115,22 @@ describe('MaoPage', () => {
     mockExec.mockResolvedValue(playPhaseState);
     fireEvent.click(screen.getByRole('button', { name: '引く' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
+  });
+
+  it('buzzes and flashes the rule panel when a rule penalty lands', async () => {
+    mockExec.mockResolvedValue(rulePenaltyState);
+    renderWithProviders(<MaoPage />);
+    await waitFor(() => expect(screen.getByTestId('rule-penalty')).toBeInTheDocument());
+    expect(mockPlaySound).toHaveBeenCalledWith('errorBuzz');
+    const panel = screen.getByTestId('mao-rule-panel');
+    expect(panel.className).toContain('motion-safe:animate-pulse');
+    expect(panel.className).toContain('ring-ds-error');
+  });
+
+  it('does not buzz when there is no rule penalty', async () => {
+    renderWithProviders(<MaoPage />);
+    await waitFor(() => expect(screen.getByTestId('mao-rule-panel')).toBeInTheDocument());
+    expect(mockPlaySound).not.toHaveBeenCalledWith('errorBuzz');
   });
 
   it('shows penalty banner and take-penalty draw label when penalty active', async () => {
