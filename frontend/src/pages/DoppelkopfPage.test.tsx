@@ -84,15 +84,19 @@ describe('DoppelkopfPage', () => {
   it('shows the Re announce button when the human is Re and can announce', async () => {
     mockExec.mockResolvedValue(announceState);
     renderWithProviders(<DoppelkopfPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Re を宣言' })).toBeInTheDocument());
-    fireEvent.click(screen.getByRole('button', { name: 'Re を宣言' }));
+    const btn = await screen.findByRole('button', { name: /Re を宣言/ });
+    // aria-label adds the timing/scoring context while still containing the visible label.
+    expect(btn.getAttribute('aria-label')).toContain('Re を宣言');
+    expect(btn.getAttribute('aria-label')).toContain('得点');
+    expect(btn).toHaveAttribute('title');
+    fireEvent.click(btn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('announce'));
   });
 
   it('shows the Kontra announce button when the human is not Re', async () => {
     mockExec.mockResolvedValue(kontraAnnounceState);
     renderWithProviders(<DoppelkopfPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Kontra を宣言' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /Kontra を宣言/ })).toBeInTheDocument());
   });
 
   it('does not show the announce button when canAnnounce is false', async () => {
