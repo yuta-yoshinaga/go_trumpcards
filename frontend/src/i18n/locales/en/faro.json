@@ -10,6 +10,7 @@
   "copperOff": "Copper: off",
   "betAmountLabel": "Bet amount",
   "copperTag": "copper",
+  "copperModeHint": "Copper mode: your next bet wagers that rank to LOSE",
   "betsTitle": "Current bets",
   "noBets": "No bets placed yet.",
   "betLine": "Rank {{rank}}: {{amount}}",
