@@ -192,6 +192,41 @@ describe('HeartsPage', () => {
     expect(screen.getByTestId('hearts-pass-progress')).toHaveTextContent('2/3');
   });
 
+  it('shows a directional arrow glyph for the pass direction', async () => {
+    mockExec.mockResolvedValue(passPhaseState); // left
+    renderWithProviders(<HeartsPage />);
+    const arrow = await screen.findByTestId('hearts-pass-arrow');
+    expect(arrow).toHaveTextContent('←');
+  });
+
+  it('shows the remaining-card count until 3 are selected', async () => {
+    mockExec.mockResolvedValue({
+      ...passPhaseState,
+      players: [
+        {
+          ...passPhaseState.players[0],
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 11 },
+            { design: 'CLOVER', value: 5 },
+          ],
+        },
+        ...passPhaseState.players.slice(1),
+      ],
+    });
+    renderWithProviders(<HeartsPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    const badge = screen.getByTestId('hearts-pass-progress');
+    expect(badge).toHaveTextContent('あと3枚');
+
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♥ J').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♣ 5').closest('button') as HTMLButtonElement);
+    // All three selected: remaining hint disappears.
+    expect(badge).not.toHaveTextContent('あと');
+  });
+
   it('play button disabled when not 1 card selected', async () => {
     renderWithProviders(<HeartsPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '出す' })).toBeDisabled());
