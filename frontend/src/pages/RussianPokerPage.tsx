@@ -296,7 +296,7 @@ function RussianPokerPageContent() {
                       <button
                         key={`p-${i}`}
                         type="button"
-                        aria-label={isMaskedCard(card) ? tc('card.back') : cardAlt(card)}
+                        aria-label={cardAlt(card)}
                         aria-pressed={selectable ? selected : undefined}
                         data-testid={`player-card-${i}`}
                         data-selected={selected ? 'true' : 'false'}
