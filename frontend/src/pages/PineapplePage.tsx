@@ -244,6 +244,20 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
     const rank = picked ? evaluateFiveCardHand(picked.map((i) => all[i])) : null;
     return { kept, handKey: rank == null ? null : pokerHandKey(rank) };
   }, [variant, isDiscardPhase, humanPlayer, state?.communityCards, selectedDiscards, discardCount]);
+  // Crazy Pineapple discards 1 of 3 after the flop; annotate each hole card with
+  // the best hand the OTHER two would make with the board if that card is the
+  // one discarded, so the player can compare keeps before committing.
+  const candidatePreviews = useMemo<(string | null)[] | null>(() => {
+    if (variant !== 'crazypineapple' || !isDiscardPhase) return null;
+    const hole = humanPlayer?.cards ?? [];
+    const board = state?.communityCards ?? [];
+    return hole.map((_, discardIdx) => {
+      const all = [...hole.filter((_, i) => i !== discardIdx), ...board];
+      const picked = holdemBestFive(all);
+      const rank = picked ? evaluateFiveCardHand(picked.map((i) => all[i])) : null;
+      return rank == null ? null : pokerHandKey(rank);
+    });
+  }, [variant, isDiscardPhase, humanPlayer, state?.communityCards]);
   const toggleDiscard = (idx: number) => {
     if (!canDiscard) return;
     setSelectedDiscards((prev) => {
@@ -452,19 +466,29 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                         const isSelected = selectedDiscards.includes(idx);
                         const inBest = showdownBest5.holeSet.has(idx);
                         const dim = showdownBest5.holeSet.size > 0 && !inBest;
+                        const candKey = candidatePreviews?.[idx] ?? null;
                         return (
-                          <button
-                            key={`${card.design}-${card.value}`}
-                            type="button"
-                            onClick={() => toggleDiscard(idx)}
-                            aria-pressed={canDiscard ? isSelected : undefined}
-                            className={`${canDiscard ? 'cursor-pointer' : 'cursor-default'} ${inBest ? 'rounded-lg ring-2 ring-ds-success motion-safe:animate-pulse' : ''} ${dim ? 'opacity-50' : ''}`}
-                            disabled={!canDiscard}
-                            style={selectedCardStyle(canDiscard && isSelected)}
-                            data-testid={inBest ? 'pn-best5-card' : undefined}
-                          >
-                            <AnimatedCard card={card} width={cardWidth} />
-                          </button>
+                          <div key={`${card.design}-${card.value}`} className="flex flex-col items-center">
+                            <button
+                              type="button"
+                              onClick={() => toggleDiscard(idx)}
+                              aria-pressed={canDiscard ? isSelected : undefined}
+                              className={`${canDiscard ? 'cursor-pointer' : 'cursor-default'} ${inBest ? 'rounded-lg ring-2 ring-ds-success motion-safe:animate-pulse' : ''} ${dim ? 'opacity-50' : ''}`}
+                              disabled={!canDiscard}
+                              style={selectedCardStyle(canDiscard && isSelected)}
+                              data-testid={inBest ? 'pn-best5-card' : undefined}
+                            >
+                              <AnimatedCard card={card} width={cardWidth} />
+                            </button>
+                            {candKey && (
+                              <span
+                                className="mt-0.5 text-[10px] text-ds-text-muted"
+                                data-testid="cp-discard-candidate"
+                              >
+                                {`${t('discard.candidateHand')}: ${t(`hand.${candKey}`)}`}
+                              </span>
+                            )}
+                          </div>
                         );
                       })
                     : !humanPlayer.folded &&

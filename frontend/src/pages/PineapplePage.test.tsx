@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { irishPokerApi, pineappleApi } from '../api/gameApi';
+import { crazyPineappleApi, irishPokerApi, pineappleApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { PineappleResponse } from '../types/card';
 import { PineapplePage } from './PineapplePage';
@@ -8,11 +8,13 @@ import { PineapplePage } from './PineapplePage';
 vi.mock('../api/gameApi', () => ({
   pineappleApi: { exec: vi.fn() },
   irishPokerApi: { exec: vi.fn() },
-  actionLogApi: { pineapple: vi.fn(), irishpoker: vi.fn() },
+  crazyPineappleApi: { exec: vi.fn() },
+  actionLogApi: { pineapple: vi.fn(), irishpoker: vi.fn(), crazypineapple: vi.fn() },
 }));
 
 const mockExec = vi.mocked(pineappleApi.exec);
 const mockIrishExec = vi.mocked(irishPokerApi.exec);
+const mockCrazyExec = vi.mocked(crazyPineappleApi.exec);
 
 /** Helper: base human player */
 const humanPlayer = (overrides: Partial<import('../types/card').HoldemPlayerData> = {}) => ({
@@ -355,6 +357,70 @@ describe('PineapplePage', () => {
     renderWithProviders(<PineapplePage variant="irishpoker" />);
     await waitFor(() => expect(screen.getByText('あなたの手札')).toBeInTheDocument());
     expect(screen.queryByTestId('irishpoker-discard-preview')).not.toBeInTheDocument();
+  });
+
+  it('annotates each Crazy Pineapple hole card with the keep-hand if discarded', async () => {
+    const crazyDiscardState: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 3,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 1 },
+            { design: 'DIAMOND', value: 5 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      discardDone: [false, true, true, true],
+    };
+    mockCrazyExec.mockResolvedValue(crazyDiscardState);
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    const labels = screen.getAllByTestId('cp-discard-candidate');
+    expect(labels).toHaveLength(3); // one per hole card
+    // Each keep makes at least a pair (Aces or fives), so a hand name is shown.
+    expect(labels[0]).toHaveTextContent('ワンペア');
+  });
+
+  it('omits Crazy Pineapple candidate labels when the board is too small to evaluate', async () => {
+    const crazyNoBoardState: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 3,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 1 },
+            { design: 'DIAMOND', value: 5 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [], // keep(2) + board(0) < 5 → no hand can be evaluated
+      discardDone: [false, true, true, true],
+    };
+    mockCrazyExec.mockResolvedValue(crazyNoBoardState);
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    expect(screen.queryByTestId('cp-discard-candidate')).not.toBeInTheDocument();
+  });
+
+  it('does not show Crazy Pineapple candidate labels outside the discard phase', async () => {
+    mockCrazyExec.mockResolvedValue({ ...preFlopState, initialDealCount: 3 });
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+    await waitFor(() => expect(screen.getByText('あなたの手札')).toBeInTheDocument());
+    expect(screen.queryByTestId('cp-discard-candidate')).not.toBeInTheDocument();
   });
 
   it('does not show the Irish Poker discard preview for the Pineapple variant', async () => {
