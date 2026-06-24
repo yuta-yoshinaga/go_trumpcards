@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { pitchApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
@@ -123,7 +123,25 @@ function PitchPageContent() {
   const [selectedCardIdx, setSelectedCardIdx] = useState<number | null>(null);
   // Game-pips breakdown popover: title-tooltips are unreachable on touch (#2612).
   const [pipsOpen, setPipsOpen] = useState(false);
+  const pipsRef = useRef<HTMLSpanElement>(null);
   const { cardWidth } = useCardDimensions();
+
+  // Dismiss the pips popover on Escape or a click/tap outside its wrapper.
+  useEffect(() => {
+    if (!pipsOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setPipsOpen(false);
+    };
+    const onPointer = (e: MouseEvent) => {
+      if (pipsRef.current && !pipsRef.current.contains(e.target as Node)) setPipsOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('mousedown', onPointer);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('mousedown', onPointer);
+    };
+  }, [pipsOpen]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('pitch');
   const cliConfig: CliGameConfig<PitchResponse, Parameters<typeof pitchApi.exec>> = useMemo(
@@ -297,21 +315,21 @@ function PitchPageContent() {
                   <span>
                     {findPlayerName(state.players, humanIdx)} ({t('cards', { count: human.cards.length })})
                   </span>
-                  <span className="relative inline-flex">
+                  <span className="relative inline-flex" ref={pipsRef}>
                     <button
                       type="button"
                       data-testid="pitch-game-pips-badge"
                       className="normal-case inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-full bg-ds-accent/20 text-ds-accent px-2 py-0.5 text-[11px] font-bold"
                       aria-expanded={pipsOpen}
+                      aria-haspopup="true"
                       onClick={() => setPipsOpen((o) => !o)}
                       title={t('gamePipsTooltip')}
                     >
                       {t('gamePips', { pips: pitchHandPips(human.cards) })}
                     </button>
                     {pipsOpen && (
-                      <div
+                      <section
                         data-testid="pitch-game-pips-popover"
-                        role="dialog"
                         aria-label={t('gamePipsTooltip')}
                         className="absolute top-full left-0 z-10 mt-1 w-max max-w-[16rem] rounded-lg bg-ds-surface border border-ds-accent/40 p-2 text-[11px] text-ds-text-primary shadow-lg"
                       >
@@ -330,7 +348,7 @@ function PitchPageContent() {
                           <span>{t('gamePipsTotal')}</span>
                           <span className="font-mono">{pitchHandPips(human.cards)}</span>
                         </div>
-                      </div>
+                      </section>
                     )}
                   </span>
                 </div>

@@ -188,4 +188,27 @@ describe('PitchPage', () => {
     expect(badge.className).toContain('min-h-[44px]');
     expect(badge.className).toContain('min-w-[44px]');
   });
+
+  it('closes the pips popover on Escape and on an outside click', async () => {
+    const pipHand: PitchResponse = {
+      ...bidState,
+      players: [
+        { ...bidState.players[0], cards: [makeCard('SPADE', 1), makeCard('SPADE', 10)], cardCount: 2 },
+        ...bidState.players.slice(1),
+      ],
+    };
+    mockApi.mockResolvedValue(pipHand);
+    renderWithProviders(<PitchPage />);
+    const badge = await screen.findByTestId('pitch-game-pips-badge');
+
+    fireEvent.click(badge);
+    expect(screen.getByTestId('pitch-game-pips-popover')).toBeInTheDocument();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByTestId('pitch-game-pips-popover')).not.toBeInTheDocument();
+
+    fireEvent.click(badge);
+    expect(screen.getByTestId('pitch-game-pips-popover')).toBeInTheDocument();
+    fireEvent.mouseDown(document.body);
+    expect(screen.queryByTestId('pitch-game-pips-popover')).not.toBeInTheDocument();
+  });
 });
