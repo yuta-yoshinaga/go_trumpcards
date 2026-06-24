@@ -299,7 +299,8 @@
   },
   "card": {
     "back": "カード裏面",
-    "joker": "ジョーカー"
+    "joker": "ジョーカー",
+    "play": "{{card}} を出す"
   },
   "label": {
     "result": "結果:",
