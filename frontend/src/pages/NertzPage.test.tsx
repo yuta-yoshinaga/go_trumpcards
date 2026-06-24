@@ -117,9 +117,9 @@ describe('NertzPage', () => {
   });
 
   it('selects a tableau card on click and renders empty columns as placeholders', async () => {
-    const foundations = Array.from({ length: 8 }, () => ({ suit: -1, size: 0, top: null }));
+    const foundations: NertzResponse['foundations'] = Array.from({ length: 8 }, () => ({ suit: -1, size: 0 }));
     // One foundation carries a top card (covers the foundation card-image branch).
-    foundations[0] = { suit: 3, size: 1, top: { design: 'HEART', value: 1 } } as (typeof foundations)[number];
+    foundations[0] = { suit: 3, size: 1, top: { design: 'HEART', value: 1 } };
     const withEmptyCol = {
       ...playingState,
       foundations,
