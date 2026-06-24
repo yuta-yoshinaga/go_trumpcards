@@ -57,11 +57,17 @@ describe('CountdownBar', () => {
     vi.mocked(useReducedMotion).mockReturnValue(false);
   });
 
-  it('renders label text in aria-live region when provided', () => {
+  it('renders label as a role=timer region, assertive in the final seconds', () => {
     render(<CountdownBar remaining={3} total={10} label="残り 3 秒" />);
     const liveRegion = screen.getByText('残り 3 秒');
-    expect(liveRegion).toHaveAttribute('aria-live', 'assertive');
+    expect(liveRegion).toHaveAttribute('role', 'timer');
+    expect(liveRegion).toHaveAttribute('aria-live', 'assertive'); // ≤3s → urgent
     expect(liveRegion).toHaveAttribute('aria-atomic', 'true');
+  });
+
+  it('announces politely while time remains (above 3s)', () => {
+    render(<CountdownBar remaining={7} total={10} label="残り 7 秒" />);
+    expect(screen.getByText('残り 7 秒')).toHaveAttribute('aria-live', 'polite');
   });
 
   it('applies ds-warning color to label text', () => {

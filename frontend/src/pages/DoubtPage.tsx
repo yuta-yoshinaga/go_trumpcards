@@ -347,6 +347,9 @@ function DoubtPageContent() {
                             {t('skipButton')}
                           </button>
                         </div>
+                        <p className="text-game-text-muted text-xs mt-2" data-testid="doubt-key-hints">
+                          {t('keyHints')}
+                        </p>
                       </>
                     ) : (
                       <>

@@ -45,7 +45,14 @@ export function CountdownBar({ remaining, total, label }: CountdownBarProps) {
         />
       </div>
       {label && (
-        <div className="text-ds-warning text-lg font-bold mt-1" aria-live="assertive" aria-atomic="true">
+        <div
+          className="text-ds-warning text-lg font-bold mt-1"
+          role="timer"
+          // Announce politely most of the time; escalate to assertive in the final
+          // few seconds so the urgency interrupts rather than queues.
+          aria-live={remaining <= 3 ? 'assertive' : 'polite'}
+          aria-atomic="true"
+        >
           {label}
         </div>
       )}
