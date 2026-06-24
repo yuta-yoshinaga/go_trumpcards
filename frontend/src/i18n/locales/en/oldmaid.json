@@ -36,7 +36,9 @@
   "suspect": {
     "badge": "Suspect",
     "pin": "Pin Suspect",
-    "unpin": "Unpin"
+    "unpin": "Unpin",
+    "pinAria": "Mark {{name}} as a suspect",
+    "unpinAria": "Remove the suspect mark from {{name}}"
   },
   "button": {
     "settings": "Settings",

@@ -143,6 +143,9 @@ export function OldMaidPlayerArea({
   return (
     <div
       id={`player-area-${player.id}`}
+      // Mark the current draw target programmatically so assistive tech announces
+      // it, not just the visual highlight / badge.
+      aria-current={isTarget && !player.isHuman && !player.isFinished && !gameEndFlag ? 'true' : undefined}
       className={`relative ${playerAreaClass}${conditionalClass ? ` ${conditionalClass}` : ''}`}
     >
       {/* Always mount CpuActionBubble so its sr-only live region stays in the
@@ -163,6 +166,10 @@ export function OldMaidPlayerArea({
             type="button"
             className="ml-1 px-1.5 py-0.5 text-xs rounded bg-ds-error hover:bg-ds-error-hover text-white"
             onClick={onToggleSuspect}
+            aria-pressed={isSuspect}
+            aria-label={t(isSuspect ? 'suspect.unpinAria' : 'suspect.pinAria', {
+              name: playerName(player.id, player.isHuman),
+            })}
           >
             {isSuspect ? t('suspect.unpin') : t('suspect.pin')}
           </button>
