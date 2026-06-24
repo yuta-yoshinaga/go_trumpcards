@@ -522,16 +522,17 @@ function EuchrePageContent() {
                       <button
                         key={s}
                         type="button"
-                        className={btnPrimary}
+                        // Red suits (♥♦) get a red border as a colour cue. A non-text ring is
+                        // used instead of red label text, which on the accent button background
+                        // would fail WCAG text contrast; a ring only needs the 3:1 non-text ratio.
+                        className={`${btnPrimary}${s >= 3 ? ' ring-2 ring-inset ring-ds-error' : ''}`}
                         onClick={() => handleCallTrump(s, goAlone)}
                         disabled={loading || isTurnedDownSuit}
                         title={isTurnedDownSuit ? t('turnedDownSuit') : undefined}
+                        data-suit={s}
                       >
-                        {/* The localized name already carries the suit glyph (e.g. "♥ ハート");
-                            tint red suits so the colour, not just the text, distinguishes them. */}
-                        <span className={s >= 3 ? 'text-ds-error font-semibold' : undefined} data-suit={s}>
-                          {t(SUIT_NAMES[s])}
-                        </span>
+                        {/* The localized name already carries the suit glyph (e.g. "♥ ハート"). */}
+                        {t(SUIT_NAMES[s])}
                       </button>
                     );
                   })}
