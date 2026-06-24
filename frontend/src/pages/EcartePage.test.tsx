@@ -66,6 +66,24 @@ describe('EcartePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('propose'));
   });
 
+  it('names the negotiation sub-step in the exchange banner', async () => {
+    renderWithProviders(<EcartePage />);
+    // elderDecideState is the beforeEach default → "Elder's proposal".
+    await waitFor(() => expect(screen.getByTestId('ecarte-neg-step')).toHaveTextContent('エルダーの提案'));
+  });
+
+  it('shows the dealer-response sub-step label on a DealerRespond turn', async () => {
+    mockExec.mockResolvedValue(dealerRespondState);
+    renderWithProviders(<EcartePage />);
+    await waitFor(() => expect(screen.getByTestId('ecarte-neg-step')).toHaveTextContent('ディーラーの応答'));
+  });
+
+  it('shows the discard sub-step label on a discard turn', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<EcartePage />);
+    await waitFor(() => expect(screen.getByTestId('ecarte-neg-step')).toHaveTextContent('札交換'));
+  });
+
   it('shows accept/refuse buttons on a DealerRespond turn', async () => {
     mockExec.mockResolvedValue(dealerRespondState);
     renderWithProviders(<EcartePage />);
