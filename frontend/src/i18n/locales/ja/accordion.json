@@ -21,6 +21,7 @@
   "hintAvailable": "ヒントがあります",
   "stalemate": "手詰まりです",
   "hintMove": "パイル{{from}} → パイル{{to}}",
+  "listSeparator": "、",
   "mergeOffsetAvailable": "左{{offset}}へマージ可",
   "noMergeAvailable": "マージ可能な手なし",
   "selectionMoves": "パイル{{idx}}を選択中。マージ可能な手が{{count}}通り",

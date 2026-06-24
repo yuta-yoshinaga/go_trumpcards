@@ -353,7 +353,7 @@ function AccordionPageContent() {
                       ? (() => {
                           const offsets = accordionLegalOffsets(state.piles, idx);
                           return offsets.length > 0
-                            ? ` — ${offsets.map((o) => t('mergeOffsetAvailable', { offset: o })).join('、')}`
+                            ? ` — ${offsets.map((o) => t('mergeOffsetAvailable', { offset: o })).join(t('listSeparator'))}`
                             : ` — ${t('noMergeAvailable')}`;
                         })()
                       : '';

@@ -371,6 +371,26 @@ describe('AccordionPage', () => {
     expect(status).toHaveTextContent('パイル3を選択中。マージ可能な手が1通り');
   });
 
+  it('lists both merge offsets joined by the localized separator when both are legal', async () => {
+    // pile 3 (SPADE 9): offset 1 → pile 2 (SPADE 3, suit) AND offset 3 → pile 0 (SPADE 7, suit).
+    mockExec.mockResolvedValue({
+      ...playingState,
+      piles: [
+        { cards: [card('SPADE', 7)], size: 1 },
+        { cards: [card('HEART', 2)], size: 1 },
+        { cards: [card('SPADE', 3)], size: 1 },
+        { cards: [card('SPADE', 9)], size: 1 },
+      ],
+    });
+    renderWithProviders(<AccordionPage />);
+    const pile3 = await screen.findByRole('button', { name: /^3: ♠ 9/ });
+    fireEvent.click(pile3);
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /3: ♠ 9 — 左1へマージ可、左3へマージ可/ })).toBeInTheDocument(),
+    );
+    expect(screen.getByTestId('ac-selection-status')).toHaveTextContent('パイル3を選択中。マージ可能な手が2通り');
+  });
+
   it('announces when a selected pile has no legal merge', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
