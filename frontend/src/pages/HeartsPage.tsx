@@ -93,6 +93,9 @@ const HEARTS_PHASE_KEYS: Readonly<Record<number, string>> = {
 
 const passDirectionKeys = ['left', 'right', 'across', 'none'] as const;
 
+/** Decorative arrow glyph per pass direction (0=left, 1=right, 2=across, 3=none). */
+const PASS_ARROWS = ['←', '→', '↑', ''] as const;
+
 /** Renders the Hearts game page with card passing, trick play, and scoring. */
 export const HeartsPage = withTutorial(HeartsPageContent, 'hearts', HT_TUTORIAL_STEPS);
 /** Inner content of the Hearts page, wrapped by TutorialProvider. */
@@ -262,16 +265,26 @@ function HeartsPageContent() {
               <div>
                 {/* Pass direction (pass phase) */}
                 {isPassPhase && (
-                  <div className="text-ds-warning text-center mb-2" data-tutorial="ht-pass-area">
-                    {(() => {
-                      const direction = t(`passDirection.${passDirectionKeys[state.passDirection]}`);
-                      if (state.passDirection === 3) return direction;
-                      const humanIdx = state.players.findIndex((p) => p.isHuman);
-                      const recipient = state.players[heartsPassTarget(humanIdx, state.passDirection)];
-                      return recipient
-                        ? t('passTo', { direction, name: playerName(recipient.id, recipient.isHuman) })
-                        : direction;
-                    })()}
+                  <div
+                    className="text-ds-warning text-center mb-2 flex items-center justify-center gap-1.5"
+                    data-tutorial="ht-pass-area"
+                  >
+                    {PASS_ARROWS[state.passDirection] && (
+                      <span aria-hidden="true" className="text-lg leading-none" data-testid="hearts-pass-arrow">
+                        {PASS_ARROWS[state.passDirection]}
+                      </span>
+                    )}
+                    <span>
+                      {(() => {
+                        const direction = t(`passDirection.${passDirectionKeys[state.passDirection]}`);
+                        if (state.passDirection === 3) return direction;
+                        const humanIdx = state.players.findIndex((p) => p.isHuman);
+                        const recipient = state.players[heartsPassTarget(humanIdx, state.passDirection)];
+                        return recipient
+                          ? t('passTo', { direction, name: playerName(recipient.id, recipient.isHuman) })
+                          : direction;
+                      })()}
+                    </span>
                   </div>
                 )}
 
@@ -446,6 +459,11 @@ function HeartsPageContent() {
                   className="self-center rounded-full bg-ds-surface border border-ds-accent px-2.5 py-0.5 text-ds-text-primary text-xs"
                 >
                   {t('passProgress', { count: selectedCardIndices.length })}
+                  {selectedCardIndices.length < 3 && (
+                    <span className="ml-1 text-ds-warning">
+                      {`· ${t('passRemaining', { count: 3 - selectedCardIndices.length })}`}
+                    </span>
+                  )}
                 </span>
               )}
               {isPassPhase && (
