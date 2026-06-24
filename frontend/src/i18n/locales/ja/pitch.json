@@ -24,6 +24,7 @@
   "cards": "{{count}}枚",
   "gamePips": "Game値: {{pips}}",
   "gamePipsTooltip": "10=10, A=4, K=3, Q=2, J=1。獲得カードのピップ合計が最も多い側がGameポイントを取ります。",
+  "gamePipsTotal": "合計",
   "cumulativeScore": "累計: {{score}}",
   "roundScore": "ラウンド: {{score}}",
   "bid": "ビッド {{n}}",
