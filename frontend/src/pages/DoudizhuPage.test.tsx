@@ -124,6 +124,29 @@ describe('DoudizhuPage', () => {
     });
   });
 
+  it('labels hand cards via cardAlt and reflects selection with aria-pressed', async () => {
+    mockExec.mockResolvedValue({
+      ...defaultState,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          isFinished: false,
+          isLandlord: true,
+          cardCount: 1,
+          cards: [{ design: 'SPADE', value: 5 }],
+        },
+        { id: 1, isHuman: false, isFinished: false, isLandlord: false, cardCount: 17, cards: [] },
+        { id: 2, isHuman: false, isFinished: false, isLandlord: false, cardCount: 17, cards: [] },
+      ],
+    });
+    renderWithProviders(<DoudizhuPage />);
+    const cardBtn = await screen.findByRole('button', { name: '♠ 5' });
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(cardBtn);
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('disables play until a card is selected, then plays on click', async () => {
     mockExec.mockResolvedValue({
       ...defaultState,

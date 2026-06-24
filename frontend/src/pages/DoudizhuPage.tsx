@@ -24,6 +24,7 @@ import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { DoudizhuResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 
 type ApiArgs = {
@@ -79,6 +80,10 @@ function formatDDZState(state: DoudizhuResponse): string {
   }
   if (state.tableCards.length > 0) {
     lines.push(`Table: ${state.tableCombo} (${state.tableCards.length} cards)`);
+  }
+  const human = state.players.find((p) => p.isHuman);
+  if (human?.cards?.length) {
+    lines.push(`Your hand: ${human.cards.map((c, i) => `[${i}]${cardAlt(c)}`).join(' ')}`);
   }
   if (state.message) lines.push(state.message);
   return lines.join('\n');
@@ -285,6 +290,8 @@ function DoudizhuPageContent() {
                         : 'transition-transform'
                     }
                     onClick={() => toggleCard(i)}
+                    aria-label={cardAlt(c)}
+                    aria-pressed={selectedCards.has(i)}
                   >
                     <AnimatedCard card={c} width={cardWidth * 0.9} />
                   </button>
