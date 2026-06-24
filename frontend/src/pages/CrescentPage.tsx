@@ -312,6 +312,15 @@ function CrescentPageContent() {
                     data-crescent-arc={arcOffset}
                     style={arcOffset === 0 ? undefined : { transform: `translateY(${arcOffset}px)` }}
                   >
+                    {/* Column-number badge mirrors the CUI "タブロー列{{col}}" labelling so hints
+                        and logs that reference a column index map to a visible marker (#2618). */}
+                    <div
+                      className="mx-auto mb-0.5 w-fit rounded-full bg-black/20 px-1.5 text-[10px] leading-tight text-ds-text-muted select-none"
+                      aria-hidden="true"
+                      data-testid={`crescent-col-badge-${colIdx.toString()}`}
+                    >
+                      {`[${colIdx.toString()}]`}
+                    </div>
                     <DropZone
                       isDropTarget={dnd.isDropTarget(tableauColZone)}
                       onDragOver={dnd.handleDragOver(tableauColZone)}
