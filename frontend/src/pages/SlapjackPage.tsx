@@ -86,7 +86,12 @@ function SlapjackPageContent() {
   const [slapAnnounce, setSlapAnnounce] = useState('');
   const prevSlapEventRef = useRef<{ kind: number; player: number }>({ kind: -1, player: -1 });
   useEffect(() => {
-    if (!state) return;
+    if (!state) {
+      // A reset blanks `state` momentarily; clear the live region so a fresh
+      // game never surfaces the previous round's stale announcement.
+      setSlapAnnounce('');
+      return;
+    }
     const kind = state.lastEventKind;
     const player = state.lastEventPlayerIdx;
     const prev = prevSlapEventRef.current;

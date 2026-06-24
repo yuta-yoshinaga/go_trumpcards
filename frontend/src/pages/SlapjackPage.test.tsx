@@ -4,7 +4,7 @@ import { slapjackApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { SlapjackResponse } from '../types/card';
-import { SlapjackPhase } from '../types/phases';
+import { SlapjackEventKind, SlapjackPhase } from '../types/phases';
 import { SlapjackPage } from './SlapjackPage';
 
 vi.mock('../hooks/useCliMode', () => ({
@@ -171,7 +171,11 @@ describe('SlapjackPage', () => {
   });
 
   it('announces a correct slap by the human via a polite status live region', async () => {
-    mockExec.mockResolvedValueOnce({ ...baseState, lastEventKind: 2, lastEventPlayerIdx: 0 });
+    mockExec.mockResolvedValueOnce({
+      ...baseState,
+      lastEventKind: SlapjackEventKind.SLAP_CORRECT,
+      lastEventPlayerIdx: 0,
+    });
     renderWithProviders(<SlapjackPage />);
     const announce = await screen.findByTestId('sj-slap-announce');
     expect(announce).toHaveAttribute('role', 'status');
@@ -180,7 +184,11 @@ describe('SlapjackPage', () => {
   });
 
   it('announces a false slap by the CPU naming the offender', async () => {
-    mockExec.mockResolvedValueOnce({ ...baseState, lastEventKind: 3, lastEventPlayerIdx: 1 });
+    mockExec.mockResolvedValueOnce({
+      ...baseState,
+      lastEventKind: SlapjackEventKind.SLAP_WRONG,
+      lastEventPlayerIdx: 1,
+    });
     renderWithProviders(<SlapjackPage />);
     const announce = await screen.findByTestId('sj-slap-announce');
     await waitFor(() => expect(announce).toHaveTextContent('お手つき（CPU 1）'));
