@@ -49,10 +49,17 @@ describe('sortedBigTwoHand', () => {
 });
 
 describe('bigTwoPlayTypeKey', () => {
-  it('maps play types 1-8 to keys', () => {
-    expect(bigTwoPlayTypeKey(1)).toBe('single');
-    expect(bigTwoPlayTypeKey(6)).toBe('fullHouse');
-    expect(bigTwoPlayTypeKey(8)).toBe('straightFlush');
+  it('maps every play type 1-8 to its key', () => {
+    expect([1, 2, 3, 4, 5, 6, 7, 8].map(bigTwoPlayTypeKey)).toEqual([
+      'single',
+      'pair',
+      'triple',
+      'straight',
+      'flush',
+      'fullHouse',
+      'fourOfAKind',
+      'straightFlush',
+    ]);
   });
 
   it('returns null for invalid/empty (0)', () => {
