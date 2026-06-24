@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { doudizhuApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { DoudizhuResponse } from '../types/card';
-import { DoudizhuPage } from './DoudizhuPage';
+import { DoudizhuPage, formatDDZState } from './DoudizhuPage';
 
 vi.mock('../api/gameApi', () => ({
   doudizhuApi: { exec: vi.fn() },
@@ -122,6 +122,29 @@ describe('DoudizhuPage', () => {
     await waitFor(() => {
       expect(mockExec).toHaveBeenCalledWith(expect.objectContaining({ command: 'bid', bidValue: 0 }));
     });
+  });
+
+  it('formatDDZState lists the human hand with indices for the CLI', () => {
+    const out = formatDDZState({
+      ...defaultState,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          isFinished: false,
+          isLandlord: true,
+          cardCount: 2,
+          cards: [
+            { design: 'SPADE', value: 5 },
+            { design: 'HEART', value: 13 },
+          ],
+        },
+        { id: 1, isHuman: false, isFinished: false, isLandlord: false, cardCount: 17, cards: [] },
+        { id: 2, isHuman: false, isFinished: false, isLandlord: false, cardCount: 17, cards: [] },
+      ],
+    });
+    expect(out).toContain('[0]♠ 5');
+    expect(out).toContain('[1]♥ K');
   });
 
   it('labels hand cards via cardAlt and reflects selection with aria-pressed', async () => {

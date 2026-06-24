@@ -71,7 +71,8 @@ function parseDDZCommand(input: string): CliParseResult<[ApiArgs]> {
   }
 }
 
-function formatDDZState(state: DoudizhuResponse): string {
+/** Formats Dou Dizhu state for the CLI terminal, including the human's indexed hand. */
+export function formatDDZState(state: DoudizhuResponse): string {
   const lines: string[] = [`Phase: ${state.phase}`];
   for (const p of state.players) {
     const role = p.isLandlord ? ' [Landlord]' : '';
