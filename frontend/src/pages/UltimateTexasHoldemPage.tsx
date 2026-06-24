@@ -370,7 +370,7 @@ function UltimateTexasHoldemPageContent() {
             const strong = strength === 'strong';
             const moderate = strength === 'moderate';
             // Spell out *why* a raise size is recommended so beginners understand the
-            // ring/pulse affordance instead of guessing (#2617).
+            // ring/pulse affordance instead of guessing.
             const strengthColor = strong ? 'text-ds-success' : moderate ? 'text-ds-warning' : 'text-ds-text-muted';
             return (
               <>
