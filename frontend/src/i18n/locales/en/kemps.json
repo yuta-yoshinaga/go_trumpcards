@@ -14,6 +14,7 @@
   "swapButton": "Swap with this card",
   "passButton": "Pass (no swap)",
   "signalLabel": "Your secret signal:",
+  "signalSent": "Signal set: {{signal}}",
   "signal": {
     "sound": "Sound (cough)",
     "blink": "Blink"

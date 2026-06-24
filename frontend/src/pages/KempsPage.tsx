@@ -260,12 +260,24 @@ function KempsPageContent() {
 
             {/* Signal cues (human only) */}
             {isDeclare && state.partnerSignaling && (
-              <div className="my-2 p-2 rounded bg-ds-success/20 text-ds-success text-sm font-semibold">
+              <div
+                className="my-2 p-2 rounded bg-ds-success/20 text-ds-success text-sm font-semibold"
+                role="status"
+                aria-live="polite"
+                data-testid="kemps-partner-signaling"
+              >
                 {t('partnerSignaling')}
               </div>
             )}
             {isDeclare && state.opponentSignaling && (
-              <div className="my-2 p-2 rounded bg-ds-warning/20 text-ds-warning text-sm">{t('opponentSignaling')}</div>
+              <div
+                className="my-2 p-2 rounded bg-ds-warning/20 text-ds-warning text-sm"
+                role="status"
+                aria-live="polite"
+                data-testid="kemps-opponent-signaling"
+              >
+                {t('opponentSignaling')}
+              </div>
             )}
 
             <GameMessageBox
@@ -335,6 +347,12 @@ function KempsPageContent() {
                   {t(`signal.${o.label}`)}
                 </button>
               ))}
+              {/* Announce the chosen signal — the visual selection is colour-only otherwise (#2690). */}
+              <span className="sr-only" role="status" aria-live="polite" data-testid="kemps-signal-sent">
+                {t('signalSent', {
+                  signal: t(`signal.${SIGNAL_OPTIONS.find((o) => o.value === state.signalType)?.label ?? 'sound'}`),
+                })}
+              </span>
             </div>
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="kemps-declare">
