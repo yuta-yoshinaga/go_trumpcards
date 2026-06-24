@@ -530,9 +530,9 @@ function RussianSolitairePageContent() {
                                   );
                                 })()
                               ) : (
-                                <span role="img" aria-label={t('faceDownRule')} title={t('faceDownRule')}>
+                                <div role="img" aria-label={t('faceDownRule')} title={t('faceDownRule')}>
                                   <AnimatedCardBack width={rs.cw} />
-                                </span>
+                                </div>
                               )}
                             </DropZone>
                           </div>
