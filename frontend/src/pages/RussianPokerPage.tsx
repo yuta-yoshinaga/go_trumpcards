@@ -28,6 +28,7 @@ import type { RussianPokerResponse } from '../types/card';
 import { isMaskedCard } from '../types/card';
 import { RussianPokerPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseRussianpokerCommand, RUSSIANPOKER_HELP } from '../utils/cli/commands/russianpokerCommands';
 import { formatRussianpokerState } from '../utils/cli/formatters/russianpokerFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -295,7 +296,7 @@ function RussianPokerPageContent() {
                       <button
                         key={`p-${i}`}
                         type="button"
-                        aria-label={`Card ${i + 1}${selected ? ' (selected)' : ''}`}
+                        aria-label={isMaskedCard(card) ? tc('card.back') : cardAlt(card)}
                         aria-pressed={selectable ? selected : undefined}
                         data-testid={`player-card-${i}`}
                         data-selected={selected ? 'true' : 'false'}
