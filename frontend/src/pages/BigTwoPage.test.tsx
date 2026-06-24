@@ -112,4 +112,34 @@ describe('BigTwoPage', () => {
     fireEvent.click(retry);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', []));
   });
+
+  it('renders the hand sort buttons', async () => {
+    renderWithProviders(<BigTwoPage />);
+    expect(await screen.findByTestId('bt-sort-strength')).toBeInTheDocument();
+    expect(screen.getByTestId('bt-sort-suit')).toBeInTheDocument();
+    expect(screen.getByTestId('bt-sort-number')).toBeInTheDocument();
+  });
+
+  it('keeps the selected card index stable across hand sorting', async () => {
+    renderWithProviders(<BigTwoPage />);
+    // Select ♦7 (original index 2), then re-sort by suit (which moves ♦ to the front).
+    fireEvent.click(await screen.findByTestId('hand-card-2'));
+    fireEvent.click(screen.getByTestId('bt-sort-suit'));
+    // The play command still references the original dealt index.
+    fireEvent.click(screen.getByTestId('play-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [2]));
+  });
+
+  it('shows the table play-type label for the cards in play', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        tableCards: [card('SPADE', 3), card('SPADE', 5), card('SPADE', 7), card('SPADE', 9), card('SPADE', 11)],
+        tablePlayType: 5, // flush
+        currentTurn: 1,
+      }),
+    );
+    renderWithProviders(<BigTwoPage />);
+    const label = await screen.findByTestId('bt-table-playtype');
+    expect(label).toHaveTextContent('フラッシュ');
+  });
 });
