@@ -200,6 +200,12 @@ function DaifugoPageContent() {
 
   const pendingAction = state.pendingAction ?? 'none';
   const isHumanTurn = !state.gameEndFlag && !!state.players[state.currentTurn]?.isHuman;
+  // When following a non-empty table, a play must match the table combo's card
+  // count — a count mismatch is illegal regardless of rank or revolution/eleven-back
+  // inversion, so we can flag it client-side. Strength is still validated server-side.
+  const tableCount = state.tableCards?.length ?? 0;
+  const countMismatch =
+    pendingAction === 'none' && tableCount > 0 && selectedIndices.length > 0 && selectedIndices.length !== tableCount;
   const cpuPlayers = state.players.filter((p) => !p.isHuman);
   const humanPlayer = state.players.find((p) => p.isHuman);
 
@@ -421,6 +427,11 @@ function DaifugoPageContent() {
             )}
 
             <div className="text-center" data-tutorial="df-play-pass">
+              {countMismatch && (
+                <p className="mb-1.5 text-xs text-ds-error" role="alert" data-testid="daifugo-count-warning">
+                  {t('countMismatch', { count: tableCount })}
+                </p>
+              )}
               <GameResetButton
                 isGameEnd={!!state.gameEndFlag}
                 onReset={handleManualReset}
@@ -445,7 +456,8 @@ function DaifugoPageContent() {
                   !isHumanTurn ||
                   state.gameEndFlag ||
                   selectedIndices.length === 0 ||
-                  pendingAction === 'queenBomber'
+                  pendingAction === 'queenBomber' ||
+                  countMismatch
                 }
                 onClick={() =>
                   exec(
