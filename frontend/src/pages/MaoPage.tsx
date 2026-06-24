@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { maoApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -165,6 +165,18 @@ function MaoPageContent() {
   });
 
   const phaseNames = usePhaseNames('mao', MAO_PHASE_KEYS);
+
+  // Buzz the moment a hidden-rule penalty lands (false→true) so the failure
+  // isn't missed amid fast CPU turns (#2688). The panel's attention pulse is
+  // driven by the `rulePenalty` flag directly (re-fires as the class re-applies).
+  const prevRulePenaltyRef = useRef(false);
+  useEffect(() => {
+    const penalty = state?.rulePenalty ?? false;
+    if (penalty && !prevRulePenaltyRef.current) {
+      playSound('errorBuzz');
+    }
+    prevRulePenaltyRef.current = penalty;
+  }, [state?.rulePenalty, playSound]);
 
   if (!state)
     return (
@@ -366,7 +378,9 @@ function MaoPageContent() {
 
             {/* Hidden-rule panel: the player must guess when to speak — the game never reveals the rule. */}
             <div
-              className="my-2 p-2 rounded bg-black/30 flex flex-col gap-2 text-sm"
+              className={`my-2 p-2 rounded bg-black/30 flex flex-col gap-2 text-sm ${
+                state.rulePenalty ? 'ring-2 ring-ds-error motion-safe:animate-pulse' : ''
+              }`}
               data-tutorial="mao-rule-panel"
               data-testid="mao-rule-panel"
             >
