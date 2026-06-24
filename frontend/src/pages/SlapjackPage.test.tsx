@@ -170,6 +170,22 @@ describe('SlapjackPage', () => {
     expect(announce).toHaveTextContent('');
   });
 
+  it('announces a correct slap by the human via a polite status live region', async () => {
+    mockExec.mockResolvedValueOnce({ ...baseState, lastEventKind: 2, lastEventPlayerIdx: 0 });
+    renderWithProviders(<SlapjackPage />);
+    const announce = await screen.findByTestId('sj-slap-announce');
+    expect(announce).toHaveAttribute('role', 'status');
+    expect(announce).toHaveAttribute('aria-live', 'polite');
+    await waitFor(() => expect(announce).toHaveTextContent('スラップ成功（あなた）'));
+  });
+
+  it('announces a false slap by the CPU naming the offender', async () => {
+    mockExec.mockResolvedValueOnce({ ...baseState, lastEventKind: 3, lastEventPlayerIdx: 1 });
+    renderWithProviders(<SlapjackPage />);
+    const announce = await screen.findByTestId('sj-slap-announce');
+    await waitFor(() => expect(announce).toHaveTextContent('お手つき（CPU 1）'));
+  });
+
   it('renders the game-end state with both buttons disabled when human wins', async () => {
     mockExec.mockResolvedValueOnce(gameEndState);
     renderWithProviders(<SlapjackPage />);

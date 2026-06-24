@@ -81,6 +81,9 @@ function SlapjackPageContent() {
     outcome: 'correct',
     label: '',
   });
+  // Screen-reader announcement for the slap outcome (who slapped + correct/miss).
+  // The visual SlapBurst alone is invisible to assistive tech (#2607).
+  const [slapAnnounce, setSlapAnnounce] = useState('');
   const prevSlapEventRef = useRef<{ kind: number; player: number }>({ kind: -1, player: -1 });
   useEffect(() => {
     if (!state) return;
@@ -96,9 +99,11 @@ function SlapjackPageContent() {
       // Counter (not Date.now()) keeps repeated slap events distinct even
       // when they happen within the same millisecond.
       setSlapBurst((prevBurst) => ({ key: prevBurst.key + 1, outcome, label }));
+      const slapper = player === 0 ? tc('player.you') : tc('player.cpu', { id: player });
+      setSlapAnnounce(t(`slapjack.slapAnnounce.${outcome}`, { player: slapper }));
       prevSlapEventRef.current = { kind, player };
     }
-  }, [state, t]);
+  }, [state, t, tc]);
 
   useMountReset(execApi);
 
@@ -253,6 +258,16 @@ function SlapjackPageContent() {
                 {/* Screen-reader announcement for the flash slap chance. */}
                 <div className="sr-only" aria-live="assertive" aria-atomic="true" data-testid="sj-jack-announce">
                   {state.isTopJack ? t('slapjack.jackAnnounce') : ''}
+                </div>
+                {/* Screen-reader announcement for the slap outcome (#2607). */}
+                <div
+                  className="sr-only"
+                  role="status"
+                  aria-live="polite"
+                  aria-atomic="true"
+                  data-testid="sj-slap-announce"
+                >
+                  {slapAnnounce}
                 </div>
               </div>
             </div>
