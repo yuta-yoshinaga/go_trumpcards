@@ -73,5 +73,8 @@
     "bet": "Each round, choose Paso (pass), Envido (bet) or Órdago (all-in). If the opponent bets, respond with Quiero (accept) or No Quiero (decline).",
     "amarrakos": "The amarrakos (scores) of both teams. The first team to reach the target wins.",
     "resetButton": "Use the reset button to start a new game."
-  }
+  },
+  "envidoStepperLabel": "Envido bet amount",
+  "envidoIncrease": "Increase envido by 1",
+  "envidoDecrease": "Decrease envido by 1"
 }
