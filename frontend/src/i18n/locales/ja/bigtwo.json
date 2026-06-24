@@ -46,5 +46,12 @@
     "fullHouse": "フルハウス",
     "fourOfAKind": "フォーカード",
     "straightFlush": "ストレートフラッシュ"
-  }
+  },
+  "sort": {
+    "strength": "強さ順",
+    "suit": "スート順",
+    "number": "数字順",
+    "label": "手札の並べ替え"
+  },
+  "tablePlayLabel": "場の役"
 }

@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -19,9 +19,11 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BigTwoResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { type BigTwoSortMode, bigTwoPlayTypeKey, sortedBigTwoHand } from '../utils/bigTwoSort';
 import {
   BIGTWO_HELP,
   type BigTwoCliArgs,
@@ -29,6 +31,13 @@ import {
   parseBigTwoCommand,
 } from '../utils/cli/commands/bigtwoCommands';
 import type { CliGameConfig } from '../utils/cli/types';
+
+/** Hand sort options for the Big Two footer. */
+const BIGTWO_SORT_MODES: { mode: BigTwoSortMode; labelKey: string }[] = [
+  { mode: 'strength', labelKey: 'sort.strength' },
+  { mode: 'suit', labelKey: 'sort.suit' },
+  { mode: 'number', labelKey: 'sort.number' },
+];
 
 const DIFFICULTY_OPTIONS = [
   { value: '0', label: 'Easy' },
@@ -85,6 +94,7 @@ function BigTwoPageContent() {
     retry,
   } = useBigTwoGame();
   const { cardWidth } = useCardDimensions();
+  const [sortMode, setSortMode] = useState<BigTwoSortMode>('strength');
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -182,7 +192,20 @@ function BigTwoPageContent() {
 
             {/* Table cards */}
             <div className="py-3 bg-black/20 rounded-lg" data-tutorial="bt-table-cards">
-              <div className="text-center text-xs text-ds-text-muted mb-2">{t('tableCards')}</div>
+              <div className="text-center text-xs text-ds-text-muted mb-2 flex items-center justify-center gap-2">
+                <span>{t('tableCards')}</span>
+                {(() => {
+                  const key = bigTwoPlayTypeKey(state.tablePlayType);
+                  return key && state.tableCards.length > 0 ? (
+                    <span
+                      data-testid="bt-table-playtype"
+                      className="rounded-full bg-ds-accent/30 px-2 py-0.5 text-ds-text-primary font-semibold"
+                    >
+                      {`${t('tablePlayLabel')}: ${t(`playType.${key}`)}`}
+                    </span>
+                  ) : null;
+                })()}
+              </div>
               <div className="flex justify-center gap-2 min-h-[60px]">
                 {state.tableCards.length === 0 ? (
                   <span className="text-ds-text-muted text-sm self-center">{t('tableEmpty')}</span>
@@ -198,19 +221,35 @@ function BigTwoPageContent() {
                 <span>{tc('player.you')}</span>
                 {human.isFinished && <span className="font-bold">{t(`rank.${human.rank}`)}</span>}
               </div>
+              {human.cards.length > 0 && (
+                <fieldset className="flex justify-center gap-1.5 mb-2 border-0 p-0 m-0">
+                  <legend className="sr-only">{t('sort.label')}</legend>
+                  {BIGTWO_SORT_MODES.map(({ mode, labelKey }) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => setSortMode(mode)}
+                      className={sortMode === mode ? `${btnPrimary} min-w-[64px]` : `${btnSecondary} min-w-[64px]`}
+                      data-testid={`bt-sort-${mode}`}
+                    >
+                      {t(labelKey)}
+                    </button>
+                  ))}
+                </fieldset>
+              )}
               <div className="flex flex-wrap justify-center gap-2">
-                {human.cards.map((c, i) => (
+                {sortedBigTwoHand(human.cards, sortMode).map(({ card, index }) => (
                   <button
-                    key={i}
+                    key={index}
                     type="button"
-                    onClick={() => isHumanTurn && toggleCardSelection(i)}
+                    onClick={() => isHumanTurn && toggleCardSelection(index)}
                     disabled={!isHumanTurn}
                     className={`rounded transition-all ${
-                      selectedIndices.includes(i) ? 'ring-2 ring-ds-info -translate-y-2' : ''
+                      selectedIndices.includes(index) ? 'ring-2 ring-ds-info -translate-y-2' : ''
                     } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
-                    data-testid={`hand-card-${i}`}
+                    data-testid={`hand-card-${index}`}
                   >
-                    <AnimatedCard card={c} width={cardWidth} />
+                    <AnimatedCard card={card} width={cardWidth} />
                   </button>
                 ))}
               </div>
