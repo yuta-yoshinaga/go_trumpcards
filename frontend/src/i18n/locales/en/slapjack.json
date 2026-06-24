@@ -30,6 +30,10 @@
     "burst": {
       "jack": "JACK!",
       "miss": "MISS!"
+    },
+    "slapAnnounce": {
+      "correct": "Slap won by {{player}}",
+      "wrong": "False slap by {{player}}"
     }
   },
   "hint": {

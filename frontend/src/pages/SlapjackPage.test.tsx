@@ -4,7 +4,7 @@ import { slapjackApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { SlapjackResponse } from '../types/card';
-import { SlapjackPhase } from '../types/phases';
+import { SlapjackEventKind, SlapjackPhase } from '../types/phases';
 import { SlapjackPage } from './SlapjackPage';
 
 vi.mock('../hooks/useCliMode', () => ({
@@ -168,6 +168,30 @@ describe('SlapjackPage', () => {
     renderWithProviders(<SlapjackPage />);
     const announce = await screen.findByTestId('sj-jack-announce');
     expect(announce).toHaveTextContent('');
+  });
+
+  it('announces a correct slap by the human via a polite status live region', async () => {
+    mockExec.mockResolvedValueOnce({
+      ...baseState,
+      lastEventKind: SlapjackEventKind.SLAP_CORRECT,
+      lastEventPlayerIdx: 0,
+    });
+    renderWithProviders(<SlapjackPage />);
+    const announce = await screen.findByTestId('sj-slap-announce');
+    expect(announce).toHaveAttribute('role', 'status');
+    expect(announce).toHaveAttribute('aria-live', 'polite');
+    await waitFor(() => expect(announce).toHaveTextContent('スラップ成功（あなた）'));
+  });
+
+  it('announces a false slap by the CPU naming the offender', async () => {
+    mockExec.mockResolvedValueOnce({
+      ...baseState,
+      lastEventKind: SlapjackEventKind.SLAP_WRONG,
+      lastEventPlayerIdx: 1,
+    });
+    renderWithProviders(<SlapjackPage />);
+    const announce = await screen.findByTestId('sj-slap-announce');
+    await waitFor(() => expect(announce).toHaveTextContent('お手つき（CPU 1）'));
   });
 
   it('renders the game-end state with both buttons disabled when human wins', async () => {
