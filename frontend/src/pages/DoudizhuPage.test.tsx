@@ -147,6 +147,11 @@ describe('DoudizhuPage', () => {
     expect(out).toContain('[1]♥ K');
   });
 
+  it('formatDDZState omits the hand line when the human has no visible cards', () => {
+    // defaultState's human has cards: [] → no "Your hand" line.
+    expect(formatDDZState(defaultState)).not.toContain('Your hand');
+  });
+
   it('labels hand cards via cardAlt and reflects selection with aria-pressed', async () => {
     mockExec.mockResolvedValue({
       ...defaultState,
