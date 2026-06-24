@@ -1099,30 +1099,30 @@ describe('OldMaidPage', () => {
 
   it('shows suspect pin button for CPU players', async () => {
     await startGame();
-    const pinButtons = screen.getAllByRole('button', { name: '容疑者ピン' });
+    const pinButtons = screen.getAllByRole('button', { name: /容疑者にマーク/ });
     expect(pinButtons.length).toBeGreaterThan(0);
   });
 
   it('toggles suspect pin on click', async () => {
     await startGame();
-    const pinButton = screen.getAllByRole('button', { name: '容疑者ピン' })[0];
+    const pinButton = screen.getAllByRole('button', { name: /容疑者にマーク/ })[0];
     fireEvent.click(pinButton);
     expect(screen.getByText('容疑者')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'ピン解除' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /マークを外す/ })).toBeInTheDocument();
   });
 
   it('unpins suspect on second click', async () => {
     await startGame();
-    const pinButton = screen.getAllByRole('button', { name: '容疑者ピン' })[0];
+    const pinButton = screen.getAllByRole('button', { name: /容疑者にマーク/ })[0];
     fireEvent.click(pinButton);
     expect(screen.getByText('容疑者')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'ピン解除' }));
+    fireEvent.click(screen.getByRole('button', { name: /マークを外す/ }));
     expect(screen.queryByText('容疑者')).not.toBeInTheDocument();
   });
 
   it('clears suspect pins on reset', async () => {
     await startGame();
-    const pinButton = screen.getAllByRole('button', { name: '容疑者ピン' })[0];
+    const pinButton = screen.getAllByRole('button', { name: /容疑者にマーク/ })[0];
     fireEvent.click(pinButton);
     expect(screen.getByText('容疑者')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
@@ -1132,7 +1132,7 @@ describe('OldMaidPage', () => {
 
   it('clears suspect pins when applying settings', async () => {
     await startGame();
-    const pinButton = screen.getAllByRole('button', { name: '容疑者ピン' })[0];
+    const pinButton = screen.getAllByRole('button', { name: /容疑者にマーク/ })[0];
     fireEvent.click(pinButton);
     expect(screen.getByText('容疑者')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '設定' }));
@@ -1152,14 +1152,14 @@ describe('OldMaidPage', () => {
     mockExec.mockResolvedValue(stateWithFinished);
     await startGame();
     // Only CPU 2 (not finished) should have pin button
-    const pinButtons = screen.getAllByRole('button', { name: '容疑者ピン' });
+    const pinButtons = screen.getAllByRole('button', { name: /容疑者にマーク/ });
     expect(pinButtons).toHaveLength(1);
   });
 
   it('does not show suspect pin button when game has ended', async () => {
     mockExec.mockResolvedValue(gameEndState);
     await startGame();
-    expect(screen.queryByRole('button', { name: '容疑者ピン' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /容疑者にマーク/ })).not.toBeInTheDocument();
   });
 
   it('goes directly to CPU replay when humanAction is null', async () => {
