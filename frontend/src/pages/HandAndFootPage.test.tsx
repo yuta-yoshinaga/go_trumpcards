@@ -117,12 +117,19 @@ describe('HandAndFootPage', () => {
     expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument();
   });
 
-  it('pulses the draw-from-discard button when the discard pile is frozen', async () => {
+  it('pulses the draw-from-discard button only when frozen and two cards are selected', async () => {
     mockExec.mockResolvedValue({ ...drawPhaseState, isFrozen: true });
     renderWithProviders(<HandAndFootPage />);
     const btn = await screen.findByRole('button', { name: '捨て札を取る' });
-    expect(btn).toHaveAttribute('data-frozen', 'true');
-    expect(btn.className).toMatch(/animate-pulse/);
+    // Disabled (no selection) → no misleading pulse yet.
+    expect(btn).not.toHaveAttribute('data-frozen');
+    // Select two hand cards to enable the action; the pulse then warns about the freeze.
+    const handCards = screen.getAllByRole('button', { pressed: false }).filter((b) => b.hasAttribute('aria-pressed'));
+    fireEvent.click(handCards[0]);
+    fireEvent.click(handCards[1]);
+    const enabled = screen.getByRole('button', { name: '捨て札を取る' });
+    expect(enabled).toHaveAttribute('data-frozen', 'true');
+    expect(enabled.className).toMatch(/animate-pulse/);
   });
 
   it('does not pulse the draw-from-discard button when not frozen', async () => {
