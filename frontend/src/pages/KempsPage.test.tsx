@@ -146,16 +146,29 @@ describe('KempsPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('counter', { targetSeat: 1 }));
   });
 
-  it('shows the partner signaling cue in the declare window', async () => {
+  it('shows the partner signaling cue in the declare window as a live region', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 1, isHumanTurn: false, partnerSignaling: true, fourHolderIdx: 2 }));
     renderWithProviders(<KempsPage />);
-    await waitFor(() => expect(screen.getByText(/パートナーが合図/)).toBeInTheDocument());
+    const cue = await screen.findByTestId('kemps-partner-signaling');
+    expect(cue).toHaveAttribute('role', 'status');
+    expect(cue).toHaveAttribute('aria-live', 'polite');
+    expect(cue).toHaveTextContent(/パートナーが合図/);
   });
 
-  it('shows the opponent signaling cue in the declare window', async () => {
+  it('shows the opponent signaling cue in the declare window as a live region', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 1, isHumanTurn: false, opponentSignaling: true, fourHolderIdx: 1 }));
     renderWithProviders(<KempsPage />);
-    await waitFor(() => expect(screen.getByText(/合図しているかもしれません/)).toBeInTheDocument());
+    const cue = await screen.findByTestId('kemps-opponent-signaling');
+    expect(cue).toHaveAttribute('role', 'status');
+    expect(cue).toHaveTextContent(/合図しているかもしれません/);
+  });
+
+  it('announces the chosen secret signal in a live region', async () => {
+    mockExec.mockResolvedValue(makeState({ signalType: 1 })); // blink
+    renderWithProviders(<KempsPage />);
+    const sent = await screen.findByTestId('kemps-signal-sent');
+    expect(sent).toHaveAttribute('role', 'status');
+    expect(sent).toHaveTextContent('シグナル設定: 瞬き');
   });
 
   it('shows the next round button at round end and dispatches next', async () => {
