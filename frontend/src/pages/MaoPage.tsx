@@ -166,9 +166,7 @@ function MaoPageContent() {
 
   const phaseNames = usePhaseNames('mao', MAO_PHASE_KEYS);
 
-  // Buzz the moment a hidden-rule penalty lands (false→true) so the failure
-  // isn't missed amid fast CPU turns (#2688). The panel's attention pulse is
-  // driven by the `rulePenalty` flag directly (re-fires as the class re-applies).
+  // Buzz once on the false→true edge; fast CPU turns would otherwise swallow the feedback.
   const prevRulePenaltyRef = useRef(false);
   useEffect(() => {
     const penalty = state?.rulePenalty ?? false;
