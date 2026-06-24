@@ -46,6 +46,7 @@ import { formatPineappleState } from '../utils/cli/formatters/pineappleFormatter
 import type { CliGameConfig } from '../utils/cli/types';
 import { holdemBestFive } from '../utils/holdemBestFive';
 import { findPlayerName } from '../utils/playerUtils';
+import { evaluateFiveCardHand, pokerHandKey } from '../utils/pokerSquaresUtils';
 
 /** Pineapple Poker tutorial step definitions. */
 const PN_TUTORIAL_STEPS: TutorialStep[] = [
@@ -231,6 +232,18 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   const canDiscard = isDiscardPhase && !humanDiscardDone;
   // Cards the player must discard down to 2: Pineapple/Crazy = 1, Irish = 2.
   const discardCount = Math.max(1, (state?.initialDealCount ?? 3) - 2);
+  // Irish Poker discards 2 of 4 hole cards; while choosing, preview the 2 cards
+  // that would be kept plus the best hand they make with the current board.
+  const discardPreview = useMemo(() => {
+    const isIrishDiscardChoice = variant === 'irishpoker' && isDiscardPhase && selectedDiscards.length === discardCount;
+    if (!isIrishDiscardChoice) return null;
+    const kept = (humanPlayer?.cards ?? []).filter((_, i) => !selectedDiscards.includes(i));
+    // holdemBestFive picks the best 5 of (kept + board); it returns null for <5 cards.
+    const all = [...kept, ...(state?.communityCards ?? [])];
+    const picked = holdemBestFive(all);
+    const rank = picked ? evaluateFiveCardHand(picked.map((i) => all[i])) : null;
+    return { kept, handKey: rank == null ? null : pokerHandKey(rank) };
+  }, [variant, isDiscardPhase, humanPlayer, state?.communityCards, selectedDiscards, discardCount]);
   const toggleDiscard = (idx: number) => {
     if (!canDiscard) return;
     setSelectedDiscards((prev) => {
@@ -475,6 +488,19 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
             {/* Discard controls */}
             {canDiscard && (
               <div className="mb-2 text-center" data-testid="discard-controls" data-tutorial="pn-discard-controls">
+                {discardPreview && (
+                  <div className="mb-2 text-sm" data-testid="irishpoker-discard-preview">
+                    <span className="text-ds-text-muted">{`${t('discard.keepLabel')}: `}</span>
+                    <span className="text-ds-text-primary font-semibold">
+                      {discardPreview.kept.map((c) => cardAlt(c)).join('  ')}
+                    </span>
+                    {discardPreview.handKey && (
+                      <span className="ml-2 inline-block rounded-full bg-ds-accent/30 px-2 py-0.5 text-ds-text-primary font-semibold">
+                        {`${t('discard.previewHand')}: ${t(`hand.${discardPreview.handKey}`)}`}
+                      </span>
+                    )}
+                  </div>
+                )}
                 {discardConfirming && selectedDiscards.length === discardCount && humanPlayer ? (
                   <div data-testid="discard-confirm">
                     <p className="text-ds-text-primary mb-2">
