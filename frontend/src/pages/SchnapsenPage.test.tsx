@@ -85,12 +85,22 @@ describe('SchnapsenPage', () => {
   });
 
   it('shows a marriage button and dispatches marriage when present', async () => {
-    mockExec.mockResolvedValue(makeState({ marriagePlays: [3, 4] }));
+    mockExec.mockResolvedValue(makeState({ marriagePlays: [3, 4] })); // ♣ marriage, trump ♠ → 20 pts
     renderWithProviders(<SchnapsenPage />);
-    await waitFor(() => expect(screen.getByTestId('schnapsen-marriage-3')).toBeInTheDocument());
+    const m3 = await screen.findByTestId('schnapsen-marriage-3');
+    expect(m3.getAttribute('aria-label')).toContain('♣');
+    expect(m3.getAttribute('aria-label')).toContain('20');
     mockExec.mockClear();
     fireEvent.click(screen.getByTestId('schnapsen-marriage-4'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('marriage', 4));
+  });
+
+  it('labels a trump-suit marriage as 40 points', async () => {
+    // trump ♣ (2): the ♣ K/Q marriage at idx 3/4 is now worth 40.
+    mockExec.mockResolvedValue(makeState({ marriagePlays: [3, 4], trumpSuit: 2 }));
+    renderWithProviders(<SchnapsenPage />);
+    const m3 = await screen.findByTestId('schnapsen-marriage-3');
+    expect(m3.getAttribute('aria-label')).toContain('40');
   });
 
   it('disables non-legal cards in the endgame (phase 2)', async () => {

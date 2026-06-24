@@ -20,6 +20,10 @@ import { gameTheme } from '../styles/gameTheme';
 import type { SchnapsenResponse } from '../types/card';
 import { SchnapsenPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { suitSymbol } from '../utils/cardAlt';
+
+/** Card design → Schnapsen trump-suit id (1=♠ 2=♣ 3=♥ 4=♦). */
+const DESIGN_TO_SUIT: Readonly<Record<string, number>> = { SPADE: 1, CLOVER: 2, HEART: 3, DIAMOND: 4 };
 
 /** Guided tutorial steps for the Schnapsen page (trump/stock, trick, hand, actions). */
 const SCHNAPSEN_TUTORIAL_STEPS: TutorialStep[] = [
@@ -231,6 +235,10 @@ function SchnapsenPageContent() {
                         disabled={loading}
                         className={`${btnWarning} text-xs px-2 py-1`}
                         data-testid={`schnapsen-marriage-${idx.toString()}`}
+                        aria-label={t('actions.marriageAria', {
+                          suit: suitSymbol(card.design),
+                          points: DESIGN_TO_SUIT[card.design] === state.trumpSuit ? 40 : 20,
+                        })}
                       >
                         👑 {t('actions.marriage')}
                       </button>
