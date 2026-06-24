@@ -367,6 +367,9 @@ function SheepsheadPageContent() {
                     className={btnPrimary}
                     onClick={() => handleCall(suit)}
                     disabled={loading}
+                    aria-label={t('callButtonAriaLabel', {
+                      suit: SUIT_KEYS[suit] ? t(`suit.${SUIT_KEYS[suit]}`) : suit,
+                    })}
                   >
                     {t('callButton', { suit: SUIT_KEYS[suit] ? t(`suit.${SUIT_KEYS[suit]}`) : suit })}
                   </button>

@@ -95,6 +95,11 @@ describe('SheepsheadPage', () => {
     mockExec.mockResolvedValue(callPhaseState);
     renderWithProviders(<SheepsheadPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /♠ スペードを呼ぶ/ })).toBeInTheDocument());
+    // The aria-label adds partner-context while still containing the visible label (WCAG 2.5.3).
+    expect(screen.getByRole('button', { name: /♠ スペードを呼ぶ/ })).toHaveAttribute(
+      'aria-label',
+      '♠ スペードを呼ぶ（パートナー指定）',
+    );
     fireEvent.click(screen.getByRole('button', { name: /♣ クラブを呼ぶ/ }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', { callSuit: 2 }));
   });

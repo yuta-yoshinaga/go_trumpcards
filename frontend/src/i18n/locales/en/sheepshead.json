@@ -77,5 +77,6 @@
     "playButton": "After selecting a card, play it with this button.",
     "info": "Card points: A=11, 10=10, K=4, Q=3, J=2. Of the 120 total, the picker team wins by taking 61+. Chips move on each result.",
     "resetButton": "Use the reset button to start a new game."
-  }
+  },
+  "callButtonAriaLabel": "Call {{suit}} (names your partner)"
 }
