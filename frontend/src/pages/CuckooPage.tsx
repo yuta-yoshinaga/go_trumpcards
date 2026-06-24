@@ -196,7 +196,7 @@ function CuckooPageContent() {
                   } ${p.isHuman ? 'font-semibold' : ''} ${p.isEliminated ? 'opacity-50' : ''}`}
                 >
                   <span>{playerLabel(p.id, p.isHuman)}</span>
-                  <span role="img" aria-label={t('lives')}>
+                  <span role="img" aria-label={p.lives > 0 ? t('livesCount', { count: p.lives }) : t('eliminated')}>
                     {p.lives > 0 ? '♥'.repeat(p.lives) : `(${t('eliminated')})`}
                   </span>
                   {p.kingRevealed && <span className="text-ds-accent">[{t('kingRevealed')}]</span>}
@@ -207,7 +207,13 @@ function CuckooPageContent() {
 
             {/* Round losers */}
             {(isRoundEnd || isGameEnd) && state.roundLosers.length > 0 && (
-              <div className="mb-2 p-2 rounded bg-ds-warning/20 text-ds-warning text-sm" data-tutorial="cuckoo-losers">
+              <div
+                className="mb-2 p-2 rounded bg-ds-warning/20 text-ds-warning text-sm"
+                data-tutorial="cuckoo-losers"
+                data-testid="cuckoo-losers"
+                role="status"
+                aria-live="polite"
+              >
                 <div className="mb-1">{t('roundLosersTitle')}</div>
                 {state.roundLosers.map((idx) => (
                   <div key={`loser-${idx}`}>{t('roundLoser', { name: playerLabel(idx, idx === 0) })}</div>
