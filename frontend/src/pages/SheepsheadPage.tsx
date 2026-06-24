@@ -360,20 +360,22 @@ function SheepsheadPageContent() {
                 </button>
               )}
               {canCall &&
-                state.callableSuits.map((suit) => (
-                  <button
-                    key={`call-${suit}`}
-                    type="button"
-                    className={btnPrimary}
-                    onClick={() => handleCall(suit)}
-                    disabled={loading}
-                    aria-label={t('callButtonAriaLabel', {
-                      suit: SUIT_KEYS[suit] ? t(`suit.${SUIT_KEYS[suit]}`) : suit,
-                    })}
-                  >
-                    {t('callButton', { suit: SUIT_KEYS[suit] ? t(`suit.${SUIT_KEYS[suit]}`) : suit })}
-                  </button>
-                ))}
+                state.callableSuits.map((suit) => {
+                  // callableSuits are always 1-3 (♠♣♥), all present in SUIT_KEYS.
+                  const suitName = t(`suit.${SUIT_KEYS[suit]}`);
+                  return (
+                    <button
+                      key={`call-${suit}`}
+                      type="button"
+                      className={btnPrimary}
+                      onClick={() => handleCall(suit)}
+                      disabled={loading}
+                      aria-label={t('callButtonAriaLabel', { suit: suitName })}
+                    >
+                      {t('callButton', { suit: suitName })}
+                    </button>
+                  );
+                })}
               {canPlay && (
                 <button
                   type="button"
