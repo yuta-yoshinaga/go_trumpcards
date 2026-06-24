@@ -350,6 +350,13 @@ describe('PineapplePage', () => {
     expect(preview).not.toHaveTextContent('暫定役');
   });
 
+  it('does not show the Irish Poker discard preview outside the discard phase', async () => {
+    mockIrishExec.mockResolvedValue({ ...preFlopState, initialDealCount: 4 });
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByText('あなたの手札')).toBeInTheDocument());
+    expect(screen.queryByTestId('irishpoker-discard-preview')).not.toBeInTheDocument();
+  });
+
   it('does not show the Irish Poker discard preview for the Pineapple variant', async () => {
     mockExec.mockResolvedValue(discardState);
     renderWithProviders(<PineapplePage />);
