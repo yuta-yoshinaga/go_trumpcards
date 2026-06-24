@@ -187,6 +187,26 @@ describe('FreeCellPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
 
+  it('shows the auto-complete-ready badge and pulses the button when the board is solvable', async () => {
+    // Single-card columns are trivially descending → deterministically winnable.
+    renderWithProviders(<FreeCellPage />);
+    const btn = await screen.findByRole('button', { name: 'オートコンプリート' });
+    expect(btn.className).toContain('animate-pulse');
+    expect(screen.getByTestId('freecell-autocomplete-ready-badge')).toBeInTheDocument();
+  });
+
+  it('does not pulse or show the badge when a column blocks auto-complete', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      // A higher rank stacked on a lower one cannot be auto-collected.
+      tableau: [[card('SPADE', 2), card('HEART', 5)], [], [], [], [], [], [], []],
+    });
+    renderWithProviders(<FreeCellPage />);
+    const btn = await screen.findByRole('button', { name: 'オートコンプリート' });
+    expect(btn.className).not.toContain('animate-pulse');
+    expect(screen.queryByTestId('freecell-autocomplete-ready-badge')).not.toBeInTheDocument();
+  });
+
   it('give up button opens a confirm dialog and only dispatches giveup after confirm', async () => {
     renderWithProviders(<FreeCellPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeInTheDocument());
