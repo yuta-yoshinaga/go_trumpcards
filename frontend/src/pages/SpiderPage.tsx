@@ -267,14 +267,16 @@ function SpiderPageContent() {
         </>
       }
       headerEnd={
-        <span className="ml-3" role="status" aria-live="polite" data-tutorial="spd-completed-suits">
-          {t('completed')}: {state.completedSuits}/8
-          {suitJustCompleted && (
-            <span className="ml-1 text-ds-success font-semibold" data-testid="spd-suit-complete">
-              {t('suitCompleted')}
-            </span>
-          )}
-        </span>
+        <>
+          <span className="ml-3" role="status" data-tutorial="spd-completed-suits">
+            {t('completed')}: {state.completedSuits}/8
+          </span>
+          {/* Dedicated live region for the completion flash: keeping it separate
+              from the counter means its removal never re-reads the counter text. */}
+          <span className="ml-1 text-ds-success font-semibold" role="status">
+            {suitJustCompleted ? <span data-testid="spd-suit-complete">{t('suitCompleted')}</span> : null}
+          </span>
+        </>
       }
     >
       {cliEnabled ? (
