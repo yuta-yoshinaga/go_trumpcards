@@ -56,6 +56,32 @@ describe('OldMaidPlayerArea compactNonTarget', () => {
   });
 });
 
+describe('OldMaidPlayerArea suspect/target a11y', () => {
+  it('exposes the suspect toggle state via aria-pressed and a descriptive aria-label', () => {
+    const { rerender } = render(
+      <OldMaidPlayerArea {...defaultProps} player={makeCpuPlayer(5)} onToggleSuspect={vi.fn()} isSuspect={false} />,
+    );
+    const btn = screen.getByRole('button', { name: /容疑者/ });
+    expect(btn).toHaveAttribute('aria-pressed', 'false');
+    expect(btn.getAttribute('aria-label')).toContain('CPU');
+
+    rerender(<OldMaidPlayerArea {...defaultProps} player={makeCpuPlayer(5)} onToggleSuspect={vi.fn()} isSuspect />);
+    expect(screen.getByRole('button', { name: /容疑者/ })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('marks the current draw target with aria-current', () => {
+    const { container } = render(
+      <OldMaidPlayerArea {...defaultProps} player={makeCpuPlayer(5)} isTarget isHumanTurn />,
+    );
+    expect(container.querySelector('#player-area-1')).toHaveAttribute('aria-current', 'true');
+  });
+
+  it('does not set aria-current on a non-target player', () => {
+    const { container } = render(<OldMaidPlayerArea {...defaultProps} player={makeCpuPlayer(5)} />);
+    expect(container.querySelector('#player-area-1')).not.toHaveAttribute('aria-current');
+  });
+});
+
 describe('OldMaidPlayerArea CPU highlight', () => {
   const selectableProps = { ...defaultProps, isTarget: true, isHumanTurn: true };
 
