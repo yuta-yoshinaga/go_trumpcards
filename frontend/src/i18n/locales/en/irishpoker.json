@@ -19,7 +19,9 @@
     "confirm": "Discard {{card}}?",
     "confirmYes": "Confirm",
     "confirmNo": "Cancel",
-    "selectedCount": "{{n}}/{{total}} selected"
+    "selectedCount": "{{n}}/{{total}} selected",
+    "keepLabel": "Keep",
+    "previewHand": "Tentative hand"
   },
   "rebuy": {
     "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",
@@ -88,5 +90,17 @@
     "decentHandRank": "Decent hand — call recommended",
     "weakHandRank": "Weak hand — fold recommended",
     "discardWeakest": "Discard the weakest card"
+  },
+  "hand": {
+    "highCard": "High Card",
+    "onePair": "One Pair",
+    "twoPair": "Two Pair",
+    "threeOfAKind": "Three of a Kind",
+    "straight": "Straight",
+    "flush": "Flush",
+    "fullHouse": "Full House",
+    "fourOfAKind": "Four of a Kind",
+    "straightFlush": "Straight Flush",
+    "royalFlush": "Royal Flush"
   }
 }

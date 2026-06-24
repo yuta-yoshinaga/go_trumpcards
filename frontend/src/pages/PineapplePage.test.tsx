@@ -1,16 +1,18 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { pineappleApi } from '../api/gameApi';
+import { irishPokerApi, pineappleApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { PineappleResponse } from '../types/card';
 import { PineapplePage } from './PineapplePage';
 
 vi.mock('../api/gameApi', () => ({
   pineappleApi: { exec: vi.fn() },
-  actionLogApi: { pineapple: vi.fn() },
+  irishPokerApi: { exec: vi.fn() },
+  actionLogApi: { pineapple: vi.fn(), irishpoker: vi.fn() },
 }));
 
 const mockExec = vi.mocked(pineappleApi.exec);
+const mockIrishExec = vi.mocked(irishPokerApi.exec);
 
 /** Helper: base human player */
 const humanPlayer = (overrides: Partial<import('../types/card').HoldemPlayerData> = {}) => ({
@@ -242,6 +244,52 @@ describe('PineapplePage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '確定' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', undefined, { cardIdxs: [0] }));
+  });
+
+  it('previews the kept cards and tentative hand for Irish Poker discard', async () => {
+    const irishDiscardState: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 4,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 1 },
+            { design: 'DIAMOND', value: 5 },
+            { design: 'CLOVER', value: 8 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      discardDone: [false, true, true, true],
+    };
+    mockIrishExec.mockResolvedValue(irishDiscardState);
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+
+    // Discard ♦5 and ♣8, keeping the pair of Aces.
+    fireEvent.click(screen.getByAltText('♦ 5').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♣ 8').closest('button') as HTMLButtonElement);
+
+    const preview = await screen.findByTestId('irishpoker-discard-preview');
+    // Kept ♠A ♥A + board makes one pair.
+    expect(preview).toHaveTextContent('ワンペア');
+  });
+
+  it('does not show the Irish Poker discard preview for the Pineapple variant', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    const cardButtons = screen.getAllByRole('button').filter((btn) => btn.getAttribute('aria-pressed') !== null);
+    fireEvent.click(cardButtons[0]);
+    expect(screen.queryByTestId('irishpoker-discard-preview')).not.toBeInTheDocument();
   });
 
   it('cancels the discard confirm step and returns to selection', async () => {
