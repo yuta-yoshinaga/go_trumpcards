@@ -39,5 +39,6 @@
   },
   "nav": {
     "easthaven": "イーストヘイブン"
-  }
+  },
+  "moveHereAriaLabel": "空のタブロー列 {{col}}（ここに移動）"
 }

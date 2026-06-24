@@ -502,7 +502,11 @@ function EasthavenPageContent() {
                         style={{ width: eh.cw, height: eh.ch }}
                         onClick={() => selectedSource && handleSelectTarget('tableau', colIdx)}
                         disabled={!isPlaying || !selectedSource}
-                        aria-label={`${t('empty')} ${t('tableau')} ${colIdx}`}
+                        aria-label={
+                          selectedSource
+                            ? t('moveHereAriaLabel', { col: colIdx })
+                            : `${t('empty')} ${t('tableau')} ${colIdx}`
+                        }
                         data-testid={`eh-empty-col-${colIdx.toString()}`}
                       >
                         {t('empty')}
