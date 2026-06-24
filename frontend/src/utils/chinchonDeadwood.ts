@@ -60,20 +60,37 @@ interface IndexedCard {
  * surfaced back to React is the integer deadwood total. */
 export function bestChinchonDeadwoodValue(hand: readonly Card[]): number {
   if (hand.length === 0) return 0;
-  const indexed: IndexedCard[] = hand.map((card, idx) => ({ idx, card }));
-  return search(indexed);
+  return search(hand.map((card, idx) => ({ idx, card }))).value;
 }
 
-function search(remaining: IndexedCard[]): number {
+/** The deadwood cards (and their values) left over by the best meld split. */
+export interface ChinchonDeadwoodBreakdown {
+  /** Cards not absorbed by any meld in the minimum-deadwood split. */
+  cards: Card[];
+  /** Each card's Chinchón point value, parallel to `cards`. */
+  values: number[];
+  /** Sum of `values` (the deadwood score). */
+  total: number;
+}
+
+/** Breakdown of which cards remain as deadwood in the best meld split, for a
+ * per-card hint like "5 + 3 + 2 = 10". */
+export function chinchonDeadwoodBreakdown(hand: readonly Card[]): ChinchonDeadwoodBreakdown {
+  const best = search(hand.map((card, idx) => ({ idx, card })));
+  const cards = best.deadwood.map((d) => d.card);
+  return { cards, values: cards.map(chinchonCardValue), total: best.value };
+}
+
+function search(remaining: IndexedCard[]): { value: number; deadwood: IndexedCard[] } {
   const candidates = enumerateMelds(remaining);
-  let best = calcChinchonDeadwoodValue(remaining.map((r) => r.card));
+  let best = { value: calcChinchonDeadwoodValue(remaining.map((r) => r.card)), deadwood: remaining };
   if (candidates.length === 0) return best;
   for (const meld of candidates) {
     const meldIdx = new Set(meld.map((m) => m.idx));
     const rest = remaining.filter((r) => !meldIdx.has(r.idx));
-    const dv = search(rest);
-    if (dv < best) best = dv;
-    if (best === 0) break;
+    const sub = search(rest);
+    if (sub.value < best.value) best = sub;
+    if (best.value === 0) break;
   }
   return best;
 }

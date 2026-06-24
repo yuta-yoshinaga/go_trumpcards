@@ -125,6 +125,28 @@ describe('ChinchonPage', () => {
     expect(knockBtn.className).toContain('animate-pulse');
   });
 
+  it('shows a per-card deadwood breakdown during the discard phase', async () => {
+    // No melds possible; best discard drops ♥K, leaving ♠5 + ♣3 = 8 deadwood.
+    const handWithDeadwood: ChinchonResponse = {
+      ...discardPhaseState,
+      players: [
+        {
+          ...discardPhaseState.players[0],
+          cards: [
+            { design: 'SPADE', value: 5 },
+            { design: 'HEART', value: 13 },
+            { design: 'CLOVER', value: 3 },
+          ],
+        },
+        ...discardPhaseState.players.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(handWithDeadwood);
+    renderWithProviders(<ChinchonPage />);
+    const bd = await screen.findByTestId('chinchon-deadwood-breakdown');
+    expect(bd).toHaveTextContent('5 + 3 = 8');
+  });
+
   it('renders draw phase with human cards', async () => {
     renderWithProviders(<ChinchonPage />);
     await waitFor(() => {
