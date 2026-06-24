@@ -24,6 +24,7 @@
   "cards": "{{count}}",
   "gamePips": "Game pips: {{pips}}",
   "gamePipsTooltip": "10=10, A=4, K=3, Q=2, J=1. Whoever captures the most pips wins the Game point.",
+  "gamePipsTotal": "Total",
   "cumulativeScore": "Total: {{score}}",
   "roundScore": "Round: {{score}}",
   "bid": "Bid {{n}}",
