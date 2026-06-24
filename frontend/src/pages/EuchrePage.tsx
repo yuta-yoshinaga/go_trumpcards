@@ -527,7 +527,11 @@ function EuchrePageContent() {
                         disabled={loading || isTurnedDownSuit}
                         title={isTurnedDownSuit ? t('turnedDownSuit') : undefined}
                       >
-                        {t(SUIT_NAMES[s])}
+                        {/* The localized name already carries the suit glyph (e.g. "♥ ハート");
+                            tint red suits so the colour, not just the text, distinguishes them. */}
+                        <span className={s >= 3 ? 'text-ds-error font-semibold' : undefined} data-suit={s}>
+                          {t(SUIT_NAMES[s])}
+                        </span>
                       </button>
                     );
                   })}

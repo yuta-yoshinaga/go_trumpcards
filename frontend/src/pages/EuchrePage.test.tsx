@@ -308,6 +308,15 @@ describe('EuchrePage', () => {
     expect(screen.getByRole('button', { name: '♠ スペード' })).toBeEnabled();
   });
 
+  it('tints the red-suit call-trump buttons but not the black-suit ones', async () => {
+    mockExec.mockResolvedValue(callTrumpPhaseState);
+    renderWithProviders(<EuchrePage />);
+    const diamond = await screen.findByRole('button', { name: '♦ ダイヤ' });
+    const spade = screen.getByRole('button', { name: '♠ スペード' });
+    expect(diamond.querySelector('[data-suit]')?.className).toContain('text-ds-error');
+    expect(spade.querySelector('[data-suit]')?.className ?? '').not.toContain('text-ds-error');
+  });
+
   it('renders discard phase with discard button', async () => {
     mockExec.mockResolvedValue(discardPhaseState);
     renderWithProviders(<EuchrePage />);
