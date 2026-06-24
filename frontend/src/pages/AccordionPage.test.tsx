@@ -292,7 +292,7 @@ describe('AccordionPage', () => {
     });
     renderWithProviders(<AccordionPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    const hintBox = screen.getByRole('status');
+    const hintBox = await screen.findByText(/パイル3 → パイル0/);
     expect(hintBox.textContent).toMatch(/3/);
     expect(hintBox.textContent).toMatch(/0/);
   });
@@ -349,6 +349,45 @@ describe('AccordionPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     // Empty pile still renders a button with 0: empty aria-label
     expect(screen.getByRole('button', { name: /^0: empty$/ })).toBeInTheDocument();
+  });
+
+  it('reflects a selected pile’s legal merge offsets in its aria-label and live region', async () => {
+    // pile 3 (SPADE 9) can merge onto pile 0 (SPADE 7) at offset 3 (suit match).
+    mockExec.mockResolvedValue({
+      ...playingState,
+      piles: [
+        { cards: [card('SPADE', 7)], size: 1 },
+        { cards: [card('HEART', 2)], size: 1 },
+        { cards: [card('CLOVER', 3)], size: 1 },
+        { cards: [card('SPADE', 9)], size: 1 },
+      ],
+    });
+    renderWithProviders(<AccordionPage />);
+    const pile3 = await screen.findByRole('button', { name: /^3: ♠ 9/ });
+    fireEvent.click(pile3);
+    await waitFor(() => expect(screen.getByRole('button', { name: /3: ♠ 9 — 左3へマージ可/ })).toBeInTheDocument());
+    const status = screen.getByTestId('ac-selection-status');
+    expect(status).toHaveAttribute('role', 'status');
+    expect(status).toHaveTextContent('パイル3を選択中。マージ可能な手が1通り');
+  });
+
+  it('announces when a selected pile has no legal merge', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      piles: [
+        { cards: [card('SPADE', 7)], size: 1 },
+        { cards: [card('HEART', 2)], size: 1 },
+        { cards: [card('CLOVER', 3)], size: 1 },
+        { cards: [card('SPADE', 9)], size: 1 },
+      ],
+    });
+    renderWithProviders(<AccordionPage />);
+    const pile1 = await screen.findByRole('button', { name: /^1: ♥ 2/ });
+    fireEvent.click(pile1);
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /1: ♥ 2 — マージ可能な手なし/ })).toBeInTheDocument(),
+    );
+    expect(screen.getByTestId('ac-selection-status')).toHaveTextContent('パイル1を選択中。マージ可能な手なし');
   });
 
   it('renders multi-card pile size badge', async () => {

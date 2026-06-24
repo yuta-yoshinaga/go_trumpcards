@@ -23,3 +23,12 @@ export function accordionLegalTargets(piles: readonly AccordionPile[], fromIdx: 
   }
   return targets;
 }
+
+/**
+ * Returns the legal merge *offsets* (a subset of {@link ACCORDION_OFFSETS}, i.e.
+ * `1` and/or `3`) available from `fromIdx`, derived from {@link accordionLegalTargets}.
+ * Used to describe a selected pile's moves to assistive tech (#2596).
+ */
+export function accordionLegalOffsets(piles: readonly AccordionPile[], fromIdx: number): number[] {
+  return accordionLegalTargets(piles, fromIdx).map((toIdx) => fromIdx - toIdx);
+}

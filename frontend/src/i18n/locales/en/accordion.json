@@ -21,6 +21,10 @@
   "hintAvailable": "Hint available",
   "stalemate": "No moves available",
   "hintMove": "Pile {{from}} → Pile {{to}}",
+  "mergeOffsetAvailable": "can merge {{offset}} to the left",
+  "noMergeAvailable": "no merge available",
+  "selectionMoves": "Pile {{idx}} selected. {{count}} merge(s) available",
+  "selectionNoMoves": "Pile {{idx}} selected. No merge available",
   "landscapeBanner": "Landscape orientation recommended",
   "frontendHint": {
     "accordionOffset1": "You can merge with the adjacent pile to the left",
