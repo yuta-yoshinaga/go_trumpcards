@@ -41,6 +41,12 @@ const SIGNAL_OPTIONS = [
   { value: KempsSignal.BLINK, label: 'blink' },
 ];
 
+/** Signal-type → i18n label key, for the screen-reader "signal set" announcement. */
+const SIGNAL_LABEL_BY_TYPE: Readonly<Record<number, string>> = {
+  [KempsSignal.SOUND]: 'sound',
+  [KempsSignal.BLINK]: 'blink',
+};
+
 /** Kemps tutorial step definitions. */
 const KEMPS_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -349,9 +355,7 @@ function KempsPageContent() {
               ))}
               {/* Announce the chosen signal — the visual selection is colour-only otherwise (#2690). */}
               <span className="sr-only" role="status" aria-live="polite" data-testid="kemps-signal-sent">
-                {t('signalSent', {
-                  signal: t(`signal.${SIGNAL_OPTIONS.find((o) => o.value === state.signalType)?.label ?? 'sound'}`),
-                })}
+                {t('signalSent', { signal: t(`signal.${SIGNAL_LABEL_BY_TYPE[state.signalType]}`) })}
               </span>
             </div>
 
