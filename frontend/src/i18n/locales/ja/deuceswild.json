@@ -5,7 +5,8 @@
     "bet": "ベット: {{bet}}コイン",
     "payout": "配当: {{payout}}",
     "betAmount": "コイン数",
-    "autoHold": "自動ホールド"
+    "autoHold": "自動ホールド",
+    "betMax": "最大ベット"
   },
   "button": {
     "deal": "ディール",

@@ -5,7 +5,8 @@
     "bet": "Bet: {{bet}} coin(s)",
     "payout": "Payout: {{payout}}",
     "betAmount": "Coins",
-    "autoHold": "Auto-hold"
+    "autoHold": "Auto-hold",
+    "betMax": "Bet Max"
   },
   "button": {
     "deal": "Deal",

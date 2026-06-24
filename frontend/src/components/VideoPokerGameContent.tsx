@@ -161,6 +161,12 @@ export function VideoPokerGameContent({
   const handleDeal = useCallback(() => {
     execApi('bet', betAmount);
   }, [execApi, betAmount]);
+  // Bet the table maximum (5) and deal in one action. Pass 5 explicitly rather
+  // than relying on the async setBetAmount so the deal never uses a stale value.
+  const handleBetMax = useCallback(() => {
+    setBetAmount(5);
+    execApi('bet', 5);
+  }, [execApi]);
 
   const handleDraw = useCallback(() => {
     const indices = heldCards.reduce<number[]>((acc, held, i) => {
@@ -303,9 +309,14 @@ export function VideoPokerGameContent({
                     ))}
                   </select>
                 </div>
-                <button type="button" className={`${btnPrimary} mt-2`} onClick={handleDeal} disabled={loading}>
-                  {t('button.deal')}
-                </button>
+                <div className="mt-2 flex gap-2">
+                  <button type="button" className={btnPrimary} onClick={handleDeal} disabled={loading}>
+                    {t('button.deal')}
+                  </button>
+                  <button type="button" className={btnPrimary} onClick={handleBetMax} disabled={loading}>
+                    {t('label.betMax')}
+                  </button>
+                </div>
                 <p className="text-ds-text-muted text-xs mt-2">{tNs('dealGuide')}</p>
               </div>
             )}
