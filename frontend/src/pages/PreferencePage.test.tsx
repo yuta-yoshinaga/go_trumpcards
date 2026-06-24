@@ -108,6 +108,32 @@ describe('PreferencePage', () => {
     expect(screen.getByTestId('bid-0')).toBeEnabled();
   });
 
+  it('shows the current highest bid (none when no one has bid)', async () => {
+    renderWithProviders(<PreferencePage />);
+    const banner = await screen.findByTestId('preference-highest-bid');
+    expect(banner).toHaveTextContent('なし');
+  });
+
+  it('names the current highest bid once someone has bid', async () => {
+    mockExec.mockResolvedValue(makePreferenceState({ bids: [2, 0, 0] }));
+    renderWithProviders(<PreferencePage />);
+    const banner = await screen.findByTestId('preference-highest-bid');
+    expect(banner).toHaveTextContent('ミゼール');
+  });
+
+  it('explains via tooltip why a too-low bid is disabled', async () => {
+    mockExec.mockResolvedValue(makePreferenceState({ bids: [2, 0, 0] }));
+    renderWithProviders(<PreferencePage />);
+    const six = await screen.findByTestId('bid-1');
+    expect(six.closest('span')).toHaveAttribute('title', '現在の最高入札を上回る必要があります');
+  });
+
+  it('marks the Misère bid as a special contract', async () => {
+    renderWithProviders(<PreferencePage />);
+    const misere = await screen.findByTestId('bid-2');
+    expect(misere).toHaveTextContent('特殊');
+  });
+
   it('renders the play phase with the human cards and the declarer badge', async () => {
     mockExec.mockResolvedValue(playPhaseState);
     renderWithProviders(<PreferencePage />);
