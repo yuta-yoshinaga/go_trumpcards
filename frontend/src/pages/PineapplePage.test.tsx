@@ -391,6 +391,31 @@ describe('PineapplePage', () => {
     expect(labels[0]).toHaveTextContent('ワンペア');
   });
 
+  it('omits Crazy Pineapple candidate labels when the board is too small to evaluate', async () => {
+    const crazyNoBoardState: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 3,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 1 },
+            { design: 'DIAMOND', value: 5 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [], // keep(2) + board(0) < 5 → no hand can be evaluated
+      discardDone: [false, true, true, true],
+    };
+    mockCrazyExec.mockResolvedValue(crazyNoBoardState);
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    expect(screen.queryByTestId('cp-discard-candidate')).not.toBeInTheDocument();
+  });
+
   it('does not show Crazy Pineapple candidate labels outside the discard phase', async () => {
     mockCrazyExec.mockResolvedValue({ ...preFlopState, initialDealCount: 3 });
     renderWithProviders(<PineapplePage variant="crazypineapple" />);
