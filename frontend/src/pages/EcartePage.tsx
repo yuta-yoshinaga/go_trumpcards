@@ -60,6 +60,18 @@ const ECARTE_PHASE_KEYS: Readonly<Record<number, string>> = {
   [EcartePhase.GAME_END]: 'gameEnd',
 };
 
+/**
+ * Exchange-phase negotiation sub-step → i18n key, mirroring the CUI's
+ * `ecarteNegPromptKey` grouping (both discard steps share one label) so the
+ * Web UI names the current sub-step instead of just showing a generic banner (#2678).
+ */
+const ECARTE_NEG_STEP_KEYS: Readonly<Record<number, string>> = {
+  [EcarteNegStep.ELDER_DECIDE]: 'negStep.elderDecide',
+  [EcarteNegStep.DEALER_RESPOND]: 'negStep.dealerRespond',
+  [EcarteNegStep.ELDER_DISCARD]: 'negStep.discard',
+  [EcarteNegStep.DEALER_DISCARD]: 'negStep.discard',
+};
+
 /** Renders the Écarté game page: a 2-player French trick game with an Exchange phase. */
 export const EcartePage = withTutorial(EcartePageContent, 'ecarte', ECARTE_TUTORIAL_STEPS);
 
@@ -210,7 +222,12 @@ function EcartePageContent() {
             </div>
 
             {isExchangePhase && (
-              <div className="text-ds-text-muted text-center mb-2 text-sm font-semibold">{t('exchangeNotice')}</div>
+              <div className="text-center mb-2">
+                <div className="text-ds-text-muted text-sm font-semibold">{t('exchangeNotice')}</div>
+                <div className="text-ds-accent text-xs mt-0.5" data-testid="ecarte-neg-step">
+                  {t('negStepLabel', { step: t(ECARTE_NEG_STEP_KEYS[state.negStep] ?? 'negStep.elderDecide') })}
+                </div>
+              </div>
             )}
 
             <div className={lgTwoColGrid}>
