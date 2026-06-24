@@ -252,8 +252,8 @@ function EgyptianRatscrewPageContent() {
                       className="flex items-center justify-center gap-1 animate-pulse"
                       aria-hidden="true"
                     >
-                      {Array.from({ length: state.chanceRemaining }, (_, i) => `dot${i}`).map((id) => (
-                        <span key={id} className="inline-block h-2 w-2 rounded-full bg-ds-warning" />
+                      {Array.from({ length: state.chanceRemaining }, (_, i) => (
+                        <span key={`dot${i}`} className="inline-block h-2 w-2 rounded-full bg-ds-warning" />
                       ))}
                     </div>
                     <div className="text-xs text-ds-warning" role="status">

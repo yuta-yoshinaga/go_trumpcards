@@ -200,6 +200,14 @@ describe('EgyptianRatscrewPage', () => {
     expect(row).toHaveTextContent('応答: CPU 1');
   });
 
+  it('names the human as responder when it is the human turn during a chance', async () => {
+    mockExec.mockResolvedValueOnce({ ...chanceState, isHumanTurn: true, currentTurnIdx: 0, chanceRemaining: 1 });
+    renderWithProviders(<EgyptianRatscrewPage />);
+    const row = await screen.findByTestId('er-chance-row');
+    expect(row.querySelectorAll('span.rounded-full')).toHaveLength(1);
+    expect(row).toHaveTextContent('応答: あなた');
+  });
+
   it('reset settings select fires reset with cpuDifficulty config', async () => {
     renderWithProviders(<EgyptianRatscrewPage />);
     await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
