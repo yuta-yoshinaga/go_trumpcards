@@ -73,17 +73,17 @@ describe('BriscolaPage', () => {
 
   it('shows human hand as 3 play buttons', async () => {
     renderWithProviders(<BriscolaPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Play SPADE 1' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: 'Play HEART 5' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Play DIAMOND 11' })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ A を出す' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '♥ 5 を出す' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♦ J を出す' })).toBeInTheDocument();
   });
 
   it('fires play with the selected card index when a card is clicked', async () => {
     renderWithProviders(<BriscolaPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Play HEART 5' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '♥ 5 を出す' })).toBeInTheDocument());
 
     mockExec.mockClear();
-    fireEvent.click(screen.getByRole('button', { name: 'Play HEART 5' }));
+    fireEvent.click(screen.getByRole('button', { name: '♥ 5 を出す' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 1));
   });
 
@@ -155,7 +155,7 @@ describe('BriscolaPage', () => {
     mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
     renderWithProviders(<BriscolaPage />);
     await waitFor(() => {
-      const btn = screen.getByRole('button', { name: 'Play SPADE 1' });
+      const btn = screen.getByRole('button', { name: '♠ A を出す' });
       expect(btn).toBeDisabled();
     });
   });

@@ -17,6 +17,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BriscolaResponse } from '../types/card';
 import { BriscolaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 
 /** Tutorial steps for the Briscola page. */
 const BRISCOLA_TUTORIAL_STEPS: TutorialStep[] = [
@@ -211,7 +212,7 @@ function BriscolaPageContent() {
                   type="button"
                   onClick={() => handlePlay(idx)}
                   disabled={loading || !isHumanTurn}
-                  aria-label={`Play ${card.design} ${card.value}`}
+                  aria-label={tc('card.play', { card: cardAlt(card) })}
                   className="disabled:opacity-50"
                 >
                   <CardImage card={card} width={cardWidth} />
