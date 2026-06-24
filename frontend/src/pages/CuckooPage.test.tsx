@@ -88,11 +88,28 @@ describe('CuckooPage', () => {
     expect(screen.getByText(/山札: 47枚/)).toBeInTheDocument();
   });
 
-  it('renders the players list with lives', async () => {
+  it('renders the players list with lives, exposing the remaining count to screen readers', async () => {
     renderWithProviders(<CuckooPage />);
     await waitFor(() => expect(screen.getByText(/プレイヤー/)).toBeInTheDocument());
-    const lives = screen.getAllByLabelText('ライフ');
+    // Each life row's aria-label includes the remaining count (e.g. "ライフ 3"), not just "ライフ".
+    const lives = screen.getAllByLabelText('ライフ 3');
     expect(lives.length).toBe(4);
+    expect(screen.queryByLabelText('ライフ')).not.toBeInTheDocument();
+  });
+
+  it('labels an eliminated player with the out label instead of a life count', async () => {
+    mockExec.mockResolvedValue(gameEndState); // seats 1-3 eliminated (lives 0)
+    renderWithProviders(<CuckooPage />);
+    await waitFor(() => expect(screen.getByText(/プレイヤー/)).toBeInTheDocument());
+    expect(screen.getAllByLabelText('脱落').length).toBe(3);
+  });
+
+  it('announces round losers via a polite live region', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<CuckooPage />);
+    const losers = await screen.findByTestId('cuckoo-losers');
+    expect(losers).toHaveAttribute('role', 'status');
+    expect(losers).toHaveAttribute('aria-live', 'polite');
   });
 
   it('dispatches keep on the human turn', async () => {

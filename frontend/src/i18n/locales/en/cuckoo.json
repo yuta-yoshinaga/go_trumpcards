@@ -6,6 +6,7 @@
   "stock": "Stock: {{count}}",
   "playersTitle": "Players",
   "lives": "Lives",
+  "livesCount": "Lives {{count}}",
   "eliminated": "Out",
   "kingRevealed": "King revealed",
   "yourCard": "Your card",

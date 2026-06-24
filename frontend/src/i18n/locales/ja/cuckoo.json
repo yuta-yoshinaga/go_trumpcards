@@ -6,6 +6,7 @@
   "stock": "山札: {{count}}枚",
   "playersTitle": "プレイヤー",
   "lives": "ライフ",
+  "livesCount": "ライフ {{count}}",
   "eliminated": "脱落",
   "kingRevealed": "キング公開",
   "yourCard": "あなたのカード",
