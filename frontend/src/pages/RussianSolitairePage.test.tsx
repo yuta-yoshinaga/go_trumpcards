@@ -75,6 +75,13 @@ describe('RussianSolitairePage', () => {
     await waitFor(() => expect(screen.getByText(/手数/)).toBeInTheDocument());
   });
 
+  it('shows the face-down rule note and labels face-down cards', async () => {
+    renderWithProviders(<RussianSolitairePage />);
+    await waitFor(() => expect(screen.getByTestId('rs-facedown-rule')).toBeInTheDocument());
+    // The playing state has face-down cards; each exposes the rule as its label.
+    expect(screen.getAllByLabelText(/移動できません/).length).toBeGreaterThan(0);
+  });
+
   it('shows game clear phase', async () => {
     mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<RussianSolitairePage />);

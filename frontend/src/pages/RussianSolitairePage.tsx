@@ -436,6 +436,9 @@ function RussianSolitairePageContent() {
             </div>
 
             {/* Tableau */}
+            <p className="text-game-text-muted text-xs text-center mb-1" data-testid="rs-facedown-rule">
+              {t('faceDownRule')}
+            </p>
             <div className="flex gap-1 sm:gap-2 justify-center" data-tutorial="rs-tableau">
               {state.tableau.map((col, colIdx) => (
                 <div key={colIdx} className="flex flex-col items-center" style={{ width: rs.cw }}>
@@ -527,7 +530,9 @@ function RussianSolitairePageContent() {
                                   );
                                 })()
                               ) : (
-                                <AnimatedCardBack width={rs.cw} />
+                                <span role="img" aria-label={t('faceDownRule')} title={t('faceDownRule')}>
+                                  <AnimatedCardBack width={rs.cw} />
+                                </span>
                               )}
                             </DropZone>
                           </div>
