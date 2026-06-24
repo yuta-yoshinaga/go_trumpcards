@@ -98,6 +98,13 @@ describe('MusPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', { betAction: 1, betAmount: 2 }));
   });
 
+  it('exposes the envido stepper to assistive tech with a group and labelled buttons', async () => {
+    renderWithProviders(<MusPage />);
+    await waitFor(() => expect(screen.getByRole('group', { name: 'エンビードの賭け額' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'エンビードを1増やす' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'エンビードを1減らす' })).toBeInTheDocument();
+  });
+
   it('shows quiero / noquiero when a bet is pending', async () => {
     mockExec.mockResolvedValue(respondState);
     renderWithProviders(<MusPage />);

@@ -323,17 +323,22 @@ function MusPageContent() {
                     </button>
                   )}
                   {state.canEnvido && (
-                    <div className="flex items-center gap-1">
+                    <fieldset className="flex items-center gap-1 border-0 p-0 m-0">
+                      <legend className="sr-only">{t('envidoStepperLabel')}</legend>
                       <button
                         type="button"
                         className={btnSecondary}
                         onClick={() => setEnvidoAmount((a) => Math.max(2, a - 1))}
                         disabled={loading}
-                        aria-label="-"
+                        aria-label={t('envidoDecrease')}
                       >
                         −
                       </button>
-                      <span className="text-ds-text-primary text-sm min-w-[3rem] text-center">
+                      <span
+                        className="text-ds-text-primary text-sm min-w-[3rem] text-center"
+                        aria-live="polite"
+                        aria-atomic="true"
+                      >
                         {t('envidoAmount', { amount: envidoAmount })}
                       </span>
                       <button
@@ -341,7 +346,7 @@ function MusPageContent() {
                         className={btnSecondary}
                         onClick={() => setEnvidoAmount((a) => a + 1)}
                         disabled={loading}
-                        aria-label="+"
+                        aria-label={t('envidoIncrease')}
                       >
                         ＋
                       </button>
@@ -353,7 +358,7 @@ function MusPageContent() {
                       >
                         {t('bet.envido')}
                       </button>
-                    </div>
+                    </fieldset>
                   )}
                   {state.canOrdago && (
                     <button
