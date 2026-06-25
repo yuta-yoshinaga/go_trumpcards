@@ -220,7 +220,14 @@ function SuecaPageContent() {
               <div data-tutorial="sueca-info">
                 {/* Team game points */}
                 <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                  <div>{t('teamScore', { team: t('team.a'), score: state.teamGamePoints[0] ?? 0 })}</div>
+                  {/* Trump is the key trick-taking signal; keep it in the always-visible sidebar
+                      so it isn't lost off-screen in the header on mobile. */}
+                  <div className="text-ds-text-primary font-semibold" data-testid="sueca-sidebar-trump">
+                    {t('trump', { suit: trumpSymbol })}
+                  </div>
+                  <div className="mt-1">
+                    {t('teamScore', { team: t('team.a'), score: state.teamGamePoints[0] ?? 0 })}
+                  </div>
                   <div>{t('teamScore', { team: t('team.b'), score: state.teamGamePoints[1] ?? 0 })}</div>
                   <div className="mt-1">
                     {t('yourTeam')}: {humanTeam === 0 ? t('team.a') : t('team.b')}
@@ -261,6 +268,19 @@ function SuecaPageContent() {
                 )}
               </div>
             </div>
+
+            {/* Trick-winner feedback: at TrickEnd the domain sets leadPlayerIdx to the
+                trick winner, so their team is shown immediately (before Next Trick). */}
+            {isTrickEnd && (
+              <div
+                className="my-2 p-2 rounded bg-ds-accent/15 text-center text-sm font-semibold text-ds-accent"
+                role="status"
+                aria-live="polite"
+                data-testid="sueca-trick-winner"
+              >
+                {t('trickWinner', { team: state.leadPlayerIdx % 2 === 0 ? t('team.a') : t('team.b') })}
+              </div>
+            )}
 
             {/* Message */}
             <GameMessageBox
