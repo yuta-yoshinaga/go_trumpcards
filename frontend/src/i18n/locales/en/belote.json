@@ -37,7 +37,8 @@
     "dixDeDer": "Last trick +10",
     "beloteKing": "Trump K",
     "beloteQueen": "Trump Q",
-    "beloteBonus": "+20"
+    "beloteBonus": "+20",
+    "beloteConfirmed": "Belote/Rebelote confirmed! +20"
   },
   "orderUpButton": "Take",
   "passButton": "Pass",
