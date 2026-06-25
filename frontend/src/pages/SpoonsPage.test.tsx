@@ -10,6 +10,14 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { spoons: vi.fn() },
 }));
 
+const mockPlaySound = vi.fn();
+const mockSoundValue = { playSound: mockPlaySound, muted: false, toggleMute: vi.fn() };
+vi.mock('../providers/SoundProvider', () => ({
+  SoundProvider: ({ children }: { children: React.ReactNode }) => children,
+  useSound: () => mockSoundValue,
+  useOptionalSound: () => mockSoundValue,
+}));
+
 const mockExec = vi.mocked(spoonsApi.exec);
 
 function makePlayer(overrides: Partial<SpoonsPlayer> = {}): SpoonsPlayer {
@@ -67,6 +75,7 @@ const gameEndState = makeState({ phase: 3, gameEndFlag: true, winnerIdx: 0, isHu
 
 beforeEach(() => {
   mockExec.mockReset();
+  mockPlaySound.mockReset();
   mockExec.mockResolvedValue(passState);
 });
 
@@ -116,6 +125,25 @@ describe('SpoonsPage', () => {
     mockExec.mockClear();
     fireEvent.click(btn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('grab'));
+  });
+
+  it('pulses the grab button while the window is open', async () => {
+    mockExec.mockResolvedValue(grabState);
+    renderWithProviders(<SpoonsPage />);
+    const btn = await screen.findByTestId('spoons-grab-button');
+    expect(btn.className).toContain('motion-safe:animate-pulse');
+  });
+
+  it('chimes once when the grab window opens (false→true)', async () => {
+    // Mount in the pass phase (window closed) → no chime yet.
+    renderWithProviders(<SpoonsPage />);
+    const buttons = await screen.findAllByRole('button', { name: '渡す' });
+    expect(mockPlaySound).not.toHaveBeenCalled();
+    // Passing a card opens the grab window in the response → chime fires once.
+    mockExec.mockResolvedValueOnce(grabState);
+    fireEvent.click(buttons[0]);
+    await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('turnTick', { pitchVariation: 0.1 }));
+    expect(mockPlaySound).toHaveBeenCalledTimes(1);
   });
 
   it('hides the grab button when the grab window is closed', async () => {
