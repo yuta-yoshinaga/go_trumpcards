@@ -3,6 +3,7 @@
   "settings": {
     "cpuDifficulty": "CPU difficulty"
   },
+  "bombCardAriaLabel": "{{card}} (part of a bomb)",
   "label": {
     "table": "Table",
     "bombs": "Bombs",
