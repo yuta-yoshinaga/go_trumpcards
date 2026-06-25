@@ -220,8 +220,7 @@ function SuecaPageContent() {
               <div data-tutorial="sueca-info">
                 {/* Team game points */}
                 <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                  {/* Trump is the key trick-taking signal; keep it in the always-visible sidebar
-                      so it isn't lost off-screen in the header on mobile. */}
+                  {/* Trump kept in the always-visible sidebar so it isn't lost off-screen on mobile. */}
                   <div className="text-ds-text-primary font-semibold" data-testid="sueca-sidebar-trump">
                     {t('trump', { suit: trumpSymbol })}
                   </div>
@@ -269,8 +268,7 @@ function SuecaPageContent() {
               </div>
             </div>
 
-            {/* Trick-winner feedback: at TrickEnd the domain sets leadPlayerIdx to the
-                trick winner, so their team is shown immediately (before Next Trick). */}
+            {/* At TrickEnd leadPlayerIdx is the trick winner, so their team shows before Next Trick. */}
             {isTrickEnd && (
               <div
                 className="my-2 p-2 rounded bg-ds-accent/15 text-center text-sm font-semibold text-ds-accent"
