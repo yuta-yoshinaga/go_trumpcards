@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { spoonsApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -18,6 +18,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { useSound } from '../providers/SoundProvider';
 import { btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -123,7 +124,19 @@ function SpoonsPageContent() {
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
   const phaseNames = usePhaseNames('spoons', SPOONS_PHASE_KEYS);
+
+  // Chime the instant the grab window opens (false→true) — a static "grab now!"
+  // text alone was easy to miss in this reflex game.
+  const prevGrabOpenRef = useRef(false);
+  useEffect(() => {
+    const open = state?.grabWindowOpen ?? false;
+    if (open && !prevGrabOpenRef.current) {
+      playSound('turnTick', { pitchVariation: 0.1 });
+    }
+    prevGrabOpenRef.current = open;
+  }, [state?.grabWindowOpen, playSound]);
 
   if (!state)
     return <GameSkeleton gameKey="spoons" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 4 }} />;
@@ -276,7 +289,13 @@ function SpoonsPageContent() {
               {state.grabWindowOpen && !isGameEnd && (
                 <>
                   <span className="text-ds-warning text-sm font-semibold mr-1">{t('grabNotice')}</span>
-                  <button type="button" className={btnWarning} onClick={() => exec('grab')} disabled={loading}>
+                  <button
+                    type="button"
+                    className={`${btnWarning} motion-safe:animate-pulse`}
+                    onClick={() => exec('grab')}
+                    disabled={loading}
+                    data-testid="spoons-grab-button"
+                  >
                     {t('grabButton')}
                   </button>
                 </>
