@@ -90,4 +90,34 @@ describe('BlackHolePage', () => {
     await waitFor(() => expect(screen.getByTestId('fan-0')).toBeInTheDocument());
     expect(screen.queryByTestId('hint-button')).not.toBeInTheDocument();
   });
+
+  it('rings the ±1 fan tops on hint, leaving non-adjacent fans unmarked', async () => {
+    // Hole top is 7 → fan0 top (CLOVER 6) is adjacent; fan1 top (DIAMOND 10) is not.
+    const adj = makeState({ blackHole: [card('SPADE', 7)] });
+    mockExec.mockResolvedValue(adj);
+    renderWithProviders(<BlackHolePage />);
+    const legalTop = await screen.findByTestId('card-0-1');
+    const otherTop = screen.getByTestId('card-1-0');
+    // No highlight until the hint is requested.
+    expect(legalTop).not.toHaveAttribute('data-hinted-legal');
+
+    fireEvent.click(screen.getByTestId('hint-button'));
+    await waitFor(() => expect(screen.getByTestId('card-0-1')).toHaveAttribute('data-hinted-legal', 'true'));
+    expect(screen.getByTestId('card-0-1').className).toContain('ring-ds-success');
+    // The non-adjacent fan top is never marked.
+    expect(otherTop).not.toHaveAttribute('data-hinted-legal');
+  });
+
+  it('does not ring an A-K wrap (no wrap in Black Hole)', async () => {
+    // Hole top A(1): only rank 2 is adjacent — K(13) must NOT highlight.
+    const wrap = makeState({ blackHole: [card('SPADE', 1)] });
+    wrap.fans[0] = [card('HEART', 13)]; // King
+    wrap.fans[1] = [card('CLOVER', 2)]; // Two — the only legal move
+    mockExec.mockResolvedValue(wrap);
+    renderWithProviders(<BlackHolePage />);
+    await screen.findByTestId('hint-button');
+    fireEvent.click(screen.getByTestId('hint-button'));
+    await waitFor(() => expect(screen.getByTestId('card-1-0')).toHaveAttribute('data-hinted-legal', 'true'));
+    expect(screen.getByTestId('card-0-0')).not.toHaveAttribute('data-hinted-legal');
+  });
 });
