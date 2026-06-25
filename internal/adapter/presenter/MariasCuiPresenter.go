@@ -89,6 +89,7 @@ func (p *MariasCuiPresenter) Output(g interfaces.MariasGame, lastErr error) stri
 			b.WriteString(i18n.Tf("marias.promptPlay",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
 			b.WriteString(i18n.T("marias.promptPlayHelp") + "\n")
+			b.WriteString(i18n.T("marias.promptMarriageHelp") + "\n")
 		case domain.MariasPhaseTrickEnd:
 			b.WriteString(i18n.T("marias.promptTrickEnd") + "\n")
 			b.WriteString(i18n.T("marias.promptTrickEndHelp") + "\n")
