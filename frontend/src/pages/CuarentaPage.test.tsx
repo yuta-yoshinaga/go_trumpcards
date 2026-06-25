@@ -10,6 +10,14 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { cuarenta: vi.fn() },
 }));
 
+const mockPlaySound = vi.fn();
+const mockSoundValue = { playSound: mockPlaySound, muted: false, toggleMute: vi.fn() };
+vi.mock('../providers/SoundProvider', () => ({
+  SoundProvider: ({ children }: { children: React.ReactNode }) => children,
+  useSound: () => mockSoundValue,
+  useOptionalSound: () => mockSoundValue,
+}));
+
 const mockExec = vi.mocked(cuarentaApi.exec);
 
 const card = (design: Card['design'], value: number): Card => ({ design, value });
@@ -76,6 +84,7 @@ const cpuWinState = makeState({
 
 beforeEach(() => {
   mockExec.mockReset();
+  mockPlaySound.mockReset();
   mockExec.mockResolvedValue(playState);
 });
 
@@ -154,6 +163,49 @@ describe('CuarentaPage', () => {
     await waitFor(() => expect(screen.getByText('カイーダ! +2')).toBeInTheDocument());
     expect(screen.getByText('ロンダ! +1')).toBeInTheDocument();
     expect(screen.getByText('リンピア! +1')).toBeInTheDocument();
+    // The human's bonus badges pop (motion-safe) to draw the eye.
+    const popped = screen.getAllByTestId('cuarenta-bonus-pop');
+    expect(popped.length).toBeGreaterThan(0);
+    expect(popped[0].className).toContain('motion-safe:animate-bounce');
+  });
+
+  it('chimes once when a fresh human bonus lands, but not on a plain play', async () => {
+    renderWithProviders(<CuarentaPage />);
+    const cardBtn = await screen.findByTestId('hand-card-1');
+    // A plain capture (no bonus) must not chime.
+    mockExec.mockResolvedValueOnce(
+      makeState({
+        humanAction: {
+          playerIdx: 0,
+          playedCard: card('CLOVER', 7),
+          capturedCards: [card('CLOVER', 7)],
+          isCaida: false,
+          isLimpia: false,
+          rondaBonus: 0,
+        },
+      }),
+    );
+    fireEvent.click(cardBtn);
+    await waitFor(() => expect(screen.getByText('直前のプレイ')).toBeInTheDocument());
+    expect(mockPlaySound).not.toHaveBeenCalled();
+
+    // A subsequent bonus play chimes exactly once.
+    const nextCard = await screen.findByTestId('hand-card-0');
+    mockExec.mockResolvedValueOnce(
+      makeState({
+        humanAction: {
+          playerIdx: 0,
+          playedCard: card('SPADE', 5),
+          capturedCards: [card('SPADE', 5)],
+          isCaida: true,
+          isLimpia: false,
+          rondaBonus: 0,
+        },
+      }),
+    );
+    fireEvent.click(nextCard);
+    await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('chipClick', { pitchVariation: 0.1 }));
+    expect(mockPlaySound).toHaveBeenCalledTimes(1);
   });
 
   it('shows the win message when the human team wins', async () => {
