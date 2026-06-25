@@ -198,6 +198,33 @@ describe('TichuPage', () => {
     expect(screen.getByRole('button', { name: '♠ 7（ボム構成カード）' })).toBeInTheDocument();
   });
 
+  it('declare phase: bomb cards are badged in the hand too', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'declare',
+        players: [
+          player({
+            id: 0,
+            isHuman: true,
+            team: 0,
+            cardCount: 4,
+            cards: [
+              { design: 'SPADE', value: 7 },
+              { design: 'HEART', value: 7 },
+              { design: 'CLOVER', value: 7 },
+              { design: 'DIAMOND', value: 7 },
+            ],
+          }),
+          player({ id: 1, team: 1 }),
+          player({ id: 2, team: 0 }),
+          player({ id: 3, team: 1 }),
+        ],
+      }),
+    );
+    renderWithProviders(<TichuPage />);
+    await waitFor(() => expect(screen.getByTestId('tichu-bomb-badge-0')).toBeInTheDocument());
+  });
+
   it('end phase: shows team scores, the win banner, and the one-two note', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 'end', gameEndFlag: true, isOneTwo: true, scores: [200, -100] }));
     renderWithProviders(<TichuPage />);

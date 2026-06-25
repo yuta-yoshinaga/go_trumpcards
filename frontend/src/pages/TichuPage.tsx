@@ -143,8 +143,6 @@ function TichuPageContent() {
   const isHumanTurn = state ? state.currentTurn === humanIdx : false;
   const humanPlayer = state?.players?.[humanIdx];
   const humanTeam = humanPlayer?.team ?? 0;
-  // Hand indices that form a bomb (4-of-a-kind / straight flush) — the strongest
-  // play, which was previously indistinguishable in the hand (#2657).
   const bombIndices = useMemo(() => tichuBombIndices(humanPlayer?.cards ?? []), [humanPlayer?.cards]);
   const humanWon = isGameEnd && !!state && state.scores[humanTeam] > state.scores[1 - humanTeam];
 

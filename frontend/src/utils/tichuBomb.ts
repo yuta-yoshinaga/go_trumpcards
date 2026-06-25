@@ -23,15 +23,16 @@ function tichuRank(card: Card): number {
 export function tichuBombIndices(cards: readonly Card[]): Set<number> {
   const bomb = new Set<number>();
 
-  // Four-of-a-kind: group the natural cards by value (a single deck holds ≤4 of each).
-  const byValue = new Map<number, number[]>();
+  // Four-of-a-kind: group the natural cards by rank (a single deck holds ≤4 of each).
+  const byRank = new Map<number, number[]>();
   cards.forEach((c, i) => {
     if (!STANDARD_SUITS.has(c.design)) return;
-    const arr = byValue.get(c.value) ?? [];
+    const r = tichuRank(c);
+    const arr = byRank.get(r) ?? [];
     arr.push(i);
-    byValue.set(c.value, arr);
+    byRank.set(r, arr);
   });
-  for (const idxs of byValue.values()) {
+  for (const idxs of byRank.values()) {
     if (idxs.length >= 4) for (const i of idxs) bomb.add(i);
   }
 
