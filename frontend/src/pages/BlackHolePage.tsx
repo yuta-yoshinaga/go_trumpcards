@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { blackholeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -61,6 +61,18 @@ function BlackHolePageContent() {
   const { cardWidth } = useCardDimensions();
   const w = Math.round(cardWidth * 0.5);
 
+  // On a hint request, ring the fans whose top card is ±1 the black hole's top
+  // rank (Black Hole accepts only adjacent ranks, no A-K wrap). The highlight
+  // auto-clears after a few seconds or on the next move (moveCount change).
+  const [showLegalHint, setShowLegalHint] = useState(false);
+  const hintTimerRef = useRef<number | null>(null);
+  const moveCount = state?.moveCount ?? 0;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: moveCount is the trigger — clear the highlight whenever a move changes the board.
+  useEffect(() => {
+    setShowLegalHint(false);
+  }, [moveCount]);
+  useEffect(() => () => window.clearTimeout(hintTimerRef.current ?? undefined), []);
+
   if (!state) return <GameSkeleton gameKey="blackhole" layout={{ kind: 'tableau', topRow: 1, tableau: 9 }} />;
 
   const isClear = state.phase === BlackHolePhase.GAME_CLEAR;
@@ -70,6 +82,10 @@ function BlackHolePageContent() {
 
   const handleReset = () => {
     hideActionLog();
+    // A reset keeps moveCount at 0, so the moveCount effect won't fire — clear
+    // the stale hint highlight (and its pending timer) here.
+    setShowLegalHint(false);
+    window.clearTimeout(hintTimerRef.current ?? undefined);
     exec('reset');
   };
 
@@ -78,8 +94,26 @@ function BlackHolePageContent() {
     exec('mb', { fan });
   };
 
+  const handleHint = () => {
+    exec('hint');
+    setShowLegalHint(true);
+    window.clearTimeout(hintTimerRef.current ?? undefined);
+    hintTimerRef.current = window.setTimeout(() => setShowLegalHint(false), 4000);
+  };
+
   const cardH = Math.round(w * 1.4);
   const holeTop = state.blackHole.length > 0 ? state.blackHole[state.blackHole.length - 1] : null;
+
+  // A fan's top card is playable when its rank is exactly one away from the hole's
+  // top rank (no A↔K wrap, so plain numeric ±1 is correct).
+  const legalFans = new Set<number>(
+    holeTop
+      ? state.fans
+          .map((fan, idx) => ({ idx, top: fan[fan.length - 1] }))
+          .filter(({ top }) => top && Math.abs(top.value - holeTop.value) === 1)
+          .map(({ idx }) => idx)
+      : [],
+  );
 
   const renderFan = (fan: (typeof state.fans)[number], idx: number) => (
     <div
@@ -97,15 +131,17 @@ function BlackHolePageContent() {
       ) : (
         fan.map((c, i) => {
           const isTop = i === fan.length - 1;
+          const isHintedLegal = showLegalHint && isTop && legalFans.has(idx);
           return (
             <button
               type="button"
               key={`fan-${idx}-${i}`}
-              className="rounded"
+              className={`rounded ${isHintedLegal ? 'ring-2 ring-ds-success motion-safe:animate-pulse' : ''}`}
               style={{ marginTop: i === 0 ? 0 : -Math.round(w * 1.05) }}
               onClick={canAct && isTop ? () => playFan(idx) : undefined}
               disabled={!canAct || !isTop}
               data-testid={`card-${idx}-${i}`}
+              data-hinted-legal={isHintedLegal ? 'true' : undefined}
             >
               <CardImage card={c} width={w} />
             </button>
@@ -173,7 +209,7 @@ function BlackHolePageContent() {
             <button
               type="button"
               className={btnPrimary}
-              onClick={() => exec('hint')}
+              onClick={handleHint}
               disabled={loading}
               data-testid="hint-button"
             >
