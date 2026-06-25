@@ -7,6 +7,8 @@
   "title": "Bristol",
   "stock": "Stock",
   "tableau": "Tableau",
+  "tableauColAria": "Build-down column {{num}} ({{count}} cards)",
+  "tableauRule": "Tableau: {{count}} build-down columns (any suit)",
   "fan": "Fan",
   "foundation": "Foundation",
   "moveCount": "Moves",

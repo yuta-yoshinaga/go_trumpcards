@@ -250,18 +250,21 @@ function BristolPageContent() {
             </div>
 
             {/* Tableau */}
+            <div className="mb-0.5 text-center text-xs text-ds-text-muted" data-testid="br-tableau-rule">
+              {t('tableauRule', { count: state.tableau.length })}
+            </div>
             <div className="mb-3 flex gap-1 sm:gap-2" data-tutorial="br-tableau">
               {state.tableau.map((col, colIdx) => {
                 const zone: BristolMoveZone = { zone: 'tableau', col: colIdx };
                 const colHeight = col.length > 0 ? (col.length - 1) * colOffset + cardHeight : cardHeight;
                 return (
                   <div key={`col-${colIdx}`} className="flex flex-1 flex-col items-center gap-1 min-w-0">
-                    <span className="text-xs text-ds-text-muted">#{colIdx}</span>
+                    <span className="text-xs text-ds-text-muted">#{colIdx + 1}</span>
                     <button
                       type="button"
                       onClick={() => handleTableauClick(colIdx)}
                       disabled={!isPlaying || loading || (col.length === 0 && !selected)}
-                      aria-label={`${t('tableau')} ${colIdx}`}
+                      aria-label={t('tableauColAria', { num: colIdx + 1, count: col.length })}
                       aria-pressed={isSelected(zone)}
                       className={
                         isSelected(zone)

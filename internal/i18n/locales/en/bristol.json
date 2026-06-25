@@ -21,6 +21,7 @@
   "hintAvailable": "Hint available",
   "noHint": "No hint",
   "foundationLabel": "Foundation {{idx}}:",
+  "tableauRule": "Tableau: {{count}} build-down columns (any suit)",
   "tableauLabel": "Tableau {{idx}}:",
   "fanLabel": "Fan {{idx}}:",
   "pileCount": " ({{count}})",

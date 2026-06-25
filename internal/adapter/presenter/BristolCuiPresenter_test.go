@@ -44,6 +44,7 @@ func TestBristolCuiPresenter_Output(t *testing.T) {
 		result := p.Output(bg, nil)
 		assert.Contains(t, result, "Bristol")
 		assert.Contains(t, result, "組札0:")
+		assert.Contains(t, result, "降順ビルド") // tableau build-down rule line
 		assert.Contains(t, result, "タブロー0列:")
 		assert.Contains(t, result, "ファン0:")
 		assert.Contains(t, result, "ストック: 28枚")

@@ -34,6 +34,7 @@ func (p *BristolCuiPresenter) Output(b interfaces.BristolGame, lastErr error) st
 		sb.WriteString("----------\n")
 
 		// Tableau columns
+		sb.WriteString(i18n.Tf("bristol.tableauRule", "count", strconv.Itoa(domain.BristolTableauCnt)) + "\n")
 		tableau := b.GetTableau()
 		for i := range domain.BristolTableauCnt {
 			sb.WriteString(i18n.Tf("bristol.tableauLabel", "idx", strconv.Itoa(i)))
