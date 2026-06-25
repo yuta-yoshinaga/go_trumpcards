@@ -213,6 +213,19 @@ describe('CasinoHoldemPage', () => {
     expect(hand).toHaveTextContent('ロイヤルフラッシュ');
   });
 
+  it('shows a non-royal current hand at flop (one pair)', async () => {
+    // A♠ + 10♣ with board 10♥ 4♦ 2♠ → a pair of tens.
+    const onePairFlop: CasinoHoldemResponse = {
+      ...flopState,
+      playerHand: [card('SPADE', 1), card('CLOVER', 10)],
+      community: [card('HEART', 10), card('DIAMOND', 4), card('SPADE', 2)],
+    };
+    mockApi.mockResolvedValue(onePairFlop);
+    renderWithProviders(<CasinoHoldemPage />);
+    const hand = await screen.findByTestId('ch-flop-hand');
+    expect(hand).toHaveTextContent('ワンペア');
+  });
+
   it('does not show the flop current-hand readout in the bet phase', async () => {
     mockApi.mockResolvedValue(betPhaseState);
     renderWithProviders(<CasinoHoldemPage />);

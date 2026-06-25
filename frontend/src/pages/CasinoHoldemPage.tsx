@@ -143,12 +143,10 @@ function CasinoHoldemPageContent() {
   const phaseName = isBetPhase ? t('phase.bet') : isFlopPhase ? t('phase.flop') : t('phase.end');
 
   // At the flop the player sees 2 hole + 3 community = 5 cards, so the current
-  // hand can be evaluated client-side to aid the Call/Fold call (#2626). The
+  // hand can be evaluated client-side to aid the Call/Fold call. evaluateFiveCardHand
+  // returns null for anything but 5 cards, so the phase guard is enough. The
   // dealer's hand stays hidden until END.
-  const flopHandRank =
-    isFlopPhase && state.playerHand.length === 2 && state.community.length === 3
-      ? evaluateFiveCardHand([...state.playerHand, ...state.community])
-      : null;
+  const flopHandRank = isFlopPhase ? evaluateFiveCardHand([...state.playerHand, ...state.community]) : null;
 
   return (
     <GamePageShell
@@ -293,7 +291,7 @@ function CasinoHoldemPageContent() {
                   )}
                   {flopHandRank !== null && (
                     <span className="ml-2 text-sm" data-testid="ch-flop-hand">
-                      ({t('currentHand')}: {t(HAND_RANK_KEYS[flopHandRank] ?? 'handRank.0')})
+                      ({t('currentHand')}: {t(HAND_RANK_KEYS[flopHandRank])})
                     </span>
                   )}
                 </div>
