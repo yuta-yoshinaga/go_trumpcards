@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { cuarentaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -18,6 +18,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { useSound } from '../providers/SoundProvider';
 import { btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -115,6 +116,30 @@ function CuarentaPageContent() {
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
+
+  // Pop + chime the human's caída / ronda / limpia bonus the instant it lands —
+  // these Cuarenta-specific scores were buried as static text in the log (#2693).
+  const [bonusCelebrationKey, setBonusCelebrationKey] = useState(0);
+  const prevHumanActionRef = useRef<string | null>(null);
+  const humanAction = state?.humanAction ?? null;
+  const humanBonus = !!humanAction && (humanAction.isCaida || humanAction.rondaBonus > 0 || humanAction.isLimpia);
+  const humanActionSig = humanAction
+    ? `${humanAction.playedCard?.design ?? ''}${humanAction.playedCard?.value ?? ''}-${humanAction.isCaida}-${humanAction.rondaBonus}-${humanAction.isLimpia}`
+    : '';
+  useEffect(() => {
+    if (prevHumanActionRef.current === null) {
+      prevHumanActionRef.current = humanActionSig;
+      return;
+    }
+    if (humanActionSig !== prevHumanActionRef.current) {
+      prevHumanActionRef.current = humanActionSig;
+      if (humanBonus) {
+        setBonusCelebrationKey((k) => k + 1);
+        playSound('chipClick', { pitchVariation: 0.1 });
+      }
+    }
+  }, [humanActionSig, humanBonus, playSound]);
 
   if (!state)
     return <GameSkeleton gameKey="cuarenta" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
@@ -132,8 +157,9 @@ function CuarentaPageContent() {
   const teamLabel = (team: number): string => t('team', { name: team === 0 ? 'A' : 'B' });
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
 
-  /** Renders a short capture-result line for a play action, with bonus badges. */
-  const renderAction = (a: CuarentaAction) => {
+  /** Renders a short capture-result line for a play action, with bonus badges.
+   * `celebrate` pops the bonus badges (used for the human's freshest bonus play). */
+  const renderAction = (a: CuarentaAction, celebrate = false) => {
     const badges: string[] = [];
     if (a.isCaida) badges.push(t('caida'));
     if (a.rondaBonus > 0) badges.push(t('ronda', { bonus: a.rondaBonus }));
@@ -145,7 +171,11 @@ function CuarentaPageContent() {
         {a.playedCard && <CardImage card={a.playedCard} width={Math.round(cardWidth * 0.6)} />}
         <span>{captured > 0 ? t('captured', { count: captured }) : t('laidDown')}</span>
         {badges.map((b) => (
-          <span key={b} className="text-ds-accent font-semibold">
+          <span
+            key={b}
+            className={`text-ds-accent font-semibold ${celebrate ? 'motion-safe:animate-bounce' : ''}`}
+            data-testid={celebrate ? 'cuarenta-bonus-pop' : undefined}
+          >
             {b}
           </span>
         ))}
@@ -252,7 +282,9 @@ function CuarentaPageContent() {
             {(state.humanAction || state.cpuActions.length > 0) && (
               <div className="mb-2 p-2 rounded bg-black/20">
                 <div className="mb-1 text-ds-text-muted text-xs">{t('lastPlays')}</div>
-                {state.humanAction && renderAction(state.humanAction)}
+                {state.humanAction && (
+                  <div key={bonusCelebrationKey}>{renderAction(state.humanAction, humanBonus)}</div>
+                )}
                 {state.cpuActions.map((a) => renderAction(a))}
               </div>
             )}
