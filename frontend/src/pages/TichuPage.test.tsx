@@ -165,6 +165,66 @@ describe('TichuPage', () => {
     });
   });
 
+  it('play phase: marks the cards that form a bomb with a badge and aria-label', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          player({
+            id: 0,
+            isHuman: true,
+            team: 0,
+            cardCount: 5,
+            // Four sevens (a four-of-a-kind bomb) + a lone nine.
+            cards: [
+              { design: 'SPADE', value: 7 },
+              { design: 'HEART', value: 7 },
+              { design: 'CLOVER', value: 7 },
+              { design: 'DIAMOND', value: 7 },
+              { design: 'SPADE', value: 9 },
+            ],
+          }),
+          player({ id: 1, team: 1 }),
+          player({ id: 2, team: 0 }),
+          player({ id: 3, team: 1 }),
+        ],
+      }),
+    );
+    renderWithProviders(<TichuPage />);
+    await waitFor(() => expect(screen.getByTestId('tichu-bomb-badge-0')).toBeInTheDocument());
+    // All four sevens are badged; the nine is not.
+    expect(screen.getByTestId('tichu-bomb-badge-3')).toBeInTheDocument();
+    expect(screen.queryByTestId('tichu-bomb-badge-4')).not.toBeInTheDocument();
+    // A bomb card's accessible name flags the bomb.
+    expect(screen.getByRole('button', { name: '♠ 7（ボム構成カード）' })).toBeInTheDocument();
+  });
+
+  it('declare phase: bomb cards are badged in the hand too', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'declare',
+        players: [
+          player({
+            id: 0,
+            isHuman: true,
+            team: 0,
+            cardCount: 4,
+            cards: [
+              { design: 'SPADE', value: 7 },
+              { design: 'HEART', value: 7 },
+              { design: 'CLOVER', value: 7 },
+              { design: 'DIAMOND', value: 7 },
+            ],
+          }),
+          player({ id: 1, team: 1 }),
+          player({ id: 2, team: 0 }),
+          player({ id: 3, team: 1 }),
+        ],
+      }),
+    );
+    renderWithProviders(<TichuPage />);
+    await waitFor(() => expect(screen.getByTestId('tichu-bomb-badge-0')).toBeInTheDocument());
+  });
+
   it('end phase: shows team scores, the win banner, and the one-two note', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 'end', gameEndFlag: true, isOneTwo: true, scores: [200, -100] }));
     renderWithProviders(<TichuPage />);
