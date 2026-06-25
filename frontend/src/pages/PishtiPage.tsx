@@ -124,24 +124,36 @@ function PishtiPageContent() {
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
 
-  // Celebrate a Pişti the instant the total bonus rises — the +10/+20 capture is
-  // the game's highlight but was easy to miss amid fast CPU turns (#2692).
+  // Celebrate a Pişti the instant a player's bonus rises — the +10/+20 capture is
+  // the game's highlight but was easy to miss amid fast CPU turns (#2692). Tracked
+  // per-player (not aggregate) so two CPU +10s in one response can't fake a +20 Jack.
   const [pistiCelebration, setPistiCelebration] = useState<{ key: number; jack: boolean } | null>(null);
-  const prevPistiTotalRef = useRef<number | null>(null);
-  const pistiTotal = state ? state.players.reduce((sum, p) => sum + p.pistiBonus, 0) : 0;
+  const prevBonusesRef = useRef<number[] | null>(null);
   useEffect(() => {
-    if (prevPistiTotalRef.current === null) {
-      prevPistiTotalRef.current = pistiTotal;
-      return;
+    if (!state) return;
+    const current = state.players.map((p) => p.pistiBonus);
+    const prev = prevBonusesRef.current;
+    prevBonusesRef.current = current;
+    if (prev === null) return;
+    let anyGain = false;
+    let jack = false;
+    if (prev.length === current.length) {
+      for (let i = 0; i < current.length; i++) {
+        const delta = current[i] - prev[i];
+        if (delta > 0) {
+          anyGain = true;
+          if (delta >= 20) jack = true; // a single +20 rise is a Jack Pişti
+        }
+      }
     }
-    const delta = pistiTotal - prevPistiTotalRef.current;
-    prevPistiTotalRef.current = pistiTotal;
-    if (delta > 0) {
-      // A Jack Pişti scores 20, a normal one 10.
-      setPistiCelebration((prev) => ({ key: (prev?.key ?? 0) + 1, jack: delta >= 20 }));
+    if (anyGain) {
+      setPistiCelebration((c) => ({ key: (c?.key ?? 0) + 1, jack }));
       playSound('chipClick', { pitchVariation: 0.1 });
+    } else if (prev.length !== current.length || current.some((v, i) => v < prev[i])) {
+      // A reset / next game / player-count change drops bonuses; clear the stale badge.
+      setPistiCelebration(null);
     }
-  }, [pistiTotal, playSound]);
+  }, [state, playSound]);
 
   if (!state)
     return <GameSkeleton gameKey="pishti" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 4 }} />;
