@@ -60,6 +60,7 @@ func TestMariasCuiPresenter_Output(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "Mariáš")
+		assert.Contains(t, result, "マリッジ") // play-phase help explains the marriage bonus
 		assert.NotEmpty(t, result)
 	})
 
