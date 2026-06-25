@@ -1,12 +1,24 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, highcardflushApi } from '../api/gameApi';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, HighCardFlushResponse } from '../types/card';
 import { HighCardFlushPage } from './HighCardFlushPage';
 
 vi.mock('../hooks/useGameHint');
+
+const cliModeDisabled = {
+  cliEnabled: false,
+  toggleCli: vi.fn(),
+  logEntries: [],
+  addInput: vi.fn(),
+  addOutput: vi.fn(),
+  addError: vi.fn(),
+  clearLog: vi.fn(),
+};
+vi.mock('../hooks/useCliMode', () => ({ useCliMode: vi.fn() }));
 
 vi.mock('../api/gameApi', () => ({
   highcardflushApi: { exec: vi.fn() },
@@ -94,6 +106,7 @@ const endPhaseFold: HighCardFlushResponse = {
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+  vi.mocked(useCliMode).mockReturnValue(cliModeDisabled);
 });
 
 describe('HighCardFlushPage', () => {
@@ -265,5 +278,13 @@ describe('HighCardFlushPage', () => {
     const dealerWrapper = dealerWrappers[0] as HTMLElement;
     expect(dealerWrapper.className).not.toContain('drop-shadow');
     expect(dealerWrapper.className).not.toContain('opacity-50');
+  });
+
+  it('renders the CLI terminal and hides the betting UI when CLI mode is enabled', async () => {
+    vi.mocked(useCliMode).mockReturnValue({ ...cliModeDisabled, cliEnabled: true });
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByRole('log')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'ベット' })).not.toBeInTheDocument();
   });
 });
