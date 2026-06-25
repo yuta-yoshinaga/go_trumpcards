@@ -34,6 +34,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { CASINOHOLDEM_HELP, parseCasinoholdemCommand } from '../utils/cli/commands/casinoholdemCommands';
 import { formatCasinoholdemState } from '../utils/cli/formatters/casinoholdemFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { evaluateFiveCardHand } from '../utils/pokerSquaresUtils';
 
 /** Casino Hold'em tutorial step definitions. */
 const CH_TUTORIAL_STEPS: TutorialStep[] = [
@@ -140,6 +141,14 @@ function CasinoHoldemPageContent() {
   const betInvalid = anteInvalid || bonusInvalid || anteAmount + bonusAmount > state.chips;
 
   const phaseName = isBetPhase ? t('phase.bet') : isFlopPhase ? t('phase.flop') : t('phase.end');
+
+  // At the flop the player sees 2 hole + 3 community = 5 cards, so the current
+  // hand can be evaluated client-side to aid the Call/Fold call (#2626). The
+  // dealer's hand stays hidden until END.
+  const flopHandRank =
+    isFlopPhase && state.playerHand.length === 2 && state.community.length === 3
+      ? evaluateFiveCardHand([...state.playerHand, ...state.community])
+      : null;
 
   return (
     <GamePageShell
@@ -281,6 +290,11 @@ function CasinoHoldemPageContent() {
                   <span aria-hidden="true">🟡</span> {t('player')}
                   {isEndPhase && (
                     <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.playerHandRank] ?? 'handRank.0')})</span>
+                  )}
+                  {flopHandRank !== null && (
+                    <span className="ml-2 text-sm" data-testid="ch-flop-hand">
+                      ({t('currentHand')}: {t(HAND_RANK_KEYS[flopHandRank] ?? 'handRank.0')})
+                    </span>
                   )}
                 </div>
                 <div className="flex justify-center gap-2 flex-wrap">

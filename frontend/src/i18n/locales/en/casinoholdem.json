@@ -1,6 +1,7 @@
 {
   "title": "Casino Hold'em",
   "player": "Player",
+  "currentHand": "Current hand",
   "dealer": "Dealer",
   "board": "Board",
   "dealerQualified": "Dealer qualifies",
