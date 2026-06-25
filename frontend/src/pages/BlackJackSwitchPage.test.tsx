@@ -335,6 +335,9 @@ describe('BlackJackSwitchPage', () => {
     });
     renderWithProviders(<BlackJackSwitchPage />);
     expect(await screen.findByTestId('payout-breakdown')).toBeInTheDocument();
+    // Both per-hand results resolve via the new result.handWin key, and the overall key.
+    expect(screen.getAllByText(/勝ち/).length).toBeGreaterThan(0);
+    expect(screen.getByText('総合: 勝ち越し')).toBeInTheDocument();
   });
 
   it('renders LOSE result keys in END phase', async () => {

@@ -28,9 +28,9 @@
     "action": "ハンド{{idx}} の操作: ヒット / スタンド / ダブルダウン"
   },
   "result": {
-    "win": "勝ち",
-    "draw": "プッシュ",
-    "lose": "負け",
+    "handWin": "勝ち",
+    "handDraw": "プッシュ",
+    "handLose": "負け",
     "dealer22Push": "ディーラーが22のためプッシュ",
     "overallWin": "総合: 勝ち越し",
     "overallDraw": "総合: 引き分け",
