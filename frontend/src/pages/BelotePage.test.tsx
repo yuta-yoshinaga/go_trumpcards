@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { beloteApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -9,6 +9,14 @@ import { BelotePage } from './BelotePage';
 vi.mock('../api/gameApi', () => ({
   beloteApi: { exec: vi.fn() },
   actionLogApi: { belote: vi.fn() },
+}));
+
+const mockPlaySound = vi.fn();
+const mockSoundValue = { playSound: mockPlaySound, muted: false, toggleMute: vi.fn() };
+vi.mock('../providers/SoundProvider', () => ({
+  SoundProvider: ({ children }: { children: React.ReactNode }) => children,
+  useSound: () => mockSoundValue,
+  useOptionalSound: () => mockSoundValue,
 }));
 
 const mockExec = vi.mocked(beloteApi.exec);
@@ -67,6 +75,8 @@ const gameEndState = makeState({
 });
 
 beforeEach(() => {
+  mockExec.mockReset();
+  mockPlaySound.mockClear();
   mockExec.mockResolvedValue(initialState);
 });
 
@@ -160,6 +170,85 @@ describe('BelotePage', () => {
     );
     renderWithProviders(<BelotePage />);
     await waitFor(() => expect(screen.getByTestId('belote-rebelote-badge')).toHaveAttribute('data-active', 'true'));
+  });
+
+  it('chimes and shows a confirmation banner when the belote bonus is freshly earned', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: BelotePhase.PLAY, trumpSuit: 1, trickNumber: 3, currentPlayerIdx: 0, makerTeam: 0 }),
+    );
+    renderWithProviders(<BelotePage />);
+    const cardBtn = await screen.findByRole('button', { name: '♠ J' });
+    fireEvent.click(cardBtn);
+    // The play that lands the K+Q-of-trump bonus.
+    mockExec.mockResolvedValueOnce(
+      makeState({
+        phase: BelotePhase.PLAY,
+        trumpSuit: 1,
+        trickNumber: 3,
+        currentPlayerIdx: 1,
+        makerTeam: 0,
+        roundBeloteBonus: [20, 0],
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(screen.getByTestId('belote-bonus-confirmed')).toBeInTheDocument());
+    expect(mockPlaySound).toHaveBeenCalledWith('winFanfare');
+  });
+
+  it('auto-hides the confirmation banner after the display window closes', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      mockExec.mockResolvedValue(
+        makeState({ phase: BelotePhase.PLAY, trumpSuit: 1, trickNumber: 3, currentPlayerIdx: 0, makerTeam: 0 }),
+      );
+      renderWithProviders(<BelotePage />);
+      const cardBtn = await screen.findByRole('button', { name: '♠ J' });
+      fireEvent.click(cardBtn);
+      mockExec.mockResolvedValueOnce(
+        makeState({
+          phase: BelotePhase.PLAY,
+          trumpSuit: 1,
+          trickNumber: 3,
+          currentPlayerIdx: 1,
+          makerTeam: 0,
+          roundBeloteBonus: [20, 0],
+        }),
+      );
+      fireEvent.click(screen.getByRole('button', { name: '出す' }));
+      await waitFor(() => expect(screen.getByTestId('belote-bonus-confirmed')).toBeInTheDocument());
+      await act(async () => {
+        vi.advanceTimersByTime(2600);
+      });
+      await waitFor(() => expect(screen.queryByTestId('belote-bonus-confirmed')).not.toBeInTheDocument());
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('does not chime on a plain play that earns no new bonus', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: BelotePhase.PLAY, trumpSuit: 1, trickNumber: 3, currentPlayerIdx: 0, makerTeam: 0 }),
+    );
+    renderWithProviders(<BelotePage />);
+    const cardBtn = await screen.findByRole('button', { name: '♠ J' });
+    fireEvent.click(cardBtn);
+    mockExec.mockResolvedValueOnce(
+      makeState({ phase: BelotePhase.PLAY, trumpSuit: 1, trickNumber: 4, currentPlayerIdx: 1, makerTeam: 0 }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, 0));
+    await waitFor(() => expect(screen.queryByTestId('belote-bonus-confirmed')).not.toBeInTheDocument());
+    expect(mockPlaySound).not.toHaveBeenCalled();
+  });
+
+  it('does not chime when loaded into a round that already has the bonus', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: BelotePhase.PLAY, trumpSuit: 1, trickNumber: 5, makerTeam: 0, roundBeloteBonus: [20, 0] }),
+    );
+    renderWithProviders(<BelotePage />);
+    await waitFor(() => expect(screen.getByTestId('belote-rebelote-badge')).toHaveAttribute('data-active', 'true'));
+    expect(mockPlaySound).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('belote-bonus-confirmed')).not.toBeInTheDocument();
   });
 
   it('shows 次のゲーム at game end with no confirm', async () => {

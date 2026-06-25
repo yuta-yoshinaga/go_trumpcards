@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -18,6 +18,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -118,6 +119,30 @@ function BelotePageContent() {
   const { cardWidth, isMobile } = useCardDimensions();
 
   const phaseNames = usePhaseNames('belote', BELOTE_PHASE_KEYS);
+
+  const { playSound } = useSound();
+  const beloteTotal = state ? state.roundBeloteBonus[0] + state.roundBeloteBonus[1] : 0;
+  const prevBeloteTotalRef = useRef<number | null>(null);
+  const [beloteJustConfirmed, setBeloteJustConfirmed] = useState(false);
+  useEffect(() => {
+    if (!state) return;
+    if (prevBeloteTotalRef.current === null) {
+      prevBeloteTotalRef.current = beloteTotal;
+      return;
+    }
+    if (beloteTotal > prevBeloteTotalRef.current) {
+      setBeloteJustConfirmed(true);
+      playSound('winFanfare');
+    }
+    prevBeloteTotalRef.current = beloteTotal;
+  }, [beloteTotal, playSound, state]);
+
+  // Clear timer keyed only on the flag so an unrelated state update mid-window can't cancel it.
+  useEffect(() => {
+    if (!beloteJustConfirmed) return;
+    const id = setTimeout(() => setBeloteJustConfirmed(false), 2500);
+    return () => clearTimeout(id);
+  }, [beloteJustConfirmed]);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
@@ -248,11 +273,11 @@ function BelotePageContent() {
                   <span
                     data-testid="belote-rebelote-badge"
                     data-active={hasBeloteBonus ? 'true' : undefined}
-                    className={
+                    className={`${
                       hasBeloteBonus
                         ? 'px-2 py-0.5 rounded-full font-medium border bg-ds-success text-ds-text-on-accent border-ds-success'
                         : 'px-2 py-0.5 rounded-full font-medium border bg-ds-surface text-ds-text-muted border-ds-border'
-                    }
+                    }${beloteJustConfirmed ? ' ring-2 ring-ds-success motion-safe:animate-pulse' : ''}`}
                   >
                     {t('tracker.beloteKing')} · {t('tracker.beloteQueen')}
                     {hasBeloteBonus ? ` ${t('tracker.beloteBonus')}` : ''}
@@ -261,6 +286,17 @@ function BelotePageContent() {
               </div>
             );
           })()}
+
+        {beloteJustConfirmed && (
+          <div
+            role="status"
+            aria-live="polite"
+            data-testid="belote-bonus-confirmed"
+            className="text-center mb-2 text-sm font-semibold text-ds-success motion-safe:animate-pulse"
+          >
+            {t('tracker.beloteConfirmed')}
+          </div>
+        )}
 
         {/* Face-up card (during bidding) */}
         {state.faceUpCard && (isBidPickUp || isBidCallTrump) && (
