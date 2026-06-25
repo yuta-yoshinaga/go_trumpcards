@@ -343,11 +343,11 @@ function CardSlot({ card, width }: { card: Card | null; width: number }) {
 function handResultKey(result: number): string {
   switch (result) {
     case BlackJackSwitchResult.WIN:
-      return 'result.win';
+      return 'result.handWin';
     case BlackJackSwitchResult.LOSE:
-      return 'result.lose';
+      return 'result.handLose';
     default:
-      return 'result.draw';
+      return 'result.handDraw';
   }
 }
 

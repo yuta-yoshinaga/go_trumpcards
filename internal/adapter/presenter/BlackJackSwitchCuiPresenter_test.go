@@ -117,6 +117,9 @@ func TestBlackJackSwitchCuiPresenter_Output_EndPhaseShowsResults(t *testing.T) {
 	out := p.Output(m, nil)
 	assert.Contains(t, out, "200") // total payout / hand0 payout
 	assert.NotContains(t, out, "??", "dealer hole card should be revealed at end phase")
+	// Per-hand results resolve via the unified handWin/handLose keys.
+	assert.Contains(t, out, "勝ち")
+	assert.Contains(t, out, "負け")
 }
 
 func TestBlackJackSwitchCuiPresenter_Output_Dealer22ShowsPushBanner(t *testing.T) {
