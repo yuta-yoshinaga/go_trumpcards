@@ -152,6 +152,19 @@ describe('SpoonsPage', () => {
     expect(screen.queryByRole('button', { name: 'スプーンを取る！' })).not.toBeInTheDocument();
   });
 
+  it('does not re-chime while the grab window stays open across updates', async () => {
+    renderWithProviders(<SpoonsPage />);
+    const buttons = await screen.findAllByRole('button', { name: '渡す' });
+    mockExec.mockResolvedValueOnce(grabState);
+    fireEvent.click(buttons[0]);
+    await waitFor(() => expect(mockPlaySound).toHaveBeenCalledTimes(1));
+    // A later update that keeps the window open must not chime again.
+    mockExec.mockResolvedValueOnce(makeState({ phase: 1, grabWindowOpen: true, drawPileSize: 35 }));
+    fireEvent.click(screen.getByRole('button', { name: 'スプーンを取る！' }));
+    await waitFor(() => expect(screen.getByText(/山札: 35/)).toBeInTheDocument());
+    expect(mockPlaySound).toHaveBeenCalledTimes(1);
+  });
+
   it('shows the next round button at round end and dispatches next', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<SpoonsPage />);

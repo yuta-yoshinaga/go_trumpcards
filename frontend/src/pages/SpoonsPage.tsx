@@ -127,8 +127,8 @@ function SpoonsPageContent() {
   const { playSound } = useSound();
   const phaseNames = usePhaseNames('spoons', SPOONS_PHASE_KEYS);
 
-  // Chime the instant the grab window opens (false→true) — this speed game gave
-  // only a static "grab now!" text, so the window was easy to miss (#2689).
+  // Chime the instant the grab window opens (false→true) — a static "grab now!"
+  // text alone was easy to miss in this reflex game.
   const prevGrabOpenRef = useRef(false);
   useEffect(() => {
     const open = state?.grabWindowOpen ?? false;
