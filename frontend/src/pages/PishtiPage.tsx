@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { pishtiApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -17,6 +17,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useSound } from '../providers/SoundProvider';
 import { btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -121,6 +122,38 @@ function PishtiPageContent() {
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
+
+  // Celebrate a Pişti the instant a player's bonus rises — the +10/+20 capture is
+  // the game's highlight but was easy to miss amid fast CPU turns (#2692). Tracked
+  // per-player (not aggregate) so two CPU +10s in one response can't fake a +20 Jack.
+  const [pistiCelebration, setPistiCelebration] = useState<{ key: number; jack: boolean } | null>(null);
+  const prevBonusesRef = useRef<number[] | null>(null);
+  useEffect(() => {
+    if (!state) return;
+    const current = state.players.map((p) => p.pistiBonus);
+    const prev = prevBonusesRef.current;
+    prevBonusesRef.current = current;
+    if (prev === null) return;
+    let anyGain = false;
+    let jack = false;
+    if (prev.length === current.length) {
+      for (let i = 0; i < current.length; i++) {
+        const delta = current[i] - prev[i];
+        if (delta > 0) {
+          anyGain = true;
+          if (delta >= 20) jack = true; // a single +20 rise is a Jack Pişti
+        }
+      }
+    }
+    if (anyGain) {
+      setPistiCelebration((c) => ({ key: (c?.key ?? 0) + 1, jack }));
+      playSound('chipClick', { pitchVariation: 0.1 });
+    } else if (prev.length !== current.length || current.some((v, i) => v < prev[i])) {
+      // A reset / next game / player-count change drops bonuses; clear the stale badge.
+      setPistiCelebration(null);
+    }
+  }, [state, playSound]);
 
   if (!state)
     return <GameSkeleton gameKey="pishti" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 4 }} />;
@@ -213,7 +246,19 @@ function PishtiPageContent() {
             </div>
 
             {/* Center pile */}
-            <div className="mb-2 p-3 rounded bg-black/20 text-center" data-tutorial="pishti-pile">
+            <div className="relative mb-2 p-3 rounded bg-black/20 text-center" data-tutorial="pishti-pile">
+              {pistiCelebration && (
+                <div
+                  key={pistiCelebration.key}
+                  className="absolute inset-x-0 -top-2 z-10 flex justify-center motion-safe:animate-bounce pointer-events-none"
+                  role="status"
+                  data-testid="pishti-celebration"
+                >
+                  <span className="rounded-full bg-ds-accent px-3 py-0.5 text-sm font-bold text-ds-text-on-accent shadow-lg">
+                    {pistiCelebration.jack ? t('pistiCelebrationJack') : t('pistiCelebration')}
+                  </span>
+                </div>
+              )}
               <div className="text-ds-text-muted text-xs mb-1">
                 {t('pile')} — {t('pileCount', { count: state.pileCount })}
               </div>

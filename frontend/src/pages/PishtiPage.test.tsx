@@ -113,6 +113,64 @@ describe('PishtiPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { handIndex: 1 }));
   });
 
+  it('celebrates a Pişti when the bonus total rises (+10)', async () => {
+    renderWithProviders(<PishtiPage />);
+    const cardBtn = await screen.findByTestId('hand-card-1');
+    expect(screen.queryByTestId('pishti-celebration')).not.toBeInTheDocument();
+    // The play resolves a state where the human just scored a +10 Pişti.
+    mockExec.mockResolvedValueOnce(
+      makeState({ players: [makePlayer({ id: 0, isHuman: true, pistiBonus: 10 }), ...playState.players.slice(1)] }),
+    );
+    fireEvent.click(cardBtn);
+    const badge = await screen.findByTestId('pishti-celebration');
+    expect(badge).toHaveTextContent('+10');
+  });
+
+  it('marks a Jack Pişti as +20', async () => {
+    renderWithProviders(<PishtiPage />);
+    const cardBtn = await screen.findByTestId('hand-card-1');
+    expect(screen.queryByTestId('pishti-celebration')).not.toBeInTheDocument();
+    mockExec.mockResolvedValueOnce(
+      makeState({ players: [makePlayer({ id: 0, isHuman: true, pistiBonus: 20 }), ...playState.players.slice(1)] }),
+    );
+    fireEvent.click(cardBtn);
+    const badge = await screen.findByTestId('pishti-celebration');
+    expect(badge).toHaveTextContent('+20');
+  });
+
+  it('does not fake a +20 Jack when two players each score +10 in one response', async () => {
+    renderWithProviders(<PishtiPage />);
+    const cardBtn = await screen.findByTestId('hand-card-1');
+    // Human +10 and a CPU +10 land in the same response → aggregate 20, but neither is a Jack.
+    mockExec.mockResolvedValueOnce(
+      makeState({
+        players: [
+          makePlayer({ id: 0, isHuman: true, pistiBonus: 10 }),
+          makePlayer({ id: 1, pistiBonus: 10 }),
+          makePlayer({ id: 2 }),
+          makePlayer({ id: 3 }),
+        ],
+      }),
+    );
+    fireEvent.click(cardBtn);
+    const badge = await screen.findByTestId('pishti-celebration');
+    expect(badge).toHaveTextContent('+10');
+    expect(badge).not.toHaveTextContent('+20');
+  });
+
+  it('clears the celebration badge when a new game resets the bonuses', async () => {
+    renderWithProviders(<PishtiPage />);
+    const cardBtn = await screen.findByTestId('hand-card-1');
+    mockExec.mockResolvedValueOnce(
+      makeState({ players: [makePlayer({ id: 0, isHuman: true, pistiBonus: 10 }), ...playState.players.slice(1)] }),
+    );
+    fireEvent.click(cardBtn);
+    await screen.findByTestId('pishti-celebration');
+    // A reset (via settings change) resolves a fresh game with bonuses back to 0.
+    fireEvent.change(screen.getByLabelText('CPU難易度'), { target: { value: '2' } });
+    await waitFor(() => expect(screen.queryByTestId('pishti-celebration')).not.toBeInTheDocument());
+  });
+
   it('shows the empty-pile label when the pile is empty', async () => {
     mockExec.mockResolvedValue(emptyPileState);
     renderWithProviders(<PishtiPage />);
