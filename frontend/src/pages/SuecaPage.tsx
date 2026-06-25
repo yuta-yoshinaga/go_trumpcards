@@ -221,12 +221,10 @@ function SuecaPageContent() {
                 {/* Team game points */}
                 <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
                   {/* Trump kept in the always-visible sidebar so it isn't lost off-screen on mobile. */}
-                  <div className="text-ds-text-primary font-semibold" data-testid="sueca-sidebar-trump">
+                  <div className="mb-1 text-ds-text-primary font-semibold" data-testid="sueca-sidebar-trump">
                     {t('trump', { suit: trumpSymbol })}
                   </div>
-                  <div className="mt-1">
-                    {t('teamScore', { team: t('team.a'), score: state.teamGamePoints[0] ?? 0 })}
-                  </div>
+                  <div>{t('teamScore', { team: t('team.a'), score: state.teamGamePoints[0] ?? 0 })}</div>
                   <div>{t('teamScore', { team: t('team.b'), score: state.teamGamePoints[1] ?? 0 })}</div>
                   <div className="mt-1">
                     {t('yourTeam')}: {humanTeam === 0 ? t('team.a') : t('team.b')}
