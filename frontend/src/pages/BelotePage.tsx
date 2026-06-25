@@ -133,12 +133,16 @@ function BelotePageContent() {
     if (beloteTotal > prevBeloteTotalRef.current) {
       setBeloteJustConfirmed(true);
       playSound('winFanfare');
-      prevBeloteTotalRef.current = beloteTotal;
-      const id = setTimeout(() => setBeloteJustConfirmed(false), 2500);
-      return () => clearTimeout(id);
     }
     prevBeloteTotalRef.current = beloteTotal;
   }, [beloteTotal, playSound, state]);
+
+  // Clear timer keyed only on the flag so an unrelated state update mid-window can't cancel it.
+  useEffect(() => {
+    if (!beloteJustConfirmed) return;
+    const id = setTimeout(() => setBeloteJustConfirmed(false), 2500);
+    return () => clearTimeout(id);
+  }, [beloteJustConfirmed]);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
