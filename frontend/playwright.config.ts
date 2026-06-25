@@ -1,5 +1,12 @@
 import { defineConfig, devices } from '@playwright/test';
 
+// In CI we pre-build the server binary so the cold `go build` happens outside
+// the webServer startup window; locally we fall back to `go run`. Either way
+// the server must run from the repo root so it can serve the `public` dir.
+const serverCommand = process.env.E2E_SERVER_BIN
+  ? `cd .. && PORT=8080 ${process.env.E2E_SERVER_BIN}`
+  : 'cd .. && PORT=8080 go run ./cmd/server';
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -28,9 +35,12 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'cd .. && PORT=8080 go run ./cmd/server',
+    command: serverCommand,
     url: 'http://localhost:8080',
     reuseExistingServer: !process.env.CI,
-    timeout: 30_000,
+    // A cold `go run` compiles the whole backend (174 games) and can exceed a
+    // tight window on slow runners; 120s absorbs that even without the prebuilt
+    // binary, eliminating the chronic "Timed out waiting from webServer" flake.
+    timeout: 120_000,
   },
 });
