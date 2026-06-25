@@ -108,6 +108,19 @@ describe('BlackHolePage', () => {
     expect(otherTop).not.toHaveAttribute('data-hinted-legal');
   });
 
+  it('clears the hint highlight on reset even though moveCount stays 0', async () => {
+    const adj = makeState({ blackHole: [card('SPADE', 7)] });
+    mockExec.mockResolvedValue(adj);
+    renderWithProviders(<BlackHolePage />);
+    await screen.findByTestId('hint-button');
+    fireEvent.click(screen.getByTestId('hint-button'));
+    await waitFor(() => expect(screen.getByTestId('card-0-1')).toHaveAttribute('data-hinted-legal', 'true'));
+    // Reset (with confirm) — moveCount stays 0, so the highlight must be cleared explicitly.
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(screen.getByTestId('card-0-1')).not.toHaveAttribute('data-hinted-legal'));
+  });
+
   it('does not ring an A-K wrap (no wrap in Black Hole)', async () => {
     // Hole top A(1): only rank 2 is adjacent — K(13) must NOT highlight.
     const wrap = makeState({ blackHole: [card('SPADE', 1)] });

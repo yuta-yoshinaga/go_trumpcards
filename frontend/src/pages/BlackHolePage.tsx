@@ -82,6 +82,10 @@ function BlackHolePageContent() {
 
   const handleReset = () => {
     hideActionLog();
+    // A reset keeps moveCount at 0, so the moveCount effect won't fire — clear
+    // the stale hint highlight (and its pending timer) here.
+    setShowLegalHint(false);
+    window.clearTimeout(hintTimerRef.current ?? undefined);
     exec('reset');
   };
 
