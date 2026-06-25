@@ -75,6 +75,23 @@ describe('SuecaPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
   });
 
+  it('shows the trump suit in the always-visible sidebar', async () => {
+    renderWithProviders(<SuecaPage />); // default trump ♦
+    await waitFor(() => expect(screen.getByTestId('sueca-sidebar-trump')).toHaveTextContent('切り札: ♦'));
+  });
+
+  it('announces the trick-winning team at trick end (leadPlayerIdx → team)', async () => {
+    mockExec.mockResolvedValue(trickEndState); // leadPlayerIdx 0 → Team A
+    renderWithProviders(<SuecaPage />);
+    await waitFor(() => expect(screen.getByTestId('sueca-trick-winner')).toHaveTextContent('チームA がトリック獲得'));
+  });
+
+  it('names Team B when an odd seat wins the trick', async () => {
+    mockExec.mockResolvedValue(makeSuecaState({ phase: 1, leadPlayerIdx: 1 }));
+    renderWithProviders(<SuecaPage />);
+    await waitFor(() => expect(screen.getByTestId('sueca-trick-winner')).toHaveTextContent('チームB がトリック獲得'));
+  });
+
   it('renders round end with the next round button and the round result', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<SuecaPage />);
