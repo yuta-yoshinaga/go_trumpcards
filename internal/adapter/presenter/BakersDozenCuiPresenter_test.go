@@ -164,7 +164,7 @@ func TestBakersDozenCuiPresenter_HintOutput(t *testing.T) {
 func TestBakersDozenCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("playing phase returns empty", func(t *testing.T) {
 		bg := new(interfaces.MockBakersDozenGame)
-		bg.On("GetPhase").Return(domain.BakersDozenPhasePlaying)
+		bg.On("GetGameEndFlag").Return(false)
 
 		p := new(BakersDozenCuiPresenter)
 		result := p.ActionLogOutput(bg)
@@ -173,7 +173,7 @@ func TestBakersDozenCuiPresenter_ActionLogOutput(t *testing.T) {
 
 	t.Run("game over returns log", func(t *testing.T) {
 		bg := new(interfaces.MockBakersDozenGame)
-		bg.On("GetPhase").Return(domain.BakersDozenPhaseGameOver)
+		bg.On("GetGameEndFlag").Return(true)
 		bg.On("GetActionLog").Return([]*domain.ActionLogEntry{
 			{TurnNumber: 1, ActionType: "move", Detail: "test"},
 		})
