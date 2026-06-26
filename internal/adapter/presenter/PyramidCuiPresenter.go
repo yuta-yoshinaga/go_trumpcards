@@ -30,12 +30,18 @@ func (pr *PyramidCuiPresenter) Output(p interfaces.PyramidGame, lastErr error) s
 					b.WriteString(pyramidIndent)
 				}
 				pc := pyramid[row][col]
-				if pc.Removed {
+				switch {
+				case pc.Removed:
 					b.WriteString(pyramidRemovedPlaceholder)
-				} else {
-					b.WriteString(i18n.Tf("pyramid.tableauCard",
+				case p.IsExposed(row, col):
+					// Exposed cards carry their coordinates so they can be played.
+					b.WriteString(i18n.Tf("pyramid.exposedCard",
 						"row", strconv.Itoa(row),
 						"col", strconv.Itoa(col),
+						"card", cuiCardStr(pc.Card)))
+				default:
+					// Blocked cards hide coordinates to signal they cannot be taken yet.
+					b.WriteString(i18n.Tf("pyramid.blockedCard",
 						"card", cuiCardStr(pc.Card)))
 				}
 			}
