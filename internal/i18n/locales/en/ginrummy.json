@@ -16,7 +16,7 @@
   "promptDrawHelpStock": "ds: draw from stock",
   "promptDrawHelpDiscard": "dd: draw from discard",
   "promptDiscard": "{{name}} to act (discard phase)",
-  "deadwoodLine": "Current deadwood: {{value}}",
+  "deadwoodLine": "Best deadwood after discard: {{value}}",
   "canKnockNow": "Can knock now (deadwood ≤ 10)",
   "promptDiscardHelp": "d <idx>: discard a card",
   "promptKnockHelp": "k <idx>: knock (discard + knock)",

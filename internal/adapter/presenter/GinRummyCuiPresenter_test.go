@@ -169,7 +169,7 @@ func TestGinRummyCuiPresenter_Output(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "現在のデッドウッド:")
+		assert.Contains(t, result, "最小デッドウッド(1枚捨て後):")
 		assert.Contains(t, result, "ノック可能")
 	})
 
@@ -191,7 +191,7 @@ func TestGinRummyCuiPresenter_Output(t *testing.T) {
 		}
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "現在のデッドウッド:")
+		assert.Contains(t, result, "最小デッドウッド(1枚捨て後):")
 		assert.NotContains(t, result, "ノック可能")
 	})
 
