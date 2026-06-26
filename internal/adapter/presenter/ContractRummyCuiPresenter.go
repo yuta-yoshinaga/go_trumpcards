@@ -103,8 +103,14 @@ func (p *ContractRummyCuiPresenter) Output(g interfaces.ContractRummyGame, lastE
 			currentIdx := g.GetCurrentPlayerIdx()
 			b.WriteString(i18n.Tf("contractrummy.promptPlay",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
-			b.WriteString(i18n.T("contractrummy.promptPlayHelpMeldContract") + "\n")
-			b.WriteString(i18n.T("contractrummy.promptPlayHelpMeldExtra") + "\n")
+			if cur := g.GetPlayer(currentIdx); cur != nil && cur.IsContractMet() {
+				// Contract already down: extra melds / layoffs are optional, discard ends the turn.
+				b.WriteString(i18n.T("contractrummy.promptPlayHelpAfterContract") + "\n")
+				b.WriteString(i18n.T("contractrummy.promptPlayHelpMeldExtra") + "\n")
+			} else {
+				b.WriteString(i18n.T("contractrummy.promptPlayHelpContractRequired") + "\n")
+				b.WriteString(i18n.T("contractrummy.promptPlayHelpMeldContract") + "\n")
+			}
 			b.WriteString(i18n.T("contractrummy.promptPlayHelpLayoff") + "\n")
 			b.WriteString(i18n.T("contractrummy.promptPlayHelpDiscard") + "\n")
 		case domain.ContractRummyPhaseRoundEnd:
