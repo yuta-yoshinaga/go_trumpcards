@@ -26,6 +26,8 @@ func setupTriPeaksCuiMockDefaults(tg *interfaces.MockTriPeaksGame) {
 			Card:    domain.NewCard(domain.CardDesignSpade, c%13+1, false),
 			Removed: false,
 		}
+		// Even columns exposed, odd columns blocked — exercises both formats.
+		tg.On("IsExposed", 3, c).Return(c%2 == 0).Maybe()
 	}
 	tg.On("GetLayout").Return(layout).Maybe()
 }
@@ -39,6 +41,36 @@ func TestTriPeaksCuiPresenterOutput_Playing(t *testing.T) {
 	assert.Contains(t, result, "TriPeaks")
 	assert.Contains(t, result, "Stock: 23枚")
 	assert.Contains(t, result, "手数: 0")
+}
+
+func TestTriPeaksCuiPresenterOutput_PlayableAndBlocked(t *testing.T) {
+	tg := new(interfaces.MockTriPeaksGame)
+	tg.On("GetPhase").Return(domain.TriPeaksPhasePlaying).Maybe()
+	tg.On("GetMoveCount").Return(0).Maybe()
+	tg.On("GetStockCount").Return(10).Maybe()
+	tg.On("IsStalemate").Return(false).Maybe()
+	// Waste top is a 2: adjacent to Ace(1) and 3, with K-A wrap also possible.
+	tg.On("GetWaste").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 2, false)}).Maybe()
+
+	var layout [domain.TriPeaksRowCnt][domain.TriPeaksColCnt]*domain.TriPeaksCard
+	// (3,0)=A exposed & adjacent->playable; (3,1)=5 blocked; (3,2)=9 exposed but not adjacent.
+	layout[3][0] = &domain.TriPeaksCard{Card: domain.NewCard(domain.CardDesignSpade, 1, false)}
+	layout[3][1] = &domain.TriPeaksCard{Card: domain.NewCard(domain.CardDesignSpade, 5, false)}
+	layout[3][2] = &domain.TriPeaksCard{Card: domain.NewCard(domain.CardDesignSpade, 9, false)}
+	tg.On("GetLayout").Return(layout).Maybe()
+	tg.On("IsExposed", 3, 0).Return(true).Maybe()
+	tg.On("IsExposed", 3, 1).Return(false).Maybe()
+	tg.On("IsExposed", 3, 2).Return(true).Maybe()
+
+	p := &TriPeaksCuiPresenter{}
+	result := p.Output(tg, nil)
+	// (3,0) is exposed and ±1 from the waste top -> playable marker.
+	assert.Contains(t, result, "(3,0)")
+	assert.Contains(t, result, "*")
+	// (3,1) is blocked -> coordinates hidden.
+	assert.Contains(t, result, "[--]")
+	// (3,2) is exposed but not adjacent -> plain coordinate format, no marker.
+	assert.Contains(t, result, "(3,2)")
 }
 
 func TestTriPeaksCuiPresenterOutput_Error(t *testing.T) {
