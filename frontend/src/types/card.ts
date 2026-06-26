@@ -6321,7 +6321,7 @@ export interface DragonTigerResponse extends BaseGameResponse {
   betAmount: number;
   /** 0=Dragon, 1=Tiger, 2=Tie */
   betType: number;
-  /** Domain GameResult: 1=Win (Dragon), 2=Lose (Tiger), 3=Draw (Tie) */
+  /** Domain GameResult on the wire: 1=Dragon wins, -1=Tiger wins, 0=Tie */
   result: number;
   payout: number;
   /** Big Road history. 0=Dragon, 1=Tiger, 2=Tie. */

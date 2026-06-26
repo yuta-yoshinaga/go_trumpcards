@@ -13,8 +13,12 @@ const BET_NAMES: Record<number, string> = {
   [DragonTigerBetType.TIE]: 'Tie',
 };
 
-// Domain GameResult: 1=Dragon wins, 2=Tiger wins, 3=Tie.
-const RESULT_NAMES: Record<number, string> = { 1: 'Dragon', 2: 'Tiger', 3: 'Tie' };
+// Domain GameResult on the wire: 1 (Win) = Dragon wins, -1 (Lose) = Tiger wins, 0 (Draw) = Tie.
+function resultName(result: number): string {
+  if (result > 0) return 'Dragon';
+  if (result < 0) return 'Tiger';
+  return 'Tie';
+}
 
 /** Format a Dragon Tiger game state as terminal text. */
 export function formatDragonTigerState(state: DragonTigerResponse): string {
@@ -32,7 +36,7 @@ export function formatDragonTigerState(state: DragonTigerResponse): string {
   }
 
   if (state.phase === DragonTigerPhase.END) {
-    lines.push(`result: ${RESULT_NAMES[state.result] ?? 'UNKNOWN'}  payout: ${state.payout}`);
+    lines.push(`result: ${resultName(state.result)}  payout: ${state.payout}`);
   }
 
   if (state.history.length > 0) {

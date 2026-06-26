@@ -43,6 +43,13 @@ describe('formatDragonTigerState', () => {
     expect(out).toContain('result: Dragon  payout: 200');
   });
 
+  it('maps the wire result value (1/-1/0) to Dragon/Tiger/Tie', () => {
+    const end = { ...baseState, phase: DragonTigerPhase.END };
+    expect(formatDragonTigerState({ ...end, result: 1 })).toContain('result: Dragon');
+    expect(formatDragonTigerState({ ...end, result: -1 })).toContain('result: Tiger');
+    expect(formatDragonTigerState({ ...end, result: 0 })).toContain('result: Tie');
+  });
+
   it('renders the big-road history with target names', () => {
     const out = formatDragonTigerState({ ...baseState, history: [0, 1, 2] });
     expect(out).toContain('history: Dragon Tiger Tie');
