@@ -84,6 +84,14 @@ func TestSpeedCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(s, nil)
 		assert.Contains(t, result, "膠着状態")
+		// The flip-command help line accompanies the stuck message.
+		assert.Contains(t, result, "f / flip")
+	})
+
+	t.Run("does not show stuck help during normal play", func(t *testing.T) {
+		s := setupSpeedWebTest()
+		result := p.Output(s, nil)
+		assert.NotContains(t, result, "f / flip")
 	})
 }
 
