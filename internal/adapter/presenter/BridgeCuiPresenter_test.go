@@ -114,7 +114,19 @@ func TestBridgeCuiPresenter_Output(t *testing.T) {
 		m, _ := setupBridgeCuiMockWithPlayers()
 
 		result := p.Output(m, nil)
+		// Contract suit 3 is the Heart bid suit, localized rather than printed raw.
 		assert.Contains(t, result, "コントラクト: 1レベル")
+		assert.Contains(t, result, "HEART")
+		assert.NotContains(t, result, "スート3")
+	})
+
+	t.Run("contract no trump shown", func(t *testing.T) {
+		m, _ := setupBridgeCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetContractSuit")
+		m.On("GetContractSuit").Return(domain.BridgeBidSuitNT)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ノートランプ")
 	})
 
 	t.Run("contract doubled", func(t *testing.T) {
@@ -369,7 +381,8 @@ func TestBridgeCuiPresenter_HintOutput(t *testing.T) {
 		assert.Contains(t, result, "HINT")
 		assert.Contains(t, result, "ビッド")
 		assert.Contains(t, result, "2レベル")
-		assert.Contains(t, result, "スート3")
+		assert.Contains(t, result, "HEART")
+		assert.NotContains(t, result, "スート3")
 		assert.Contains(t, result, "強い手札")
 	})
 
