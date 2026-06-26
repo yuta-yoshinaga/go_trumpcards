@@ -35,6 +35,9 @@ type MemoryBoardCard struct {
 	Card   *Card `json:"c"`
 	FaceUp bool  `json:"f"`
 	Taken  bool  `json:"t"`
+	// Visited is true once the card has been turned face up at least once,
+	// powering the CUI/Web memory aids for previously-seen face-down cells.
+	Visited bool `json:"v"`
 }
 
 // CPU記憶パラメータ (難易度別)
@@ -309,6 +312,7 @@ func (m *Memory) flip(pos int) error {
 	}
 
 	bc.FaceUp = true
+	bc.Visited = true
 	retentionChance := m.retentionChance()
 
 	// 全CPUプレイヤーに公開されたカードを記憶させる
