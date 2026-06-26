@@ -10,6 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
@@ -308,11 +309,14 @@ function AcesUpPageContent() {
             </div>
 
             {/* Hint display */}
-            <div data-tutorial="acesup-hint-display">
+            <div className="mb-2 flex justify-center" data-tutorial="acesup-hint-display">
               {hint && (
-                <div className="text-ds-warning text-sm mb-2 text-center">
-                  {t('hintAvailable')}: {t(`hintType.${hint.type}`)}
-                </div>
+                <HintTooltip
+                  reason={
+                    hint.type === 'draw' ? t('hintReason.draw') : t(`hintReason.${hint.type}`, { col: hint.col + 1 })
+                  }
+                  confidence="strong"
+                />
               )}
             </div>
 

@@ -27,6 +27,11 @@
     "move": "You can move a card to an empty column",
     "draw": "Deal a card to each column"
   },
+  "hintReason": {
+    "remove": "Remove the top card of column {{col}} (the lower of a same-suit pair)",
+    "move": "Move column {{col}}'s card to an empty column",
+    "draw": "No moves available — deal one card from the stock to each column"
+  },
   "tutorial": {
     "columns": "Four tableau columns. You can act on the top card of each column.",
     "rules": "Discard the lower of two same-suit top cards (Ace is highest).",

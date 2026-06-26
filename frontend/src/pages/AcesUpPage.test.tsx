@@ -193,6 +193,8 @@ describe('AcesUpPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    // The hint renders via HintTooltip with a column-specific reason (col 0 → 列1).
+    await waitFor(() => expect(screen.getByText(/列1の一番上の札を除去/)).toBeInTheDocument());
   });
 
   it('renders game clear state', async () => {
