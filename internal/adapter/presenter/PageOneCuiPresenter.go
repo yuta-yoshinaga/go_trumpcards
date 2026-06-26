@@ -71,9 +71,13 @@ func (p *PageOneCuiPresenter) Output(g interfaces.PageOneGame, lastErr error) st
 				currentIdx := g.GetCurrentPlayerIdx()
 				player := g.GetPlayer(currentIdx)
 				fmt.Fprintf(b, "%s\n", i18n.Tf("pageone.turnLine", "name", cuiPlayerName(player, currentIdx)))
+				if top := g.GetDiscardTop(); top != nil {
+					b.WriteString(i18n.Tf("pageone.cuiPlayCondition", "card", cuiCardStr(top)) + "\n")
+				}
 				b.WriteString(i18n.T("pageone.cmdPlay") + "\n")
 				b.WriteString(i18n.T("pageone.cmdDraw") + "\n")
 			case domain.PageOnePhaseMustDeclare:
+				b.WriteString(color.Yellow(i18n.T("pageone.cuiMustDeclare")) + "\n")
 				b.WriteString(i18n.T("pageone.declarePhase") + "\n")
 				b.WriteString(i18n.T("pageone.cmdDeclare") + "\n")
 				b.WriteString(i18n.T("pageone.cmdSkip") + "\n")

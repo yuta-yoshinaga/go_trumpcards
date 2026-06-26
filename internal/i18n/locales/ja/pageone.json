@@ -14,6 +14,8 @@
   "turnLine": "手番: {{name}}",
   "cmdPlay": "play <idx>・・・カードを出す",
   "cmdDraw": "draw・・・カードを引く",
+  "cuiPlayCondition": "出せる条件: {{card}} と同じスートまたはランク",
+  "cuiMustDeclare": "⚠ 今すぐ「ページワン」を宣言してください！",
   "declarePhase": "宣言フェーズ: 手札が残り1枚です！",
   "cmdDeclare": "declare・・・「ページワン！」と宣言する",
   "cmdSkip": "skip・・・宣言をスキップ（ペナルティ: 2枚引く）",
