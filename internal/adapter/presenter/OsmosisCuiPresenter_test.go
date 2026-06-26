@@ -133,6 +133,23 @@ func TestOsmosisCuiPresenter_HintOutput(t *testing.T) {
 		assert.Contains(t, result, "配置可能: 7")
 	})
 
+	t.Run("lower row with partial pile lists ranks from the row above", func(t *testing.T) {
+		og := new(interfaces.MockOsmosisGame)
+		og.On("GetHint").Return(&domain.OsmosisHint{FromZone: "reserve", FromCol: 0, ToCol: 1})
+		og.On("GetBaseRank").Return(7)
+		var foundation [domain.OsmosisFoundationCnt][]*domain.Card
+		foundation[0] = []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 7, false),
+			domain.NewCard(domain.CardDesignSpade, 9, false),
+		}
+		foundation[1] = []*domain.Card{domain.NewCard(domain.CardDesignHeart, 7, false)}
+		og.On("GetFoundation").Return(foundation)
+		p := new(OsmosisCuiPresenter)
+		result := p.HintOutput(og)
+		// Row above has 7 and 9; row 1 already has 7 → only 9 is placeable.
+		assert.Contains(t, result, "配置可能: 9")
+	})
+
 	t.Run("waste to base row shows any rank", func(t *testing.T) {
 		og := new(interfaces.MockOsmosisGame)
 		og.On("GetHint").Return(&domain.OsmosisHint{FromZone: "waste", FromCol: -1, ToCol: 0})
@@ -146,6 +163,46 @@ func TestOsmosisCuiPresenter_HintOutput(t *testing.T) {
 		// Base row already seeded → any rank may be added.
 		assert.Contains(t, result, "任意ランク")
 	})
+}
+
+func TestOsmosisAllowedRanks(t *testing.T) {
+	card := func(v int) *domain.Card { return domain.NewCard(domain.CardDesignSpade, v, false) }
+
+	t.Run("empty row returns the base rank", func(t *testing.T) {
+		var f [domain.OsmosisFoundationCnt][]*domain.Card
+		f[0] = []*domain.Card{card(7)}
+		assert.Equal(t, []int{7}, osmosisAllowedRanks(f, 7, 1))
+	})
+
+	t.Run("empty row with empty row above returns nothing", func(t *testing.T) {
+		var f [domain.OsmosisFoundationCnt][]*domain.Card
+		assert.Nil(t, osmosisAllowedRanks(f, 7, 2))
+	})
+
+	t.Run("base row lists every rank not yet present", func(t *testing.T) {
+		var f [domain.OsmosisFoundationCnt][]*domain.Card
+		f[0] = []*domain.Card{card(7), card(13)}
+		got := osmosisAllowedRanks(f, 7, 0)
+		assert.NotContains(t, got, 7)
+		assert.NotContains(t, got, 13)
+		assert.Contains(t, got, 1)
+		assert.Len(t, got, 11)
+	})
+
+	t.Run("lower row intersects the row above minus its own ranks", func(t *testing.T) {
+		var f [domain.OsmosisFoundationCnt][]*domain.Card
+		f[0] = []*domain.Card{card(7), card(9), card(11)}
+		f[1] = []*domain.Card{card(7)}
+		assert.Equal(t, []int{9, 11}, osmosisAllowedRanks(f, 7, 1))
+	})
+}
+
+func TestOsmosisRankLabel(t *testing.T) {
+	assert.Equal(t, "A", osmosisRankLabel(1))
+	assert.Equal(t, "10", osmosisRankLabel(10))
+	assert.Equal(t, "J", osmosisRankLabel(11))
+	assert.Equal(t, "Q", osmosisRankLabel(12))
+	assert.Equal(t, "K", osmosisRankLabel(13))
 }
 
 func TestOsmosisCuiPresenter_ActionLogOutput(t *testing.T) {
