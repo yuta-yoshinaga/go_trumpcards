@@ -114,4 +114,36 @@ describe('SevenBridgePage', () => {
     fireEvent.click(btn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawstock'));
   });
+
+  it('renders round-end with the next-round button and revealed CPU hands', async () => {
+    const roundEndState: SevenBridgeResponse = {
+      ...drawState,
+      phase: 2,
+      roundWinnerIdx: 0,
+      players: [
+        { ...drawState.players[0], roundScore: 0 },
+        { ...drawState.players[1], cards: [{ design: 'HEART', value: 4 }], cardCount: 1, roundScore: 12 },
+      ],
+    };
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<SevenBridgePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
+  });
+
+  it('renders game-end state', async () => {
+    const gameEndState: SevenBridgeResponse = {
+      ...drawState,
+      phase: 3,
+      gameEndFlag: true,
+      winnerIdx: 0,
+      players: [
+        { ...drawState.players[0], cards: [{ design: 'SPADE', value: 9 }] },
+        { ...drawState.players[1], cards: [{ design: 'HEART', value: 4 }], cardCount: 1 },
+      ],
+    };
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<SevenBridgePage />);
+    // At game end the CPU hand is revealed (covers the isGameEnd reveal branch).
+    await waitFor(() => expect(screen.getByAltText('♥ 4')).toBeInTheDocument());
+  });
 });
