@@ -6,6 +6,8 @@
   "centerLabel": "[中央K]",
   "pileFootnote": " ({{up}}/{{total}})",
   "currentCard": "手持ち: {{card}}",
+  "placementHint": "  → {{hour}}時の山へ",
+  "placementKing": "  → 中央(K)の山へ",
   "stepLine": "ステップ: {{count}}",
   "gameClearLine": "ゲームクリア！ ステップ数: {{count}}",
   "gameOverLine": "ゲームオーバー ステップ数: {{count}}",

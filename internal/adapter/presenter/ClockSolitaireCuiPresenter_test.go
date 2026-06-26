@@ -20,6 +20,37 @@ func TestClockSolitaireCuiPresenterOutput_Playing(t *testing.T) {
 	result := p.Output(gg, nil)
 	assert.Contains(t, result, "Clock Solitaire")
 	assert.Contains(t, result, "ステップ: 0")
+	// Current card is SPADE 5 → placement hint points to the 5 o'clock pile.
+	assert.Contains(t, result, "5時の山へ")
+}
+
+func TestClockSolitaireCuiPresenterOutput_KingPlacement(t *testing.T) {
+	gg := new(interfaces.MockClockSolitaireGame)
+	setupClockSolitaireWebMockDefaults(gg)
+	gg.ExpectedCalls = nil
+	gg.On("GetPhase").Return(domain.ClockSolitairePhasePlaying)
+	gg.On("GetStepCount").Return(3)
+	gg.On("GetCurrentCard").Return(domain.NewCard(domain.CardDesignHeart, 13, false))
+
+	var piles [domain.ClockSolitairePileCount][]*domain.ClockSolitaireCard
+	var fuc [domain.ClockSolitairePileCount]int
+	for i := range domain.ClockSolitairePileCount {
+		piles[i] = make([]*domain.ClockSolitaireCard, domain.ClockSolitaireCardsPerPile)
+		for j := range domain.ClockSolitaireCardsPerPile {
+			piles[i][j] = &domain.ClockSolitaireCard{
+				Card:   domain.NewCard(domain.CardDesignSpade, i+1, false),
+				FaceUp: true,
+			}
+		}
+		fuc[i] = 4
+	}
+	gg.On("GetPiles").Return(piles)
+	gg.On("GetFaceUpCount").Return(fuc)
+
+	p := &ClockSolitaireCuiPresenter{}
+	result := p.Output(gg, nil)
+	assert.Contains(t, result, "中央(K)の山へ")
+	assert.NotContains(t, result, "時の山へ")
 }
 
 func TestClockSolitaireCuiPresenterOutput_Error(t *testing.T) {
