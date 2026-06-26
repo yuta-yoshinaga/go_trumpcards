@@ -1,5 +1,7 @@
 import type { DeuceToSevenResponse } from '../../../types/card';
-import { formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
+import { DeuceToSevenPhase } from '../../../types/phases';
+import { deuceToSevenBestIndices, isMadePatLow } from '../../deuceToSevenUtils';
+import { formatCardList, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES: Record<number, string> = {
   0: 'INIT',
@@ -30,6 +32,17 @@ export function formatDeuceToSevenState(state: DeuceToSevenResponse): string {
     if (p.handName) lines.push(`  hand: ${p.handName}`);
     if (p.isHuman && p.cards.length > 0) {
       lines.push(`  ${formatIndexedCards(p.cards)}`);
+    }
+  }
+
+  // Draw-phase stand-pat guidance for the human, mirroring the GUI banner.
+  const human = state.players.find((p) => p.isHuman);
+  if (state.phase === DeuceToSevenPhase.DRAW && human && state.currentTurn === human.id && human.cards.length === 5) {
+    if (isMadePatLow(human.cards)) {
+      lines.push(`Made low: ${formatCardList(human.cards)} (stand recommended)`);
+    } else {
+      const keep = deuceToSevenBestIndices(human.cards).map((i) => human.cards[i]);
+      lines.push(`Best to keep: ${formatCardList(keep)} (draw the rest)`);
     }
   }
 
