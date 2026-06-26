@@ -148,6 +148,8 @@ describe('RedDogPage', () => {
     for (const r of [6, 7, 8, 9]) {
       expect(screen.getByTestId(`reddog-ghost-${r}`)).toBeInTheDocument();
     }
+    // Text summary mirrors the ghost chips for at-a-glance / non-visual reading.
+    expect(screen.getByTestId('reddog-winners-text')).toHaveTextContent('6, 7, 8, 9');
   });
 
   it('marks the hit ghost chip in end phase', async () => {

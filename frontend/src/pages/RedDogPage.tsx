@@ -199,6 +199,11 @@ function RedDogPageContent() {
                       thirdRank={isEndPhase && state.thirdCard ? redDogRank(state.thirdCard) : null}
                       label={t('label.winners')}
                     />
+                    {reddogWinningRanks(state.initialCards).length > 0 && (
+                      <div className="text-ds-text-muted text-center text-xs mt-1" data-testid="reddog-winners-text">
+                        {t('label.winners')}: {reddogWinningRanks(state.initialCards).map(rankLabel).join(', ')}
+                      </div>
+                    )}
                   </>
                 )}
               </div>
