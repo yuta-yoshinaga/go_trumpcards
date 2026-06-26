@@ -59,6 +59,39 @@ func TestMemoryCuiPresenterOutput(t *testing.T) {
 		assert.Contains(t, result, "f <pos>")
 	})
 
+	t.Run("marks visited face-down cells distinctly with a legend", func(t *testing.T) {
+		mg := newMockMemoryGame()
+		setupMemoryMockDefaults(mg)
+		mg.ExpectedCalls = nil // clear defaults
+		mg.On("GetPlayerCnt").Return(4)
+		mg.On("GetGameEndFlag").Return(false)
+		mg.On("GetPhase").Return(domain.MemoryPhaseFlip1)
+		mg.On("GetCurrentPlayerIdx").Return(0)
+		mg.On("GetLastMatchResult").Return(false)
+		mg.On("GetWinnerIdx").Return(-1)
+
+		var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
+		for i := 0; i < domain.MemoryBoardSize; i++ {
+			board[i] = &domain.MemoryBoardCard{
+				Card:   domain.NewCard(domain.CardDesignSpade, (i%13)+1, false),
+				FaceUp: false,
+				Taken:  false,
+			}
+		}
+		// Position 0 was seen before (face-down but visited).
+		board[0].Visited = true
+		mg.On("GetBoard").Return(board)
+		for i := 0; i < 4; i++ {
+			mg.On("GetPlayer", i).Return(domain.NewMemoryPlayer(i == 0))
+		}
+
+		p := new(MemoryCuiPresenter)
+		result := p.Output(mg, nil)
+		assert.Contains(t, result, "*?") // visited, face-down
+		assert.Contains(t, result, "??") // unvisited cells
+		assert.Contains(t, result, "凡例")
+	})
+
 	t.Run("flip2 phase", func(t *testing.T) {
 		mg := newMockMemoryGame()
 		setupMemoryMockDefaults(mg)
