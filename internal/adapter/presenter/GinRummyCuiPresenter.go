@@ -12,6 +12,33 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// ginRummyBestDeadwood returns the lowest deadwood value the player can reach by
+// discarding one card — the value that gates knocking (<= GinRummyKnockThreshold).
+func ginRummyBestDeadwood(player *domain.GinRummyPlayer) int {
+	n := player.GetCardsSize()
+	cards := make([]*domain.Card, n)
+	for i := 0; i < n; i++ {
+		cards[i] = player.GetCard(i)
+	}
+	best := -1
+	for skip := 0; skip < n; skip++ {
+		sub := make([]*domain.Card, 0, n-1)
+		for i, c := range cards {
+			if i != skip {
+				sub = append(sub, c)
+			}
+		}
+		_, deadwood := domain.FindBestMelds(sub)
+		if v := domain.CalcDeadwoodValue(deadwood); best < 0 || v < best {
+			best = v
+		}
+	}
+	if best < 0 {
+		best = 0
+	}
+	return best
+}
+
 // ginRummyPlayerStr returns the display string for a single GinRummy player.
 func ginRummyPlayerStr(player *domain.GinRummyPlayer, i int) string {
 	var b strings.Builder
@@ -66,6 +93,13 @@ func (p *GinRummyCuiPresenter) Output(g interfaces.GinRummyGame, lastErr error) 
 			currentIdx := g.GetCurrentPlayerIdx()
 			b.WriteString(i18n.Tf("ginrummy.promptDiscard",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
+			if cur := g.GetPlayer(currentIdx); cur.GetIsHuman() {
+				best := ginRummyBestDeadwood(cur)
+				b.WriteString(i18n.Tf("ginrummy.deadwoodLine", "value", strconv.Itoa(best)) + "\n")
+				if best <= domain.GinRummyKnockThreshold {
+					b.WriteString(color.Yellow(i18n.T("ginrummy.canKnockNow")) + "\n")
+				}
+			}
 			b.WriteString(i18n.T("ginrummy.promptDiscardHelp") + "\n")
 			b.WriteString(i18n.T("ginrummy.promptKnockHelp") + "\n")
 		case domain.GinRummyPhaseLayoff:
