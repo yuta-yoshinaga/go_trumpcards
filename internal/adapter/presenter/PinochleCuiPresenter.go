@@ -42,7 +42,9 @@ func pinochleMeldName(t domain.PinochleMeldType) string {
 }
 
 // pinochlePlayerStr returns the display string for a single Pinochle player.
-func pinochlePlayerStr(player *domain.PinochlePlayer, i int) string {
+// legalIndices, when non-nil, lists the hand positions the human may legally
+// play this turn and is rendered as a follow-rule legend below their hand.
+func pinochlePlayerStr(player *domain.PinochlePlayer, i int, legalIndices []int) string {
 	var b strings.Builder
 	name := cuiPlayerName(player, i)
 	b.WriteString(i18n.Tf("pinochle.playerLine",
@@ -58,6 +60,14 @@ func pinochlePlayerStr(player *domain.PinochlePlayer, i int) string {
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player))
 		b.WriteString("\n")
+		if legalIndices != nil {
+			parts := make([]string, len(legalIndices))
+			for k, idx := range legalIndices {
+				parts[k] = "[" + strconv.Itoa(idx) + "]"
+			}
+			b.WriteString(i18n.Tf("pinochle.legalPlayLegend",
+				"indices", strings.Join(parts, " ")) + "\n")
+		}
 	}
 	return b.String()
 }
@@ -99,9 +109,14 @@ func (p *PinochleCuiPresenter) Output(g interfaces.PinochleGame, lastErr error) 
 			"a", strconv.Itoa(g.GetTeamScore(0)),
 			"b", strconv.Itoa(g.GetTeamScore(1))))
 
-		// Player rows
+		// Player rows. On the human's play turn, surface the legal follow plays.
 		for i := 0; i < g.GetPlayerCnt(); i++ {
-			b.WriteString(pinochlePlayerStr(g.GetPlayer(i), i))
+			var legalIndices []int
+			if g.GetPhase() == domain.PinochlePhasePlay &&
+				i == g.GetCurrentPlayerIdx() && g.GetPlayer(i).GetIsHuman() {
+				legalIndices = g.GetValidPlayIndices(i)
+			}
+			b.WriteString(pinochlePlayerStr(g.GetPlayer(i), i, legalIndices))
 		}
 
 		// Meld details (only during meld + round-end phases)

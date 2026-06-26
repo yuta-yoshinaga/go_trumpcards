@@ -49,6 +49,7 @@
   "promptTrump": "{{name}}, choose the trump suit. (trump <1-4>)",
   "promptMeld": "Meld phase. (use 'meld' to confirm and continue)",
   "promptPlay": "{{name}} to play. (play <i>)",
+  "legalPlayLegend": "Legal plays: {{indices}}",
   "promptTrickEnd": "Trick ended. (use 'next' to advance)",
   "promptRoundEnd": "Round ended. (use 'nextround' to advance)"
 }
