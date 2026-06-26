@@ -118,21 +118,33 @@ func TestOsmosisCuiPresenter_HintOutput(t *testing.T) {
 		assert.Contains(t, p.HintOutput(og), "ヒントはありません")
 	})
 
-	t.Run("reserve to foundation", func(t *testing.T) {
+	t.Run("reserve to foundation shows allowed ranks", func(t *testing.T) {
 		og := new(interfaces.MockOsmosisGame)
 		og.On("GetHint").Return(&domain.OsmosisHint{FromZone: "reserve", FromCol: 0, ToCol: 1})
+		og.On("GetBaseRank").Return(7)
+		var foundation [domain.OsmosisFoundationCnt][]*domain.Card
+		foundation[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 7, false)}
+		og.On("GetFoundation").Return(foundation)
 		p := new(OsmosisCuiPresenter)
 		result := p.HintOutput(og)
 		assert.Contains(t, result, "リザーブ0列")
 		assert.Contains(t, result, "組札1段")
+		// Row 1 is empty with a seeded base row → only the base rank (7) is placeable.
+		assert.Contains(t, result, "配置可能: 7")
 	})
 
-	t.Run("waste to foundation", func(t *testing.T) {
+	t.Run("waste to base row shows any rank", func(t *testing.T) {
 		og := new(interfaces.MockOsmosisGame)
 		og.On("GetHint").Return(&domain.OsmosisHint{FromZone: "waste", FromCol: -1, ToCol: 0})
+		og.On("GetBaseRank").Return(7)
+		var foundation [domain.OsmosisFoundationCnt][]*domain.Card
+		foundation[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 7, false)}
+		og.On("GetFoundation").Return(foundation)
 		p := new(OsmosisCuiPresenter)
 		result := p.HintOutput(og)
 		assert.Contains(t, result, "ウェイスト")
+		// Base row already seeded → any rank may be added.
+		assert.Contains(t, result, "任意ランク")
 	})
 }
 
