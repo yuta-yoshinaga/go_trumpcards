@@ -13,7 +13,7 @@
   "promptCurrentPlayer": "{{name}} to play",
   "promptPlay": "play <idx>: play a card",
   "promptTrickEnd": "Trick complete",
-  "promptTrickEndHelp": "next: advance to next trick",
+  "promptTrickEndHelp": "n / next: advance to next trick",
   "promptRoundEnd": "Round complete",
   "promptRoundEndHelp": "nr / nextround: advance to next round",
   "hintNone": "No hint available.",

@@ -13,7 +13,7 @@
   "promptCurrentPlayer": "手番: {{name}}",
   "promptPlay": "play <idx>・・・カードを出す",
   "promptTrickEnd": "トリック終了",
-  "promptTrickEndHelp": "next・・・次のトリックへ",
+  "promptTrickEndHelp": "n / next・・・次のトリックへ",
   "promptRoundEnd": "ラウンド終了",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "hintNone": "ヒントはありません。",
