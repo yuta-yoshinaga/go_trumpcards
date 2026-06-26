@@ -49,20 +49,14 @@ func (p *FiftyOneCuiPresenter) Output(fo interfaces.FiftyOneGame, lastErr error)
 		}
 		b.WriteString("\n")
 
-		// Stop state
-		if fo.GetStopCallerIdx() >= 0 {
-			callerName := cuiPlayerName(fo.GetPlayer(fo.GetStopCallerIdx()), fo.GetStopCallerIdx())
-			b.WriteString(i18n.Tf("fiftyone.stopCalled", "name", callerName) + "\n")
-		}
-
 		b.WriteString("----------\n")
 
-		// Prominent colored alert whenever a stop has been declared, shown in
-		// every phase right before the prompt so CUI players know the game is in
-		// its final round (mirrors Yukon's color.Red stalemate notice).
-		if fo.GetStopCallerIdx() >= 0 {
-			callerName := cuiPlayerName(fo.GetPlayer(fo.GetStopCallerIdx()), fo.GetStopCallerIdx())
-			b.WriteString(color.Red(i18n.Tf("fiftyone.cuiStopCalled", "name", callerName)) + "\n")
+		// Colored so CUI players notice the final round is in effect (every phase).
+		if idx := fo.GetStopCallerIdx(); idx >= 0 {
+			if caller := fo.GetPlayer(idx); caller != nil {
+				name := cuiPlayerName(caller, idx)
+				b.WriteString(color.Red(i18n.Tf("fiftyone.cuiStopCalled", "name", name)) + "\n")
+			}
 		}
 
 		cuiErrorBlock(b, lastErr)
