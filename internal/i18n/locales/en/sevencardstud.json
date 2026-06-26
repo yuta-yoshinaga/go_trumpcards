@@ -52,6 +52,8 @@
   "resultKickers": " (kickers: {{kickers}})",
   "wonAmount": " → won {{total}} chips",
   "muckPrompt": "Muck? (m=muck / sh=show)",
+  "actionPrompt": "Your turn: call {{call}} / min raise {{raise}} / fold",
+  "actionPromptCheck": "Your turn: check / min bet {{raise}} / fold",
   "rebuyPrompt": "Rebuy? ({{chips}} chips, used {{used}}/{{max}}) (rb=rebuy / sr=skip)",
   "addonPrompt": "Add-on? ({{chips}} chips) (ad=addon / sa=skip)",
   "gameEnd": "Game over"

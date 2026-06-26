@@ -111,6 +111,28 @@ func (p *SevenCardStudCuiPresenter) Output(s interfaces.SevenCardStudGame, lastE
 			}
 		}
 
+		phase := s.GetPhase()
+		isBettingStreet := phase >= domain.SevenCardStudPhaseThirdStreet && phase <= domain.SevenCardStudPhaseSeventhStreet
+		if !s.GetGameEndFlag() && isBettingStreet {
+			turnIdx := s.GetCurrentTurn()
+			cur := s.GetPlayer(turnIdx)
+			if cur != nil && cur.GetIsHuman() && !cur.GetFolded() {
+				toCall := s.GetLastBet() - cur.GetCurrentBet()
+				if toCall < 0 {
+					toCall = 0
+				}
+				b.WriteString("----------\n")
+				if toCall == 0 {
+					b.WriteString(i18n.Tf("sevencardstud.actionPromptCheck",
+						"raise", strconv.Itoa(s.GetMinRaise())) + "\n")
+				} else {
+					b.WriteString(i18n.Tf("sevencardstud.actionPrompt",
+						"call", strconv.Itoa(toCall),
+						"raise", strconv.Itoa(s.GetMinRaise())) + "\n")
+				}
+			}
+		}
+
 		results := s.GetRoundResults()
 		if len(results) > 0 && (s.GetPhase() == domain.SevenCardStudPhaseEnd || s.GetPhase() == domain.SevenCardStudPhaseShowdown) {
 			b.WriteString("==========\n")

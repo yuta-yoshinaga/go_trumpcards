@@ -37,6 +37,39 @@ func TestSevenCardStudCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "♣5")
 	})
 
+	t.Run("action prompt shows call amount on human betting turn", func(t *testing.T) {
+		s, players := makeSevenCardStudForPresenter()
+		s.SetPhase(domain.SevenCardStudPhaseThirdStreet)
+		s.SetCurrentTurn(0)
+		s.SetLastBet(5)
+		players[0].SetCurrentBet(0)
+
+		result := p.Output(s, nil)
+		assert.Contains(t, result, "コール 5")
+		assert.Contains(t, result, "最低レイズ")
+	})
+
+	t.Run("action prompt shows check when nothing to call", func(t *testing.T) {
+		s, players := makeSevenCardStudForPresenter()
+		s.SetPhase(domain.SevenCardStudPhaseThirdStreet)
+		s.SetCurrentTurn(0)
+		s.SetLastBet(0)
+		players[0].SetCurrentBet(0)
+
+		result := p.Output(s, nil)
+		assert.Contains(t, result, "チェック可")
+	})
+
+	t.Run("no action prompt on a CPU betting turn", func(t *testing.T) {
+		s := func() *domain.SevenCardStud { s, _ := makeSevenCardStudForPresenter(); return s }()
+		s.SetPhase(domain.SevenCardStudPhaseThirdStreet)
+		s.SetCurrentTurn(1)
+		s.SetLastBet(5)
+
+		result := p.Output(s, nil)
+		assert.NotContains(t, result, "あなたの手番")
+	})
+
 	t.Run("ante and bring-in info displayed", func(t *testing.T) {
 		s, _ := makeSevenCardStudForPresenter()
 		s.SetPhase(domain.SevenCardStudPhaseThirdStreet)
