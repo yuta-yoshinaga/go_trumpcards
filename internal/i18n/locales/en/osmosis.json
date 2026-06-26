@@ -27,5 +27,6 @@
   "hintFromReserve": "reserve col {{col}}",
   "hintFromWaste": "waste",
   "hintToFoundation": "foundation {{idx}}",
-  "hintLine": "Hint: {{from}} → {{to}}"
+  "anyRank": "any rank",
+  "hintLine": "Hint: {{from}} → {{to}} (allowed: {{allowed}})"
 }
