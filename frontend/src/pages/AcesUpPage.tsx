@@ -312,9 +312,7 @@ function AcesUpPageContent() {
             <div className="mb-2 flex justify-center" data-tutorial="acesup-hint-display">
               {hint && (
                 <HintTooltip
-                  reason={
-                    hint.type === 'draw' ? t('hintReason.draw') : t(`hintReason.${hint.type}`, { col: hint.col + 1 })
-                  }
+                  reason={hint.type === 'draw' ? t('hintReason.draw') : t(`hintReason.${hint.type}`, { col: hint.col })}
                   confidence="strong"
                 />
               )}
