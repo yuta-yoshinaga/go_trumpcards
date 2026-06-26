@@ -5,6 +5,8 @@
   "helpGiveUp": "  g                        give up",
   "helpHint": "  h                        hint",
   "tableauCard": "({{row}},{{col}}){{card}}",
+  "playableCard": "({{row}},{{col}}){{card}}*",
+  "blockedCard": "[--]{{card}}",
   "stockLine": "Stock: {{count}}",
   "wasteCard": " | Waste: {{card}}",
   "wasteEmpty": " | Waste: [empty]",

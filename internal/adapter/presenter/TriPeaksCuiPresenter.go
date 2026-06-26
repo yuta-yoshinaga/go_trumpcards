@@ -12,6 +12,17 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// triPeaksAdjacentRank reports whether two ranks differ by one, treating
+// King(13) and Ace(1) as adjacent (mirrors the domain's isAdjacentRank, which
+// is unexported, and the frontend's isTriPeaksAdjacent).
+func triPeaksAdjacentRank(v1, v2 int) bool {
+	diff := v1 - v2
+	if diff < 0 {
+		diff = -diff
+	}
+	return diff == 1 || diff == 12
+}
+
 // TriPeaksCuiPresenter renders the TriPeaks Solitaire CUI view.
 type TriPeaksCuiPresenter struct{}
 
@@ -19,6 +30,13 @@ type TriPeaksCuiPresenter struct{}
 func (pr *TriPeaksCuiPresenter) Output(t interfaces.TriPeaksGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("tripeaks.helpTitle"), func(b *strings.Builder) {
 		layout := t.GetLayout()
+
+		// Waste top drives the ±1 playable check for exposed tableau cards.
+		waste := t.GetWaste()
+		var wasteTop *domain.Card
+		if len(waste) > 0 {
+			wasteTop = waste[len(waste)-1]
+		}
 
 		// Tableau (with row indent)
 		for row := range domain.TriPeaksRowCnt {
@@ -34,9 +52,20 @@ func (pr *TriPeaksCuiPresenter) Output(t interfaces.TriPeaksGame, lastErr error)
 					b.WriteString("  ")
 				}
 				first = false
-				if tc.Removed {
+				switch {
+				case tc.Removed:
 					b.WriteString("    ")
-				} else {
+				case !t.IsExposed(row, col):
+					// Blocked cards hide coordinates: they cannot be taken yet.
+					b.WriteString(i18n.Tf("tripeaks.blockedCard", "card", cuiCardStr(tc.Card)))
+				case wasteTop != nil && triPeaksAdjacentRank(tc.Card.GetValue(), wasteTop.GetValue()):
+					// Exposed and ±1 from the waste top: playable now (trailing *).
+					b.WriteString(i18n.Tf("tripeaks.playableCard",
+						"row", strconv.Itoa(row),
+						"col", strconv.Itoa(col),
+						"card", cuiCardStr(tc.Card)))
+				default:
+					// Exposed but not adjacent: shown with coordinates, no marker.
 					b.WriteString(i18n.Tf("tripeaks.tableauCard",
 						"row", strconv.Itoa(row),
 						"col", strconv.Itoa(col),
@@ -51,7 +80,6 @@ func (pr *TriPeaksCuiPresenter) Output(t interfaces.TriPeaksGame, lastErr error)
 		// Stock + waste
 		b.WriteString(i18n.Tf("tripeaks.stockLine",
 			"count", strconv.Itoa(t.GetStockCount())))
-		waste := t.GetWaste()
 		if len(waste) > 0 {
 			b.WriteString(i18n.Tf("tripeaks.wasteCard",
 				"card", cuiCardStr(waste[len(waste)-1])))
