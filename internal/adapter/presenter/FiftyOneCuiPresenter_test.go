@@ -116,6 +116,16 @@ func TestFiftyOneCuiPresenter_Output_StopCalled(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "ストップ宣言")
+	// The prominent colored alert is shown before the prompt in every phase.
+	assert.Contains(t, result, "最終ラウンド")
+}
+
+func TestFiftyOneCuiPresenter_Output_NoStopAlertWhenNoStop(t *testing.T) {
+	p := new(presenter.FiftyOneCuiPresenter)
+	m := setupFiftyOneMock()
+	// setupFiftyOneMock leaves GetStopCallerIdx() == -1 (no stop declared).
+	result := p.Output(m, nil)
+	assert.NotContains(t, result, "最終ラウンド")
 }
 
 func TestFiftyOneCuiPresenter_ActionLogOutput(t *testing.T) {

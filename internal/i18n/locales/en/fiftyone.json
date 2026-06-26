@@ -12,7 +12,7 @@
   "scoreUnknown": "?",
   "tableHeader": "Table: ",
   "tableCard": "[{{idx}}]{{card}}",
-  "stopCalled": "⚠ {{name}} called stop!",
+  "cuiStopCalled": "⚠ Stop is in effect ({{name}}) — this is the final round",
   "gameEndHeader": "=== Game over ===",
   "scoreEntry": "  {{name}}: {{score}}",
   "winHuman": "You win!",
