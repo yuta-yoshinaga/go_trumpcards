@@ -52,6 +52,8 @@
   "resultKickers": " (キッカー: {{kickers}})",
   "wonAmount": " → {{total}}チップ獲得",
   "muckPrompt": "マックしますか? (m=マック / sh=ショー)",
+  "actionPrompt": "あなたの手番: コール {{call}} / 最低レイズ {{raise}} / フォールド可",
+  "actionPromptCheck": "あなたの手番: チェック可 / 最低ベット {{raise}} / フォールド可",
   "rebuyPrompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済) (rb=リバイ / sr=スキップ)",
   "addonPrompt": "アドオンしますか? ({{chips}}チップ) (ad=アドオン / sa=スキップ)",
   "gameEnd": "ゲーム終了"
