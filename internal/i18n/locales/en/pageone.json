@@ -14,6 +14,8 @@
   "turnLine": "Turn: {{name}}",
   "cmdPlay": "play <idx>  ... play a card",
   "cmdDraw": "draw        ... draw a card",
+  "cuiPlayCondition": "Play condition: same suit or rank as {{card}}",
+  "cuiMustDeclare": "⚠ Declare \"Page One\" now!",
   "declarePhase": "Declaration phase: only 1 card left!",
   "cmdDeclare": "declare     ... declare Page One!",
   "cmdSkip": "skip        ... skip declaration (penalty: draw 2)",
