@@ -129,6 +129,37 @@ func TestTonkCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "k <idx>")
 	})
 
+	t.Run("discard phase shows knockable for a low hand", func(t *testing.T) {
+		m, players := setupTonkCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.TonkPhaseDiscard)
+		// A run plus a single low stray: discarding the stray leaves deadwood 0.
+		for _, v := range []int{1, 2, 3} {
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
+		}
+		players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "最小デッドウッド(1枚捨て後):")
+		assert.Contains(t, result, "ノック可能")
+	})
+
+	t.Run("discard phase shows not-knockable for a high hand", func(t *testing.T) {
+		m, players := setupTonkCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.TonkPhaseDiscard)
+		// Scattered high cards with no meld: deadwood stays above the threshold.
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 9, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "最小デッドウッド(1枚捨て後):")
+		assert.Contains(t, result, "ノック不可")
+		assert.NotContains(t, result, "ノック可能")
+	})
+
 	t.Run("round end shows next command", func(t *testing.T) {
 		m, _ := setupTonkCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
