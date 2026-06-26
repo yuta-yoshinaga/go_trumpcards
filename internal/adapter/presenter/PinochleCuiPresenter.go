@@ -60,7 +60,7 @@ func pinochlePlayerStr(player *domain.PinochlePlayer, i int, legalIndices []int)
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player))
 		b.WriteString("\n")
-		if legalIndices != nil {
+		if len(legalIndices) > 0 {
 			parts := make([]string, len(legalIndices))
 			for k, idx := range legalIndices {
 				parts[k] = "[" + strconv.Itoa(idx) + "]"
