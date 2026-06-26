@@ -23,6 +23,7 @@
   "promptDrawHelpStock": "ds: draw from stock",
   "promptDrawHelpDiscard": "dd: take the discard top",
   "promptMeld": "{{name}} to act (meld phase)",
+  "openingHint": "Opening requires melds totaling at least {{n}} points",
   "promptMeldHelpMeld": "m <a,b,c> [<d,e,f>]: lay meld(s)",
   "promptMeldHelpLayoff": "lo <pIdx> <mIdx> <cIdx>: add a card to an existing meld",
   "promptMeldHelpDiscard": "d <idx>: discard a card",
