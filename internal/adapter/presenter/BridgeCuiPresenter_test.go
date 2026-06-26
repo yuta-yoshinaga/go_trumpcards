@@ -129,6 +129,23 @@ func TestBridgeCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ノートランプ")
 	})
 
+	t.Run("contract suit localized for each bid suit", func(t *testing.T) {
+		cases := map[int]string{
+			domain.BridgeBidSuitClub:    "CLOVER",
+			domain.BridgeBidSuitDiamond: "DIAMOND",
+			domain.BridgeBidSuitSpade:   "SPADE",
+			99:                          "UNKNOWN", // out-of-range falls through to UNKNOWN
+		}
+		for suit, name := range cases {
+			m, _ := setupBridgeCuiMockWithPlayers()
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetContractSuit")
+			m.On("GetContractSuit").Return(suit)
+
+			result := p.Output(m, nil)
+			assert.Contains(t, result, name)
+		}
+	})
+
 	t.Run("contract doubled", func(t *testing.T) {
 		m, _ := setupBridgeCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDoubled")
@@ -490,6 +507,7 @@ func TestBridgeCuiPresenter_English(t *testing.T) {
 		assert.Contains(t, result, "Trick: 1")
 		assert.Contains(t, result, "Dealer: You")
 		assert.Contains(t, result, "Trump: SPADE")
+		assert.Contains(t, result, "Contract: 1-level HEART")
 		assert.Contains(t, result, "Vulnerability:")
 		assert.Contains(t, result, "Team 0:")
 		assert.NotContains(t, result, "ラウンド") // no Japanese leakage
