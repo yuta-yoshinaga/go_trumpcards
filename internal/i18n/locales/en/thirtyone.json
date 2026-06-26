@@ -15,6 +15,8 @@
   "promptDrawHelpStock": "ds: draw from stock",
   "promptDrawHelpDiscard": "dd: draw from discard",
   "promptKnockHelp": "k: knock (stand on your hand)",
+  "yourBestSuit": "Your best-suit total: {{score}} (31 to win)",
+  "knockNotice": "{{name}} knocked — this is the last turn",
   "promptDiscard": "{{name}} to act (discard phase)",
   "promptDiscardHelp": "d <idx>: discard a card",
   "promptThirtyOne": "{{name}} hit 31!",

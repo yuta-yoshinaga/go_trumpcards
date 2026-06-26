@@ -57,6 +57,24 @@ func TestThirtyOneCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "k:") // knock help shown when no knocker
 	})
 
+	t.Run("human best-suit total shown in prompt", func(t *testing.T) {
+		m, players := setupThirtyOneCuiMock()
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+		assert.Contains(t, p.Output(m, nil), "あなたのベストスート合計:")
+	})
+
+	t.Run("knock notice shown when someone has knocked", func(t *testing.T) {
+		m, _ := setupThirtyOneCuiMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetKnockerIdx")
+		m.On("GetKnockerIdx").Return(1)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "CPU 1")
+		assert.Contains(t, result, "最終ターン")
+		// Knock help is no longer offered once a knock is in progress.
+		assert.NotContains(t, result, "k:")
+	})
+
 	t.Run("discard top shown", func(t *testing.T) {
 		m, _ := setupThirtyOneCuiMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardTop")
