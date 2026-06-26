@@ -2,6 +2,7 @@
   "helpTitle": "Baccarat",
   "helpBet": "  b <amount> <type>    bet (type: 0=Player, 1=Banker, 2=Tie)",
   "chipsLine": "chips: {{chips}}",
+  "historyHeader": "History: {{symbols}}",
   "phaseLine": "phase: {{phase}}",
   "valueLine": "value: {{value}}",
   "playerHeader": "PLAYER",

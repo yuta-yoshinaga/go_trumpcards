@@ -23,6 +23,7 @@ func setupBaccaratCuiMockDefaults(m *interfaces.MockBaccaratGame) {
 	m.On("GetResult").Return(domain.GameResult(0)).Maybe()
 	m.On("GetPayout").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("GetHistory").Return(([]int)(nil)).Maybe()
 }
 
 func TestBaccaratCuiPresenter_Output_BetPhase(t *testing.T) {
@@ -36,6 +37,38 @@ func TestBaccaratCuiPresenter_Output_BetPhase(t *testing.T) {
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "チップ: 1000")
 	assert.Contains(t, result, "フェーズ: BET")
+}
+
+func TestBaccaratCuiPresenter_Output_History(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(BaccaratCuiPresenter)
+
+	t.Run("shows P/B/T history symbols when present", func(t *testing.T) {
+		m := new(interfaces.MockBaccaratGame)
+		m.On("GetChips").Return(1000).Maybe()
+		m.On("GetPhase").Return(domain.BaccaratPhaseBet).Maybe()
+		m.On("GetPlayerHand").Return(([]*domain.Card)(nil)).Maybe()
+		m.On("GetBankerHand").Return(([]*domain.Card)(nil)).Maybe()
+		m.On("GetPlayerHandValue").Return(0).Maybe()
+		m.On("GetBankerHandValue").Return(0).Maybe()
+		m.On("GetGameEndFlag").Return(false).Maybe()
+		m.On("GetHistory").Return([]int{
+			domain.BaccaratResultPlayer,
+			domain.BaccaratResultBanker,
+			domain.BaccaratResultTie,
+		}).Maybe()
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "履歴: P B T")
+	})
+
+	t.Run("omits the history line when empty", func(t *testing.T) {
+		m := new(interfaces.MockBaccaratGame)
+		setupBaccaratCuiMockDefaults(m)
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, "履歴:")
+	})
 }
 
 func TestBaccaratCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
@@ -62,6 +95,7 @@ func TestBaccaratCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 	m.On("GetResult").Return(domain.GameResultWin).Maybe()
 	m.On("GetPayout").Return(200).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("GetHistory").Return(([]int)(nil)).Maybe()
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "フェーズ: END")
@@ -94,6 +128,7 @@ func TestBaccaratCuiPresenter_Output_EndPhase_BankerWins(t *testing.T) {
 	m.On("GetResult").Return(domain.GameResultLose).Maybe()
 	m.On("GetPayout").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("GetHistory").Return(([]int)(nil)).Maybe()
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "バンカーの勝ち")
@@ -122,6 +157,7 @@ func TestBaccaratCuiPresenter_Output_EndPhase_Tie(t *testing.T) {
 	m.On("GetResult").Return(domain.GameResultDraw).Maybe()
 	m.On("GetPayout").Return(900).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("GetHistory").Return(([]int)(nil)).Maybe()
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "タイ")
@@ -172,6 +208,7 @@ func TestBaccaratCuiPresenter_Output_EndPhase_UnknownResult(t *testing.T) {
 	m.On("GetResult").Return(domain.GameResult(99)).Maybe()
 	m.On("GetPayout").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("GetHistory").Return(([]int)(nil)).Maybe()
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "払戻し: 0")
@@ -199,6 +236,7 @@ func TestBaccaratCuiPresenter_Output_UnknownBetType(t *testing.T) {
 	m.On("GetResult").Return(domain.GameResultWin).Maybe()
 	m.On("GetPayout").Return(200).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("GetHistory").Return(([]int)(nil)).Maybe()
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "UNKNOWN")
