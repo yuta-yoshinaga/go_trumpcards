@@ -331,6 +331,11 @@ function OasisPokerPageContent() {
                     ),
                   )}
                 </div>
+                {!isEndPhase && (
+                  <div className="text-ds-text-muted text-xs text-center mt-1" data-testid="dealer-qualify-pending">
+                    {t('dealerQualifyPending')}
+                  </div>
+                )}
               </div>
             )}
 
