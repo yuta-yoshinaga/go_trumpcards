@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { openfacechineseApi } from '../api/gameApi';
+import { useCliMode } from '../hooks/useCliMode';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, OpenFaceChinesePlayer, OpenFaceChineseResponse } from '../types/card';
 import { OpenFaceChinesePage } from './OpenFaceChinesePage';
@@ -9,6 +10,17 @@ vi.mock('../api/gameApi', () => ({
   openfacechineseApi: { exec: vi.fn() },
   actionLogApi: { openfacechinese: vi.fn() },
 }));
+
+const cliModeDisabled = {
+  cliEnabled: false,
+  toggleCli: vi.fn(),
+  logEntries: [],
+  addInput: vi.fn(),
+  addOutput: vi.fn(),
+  addError: vi.fn(),
+  clearLog: vi.fn(),
+};
+vi.mock('../hooks/useCliMode', () => ({ useCliMode: vi.fn() }));
 
 const mockExec = vi.mocked(openfacechineseApi.exec);
 
@@ -76,6 +88,7 @@ const gameEndState = makeState({
 beforeEach(() => {
   mockExec.mockReset();
   mockExec.mockResolvedValue(placingState);
+  vi.mocked(useCliMode).mockReturnValue(cliModeDisabled);
 });
 
 describe('OpenFaceChinesePage', () => {
@@ -152,5 +165,13 @@ describe('OpenFaceChinesePage', () => {
     renderWithProviders(<OpenFaceChinesePage />);
     await waitFor(() => expect(screen.getAllByText('ゲーム終了').length).toBeGreaterThan(0));
     expect(screen.queryByTestId('next-button')).not.toBeInTheDocument();
+  });
+
+  it('renders the CLI terminal and hides the board when CLI mode is enabled', async () => {
+    vi.mocked(useCliMode).mockReturnValue({ ...cliModeDisabled, cliEnabled: true });
+    mockExec.mockResolvedValue(placingState);
+    renderWithProviders(<OpenFaceChinesePage />);
+    await waitFor(() => expect(screen.getByRole('log')).toBeInTheDocument());
+    expect(screen.queryByTestId('place-front')).not.toBeInTheDocument();
   });
 });
