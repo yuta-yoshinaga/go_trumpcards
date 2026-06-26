@@ -5,7 +5,7 @@
   "helpMoveWF": "  m w f                move waste to foundation",
   "helpMoveTF": "  m t <col> f          move tableau to foundation",
   "helpMoveTT": "  m t <col> <idx> t <col>  move tableau to tableau",
-  "cuiCommandHint": "操作: m で移動 (例 m w f / m t0 f / m t0 t3), d=ドロー, u=アンドゥ, h=ヒント",
+  "cuiCommandHint": "操作: m で移動 (例 m w f / m t 0 f), d=ドロー, u=アンドゥ, h=ヒント",
   "helpGiveUp": "  g                    give up",
   "helpHint": "  h                    hint",
   "helpAutoComplete": "  ac                   auto-complete",
