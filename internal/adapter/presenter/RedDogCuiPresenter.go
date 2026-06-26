@@ -23,11 +23,11 @@ func redDogRankOf(c *domain.Card) int {
 	return c.GetValue()
 }
 
-// redDogRankLabel renders a Red Dog rank as a short label (A/K/Q/J or number).
+// redDogRankLabel renders a Red Dog rank as a short label (K/Q/J or number).
+// Winning ranks are always strictly below the higher card (max 14), so the
+// highest possible label here is K (13); Ace never appears.
 func redDogRankLabel(rank int) string {
 	switch rank {
-	case 14:
-		return "A"
 	case 13:
 		return "K"
 	case 12:
@@ -53,7 +53,7 @@ func redDogWinningRanksStr(initial []*domain.Card) string {
 	for r := lo + 1; r < hi; r++ {
 		labels = append(labels, redDogRankLabel(r))
 	}
-	return strings.Join(labels, ",")
+	return strings.Join(labels, ", ")
 }
 
 // Output ゲーム状態を出力
