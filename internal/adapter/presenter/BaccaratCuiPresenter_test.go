@@ -1,6 +1,7 @@
 package presenter
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -68,6 +69,31 @@ func TestBaccaratCuiPresenter_Output_History(t *testing.T) {
 		setupBaccaratCuiMockDefaults(m)
 		result := p.Output(m, nil)
 		assert.NotContains(t, result, "履歴:")
+	})
+
+	t.Run("renders unknown result values as ? and caps the trailing run", func(t *testing.T) {
+		m := new(interfaces.MockBaccaratGame)
+		m.On("GetChips").Return(1000).Maybe()
+		m.On("GetPhase").Return(domain.BaccaratPhaseBet).Maybe()
+		m.On("GetPlayerHand").Return(([]*domain.Card)(nil)).Maybe()
+		m.On("GetBankerHand").Return(([]*domain.Card)(nil)).Maybe()
+		m.On("GetPlayerHandValue").Return(0).Maybe()
+		m.On("GetBankerHandValue").Return(0).Maybe()
+		m.On("GetGameEndFlag").Return(false).Maybe()
+		// 40 entries (> cap) ending in an unexpected value to hit both branches.
+		history := make([]int, 0, 40)
+		for range 39 {
+			history = append(history, domain.BaccaratResultPlayer)
+		}
+		history = append(history, 99)
+		m.On("GetHistory").Return(history).Maybe()
+		result := p.Output(m, nil)
+		// Unknown value maps to '?'.
+		assert.Contains(t, result, "?")
+		// Only the last baccaratHistoryMaxShown symbols are shown (29 P + 1 ?);
+		// without the cap there would be 39 P. No other P/? appears in the
+		// bet-phase output, so counting the symbol chars verifies truncation.
+		assert.Equal(t, baccaratHistoryMaxShown, strings.Count(result, "P")+strings.Count(result, "?"))
 	})
 }
 
