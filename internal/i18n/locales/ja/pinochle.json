@@ -49,6 +49,7 @@
   "promptTrump": "{{name}}がトランプスートを選んでください。(trump <1-4>)",
   "promptMeld": "メルドフェーズです。(meld で確認して次に進む)",
   "promptPlay": "{{name}}の番です。(play <i>)",
+  "legalPlayLegend": "合法手: {{indices}}",
   "promptTrickEnd": "トリック終了。(next で次のトリックへ)",
   "promptRoundEnd": "ラウンド終了。(nextround で次のラウンドへ)"
 }

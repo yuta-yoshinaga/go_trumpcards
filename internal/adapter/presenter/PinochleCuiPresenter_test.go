@@ -110,6 +110,23 @@ func TestPinochleCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "[0]SPADE 1")
 	})
 
+	t.Run("shows legal-play legend on human play turn", func(t *testing.T) {
+		m, players := setupPinochleCuiMockWithPlayers()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "合法手: [0] [1]")
+	})
+
+	t.Run("hides legal-play legend outside the play phase", func(t *testing.T) {
+		m, players := setupPinochleCuiMockWithPlayers()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.PinochlePhaseMeld)
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, "合法手:")
+	})
+
 	t.Run("shows current trick on table", func(t *testing.T) {
 		m, _ := setupPinochleCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
