@@ -81,6 +81,7 @@
   },
   "dealerQualified": "Qualified",
   "dealerNotQualified": "Not qualified",
+  "dealerQualifyPending": "Qualification is revealed at showdown",
   "tutorial": {
     "betControls": "Set your ante and optional jackpot bet, then press Bet.",
     "exchangeControls": "Tap cards to mark them for exchange, then press Exchange or Stand. Each exchanged card costs 1x ante.",
