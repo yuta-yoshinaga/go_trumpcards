@@ -64,6 +64,24 @@ describe('WhistPage', () => {
     );
   });
 
+  it('advances to the next trick when pressing n at trick end', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1 }));
+    renderWithProviders(<WhistPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'n' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
+  });
+
+  it('advances to the next round when pressing n at round end', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 2 }));
+    renderWithProviders(<WhistPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'n' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+  });
+
   it('shows mid-game リセット button that opens confirm dialog', async () => {
     renderWithProviders(<WhistPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
