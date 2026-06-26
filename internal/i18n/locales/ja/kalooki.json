@@ -23,6 +23,7 @@
   "promptDrawHelpStock": "ds・・・山札から引く",
   "promptDrawHelpDiscard": "dd・・・捨て札トップを取る",
   "promptMeld": "手番: {{name}} (メルドフェーズ)",
+  "openingHint": "開設には合計 {{n}} 点以上のメルドが必要です",
   "promptMeldHelpMeld": "m <a,b,c> [<d,e,f>]・・・メルドを場に出す",
   "promptMeldHelpLayoff": "lo <pIdx> <mIdx> <cIdx>・・・既存メルドにカード追加",
   "promptMeldHelpDiscard": "d <idx>・・・カードを捨てる",

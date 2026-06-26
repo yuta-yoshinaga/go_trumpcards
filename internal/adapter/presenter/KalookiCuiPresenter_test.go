@@ -53,7 +53,11 @@ func TestKalookiCuiPresenter_Output(t *testing.T) {
 
 	t.Run("meld phase", func(t *testing.T) {
 		m, _ := setupKalookiCuiMock(domain.KalookiPhaseMeld, false)
-		assert.NotEmpty(t, p.Output(m, nil))
+		out := p.Output(m, nil)
+		assert.NotEmpty(t, out)
+		// Current player has not opened → opening-threshold hint is shown.
+		assert.Contains(t, out, "開設には")
+		assert.Contains(t, out, "51")
 	})
 
 	t.Run("round end", func(t *testing.T) {
@@ -79,7 +83,10 @@ func TestKalookiCuiPresenter_Output(t *testing.T) {
 			domain.NewCard(domain.CardDesignHeart, 5, false),
 			domain.NewCard(domain.CardDesignDiamond, 5, false),
 		})
-		assert.NotEmpty(t, p.Output(m, nil))
+		out := p.Output(m, nil)
+		assert.NotEmpty(t, out)
+		// Already opened → no opening-threshold hint.
+		assert.NotContains(t, out, "開設には")
 	})
 }
 
