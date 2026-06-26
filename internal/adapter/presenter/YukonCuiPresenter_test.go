@@ -125,6 +125,8 @@ func TestYukonCuiPresenter_HintOutput(t *testing.T) {
 		result := p.HintOutput(yg)
 		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "ファンデーション")
+		// Foundation moves carry the high-priority confidence label.
+		assert.Contains(t, result, "優先度: 高")
 	})
 
 	t.Run("hint to tableau", func(t *testing.T) {
@@ -139,6 +141,8 @@ func TestYukonCuiPresenter_HintOutput(t *testing.T) {
 		p := new(YukonCuiPresenter)
 		result := p.HintOutput(yg)
 		assert.Contains(t, result, "タブロー列3")
+		// Tableau moves carry the medium-priority confidence label.
+		assert.Contains(t, result, "優先度: 中")
 	})
 
 	t.Run("no hint", func(t *testing.T) {
