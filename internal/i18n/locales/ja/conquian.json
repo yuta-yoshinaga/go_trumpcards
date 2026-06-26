@@ -21,6 +21,7 @@
   "promptDrawHelpStock": "ds・・・山札から引く",
   "promptDrawHelpDiscard": "dd・・・捨て札から引く (必ずメルドに使う)",
   "promptMeld": "手番: {{name}} (メルドフェーズ)",
+  "forcedUse": "⚠ 捨て札から引いたカードは必ずこのターンにメルドで使う必要があります",
   "promptMeldHelp": "m <idx,idx,..>;<idx>・・・メルドを並べる/付ける (グループは;区切り)",
   "promptDiscardHelp": "d <idx>・・・カードを捨ててターン終了",
   "promptRoundEnd": "ラウンド終了",

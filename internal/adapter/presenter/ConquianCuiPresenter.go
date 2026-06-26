@@ -74,6 +74,9 @@ func (p *ConquianCuiPresenter) Output(g interfaces.ConquianGame, lastErr error) 
 			currentIdx := g.GetCurrentPlayerIdx()
 			b.WriteString(i18n.Tf("conquian.promptMeld",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
+			if g.GetTookDiscard() {
+				b.WriteString(color.Yellow(i18n.T("conquian.forcedUse")) + "\n")
+			}
 			b.WriteString(i18n.T("conquian.promptMeldHelp") + "\n")
 			b.WriteString(i18n.T("conquian.promptDiscardHelp") + "\n")
 		case domain.ConquianPhaseRoundEnd:
