@@ -16,6 +16,8 @@
   "promptDrawHelpStock": "ds・・・山札から引く",
   "promptDrawHelpDiscard": "dd・・・捨て札から引く",
   "promptDiscard": "手番: {{name}} (ディスカードフェーズ)",
+  "deadwoodLine": "現在のデッドウッド: {{value}}点",
+  "canKnockNow": "ノック可能 (デッドウッド10点以下)",
   "promptDiscardHelp": "d <idx>・・・カードを捨てる",
   "promptKnockHelp": "k <idx>・・・ノック (カードを捨ててノック)",
   "promptLayoff": "レイオフフェーズ",

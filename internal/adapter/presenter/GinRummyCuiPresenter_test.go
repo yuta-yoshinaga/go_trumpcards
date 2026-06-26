@@ -154,6 +154,47 @@ func TestGinRummyCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "k <idx>")
 	})
 
+	t.Run("discard phase shows deadwood and knock-available for a low hand", func(t *testing.T) {
+		m, players := setupGinRummyCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.GinRummyPhaseDiscard)
+		// Two runs + two low strays: discarding one stray leaves deadwood <= 10.
+		for _, v := range []int{1, 2, 3, 4, 5, 6} {
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
+		}
+		for _, v := range []int{7, 8, 9} {
+			players[0].AddCard(domain.NewCard(domain.CardDesignHeart, v, false))
+		}
+		players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "現在のデッドウッド:")
+		assert.Contains(t, result, "ノック可能")
+	})
+
+	t.Run("discard phase hides knock-available for a high hand", func(t *testing.T) {
+		m, players := setupGinRummyCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.GinRummyPhaseDiscard)
+		// Scattered high cards with no runs or sets: deadwood stays well above 10.
+		highCards := []struct {
+			d, v int
+		}{
+			{domain.CardDesignSpade, 13}, {domain.CardDesignHeart, 12}, {domain.CardDesignClover, 11},
+			{domain.CardDesignDiamond, 10}, {domain.CardDesignSpade, 9}, {domain.CardDesignHeart, 8},
+			{domain.CardDesignClover, 7}, {domain.CardDesignDiamond, 6}, {domain.CardDesignSpade, 4},
+			{domain.CardDesignHeart, 3}, {domain.CardDesignClover, 2},
+		}
+		for _, c := range highCards {
+			players[0].AddCard(domain.NewCard(c.d, c.v, false))
+		}
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "現在のデッドウッド:")
+		assert.NotContains(t, result, "ノック可能")
+	})
+
 	t.Run("layoff phase shows commands", func(t *testing.T) {
 		m, _ := setupGinRummyCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
