@@ -99,8 +99,5 @@ func (p *BakersDozenCuiPresenter) HintOutput(bd interfaces.BakersDozenGame) stri
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BakersDozenCuiPresenter) ActionLogOutput(bd interfaces.BakersDozenGame) string {
-	if bd.GetPhase() == domain.BakersDozenPhasePlaying {
-		return actionLogToText(nil)
-	}
-	return actionLogToText(bd.GetActionLog())
+	return actionLogOutputText(bd)
 }

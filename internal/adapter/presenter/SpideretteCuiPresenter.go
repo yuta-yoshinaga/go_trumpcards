@@ -86,8 +86,5 @@ func (p *SpideretteCuiPresenter) HintOutput(s interfaces.SpideretteGame) string 
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SpideretteCuiPresenter) ActionLogOutput(s interfaces.SpideretteGame) string {
-	if s.GetPhase() == domain.SpiderettePhasePlaying {
-		return actionLogToText(nil)
-	}
-	return actionLogToText(s.GetActionLog())
+	return actionLogOutputText(s)
 }
