@@ -57,6 +57,10 @@ func (pr *PokerSquaresCuiPresenter) Output(p interfaces.PokerSquaresGame, lastEr
 			"total", strconv.Itoa(domain.PokerSquaresTotalCells),
 			"score", strconv.Itoa(p.TotalScore())) + "\n")
 
+		if p.GetPhase() != domain.PokerSquaresPhaseComplete {
+			b.WriteString(i18n.T("pokersquares.cuiPlaceHint") + "\n")
+		}
+
 		cuiErrorBlock(b, lastErr)
 
 		if p.GetPhase() == domain.PokerSquaresPhaseComplete {
