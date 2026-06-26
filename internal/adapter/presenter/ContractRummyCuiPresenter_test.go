@@ -55,6 +55,8 @@ func TestContractRummyCuiPresenter_Output(t *testing.T) {
 		m, _ := setupContractRummyCuiMock(domain.ContractRummyPhasePlay, false)
 		out := p.Output(m, nil)
 		assert.NotEmpty(t, out)
+		// Contract not yet met → the help emphasizes meeting it first.
+		assert.Contains(t, out, "コントラクト達成が必須")
 	})
 
 	t.Run("round end", func(t *testing.T) {
@@ -85,6 +87,9 @@ func TestContractRummyCuiPresenter_Output(t *testing.T) {
 		})
 		out := p.Output(m, nil)
 		assert.NotEmpty(t, out)
+		// Contract met → optional extra melds / discard-to-end help, not the required prompt.
+		assert.Contains(t, out, "コントラクト達成済み")
+		assert.NotContains(t, out, "コントラクト達成が必須")
 	})
 }
 
