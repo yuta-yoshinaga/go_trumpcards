@@ -11,7 +11,10 @@ describe('parseOpenfacechineseCommand', () => {
   it('parses place with row initials and indices', () => {
     expect(parseOpenfacechineseCommand('p f')).toEqual({ args: ['place', { row: 0 }] });
     expect(parseOpenfacechineseCommand('p m')).toEqual({ args: ['place', { row: 1 }] });
+    expect(parseOpenfacechineseCommand('p mid')).toEqual({ args: ['place', { row: 1 }] });
     expect(parseOpenfacechineseCommand('p b')).toEqual({ args: ['place', { row: 2 }] });
+    expect(parseOpenfacechineseCommand('p 0')).toEqual({ args: ['place', { row: 0 }] });
+    expect(parseOpenfacechineseCommand('p 1')).toEqual({ args: ['place', { row: 1 }] });
     expect(parseOpenfacechineseCommand('p 2')).toEqual({ args: ['place', { row: 2 }] });
   });
 

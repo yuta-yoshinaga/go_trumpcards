@@ -57,8 +57,8 @@ export function parseOpenfacechineseCommand(input: string): CliParseResult<OpenF
 
 /** Help text for Open Face Chinese Poker CLI mode. */
 export const OPENFACECHINESE_HELP: string[] = [
-  'place <f|m|b>  - Place the pending card in the front / middle / back row',
-  'n/next         - Deal the next round',
-  'log            - Show action log',
-  'r/reset        - Reset game',
+  'p/place <f|m|b> - Place the pending card in the front / middle / back row',
+  'n/next          - Deal the next round',
+  'log             - Show action log',
+  'r/reset         - Reset game',
 ];
