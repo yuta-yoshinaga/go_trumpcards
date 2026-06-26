@@ -80,6 +80,7 @@ func (p *FortyThievesCuiPresenter) Output(ft interfaces.FortyThievesGame, lastEr
 			if ft.IsStalemate() {
 				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
 			}
+			b.WriteString(i18n.T("fortythieves.cuiCommandHint") + "\n")
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(ft.GetMoveCount())) + "\n")
 		case domain.FortyThievesPhaseGameClear:

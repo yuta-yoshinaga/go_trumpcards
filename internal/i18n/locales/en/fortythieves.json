@@ -5,6 +5,7 @@
   "helpMoveWF": "  m w f                move waste to foundation",
   "helpMoveTF": "  m t <col> f          move tableau to foundation",
   "helpMoveTT": "  m t <col> <idx> t <col>  move tableau to tableau",
+  "cuiCommandHint": "Commands: m to move (e.g. m w f / m t0 f / m t0 t3), d=draw, u=undo, h=hint",
   "helpGiveUp": "  g                    give up",
   "helpHint": "  h                    hint",
   "helpAutoComplete": "  ac                   auto-complete",
