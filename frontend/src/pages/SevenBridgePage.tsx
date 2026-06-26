@@ -1,7 +1,5 @@
 import { useCallback, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -12,7 +10,6 @@ import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
-import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
@@ -91,7 +88,6 @@ function SevenBridgePageContent() {
   } = useGameHint('sevenbridge', state);
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
-  const { cliEnabled, toggleCli, logEntries } = useCliMode('sevenbridge');
 
   const phaseNames = usePhaseNames('sevenbridge', SEVENBRIDGE_PHASE_KEYS);
 
@@ -130,297 +126,292 @@ function SevenBridgePageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
-      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={async () => undefined} disabled={loading} />
-      ) : (
-        <>
-          <SettingsPanel
-            title={t('settings.title')}
-            groups={[
-              {
-                items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: sevenBridgeConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
-                  {
-                    type: 'select',
-                    id: 'pointLimit',
-                    label: t('settings.pointLimit'),
-                    value: sevenBridgeConfig.pointLimit,
-                    options: POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                    onSelect: (v) => handleConfigChange('pointLimit', v),
-                  },
-                  {
-                    type: 'checkbox',
-                    id: 'frontendHint',
-                    label: tc('hint.toggle', { ns: 'tutorial' }),
-                    checked: frontendHintEnabled,
-                    onToggle: setFrontendHintEnabled,
-                  },
-                ],
-              },
-            ]}
-          />
+      <>
+        <SettingsPanel
+          title={t('settings.title')}
+          groups={[
+            {
+              items: [
+                {
+                  type: 'select',
+                  id: 'cpuDifficulty',
+                  label: t('settings.cpuDifficulty'),
+                  value: sevenBridgeConfig.cpuDifficulty,
+                  options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+                    value: o.value,
+                    label: t(`settings.${o.label.toLowerCase()}`),
+                  })),
+                  onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+                },
+                {
+                  type: 'select',
+                  id: 'pointLimit',
+                  label: t('settings.pointLimit'),
+                  value: sevenBridgeConfig.pointLimit,
+                  options: POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+                  onSelect: (v) => handleConfigChange('pointLimit', v),
+                },
+                {
+                  type: 'checkbox',
+                  id: 'frontendHint',
+                  label: tc('hint.toggle', { ns: 'tutorial' }),
+                  checked: frontendHintEnabled,
+                  onToggle: setFrontendHintEnabled,
+                },
+              ],
+            },
+          ]}
+        />
 
-          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('round', { n: state?.roundNumber ?? 0 })}</span>
-              <span>{t('drawPile', { count: state?.drawPileCount ?? 0 })}</span>
-            </div>
-
-            <div className={lgTwoColGrid}>
-              {/* Left: discard + melds */}
-              <div data-tutorial="sb-draw-area">
-                {state?.discardTop && (
-                  <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3">
-                    <AnimatedCard card={state.discardTop} width={cardWidth} />
-                    <div className="text-ds-text-muted text-sm">{t('discardTop')}</div>
-                  </div>
-                )}
-
-                {state?.players
-                  ?.filter((p) => !p.isHuman)
-                  .map((p) => (
-                    <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                      <div className="text-ds-text-muted text-sm">
-                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                        {t('cumulativeScore', { score: p.cumulativeScore })}
-                      </div>
-                      {(isRoundEnd || isGameEnd) && p.cards.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {p.cards.map((card, idx) => (
-                            <AnimatedCard
-                              key={`cpu-${card.design}-${card.value}-${idx}`}
-                              card={card}
-                              width={cardWidth * 0.8}
-                            />
-                          ))}
-                        </div>
-                      )}
-                      {p.melds.length > 0 && (
-                        <div className="mt-1 flex flex-col gap-1">
-                          {p.melds.map((meld, mi) => (
-                            <div key={`cpu-meld-${mi}`} className="flex flex-wrap gap-1">
-                              {meld.cards.map((c, ci) => (
-                                <AnimatedCard
-                                  key={`cpu-meld-${mi}-${c.design}-${c.value}-${ci}`}
-                                  card={c}
-                                  width={cardWidth * 0.6}
-                                />
-                              ))}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-              </div>
-
-              {/* Right: score table */}
-              <div>
-                <div className="my-3 p-2 rounded bg-black/30">
-                  <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
-                  <table className="w-full text-sm text-ds-text-muted">
-                    <thead>
-                      <tr>
-                        <th scope="col" className="text-left">
-                          {t('scoresPlayer')}
-                        </th>
-                        <th scope="col">{t('scoresRound')}</th>
-                        <th scope="col">{t('scoresTotal')}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {state?.players?.map((p) => (
-                        <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
-                          <td>{playerName(p.id, p.isHuman)}</td>
-                          <td className="text-center">{p.roundScore}</td>
-                          <td className="text-center">{p.cumulativeScore}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-            <GameMessageBox
-              message={state?.message ?? ''}
-              messageCode={state?.messageCode}
-              messageParams={state?.messageParams}
-            />
-
-            <ActionLogSection
-              isEndPhase={isGameEnd}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
+        <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+          <div className="text-ds-text-primary text-center mb-2">
+            <span className="mr-4">{t('round', { n: state?.roundNumber ?? 0 })}</span>
+            <span>{t('drawPile', { count: state?.drawPileCount ?? 0 })}</span>
           </div>
 
-          <GameFooter className="px-4 py-2.5">
-            {humanPlayer && (
-              <div className="flex flex-wrap gap-1 mb-2" data-tutorial="sb-player-hand">
-                {humanPlayer.cards.map((card, idx) => (
-                  <button
-                    type="button"
-                    key={`${card.design}-${card.value}-${idx}`}
-                    onClick={() => toggleCard(idx)}
-                    aria-label={cardAlt(card)}
-                    aria-pressed={selectedCardIndices.includes(idx)}
-                    className={`transition-transform ${focusRingCard}`}
-                    style={{
-                      background: 'none',
-                      padding: 0,
-                      borderRadius: 8,
-                      ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                      boxSizing: 'border-box',
-                    }}
-                  >
-                    <AnimatedCard card={card} width={cardWidth} />
-                  </button>
-                ))}
-                {humanPlayer.melds.length > 0 && (
-                  <div className="basis-full flex flex-col gap-1 mt-2">
-                    <div className="text-ds-text-muted text-xs">{t('yourMelds')}</div>
-                    {humanPlayer.melds.map((meld, mi) => (
-                      <div key={`me-meld-${mi}`} className="flex flex-wrap gap-1">
-                        {meld.cards.map((c, ci) => (
+          <div className={lgTwoColGrid}>
+            {/* Left: discard + melds */}
+            <div data-tutorial="sb-draw-area">
+              {state?.discardTop && (
+                <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3">
+                  <AnimatedCard card={state.discardTop} width={cardWidth} />
+                  <div className="text-ds-text-muted text-sm">{t('discardTop')}</div>
+                </div>
+              )}
+
+              {state?.players
+                ?.filter((p) => !p.isHuman)
+                .map((p) => (
+                  <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                    <div className="text-ds-text-muted text-sm">
+                      {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                      {t('cumulativeScore', { score: p.cumulativeScore })}
+                    </div>
+                    {(isRoundEnd || isGameEnd) && p.cards.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {p.cards.map((card, idx) => (
                           <AnimatedCard
-                            key={`me-meld-${mi}-${c.design}-${c.value}-${ci}`}
-                            card={c}
-                            width={cardWidth * 0.6}
+                            key={`cpu-${card.design}-${card.value}-${idx}`}
+                            card={card}
+                            width={cardWidth * 0.8}
                           />
                         ))}
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {frontendHintEnabled && frontendHint && (
-              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-            )}
-
-            <div className="flex gap-2 items-center flex-wrap">
-              {isDrawPhase && isHumanTurn && (
-                <>
-                  <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
-                    {t('drawStockButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handlePon}
-                    disabled={loading || selectedCardIndices.length !== 2}
-                  >
-                    {t('ponButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleChi}
-                    disabled={loading || selectedCardIndices.length !== 2}
-                  >
-                    {t('chiButton')}
-                  </button>
-                </>
-              )}
-              {isPlayPhase && isHumanTurn && (
-                <>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleMeld}
-                    disabled={loading || selectedCardIndices.length < 3}
-                    data-tutorial="sb-meld-button"
-                  >
-                    {t('meldButton')}
-                  </button>
-                  {/* Visual meld picker: tap a meld's card row to target it for layoff. */}
-                  <div className="flex w-full flex-col gap-1" data-testid="sb-layoff-melds">
-                    <span className="text-ds-text-muted text-xs">{t('layoffTarget')}:</span>
-                    {layoffPlayers.map((p) =>
-                      p.melds.length > 0 ? (
-                        <div key={p.id} className="flex flex-wrap items-center gap-1">
-                          <span className="text-ds-text-muted text-xs">{playerName(p.id, p.isHuman)}:</span>
-                          {p.melds.map((meld, mi) => {
-                            const selected = layoffTarget === p.id && layoffMeldIdx === mi;
-                            return (
-                              <button
-                                type="button"
-                                key={`${p.id}-${mi}`}
-                                data-testid={`sb-layoff-meld-${p.id}-${mi}`}
-                                aria-pressed={selected}
-                                aria-label={`${playerName(p.id, p.isHuman)} ${t('layoffTarget')} ${mi + 1}`}
-                                onClick={() => {
-                                  setLayoffTarget(p.id);
-                                  setLayoffMeldIdx(mi);
-                                }}
-                                className={`flex gap-0.5 rounded p-0.5 ${focusRingCard} ${selected ? 'ring-2 ring-ds-info' : ''}`}
-                              >
-                                {meld.cards.map((c, ci) => (
-                                  <AnimatedCard
-                                    key={`${c.design}-${c.value}-${ci}`}
-                                    card={c}
-                                    width={Math.round(cardWidth * 0.4)}
-                                  />
-                                ))}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      ) : null,
+                    )}
+                    {p.melds.length > 0 && (
+                      <div className="mt-1 flex flex-col gap-1">
+                        {p.melds.map((meld, mi) => (
+                          <div key={`cpu-meld-${mi}`} className="flex flex-wrap gap-1">
+                            {meld.cards.map((c, ci) => (
+                              <AnimatedCard
+                                key={`cpu-meld-${mi}-${c.design}-${c.value}-${ci}`}
+                                card={c}
+                                width={cardWidth * 0.6}
+                              />
+                            ))}
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={() => handleLayoff(layoffTarget, layoffMeldIdx)}
-                    disabled={loading || selectedCardIndices.length !== 1 || layoffMelds.length === 0}
-                  >
-                    {t('layoffButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnSuccess}
-                    onClick={handleDiscard}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                    data-tutorial="sb-discard-button"
-                  >
-                    {t('discardButton')}
-                  </button>
-                </>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="sb-reset-button"
-              />
+                ))}
             </div>
-          </GameFooter>
-        </>
-      )}
+
+            {/* Right: score table */}
+            <div>
+              <div className="my-3 p-2 rounded bg-black/30">
+                <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
+                <table className="w-full text-sm text-ds-text-muted">
+                  <thead>
+                    <tr>
+                      <th scope="col" className="text-left">
+                        {t('scoresPlayer')}
+                      </th>
+                      <th scope="col">{t('scoresRound')}</th>
+                      <th scope="col">{t('scoresTotal')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {state?.players?.map((p) => (
+                      <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
+                        <td>{playerName(p.id, p.isHuman)}</td>
+                        <td className="text-center">{p.roundScore}</td>
+                        <td className="text-center">{p.cumulativeScore}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <GameMessageBox
+            message={state?.message ?? ''}
+            messageCode={state?.messageCode}
+            messageParams={state?.messageParams}
+          />
+
+          <ActionLogSection
+            isEndPhase={isGameEnd}
+            actionLog={actionLog}
+            showActionLog={showActionLog}
+            hideActionLog={hideActionLog}
+          />
+        </div>
+
+        <GameFooter className="px-4 py-2.5">
+          {humanPlayer && (
+            <div className="flex flex-wrap gap-1 mb-2" data-tutorial="sb-player-hand">
+              {humanPlayer.cards.map((card, idx) => (
+                <button
+                  type="button"
+                  key={`${card.design}-${card.value}-${idx}`}
+                  onClick={() => toggleCard(idx)}
+                  aria-label={cardAlt(card)}
+                  aria-pressed={selectedCardIndices.includes(idx)}
+                  className={`transition-transform ${focusRingCard}`}
+                  style={{
+                    background: 'none',
+                    padding: 0,
+                    borderRadius: 8,
+                    ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  <AnimatedCard card={card} width={cardWidth} />
+                </button>
+              ))}
+              {humanPlayer.melds.length > 0 && (
+                <div className="basis-full flex flex-col gap-1 mt-2">
+                  <div className="text-ds-text-muted text-xs">{t('yourMelds')}</div>
+                  {humanPlayer.melds.map((meld, mi) => (
+                    <div key={`me-meld-${mi}`} className="flex flex-wrap gap-1">
+                      {meld.cards.map((c, ci) => (
+                        <AnimatedCard
+                          key={`me-meld-${mi}-${c.design}-${c.value}-${ci}`}
+                          card={c}
+                          width={cardWidth * 0.6}
+                        />
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          <ErrorAlert message={error} onRetry={retry} />
+
+          {frontendHintEnabled && frontendHint && (
+            <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+          )}
+
+          <div className="flex gap-2 items-center flex-wrap">
+            {isDrawPhase && isHumanTurn && (
+              <>
+                <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                  {t('drawStockButton')}
+                </button>
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handlePon}
+                  disabled={loading || selectedCardIndices.length !== 2}
+                >
+                  {t('ponButton')}
+                </button>
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handleChi}
+                  disabled={loading || selectedCardIndices.length !== 2}
+                >
+                  {t('chiButton')}
+                </button>
+              </>
+            )}
+            {isPlayPhase && isHumanTurn && (
+              <>
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handleMeld}
+                  disabled={loading || selectedCardIndices.length < 3}
+                  data-tutorial="sb-meld-button"
+                >
+                  {t('meldButton')}
+                </button>
+                {/* Visual meld picker: tap a meld's card row to target it for layoff. */}
+                <div className="flex w-full flex-col gap-1" data-testid="sb-layoff-melds">
+                  <span className="text-ds-text-muted text-xs">{t('layoffTarget')}:</span>
+                  {layoffPlayers.map((p) =>
+                    p.melds.length > 0 ? (
+                      <div key={p.id} className="flex flex-wrap items-center gap-1">
+                        <span className="text-ds-text-muted text-xs">{playerName(p.id, p.isHuman)}:</span>
+                        {p.melds.map((meld, mi) => {
+                          const selected = layoffTarget === p.id && layoffMeldIdx === mi;
+                          return (
+                            <button
+                              type="button"
+                              key={`${p.id}-${mi}`}
+                              data-testid={`sb-layoff-meld-${p.id}-${mi}`}
+                              aria-pressed={selected}
+                              aria-label={`${playerName(p.id, p.isHuman)} ${t('layoffTarget')} ${mi + 1}`}
+                              onClick={() => {
+                                setLayoffTarget(p.id);
+                                setLayoffMeldIdx(mi);
+                              }}
+                              className={`flex gap-0.5 rounded p-0.5 ${focusRingCard} ${selected ? 'ring-2 ring-ds-info' : ''}`}
+                            >
+                              {meld.cards.map((c, ci) => (
+                                <AnimatedCard
+                                  key={`${c.design}-${c.value}-${ci}`}
+                                  card={c}
+                                  width={Math.round(cardWidth * 0.4)}
+                                />
+                              ))}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : null,
+                  )}
+                </div>
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => handleLayoff(layoffTarget, layoffMeldIdx)}
+                  disabled={loading || selectedCardIndices.length !== 1 || layoffMelds.length === 0}
+                >
+                  {t('layoffButton')}
+                </button>
+                <button
+                  type="button"
+                  className={btnSuccess}
+                  onClick={handleDiscard}
+                  disabled={loading || selectedCardIndices.length !== 1}
+                  data-tutorial="sb-discard-button"
+                >
+                  {t('discardButton')}
+                </button>
+              </>
+            )}
+            {isRoundEnd && (
+              <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                {t('nextRound')}
+              </button>
+            )}
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="sb-reset-button"
+            />
+          </div>
+        </GameFooter>
+      </>
     </GamePageShell>
   );
 }
