@@ -3,11 +3,13 @@
 package presenter_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
@@ -95,6 +97,27 @@ func TestDurakCuiPresenter_Output(t *testing.T) {
 		result := p.Output(d, nil)
 		assert.Contains(t, result, "SPADE 7")
 		assert.Contains(t, result, "SPADE 8")
+	})
+
+	t.Run("trump cards highlighted in human hand", func(t *testing.T) {
+		origNoColor := color.NoColor()
+		color.SetNoColor(false)
+		defer color.SetNoColor(origNoColor)
+
+		d := setupGame()
+		d.SetTrumpSuit(domain.CardDesignHeart)
+		human := d.GetPlayer(0)
+		human.Reset()
+		human.AddCard(domain.NewCard(domain.CardDesignHeart, 9, false)) // trump
+		human.AddCard(domain.NewCard(domain.CardDesignSpade, 7, false)) // non-trump
+
+		result := p.Output(d, nil)
+		// The card text itself carries a suit color, so assert on the bold-yellow
+		// opening code that wraps the trump card's index marker.
+		boldStart := strings.Split(color.BoldYellow("X"), "X")[0]
+		assert.Contains(t, result, boldStart+"[0]")    // trump card highlighted
+		assert.NotContains(t, result, boldStart+"[1]") // non-trump left plain
+		assert.Contains(t, result, "SPADE 7")
 	})
 
 	t.Run("finished player rendered", func(t *testing.T) {

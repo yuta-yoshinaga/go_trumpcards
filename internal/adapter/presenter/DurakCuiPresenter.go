@@ -1,6 +1,7 @@
 package presenter
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -10,8 +11,23 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// durakHandStr renders the human's indexed hand, emphasizing trump cards so the
+// player can spot which cards beat any non-trump in attack and defense.
+func durakHandStr(player *domain.DurakPlayer, trumpSuit int) string {
+	parts := make([]string, player.GetCardsSize())
+	for i := range parts {
+		card := player.GetCard(i)
+		s := fmt.Sprintf("[%d]%s", i, cuiCardStr(card))
+		if card != nil && card.GetDesign() == trumpSuit {
+			s = color.BoldYellow(s)
+		}
+		parts[i] = s
+	}
+	return strings.Join(parts, "  ")
+}
+
 // durakPlayerStr returns the display string for a single Durak player.
-func durakPlayerStr(player *domain.DurakPlayer, i int, isAttacker, isDefender bool) string {
+func durakPlayerStr(player *domain.DurakPlayer, i int, isAttacker, isDefender bool, trumpSuit int) string {
 	var b strings.Builder
 	b.WriteString(cuiPlayerName(player, i))
 	if isAttacker {
@@ -27,7 +43,7 @@ func durakPlayerStr(player *domain.DurakPlayer, i int, isAttacker, isDefender bo
 	b.WriteString(i18n.Tf("durak.playerHand",
 		"count", strconv.Itoa(player.GetCardsSize())) + "\n")
 	if player.GetIsHuman() {
-		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		b.WriteString(durakHandStr(player, trumpSuit) + "\n")
 	}
 	return b.String()
 }
@@ -53,7 +69,7 @@ func (p *DurakCuiPresenter) Output(dg interfaces.DurakGame, lastErr error) strin
 		// Players
 		for i := 0; i < dg.GetPlayerCnt(); i++ {
 			b.WriteString(durakPlayerStr(dg.GetPlayer(i), i,
-				i == dg.GetAttackerIdx(), i == dg.GetDefenderIdx()))
+				i == dg.GetAttackerIdx(), i == dg.GetDefenderIdx(), dg.GetTrumpSuit()))
 		}
 
 		b.WriteString("----------\n")
