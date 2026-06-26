@@ -65,6 +65,32 @@ func TestRedDogCuiPresenter_Output_SpreadDecision(t *testing.T) {
 	assert.Contains(t, result, "INITIAL")
 	assert.Contains(t, result, "スプレッド: 4")
 	assert.Contains(t, result, "アンテ: 100")
+	// Winning ranks strictly between 5 and 10 are 6,7,8,9, plus the raise/stay guide.
+	assert.Contains(t, result, "勝てるランク: 6,7,8,9")
+	assert.Contains(t, result, "raise")
+}
+
+func TestRedDogCuiPresenter_Output_SpreadGuideFaceCards(t *testing.T) {
+	p := new(RedDogCuiPresenter)
+	m := new(interfaces.MockRedDogGame)
+	cards := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 10, false),
+		domain.NewCard(domain.CardDesignHeart, 1, false), // Ace high (14)
+	}
+	m.On("GetChips").Return(900)
+	m.On("GetPhase").Return(domain.RedDogPhaseSpreadDecision)
+	m.On("GetInitialCards").Return(cards)
+	m.On("GetThirdCard").Return((*domain.Card)(nil))
+	m.On("GetGameEndFlag").Return(false)
+	m.On("GetAnte").Return(100)
+	m.On("GetRaise").Return(0)
+	m.On("GetSpread").Return(3)
+	m.On("GetResult").Return(domain.GameResult(0))
+	m.On("GetTotalPayout").Return(0)
+
+	result := p.Output(m, nil)
+	// Ranks strictly between 10 and Ace(14): J,Q,K.
+	assert.Contains(t, result, "勝てるランク: J,Q,K")
 }
 
 func TestRedDogCuiPresenter_Output_EndWin(t *testing.T) {

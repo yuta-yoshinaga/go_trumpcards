@@ -8,6 +8,7 @@
   "anteLine": "アンテ: {{ante}}",
   "raiseInline": "  レイズ: {{raise}}",
   "spreadLine": "スプレッド: {{spread}}",
+  "cuiSpreadGuide": "勝てるランク: {{ranks}} | レイズ: raise <額> / そのまま: s",
   "initialHeader": "INITIAL",
   "thirdHeader": "THIRD",
   "phaseBet": "BET",

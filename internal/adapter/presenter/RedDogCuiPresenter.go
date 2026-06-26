@@ -15,6 +15,47 @@ import (
 // RedDogCuiPresenter レッドドッグCUIプレゼンタークラス
 type RedDogCuiPresenter struct{}
 
+// redDogRankOf maps a card to Red Dog rank space (Ace high = 14).
+func redDogRankOf(c *domain.Card) int {
+	if c.GetValue() == 1 {
+		return 14
+	}
+	return c.GetValue()
+}
+
+// redDogRankLabel renders a Red Dog rank as a short label (A/K/Q/J or number).
+func redDogRankLabel(rank int) string {
+	switch rank {
+	case 14:
+		return "A"
+	case 13:
+		return "K"
+	case 12:
+		return "Q"
+	case 11:
+		return "J"
+	default:
+		return strconv.Itoa(rank)
+	}
+}
+
+// redDogWinningRanksStr lists the ranks strictly between the two initial cards —
+// the ranks the third card must hit to win.
+func redDogWinningRanksStr(initial []*domain.Card) string {
+	if len(initial) != 2 {
+		return ""
+	}
+	lo, hi := redDogRankOf(initial[0]), redDogRankOf(initial[1])
+	if lo > hi {
+		lo, hi = hi, lo
+	}
+	labels := make([]string, 0, hi-lo)
+	for r := lo + 1; r < hi; r++ {
+		labels = append(labels, redDogRankLabel(r))
+	}
+	return strings.Join(labels, ",")
+}
+
 // Output ゲーム状態を出力
 func (rp *RedDogCuiPresenter) Output(rd interfaces.RedDogGame, lastErr error) string {
 	var sb strings.Builder
@@ -31,6 +72,10 @@ func (rp *RedDogCuiPresenter) Output(rd interfaces.RedDogGame, lastErr error) st
 	}
 	if rd.GetPhase() == domain.RedDogPhaseSpreadDecision || rd.GetPhase() == domain.RedDogPhaseEnd {
 		sb.WriteString(i18n.Tf("reddog.spreadLine", "spread", strconv.Itoa(rd.GetSpread())) + "\n")
+	}
+	if rd.GetPhase() == domain.RedDogPhaseSpreadDecision {
+		sb.WriteString(i18n.Tf("reddog.cuiSpreadGuide",
+			"ranks", redDogWinningRanksStr(rd.GetInitialCards())) + "\n")
 	}
 
 	initial := rd.GetInitialCards()
