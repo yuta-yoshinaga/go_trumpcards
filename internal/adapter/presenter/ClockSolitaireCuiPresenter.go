@@ -60,6 +60,14 @@ func (pr *ClockSolitaireCuiPresenter) Output(g interfaces.ClockSolitaireGame, la
 		// Current card (hand)
 		if cc := g.GetCurrentCard(); cc != nil {
 			b.WriteString(i18n.Tf("clocksolitaire.currentCard", "card", cuiCardStr(cc)) + "\n")
+			// Mirror the web's flight-target highlight: A-Q map to their hour pile, K to the center.
+			if g.GetPhase() == domain.ClockSolitairePhasePlaying {
+				if cc.GetValue() == 13 {
+					b.WriteString(i18n.T("clocksolitaire.placementKing") + "\n")
+				} else {
+					b.WriteString(i18n.Tf("clocksolitaire.placementHint", "hour", strconv.Itoa(cc.GetValue())) + "\n")
+				}
+			}
 		}
 
 		cuiErrorBlock(b, lastErr)
