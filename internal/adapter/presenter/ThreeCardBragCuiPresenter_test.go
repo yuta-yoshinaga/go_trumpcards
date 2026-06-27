@@ -12,6 +12,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func tcbMakePlayers() []*domain.ThreeCardBragPlayer {
@@ -69,6 +70,8 @@ func TestThreeCardBragCuiPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("betting phase shows raise unavailable when chips too low", func(t *testing.T) {
+		i18n.SetLang("en")
+		defer i18n.SetLang("ja")
 		m := tcbSetupBaseMock()
 		players := []*domain.ThreeCardBragPlayer{
 			domain.NewThreeCardBragPlayer(true, 1), // blind, 1 chip, stake 1 -> min 2 > max 1
@@ -81,15 +84,18 @@ func TestThreeCardBragCuiPresenter_Output(t *testing.T) {
 			m.On("GetPlayer", i).Return(pl)
 		}
 		result := p.Output(m, nil)
-		assert.NotEmpty(t, result)
+		assert.Contains(t, result, "Not enough chips to raise.")
 	})
 
 	t.Run("betting phase omits raise range on a CPU turn", func(t *testing.T) {
+		i18n.SetLang("en")
+		defer i18n.SetLang("ja")
 		m, _ := tcbSetupMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
 		m.On("GetCurrentPlayerIdx").Return(1) // CPU at turn
 		result := p.Output(m, nil)
 		assert.NotEmpty(t, result)
+		assert.NotContains(t, result, "Raise range")
 	})
 
 	t.Run("showdown reveals all non-folded hands", func(t *testing.T) {
