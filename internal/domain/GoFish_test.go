@@ -339,6 +339,9 @@ func TestGoFish_GetKnownRanks(t *testing.T) {
 	// Player 1 has booked rank 5, so it drops out of their known ranks.
 	g.players[1].books = [][]*Card{{NewCard(CardDesignSpade, 5, false)}}
 
+	// A nil player slot is skipped defensively rather than panicking.
+	g.players[3] = nil
+
 	known := g.GetKnownRanks()
 	assert.Equal(t, []int{9}, known[1])
 	assert.Equal(t, []int{7}, known[2])

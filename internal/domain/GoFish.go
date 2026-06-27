@@ -685,6 +685,10 @@ func (g *GoFish) GetKnownRanks() map[int][]int {
 	}
 	out := make(map[int][]int, len(g.players))
 	for i, p := range g.players {
+		if p == nil {
+			out[i] = nil
+			continue
+		}
 		booked := make(map[int]bool)
 		for _, book := range p.GetBooks() {
 			if len(book) > 0 {
