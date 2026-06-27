@@ -14,15 +14,19 @@ describe('videoPokerPayoutRows', () => {
     expect(rows).toHaveLength(9);
   });
   it('returns the Deuces Wild table with four deuces and wild royal', () => {
-    const keys = videoPokerPayoutRows('deuceswild').map((r) => r.key);
+    const rows = videoPokerPayoutRows('deuceswild');
+    const keys = rows.map((r) => r.key);
     expect(keys).toContain('fourDeuces');
     expect(keys).toContain('wildRoyalFlush');
     expect(keys).toContain('naturalRoyalFlush');
+    expect(rows).toHaveLength(10);
   });
   it('returns the Joker Poker table with five of a kind and kings or better', () => {
-    const keys = videoPokerPayoutRows('jokerpoker').map((r) => r.key);
+    const rows = videoPokerPayoutRows('jokerpoker');
+    const keys = rows.map((r) => r.key);
     expect(keys).toContain('fiveOfAKind');
     expect(keys).toContain('kingsOrBetter');
+    expect(rows).toHaveLength(11);
   });
 });
 
@@ -44,7 +48,17 @@ describe('videoPokerPayoutCell', () => {
 
 describe('videoPokerHandNameToRowKey', () => {
   it('maps server hand names to row keys', () => {
+    expect(videoPokerHandNameToRowKey('Royal Flush')).toBe('royalFlush');
     expect(videoPokerHandNameToRowKey('Natural Royal Flush')).toBe('naturalRoyalFlush');
+    expect(videoPokerHandNameToRowKey('Wild Royal Flush')).toBe('wildRoyalFlush');
+    expect(videoPokerHandNameToRowKey('Four Deuces')).toBe('fourDeuces');
+    expect(videoPokerHandNameToRowKey('Five of a Kind')).toBe('fiveOfAKind');
+    expect(videoPokerHandNameToRowKey('Four of a Kind')).toBe('fourOfAKind');
+    expect(videoPokerHandNameToRowKey('Full House')).toBe('fullHouse');
+    expect(videoPokerHandNameToRowKey('Straight Flush')).toBe('straightFlush');
+    expect(videoPokerHandNameToRowKey('Straight')).toBe('straight');
+    expect(videoPokerHandNameToRowKey('Three of a Kind')).toBe('threeOfAKind');
+    expect(videoPokerHandNameToRowKey('Two Pair')).toBe('twoPair');
     expect(videoPokerHandNameToRowKey('Jacks or Better')).toBe('jacksOrBetter');
     expect(videoPokerHandNameToRowKey('Kings or Better')).toBe('kingsOrBetter');
     expect(videoPokerHandNameToRowKey('Flush')).toBe('flush');

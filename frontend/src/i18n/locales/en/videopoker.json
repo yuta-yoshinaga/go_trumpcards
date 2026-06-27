@@ -55,5 +55,6 @@
     "drawAll": "No strong holds — draw all"
   },
   "card": "Card {{index}}",
-  "dealGuide": "Select coins and deal to start"
+  "dealGuide": "Select coins and deal to start",
+  "wild": "WILD"
 }
