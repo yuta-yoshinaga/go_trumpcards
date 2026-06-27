@@ -37,22 +37,25 @@ export function parseSevenBridgeCommand(input: string): CliParseResult<SevenBrid
     case 'p':
     case 'pon': {
       const idx = parseIntSlice(args);
-      if ('error' in idx) return { error: 'Usage: p <i...> (hand indices forming the pon)' };
-      if (idx.values.length === 0) return { error: 'Usage: p <i...> (hand indices forming the pon)' };
+      if ('error' in idx || idx.values.length === 0) {
+        return { error: 'Usage: p <i...> (hand indices forming the pon)' };
+      }
       return { args: ['pon', undefined, undefined, idx.values] };
     }
     case 'c':
     case 'chi': {
       const idx = parseIntSlice(args);
-      if ('error' in idx) return { error: 'Usage: c <i...> (hand indices forming the chi)' };
-      if (idx.values.length === 0) return { error: 'Usage: c <i...> (hand indices forming the chi)' };
+      if ('error' in idx || idx.values.length === 0) {
+        return { error: 'Usage: c <i...> (hand indices forming the chi)' };
+      }
       return { args: ['chi', undefined, undefined, idx.values] };
     }
     case 'm':
     case 'meld': {
       const idx = parseIntSlice(args);
-      if ('error' in idx) return { error: 'Usage: m <i...> (hand indices forming the meld)' };
-      if (idx.values.length === 0) return { error: 'Usage: m <i...> (hand indices forming the meld)' };
+      if ('error' in idx || idx.values.length === 0) {
+        return { error: 'Usage: m <i...> (hand indices forming the meld)' };
+      }
       return { args: ['meld', undefined, undefined, idx.values] };
     }
     case 'x':
@@ -99,5 +102,5 @@ export const SEVENBRIDGE_HELP: string[] = [
   'x <i>                   - Discard hand card i',
   'n                       - Next round',
   'r                       - Reset / new game',
-  'l                       - Action log',
+  'l / log                 - Action log',
 ];
