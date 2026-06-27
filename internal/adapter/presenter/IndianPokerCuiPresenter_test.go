@@ -46,6 +46,27 @@ func TestIndianPokerCuiPresenter_Output(t *testing.T) {
 		assert.NotContains(t, result, "♠10")
 	})
 
+	t.Run("betting phase shows human estimated equity", func(t *testing.T) {
+		ip, players := makeIndianPokerForPresenter()
+		ip.SetPhase(domain.IndianPokerPhaseBetting)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		// A low visible opponent card leaves most ranks above it.
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+
+		result := p.Output(ip, nil)
+		assert.Contains(t, result, "推定勝率:")
+	})
+
+	t.Run("showdown phase hides equity", func(t *testing.T) {
+		ip, players := makeIndianPokerForPresenter()
+		ip.SetPhase(domain.IndianPokerPhaseShowdown)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+
+		result := p.Output(ip, nil)
+		assert.NotContains(t, result, "推定勝率:")
+	})
+
 	t.Run("showdown phase human card visible", func(t *testing.T) {
 		ip, players := makeIndianPokerForPresenter()
 		ip.SetPhase(domain.IndianPokerPhaseShowdown)

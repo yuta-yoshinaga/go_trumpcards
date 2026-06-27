@@ -31,6 +31,12 @@ func (_m *MockIndianPokerGame) GetPhase() int {
 	return ret.Int(0)
 }
 
+// GetEstimatedStrength モック
+func (_m *MockIndianPokerGame) GetEstimatedStrength(idx int) int {
+	ret := _m.Called(idx)
+	return ret.Int(0)
+}
+
 // GetPlayers モック
 func (_m *MockIndianPokerGame) GetPlayers() []*domain.IndianPokerPlayer {
 	ret := _m.Called()
