@@ -24,6 +24,8 @@ type BarbuInteractorIF interface {
 	ResetWithConfig(config domain.BarbuConfig) string
 	// GetConfig 現在の設定を返す
 	GetConfig() domain.BarbuConfig
+	// Hint ヒントを出力する
+	Hint() string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
@@ -95,6 +97,11 @@ func (bi *BarbuInteractor) ResetWithConfig(config domain.BarbuConfig) string {
 // ActionLog 棋譜を出力する。
 func (bi *BarbuInteractor) ActionLog() string {
 	return bi.bp.ActionLogOutput(bi.Game)
+}
+
+// Hint ヒントを出力する。
+func (bi *BarbuInteractor) Hint() string {
+	return bi.bp.HintOutput(bi.Game)
 }
 
 // barbuMaxCpuIterations は runCpuTurns の防御的な反復上限。

@@ -69,6 +69,15 @@ func TestBarbuInteractor_ActionLog(t *testing.T) {
 	bpMock.AssertExpectations(t)
 }
 
+func TestBarbuInteractor_Hint(t *testing.T) {
+	bpMock := new(presenter.MockBarbuPresenter)
+	gameMock := new(interfaces.MockBarbuGame)
+	bpMock.On("HintOutput", gameMock).Return("hint output")
+	bi := usecase.NewBarbuInteractor(gameMock, bpMock)
+	assert.Equal(t, "hint output", bi.Hint())
+	bpMock.AssertExpectations(t)
+}
+
 func TestBarbuInteractor_GuardsWhenGameEnded(t *testing.T) {
 	mockOutput := `{"end":1}`
 	bpMock := new(presenter.MockBarbuPresenter)
