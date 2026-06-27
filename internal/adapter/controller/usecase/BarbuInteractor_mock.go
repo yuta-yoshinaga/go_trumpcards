@@ -49,6 +49,12 @@ func (_m *MockBarbuInteractor) ResetWithConfig(config domain.BarbuConfig) string
 	return ret.Get(0).(string)
 }
 
+// Hint モック
+func (_m *MockBarbuInteractor) Hint() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
 // ActionLog モック
 func (_m *MockBarbuInteractor) ActionLog() string {
 	ret := _m.Called()

@@ -33,7 +33,7 @@ func (c *BarbuCuiController) Exec(command string) string {
 			return c.bi.ResetWithConfig(cfg)
 		},
 		[]string{
-			"contract", "c", "play", "p", "next", "n", "sd", "setdifficulty", "log", "l",
+			"contract", "c", "play", "p", "next", "n", "sd", "setdifficulty", "h", "hint", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -50,7 +50,7 @@ func (c *BarbuCuiController) Exec(command string) string {
 					return c.bi.ResetWithConfig(cfg)
 				})
 			default:
-				return handleCuiLog(cmd, c.bi.ActionLog)
+				return handleCuiHintAndLog(cmd, c.bi.Hint, c.bi.ActionLog)
 			}
 		},
 	)
