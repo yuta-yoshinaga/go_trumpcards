@@ -25,16 +25,18 @@
   },
   "payoutTable": {
     "title": "配当表",
-    "royalFlush5": "ロイヤルフラッシュ (5コイン): 4000",
-    "royalFlush": "ロイヤルフラッシュ: 250倍",
-    "straightFlush": "ストレートフラッシュ: 50倍",
-    "fourOfAKind": "フォーカード: 25倍",
-    "fullHouse": "フルハウス: 9倍",
-    "flush": "フラッシュ: 6倍",
-    "straight": "ストレート: 4倍",
-    "threeOfAKind": "スリーカード: 3倍",
-    "twoPair": "ツーペア: 2倍",
-    "jacksOrBetter": "ジャックス・オア・ベター: 1倍"
+    "hand": "役",
+    "name": {
+      "royalFlush": "ロイヤルフラッシュ",
+      "straightFlush": "ストレートフラッシュ",
+      "fourOfAKind": "フォーカード",
+      "fullHouse": "フルハウス",
+      "flush": "フラッシュ",
+      "straight": "ストレート",
+      "threeOfAKind": "スリーカード",
+      "twoPair": "ツーペア",
+      "jacksOrBetter": "ジャックス・オア・ベター"
+    }
   },
   "tutorial": {
     "betControls": "1〜5コインを賭けます。5コインでロイヤルフラッシュのボーナスが増えます。",
@@ -53,5 +55,6 @@
     "drawAll": "ホールドなし — 全て交換"
   },
   "card": "カード {{index}}",
-  "dealGuide": "コイン数を選んでディールしてゲーム開始"
+  "dealGuide": "コイン数を選んでディールしてゲーム開始",
+  "wild": "ワイルド"
 }

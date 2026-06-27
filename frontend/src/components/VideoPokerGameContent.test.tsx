@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -78,8 +78,6 @@ const resultPhaseLose: VideoPokerResponse = {
   messageCode: 'videopoker.result.lose',
 };
 
-const payoutRows = ['royalFlush5', 'royalFlush'];
-
 const tutorialConfig: TutorialConfig = {
   gameName: 'videopoker',
   steps: [],
@@ -92,7 +90,6 @@ function renderContent(gameName: 'videopoker' | 'deuceswild' | 'jokerpoker' = 'v
         gameName={gameName}
         i18nNamespace={gameName}
         apiExec={mockExec}
-        payoutTableRows={payoutRows}
         gamePath={`/${gameName}`}
         cliGameConfig={{
           parseCommand: () => ({ args: ['reset'] }),
@@ -244,6 +241,24 @@ describe('VideoPokerGameContent', () => {
     renderContent();
     await waitFor(() => expect(screen.getByRole('button', { name: /ディール/ })).toBeInTheDocument());
     expect(screen.getByText(/配当表/)).toBeInTheDocument();
+  });
+
+  it('renders the payout grid with bet-scaled cell values (royal jackpot at max bet)', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderContent();
+    await waitFor(() => expect(screen.getByTestId('vp-payout-row-royalFlush')).toBeInTheDocument());
+    const royalRow = within(screen.getByTestId('vp-payout-row-royalFlush'));
+    expect(royalRow.getByText('250')).toBeInTheDocument(); // 1-coin
+    expect(royalRow.getByText('1000')).toBeInTheDocument(); // 4-coin (250x4)
+    expect(royalRow.getByText('4000')).toBeInTheDocument(); // 5-coin jackpot
+  });
+
+  it('highlights the winning hand row in result phase', async () => {
+    mockExec.mockResolvedValue(resultPhaseWin); // handName: 'Jacks or Better'
+    renderContent();
+    await waitFor(() => expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument());
+    expect(screen.getByTestId('vp-payout-row-jacksOrBetter')).toHaveAttribute('aria-current', 'true');
+    expect(screen.getByTestId('vp-payout-row-royalFlush')).not.toHaveAttribute('aria-current');
   });
 
   it('clicking card in result phase does not toggle hold', async () => {

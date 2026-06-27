@@ -26,18 +26,20 @@
   },
   "payoutTable": {
     "title": "配当表",
-    "naturalRoyalFlush5": "ナチュラルロイヤルフラッシュ (5コイン): 4000",
-    "naturalRoyalFlush": "ナチュラルロイヤルフラッシュ: 250倍",
-    "fiveOfAKind": "ファイブカード: 200倍",
-    "wildRoyalFlush": "ワイルドロイヤルフラッシュ: 100倍",
-    "straightFlush": "ストレートフラッシュ: 50倍",
-    "fourOfAKind": "フォーカード: 20倍",
-    "fullHouse": "フルハウス: 7倍",
-    "flush": "フラッシュ: 5倍",
-    "straight": "ストレート: 3倍",
-    "threeOfAKind": "スリーカード: 2倍",
-    "twoPair": "ツーペア: 1倍",
-    "kingsOrBetter": "キングス・オア・ベター: 1倍"
+    "hand": "役",
+    "name": {
+      "naturalRoyalFlush": "ナチュラルロイヤルフラッシュ",
+      "fiveOfAKind": "ファイブカード",
+      "wildRoyalFlush": "ワイルドロイヤルフラッシュ",
+      "straightFlush": "ストレートフラッシュ",
+      "fourOfAKind": "フォーカード",
+      "fullHouse": "フルハウス",
+      "flush": "フラッシュ",
+      "straight": "ストレート",
+      "threeOfAKind": "スリーカード",
+      "twoPair": "ツーペア",
+      "kingsOrBetter": "キングス・オア・ベター"
+    }
   },
   "tutorial": {
     "betControls": "1〜5コインを賭けます。ジョーカーがワイルドカードとして使われます!",
