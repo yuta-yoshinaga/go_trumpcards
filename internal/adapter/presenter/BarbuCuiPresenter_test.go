@@ -52,6 +52,36 @@ func TestBarbuCuiPresenter_HintOutput(t *testing.T) {
 		assert.Contains(t, p.HintOutput(b), "合法手")
 	})
 
+	t.Run("trick leading (empty trick): all cards legal", func(t *testing.T) {
+		b := domain.BarbuTestNew(domain.DefaultBarbuConfig())
+		b.BarbuTestSetContract(domain.BarbuContractNoTricks, 0)
+		b.BarbuTestSetPhase(domain.BarbuPhasePlay)
+		b.BarbuTestSetCurrentPlayer(0)
+		b.BarbuTestSetHand(0, []*domain.Card{bcard(domain.CardDesignHeart, 5), bcard(domain.CardDesignSpade, 9)})
+		assert.Contains(t, p.HintOutput(b), "合法手")
+	})
+
+	t.Run("trick void in lead suit: all cards legal", func(t *testing.T) {
+		b := domain.BarbuTestNew(domain.DefaultBarbuConfig())
+		b.BarbuTestSetContract(domain.BarbuContractNoTricks, 0)
+		b.BarbuTestSetPhase(domain.BarbuPhasePlay)
+		b.BarbuTestSetCurrentPlayer(0)
+		// Hand has no hearts, lead is a heart -> void -> every card is legal.
+		b.BarbuTestSetHand(0, []*domain.Card{bcard(domain.CardDesignSpade, 5), bcard(domain.CardDesignClover, 9)})
+		b.BarbuTestSetCurrentTrick([]*domain.BarbuTrickCard{{PlayerIdx: 3, Card: bcard(domain.CardDesignHeart, 9)}})
+		assert.Contains(t, p.HintOutput(b), "合法手")
+	})
+
+	t.Run("trick with a nil lead entry falls back to all legal", func(t *testing.T) {
+		b := domain.BarbuTestNew(domain.DefaultBarbuConfig())
+		b.BarbuTestSetContract(domain.BarbuContractNoTricks, 0)
+		b.BarbuTestSetPhase(domain.BarbuPhasePlay)
+		b.BarbuTestSetCurrentPlayer(0)
+		b.BarbuTestSetHand(0, []*domain.Card{bcard(domain.CardDesignSpade, 5)})
+		b.BarbuTestSetCurrentTrick([]*domain.BarbuTrickCard{{PlayerIdx: 3, Card: nil}})
+		assert.Contains(t, p.HintOutput(b), "合法手")
+	})
+
 	t.Run("none outside the play phase", func(t *testing.T) {
 		b := domain.BarbuTestNew(domain.DefaultBarbuConfig())
 		b.BarbuTestSetPhase(domain.BarbuPhaseSelectContract)
