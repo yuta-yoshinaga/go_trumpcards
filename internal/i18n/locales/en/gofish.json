@@ -15,5 +15,7 @@
   "winCpu": "Game over! CPU {{idx}} wins!",
   "scoreEntry": "  {{name}}: {{count}} book(s)",
   "promptCurrentTurn": "{{name}}'s turn",
-  "promptHumanHelp": "ask <opponent> <rank> to request"
+  "promptHumanHelp": "ask <opponent> <rank> to request",
+  "knownRanks": "{{name}} known ranks: {{ranks}}",
+  "knownRanksLegend": "(* = a rank you also hold = a strong ask target)"
 }

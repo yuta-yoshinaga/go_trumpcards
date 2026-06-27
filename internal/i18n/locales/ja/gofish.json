@@ -15,5 +15,7 @@
   "winCpu": "ゲーム終了！ CPU {{idx}}の勝ち！",
   "scoreEntry": "  {{name}}: {{count}}ブック",
   "promptCurrentTurn": "{{name}}のターン",
-  "promptHumanHelp": "ask <相手番号> <ランク> で要求"
+  "promptHumanHelp": "ask <相手番号> <ランク> で要求",
+  "knownRanks": "{{name}}の既知ランク: {{ranks}}",
+  "knownRanksLegend": "(* = あなたも持つランク = 有利な要求先)"
 }

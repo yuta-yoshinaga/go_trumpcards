@@ -328,6 +328,24 @@ func TestGoFish_JSON_RoundTrip_PreservesCpuMemories(t *testing.T) {
 	assert.Equal(t, g.cpuMemories, restored.cpuMemories)
 }
 
+func TestGoFish_GetKnownRanks(t *testing.T) {
+	g := newTestGoFish()
+	g.cpuMemories = []goFishMemoryEntry{
+		{askerIdx: 1, rank: 5},
+		{askerIdx: 1, rank: 5}, // duplicate is de-duped
+		{askerIdx: 1, rank: 9},
+		{askerIdx: 2, rank: 7},
+	}
+	// Player 1 has booked rank 5, so it drops out of their known ranks.
+	g.players[1].books = [][]*Card{{NewCard(CardDesignSpade, 5, false)}}
+
+	known := g.GetKnownRanks()
+	assert.Equal(t, []int{9}, known[1])
+	assert.Equal(t, []int{7}, known[2])
+	assert.Empty(t, known[0])
+	assert.Empty(t, known[3])
+}
+
 func TestGoFish_ActionLog(t *testing.T) {
 	g := newTestGoFish()
 	g.players[0].AddCard(NewCard(CardDesignSpade, 3, false))

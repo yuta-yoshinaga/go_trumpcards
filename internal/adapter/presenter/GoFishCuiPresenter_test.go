@@ -22,6 +22,24 @@ func TestGoFishCuiPresenter_Output_Initial(t *testing.T) {
 	assert.Contains(t, result, "のターン")
 }
 
+func TestGoFishCuiPresenter_Output_KnownRanks(t *testing.T) {
+	p := new(presenter.GoFishCuiPresenter)
+	m := setupGoFishMock()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetKnownRanks")
+	m.On("GetKnownRanks").Return(map[int][]int{1: {7, 9}})
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPlayer")
+	human := domain.NewGoFishPlayer(true)
+	human.AddCard(domain.NewCard(domain.CardDesignSpade, 7, false)) // human also holds rank 7
+	m.On("GetPlayer", 0).Return(human)
+	for i := 1; i < 4; i++ {
+		m.On("GetPlayer", i).Return(domain.NewGoFishPlayer(false))
+	}
+
+	result := p.Output(m, nil)
+	assert.Contains(t, result, "既知ランク")
+	assert.Contains(t, result, "7*") // human holds rank 7 -> strong ask target
+}
+
 func TestGoFishCuiPresenter_Output_GameEnd(t *testing.T) {
 	p := new(presenter.GoFishCuiPresenter)
 	m := new(interfaces.MockGoFishGame)
