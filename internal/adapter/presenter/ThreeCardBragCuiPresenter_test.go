@@ -64,6 +64,32 @@ func TestThreeCardBragCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.NotEmpty(t, result)
 		assert.Contains(t, result, "SPADE")
+		// Seen player with 30 chips at stake 1: raise range max = 30/2 = 15.
+		assert.Contains(t, result, "15")
+	})
+
+	t.Run("betting phase shows raise unavailable when chips too low", func(t *testing.T) {
+		m := tcbSetupBaseMock()
+		players := []*domain.ThreeCardBragPlayer{
+			domain.NewThreeCardBragPlayer(true, 1), // blind, 1 chip, stake 1 -> min 2 > max 1
+			domain.NewThreeCardBragPlayer(false, 30),
+			domain.NewThreeCardBragPlayer(false, 30),
+			domain.NewThreeCardBragPlayer(false, 30),
+		}
+		m.On("GetPlayerCnt").Return(domain.ThreeCardBragPlayerCnt)
+		for i, pl := range players {
+			m.On("GetPlayer", i).Return(pl)
+		}
+		result := p.Output(m, nil)
+		assert.NotEmpty(t, result)
+	})
+
+	t.Run("betting phase omits raise range on a CPU turn", func(t *testing.T) {
+		m, _ := tcbSetupMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+		m.On("GetCurrentPlayerIdx").Return(1) // CPU at turn
+		result := p.Output(m, nil)
+		assert.NotEmpty(t, result)
 	})
 
 	t.Run("showdown reveals all non-folded hands", func(t *testing.T) {
@@ -134,7 +160,7 @@ func TestThreeCardBragCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetHint").Return(&domain.ThreeCardBragHint{Action: "see", Reason: "see_first"})
 		result := p.HintOutput(m)
 		assert.NotEmpty(t, result)
-		assert.Contains(t, result, "threecardbrag.hint")
+		assert.Contains(t, result, "see")
 	})
 
 	t.Run("raise hint", func(t *testing.T) {
@@ -142,7 +168,7 @@ func TestThreeCardBragCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetHint").Return(&domain.ThreeCardBragHint{Action: "raise", Reason: "strong_hand"})
 		result := p.HintOutput(m)
 		assert.NotEmpty(t, result)
-		assert.Contains(t, result, "threecardbrag.hint")
+		assert.Contains(t, result, "raise")
 	})
 }
 

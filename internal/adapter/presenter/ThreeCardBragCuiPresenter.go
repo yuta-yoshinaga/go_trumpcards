@@ -59,6 +59,31 @@ func threeCardBragStatusStr(player *domain.ThreeCardBragPlayer) string {
 	}
 }
 
+// threeCardBragRaiseRangeStr returns the betting-phase raise guidance line for
+// the human at turn: the allowed stake range (min = stake+1, max = the largest
+// stake the player can afford given the seen/blind call multiplier), or an
+// "unavailable" notice when chips are too low. Returns "" when it is not the
+// human's turn (a raise prompt would be meaningless for CPU turns).
+func threeCardBragRaiseRangeStr(g interfaces.ThreeCardBragGame) string {
+	player := g.GetPlayer(g.GetCurrentPlayerIdx())
+	if player == nil || !player.GetIsHuman() {
+		return ""
+	}
+	minRaise := g.GetStake() + 1
+	maxRaise := player.GetChips()
+	if player.GetSeen() {
+		// Seen players pay double the stake to call/raise, halving the affordable ceiling.
+		maxRaise = player.GetChips() / 2
+	}
+	if maxRaise < minRaise {
+		return i18n.T("threecardbrag.promptRaiseUnavailable") + "\n"
+	}
+	return i18n.Tf("threecardbrag.promptRaiseRange",
+		"min", strconv.Itoa(minRaise),
+		"max", strconv.Itoa(maxRaise),
+	) + "\n"
+}
+
 // ThreeCardBragCuiPresenter renders the Three Card Brag CUI view.
 type ThreeCardBragCuiPresenter struct{}
 
@@ -89,6 +114,7 @@ func (p *ThreeCardBragCuiPresenter) Output(g interfaces.ThreeCardBragGame, lastE
 		case domain.ThreeCardBragPhaseBetting:
 			b.WriteString(i18n.T("threecardbrag.promptBetting") + "\n")
 			b.WriteString(i18n.T("threecardbrag.promptBettingHelp") + "\n")
+			b.WriteString(threeCardBragRaiseRangeStr(g))
 		case domain.ThreeCardBragPhaseShowdown:
 			b.WriteString(i18n.T("threecardbrag.promptShowdown") + "\n")
 		case domain.ThreeCardBragPhaseRoundEnd:
