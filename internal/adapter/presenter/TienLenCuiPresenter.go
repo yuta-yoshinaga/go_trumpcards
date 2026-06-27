@@ -74,6 +74,9 @@ func (p *TienLenCuiPresenter) Output(tg interfaces.TienLenGame, lastErr error) s
 			}
 			if tg.IsHumanTurn() {
 				b.WriteString(i18n.T("tienlen.yourTurn") + "\n")
+				// Combo-strength rules, so CLI players can judge a legal play
+				// (and self-diagnose an invalid combo shown in the error line).
+				b.WriteString(i18n.T("tienlen.comboRulesHint") + "\n")
 			}
 		}
 
