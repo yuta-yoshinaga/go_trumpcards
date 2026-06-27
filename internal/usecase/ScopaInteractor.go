@@ -22,6 +22,8 @@ type ScopaInteractorIF interface {
 	ResetWithConfig(config domain.ScopaConfig) string
 	// GetConfig 現在の設定を返す
 	GetConfig() domain.ScopaConfig
+	// Hint ヒントを出力する
+	Hint() string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
@@ -81,6 +83,11 @@ func (si *ScopaInteractor) ResetWithConfig(config domain.ScopaConfig) string {
 // ActionLog 棋譜を出力する。
 func (si *ScopaInteractor) ActionLog() string {
 	return si.sp.ActionLogOutput(si.Game)
+}
+
+// Hint ヒントを出力する。
+func (si *ScopaInteractor) Hint() string {
+	return si.sp.HintOutput(si.Game)
 }
 
 // scopaMaxCpuIterations は runCpuTurns の防御的な反復上限。

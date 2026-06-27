@@ -1,5 +1,9 @@
 {
   "helpTitle": "Scopa (スコパ)",
+  "hintNone": "ヒントはありません",
+  "hintNoCapture": "捕獲できる手はありません。最小札を場に置きましょう",
+  "hintCapture": "推奨: {{played}} で 場札 {{captured}} を捕獲",
+  "hintScopa": "推奨: {{played}} で 場札 {{captured}} を全取り（スコパ！）",
   "helpPlay": "  p <h> [t...]             手札hを出す (場札t...を捕獲、無指定で場に置く)",
   "helpNext": "  n                        次のラウンドを開始する",
   "helpSetDifficulty": "  sd [0-2]                 CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
