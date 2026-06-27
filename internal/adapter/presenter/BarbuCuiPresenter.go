@@ -143,22 +143,35 @@ func barbuTrumpLabel(suit int) string {
 // in a trick contract: cards of the lead suit, or the whole hand when leading
 // or void in the lead suit.
 func barbuLegalTrickIndices(player *domain.BarbuPlayer, trick []*domain.BarbuTrickCard) []int {
-	all := make([]int, 0, player.GetCardsSize())
-	for i := 0; i < player.GetCardsSize(); i++ {
-		all = append(all, i)
-	}
-	if len(trick) == 0 {
+	cardsSize := player.GetCardsSize()
+	makeAll := func() []int {
+		all := make([]int, cardsSize)
+		for i := range all {
+			all[i] = i
+		}
 		return all
 	}
-	leadSuit := trick[0].Card.GetDesign()
-	follow := make([]int, 0, len(all))
-	for _, i := range all {
-		if player.GetCard(i).GetDesign() == leadSuit {
+	// Find the lead card defensively: a malformed/empty trick falls back to
+	// "all cards legal" rather than dereferencing a nil entry.
+	var leadCard *domain.Card
+	for _, tc := range trick {
+		if tc != nil && tc.Card != nil {
+			leadCard = tc.Card
+			break
+		}
+	}
+	if leadCard == nil {
+		return makeAll()
+	}
+	leadSuit := leadCard.GetDesign()
+	follow := make([]int, 0, cardsSize)
+	for i := 0; i < cardsSize; i++ {
+		if c := player.GetCard(i); c != nil && c.GetDesign() == leadSuit {
 			follow = append(follow, i)
 		}
 	}
 	if len(follow) == 0 {
-		return all
+		return makeAll()
 	}
 	return follow
 }
