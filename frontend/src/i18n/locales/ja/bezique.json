@@ -25,6 +25,7 @@
   "cpu": "CPU {{id}}",
   "matchScoreTitle": "スコア",
   "scoreLine": "{{name}}: マッチ {{match}} / ディール {{deal}} / {{tricks}}トリック",
+  "dealBreakdown": "内訳: トリック{{trick}} + メルド{{meld}} = {{total}}",
   "playButton": "出す",
   "skipMeld": "メルドしない",
   "nextRound": "次のディール",

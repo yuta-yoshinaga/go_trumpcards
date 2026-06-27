@@ -173,6 +173,7 @@ type Bezique struct {
 	leadPlayerIdx    int
 	dealerIdx        int
 	dealPoints       []int // 当ディールの得点
+	dealMeldPoints   []int // 当ディールのうちメルド由来の得点 (内訳表示用; トリック由来 = dealPoints - dealMeldPoints)
 	matchScore       []int // 試合累積得点
 	meldsDeclared    []int // プレイヤー毎の宣言済みメルドビットマスク
 	gameEndFlag      bool
@@ -183,13 +184,14 @@ type Bezique struct {
 // NewBezique コンストラクタ
 func NewBezique(trumpCards *TrumpCards, players []*BeziquePlayer, config BeziqueConfig) *Bezique {
 	return &Bezique{
-		trumpCards:    trumpCards,
-		players:       players,
-		config:        config,
-		winnerIdx:     -1,
-		dealPoints:    make([]int, len(players)),
-		matchScore:    make([]int, len(players)),
-		meldsDeclared: make([]int, len(players)),
+		trumpCards:     trumpCards,
+		players:        players,
+		config:         config,
+		winnerIdx:      -1,
+		dealPoints:     make([]int, len(players)),
+		dealMeldPoints: make([]int, len(players)),
+		matchScore:     make([]int, len(players)),
+		meldsDeclared:  make([]int, len(players)),
 	}
 }
 
@@ -227,6 +229,7 @@ func (b *Bezique) NextRound() {
 // startDeal 1 ディールを開始する: シャッフル・8枚配り・切り札表示。
 func (b *Bezique) startDeal() {
 	b.dealPoints = make([]int, len(b.players))
+	b.dealMeldPoints = make([]int, len(b.players))
 	b.meldsDeclared = make([]int, len(b.players))
 	b.currentTrick = nil
 	b.trumpCard = nil
@@ -424,6 +427,15 @@ func (b *Bezique) GetDealPoints(i int) int {
 		return 0
 	}
 	return b.dealPoints[i]
+}
+
+// GetDealMeldPoints はプレイヤーの当ディール得点のうちメルド由来分を返す。
+// トリック由来の得点は GetDealPoints - GetDealMeldPoints で求められる。
+func (b *Bezique) GetDealMeldPoints(i int) int {
+	if i < 0 || i >= len(b.dealMeldPoints) {
+		return 0
+	}
+	return b.dealMeldPoints[i]
 }
 
 // SetDealPoints プレイヤーの当ディール得点設定 (テスト用)
@@ -827,6 +839,7 @@ func (b *Bezique) applyMeld(playerIdx int, m BeziqueMeld) {
 	bit := beziqueMeldBit(m)
 	b.meldsDeclared[playerIdx] |= 1 << bit
 	b.dealPoints[playerIdx] += m.Points
+	b.dealMeldPoints[playerIdx] += m.Points
 	b.appendLog(playerIdx, "meld",
 		fmt.Sprintf("%s declares %s (+%d)", b.playerName(playerIdx), beziqueMeldName(m), m.Points), nil)
 }
@@ -1080,6 +1093,7 @@ type beziqueJSON struct {
 	LeadPlayerIdx    int                 `json:"li"`
 	DealerIdx        int                 `json:"di"`
 	DealPoints       []int               `json:"dp"`
+	DealMeldPoints   []int               `json:"dmp"`
 	MatchScore       []int               `json:"ms"`
 	MeldsDeclared    []int               `json:"me"`
 	GameEndFlag      bool                `json:"ge"`
@@ -1103,6 +1117,7 @@ func (b *Bezique) MarshalJSON() ([]byte, error) {
 		LeadPlayerIdx:    b.leadPlayerIdx,
 		DealerIdx:        b.dealerIdx,
 		DealPoints:       b.dealPoints,
+		DealMeldPoints:   b.dealMeldPoints,
 		MatchScore:       b.matchScore,
 		MeldsDeclared:    b.meldsDeclared,
 		GameEndFlag:      b.gameEndFlag,
@@ -1174,6 +1189,7 @@ func (b *Bezique) UnmarshalJSON(data []byte) error {
 	b.leadPlayerIdx = j.LeadPlayerIdx
 	b.dealerIdx = j.DealerIdx
 	b.dealPoints = beziqueEnsureLen(j.DealPoints)
+	b.dealMeldPoints = beziqueEnsureLen(j.DealMeldPoints)
 	b.matchScore = beziqueEnsureLen(j.MatchScore)
 	b.meldsDeclared = beziqueEnsureLen(j.MeldsDeclared)
 	b.gameEndFlag = j.GameEndFlag

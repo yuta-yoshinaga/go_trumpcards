@@ -124,6 +124,12 @@ func (m *MockBeziqueGame) GetDealPoints(i int) int {
 	return args.Int(0)
 }
 
+// GetDealMeldPoints モック
+func (m *MockBeziqueGame) GetDealMeldPoints(i int) int {
+	args := m.Called(i)
+	return args.Int(0)
+}
+
 func (m *MockBeziqueGame) GetMatchScore(i int) int {
 	args := m.Called(i)
 	return args.Int(0)

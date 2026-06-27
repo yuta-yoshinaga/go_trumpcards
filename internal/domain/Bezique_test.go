@@ -148,8 +148,11 @@ func TestBezique_FourAcesMeld(t *testing.T) {
 	assert.Equal(t, domain.BeziqueFourAcesPoints, melds[0].Points)
 
 	startDeal := b.GetDealPoints(0)
+	startMeld := b.GetDealMeldPoints(0)
 	require.NoError(t, b.PlayerDeclareMeld(0))
 	assert.Equal(t, startDeal+domain.BeziqueFourAcesPoints, b.GetDealPoints(0))
+	// The meld points are also tracked separately for the score breakdown.
+	assert.Equal(t, startMeld+domain.BeziqueFourAcesPoints, b.GetDealMeldPoints(0))
 	// Same meld cannot be declared twice.
 	b.SetPhase(domain.BeziquePhaseMeld)
 	b.SetCurrentPlayerIdx(0)

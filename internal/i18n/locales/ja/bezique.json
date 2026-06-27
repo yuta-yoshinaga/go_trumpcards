@@ -6,6 +6,7 @@
   "trumpLine": "切り札表示カード: {{card}}",
   "trumpLineNone": "切り札: {{suit}} (山札なし)",
   "scoreLine": "累積得点: あなた={{p0}}  CPU={{p1}}",
+  "dealBreakdown": "{{name}} ディール得点: トリック{{trick}} + メルド{{meld}} = {{total}}",
   "playerLine": "{{name}}: 獲得{{tricks}}トリック ディール{{deal}}点 累積{{match}}点 {{cards}}枚",
   "gameEndP0": "ゲーム終了！ あなたの勝利です ({{p0}}-{{p1}})！",
   "gameEndP1": "ゲーム終了！ CPUの勝利です ({{p0}}-{{p1}})。",
