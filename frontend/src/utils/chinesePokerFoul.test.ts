@@ -22,6 +22,15 @@ describe('cpEvalFiveCardHand', () => {
   it('detects a wheel straight (A-2-3-4-5)', () => {
     expect(cpEvalFiveCardHand([c(S, 1), c(H, 2), c(D, 3), c(C, 4), c(S, 5)])).toBe(4);
   });
+  it('detects a broadway straight (A-10-J-Q-K)', () => {
+    expect(cpEvalFiveCardHand([c(S, 1), c(H, 10), c(D, 11), c(C, 12), c(S, 13)])).toBe(4);
+  });
+  it('detects a straight flush', () => {
+    expect(cpEvalFiveCardHand([c(S, 2), c(S, 3), c(S, 4), c(S, 5), c(S, 6)])).toBe(8);
+  });
+  it('detects a royal flush', () => {
+    expect(cpEvalFiveCardHand([c(S, 1), c(S, 10), c(S, 11), c(S, 12), c(S, 13)])).toBe(9);
+  });
   it('returns high card for a non-5-card hand', () => {
     expect(cpEvalFiveCardHand([c(S, 2), c(H, 3)])).toBe(0);
   });
@@ -68,6 +77,24 @@ describe('chinesePokerIsFoul', () => {
     const middle = [c(S, 6), c(H, 6), c(D, 2), c(C, 10), c(S, 12)]; // one pair
     const back = [c(S, 8), c(H, 8), c(D, 8), c(C, 8), c(S, 4)]; // quads
     expect(chinesePokerIsFoul(strongFront, middle, back)).toBe(true);
+  });
+
+  it('returns true when front ties middle on rank but wins the kicker comparison', () => {
+    // Front pair of Kings vs middle pair of Queens: same mapped rank (one pair),
+    // front's higher kicker makes it stronger than middle → foul.
+    const frontPairK = [c(S, 13), c(H, 13), c(S, 2)];
+    const middle = [c(S, 12), c(H, 12), c(C, 5), c(D, 4), c(C, 3)]; // pair of Queens
+    const back = [c(S, 8), c(H, 8), c(C, 8), c(D, 7), c(S, 6)]; // trips
+    expect(chinesePokerIsFoul(frontPairK, middle, back)).toBe(true);
+  });
+
+  it('returns false when front ties middle on rank but loses the kicker comparison', () => {
+    // Front pair of 3s vs middle pair of Queens: same mapped rank, front's lower
+    // kicker keeps it weaker than middle → legal.
+    const frontPair3 = [c(S, 3), c(H, 3), c(D, 2)];
+    const middle = [c(S, 12), c(H, 12), c(C, 5), c(D, 4), c(C, 3)]; // pair of Queens
+    const back = [c(S, 8), c(H, 8), c(C, 8), c(D, 7), c(S, 6)]; // trips
+    expect(chinesePokerIsFoul(frontPair3, middle, back)).toBe(false);
   });
 
   it('returns false for incomplete (wrong-length) rows', () => {
