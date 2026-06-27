@@ -44,6 +44,25 @@ describe('LaBelleLuciePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('shows the stuck redeal banner when no legal move remains', async () => {
+    // No Aces, no foundation builds, no same-suit stacks -> stuck.
+    mockExec.mockResolvedValue(
+      makeState({
+        fans: [[card('SPADE', 5)], [card('HEART', 9)], [card('CLOVER', 2)]],
+        foundation: [[], [], [], []],
+        redealsLeft: 3,
+      }),
+    );
+    renderWithProviders(<LaBelleLuciePage />);
+    await waitFor(() => expect(screen.getByTestId('ll-stuck-banner')).toBeInTheDocument());
+  });
+
+  it('hides the stuck banner when a legal move exists', async () => {
+    renderWithProviders(<LaBelleLuciePage />);
+    await waitFor(() => expect(screen.getByTestId('fan-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('ll-stuck-banner')).not.toBeInTheDocument();
+  });
+
   it('renders fans and foundations', async () => {
     renderWithProviders(<LaBelleLuciePage />);
     await waitFor(() => expect(screen.getByTestId('fan-0')).toBeInTheDocument());

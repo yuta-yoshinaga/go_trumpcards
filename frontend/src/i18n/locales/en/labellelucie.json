@@ -8,6 +8,8 @@
   "foundation": "Foundation",
   "fan": "Fan",
   "redealsLeft": "Redeals left: {{count}}",
+  "stuckRedeal": "Stuck — redeal recommended",
+  "redealsLeftBadge": "{{count}} left",
   "moveCount": "Moves: {{count}}",
   "redeal": "Gather & redeal",
   "giveup": "Give up",
