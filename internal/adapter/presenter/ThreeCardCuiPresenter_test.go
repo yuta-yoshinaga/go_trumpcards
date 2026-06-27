@@ -40,6 +40,57 @@ func TestThreeCardCuiPresenter_Output_BetPhase(t *testing.T) {
 	assert.Contains(t, result, "フェーズ: BET")
 }
 
+func TestThreeCardCuiPresenter_HintOutput(t *testing.T) {
+	p := new(ThreeCardCuiPresenter)
+
+	actionMock := func(rank int, cards ...*domain.Card) *interfaces.MockThreeCardGame {
+		m := new(interfaces.MockThreeCardGame)
+		m.On("GetPhase").Return(domain.ThreeCardPhaseAction).Maybe()
+		m.On("GetPlayerHand").Return(cards).Maybe()
+		m.On("GetPlayerHandRank").Return(rank).Maybe()
+		return m
+	}
+	c := func(v int) *domain.Card { return domain.NewCard(domain.CardDesignSpade, v, false) }
+	mixed := func(v int, d int) *domain.Card { return domain.NewCard(d, v, false) }
+
+	t.Run("pair always plays", func(t *testing.T) {
+		m := actionMock(domain.ThreeCardHandPair, c(3), c(3), c(9))
+		assert.Contains(t, p.HintOutput(m), "プレイ")
+	})
+
+	t.Run("Q-6-4 high card plays (boundary)", func(t *testing.T) {
+		m := actionMock(domain.ThreeCardHandHighCard, mixed(12, domain.CardDesignSpade), mixed(6, domain.CardDesignHeart), mixed(4, domain.CardDesignClover))
+		assert.Contains(t, p.HintOutput(m), "プレイ")
+	})
+
+	t.Run("Q-6-3 high card folds (just below boundary)", func(t *testing.T) {
+		m := actionMock(domain.ThreeCardHandHighCard, mixed(12, domain.CardDesignSpade), mixed(6, domain.CardDesignHeart), mixed(3, domain.CardDesignClover))
+		assert.Contains(t, p.HintOutput(m), "フォールド")
+	})
+
+	t.Run("Ace high plays", func(t *testing.T) {
+		m := actionMock(domain.ThreeCardHandHighCard, mixed(1, domain.CardDesignSpade), mixed(9, domain.CardDesignHeart), mixed(2, domain.CardDesignClover))
+		assert.Contains(t, p.HintOutput(m), "プレイ")
+	})
+
+	t.Run("Jack high folds", func(t *testing.T) {
+		m := actionMock(domain.ThreeCardHandHighCard, mixed(11, domain.CardDesignSpade), mixed(9, domain.CardDesignHeart), mixed(8, domain.CardDesignClover))
+		assert.Contains(t, p.HintOutput(m), "フォールド")
+	})
+
+	t.Run("no hint outside the action phase", func(t *testing.T) {
+		m := new(interfaces.MockThreeCardGame)
+		m.On("GetPhase").Return(domain.ThreeCardPhaseBet).Maybe()
+		assert.Contains(t, p.HintOutput(m), "ヒントはありません")
+	})
+
+	t.Run("incomplete hand folds (guard)", func(t *testing.T) {
+		// An action-phase hand without exactly 3 cards is treated as fold.
+		m := actionMock(domain.ThreeCardHandHighCard, c(12), c(6))
+		assert.Contains(t, p.HintOutput(m), "フォールド")
+	})
+}
+
 func TestThreeCardCuiPresenter_Output_ActionPhase(t *testing.T) {
 	p := new(ThreeCardCuiPresenter)
 	m := new(interfaces.MockThreeCardGame)

@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"sort"
 	"strconv"
 	"strings"
 
@@ -88,6 +89,45 @@ func (tp *ThreeCardCuiPresenter) Output(tc interfaces.ThreeCardGame, lastErr err
 	}
 
 	return sb.String()
+}
+
+// threeCardShouldPlay reports whether the player's three-card hand meets the
+// classic Q-6-4 "play" threshold. Any pair-or-better always plays; a high-card
+// hand plays only when its Ace-high descending ranks are at least Q-6-4.
+func threeCardShouldPlay(hand []*domain.Card, rank int) bool {
+	if len(hand) != 3 {
+		return false
+	}
+	if rank > domain.ThreeCardHandHighCard {
+		return true
+	}
+	vals := make([]int, 3)
+	for i, c := range hand {
+		v := c.GetValue()
+		if v == 1 {
+			v = 14 // Ace is high in Three Card Poker.
+		}
+		vals[i] = v
+	}
+	sort.Sort(sort.Reverse(sort.IntSlice(vals)))
+	for i, threshold := range []int{12, 6, 4} {
+		if vals[i] != threshold {
+			return vals[i] > threshold
+		}
+	}
+	return true // exactly Q-6-4 is a play.
+}
+
+// HintOutput emits a play/fold recommendation (Q-6-4 strategy) during the
+// action phase; other phases have no decision to advise.
+func (tp *ThreeCardCuiPresenter) HintOutput(tc interfaces.ThreeCardGame) string {
+	if tc.GetPhase() != domain.ThreeCardPhaseAction {
+		return i18n.T("threecard.hintNone") + "\n"
+	}
+	if threeCardShouldPlay(tc.GetPlayerHand(), tc.GetPlayerHandRank()) {
+		return color.Yellow(i18n.T("threecard.hintPlay")) + "\n"
+	}
+	return color.Yellow(i18n.T("threecard.hintFold")) + "\n"
 }
 
 // ActionLogOutput 棋譜をテキスト出力
