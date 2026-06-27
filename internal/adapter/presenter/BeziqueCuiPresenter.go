@@ -58,6 +58,17 @@ func (p *BeziqueCuiPresenter) Output(b interfaces.BeziqueGame, lastErr error) st
 			sb.WriteString(beziquePlayerStr(b.GetPlayer(i), i, b.GetDealPoints(i), b.GetMatchScore(i)))
 		}
 
+		// Deal-points breakdown so players see trick vs meld contribution.
+		for i := 0; i < b.GetPlayerCnt(); i++ {
+			deal := b.GetDealPoints(i)
+			meld := b.GetDealMeldPoints(i)
+			sb.WriteString(i18n.Tf("bezique.dealBreakdown",
+				"name", cuiPlayerName(b.GetPlayer(i), i),
+				"trick", strconv.Itoa(deal-meld),
+				"meld", strconv.Itoa(meld),
+				"total", strconv.Itoa(deal)) + "\n")
+		}
+
 		sb.WriteString("----------\n")
 
 		trick := b.GetCurrentTrick()

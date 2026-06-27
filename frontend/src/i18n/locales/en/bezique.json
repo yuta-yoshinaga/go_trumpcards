@@ -25,6 +25,7 @@
   "cpu": "CPU {{id}}",
   "matchScoreTitle": "Score",
   "scoreLine": "{{name}}: match {{match}} / deal {{deal}} / {{tricks}} tricks",
+  "dealBreakdown": "Breakdown: trick {{trick}} + meld {{meld}} = {{total}}",
   "playButton": "Play",
   "skipMeld": "Skip meld",
   "nextRound": "Next Deal",

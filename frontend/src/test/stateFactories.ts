@@ -1200,6 +1200,7 @@ const baseBeziqueState: BeziqueResponse = {
     { id: 1, isHuman: false, cardCount: 9, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
   ],
   dealPoints: [0, 0],
+  dealMeldPoints: [0, 0],
   matchScore: [0, 0],
   phase: 0,
   roundNumber: 1,

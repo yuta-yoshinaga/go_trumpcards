@@ -58,6 +58,17 @@ describe('BeziquePage', () => {
     );
   });
 
+  it('shows the deal-points trick/meld breakdown in the score sidebar', async () => {
+    mockExec.mockResolvedValue(
+      makeBeziqueState({ phase: 0, currentPlayerIdx: 0, dealPoints: [10, 0], dealMeldPoints: [4, 0] }),
+    );
+    renderWithProviders(<BeziquePage />);
+    const breakdown = await screen.findByTestId('bezique-deal-breakdown-0');
+    // trick = deal(10) - meld(4) = 6
+    expect(breakdown).toHaveTextContent('6');
+    expect(breakdown).toHaveTextContent('4');
+  });
+
   it('renders the play phase with the human cards and the play button', async () => {
     renderWithProviders(<BeziquePage />);
     await waitFor(() => {
