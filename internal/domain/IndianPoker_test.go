@@ -37,6 +37,20 @@ func defaultTestConfig() IndianPokerConfig {
 
 // --- Phase and Action constants ---
 
+func TestIndianPoker_GetEstimatedStrength(t *testing.T) {
+	ip, players := newIndianPokerTestGame(defaultTestConfig())
+	// Opponents all show low cards, so player 0's hidden card very likely wins.
+	players[1].AddCard(NewCard(CardDesignClover, 2, false))
+	players[2].AddCard(NewCard(CardDesignHeart, 3, false))
+	players[3].AddCard(NewCard(CardDesignSpade, 4, false))
+
+	s := ip.GetEstimatedStrength(0)
+	assert.GreaterOrEqual(t, s, 0)
+	assert.LessOrEqual(t, s, 100)
+	// Max visible rank is 4, so most remaining ranks beat it -> high equity.
+	assert.GreaterOrEqual(t, s, 50)
+}
+
 func TestIndianPokerPhaseConstants(t *testing.T) {
 	assert.Equal(t, 0, IndianPokerPhaseInit)
 	assert.Equal(t, 1, IndianPokerPhaseAnte)
