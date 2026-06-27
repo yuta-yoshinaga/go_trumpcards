@@ -28,6 +28,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card, ChinesePokerResponse } from '../types/card';
 import { ChinesePokerPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { chinesePokerIsFoul } from '../utils/chinesePokerFoul';
 import { CHINESEPOKER_HELP, parseChinesepokerCommand } from '../utils/cli/commands/chinesepokerCommands';
 import type { CliGameConfig } from '../utils/cli/types';
 
@@ -134,6 +135,15 @@ function ChinesePokerPageContent() {
     [state?.playerCards, assignments],
   );
   const canSet = frontIndices.length === 3 && middleIndices.length === 5;
+
+  // When a full arrangement is staged, warn (advisory) if it fouls back >= middle >= front.
+  // The check mirrors the server's cpValidateHands, so it agrees with the eventual result.
+  const isFoul = useMemo(() => {
+    if (!canSet) return false;
+    const cards = state?.playerCards ?? [];
+    const pick = (indices: number[]) => indices.map((i) => cards[i]).filter((c): c is Card => !!c);
+    return chinesePokerIsFoul(pick(frontIndices), pick(middleIndices), pick(backIndices));
+  }, [canSet, state?.playerCards, frontIndices, middleIndices, backIndices]);
 
   const toggleCard = useCallback((index: number) => {
     setAssignments((prev) => {
@@ -295,6 +305,15 @@ function ChinesePokerPageContent() {
                     </div>
                   ))}
                 </div>
+                {isFoul && (
+                  <div
+                    className="mt-2 rounded border border-ds-danger/60 bg-ds-danger/10 px-2 py-1 text-ds-danger text-xs"
+                    role="alert"
+                    data-testid="cp-foul-warning"
+                  >
+                    {t('foulWarning')}
+                  </div>
+                )}
               </div>
             )}
 
