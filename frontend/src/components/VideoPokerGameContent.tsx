@@ -16,6 +16,12 @@ import type { Card, VideoPokerResponse } from '../types/card';
 import { VideoPokerPhase } from '../types/phases';
 import type { CliGameConfig } from '../utils/cli/types';
 import { getVideoPokerBaseHint } from '../utils/hints/videoPokerBaseHint';
+import {
+  VIDEO_POKER_MAX_BET,
+  videoPokerHandNameToRowKey,
+  videoPokerPayoutCell,
+  videoPokerPayoutRows,
+} from '../utils/videoPokerPayout';
 import { ActionLogPanel } from './ActionLogPanel';
 import { CliTerminal } from './cli/CliTerminal';
 import { CliToggle } from './cli/CliToggle';
@@ -46,34 +52,72 @@ export interface VideoPokerGameContentProps {
     amount?: number,
     indices?: number[],
   ) => Promise<VideoPokerResponse>;
-  /** Payout table row keys (variant-specific) */
-  payoutTableRows: string[];
   /** Route path for the game manual lookup (e.g., "/videopoker") */
   gamePath: string;
   /** CLI game configuration for CLI mode integration */
   cliGameConfig: Omit<CliGameConfig<VideoPokerResponse, Parameters<VideoPokerGameContentProps['apiExec']>>, 'gameName'>;
 }
 
-/** Payout table display component. Expanded on the first visit so new players see
- * the payouts; once the player collapses it, the choice persists per variant. */
+/** Payout table display component. Renders a bet-by-hand grid (columns = bet 1..5)
+ * with the active bet column highlighted and, in the result phase, the winning hand
+ * row highlighted. Expanded on the first visit so new players see the payouts; once
+ * the player collapses it, the choice persists per variant. */
 function PayoutTable({
   t,
-  rows,
   gameName,
+  betAmount,
+  winningRowKey,
 }: {
   t: (key: string) => string;
-  rows: string[];
   gameName: 'videopoker' | 'deuceswild' | 'jokerpoker';
+  betAmount: number;
+  winningRowKey: string | null;
 }) {
   const [open, setOpen] = useLocalStorageToggle(`paytable_open_${gameName}`, true);
+  const rows = videoPokerPayoutRows(gameName);
+  const bets = Array.from({ length: VIDEO_POKER_MAX_BET }, (_, i) => i + 1);
   return (
     <details className="mb-3 text-center" open={open} onToggle={(e) => setOpen(e.currentTarget.open)}>
       <summary className="text-ds-warning text-sm cursor-pointer lg:text-base">{t('payoutTable.title')}</summary>
-      <ul className="text-ds-text-muted text-xs mt-1 space-y-0.5 lg:text-sm lg:space-y-1">
-        {rows.map((row) => (
-          <li key={row}>{t(`payoutTable.${row}`)}</li>
-        ))}
-      </ul>
+      <table
+        className="mt-1 mx-auto border-collapse text-ds-text-muted text-xs lg:text-sm"
+        aria-label={t('payoutTable.title')}
+      >
+        <thead>
+          <tr>
+            <th className="px-1.5 py-0.5 text-left font-medium">{t('payoutTable.hand')}</th>
+            {bets.map((b) => (
+              <th
+                key={b}
+                className={`px-1.5 py-0.5 text-right ${b === betAmount ? 'text-ds-warning font-bold' : ''}`}
+                aria-current={b === betAmount ? 'true' : undefined}
+              >
+                {b}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => {
+            const isWin = row.key === winningRowKey;
+            return (
+              <tr
+                key={row.key}
+                data-testid={`vp-payout-row-${row.key}`}
+                className={isWin ? 'bg-ds-success/20 text-ds-text-primary font-bold' : ''}
+                aria-current={isWin ? 'true' : undefined}
+              >
+                <td className="px-1.5 py-0.5 text-left whitespace-nowrap">{t(`payoutTable.name.${row.key}`)}</td>
+                {bets.map((b) => (
+                  <td key={b} className={`px-1.5 py-0.5 text-right ${b === betAmount ? 'text-ds-warning' : ''}`}>
+                    {videoPokerPayoutCell(row, b)}
+                  </td>
+                ))}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </details>
   );
 }
@@ -83,7 +127,6 @@ export function VideoPokerGameContent({
   gameName,
   i18nNamespace,
   apiExec,
-  payoutTableRows,
   gamePath,
   cliGameConfig,
 }: VideoPokerGameContentProps) {
@@ -321,7 +364,12 @@ export function VideoPokerGameContent({
               </div>
             )}
 
-            <PayoutTable t={tNs} rows={payoutTableRows} gameName={gameName} />
+            <PayoutTable
+              t={tNs}
+              gameName={gameName}
+              betAmount={betAmount}
+              winningRowKey={isResultPhase ? videoPokerHandNameToRowKey(state.handName) : null}
+            />
 
             {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
           </div>
