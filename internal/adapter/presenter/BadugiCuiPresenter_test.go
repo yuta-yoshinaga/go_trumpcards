@@ -52,6 +52,45 @@ func TestBadugiCuiPresenter_Output_ShowsHumanHand(t *testing.T) {
 	}
 }
 
+func TestBadugiCuiPresenter_HintOutput_StandPat(t *testing.T) {
+	pres := new(presenter.BadugiCuiPresenter)
+	bd, players := makeBadugiForPresenter()
+	bd.SetPhase(domain.BadugiPhaseDraw)
+	bd.SetCurrentTurn(0)
+	// A complete 4-card Badugi (all ranks and suits distinct).
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 4, false))
+
+	out := pres.HintOutput(bd)
+	assert.Contains(t, out, "スタンドパット")
+}
+
+func TestBadugiCuiPresenter_HintOutput_Exchange(t *testing.T) {
+	pres := new(presenter.BadugiCuiPresenter)
+	bd, players := makeBadugiForPresenter()
+	bd.SetPhase(domain.BadugiPhaseDraw)
+	bd.SetCurrentTurn(0)
+	// Two spades + two hearts: best Badugi subset is only 2 cards, so the
+	// other two should be flagged for exchange.
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+
+	out := pres.HintOutput(bd)
+	assert.Contains(t, out, "交換")
+}
+
+func TestBadugiCuiPresenter_HintOutput_NoneOutsideDraw(t *testing.T) {
+	pres := new(presenter.BadugiCuiPresenter)
+	bd, _ := makeBadugiForPresenter()
+	bd.SetPhase(domain.BadugiPhaseDeal)
+
+	assert.Contains(t, pres.HintOutput(bd), "ヒントはありません")
+}
+
 func TestBadugiCuiPresenter_Output_ShowsFoldedBadge(t *testing.T) {
 	pres := new(presenter.BadugiCuiPresenter)
 	bd, players := makeBadugiForPresenter()

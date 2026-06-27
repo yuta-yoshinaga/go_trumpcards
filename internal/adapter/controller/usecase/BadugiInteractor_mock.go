@@ -50,6 +50,11 @@ func (m *MockBadugiInteractor) Stand() string {
 }
 
 // ActionLog mock.
+func (m *MockBadugiInteractor) Hint() string {
+	ret := m.Called()
+	return ret.Get(0).(string)
+}
+
 func (m *MockBadugiInteractor) ActionLog() string {
 	ret := m.Called()
 	return ret.Get(0).(string)

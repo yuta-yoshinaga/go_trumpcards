@@ -131,3 +131,45 @@ func (bcp *BadugiCuiPresenter) Output(g interfaces.BadugiGame, lastErr error) st
 func (bcp *BadugiCuiPresenter) ActionLogOutput(g interfaces.BadugiGame) string {
 	return actionLogOutputText(g)
 }
+
+// HintOutput emits a draw-phase recommendation: which cards form the current
+// best Badugi subset (keep) and which to exchange. Mirrors the CPU's
+// best-subset discard logic so the human gets the same guidance.
+func (bcp *BadugiCuiPresenter) HintOutput(g interfaces.BadugiGame) string {
+	if g.GetPhase() != domain.BadugiPhaseDraw {
+		return i18n.T("badugi.hintNone") + "\n"
+	}
+	turn := g.GetCurrentTurn()
+	players := g.GetPlayers()
+	if turn < 0 || turn >= len(players) {
+		return i18n.T("badugi.hintNone") + "\n"
+	}
+	pl := players[turn]
+	if !pl.GetIsHuman() {
+		return i18n.T("badugi.hintNone") + "\n"
+	}
+	// EvalHand idempotently recomputes the cached best subset from the current
+	// cards; the draw phase does not otherwise refresh it for the human.
+	pl.EvalHand()
+	best := pl.GetBestHand()
+	kept := make(map[*domain.Card]bool, len(best.Cards))
+	for _, c := range best.Cards {
+		kept[c] = true
+	}
+	keep := make([]string, 0, best.Size)
+	discard := make([]string, 0, pl.GetCardsSize())
+	for i := 0; i < pl.GetCardsSize(); i++ {
+		if kept[pl.GetCard(i)] {
+			keep = append(keep, strconv.Itoa(i))
+		} else {
+			discard = append(discard, strconv.Itoa(i))
+		}
+	}
+	if len(discard) == 0 {
+		return color.Yellow(i18n.Tf("badugi.hintStandPat", "size", strconv.Itoa(best.Size))) + "\n"
+	}
+	return color.Yellow(i18n.Tf("badugi.hintExchange",
+		"keep", strings.Join(keep, ","),
+		"discard", strings.Join(discard, ","),
+		"size", strconv.Itoa(best.Size))) + "\n"
+}

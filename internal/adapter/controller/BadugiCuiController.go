@@ -44,7 +44,7 @@ func (bcc *BadugiCuiController) Exec(command string) string {
 			"e", "exchange", "s", "stand", "b", "bet", "c", "call", "ra", "raise",
 			"f", "fold", "ck", "check", "a", "allin",
 			"bl", "bettinglimit", "scc", "setcpucount", "mai", "metaai",
-			"log", "l",
+			"h", "hint", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -91,7 +91,7 @@ func (bcc *BadugiCuiController) Exec(command string) string {
 				cfg.CpuMetaAI = v == 1
 				return bcc.bi.ResetWithConfig(cfg, nil), true
 			default:
-				return handleCuiLog(cmd, bcc.bi.ActionLog)
+				return handleCuiHintAndLog(cmd, bcc.bi.Hint, bcc.bi.ActionLog)
 			}
 		},
 	)

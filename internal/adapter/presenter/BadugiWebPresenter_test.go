@@ -24,6 +24,18 @@ func makeBadugiForPresenter() (*domain.Badugi, []*domain.BadugiPlayer) {
 	return domain.NewBadugi(tc, players, domain.DefaultBadugiConfig()), players
 }
 
+func TestBadugiWebPresenter_HintOutput(t *testing.T) {
+	pres := new(presenter.BadugiWebPresenter)
+	bd, _ := makeBadugiForPresenter()
+	bd.SetPhase(domain.BadugiPhaseDeal)
+
+	// HintOutput mirrors Output (the GUI computes its own hint client-side).
+	var out controller.BadugiWebOutput
+	require.NoError(t, json.Unmarshal([]byte(pres.HintOutput(bd)), &out))
+	assert.Equal(t, domain.BadugiPhaseDeal, out.Phase)
+	assert.Equal(t, 4, len(out.Players))
+}
+
 func TestBadugiWebPresenter_Output_Initial(t *testing.T) {
 	pres := new(presenter.BadugiWebPresenter)
 	bd, players := makeBadugiForPresenter()
