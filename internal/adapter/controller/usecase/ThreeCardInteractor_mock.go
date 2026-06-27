@@ -29,6 +29,11 @@ func (m *MockThreeCardInteractor) Fold() string {
 	return args.String(0)
 }
 
+func (m *MockThreeCardInteractor) Hint() string {
+	args := m.Called()
+	return args.String(0)
+}
+
 func (m *MockThreeCardInteractor) ActionLog() string {
 	args := m.Called()
 	return args.String(0)

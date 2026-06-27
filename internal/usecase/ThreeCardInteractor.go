@@ -20,6 +20,8 @@ type ThreeCardInteractorIF interface {
 	Play() string
 	// Fold フォールド
 	Fold() string
+	// Hint ヒント取得
+	Hint() string
 	// ActionLog 棋��を出力する
 	ActionLog() string
 }
@@ -62,6 +64,11 @@ func (ti *ThreeCardInteractor) Fold() string {
 // ActionLog 棋譜を出力する
 func (ti *ThreeCardInteractor) ActionLog() string {
 	return ti.tp.ActionLogOutput(ti.Game)
+}
+
+// Hint ヒント取得
+func (ti *ThreeCardInteractor) Hint() string {
+	return ti.tp.HintOutput(ti.Game)
 }
 
 // RestoreThreeCardInteractor deserialises JSON into a ThreeCardInteractor.
