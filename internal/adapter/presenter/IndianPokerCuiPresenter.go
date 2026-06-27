@@ -64,6 +64,13 @@ func (p *IndianPokerCuiPresenter) Output(ip interfaces.IndianPokerGame, lastErr 
 					b.WriteString(i18n.Tf("indianpoker.cardLine", "card", cuiCardStrEmoji(player.GetCard(0))) + "\n")
 				}
 			}
+
+			// During betting, surface the human's estimated win equity (their
+			// own card is hidden), mirroring the web equity meter.
+			if ip.GetPhase() == domain.IndianPokerPhaseBetting && player.GetIsHuman() && !player.GetFolded() {
+				b.WriteString(i18n.Tf("indianpoker.equityLine",
+					"pct", strconv.Itoa(ip.GetEstimatedStrength(i))) + "\n")
+			}
 		}
 
 		cpuActions := ip.GetCpuActions()
