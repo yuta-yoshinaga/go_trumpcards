@@ -18,6 +18,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card } from '../types/card';
 import { LaBelleLuciePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { labelleLucieHasLegalMove } from '../utils/labelleLucieLegalMove';
 
 /** La Belle Lucie tutorial step definitions. */
 const LL_TUTORIAL_STEPS: TutorialStep[] = [
@@ -76,6 +77,9 @@ function LaBelleLuciePageContent() {
   const isOver = state.phase === LaBelleLuciePhase.GAME_OVER;
   const isEnd = isClear || isOver;
   const canAct = !isEnd;
+  // No legal move left but redeals remain: recommend a redeal before the
+  // player wastes time hunting for a move that does not exist.
+  const stuck = canAct && state.redealsLeft > 0 && !labelleLucieHasLegalMove(state.fans, state.foundation);
   const phaseName = phaseNames[state.phase] ?? '';
 
   const handleReset = () => {
@@ -180,6 +184,18 @@ function LaBelleLuciePageContent() {
         <div className="mt-2 text-ds-text-muted text-xs">
           {t('redealsLeft', { count: state.redealsLeft })} · {t('moveCount', { count: state.moveCount })}
         </div>
+        {stuck && (
+          <div
+            className="mt-1 flex items-center gap-2 text-ds-warning text-sm font-medium"
+            role="status"
+            data-testid="ll-stuck-banner"
+          >
+            <span>{t('stuckRedeal')}</span>
+            <span className="rounded-full bg-ds-warning/20 px-2 py-0.5 text-xs font-bold tabular-nums">
+              {t('redealsLeftBadge', { count: state.redealsLeft })}
+            </span>
+          </div>
+        )}
         {canAct && (
           <div className="mt-1 text-ds-text-primary text-xs">
             {selected === null ? t('selectSource') : t('selectDestination')}
@@ -201,7 +217,7 @@ function LaBelleLuciePageContent() {
           {canAct && (
             <button
               type="button"
-              className={btnWarning}
+              className={`${btnWarning}${stuck ? ' motion-safe:animate-pulse' : ''}`}
               onClick={() => exec('rd')}
               disabled={loading || state.redealsLeft <= 0}
               data-tutorial="ll-redeal"
