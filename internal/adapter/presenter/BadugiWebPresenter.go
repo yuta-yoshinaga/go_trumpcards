@@ -17,6 +17,13 @@ func (bwp *BadugiWebPresenter) Output(g interfaces.BadugiGame, lastErr error) st
 }
 
 // ActionLogOutput marshals the action log to JSON.
+// HintOutput returns the current state as JSON. The Web GUI computes its own
+// draw hint client-side, so this mirrors Output to satisfy the BadugiPresenter
+// interface shared with the CUI.
+func (bwp *BadugiWebPresenter) HintOutput(g interfaces.BadugiGame) string {
+	return bwp.Output(g, nil)
+}
+
 func (bwp *BadugiWebPresenter) ActionLogOutput(g interfaces.BadugiGame) string {
 	return actionLogOutputJSON(g)
 }

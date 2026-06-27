@@ -1,5 +1,8 @@
 {
   "helpTitle": "Badugi",
+  "hintNone": "No hint available",
+  "hintStandPat": "Recommendation: stand pat (a {{size}}-card Badugi is complete)",
+  "hintExchange": "Recommendation: keep [{{keep}}], exchange [{{discard}}] (best subset {{size}})",
   "helpBet": "  b [amount]           bet (e.g. b 20)",
   "helpCall": "  c                    call",
   "helpRaise": "  ra [amount]          raise (e.g. ra 30)",
