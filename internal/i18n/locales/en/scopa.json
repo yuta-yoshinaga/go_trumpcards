@@ -1,5 +1,9 @@
 {
   "helpTitle": "Scopa",
+  "hintNone": "No hint available",
+  "hintNoCapture": "No capture available; lay your lowest card",
+  "hintCapture": "Recommendation: play {{played}} to capture {{captured}}",
+  "hintScopa": "Recommendation: play {{played}} to sweep {{captured}} (scopa!)",
   "helpPlay": "  p <h> [t...]             play hand h (capture table cards t..., or lay if none given)",
   "helpNext": "  n                        start the next round",
   "helpSetDifficulty": "  sd [0-2]                 CPU difficulty (0=Easy, 1=Normal, 2=Hard)",

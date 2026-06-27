@@ -64,6 +64,15 @@ func TestScopaInteractor_ActionLog(t *testing.T) {
 	spMock.AssertExpectations(t)
 }
 
+func TestScopaInteractor_Hint(t *testing.T) {
+	spMock := new(presenter.MockScopaPresenter)
+	gameMock := new(interfaces.MockScopaGame)
+	spMock.On("HintOutput", gameMock).Return("hint output")
+	si := usecase.NewScopaInteractor(gameMock, spMock)
+	assert.Equal(t, "hint output", si.Hint())
+	spMock.AssertExpectations(t)
+}
+
 func TestScopaInteractor_MockGame(t *testing.T) {
 	mockOutput := `{"players":[]}`
 	spMock := new(presenter.MockScopaPresenter)

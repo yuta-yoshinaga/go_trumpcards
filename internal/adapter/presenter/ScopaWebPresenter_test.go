@@ -31,6 +31,20 @@ func TestScopaWebPresenter_OutputJSON(t *testing.T) {
 	}
 }
 
+func TestScopaWebPresenter_HintOutput(t *testing.T) {
+	p := &presenter.ScopaWebPresenter{}
+	s := buildScoredScopa(t)
+	// HintOutput mirrors Output (the GUI computes its own hint client-side).
+	out := p.HintOutput(s)
+	var parsed map[string]any
+	if err := json.Unmarshal([]byte(out), &parsed); err != nil {
+		t.Fatalf("hint output is not valid JSON: %v", err)
+	}
+	if _, ok := parsed["phase"]; !ok {
+		t.Errorf("missing phase key in hint output")
+	}
+}
+
 func TestScopaWebPresenter_OutputError(t *testing.T) {
 	p := &presenter.ScopaWebPresenter{}
 	s := buildScoredScopa(t)
