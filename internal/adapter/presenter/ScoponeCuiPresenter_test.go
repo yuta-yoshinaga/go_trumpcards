@@ -15,6 +15,56 @@ func spBuildPlayedScopone(t *testing.T) *domain.Scopone {
 	return s
 }
 
+func TestScoponeCuiPresenter_HintOutput(t *testing.T) {
+	p := &presenter.ScoponeCuiPresenter{}
+	build := func(handVal, handSuit int, table []*domain.Card) *domain.Scopone {
+		s := domain.NewDefaultScopone()
+		s.SetPhase(domain.ScoponePhasePlayerTurn)
+		s.SetCurrentTurn(0)
+		s.GetPlayer(0).AddCard(domain.NewCard(handSuit, handVal, false))
+		s.SetTableCards(table)
+		return s
+	}
+
+	t.Run("scopa sweep", func(t *testing.T) {
+		s := build(7, domain.CardDesignHeart, []*domain.Card{
+			domain.NewCard(domain.CardDesignDiamond, 3, false),
+			domain.NewCard(domain.CardDesignClover, 4, false),
+		})
+		if out := p.HintOutput(s); !strings.Contains(out, "スコパ") {
+			t.Errorf("expected scopa hint, got: %s", out)
+		}
+	})
+
+	t.Run("plain capture", func(t *testing.T) {
+		s := build(7, domain.CardDesignHeart, []*domain.Card{
+			domain.NewCard(domain.CardDesignDiamond, 7, false),
+			domain.NewCard(domain.CardDesignClover, 5, false),
+		})
+		if out := p.HintOutput(s); !strings.Contains(out, "捕獲") {
+			t.Errorf("expected capture hint, got: %s", out)
+		}
+	})
+
+	t.Run("no capture", func(t *testing.T) {
+		s := build(2, domain.CardDesignHeart, []*domain.Card{
+			domain.NewCard(domain.CardDesignDiamond, 7, false),
+			domain.NewCard(domain.CardDesignClover, 5, false),
+		})
+		if out := p.HintOutput(s); !strings.Contains(out, "捕獲できる手はありません") {
+			t.Errorf("expected no-capture hint, got: %s", out)
+		}
+	})
+
+	t.Run("none outside player turn", func(t *testing.T) {
+		s := domain.NewDefaultScopone()
+		s.SetPhase(domain.ScoponePhaseRoundEnd)
+		if out := p.HintOutput(s); !strings.Contains(out, "ヒントはありません") {
+			t.Errorf("expected none hint, got: %s", out)
+		}
+	})
+}
+
 func TestScoponeCuiPresenter_Output(t *testing.T) {
 	p := &presenter.ScoponeCuiPresenter{}
 	s := spBuildPlayedScopone(t)

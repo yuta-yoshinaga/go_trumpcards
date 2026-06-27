@@ -119,6 +119,13 @@ func (swp *ScoponeWebPresenter) buildResultMessage(sg interfaces.ScoponeGame) st
 }
 
 // ActionLogOutput 棋譜を JSON 出力。
+// HintOutput returns the current state as JSON. The Web GUI computes its own
+// hint client-side, so this mirrors Output to satisfy the ScoponePresenter
+// interface shared with the CUI.
+func (swp *ScoponeWebPresenter) HintOutput(sg interfaces.ScoponeGame) string {
+	return swp.Output(sg, nil)
+}
+
 func (swp *ScoponeWebPresenter) ActionLogOutput(sg interfaces.ScoponeGame) string {
 	return actionLogOutputJSON(sg)
 }

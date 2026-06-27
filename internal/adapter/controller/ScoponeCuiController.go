@@ -34,7 +34,7 @@ func (c *ScoponeCuiController) Exec(command string) string {
 		},
 		[]string{
 			"play", "p", "next", "n", "nextround",
-			"sd", "setdifficulty", "st", "settarget", "log", "l",
+			"sd", "setdifficulty", "st", "settarget", "h", "hint", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -55,7 +55,7 @@ func (c *ScoponeCuiController) Exec(command string) string {
 					return c.si.ResetWithConfig(cfg)
 				})
 			default:
-				return handleCuiLog(cmd, c.si.ActionLog)
+				return handleCuiHintAndLog(cmd, c.si.Hint, c.si.ActionLog)
 			}
 		},
 	)
