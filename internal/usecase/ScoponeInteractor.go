@@ -22,6 +22,8 @@ type ScoponeInteractorIF interface {
 	ResetWithConfig(config domain.ScoponeConfig) string
 	// GetConfig 現在の設定を返す
 	GetConfig() domain.ScoponeConfig
+	// Hint ヒントを出力する
+	Hint() string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
@@ -81,6 +83,11 @@ func (si *ScoponeInteractor) ResetWithConfig(config domain.ScoponeConfig) string
 // ActionLog 棋譜を出力する。
 func (si *ScoponeInteractor) ActionLog() string {
 	return si.sp.ActionLogOutput(si.Game)
+}
+
+// Hint ヒントを出力する。
+func (si *ScoponeInteractor) Hint() string {
+	return si.sp.HintOutput(si.Game)
 }
 
 // scoponeMaxCpuIterations は runCpuTurns の防御的な反復上限。

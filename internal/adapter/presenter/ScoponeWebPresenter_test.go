@@ -16,6 +16,19 @@ func spBuildScoredScopone(t *testing.T) *domain.Scopone {
 	return s
 }
 
+func TestScoponeWebPresenter_HintOutput(t *testing.T) {
+	p := &presenter.ScoponeWebPresenter{}
+	s := spBuildScoredScopone(t)
+	// HintOutput mirrors Output (the GUI computes its own hint client-side).
+	var parsed map[string]any
+	if err := json.Unmarshal([]byte(p.HintOutput(s)), &parsed); err != nil {
+		t.Fatalf("hint output is not valid JSON: %v", err)
+	}
+	if _, ok := parsed["phase"]; !ok {
+		t.Errorf("missing phase key in hint output")
+	}
+}
+
 func TestScoponeWebPresenter_OutputJSON(t *testing.T) {
 	p := &presenter.ScoponeWebPresenter{}
 	s := spBuildScoredScopone(t)

@@ -64,6 +64,15 @@ func TestScoponeInteractor_ActionLog(t *testing.T) {
 	spMock.AssertExpectations(t)
 }
 
+func TestScoponeInteractor_Hint(t *testing.T) {
+	spMock := new(presenter.MockScoponePresenter)
+	gameMock := new(interfaces.MockScoponeGame)
+	spMock.On("HintOutput", gameMock).Return("hint output")
+	si := usecase.NewScoponeInteractor(gameMock, spMock)
+	assert.Equal(t, "hint output", si.Hint())
+	spMock.AssertExpectations(t)
+}
+
 func TestScoponeInteractor_MockGame(t *testing.T) {
 	mockOutput := `{"players":[]}`
 	spMock := new(presenter.MockScoponePresenter)

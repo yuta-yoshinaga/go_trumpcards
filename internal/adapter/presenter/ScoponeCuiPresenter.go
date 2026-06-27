@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -89,6 +90,51 @@ func scoponeScoreDetailStr(b *strings.Builder, det *domain.ScoponeScoreDetail) {
 			"scopas", strconv.Itoa(det.Scopas[t]),
 			"gained", strconv.Itoa(det.Gained[t])) + "\n")
 	}
+}
+
+// HintOutput emits a capture recommendation for the human's turn: the hand
+// card and the table cards it captures (flagging a scopa when it clears the
+// table), reusing the domain's GetValidCaptures.
+func (p *ScoponeCuiPresenter) HintOutput(sg interfaces.ScoponeGame) string {
+	if sg.GetPhase() != domain.ScoponePhasePlayerTurn {
+		return i18n.T("scopone.hintNone") + "\n"
+	}
+	turn := sg.GetCurrentTurn()
+	player := sg.GetPlayer(turn)
+	if player == nil || !player.GetIsHuman() {
+		return i18n.T("scopone.hintNone") + "\n"
+	}
+	table := sg.GetTableCards()
+	bestHand := -1
+	var bestCap []int
+	bestScopa := false
+	for i := 0; i < player.GetCardsSize(); i++ {
+		for _, cap := range sg.GetValidCaptures(i) {
+			isScopa := len(table) > 0 && len(cap) == len(table)
+			switch {
+			case bestHand == -1:
+			case isScopa && !bestScopa:
+			case isScopa == bestScopa && len(cap) > len(bestCap):
+			default:
+				continue
+			}
+			bestHand, bestCap, bestScopa = i, cap, isScopa
+		}
+	}
+	if bestHand == -1 {
+		return color.Yellow(i18n.T("scopone.hintNoCapture")) + "\n"
+	}
+	capCards := make([]*domain.Card, 0, len(bestCap))
+	for _, idx := range bestCap {
+		capCards = append(capCards, table[idx])
+	}
+	key := "scopone.hintCapture"
+	if bestScopa {
+		key = "scopone.hintScopa"
+	}
+	return color.Yellow(i18n.Tf(key,
+		"played", cuiCardSliceStr([]*domain.Card{player.GetCard(bestHand)}),
+		"captured", cuiCardSliceStr(capCards))) + "\n"
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.
