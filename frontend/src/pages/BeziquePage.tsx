@@ -247,9 +247,9 @@ function BeziquePageContent() {
                       </div>
                       <div className="text-ds-text-muted text-xs" data-testid={`bezique-deal-breakdown-${p.id}`}>
                         {t('dealBreakdown', {
-                          trick: (state.dealPoints[p.id] ?? 0) - (state.dealMeldPoints[p.id] ?? 0),
-                          meld: state.dealMeldPoints[p.id] ?? 0,
-                          total: state.dealPoints[p.id] ?? 0,
+                          trick: state.dealPoints[p.id] - state.dealMeldPoints[p.id],
+                          meld: state.dealMeldPoints[p.id],
+                          total: state.dealPoints[p.id],
                         })}
                       </div>
                     </div>
