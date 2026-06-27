@@ -53,6 +53,8 @@ type GoFishGame interface {
 	GetLastBookRank() int
 	// GetCpuActions CPUターンの行動履歴を取得する
 	GetCpuActions() []*domain.GoFishCpuAction
+	// GetKnownRanks は各プレイヤーが保有を公開済みのランク一覧を返す
+	GetKnownRanks() map[int][]int
 	// GetHumanAction 人間の最後の行動記録を取得する
 	GetHumanAction() *domain.GoFishCpuAction
 }

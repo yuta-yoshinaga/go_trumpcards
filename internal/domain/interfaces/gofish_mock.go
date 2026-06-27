@@ -161,6 +161,15 @@ func (_m *MockGoFishGame) GetCpuActions() []*domain.GoFishCpuAction {
 	return nil
 }
 
+// GetKnownRanks モック
+func (_m *MockGoFishGame) GetKnownRanks() map[int][]int {
+	ret := _m.Called()
+	if v, ok := ret.Get(0).(map[int][]int); ok {
+		return v
+	}
+	return nil
+}
+
 // GetHumanAction モック
 func (_m *MockGoFishGame) GetHumanAction() *domain.GoFishCpuAction {
 	ret := _m.Called()
