@@ -114,4 +114,16 @@ describe('SevenBridgePage', () => {
     fireEvent.click(btn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawstock'));
   });
+
+  it('executes a typed CLI command (no longer a no-op stub)', async () => {
+    localStorage.setItem('cli-mode-sevenbridge', 'true');
+    mockExec.mockResolvedValue(drawState);
+    renderWithProviders(<SevenBridgePage />);
+    const input = await screen.findByRole('textbox');
+    mockExec.mockClear();
+    fireEvent.change(input, { target: { value: 'd' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawstock'));
+    localStorage.removeItem('cli-mode-sevenbridge');
+  });
 });
