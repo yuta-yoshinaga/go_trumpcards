@@ -64,6 +64,15 @@ func TestEscobaInteractor_ActionLog(t *testing.T) {
 	spMock.AssertExpectations(t)
 }
 
+func TestEscobaInteractor_Hint(t *testing.T) {
+	spMock := new(presenter.MockEscobaPresenter)
+	gameMock := new(interfaces.MockEscobaGame)
+	spMock.On("HintOutput", gameMock).Return("hint output")
+	ei := usecase.NewEscobaInteractor(gameMock, spMock)
+	assert.Equal(t, "hint output", ei.Hint())
+	spMock.AssertExpectations(t)
+}
+
 func TestEscobaInteractor_MockGame(t *testing.T) {
 	mockOutput := `{"players":[]}`
 	spMock := new(presenter.MockEscobaPresenter)

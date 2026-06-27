@@ -108,6 +108,13 @@ func (ewp *EscobaWebPresenter) buildResultMessage(eg interfaces.EscobaGame) stri
 }
 
 // ActionLogOutput 棋譜を JSON 出力。
+// HintOutput returns the current state as JSON. The Web GUI computes its own
+// hint client-side, so this mirrors Output to satisfy the EscobaPresenter
+// interface shared with the CUI.
+func (ewp *EscobaWebPresenter) HintOutput(eg interfaces.EscobaGame) string {
+	return ewp.Output(eg, nil)
+}
+
 func (ewp *EscobaWebPresenter) ActionLogOutput(eg interfaces.EscobaGame) string {
 	return actionLogOutputJSON(eg)
 }

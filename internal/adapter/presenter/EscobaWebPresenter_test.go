@@ -16,6 +16,19 @@ func escobaBuildGame(t *testing.T) *domain.Escoba {
 	return e
 }
 
+func TestEscobaWebPresenter_HintOutput(t *testing.T) {
+	p := &presenter.EscobaWebPresenter{}
+	e := escobaBuildGame(t)
+	// HintOutput mirrors Output (the GUI computes its own hint client-side).
+	var parsed map[string]any
+	if err := json.Unmarshal([]byte(p.HintOutput(e)), &parsed); err != nil {
+		t.Fatalf("hint output is not valid JSON: %v", err)
+	}
+	if _, ok := parsed["phase"]; !ok {
+		t.Errorf("missing phase key in hint output")
+	}
+}
+
 func TestEscobaWebPresenter_OutputJSON(t *testing.T) {
 	p := &presenter.EscobaWebPresenter{}
 	e := escobaBuildGame(t)

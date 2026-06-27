@@ -22,6 +22,8 @@ type EscobaInteractorIF interface {
 	ResetWithConfig(config domain.EscobaConfig) string
 	// GetConfig 現在の設定を返す
 	GetConfig() domain.EscobaConfig
+	// Hint ヒントを出力する
+	Hint() string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
@@ -81,6 +83,11 @@ func (ei *EscobaInteractor) ResetWithConfig(config domain.EscobaConfig) string {
 // ActionLog 棋譜を出力する。
 func (ei *EscobaInteractor) ActionLog() string {
 	return ei.sp.ActionLogOutput(ei.Game)
+}
+
+// Hint ヒントを出力する。
+func (ei *EscobaInteractor) Hint() string {
+	return ei.sp.HintOutput(ei.Game)
 }
 
 // escobaMaxCpuIterations は runCpuTurns の防御的な反復上限。
