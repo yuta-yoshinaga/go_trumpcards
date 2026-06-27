@@ -83,6 +83,12 @@ func TestThreeCardCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetPhase").Return(domain.ThreeCardPhaseBet).Maybe()
 		assert.Contains(t, p.HintOutput(m), "ヒントはありません")
 	})
+
+	t.Run("incomplete hand folds (guard)", func(t *testing.T) {
+		// An action-phase hand without exactly 3 cards is treated as fold.
+		m := actionMock(domain.ThreeCardHandHighCard, c(12), c(6))
+		assert.Contains(t, p.HintOutput(m), "フォールド")
+	})
 }
 
 func TestThreeCardCuiPresenter_Output_ActionPhase(t *testing.T) {
