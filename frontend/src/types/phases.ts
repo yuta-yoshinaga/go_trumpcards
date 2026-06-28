@@ -1422,3 +1422,13 @@ export const BeggarMyNeighbourPhase = {
   COLLECT: 2,
   GAME_END: 3,
 } as const;
+
+/** All Fours (Seven Up) phase constants (sync: internal/domain/AllFours.go). */
+export const AllFoursPhase = {
+  BEG: 0,
+  GIFT: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;

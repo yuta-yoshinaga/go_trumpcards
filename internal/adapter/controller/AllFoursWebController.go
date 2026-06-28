@@ -1,0 +1,137 @@
+package controller
+
+import (
+	"net/http"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
+)
+
+// AllFoursWebInput All Fours Webインプット
+type AllFoursWebInput struct {
+	BaseWebInput
+	Beg       *bool              `json:"beg,omitempty"`
+	Run       *bool              `json:"run,omitempty"`
+	CardIndex *int               `json:"cardIndex,omitempty"`
+	Config    *AllFoursWebConfig `json:"config,omitempty"`
+}
+
+// AllFoursWebConfig All Fours Web設定
+type AllFoursWebConfig struct {
+	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
+	PointLimit    *int `json:"pointLimit,omitempty"`
+}
+
+// AllFoursWebOutputPlayer All Fours Webアウトプットプレイヤー
+type AllFoursWebOutputPlayer struct {
+	ID              int              `json:"id"`
+	IsHuman         bool             `json:"isHuman"`
+	CardCount       int              `json:"cardCount"`
+	Cards           []*WebOutputCard `json:"cards"`
+	RoundScore      int              `json:"roundScore"`
+	CumulativeScore int              `json:"cumulativeScore"`
+	TrickCount      int              `json:"trickCount"`
+}
+
+// AllFoursWebOutputTrickCard トリック中の1枚
+type AllFoursWebOutputTrickCard struct {
+	PlayerIdx int            `json:"playerIdx"`
+	Card      *WebOutputCard `json:"card"`
+}
+
+// AllFoursWebOutputHint ヒント出力
+type AllFoursWebOutputHint struct {
+	CardIndex *int   `json:"cardIndex,omitempty"`
+	Beg       *bool  `json:"beg,omitempty"`
+	Run       *bool  `json:"run,omitempty"`
+	Reason    string `json:"reason"`
+}
+
+// AllFoursWebOutput All Fours Webアウトプット
+type AllFoursWebOutput struct {
+	Players          []*AllFoursWebOutputPlayer    `json:"players"`
+	Phase            int                           `json:"phase"`
+	RoundNumber      int                           `json:"roundNumber"`
+	TrickNumber      int                           `json:"trickNumber"`
+	DealerIdx        int                           `json:"dealerIdx"`
+	NonDealerIdx     int                           `json:"nonDealerIdx"`
+	CurrentPlayerIdx int                           `json:"currentPlayerIdx"`
+	TrumpSuit        int                           `json:"trumpSuit"`
+	TurnUp           *WebOutputCard                `json:"turnUp"`
+	RunCount         int                           `json:"runCount"`
+	CurrentTrick     []*AllFoursWebOutputTrickCard `json:"currentTrick"`
+	GameEndFlag      bool                          `json:"gameEndFlag"`
+	WinnerIdx        int                           `json:"winnerIdx"`
+	LeadPlayerIdx    int                           `json:"leadPlayerIdx"`
+	ValidPlayIndices []int                         `json:"validPlayIndices,omitempty"`
+	Hint             *AllFoursWebOutputHint        `json:"hint,omitempty"`
+	WebOutputBase
+	Config AllFoursWebOutputConfig `json:"config"`
+}
+
+// AllFoursWebOutputConfig All Fours 設定アウトプット
+type AllFoursWebOutputConfig struct {
+	CpuDifficulty int `json:"cpuDifficulty"`
+	PointLimit    int `json:"pointLimit"`
+}
+
+// ToConfig builds an AllFoursConfig from the nested web config, applying bounds checking.
+func (c *AllFoursWebConfig) ToConfig() domain.AllFoursConfig {
+	cfg := domain.DefaultAllFoursConfig()
+	cfg.CpuDifficulty = domain.AllFoursCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty, int(domain.AllFoursCpuDifficultyEasy), int(domain.AllFoursCpuDifficultyHard), int(cfg.CpuDifficulty)))
+	webutil.ApplyBoundedInt(&cfg.PointLimit, c.PointLimit, 1, 1000)
+	return cfg
+}
+
+// ToConfig builds an AllFoursConfig from the web input.
+func (in AllFoursWebInput) ToConfig() domain.AllFoursConfig {
+	return configOrDefault(in.Config, (*AllFoursWebConfig).ToConfig, domain.DefaultAllFoursConfig())
+}
+
+// AllFoursWebController All Fours Webコントローラー型
+type AllFoursWebController = GameWebController[usecase.AllFoursInteractorIF, AllFoursWebInput, *AllFoursWebOutput]
+
+// NewAllFoursWebController and NewAllFoursWebControllerWithProvider are
+// the standard and provider-backed constructors for AllFoursWebController.
+var NewAllFoursWebController, NewAllFoursWebControllerWithProvider = webControllerPair[usecase.AllFoursInteractorIF, AllFoursWebInput, *AllFoursWebOutput](
+	newAllFoursDefaultOutput, allFoursDispatch,
+)
+
+func newAllFoursDefaultOutput(msg string) *AllFoursWebOutput {
+	return &AllFoursWebOutput{
+		Players:       make([]*AllFoursWebOutputPlayer, 0),
+		CurrentTrick:  make([]*AllFoursWebOutputTrickCard, 0),
+		WinnerIdx:     -1,
+		WebOutputBase: WebOutputBase{Message: msg},
+	}
+}
+
+func allFoursDispatch(bc *baseController, w http.ResponseWriter, ai usecase.AllFoursInteractorIF, param AllFoursWebInput, newDefault func(string) *AllFoursWebOutput) bool {
+	switch param.Command {
+	case "r", "reset":
+		bc.writePresenterResponse(w, ai.ResetWithConfig(param.ToConfig()))
+	case "beg":
+		if !requireParam(bc, w, newDefault, param.Beg == nil, "param error: beg is required.") {
+			return true
+		}
+		bc.writePresenterResponse(w, ai.Beg(*param.Beg))
+	case "respond":
+		if !requireParam(bc, w, newDefault, param.Run == nil, "param error: run is required.") {
+			return true
+		}
+		bc.writePresenterResponse(w, ai.RespondBeg(*param.Run))
+	case "p", "play":
+		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
+			return true
+		}
+		bc.writePresenterResponse(w, ai.Play(*param.CardIndex))
+	case "n", "next":
+		bc.writePresenterResponse(w, ai.NextTrick())
+	case "nr", "nextround":
+		bc.writePresenterResponse(w, ai.NextRound())
+	default:
+		return dispatchHintAndLog(param.Command, bc, w, ai.Hint, ai.ActionLog)
+	}
+	return true
+}

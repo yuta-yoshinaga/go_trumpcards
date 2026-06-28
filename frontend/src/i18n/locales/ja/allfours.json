@@ -1,0 +1,67 @@
+{
+  "phase": {
+    "beg": "ベグ",
+    "gift": "ギフト",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ディール終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "pointLimit": "目標スコア",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "trick": "トリック {{n}}",
+  "dealer": "親: {{name}}",
+  "trumpSuit": "切り札: {{suit}}",
+  "trumpUnset": "未確定",
+  "turnUp": "めくり札: {{card}}",
+  "cards": "{{count}}枚",
+  "currentTrick": "現在のトリック",
+  "scoresPlayer": "プレイヤー",
+  "scoresTricks": "トリック",
+  "scoresRound": "ディール",
+  "scoresTotal": "累計",
+  "standButton": "スタンド",
+  "begButton": "ベグ",
+  "giftButton": "ギフト (1点渡す)",
+  "runButton": "ラン (引き直す)",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のディール",
+  "begPhase": "スタンド (現トランプで開始) かベグ (切り直し要求) を選択",
+  "giftPhase": "ギフト (相手に1点) かラン (引き直す) を選択",
+  "result": {
+    "humanWin": "あなたの勝利！",
+    "cpuWin": "CPU {{cpuId}} の勝利！"
+  },
+  "scoring": {
+    "high": "High (最強トランプ)",
+    "low": "Low (最弱トランプ)",
+    "jack": "Jack (Jトランプの捕獲)",
+    "game": "Game (ピップ合計最大)"
+  },
+  "hint": {
+    "begBeg": "弱い手札なのでベグ",
+    "begStand": "十分な手札なのでスタンド",
+    "giftGift": "強い手札なのでギフトで進める",
+    "giftRun": "弱い手札なので引き直す",
+    "leadStrong": "強いカードでリード",
+    "followSuit": "リードスートに追随",
+    "trumpCut": "トランプでカット",
+    "discardLow": "低いカードを捨てる"
+  },
+  "tutorial": {
+    "begControls": "非親はスタンド (今のトランプで開始) かベグ (切り直し要求) を選びます。",
+    "trickDisplay": "現在のトリックです。めくり札のスートが切り札になります。",
+    "playerHand": "あなたの手札です。リードスートに従うかトランプでカット可能です。",
+    "playButton": "カードを選んだらこのボタンで出します。",
+    "scoreTable": "スコア表です。High/Low/Jack/Game の4ポイントを競い、先に7点で勝利です。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}

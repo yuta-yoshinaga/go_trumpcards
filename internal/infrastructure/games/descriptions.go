@@ -185,6 +185,7 @@ var gameDescriptions = map[string]string{
 	"doubleklondike":      "Double Klondike / Gargantua (ダブル・クロンダイク/ガルガンチュア)",
 	"blackhole":           "Black Hole (ブラックホール)",
 	"beggarmyneighbour":   "Beggar-My-Neighbour (ビガー・マイ・ネイバー)",
+	"allfours":            "All Fours / Seven Up (オールフォーズ/セブンアップ)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

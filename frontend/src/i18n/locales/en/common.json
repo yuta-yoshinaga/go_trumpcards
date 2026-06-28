@@ -194,7 +194,8 @@
     "simplesimon": "Simple Simon",
     "doubleklondike": "Double Klondike",
     "blackhole": "Black Hole",
-    "beggarmyneighbour": "Beggar-My-Neighbour"
+    "beggarmyneighbour": "Beggar-My-Neighbour",
+    "allfours": "All Fours"
   },
   "sound": {
     "mute": "Mute sound",
@@ -793,6 +794,9 @@
     "beggarmyneighbour.result.humanWin": "Game Over! You win!",
     "beggarmyneighbour.result.cpuWin": "Game Over! CPU wins...",
     "beggarmyneighbour.result.draw": "Game Over! It's a draw.",
+    "allfours.result.humanWin": "Game over! You win!",
+    "allfours.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+    "allfours.result.draw": "Game over! It's a draw.",
     "slapjack.result.humanWin": "Game Over! You win!",
     "slapjack.result.cpuWin": "Game Over! CPU wins...",
     "egyptianratscrew.result.humanWin": "Game Over! You win!",

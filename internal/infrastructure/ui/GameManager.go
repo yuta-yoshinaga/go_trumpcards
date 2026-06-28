@@ -2839,6 +2839,19 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"beggarmyneighbour.helpSetMax"},
 			})
 	}},
+	{Name: "allfours", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewAllFoursCuiController(usecase.NewAllFoursInteractor(
+				domain.NewDefaultAllFours(), new(presenter.AllFoursCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "allfours.helpTitle",
+				CommandKeys: []string{
+					"allfours.helpStand", "allfours.helpBeg", "allfours.helpGift",
+					"allfours.helpRun", "allfours.helpPlay", "allfours.helpNext", "allfours.helpNextRound",
+				},
+				SettingKeys: []string{"allfours.helpSetDifficulty", "allfours.helpSetLimit"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

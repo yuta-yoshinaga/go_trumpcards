@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した175種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した176種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -194,6 +194,7 @@ Go + Clean Architecture で実装した175種類のトランプゲーム。CLI �
 | ダブル・クロンダイク (Double Klondike) | `doubleklondike` | [CUI](docs/manual/cui/doubleklondike.md) / [Web](docs/manual/web/doubleklondike.md) |
 | ブラックホール (Black Hole) | `blackhole` | [CUI](docs/manual/cui/blackhole.md) / [Web](docs/manual/web/blackhole.md) |
 | ビガー・マイ・ネイバー (Beggar-My-Neighbour) | `beggarmyneighbour` | [CUI](docs/manual/cui/beggarmyneighbour.md) / [Web](docs/manual/web/beggarmyneighbour.md) |
+| オールフォーズ (All Fours / Seven Up) | `allfours` | [CUI](docs/manual/cui/allfours.md) / [Web](docs/manual/web/allfours.md) |
 
 ## Demo
 

@@ -1325,6 +1325,13 @@ export const gameCategories: readonly GameCategory[] = [
         page: 'BeggarMyNeighbour',
         profile: { mood: [3, 4, 1, 5], skill: [5, 1, 0, 5], social: [0, 3, 5, 5, 1], theme: [1, 2, 2, 3, 2, 2] },
       },
+      {
+        path: '/allfours',
+        labelKey: 'nav.allfours',
+        icon: '🃏',
+        page: 'AllFours',
+        profile: { mood: [3, 4, 3, 3], skill: [2, 4, 3, 2], social: [0, 5, 2, 2, 3], theme: [1, 2, 3, 3, 2, 2] },
+      },
     ],
   },
 ] as const;
