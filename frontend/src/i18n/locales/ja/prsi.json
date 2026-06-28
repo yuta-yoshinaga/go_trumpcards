@@ -1,0 +1,39 @@
+{
+  "phase": {
+    "play": "プレイ",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "drawPile": "山札: {{count}}枚",
+  "discardTop": "捨て札",
+  "penalty": "ペナルティ: {{count}}枚 — 7を重ねるか引く",
+  "cards": "{{count}}枚",
+  "playButton": "出す",
+  "drawButton": "引く",
+  "playPhase": "カードを出すか、山札から引いてください",
+  "result": {
+    "humanWin": "あなたの勝利！",
+    "cpuWin": "CPU {{cpuId}} の勝利！"
+  },
+  "tutorial": {
+    "discardPile": "捨て札の一番上のカードです。同じスートか同じ数字のカードを出せます。",
+    "playerHand": "あなたの手札です。出すカードをクリックして選びます。",
+    "playDraw": "カードを出すか、山札から1枚引きます。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "hint": {
+    "playMatchingSuit": "同じスートのカードをプレイ推奨",
+    "playMatchingValue": "同じ数字のカードをプレイ推奨",
+    "playActionCard": "アクションカード（7・A・Under）をプレイ推奨",
+    "stackSeven": "7を重ねてドローペナルティを回避推奨",
+    "drawPenalty": "重ねる7なし — ペナルティ分を引く",
+    "drawCard": "出せるカードなし — 山札から引く"
+  },
+  "illegalHint": "このカードは出せません（スート・数字のいずれも不一致）"
+}

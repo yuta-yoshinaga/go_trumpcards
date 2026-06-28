@@ -575,6 +575,12 @@ export const CrazyEightsPhase = {
   GAME_END: 3,
 } as const;
 
+/** Prší phase constants (sync: internal/domain/Prsi.go). */
+export const PrsiPhase = {
+  PLAY: 0,
+  GAME_END: 1,
+} as const;
+
 /** Page One phase constants (sync: internal/domain/PageOne.go). */
 export const PageOnePhase = {
   PLAY: 0,

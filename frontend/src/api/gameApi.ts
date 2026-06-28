@@ -127,6 +127,7 @@ import type {
   PokerSquaresResponse,
   PreferenceResponse,
   PresidentResponse,
+  PrsiResponse,
   PyramidResponse,
   RedDogResponse,
   Rummy500Response,
@@ -255,6 +256,7 @@ const workerUrl: Record<string, string> = {
   tienlen: WORKER_SOLO,
   sevens: WORKER_CLASSIC,
   crazyeights: WORKER_CLASSIC,
+  prsi: WORKER_CLASSIC,
   pageone: WORKER_CLASSIC,
   speed: WORKER_CLASSIC,
   war: WORKER_CLASSIC,
@@ -1259,6 +1261,21 @@ export const crazyeightsApi = {
       command,
       cardIndex,
       suit,
+      config,
+    }),
+};
+
+/** Configuration options for Prší game settings. */
+export interface PrsiConfigInput {
+  cpuDifficulty?: number;
+}
+
+/** API client for the Prší /prsi/exec endpoint. */
+export const prsiApi = {
+  exec: (command: 'reset' | 'play' | 'draw' | 'log', cardIndex?: number, config?: PrsiConfigInput) =>
+    gameExec<PrsiResponse>('prsi', {
+      command,
+      cardIndex,
       config,
     }),
 };
@@ -3932,6 +3949,7 @@ const games = [
   'cruel',
   'baccarat',
   'crazyeights',
+  'prsi',
   'ginrummy',
   'conquian',
   'chinchon',

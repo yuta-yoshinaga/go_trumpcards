@@ -900,4 +900,9 @@ func init() {
 			return usecase.NewAllFoursInteractor(domain.NewDefaultAllFours(), new(presenter.AllFoursWebPresenter))
 		},
 		controller.NewAllFoursWebController)
+	BindWebControllerFor("prsi",
+		func() usecase.PrsiInteractorIF {
+			return usecase.NewPrsiInteractor(domain.NewDefaultPrsi(), new(presenter.PrsiWebPresenter))
+		},
+		controller.NewPrsiWebController)
 }

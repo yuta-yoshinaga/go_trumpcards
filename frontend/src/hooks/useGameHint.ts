@@ -85,6 +85,7 @@ import type {
   PokerSquaresResponse,
   PreferenceResponse,
   PresidentResponse,
+  PrsiResponse,
   PyramidResponse,
   RedDogResponse,
   Rummy500Response,
@@ -225,6 +226,7 @@ import { getPokerHint } from '../utils/hints/pokerHint';
 import { getPokersquaresHint } from '../utils/hints/pokersquaresHint';
 import { getPreferenceHint } from '../utils/hints/preferenceHint';
 import { getPresidentHint } from '../utils/hints/presidentHint';
+import { getPrsiHint } from '../utils/hints/prsiHint';
 import { getPyramidHint } from '../utils/hints/pyramidHint';
 import { getRazzHint } from '../utils/hints/razzHint';
 import { getReddogHint } from '../utils/hints/reddogHint';
@@ -321,6 +323,7 @@ const hintFactories = {
   daifugo: (s) => getDaifugoHint(s as DaifugoResponse),
   sevens: (s) => getSevensHint(s as SevensResponse),
   crazyeights: (s) => getCrazyEightsHint(s as CrazyEightsResponse),
+  prsi: (s) => getPrsiHint(s as PrsiResponse),
   speed: (s) => getSpeedHint(s as SpeedResponse),
   klondike: (s) => getKlondikeHint(s as KlondikeResponse),
   freecell: (s) => getFreeCellHint(s as FreeCellResponse),

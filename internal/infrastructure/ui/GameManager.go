@@ -2863,6 +2863,17 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"allfours.helpSetDifficulty", "allfours.helpSetLimit"},
 			})
 	}},
+	{Name: "prsi", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPrsiCuiController(usecase.NewPrsiInteractor(
+				domain.NewDefaultPrsi(), new(presenter.PrsiCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "prsi.helpTitle",
+				CommandKeys:       []string{"prsi.helpPlay", "prsi.helpDraw"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"prsi.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

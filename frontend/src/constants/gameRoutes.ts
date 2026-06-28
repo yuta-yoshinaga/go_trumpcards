@@ -784,6 +784,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [3, 5, 2, 5], skill: [5, 3, 1, 5], social: [1, 3, 5, 5, 2], theme: [2, 2, 3, 3, 3, 3] },
       },
       {
+        path: '/prsi',
+        labelKey: 'nav.prsi',
+        icon: '🇨🇿',
+        page: 'Prsi',
+        profile: { mood: [3, 5, 2, 5], skill: [5, 3, 1, 5], social: [1, 3, 5, 5, 2], theme: [2, 2, 3, 3, 3, 3] },
+      },
+      {
         path: '/pageone',
         labelKey: 'nav.pageone',
         icon: '📄',
