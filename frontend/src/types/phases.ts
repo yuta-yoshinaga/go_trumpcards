@@ -369,6 +369,7 @@ export const KnockoutWhistPhase = {
   TRICK_END: 1,
   ROUND_END: 2,
   GAME_END: 3,
+  TRUMP_SELECT: 4,
 } as const;
 
 /** Spoil Five phase constants (sync: internal/domain/SpoilFive.go). */

@@ -3,7 +3,8 @@
     "play": "Play",
     "trickEnd": "Trick End",
     "roundEnd": "Round End",
-    "gameEnd": "Game End"
+    "gameEnd": "Game End",
+    "trumpSelect": "Trump Select"
   },
   "settings": {
     "title": "Settings",
@@ -16,6 +17,8 @@
   "trick": "Trick {{n}}",
   "handSize": "Hand {{n}}",
   "trump": "Trump {{suit}}",
+  "trumpSelectPrompt": "You won the round. Choose the trump suit for the next round:",
+  "trumpSelectSuit": "Set trump to {{suit}}",
   "activeCount": "{{n}} left",
   "cards": "{{count}} cards",
   "roundTricks": "{{count}} round tricks",
@@ -44,7 +47,7 @@
     "discard_low": "Can't follow — discard a low card"
   },
   "tutorial": {
-    "trickDisplay": "This is the current trick. You must follow the lead suit; trump (auto-set to the previous round winner's longest suit) beats non-trump, and the Ace is highest.",
+    "trickDisplay": "This is the current trick. You must follow the lead suit; trump beats non-trump, and the Ace is highest. The round winner picks the next round's trump — if that's you, you choose it; otherwise it is auto-set from their longest suit.",
     "playerHand": "This is your hand. Click any card to select it. The hand shrinks by one card each round (Round 1 deals 7).",
     "playButton": "Once a card is selected, play it with this button. The player who plays the strongest card wins the trick.",
     "info": "Each player starts with one Dogbone token. A player who wins zero tricks in a round must spend a Dogbone to survive; with no Dogbone left, a zero-trick round eliminates them (greyed out). The last player standing wins the match.",

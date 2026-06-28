@@ -202,3 +202,29 @@ func TestRestoreKnockoutWhistInteractor(t *testing.T) {
 	_, err = usecase.RestoreKnockoutWhistInteractor([]byte(`{`), mpMock)
 	assert.Error(t, err)
 }
+
+func TestKnockoutWhistInteractor_SelectTrump(t *testing.T) {
+	mpMock := new(presenter.MockKnockoutWhistPresenter)
+	mpMock.On("Output", mock.Anything, mock.Anything).Return(knockoutWhistMockOutput)
+	gameMock := new(interfaces.MockKnockoutWhistGame)
+	gameMock.On("PlayerSelectTrump", 3).Return(nil)
+	gameMock.On("GetGameEndFlag").Return(false)
+	gameMock.On("GetPhase").Return(domain.KnockoutWhistPhasePlay)
+	gameMock.On("IsHumanTurn").Return(true)
+
+	mi := usecase.NewKnockoutWhistInteractor(gameMock, mpMock)
+	assert.Equal(t, knockoutWhistMockOutput, mi.SelectTrump(3))
+	gameMock.AssertCalled(t, "PlayerSelectTrump", 3)
+}
+
+func TestKnockoutWhistInteractor_SelectTrumpError(t *testing.T) {
+	mpMock := new(presenter.MockKnockoutWhistPresenter)
+	mpMock.On("Output", mock.Anything, mock.Anything).Return(knockoutWhistMockOutput)
+	gameMock := new(interfaces.MockKnockoutWhistGame)
+	gameMock.On("PlayerSelectTrump", 0).Return(errors.New("invalid trump"))
+
+	mi := usecase.NewKnockoutWhistInteractor(gameMock, mpMock)
+	assert.Equal(t, knockoutWhistMockOutput, mi.SelectTrump(0))
+	// On a validation error the CPU loop is skipped entirely.
+	gameMock.AssertNotCalled(t, "GetGameEndFlag")
+}

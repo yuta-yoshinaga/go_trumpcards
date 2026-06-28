@@ -84,6 +84,11 @@ func (p *KnockoutWhistCuiPresenter) Output(g interfaces.KnockoutWhistGame, lastE
 			return
 		}
 		switch g.GetPhase() {
+		case domain.KnockoutWhistPhaseTrumpSelect:
+			leadIdx := g.GetLeadPlayerIdx()
+			b.WriteString(i18n.Tf("knockoutwhist.promptTrumpSelect",
+				"name", cuiPlayerName(g.GetPlayer(leadIdx), leadIdx)) + "\n")
+			b.WriteString(i18n.T("knockoutwhist.promptTrumpSelectHelp") + "\n")
 		case domain.KnockoutWhistPhasePlay:
 			currentIdx := g.GetCurrentPlayerIdx()
 			b.WriteString(i18n.Tf("knockoutwhist.promptPlay",

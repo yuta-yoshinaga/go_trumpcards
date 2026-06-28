@@ -95,6 +95,17 @@ describe('KnockoutWhistPage', () => {
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
   });
 
+  it('renders trump-select suit buttons and dispatches selecttrump', async () => {
+    const trumpSelectState = makeKnockoutWhistState({ phase: 4, roundWinnerIdx: 0 });
+    mockExec.mockResolvedValue(trumpSelectState);
+    renderWithProviders(<KnockoutWhistPage />);
+    const heartBtn = await screen.findByTestId('knockoutwhist-trump-3');
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(trumpSelectState);
+    fireEvent.click(heartBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('selecttrump', { trumpSuit: 3 }));
+  });
+
   it('greys out an eliminated player panel', async () => {
     const eliminatedState = makeKnockoutWhistState();
     eliminatedState.players[1] = { ...eliminatedState.players[1], eliminated: true, dogbones: 0 };

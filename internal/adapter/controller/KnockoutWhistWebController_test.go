@@ -36,6 +36,7 @@ func TestKnockoutWhistWebController_Method(t *testing.T) {
 	diMock := new(usecase.MockKnockoutWhistInteractor)
 	diMock.On("ResetWithConfig", domain.DefaultKnockoutWhistConfig()).Return(mockOutput)
 	diMock.On("Play", 3).Return(mockOutput)
+	diMock.On("SelectTrump", 2).Return(mockOutput)
 	diMock.On("NextTrick").Return(mockOutput)
 	diMock.On("NextRound").Return(mockOutput)
 	diMock.On("Hint").Return(mockOutput)
@@ -72,6 +73,18 @@ func TestKnockoutWhistWebController_Method(t *testing.T) {
 	})
 	t.Run("play missing cardIndex", func(t *testing.T) {
 		run(t, `{"command":"p","sessionId":"s1"}`, mustKnockoutWhistOutputJSON("param error: cardIndex is required."), http.StatusBadRequest)
+	})
+	t.Run("selecttrump", func(t *testing.T) {
+		input := controller.KnockoutWhistWebInput{
+			BaseWebInput: controller.BaseWebInput{Command: "st", SessionID: "s1"},
+			TrumpSuit:    func() *int { v := 2; return &v }(),
+		}
+		recorded := execRequest(t, ctrl.Exec, &input)
+		recorded.CodeIs(http.StatusOK)
+		recorded.BodyIs(mockOutput)
+	})
+	t.Run("selecttrump missing trumpSuit", func(t *testing.T) {
+		run(t, `{"command":"st","sessionId":"s1"}`, mustKnockoutWhistOutputJSON("param error: trumpSuit is required."), http.StatusBadRequest)
 	})
 	t.Run("next", func(t *testing.T) {
 		run(t, `{"command":"n","sessionId":"s1"}`, mockOutput, http.StatusOK)

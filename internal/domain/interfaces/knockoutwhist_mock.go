@@ -29,6 +29,12 @@ func (_m *MockKnockoutWhistGame) PlayerPlay(cardIndex int) error {
 	return ret.Error(0)
 }
 
+// PlayerSelectTrump モック
+func (_m *MockKnockoutWhistGame) PlayerSelectTrump(suit int) error {
+	ret := _m.Called(suit)
+	return ret.Error(0)
+}
+
 // CpuPlay モック
 func (_m *MockKnockoutWhistGame) CpuPlay() {
 	_m.Called()
