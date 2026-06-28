@@ -1011,11 +1011,6 @@ func (m *Mighty) startPlayPhase() {
 
 // playCard カードをプレイする共通処理
 func (m *Mighty) playCard(playerIdx int, card *Card, isJokerLead bool, demandSuit int) {
-	// Defense in depth: a nil card (e.g. RemoveCard on an out-of-range/empty index)
-	// must never reach card.GetDesign() below and panic the HTTP handler (issue #2527).
-	if card == nil {
-		return
-	}
 	m.round.currentTrick = append(m.round.currentTrick, &MightyTrickCard{
 		PlayerIdx:      playerIdx,
 		Card:           card,
