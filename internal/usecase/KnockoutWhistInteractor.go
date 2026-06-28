@@ -20,6 +20,8 @@ type KnockoutWhistInteractorIF interface {
 	Play(cardIndex int) string
 	// NextTrick 次のトリックへ進む
 	NextTrick() string
+	// SelectTrump 人間のラウンド勝者が切り札スートを選択する (1-4)
+	SelectTrump(suit int) string
 	// NextRound ラウンドをスコアリングして次のラウンドへ進む
 	NextRound() string
 	// GetConfig 現在の設定を取得
@@ -74,6 +76,15 @@ func (mi *KnockoutWhistInteractor) Play(cardIndex int) string {
 // NextTrick 次のトリックへ進む
 func (mi *KnockoutWhistInteractor) NextTrick() string {
 	mi.Game.NextTrick()
+	mi.runCpuTurns()
+	return mi.mp.Output(mi.Game, nil)
+}
+
+// SelectTrump 人間のラウンド勝者が切り札スートを選択する (1-4)
+func (mi *KnockoutWhistInteractor) SelectTrump(suit int) string {
+	if err := mi.Game.PlayerSelectTrump(suit); err != nil {
+		return mi.mp.Output(mi.Game, err)
+	}
 	mi.runCpuTurns()
 	return mi.mp.Output(mi.Game, nil)
 }

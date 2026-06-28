@@ -4,6 +4,7 @@ package domain
 
 import (
 	"encoding/json"
+	"errors"
 	"testing"
 )
 
@@ -251,5 +252,61 @@ func TestKnockoutWhist_UnmarshalErrors(t *testing.T) {
 	}
 	if err := g.UnmarshalJSON([]byte(`{"ps":[null,null,null,null]}`)); err == nil {
 		t.Error("expected nil-player error")
+	}
+}
+
+func TestKnockoutWhist_NextRoundHumanWinnerEntersTrumpSelect(t *testing.T) {
+	g := newKoGame(true) // human at index 0
+	g.SetPhase(KnockoutWhistPhaseRoundEnd)
+	g.SetRoundNumber(2)
+	g.GetPlayer(0).IncRoundTricks() // human takes the most tricks this round
+	g.ScoreRound()                  // sets roundWinnerIdx = 0 (human)
+	g.NextRound()                   // human winner leads -> TrumpSelect phase
+	if g.GetPhase() != KnockoutWhistPhaseTrumpSelect {
+		t.Fatalf("want TrumpSelect phase, got %v", g.GetPhase())
+	}
+	if err := g.PlayerSelectTrump(CardDesignHeart); err != nil {
+		t.Fatalf("PlayerSelectTrump: %v", err)
+	}
+	if g.GetPhase() != KnockoutWhistPhasePlay {
+		t.Errorf("want Play phase after select, got %v", g.GetPhase())
+	}
+	if g.GetTrumpSuit() != CardDesignHeart {
+		t.Errorf("want trump %d, got %d", CardDesignHeart, g.GetTrumpSuit())
+	}
+}
+
+func TestKnockoutWhist_NextRoundCpuWinnerAutoSelectsTrump(t *testing.T) {
+	g := newKoGame(true)
+	g.SetPhase(KnockoutWhistPhaseRoundEnd)
+	g.SetRoundNumber(2)
+	g.GetPlayer(1).IncRoundTricks() // CPU idx1 takes the most tricks
+	g.ScoreRound()
+	g.NextRound()
+	if g.GetPhase() != KnockoutWhistPhasePlay {
+		t.Fatalf("CPU winner should auto-select trump and enter Play, got %v", g.GetPhase())
+	}
+}
+
+func TestKnockoutWhist_PlayerSelectTrumpErrors(t *testing.T) {
+	g := newKoGame(true)
+
+	g.SetPhase(KnockoutWhistPhasePlay)
+	if err := g.PlayerSelectTrump(CardDesignHeart); !errors.Is(err, ErrWrongPhase) {
+		t.Errorf("want ErrWrongPhase, got %v", err)
+	}
+
+	g.SetPhase(KnockoutWhistPhaseTrumpSelect)
+	g.SetLeadPlayerIdx(1) // CPU is the lead/winner
+	if err := g.PlayerSelectTrump(CardDesignHeart); !errors.Is(err, ErrNotHumanTurn) {
+		t.Errorf("want ErrNotHumanTurn, got %v", err)
+	}
+
+	g.SetLeadPlayerIdx(0) // human lead
+	if err := g.PlayerSelectTrump(0); !errors.Is(err, ErrInvalidPlay) {
+		t.Errorf("want ErrInvalidPlay for suit 0, got %v", err)
+	}
+	if err := g.PlayerSelectTrump(5); !errors.Is(err, ErrInvalidPlay) {
+		t.Errorf("want ErrInvalidPlay for suit 5, got %v", err)
 	}
 }

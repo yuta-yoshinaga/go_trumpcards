@@ -142,3 +142,18 @@ func TestKnockoutWhistCuiPresenter_ActionLogOutput(t *testing.T) {
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "play")
 }
+
+func TestKnockoutWhistCuiPresenter_TrumpSelectPrompt(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.KnockoutWhistCuiPresenter)
+
+	m, _ := setupKnockoutWhistCuiMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+	m.On("GetPhase").Return(domain.KnockoutWhistPhaseTrumpSelect)
+	m.On("GetLeadPlayerIdx").Return(0)
+
+	result := p.Output(m, nil)
+	assert.Contains(t, result, "st <1-4>") // help line advertising the select-trump command
+}

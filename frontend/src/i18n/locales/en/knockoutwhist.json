@@ -3,7 +3,8 @@
     "play": "Play",
     "trickEnd": "Trick End",
     "roundEnd": "Round End",
-    "gameEnd": "Game End"
+    "gameEnd": "Game End",
+    "trumpSelect": "Trump Select"
   },
   "settings": {
     "title": "Settings",
@@ -16,6 +17,8 @@
   "trick": "Trick {{n}}",
   "handSize": "Hand {{n}}",
   "trump": "Trump {{suit}}",
+  "trumpSelectPrompt": "You won the round. Choose the trump suit for the next round:",
+  "trumpSelectSuit": "Set trump to {{suit}}",
   "activeCount": "{{n}} left",
   "cards": "{{count}} cards",
   "roundTricks": "{{count}} round tricks",

@@ -3,7 +3,8 @@
     "play": "プレイ",
     "trickEnd": "トリック終了",
     "roundEnd": "ラウンド終了",
-    "gameEnd": "ゲーム終了"
+    "gameEnd": "ゲーム終了",
+    "trumpSelect": "切り札選択"
   },
   "settings": {
     "title": "設定",
@@ -16,6 +17,8 @@
   "trick": "トリック {{n}}",
   "handSize": "手札 {{n}}枚",
   "trump": "切り札 {{suit}}",
+  "trumpSelectPrompt": "あなたがラウンド勝者です。次ラウンドの切り札を選んでください:",
+  "trumpSelectSuit": "切り札を{{suit}}にする",
   "activeCount": "残り {{n}}人",
   "cards": "{{count}}枚",
   "roundTricks": "今ラウンド {{count}}トリック",
