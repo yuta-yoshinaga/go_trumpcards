@@ -259,4 +259,32 @@ describe('CasinoWarPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset'));
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 100));
   });
+
+  it('suggests the previous bet in the bet phase and refills the input when clicked', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<CasinoWarPage />);
+    const input = (await screen.findByLabelText(/アンテ/)) as HTMLInputElement;
+
+    // Place a non-default bet of 300, then return to the bet phase.
+    fireEvent.change(input, { target: { value: '300' } });
+    fireEvent.click(screen.getByRole('button', { name: /^ベット$/ }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 300));
+
+    // Lower the current input below the last bet so the suggestion appears.
+    fireEvent.change(input, { target: { value: '150' } });
+    const suggest = await screen.findByTestId('cw-previous-bet');
+    expect(suggest).toHaveTextContent('300');
+
+    fireEvent.click(suggest);
+    await waitFor(() => expect(input.value).toBe('300'));
+    // Once the input matches the previous bet, the suggestion is redundant and hides.
+    await waitFor(() => expect(screen.queryByTestId('cw-previous-bet')).not.toBeInTheDocument());
+  });
+
+  it('does not suggest the previous bet before any bet is placed', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<CasinoWarPage />);
+    await screen.findByRole('button', { name: /^ベット$/ });
+    expect(screen.queryByTestId('cw-previous-bet')).not.toBeInTheDocument();
+  });
 });

@@ -227,6 +227,17 @@ function KlaverjasPageContent() {
                   </div>
                 </div>
 
+                {/* Live Roem (bonus) per team, shown throughout the hand to match the CUI's
+                    Roem readout; the round-result block below repeats it once the round ends. */}
+                {!(isRoundEnd || isGameEnd) && (
+                  <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="klaverjas-roem">
+                    <div className="mb-1 text-ds-text-primary">{t('roem.title')}</div>
+                    <div>
+                      {t('roundResult.roem', { roemA: state.roundRoem[0] ?? 0, roemB: state.roundRoem[1] ?? 0 })}
+                    </div>
+                  </div>
+                )}
+
                 {/* Players: cards / tricks */}
                 {isMobile ? (
                   <details className="mb-2 p-2 rounded bg-black/30">

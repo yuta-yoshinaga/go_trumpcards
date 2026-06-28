@@ -29,6 +29,7 @@
   "bidPass": "パス",
   "currentTrick": "現在のトリック",
   "trumpSuit": "切り札",
+  "faceProgress": "絵札 {{collected}}/{{bid}} 枚",
   "adjutantCard": "副官カード",
   "adjutantNone": "なし",
   "role": {

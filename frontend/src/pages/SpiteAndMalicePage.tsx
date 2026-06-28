@@ -289,6 +289,8 @@ function SpiteAndMalicePageContent() {
               player={opponent}
               cardWidth={cardWidth}
               dataTutorial="sam-opponent"
+              handCountLabel={(count) => t('label.handCount', { count })}
+              goalLabel={(count) => t('label.cpuGoal', { count })}
             />
 
             <div className="flex items-center justify-center gap-2 sm:gap-4" data-tutorial="sam-foundations">
@@ -333,6 +335,9 @@ function SpiteAndMalicePageContent() {
               dataTutorial="sam-hand"
               hintEnabled={hintEnabled}
               currentHint={currentHint}
+              label={t('label.hand')}
+              emptyLabel={t('empty')}
+              hiddenLabel={t('label.hidden')}
             />
 
             <SideRow
@@ -397,28 +402,32 @@ function PlayerSummary({
   player,
   cardWidth,
   dataTutorial,
+  handCountLabel,
+  goalLabel,
 }: {
   label: string;
   sidesLabel: string;
   player: SpiteAndMaliceResponse['players'][number];
   cardWidth: number;
   dataTutorial: string;
+  handCountLabel: (count: number) => string;
+  goalLabel: (count: number) => string;
 }) {
   // Side piles render at half scale to keep the opponent strip compact on mobile.
   const sideWidth = Math.round(cardWidth * 0.5);
   return (
     <div className="flex flex-col items-center" data-tutorial={dataTutorial}>
       <span className="text-sm text-ds-secondary mb-1">
-        {label} (hand: {player.hand.length})
+        {label} ({handCountLabel(player.hand.length)})
       </span>
       <div className="flex gap-2 items-end">
         {player.goalTop ? (
           <div className="flex flex-col items-center">
-            <span className="text-xs text-ds-secondary">CPU goal x{player.goalSize}</span>
+            <span className="text-xs text-ds-secondary">{goalLabel(player.goalSize)}</span>
             <AnimatedCard card={player.goalTop} width={cardWidth} />
           </div>
         ) : (
-          <span className="text-xs text-ds-secondary">CPU goal: 0</span>
+          <span className="text-xs text-ds-secondary">{goalLabel(0)}</span>
         )}
         <div className="flex flex-col items-center" data-testid="sam-cpu-sides">
           <span className="text-xs text-ds-secondary">{sidesLabel}</span>
@@ -558,6 +567,9 @@ function HandRow({
   dataTutorial,
   hintEnabled,
   currentHint,
+  label,
+  emptyLabel,
+  hiddenLabel,
 }: {
   hand: (Card | null)[];
   cardWidth: number;
@@ -566,13 +578,16 @@ function HandRow({
   dataTutorial: string;
   hintEnabled: boolean;
   currentHint: { targetAction: string } | null;
+  label: string;
+  emptyLabel: string;
+  hiddenLabel: string;
 }) {
   return (
     <div className="flex flex-col items-center" data-tutorial={dataTutorial}>
-      <span className="text-sm text-ds-secondary mb-1">Hand</span>
+      <span className="text-sm text-ds-secondary mb-1">{label}</span>
       <div className="flex gap-2 flex-wrap justify-center">
         {hand.length === 0 ? (
-          <span className="text-xs text-ds-secondary">(empty)</span>
+          <span className="text-xs text-ds-secondary">{emptyLabel}</span>
         ) : (
           hand.map((card, idx) => {
             const selected = selectedIdx === idx;
@@ -586,7 +601,7 @@ function HandRow({
                 className={`${focusRingWhite} relative rounded-lg transition-transform ${ring}`}
                 onClick={() => onSelect(idx)}
                 disabled={card === null}
-                aria-label={card ? `Hand ${idx + 1}: ${cardAlt(card)}` : `Hand ${idx + 1}: hidden`}
+                aria-label={`${label} ${(idx + 1).toString()}: ${card ? cardAlt(card) : hiddenLabel}`}
               >
                 {card ? <AnimatedCard card={card} width={cardWidth} /> : <FaceDownSlot label="?" width={cardWidth} />}
               </button>

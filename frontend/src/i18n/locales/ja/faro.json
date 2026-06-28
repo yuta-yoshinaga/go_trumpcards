@@ -10,6 +10,7 @@
   "copperOff": "カッパー: オフ",
   "betAmountLabel": "ベット額",
   "copperTag": "カッパー",
+  "copperModeHint": "カッパーモード: 次の賭けはそのランクが「負ける」方に賭けます",
   "betsTitle": "現在のベット",
   "noBets": "まだベットがありません。",
   "betLine": "ランク {{rank}}: {{amount}}",

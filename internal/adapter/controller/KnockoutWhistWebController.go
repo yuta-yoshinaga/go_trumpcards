@@ -15,6 +15,8 @@ type KnockoutWhistWebInput struct {
 	BaseWebInput
 	// CardIndex プレイするカードのインデックス (play コマンド)
 	CardIndex *int `json:"cardIndex,omitempty"`
+	// TrumpSuit 選択する切り札スート 1-4 (selecttrump コマンド)
+	TrumpSuit *int `json:"trumpSuit,omitempty"`
 	// Config ゲーム設定
 	Config *KnockoutWhistWebConfig `json:"config,omitempty"`
 }
@@ -121,6 +123,11 @@ func knockoutWhistDispatch(bc *baseController, w http.ResponseWriter, di usecase
 		bc.writePresenterResponse(w, di.NextTrick())
 	case "nr", "nextround":
 		bc.writePresenterResponse(w, di.NextRound())
+	case "st", "selecttrump":
+		if !requireParam(bc, w, newDefault, param.TrumpSuit == nil, "param error: trumpSuit is required.") {
+			return true
+		}
+		bc.writePresenterResponse(w, di.SelectTrump(*param.TrumpSuit))
 	default:
 		return dispatchHintAndLog(param.Command, bc, w, di.Hint, di.ActionLog)
 	}

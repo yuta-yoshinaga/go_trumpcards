@@ -176,6 +176,15 @@ describe('PresidentPage', () => {
     );
   });
 
+  it('renders CPU difficulty options with localized (Japanese) labels', async () => {
+    renderWithProviders(<PresidentPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+
+    const select = screen.getByLabelText(/CPU難易度|CPU Difficulty/) as HTMLSelectElement;
+    const labels = Array.from(select.options).map((o) => o.textContent);
+    expect(labels).toEqual(['やさしい', 'ふつう', 'むずかしい']);
+  });
+
   it('renders game-end state with rank', async () => {
     mockExec.mockResolvedValue(
       makeState({

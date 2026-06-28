@@ -199,6 +199,20 @@ describe('FiveCardStudPage', () => {
     expect(screen.getAllByText('ホールカード').length).toBeGreaterThanOrEqual(1);
   });
 
+  it('highlights the latest door card for the human and each CPU', async () => {
+    mockExec.mockResolvedValue(secondStreetState);
+    renderWithProviders(<FiveCardStudPage />);
+    // Human's newest door card (last of 4) gets a ring highlight.
+    const humanLatest = await screen.findByTestId('latest-door-human');
+    expect(humanLatest.className).toContain('ring-2');
+    expect(humanLatest.className).toContain('motion-safe:animate-pulse');
+    // The newest door card is the last in the array (♦ 7), not an earlier one.
+    expect(humanLatest.querySelector('img')).toHaveAttribute('alt', '♦ 7');
+    // Each CPU also has exactly one highlighted latest door card.
+    expect(screen.getByTestId('latest-door-cpu-1')).toBeInTheDocument();
+    expect(screen.getByTestId('latest-door-cpu-2')).toBeInTheDocument();
+  });
+
   it('reveals CPU hand name and hole card during showdown and shows round results', async () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<FiveCardStudPage />);

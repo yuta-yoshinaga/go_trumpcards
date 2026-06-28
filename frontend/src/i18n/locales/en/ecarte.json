@@ -20,6 +20,12 @@
   "stock": "Stock: {{count}}",
   "noTrump": "undeclared",
   "exchangeNotice": "Exchange phase — the elder chooses Propose or Stand; if proposed, the dealer Accepts or Refuses. After accepting, choose cards to discard and draw replacements.",
+  "negStepLabel": "Current step: {{step}}",
+  "negStep": {
+    "elderDecide": "Elder's proposal",
+    "dealerRespond": "Dealer's response",
+    "discard": "Card exchange"
+  },
   "currentTrick": "Current Trick",
   "you": "You",
   "cpu": "CPU {{id}}",

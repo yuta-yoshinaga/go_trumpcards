@@ -86,6 +86,50 @@ describe('SpadesPage', () => {
     });
   });
 
+  it('shows the bid-progress badge with tricks remaining during play', async () => {
+    // Default human player: bid 3, 0 tricks \u2192 3 remaining.
+    renderWithProviders(<SpadesPage />);
+    const badge = await screen.findByTestId('sp-bid-progress');
+    expect(badge).toHaveTextContent('\u9054\u6210\u307e\u3067\u6b8b\u308a 3 \u30c8\u30ea\u30c3\u30af');
+  });
+
+  it('warns when a Nil bid has been broken', async () => {
+    mockExec.mockResolvedValue(
+      makeSpadesState({
+        players: [
+          { ...playPhaseState.players[0], bid: 0, trickCount: 1 },
+          playPhaseState.players[1],
+          playPhaseState.players[2],
+          playPhaseState.players[3],
+        ],
+      }),
+    );
+    renderWithProviders(<SpadesPage />);
+    const badge = await screen.findByTestId('sp-bid-progress');
+    expect(badge).toHaveTextContent('\u30cb\u30eb\u5931\u6557');
+  });
+
+  it('shows bid-made (with bags) and Nil-on-track variants', async () => {
+    mockExec.mockResolvedValue(
+      makeSpadesState({
+        players: [{ ...playPhaseState.players[0], bid: 2, trickCount: 4 }, ...playPhaseState.players.slice(1)],
+      }),
+    );
+    const { unmount } = renderWithProviders(<SpadesPage />);
+    expect(await screen.findByTestId('sp-bid-progress')).toHaveTextContent(
+      '\u30d3\u30c3\u30c9\u9054\u6210 (+2 \u30d0\u30c3\u30b0)',
+    );
+    unmount();
+
+    mockExec.mockResolvedValue(
+      makeSpadesState({
+        players: [{ ...playPhaseState.players[0], bid: 0, trickCount: 0 }, ...playPhaseState.players.slice(1)],
+      }),
+    );
+    renderWithProviders(<SpadesPage />);
+    expect(await screen.findByTestId('sp-bid-progress')).toHaveTextContent('\u30cb\u30eb\u7d99\u7d9a\u4e2d');
+  });
+
   it('renders bid phase with a bid value button group and a Nil button', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<SpadesPage />);

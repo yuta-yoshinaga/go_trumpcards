@@ -5,4 +5,8 @@ package presenter
 import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 
 // BarbuPresenter はバルブプレゼンターインタフェース。
-type BarbuPresenter = GamePresenter[interfaces.BarbuGame]
+type BarbuPresenter interface {
+	GamePresenter[interfaces.BarbuGame]
+	// HintOutput ヒント情報を出力する
+	HintOutput(g interfaces.BarbuGame) string
+}

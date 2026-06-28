@@ -1,6 +1,7 @@
 {
   "title": "カジノホールデム",
   "player": "プレイヤー",
+  "currentHand": "現在の役",
   "dealer": "ディーラー",
   "board": "ボード",
   "dealerQualified": "ディーラークオリファイ",

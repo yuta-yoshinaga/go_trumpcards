@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -90,6 +91,51 @@ func escobaScoreDetailStr(b *strings.Builder, det *domain.EscobaScoreDetail) {
 	b.WriteString(i18n.Tf("escoba.specialLine",
 		"ace", strconv.Itoa(det.AceEsp),
 		"sete", strconv.Itoa(det.SeteEsp)) + "\n")
+}
+
+// HintOutput emits a capture recommendation for the human's turn: the hand
+// card and the table cards summing to 15 it captures (flagging an escoba when
+// it clears the table), reusing the domain's GetValidCaptures.
+func (p *EscobaCuiPresenter) HintOutput(eg interfaces.EscobaGame) string {
+	if eg.GetPhase() != domain.EscobaPhasePlayerTurn {
+		return i18n.T("escoba.hintNone") + "\n"
+	}
+	turn := eg.GetCurrentTurn()
+	player := eg.GetPlayer(turn)
+	if player == nil || !player.GetIsHuman() {
+		return i18n.T("escoba.hintNone") + "\n"
+	}
+	table := eg.GetTableCards()
+	bestHand := -1
+	var bestCap []int
+	bestEscoba := false
+	for i := 0; i < player.GetCardsSize(); i++ {
+		for _, cap := range eg.GetValidCaptures(i) {
+			isEscoba := len(table) > 0 && len(cap) == len(table)
+			switch {
+			case bestHand == -1:
+			case isEscoba && !bestEscoba:
+			case isEscoba == bestEscoba && len(cap) > len(bestCap):
+			default:
+				continue
+			}
+			bestHand, bestCap, bestEscoba = i, cap, isEscoba
+		}
+	}
+	if bestHand == -1 {
+		return color.Yellow(i18n.T("escoba.hintNoCapture")) + "\n"
+	}
+	capCards := make([]*domain.Card, 0, len(bestCap))
+	for _, idx := range bestCap {
+		capCards = append(capCards, table[idx])
+	}
+	key := "escoba.hintCapture"
+	if bestEscoba {
+		key = "escoba.hintEscoba"
+	}
+	return color.Yellow(i18n.Tf(key,
+		"played", cuiCardSliceStr([]*domain.Card{player.GetCard(bestHand)}),
+		"captured", cuiCardSliceStr(capCards))) + "\n"
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

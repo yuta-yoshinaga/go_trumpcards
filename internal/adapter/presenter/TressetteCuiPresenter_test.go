@@ -51,6 +51,8 @@ func TestTressetteCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "Tressette")
 		assert.NotEmpty(t, result)
+		// The thirds-conversion rule is explained alongside the score line.
+		assert.Contains(t, result, "サード: 3トリック")
 	})
 
 	t.Run("trick end prompt", func(t *testing.T) {

@@ -13,6 +13,9 @@
     "side": "サイド",
     "cpuSides": "CPUのサイドパイル",
     "hand": "手札",
+    "hidden": "非公開",
+    "handCount": "手札: {{count}}",
+    "cpuGoal": "CPUゴール: {{count}}",
     "foundation": "ファウンデーション",
     "stock": "ストック",
     "completed": "完成済み"

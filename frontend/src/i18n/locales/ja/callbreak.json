@@ -75,5 +75,6 @@
     "followSuit": "リードされたスートに従ってプレイ推奨",
     "mustTrumpWithSpade": "ボイドなのでスペードで切らなければなりません",
     "discardLowest": "最も低いカードを捨てることを推奨"
-  }
+  },
+  "bidSelected": "選択中のビッド: {{n}}"
 }

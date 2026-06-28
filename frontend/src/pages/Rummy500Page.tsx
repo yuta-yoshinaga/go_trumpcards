@@ -91,8 +91,10 @@ function Rummy500PageContent() {
   } = useGameHint('rummy500', state);
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
-  const [layoffOwner, setLayoffOwner] = useState(0);
-  const [layoffMeldIdx, setLayoffMeldIdx] = useState(0);
+  // The lay-off destination is chosen solely by clicking a meld on the board above; null
+  // means nothing is selected yet, so the Lay off button stays disabled. The owner's
+  // display name is captured here (where isHuman is in scope) for the footer label.
+  const [layoffTarget, setLayoffTarget] = useState<{ owner: number; meldIdx: number; ownerName: string } | null>(null);
 
   const phaseNames = usePhaseNames('rummy500', RUMMY500_PHASE_KEYS);
 
@@ -214,15 +216,18 @@ function Rummy500PageContent() {
                   <div className="mt-1">
                     <div className="text-ds-text-muted text-xs mb-1">{t('laidMelds')}</div>
                     {p.laidMelds.map((meld, mIdx) => {
-                      const isLayoffTarget = layoffOwner === p.id && layoffMeldIdx === mIdx;
+                      const isLayoffTarget = layoffTarget?.owner === p.id && layoffTarget?.meldIdx === mIdx;
                       return (
                         <button
                           type="button"
                           key={`meld-${p.id}-${mIdx}`}
-                          onClick={() => {
-                            setLayoffOwner(p.id);
-                            setLayoffMeldIdx(mIdx);
-                          }}
+                          onClick={() =>
+                            setLayoffTarget((prev) =>
+                              prev?.owner === p.id && prev.meldIdx === mIdx
+                                ? null
+                                : { owner: p.id, meldIdx: mIdx, ownerName: playerName(p.id, p.isHuman) },
+                            )
+                          }
                           aria-pressed={isLayoffTarget}
                           aria-label={t('layoffMeldTarget', { owner: playerName(p.id, p.isHuman), idx: mIdx })}
                           data-testid={`layoff-meld-${p.id}-${mIdx}`}
@@ -319,33 +324,23 @@ function Rummy500PageContent() {
                 {t('meldButton')}
               </button>
               <div className="flex items-center gap-1 text-xs text-ds-text-muted">
-                <label htmlFor="r5-lo-owner">{t('layoffOwner')}</label>
-                <select
-                  id="r5-lo-owner"
-                  className="rounded bg-black/30 text-ds-text-primary px-1"
-                  value={layoffOwner}
-                  onChange={(e) => setLayoffOwner(Number(e.target.value))}
-                >
-                  {state.players.map((p) => (
-                    <option key={`lo-own-${p.id}`} value={p.id}>
-                      {playerName(p.id, p.isHuman)}
-                    </option>
-                  ))}
-                </select>
-                <label htmlFor="r5-lo-meld">{t('layoffMeld')}</label>
-                <input
-                  id="r5-lo-meld"
-                  type="number"
-                  min={0}
-                  className="w-12 rounded bg-black/30 text-ds-text-primary px-1"
-                  value={layoffMeldIdx}
-                  onChange={(e) => setLayoffMeldIdx(Number(e.target.value))}
-                />
+                <span data-testid="r5-layoff-target">
+                  {layoffTarget
+                    ? t('layoffTargetLabel', { owner: layoffTarget.ownerName, idx: layoffTarget.meldIdx })
+                    : t('layoffTargetNone')}
+                </span>
                 <button
                   type="button"
                   className={btnSecondary}
-                  onClick={() => handleLayoff(layoffOwner, layoffMeldIdx)}
-                  disabled={loading || selectedCardIndices.length !== 1}
+                  onClick={
+                    layoffTarget
+                      ? () => {
+                          handleLayoff(layoffTarget.owner, layoffTarget.meldIdx);
+                          setLayoffTarget(null);
+                        }
+                      : undefined
+                  }
+                  disabled={loading || layoffTarget === null || selectedCardIndices.length !== 1}
                 >
                   {t('layoffButton')}
                 </button>

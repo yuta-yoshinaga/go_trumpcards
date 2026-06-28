@@ -28,9 +28,9 @@
     "action": "Acting on hand {{idx}}: Hit / Stand / Double Down"
   },
   "result": {
-    "win": "win",
-    "draw": "push",
-    "lose": "lose",
+    "handWin": "win",
+    "handDraw": "push",
+    "handLose": "lose",
     "dealer22Push": "Dealer 22 — push",
     "overallWin": "Overall: net win",
     "overallDraw": "Overall: even",

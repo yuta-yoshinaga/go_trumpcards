@@ -53,6 +53,7 @@ func TestFortyThievesCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "Waste: [空]")
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "手数: 0")
+		assert.Contains(t, result, "操作: m で移動")
 	})
 
 	t.Run("with waste card", func(t *testing.T) {
@@ -85,6 +86,7 @@ func TestFortyThievesCuiPresenter_Output(t *testing.T) {
 		p := new(FortyThievesCuiPresenter)
 		result := p.Output(fg, nil)
 		assert.Contains(t, result, "ゲームクリア")
+		assert.NotContains(t, result, "操作: m で移動")
 	})
 
 	t.Run("game over", func(t *testing.T) {
@@ -96,6 +98,7 @@ func TestFortyThievesCuiPresenter_Output(t *testing.T) {
 		p := new(FortyThievesCuiPresenter)
 		result := p.Output(fg, nil)
 		assert.Contains(t, result, "ゲームオーバー")
+		assert.NotContains(t, result, "操作: m で移動")
 	})
 
 	t.Run("stalemate", func(t *testing.T) {

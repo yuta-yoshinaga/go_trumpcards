@@ -21,6 +21,7 @@
   "promptDrawHelpStock": "ds: draw from stock",
   "promptDrawHelpDiscard": "dd: draw from discard (must be melded)",
   "promptMeld": "{{name}} to act (meld phase)",
+  "forcedUse": "⚠ A card taken from the discard pile must be used in a meld this turn",
   "promptMeldHelp": "m <idx,idx,..>;<idx>: lay or extend melds (groups split by ;)",
   "promptDiscardHelp": "d <idx>: discard a card to end your turn",
   "promptRoundEnd": "Round complete",

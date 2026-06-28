@@ -31,6 +31,7 @@
   "discardButton": "捨てる",
   "knockButton": "ノック",
   "deadwoodLabel": "デッドウッド: {{score}}点（ノック上限 {{threshold}}）",
+  "deadwoodBreakdown": "内訳: {{breakdown}}",
   "layoffButton": "レイオフ",
   "skipLayoffButton": "スキップ",
   "nextRound": "次のラウンド",

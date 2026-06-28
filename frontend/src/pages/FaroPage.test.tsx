@@ -113,6 +113,24 @@ describe('FaroPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', { rank: 7, amount: 10, copper: true }));
   });
 
+  it('shows the copper-mode hint on the layout when the copper toggle is on', async () => {
+    renderWithProviders(<FaroPage />);
+    await screen.findByTestId('rank-7');
+    expect(screen.queryByTestId('faro-copper-mode')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('copper-toggle'));
+    expect(screen.getByTestId('faro-copper-mode')).toBeInTheDocument();
+  });
+
+  it('distinguishes a copper bet with accent styling and a coin marker', async () => {
+    mockExec.mockResolvedValue(makeState({ bets: [{ rank: 7, amount: 100, copper: true }] }));
+    renderWithProviders(<FaroPage />);
+    const rankBtn = await screen.findByTestId('rank-7');
+    expect(rankBtn.className).toContain('border-ds-accent');
+    expect(rankBtn.textContent).toContain('🪙');
+    // A normal (non-copper) rank stays on the warning palette.
+    expect(screen.getByTestId('rank-8').className).not.toContain('border-ds-accent');
+  });
+
   it('shows the no-bets message when no chips are placed', async () => {
     renderWithProviders(<FaroPage />);
     await waitFor(() => expect(screen.getByText('まだベットがありません。')).toBeInTheDocument());

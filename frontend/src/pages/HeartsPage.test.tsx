@@ -116,13 +116,21 @@ describe('HeartsPage', () => {
     expect(screen.queryByTestId('hearts-shoot-the-moon-badge')).not.toBeInTheDocument();
   });
 
-  it('renders pass phase with pass button', async () => {
+  it('renders pass phase with pass button and the recipient name', async () => {
     mockExec.mockResolvedValue(passPhaseState);
     renderWithProviders(<HeartsPage />);
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'パス' })).toBeInTheDocument();
-      expect(screen.getByText('パス方向: 左')).toBeInTheDocument();
+      // Left pass from seat 0 goes to seat 1 (CPU 1).
+      expect(screen.getByText('パス方向: 左 → CPU 1 へ')).toBeInTheDocument();
     });
+  });
+
+  it('shows the pass-progress badge from zero cards selected', async () => {
+    mockExec.mockResolvedValue(passPhaseState);
+    renderWithProviders(<HeartsPage />);
+    const badge = await screen.findByTestId('hearts-pass-progress');
+    expect(badge).toHaveTextContent('0/3');
   });
 
   it('pass button disabled when not 3 cards selected', async () => {
@@ -174,14 +182,49 @@ describe('HeartsPage', () => {
     renderWithProviders(<HeartsPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
-    // No pill before any selection.
-    expect(screen.queryByTestId('hearts-pass-progress')).not.toBeInTheDocument();
+    // Pill shows 0/3 before any selection, then updates as cards are picked.
+    expect(screen.getByTestId('hearts-pass-progress')).toHaveTextContent('0/3');
 
     fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
     expect(screen.getByTestId('hearts-pass-progress')).toHaveTextContent('1/3');
 
     fireEvent.click(screen.getByAltText('♥ J').closest('button') as HTMLButtonElement);
     expect(screen.getByTestId('hearts-pass-progress')).toHaveTextContent('2/3');
+  });
+
+  it('shows a directional arrow glyph for the pass direction', async () => {
+    mockExec.mockResolvedValue(passPhaseState); // left
+    renderWithProviders(<HeartsPage />);
+    const arrow = await screen.findByTestId('hearts-pass-arrow');
+    expect(arrow).toHaveTextContent('←');
+  });
+
+  it('shows the remaining-card count until 3 are selected', async () => {
+    mockExec.mockResolvedValue({
+      ...passPhaseState,
+      players: [
+        {
+          ...passPhaseState.players[0],
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 11 },
+            { design: 'CLOVER', value: 5 },
+          ],
+        },
+        ...passPhaseState.players.slice(1),
+      ],
+    });
+    renderWithProviders(<HeartsPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    const badge = screen.getByTestId('hearts-pass-progress');
+    expect(badge).toHaveTextContent('あと3枚');
+
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♥ J').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♣ 5').closest('button') as HTMLButtonElement);
+    // All three selected: remaining hint disappears.
+    expect(badge).not.toHaveTextContent('あと');
   });
 
   it('play button disabled when not 1 card selected', async () => {
@@ -497,13 +540,13 @@ describe('HeartsPage', () => {
   it('shows pass direction right', async () => {
     mockExec.mockResolvedValue({ ...passPhaseState, passDirection: 1 });
     renderWithProviders(<HeartsPage />);
-    await waitFor(() => expect(screen.getByText('パス方向: 右')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('パス方向: 右 → CPU 3 へ')).toBeInTheDocument());
   });
 
   it('shows pass direction across', async () => {
     mockExec.mockResolvedValue({ ...passPhaseState, passDirection: 2 });
     renderWithProviders(<HeartsPage />);
-    await waitFor(() => expect(screen.getByText('パス方向: 対面')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('パス方向: 対面 → CPU 2 へ')).toBeInTheDocument());
   });
 
   it('shows pass direction none', async () => {

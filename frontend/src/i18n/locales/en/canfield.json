@@ -43,5 +43,6 @@
     "tableau": "Tableau columns. Drag and drop cards to rearrange.",
     "actionButtons": "Action buttons: hint, auto-complete, undo, give up.",
     "resetButton": "Start a new game."
-  }
+  },
+  "columnActions": "Actions"
 }

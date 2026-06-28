@@ -12,7 +12,7 @@
   "scoreUnknown": "?",
   "tableHeader": "場札: ",
   "tableCard": "[{{idx}}]{{card}}",
-  "stopCalled": "⚠ {{name}} がストップ宣言！",
+  "cuiStopCalled": "⚠ ストップ宣言中（{{name}}）— 残り1巡が最終ラウンドです",
   "gameEndHeader": "=== ゲーム終了 ===",
   "scoreEntry": "  {{name}}: {{score}}点",
   "winHuman": "あなたの勝ち！",

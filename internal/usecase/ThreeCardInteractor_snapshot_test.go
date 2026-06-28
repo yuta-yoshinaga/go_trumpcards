@@ -23,6 +23,10 @@ func (s *stubThreeCardPresenter) ActionLogOutput(_ interfaces.ThreeCardGame) str
 	return `{"log":[]}`
 }
 
+func (s *stubThreeCardPresenter) HintOutput(_ interfaces.ThreeCardGame) string {
+	return `{"hint":true}`
+}
+
 func TestThreeCardInteractor_SnapshotRestore(t *testing.T) {
 	tc := domain.NewDefaultThreeCard()
 	ti := NewThreeCardInteractor(tc, new(stubThreeCardPresenter))

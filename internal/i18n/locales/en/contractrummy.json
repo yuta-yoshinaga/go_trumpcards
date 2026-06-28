@@ -23,6 +23,8 @@
   "promptDrawHelpStock": "ds: draw from stock",
   "promptDrawHelpDiscard": "dd: take the discard top",
   "promptPlay": "{{name}} to act (play phase)",
+  "promptPlayHelpContractRequired": "▶ You must meet this round's contract first",
+  "promptPlayHelpAfterContract": "▶ Contract met: extra melds/layoffs are optional, or discard to end",
   "promptPlayHelpMeldContract": "mc <a,b,c> <d,e,f>: meet the round contract",
   "promptPlayHelpMeldExtra": "me <a,b,c>: lay an extra meld (after contract met)",
   "promptPlayHelpLayoff": "lo <pIdx> <mIdx> <cIdx>: add a card to an existing meld",

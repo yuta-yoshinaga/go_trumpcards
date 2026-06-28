@@ -40,6 +40,8 @@ const (
 	KnockoutWhistPhaseRoundEnd KnockoutWhistPhase = 2
 	// KnockoutWhistPhaseGameEnd ゲーム終了フェーズ
 	KnockoutWhistPhaseGameEnd KnockoutWhistPhase = 3
+	// KnockoutWhistPhaseTrumpSelect 切り札選択フェーズ (人間のラウンド勝者が次ラウンドの切り札を選ぶ)
+	KnockoutWhistPhaseTrumpSelect KnockoutWhistPhase = 4
 )
 
 // KnockoutWhistHint ヒント情報
@@ -170,13 +172,45 @@ func (g *KnockoutWhist) startRound() {
 	g.deal()
 	g.sortAllHands()
 
-	// 切り札 = リードプレイヤー (= 前ラウンド勝者) の最長スートを自動選択。
-	g.trumpSuit = g.longestSuit(g.leadPlayerIdx)
 	g.currentPlayerIdx = g.leadPlayerIdx
+
+	// 切り札はラウンド勝者 (= リードプレイヤー) が選ぶ。人間勝者は TrumpSelect フェーズで
+	// 対話的に選択する。CPU 勝者と第 1 ラウンド (前ラウンド勝者なし) は最長スートを自動選択。
+	if g.roundNumber > 1 && g.players[g.leadPlayerIdx].GetIsHuman() {
+		g.phase = KnockoutWhistPhaseTrumpSelect
+		g.appendLog(g.leadPlayerIdx, "trump_select",
+			fmt.Sprintf("round %d: %d cards each, %s chooses trump",
+				g.roundNumber, g.handSize, g.playerName(g.leadPlayerIdx)), nil)
+		return
+	}
+
+	g.trumpSuit = g.longestSuit(g.leadPlayerIdx)
 	g.phase = KnockoutWhistPhasePlay
 	g.appendLog(g.leadPlayerIdx, "round_start",
 		fmt.Sprintf("round %d: %d cards each, trump %d, %s leads",
 			g.roundNumber, g.handSize, g.trumpSuit, g.playerName(g.leadPlayerIdx)), nil)
+}
+
+// PlayerSelectTrump 人間のラウンド勝者が次ラウンドの切り札スートを選択する (1-4)。
+func (g *KnockoutWhist) PlayerSelectTrump(suit int) error {
+	if g.gameEndFlag {
+		return ErrGameEnded
+	}
+	if g.phase != KnockoutWhistPhaseTrumpSelect {
+		return ErrWrongPhase
+	}
+	if !g.players[g.leadPlayerIdx].GetIsHuman() {
+		return ErrNotHumanTurn
+	}
+	if suit < CardDesignSpade || suit > CardDesignDiamond {
+		return NewDomainError(ErrInvalidPlay, "切り札スートが範囲外です")
+	}
+	g.trumpSuit = suit
+	g.phase = KnockoutWhistPhasePlay
+	g.appendLog(g.leadPlayerIdx, "round_start",
+		fmt.Sprintf("round %d: %d cards each, trump %d, %s leads",
+			g.roundNumber, g.handSize, g.trumpSuit, g.playerName(g.leadPlayerIdx)), nil)
+	return nil
 }
 
 // deal 未脱落プレイヤーへ handSize 枚ずつ配る。
@@ -799,7 +833,7 @@ func (g *KnockoutWhist) UnmarshalJSON(data []byte) error {
 		j.RoundNumber < 1 || j.RoundNumber > KnockoutWhistMaxRounds ||
 		j.HandSize < 1 || j.HandSize > KnockoutWhistMaxRounds ||
 		j.TrickNumber < 1 || j.TrickNumber > KnockoutWhistMaxRounds ||
-		j.Phase < KnockoutWhistPhasePlay || j.Phase > KnockoutWhistPhaseGameEnd {
+		j.Phase < KnockoutWhistPhasePlay || j.Phase > KnockoutWhistPhaseTrumpSelect {
 		return errKnockoutWhistInvalidState
 	}
 	for _, tc := range j.CurrentTrick {

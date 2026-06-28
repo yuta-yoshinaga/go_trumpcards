@@ -8,6 +8,7 @@
   "anteLine": "ante: {{ante}}",
   "raiseInline": "  raise: {{raise}}",
   "spreadLine": "spread: {{spread}}",
+  "cuiSpreadGuide": "Winning ranks: {{ranks}} | raise <amt> / stay: s",
   "initialHeader": "INITIAL",
   "thirdHeader": "THIRD",
   "phaseBet": "BET",

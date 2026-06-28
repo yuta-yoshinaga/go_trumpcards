@@ -44,7 +44,9 @@ import { cardAlt } from '../utils/cardAlt';
 import { PINEAPPLE_HELP, parsePineappleCommand } from '../utils/cli/commands/pineappleCommands';
 import { formatPineappleState } from '../utils/cli/formatters/pineappleFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { holdemBestFive } from '../utils/holdemBestFive';
 import { findPlayerName } from '../utils/playerUtils';
+import { evaluateFiveCardHand, pokerHandKey } from '../utils/pokerSquaresUtils';
 
 /** Pineapple Poker tutorial step definitions. */
 const PN_TUTORIAL_STEPS: TutorialStep[] = [
@@ -201,6 +203,24 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   const humanAllIn = humanPlayer?.allIn ?? false;
   const canAct = isActive && !humanFolded && !humanAllIn && !isDiscardPhase && state?.currentTurn === humanPlayer?.id;
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
+  // Best-5 highlight at showdown: after the discard, the hand is Hold'em-style
+  // (2 hole + 5 board), so holdemBestFive marks the winning five cards. Indices
+  // 0..1 map to the hole cards, 2..6 to the board.
+  const showdownBest5 = useMemo(() => {
+    const hole = humanPlayer?.cards ?? [];
+    const board = state?.communityCards ?? [];
+    if (!isShowdown || !humanPlayer || humanPlayer.folded || hole.length !== 2 || board.length < 5) {
+      return { holeSet: new Set<number>(), boardSet: new Set<number>() };
+    }
+    const picked = holdemBestFive([...hole, ...board.slice(0, 5)]) ?? [];
+    const holeSet = new Set<number>();
+    const boardSet = new Set<number>();
+    for (const i of picked) {
+      if (i < hole.length) holeSet.add(i);
+      else boardSet.add(i - hole.length);
+    }
+    return { holeSet, boardSet };
+  }, [isShowdown, humanPlayer, state?.communityCards]);
   const minRaise = state?.minRaise ?? 0;
   const isMuckPhase = phase === PineapplePhase.SHOWDOWN && state?.muckAvailable === true;
   const isRebuyPhase = phase === PineapplePhase.REBUY && state?.rebuyPhaseType === HoldemRebuyPhaseType.REBUY;
@@ -212,6 +232,32 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   const canDiscard = isDiscardPhase && !humanDiscardDone;
   // Cards the player must discard down to 2: Pineapple/Crazy = 1, Irish = 2.
   const discardCount = Math.max(1, (state?.initialDealCount ?? 3) - 2);
+  // Irish Poker discards 2 of 4 hole cards; while choosing, preview the 2 cards
+  // that would be kept plus the best hand they make with the current board.
+  const discardPreview = useMemo(() => {
+    const isIrishDiscardChoice = variant === 'irishpoker' && isDiscardPhase && selectedDiscards.length === discardCount;
+    if (!isIrishDiscardChoice) return null;
+    const kept = (humanPlayer?.cards ?? []).filter((_, i) => !selectedDiscards.includes(i));
+    // holdemBestFive picks the best 5 of (kept + board); it returns null for <5 cards.
+    const all = [...kept, ...(state?.communityCards ?? [])];
+    const picked = holdemBestFive(all);
+    const rank = picked ? evaluateFiveCardHand(picked.map((i) => all[i])) : null;
+    return { kept, handKey: rank == null ? null : pokerHandKey(rank) };
+  }, [variant, isDiscardPhase, humanPlayer, state?.communityCards, selectedDiscards, discardCount]);
+  // Crazy Pineapple discards 1 of 3 after the flop; annotate each hole card with
+  // the best hand the OTHER two would make with the board if that card is the
+  // one discarded, so the player can compare keeps before committing.
+  const candidatePreviews = useMemo<(string | null)[] | null>(() => {
+    if (variant !== 'crazypineapple' || !isDiscardPhase) return null;
+    const hole = humanPlayer?.cards ?? [];
+    const board = state?.communityCards ?? [];
+    return hole.map((_, discardIdx) => {
+      const all = [...hole.filter((_, i) => i !== discardIdx), ...board];
+      const picked = holdemBestFive(all);
+      const rank = picked ? evaluateFiveCardHand(picked.map((i) => all[i])) : null;
+      return rank == null ? null : pokerHandKey(rank);
+    });
+  }, [variant, isDiscardPhase, humanPlayer, state?.communityCards]);
   const toggleDiscard = (idx: number) => {
     if (!canDiscard) return;
     setSelectedDiscards((prev) => {
@@ -299,14 +345,19 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                   <div className="text-ds-text-primary text-lg mb-1.5">{t('communityCards')}</div>
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
-                      ? state.communityCards.map((card) => (
-                          <AnimatedCard
-                            key={`${card.design}-${card.value}`}
-                            card={card}
-                            width={cardWidth}
-                            style={placeholderCardStyle}
-                          />
-                        ))
+                      ? state.communityCards.map((card, idx) => {
+                          const inBest = showdownBest5.boardSet.has(idx);
+                          const dim = showdownBest5.boardSet.size > 0 && !inBest;
+                          return (
+                            <div
+                              key={`${card.design}-${card.value}`}
+                              className={`transition-all ${inBest ? '-translate-y-1 rounded-lg ring-2 ring-ds-success motion-safe:animate-pulse' : ''} ${dim ? 'opacity-50' : ''}`}
+                              data-testid={inBest ? 'pn-best5-card' : undefined}
+                            >
+                              <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                            </div>
+                          );
+                        })
                       : Array.from({ length: 5 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                   </div>
                 </>
@@ -413,18 +464,31 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                   {humanPlayer.cards?.length
                     ? humanPlayer.cards.map((card, idx) => {
                         const isSelected = selectedDiscards.includes(idx);
+                        const inBest = showdownBest5.holeSet.has(idx);
+                        const dim = showdownBest5.holeSet.size > 0 && !inBest;
+                        const candKey = candidatePreviews?.[idx] ?? null;
                         return (
-                          <button
-                            key={`${card.design}-${card.value}`}
-                            type="button"
-                            onClick={() => toggleDiscard(idx)}
-                            aria-pressed={canDiscard ? isSelected : undefined}
-                            className={canDiscard ? 'cursor-pointer' : 'cursor-default'}
-                            disabled={!canDiscard}
-                            style={selectedCardStyle(canDiscard && isSelected)}
-                          >
-                            <AnimatedCard card={card} width={cardWidth} />
-                          </button>
+                          <div key={`${card.design}-${card.value}`} className="flex flex-col items-center">
+                            <button
+                              type="button"
+                              onClick={() => toggleDiscard(idx)}
+                              aria-pressed={canDiscard ? isSelected : undefined}
+                              className={`${canDiscard ? 'cursor-pointer' : 'cursor-default'} ${inBest ? 'rounded-lg ring-2 ring-ds-success motion-safe:animate-pulse' : ''} ${dim ? 'opacity-50' : ''}`}
+                              disabled={!canDiscard}
+                              style={selectedCardStyle(canDiscard && isSelected)}
+                              data-testid={inBest ? 'pn-best5-card' : undefined}
+                            >
+                              <AnimatedCard card={card} width={cardWidth} />
+                            </button>
+                            {candKey && (
+                              <span
+                                className="mt-0.5 text-[10px] text-ds-text-muted"
+                                data-testid="cp-discard-candidate"
+                              >
+                                {`${t('discard.candidateHand')}: ${t(`hand.${candKey}`)}`}
+                              </span>
+                            )}
+                          </div>
                         );
                       })
                     : !humanPlayer.folded &&
@@ -448,6 +512,19 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
             {/* Discard controls */}
             {canDiscard && (
               <div className="mb-2 text-center" data-testid="discard-controls" data-tutorial="pn-discard-controls">
+                {discardPreview && (
+                  <div className="mb-2 text-sm" data-testid="irishpoker-discard-preview">
+                    <span className="text-ds-text-muted">{`${t('discard.keepLabel')}: `}</span>
+                    <span className="text-ds-text-primary font-semibold">
+                      {discardPreview.kept.map((c) => cardAlt(c)).join('  ')}
+                    </span>
+                    {discardPreview.handKey && (
+                      <span className="ml-2 inline-block rounded-full bg-ds-accent/30 px-2 py-0.5 text-ds-text-primary font-semibold">
+                        {`${t('discard.previewHand')}: ${t(`hand.${discardPreview.handKey}`)}`}
+                      </span>
+                    )}
+                  </div>
+                )}
                 {discardConfirming && selectedDiscards.length === discardCount && humanPlayer ? (
                   <div data-testid="discard-confirm">
                     <p className="text-ds-text-primary mb-2">

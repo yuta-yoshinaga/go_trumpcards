@@ -5,7 +5,8 @@
     "bet": "ベット: {{bet}}コイン",
     "payout": "配当: {{payout}}",
     "betAmount": "コイン数",
-    "autoHold": "自動ホールド"
+    "autoHold": "自動ホールド",
+    "betMax": "最大ベット"
   },
   "button": {
     "deal": "ディール",
@@ -25,17 +26,19 @@
   },
   "payoutTable": {
     "title": "配当表",
-    "naturalRoyalFlush5": "ナチュラルロイヤルフラッシュ (5コイン): 4000",
-    "naturalRoyalFlush": "ナチュラルロイヤルフラッシュ: 250倍",
-    "fourDeuces": "フォーデューシーズ: 200倍",
-    "wildRoyalFlush": "ワイルドロイヤルフラッシュ: 25倍",
-    "fiveOfAKind": "ファイブカード: 15倍",
-    "straightFlush": "ストレートフラッシュ: 9倍",
-    "fourOfAKind": "フォーカード: 5倍",
-    "fullHouse": "フルハウス: 3倍",
-    "flush": "フラッシュ: 2倍",
-    "straight": "ストレート: 2倍",
-    "threeOfAKind": "スリーカード: 1倍"
+    "hand": "役",
+    "name": {
+      "naturalRoyalFlush": "ナチュラルロイヤルフラッシュ",
+      "fourDeuces": "フォーデューシーズ",
+      "wildRoyalFlush": "ワイルドロイヤルフラッシュ",
+      "fiveOfAKind": "ファイブカード",
+      "straightFlush": "ストレートフラッシュ",
+      "fourOfAKind": "フォーカード",
+      "fullHouse": "フルハウス",
+      "flush": "フラッシュ",
+      "straight": "ストレート",
+      "threeOfAKind": "スリーカード"
+    }
   },
   "tutorial": {
     "betControls": "1〜5コインを賭けます。2は全てワイルドカードです!",

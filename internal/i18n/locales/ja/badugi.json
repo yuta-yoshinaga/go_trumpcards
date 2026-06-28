@@ -1,5 +1,8 @@
 {
   "helpTitle": "Badugi (バドゥーギ)",
+  "hintNone": "ヒントはありません",
+  "hintStandPat": "推奨: スタンドパット（現在 {{size}} 枚のバドゥーギが完成）",
+  "hintExchange": "推奨: [{{keep}}] を残し [{{discard}}] を交換（最善サブセット {{size}} 枚）",
   "helpBet": "  b [amount]           ベット (例: b 20)",
   "helpCall": "  c                    コール",
   "helpRaise": "  ra [amount]          レイズ (例: ra 30)",

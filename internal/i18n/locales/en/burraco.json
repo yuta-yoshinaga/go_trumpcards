@@ -25,6 +25,7 @@
   "promptDraw": "{{name}} to act (draw phase)",
   "promptDrawHelpStock": "ds: draw from stock",
   "promptDrawHelpDiscard": "dd <idx,idx>: take the discard pile (natural pair indices)",
+  "promptDrawFrozen": "Frozen: only the top card, no wild-card pickup",
   "promptMeld": "{{name}} to act (meld phase)",
   "promptMeldHelp": "m <idx,idx,idx;idx,idx,idx>: lay down meld(s) (; separates groups)",
   "promptSkipMeld": "sm: skip melding",

@@ -193,6 +193,24 @@ describe('AcesUpPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    // The hint renders via HintTooltip with a 0-based column reason matching the move buttons.
+    await waitFor(() => expect(screen.getByText(/列\[0\]の一番上の札を除去/)).toBeInTheDocument());
+  });
+
+  it('renders a move hint via HintTooltip with the column', async () => {
+    renderWithProviders(<AcesUpPage />);
+    await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    mockExec.mockResolvedValue({ ...playingState, hint: { type: 'move', col: 2 } });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByText(/列\[2\]の札を空き列へ移動/)).toBeInTheDocument());
+  });
+
+  it('renders a draw hint via HintTooltip without a column', async () => {
+    renderWithProviders(<AcesUpPage />);
+    await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    mockExec.mockResolvedValue({ ...playingState, hint: { type: 'draw', col: -1 } });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByText(/山札から各列へ1枚ずつ/)).toBeInTheDocument());
   });
 
   it('renders game clear state', async () => {

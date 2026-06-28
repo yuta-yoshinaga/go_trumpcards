@@ -100,8 +100,9 @@ describe('PiquetPage', () => {
   it('shows the human hand cards', async () => {
     mockExec.mockResolvedValue(makeState());
     renderWithProviders(<PiquetPage />);
-    await waitFor(() => expect(screen.getByText('K♠')).toBeInTheDocument());
-    expect(screen.getByText('A♥')).toBeInTheDocument();
+    // Cards now render as real images with localized alt text (suit + rank).
+    await waitFor(() => expect(screen.getByAltText('♠ K')).toBeInTheDocument());
+    expect(screen.getByAltText('♥ A')).toBeInTheDocument();
   });
 
   it('renders reset button', async () => {
@@ -190,7 +191,7 @@ describe('PiquetPage', () => {
     renderWithProviders(<PiquetPage />);
     // Exact match isolates the TrickView header from the "トリック: 0" stats line.
     await waitFor(() => expect(screen.getByText('トリック')).toBeInTheDocument()); // trickHeader
-    expect(screen.getByText(/P0:/)).toBeInTheDocument(); // TrickView entry
+    expect(screen.getByText('P0')).toBeInTheDocument(); // TrickView player label (cards now render as images)
   });
 
   it('shows the meld badge in the lost palette when the opponent scores', async () => {

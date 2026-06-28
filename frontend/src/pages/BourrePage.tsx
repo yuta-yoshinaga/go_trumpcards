@@ -315,6 +315,11 @@ function BourrePageContent() {
           {phase === 'decide' && isHumanTurn && (
             <p
               data-testid="bourre-decide-summary"
+              title={t('decideSummaryHelp', {
+                penalty: state.pot + state.carryPot,
+                defaultValue:
+                  "If you play and take zero tricks you are 'bourréd' and pay {{penalty}} chips. Folding incurs no penalty.",
+              })}
               className={`mt-1 text-center text-xs ${
                 state.pot + state.carryPot >= BOURRE_PENALTY_WARN_THRESHOLD
                   ? 'text-ds-warning font-medium'
@@ -324,7 +329,8 @@ function BourrePageContent() {
               {t('decideSummary', {
                 pot: state.pot,
                 penalty: state.pot + state.carryPot,
-                defaultValue: 'Pot: {{pot}} chips | Bourré penalty: {{penalty}} chips',
+                defaultValue:
+                  'Pot: {{pot}} chips | Play and win no tricks: {{penalty}}-chip penalty (folding avoids it)',
               })}
             </p>
           )}

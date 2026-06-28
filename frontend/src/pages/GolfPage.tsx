@@ -34,6 +34,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { GOLF_HELP, parseGolfCommand } from '../utils/cli/commands/golfCommands';
 import { formatGolfState } from '../utils/cli/formatters/golfFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isGolfAdjacent } from '../utils/hints/golfHint';
 
 /** Golf Solitaire tutorial step definitions. */
 const GOLF_TUTORIAL_STEPS: TutorialStep[] = [
@@ -166,6 +167,8 @@ function GolfPageContent() {
 
   const isPlaying = state.phase === GolfPhase.PLAYING;
   const isGameClear = state.phase === GolfPhase.GAME_CLEAR;
+  // Waste-top value drives which exposed tableau cards are playable (±1, K-A wrap).
+  const wasteTopValue = isPlaying ? state.waste.at(-1)?.value : undefined;
   const isGameOver = state.phase === GolfPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
 
@@ -252,6 +255,8 @@ function GolfPageContent() {
                     if (!gc.card) return null;
                     const exposed = gc.exposed;
                     const isHinted = hint?.type === 'remove' && hint.col === colIdx;
+                    const isPlayable =
+                      exposed && wasteTopValue !== undefined && isGolfAdjacent(gc.card.value, wasteTopValue);
                     return (
                       <div key={`gc-${colIdx.toString()}-${rowIdx.toString()}`} className="absolute" style={{ top }}>
                         <button
@@ -259,8 +264,9 @@ function GolfPageContent() {
                           onClick={() => handleSelectCard(colIdx)}
                           disabled={!isPlaying || loading || !exposed}
                           aria-label={cardAlt(gc.card)}
+                          data-testid={isPlayable ? 'golf-playable' : undefined}
                           className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
-                            isHinted && exposed ? 'ring-2 ring-ds-warning' : ''
+                            isHinted && exposed ? 'ring-2 ring-ds-warning' : isPlayable ? 'ring-2 ring-ds-success' : ''
                           } ${!exposed ? 'opacity-60' : ''}`}
                         >
                           <AnimatedCard card={gc.card} width={effectiveCardWidth} />

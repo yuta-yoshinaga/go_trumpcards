@@ -5,7 +5,8 @@
     "bet": "Bet: {{bet}} coin(s)",
     "payout": "Payout: {{payout}}",
     "betAmount": "Coins",
-    "autoHold": "Auto-hold"
+    "autoHold": "Auto-hold",
+    "betMax": "Bet Max"
   },
   "button": {
     "deal": "Deal",
@@ -25,17 +26,19 @@
   },
   "payoutTable": {
     "title": "Payout Table",
-    "naturalRoyalFlush5": "Natural Royal Flush (5 coins): 4000",
-    "naturalRoyalFlush": "Natural Royal Flush: 250x",
-    "fourDeuces": "Four Deuces: 200x",
-    "wildRoyalFlush": "Wild Royal Flush: 25x",
-    "fiveOfAKind": "Five of a Kind: 15x",
-    "straightFlush": "Straight Flush: 9x",
-    "fourOfAKind": "Four of a Kind: 5x",
-    "fullHouse": "Full House: 3x",
-    "flush": "Flush: 2x",
-    "straight": "Straight: 2x",
-    "threeOfAKind": "Three of a Kind: 1x"
+    "hand": "Hand",
+    "name": {
+      "naturalRoyalFlush": "Natural Royal Flush",
+      "fourDeuces": "Four Deuces",
+      "wildRoyalFlush": "Wild Royal Flush",
+      "fiveOfAKind": "Five of a Kind",
+      "straightFlush": "Straight Flush",
+      "fourOfAKind": "Four of a Kind",
+      "fullHouse": "Full House",
+      "flush": "Flush",
+      "straight": "Straight",
+      "threeOfAKind": "Three of a Kind"
+    }
   },
   "tutorial": {
     "betControls": "Place 1–5 coins. All 2s are wild cards!",

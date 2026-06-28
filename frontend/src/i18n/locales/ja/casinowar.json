@@ -4,6 +4,7 @@
   "tieGuide": "タイ！ サレンダー (アンテ半額没収) かウォー (同額追加ベットで再勝負) を選択",
   "warCost": "ウォー = 追加 {{amount}} チップ",
   "insufficientChips": "チップが足りません",
+  "previousBet": "前回額を使う ({{amount}})",
   "label": {
     "chips": "チップ",
     "ante": "アンテ",

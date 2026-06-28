@@ -16,6 +16,7 @@ import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
@@ -143,6 +144,8 @@ function WhistPageContent() {
   const isPlayPhaseForKbd = state?.phase === WhistPhase.PLAY;
   const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
   const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
+  const isTrickEndForKbd = state?.phase === WhistPhase.TRICK_END;
+  const isRoundEndForKbd = state?.phase === WhistPhase.ROUND_END;
 
   const confirmAction = useCallback(() => {
     handlePlay();
@@ -155,6 +158,21 @@ function WhistPageContent() {
     onClear: clearSelection,
     enabled: !!isHumanTurnForKbd && !loading,
   });
+
+  // 'n' advances the game at a trick/round boundary, mirroring the CUI's
+  // next / nextround commands so keyboard users can progress without the mouse.
+  const advanceAction = useCallback(() => {
+    if (isTrickEndForKbd) {
+      handleNextTrick();
+    } else if (isRoundEndForKbd) {
+      handleNextRound();
+    }
+  }, [isTrickEndForKbd, isRoundEndForKbd, handleNextTrick, handleNextRound]);
+  const advanceBindings = useMemo(
+    () => [{ key: 'n', action: advanceAction, enabled: isTrickEndForKbd || isRoundEndForKbd }],
+    [advanceAction, isTrickEndForKbd, isRoundEndForKbd],
+  );
+  useActionKeyboardNav({ bindings: advanceBindings, enabled: !!state && !loading });
 
   const phaseNames = usePhaseNames('whist', WHIST_PHASE_KEYS);
 

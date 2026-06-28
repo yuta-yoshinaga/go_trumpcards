@@ -3,7 +3,8 @@
     "title": "ハイ/ロー内訳",
     "hi": "ハイ",
     "lo": "ロー",
-    "winner": "{{name}} (+{{amount}})"
+    "winner": "{{name}} (+{{amount}})",
+    "hiTakesAll": "ロー該当者なし — ハイが総取り"
   },
   "phase": {
     "preFlop": "プリフロップ",

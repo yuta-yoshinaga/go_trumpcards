@@ -156,6 +156,53 @@ describe('CanfieldPage', () => {
     await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
   });
 
+  it('collapses per-column actions behind a details disclosure on mobile', async () => {
+    const orig = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      renderWithProviders(<CanfieldPage />);
+      const details = await screen.findByTestId('cf-col-actions-0');
+      expect(details.tagName.toLowerCase()).toBe('details');
+      // Collapsed by default (no open attribute).
+      expect(details).not.toHaveAttribute('open');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: orig });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('shows per-column actions directly (no disclosure) on desktop', async () => {
+    renderWithProviders(<CanfieldPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByTestId('cf-col-actions-0')).not.toBeInTheDocument();
+  });
+
+  it('per-column action buttons dispatch the matching move', async () => {
+    renderWithProviders(<CanfieldPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // Column 0's action group. Await each call before the next click, since a
+    // pending exec sets loading=true and disables the buttons in between.
+    fireEvent.click(screen.getByRole('button', { name: '捨→0' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste' }, { zone: 'tableau', col: 0 }));
+    fireEvent.click(screen.getByRole('button', { name: '予→0' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'reserve' }, { zone: 'tableau', col: 0 }),
+    );
+    fireEvent.click(screen.getAllByRole('button', { name: '→組' })[0]);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0 }, { zone: 'foundation' }),
+    );
+    fireEvent.click(screen.getAllByRole('button', { name: '→1' })[0]);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 0, cardIndex: 0 },
+        { zone: 'tableau', col: 1 },
+      ),
+    );
+  });
+
   it('hides game action buttons after game over (only reset remains)', async () => {
     mockExec.mockResolvedValue(gameOverState);
     renderWithProviders(<CanfieldPage />);

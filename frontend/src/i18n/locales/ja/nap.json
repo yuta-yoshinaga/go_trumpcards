@@ -37,6 +37,9 @@
   "nextRound": "次のラウンド",
   "target": "目標: {{points}}チップ",
   "bidPrompt": "入札してください（上回る入札のみ可）:",
+  "bidHighest": "現在の最高入札: {{bid}}（{{player}}）",
+  "bidNone": "まだ入札なし",
+  "bidTooLow": "現在の最高入札 {{bid}} を上回る必要があります",
   "bid": {
     "pass": "パス",
     "two": "ツー",

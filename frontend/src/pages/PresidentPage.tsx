@@ -30,12 +30,6 @@ import {
 } from '../utils/cli/commands/presidentCommands';
 import type { CliGameConfig } from '../utils/cli/types';
 
-const DIFFICULTY_OPTIONS = [
-  { value: '0', label: 'Easy' },
-  { value: '1', label: 'Normal' },
-  { value: '2', label: 'Hard' },
-];
-
 /** Tutorial steps for President. */
 const PR_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="pr-cpu-area"]', messageKey: 'tutorial.cpuArea', placement: 'bottom', advanceOn: 'next' },
@@ -298,7 +292,11 @@ function PresidentPageContent() {
                     id: 'cpuDifficulty',
                     label: t('settings.cpuDifficulty'),
                     value: String(configInput.cpuDifficulty ?? 1),
-                    options: DIFFICULTY_OPTIONS,
+                    options: [
+                      { value: '0', label: t('settings.difficulty.easy') },
+                      { value: '1', label: t('settings.difficulty.normal') },
+                      { value: '2', label: t('settings.difficulty.hard') },
+                    ],
                     onSelect: (v: string) => handleConfigChange('cpuDifficulty', Number.parseInt(v, 10)),
                   },
                   {

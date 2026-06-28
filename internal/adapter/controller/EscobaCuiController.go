@@ -34,7 +34,7 @@ func (c *EscobaCuiController) Exec(command string) string {
 		},
 		[]string{
 			"play", "p", "next", "n", "nextround",
-			"sd", "setdifficulty", "st", "settarget", "log", "l",
+			"sd", "setdifficulty", "st", "settarget", "h", "hint", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -55,7 +55,7 @@ func (c *EscobaCuiController) Exec(command string) string {
 					return c.ei.ResetWithConfig(cfg)
 				})
 			default:
-				return handleCuiLog(cmd, c.ei.ActionLog)
+				return handleCuiHintAndLog(cmd, c.ei.Hint, c.ei.ActionLog)
 			}
 		},
 	)

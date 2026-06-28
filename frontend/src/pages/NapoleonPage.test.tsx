@@ -283,6 +283,20 @@ describe('NapoleonPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', 0));
   });
 
+  it('shows Napoleon-side face-card progress (adjutant excluded until revealed)', async () => {
+    mockExec.mockResolvedValue(playPhaseState); // napoleon 2 pics, bid 13, adjutant hidden
+    renderWithProviders(<NapoleonPage />);
+    const badge = await screen.findByTestId('np-face-progress');
+    expect(badge).toHaveTextContent('絵札 2/13 枚');
+  });
+
+  it('includes the adjutant haul in the progress once revealed', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, adjutantRevealed: true });
+    renderWithProviders(<NapoleonPage />);
+    const badge = await screen.findByTestId('np-face-progress');
+    expect(badge).toHaveTextContent('絵札 3/13 枚');
+  });
+
   it('shows trump declaration controls when human is napoleon', async () => {
     mockExec.mockResolvedValue(trumpDeclarationState);
     renderWithProviders(<NapoleonPage />);

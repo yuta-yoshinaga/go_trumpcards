@@ -647,6 +647,11 @@ func (ip *IndianPoker) cpuPotBet(potPct int) int {
 // GetPhase フェーズ取得
 func (ip *IndianPoker) GetPhase() int { return ip.phase }
 
+// GetEstimatedStrength は player idx の推定勝率 (0-100) を返す。自分のカードが
+// 見えないインディアンポーカーで、見えている相手札から算出した勝率であり、CUI
+// のエクイティ表示と CPU 判断で共有する単一ロジック。
+func (ip *IndianPoker) GetEstimatedStrength(idx int) int { return ip.estimateOwnStrength(idx) }
+
 // GetPlayers プレイヤー一覧取得
 func (ip *IndianPoker) GetPlayers() []*IndianPokerPlayer { return ip.players }
 

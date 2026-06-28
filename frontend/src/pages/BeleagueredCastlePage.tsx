@@ -177,6 +177,9 @@ function BeleagueredCastlePageContent() {
   const isGameClear = state.phase === BeleagueredCastlePhase.GAME_CLEAR;
   const isGameOver = state.phase === BeleagueredCastlePhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
+  // How many of the 52 cards reached a foundation — only needed on game over, so skip the
+  // reduce during normal (frequently re-rendered) play.
+  const foundationCount = isGameOver ? state.foundation.reduce((sum, pile) => sum + pile.length, 0) : 0;
   // Auto-complete becomes useful once a foundation has built past its ace, so
   // pulse the button only then (mirrors Crescent / Spiderette).
   const autoCompleteReady = state.foundation.some((pile) => pile.length > 1);
@@ -369,6 +372,15 @@ function BeleagueredCastlePageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+
+            {isGameOver && (
+              <p data-testid="bc-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
+                {t('gameOverSummary', {
+                  count: foundationCount,
+                  percent: Math.round((foundationCount / 52) * 100),
+                })}
+              </p>
+            )}
 
             <ActionLogSection
               isEndPhase={isEnded}

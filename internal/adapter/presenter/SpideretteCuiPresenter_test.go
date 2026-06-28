@@ -147,7 +147,7 @@ func TestSpideretteCuiPresenter_ActionLogOutput(t *testing.T) {
 
 	t.Run("during game", func(t *testing.T) {
 		sg := new(interfaces.MockSpideretteGame)
-		sg.On("GetPhase").Return(domain.SpiderettePhasePlaying)
+		sg.On("GetGameEndFlag").Return(false)
 
 		p := new(SpideretteCuiPresenter)
 		result := p.ActionLogOutput(sg)
@@ -156,7 +156,7 @@ func TestSpideretteCuiPresenter_ActionLogOutput(t *testing.T) {
 
 	t.Run("after game clear", func(t *testing.T) {
 		sg := new(interfaces.MockSpideretteGame)
-		sg.On("GetPhase").Return(domain.SpiderettePhaseGameClear)
+		sg.On("GetGameEndFlag").Return(true)
 		sg.On("GetActionLog").Return([]*domain.ActionLogEntry{
 			{TurnNumber: 1, PlayerIdx: 0, ActionType: "move", Detail: "test", Cards: nil},
 		})
@@ -169,7 +169,7 @@ func TestSpideretteCuiPresenter_ActionLogOutput(t *testing.T) {
 
 	t.Run("after game over", func(t *testing.T) {
 		sg := new(interfaces.MockSpideretteGame)
-		sg.On("GetPhase").Return(domain.SpiderettePhaseGameOver)
+		sg.On("GetGameEndFlag").Return(true)
 		sg.On("GetActionLog").Return([]*domain.ActionLogEntry{})
 
 		p := new(SpideretteCuiPresenter)

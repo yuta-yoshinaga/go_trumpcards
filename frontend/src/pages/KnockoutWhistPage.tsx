@@ -69,6 +69,7 @@ const KNOCKOUT_WHIST_PHASE_KEYS: Readonly<Record<number, string>> = {
   [KnockoutWhistPhase.TRICK_END]: 'trickEnd',
   [KnockoutWhistPhase.ROUND_END]: 'roundEnd',
   [KnockoutWhistPhase.GAME_END]: 'gameEnd',
+  [KnockoutWhistPhase.TRUMP_SELECT]: 'trumpSelect',
 };
 
 /** Renders the Knockout Whist game page: a British play-only survival trick-taker with elimination and Dogbone tokens. */
@@ -92,6 +93,7 @@ function KnockoutWhistPageContent() {
     handlePlay,
     handleNextTrick,
     handleNextRound,
+    handleSelectTrump,
   } = useKnockoutWhistGame();
 
   // Fetch a fresh game on mount.
@@ -141,6 +143,7 @@ function KnockoutWhistPageContent() {
   const isPlayPhase = state.phase === KnockoutWhistPhase.PLAY;
   const isTrickEnd = state.phase === KnockoutWhistPhase.TRICK_END;
   const isRoundEnd = state.phase === KnockoutWhistPhase.ROUND_END;
+  const isTrumpSelect = state.phase === KnockoutWhistPhase.TRUMP_SELECT;
   const isGameEnd = state.phase === KnockoutWhistPhase.GAME_END || state.gameEndFlag;
 
   const canPlay = isPlayPhase && isHumanTurn && !(state.players[humanIdx]?.eliminated ?? false);
@@ -334,6 +337,24 @@ function KnockoutWhistPageContent() {
                 <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
                   {t('nextRound')}
                 </button>
+              )}
+              {isTrumpSelect && (
+                <div className="flex flex-wrap items-center gap-2" data-testid="knockoutwhist-trump-select">
+                  <span className="text-ds-text-primary text-sm">{t('trumpSelectPrompt')}</span>
+                  {[1, 2, 3, 4].map((suit) => (
+                    <button
+                      key={suit}
+                      type="button"
+                      className={btnPrimary}
+                      onClick={() => handleSelectTrump(suit)}
+                      disabled={loading}
+                      data-testid={`knockoutwhist-trump-${suit}`}
+                      aria-label={t('trumpSelectSuit', { suit: SUIT_SYMBOLS[suit] })}
+                    >
+                      {SUIT_SYMBOLS[suit]}
+                    </button>
+                  ))}
+                </div>
               )}
               <GameResetButton
                 isGameEnd={isGameEnd}

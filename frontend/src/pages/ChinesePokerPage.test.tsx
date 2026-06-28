@@ -155,4 +155,63 @@ describe('ChinesePokerPage', () => {
     fireEvent.keyDown(document, { key: 'b' });
     expect(mockExec).toHaveBeenCalledWith('bet', 100);
   });
+
+  // Assign the cards at the given indices in order: the first 3 become the front
+  // row, the next 5 the middle row, and the remaining 5 stay in the back row.
+  const assignFrontMiddle = (frontMid: number[]) => {
+    for (const i of frontMid) {
+      fireEvent.click(screen.getByRole('button', { name: `Card ${i}` }));
+    }
+  };
+
+  it('shows a foul warning when the staged arrangement violates back >= middle >= front', async () => {
+    // Front = trips 9s (idx 0-2), Middle = pair 6s (idx 3-7), Back = quads 8s.
+    // Front (trips) outranks Middle (pair) → foul.
+    const foulCards: Card[] = [
+      card(0, 9),
+      card(1, 9),
+      card(2, 9), // front: trips
+      card(0, 6),
+      card(1, 6),
+      card(2, 2),
+      card(3, 3),
+      card(0, 4), // middle: pair of 6s
+      card(0, 8),
+      card(1, 8),
+      card(2, 8),
+      card(3, 8),
+      card(0, 5), // back: quads of 8s
+    ];
+    mockExec.mockResolvedValue({ ...setHandsState, playerCards: foulCards });
+    renderWithProviders(<ChinesePokerPage />);
+    await screen.findByTestId('cp-row-preview');
+    assignFrontMiddle([0, 1, 2, 3, 4, 5, 6, 7]);
+    expect(screen.getByTestId('cp-foul-warning')).toBeInTheDocument();
+  });
+
+  it('does not show a foul warning for a legal arrangement', async () => {
+    // Front = high card (idx 0-2), Middle = pair 6s (idx 3-7), Back = trips 8s.
+    const legalCards: Card[] = [
+      card(0, 2),
+      card(1, 3),
+      card(3, 5), // front: high card
+      card(0, 6),
+      card(1, 6),
+      card(2, 10),
+      card(3, 11),
+      card(0, 12), // middle: pair of 6s
+      card(0, 8),
+      card(1, 8),
+      card(2, 8),
+      card(3, 2),
+      card(0, 4), // back: trips 8s
+    ];
+    mockExec.mockResolvedValue({ ...setHandsState, playerCards: legalCards });
+    renderWithProviders(<ChinesePokerPage />);
+    await screen.findByTestId('cp-row-preview');
+    // No assignment yet → incomplete → no warning.
+    expect(screen.queryByTestId('cp-foul-warning')).not.toBeInTheDocument();
+    assignFrontMiddle([0, 1, 2, 3, 4, 5, 6, 7]);
+    expect(screen.queryByTestId('cp-foul-warning')).not.toBeInTheDocument();
+  });
 });

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { letitrideApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ChipBetInput } from '../components/common/ChipBetInput';
@@ -19,6 +20,7 @@ import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
+import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -77,6 +79,13 @@ export const LetItRidePage = withTutorial(LetItRidePageContent, 'letitride', LIR
 function LetItRidePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('letitride');
+  // Separate confirm dialog for the irreversible "pull" action.
+  const {
+    isOpen: pullConfirmOpen,
+    requestConfirm: requestPullConfirm,
+    confirm: confirmPull,
+    cancel: cancelPull,
+  } = useConfirmDialog();
 
   const [betAmount, setBetAmount] = useState(100);
 
@@ -116,16 +125,18 @@ function LetItRidePageContent() {
         action: () => execApi('bet', betAmount),
         enabled: isBetPhase,
       },
-      { key: 'p', action: () => execApi('pull'), enabled: isDecisionPhase },
+      { key: 'p', action: () => requestPullConfirm(() => execApi('pull')), enabled: isDecisionPhase },
       { key: 'l', action: () => execApi('letitride'), enabled: isDecisionPhase },
       { key: 'r', action: () => execApi('reset'), enabled: isEndPhase },
     ],
-    [execApi, betAmount, isBetPhase, isDecisionPhase, isEndPhase],
+    [execApi, betAmount, isBetPhase, isDecisionPhase, isEndPhase, requestPullConfirm],
   );
 
   useActionKeyboardNav({
     bindings: actionBindings,
-    enabled: !!state && !loading,
+    // Disable shortcuts while a confirmation dialog is open so a stray key
+    // (e.g. 'l') can't bypass the confirm.
+    enabled: !!state && !loading && !pullConfirmOpen && !confirmOpen,
   });
 
   if (!state) return <GameSkeleton gameKey="letitride" layout={{ kind: 'casino-table', sections: [3, 2] }} />;
@@ -135,7 +146,7 @@ function LetItRidePageContent() {
   };
 
   const handlePull = () => {
-    execApi('pull');
+    requestPullConfirm(() => execApi('pull'));
   };
 
   const handleLetItRide = () => {
@@ -371,6 +382,19 @@ function LetItRidePageContent() {
           </GameFooter>
         </>
       )}
+      <ConfirmDialog
+        open={pullConfirmOpen}
+        title={t('pullConfirmTitle')}
+        message={t('pullConfirm', {
+          amount: state.betAmount,
+          risk: currentRisk,
+          newRisk: Math.max(0, currentRisk - state.betAmount),
+        })}
+        confirmLabel={tc('button.confirm')}
+        cancelLabel={tc('button.cancel')}
+        onConfirm={confirmPull}
+        onCancel={cancelPull}
+      />
     </GamePageShell>
   );
 }

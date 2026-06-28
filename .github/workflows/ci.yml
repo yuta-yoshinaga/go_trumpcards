@@ -126,8 +126,13 @@ jobs:
         working-directory: frontend
         run: bunx playwright install --with-deps chromium
 
+      - name: Build server binary
+        run: go build -o /tmp/trumpcards-server ./cmd/server
+
       - name: Run E2E tests
         working-directory: frontend
+        env:
+          E2E_SERVER_BIN: /tmp/trumpcards-server
         run: bunx playwright test
 
       - name: Upload Playwright report

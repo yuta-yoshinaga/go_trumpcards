@@ -13,6 +13,7 @@
   "undo": "元に戻す",
   "moveCount": "手数",
   "baseRank": "基準ランク",
+  "baseRankLegend": "このディールは {{rank}} から開始。1つ下の {{prev}} が最後（K→A と折り返し）",
   "empty": "空",
   "hintAvailable": "ヒント",
   "foundationAriaLabel": "{{suit}} ファンデーション ({{cardCount}}枚)",

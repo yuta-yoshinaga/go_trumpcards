@@ -1,4 +1,17 @@
 {
+  "handRank": {
+    "title": "役の強さ（ショートデッキ）",
+    "straightFlush": "ストレートフラッシュ",
+    "fourOfAKind": "フォーカード",
+    "flush": "フラッシュ",
+    "fullHouse": "フルハウス",
+    "straight": "ストレート",
+    "threeOfAKind": "スリーカード",
+    "twoPair": "ツーペア",
+    "onePair": "ワンペア",
+    "highCard": "ハイカード",
+    "note": "通常ポーカーと違い、フラッシュがフルハウスより強い。A は 6-7-8-9-A の低位ストレートにも使えます。"
+  },
   "phase": {
     "preFlop": "プリフロップ",
     "flop": "フロップ",

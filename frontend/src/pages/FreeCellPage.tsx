@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { FreeCellMoveZone, freecellApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { AutoCompleteReadyBadge } from '../components/AutoCompleteReadyBadge';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -34,6 +35,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { FREECELL_HELP, parseFreecellCommand } from '../utils/cli/commands/freecellCommands';
 import { formatFreecellState } from '../utils/cli/formatters/freecellFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { freeCellAutoCompleteReady } from '../utils/freeCellAutoComplete';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 
@@ -185,6 +187,8 @@ function FreeCellPageContent() {
   const emptyFreeCells = state.freeCells.filter((c) => c === null).length;
   const emptyTableauCols = state.tableau.filter((col: (Card | null)[]) => col.length === 0).length;
   const supermoveLimit = (1 + emptyFreeCells) * 2 ** emptyTableauCols;
+  // Auto-complete will deterministically win once every column is descending.
+  const autoCompleteReady = freeCellAutoCompleteReady(state.tableau);
 
   const isSourceSelected = (zone: string, col?: number, cell?: number, cardIndex?: number) =>
     selectedSource !== null &&
@@ -330,6 +334,11 @@ function FreeCellPageContent() {
                   );
                 })}
               </div>
+            </div>
+
+            {/* Max bulk-move (supermove) limit, derived from empty free cells/columns */}
+            <div className="text-game-text-muted text-xs mb-2" data-testid="fc-supermove-limit">
+              {t('supermoveLimitLabel', { limit: supermoveLimit })}
             </div>
 
             {/* Tableau */}
@@ -515,12 +524,15 @@ function FreeCellPageContent() {
                   </button>
                   <button
                     type="button"
-                    className={btnSuccess}
+                    className={`${btnSuccess}${
+                      autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''
+                    }`}
                     onClick={handleAutoComplete}
                     disabled={loading || isAutoCompleting}
                   >
                     {t('autoComplete')}
                   </button>
+                  <AutoCompleteReadyBadge ready={autoCompleteReady} testId="freecell-autocomplete-ready-badge" />
                   <button
                     type="button"
                     className={btnDanger}

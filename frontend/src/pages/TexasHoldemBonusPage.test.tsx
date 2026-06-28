@@ -132,6 +132,13 @@ describe('TexasHoldemBonusPage', () => {
     expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument();
   });
 
+  it('explains that ante and bonus payouts are judged independently', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<TexasHoldemBonusPage />);
+    const intro = await screen.findByTestId('payout-intro');
+    expect(intro).toHaveTextContent('独立して');
+  });
+
   it('renders skeleton before state loads', () => {
     mockApi.mockReturnValue(new Promise(() => {}));
     renderWithProviders(<TexasHoldemBonusPage />);

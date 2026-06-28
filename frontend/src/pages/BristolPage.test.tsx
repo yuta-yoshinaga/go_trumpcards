@@ -65,6 +65,15 @@ describe('BristolPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('gives tableau columns a contextual aria-label (1-based number, role, depth) and a rule header', async () => {
+    renderWithProviders(<BristolPage />);
+    // Column 1 (0-based idx 0) holds 1 card → "降順ビルド列 1（1枚）".
+    await waitFor(() => expect(screen.getByRole('button', { name: '降順ビルド列 1（1枚）' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '降順ビルド列 8（1枚）' })).toBeInTheDocument();
+    // The tableau header conveys the build-down rule with the actual column count (8).
+    expect(screen.getByTestId('br-tableau-rule')).toHaveTextContent('8列の降順ビルド');
+  });
+
   it('shows a stacked-count badge on fans with 2+ cards and hides it otherwise', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
@@ -95,11 +104,13 @@ describe('BristolPage', () => {
   it('selects a tableau column then moves it to another tableau column', async () => {
     renderWithProviders(<BristolPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    screen.getByRole('button', { name: '場札 0' }).click();
+    screen.getByRole('button', { name: /降順ビルド列 1/ }).click();
     // Wait for the source selection to render before clicking the destination,
     // so the destination handler reads the updated `selected` state.
-    await waitFor(() => expect(screen.getByRole('button', { name: '場札 0' })).toHaveAttribute('aria-pressed', 'true'));
-    screen.getByRole('button', { name: '場札 1' }).click();
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /降順ビルド列 1/ })).toHaveAttribute('aria-pressed', 'true'),
+    );
+    screen.getByRole('button', { name: /降順ビルド列 2/ }).click();
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0 }, { zone: 'tableau', col: 1 }),
     );
@@ -108,7 +119,7 @@ describe('BristolPage', () => {
   it('selects a tableau column then moves it to a foundation', async () => {
     renderWithProviders(<BristolPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    screen.getByRole('button', { name: '場札 0' }).click();
+    screen.getByRole('button', { name: /降順ビルド列 1/ }).click();
     await waitFor(() => expect(screen.getByRole('button', { name: '組札 0' })).toBeEnabled());
     screen.getByRole('button', { name: '組札 0' }).click();
     await waitFor(() =>

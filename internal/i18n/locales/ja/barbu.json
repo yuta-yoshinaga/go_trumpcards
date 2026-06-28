@@ -1,5 +1,9 @@
 {
   "helpTitle": "バルブ",
+  "hintNone": "ヒントはありません",
+  "hintDomino": "推奨: 置けるカード {{cards}}",
+  "hintDominoPass": "置けるカードがありません。パスします",
+  "hintLegal": "合法手: {{cards}}",
   "helpContract": "  c <0-6> [切札 1-4]       コントラクトを選ぶ (切札は Trumps=5 のみ)",
   "helpPlay": "  p <h>                    手札 h を出す (Dominoes では -1 でパス)",
   "helpNext": "  n                        次のディールを開始",

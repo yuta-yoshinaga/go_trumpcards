@@ -14,6 +14,7 @@
   "swapButton": "このカードと交換",
   "passButton": "パス（交換しない）",
   "signalLabel": "あなたの秘密のシグナル:",
+  "signalSent": "シグナル設定: {{signal}}",
   "signal": {
     "sound": "音（咳払い）",
     "blink": "瞬き"

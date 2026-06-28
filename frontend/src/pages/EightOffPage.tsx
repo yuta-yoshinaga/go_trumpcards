@@ -416,7 +416,11 @@ function EightOffPageContent() {
                                       onBlur={() => setHoveredStack(null)}
                                       title={
                                         exceedsSupermove
-                                          ? t('supermoveLimitTooltip', { limit: supermoveLimit })
+                                          ? t('supermoveLimitTooltip', {
+                                              limit: supermoveLimit,
+                                              cells: emptyFreeCells,
+                                              cols: emptyTableauCols,
+                                            })
                                           : undefined
                                       }
                                       data-supermove-blocked={exceedsSupermove ? 'true' : undefined}

@@ -22,6 +22,46 @@ func goFishPlayerStr(player *domain.GoFishPlayer, i int) string {
 	return b.String()
 }
 
+// writeGoFishKnownRanks lists, per opponent, the ranks they are known to hold
+// from past asks; a rank the human also holds is starred as a strong ask
+// target. Emitted only on the human's turn.
+func writeGoFishKnownRanks(b *strings.Builder, gf interfaces.GoFishGame) {
+	known := gf.GetKnownRanks()
+	var human *domain.GoFishPlayer
+	for i := 0; i < gf.GetPlayerCnt(); i++ {
+		if p := gf.GetPlayer(i); p != nil && p.GetIsHuman() {
+			human = p
+			break
+		}
+	}
+	wrote := false
+	for i := 0; i < gf.GetPlayerCnt(); i++ {
+		p := gf.GetPlayer(i)
+		if p == nil || p.GetIsHuman() {
+			continue
+		}
+		ranks := known[i]
+		if len(ranks) == 0 {
+			continue
+		}
+		parts := make([]string, len(ranks))
+		for k, r := range ranks {
+			s := strconv.Itoa(r)
+			if human != nil && human.HasRank(r) {
+				s += "*" // you hold this rank too — a strong ask target
+			}
+			parts[k] = s
+		}
+		b.WriteString(i18n.Tf("gofish.knownRanks",
+			"name", cuiPlayerName(p, i),
+			"ranks", strings.Join(parts, " ")) + "\n")
+		wrote = true
+	}
+	if wrote {
+		b.WriteString(i18n.T("gofish.knownRanksLegend") + "\n")
+	}
+}
+
 // GoFishCuiPresenter renders the Go Fish CUI view.
 type GoFishCuiPresenter struct{}
 
@@ -107,6 +147,7 @@ func (p *GoFishCuiPresenter) Output(gf interfaces.GoFishGame, lastErr error) str
 		b.WriteString(i18n.Tf("gofish.promptCurrentTurn", "name", turnName) + "\n")
 		if gf.IsHumanTurn() {
 			b.WriteString(i18n.T("gofish.promptHumanHelp") + "\n")
+			writeGoFishKnownRanks(b, gf)
 		}
 	})
 }

@@ -5,7 +5,8 @@
     "bet": "Bet: {{bet}} coin(s)",
     "payout": "Payout: {{payout}}",
     "betAmount": "Coins",
-    "autoHold": "Auto-hold"
+    "autoHold": "Auto-hold",
+    "betMax": "Bet Max"
   },
   "button": {
     "deal": "Deal",
@@ -24,16 +25,18 @@
   },
   "payoutTable": {
     "title": "Payout Table",
-    "royalFlush5": "Royal Flush (5 coins): 4000",
-    "royalFlush": "Royal Flush: 250x",
-    "straightFlush": "Straight Flush: 50x",
-    "fourOfAKind": "Four of a Kind: 25x",
-    "fullHouse": "Full House: 9x",
-    "flush": "Flush: 6x",
-    "straight": "Straight: 4x",
-    "threeOfAKind": "Three of a Kind: 3x",
-    "twoPair": "Two Pair: 2x",
-    "jacksOrBetter": "Jacks or Better: 1x"
+    "hand": "Hand",
+    "name": {
+      "royalFlush": "Royal Flush",
+      "straightFlush": "Straight Flush",
+      "fourOfAKind": "Four of a Kind",
+      "fullHouse": "Full House",
+      "flush": "Flush",
+      "straight": "Straight",
+      "threeOfAKind": "Three of a Kind",
+      "twoPair": "Two Pair",
+      "jacksOrBetter": "Jacks or Better"
+    }
   },
   "tutorial": {
     "betControls": "Place 1–5 coins to set your bet. Higher bets increase the Royal Flush bonus.",
@@ -52,5 +55,6 @@
     "drawAll": "No strong holds — draw all"
   },
   "card": "Card {{index}}",
-  "dealGuide": "Select coins and deal to start"
+  "dealGuide": "Select coins and deal to start",
+  "wild": "WILD"
 }

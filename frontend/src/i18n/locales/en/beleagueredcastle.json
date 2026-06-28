@@ -20,6 +20,7 @@
   "playing": "Move cards to build foundations",
   "gameClear": "Game Clear! Moves: {{moveCount}}",
   "gameOver": "Game Over",
+  "gameOverSummary": "Reached {{count}}/52 cards on the foundations ({{percent}}%)",
   "hintAvailable": "Hint available",
   "noHint": "No hint available",
   "tutorial": {

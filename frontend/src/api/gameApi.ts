@@ -2042,7 +2042,7 @@ export interface KnockoutWhistConfigInput {
 }
 
 /** Commands accepted by the Knockout Whist /knockoutwhist/exec endpoint. */
-export type KnockoutWhistCommand = 'reset' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+export type KnockoutWhistCommand = 'reset' | 'play' | 'selecttrump' | 'next' | 'nextround' | 'hint' | 'log';
 
 /**
  * API client for the Knockout Whist /knockoutwhist/exec endpoint.
@@ -2061,12 +2061,14 @@ export const knockoutWhistApi = {
     command: KnockoutWhistCommand,
     opts?: {
       cardIndex?: number;
+      trumpSuit?: number;
       config?: KnockoutWhistConfigInput;
     },
   ) =>
     gameExec<KnockoutWhistResponse>('knockoutwhist', {
       command,
       cardIndex: opts?.cardIndex,
+      trumpSuit: opts?.trumpSuit,
       config: opts?.config,
     }),
 };

@@ -112,8 +112,43 @@ describe('NertzPage', () => {
         <NertzPage />
       </MemoryRouter>,
     );
-    await waitFor(() => expect(screen.getByText(/♥7/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByAltText('♥ 7')).toBeInTheDocument());
     expect(screen.getByRole('button', { name: '35' })).toBeInTheDocument();
+  });
+
+  it('selects a tableau card on click and renders empty columns as placeholders', async () => {
+    const foundations: NertzResponse['foundations'] = Array.from({ length: 8 }, () => ({ suit: -1, size: 0 }));
+    // One foundation carries a top card (covers the foundation card-image branch).
+    foundations[0] = { suit: 3, size: 1, top: { design: 'HEART', value: 1 } };
+    const withEmptyCol = {
+      ...playingState,
+      foundations,
+      players: [
+        {
+          ...playingState.players[0],
+          // A selectable card, an empty column, and a face-down (null) cell.
+          tableau: [
+            [{ card: { design: 'SPADE' as const, value: 5 }, faceUp: true }],
+            [],
+            [{ card: null, faceUp: false }],
+            [],
+          ],
+        },
+        playingState.players[1],
+      ],
+    };
+    mockExec.mockResolvedValue(withEmptyCol);
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    const card = await screen.findByAltText('♠ 5');
+    // Clicking selects the card (re-renders the AnimatedCard with isSelected=true).
+    fireEvent.click(card);
+    expect(screen.getByAltText('♠ 5')).toBeInTheDocument();
+    // The foundation with a top card shows its image (♥ A).
+    expect(screen.getByAltText('♥ A')).toBeInTheDocument();
   });
 
   it('renders per-player score progress bars scaled to the target score', async () => {
@@ -198,9 +233,9 @@ describe('NertzPage', () => {
         <NertzPage />
       </MemoryRouter>,
     );
-    await waitFor(() => expect(screen.getByText(/♥7/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByAltText('♥ 7')).toBeInTheDocument());
     // Select nertz pile
-    const nertzBtn = screen.getByText('♥7').closest('button');
+    const nertzBtn = screen.getByAltText('♥ 7').closest('button');
     expect(nertzBtn).not.toBeNull();
     fireEvent.click(nertzBtn as HTMLElement);
     mockExec.mockClear();
@@ -242,7 +277,7 @@ describe('NertzPage', () => {
         <NertzPage />
       </MemoryRouter>,
     );
-    await waitFor(() => expect(screen.getByText(/♥7/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByAltText('♥ 7')).toBeInTheDocument());
     mockExec.mockClear();
     mockExec.mockResolvedValue(playingState);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('tick'), { timeout: 2000 });
@@ -255,7 +290,7 @@ describe('NertzPage', () => {
         <NertzPage />
       </MemoryRouter>,
     );
-    await waitFor(() => expect(screen.getByText(/♥7/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByAltText('♥ 7')).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(playingState);
@@ -270,7 +305,7 @@ describe('NertzPage', () => {
         <NertzPage />
       </MemoryRouter>,
     );
-    await waitFor(() => expect(screen.getByText(/♥7/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByAltText('♥ 7')).toBeInTheDocument());
 
     // Pick the Nertz pile via 'n' first, then ask for foundation 0.
     fireEvent.keyDown(document, { key: 'n' });
@@ -292,8 +327,8 @@ describe('NertzPage', () => {
         <NertzPage />
       </MemoryRouter>,
     );
-    await waitFor(() => expect(screen.getByText(/♥7/)).toBeInTheDocument());
-    fireEvent.click(screen.getByText('♥7').closest('button') as HTMLElement);
+    await waitFor(() => expect(screen.getByAltText('♥ 7')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♥ 7').closest('button') as HTMLElement);
 
     // Reject the next move (simulates CPU getting there first).
     mockExec.mockRejectedValueOnce(new Error('collision'));
@@ -308,8 +343,8 @@ describe('NertzPage', () => {
         <NertzPage />
       </MemoryRouter>,
     );
-    await waitFor(() => expect(screen.getByText(/♥7/)).toBeInTheDocument());
-    fireEvent.click(screen.getByText('♥7').closest('button') as HTMLElement);
+    await waitFor(() => expect(screen.getByAltText('♥ 7')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♥ 7').closest('button') as HTMLElement);
 
     mockExec.mockRejectedValueOnce(new Error('boom'));
     fireEvent.click(screen.getByTestId('nertz-foundation-1'));
@@ -327,8 +362,8 @@ describe('NertzPage', () => {
         <NertzPage />
       </MemoryRouter>,
     );
-    await waitFor(() => expect(screen.getByText(/♥7/)).toBeInTheDocument());
-    fireEvent.click(screen.getByText('♥7').closest('button') as HTMLElement);
+    await waitFor(() => expect(screen.getByAltText('♥ 7')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♥ 7').closest('button') as HTMLElement);
 
     // Successful foundation move → state updates → pending ref must be cleared.
     fireEvent.click(screen.getByTestId('nertz-foundation-2'));
@@ -336,7 +371,7 @@ describe('NertzPage', () => {
 
     // Now a different action fails — must NOT light up foundation 2.
     mockExec.mockRejectedValueOnce(new Error('tick boom'));
-    fireEvent.click(screen.getByText('♥7').closest('button') as HTMLElement); // re-select
+    fireEvent.click(screen.getByAltText('♥ 7').closest('button') as HTMLElement); // re-select
     fireEvent.click(screen.getByTestId('nertz-foundation-3')); // dispatch to a different cell
     // Only foundation 3 (the new target) should be marked, not foundation 2.
     await waitFor(() => expect(screen.getByTestId('nertz-foundation-3')).toHaveAttribute('data-collided', 'true'));

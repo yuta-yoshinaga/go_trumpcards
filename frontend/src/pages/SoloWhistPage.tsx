@@ -147,6 +147,10 @@ function SoloWhistPageContent() {
 
   // The current highest (non-pass) bid; a new non-pass bid must beat it.
   const highestBid = Math.max(0, ...state.bids);
+  // Resolve the holder via the players array (playerName expects a player id, not an index).
+  const highestBidder = highestBid > 0 ? state.players[state.bids.indexOf(highestBid)] : undefined;
+  const highestBidLabelKey = BIDS.find((b) => b.value === highestBid)?.key;
+  const highestBidderName = highestBidder ? playerName(highestBidder.id, highestBidder.isHuman) : '';
 
   const contractName =
     state.declarerIdx >= 0 ? t(`contractName.${CONTRACT_KEYS[state.contract] ?? 'pass'}`) : t('contractUndecided');
@@ -347,20 +351,35 @@ function SoloWhistPageContent() {
               {isBidPhase && isHumanBidTurn && (
                 <>
                   <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>
+                  <span className="text-xs text-ds-text-muted self-center mr-1" data-testid="sw-highest-bid">
+                    {highestBid > 0
+                      ? t('bidHighest', {
+                          bid: highestBidLabelKey ? t(highestBidLabelKey) : highestBid,
+                          player: highestBidderName,
+                        })
+                      : t('bidNone')}
+                  </span>
                   {BIDS.map((b) => {
                     // Pass (0) is always allowed; a non-pass bid must beat the current highest.
-                    const disabled = loading || (b.value !== SoloWhistContract.PASS && b.value <= highestBid);
+                    const tooLow = b.value !== SoloWhistContract.PASS && b.value <= highestBid;
+                    const disabled = loading || tooLow;
+                    const reason = tooLow ? t('bidTooLow') : undefined;
+                    // The title lives on the wrapping span: browsers suppress native tooltips on
+                    // disabled buttons, so hovering the span still surfaces the reason.
                     return (
-                      <button
-                        key={b.value}
-                        type="button"
-                        className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
-                        onClick={() => handleBid(b.value)}
-                        disabled={disabled}
-                        data-testid={`bid-${b.value}`}
-                      >
-                        {t(b.key)}
-                      </button>
+                      <span key={b.value} title={reason} data-testid={`bid-wrap-${b.value}`}>
+                        <button
+                          type="button"
+                          className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                          onClick={() => handleBid(b.value)}
+                          disabled={disabled}
+                          aria-disabled={disabled}
+                          aria-label={reason ? `${t(b.key)} — ${reason}` : undefined}
+                          data-testid={`bid-${b.value}`}
+                        >
+                          {t(b.key)}
+                        </button>
+                      </span>
                     );
                   })}
                 </>

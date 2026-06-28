@@ -105,6 +105,9 @@ func (p *BurracoCuiPresenter) Output(g interfaces.BurracoGame, lastErr error) st
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
 			b.WriteString(i18n.T("burraco.promptDrawHelpStock") + "\n")
 			b.WriteString(i18n.T("burraco.promptDrawHelpDiscard") + "\n")
+			if g.GetIsFrozen() {
+				b.WriteString(i18n.T("burraco.promptDrawFrozen") + "\n")
+			}
 		case domain.BurracoPhaseMeld:
 			currentIdx := g.GetCurrentPlayerIdx()
 			b.WriteString(i18n.Tf("burraco.promptMeld",

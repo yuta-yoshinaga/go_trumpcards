@@ -314,54 +314,65 @@ function PenguinPageContent() {
               <div className="w-4" />
 
               {/* Foundation piles */}
-              <div className="flex gap-2" data-tutorial="pg-foundation">
-                {state.foundation.map((pile: Card[], idx: number) => {
-                  const foundationZone: PenguinMoveZone = { zone: 'foundation', col: idx };
-                  return (
-                    <div key={`f-${idx.toString()}`} className="text-center">
-                      <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
-                      <DropZone
-                        isDropTarget={dnd.isDropTarget(foundationZone)}
-                        onDragOver={dnd.handleDragOver(foundationZone)}
-                        onDrop={dnd.handleDrop(foundationZone)}
-                        onDragLeave={dnd.handleDragLeave}
-                      >
-                        {pile.length > 0 ? (
-                          <button
-                            type="button"
-                            onClick={() => handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
-                            aria-label={t('foundationAriaLabel', {
-                              suit: FOUNDATION_SUITS[idx],
-                              cardCount: String(pile.length),
-                            })}
-                            data-testid={`pg-foundation-${idx.toString()}`}
-                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}${isHintTarget('foundation', idx) ? ' ring-2 ring-ds-success animate-pulse' : ''}`}
-                          >
-                            <AnimatedCard
-                              card={pile[pile.length - 1]}
-                              width={cardWidth}
-                              draggable={false}
-                              dealDelay={isAutoCompleting ? idx * 0.15 : 0}
-                            />
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || !selectedSource}
-                            aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
-                            data-testid={`pg-foundation-empty-${idx.toString()}`}
-                            style={{ width: cardWidth, height: cardHeight }}
-                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${isHintTarget('foundation', idx) ? ' ring-2 ring-ds-success animate-pulse' : ''}`}
-                          >
-                            {baseRankLabel(state.baseRank)}
-                          </button>
-                        )}
-                      </DropZone>
-                    </div>
-                  );
-                })}
+              <div className="flex flex-col items-center">
+                <div className="flex gap-2" data-tutorial="pg-foundation">
+                  {state.foundation.map((pile: Card[], idx: number) => {
+                    const foundationZone: PenguinMoveZone = { zone: 'foundation', col: idx };
+                    return (
+                      <div key={`f-${idx.toString()}`} className="text-center">
+                        <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
+                        <DropZone
+                          isDropTarget={dnd.isDropTarget(foundationZone)}
+                          onDragOver={dnd.handleDragOver(foundationZone)}
+                          onDrop={dnd.handleDrop(foundationZone)}
+                          onDragLeave={dnd.handleDragLeave}
+                        >
+                          {pile.length > 0 ? (
+                            <button
+                              type="button"
+                              onClick={() => handleSelectTarget(foundationZone)}
+                              disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                              aria-label={t('foundationAriaLabel', {
+                                suit: FOUNDATION_SUITS[idx],
+                                cardCount: String(pile.length),
+                              })}
+                              data-testid={`pg-foundation-${idx.toString()}`}
+                              className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}${isHintTarget('foundation', idx) ? ' ring-2 ring-ds-success animate-pulse' : ''}`}
+                            >
+                              <AnimatedCard
+                                card={pile[pile.length - 1]}
+                                width={cardWidth}
+                                draggable={false}
+                                dealDelay={isAutoCompleting ? idx * 0.15 : 0}
+                              />
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleSelectTarget(foundationZone)}
+                              disabled={!isPlaying || loading || !selectedSource}
+                              aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
+                              data-testid={`pg-foundation-empty-${idx.toString()}`}
+                              style={{ width: cardWidth, height: cardHeight }}
+                              className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${isHintTarget('foundation', idx) ? ' ring-2 ring-ds-success animate-pulse' : ''}`}
+                            >
+                              {baseRankLabel(state.baseRank)}
+                            </button>
+                          )}
+                        </DropZone>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div
+                  className="text-game-text-muted text-[10px] mt-1 max-w-[12rem] text-center"
+                  data-testid="pg-base-rank-legend"
+                >
+                  {t('baseRankLegend', {
+                    rank: baseRankLabel(state.baseRank),
+                    prev: prevRankLabel(state.baseRank),
+                  })}
+                </div>
               </div>
             </div>
 

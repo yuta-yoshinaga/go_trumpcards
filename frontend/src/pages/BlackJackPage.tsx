@@ -117,6 +117,32 @@ const BJ_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
+/**
+ * Spanish 21 tutorial: the BlackJack steps plus two variant-specific stops that
+ * explain the 48-card deck / bonus payout table and the bonus-achievement badges.
+ */
+const SPANISH21_TUTORIAL_STEPS: TutorialStep[] = [
+  BJ_TUTORIAL_STEPS[0], // bet controls
+  BJ_TUTORIAL_STEPS[1], // bet button
+  {
+    target: '[data-tutorial="bj-payout-ref"]',
+    messageKey: 'tutorial.payoutRef',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  BJ_TUTORIAL_STEPS[2], // dealer hand
+  BJ_TUTORIAL_STEPS[3], // player hand
+  {
+    target: '[data-tutorial="bj-bonus-badges"]',
+    messageKey: 'tutorial.bonusBadges',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  BJ_TUTORIAL_STEPS[4], // action buttons
+  BJ_TUTORIAL_STEPS[5], // result message
+  BJ_TUTORIAL_STEPS[6], // reset button
+];
+
 /** Variant identifier shared by BlackJack and Spanish 21 (which reuses this page). */
 export type BlackJackVariant = 'blackjack' | 'spanish21';
 
@@ -127,8 +153,9 @@ interface BlackJackPageProps {
 
 /** Renders the BlackJack game page with betting, action, and end phases. */
 export function BlackJackPage({ variant = 'blackjack' }: BlackJackPageProps) {
+  const steps = variant === 'spanish21' ? SPANISH21_TUTORIAL_STEPS : BJ_TUTORIAL_STEPS;
   return (
-    <TutorialWrapper gameName={variant} steps={BJ_TUTORIAL_STEPS}>
+    <TutorialWrapper gameName={variant} steps={steps}>
       <BlackJackPageContent variant={variant} />
     </TutorialWrapper>
   );
@@ -320,7 +347,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
             {phase === BjPhase.BET && (
               <div className="flex flex-col items-center justify-center py-6 gap-4">
                 <p className="text-ds-text-muted text-lg">{t('betGuide')}</p>
-                <details className="bg-black/30 rounded-lg w-full max-w-sm">
+                <details className="bg-black/30 rounded-lg w-full max-w-sm" data-tutorial="bj-payout-ref">
                   <summary className="cursor-pointer select-none px-4 py-2 text-ds-text-primary font-bold text-sm">
                     {t('payoutRef.title')}
                   </summary>
@@ -475,7 +502,11 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
 
             {/* Variant bonus badges (Spanish 21): 7-7-7 / 6-7-8 / 5+card 21 achievements. */}
             {phase === BjPhase.END && (state?.bonuses?.length ?? 0) > 0 && (
-              <div className="mb-2 flex flex-wrap justify-center gap-1" data-testid="bj-bonus-badges">
+              <div
+                className="mb-2 flex flex-wrap justify-center gap-1"
+                data-testid="bj-bonus-badges"
+                data-tutorial="bj-bonus-badges"
+              >
                 {state?.bonuses?.map((key, i) => (
                   <span
                     // Multi-hand rounds can repeat the same bonus key, so include the index.
@@ -532,6 +563,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
                     <BjBetPhaseControls
                       betAmount={betAmount}
                       onBetAmountChange={setBetAmount}
+                      playerChips={playerChips}
                       deckCount={state?.deckCount ?? 1}
                       onDeckCountChange={(v) => exec('setdeckcount', v)}
                       cpuPlayerCount={cpuPlayerCount}

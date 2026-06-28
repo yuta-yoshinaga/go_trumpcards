@@ -26,9 +26,10 @@ import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { CanastaResponse } from '../types/card';
+import type { CanastaResponse, Card } from '../types/card';
 import { CanastaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { canastaMinMeld, canastaSelectionPoints } from '../utils/canastaScore';
 import { cardAlt } from '../utils/cardAlt';
 import { CANASTA_HELP, parseCanastaCommand } from '../utils/cli/commands/canastaCommands';
 import { formatCanastaState } from '../utils/cli/formatters/canastaFormatter';
@@ -123,6 +124,17 @@ function CanastaPageContent() {
     if (n === 1) return t('drawDiscardReason.selectOneMore');
     return t('drawDiscardReason.selectTwo');
   }, [isDrawPhase, selectedCardIndices.length, state?.isFrozen, t]);
+
+  // Meld phase: surface the initial-meld minimum (by score band) and the
+  // selected cards' running point total so the player can tell if they qualify.
+  const meldPointInfo = useMemo(() => {
+    if (!isMeldPhase || !humanPlayer) return null;
+    const selectedCards = selectedCardIndices.map((i) => humanPlayer.cards[i]).filter((c): c is Card => Boolean(c));
+    const selectedPoints = canastaSelectionPoints(selectedCards);
+    const needInitial = !humanPlayer.hasInitMeld;
+    const minMeld = canastaMinMeld(humanPlayer.cumulativeScore);
+    return { selectedPoints, needInitial, minMeld, below: needInitial && selectedPoints < minMeld };
+  }, [isMeldPhase, humanPlayer, selectedCardIndices]);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
@@ -414,11 +426,26 @@ function CanastaPageContent() {
               )}
               {isMeldPhase && isHumanTurn && (
                 <>
+                  {meldPointInfo && (
+                    <div
+                      id="ca-meld-points"
+                      data-testid="ca-meld-points"
+                      className={`w-full text-xs ${meldPointInfo.below ? 'text-ds-warning' : 'text-ds-text-muted'}`}
+                    >
+                      {meldPointInfo.needInitial
+                        ? t('meldPoints.initial', {
+                            min: meldPointInfo.minMeld,
+                            points: meldPointInfo.selectedPoints,
+                          })
+                        : t('meldPoints.selected', { points: meldPointInfo.selectedPoints })}
+                    </div>
+                  )}
                   <button
                     type="button"
                     className={btnPrimary}
                     onClick={handleMeldSelected}
                     disabled={loading || selectedCardIndices.length < 3}
+                    aria-describedby={meldPointInfo?.below ? 'ca-meld-points' : undefined}
                   >
                     {t('meldButton')}
                   </button>

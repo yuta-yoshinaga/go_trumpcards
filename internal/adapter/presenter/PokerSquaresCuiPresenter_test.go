@@ -33,6 +33,7 @@ func TestPokerSquaresCuiPresenter_Output_Playing(t *testing.T) {
 	assert.Contains(t, out, "Poker Squares")
 	assert.Contains(t, out, "手持ちカード:")
 	assert.Contains(t, out, "配置済み: 0/25")
+	assert.Contains(t, out, "カードを置く: p")
 }
 
 func TestPokerSquaresCuiPresenter_Output_Complete(t *testing.T) {
@@ -57,6 +58,7 @@ func TestPokerSquaresCuiPresenter_Output_Complete(t *testing.T) {
 	out := p.Output(pg, nil)
 	assert.Contains(t, out, "ゲーム終了")
 	assert.Contains(t, out, "20")
+	assert.NotContains(t, out, "カードを置く: p")
 }
 
 func TestPokerSquaresCuiPresenter_ActionLog_Playing(t *testing.T) {

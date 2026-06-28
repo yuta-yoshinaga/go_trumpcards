@@ -35,6 +35,9 @@ import { playerName } from '../utils/playerUtils';
 /** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 unused). */
 const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 
+/** Card design string → suit number (1=♠ 2=♣ 3=♥ 4=♦), to align with SUIT_SYMBOLS / trumpSuit. */
+const DESIGN_TO_SUIT: Readonly<Record<string, number>> = { SPADE: 1, CLOVER: 2, HEART: 3, DIAMOND: 4 };
+
 /** Mariáš tutorial step definitions. */
 const MARIAS_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -135,6 +138,20 @@ function MariasPageContent() {
 
   const canPlay = isPlayPhase && isHumanTurn;
   const trumpSymbol = SUIT_SYMBOLS[state.trumpSuit] ?? '?';
+
+  // Suits where the human holds both K (13) and Q (12) — a marriage worth 40 in
+  // the trump suit, otherwise 20. Surfaced as a banner during play so the bonus
+  // (otherwise only shown at round end) is visible while it can still be earned.
+  const marriages = isPlayPhase
+    ? [1, 2, 3, 4]
+        .filter((suit) => {
+          const cards = humanPlayer?.cards ?? [];
+          const hasK = cards.some((c) => DESIGN_TO_SUIT[c.design] === suit && c.value === 13);
+          const hasQ = cards.some((c) => DESIGN_TO_SUIT[c.design] === suit && c.value === 12);
+          return hasK && hasQ;
+        })
+        .map((suit) => ({ symbol: SUIT_SYMBOLS[suit] ?? '?', points: suit === state.trumpSuit ? 40 : 20 }))
+    : [];
 
   const handleManualReset = () => {
     hideActionLog();
@@ -302,6 +319,13 @@ function MariasPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.marias.footer} px-4 py-2.5`}>
+            {marriages.length > 0 && (
+              <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="marias-marriage">
+                {t('marriageAvailable', {
+                  list: marriages.map((m) => `${m.symbol} K-Q (+${m.points})`).join('  '),
+                })}
+              </div>
+            )}
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}

@@ -10,6 +10,33 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// tonkBestDeadwood returns the lowest deadwood value the player can reach by
+// discarding one card — the value that gates knocking (<= TonkKnockThreshold).
+func tonkBestDeadwood(player *domain.TonkPlayer) int {
+	n := player.GetCardsSize()
+	cards := make([]*domain.Card, n)
+	for i := 0; i < n; i++ {
+		cards[i] = player.GetCard(i)
+	}
+	best := -1
+	for skip := 0; skip < n; skip++ {
+		sub := make([]*domain.Card, 0, n-1)
+		for i, c := range cards {
+			if i != skip {
+				sub = append(sub, c)
+			}
+		}
+		_, deadwood := domain.FindBestMelds(sub)
+		if v := domain.CalcDeadwoodValue(deadwood); best < 0 || v < best {
+			best = v
+		}
+	}
+	if best < 0 {
+		best = 0
+	}
+	return best
+}
+
 // tonkPlayerStr returns the display string for a single Tonk player.
 func tonkPlayerStr(player *domain.TonkPlayer, i int) string {
 	var b strings.Builder
@@ -64,6 +91,16 @@ func (p *TonkCuiPresenter) Output(g interfaces.TonkGame, lastErr error) string {
 			currentIdx := g.GetCurrentPlayerIdx()
 			b.WriteString(i18n.Tf("tonk.promptDiscard",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
+			if cur := g.GetPlayer(currentIdx); cur.GetIsHuman() {
+				best := tonkBestDeadwood(cur)
+				if best <= domain.TonkKnockThreshold {
+					b.WriteString(color.Yellow(i18n.Tf("tonk.currentDeadwood", "value", strconv.Itoa(best))) +
+						" " + color.Yellow(i18n.T("tonk.knockable")) + "\n")
+				} else {
+					b.WriteString(i18n.Tf("tonk.currentDeadwood", "value", strconv.Itoa(best)) +
+						" " + i18n.T("tonk.knockUnable") + "\n")
+				}
+			}
 			b.WriteString(i18n.T("tonk.promptDiscardHelp") + "\n")
 			b.WriteString(i18n.T("tonk.promptKnockHelp") + "\n")
 		case domain.TonkPhaseRoundEnd:

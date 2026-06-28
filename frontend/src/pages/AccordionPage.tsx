@@ -29,7 +29,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { AccordionResponse } from '../types/card';
 import { AccordionPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { accordionLegalTargets } from '../utils/accordionUtils';
+import { accordionLegalOffsets, accordionLegalTargets } from '../utils/accordionUtils';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 
@@ -346,6 +346,18 @@ function AccordionPageContent() {
                   const hintFrom = state.hint?.fromIdx === idx;
                   const hintTo = state.hint?.toIdx === idx;
                   const isHoverTarget = hoverTargets?.has(idx) ?? false;
+                  // When a pile is selected, spell out its legal merge offsets (1/3)
+                  // in the aria-label so screen-reader users learn where it can go (#2596).
+                  const mergeSuffix =
+                    isSelected && top
+                      ? (() => {
+                          const offsets = accordionLegalOffsets(state.piles, idx);
+                          return offsets.length > 0
+                            ? ` — ${offsets.map((o) => t('mergeOffsetAvailable', { offset: o })).join(t('listSeparator'))}`
+                            : ` — ${t('noMergeAvailable')}`;
+                        })()
+                      : '';
+                  const baseLabel = top ? `${idx}: ${cardAlt(top)}` : `${idx}: empty`;
                   // Keying by the top card's identity lets React preserve
                   // per-pile state (ring/selection class transitions, AnimatedCard
                   // instances) when piles shift left after a merge.
@@ -366,7 +378,7 @@ function AccordionPageContent() {
                       onBlur={() => setHoveredIdx((cur) => (cur === idx ? null : cur))}
                       disabled={!isPlaying}
                       data-hover-target={isHoverTarget ? 'true' : 'false'}
-                      aria-label={top ? `${idx}: ${cardAlt(top)}` : `${idx}: empty`}
+                      aria-label={`${baseLabel}${mergeSuffix}`}
                     >
                       {top && <AnimatedCard card={top} width={cardWidth} />}
                       <span className="absolute top-0 left-0 text-[10px] bg-black/40 text-ds-text-primary rounded-br px-1">
@@ -382,6 +394,18 @@ function AccordionPageContent() {
                 });
               })()}
             </div>
+          </div>
+
+          {/* SR-only live region announcing the selected pile's available merges (#2596). */}
+          <div className="sr-only" role="status" aria-live="polite" data-testid="ac-selection-status">
+            {isPlaying && selectedIdx !== null
+              ? (() => {
+                  const count = accordionLegalOffsets(state.piles, selectedIdx).length;
+                  return count > 0
+                    ? t('selectionMoves', { idx: selectedIdx, count })
+                    : t('selectionNoMoves', { idx: selectedIdx });
+                })()
+              : ''}
           </div>
 
           <div data-tutorial="ac-controls">

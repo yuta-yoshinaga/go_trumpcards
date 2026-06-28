@@ -105,5 +105,6 @@
     "revolutionChance": "同じ数字が4枚あります — 革命のチャンス",
     "playStronger": "場より強いカードがあります — プレイ推奨",
     "passNoPlay": "出せるカードなし — パス推奨"
-  }
+  },
+  "countMismatch": "場のカードと同じ {{count}} 枚を選んでください"
 }

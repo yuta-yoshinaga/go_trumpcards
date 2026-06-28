@@ -231,4 +231,25 @@ describe('FourCardPokerPage', () => {
   it('uses the actionLogApi mock', () => {
     expect(actionLogApi).toBeDefined();
   });
+
+  it('renders ante and aces-up as ChipBetInputs with steppers', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<FourCardPokerPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'アンテ +10' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'エースズアップ +10' })).toBeInTheDocument();
+  });
+
+  it('disables Bet and shows an alert when the combined wager exceeds the balance', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<FourCardPokerPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    // Ante defaults to 100; pushing Aces Up to the full balance makes the sum exceed it.
+    const acesUp = screen.getByLabelText('エースズアップ') as HTMLInputElement;
+    fireEvent.change(acesUp, { target: { value: '1000' } });
+
+    expect(screen.getByRole('alert')).toHaveTextContent(/残高/);
+    expect(screen.getByRole('button', { name: 'ベット' })).toBeDisabled();
+  });
 });

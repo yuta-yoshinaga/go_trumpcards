@@ -2,6 +2,7 @@
   "helpTitle": "Baccarat (バカラ)",
   "helpBet": "  b <amount> <type>    bet (type: 0=Player, 1=Banker, 2=Tie)",
   "chipsLine": "チップ: {{chips}}",
+  "historyHeader": "履歴: {{symbols}}",
   "phaseLine": "フェーズ: {{phase}}",
   "valueLine": "値: {{value}}",
   "playerHeader": "PLAYER",

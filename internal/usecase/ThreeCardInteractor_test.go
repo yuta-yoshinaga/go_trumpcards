@@ -39,6 +39,16 @@ func TestThreeCardInteractor_Reset(t *testing.T) {
 	mockGame.AssertCalled(t, "Reset")
 }
 
+func TestThreeCardInteractor_Hint(t *testing.T) {
+	mockGame := new(interfaces.MockThreeCardGame)
+	mockPresenter := new(presenter.MockThreeCardPresenter)
+	ti := NewThreeCardInteractor(mockGame, mockPresenter)
+
+	mockPresenter.On("HintOutput", mockGame).Return("hint output")
+
+	assert.Equal(t, "hint output", ti.Hint())
+}
+
 func TestThreeCardInteractor_Bet(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		mockGame := new(interfaces.MockThreeCardGame)

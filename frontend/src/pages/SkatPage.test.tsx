@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { skatApi } from '../api/gameApi';
@@ -487,6 +487,10 @@ describe('SkatPage', () => {
       </MemoryRouter>,
     );
     await waitFor(() => expect(screen.getByText(/スカート \(場札\)/)).toBeInTheDocument());
+    // The two skat cards now render as real card images, not raw "DIAMOND 7" text.
+    const reveal = screen.getByTestId('skat-reveal');
+    expect(within(reveal).getAllByRole('img')).toHaveLength(2);
+    expect(reveal).not.toHaveTextContent('DIAMOND');
   });
 
   it('hides next-round button when game has ended', async () => {

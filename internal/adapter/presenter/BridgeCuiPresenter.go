@@ -12,6 +12,25 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// bridgeBidSuitName localizes a bid-suit value (Club..NT) to a suit name.
+// Contract/bid suits are numbered separately from card designs, so they are
+// mapped through the card design before reusing cuiSuitName; NT has no suit.
+func bridgeBidSuitName(bidSuit int) string {
+	switch bidSuit {
+	case domain.BridgeBidSuitClub:
+		return cuiSuitName(domain.CardDesignClover)
+	case domain.BridgeBidSuitDiamond:
+		return cuiSuitName(domain.CardDesignDiamond)
+	case domain.BridgeBidSuitHeart:
+		return cuiSuitName(domain.CardDesignHeart)
+	case domain.BridgeBidSuitSpade:
+		return cuiSuitName(domain.CardDesignSpade)
+	case domain.BridgeBidSuitNT:
+		return i18n.T("bridge.bidNoTrump")
+	}
+	return "UNKNOWN"
+}
+
 // bridgePlayerStr returns the display string for a single Bridge player.
 func bridgePlayerStr(player *domain.BridgePlayer, i int) string {
 	var b strings.Builder
@@ -54,7 +73,7 @@ func (p *BridgeCuiPresenter) Output(b interfaces.BridgeGame, lastErr error) stri
 		if contractLevel := b.GetContractLevel(); contractLevel > 0 {
 			sb.WriteString(i18n.Tf("bridge.contractLine",
 				"level", strconv.Itoa(contractLevel),
-				"suit", strconv.Itoa(b.GetContractSuit())))
+				"suit", bridgeBidSuitName(b.GetContractSuit())))
 			switch b.GetDoubled() {
 			case 1:
 				sb.WriteString(i18n.T("bridge.contractDoubled"))
@@ -154,7 +173,7 @@ func (p *BridgeCuiPresenter) HintOutput(b interfaces.BridgeGame) string {
 			return color.Yellow(i18n.Tf("bridge.hintBidWithLevel",
 				"type", bidTypeStr,
 				"level", strconv.Itoa(*hint.BidLevel),
-				"suit", strconv.Itoa(*hint.BidSuit),
+				"suit", bridgeBidSuitName(*hint.BidSuit),
 				"reason", reason)) + "\n"
 		}
 		return color.Yellow(i18n.Tf("bridge.hintBidNoLevel",

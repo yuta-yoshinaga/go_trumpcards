@@ -55,6 +55,7 @@ func (p *SpeedCuiPresenter) Output(s interfaces.SpeedGame, lastErr error) string
 		switch s.GetPhase() {
 		case domain.SpeedPhaseStuck:
 			b.WriteString(color.Yellow(i18n.T("speed.promptStuck")) + "\n")
+			b.WriteString(i18n.T("speed.promptStuckHelp") + "\n")
 		}
 
 		// Outcome

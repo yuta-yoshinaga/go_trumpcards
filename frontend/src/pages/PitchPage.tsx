@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { pitchApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
@@ -121,7 +121,27 @@ function PitchPageContent() {
   const { state, loading, error, exec: execApi, retry } = useGameApi(pitchApi.exec);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('pitch', state);
   const [selectedCardIdx, setSelectedCardIdx] = useState<number | null>(null);
+  // Game-pips breakdown popover: title-tooltips are unreachable on touch (#2612).
+  const [pipsOpen, setPipsOpen] = useState(false);
+  const pipsRef = useRef<HTMLSpanElement>(null);
   const { cardWidth } = useCardDimensions();
+
+  // Dismiss the pips popover on Escape or a click/tap outside its wrapper.
+  useEffect(() => {
+    if (!pipsOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setPipsOpen(false);
+    };
+    const onPointer = (e: MouseEvent) => {
+      if (pipsRef.current && !pipsRef.current.contains(e.target as Node)) setPipsOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('mousedown', onPointer);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('mousedown', onPointer);
+    };
+  }, [pipsOpen]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('pitch');
   const cliConfig: CliGameConfig<PitchResponse, Parameters<typeof pitchApi.exec>> = useMemo(
@@ -295,21 +315,41 @@ function PitchPageContent() {
                   <span>
                     {findPlayerName(state.players, humanIdx)} ({t('cards', { count: human.cards.length })})
                   </span>
-                  <span
-                    data-testid="pitch-game-pips-badge"
-                    className="normal-case inline-flex items-center rounded-full bg-ds-accent/20 text-ds-accent px-2 py-0.5 text-[11px] font-bold cursor-help"
-                    title={
-                      t('gamePipsTooltip') +
-                      (pitchHandPips(human.cards) > 0
-                        ? '\n' +
-                          pitchHandPipBreakdown(human.cards)
+                  <span className="relative inline-flex" ref={pipsRef}>
+                    <button
+                      type="button"
+                      data-testid="pitch-game-pips-badge"
+                      className="normal-case inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-full bg-ds-accent/20 text-ds-accent px-2 py-0.5 text-[11px] font-bold"
+                      aria-expanded={pipsOpen}
+                      aria-haspopup="true"
+                      onClick={() => setPipsOpen((o) => !o)}
+                      title={t('gamePipsTooltip')}
+                    >
+                      {t('gamePips', { pips: pitchHandPips(human.cards) })}
+                    </button>
+                    {pipsOpen && (
+                      <section
+                        data-testid="pitch-game-pips-popover"
+                        aria-label={t('gamePipsTooltip')}
+                        className="absolute top-full left-0 z-10 mt-1 w-max max-w-[16rem] rounded-lg bg-ds-surface border border-ds-accent/40 p-2 text-[11px] text-ds-text-primary shadow-lg"
+                      >
+                        <div className="font-bold mb-1">{t('gamePipsTooltip')}</div>
+                        <ul className="space-y-0.5">
+                          {pitchHandPipBreakdown(human.cards)
                             .filter((b) => b.pips > 0)
-                            .map((b) => `${valueLabel(b.value)}(${b.pips})`)
-                            .join(' + ')
-                        : '')
-                    }
-                  >
-                    {t('gamePips', { pips: pitchHandPips(human.cards) })}
+                            .map((b) => (
+                              <li key={`pip-${b.value}`} className="flex justify-between gap-3">
+                                <span>{valueLabel(b.value)}</span>
+                                <span className="font-mono">+{b.pips}</span>
+                              </li>
+                            ))}
+                        </ul>
+                        <div className="mt-1 border-t border-ds-accent/30 pt-1 flex justify-between gap-3 font-bold">
+                          <span>{t('gamePipsTotal')}</span>
+                          <span className="font-mono">{pitchHandPips(human.cards)}</span>
+                        </div>
+                      </section>
+                    )}
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-2">

@@ -43,6 +43,12 @@ func (_m *MockScopaInteractor) ResetWithConfig(config domain.ScopaConfig) string
 	return ret.Get(0).(string)
 }
 
+// Hint モック
+func (_m *MockScopaInteractor) Hint() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
 // ActionLog モック
 func (_m *MockScopaInteractor) ActionLog() string {
 	ret := _m.Called()

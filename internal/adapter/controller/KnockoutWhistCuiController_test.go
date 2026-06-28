@@ -21,6 +21,7 @@ func TestKnockoutWhistCuiController_Exec(t *testing.T) {
 		m.On("GetConfig").Return(domain.DefaultKnockoutWhistConfig())
 		m.On("ResetWithConfig", mock.Anything).Return(mockOutput)
 		m.On("Play", mock.Anything).Return(mockOutput)
+		m.On("SelectTrump", mock.Anything).Return(mockOutput)
 		m.On("NextTrick").Return(mockOutput)
 		m.On("NextRound").Return(mockOutput)
 		m.On("Hint").Return(mockOutput)
@@ -59,6 +60,18 @@ func TestKnockoutWhistCuiController_Exec(t *testing.T) {
 		assert.Equal(t, mockOutput, c.Exec("nr"))
 		m.AssertCalled(t, "NextTrick")
 		m.AssertCalled(t, "NextRound")
+	})
+
+	t.Run("selecttrump", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewKnockoutWhistCuiController(m)
+		assert.Equal(t, mockOutput, c.Exec("st 3"))
+		m.AssertCalled(t, "SelectTrump", 3)
+	})
+
+	t.Run("selecttrump invalid", func(t *testing.T) {
+		result := controller.NewKnockoutWhistCuiController(newMock()).Exec("st 9")
+		assert.Contains(t, result, "Invalid trump suit")
 	})
 
 	t.Run("setdifficulty", func(t *testing.T) {

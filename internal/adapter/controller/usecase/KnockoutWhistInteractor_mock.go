@@ -43,6 +43,12 @@ func (_m *MockKnockoutWhistInteractor) NextRound() string {
 	return ret.Get(0).(string)
 }
 
+// SelectTrump モック
+func (_m *MockKnockoutWhistInteractor) SelectTrump(suit int) string {
+	ret := _m.Called(suit)
+	return ret.Get(0).(string)
+}
+
 // GetConfig モック
 func (_m *MockKnockoutWhistInteractor) GetConfig() domain.KnockoutWhistConfig {
 	ret := _m.Called()

@@ -132,6 +132,15 @@ describe('CaribbeanStudPage', () => {
     expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument();
   });
 
+  it('shows an accessible jackpot help in the bet phase', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<CaribbeanStudPage />);
+    const help = await screen.findByTestId('jackpot-help');
+    expect(help).toHaveTextContent('ジャックポットとは？');
+    // Native <details>/<summary> is keyboard-focusable.
+    expect(help.querySelector('summary')).toBeInTheDocument();
+  });
+
   it('renders skeleton before state loads', () => {
     mockApi.mockReturnValue(new Promise(() => {}));
     renderWithProviders(<CaribbeanStudPage />);

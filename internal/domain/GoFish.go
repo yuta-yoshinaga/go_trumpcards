@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"sort"
 )
 
 // GoFishPlayerCnt Go Fishプレイヤー数
@@ -669,6 +670,42 @@ func (g *GoFish) GetLastBookRank() int { return g.lastBookRank }
 
 // GetCpuActions CPUターンの行動履歴を取得する
 func (g *GoFish) GetCpuActions() []*GoFishCpuAction { return g.cpuActions }
+
+// GetKnownRanks returns, per player index, the sorted ranks that player is
+// publicly known to hold from past asks — a player must hold a card of the rank
+// they ask for — excluding ranks they have since booked. Derived from the
+// shared ask memory so the CUI hint matches what the CPU can already deduce.
+func (g *GoFish) GetKnownRanks() map[int][]int {
+	asked := make(map[int]map[int]bool, len(g.players))
+	for _, e := range g.cpuMemories {
+		if asked[e.askerIdx] == nil {
+			asked[e.askerIdx] = make(map[int]bool)
+		}
+		asked[e.askerIdx][e.rank] = true
+	}
+	out := make(map[int][]int, len(g.players))
+	for i, p := range g.players {
+		if p == nil {
+			out[i] = nil
+			continue
+		}
+		booked := make(map[int]bool)
+		for _, book := range p.GetBooks() {
+			if len(book) > 0 {
+				booked[book[0].GetValue()] = true
+			}
+		}
+		ranks := make([]int, 0, len(asked[i]))
+		for r := range asked[i] {
+			if !booked[r] {
+				ranks = append(ranks, r)
+			}
+		}
+		sort.Ints(ranks)
+		out[i] = ranks
+	}
+	return out
+}
 
 // GetHumanAction 人間の最後の行動記録を取得する
 func (g *GoFish) GetHumanAction() *GoFishCpuAction { return g.humanAction }

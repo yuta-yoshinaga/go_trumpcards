@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { pitchApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
@@ -167,9 +167,48 @@ describe('PitchPage', () => {
     renderWithProviders(<PitchPage />);
     const badge = await screen.findByTestId('pitch-game-pips-badge');
     expect(badge.textContent).toMatch(/Game値: 20/);
-    // Tooltip contains the breakdown of contributing cards only.
-    expect(badge.getAttribute('title')).toContain('A(4)');
-    expect(badge.getAttribute('title')).toContain('10(10)');
-    expect(badge.getAttribute('title')).not.toContain('7(');
+    // Tapping opens a breakdown popover (reachable on touch, unlike the title tooltip).
+    expect(screen.queryByTestId('pitch-game-pips-popover')).not.toBeInTheDocument();
+    fireEvent.click(badge);
+    const popover = screen.getByTestId('pitch-game-pips-popover');
+    // Breakdown lists only contributing cards plus the total; the zero-pip 7 is excluded.
+    expect(popover.textContent).toContain('+4'); // A
+    expect(popover.textContent).toContain('+10'); // 10
+    expect(popover).toHaveTextContent('合計');
+    expect(popover.textContent).toMatch(/20/);
+    // Tapping again closes it.
+    fireEvent.click(badge);
+    expect(screen.queryByTestId('pitch-game-pips-popover')).not.toBeInTheDocument();
+  });
+
+  it('Game-pip badge meets the 44px tap-target minimum', async () => {
+    mockApi.mockResolvedValue(bidState);
+    renderWithProviders(<PitchPage />);
+    const badge = await screen.findByTestId('pitch-game-pips-badge');
+    expect(badge.className).toContain('min-h-[44px]');
+    expect(badge.className).toContain('min-w-[44px]');
+  });
+
+  it('closes the pips popover on Escape and on an outside click', async () => {
+    const pipHand: PitchResponse = {
+      ...bidState,
+      players: [
+        { ...bidState.players[0], cards: [makeCard('SPADE', 1), makeCard('SPADE', 10)], cardCount: 2 },
+        ...bidState.players.slice(1),
+      ],
+    };
+    mockApi.mockResolvedValue(pipHand);
+    renderWithProviders(<PitchPage />);
+    const badge = await screen.findByTestId('pitch-game-pips-badge');
+
+    fireEvent.click(badge);
+    expect(screen.getByTestId('pitch-game-pips-popover')).toBeInTheDocument();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByTestId('pitch-game-pips-popover')).not.toBeInTheDocument();
+
+    fireEvent.click(badge);
+    expect(screen.getByTestId('pitch-game-pips-popover')).toBeInTheDocument();
+    fireEvent.mouseDown(document.body);
+    expect(screen.queryByTestId('pitch-game-pips-popover')).not.toBeInTheDocument();
   });
 });

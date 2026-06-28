@@ -23,6 +23,8 @@
   "promptDrawHelpStock": "ds・・・山札から引く",
   "promptDrawHelpDiscard": "dd・・・捨て札トップを取る",
   "promptPlay": "手番: {{name}} (プレイフェーズ)",
+  "promptPlayHelpContractRequired": "▶ まずこのラウンドのコントラクト達成が必須です",
+  "promptPlayHelpAfterContract": "▶ コントラクト達成済み: 追加メルド/レイオフ（任意）または捨て札で終了",
   "promptPlayHelpMeldContract": "mc <a,b,c> <d,e,f>・・・コントラクトを場に出す",
   "promptPlayHelpMeldExtra": "me <a,b,c>・・・追加メルド（コントラクト達成後）",
   "promptPlayHelpLayoff": "lo <pIdx> <mIdx> <cIdx>・・・既存メルドにカード追加",

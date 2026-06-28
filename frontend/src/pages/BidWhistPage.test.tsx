@@ -83,6 +83,12 @@ describe('BidWhistPage', () => {
     expect(await screen.findByTestId('pass-button')).toBeEnabled();
   });
 
+  it('shows a visible label for the trick-count selector', async () => {
+    renderWithProviders(<BidWhistPage />);
+    const label = await screen.findByTestId('bw-tricks-label');
+    expect(label).toHaveTextContent('トリック数を選択');
+  });
+
   it('bids a direction when a direction button is clicked', async () => {
     renderWithProviders(<BidWhistPage />);
     const uptown = await screen.findByRole('button', { name: 'アップタウン' });

@@ -41,16 +41,18 @@ test.describe('Let It Ride E2E', () => {
     await betButton.click();
     await waitForLoaded(page);
 
-    // FIRST DECISION: pull
+    // FIRST DECISION: pull (now requires confirming the risk-reduction dialog)
     const pullButton1 = page.getByRole('button', { name: 'プル' });
     await expect(pullButton1).toBeVisible({ timeout: 10_000 });
     await pullButton1.click();
+    await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
     // SECOND DECISION: pull
     const pullButton2 = page.getByRole('button', { name: 'プル' });
     await expect(pullButton2).toBeVisible({ timeout: 10_000 });
     await pullButton2.click();
+    await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
     // END phase

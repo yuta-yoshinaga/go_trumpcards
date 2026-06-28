@@ -237,12 +237,21 @@ function BeziquePageContent() {
                   <div className="mb-1 text-ds-text-primary text-xs">{t('matchScoreTitle')}</div>
                   {state.players.map((p) => (
                     <div key={p.id} className={p.isHuman ? 'text-ds-text-primary' : ''}>
-                      {t('scoreLine', {
-                        name: p.isHuman ? t('you') : t('cpu', { id: p.id }),
-                        match: state.matchScore[p.id] ?? 0,
-                        deal: state.dealPoints[p.id] ?? 0,
-                        tricks: p.trickCount,
-                      })}
+                      <div>
+                        {t('scoreLine', {
+                          name: p.isHuman ? t('you') : t('cpu', { id: p.id }),
+                          match: state.matchScore[p.id] ?? 0,
+                          deal: state.dealPoints[p.id] ?? 0,
+                          tricks: p.trickCount,
+                        })}
+                      </div>
+                      <div className="text-ds-text-muted text-xs" data-testid={`bezique-deal-breakdown-${p.id}`}>
+                        {t('dealBreakdown', {
+                          trick: state.dealPoints[p.id] - state.dealMeldPoints[p.id],
+                          meld: state.dealMeldPoints[p.id],
+                          total: state.dealPoints[p.id],
+                        })}
+                      </div>
                     </div>
                   ))}
                 </div>

@@ -5,7 +5,8 @@
     "bet": "Bet: {{bet}} coin(s)",
     "payout": "Payout: {{payout}}",
     "betAmount": "Coins",
-    "autoHold": "Auto-hold"
+    "autoHold": "Auto-hold",
+    "betMax": "Bet Max"
   },
   "button": {
     "deal": "Deal",
@@ -25,18 +26,20 @@
   },
   "payoutTable": {
     "title": "Payout Table",
-    "naturalRoyalFlush5": "Natural Royal Flush (5 coins): 4000",
-    "naturalRoyalFlush": "Natural Royal Flush: 250x",
-    "fiveOfAKind": "Five of a Kind: 200x",
-    "wildRoyalFlush": "Wild Royal Flush: 100x",
-    "straightFlush": "Straight Flush: 50x",
-    "fourOfAKind": "Four of a Kind: 20x",
-    "fullHouse": "Full House: 7x",
-    "flush": "Flush: 5x",
-    "straight": "Straight: 3x",
-    "threeOfAKind": "Three of a Kind: 2x",
-    "twoPair": "Two Pair: 1x",
-    "kingsOrBetter": "Kings or Better: 1x"
+    "hand": "Hand",
+    "name": {
+      "naturalRoyalFlush": "Natural Royal Flush",
+      "fiveOfAKind": "Five of a Kind",
+      "wildRoyalFlush": "Wild Royal Flush",
+      "straightFlush": "Straight Flush",
+      "fourOfAKind": "Four of a Kind",
+      "fullHouse": "Full House",
+      "flush": "Flush",
+      "straight": "Straight",
+      "threeOfAKind": "Three of a Kind",
+      "twoPair": "Two Pair",
+      "kingsOrBetter": "Kings or Better"
+    }
   },
   "tutorial": {
     "betControls": "Place 1–5 coins. The Joker acts as a wild card!",

@@ -215,6 +215,8 @@ describe('BurracoPage', () => {
     expect(screen.getByTestId('ca-draw-discard-reason')).toHaveTextContent(
       'フリーズ中はワイルドカードでの代用ができません',
     );
+    // Pre-emptive freeze guide shown at the top of the draw controls.
+    expect(screen.getByTestId('ca-draw-freeze-guide')).toHaveTextContent(/フリーズ中/);
   });
 
   it('switches the reason to selectOneMore once the player selects one card', async () => {

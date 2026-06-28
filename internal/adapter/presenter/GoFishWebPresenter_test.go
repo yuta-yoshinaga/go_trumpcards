@@ -18,6 +18,7 @@ import (
 func setupGoFishMock() *interfaces.MockGoFishGame {
 	m := new(interfaces.MockGoFishGame)
 	m.On("GetPlayerCnt").Return(4)
+	m.On("GetKnownRanks").Return(map[int][]int{}).Maybe()
 	m.On("GetCurrentTurn").Return(0)
 	m.On("GetPhase").Return(domain.GoFishPhasePlay)
 	m.On("GetGameEndFlag").Return(false)

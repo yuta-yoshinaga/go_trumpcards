@@ -13,6 +13,8 @@
   "doorCards": "Door Cards",
   "holeCards": "Hole Cards",
   "yourHand": "Your Hand",
+  "currentLow": "Current low: {{low}}",
+  "currentLowIncomplete": "Low incomplete (fewer than 5 ranks)",
   "anteBringIn": "Ante/Bring-in",
   "handNumber": "Hand {{count}} / Lv.{{level}}",
   "rebuy": {

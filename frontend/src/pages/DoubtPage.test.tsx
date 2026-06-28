@@ -348,6 +348,14 @@ describe('DoubtPage', () => {
     });
   });
 
+  it('shows the keyboard-shortcut hints during the doubt window', async () => {
+    mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByTestId('doubt-key-hints')).toBeInTheDocument());
+    expect(screen.getByTestId('doubt-key-hints')).toHaveTextContent('Space');
+    expect(screen.getByTestId('doubt-key-hints')).toHaveTextContent('Esc');
+  });
+
   it('shows cpu doubters in cpuPlayed doubt phase', async () => {
     const s: DoubtResponse = {
       ...doubtPhaseCpuPlayedState,
@@ -513,12 +521,13 @@ describe('DoubtPage', () => {
       await waitFor(() => expect(screen.getByText(/残り 10 秒/)).toBeInTheDocument());
     });
 
-    it('countdown has aria-live assertive and aria-atomic true', async () => {
+    it('countdown is a polite role=timer region early on (escalates to assertive ≤3s)', async () => {
       mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
       renderWithProviders(<DoubtPage />);
       await waitFor(() => expect(screen.getByText(/残り 10 秒/)).toBeInTheDocument());
       const countdownEl = screen.getByText(/残り 10 秒/);
-      expect(countdownEl).toHaveAttribute('aria-live', 'assertive');
+      expect(countdownEl).toHaveAttribute('role', 'timer');
+      expect(countdownEl).toHaveAttribute('aria-live', 'polite'); // 10s remaining → not yet urgent
       expect(countdownEl).toHaveAttribute('aria-atomic', 'true');
     });
 

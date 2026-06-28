@@ -1,4 +1,4 @@
-import { waitFor, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tarneebApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -75,5 +75,45 @@ describe('TarneebPage', () => {
     const oppRow = within(table).getByText('相手チーム').closest('tr') as HTMLTableRowElement;
     expect(within(oppRow).getByText('2')).toBeInTheDocument();
     expect(within(oppRow).getByText('5')).toBeInTheDocument();
+  });
+
+  it('renders a bid button group from minBid to 13 and bids the selected value', async () => {
+    renderWithProviders(<TarneebPage />);
+    // minBid 7 → buttons 7..13, none below 7.
+    const bid9 = await screen.findByTestId('bid-option-9');
+    expect(screen.queryByTestId('bid-option-6')).not.toBeInTheDocument();
+    expect(screen.getByTestId('bid-option-13')).toBeInTheDocument();
+
+    fireEvent.click(bid9);
+    expect(bid9).toHaveAttribute('aria-pressed', 'true');
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'ビッド' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', 9));
+  });
+
+  it('disables bid buttons that do not beat the current highest bid and pre-selects the lowest legal bid', async () => {
+    mockExec.mockResolvedValue(makeState({ highestBid: 9 }));
+    renderWithProviders(<TarneebPage />);
+    await waitFor(() => expect(screen.getByTestId('bid-option-9')).toBeDisabled());
+    expect(screen.getByTestId('bid-option-7')).toBeDisabled();
+    expect(screen.getByTestId('bid-option-10')).toBeEnabled();
+    // The effect snaps the selection to the lowest legal value (highestBid + 1 = 10).
+    expect(screen.getByTestId('bid-option-10')).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('shows no bid controls outside the human bid turn', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 3 })); // PLAY phase
+    renderWithProviders(<TarneebPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, expect.any(Object)));
+    expect(screen.queryByTestId('bid-option-7')).not.toBeInTheDocument();
+  });
+
+  it('passes by bidding 0', async () => {
+    renderWithProviders(<TarneebPage />);
+    await screen.findByTestId('bid-option-7');
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'パス' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', 0));
   });
 });

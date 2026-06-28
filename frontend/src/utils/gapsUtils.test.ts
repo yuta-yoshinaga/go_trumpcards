@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Card, CardDesign } from '../types/card';
-import { gapsLockedPrefixLengths } from './gapsUtils';
+import { gapsLockedPrefixLengths, gapsLockedTotal } from './gapsUtils';
 
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
@@ -38,5 +38,16 @@ describe('gapsLockedPrefixLengths', () => {
   it('computes a value per row independently', () => {
     const grid = [[card('SPADE', 2), card('SPADE', 3)], [card('HEART', 5)], [], [card('CLOVER', 2)]];
     expect(gapsLockedPrefixLengths(grid)).toEqual([2, 0, 0, 1]);
+  });
+});
+
+describe('gapsLockedTotal', () => {
+  it('sums the locked prefix lengths across all rows', () => {
+    const grid = [[card('SPADE', 2), card('SPADE', 3)], [card('HEART', 5)], [], [card('CLOVER', 2)]];
+    expect(gapsLockedTotal(grid)).toBe(3);
+  });
+
+  it('returns 0 when no row starts with a 2', () => {
+    expect(gapsLockedTotal([[card('HEART', 5)], [card('SPADE', 7)]])).toBe(0);
   });
 });

@@ -388,16 +388,26 @@ function BigOPageContent() {
                   {humanPlayer.cards?.length
                     ? humanPlayer.cards.map((card, idx) => {
                         const inBest = showdownBest5.holeSet.has(idx);
-                        const dim = showdownBest5.holeSet.size > 0 && !inBest;
+                        const showUsage = showdownBest5.holeSet.size > 0;
+                        const dim = showUsage && !inBest;
                         return (
-                          <div
-                            key={`${card.design}-${card.value}`}
-                            className={`transition-all ${
-                              inBest ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse' : ''
-                            } ${dim ? 'opacity-50' : ''}`}
-                            data-best5-hole={inBest || undefined}
-                          >
-                            <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                          <div key={`${card.design}-${card.value}`} className="flex flex-col items-center">
+                            <div
+                              className={`transition-all ${
+                                inBest ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse' : ''
+                              } ${dim ? 'opacity-50' : ''}`}
+                              data-best5-hole={inBest || undefined}
+                            >
+                              <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                            </div>
+                            {showUsage && (
+                              <span
+                                className={`mt-0.5 text-[10px] font-semibold ${inBest ? 'text-ds-success' : 'text-ds-text-muted'}`}
+                                data-testid={inBest ? 'bigo-hole-used' : 'bigo-hole-unused'}
+                              >
+                                {inBest ? t('cardUsed') : t('cardUnused')}
+                              </span>
+                            )}
                           </div>
                         );
                       })

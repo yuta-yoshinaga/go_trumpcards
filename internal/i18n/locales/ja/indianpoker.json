@@ -26,6 +26,7 @@
   "playerBet": " ベット:{{bet}}",
   "cardLine": "  カード: {{card}}",
   "cardHidden": "  カード: ??",
+  "equityLine": "  推定勝率: {{pct}}%",
   "cpuActionsHeader": "[CPU行動]",
   "cpuActionLine": "  Player {{idx}}: {{action}}",
   "cpuActionAmount": " ({{amount}})",

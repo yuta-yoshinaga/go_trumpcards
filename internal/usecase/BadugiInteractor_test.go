@@ -178,6 +178,15 @@ func TestBadugiInteractor_ActionLog(t *testing.T) {
 	mp.AssertExpectations(t)
 }
 
+func TestBadugiInteractor_Hint(t *testing.T) {
+	mg, mp := newBadugiMocks()
+	mp.On("HintOutput", mg).Return("hint output")
+	bi := usecase.NewBadugiInteractor(mg, mp)
+
+	assert.Equal(t, "hint output", bi.Hint())
+	mp.AssertExpectations(t)
+}
+
 func TestBadugiInteractor_Snapshot(t *testing.T) {
 	g := domain.NewDefaultBadugi()
 	bi := usecase.NewBadugiInteractor(g, new(presenter.MockBadugiPresenter))

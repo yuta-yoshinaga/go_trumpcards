@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { spoilFiveApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -126,6 +126,22 @@ function SpoilFivePageContent() {
   const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('spoilfive', SPOIL_FIVE_PHASE_KEYS);
 
+  // Transient "+NN" feedback whenever the pot grows (e.g. a spoiled round carries
+  // the pot forward). Cleared after a short delay so the pulse is momentary.
+  const [potDelta, setPotDelta] = useState(0);
+  const prevPotRef = useRef<number | null>(null);
+  useEffect(() => {
+    const pot = state?.pot;
+    if (pot == null) return;
+    const prev = prevPotRef.current;
+    prevPotRef.current = pot;
+    if (prev != null && pot > prev) {
+      setPotDelta(pot - prev);
+      const id = setTimeout(() => setPotDelta(0), 2500);
+      return () => clearTimeout(id);
+    }
+  }, [state?.pot]);
+
   if (!state)
     return <GameSkeleton gameKey="spoilfive" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
 
@@ -219,7 +235,17 @@ function SpoilFivePageContent() {
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
               <span className="mr-4">{t('trump', { suit: trumpSymbol })}</span>
-              <span>{t('pot', { n: state.pot })}</span>
+              <span className={potDelta > 0 ? 'font-semibold text-ds-warning motion-safe:animate-pulse' : ''}>
+                {t('pot', { n: state.pot })}
+              </span>
+              {potDelta > 0 && (
+                <span
+                  data-testid="spoilfive-pot-delta"
+                  className="ml-1 text-sm font-semibold text-ds-warning motion-safe:animate-pulse"
+                >
+                  {t('potIncrease', { n: potDelta })}
+                </span>
+              )}
             </div>
 
             <div className={lgTwoColGrid}>

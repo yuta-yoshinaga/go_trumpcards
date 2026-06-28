@@ -1,4 +1,5 @@
 {
+  "handTotalHelp": "Declare Yaniv when your hand total is 5 or less; any excess becomes penalty points.",
   "button": {
     "discard": "Discard",
     "yaniv": "Yaniv!",

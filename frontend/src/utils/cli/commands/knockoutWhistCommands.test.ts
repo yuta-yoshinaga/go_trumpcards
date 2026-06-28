@@ -15,6 +15,17 @@ describe('parseKnockoutWhistCommand', () => {
     expect('error' in result).toBe(true);
   });
 
+  it('parses selecttrump (short and long)', () => {
+    expect(parseKnockoutWhistCommand('st 3')).toEqual({ args: ['selecttrump', { trumpSuit: 3 }] });
+    expect(parseKnockoutWhistCommand('selecttrump 1')).toEqual({ args: ['selecttrump', { trumpSuit: 1 }] });
+  });
+
+  it('returns error for selecttrump out of range or missing', () => {
+    expect('error' in parseKnockoutWhistCommand('st')).toBe(true);
+    expect('error' in parseKnockoutWhistCommand('st 0')).toBe(true);
+    expect('error' in parseKnockoutWhistCommand('st 5')).toBe(true);
+  });
+
   it('parses next (short and long)', () => {
     expect(parseKnockoutWhistCommand('n')).toEqual({ args: ['next'] });
     expect(parseKnockoutWhistCommand('next')).toEqual({ args: ['next'] });

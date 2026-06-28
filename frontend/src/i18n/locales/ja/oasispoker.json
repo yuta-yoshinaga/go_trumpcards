@@ -81,6 +81,7 @@
   },
   "dealerQualified": "クオリファイ",
   "dealerNotQualified": "未クオリファイ",
+  "dealerQualifyPending": "資格（クオリファイ）は結果フェーズで開示されます",
   "tutorial": {
     "betControls": "アンテとオプションのジャックポットを設定し、ベットを押してください。",
     "exchangeControls": "交換したいカードをタップで選択し、交換するかステイするかを選んでください。1枚交換するごとにアンテと同額の手数料が必要です。",

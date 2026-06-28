@@ -46,9 +46,11 @@ func (p *BeziqueWebPresenter) buildBase(b interfaces.BeziqueGame) *controller.Be
 
 	cnt := b.GetPlayerCnt()
 	resObj.DealPoints = make([]int, cnt)
+	resObj.DealMeldPoints = make([]int, cnt)
 	resObj.MatchScore = make([]int, cnt)
 	for i := 0; i < cnt; i++ {
 		resObj.DealPoints[i] = b.GetDealPoints(i)
+		resObj.DealMeldPoints[i] = b.GetDealMeldPoints(i)
 		resObj.MatchScore[i] = b.GetMatchScore(i)
 	}
 

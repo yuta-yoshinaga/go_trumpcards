@@ -7,6 +7,7 @@
   "helpSetTarget": "  st <n>               target points (default 21)",
   "round": "Round: {{round}}  Trick: {{trick}}",
   "teamScores": "Team A: {{a}} pts (this round {{athird}}/3)   Team B: {{b}} pts (this round {{bthird}}/3)",
+  "thirdsRule": "Thirds: every 3 tricks won convert to 1 point, then the counter resets",
   "playerLine": "{{name}} [Team {{team}}]: {{cards}} cards, {{tricks}} tricks",
   "gameEnd": "Game over! Team {{team}} wins!",
   "promptPlay": "Turn: {{name}}",

@@ -94,56 +94,11 @@ Before marking any task complete:
 
 ## Documentation Maintenance
 
-**When making code changes, always update the following documentation in the same commit:**
-
-| Change type | Documents to update |
-|-------------|---------------------|
-| Add/remove a game | [`README.md`](README.md) (Description, Run section), [`CLAUDE.md`](CLAUDE.md) (available games list), [`docs/games.md`](docs/games.md), Cloudflare Worker WASM registration (see below) |
-| Add/remove a CLI command (`cmd/trumpcards/main.go`) | [`README.md`](README.md) (Run section), [`CLAUDE.md`](CLAUDE.md) (available games list) |
-| Add/remove a Web API endpoint | [`docs/architecture.md`](docs/architecture.md) (Web API in Key patterns), [`api/openapi.yaml`](api/openapi.yaml) |
-| Change request/response schema of a Web API endpoint | [`api/openapi.yaml`](api/openapi.yaml) |
-| Change architecture or layer structure | [`README.md`](README.md) (Architecture), [`CLAUDE.md`](CLAUDE.md) (Architecture), [`docs/architecture.md`](docs/architecture.md) |
-| Change Git workflow or CI/CD | [`CLAUDE.md`](CLAUDE.md) (Git Workflow) |
-| Modify anything under `frontend/` | Run `cd frontend && bun run build`, `cd frontend && bun run check`, and `cd frontend && bun run test` and ensure all three pass before committing |
-| Add/remove frontend source files or change testing approach | Update Testing section in [`frontend/CLAUDE.md`](frontend/CLAUDE.md) |
-| Change frontend tooling or scripts | [`frontend/README.md`](frontend/README.md) (Scripts, Tooling) |
-| Change game rules or game flow logic | `docs/manual/cui/<game>.md` and `docs/manual/web/<game>.md` for the affected game (follow `docs/manual/cui_template.md` / `docs/manual/web_template.md` format) |
-| Add a new game manual | Copy `docs/manual/cui_template.md` → `docs/manual/cui/<game>.md`, `docs/manual/web_template.md` → `docs/manual/web/<game>.md` and fill in game-specific content. Also import in `frontend/src/constants/manualTexts.ts` and add route mapping |
-| Change Go testing policy or mock patterns | Update Testing section in [`CLAUDE.md`](CLAUDE.md) and [`internal/CLAUDE.md`](internal/CLAUDE.md) |
-| Make an architectural decision that passes the ADR litmus test (see Workflow section) | Add or update an ADR in [`docs/adr/`](docs/adr/) (written in Japanese) and update the index in [`docs/adr/README.md`](docs/adr/README.md) |
-| Add/modify exported Go symbol | Ensure GoDoc comment (`// SymbolName description`) is present |
-| Add/modify exported TS symbol | Ensure TSDoc comment (`/** description */`) is present |
-| Change backend struct/interface/domain logic | Update corresponding UML diagrams in [`docs/design/backend.md`](docs/design/backend.md) (class, sequence, state machine) |
-| Change frontend component/hook/API/type | Update corresponding UML diagrams in [`docs/design/frontend.md`](docs/design/frontend.md) (class, sequence, state machine) |
-
-Use commit type `docs` (or include doc changes in the same commit as the code change) following the Conventional Commits format.
-
-### Intermediate design docs
-
-**Do NOT commit intermediate design documents (e.g., `docs/superpowers/specs/`) to the repository.** These documents are not maintained after implementation and become tech debt. Instead:
-
-- **Design specs and brainstorming output**: Post as a comment on the relevant GitHub issue
-- **Architecture Decision Records (ADRs)**: These ARE worth committing to `docs/adr/` — they capture the *why* behind decisions and remain valuable long-term
+When making code changes, update the relevant documentation **in the same commit**. The full change-type → docs-to-update mapping (games, CLI commands, Web API, ADRs, UML diagrams, GoDoc/TSDoc, etc.) lives in [`docs/documentation-maintenance.md`](docs/documentation-maintenance.md). Use commit type `docs` (or fold doc updates into the code commit). Never commit intermediate design docs — post them to the GitHub issue instead (ADRs are the exception; those belong in `docs/adr/`).
 
 ## Cloudflare Workers (WASM)
 
-Games are deployed to Cloudflare Workers as WASM binaries via TinyGo. Three workers split games by category:
-
-| Worker | Entry point | Games |
-|--------|-------------|-------|
-| **casino** | `cmd/workers/casino/main.go` | Table & poker games (blackjack, baccarat, poker, holdem, omaha, omahahilo, bigo, bigohilo, shortdeck, pineapple, crazypineapple, irishpoker, indianpoker, videopoker, deuceswild, jokerpoker, threecard, fourcardpoker, caribbeanstud, texasholdembonus, ultimatetexasholdem, mississippistud, sevencardstud, paigow, chinesepoker, letitride, reddog, razz, badugi, deucetoseven, spanish21, casinowar, dragontiger, blackjackswitch, oasispoker, russianpoker, casinoholdem, highcardflush, yaniv, tressette, bourre, napoleon, mighty, bridge, skat, belote, tarneeb, sheepshead, doppelkopf, mus, tute, sueca, fortyfives, twentynine, courtpiece, ecarte, threecardbrag, teenpatti, kemps, pishti, cuarenta, fivecardstud, faro, openfacechinese) |
-| **classic** | `cmd/workers/classic/main.go` | Trick-taking, matching & fishing (hearts, spades, pitch, twotenjack, callbreak, briscola, oldmaid, doubt, daifugo, bigtwo, sevens, crazyeights, ohhell, speed, gofish, pinochle, pigtail, durak, war, fiftyone, whist, pageone, trash, president, cassino, spiteandmalice, shithead, nertz, slapjack, egyptianratscrew, tonk, sixcardgolf, truco, klaverjas, manille, marias, sedma, solowhist, knockoutwhist, nap, preference, spoilfive, doudizhu, tichu, scopa, scopone, escoba, bezique, cuckoo, spoons, labellelucie, simplesimon, doubleklondike) |
-| **solo** | `cmd/workers/solo/main.go` | Solitaire & rummy (klondike, freecell, seahaventowers, cruel, spider, spiderette, pyramid, tripeaks, memory, ginrummy, conquian, chinchon, threethirteen, canasta, handandfoot, cribbage, golf, clocksolitaire, fortythieves, canfield, yukon, russiansolitaire, scorpion, wasp, accordion, pokersquares, montecarlo, contractrummy, kalooki, calculation, bakersdozen, beleagueredcastle, sevenbridge, crescent, gaps, rummy500, eightoff, penguin, acesup, barbu, macau, mao, thirtyone, tienlen, osmosis, fivehundred, schnapsen, burraco, gongzhu, bristol, bidwhist, easthaven, bakersgame, euchre, piquet, russianbank, blackhole) |
-
-The worker entry points (`cmd/workers/{casino,classic,solo}/main.go`) are thin shells that blank-import the matching `internal/infrastructure/games/<category>` sub-package and call `games.RegisterCategory(mux, games.Category…)`. The registry itself (`internal/infrastructure/games/registry.go`) stores `{Name, Category, Description}` for each game (the description SSoT — `ui.gameRegistry` reads it from here); the Web-server factories live in `games_server.go` (excluded from WASM via build tags) and the Worker bindings live in per-category sub-packages — this split is what keeps each Cloudflare Worker binary under the 1 MB gzipped free-tier limit by letting TinyGo dead-code-eliminate the games from the other two categories.
-
-**When adding/modifying a game, always update:**
-1. `internal/infrastructure/games/registry.go` — `{Name, Category, Description}` entry (selects the worker; Description is the CLI display title)
-2. `internal/infrastructure/games/games_server.go` — `BindWebControllerFor("<name>", …)` for the HTTP server factory
-3. `internal/infrastructure/games/{casino,classic,solo}/<category>.go` — `games.RegisterKVGame("<name>", games.Category…, …)` for the KV-backed worker route (must match the `Category`)
-4. `frontend/src/api/gameApi.ts` `workerUrl` — must match the `Category`
-
-Build: `make build-worker-{solo,casino,classic}` or `make build-workers` (requires TinyGo).
+Games ship to three Cloudflare Workers (`casino`, `classic`, `solo`) as TinyGo WASM binaries, split by category purely to keep each binary under the 1 MB gzipped free-tier limit. The `Category` in the registry is a binary-size bucket, **not** a user-facing taxonomy. Adding/modifying a game touches 4 registration points (registry, `games_server.go`, the category sub-package, and `gameApi.ts`). Full per-worker game list, the build-tag split rationale, and build commands: [`docs/cloudflare-workers.md`](docs/cloudflare-workers.md).
 
 ## New Game Addition Checklist
 
@@ -218,6 +173,8 @@ Always read [`DESIGN.md`](DESIGN.md) before making any visual or UI decisions. A
 |-------|------|
 | Architecture & key patterns | [`docs/architecture.md`](docs/architecture.md) |
 | Architecture Decision Records | [`docs/adr/`](docs/adr/) |
+| Documentation maintenance map (change type → docs to update) | [`docs/documentation-maintenance.md`](docs/documentation-maintenance.md) |
+| Cloudflare Workers (per-worker game list, build) | [`docs/cloudflare-workers.md`](docs/cloudflare-workers.md) |
 | Game descriptions & entities | [`docs/games.md`](docs/games.md) |
 | Backend UML design (class, sequence, state machine) | [`docs/design/backend.md`](docs/design/backend.md) |
 | Frontend UML design (class, sequence, state machine) | [`docs/design/frontend.md`](docs/design/frontend.md) |

@@ -204,6 +204,35 @@ describe('CasinoHoldemPage', () => {
     expect(screen.getByText('🃏')).toBeInTheDocument();
   });
 
+  it('shows the player current hand at flop (computed client-side)', async () => {
+    // flopState is A-K-Q-J-10 all spades → Royal Flush.
+    mockApi.mockResolvedValue(flopState);
+    renderWithProviders(<CasinoHoldemPage />);
+    const hand = await screen.findByTestId('ch-flop-hand');
+    expect(hand).toHaveTextContent('現在の役');
+    expect(hand).toHaveTextContent('ロイヤルフラッシュ');
+  });
+
+  it('shows a non-royal current hand at flop (one pair)', async () => {
+    // A♠ + 10♣ with board 10♥ 4♦ 2♠ → a pair of tens.
+    const onePairFlop: CasinoHoldemResponse = {
+      ...flopState,
+      playerHand: [card('SPADE', 1), card('CLOVER', 10)],
+      community: [card('HEART', 10), card('DIAMOND', 4), card('SPADE', 2)],
+    };
+    mockApi.mockResolvedValue(onePairFlop);
+    renderWithProviders(<CasinoHoldemPage />);
+    const hand = await screen.findByTestId('ch-flop-hand');
+    expect(hand).toHaveTextContent('ワンペア');
+  });
+
+  it('does not show the flop current-hand readout in the bet phase', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<CasinoHoldemPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /ベット/ })).toBeInTheDocument());
+    expect(screen.queryByTestId('ch-flop-hand')).not.toBeInTheDocument();
+  });
+
   it('renders hint toggle checkbox', async () => {
     mockApi.mockResolvedValue(flopState);
     renderWithProviders(<CasinoHoldemPage />);

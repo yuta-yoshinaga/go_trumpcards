@@ -26,6 +26,7 @@
   "playerBet": " bet:{{bet}}",
   "cardLine": "  card: {{card}}",
   "cardHidden": "  card: ??",
+  "equityLine": "  est. win: {{pct}}%",
   "cpuActionsHeader": "[CPU actions]",
   "cpuActionLine": "  Player {{idx}}: {{action}}",
   "cpuActionAmount": " ({{amount}})",

@@ -43,6 +43,12 @@ func (_m *MockScoponeInteractor) ResetWithConfig(config domain.ScoponeConfig) st
 	return ret.Get(0).(string)
 }
 
+// Hint モック
+func (_m *MockScoponeInteractor) Hint() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
 // ActionLog モック
 func (_m *MockScoponeInteractor) ActionLog() string {
 	ret := _m.Called()

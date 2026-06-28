@@ -19,7 +19,8 @@
     "select": "捨てるカードを選択してください",
     "confirm": "{{card}} を捨てますか？",
     "confirmYes": "確定",
-    "confirmNo": "キャンセル"
+    "confirmNo": "キャンセル",
+    "candidateHand": "捨てると"
   },
   "rebuy": {
     "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",
@@ -88,5 +89,17 @@
     "decentHandRank": "まずまずのハンド — コール推奨",
     "weakHandRank": "弱いハンド — フォールド推奨",
     "discardWeakest": "最も弱いカードを捨てましょう"
+  },
+  "hand": {
+    "highCard": "ハイカード",
+    "onePair": "ワンペア",
+    "twoPair": "ツーペア",
+    "threeOfAKind": "スリーカード",
+    "straight": "ストレート",
+    "flush": "フラッシュ",
+    "fullHouse": "フルハウス",
+    "fourOfAKind": "フォーカード",
+    "straightFlush": "ストレートフラッシュ",
+    "royalFlush": "ロイヤルフラッシュ"
   }
 }

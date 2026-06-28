@@ -494,13 +494,27 @@ function KlondikePageContent() {
 
             {/* Hint display */}
             <div data-tutorial="kl-hint-display">
-              {hint && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {t('hintAvailable')}: {hint.fromZone}
-                  {hint.fromCol >= 0 ? ` ${t('tableau')} ${hint.fromCol}` : ` ${t('waste')}`} → {hint.toZone}
-                  {hint.toCol >= 0 ? ` ${hint.toCol}` : ''}
-                </div>
-              )}
+              {hint &&
+                (() => {
+                  const fromCard =
+                    hint.fromCol >= 0
+                      ? (state.tableau[hint.fromCol]?.[hint.cardIndex]?.card ?? null)
+                      : (state.waste.at(-1) ?? null);
+                  return (
+                    <div className="text-ds-warning text-sm mb-2 flex items-center justify-center gap-1.5 flex-wrap">
+                      <span>{t('hintAvailable')}:</span>
+                      {fromCard && (
+                        <span data-testid="kl-hint-card">
+                          <AnimatedCard card={fromCard} width={Math.round(kl.cw * 0.5)} />
+                        </span>
+                      )}
+                      <span>
+                        {hint.fromCol >= 0 ? `${t('tableau')} ${hint.fromCol}` : t('waste')} → {hint.toZone}
+                        {hint.toCol >= 0 ? ` ${hint.toCol}` : ''}
+                      </span>
+                    </div>
+                  );
+                })()}
             </div>
             {frontendHintEnabled && frontendHint && (
               <div className="flex justify-center">

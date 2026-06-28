@@ -21,6 +21,7 @@
   "hintAvailable": "ヒントがあります",
   "noHint": "ヒントはありません",
   "foundationLabel": "組札{{idx}}:",
+  "tableauRule": "場札: {{count}}列の降順ビルド（スート不問）",
   "tableauLabel": "タブロー{{idx}}列:",
   "fanLabel": "ファン{{idx}}:",
   "pileCount": " ({{count}}枚)",

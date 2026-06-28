@@ -18,6 +18,7 @@
   "currentTrick": "現在のトリック",
   "trickEmpty": "(まだカードがありません)",
   "tricksLabel": "トリック数",
+  "selectTricks": "トリック数を選択 (6-10):",
   "misereButton": "ミゼール",
   "openMisereButton": "オープンミゼール",
   "bidValueLabel": "{{value}}点",

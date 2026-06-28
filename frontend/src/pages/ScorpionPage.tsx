@@ -35,6 +35,7 @@ import { ScorpionPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig } from '../utils/cli/types';
+import { scorpionLegalTargets } from '../utils/scorpionUtils';
 
 const noop = () => {};
 
@@ -235,6 +236,11 @@ function ScorpionPageContent() {
   // Empty-column deal guard: surfaces a shake animation + tooltip instead of failing silently.
   const [emptyDealAttemptKey, setEmptyDealAttemptKey] = useState(0);
   const hasEmptyColumn = useMemo(() => state?.tableau.some((col) => col.length === 0) ?? false, [state?.tableau]);
+  // Columns the selected card may legally move onto (same suit, one rank higher).
+  const legalTargets = useMemo(
+    () => (selectedSource && state ? scorpionLegalTargets(state.tableau, selectedSource) : new Set<number>()),
+    [selectedSource, state],
+  );
   const dealBlockedByEmpty = hasEmptyColumn && (state?.stockCount ?? 0) > 0;
   const handleDealGuarded = useCallback(() => {
     if (dealBlockedByEmpty) {
@@ -438,11 +444,14 @@ function ScorpionPageContent() {
                                   draggable={isPlaying}
                                   onDragStart={dnd.handleDragStart(zone)}
                                   onDragEnd={dnd.handleDragEnd}
+                                  data-testid={isLast && legalTargets.has(colIdx) ? 'sc-legal-target' : undefined}
                                   className={`${focusRingWhite} rounded-lg transition-all ${
                                     isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
                                   } ${isDragSrc ? 'opacity-50' : ''} ${
                                     hintFrom ? 'ring-2 ring-ds-info animate-pulse' : ''
-                                  } ${hintTo ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
+                                  } ${hintTo ? 'ring-2 ring-ds-success animate-pulse' : ''} ${
+                                    isLast && legalTargets.has(colIdx) ? 'ring-2 ring-ds-success' : ''
+                                  }`}
                                   onClick={() => {
                                     if (selectedSource) {
                                       if (isLast) {

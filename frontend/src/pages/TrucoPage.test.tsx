@@ -81,17 +81,17 @@ describe('TrucoPage', () => {
 
   it('shows human hand as 3 play buttons', async () => {
     renderWithProviders(<TrucoPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Play SPADE 1' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: 'Play HEART 5' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Play DIAMOND 11' })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ A を出す' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '♥ 5 を出す' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♦ J を出す' })).toBeInTheDocument();
   });
 
   it('fires play with the selected card index when a card is clicked', async () => {
     renderWithProviders(<TrucoPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Play HEART 5' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '♥ 5 を出す' })).toBeInTheDocument());
 
     mockExec.mockClear();
-    fireEvent.click(screen.getByRole('button', { name: 'Play HEART 5' }));
+    fireEvent.click(screen.getByRole('button', { name: '♥ 5 を出す' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 1));
   });
 
@@ -140,7 +140,7 @@ describe('TrucoPage', () => {
   it('disables play buttons when it is not the human turn', async () => {
     mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1, canDeclareTruco: false }));
     renderWithProviders(<TrucoPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Play SPADE 1' })).toBeDisabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ A を出す' })).toBeDisabled());
   });
 
   it('shows confirm dialog on reset click and runs reset on accept', async () => {

@@ -53,6 +53,7 @@ func (p *TressetteCuiPresenter) Output(g interfaces.TressetteGame, lastErr error
 			"athird", strconv.Itoa(thirds[0]),
 			"b", strconv.Itoa(scores[1]),
 			"bthird", strconv.Itoa(thirds[1])) + "\n")
+		b.WriteString(i18n.T("tressette.thirdsRule") + "\n")
 
 		for i := 0; i < g.GetPlayerCnt(); i++ {
 			if player := g.GetPlayer(i); player != nil {

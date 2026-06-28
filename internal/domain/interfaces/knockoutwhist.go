@@ -13,6 +13,8 @@ type KnockoutWhistGame interface {
 	NextRound()
 	// PlayerPlay プレイヤーがカードを出す
 	PlayerPlay(cardIndex int) error
+	// PlayerSelectTrump 人間のラウンド勝者が次ラウンドの切り札スートを選択する (1-4)
+	PlayerSelectTrump(suit int) error
 	// CpuPlay CPUプレイヤーが1ターン実行する
 	CpuPlay()
 	// ResolveTrick トリックを解決する

@@ -16,6 +16,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { TrucoResponse } from '../types/card';
 import { TrucoPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 
 /** Tutorial steps for the Truco page. */
 const TRUCO_TUTORIAL_STEPS: TutorialStep[] = [
@@ -173,7 +174,7 @@ function TrucoPageContent() {
                   type="button"
                   onClick={() => handlePlay(idx)}
                   disabled={loading || !isHumanPlayTurn}
-                  aria-label={`Play ${card.design} ${card.value}`}
+                  aria-label={tc('card.play', { card: cardAlt(card) })}
                   className="disabled:opacity-50"
                 >
                   <CardImage card={card} width={cardWidth} />

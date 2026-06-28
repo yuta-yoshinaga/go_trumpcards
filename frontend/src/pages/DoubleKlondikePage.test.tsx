@@ -59,6 +59,16 @@ describe('DoubleKlondikePage', () => {
     expect(screen.getByTestId('foundation-7')).toBeInTheDocument();
   });
 
+  it('renders face-down tableau cards as a card-back image, not "##"', async () => {
+    renderWithProviders(<DoubleKlondikePage />);
+    // makeState seeds a face-down card at tableau[1][0].
+    await waitFor(() => expect(screen.getByTestId('column-1')).toBeInTheDocument());
+    // Assert by the locale-independent card-back image src.
+    const cardBacks = screen.queryAllByRole('img').filter((img) => img.getAttribute('src') === '/images/z01.png');
+    expect(cardBacks.length).toBeGreaterThan(0);
+    expect(screen.queryByText('##')).not.toBeInTheDocument();
+  });
+
   it('draws from the stock', async () => {
     renderWithProviders(<DoubleKlondikePage />);
     const stock = await screen.findByTestId('stock');

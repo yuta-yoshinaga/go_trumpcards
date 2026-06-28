@@ -217,6 +217,29 @@ describe('CassinoPage', () => {
     await waitFor(() => expect(screen.getByTestId('build-0')).toBeInTheDocument());
   });
 
+  it('renders the build label fully localized (no mixed English literals)', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        builds: [
+          { ownerIdx: 0, value: 7, groups: [[card('SPADE', 3), card('HEART', 4)]], isMulti: true },
+          { ownerIdx: 2, value: 5, groups: [[card('CLUB', 5)]], isMulti: false },
+        ],
+      }),
+    );
+    renderWithProviders(<CassinoPage />);
+    const b0 = await screen.findByTestId('build-0');
+    const b1 = await screen.findByTestId('build-1');
+    // No raw English literals from the old hardcoded string.
+    for (const el of [b0, b1]) {
+      expect(el.textContent).not.toMatch(/multi|single|owner:/i);
+    }
+    // Multi build owned by the human, single build owned by CPU 2.
+    expect(b0.textContent).toContain('複合');
+    expect(b0.textContent).toContain('あなた');
+    expect(b1.textContent).toContain('単一');
+    expect(b1.textContent).toContain('CPU 2');
+  });
+
   it('toggles a build selection and includes it in take', async () => {
     mockExec.mockResolvedValue(
       makeState({

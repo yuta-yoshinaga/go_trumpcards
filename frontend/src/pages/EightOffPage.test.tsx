@@ -66,6 +66,32 @@ const withFreeCellCardState: EightOffResponse = {
   freeCells: [card('DIAMOND', 7), null, null, null, null, null, null, null],
 };
 
+// All free cells occupied and every tableau column non-empty → supermoveLimit = 1,
+// so the deeper card of a 2-card column exceeds the limit and gets the blocked tooltip.
+const supermoveBlockedState: EightOffResponse = {
+  ...playingState,
+  tableau: [
+    [card('SPADE', 13), card('HEART', 12)],
+    [card('CLOVER', 13)],
+    [card('DIAMOND', 13)],
+    [card('SPADE', 11)],
+    [card('HEART', 11)],
+    [card('CLOVER', 11)],
+    [card('DIAMOND', 11)],
+    [card('SPADE', 10)],
+  ],
+  freeCells: [
+    card('SPADE', 2),
+    card('SPADE', 3),
+    card('SPADE', 4),
+    card('SPADE', 5),
+    card('HEART', 6),
+    card('HEART', 7),
+    card('HEART', 8),
+    card('HEART', 9),
+  ],
+};
+
 beforeEach(() => {
   mockExec.mockResolvedValue(playingState);
   vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
@@ -85,6 +111,17 @@ describe('EightOffPage', () => {
   it('renders tableau without index headers', async () => {
     renderWithProviders(<EightOffPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+  });
+
+  it('shows supermove limit tooltip with empty free-cell and column counts', async () => {
+    mockExec.mockResolvedValue(supermoveBlockedState);
+    renderWithProviders(<EightOffPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    const blocked = screen.getByTestId('eo-tableau-0-0');
+    expect(blocked).toHaveAttribute('data-supermove-blocked', 'true');
+    const title = blocked.getAttribute('title') ?? '';
+    expect(title).toMatch(/空きフリーセル0/);
+    expect(title).toMatch(/空き列0/);
   });
 
   it('renders empty tableau columns with K placeholder', async () => {

@@ -59,6 +59,16 @@ func teenPattiStatusStr(player *domain.TeenPattiPlayer) string {
 	}
 }
 
+// teenPattiPlayerNameAt returns the human-readable name for the player at idx,
+// falling back to the raw index when the player is missing (e.g. idx == -1).
+func teenPattiPlayerNameAt(g interfaces.TeenPattiGame, idx int) string {
+	player := g.GetPlayer(idx)
+	if player == nil {
+		return strconv.Itoa(idx)
+	}
+	return cuiPlayerName(player, idx)
+}
+
 // TeenPattiCuiPresenter renders the Teen Patti CUI view.
 type TeenPattiCuiPresenter struct{}
 
@@ -90,10 +100,14 @@ func (p *TeenPattiCuiPresenter) Output(g interfaces.TeenPattiGame, lastErr error
 			b.WriteString(i18n.T("teenpatti.promptBetting") + "\n")
 			b.WriteString(i18n.T("teenpatti.promptBettingHelp") + "\n")
 		case domain.TeenPattiPhaseSideShow:
+			targetIdx := g.GetSideShowTarget()
 			b.WriteString(i18n.Tf("teenpatti.promptSideShow",
-				"requester", strconv.Itoa(g.GetSideShowRequester()),
-				"target", strconv.Itoa(g.GetSideShowTarget()),
+				"requester", teenPattiPlayerNameAt(g, g.GetSideShowRequester()),
+				"target", teenPattiPlayerNameAt(g, targetIdx),
 			) + "\n")
+			if target := g.GetPlayer(targetIdx); target != nil && target.GetIsHuman() {
+				b.WriteString(i18n.T("teenpatti.promptSideShowYou") + "\n")
+			}
 			b.WriteString(i18n.T("teenpatti.promptSideShowHelp") + "\n")
 		case domain.TeenPattiPhaseShowdown:
 			b.WriteString(i18n.T("teenpatti.promptShowdown") + "\n")

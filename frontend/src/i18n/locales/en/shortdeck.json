@@ -1,4 +1,17 @@
 {
+  "handRank": {
+    "title": "Hand ranking (Short Deck)",
+    "straightFlush": "Straight flush",
+    "fourOfAKind": "Four of a kind",
+    "flush": "Flush",
+    "fullHouse": "Full house",
+    "straight": "Straight",
+    "threeOfAKind": "Three of a kind",
+    "twoPair": "Two pair",
+    "onePair": "One pair",
+    "highCard": "High card",
+    "note": "Unlike standard poker, a flush beats a full house. The Ace also plays low in the 6-7-8-9-A straight."
+  },
   "phase": {
     "preFlop": "Pre-Flop",
     "flop": "Flop",

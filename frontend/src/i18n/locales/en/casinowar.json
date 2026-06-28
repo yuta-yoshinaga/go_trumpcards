@@ -4,6 +4,7 @@
   "tieGuide": "Tie! Surrender (lose half ante) or go to War (match ante and re-draw).",
   "warCost": "War = {{amount}} extra chips",
   "insufficientChips": "Not enough chips",
+  "previousBet": "Use last bet ({{amount}})",
   "label": {
     "chips": "Chips",
     "ante": "Ante",

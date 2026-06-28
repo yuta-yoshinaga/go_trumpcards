@@ -1,7 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { openfacechineseApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -10,14 +12,19 @@ import { GameResetButton } from '../components/GameResetButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { Card, OpenFaceChinesePlayer } from '../types/card';
+import type { Card, OpenFaceChinesePlayer, OpenFaceChineseResponse } from '../types/card';
 import { OpenFaceChinesePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { OPENFACECHINESE_HELP, parseOpenfacechineseCommand } from '../utils/cli/commands/openfacechineseCommands';
+import { formatOpenfacechineseState } from '../utils/cli/formatters/openfacechineseFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 
 /** Row indices accepted by the backend `place` command. */
 const ROW_FRONT = 0;
@@ -67,6 +74,17 @@ function OpenFaceChinesePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('openfacechinese');
   const { state, loading, error, exec, retry } = useGameApi(openfacechineseApi.exec);
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('openfacechinese');
+  const cliConfig: CliGameConfig<OpenFaceChineseResponse, Parameters<typeof openfacechineseApi.exec>> = useMemo(
+    () => ({
+      gameName: 'openfacechinese',
+      parseCommand: parseOpenfacechineseCommand,
+      formatResponse: formatOpenfacechineseState,
+      helpText: OPENFACECHINESE_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
@@ -133,132 +151,143 @@ function OpenFaceChinesePageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
-      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
-        {/* Round info */}
-        <div
-          className="mb-3 p-2 rounded bg-black/30 flex flex-wrap justify-center gap-x-6 gap-y-1 text-sm"
-          data-tutorial="ofc-info"
-        >
-          <span className="font-semibold text-ds-warning">{t('round', { round: state.roundNumber })}</span>
-          {human && <span className="text-ds-text-muted">{t('totalScore', { score: human.totalScore })}</span>}
-        </div>
-
-        {/* Pending card to place */}
-        {canPlace && state.currentCard && (
-          <div
-            className="mb-3 p-3 rounded bg-black/30 text-center flex flex-col items-center gap-2"
-            data-tutorial="ofc-place"
-          >
-            <span className="text-ds-text-muted text-xs">{t('pendingTitle')}</span>
-            <CardImage card={state.currentCard} width={cardWidth} />
-            <span className="text-ds-text-primary text-sm">{t('placePrompt')}</span>
-            <div className="flex flex-wrap justify-center gap-2 mt-1">
-              <button
-                type="button"
-                className={btnSuccess}
-                onClick={() => handlePlace(ROW_FRONT)}
-                disabled={loading}
-                data-testid="place-front"
-              >
-                {t('place.front')}
-              </button>
-              <button
-                type="button"
-                className={btnSuccess}
-                onClick={() => handlePlace(ROW_MIDDLE)}
-                disabled={loading}
-                data-testid="place-middle"
-              >
-                {t('place.middle')}
-              </button>
-              <button
-                type="button"
-                className={btnSuccess}
-                onClick={() => handlePlace(ROW_BACK)}
-                disabled={loading}
-                data-testid="place-back"
-              >
-                {t('place.back')}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Player boards */}
-        <div className="grid gap-3 sm:grid-cols-2" data-tutorial="ofc-rows">
-          {state.players.map((p) => (
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+            {/* Round info */}
             <div
-              key={`player-${p.id}`}
-              className={`p-3 rounded bg-black/20 ${p.id === state.currentPlayerIdx && isPlacing ? 'ring-1 ring-ds-warning' : ''}`}
-              data-testid={`player-${p.id}`}
+              className="mb-3 p-2 rounded bg-black/30 flex flex-wrap justify-center gap-x-6 gap-y-1 text-sm"
+              data-tutorial="ofc-info"
             >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-ds-text-primary text-sm font-semibold">{playerName(p)}</span>
-                <div className="flex items-center gap-2 text-xs">
-                  {p.fouled && <span className="text-ds-error font-semibold">{t('fouled')}</span>}
-                  {p.fantasyland && <span className="text-ds-accent font-semibold">{t('fantasyland')}</span>}
-                </div>
-              </div>
-              <div className="flex flex-col gap-2">
-                {renderRow(t('rows.front'), p.front, 3, `front-${p.id}`)}
-                {renderRow(t('rows.middle'), p.middle, 5, `middle-${p.id}`)}
-                {renderRow(t('rows.back'), p.back, 5, `back-${p.id}`)}
-              </div>
-              {isRoundEnd && (
-                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
-                  <span className="text-ds-text-primary" data-testid={`round-score-${p.id}`}>
-                    {t('roundScore', { score: p.roundScore })}
-                  </span>
-                  {p.royalty > 0 && <span className="text-ds-success">{t('royalty', { points: p.royalty })}</span>}
-                  <span className="text-ds-text-muted">{t('totalScore', { score: p.totalScore })}</span>
-                </div>
-              )}
+              <span className="font-semibold text-ds-warning">{t('round', { round: state.roundNumber })}</span>
+              {human && <span className="text-ds-text-muted">{t('totalScore', { score: human.totalScore })}</span>}
             </div>
-          ))}
-        </div>
 
-        {isRoundEnd && (
-          <div className="mt-3 text-center text-ds-text-primary text-sm font-semibold">{t('roundEndTitle')}</div>
-        )}
+            {/* Pending card to place */}
+            {canPlace && state.currentCard && (
+              <div
+                className="mb-3 p-3 rounded bg-black/30 text-center flex flex-col items-center gap-2"
+                data-tutorial="ofc-place"
+              >
+                <span className="text-ds-text-muted text-xs">{t('pendingTitle')}</span>
+                <CardImage card={state.currentCard} width={cardWidth} />
+                <span className="text-ds-text-primary text-sm">{t('placePrompt')}</span>
+                <div className="flex flex-wrap justify-center gap-2 mt-1">
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={() => handlePlace(ROW_FRONT)}
+                    disabled={loading}
+                    data-testid="place-front"
+                  >
+                    {t('place.front')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={() => handlePlace(ROW_MIDDLE)}
+                    disabled={loading}
+                    data-testid="place-middle"
+                  >
+                    {t('place.middle')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={() => handlePlace(ROW_BACK)}
+                    disabled={loading}
+                    data-testid="place-back"
+                  >
+                    {t('place.back')}
+                  </button>
+                </div>
+              </div>
+            )}
 
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+            {/* Player boards */}
+            <div className="grid gap-3 sm:grid-cols-2" data-tutorial="ofc-rows">
+              {state.players.map((p) => (
+                <div
+                  key={`player-${p.id}`}
+                  className={`p-3 rounded bg-black/20 ${p.id === state.currentPlayerIdx && isPlacing ? 'ring-1 ring-ds-warning' : ''}`}
+                  data-testid={`player-${p.id}`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-ds-text-primary text-sm font-semibold">{playerName(p)}</span>
+                    <div className="flex items-center gap-2 text-xs">
+                      {p.fouled && <span className="text-ds-error font-semibold">{t('fouled')}</span>}
+                      {p.fantasyland && <span className="text-ds-accent font-semibold">{t('fantasyland')}</span>}
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {renderRow(t('rows.front'), p.front, 3, `front-${p.id}`)}
+                    {renderRow(t('rows.middle'), p.middle, 5, `middle-${p.id}`)}
+                    {renderRow(t('rows.back'), p.back, 5, `back-${p.id}`)}
+                  </div>
+                  {isRoundEnd && (
+                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+                      <span className="text-ds-text-primary" data-testid={`round-score-${p.id}`}>
+                        {t('roundScore', { score: p.roundScore })}
+                      </span>
+                      {p.royalty > 0 && <span className="text-ds-success">{t('royalty', { points: p.royalty })}</span>}
+                      <span className="text-ds-text-muted">{t('totalScore', { score: p.totalScore })}</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
 
-        <ActionLogSection
-          isEndPhase={isGameEnd}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
-      </div>
+            {isRoundEnd && (
+              <div className="mt-3 text-center text-ds-text-primary text-sm font-semibold">{t('roundEndTitle')}</div>
+            )}
 
-      {/* Footer: next round / reset */}
-      <GameFooter className={`${gameTheme.openfacechinese.footer} px-4 py-2.5`}>
-        <ErrorAlert message={error} onRetry={retry} />
-        <div className="flex flex-wrap gap-2 items-center">
-          {isGameEnd && <span className="text-ds-text-primary text-sm font-semibold mr-1">{t('gameEnd')}</span>}
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
 
-          {isRoundEnd && (
-            <button
-              type="button"
-              className={btnSuccess}
-              onClick={handleNext}
-              disabled={loading}
-              data-testid="next-button"
-            >
-              {t('next')}
-            </button>
-          )}
+            <ActionLogSection
+              isEndPhase={isGameEnd}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+          </div>
 
-          <GameResetButton
-            isGameEnd={isGameEnd}
-            onReset={handleReset}
-            requestConfirm={requestConfirm}
-            loading={loading}
-            dataTutorial="ofc-reset-button"
-          />
-        </div>
-      </GameFooter>
+          {/* Footer: next round / reset */}
+          <GameFooter className={`${gameTheme.openfacechinese.footer} px-4 py-2.5`}>
+            <ErrorAlert message={error} onRetry={retry} />
+            <div className="flex flex-wrap gap-2 items-center">
+              {isGameEnd && <span className="text-ds-text-primary text-sm font-semibold mr-1">{t('gameEnd')}</span>}
+
+              {isRoundEnd && (
+                <button
+                  type="button"
+                  className={btnSuccess}
+                  onClick={handleNext}
+                  disabled={loading}
+                  data-testid="next-button"
+                >
+                  {t('next')}
+                </button>
+              )}
+
+              <GameResetButton
+                isGameEnd={isGameEnd}
+                onReset={handleReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="ofc-reset-button"
+              />
+            </div>
+          </GameFooter>
+        </>
+      )}
     </GamePageShell>
   );
 }

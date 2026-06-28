@@ -45,6 +45,15 @@ func TestTienLenCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "[0]")
 		assert.Contains(t, result, "自由に出せます")
 		assert.Contains(t, result, "あなたのターン")
+		// Combo-strength rules are shown on the human's turn.
+		assert.Contains(t, result, "連番>3カード>ペア>シングル")
+	})
+
+	t.Run("invalid combo error is accompanied by the combo rules", func(t *testing.T) {
+		m, _ := setupTienLenCuiMock()
+		result := p.Output(m, errors.New("invalid combo"))
+		assert.Contains(t, result, "invalid combo")
+		assert.Contains(t, result, "連番>3カード>ペア>シングル")
 	})
 
 	t.Run("table cards and cpu pass action", func(t *testing.T) {

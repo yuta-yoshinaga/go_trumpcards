@@ -43,6 +43,12 @@ func (_m *MockEscobaInteractor) ResetWithConfig(config domain.EscobaConfig) stri
 	return ret.Get(0).(string)
 }
 
+// Hint モック
+func (_m *MockEscobaInteractor) Hint() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
 // ActionLog モック
 func (_m *MockEscobaInteractor) ActionLog() string {
 	ret := _m.Called()

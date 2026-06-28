@@ -1657,8 +1657,8 @@ export interface SedmaResponse extends BaseGameResponse {
 
 // --- Knockout Whist ---
 
-/** Knockout Whist game phase (0=Play 1=TrickEnd 2=RoundEnd 3=GameEnd). */
-export type KnockoutWhistPhaseValue = 0 | 1 | 2 | 3;
+/** Knockout Whist game phase (0=Play 1=TrickEnd 2=RoundEnd 3=GameEnd 4=TrumpSelect). */
+export type KnockoutWhistPhaseValue = 0 | 1 | 2 | 3 | 4;
 
 /** A Knockout Whist player's public/own state. Cards are non-empty only for the human. */
 export interface KnockoutWhistPlayer {
@@ -2186,6 +2186,8 @@ export interface BeziqueResponse extends BaseGameResponse {
   players: BeziquePlayer[];
   /** Points scored in the current deal, indexed by seat. */
   dealPoints: number[];
+  /** Of the deal points, the portion from melds (trick portion = dealPoints - dealMeldPoints). */
+  dealMeldPoints: number[];
   /** Cumulative match score, indexed by seat. */
   matchScore: number[];
   phase: BeziquePhaseValue;
@@ -6321,7 +6323,7 @@ export interface DragonTigerResponse extends BaseGameResponse {
   betAmount: number;
   /** 0=Dragon, 1=Tiger, 2=Tie */
   betType: number;
-  /** Domain GameResult: 1=Win (Dragon), 2=Lose (Tiger), 3=Draw (Tie) */
+  /** Domain GameResult on the wire: 1=Dragon wins, -1=Tiger wins, 0=Tie */
   result: number;
   payout: number;
   /** Big Road history. 0=Dragon, 1=Tiger, 2=Tie. */

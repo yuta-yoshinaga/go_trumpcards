@@ -80,6 +80,13 @@ describe('SeahavenTowersPage', () => {
     expect(kElements.length).toBeGreaterThanOrEqual(1);
   });
 
+  it('shows the bulk-move (supermove) limit from empty reserved cells', async () => {
+    // 2 empty reserved cells → 1 + 2 = 3.
+    renderWithProviders(<SeahavenTowersPage />);
+    const limit = await screen.findByTestId('st-supermove-limit');
+    expect(limit).toHaveTextContent('3');
+  });
+
   it('renders foundation piles with all four suit symbols', async () => {
     renderWithProviders(<SeahavenTowersPage />);
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());

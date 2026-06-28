@@ -36,7 +36,9 @@
   "suspect": {
     "badge": "容疑者",
     "pin": "容疑者ピン",
-    "unpin": "ピン解除"
+    "unpin": "ピン解除",
+    "pinAria": "{{name}} を容疑者にマーク",
+    "unpinAria": "{{name}} の容疑者マークを外す"
   },
   "button": {
     "settings": "設定",

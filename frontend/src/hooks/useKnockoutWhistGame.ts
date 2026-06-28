@@ -59,6 +59,14 @@ export function useKnockoutWhistGame() {
     void exec('nextround');
   }, [exec]);
 
+  /** Selects the trump suit (1-4) when the human won the previous round. */
+  const handleSelectTrump = useCallback(
+    (suit: number) => {
+      void exec('selecttrump', { trumpSuit: suit });
+    },
+    [exec],
+  );
+
   return {
     state,
     loading,
@@ -74,5 +82,6 @@ export function useKnockoutWhistGame() {
     handlePlay,
     handleNextTrick,
     handleNextRound,
+    handleSelectTrump,
   };
 }

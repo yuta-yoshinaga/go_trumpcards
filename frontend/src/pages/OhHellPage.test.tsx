@@ -249,6 +249,33 @@ describe('OhHellPage', () => {
     });
   });
 
+  it('shows the bid-total chip during the bid phase (under when nothing bid yet)', async () => {
+    mockExec.mockResolvedValue(bidPhaseState); // handSize 5, no bids placed
+    renderWithProviders(<OhHellPage />);
+    const chip = await screen.findByTestId('bid-total-chip');
+    expect(chip).toHaveTextContent('総ビッド 0 / 手札 5');
+    expect(chip).toHaveTextContent('(アンダー)');
+  });
+
+  it('colors the bid-total chip for over and exact tables', async () => {
+    // Three players bid totaling 7 vs handSize 5 -> over.
+    mockExec.mockResolvedValue({
+      ...bidPhaseState,
+      players: bidPhaseState.players.map((p, i) => ({ ...p, bid: i < 3 ? [3, 2, 2, -1][i] : -1 })),
+    });
+    const { unmount } = renderWithProviders(<OhHellPage />);
+    expect(await screen.findByTestId('bid-total-chip')).toHaveTextContent('(オーバー)');
+    unmount();
+
+    // Bids totaling exactly 5.
+    mockExec.mockResolvedValue({
+      ...bidPhaseState,
+      players: bidPhaseState.players.map((p, i) => ({ ...p, bid: [2, 2, 1, -1][i] })),
+    });
+    renderWithProviders(<OhHellPage />);
+    expect(await screen.findByTestId('bid-total-chip')).toHaveTextContent('(ぴったり)');
+  });
+
   it('disables the restricted bid button and exposes the tooltip', async () => {
     mockExec.mockResolvedValue(bidPhaseDealerState);
     renderWithProviders(<OhHellPage />);

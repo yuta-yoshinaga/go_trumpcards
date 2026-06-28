@@ -8,6 +8,7 @@
     "totalPayout": "Total Payout",
     "hand": "Hand",
     "community": "Community Cards",
+    "communityStatus": "Revealed: {{revealed}} / {{total}}",
     "street3": "3rd",
     "street4": "4th",
     "street5": "5th"

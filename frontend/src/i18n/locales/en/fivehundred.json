@@ -18,6 +18,7 @@
   "currentTrick": "Current trick",
   "trickEmpty": "(no cards yet)",
   "tricksLabel": "Tricks",
+  "selectTricks": "Select tricks (6-10):",
   "misereButton": "Misere",
   "openMisereButton": "Open Misere",
   "bidValueLabel": "{{value}} pts",

@@ -20,6 +20,12 @@
   "stock": "山札: {{count}}枚",
   "noTrump": "未宣言",
   "exchangeNotice": "交換フェーズ — エルダーは「交換を提案」か「勝負」を選び、提案されたらディーラーが「承諾」か「拒否」を選びます。承諾後は捨て札を選んで引き直します。",
+  "negStepLabel": "現在のステップ: {{step}}",
+  "negStep": {
+    "elderDecide": "エルダーの提案",
+    "dealerRespond": "ディーラーの応答",
+    "discard": "札交換"
+  },
   "currentTrick": "現在のトリック",
   "you": "あなた",
   "cpu": "CPU {{id}}",

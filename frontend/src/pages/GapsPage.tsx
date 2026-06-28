@@ -143,6 +143,8 @@ function GapsPageContent() {
   const isGameOver = state.phase === GapsPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
   const lockedPrefixLengths = gapsLockedPrefixLengths(state.grid);
+  // Derive the total from the already-computed per-row lengths to avoid a second board pass.
+  const lockedTotal = lockedPrefixLengths.reduce((sum, n) => sum + n, 0);
 
   return (
     <GamePageShell
@@ -317,8 +319,13 @@ function GapsPageContent() {
                 className={btnPrimary}
                 onClick={handleRedeal}
                 disabled={loading || state.redealsRemaining <= 0}
+                data-testid="gaps-redeal-button"
               >
-                {t('redeal')} ({state.redealsUsed}/{state.redealsUsed + state.redealsRemaining})
+                {t('redealKeepLabel', {
+                  used: state.redealsUsed,
+                  total: state.redealsUsed + state.redealsRemaining,
+                  locked: lockedTotal,
+                })}
               </button>
               <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
                 {t('hint')}

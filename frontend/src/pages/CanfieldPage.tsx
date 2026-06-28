@@ -82,7 +82,7 @@ function CanfieldPageContent() {
     cancelGiveUp,
   } = useGamePageSetup('canfield');
   const { state, loading, error, exec: execApi, retry } = useGameApi(canfieldApi.exec);
-  const { cardWidth, cardHeight } = useCardDimensions();
+  const { cardWidth, cardHeight, isMobile } = useCardDimensions();
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -360,47 +360,62 @@ function CanfieldPageContent() {
                         )}
                       </div>
                     </DropZone>
-                    {isPlaying && (
-                      <div className="flex flex-col gap-1">
-                        <button
-                          type="button"
-                          className={`${btnOutline} ${focusRingWhite} text-xs`}
-                          onClick={() => handleMoveWasteToTableau(i)}
-                          disabled={!topWaste || loading}
-                        >
-                          {t('moveWasteToCol', { col: i })}
-                        </button>
-                        <button
-                          type="button"
-                          className={`${btnOutline} ${focusRingWhite} text-xs`}
-                          onClick={() => handleMoveReserveToTableau(i)}
-                          disabled={!topReserve || loading}
-                        >
-                          {t('moveReserveToCol', { col: i })}
-                        </button>
-                        <button
-                          type="button"
-                          className={`${btnOutline} ${focusRingWhite} text-xs`}
-                          onClick={() => handleMoveTableauToFoundation(i)}
-                          disabled={col.length === 0 || loading}
-                        >
-                          {t('moveToFoundation')}
-                        </button>
-                        {state.tableau.map((_, j) =>
-                          j === i ? null : (
+                    {isPlaying &&
+                      (() => {
+                        const actionButtons = (
+                          <div className="flex flex-col gap-1">
                             <button
-                              key={`t-${i}-to-${j}`}
                               type="button"
-                              className={`${btnOutline} ${focusRingWhite} text-xs`}
-                              onClick={() => handleMoveTableauToTableau(i, col.length - 1, j)}
+                              className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px]`}
+                              onClick={() => handleMoveWasteToTableau(i)}
+                              disabled={!topWaste || loading}
+                            >
+                              {t('moveWasteToCol', { col: i })}
+                            </button>
+                            <button
+                              type="button"
+                              className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px]`}
+                              onClick={() => handleMoveReserveToTableau(i)}
+                              disabled={!topReserve || loading}
+                            >
+                              {t('moveReserveToCol', { col: i })}
+                            </button>
+                            <button
+                              type="button"
+                              className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px]`}
+                              onClick={() => handleMoveTableauToFoundation(i)}
                               disabled={col.length === 0 || loading}
                             >
-                              {t('moveToCol', { col: j })}
+                              {t('moveToFoundation')}
                             </button>
-                          ),
-                        )}
-                      </div>
-                    )}
+                            {state.tableau.map((_, j) =>
+                              j === i ? null : (
+                                <button
+                                  key={`t-${i}-to-${j}`}
+                                  type="button"
+                                  className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px]`}
+                                  onClick={() => handleMoveTableauToTableau(i, col.length - 1, j)}
+                                  disabled={col.length === 0 || loading}
+                                >
+                                  {t('moveToCol', { col: j })}
+                                </button>
+                              ),
+                            )}
+                          </div>
+                        );
+                        // On mobile, collapse the dense per-column action buttons behind a
+                        // details disclosure so they don't crowd below the 44px tap-target min.
+                        return isMobile ? (
+                          <details className="mt-1 w-full" data-testid={`cf-col-actions-${i}`}>
+                            <summary className="text-xs text-ds-text-muted cursor-pointer min-h-[44px] flex items-center justify-center">
+                              {t('columnActions')}
+                            </summary>
+                            {actionButtons}
+                          </details>
+                        ) : (
+                          actionButtons
+                        );
+                      })()}
                   </div>
                 );
               })}

@@ -533,8 +533,15 @@ function CruelPageContent() {
                 className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1"
                 role="status"
                 aria-live="polite"
+                data-testid="cruel-hint"
               >
-                {state.hint.toZone === 'foundation' ? t('foundation') : `${t('tableau')} ${state.hint.toCol}`}
+                {t('hintMove', {
+                  from: `${t('tableau')} ${state.hint.fromCol.toString()}`,
+                  to:
+                    state.hint.toZone === 'foundation'
+                      ? t('foundation')
+                      : `${t('tableau')} ${state.hint.toCol.toString()}`,
+                })}
               </div>
             )}
             {frontendHintEnabled && frontendHint && (

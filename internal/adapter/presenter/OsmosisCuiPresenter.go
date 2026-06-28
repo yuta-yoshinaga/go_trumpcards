@@ -75,6 +75,71 @@ func (p *OsmosisCuiPresenter) Output(o interfaces.OsmosisGame, lastErr error) st
 	})
 }
 
+// osmosisRanksIn returns the set of card ranks present in a foundation pile.
+func osmosisRanksIn(pile []*domain.Card) map[int]bool {
+	have := make(map[int]bool, len(pile))
+	for _, c := range pile {
+		have[c.GetValue()] = true
+	}
+	return have
+}
+
+// osmosisAllowedRanks mirrors the web rule: which ranks may be placed on
+// foundation row i (base row 0 accepts any rank once seeded; lower rows accept
+// ranks present in the row above that are not yet in the row).
+func osmosisAllowedRanks(foundation [domain.OsmosisFoundationCnt][]*domain.Card, baseRank, i int) []int {
+	pile := foundation[i]
+	if len(pile) == 0 {
+		if i >= 1 && len(foundation[i-1]) == 0 {
+			return nil
+		}
+		return []int{baseRank}
+	}
+	have := osmosisRanksIn(pile)
+	if i == 0 {
+		var all []int
+		for r := 1; r <= 13; r++ {
+			if !have[r] {
+				all = append(all, r)
+			}
+		}
+		return all
+	}
+	above := osmosisRanksIn(foundation[i-1])
+	var out []int
+	for r := 1; r <= 13; r++ {
+		if above[r] && !have[r] {
+			out = append(out, r)
+		}
+	}
+	return out
+}
+
+// osmosisRankLabel renders an Ace-low rank (1=A … 13=K) as a short label.
+func osmosisRankLabel(rank int) string {
+	switch rank {
+	case 1:
+		return "A"
+	case 11:
+		return "J"
+	case 12:
+		return "Q"
+	case 13:
+		return "K"
+	default:
+		return strconv.Itoa(rank)
+	}
+}
+
+// osmosisRankLabels renders ranks as short labels (A/2-10/J/Q/K).
+func osmosisRankLabels(ranks []int) string {
+	labels := make([]string, 0, len(ranks))
+	for _, r := range ranks {
+		labels = append(labels, osmosisRankLabel(r))
+	}
+	return strings.Join(labels, " ")
+}
+
 // HintOutput emits the current Osmosis hint.
 func (p *OsmosisCuiPresenter) HintOutput(o interfaces.OsmosisGame) string {
 	hint := o.GetHint()
@@ -88,7 +153,15 @@ func (p *OsmosisCuiPresenter) HintOutput(o interfaces.OsmosisGame) string {
 		from = i18n.T("osmosis.hintFromWaste")
 	}
 	to := i18n.Tf("osmosis.hintToFoundation", "idx", strconv.Itoa(hint.ToCol))
-	return i18n.Tf("osmosis.hintLine", "from", from, "to", to) + "\n"
+
+	foundation := o.GetFoundation()
+	var allowed string
+	if hint.ToCol == 0 && len(foundation[0]) > 0 {
+		allowed = i18n.T("osmosis.anyRank")
+	} else {
+		allowed = osmosisRankLabels(osmosisAllowedRanks(foundation, o.GetBaseRank(), hint.ToCol))
+	}
+	return i18n.Tf("osmosis.hintLine", "from", from, "to", to, "allowed", allowed) + "\n"
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

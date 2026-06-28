@@ -4,14 +4,16 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePiquetGame } from '../hooks/usePiquetGame';
 import { badgeErrorColors, badgeSuccessColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { Card, PiquetDeclaration, PiquetPlayerData, PiquetResponse } from '../types/card';
+import type { PiquetDeclaration, PiquetPlayerData, PiquetResponse } from '../types/card';
 import { PiquetDeclarationKind, PiquetExchangeTurn, PiquetPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { type DeclarationHighlight, declarationHighlight } from '../utils/piquetDeclarationHighlight';
@@ -33,37 +35,6 @@ const PIQUET_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-const SUIT_GLYPH: Record<string, string> = {
-  SPADE: '♠',
-  CLOVER: '♣',
-  HEART: '♥',
-  DIAMOND: '♦',
-  JOKER: 'Jk',
-};
-
-/** Format a single card into a short string like "K♠". */
-function formatCard(card: Card): string {
-  const v = card.value;
-  let rank: string;
-  switch (v) {
-    case 1:
-      rank = 'A';
-      break;
-    case 11:
-      rank = 'J';
-      break;
-    case 12:
-      rank = 'Q';
-      break;
-    case 13:
-      rank = 'K';
-      break;
-    default:
-      rank = String(v);
-  }
-  return `${rank}${SUIT_GLYPH[card.design] ?? '?'}`;
-}
-
 function declKindLabel(kind: number): string {
   switch (kind) {
     case PiquetDeclarationKind.POINT:
@@ -84,6 +55,7 @@ function PiquetPageContent() {
   const { t, tc, confirmOpen, requestConfirm, confirmReset, cancelReset } = useGamePageSetup('piquet');
   const game = usePiquetGame();
   const { state, loading, error, retry } = game;
+  const { cardWidth } = useCardDimensions();
   const [selectedDiscards, setSelectedDiscards] = useState<number[]>([]);
   const [activeHighlight, setActiveHighlight] = useState<DeclarationHighlight | null>(null);
   const prevDeclLenRef = useRef(0);
@@ -191,9 +163,11 @@ function PiquetPageContent() {
             {human.cards.map((c, i) => {
               const selected = selectedDiscards.includes(i);
               const highlighted = activeHighlight?.cardIndices.includes(i) ?? false;
+              // Highlight ring lives on the AnimatedCard wrapper so it tracks the lift; the
+              // selection lift/glow is driven by AnimatedCard's isSelected (Framer Motion).
               const ringClass = highlighted
                 ? activeHighlight?.won
-                  ? 'ring-2 ring-ds-success -translate-y-1'
+                  ? 'ring-2 ring-ds-success'
                   : 'ring-2 ring-ds-error'
                 : '';
               const handlePlay = () => game.handlePlay(i);
@@ -202,13 +176,12 @@ function PiquetPageContent() {
                 <button
                   key={`hand-${i}-${c.design}-${c.value}`}
                   type="button"
-                  className={`rounded border px-2 py-1 text-sm font-mono min-h-[44px] min-w-[44px] transition-transform ${
-                    selected ? 'bg-ds-warning/40 border-ds-warning' : 'bg-white/10 border-white/30'
-                  } ${ringClass}`}
+                  aria-pressed={humanCanExchange ? selected : undefined}
+                  className="rounded"
                   onClick={handleClick}
                   disabled={handleClick == null}
                 >
-                  {formatCard(c)}
+                  <AnimatedCard card={c} width={cardWidth} isSelected={selected} wrapperClassName={ringClass} />
                 </button>
               );
             })}
@@ -334,6 +307,7 @@ function DeclarationList({ results, elderIdx }: { results: PiquetDeclaration[]; 
 
 function TrickView({ trick }: { trick: PiquetResponse['currentTrick'] }) {
   const { t } = useTranslation('piquet');
+  const { cardWidth } = useCardDimensions();
   return (
     <div className="rounded border border-white/20 p-2 mx-2 text-sm">
       <div className="mb-1 font-bold">{t('trickHeader')}</div>
@@ -341,9 +315,10 @@ function TrickView({ trick }: { trick: PiquetResponse['currentTrick'] }) {
         {trick.map((tc, i) => (
           <div
             key={`trick-${i}-${tc.playerIdx}-${tc.card.design}-${tc.card.value}`}
-            className="rounded bg-white/10 px-2 py-1 font-mono"
+            className="flex flex-col items-center gap-0.5"
           >
-            P{tc.playerIdx}: {formatCard(tc.card)}
+            <span className="text-xs text-ds-text-muted">P{tc.playerIdx}</span>
+            <AnimatedCard card={tc.card} width={cardWidth} />
           </div>
         ))}
       </div>

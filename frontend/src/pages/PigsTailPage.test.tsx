@@ -111,6 +111,77 @@ describe('PigsTailPage', () => {
     });
   });
 
+  it('shows the center top card rank and suit (not just the suit symbol)', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      centerTop: { design: 'SPADE', value: 1 },
+      centerCount: 3,
+    });
+    renderWithProviders(<PigsTailPage />);
+    const center = await screen.findByTestId('pt-center-top');
+    // Rank (A) must be visible alongside the suit symbol.
+    expect(center).toHaveTextContent('♠A');
+  });
+
+  it('falls back to "?" for a card whose design has no suit symbol', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      centerTop: { design: 'JOKER', value: 0 },
+      centerCount: 1,
+    });
+    renderWithProviders(<PigsTailPage />);
+    const center = await screen.findByTestId('pt-center-top');
+    expect(center).toHaveTextContent('?');
+  });
+
+  it('accumulates a recent-center history strip across draws', async () => {
+    mockExec.mockResolvedValue({ ...baseState, centerTop: { design: 'SPADE', value: 1 }, centerCount: 3 });
+    renderWithProviders(<PigsTailPage />);
+    const strip = await screen.findByTestId('pt-center-history');
+    expect(strip).toHaveTextContent('♠A');
+
+    mockExec.mockResolvedValue({ ...baseState, centerTop: { design: 'HEART', value: 3 }, centerCount: 4 });
+    fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
+    await waitFor(() => expect(screen.getByTestId('pt-center-history')).toHaveTextContent('♥3'));
+    // The earlier center top is still part of the tail.
+    expect(screen.getByTestId('pt-center-history')).toHaveTextContent('♠A');
+  });
+
+  it('does not duplicate the center history when the top card is unchanged', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      centerTop: { design: 'SPADE', value: 1 },
+      centerCount: 3,
+      circleCount: 52,
+    });
+    renderWithProviders(<PigsTailPage />);
+    const strip = await screen.findByTestId('pt-center-history');
+    expect(strip.children).toHaveLength(1);
+
+    // A fresh draw signature (circleCount changed) but the same center top must
+    // not append a duplicate entry.
+    mockExec.mockResolvedValue({
+      ...baseState,
+      centerTop: { design: 'SPADE', value: 1 },
+      centerCount: 3,
+      circleCount: 51,
+    });
+    fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
+    await waitFor(() => expect(screen.getByText((_, el) => el?.textContent === '山札: 51')).toBeInTheDocument());
+    expect(screen.getByTestId('pt-center-history').children).toHaveLength(1);
+  });
+
+  it('clears the center history when the pile is collected (centerCount 0)', async () => {
+    mockExec.mockResolvedValue({ ...baseState, centerTop: { design: 'SPADE', value: 1 }, centerCount: 3 });
+    renderWithProviders(<PigsTailPage />);
+    await screen.findByTestId('pt-center-history');
+
+    mockExec.mockResolvedValue({ ...baseState, centerTop: null, centerCount: 0 });
+    fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
+    await waitFor(() => expect(screen.queryByTestId('pt-center-history')).not.toBeInTheDocument());
+  });
+
   it('draw button is disabled on game end', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<PigsTailPage />);

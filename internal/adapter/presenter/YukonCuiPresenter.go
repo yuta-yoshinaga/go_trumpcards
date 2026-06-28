@@ -78,13 +78,16 @@ func (p *YukonCuiPresenter) HintOutput(y interfaces.YukonGame) string {
 	from := i18n.Tf("yukon.hintFrom",
 		"col", strconv.Itoa(hint.FromCol),
 		"idx", strconv.Itoa(hint.CardIndex))
-	var to string
+	var to, confidence string
 	if hint.ToZone == "foundation" {
+		// Foundation moves never hurt, so they are the highest-priority play.
 		to = i18n.T("yukon.hintToFoundation")
+		confidence = i18n.T("yukon.hintConfidenceFoundation")
 	} else {
 		to = i18n.Tf("yukon.hintToTableau", "col", strconv.Itoa(hint.ToCol))
+		confidence = i18n.T("yukon.hintConfidenceTableau")
 	}
-	return i18n.Tf("yukon.hintLine", "from", from, "to", to) + "\n"
+	return i18n.Tf("yukon.hintLine", "from", from, "to", to, "confidence", confidence) + "\n"
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

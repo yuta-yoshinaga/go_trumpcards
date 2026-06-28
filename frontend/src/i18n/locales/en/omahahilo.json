@@ -3,7 +3,8 @@
     "title": "Hi/Lo split",
     "hi": "Hi",
     "lo": "Lo",
-    "winner": "{{name}} (+{{amount}})"
+    "winner": "{{name}} (+{{amount}})",
+    "hiTakesAll": "No qualifying low — Hi scoops the pot"
   },
   "phase": {
     "preFlop": "Pre-Flop",

@@ -348,20 +348,36 @@ function PreferencePageContent() {
               {isBidPhase && isHumanBidTurn && (
                 <>
                   <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>
+                  <span
+                    className="text-xs font-semibold text-ds-text-primary self-center mr-1"
+                    data-testid="preference-highest-bid"
+                  >
+                    {t('bidHighest', {
+                      name: highestBid > 0 ? t(`bid.${CONTRACT_KEYS[highestBid]}`) : t('bidNone'),
+                    })}
+                  </span>
                   {BIDS.map((b) => {
                     // Pass (0) is always allowed; a non-pass bid must beat the current highest.
-                    const disabled = loading || (b.value !== PreferenceContract.PASS && b.value <= highestBid);
+                    const tooLow = b.value !== PreferenceContract.PASS && b.value <= highestBid;
+                    const disabled = loading || tooLow;
+                    const isMisere = b.value === PreferenceContract.MISERE;
                     return (
-                      <button
-                        key={b.value}
-                        type="button"
-                        className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
-                        onClick={() => handleBid(b.value)}
-                        disabled={disabled}
-                        data-testid={`bid-${b.value}`}
-                      >
-                        {t(b.key)}
-                      </button>
+                      // Wrap in a span so the explanatory tooltip still shows on a disabled button.
+                      <span key={b.value} title={tooLow ? t('bidTooLow') : undefined} className="inline-flex">
+                        <button
+                          type="button"
+                          className={`px-3 py-2 rounded-lg text-white text-sm disabled:opacity-40 ${
+                            isMisere ? 'bg-ds-warning ring-1 ring-ds-warning' : 'bg-ds-info'
+                          }`}
+                          onClick={() => handleBid(b.value)}
+                          disabled={disabled}
+                          aria-disabled={disabled}
+                          data-testid={`bid-${b.value}`}
+                        >
+                          {t(b.key)}
+                          {isMisere && <span className="ml-1 text-[10px] opacity-80">{t('misereBadge')}</span>}
+                        </button>
+                      </span>
                     );
                   })}
                 </>

@@ -112,6 +112,19 @@ describe('OasisPokerPage', () => {
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
+  it('shows the dealer-qualification-pending note during the exchange phase', async () => {
+    mockApi.mockResolvedValue(exchangePhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('dealer-qualify-pending')).toBeInTheDocument());
+  });
+
+  it('hides the pending note and shows the qualification state at the end phase', async () => {
+    mockApi.mockResolvedValue(endPhasePlayerWins);
+    renderWithProviders(<OasisPokerPage />);
+    await waitFor(() => expect(screen.getByText('クオリファイ')).toBeInTheDocument());
+    expect(screen.queryByTestId('dealer-qualify-pending')).not.toBeInTheDocument();
+  });
+
   it('transitions bet → exchange and shows exchange UI', async () => {
     mockApi.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(exchangePhaseState);
     renderWithProviders(<OasisPokerPage />);

@@ -41,6 +41,8 @@ func setupBeziqueCuiMockWithPlayers(trumpCard *domain.Card) (*interfaces.MockBez
 	m.On("GetPlayer", 1).Return(players[1])
 	m.On("GetDealPoints", 0).Return(18)
 	m.On("GetDealPoints", 1).Return(5)
+	m.On("GetDealMeldPoints", 0).Return(8)
+	m.On("GetDealMeldPoints", 1).Return(0)
 	m.On("GetMatchScore", 0).Return(118)
 	m.On("GetMatchScore", 1).Return(45)
 	return m, players

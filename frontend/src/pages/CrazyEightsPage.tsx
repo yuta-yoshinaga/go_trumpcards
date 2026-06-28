@@ -33,6 +33,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { CRAZYEIGHTS_HELP, parseCrazyeightsCommand } from '../utils/cli/commands/crazyeightsCommands';
 import { formatCrazyeightsState } from '../utils/cli/formatters/crazyeightsFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isCrazyEightsLegalPlay } from '../utils/crazyEightsLegal';
 import { playerName } from '../utils/playerUtils';
 
 const CRAZYEIGHTS_PHASE_KEYS: Readonly<Record<number, string>> = {
@@ -323,25 +324,34 @@ function CrazyEightsPageContent() {
           <GameFooter className={`${gameTheme.crazyeights.footer} px-4 py-2.5`}>
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ce-player-hand">
-                {humanPlayer.cards.map((card, idx) => (
-                  <button
-                    type="button"
-                    key={`${card.design}-${card.value}-${idx}`}
-                    onClick={() => toggleCard(idx)}
-                    aria-label={cardAlt(card)}
-                    aria-pressed={selectedCardIndices.includes(idx)}
-                    className={`transition-transform ${focusRingCard}`}
-                    style={{
-                      background: 'none',
-                      padding: 0,
-                      borderRadius: 8,
-                      ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                      boxSizing: 'border-box',
-                    }}
-                  >
-                    <AnimatedCard card={card} width={cardWidth} />
-                  </button>
-                ))}
+                {humanPlayer.cards.map((card, idx) => {
+                  // On the human's turn, highlight playable cards (matching suit/rank or an 8)
+                  // and dim the rest with a reason tooltip, so the rule is visible at a glance.
+                  const legal = !isHumanTurn || isCrazyEightsLegalPlay(card, state.discardTop, state.chosenSuit);
+                  return (
+                    <button
+                      type="button"
+                      key={`${card.design}-${card.value}-${idx}`}
+                      onClick={() => toggleCard(idx)}
+                      aria-label={cardAlt(card)}
+                      aria-pressed={selectedCardIndices.includes(idx)}
+                      title={isHumanTurn && !legal ? t('illegalHint') : undefined}
+                      data-legal={isHumanTurn ? legal : undefined}
+                      className={`transition-transform ${focusRingCard} ${
+                        isHumanTurn && legal ? 'rounded-lg ring-2 ring-ds-success' : ''
+                      } ${isHumanTurn && !legal ? 'opacity-50' : ''}`}
+                      style={{
+                        background: 'none',
+                        padding: 0,
+                        borderRadius: 8,
+                        ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      <AnimatedCard card={card} width={cardWidth} />
+                    </button>
+                  );
+                })}
               </div>
             )}
 

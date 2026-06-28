@@ -52,6 +52,14 @@ describe('RussianPokerPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('labels player cards with localized names via cardAlt', async () => {
+    renderWithProviders(<RussianPokerPage />);
+    // playerHand[0] is ♠10 → cardAlt label, not the old "Card 1".
+    const firstCard = await screen.findByTestId('player-card-0');
+    expect(firstCard).toHaveAttribute('aria-label', '♠ 10');
+    expect(firstCard.getAttribute('aria-label')).not.toMatch(/Card 1/);
+  });
+
   it('shows the exchange-cost line from the start of the action phase (0 cards = 0 fee)', async () => {
     renderWithProviders(<RussianPokerPage />);
     const line = await screen.findByTestId('russian-exchange-fee-line');

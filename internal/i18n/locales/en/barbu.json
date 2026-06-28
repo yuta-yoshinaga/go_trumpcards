@@ -1,5 +1,9 @@
 {
   "helpTitle": "Barbu",
+  "hintNone": "No hint available",
+  "hintDomino": "Recommendation: playable cards {{cards}}",
+  "hintDominoPass": "No playable card; you must pass",
+  "hintLegal": "Legal plays: {{cards}}",
   "helpContract": "  c <0-6> [trump 1-4]      pick a contract (trump suit only for Trumps=5)",
   "helpPlay": "  p <h>                    play hand h (-1 to pass in Dominoes)",
   "helpNext": "  n                        start the next deal",

@@ -40,10 +40,12 @@ import { gameTheme } from '../styles/gameTheme';
 import type { OmahaResponse } from '../types/card';
 import { OmahaPhase, OmahaRebuyPhaseType } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { valueName } from '../utils/cardUtils';
 import { OMAHA_HELP, parseOmahaCommand } from '../utils/cli/commands/omahaCommands';
 import { formatOmahaState } from '../utils/cli/formatters/omahaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { omahaBestFive } from '../utils/omahaBestFive';
+import { lowCardIndexSets } from '../utils/omahaLowCards';
 import { findPlayerName } from '../utils/playerUtils';
 
 /** 5 Card Omaha Hi-Lo (Big O) tutorial step definitions. */
@@ -173,6 +175,12 @@ function BigOHiLoPageContent() {
     if (!best) return empty;
     return { holeSet: new Set(best.holeIdx), boardSet: new Set(best.boardIdx) };
   }, [isShowdown, humanPlayer, state?.communityCards]);
+  // Separately highlight the human's qualifying low cards (blue), distinct from
+  // the Hi best-5 (green) — the Hi and Lo hole cards can differ.
+  const humanLowBestHand = isShowdown
+    ? state?.roundResults?.find((r) => r.playerIdx === humanPlayer?.id)?.lowBestHand
+    : undefined;
+  const lowSets = lowCardIndexSets(humanLowBestHand, humanPlayer?.cards ?? [], state?.communityCards ?? []);
   const humanFolded = humanPlayer?.folded ?? false;
   const humanAllIn = humanPlayer?.allIn ?? false;
   const canAct = isActive && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
@@ -265,14 +273,19 @@ function BigOHiLoPageContent() {
                     {state?.communityCards?.length
                       ? state.communityCards.map((card, idx) => {
                           const inBest = showdownBest5.boardSet.has(idx);
-                          const dim = showdownBest5.boardSet.size > 0 && !inBest;
+                          const inLo = lowSets.loBoardSet.has(idx);
+                          const dim = showdownBest5.boardSet.size > 0 && !inBest && !inLo;
+                          const ring = inLo
+                            ? 'ring-2 ring-ds-info motion-safe:animate-pulse'
+                            : inBest
+                              ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse'
+                              : '';
                           return (
                             <div
                               key={`${card.design}-${card.value}`}
-                              className={`transition-all ${
-                                inBest ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse' : ''
-                              } ${dim ? 'opacity-50' : ''}`}
+                              className={`transition-all ${ring} ${dim ? 'opacity-50' : ''}`}
                               data-best5-board={inBest || undefined}
+                              data-testid={inLo ? 'bigohilo-lo-card' : undefined}
                             >
                               <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
                             </div>
@@ -343,7 +356,15 @@ function BigOHiLoPageContent() {
                   r.hiWonAmount ? [{ name: findPlayerName(state.players, r.playerIdx), amount: r.hiWonAmount }] : [],
                 );
                 const loWinners = state.roundResults.flatMap((r) =>
-                  r.lowWonAmount ? [{ name: findPlayerName(state.players, r.playerIdx), amount: r.lowWonAmount }] : [],
+                  r.lowWonAmount
+                    ? [
+                        {
+                          name: findPlayerName(state.players, r.playerIdx),
+                          amount: r.lowWonAmount,
+                          cards: (r.lowBestHand ?? []).map((card) => valueName(card.value)).join(' '),
+                        },
+                      ]
+                    : [],
                 );
                 if (hiWinners.length === 0 && loWinners.length === 0) return null;
                 return (
@@ -366,9 +387,15 @@ function BigOHiLoPageContent() {
                           className="inline-block rounded border border-ds-info bg-ds-surface px-2 py-0.5 text-ds-info"
                         >
                           {t('hiLo.lo')}: {t('hiLo.winner', { name: w.name, amount: w.amount })}
+                          {w.cards && ` (${w.cards})`}
                         </span>
                       ))}
                     </div>
+                    {loWinners.length === 0 && hiWinners.length > 0 && (
+                      <div className="mt-1 text-xs text-ds-text-muted" data-testid="bigohilo-hi-takes-all">
+                        {t('hiLo.hiTakesAll')}
+                      </div>
+                    )}
                   </div>
                 );
               })()}
@@ -426,14 +453,19 @@ function BigOHiLoPageContent() {
                   {humanPlayer.cards?.length
                     ? humanPlayer.cards.map((card, idx) => {
                         const inBest = showdownBest5.holeSet.has(idx);
-                        const dim = showdownBest5.holeSet.size > 0 && !inBest;
+                        const inLo = lowSets.loHoleSet.has(idx);
+                        const dim = showdownBest5.holeSet.size > 0 && !inBest && !inLo;
+                        const ring = inLo
+                          ? 'ring-2 ring-ds-info motion-safe:animate-pulse'
+                          : inBest
+                            ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse'
+                            : '';
                         return (
                           <div
                             key={`${card.design}-${card.value}`}
-                            className={`transition-all ${
-                              inBest ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse' : ''
-                            } ${dim ? 'opacity-50' : ''}`}
+                            className={`transition-all ${ring} ${dim ? 'opacity-50' : ''}`}
                             data-best5-hole={inBest || undefined}
+                            data-testid={inLo ? 'bigohilo-lo-card' : undefined}
                           >
                             <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
                           </div>

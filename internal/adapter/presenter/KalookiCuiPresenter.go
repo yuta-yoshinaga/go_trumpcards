@@ -86,6 +86,9 @@ func (p *KalookiCuiPresenter) Output(g interfaces.KalookiGame, lastErr error) st
 			currentIdx := g.GetCurrentPlayerIdx()
 			b.WriteString(i18n.Tf("kalooki.promptMeld",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
+			if cur := g.GetPlayer(currentIdx); cur != nil && !cur.HasOpened() {
+				b.WriteString(i18n.Tf("kalooki.openingHint", "n", strconv.Itoa(g.GetOpeningThreshold())) + "\n")
+			}
 			b.WriteString(i18n.T("kalooki.promptMeldHelpMeld") + "\n")
 			b.WriteString(i18n.T("kalooki.promptMeldHelpLayoff") + "\n")
 			b.WriteString(i18n.T("kalooki.promptMeldHelpDiscard") + "\n")

@@ -12,6 +12,28 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// baccaratHistoryMaxShown caps the trailing run of results rendered in the CUI
+// so a long shoe does not overflow the terminal line.
+const baccaratHistoryMaxShown = 30
+
+// baccaratHistorySymbols maps the big-road history to a P/B/T symbol string.
+func baccaratHistorySymbols(history []int) string {
+	syms := make([]string, len(history))
+	for i, r := range history {
+		switch r {
+		case domain.BaccaratResultPlayer:
+			syms[i] = "P"
+		case domain.BaccaratResultBanker:
+			syms[i] = "B"
+		case domain.BaccaratResultTie:
+			syms[i] = "T"
+		default:
+			syms[i] = "?"
+		}
+	}
+	return strings.Join(syms, " ")
+}
+
 // BaccaratCuiPresenter バカラCUIプレゼンタークラス
 type BaccaratCuiPresenter struct {
 }
@@ -70,6 +92,14 @@ func (bp *BaccaratCuiPresenter) Output(b interfaces.BaccaratGame, lastErr error)
 		}
 		sb.WriteString(i18n.Tf("baccarat.payoutLine", "payout", strconv.Itoa(b.GetPayout())) + "\n")
 		sb.WriteString("----------\n")
+	}
+
+	// Big-road history (also useful while betting); skip when empty.
+	if history := b.GetHistory(); len(history) > 0 {
+		if len(history) > baccaratHistoryMaxShown {
+			history = history[len(history)-baccaratHistoryMaxShown:]
+		}
+		sb.WriteString(i18n.Tf("baccarat.historyHeader", "symbols", baccaratHistorySymbols(history)) + "\n")
 	}
 
 	return sb.String()

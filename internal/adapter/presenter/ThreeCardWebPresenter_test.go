@@ -54,6 +54,17 @@ func TestThreeCardWebPresenter_Output_BetPhase(t *testing.T) {
 	assert.Empty(t, result.Message)
 }
 
+func TestThreeCardWebPresenter_HintOutput(t *testing.T) {
+	p := new(ThreeCardWebPresenter)
+	m := new(interfaces.MockThreeCardGame)
+	setupThreeCardWebMockDefaults(m)
+
+	// HintOutput mirrors Output (the GUI computes its own hint client-side).
+	result := parseThreeCardOutput(t, p.HintOutput(m))
+	assert.Equal(t, domain.ThreeCardPhaseBet, result.Phase)
+	assert.Equal(t, 1000, result.Chips)
+}
+
 func TestThreeCardWebPresenter_Output_Error(t *testing.T) {
 	p := new(ThreeCardWebPresenter)
 	m := new(interfaces.MockThreeCardGame)

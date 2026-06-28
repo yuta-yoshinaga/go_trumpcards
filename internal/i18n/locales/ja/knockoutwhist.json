@@ -14,6 +14,8 @@
   "promptTrickEndHelp": "n / next・・・次のトリックへ",
   "promptRoundEnd": "ラウンド終了（残り{{active}}人）",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ（0トリックのプレイヤーはDogboneを消費／使い切ると脱落。手札は1枚ずつ減る）",
+  "promptTrumpSelect": "{{name}} がラウンド勝者です。次ラウンドの切り札を選んでください。",
+  "promptTrumpSelectHelp": "st <1-4>・・・切り札を選択 (1=♠ 2=♣ 3=♥ 4=♦)",
   "hintNone": "ヒントはありません。",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
   "hintReasonLeadHigh": "高い札でリードしてトリックを取りにいく",

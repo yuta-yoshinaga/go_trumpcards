@@ -5,6 +5,8 @@
   "helpGiveUp": "  g                        ギブアップ",
   "helpHint": "  h                        ヒント",
   "tableauCard": "({{row}},{{col}}){{card}}",
+  "playableCard": "({{row}},{{col}}){{card}}*",
+  "blockedCard": "[--]{{card}}",
   "stockLine": "Stock: {{count}}枚",
   "wasteCard": " | Waste: {{card}}",
   "wasteEmpty": " | Waste: [空]",

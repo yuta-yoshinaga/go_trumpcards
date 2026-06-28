@@ -31,6 +31,8 @@
   "playButton": "Play",
   "declareMarriage": "Marriage {{suit}}",
   "declareTute": "Declare Tute",
+  "declarationsLabel": "Available declarations",
+  "tuteHelp": "Tute: declare when you hold all four Kings (or all four Queens) for a large bonus.",
   "nextTrick": "Next Trick",
   "nextRound": "Next Round",
   "roundResult": {

@@ -17,6 +17,7 @@
     "pileCount": "Pile: {{count}}",
     "chanceRemaining": "Chances left: {{count}}"
   },
+  "chanceResponder": "Responding: {{player}}",
   "settings": {
     "cpuDifficulty": "CPU difficulty",
     "difficulty": {

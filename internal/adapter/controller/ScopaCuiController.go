@@ -32,7 +32,7 @@ func (c *ScopaCuiController) Exec(command string) string {
 			return c.si.ResetWithConfig(cfg)
 		},
 		[]string{
-			"play", "p", "next", "n", "sd", "setdifficulty", "log", "l",
+			"play", "p", "next", "n", "sd", "setdifficulty", "h", "hint", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -47,7 +47,7 @@ func (c *ScopaCuiController) Exec(command string) string {
 					return c.si.ResetWithConfig(cfg)
 				})
 			default:
-				return handleCuiLog(cmd, c.si.ActionLog)
+				return handleCuiHintAndLog(cmd, c.si.Hint, c.si.ActionLog)
 			}
 		},
 	)

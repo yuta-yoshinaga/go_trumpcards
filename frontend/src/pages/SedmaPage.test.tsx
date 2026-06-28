@@ -94,4 +94,16 @@ describe('SedmaPage', () => {
     await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
   });
+
+  it('colour-codes the player list by 2-vs-2 team', async () => {
+    renderWithProviders(<SedmaPage />);
+    await waitFor(() => expect(screen.getByTestId('sedma-player-0')).toBeInTheDocument());
+    // Even ids → team A (blue), odd ids → team B (red).
+    expect(screen.getByTestId('sedma-player-0')).toHaveAttribute('data-team', '0');
+    expect(screen.getByTestId('sedma-player-0')).toHaveClass('border-ds-info');
+    expect(screen.getByTestId('sedma-player-2')).toHaveAttribute('data-team', '0');
+    expect(screen.getByTestId('sedma-player-1')).toHaveAttribute('data-team', '1');
+    expect(screen.getByTestId('sedma-player-1')).toHaveClass('border-ds-error');
+    expect(screen.getByTestId('sedma-player-3')).toHaveAttribute('data-team', '1');
+  });
 });

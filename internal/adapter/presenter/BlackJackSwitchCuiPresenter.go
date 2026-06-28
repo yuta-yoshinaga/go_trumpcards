@@ -130,10 +130,10 @@ func (bp *BlackJackSwitchCuiPresenter) phaseStr(phase int) string {
 func (bp *BlackJackSwitchCuiPresenter) resultStr(r domain.GameResult) string {
 	switch r {
 	case domain.GameResultWin:
-		return i18n.T("blackjackswitch.resultWin")
+		return i18n.T("blackjackswitch.handWin")
 	case domain.GameResultDraw:
-		return i18n.T("blackjackswitch.resultDraw")
+		return i18n.T("blackjackswitch.handDraw")
 	default:
-		return i18n.T("blackjackswitch.resultLose")
+		return i18n.T("blackjackswitch.handLose")
 	}
 }

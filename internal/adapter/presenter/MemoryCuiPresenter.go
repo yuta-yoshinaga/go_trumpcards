@@ -21,6 +21,10 @@ func memoryCellStr(bc *domain.MemoryBoardCard, pos int) string {
 	if bc.FaceUp {
 		return fmt.Sprintf("[%2d]%-10s", pos, cuiCardStr(bc.Card))
 	}
+	// Face-down: distinguish previously-seen cells (*?) from unseen ones (??).
+	if bc.Visited {
+		return fmt.Sprintf("[%2d]%-10s", pos, "*?")
+	}
 	return fmt.Sprintf("[%2d]%-10s", pos, "??")
 }
 
@@ -52,6 +56,7 @@ func (p *MemoryCuiPresenter) Output(m interfaces.MemoryGame, lastErr error) stri
 			b.WriteString("\n")
 		}
 
+		b.WriteString(i18n.T("memory.visitedLegend") + "\n")
 		b.WriteString("----------\n")
 
 		cuiErrorBlock(b, lastErr)

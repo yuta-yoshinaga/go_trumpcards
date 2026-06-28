@@ -7,5 +7,6 @@
   "currentCard": "Current card: {{card}}",
   "currentCardNone": "Current card: (none)",
   "placedLine": "Placed: {{placed}}/{{total}}  Total score: {{score}}",
+  "cuiPlaceHint": "Place a card: p <row> <col> or place <row> <col> (0-based, e.g. p 2 3)",
   "gameComplete": "Game complete! Total score: {{score}}"
 }

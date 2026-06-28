@@ -64,6 +64,46 @@ describe('MariasPage', () => {
     expect(screen.getByText('ソリスト')).toBeInTheDocument();
   });
 
+  it('shows a marriage banner during play (trump-suit K-Q scores +40)', async () => {
+    // Default hand: ♥K + ♥Q with trump ♥ → a +40 marriage.
+    renderWithProviders(<MariasPage />);
+    const banner = await screen.findByTestId('marias-marriage');
+    expect(banner).toHaveTextContent('マリッジ可能');
+    expect(banner).toHaveTextContent('♥ K-Q (+40)');
+  });
+
+  it('labels a non-trump marriage as +20', async () => {
+    mockExec.mockResolvedValue(makeMariasState({ trumpSuit: 1 })); // trump ♠, ♥ K-Q now +20
+    renderWithProviders(<MariasPage />);
+    await waitFor(() => expect(screen.getByTestId('marias-marriage')).toHaveTextContent('♥ K-Q (+20)'));
+  });
+
+  it('shows no marriage banner when the hand has no K-Q pair', async () => {
+    mockExec.mockResolvedValue(
+      makeMariasState({
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 2,
+            cards: [
+              { design: 'HEART', value: 13 },
+              { design: 'SPADE', value: 12 },
+            ],
+            trickCount: 0,
+            score: 0,
+            isSoloist: true,
+          },
+          { id: 1, isHuman: false, cardCount: 10, cards: [], trickCount: 0, score: 0, isSoloist: false },
+          { id: 2, isHuman: false, cardCount: 10, cards: [], trickCount: 0, score: 0, isSoloist: false },
+        ],
+      }),
+    );
+    renderWithProviders(<MariasPage />);
+    await waitFor(() => expect(screen.getByAltText('♥ K')).toBeInTheDocument());
+    expect(screen.queryByTestId('marias-marriage')).not.toBeInTheDocument();
+  });
+
   it('selecting a card then playing dispatches play', async () => {
     renderWithProviders(<MariasPage />);
     const card = await screen.findByAltText('♥ Q');

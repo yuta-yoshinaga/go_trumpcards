@@ -324,7 +324,14 @@ function DoppelkopfPageContent() {
                 </button>
               )}
               {state.canAnnounce && (
-                <button type="button" className={btnSecondary} onClick={handleAnnounce} disabled={loading}>
+                <button
+                  type="button"
+                  className={btnSecondary}
+                  onClick={handleAnnounce}
+                  disabled={loading}
+                  aria-label={`${announceLabel} — ${t('announceDescription')}`}
+                  title={t('announceDescription')}
+                >
                   {announceLabel}
                 </button>
               )}

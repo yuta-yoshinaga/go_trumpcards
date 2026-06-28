@@ -25,7 +25,9 @@ import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { TichuResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { tichuBombIndices } from '../utils/tichuBomb';
 
 type ApiArgs = {
   command: string;
@@ -141,6 +143,7 @@ function TichuPageContent() {
   const isHumanTurn = state ? state.currentTurn === humanIdx : false;
   const humanPlayer = state?.players?.[humanIdx];
   const humanTeam = humanPlayer?.team ?? 0;
+  const bombIndices = useMemo(() => tichuBombIndices(humanPlayer?.cards ?? []), [humanPlayer?.cards]);
   const humanWon = isGameEnd && !!state && state.scores[humanTeam] > state.scores[1 - humanTeam];
 
   useEffect(() => {
@@ -289,21 +292,36 @@ function TichuPageContent() {
           {humanPlayer && (phase === 'play' || phase === 'declare') && (
             <div data-tutorial="tichu-hand">
               <div className="flex flex-wrap justify-center gap-1">
-                {humanPlayer.cards.map((c, i) => (
-                  <button
-                    key={`hand-${c.design}-${c.value}-${i}`}
-                    type="button"
-                    className={
-                      selectedCards.has(i)
-                        ? 'transition-transform -translate-y-2 ring-2 ring-ds-warning rounded'
-                        : 'transition-transform'
-                    }
-                    onClick={() => toggleCard(i)}
-                    disabled={phase !== 'play'}
-                  >
-                    <AnimatedCard card={c} width={cardWidth * 0.9} />
-                  </button>
-                ))}
+                {humanPlayer.cards.map((c, i) => {
+                  const isBomb = bombIndices.has(i);
+                  return (
+                    <button
+                      key={`hand-${c.design}-${c.value}-${i}`}
+                      type="button"
+                      className={`relative ${
+                        selectedCards.has(i)
+                          ? 'transition-transform -translate-y-2 ring-2 ring-ds-warning rounded'
+                          : isBomb
+                            ? 'transition-transform ring-2 ring-ds-error rounded'
+                            : 'transition-transform'
+                      }`}
+                      onClick={() => toggleCard(i)}
+                      disabled={phase !== 'play'}
+                      aria-label={isBomb ? t('bombCardAriaLabel', { card: cardAlt(c) }) : cardAlt(c)}
+                    >
+                      <AnimatedCard card={c} width={cardWidth * 0.9} />
+                      {isBomb && (
+                        <span
+                          className="absolute -top-1 -right-1 text-[10px] rounded-full bg-ds-error px-1 text-ds-text-on-accent"
+                          aria-hidden="true"
+                          data-testid={`tichu-bomb-badge-${i}`}
+                        >
+                          💣
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
               {phase === 'play' && isHumanTurn && (
                 <div className="flex justify-center gap-2 mt-2">

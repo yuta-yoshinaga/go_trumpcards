@@ -63,6 +63,19 @@ func (p *ThirtyOneCuiPresenter) Output(g interfaces.ThirtyOneGame, lastErr error
 			return
 		}
 
+		// The best-suit total is the win condition (31), so surface the human's
+		// running total and announce a knock (which makes the round's last turn).
+		for i := 0; i < g.GetPlayerCnt(); i++ {
+			if hp := g.GetPlayer(i); hp.GetIsHuman() {
+				b.WriteString(i18n.Tf("thirtyone.yourBestSuit", "score", strconv.Itoa(hp.BestSuitScore())) + "\n")
+				break
+			}
+		}
+		if knocker := g.GetKnockerIdx(); knocker >= 0 {
+			b.WriteString(color.Yellow(i18n.Tf("thirtyone.knockNotice",
+				"name", cuiPlayerName(g.GetPlayer(knocker), knocker))) + "\n")
+		}
+
 		switch g.GetPhase() {
 		case domain.ThirtyOnePhaseDraw:
 			idx := g.GetCurrentPlayerIdx()

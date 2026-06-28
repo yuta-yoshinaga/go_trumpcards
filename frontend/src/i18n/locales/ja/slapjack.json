@@ -30,6 +30,10 @@
     "burst": {
       "jack": "ジャック！",
       "miss": "ミス！"
+    },
+    "slapAnnounce": {
+      "correct": "スラップ成功（{{player}}）",
+      "wrong": "お手つき（{{player}}）"
     }
   },
   "hint": {

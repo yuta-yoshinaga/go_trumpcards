@@ -29,6 +29,7 @@
   "bidPass": "Pass",
   "currentTrick": "Current Trick",
   "trumpSuit": "Trump",
+  "faceProgress": "Face cards {{collected}}/{{bid}}",
   "adjutantCard": "Adjutant Card",
   "adjutantNone": "None",
   "role": {

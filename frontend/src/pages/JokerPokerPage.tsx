@@ -5,22 +5,6 @@ import { VIDEO_POKER_TUTORIAL_STEPS } from '../constants/videoPokerTutorial';
 import { JOKERPOKER_HELP, parseJokerpokerCommand } from '../utils/cli/commands/jokerpokerCommands';
 import { formatJokerpokerState } from '../utils/cli/formatters/jokerpokerFormatter';
 
-/** Joker Poker payout table rows. */
-const JP_PAYOUT_ROWS = [
-  'naturalRoyalFlush5',
-  'naturalRoyalFlush',
-  'fiveOfAKind',
-  'wildRoyalFlush',
-  'straightFlush',
-  'fourOfAKind',
-  'fullHouse',
-  'flush',
-  'straight',
-  'threeOfAKind',
-  'twoPair',
-  'kingsOrBetter',
-];
-
 const CLI_GAME_CONFIG = {
   parseCommand: parseJokerpokerCommand,
   formatResponse: formatJokerpokerState,
@@ -33,7 +17,6 @@ function JokerPokerPageContent() {
       gameName="jokerpoker"
       i18nNamespace="jokerpoker"
       apiExec={jokerpokerApi.exec}
-      payoutTableRows={JP_PAYOUT_ROWS}
       gamePath="/jokerpoker"
       cliGameConfig={CLI_GAME_CONFIG}
     />

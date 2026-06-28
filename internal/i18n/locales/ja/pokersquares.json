@@ -7,5 +7,6 @@
   "currentCard": "手持ちカード: {{card}}",
   "currentCardNone": "手持ちカード: (なし)",
   "placedLine": "配置済み: {{placed}}/{{total}}  合計得点: {{score}}",
+  "cuiPlaceHint": "カードを置く: p <行> <列> または place <行> <列> (0始まり, 例 p 2 3)",
   "gameComplete": "ゲーム終了 合計得点: {{score}}"
 }

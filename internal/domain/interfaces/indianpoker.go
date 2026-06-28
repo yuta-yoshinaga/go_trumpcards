@@ -14,6 +14,8 @@ type IndianPokerGame interface {
 	PlayerAction(action, amount, humanPlayMs int) error
 	// GetPhase 現在のフェーズを取得する
 	GetPhase() int
+	// GetEstimatedStrength は player idx の推定勝率 (0-100) を返す
+	GetEstimatedStrength(idx int) int
 	// GetPlayers プレイヤー一覧を取得する
 	GetPlayers() []*domain.IndianPokerPlayer
 	// GetPlayer 指定インデックスのプレイヤーを取得する

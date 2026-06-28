@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -136,6 +137,73 @@ func barbuTrumpLabel(suit int) string {
 		return "-"
 	}
 	return suitNames[suit]
+}
+
+// barbuLegalTrickIndices returns the hand positions the player may legally play
+// in a trick contract: cards of the lead suit, or the whole hand when leading
+// or void in the lead suit.
+func barbuLegalTrickIndices(player *domain.BarbuPlayer, trick []*domain.BarbuTrickCard) []int {
+	cardsSize := player.GetCardsSize()
+	makeAll := func() []int {
+		all := make([]int, cardsSize)
+		for i := range all {
+			all[i] = i
+		}
+		return all
+	}
+	// Find the lead card defensively: a malformed/empty trick falls back to
+	// "all cards legal" rather than dereferencing a nil entry.
+	var leadCard *domain.Card
+	for _, tc := range trick {
+		if tc != nil && tc.Card != nil {
+			leadCard = tc.Card
+			break
+		}
+	}
+	if leadCard == nil {
+		return makeAll()
+	}
+	leadSuit := leadCard.GetDesign()
+	follow := make([]int, 0, cardsSize)
+	for i := 0; i < cardsSize; i++ {
+		if c := player.GetCard(i); c != nil && c.GetDesign() == leadSuit {
+			follow = append(follow, i)
+		}
+	}
+	if len(follow) == 0 {
+		return makeAll()
+	}
+	return follow
+}
+
+// HintOutput emits a play recommendation for the human's turn: the playable
+// hand positions for the Dominoes contract (via GetDominoPlayableIndices) or
+// the legal follow-suit plays for a trick contract.
+func (p *BarbuCuiPresenter) HintOutput(bg interfaces.BarbuGame) string {
+	if bg.GetPhase() != domain.BarbuPhasePlay {
+		return i18n.T("barbu.hintNone") + "\n"
+	}
+	turn := bg.GetCurrentTurn()
+	player := bg.GetPlayer(turn)
+	if player == nil || !player.GetIsHuman() {
+		return i18n.T("barbu.hintNone") + "\n"
+	}
+	idxStr := func(idxs []int) string {
+		parts := make([]string, len(idxs))
+		for i, idx := range idxs {
+			parts[i] = "[" + strconv.Itoa(idx) + "]"
+		}
+		return strings.Join(parts, " ")
+	}
+	if bg.GetCurrentContract() == domain.BarbuContractDominoes {
+		playable := bg.GetDominoPlayableIndices(turn)
+		if len(playable) == 0 {
+			return color.Yellow(i18n.T("barbu.hintDominoPass")) + "\n"
+		}
+		return color.Yellow(i18n.Tf("barbu.hintDomino", "cards", idxStr(playable))) + "\n"
+	}
+	legal := barbuLegalTrickIndices(player, bg.GetCurrentTrick())
+	return color.Yellow(i18n.Tf("barbu.hintLegal", "cards", idxStr(legal))) + "\n"
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

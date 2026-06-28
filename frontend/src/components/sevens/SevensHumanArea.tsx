@@ -36,6 +36,23 @@ function HumanArea({
 }: HumanAreaProps) {
   const { t } = useTranslation('sevens');
   const { cardWidth } = useCardDimensions();
+  // Whether the human has at least one legal move this turn (cards or a joker placement).
+  const anyPlayable =
+    isCurrentTurn &&
+    !loading &&
+    (player.cards ?? []).some((card) =>
+      isCardPlayable(
+        card,
+        tablePlaced,
+        tunnelEnabled,
+        noJokerFinish,
+        player.cards,
+        endStopEnabled,
+        jokerConsecutiveBanned,
+        player.lastPlayedJoker,
+        tunnelSkipWidth,
+      ),
+    );
   const conditionalClass = player.isFinished
     ? 'opacity-50'
     : isCurrentTurn
@@ -55,7 +72,14 @@ function HumanArea({
             used: player.passesUsed,
             max: player.maxPasses === 0 ? t('passUnlimited') : player.maxPasses,
           })}
-          {isCurrentTurn && <span className="ml-2 text-game-text-highlight">{t('clickPlayable')}</span>}
+          {isCurrentTurn &&
+            (anyPlayable ? (
+              <span className="ml-2 text-game-text-highlight">{t('clickPlayable')}</span>
+            ) : (
+              <span className="ml-2 text-ds-warning" data-testid="sv-must-pass">
+                {t('mustPass')}
+              </span>
+            ))}
         </div>
       )}
       <div className="flex flex-wrap gap-1">

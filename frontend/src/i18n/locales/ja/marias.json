@@ -16,6 +16,7 @@
   "round": "ラウンド {{n}}",
   "trick": "トリック {{n}}",
   "trump": "切り札: {{suit}}",
+  "marriageAvailable": "マリッジ可能: {{list}}",
   "cards": "{{count}}枚",
   "tricks": "{{count}}トリック",
   "currentTrick": "現在のトリック",

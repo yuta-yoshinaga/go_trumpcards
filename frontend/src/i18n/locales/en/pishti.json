@@ -5,6 +5,8 @@
   "playersTitle": "Players",
   "captured": "captured {{count}}",
   "pisti": "Pişti {{count}}",
+  "pistiCelebration": "PİŞTİ +10!",
+  "pistiCelebrationJack": "PİŞTİ +20! (J)",
   "finalScore": "{{score}} pts",
   "pile": "Pile",
   "pileTop": "Pile top",

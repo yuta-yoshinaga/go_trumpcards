@@ -144,8 +144,40 @@ describe('Rummy500Page', () => {
     renderWithProviders(<Rummy500Page />);
     const meldBtn = await screen.findByTestId('layoff-meld-1-0');
     expect(meldBtn).toHaveAttribute('aria-pressed', 'false');
+
+    // Before selecting, the footer shows the "click a meld" hint and Lay off is disabled.
+    expect(screen.getByTestId('r5-layoff-target')).toHaveTextContent(/上のメルドをクリック/);
+    expect(screen.getByRole('button', { name: 'レイオフ' })).toBeDisabled();
+
     fireEvent.click(meldBtn);
     await waitFor(() => expect(screen.getByTestId('layoff-meld-1-0')).toHaveAttribute('aria-pressed', 'true'));
+    // The selected meld is now described in the footer text.
+    expect(screen.getByTestId('r5-layoff-target')).toHaveTextContent('#0');
+
+    // Clicking the same meld again toggles the selection off.
+    fireEvent.click(screen.getByTestId('layoff-meld-1-0'));
+    await waitFor(() => expect(screen.getByTestId('layoff-meld-1-0')).toHaveAttribute('aria-pressed', 'false'));
+    expect(screen.getByTestId('r5-layoff-target')).toHaveTextContent(/上のメルドをクリック/);
+    // Re-select for the lay-off flow below.
+    fireEvent.click(screen.getByTestId('layoff-meld-1-0'));
+    await waitFor(() => expect(screen.getByTestId('layoff-meld-1-0')).toHaveAttribute('aria-pressed', 'true'));
+    // Still disabled until exactly one hand card is chosen.
+    expect(screen.getByRole('button', { name: 'レイオフ' })).toBeDisabled();
+
+    const handCard = document.querySelector('[data-tutorial="r5-player-hand"] button') as HTMLButtonElement;
+    fireEvent.click(handCard);
+    const layoffBtn = screen.getByRole('button', { name: 'レイオフ' });
+    await waitFor(() => expect(layoffBtn).toBeEnabled());
+
+    mockExec.mockClear();
+    fireEvent.click(layoffBtn);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('layoff', undefined, undefined, undefined, undefined, {
+        meldOwner: 1,
+        meldIdx: 0,
+        cardIndex: 0,
+      }),
+    );
   });
 
   it('shows next round button in RoundEnd phase', async () => {

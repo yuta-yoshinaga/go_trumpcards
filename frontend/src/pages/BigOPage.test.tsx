@@ -366,6 +366,29 @@ describe('BigOPage', () => {
     await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
   });
 
+  it('labels the used hole cards (2) and the unused ones at showdown', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<BigOPage />);
+    await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
+    // Omaha-style: exactly 2 hole cards are used; the rest are labeled unused.
+    expect(screen.getAllByTestId('bigo-hole-used').length).toBe(2);
+    expect(screen.getAllByTestId('bigo-hole-unused').length).toBeGreaterThan(0);
+  });
+
+  it('omits used/unused labels when the human has folded', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      players: [
+        humanPlayer({ handName: 'ワンペア', folded: true }),
+        showdownState.players[1],
+        showdownState.players[2],
+      ],
+    });
+    renderWithProviders(<BigOPage />);
+    await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
+    expect(screen.queryByTestId('bigo-hole-used')).not.toBeInTheDocument();
+  });
+
   it('highlights exactly 2 hole + 3 board cards as the best-5 at showdown', async () => {
     mockExec.mockResolvedValue(showdownState);
     const { container } = renderWithProviders(<BigOPage />);

@@ -27,21 +27,11 @@ import { gameTheme } from '../styles/gameTheme';
 import type { DragonTigerResponse } from '../types/card';
 import { DragonTigerBetType, DragonTigerHistoryResult, DragonTigerPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { DRAGONTIGER_CLI_HELP, parseDragonTigerCommand } from '../utils/cli/commands/dragontigerCommands';
+import { formatDragonTigerState } from '../utils/cli/formatters/dragontigerFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 
 const DT_TUTORIAL_STEPS: TutorialStep[] = [];
-
-const DRAGONTIGER_CLI_HELP: string[] = [];
-
-/** Stub CLI parser — Dragon Tiger doesn't ship CLI commands yet (per checklist item 11 minimum). */
-function parseDragonTigerCommand(): { error: string } {
-  return { error: 'CLI commands are not yet implemented for Dragon Tiger.' };
-}
-
-/** Stub formatter — used only when CLI mode is enabled. */
-function formatDragonTigerState(_state: DragonTigerResponse | null): string {
-  return 'CLI mode is not implemented for Dragon Tiger.';
-}
 
 /** Renders the Dragon Tiger game page (#1684). */
 export const DragonTigerPage = withTutorial(DragonTigerPageContent, 'dragontiger', DT_TUTORIAL_STEPS);

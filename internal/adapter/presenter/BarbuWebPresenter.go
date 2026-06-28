@@ -154,6 +154,13 @@ func (bwp *BarbuWebPresenter) buildResultMessage(bg interfaces.BarbuGame) string
 }
 
 // ActionLogOutput は棋譜を JSON 出力する。
+// HintOutput returns the current state as JSON. The Web GUI computes its own
+// hint client-side, so this mirrors Output to satisfy the BarbuPresenter
+// interface shared with the CUI.
+func (bwp *BarbuWebPresenter) HintOutput(bg interfaces.BarbuGame) string {
+	return bwp.Output(bg, nil)
+}
+
 func (bwp *BarbuWebPresenter) ActionLogOutput(bg interfaces.BarbuGame) string {
 	return actionLogOutputJSON(bg)
 }

@@ -62,6 +62,13 @@ func (tp *ThreeCardWebPresenter) Output(tc interfaces.ThreeCardGame, lastErr err
 	return marshalOrError(resObj)
 }
 
+// HintOutput returns the current game state as JSON. The Web GUI computes its
+// own play/fold hint client-side (useGameHint), so this simply mirrors Output;
+// it exists to satisfy the ThreeCardPresenter interface shared with the CUI.
+func (tp *ThreeCardWebPresenter) HintOutput(tc interfaces.ThreeCardGame) string {
+	return tp.Output(tc, nil)
+}
+
 // ActionLogOutput 棋譜をJSON出力
 func (tp *ThreeCardWebPresenter) ActionLogOutput(tc interfaces.ThreeCardGame) string {
 	return actionLogOutputJSON(tc)

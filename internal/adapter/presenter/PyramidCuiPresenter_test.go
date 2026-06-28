@@ -11,6 +11,16 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
+// addPyramidExposedExpectations marks only the bottom row as exposed, so tests
+// exercise both the exposed (coordinate) and blocked ([--]) card formats.
+func addPyramidExposedExpectations(pg *interfaces.MockPyramidGame) {
+	for row := range domain.PyramidRowCnt {
+		for col := range row + 1 {
+			pg.On("IsExposed", row, col).Return(row == domain.PyramidRowCnt-1).Maybe()
+		}
+	}
+}
+
 func setupPyramidCuiMock() *interfaces.MockPyramidGame {
 	pg := new(interfaces.MockPyramidGame)
 	pg.On("GetPhase").Return(domain.PyramidPhasePlaying).Maybe()
@@ -18,6 +28,7 @@ func setupPyramidCuiMock() *interfaces.MockPyramidGame {
 	pg.On("GetStockCount").Return(24).Maybe()
 	pg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	pg.On("IsStalemate").Return(false).Maybe()
+	addPyramidExposedExpectations(pg)
 
 	var pyramid [domain.PyramidRowCnt][]*domain.PyramidCard
 	for row := range domain.PyramidRowCnt {
@@ -41,6 +52,20 @@ func TestPyramidCuiPresenterOutput_Playing(t *testing.T) {
 	assert.Contains(t, result, "Pyramid")
 	assert.Contains(t, result, "Stock: 24枚")
 	assert.Contains(t, result, "手数: 0")
+}
+
+func TestPyramidCuiPresenterOutput_ExposedVsBlocked(t *testing.T) {
+	pg := setupPyramidCuiMock()
+	p := &PyramidCuiPresenter{}
+
+	result := p.Output(pg, nil)
+	// Exposed bottom-row cards keep their (row,col) coordinate prefix.
+	assert.Contains(t, result, "(6,0)")
+	// Blocked upper-row cards hide coordinates behind the [--] marker.
+	assert.Contains(t, result, "[--]")
+	// The apex (row 0) is never exposed while children remain, so its
+	// coordinate must not appear.
+	assert.NotContains(t, result, "(0,0)")
 }
 
 func TestPyramidCuiPresenterOutput_GameClear(t *testing.T) {
@@ -78,6 +103,7 @@ func TestPyramidCuiPresenterOutput_GameOver(t *testing.T) {
 	pg.On("GetStockCount").Return(0).Maybe()
 	pg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	pg.On("IsStalemate").Return(false).Maybe()
+	addPyramidExposedExpectations(pg)
 
 	var pyramid [domain.PyramidRowCnt][]*domain.PyramidCard
 	for row := range domain.PyramidRowCnt {
@@ -158,6 +184,7 @@ func TestPyramidCuiPresenterOutput_StalemateAndNonEmptyWaste(t *testing.T) {
 		domain.NewCard(domain.CardDesignSpade, 7, false),
 	}).Maybe()
 	pg.On("IsStalemate").Return(true).Maybe()
+	addPyramidExposedExpectations(pg)
 
 	var pyramid [domain.PyramidRowCnt][]*domain.PyramidCard
 	for row := range domain.PyramidRowCnt {

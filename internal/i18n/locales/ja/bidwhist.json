@@ -24,7 +24,7 @@
   "dirDowntown": "ダウンタウン",
   "dirNoTrump": "ノートランプ",
   "promptBid": "{{name}} のビッドです",
-  "promptBidHelp": "b <tricks> <dir> でビッド / pa でパス",
+  "promptBidHelp": "b <tricks> <dir> でビッド (tricks は 1-7) / pa でパス",
   "promptTrump": "切り札スートを宣言してください",
   "promptTrumpHelp": "t <suit> (1=S 2=C 3=H 4=D)",
   "promptKittyExchange": "キティを手札に加えました。6枚捨ててください",

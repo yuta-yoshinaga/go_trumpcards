@@ -94,6 +94,12 @@ describe('BakersGamePage', () => {
     expect(kElements.length).toBeGreaterThanOrEqual(1);
   });
 
+  it('labels empty tableau columns for screen readers', async () => {
+    renderWithProviders(<BakersGamePage />);
+    // playingState columns 2-7 are empty → each empty-column button is labelled.
+    await waitFor(() => expect(screen.getByLabelText('空のタブロー列 2（カードの移動先）')).toBeInTheDocument());
+  });
+
   // --- Foundation ---
 
   it('renders foundation piles with suit symbols', async () => {

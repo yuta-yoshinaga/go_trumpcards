@@ -329,7 +329,8 @@ describe('ShortDeckPage', () => {
   it('shows CPU hand name badge during showdown when not folded', async () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<ShortDeckPage />);
-    await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
+    // 'ツーペア' appears in the CPU badge and also in the always-present hand-rank reference.
+    await waitFor(() => expect(screen.getAllByText('ツーペア').length).toBeGreaterThanOrEqual(2));
   });
 
   it('appends the Short Deck rank-override marker to the human hand-name badge at showdown', async () => {
@@ -436,7 +437,18 @@ describe('ShortDeckPage', () => {
   it('shows human hand name badge during showdown when not folded', async () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<ShortDeckPage />);
-    await waitFor(() => expect(screen.getByText('ワンペア')).toBeInTheDocument());
+    // 'ワンペア' appears in the human badge and also in the always-present hand-rank reference.
+    await waitFor(() => expect(screen.getAllByText('ワンペア').length).toBeGreaterThanOrEqual(2));
+  });
+
+  it('shows the Short Deck hand-ranking reference with the flush>full-house note', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<ShortDeckPage />);
+    const ref = await screen.findByTestId('sd-handrank-reference');
+    expect(ref).toHaveTextContent('役の強さ');
+    expect(ref).toHaveTextContent('フラッシュ');
+    expect(ref).toHaveTextContent('フルハウス');
+    expect(ref).toHaveTextContent('6-7-8-9-A');
   });
 
   // ---- message ----

@@ -94,6 +94,13 @@ describe('FreeCellPage', () => {
     expect(kElements.length).toBeGreaterThanOrEqual(1);
   });
 
+  it('shows the bulk-move (supermove) limit derived from empty cells/columns', async () => {
+    // 4 empty free cells + 6 empty columns → (1+4) * 2^6 = 320.
+    renderWithProviders(<FreeCellPage />);
+    const limit = await screen.findByTestId('fc-supermove-limit');
+    expect(limit).toHaveTextContent('320');
+  });
+
   // --- Foundation ---
 
   it('renders foundation piles with suit symbols', async () => {
@@ -178,6 +185,26 @@ describe('FreeCellPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'オートコンプリート' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
+  });
+
+  it('shows the auto-complete-ready badge and pulses the button when the board is solvable', async () => {
+    // Single-card columns are trivially descending → deterministically winnable.
+    renderWithProviders(<FreeCellPage />);
+    const btn = await screen.findByRole('button', { name: 'オートコンプリート' });
+    expect(btn.className).toContain('animate-pulse');
+    expect(screen.getByTestId('freecell-autocomplete-ready-badge')).toBeInTheDocument();
+  });
+
+  it('does not pulse or show the badge when a column blocks auto-complete', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      // A higher rank stacked on a lower one cannot be auto-collected.
+      tableau: [[card('SPADE', 2), card('HEART', 5)], [], [], [], [], [], [], []],
+    });
+    renderWithProviders(<FreeCellPage />);
+    const btn = await screen.findByRole('button', { name: 'オートコンプリート' });
+    expect(btn.className).not.toContain('animate-pulse');
+    expect(screen.queryByTestId('freecell-autocomplete-ready-badge')).not.toBeInTheDocument();
   });
 
   it('give up button opens a confirm dialog and only dispatches giveup after confirm', async () => {

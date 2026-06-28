@@ -15,6 +15,16 @@ import (
 
 func bcard(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
 
+func TestBarbuWebPresenter_HintOutput(t *testing.T) {
+	b := domain.NewDefaultBarbu()
+	b.Reset()
+	p := new(presenter.BarbuWebPresenter)
+	// HintOutput mirrors Output (the GUI computes its own hint client-side).
+	var out controller.BarbuWebOutput
+	require.NoError(t, json.Unmarshal([]byte(p.HintOutput(b)), &out))
+	assert.Equal(t, domain.BarbuPhaseSelectContract, out.Phase)
+}
+
 func TestBarbuWebPresenter_Output(t *testing.T) {
 	b := domain.NewDefaultBarbu()
 	b.Reset()

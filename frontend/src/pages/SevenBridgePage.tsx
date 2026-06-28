@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import type { sevenBridgeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -12,6 +13,7 @@ import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -21,9 +23,13 @@ import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
+import type { SevenBridgeResponse } from '../types/card';
 import { SevenBridgePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { parseSevenBridgeCommand, SEVENBRIDGE_HELP } from '../utils/cli/commands/sevenBridgeCommands';
+import { formatSevenBridgeState } from '../utils/cli/formatters/sevenBridgeFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 
 const SEVENBRIDGE_PHASE_KEYS: Readonly<Record<number, string>> = {
@@ -91,7 +97,17 @@ function SevenBridgePageContent() {
   } = useGameHint('sevenbridge', state);
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
-  const { cliEnabled, toggleCli, logEntries } = useCliMode('sevenbridge');
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('sevenbridge');
+  const cliConfig: CliGameConfig<SevenBridgeResponse, Parameters<typeof sevenBridgeApi.exec>> = useMemo(
+    () => ({
+      gameName: 'sevenbridge',
+      parseCommand: parseSevenBridgeCommand,
+      formatResponse: formatSevenBridgeState,
+      helpText: SEVENBRIDGE_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(callApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const phaseNames = usePhaseNames('sevenbridge', SEVENBRIDGE_PHASE_KEYS);
 
@@ -133,7 +149,7 @@ function SevenBridgePageContent() {
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
       {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={async () => undefined} disabled={loading} />
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
           <SettingsPanel

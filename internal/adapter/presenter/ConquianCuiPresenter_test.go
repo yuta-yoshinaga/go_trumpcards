@@ -32,6 +32,7 @@ func setupConquianCuiMock(phase domain.ConquianPhase, ended bool, winner int) (*
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetWinnerIdx").Return(winner)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	m.On("GetTookDiscard").Return(false)
 	m.On("GetPlayerCnt").Return(2)
 	m.On("GetPlayer", 0).Return(players[0])
 	m.On("GetPlayer", 1).Return(players[1])
@@ -63,6 +64,17 @@ func TestConquianCuiPresenter_Output(t *testing.T) {
 		})
 		result := p.Output(m, nil)
 		assert.NotEmpty(t, result)
+		// No discard taken → no forced-use warning.
+		assert.NotContains(t, result, "必ず")
+	})
+
+	t.Run("forced-use warning shown after taking a discard", func(t *testing.T) {
+		m, _ := setupConquianCuiMock(domain.ConquianPhaseMeld, false, -1)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTookDiscard")
+		m.On("GetTookDiscard").Return(true)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "必ず")
 	})
 
 	t.Run("discard top is displayed", func(t *testing.T) {

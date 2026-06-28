@@ -241,6 +241,10 @@ function MonteCarloPageContent() {
                       // `isAdjOfSelected` already requires `filled`, so `cell.card` is non-null here.
                       const isMatchingPair =
                         isAdjOfSelected && selectedValue !== undefined && cell.card?.value === selectedValue;
+                      // Once a first card is picked, dim every filled card that is neither the
+                      // selection itself nor a legal (adjacent + same-rank) target, so the
+                      // removable pairs stand out.
+                      const dimmed = selected !== null && filled && !isSelected && !isMatchingPair;
                       const cellAction = `remove-${selected?.row ?? -1}-${selected?.col ?? -1}-${rowIdx}-${colIdx}`;
                       const isHintTarget =
                         frontendHintEnabled &&
@@ -266,15 +270,12 @@ function MonteCarloPageContent() {
                           onClick={() => handleCellClick(rowIdx, colIdx)}
                           disabled={!isPlaying || loading || !filled}
                           data-pair-match={isMatchingPair ? 'true' : undefined}
-                          className={`p-0 border-0 bg-transparent rounded transition-transform ${focusRingWhite} ${
+                          data-dimmed={dimmed ? 'true' : undefined}
+                          className={`p-0 border-0 bg-transparent rounded transition ${focusRingWhite} ${
                             filled ? 'cursor-pointer' : ''
                           } ${isSelected ? 'ring-2 ring-ds-accent' : ''} ${
-                            isMatchingPair
-                              ? 'ring-2 ring-ds-success animate-pulse -translate-y-1'
-                              : isAdjOfSelected
-                                ? 'opacity-60'
-                                : ''
-                          } ${isHintTarget ? 'ring-2 ring-ds-warning' : ''}`}
+                            isMatchingPair ? 'ring-2 ring-ds-success animate-pulse -translate-y-1' : ''
+                          } ${dimmed ? 'opacity-40' : ''} ${isHintTarget ? 'ring-2 ring-ds-warning' : ''}`}
                         >
                           {cell.card ? (
                             <AnimatedCard card={cell.card} width={cardWidth} />

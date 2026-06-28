@@ -1,16 +1,20 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { pineappleApi } from '../api/gameApi';
+import { crazyPineappleApi, irishPokerApi, pineappleApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { PineappleResponse } from '../types/card';
 import { PineapplePage } from './PineapplePage';
 
 vi.mock('../api/gameApi', () => ({
   pineappleApi: { exec: vi.fn() },
-  actionLogApi: { pineapple: vi.fn() },
+  irishPokerApi: { exec: vi.fn() },
+  crazyPineappleApi: { exec: vi.fn() },
+  actionLogApi: { pineapple: vi.fn(), irishpoker: vi.fn(), crazypineapple: vi.fn() },
 }));
 
 const mockExec = vi.mocked(pineappleApi.exec);
+const mockIrishExec = vi.mocked(irishPokerApi.exec);
+const mockCrazyExec = vi.mocked(crazyPineappleApi.exec);
 
 /** Helper: base human player */
 const humanPlayer = (overrides: Partial<import('../types/card').HoldemPlayerData> = {}) => ({
@@ -244,6 +248,190 @@ describe('PineapplePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', undefined, { cardIdxs: [0] }));
   });
 
+  it('previews the kept cards and tentative hand for Irish Poker discard', async () => {
+    const irishDiscardState: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 4,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 1 },
+            { design: 'DIAMOND', value: 5 },
+            { design: 'CLOVER', value: 8 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      discardDone: [false, true, true, true],
+    };
+    mockIrishExec.mockResolvedValue(irishDiscardState);
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+
+    // Discard ♦5 and ♣8, keeping the pair of Aces.
+    fireEvent.click(screen.getByAltText('♦ 5').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♣ 8').closest('button') as HTMLButtonElement);
+
+    const preview = await screen.findByTestId('irishpoker-discard-preview');
+    // Kept ♠A ♥A + board makes one pair.
+    expect(preview).toHaveTextContent('ワンペア');
+  });
+
+  it('evaluates the best five when the board has more than three cards', async () => {
+    const irishRiverState: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 4,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 1 },
+            { design: 'DIAMOND', value: 5 },
+            { design: 'CLOVER', value: 8 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      // Five board cards → kept(2) + board(5) = 7, so holdemBestFive picks the best 5.
+      communityCards: [
+        { design: 'SPADE', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+        { design: 'CLOVER', value: 2 },
+        { design: 'HEART', value: 9 },
+      ],
+      discardDone: [false, true, true, true],
+    };
+    mockIrishExec.mockResolvedValue(irishRiverState);
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♦ 5').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♣ 8').closest('button') as HTMLButtonElement);
+    const preview = await screen.findByTestId('irishpoker-discard-preview');
+    expect(preview).toHaveTextContent('ワンペア');
+  });
+
+  it('shows kept cards without a hand badge when the board is too small to evaluate', async () => {
+    const irishNoBoardState: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 4,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 1 },
+            { design: 'DIAMOND', value: 5 },
+            { design: 'CLOVER', value: 8 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [], // fewer than 3 board cards → no hand can be formed
+      discardDone: [false, true, true, true],
+    };
+    mockIrishExec.mockResolvedValue(irishNoBoardState);
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♦ 5').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♣ 8').closest('button') as HTMLButtonElement);
+    const preview = await screen.findByTestId('irishpoker-discard-preview');
+    // Kept cards are shown, but no tentative-hand badge.
+    expect(preview).toHaveTextContent('残す札');
+    expect(preview).not.toHaveTextContent('暫定役');
+  });
+
+  it('does not show the Irish Poker discard preview outside the discard phase', async () => {
+    mockIrishExec.mockResolvedValue({ ...preFlopState, initialDealCount: 4 });
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByText('あなたの手札')).toBeInTheDocument());
+    expect(screen.queryByTestId('irishpoker-discard-preview')).not.toBeInTheDocument();
+  });
+
+  it('annotates each Crazy Pineapple hole card with the keep-hand if discarded', async () => {
+    const crazyDiscardState: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 3,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 1 },
+            { design: 'DIAMOND', value: 5 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      discardDone: [false, true, true, true],
+    };
+    mockCrazyExec.mockResolvedValue(crazyDiscardState);
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    const labels = screen.getAllByTestId('cp-discard-candidate');
+    expect(labels).toHaveLength(3); // one per hole card
+    // Each keep makes at least a pair (Aces or fives), so a hand name is shown.
+    expect(labels[0]).toHaveTextContent('ワンペア');
+  });
+
+  it('omits Crazy Pineapple candidate labels when the board is too small to evaluate', async () => {
+    const crazyNoBoardState: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 3,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 1 },
+            { design: 'DIAMOND', value: 5 },
+          ],
+        }),
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [], // keep(2) + board(0) < 5 → no hand can be evaluated
+      discardDone: [false, true, true, true],
+    };
+    mockCrazyExec.mockResolvedValue(crazyNoBoardState);
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    expect(screen.queryByTestId('cp-discard-candidate')).not.toBeInTheDocument();
+  });
+
+  it('does not show Crazy Pineapple candidate labels outside the discard phase', async () => {
+    mockCrazyExec.mockResolvedValue({ ...preFlopState, initialDealCount: 3 });
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+    await waitFor(() => expect(screen.getByText('あなたの手札')).toBeInTheDocument());
+    expect(screen.queryByTestId('cp-discard-candidate')).not.toBeInTheDocument();
+  });
+
+  it('does not show the Irish Poker discard preview for the Pineapple variant', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    const cardButtons = screen.getAllByRole('button').filter((btn) => btn.getAttribute('aria-pressed') !== null);
+    fireEvent.click(cardButtons[0]);
+    expect(screen.queryByTestId('irishpoker-discard-preview')).not.toBeInTheDocument();
+  });
+
   it('cancels the discard confirm step and returns to selection', async () => {
     mockExec.mockResolvedValue(discardState);
     renderWithProviders(<PineapplePage />);
@@ -266,6 +454,28 @@ describe('PineapplePage', () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<PineapplePage />);
     await waitFor(() => expect(screen.getByText('ワンペア')).toBeInTheDocument());
+  });
+
+  it('highlights the winning best-5 cards at showdown', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByText('ワンペア')).toBeInTheDocument());
+    // 2 hole + 3 board cards form the best 5.
+    expect(screen.getAllByTestId('pn-best5-card').length).toBe(5);
+  });
+
+  it('does not highlight best-5 when the human has folded', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      players: [
+        humanPlayer({ handName: 'ワンペア', folded: true, cards: showdownState.players[0].cards }),
+        showdownState.players[1],
+        showdownState.players[2],
+      ],
+    });
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
+    expect(screen.queryByTestId('pn-best5-card')).not.toBeInTheDocument();
   });
 
   it('shows reset button and triggers reset flow', async () => {

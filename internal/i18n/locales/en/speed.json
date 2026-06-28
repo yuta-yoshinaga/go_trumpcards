@@ -10,6 +10,7 @@
   "centerCard": "[{{idx}}] {{card}} ",
   "hintLine": "[Hint] play card [{{ci}}] on center pile [{{pi}}]",
   "promptStuck": "Stuck. Use flip to flip the center cards.",
+  "promptStuckHelp": "Command: f / flip — both players flip a new card to break the deadlock",
   "winHuman": "You win!",
   "winCpu": "CPU wins..."
 }

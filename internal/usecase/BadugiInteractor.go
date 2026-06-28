@@ -27,6 +27,8 @@ type BadugiInteractorIF interface {
 	Exchange(indices []int) string
 	// Stand passes on the current draw.
 	Stand() string
+	// Hint returns the hint output for the current hand.
+	Hint() string
 	// ActionLog returns the log output for the current hand.
 	ActionLog() string
 }
@@ -93,6 +95,11 @@ func (bi *BadugiInteractor) Stand() string {
 // ActionLog returns the log output for the current hand.
 func (bi *BadugiInteractor) ActionLog() string {
 	return bi.pp.ActionLogOutput(bi.Game)
+}
+
+// Hint returns the hint output for the current hand.
+func (bi *BadugiInteractor) Hint() string {
+	return bi.pp.HintOutput(bi.Game)
 }
 
 // RestoreBadugiInteractor deserialises JSON into a BadugiInteractor. Used by
