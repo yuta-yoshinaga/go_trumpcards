@@ -187,6 +187,7 @@ var gameDescriptions = map[string]string{
 	"blackhole":           "Black Hole (ブラックホール)",
 	"beggarmyneighbour":   "Beggar-My-Neighbour (ビガー・マイ・ネイバー)",
 	"allfours":            "All Fours / Seven Up (オールフォーズ/セブンアップ)",
+	"prsi":                "Prší (プルシー/チェコ版クレイジーエイト)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

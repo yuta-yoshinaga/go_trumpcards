@@ -1,0 +1,39 @@
+{
+  "phase": {
+    "play": "Play",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "drawPile": "Draw pile: {{count}} cards",
+  "discardTop": "Discard",
+  "penalty": "Penalty: {{count}} — stack a 7 or draw",
+  "cards": "{{count}} cards",
+  "playButton": "Play",
+  "drawButton": "Draw",
+  "playPhase": "Play a card or draw from the pile",
+  "result": {
+    "humanWin": "You win!",
+    "cpuWin": "CPU {{cpuId}} wins!"
+  },
+  "tutorial": {
+    "discardPile": "The top card of the discard pile. Play a card matching its suit or rank.",
+    "playerHand": "This is your hand. Click a card to select it for playing.",
+    "playDraw": "Play a card or draw from the stock pile.",
+    "resetButton": "Press the reset button to start a new game."
+  },
+  "hint": {
+    "playMatchingSuit": "Play a card matching the current suit",
+    "playMatchingValue": "Play a card matching the current value",
+    "playActionCard": "Play your action card (7, Ace, or Under)",
+    "stackSeven": "Stack a 7 to pass on the draw penalty",
+    "drawPenalty": "No 7 to stack — draw the penalty cards",
+    "drawCard": "No playable cards — draw from the pile"
+  },
+  "illegalHint": "Can't play this card (no matching suit or rank)"
+}

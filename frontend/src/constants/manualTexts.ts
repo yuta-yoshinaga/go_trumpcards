@@ -122,6 +122,7 @@ import poker from '../../../docs/manual/web/poker.md?raw';
 import pokersquares from '../../../docs/manual/web/pokersquares.md?raw';
 import preference from '../../../docs/manual/web/preference.md?raw';
 import president from '../../../docs/manual/web/president.md?raw';
+import prsi from '../../../docs/manual/web/prsi.md?raw';
 import pyramid from '../../../docs/manual/web/pyramid.md?raw';
 import razz from '../../../docs/manual/web/razz.md?raw';
 import reddog from '../../../docs/manual/web/reddog.md?raw';
@@ -218,6 +219,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/texasholdembonus': texasholdembonus,
   '/clocksolitaire': clocksolitaire,
   '/crazyeights': crazyeights,
+  '/prsi': prsi,
   '/cribbage': cribbage,
   '/daifugo': daifugo,
   '/deuceswild': deuceswild,

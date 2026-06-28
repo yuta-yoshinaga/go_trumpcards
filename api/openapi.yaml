@@ -367,6 +367,8 @@ tags:
     description: Beggar-My-Neighbour (ビガー・マイ・ネイバー) — a two-player (human vs CPU) war-style card game played with a standard 52-card deck split evenly 26-26 face-down; players alternate turning top cards onto a central pile; penalty cards (J=1, Q=2, K=3, A=4) force the opponent to pay that many cards; if a penalty card appears during payment the obligation flips; if the count is exhausted with no penalty card the last penalty player collects the entire central pile; collecting all 52 cards wins; command step (s) advances one action, autoplay runs to completion or round cap; phases 0 Play, 1 PayPenalty, 2 Collect, 3 GameEnd
   - name: allfours
     description: All Fours / Seven Up (オールフォーズ/セブンアップ) — a two-player (human elder hand vs CPU dealer) trick-taking game on a standard 52-card deck; each deal gives 6 cards each and flips a turn-up whose suit is the provisional trump; the non-dealer stands or begs, and on a beg the dealer gifts 1 point or runs the cards (3 more each plus a fresh trump, re-dealing if the deck is exhausted); must-follow trick play (trump always legal) scores High, Low, Jack and Game per deal; first to PointLimit (default 7) wins, with a Gift→High→Low→Jack→Game peg-out order breaking same-deal ties; commands stand (st), beg (bg), gift (g), run, play (p), next (n), nextround (nr); phases 0 Beg, 1 Gift, 2 Play, 3 TrickEnd, 4 RoundEnd, 5 GameEnd
+  - name: prsi
+    description: Prší (プルシー / Czech Crazy Eights / Mau Mau) — a Czech shedding game for 4 players (1 human + 3 CPU) on a 32-card pack (7,8,9,10,J,Q,K,A × 4 suits); each player is dealt 5 cards and one card starts the discard pile; play a card matching the discard top by suit or rank, otherwise draw 1 and end your turn; action cards — 7 forces the next player to draw 2 and 7s stack (a player facing a pending 7-penalty may stack another 7 or draw the accumulated count), Ace skips the next player (skips stack), and Under (Jack) also skips the next player; the first player to empty their hand wins immediately (no rounds or scoring); commands play (p) with cardIndex, draw (d), setdifficulty (sd), log (l), reset (r), quit (q); phases 0 Play, 1 GameEnd
 
 paths:
   /blackjack/exec:
@@ -16239,6 +16241,87 @@ paths:
                   message:
                     type: string
 
+  /prsi/exec:
+    post:
+      tags:
+        - prsi
+      summary: Execute a Prší (プルシー) game command
+      description: |
+        Send a command to advance the Prší (Czech Crazy Eights / Mau Mau)
+        session identified by `sessionId`. Prší is a 4-player shedding game
+        (1 human + 3 CPU) on a 32-card pack (7,8,9,10,J,Q,K,A × 4 suits). Play
+        a card matching the discard top by suit or rank; otherwise draw 1 and
+        end your turn. Action cards: 7 forces the next player to draw 2 (7s
+        stack), Ace skips the next player, Under (Jack) also skips. First to
+        empty their hand wins.
+
+        | Phase   | Value | Description |
+        |---------|-------|-------------|
+        | Play    | `0`   | Normal play |
+        | GameEnd | `1`   | A player emptied their hand and won |
+
+        | Command         | Aliases | Description |
+        |-----------------|---------|-------------|
+        | `reset`         | `r`     | Start / restart a game |
+        | `play`          | `p`     | Play a card (requires `cardIndex`) |
+        | `draw`          | `d`     | Draw (takes the whole 7-penalty stack when pending) |
+        | `setdifficulty` | `sd`    | Set CPU difficulty (via config on reset) |
+        | `log`           | `l`     | View action log |
+      operationId: prsiExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, p, draw, d, log, l]
+                cardIndex:
+                  type: integer
+                  description: Hand index of the card to play (for `play`).
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      minimum: 0
+                      maximum: 2
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play the first card in hand
+                value:
+                  command: play
+                  cardIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrsiResponse'
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
 components:
   schemas:
     # -------------------------------------------------------------------------
@@ -28450,6 +28533,64 @@ components:
               type: boolean
             reason:
               type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    PrsiResponse:
+      type: object
+      description: Current state of the Prší (Czech Crazy Eights) game
+      properties:
+        players:
+          type: array
+          description: Array of 4 player objects (0=human, 1-3=CPU)
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 0=Play, 1=GameEnd."
+          enum: [0, 1]
+          example: 0
+        currentPlayerIdx:
+          type: integer
+        discardTop:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          description: Top card of the discard pile, or null.
+        drawPileCount:
+          type: integer
+        penaltyDrawCount:
+          type: integer
+          description: Accumulated 7-stack penalty the current player must take or stack onto (0 = none).
+        pendingSkips:
+          type: integer
+          description: Accumulated skip count from Aces/Unders pending on the next turn advance.
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
         message:
           type: string
         messageCode:

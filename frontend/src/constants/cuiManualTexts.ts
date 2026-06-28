@@ -123,6 +123,7 @@ import poker from '../../../docs/manual/cui/poker.md?raw';
 import pokersquares from '../../../docs/manual/cui/pokersquares.md?raw';
 import preference from '../../../docs/manual/cui/preference.md?raw';
 import president from '../../../docs/manual/cui/president.md?raw';
+import prsi from '../../../docs/manual/cui/prsi.md?raw';
 import pyramid from '../../../docs/manual/cui/pyramid.md?raw';
 import razz from '../../../docs/manual/cui/razz.md?raw';
 import reddog from '../../../docs/manual/cui/reddog.md?raw';
@@ -210,6 +211,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/crescent': crescent,
   '/mississippistud': mississippistud,
   '/crazyeights': crazyeights,
+  '/prsi': prsi,
   '/cribbage': cribbage,
   '/daifugo': daifugo,
   '/deuceswild': deuceswild,

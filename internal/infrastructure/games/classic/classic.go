@@ -460,4 +460,13 @@ func init() {
 		},
 		controller.NewAllFoursWebControllerWithProvider)
 
+	games.RegisterKVGame("prsi", games.CategoryClassic,
+		func() usecase.PrsiInteractorIF {
+			return usecase.NewPrsiInteractor(domain.NewDefaultPrsi(), new(presenter.PrsiWebPresenter))
+		},
+		func(data []byte) (usecase.PrsiInteractorIF, error) {
+			return usecase.RestorePrsiInteractor(data, new(presenter.PrsiWebPresenter))
+		},
+		controller.NewPrsiWebControllerWithProvider)
+
 }

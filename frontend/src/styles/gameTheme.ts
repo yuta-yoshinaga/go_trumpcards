@@ -117,6 +117,7 @@ export type GameKey =
   | 'mao'
   | 'sevens'
   | 'crazyeights'
+  | 'prsi'
   | 'pageone'
   | 'speed'
   | 'gofish'
@@ -244,6 +245,10 @@ const MARIAS = {
 const SEDMA = {
   bg: 'bg-game-bg-sedma',
   footer: 'bg-game-bg-sedma-dark border-white/20',
+} as const;
+const PRSI = {
+  bg: 'bg-game-bg-prsi',
+  footer: 'bg-game-bg-prsi-dark border-white/20',
 } as const;
 const KNOCKOUTWHIST = {
   bg: 'bg-game-bg-knockoutwhist',
@@ -435,6 +440,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   mao: BLUE,
   sevens: GREEN,
   crazyeights: GREEN,
+  prsi: PRSI,
   pageone: GREEN,
   speed: GREEN,
   gofish: GREEN,

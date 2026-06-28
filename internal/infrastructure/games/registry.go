@@ -471,6 +471,13 @@ var registry = []*Game{
 	// casino worker is at the 1 MB gzip limit; as a trick-taker, All Fours
 	// shares the classic worker's trick-taking code).
 	{Name: "allfours", Category: CategoryClassic},
+	// Prší (チェコ版クレイジーエイト / Mau Mau): a Czech shedding game on a
+	// 32-card pack (7..A). Match the discard top by suit or rank; 7 forces the
+	// next player to draw 2 (7s stack), Ace and Under (Jack) skip the next
+	// player. First to empty their hand wins. Shares the classic worker's
+	// shedding code (crazyeights). Classic worker bucket — the issue proposed
+	// casino but that worker is at the 1 MB gzip limit.
+	{Name: "prsi", Category: CategoryClassic},
 }
 
 // All returns a value-level copy of the registry in canonical order.
