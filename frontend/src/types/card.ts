@@ -1657,8 +1657,8 @@ export interface SedmaResponse extends BaseGameResponse {
 
 // --- Knockout Whist ---
 
-/** Knockout Whist game phase (0=Play 1=TrickEnd 2=RoundEnd 3=GameEnd). */
-export type KnockoutWhistPhaseValue = 0 | 1 | 2 | 3;
+/** Knockout Whist game phase (0=Play 1=TrickEnd 2=RoundEnd 3=GameEnd 4=TrumpSelect). */
+export type KnockoutWhistPhaseValue = 0 | 1 | 2 | 3 | 4;
 
 /** A Knockout Whist player's public/own state. Cards are non-empty only for the human. */
 export interface KnockoutWhistPlayer {
