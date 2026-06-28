@@ -7,6 +7,7 @@ import type {
   BakersDozenMoveZone,
   BakersDozenResponse,
   BarbuResponse,
+  BeggarMyNeighbourResponse,
   BeleagueredCastleMoveZone,
   BeleagueredCastleResponse,
   BeloteResponse,
@@ -372,6 +373,7 @@ const workerUrl: Record<string, string> = {
   twentynine: WORKER_CASINO,
   courtpiece: WORKER_CASINO,
   bezique: WORKER_CLASSIC,
+  beggarmyneighbour: WORKER_CASINO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -3253,6 +3255,12 @@ export const warApi = {
     gameExec<WarResponse>('war', { command, ...config }),
 };
 
+/** API client for the Beggar-My-Neighbour /beggarmyneighbour/exec endpoint. */
+export const beggarmyneighbourApi = {
+  exec: (command: 'reset' | 'step' | 'autoplay' | 'log', config?: { maxRounds?: number }) =>
+    gameExec<BeggarMyNeighbourResponse>('beggarmyneighbour', { command, ...config }),
+};
+
 /** Configuration options for Slapjack game settings. */
 export interface SlapjackConfigInput {
   cpuDifficulty?: number;
@@ -4031,6 +4039,7 @@ const games = [
   'simplesimon',
   'doubleklondike',
   'blackhole',
+  'beggarmyneighbour',
 ] as const;
 type Game = (typeof games)[number];
 

@@ -1414,3 +1414,11 @@ export const RussianBankPhase = {
   PLAYING: 1,
   GAME_END: 2,
 } as const;
+
+/** Beggar-My-Neighbour phase constants (sync: internal/domain/BeggarMyNeighbour.go). */
+export const BeggarMyNeighbourPhase = {
+  PLAY: 0,
+  PAY_PENALTY: 1,
+  COLLECT: 2,
+  GAME_END: 3,
+} as const;

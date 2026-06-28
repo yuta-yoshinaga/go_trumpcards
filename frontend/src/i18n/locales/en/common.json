@@ -193,7 +193,8 @@
     "labellelucie": "La Belle Lucie",
     "simplesimon": "Simple Simon",
     "doubleklondike": "Double Klondike",
-    "blackhole": "Black Hole"
+    "blackhole": "Black Hole",
+    "beggarmyneighbour": "Beggar-My-Neighbour"
   },
   "sound": {
     "mute": "Mute sound",
@@ -789,6 +790,9 @@
     "pigtail.result.cpuLose": "Game Over! CPU {{cpuId}} loses!",
     "war.result.humanWin": "Game Over! You win!",
     "war.result.cpuWin": "Game Over! CPU wins...",
+    "beggarmyneighbour.result.humanWin": "Game Over! You win!",
+    "beggarmyneighbour.result.cpuWin": "Game Over! CPU wins...",
+    "beggarmyneighbour.result.draw": "Game Over! It's a draw.",
     "slapjack.result.humanWin": "Game Over! You win!",
     "slapjack.result.cpuWin": "Game Over! CPU wins...",
     "egyptianratscrew.result.humanWin": "Game Over! You win!",

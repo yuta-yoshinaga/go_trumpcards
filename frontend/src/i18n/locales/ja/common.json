@@ -193,7 +193,8 @@
     "labellelucie": "ラ・ベル・ルーシー",
     "simplesimon": "シンプル・サイモン",
     "doubleklondike": "ダブル・クロンダイク",
-    "blackhole": "ブラックホール"
+    "blackhole": "ブラックホール",
+    "beggarmyneighbour": "ビガー・マイ・ネイバー"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -789,6 +790,9 @@
     "pigtail.result.cpuLose": "ゲーム終了！ CPU {{cpuId}}の負け！",
     "war.result.humanWin": "ゲーム終了！ あなたの勝ち！",
     "war.result.cpuWin": "ゲーム終了！ CPU の勝ち...",
+    "beggarmyneighbour.result.humanWin": "ゲーム終了！ あなたの勝ち！",
+    "beggarmyneighbour.result.cpuWin": "ゲーム終了！ CPU の勝ち...",
+    "beggarmyneighbour.result.draw": "ゲーム終了！ 引き分け",
     "slapjack.result.humanWin": "ゲーム終了！ あなたの勝ち！",
     "slapjack.result.cpuWin": "ゲーム終了！ CPU の勝ち...",
     "egyptianratscrew.result.humanWin": "ゲーム終了！ あなたの勝ち！",

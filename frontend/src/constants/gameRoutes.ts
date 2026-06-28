@@ -1318,6 +1318,13 @@ export const gameCategories: readonly GameCategory[] = [
         page: 'Rummy500',
         profile: { mood: [3, 3, 4, 3], skill: [3, 4, 4, 2], social: [1, 3, 5, 3, 4], theme: [2, 2, 4, 2, 3, 2] },
       },
+      {
+        path: '/beggarmyneighbour',
+        labelKey: 'nav.beggarmyneighbour',
+        icon: '🪙',
+        page: 'BeggarMyNeighbour',
+        profile: { mood: [3, 4, 1, 5], skill: [5, 1, 0, 5], social: [0, 3, 5, 5, 1], theme: [1, 2, 2, 3, 2, 2] },
+      },
     ],
   },
 ] as const;

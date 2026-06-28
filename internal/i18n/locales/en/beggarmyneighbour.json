@@ -1,0 +1,18 @@
+{
+  "helpTitle": "Beggar-My-Neighbour (ビガー・マイ・ネイバー)",
+  "helpStep": "  s                    play next card / pay penalty / collect pile",
+  "helpAutoPlay": "  a                    auto play until the game ends",
+  "helpSetMax": "  sm <n>               set MaxRounds (10-50000) and reset",
+  "cpuStats": "CPU: deck {{draw}} / discard {{discard}} (total {{total}})",
+  "humanStats": "You: deck {{draw}} / discard {{discard}} (total {{total}})",
+  "boardLabel": "[Central Pile]",
+  "boardPile": "Pile: {{count}} cards",
+  "boardLastCard": "Last card: {{card}}",
+  "boardLastCardEmpty": "Last card: --",
+  "promptPlay": "Use step to play the next card.",
+  "promptPayPenalty": "Paying penalty! {{remaining}} more card(s) to pay.",
+  "promptCollect": "Penalty paid off! step to collect the pile.",
+  "gameWinHuman": "You win!",
+  "gameWinCpu": "CPU wins...",
+  "gameDraw": "It's a draw!"
+}

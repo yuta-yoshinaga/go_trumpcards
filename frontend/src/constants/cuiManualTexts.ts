@@ -10,6 +10,7 @@ import badugi from '../../../docs/manual/cui/badugi.md?raw';
 import bakersdozen from '../../../docs/manual/cui/bakersdozen.md?raw';
 import bakersgame from '../../../docs/manual/cui/bakersgame.md?raw';
 import barbu from '../../../docs/manual/cui/barbu.md?raw';
+import beggarmyneighbour from '../../../docs/manual/cui/beggarmyneighbour.md?raw';
 import beleagueredcastle from '../../../docs/manual/cui/beleagueredcastle.md?raw';
 import belote from '../../../docs/manual/cui/belote.md?raw';
 import bezique from '../../../docs/manual/cui/bezique.md?raw';
@@ -354,6 +355,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/oasispoker': oasispoker,
   '/piquet': piquet,
   '/truco': truco,
+  '/beggarmyneighbour': beggarmyneighbour,
 };
 
 /** Returns true when CLI mode is enabled for the game at the given path. */

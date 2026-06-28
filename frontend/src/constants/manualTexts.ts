@@ -9,6 +9,7 @@ import badugi from '../../../docs/manual/web/badugi.md?raw';
 import bakersdozen from '../../../docs/manual/web/bakersdozen.md?raw';
 import bakersgame from '../../../docs/manual/web/bakersgame.md?raw';
 import barbu from '../../../docs/manual/web/barbu.md?raw';
+import beggarmyneighbour from '../../../docs/manual/web/beggarmyneighbour.md?raw';
 import beleagueredcastle from '../../../docs/manual/web/beleagueredcastle.md?raw';
 import belote from '../../../docs/manual/web/belote.md?raw';
 import bezique from '../../../docs/manual/web/bezique.md?raw';
@@ -353,4 +354,5 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/bourre': bourre,
   '/doudizhu': doudizhu,
   '/truco': truco,
+  '/beggarmyneighbour': beggarmyneighbour,
 };
