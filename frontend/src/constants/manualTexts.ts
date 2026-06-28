@@ -34,6 +34,7 @@ import caribbeanstud from '../../../docs/manual/web/caribbeanstud.md?raw';
 import casinoholdem from '../../../docs/manual/web/casinoholdem.md?raw';
 import casinowar from '../../../docs/manual/web/casinowar.md?raw';
 import cassino from '../../../docs/manual/web/cassino.md?raw';
+import catchten from '../../../docs/manual/web/catchten.md?raw';
 import chinchon from '../../../docs/manual/web/chinchon.md?raw';
 import chinesepoker from '../../../docs/manual/web/chinesepoker.md?raw';
 import clocksolitaire from '../../../docs/manual/web/clocksolitaire.md?raw';
@@ -323,6 +324,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/war': war,
   '/fiftyone': fiftyone,
   '/whist': whist,
+  '/catchten': catchten,
   '/yaniv': yaniv,
   '/yukon': yukon,
   '/russiansolitaire': russiansolitaire,

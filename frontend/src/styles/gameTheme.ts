@@ -89,6 +89,7 @@ export type GameKey =
   | 'bridge'
   | 'napoleon'
   | 'whist'
+  | 'catchten'
   | 'pinochle'
   | 'piquet'
   | 'callbreak'
@@ -256,6 +257,10 @@ const SOLOWHIST = {
   bg: 'bg-game-bg-solowhist',
   footer: 'bg-game-bg-solowhist-dark border-white/20',
 } as const;
+const CATCHTEN = {
+  bg: 'bg-game-bg-catchten',
+  footer: 'bg-game-bg-catchten-dark border-white/20',
+} as const;
 const FORTYFIVES = {
   bg: 'bg-game-bg-fortyfives',
   footer: 'bg-game-bg-fortyfives-dark border-white/20',
@@ -402,6 +407,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   bridge: BLUE,
   napoleon: BLUE,
   whist: BLUE,
+  catchten: CATCHTEN,
   pinochle: BLUE,
   piquet: BLUE,
   skat: BLUE,

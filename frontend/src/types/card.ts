@@ -6004,6 +6004,56 @@ export interface WhistResponse extends BaseGameResponse {
   hint?: WhistHint;
 }
 
+// --- Catch the Ten (スコッチ・ホイスト) ---
+
+/** Catch the Ten player data with team, scores, and trick count. */
+export interface CatchTenPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  roundScore: number;
+  cumulativeScore: number;
+  trickCount: number;
+  team: number;
+}
+
+/** A card played in a Catch the Ten trick. */
+export interface CatchTenTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Catch the Ten game configuration. */
+export interface CatchTenConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+/** A suggested hint for Catch the Ten. */
+export interface CatchTenHint {
+  cardIndex?: number;
+  reason: string;
+}
+
+/** Full Catch the Ten game state returned from the API. */
+export interface CatchTenResponse extends BaseGameResponse {
+  players: CatchTenPlayerData[];
+  phase: number;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  currentTrick: CatchTenTrickCard[];
+  trumpSuit: number;
+  dealerIdx: number;
+  teamScores: [number, number];
+  gameEndFlag: boolean;
+  winnerTeam: number;
+  leadPlayerIdx: number;
+  config: CatchTenConfig;
+  hint?: CatchTenHint;
+}
+
 // --- Briscola (ブリスコラ) ---
 
 /** Briscola player data with points and trick count. */

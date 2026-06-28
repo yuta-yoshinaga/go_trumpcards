@@ -24,6 +24,7 @@ import type {
   CasinoHoldemResponse,
   CasinoWarResponse,
   CassinoResponse,
+  CatchTenResponse,
   ClockSolitaireResponse,
   CourtPieceResponse,
   CrazyEightsResponse,
@@ -158,6 +159,7 @@ import { getCaribbeanStudHint } from '../utils/hints/caribbeanstudHint';
 import { getCasinoHoldemHint } from '../utils/hints/casinoholdemHint';
 import { getCasinowarHint } from '../utils/hints/casinowarHint';
 import { getCassinoHint } from '../utils/hints/cassinoHint';
+import { getCatchTenHint } from '../utils/hints/catchtenHint';
 import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
 import { getCourtPieceHint } from '../utils/hints/courtPieceHint';
 import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
@@ -372,6 +374,7 @@ const hintFactories = {
   blackjackswitch: (s) => getBlackjackswitchHint(s as BlackJackSwitchResponse),
   war: (s) => getWarHint(s as WarResponse),
   whist: (s) => getWhistHint(s as WhistResponse),
+  catchten: (s) => getCatchTenHint(s as CatchTenResponse),
   yukon: (s) => getYukonHint(s as YukonResponse),
   russiansolitaire: (s) => getRussianSolitaireHint(s as RussianSolitaireResponse),
   cruel: (s) => getCruelHint(s as CruelResponse),

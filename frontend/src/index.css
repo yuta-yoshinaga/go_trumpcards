@@ -69,6 +69,9 @@
   /* Solo Whist — British racing-green felt with a club-room navy undertone, distinct from every other felt. */
   --color-game-bg-solowhist: #1f4d3a;
   --color-game-bg-solowhist-dark: #143324;
+  /* Catch the Ten (Scotch Whist) — Scottish slate-teal felt, distinct from Solo Whist's green and Sedma's deeper teal. */
+  --color-game-bg-catchten: #2a5d6e;
+  --color-game-bg-catchten-dark: #1a3d49;
   /* Auction Forty-Fives — Irish/Canadian deep shamrock-on-amber, a warm bronze-gold felt distinct from Solo Whist's cool green and Spoil Five's vivid emerald. */
   --color-game-bg-fortyfives: #8a5a16;
   --color-game-bg-fortyfives-dark: #5c3a0d;

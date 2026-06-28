@@ -35,6 +35,8 @@ import type {
   CasinoHoldemResponse,
   CasinoWarResponse,
   CassinoResponse,
+  CatchTenConfig,
+  CatchTenResponse,
   ChinchonResponse,
   ChinesePokerResponse,
   ClockSolitaireResponse,
@@ -294,6 +296,7 @@ const workerUrl: Record<string, string> = {
   sevenbridge: WORKER_SOLO,
   trash: WORKER_CLASSIC,
   whist: WORKER_CLASSIC,
+  catchten: WORKER_CLASSIC,
   letitride: WORKER_CASINO,
   reddog: WORKER_CASINO,
   casinowar: WORKER_CASINO,
@@ -3748,6 +3751,15 @@ export const whistApi = {
   ) => gameExec<WhistResponse>('whist', { command, cardIndex, config }),
 };
 
+/** API client for the Catch the Ten /catchten/exec endpoint. */
+export const catchtenApi = {
+  exec: (
+    command: 'reset' | 'play' | 'next' | 'nextround' | 'hint' | 'log',
+    cardIndex?: number,
+    config?: Partial<CatchTenConfig>,
+  ) => gameExec<CatchTenResponse>('catchten', { command, cardIndex, config }),
+};
+
 /** API client for the Briscola /briscola/exec endpoint. */
 export const briscolaApi = {
   exec: (command: 'reset' | 'play' | 'next' | 'hint' | 'log', cardIndex?: number, config?: Partial<BriscolaConfig>) =>
@@ -3962,6 +3974,7 @@ const games = [
   'sevenbridge',
   'trash',
   'whist',
+  'catchten',
   'letitride',
   'pokersquares',
   'pageone',

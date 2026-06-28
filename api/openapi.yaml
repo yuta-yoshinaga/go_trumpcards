@@ -289,6 +289,8 @@ tags:
     description: Aces Up (四つ葉のクローバー) - single-player solitaire with a standard 52-card deck. 4 tableau columns dealt 1 card each (48 to stock). Aces rank highest. Remove a column's top card when another column's top is the same suit and higher rank; deal one card onto each column; move a top card into an empty column. Win by clearing the board down to the four Aces.
   - name: whist
     description: Whist (ホイスト) - 4-player partnership trick-taking on a standard 52-card deck; 13-card hands, the last dealt card fixes the trump suit, must-follow trick play, the highest trump (or highest lead-suit card if none) wins each trick, and the team taking more than 6 tricks scores 1 point per trick over the book of 6.
+  - name: catchten
+    description: Catch the Ten (Scotch Whist / キャッチ・ザ・テン) - 4-player 2v2 partnership trick-taking on a Scottish 36-card deck (ranks 6-A × 4 suits); 9-card hands, the last dealt card fixes the trump suit, must-follow trick play. In the trump suit the rank order is special - J highest, then A, K, Q, 10, 9, 8, 7, 6; non-trump suits are A high down to 6. Honor capture - the trick winner scores trump J=11, 10=10, A=4, K=3, Q=2 (non-trump cards score nothing). First side to the point limit (default 41) wins; an exact tie when both reach the target in the same deal is a draw.
   - name: canfield
     description: Canfield (キャンフィールド) - single-player solitaire with a standard 52-card deck; 4 tableau columns, a 13-card reserve, a stock dealt 3 at a time, and 4 foundations built up by suit from a randomly chosen base rank with K-A wraparound. Tableau builds down alternating colors with wraparound; the reserve feeds the tableau.
   - name: sixcardgolf
@@ -8740,6 +8742,59 @@ paths:
                         type: integer
         '400':
           description: Bad request
+
+  /catchten/exec:
+    post:
+      tags:
+        - catchten
+      summary: Execute a Catch the Ten (Scotch Whist) game command
+      description: |
+        4-player 2v2 partnership trick-taking game on a 36-card deck (ranks 6-A).
+        The trump suit is fixed by the last card dealt to the dealer. In the trump
+        suit only, J is the highest card, then A, K, Q, 10, 9, 8, 7, 6; non-trump
+        suits are A high down to 6. The trick winner scores the trump honors it
+        contains (J=11, 10=10, A=4, K=3, Q=2). First side to the point limit
+        (default 41) wins; an exact same-deal tie is a draw (winnerTeam = -2).
+        Commands: reset, play, next, nextround, hint, log.
+      operationId: catchTenExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [command, sessionId]
+              properties:
+                command:
+                  type: string
+                  enum: [reset, play, next, nextround, hint, log, quit]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      minimum: 0
+                      maximum: 2
+                    pointLimit:
+                      type: integer
+                      minimum: 1
+      responses:
+        '200':
+          description: Game state after executing the command
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatchTenResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatchTenResponse'
 
   /letitride/exec:
     post:
@@ -32978,6 +33033,95 @@ components:
             cpuDifficulty:
               type: integer
             targetScore:
+              type: integer
+
+    CatchTenResponse:
+      type: object
+      description: Current state of the Catch the Ten (Scotch Whist) game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              roundScore:
+                type: integer
+                description: Honor points captured this deal
+              cumulativeScore:
+                type: integer
+              trickCount:
+                type: integer
+              team:
+                type: integer
+                description: "Partnership index (0 = human side, 1 = opponents)"
+        phase:
+          type: integer
+          description: "Game phase: 0=Play, 1=TrickEnd, 2=RoundEnd, 3=GameEnd"
+          enum: [0, 1, 2, 3]
+          example: 0
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        trumpSuit:
+          type: integer
+          description: "Trump suit: 1=Spades, 2=Clubs, 3=Hearts, 4=Diamonds"
+          minimum: 1
+          maximum: 4
+        dealerIdx:
+          type: integer
+        teamScores:
+          type: array
+          items:
+            type: integer
+          description: Cumulative honor points per team [team0, team1]
+          minItems: 2
+          maxItems: 2
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: "Winning team (0 or 1); -1 if undecided, -2 if the game ended in a draw"
+        leadPlayerIdx:
+          type: integer
+        hint:
+          type: object
+          properties:
+            cardIndex:
+              type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
               type: integer
 
     KnockoutWhistRequest:

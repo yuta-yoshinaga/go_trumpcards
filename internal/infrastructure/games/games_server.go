@@ -315,6 +315,11 @@ func init() {
 			return usecase.NewWhistInteractor(domain.NewDefaultWhist(), new(presenter.WhistWebPresenter))
 		},
 		controller.NewWhistWebController)
+	BindWebControllerFor("catchten",
+		func() usecase.CatchTenInteractorIF {
+			return usecase.NewCatchTenInteractor(domain.NewDefaultCatchTen(), new(presenter.CatchTenWebPresenter))
+		},
+		controller.NewCatchTenWebController)
 	BindWebControllerFor("letitride",
 		func() usecase.LetItRideInteractorIF {
 			return usecase.NewLetItRideInteractor(domain.NewDefaultLetItRide(), new(presenter.LetItRideWebPresenter))

@@ -963,6 +963,17 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"whist.helpSetDifficulty", "whist.helpSetLimit"},
 			})
 	}},
+	{Name: "catchten", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCatchTenCuiController(usecase.NewCatchTenInteractor(
+				domain.NewDefaultCatchTen(), new(presenter.CatchTenCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "catchten.helpTitle",
+				CommandKeys:       []string{"catchten.helpPlay", "catchten.helpNext", "catchten.helpNextRound"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"catchten.helpSetDifficulty", "catchten.helpSetLimit"},
+			})
+	}},
 	{Name: "letitride", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewLetItRideCuiController(usecase.NewLetItRideInteractor(
