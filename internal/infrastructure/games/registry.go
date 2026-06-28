@@ -149,6 +149,7 @@ var registry = []*Game{
 	{Name: "yukon", Category: CategorySolo},
 	{Name: "russiansolitaire", Category: CategorySolo},
 	{Name: "whist", Category: CategoryClassic},
+	{Name: "catchten", Category: CategoryClassic},
 	{Name: "letitride", Category: CategoryCasino},
 	{Name: "pokersquares", Category: CategorySolo},
 	{Name: "pageone", Category: CategoryClassic},

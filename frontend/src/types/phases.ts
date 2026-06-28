@@ -1166,6 +1166,14 @@ export const WhistPhase = {
   GAME_END: 3,
 } as const;
 
+/** Catch the Ten phase constants (sync: internal/domain/CatchTen.go). */
+export const CatchTenPhase = {
+  PLAY: 0,
+  TRICK_END: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Briscola phase constants (sync: internal/domain/Briscola.go). */
 export const BriscolaPhase = {
   PLAY: 0,

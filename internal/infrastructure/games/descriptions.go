@@ -69,6 +69,7 @@ var gameDescriptions = map[string]string{
 	"yukon":               "Yukon Solitaire (ユーコン)",
 	"russiansolitaire":    "Russian Solitaire (ロシアンソリティア)",
 	"whist":               "Whist (ホイスト)",
+	"catchten":            "Catch the Ten (スコッチ・ホイスト)",
 	"letitride":           "Let It Ride (レット・イット・ライド)",
 	"pokersquares":        "Poker Squares (ポーカー・スクエアズ)",
 	"pageone":             "Page One (ページワン)",

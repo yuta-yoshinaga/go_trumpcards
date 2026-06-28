@@ -1,0 +1,68 @@
+{
+  "phase": {
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "pointLimit": "目標スコア",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "trick": "トリック {{n}}",
+  "trumpSuit": "切り札",
+  "cards": "{{count}}枚",
+  "cumulativeScore": "累計: {{score}}",
+  "roundScore": "ラウンド: {{score}}",
+  "currentTrick": "現在のトリック",
+  "teamScores": "チームスコア",
+  "scoreHeaderTeam": "チーム",
+  "scoreHeaderPoints": "スコア",
+  "team": "チーム {{n}}",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド",
+  "playPhase": {
+    "lead": "リードしてください",
+    "follow": "カードを出してください"
+  },
+  "trickEnd": "トリック終了",
+  "roundEnd": "ラウンド終了",
+  "result": {
+    "humanWin": "あなたのチームの勝利！",
+    "cpuWin": "CPUチームの勝利",
+    "draw": "引き分け"
+  },
+  "hintPlay": "推奨カード",
+  "hintReason": {
+    "lead_strong": "強いカードでリード",
+    "follow_suit": "リードスートに追随",
+    "trump_cut": "トランプでカット",
+    "discard_high": "高いカードを捨てる"
+  },
+  "suitNames": {
+    "1": "♠ スペード",
+    "2": "♣ クラブ",
+    "3": "♥ ハート",
+    "4": "♦ ダイヤ"
+  },
+  "tutorial": {
+    "trickDisplay": "現在のトリックです。切り札のスートが毎ディール変わります。",
+    "playerHand": "あなたの手札です。リードスートに従う必要があります。",
+    "playButton": "カードを選んだらこのボタンで出します。",
+    "teamScores": "チームスコアです。トリックで獲得した切り札のオナー（J=11, 10=10, A=4, K=3, Q=2）が得点になります。",
+    "trumpInfo": "ディーラーの最後のカードのスートが切り札です。切り札ではJが最強です。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "hint": {
+    "leadStrategic": "戦略的にリード推奨",
+    "followSuit": "リードされたスートに従ってプレイ推奨",
+    "trumpCut": "切り札で勝ちに行くチャンス",
+    "discardLowest": "最も低いカードを捨てることを推奨"
+  }
+}

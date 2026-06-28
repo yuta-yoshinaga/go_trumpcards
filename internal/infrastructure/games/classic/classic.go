@@ -159,6 +159,14 @@ func init() {
 			return usecase.RestoreWhistInteractor(data, new(presenter.WhistWebPresenter))
 		},
 		controller.NewWhistWebControllerWithProvider)
+	games.RegisterKVGame("catchten", games.CategoryClassic,
+		func() usecase.CatchTenInteractorIF {
+			return usecase.NewCatchTenInteractor(domain.NewDefaultCatchTen(), new(presenter.CatchTenWebPresenter))
+		},
+		func(data []byte) (usecase.CatchTenInteractorIF, error) {
+			return usecase.RestoreCatchTenInteractor(data, new(presenter.CatchTenWebPresenter))
+		},
+		controller.NewCatchTenWebControllerWithProvider)
 	games.RegisterKVGame("pageone", games.CategoryClassic,
 		func() usecase.PageOneInteractorIF {
 			return usecase.NewPageOneInteractor(domain.NewDefaultPageOne(), new(presenter.PageOneWebPresenter))
