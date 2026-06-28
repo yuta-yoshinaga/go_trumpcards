@@ -833,7 +833,7 @@ func (g *KnockoutWhist) UnmarshalJSON(data []byte) error {
 		j.RoundNumber < 1 || j.RoundNumber > KnockoutWhistMaxRounds ||
 		j.HandSize < 1 || j.HandSize > KnockoutWhistMaxRounds ||
 		j.TrickNumber < 1 || j.TrickNumber > KnockoutWhistMaxRounds ||
-		j.Phase < KnockoutWhistPhasePlay || j.Phase > KnockoutWhistPhaseGameEnd {
+		j.Phase < KnockoutWhistPhasePlay || j.Phase > KnockoutWhistPhaseTrumpSelect {
 		return errKnockoutWhistInvalidState
 	}
 	for _, tc := range j.CurrentTrick {

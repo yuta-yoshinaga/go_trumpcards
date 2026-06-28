@@ -310,3 +310,24 @@ func TestKnockoutWhist_PlayerSelectTrumpErrors(t *testing.T) {
 		t.Errorf("want ErrInvalidPlay for suit 5, got %v", err)
 	}
 }
+
+func TestKnockoutWhist_JSONRoundTripTrumpSelect(t *testing.T) {
+	g := newKoGame(true)
+	g.SetPhase(KnockoutWhistPhaseTrumpSelect)
+	g.SetRoundNumber(2)
+	g.SetHandSize(6)
+	g.SetTrickNumber(1)
+	g.SetTrumpSuit(CardDesignSpade)
+	g.SetLeadPlayerIdx(0)
+	data, err := json.Marshal(g)
+	if err != nil {
+		t.Fatalf("marshal err: %v", err)
+	}
+	var g2 KnockoutWhist
+	if err := json.Unmarshal(data, &g2); err != nil {
+		t.Fatalf("unmarshal err: %v", err)
+	}
+	if g2.GetPhase() != KnockoutWhistPhaseTrumpSelect {
+		t.Errorf("phase not preserved: got %v", g2.GetPhase())
+	}
+}
