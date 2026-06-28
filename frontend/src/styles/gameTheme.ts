@@ -189,7 +189,8 @@ export type GameKey =
   | 'contractrummy'
   | 'kalooki'
   | 'rummy500'
-  | 'beggarmyneighbour';
+  | 'beggarmyneighbour'
+  | 'allfours';
 
 /** Theme classes (Tailwind) applied to the page background and footer for each game. */
 export interface GameThemeClasses {
@@ -314,6 +315,10 @@ const CUARENTA = {
 const FARO = {
   bg: 'bg-game-bg-faro',
   footer: 'bg-game-bg-faro-dark border-white/20',
+} as const;
+const ALLFOURS = {
+  bg: 'bg-game-bg-allfours',
+  footer: 'bg-game-bg-allfours-dark border-white/20',
 } as const;
 
 export const gameTheme: Record<GameKey, GameThemeClasses> = {
@@ -498,4 +503,5 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   kalooki: GREEN,
   rummy500: BLUE,
   beggarmyneighbour: GREEN,
+  allfours: ALLFOURS,
 };

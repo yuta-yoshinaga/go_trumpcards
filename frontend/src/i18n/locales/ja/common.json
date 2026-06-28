@@ -194,7 +194,8 @@
     "simplesimon": "シンプル・サイモン",
     "doubleklondike": "ダブル・クロンダイク",
     "blackhole": "ブラックホール",
-    "beggarmyneighbour": "ビガー・マイ・ネイバー"
+    "beggarmyneighbour": "ビガー・マイ・ネイバー",
+    "allfours": "オールフォーズ"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -793,6 +794,9 @@
     "beggarmyneighbour.result.humanWin": "ゲーム終了！ あなたの勝ち！",
     "beggarmyneighbour.result.cpuWin": "ゲーム終了！ CPU の勝ち...",
     "beggarmyneighbour.result.draw": "ゲーム終了！ 引き分け",
+    "allfours.result.humanWin": "ゲーム終了！ あなたの勝ち！",
+    "allfours.result.cpuWin": "ゲーム終了！ CPU {{cpuId}} の勝ち！",
+    "allfours.result.draw": "ゲーム終了！ 引き分け",
     "slapjack.result.humanWin": "ゲーム終了！ あなたの勝ち！",
     "slapjack.result.cpuWin": "ゲーム終了！ CPU の勝ち...",
     "egyptianratscrew.result.humanWin": "ゲーム終了！ あなたの勝ち！",

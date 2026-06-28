@@ -363,6 +363,8 @@ tags:
     description: Black Hole (ブラックホール) — a single-player logic-puzzle patience by David Parlett on a standard 52-card deck; the Ace of Spades seeds a single central foundation (the black hole) and the other 51 cards are dealt face-up into 17 fans of three; only a fan top can move, and a card may be played onto the black hole when its rank is one away from the current top (any suit, no King-Ace wrap); cards never leave the black hole, absorbing all 52 cards wins and running out of legal moves loses; commands m with fan, u undo, undo_n, g giveup, hint, log (l), reset (r); phases 0 Playing, 1 GameClear, 2 GameOver
   - name: beggarmyneighbour
     description: Beggar-My-Neighbour (ビガー・マイ・ネイバー) — a two-player (human vs CPU) war-style card game played with a standard 52-card deck split evenly 26-26 face-down; players alternate turning top cards onto a central pile; penalty cards (J=1, Q=2, K=3, A=4) force the opponent to pay that many cards; if a penalty card appears during payment the obligation flips; if the count is exhausted with no penalty card the last penalty player collects the entire central pile; collecting all 52 cards wins; command step (s) advances one action, autoplay runs to completion or round cap; phases 0 Play, 1 PayPenalty, 2 Collect, 3 GameEnd
+  - name: allfours
+    description: All Fours / Seven Up (オールフォーズ/セブンアップ) — a two-player (human elder hand vs CPU dealer) trick-taking game on a standard 52-card deck; each deal gives 6 cards each and flips a turn-up whose suit is the provisional trump; the non-dealer stands or begs, and on a beg the dealer gifts 1 point or runs the cards (3 more each plus a fresh trump, re-dealing if the deck is exhausted); must-follow trick play (trump always legal) scores High, Low, Jack and Game per deal; first to PointLimit (default 7) wins, with a Gift→High→Low→Jack→Game peg-out order breaking same-deal ties; commands stand (st), beg (bg), gift (g), run, play (p), next (n), nextround (nr); phases 0 Beg, 1 Gift, 2 Play, 3 TrickEnd, 4 RoundEnd, 5 GameEnd
 
 paths:
   /blackjack/exec:
@@ -16084,6 +16086,104 @@ paths:
                   message:
                     type: string
 
+  /allfours/exec:
+    post:
+      tags:
+        - allfours
+      summary: Execute an All Fours (オールフォーズ) game command
+      description: |
+        Send a command to advance the All Fours (Seven Up) session identified by
+        `sessionId`. All Fours is a two-player (human elder hand vs CPU dealer)
+        trick-taking game on a standard 52-card deck. Each deal gives 6 cards
+        each and flips a turn-up whose suit is the provisional trump. The
+        non-dealer stands or begs; on a beg the dealer gifts 1 point or runs the
+        cards (deals 3 more each and turns a fresh trump). Must-follow trick play
+        (trump always legal) scores High, Low, Jack and Game per deal; first to
+        PointLimit (default 7) wins.
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Beg      | `0`   | Non-dealer stands or begs |
+        | Gift     | `1`   | Dealer gifts a point or runs the cards |
+        | Play     | `2`   | Trick play |
+        | TrickEnd | `3`   | Trick resolved; advance to next trick |
+        | RoundEnd | `4`   | Deal scored; advance to next deal |
+        | GameEnd  | `5`   | Game over |
+
+        | Command     | Aliases | Description |
+        |-------------|---------|-------------|
+        | `reset`     | `r`     | Start / restart a game |
+        | `beg`       |         | Stand (`beg=false`) or beg (`beg=true`) |
+        | `respond`   |         | Gift (`run=false`) or run the cards (`run=true`) |
+        | `play`      | `p`     | Play a card (requires `cardIndex`) |
+        | `next`      | `n`     | Advance to next trick |
+        | `nextround` | `nr`    | Score the deal and advance |
+        | `hint`      | `h`     | Get a recommended action |
+        | `log`       | `l`     | View action log |
+      operationId: allFoursExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, beg, respond, play, p, next, n, nextround, nr, hint, h, log, l]
+                beg:
+                  type: boolean
+                  description: For the `beg` command — true to beg, false to stand.
+                run:
+                  type: boolean
+                  description: For the `respond` command — true to run the cards, false to gift.
+                cardIndex:
+                  type: integer
+                  description: Hand index of the card to play (for `play`).
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      minimum: 0
+                      maximum: 2
+                    pointLimit:
+                      type: integer
+                      minimum: 1
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              stand:
+                summary: Non-dealer stands
+                value:
+                  command: beg
+                  beg: false
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllFoursResponse'
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
 components:
   schemas:
     # -------------------------------------------------------------------------
@@ -28194,6 +28294,105 @@ components:
               type: integer
             bid:
               type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    AllFoursResponse:
+      type: object
+      description: Current state of the All Fours (Seven Up) game
+      properties:
+        players:
+          type: array
+          description: Array of player objects (0=non-dealer/human, 1=dealer/CPU)
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+              trickCount:
+                type: integer
+        phase:
+          type: integer
+          description: "Game phase: 0=Beg, 1=Gift, 2=Play, 3=TrickEnd, 4=RoundEnd, 5=GameEnd."
+          enum: [0, 1, 2, 3, 4, 5]
+          example: 0
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        dealerIdx:
+          type: integer
+        nonDealerIdx:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        trumpSuit:
+          type: integer
+          description: "Trump suit: 0=unset, 1=Spades, 2=Clubs, 3=Hearts, 4=Diamonds."
+        turnUp:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          description: The turn-up card that set the provisional trump, or null.
+        runCount:
+          type: integer
+          description: Number of "run the cards" attempts this deal.
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        validPlayIndices:
+          type: array
+          items:
+            type: integer
+          description: Indices of cards in the human player's hand that are legal to play.
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+        hint:
+          type: object
+          properties:
+            cardIndex:
+              type: integer
+            beg:
+              type: boolean
+            run:
+              type: boolean
             reason:
               type: string
         message:

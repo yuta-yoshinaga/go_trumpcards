@@ -890,4 +890,9 @@ func init() {
 			return usecase.NewBeggarMyNeighbourInteractor(domain.NewDefaultBeggarMyNeighbour(), new(presenter.BeggarMyNeighbourWebPresenter))
 		},
 		controller.NewBeggarMyNeighbourWebController)
+	BindWebControllerFor("allfours",
+		func() usecase.AllFoursInteractorIF {
+			return usecase.NewAllFoursInteractor(domain.NewDefaultAllFours(), new(presenter.AllFoursWebPresenter))
+		},
+		controller.NewAllFoursWebController)
 }

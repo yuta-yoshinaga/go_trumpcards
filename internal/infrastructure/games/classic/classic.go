@@ -443,4 +443,13 @@ func init() {
 		},
 		controller.NewDoubleKlondikeWebControllerWithProvider)
 
+	games.RegisterKVGame("allfours", games.CategoryClassic,
+		func() usecase.AllFoursInteractorIF {
+			return usecase.NewAllFoursInteractor(domain.NewDefaultAllFours(), new(presenter.AllFoursWebPresenter))
+		},
+		func(data []byte) (usecase.AllFoursInteractorIF, error) {
+			return usecase.RestoreAllFoursInteractor(data, new(presenter.AllFoursWebPresenter))
+		},
+		controller.NewAllFoursWebControllerWithProvider)
+
 }

@@ -5,6 +5,7 @@
  */
 import accordion from '../../../docs/manual/cui/accordion.md?raw';
 import acesup from '../../../docs/manual/cui/acesup.md?raw';
+import allfours from '../../../docs/manual/cui/allfours.md?raw';
 import baccarat from '../../../docs/manual/cui/baccarat.md?raw';
 import badugi from '../../../docs/manual/cui/badugi.md?raw';
 import bakersdozen from '../../../docs/manual/cui/bakersdozen.md?raw';
@@ -356,6 +357,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/piquet': piquet,
   '/truco': truco,
   '/beggarmyneighbour': beggarmyneighbour,
+  '/allfours': allfours,
 };
 
 /** Returns true when CLI mode is enabled for the game at the given path. */

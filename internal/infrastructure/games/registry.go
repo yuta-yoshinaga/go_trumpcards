@@ -464,6 +464,12 @@ var registry = []*Game{
 	// penalty card during payment flips the obligation. The player who collects all
 	// 52 cards wins. Casino worker bucket.
 	{Name: "beggarmyneighbour", Category: CategoryCasino},
+	// All Fours (Seven Up / Old Sledge): classic English 2-player trick-taking
+	// game with a beg/stand negotiation and a turn-up trump. Each deal scores
+	// High/Low/Jack/Game; first to 7 points wins. Classic worker bucket (the
+	// casino worker is at the 1 MB gzip limit; as a trick-taker, All Fours
+	// shares the classic worker's trick-taking code).
+	{Name: "allfours", Category: CategoryClassic},
 }
 
 // All returns a value-level copy of the registry in canonical order.

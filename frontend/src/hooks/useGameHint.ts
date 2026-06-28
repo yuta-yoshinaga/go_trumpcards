@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type {
   AccordionResponse,
+  AllFoursResponse,
   BaccaratResponse,
   BadugiResponse,
   BakersDozenResponse,
@@ -134,6 +135,7 @@ import type {
 } from '../types/card';
 import type { HintResult } from '../types/hint';
 import { getAccordionHint } from '../utils/hints/accordionHint';
+import { getAllFoursHint } from '../utils/hints/allfoursHint';
 import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBadugiHint } from '../utils/hints/badugiHint';
 import { getBakersdozenHint } from '../utils/hints/bakersdozenHint';
@@ -424,6 +426,7 @@ const hintFactories = {
   threecardbrag: (s) => getThreeCardBragHint(s as ThreeCardBragResponse),
   teenpatti: (s) => getTeenPattiHint(s as TeenPattiResponse),
   beggarmyneighbour: (s) => getBeggarMyNeighbourHint(s as BeggarMyNeighbourResponse),
+  allfours: (s) => getAllFoursHint(s as AllFoursResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

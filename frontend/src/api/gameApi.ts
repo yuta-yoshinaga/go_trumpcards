@@ -2,6 +2,7 @@ import type {
   AccordionResponse,
   AcesUpResponse,
   ActionLogResponse,
+  AllFoursResponse,
   BaccaratResponse,
   BadugiResponse,
   BakersDozenMoveZone,
@@ -374,6 +375,7 @@ const workerUrl: Record<string, string> = {
   courtpiece: WORKER_CASINO,
   bezique: WORKER_CLASSIC,
   beggarmyneighbour: WORKER_CASINO,
+  allfours: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -3261,6 +3263,23 @@ export const beggarmyneighbourApi = {
     gameExec<BeggarMyNeighbourResponse>('beggarmyneighbour', { command, ...config }),
 };
 
+/** Configuration options for All Fours (Seven Up) game settings. */
+export interface AllFoursConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** API client for the All Fours /allfours/exec endpoint. */
+export const allfoursApi = {
+  exec: (
+    command: 'reset' | 'beg' | 'respond' | 'play' | 'next' | 'nextround' | 'hint' | 'log',
+    beg?: boolean,
+    run?: boolean,
+    cardIndex?: number,
+    config?: AllFoursConfigInput,
+  ) => gameExec<AllFoursResponse>('allfours', { command, beg, run, cardIndex, config }),
+};
+
 /** Configuration options for Slapjack game settings. */
 export interface SlapjackConfigInput {
   cpuDifficulty?: number;
@@ -4040,6 +4059,7 @@ const games = [
   'doubleklondike',
   'blackhole',
   'beggarmyneighbour',
+  'allfours',
 ] as const;
 type Game = (typeof games)[number];
 
