@@ -1473,3 +1473,33 @@ func TestMighty_TrickCard_JSONRoundTrip(t *testing.T) {
 	assert.Equal(t, tc.Card.GetDesign(), out.Card.GetDesign())
 	assert.Equal(t, tc.Card.GetValue(), out.Card.GetValue())
 }
+
+// --- issue #2527: empty-hand nil-panic in CpuPlay ---
+
+func TestMighty_CpuPlayDoesNotPanicOnEmptyHand(t *testing.T) {
+	m := newTestMighty()
+	m.SetPhase(domain.MightyPhasePlay)
+	m.SetCurrentPlayerIdx(1) // a CPU whose hand is empty (no cards dealt)
+	require.NotPanics(t, func() { m.CpuPlay() })
+	// The invalid empty-hand-in-play state is converted to RoundEnd, which is a
+	// terminal phase for the CPU loop (no panic, no infinite no-op loop).
+	assert.Equal(t, domain.MightyPhaseRoundEnd, m.GetPhase())
+}
+
+func TestMighty_ResolveTrickEndsRoundWhenWinnerOutOfCards(t *testing.T) {
+	m := newTestMighty()
+	m.SetTrumpSuit(domain.CardDesignSpade)
+	m.SetPhase(domain.MightyPhaseTrickEnd)
+	m.SetTrickNumber(3) // well before the 10-trick cap
+	// A complete 5-card trick while every hand is already empty.
+	m.SetCurrentTrick([]*domain.MightyTrickCard{
+		{PlayerIdx: 0, Card: mightyCard(domain.CardDesignSpade, 5)},
+		{PlayerIdx: 1, Card: mightyCard(domain.CardDesignSpade, 9)},
+		{PlayerIdx: 2, Card: mightyCard(domain.CardDesignHeart, 3)},
+		{PlayerIdx: 3, Card: mightyCard(domain.CardDesignClover, 7)},
+		{PlayerIdx: 4, Card: mightyCard(domain.CardDesignDiamond, 2)},
+	})
+	m.ResolveTrick()
+	// Winner is out of cards, so the round ends instead of starting another trick.
+	assert.Equal(t, domain.MightyPhaseRoundEnd, m.GetPhase())
+}

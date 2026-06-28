@@ -427,6 +427,15 @@ func (m *Mighty) CpuPlay() {
 
 	player := m.players[m.round.currentPlayerIdx]
 
+	// Safety net: never ask an empty-handed player to play. If we somehow reach
+	// the play phase with no cards (a hand-desync bug), end the round instead of
+	// dereferencing a nil card. RoundEnd is a terminal phase for the CPU loop, so
+	// this also avoids an infinite no-op loop (issue #2527).
+	if player.GetCardsSize() == 0 {
+		m.round.phase = MightyPhaseRoundEnd
+		return
+	}
+
 	// ジョーカーリードの判断: リード時かつジョーカー所有時のみ検討
 	if len(m.round.currentTrick) == 0 {
 		jokerIdx := m.findJokerIndex(player)
@@ -470,7 +479,11 @@ func (m *Mighty) ResolveTrick() {
 
 	m.round.leadPlayerIdx = winnerIdx
 
-	if m.round.trickNumber >= MightyTricksPerRound {
+	// The winner leads the next trick; if their hand is empty the round is over.
+	// Guarding on an empty hand (not just the trick cap) prevents NextTrick from
+	// re-entering the play phase with an empty-handed leader, which would make
+	// CpuPlay try to play a card it does not have (issue #2527).
+	if m.round.trickNumber >= MightyTricksPerRound || m.players[winnerIdx].GetCardsSize() == 0 {
 		m.round.phase = MightyPhaseRoundEnd
 	} else {
 		m.round.phase = MightyPhaseTrickEnd
@@ -998,6 +1011,11 @@ func (m *Mighty) startPlayPhase() {
 
 // playCard カードをプレイする共通処理
 func (m *Mighty) playCard(playerIdx int, card *Card, isJokerLead bool, demandSuit int) {
+	// Defense in depth: a nil card (e.g. RemoveCard on an out-of-range/empty index)
+	// must never reach card.GetDesign() below and panic the HTTP handler (issue #2527).
+	if card == nil {
+		return
+	}
 	m.round.currentTrick = append(m.round.currentTrick, &MightyTrickCard{
 		PlayerIdx:      playerIdx,
 		Card:           card,
