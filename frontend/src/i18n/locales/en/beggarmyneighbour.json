@@ -1,0 +1,39 @@
+{
+  "button": {
+    "step": "Play Card",
+    "autoplay": "Auto Play"
+  },
+  "phase": {
+    "play": "Playing",
+    "payPenalty": "Paying Penalty",
+    "collect": "Collect Pile",
+    "end": "End"
+  },
+  "label": {
+    "drawPile": "Draw",
+    "discardPile": "Discard",
+    "total": "Total",
+    "centralPile": "Central Pile",
+    "penaltyRemaining": "Penalty Left",
+    "lastCard": "Last Card",
+    "rounds": "Rounds",
+    "maxRounds": "Max Rounds"
+  },
+  "settings": {
+    "maxRounds": "Max Rounds",
+    "maxRoundsHelp": "A cap that prevents the game from running indefinitely when penalty chains loop. The game ends when either player runs out of cards or the max round is reached."
+  },
+  "hint": {
+    "playCard": "Play the next card",
+    "payPenalty": "Pay your penalty card",
+    "collectPile": "Collect the central pile"
+  },
+  "tutorial": {
+    "cpuPile": "CPU's card pile. Shows remaining card count.",
+    "centralPile": "The central pile. Penalty cards cause it to grow.",
+    "playerPile": "Your card pile. You lose when you run out of cards.",
+    "stepButton": "Press this button to play the next card.",
+    "autoplayButton": "Press this button to auto-play until the game ends.",
+    "resetButton": "Start a new game."
+  }
+}

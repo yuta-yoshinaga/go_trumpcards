@@ -541,4 +541,13 @@ func init() {
 		},
 		controller.NewOpenFaceChineseWebControllerWithProvider)
 
+	games.RegisterKVGame("beggarmyneighbour", games.CategoryCasino,
+		func() usecase.BeggarMyNeighbourInteractorIF {
+			return usecase.NewBeggarMyNeighbourInteractor(domain.NewDefaultBeggarMyNeighbour(), new(presenter.BeggarMyNeighbourWebPresenter))
+		},
+		func(data []byte) (usecase.BeggarMyNeighbourInteractorIF, error) {
+			return usecase.RestoreBeggarMyNeighbourInteractor(data, new(presenter.BeggarMyNeighbourWebPresenter))
+		},
+		controller.NewBeggarMyNeighbourWebControllerWithProvider)
+
 }

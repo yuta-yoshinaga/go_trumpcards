@@ -1,0 +1,39 @@
+{
+  "button": {
+    "step": "カードを出す",
+    "autoplay": "自動進行"
+  },
+  "phase": {
+    "play": "プレイ中",
+    "payPenalty": "ペナルティ支払い中",
+    "collect": "山を回収",
+    "end": "終了"
+  },
+  "label": {
+    "drawPile": "山札",
+    "discardPile": "捨札",
+    "total": "合計",
+    "centralPile": "場の山",
+    "penaltyRemaining": "残りペナルティ",
+    "lastCard": "最後のカード",
+    "rounds": "ラウンド",
+    "maxRounds": "最大ラウンド"
+  },
+  "settings": {
+    "maxRounds": "最大ラウンド数",
+    "maxRoundsHelp": "ペナルティカードの連鎖でゲームが長引く場合の上限です。どちらかの手札が尽きるか、最大ラウンドに到達するとゲーム終了です。"
+  },
+  "hint": {
+    "playCard": "カードを出しましょう",
+    "payPenalty": "ペナルティを支払いましょう",
+    "collectPile": "場の山を回収しましょう"
+  },
+  "tutorial": {
+    "cpuPile": "CPUの山札です。残り枚数が表示されます。",
+    "centralPile": "場の山です。ペナルティが発生すると積み重なります。",
+    "playerPile": "あなたの山札です。カードがなくなると負けです。",
+    "stepButton": "このボタンでカードを出します。",
+    "autoplayButton": "決着まで自動で進めるボタンです。",
+    "resetButton": "新しいゲームを始めるボタンです。"
+  }
+}

@@ -5,6 +5,7 @@ import type {
   BadugiResponse,
   BakersDozenResponse,
   BarbuResponse,
+  BeggarMyNeighbourResponse,
   BeleagueredCastleResponse,
   BeloteResponse,
   BeziqueResponse,
@@ -137,6 +138,7 @@ import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBadugiHint } from '../utils/hints/badugiHint';
 import { getBakersdozenHint } from '../utils/hints/bakersdozenHint';
 import { getBarbuHint } from '../utils/hints/barbuHint';
+import { getBeggarMyNeighbourHint } from '../utils/hints/beggarmyneighbourHint';
 import { getBeleagueredcastleHint } from '../utils/hints/beleagueredcastleHint';
 import { getBeloteHint } from '../utils/hints/beloteHint';
 import { getBeziqueHint } from '../utils/hints/beziqueHint';
@@ -421,6 +423,7 @@ const hintFactories = {
   ecarte: (s) => getEcarteHint(s as EcarteResponse),
   threecardbrag: (s) => getThreeCardBragHint(s as ThreeCardBragResponse),
   teenpatti: (s) => getTeenPattiHint(s as TeenPattiResponse),
+  beggarmyneighbour: (s) => getBeggarMyNeighbourHint(s as BeggarMyNeighbourResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

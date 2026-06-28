@@ -259,7 +259,8 @@
     "labellelucie": "A classic French fan solitaire. 52 cards are dealt into 17 fans of three; only each fan's top card moves, building down in suit onto another fan or up from the Ace on four foundations. When stuck, gather the remaining cards, shuffle and redeal — but only three times. Run out of redeals while stuck and you lose.",
     "simplesimon": "An easier Spider-family solitaire. All 52 cards are dealt face-up into 10 columns with no stock and no free cells. Move a single top card or a same-suit descending run; a complete King-to-Ace same-suit run is removed automatically. Clear all four suits to win. Because every card is visible, it plays like a look-ahead puzzle.",
     "doubleklondike": "Klondike played with two decks of 104 cards. Nine tableau columns and eight foundations (two per suit), with a three-card draw from the stock. Build the tableau down in alternating colours and the foundations up by suit from Ace to King; move all 104 cards to the foundations to win. The doubled deck rewards long look-ahead to avoid dead ends.",
-    "blackhole": "A logic-puzzle patience by David Parlett. The Ace of Spades seeds a central black hole; the other 51 cards are dealt into 17 fans of three. Play any fan top whose rank is one away from the black hole top (any suit, no King-Ace wrap). Absorb all 52 cards to win. With no stock and everything visible, it plays as a pure look-ahead puzzle."
+    "blackhole": "A logic-puzzle patience by David Parlett. The Ace of Spades seeds a central black hole; the other 51 cards are dealt into 17 fans of three. Play any fan top whose rank is one away from the black hole top (any suit, no King-Ace wrap). Absorb all 52 cards to win. With no stock and everything visible, it plays as a pure look-ahead puzzle.",
+    "beggarmyneighbour": "Beggar-My-Neighbour. Split 52 cards evenly; take turns playing one card face-up to a central pile. Penalty cards (J=1, Q=2, K=3, A=4) force the opponent to pay that many cards — but if a new penalty appears mid-payment the obligation flips back. Collect all 52 to win. Pure luck but penalty chains can stretch surprisingly long."
   },
   "stretch_blurb": {
     "blackjack": "The 21 instinct may be obvious — but the betting decisions surprise.",
@@ -435,6 +436,7 @@
     "labellelucie": "A classic fan solitaire with just three gather-and-reshuffle redeals to escape a dead end.",
     "simplesimon": "An easier, fully-open Spider-family solitaire with no stock — a visible puzzle to solve.",
     "doubleklondike": "Two-deck Klondike — clear 104 cards to eight foundations. An expanded solitaire needing long look-ahead.",
-    "blackhole": "Absorb all 52 cards by \u00b11 rank around a central pile. A fully-visible look-ahead puzzle."
+    "blackhole": "Absorb all 52 cards by \u00b11 rank around a central pile. A fully-visible look-ahead puzzle.",
+    "beggarmyneighbour": "Pure luck. The suspense is in the penalty chain \u2014 when will it end?"
   }
 }

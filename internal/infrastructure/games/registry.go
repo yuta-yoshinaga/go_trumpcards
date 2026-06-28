@@ -458,6 +458,12 @@ var registry = []*Game{
 	// ♠A; play a fan top whose rank is ±1 (any suit, no K-A wrap) onto the pile.
 	// Absorb all 52 cards to win. Solo worker bucket.
 	{Name: "blackhole", Category: CategorySolo},
+	// Beggar-My-Neighbour: classic English 2-player capture game. 52 cards split
+	// evenly; players alternate turning top cards onto a central pile. Penalty
+	// cards (J=1, Q=2, K=3, A=4) force the opponent to pay that many cards; a new
+	// penalty card during payment flips the obligation. The player who collects all
+	// 52 cards wins. Casino worker bucket.
+	{Name: "beggarmyneighbour", Category: CategoryCasino},
 }
 
 // All returns a value-level copy of the registry in canonical order.

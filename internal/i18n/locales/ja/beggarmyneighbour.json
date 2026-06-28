@@ -1,0 +1,18 @@
+{
+  "helpTitle": "Beggar-My-Neighbour (ビガー・マイ・ネイバー)",
+  "helpStep": "  s                    次のカードを出す / ペナルティを払う / 山を回収する",
+  "helpAutoPlay": "  a                    決着まで自動で進める",
+  "helpSetMax": "  sm <n>               MaxRounds (10-50000) を設定してリセット",
+  "cpuStats": "CPU: 山札{{draw}}枚 / 捨札{{discard}}枚 (計{{total}}枚)",
+  "humanStats": "あなた: 山札{{draw}}枚 / 捨札{{discard}}枚 (計{{total}}枚)",
+  "boardLabel": "[場の山]",
+  "boardPile": "場のカード: {{count}}枚",
+  "boardLastCard": "最後に出たカード: {{card}}",
+  "boardLastCardEmpty": "最後に出たカード: --",
+  "promptPlay": "step コマンドで次のカードを出します。",
+  "promptPayPenalty": "ペナルティ支払い中！ あと{{remaining}}枚 step で払います。",
+  "promptCollect": "ペナルティを払いきった！ step で山を回収します。",
+  "gameWinHuman": "あなたの勝ちです！",
+  "gameWinCpu": "CPUの勝ちです...",
+  "gameDraw": "引き分けです！"
+}

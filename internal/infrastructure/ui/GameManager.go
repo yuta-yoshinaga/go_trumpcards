@@ -2829,6 +2829,16 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "beggarmyneighbour", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBeggarMyNeighbourCuiController(usecase.NewBeggarMyNeighbourInteractor(
+				domain.NewDefaultBeggarMyNeighbour(), new(presenter.BeggarMyNeighbourCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:    "beggarmyneighbour.helpTitle",
+				CommandKeys: []string{"beggarmyneighbour.helpStep", "beggarmyneighbour.helpAutoPlay"},
+				SettingKeys: []string{"beggarmyneighbour.helpSetMax"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

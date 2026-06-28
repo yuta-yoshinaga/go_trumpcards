@@ -885,4 +885,9 @@ func init() {
 			return usecase.NewOpenFaceChineseInteractor(domain.NewDefaultOpenFaceChinese(), new(presenter.OpenFaceChineseWebPresenter))
 		},
 		controller.NewOpenFaceChineseWebController)
+	BindWebControllerFor("beggarmyneighbour",
+		func() usecase.BeggarMyNeighbourInteractorIF {
+			return usecase.NewBeggarMyNeighbourInteractor(domain.NewDefaultBeggarMyNeighbour(), new(presenter.BeggarMyNeighbourWebPresenter))
+		},
+		controller.NewBeggarMyNeighbourWebController)
 }
