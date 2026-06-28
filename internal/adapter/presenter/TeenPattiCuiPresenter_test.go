@@ -12,6 +12,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func tpMakePlayers() []*domain.TeenPattiPlayer {
@@ -68,16 +69,35 @@ func TestTeenPattiCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "SPADE")
 	})
 
-	t.Run("side show phase shows prompt", func(t *testing.T) {
+	t.Run("side show phase shows player names, not raw indices", func(t *testing.T) {
+		i18n.SetLang("en")
+		defer i18n.SetLang("ja")
 		m, _ := tpSetupMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.TeenPattiPhaseSideShow)
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetSideShowRequester")
 		m.On("GetSideShowRequester").Return(2)
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetSideShowTarget")
-		m.On("GetSideShowTarget").Return(1)
+		m.On("GetSideShowTarget").Return(1) // CPU target
 		result := p.Output(m, nil)
-		assert.NotEmpty(t, result)
+		assert.Contains(t, result, "CPU 2") // requester rendered by name
+		assert.Contains(t, result, "CPU 1") // target rendered by name
+		// Target is a CPU, so the "you are challenged" clarification is omitted.
+		assert.NotContains(t, result, "accept or decline")
+	})
+
+	t.Run("side show targeting the human shows a respond clarification", func(t *testing.T) {
+		i18n.SetLang("en")
+		defer i18n.SetLang("ja")
+		m, _ := tpSetupMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.TeenPattiPhaseSideShow)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetSideShowRequester")
+		m.On("GetSideShowRequester").Return(1)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetSideShowTarget")
+		m.On("GetSideShowTarget").Return(0) // human target
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "accept or decline")
 	})
 
 	t.Run("showdown reveals all non-folded hands", func(t *testing.T) {
@@ -148,7 +168,7 @@ func TestTeenPattiCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetHint").Return(&domain.TeenPattiHint{Action: "see", Reason: "see_first"})
 		result := p.HintOutput(m)
 		assert.NotEmpty(t, result)
-		assert.Contains(t, result, "teenpatti.hint")
+		assert.Contains(t, result, "see")
 	})
 
 	t.Run("raise hint", func(t *testing.T) {
@@ -156,7 +176,7 @@ func TestTeenPattiCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetHint").Return(&domain.TeenPattiHint{Action: "raise", Reason: "strong_hand"})
 		result := p.HintOutput(m)
 		assert.NotEmpty(t, result)
-		assert.Contains(t, result, "teenpatti.hint")
+		assert.Contains(t, result, "raise")
 	})
 }
 
