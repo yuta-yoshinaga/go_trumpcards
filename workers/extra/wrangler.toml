@@ -1,0 +1,17 @@
+name = "go-trumpcards-extra"
+main = "./build/worker.mjs"
+compatibility_date = "2024-09-23"
+
+# Production KV — REPLACE the placeholder ids below with the namespace you
+# create for this worker, e.g.: wrangler kv namespace create GAME_SESSIONS
+[[kv_namespaces]]
+binding = "GAME_SESSIONS"
+id = "REPLACE_WITH_PROD_KV_ID"
+preview_id = "REPLACE_WITH_PREVIEW_KV_ID"
+
+[env.staging]
+name = "go-trumpcards-extra-staging"
+
+[[env.staging.kv_namespaces]]
+binding = "GAME_SESSIONS"
+id = "REPLACE_WITH_STAGING_KV_ID"

@@ -16,7 +16,8 @@ const (
 	expectedCasino  = 65
 	expectedClassic = 57
 	expectedSolo    = 57
-	expectedTotal   = expectedCasino + expectedClassic + expectedSolo
+	expectedExtra   = 0
+	expectedTotal   = expectedCasino + expectedClassic + expectedSolo + expectedExtra
 )
 
 func TestAllReturnsExpectedTotal(t *testing.T) {
@@ -52,6 +53,7 @@ func TestByCategoryCounts(t *testing.T) {
 		{games.CategoryCasino, expectedCasino},
 		{games.CategoryClassic, expectedClassic},
 		{games.CategorySolo, expectedSolo},
+		{games.CategoryExtra, expectedExtra},
 	}
 	for _, c := range cases {
 		t.Run(c.cat.String(), func(t *testing.T) {
@@ -67,6 +69,7 @@ func TestCategoryString(t *testing.T) {
 		games.CategoryCasino:  "casino",
 		games.CategoryClassic: "classic",
 		games.CategorySolo:    "solo",
+		games.CategoryExtra:   "extra",
 	}
 	for cat, want := range cases {
 		if got := cat.String(); got != want {
@@ -103,7 +106,7 @@ func TestAllEntriesAreValid(t *testing.T) {
 			t.Errorf("game %q: NewWebController() returned nil", g.Name)
 		}
 		switch g.Category {
-		case games.CategoryCasino, games.CategoryClassic, games.CategorySolo:
+		case games.CategoryCasino, games.CategoryClassic, games.CategorySolo, games.CategoryExtra:
 			// valid
 		default:
 			t.Errorf("game %q has invalid Category %d", g.Name, int(g.Category))
