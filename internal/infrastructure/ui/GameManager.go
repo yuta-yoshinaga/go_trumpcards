@@ -676,6 +676,17 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"ohhell.helpSetDifficulty", "ohhell.helpSetMaxHand"},
 			})
 	}},
+	{Name: "ninetynine", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewNinetyNineCuiController(usecase.NewNinetyNineInteractor(
+				domain.NewDefaultNinetyNine(), new(presenter.NinetyNineCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "ninetynine.helpTitle",
+				CommandKeys:       []string{"ninetynine.helpBid", "ninetynine.helpPlay", "ninetynine.helpNext", "ninetynine.helpNextRound"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"ninetynine.helpSetDifficulty", "ninetynine.helpSetTarget"},
+			})
+	}},
 	{Name: "bridge", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewBridgeCuiController(usecase.NewBridgeInteractor(

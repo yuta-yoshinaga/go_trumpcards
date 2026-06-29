@@ -1,0 +1,76 @@
+{
+  "phase": {
+    "bid": "埋める",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetScore": "目標スコア",
+    "easy": "やさしい",
+    "normal": "ふつう",
+    "hard": "むずかしい"
+  },
+  "deal": "ディール {{n}}",
+  "trick": "トリック {{n}}",
+  "handSize": "手札枚数: {{n}}",
+  "trump": "切り札: {{suit}}",
+  "dealer": "ディーラー: {{name}}",
+  "targetScore": "目標: {{n}}",
+  "cards": "{{count}} 枚",
+  "cumulativeScore": "累計: {{score}}",
+  "roundScore": "ラウンド: {{score}}",
+  "bid": "ビッド {{n}}",
+  "bidNone": "ビッドなし",
+  "buried": "埋めた枚数: {{count}}",
+  "bidProgress": "ビッド: {{bid}} / 獲得: {{won}}",
+  "burySelected": "選択 {{count}} / 3",
+  "currentTrick": "現在のトリック",
+  "scores": "スコア",
+  "scoresPlayer": "プレイヤー",
+  "scoresBid": "ビッド",
+  "scoresTricks": "トリック",
+  "scoresRound": "ラウンド",
+  "scoresTotal": "累計",
+  "playButton": "カードを出す",
+  "buryButton": "3枚埋める",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド",
+  "buryPhase": "ちょうど3枚を埋めてください（スート合計があなたのビッド）",
+  "playPhase": {
+    "lead": "カードをリードしてください",
+    "follow": "カードを出してください"
+  },
+  "trickEnd": "トリック完了",
+  "roundEnd": "ラウンド完了",
+  "result": {
+    "humanWin": "あなたの勝ち！",
+    "cpuWin": "CPU {{cpuId}} の勝ち！"
+  },
+  "hintBury": "推奨の埋めカード",
+  "hintPlay": "推奨カード",
+  "suitName": {
+    "1": "スペード",
+    "2": "クラブ",
+    "3": "ハート",
+    "4": "ダイヤ"
+  },
+  "tutorial": {
+    "bidControls": "埋めるフェーズではちょうど3枚を選びます。3枚のスート合計（♦=0, ♠=1, ♥=2, ♣=3）が宣言ビッド（0〜9）になります。",
+    "trickDisplay": "現在のトリックです。切り札スートはディールごとに固定です。",
+    "playerHand": "あなたの手札です。リードスートに従う必要があります。",
+    "playButton": "このボタンでカードを埋めたり、選択したカードを出します。",
+    "scoreTable": "スコア表です。ちょうどのビッドで 10 + ビッド数 + 成功ボーナスが得られます。",
+    "resetButton": "リセットボタンで新しいゲームを始めます。"
+  },
+  "hint": {
+    "buryStrategic": "到達可能なビッドになるよう埋めましょう",
+    "leadStrategic": "戦略的にリードしましょう",
+    "followSuit": "リードスートに従いましょう",
+    "trumpWithCard": "切り札で取りましょう",
+    "discardLowest": "一番低いカードを捨てましょう"
+  }
+}

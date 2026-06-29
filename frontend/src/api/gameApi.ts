@@ -107,6 +107,7 @@ import type {
   NertzConfig as NertzConfigType,
   NertzMoveZone,
   NertzResponse,
+  NinetyNineResponse,
   OasisPokerResponse,
   OhHellResponse,
   OldMaidResponse,
@@ -247,6 +248,7 @@ const workerUrl: Record<string, string> = {
   euchre: WORKER_SOLO,
   bridge: WORKER_CASINO,
   napoleon: WORKER_CASINO,
+  ninetynine: WORKER_CLASSIC,
   ohhell: WORKER_CLASSIC,
   oldmaid: WORKER_CLASSIC,
   doubt: WORKER_CLASSIC,
@@ -1005,6 +1007,22 @@ export interface OhHellConfigInput {
 
 /** API client for the Oh Hell /ohhell/exec endpoint. */
 export const ohHellApi = createBidPlayApi<OhHellResponse, OhHellConfigInput>('ohhell');
+
+/** Configuration options for Ninety-Nine game settings. */
+export interface NinetyNineConfigInput {
+  cpuDifficulty?: number;
+  targetScore?: number;
+}
+
+/** API client for the Ninety-Nine /ninetynine/exec endpoint. Bidding submits 3 bury-card indices. */
+export const ninetyNineApi = {
+  exec: (
+    command: 'reset' | 'bid' | 'play' | 'next' | 'nextround' | 'hint' | 'log',
+    buryIndices?: number[],
+    cardIndex?: number,
+    config?: NinetyNineConfigInput,
+  ) => gameExec<NinetyNineResponse>('ninetynine', { command, buryIndices, cardIndex, config }),
+};
 
 /** Configuration options for Memory game settings. */
 export interface MemoryConfigInput {
@@ -3941,6 +3959,7 @@ const games = [
   'twotenjack',
   'napoleon',
   'ohhell',
+  'ninetynine',
   'memory',
   'klondike',
   'freecell',

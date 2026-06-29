@@ -303,6 +303,27 @@ func NewTrumpCardsShortDeck() *TrumpCards {
 	return t
 }
 
+// NewTrumpCardsNinetyNine ナインティナイン(David Parlett)用36枚デッキコンストラクタ
+// 正規のNinety-Nineパックは2,3,4,5を抜き、A,6,7,8,9,10,J,Q,K
+// (値: 1,6,7,8,9,10,11,12,13) × 4スート = 36枚で構成される。
+// これはショートデック(6+)と同一の36枚構成のため ShortDeckValues を共有する。
+// 3人に12枚ずつ配ると過不足なく0枚残る。
+func NewTrumpCardsNinetyNine() *TrumpCards {
+	suits := []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond}
+	totalCards := len(ShortDeckValues) * len(suits) // 36
+
+	t := new(TrumpCards)
+	t.deckCnt = totalCards
+	t.deck = make([]*Card, 0, totalCards)
+	for _, suit := range suits {
+		for _, val := range ShortDeckValues {
+			t.deck = append(t.deck, NewCard(suit, val, false))
+		}
+	}
+	t.deckInit()
+	return t
+}
+
 // NewTrumpCardsFiveHundred 500 (Five Hundred) 用43枚デッキコンストラクタ
 // ジョーカー1枚 + 赤スート(♥♦)の 4〜A(値: 4-13,1 = 11枚) + 黒スート(♠♣)の 5〜A(値: 5-13,1 = 10枚)
 // 合計 11×2 + 10×2 + 1 = 43枚。赤の2〜3、黒の2〜4を抜いた標準的な4人用500デッキ。

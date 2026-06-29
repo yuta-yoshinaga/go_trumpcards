@@ -87,6 +87,14 @@ func init() {
 			return usecase.RestoreOhHellInteractor(data, new(presenter.OhHellWebPresenter))
 		},
 		controller.NewOhHellWebControllerWithProvider)
+	games.RegisterKVGame("ninetynine", games.CategoryClassic,
+		func() usecase.NinetyNineInteractorIF {
+			return usecase.NewNinetyNineInteractor(domain.NewDefaultNinetyNine(), new(presenter.NinetyNineWebPresenter))
+		},
+		func(data []byte) (usecase.NinetyNineInteractorIF, error) {
+			return usecase.RestoreNinetyNineInteractor(data, new(presenter.NinetyNineWebPresenter))
+		},
+		controller.NewNinetyNineWebControllerWithProvider)
 	games.RegisterKVGame("speed", games.CategoryClassic,
 		func() usecase.SpeedInteractorIF {
 			return usecase.NewSpeedInteractor(domain.NewDefaultSpeed(), new(presenter.SpeedWebPresenter))
