@@ -1,0 +1,19 @@
+{
+  "helpTitle": "Flower Garden (フラワーガーデン)",
+  "helpMoveTF": "  m <col> f            フラワーベッドから組札へ",
+  "helpMoveTT": "  m <fromCol> <toCol>  フラワーベッド間で1枚移動",
+  "helpMoveRT": "  m r<idx> <toCol>     ブーケからフラワーベッドへ",
+  "helpMoveRF": "  m r<idx> f           ブーケから組札へ",
+  "helpGiveUp": "  g                    ギブアップ",
+  "helpHint": "  h                    ヒント",
+  "helpAutoComplete": "  ac                   オートコンプリート",
+  "foundationHeader": "Foundation: ",
+  "reserveHeader": "ブーケ: ",
+  "columnLabel": "列{{col}}:",
+  "promptToZone": "移動先の列、または組札なら 'f'",
+  "hintFrom": "フラワーベッド{{col}}[{{idx}}]",
+  "hintFromReserve": "ブーケ{{idx}}",
+  "hintToFoundation": "ファンデーション",
+  "hintToTableau": "フラワーベッド{{col}}",
+  "hintLine": "ヒント: {{from}} → {{to}}"
+}

@@ -68,6 +68,7 @@ import faro from '../../../docs/manual/cui/faro.md?raw';
 import fiftyone from '../../../docs/manual/cui/fiftyone.md?raw';
 import fivecardstud from '../../../docs/manual/cui/fivecardstud.md?raw';
 import fivehundred from '../../../docs/manual/cui/fivehundred.md?raw';
+import flowergarden from '../../../docs/manual/cui/flowergarden.md?raw';
 import fortyfives from '../../../docs/manual/cui/fortyfives.md?raw';
 import fortythieves from '../../../docs/manual/cui/fortythieves.md?raw';
 import fourcardpoker from '../../../docs/manual/cui/fourcardpoker.md?raw';
@@ -226,6 +227,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/beleagueredcastle': beleagueredcastle,
   '/streetsandalleys': streetsandalleys,
   '/kingalbert': kingalbert,
+  '/flowergarden': flowergarden,
   '/durak': durak,
   '/egyptianratscrew': egyptianratscrew,
   '/fiftyone': fiftyone,

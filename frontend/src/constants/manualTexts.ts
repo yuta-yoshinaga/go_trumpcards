@@ -67,6 +67,7 @@ import faro from '../../../docs/manual/web/faro.md?raw';
 import fiftyone from '../../../docs/manual/web/fiftyone.md?raw';
 import fivecardstud from '../../../docs/manual/web/fivecardstud.md?raw';
 import fivehundred from '../../../docs/manual/web/fivehundred.md?raw';
+import flowergarden from '../../../docs/manual/web/flowergarden.md?raw';
 import fortyfives from '../../../docs/manual/web/fortyfives.md?raw';
 import fortythieves from '../../../docs/manual/web/fortythieves.md?raw';
 import fourcardpoker from '../../../docs/manual/web/fourcardpoker.md?raw';
@@ -235,6 +236,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/beleagueredcastle': beleagueredcastle,
   '/streetsandalleys': streetsandalleys,
   '/kingalbert': kingalbert,
+  '/flowergarden': flowergarden,
   '/egyptianratscrew': egyptianratscrew,
   '/fortythieves': fortythieves,
   '/fourcardpoker': fourcardpoker,

@@ -44,6 +44,7 @@ import type {
   EuchreResponse,
   FiftyOneResponse,
   FiveHundredResponse,
+  FlowerGardenResponse,
   FortyFivesResponse,
   FourCardPokerResponse,
   FreeCellResponse,
@@ -185,6 +186,7 @@ import { getEightOffHint } from '../utils/hints/eightoffHint';
 import { getEuchreHint } from '../utils/hints/euchreHint';
 import { getFiftyOneHint } from '../utils/hints/fiftyoneHint';
 import { getFiveHundredHint } from '../utils/hints/fivehundredHint';
+import { getFlowergardenHint } from '../utils/hints/flowergardenHint';
 import { getFortyFivesHint } from '../utils/hints/fortyFivesHint';
 import { getFourCardPokerHint } from '../utils/hints/fourcardpokerHint';
 import { getFreeCellHint } from '../utils/hints/freecellHint';
@@ -369,6 +371,7 @@ const hintFactories = {
   beleagueredcastle: (s) => getBeleagueredcastleHint(s as BeleagueredCastleResponse),
   streetsandalleys: (s) => getStreetsandalleysHint(s as StreetsAndAlleysResponse),
   kingalbert: (s) => getKingalbertHint(s as KingAlbertResponse),
+  flowergarden: (s) => getFlowergardenHint(s as FlowerGardenResponse),
   tonk: () => null,
   thirtyone: (s) => getThirtyOneHint(s as ThirtyOneResponse),
   yaniv: (s) => getYanivHint(s as YanivResponse),

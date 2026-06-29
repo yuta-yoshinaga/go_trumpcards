@@ -1390,6 +1390,13 @@ export const KingAlbertPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Flower Garden phase constants (sync: internal/domain/FlowerGarden.go). */
+export const FlowerGardenPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Tarneeb phase constants (sync: internal/domain/Tarneeb.go). */
 export const TarneebPhase = {
   BID: 0,

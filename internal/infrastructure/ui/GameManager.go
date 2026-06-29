@@ -1633,6 +1633,24 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "flowergarden", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewFlowerGardenCuiController(usecase.NewFlowerGardenInteractor(
+				domain.NewDefaultFlowerGarden(), new(presenter.FlowerGardenCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "flowergarden.helpTitle",
+				CommandKeys: []string{
+					"flowergarden.helpMoveTT",
+					"flowergarden.helpMoveTF",
+					"flowergarden.helpMoveRT",
+					"flowergarden.helpMoveRF",
+					"flowergarden.helpGiveUp",
+					"flowergarden.helpHint",
+					"flowergarden.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "piquet", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewPiquetCuiController(usecase.NewPiquetInteractor(
