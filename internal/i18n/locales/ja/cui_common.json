@@ -16,6 +16,7 @@
   "cuiHintDiscardHigh": "高いカードを捨てる",
   "cuiHintTrumpCut": "切り札でカット",
   "cuiHintStrategicBid": "戦略的なビッド",
+  "cuiHintStrategicBury": "戦略的な伏せ札",
   "cuiHintStrongHand": "強い手札",
   "cuiHintWeakHand": "弱い手札",
   "cuiHintNone": "ヒントはありません。",

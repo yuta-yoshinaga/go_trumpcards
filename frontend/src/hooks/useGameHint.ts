@@ -71,6 +71,7 @@ import type {
   NapoleonResponse,
   NapResponse,
   NertzResponse,
+  NinetyNineResponse,
   OhHellResponse,
   OldMaidResponse,
   OmahaResponse,
@@ -211,6 +212,7 @@ import { getMusHint } from '../utils/hints/musHint';
 import { getNapHint } from '../utils/hints/napHint';
 import { getNapoleonHint } from '../utils/hints/napoleonHint';
 import { getNertzHint } from '../utils/hints/nertzHint';
+import { getNinetyNineHint } from '../utils/hints/ninetynineHint';
 import { getOhHellHint } from '../utils/hints/ohhellHint';
 import { getOldMaidHint } from '../utils/hints/oldmaidHint';
 import { getOmahaHiLoHint } from '../utils/hints/omahaHiLoHint';
@@ -318,6 +320,7 @@ const hintFactories = {
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
   mighty: (s) => getMightyHint(s as MightyResponse),
   ohhell: (s) => getOhHellHint(s as OhHellResponse),
+  ninetynine: (s) => getNinetyNineHint(s as NinetyNineResponse),
   oldmaid: (s) => getOldMaidHint(s as OldMaidResponse),
   doubt: (s) => getDoubtHint(s as DoubtResponse),
   daifugo: (s) => getDaifugoHint(s as DaifugoResponse),

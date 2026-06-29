@@ -215,6 +215,11 @@ func init() {
 			return usecase.NewOhHellInteractor(domain.NewDefaultOhHell(), new(presenter.OhHellWebPresenter))
 		},
 		controller.NewOhHellWebController)
+	BindWebControllerFor("ninetynine",
+		func() usecase.NinetyNineInteractorIF {
+			return usecase.NewNinetyNineInteractor(domain.NewDefaultNinetyNine(), new(presenter.NinetyNineWebPresenter))
+		},
+		controller.NewNinetyNineWebController)
 	BindWebControllerFor("bridge",
 		func() usecase.BridgeInteractorIF {
 			return usecase.NewBridgeInteractor(domain.NewDefaultBridge(), new(presenter.BridgeWebPresenter))

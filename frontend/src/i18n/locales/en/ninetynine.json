@@ -1,0 +1,76 @@
+{
+  "phase": {
+    "bid": "Bury",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetScore": "Target Score",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "deal": "Deal {{n}}",
+  "trick": "Trick {{n}}",
+  "handSize": "Hand size: {{n}}",
+  "trump": "Trump: {{suit}}",
+  "dealer": "Dealer: {{name}}",
+  "targetScore": "Target: {{n}}",
+  "cards": "{{count}} cards",
+  "cumulativeScore": "Total: {{score}}",
+  "roundScore": "Round: {{score}}",
+  "bid": "Bid {{n}}",
+  "bidNone": "No bid",
+  "buried": "Buried: {{count}}",
+  "bidProgress": "Bid: {{bid}} / Won: {{won}}",
+  "burySelected": "Selected {{count}} / 3",
+  "currentTrick": "Current Trick",
+  "scores": "Scores",
+  "scoresPlayer": "Player",
+  "scoresBid": "Bid",
+  "scoresTricks": "Tricks",
+  "scoresRound": "Round",
+  "scoresTotal": "Total",
+  "playButton": "Play",
+  "buryButton": "Bury 3",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "buryPhase": "Bury exactly 3 cards (their suit-sum is your bid)",
+  "playPhase": {
+    "lead": "Lead a card",
+    "follow": "Play a card"
+  },
+  "trickEnd": "Trick complete",
+  "roundEnd": "Round complete",
+  "result": {
+    "humanWin": "You win!",
+    "cpuWin": "CPU {{cpuId}} wins!"
+  },
+  "hintBury": "Recommended bury",
+  "hintPlay": "Recommended card",
+  "suitName": {
+    "1": "Spades",
+    "2": "Clubs",
+    "3": "Hearts",
+    "4": "Diamonds"
+  },
+  "tutorial": {
+    "bidControls": "In the bury phase, select exactly 3 cards. Their suit-sum (♦=0, ♠=1, ♥=2, ♣=3) becomes your bid (0-9).",
+    "trickDisplay": "The current trick. The trump suit is fixed for each deal.",
+    "playerHand": "Your hand. You must follow the lead suit.",
+    "playButton": "Press this button to bury cards or play the selected card.",
+    "scoreTable": "Score table. An exact bid earns 10 + bid, plus a success bonus.",
+    "resetButton": "Press the reset button to start a new game."
+  },
+  "hint": {
+    "buryStrategic": "Bury to set a reachable bid",
+    "leadStrategic": "Lead strategically",
+    "followSuit": "Follow the led suit",
+    "trumpWithCard": "Trump with a card",
+    "discardLowest": "Discard your lowest card"
+  }
+}

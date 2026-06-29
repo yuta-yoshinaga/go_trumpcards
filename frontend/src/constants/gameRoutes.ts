@@ -463,6 +463,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 4, 4, 3], skill: [3, 4, 4, 2], social: [1, 3, 5, 3, 4], theme: [2, 3, 3, 2, 3, 2] },
       },
       {
+        path: '/ninetynine',
+        labelKey: 'nav.ninetynine',
+        icon: '💯',
+        page: 'NinetyNine',
+        profile: { mood: [2, 3, 5, 2], skill: [2, 3, 5, 2], social: [1, 3, 5, 3, 3], theme: [2, 3, 3, 2, 3, 2] },
+      },
+      {
         path: '/euchre',
         labelKey: 'nav.euchre',
         icon: '🎩',

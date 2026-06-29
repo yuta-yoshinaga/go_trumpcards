@@ -126,6 +126,10 @@ var registry = []*Game{
 	{Name: "cribbage", Category: CategorySolo},
 	{Name: "threecard", Category: CategoryCasino},
 	{Name: "ohhell", Category: CategoryClassic},
+	// Ninety-Nine (David Parlett) is a trick-taking game; it shares the classic
+	// worker's trick-play code with ohhell. The casino worker is at the 1 MB gzip
+	// limit, so it is bucketed into classic. Category is only a size bucket.
+	{Name: "ninetynine", Category: CategoryClassic},
 	// Bridge is a trick-taking game bucketed into the casino worker purely for
 	// binary-size balancing (#2126): it is one of the heaviest games and the
 	// classic worker is at the 1 MB gzip limit. Category is only a size bucket.

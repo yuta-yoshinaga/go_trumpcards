@@ -85,6 +85,7 @@ export type GameKey =
   | 'pitch'
   | 'twotenjack'
   | 'ohhell'
+  | 'ninetynine'
   | 'euchre'
   | 'bridge'
   | 'napoleon'
@@ -330,6 +331,10 @@ const ALLFOURS = {
   bg: 'bg-game-bg-allfours',
   footer: 'bg-game-bg-allfours-dark border-white/20',
 } as const;
+const NINETYNINE = {
+  bg: 'bg-game-bg-ninetynine',
+  footer: 'bg-game-bg-ninetynine-dark border-white/20',
+} as const;
 
 export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Table games
@@ -408,6 +413,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   pitch: BLUE,
   twotenjack: BLUE,
   ohhell: BLUE,
+  ninetynine: NINETYNINE,
   euchre: BLUE,
   bridge: BLUE,
   napoleon: BLUE,

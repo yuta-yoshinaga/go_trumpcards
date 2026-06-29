@@ -129,6 +129,9 @@
   /* All Fours — a muted slate-teal felt evoking the old English pub trick-taker, distinct from the casino greens. */
   --color-game-bg-allfours: #1f4a4a;
   --color-game-bg-allfours-dark: #143131;
+  /* Ninety-Nine — a deep teal-indigo felt evoking the bury-3 bidding trick-taker, distinct from BLUE's navy and Catch-the-Ten's slate-teal. */
+  --color-game-bg-ninetynine: #234e6e;
+  --color-game-bg-ninetynine-dark: #163349;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;

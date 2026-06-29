@@ -52,14 +52,15 @@ func cuiErrorBlock(b *strings.Builder, lastErr error) {
 // shared across trick-taking games. The displayed string follows the
 // active locale via i18n.T (issue #1699 Phase 1).
 var sharedHintReasonKeys = map[string]string{
-	"follow_suit":   "cuiHintFollowSuit",
-	"lead_low":      "cuiHintLeadLow",
-	"lead_strong":   "cuiHintLeadStrong",
-	"discard_high":  "cuiHintDiscardHigh",
-	"trump_cut":     "cuiHintTrumpCut",
-	"strategic_bid": "cuiHintStrategicBid",
-	"strong_hand":   "cuiHintStrongHand",
-	"weak_hand":     "cuiHintWeakHand",
+	"follow_suit":    "cuiHintFollowSuit",
+	"lead_low":       "cuiHintLeadLow",
+	"lead_strong":    "cuiHintLeadStrong",
+	"discard_high":   "cuiHintDiscardHigh",
+	"trump_cut":      "cuiHintTrumpCut",
+	"strategic_bid":  "cuiHintStrategicBid",
+	"strategic_bury": "cuiHintStrategicBury",
+	"strong_hand":    "cuiHintStrongHand",
+	"weak_hand":      "cuiHintWeakHand",
 }
 
 // lookupHintReason looks up a hint reason string from game-specific map, then shared map.

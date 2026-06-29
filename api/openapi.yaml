@@ -126,6 +126,8 @@ tags:
     description: Texas Hold'em Bonus Poker (テキサスホールデムボーナスポーカー) game
   - name: ohhell
     description: Oh Hell (オー・ヘル) game
+  - name: ninetynine
+    description: Ninety-Nine (ナインティナイン) game
   - name: bridge
     description: Contract Bridge (コントラクトブリッジ) game
   - name: pineapple
@@ -4747,6 +4749,81 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OhHellResponse'
+
+  /ninetynine/exec:
+    post:
+      tags:
+        - ninetynine
+      summary: Execute a Ninety-Nine game command
+      description: |
+        Send a command to advance the Ninety-Nine (ナインティナイン) game session identified
+        by `sessionId`.  Ninety-Nine (David Parlett) is a 3-player trick-taking game on a
+        36-card pack (A,6,7,8,9,10,J,Q,K × 4 suits).  Each deal 12 cards are dealt to each
+        player.  The signature mechanic is bidding by burying: each player sets aside
+        exactly 3 cards, whose suits encode the exact trick declaration via ♦=0, ♠=1, ♥=2,
+        ♣=3 summed to 0-9.  The buried cards are out of play, leaving 9 cards / 9 tricks
+        (must-follow).  Trump is a fixed suit per deal, rotating ♠→♥→♣→♦ by deal number.
+        Scoring: exact declaration = 10 + declared tricks plus a success bonus that
+        escalates as fewer players succeed (1→+30, 2→+20, 3→+10); miss = 0.  First to the
+        target score (default 100) wins.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Bid       | `0`   | Each player buries 3 cards to declare their bid |
+        | Play      | `1`   | Trick play (follow suit; trump suit wins) |
+        | TrickEnd  | `2`   | Trick resolved; advance with `next` |
+        | RoundEnd  | `3`   | All 9 tricks played; advance with `nextround` |
+        | GameEnd   | `4`   | A player reached the target score |
+
+        | Command     | Aliases | Description |
+        |-------------|---------|-------------|
+        | `reset`     | `r`     | Start / restart a game |
+        | `bid`       | `b`     | Bury 3 cards (requires `buryIndices`, 3 distinct card indices) |
+        | `play`      | `p`     | Play a card (requires `cardIndex`) |
+        | `next`      | `n`     | Advance to the next trick |
+        | `nextround` | `nr`    | Score the deal and start the next |
+        | `hint`      | `h`     | Get recommended bury or play |
+        | `log`       | `l`     | View action log |
+      operationId: ninetynineExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NinetyNineRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Bury cards at indices 0, 1, 2
+                value:
+                  command: bid
+                  buryIndices: [0, 1, 2]
+                  sessionId: my-session-001
+              play:
+                summary: Play card at index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NinetyNineResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NinetyNineResponse'
 
   /bridge/exec:
     post:
@@ -26247,6 +26324,168 @@ components:
               type: integer
               nullable: true
               description: Recommended bid value (null during play phase)
+            reason:
+              type: string
+              description: Machine-readable reason key for the hint
+
+    # -------------------------------------------------------------------------
+    # Ninety-Nine
+    # -------------------------------------------------------------------------
+    NinetyNineRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `bid` (`b`),
+            `play` (`p`), `next` (`n`), `nextround` (`nr`), `hint` (`h`),
+            `log` (`l`).
+          enum: [reset, r, bid, b, play, p, next, n, nextround, nr, hint, h, log, l]
+          example: reset
+        buryIndices:
+          type: array
+          description: Indices of the 3 cards to bury (encodes the bid).  Required for `bid` command.
+          items:
+            type: integer
+          example: [0, 1, 2]
+        cardIndex:
+          type: integer
+          description: Index of the card to play.  Required for `play` command.
+          example: 2
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            targetScore:
+              type: integer
+              minimum: 10
+              maximum: 1000
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    NinetyNineResponse:
+      type: object
+      description: Current state of the Ninety-Nine game
+      properties:
+        players:
+          type: array
+          description: Array of player objects
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              bid:
+                type: integer
+                description: Declared trick count from buried suits (-1 if not yet declared)
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+              trickCount:
+                type: integer
+              buriedCount:
+                type: integer
+                description: Number of cards this player has buried this deal
+        phase:
+          type: integer
+          description: "Game phase: 0 = Bid, 1 = Play, 2 = TrickEnd, 3 = RoundEnd, 4 = GameEnd"
+          enum: [0, 1, 2, 3, 4]
+          example: 0
+        dealNumber:
+          type: integer
+          description: Current deal number
+        targetScore:
+          type: integer
+          description: Cumulative score required to win the game
+        handSize:
+          type: integer
+          description: Number of cards in hand during play (9)
+        trickNumber:
+          type: integer
+          description: Current trick number within the deal
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        bidPlayerIdx:
+          type: integer
+          description: Index of the player currently bidding
+        dealerIdx:
+          type: integer
+          description: Index of the dealer for the current deal
+        currentTrick:
+          type: array
+          description: Cards played in the current trick
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        trumpSuit:
+          type: integer
+          description: "Trump suit for the deal (1=Spade, 2=Clover, 3=Heart, 4=Diamond)"
+        gameEndFlag:
+          type: boolean
+          description: Whether the game has ended
+        winnerIdx:
+          type: integer
+          description: Index of the winning player (-1 if not ended)
+        leadPlayerIdx:
+          type: integer
+          description: Index of the player who leads the current trick
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            targetScore:
+              type: integer
+        message:
+          type: string
+          description: Game status message
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+        hint:
+          type: object
+          nullable: true
+          description: Recommended play or bury hint (only present when hint command is used)
+          properties:
+            cardIndex:
+              type: integer
+              nullable: true
+              description: Recommended card index (null during bid phase)
+            buryIndices:
+              type: array
+              nullable: true
+              description: Recommended 3 card indices to bury (null during play phase)
+              items:
+                type: integer
             reason:
               type: string
               description: Machine-readable reason key for the hint
