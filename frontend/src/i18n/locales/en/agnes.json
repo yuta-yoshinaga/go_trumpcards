@@ -1,0 +1,38 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "Agnes Sorel",
+  "stock": "Stock",
+  "foundation": "Foundation",
+  "tableau": "Tableau",
+  "baseRank": "Base rank",
+  "moveCount": "Moves",
+  "deal": "Deal",
+  "giveup": "Give up",
+  "hint": "Hint",
+  "undo": "Undo",
+  "empty": "empty",
+  "gameClear": "Game cleared! Moves: {{moveCount}}",
+  "gameOver": "Game over",
+  "playing": "Playing",
+  "noHint": "No hint available",
+  "hintAvailable": "Hint available",
+  "moveToFoundation": "→F",
+  "moveToCol": "→{{col}}",
+  "moveTableauToFoundation": "Tableau → Foundation",
+  "frontendHint": {
+    "moveToFoundation": "A card can be moved to the foundation",
+    "moveToTableau": "A card can be moved between tableau columns"
+  },
+  "tutorial": {
+    "foundation": "Build up cards from the base rank by suit here, wrapping King to Ace.",
+    "stock": "Click Deal to deal one face-up card to each tableau column.",
+    "tableau": "Tableau columns. Move the end card onto a same-color card one rank higher.",
+    "actionButtons": "Action buttons: deal, hint, undo, give up.",
+    "resetButton": "Start a new game."
+  },
+  "columnActions": "Actions"
+}

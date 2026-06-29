@@ -187,6 +187,13 @@ export const CanfieldPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Agnes Sorel phase constants (sync: internal/domain/Agnes.go). */
+export const AgnesPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Osmosis phase constants (sync: internal/domain/Osmosis.go). */
 export const OsmosisPhase = {
   PLAYING: 0,

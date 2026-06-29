@@ -1152,6 +1152,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [5, 1, 4, 3], skill: [3, 4, 4, 3], social: [5, 1, 0, 3, 4], theme: [3, 3, 3, 1, 3, 3] },
       },
       {
+        path: '/agnes',
+        labelKey: 'nav.agnes',
+        icon: '👑',
+        page: 'Agnes',
+        profile: { mood: [5, 1, 4, 3], skill: [3, 4, 4, 3], social: [5, 1, 0, 3, 4], theme: [3, 3, 3, 1, 3, 3] },
+      },
+      {
         path: '/osmosis',
         labelKey: 'nav.osmosis',
         icon: '💧',

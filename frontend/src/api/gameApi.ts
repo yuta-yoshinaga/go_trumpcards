@@ -2,6 +2,7 @@ import type {
   AccordionResponse,
   AcesUpResponse,
   ActionLogResponse,
+  AgnesResponse,
   AllFoursResponse,
   BaccaratResponse,
   BadugiResponse,
@@ -353,6 +354,7 @@ const workerUrl: Record<string, string> = {
   kingalbert: WORKER_EXTRA,
   flowergarden: WORKER_EXTRA,
   fortyandeight: WORKER_EXTRA,
+  agnes: WORKER_EXTRA,
   eightoff: WORKER_SOLO,
   penguin: WORKER_SOLO,
   chinesepoker: WORKER_CASINO,
@@ -1117,6 +1119,20 @@ export const canfieldApi = createSolitaireMoveApi<
   CanfieldMoveZone,
   'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('canfield');
+
+/** Source or target zone for an Agnes Sorel card move. */
+export interface AgnesMoveZone {
+  zone: string;
+  col?: number;
+  cardIndex?: number;
+}
+
+/** API client for the Agnes Sorel /agnes/exec endpoint. */
+export const agnesApi = createSolitaireMoveApi<
+  AgnesResponse,
+  AgnesMoveZone,
+  'reset' | 'deal' | 'move' | 'giveup' | 'hint' | 'log' | 'undo' | 'undo_n'
+>('agnes');
 
 /** Source or target zone for an Osmosis card move. */
 export interface OsmosisMoveZone {
@@ -4107,6 +4123,7 @@ const games = [
   'kingalbert',
   'flowergarden',
   'fortyandeight',
+  'agnes',
   'piquet',
   'casinoholdem',
   'callbreak',

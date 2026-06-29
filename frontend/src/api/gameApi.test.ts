@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   actionLogApi,
+  agnesApi,
   baccaratApi,
   bidWhistApi,
   bigOApi,
@@ -3437,6 +3438,35 @@ describe('gameApi', () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ command: 'undo_n', from: undefined, to: undefined, n: 3, sessionId }),
+      });
+    });
+  });
+
+  describe('agnesApi.exec', () => {
+    it('sends deal command with no zones', async () => {
+      const mockResponse = { tableau: [], stockCount: 0, foundation: [], baseRank: 0, phase: 0, message: '' };
+      mockFetch.mockReturnValue(makeResponse(mockResponse));
+      const result = await agnesApi.exec('deal');
+      expect(mockFetch).toHaveBeenCalledWith('/agnes/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'deal', from: undefined, to: undefined, sessionId }),
+      });
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('sends move command with from and to zones', async () => {
+      mockFetch.mockReturnValue(makeResponse({ phase: 0 }));
+      await agnesApi.exec('move', { zone: 'tableau', col: 0, cardIndex: 0 }, { zone: 'foundation' });
+      expect(mockFetch).toHaveBeenCalledWith('/agnes/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'move',
+          from: { zone: 'tableau', col: 0, cardIndex: 0 },
+          to: { zone: 'foundation' },
+          sessionId,
+        }),
       });
     });
   });
