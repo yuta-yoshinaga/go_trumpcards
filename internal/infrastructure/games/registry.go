@@ -219,6 +219,10 @@ var registry = []*Game{
 	{Name: "kingalbert", Category: CategoryExtra},
 	{Name: "flowergarden", Category: CategoryExtra},
 	{Name: "fortyandeight", Category: CategoryExtra},
+	// Agnes Sorel is a Klondike+Canfield hybrid patience routed to the EXTRA
+	// worker purely for binary-size balancing — the solo worker is at the 1 MB
+	// gzip limit. Category is only a per-worker size bucket.
+	{Name: "agnes", Category: CategoryExtra},
 	// Piquet is a trick-taking game bucketed into the SOLO worker purely for
 	// binary-size balancing (#2126). Category is only a size bucket.
 	{Name: "piquet", Category: CategorySolo},

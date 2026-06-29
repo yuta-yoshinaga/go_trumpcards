@@ -113,6 +113,7 @@ var gameDescriptions = map[string]string{
 	"kingalbert":          "King Albert (キング・アルバート)",
 	"flowergarden":        "Flower Garden (フラワーガーデン)",
 	"fortyandeight":       "Forty and Eight (フォーティ・アンド・エイト)",
+	"agnes":               "Agnes Sorel (アグネス・ソレル)",
 	"piquet":              "Piquet (ピケ)",
 	"casinoholdem":        "Casino Hold'em (カジノホールデム)",
 	"callbreak":           "Call Break (コールブレイク)",

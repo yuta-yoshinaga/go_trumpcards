@@ -1,0 +1,38 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "title": "アグネス・ソレル",
+  "stock": "山札",
+  "foundation": "組札",
+  "tableau": "場札",
+  "baseRank": "ベースランク",
+  "moveCount": "手数",
+  "deal": "配る",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "undo": "元に戻す",
+  "empty": "空",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "playing": "プレイ中",
+  "noHint": "ヒントはありません",
+  "hintAvailable": "ヒントがあります",
+  "moveToFoundation": "→組",
+  "moveToCol": "→{{col}}",
+  "moveTableauToFoundation": "場札→組札",
+  "frontendHint": {
+    "moveToFoundation": "組札へ移動できるカードがあります",
+    "moveToTableau": "場札間で移動可能なカードがあります"
+  },
+  "tutorial": {
+    "foundation": "ここにベースランクから順にスート別にカードを積み上げます（K→Aへラップ）。",
+    "stock": "「配る」を押すと各列に表向きのカードが1枚ずつ配られます。",
+    "tableau": "場札です。末尾のカードを同色・1ランク上のカードに重ねられます。",
+    "actionButtons": "配る・ヒント・元に戻す・ギブアップなどの操作ボタンです。",
+    "resetButton": "新しいゲームを始めるボタンです。"
+  },
+  "columnActions": "操作"
+}

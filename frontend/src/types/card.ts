@@ -3505,6 +3505,35 @@ export interface CanfieldResponse extends BaseGameResponse {
   hint?: CanfieldHint;
 }
 
+// --- Agnes Sorel (アグネス・ソレル) ---
+
+/** A single card on an Agnes Sorel tableau column (carries face-up state). */
+export interface AgnesTableauCard {
+  card: Card | null;
+  faceUp: boolean;
+}
+
+/** A suggested move hint in Agnes Sorel. */
+export interface AgnesHint {
+  fromZone: string;
+  fromCol: number;
+  cardIndex: number;
+  toZone: string;
+  toCol: number;
+}
+
+/** Full Agnes Sorel game state returned from the API. */
+export interface AgnesResponse extends BaseGameResponse {
+  tableau: AgnesTableauCard[][];
+  stockCount: number;
+  foundation: Card[][];
+  baseRank: number;
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  hint?: AgnesHint;
+}
+
 // --- Osmosis (オズモシス / 浸透) ---
 
 /** A suggested move hint in Osmosis. */

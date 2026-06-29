@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type {
   AccordionResponse,
+  AgnesResponse,
   AllFoursResponse,
   BaccaratResponse,
   BadugiResponse,
@@ -141,6 +142,7 @@ import type {
 } from '../types/card';
 import type { HintResult } from '../types/hint';
 import { getAccordionHint } from '../utils/hints/accordionHint';
+import { getAgnesHint } from '../utils/hints/agnesHint';
 import { getAllFoursHint } from '../utils/hints/allfoursHint';
 import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBadugiHint } from '../utils/hints/badugiHint';
@@ -359,6 +361,7 @@ const hintFactories = {
   bristol: (s) => getBristolHint(s as BristolResponse),
   burraco: (s) => getBurracoHint(s as BurracoResponse),
   canfield: (s) => getCanfieldHint(s as CanfieldResponse),
+  agnes: (s) => getAgnesHint(s as AgnesResponse),
   osmosis: (s) => getOsmosisHint(s as OsmosisResponse),
   pinochle: (s) => getPinochleHint(s as PinochleResponse),
   twotenjack: (s) => getTwoTenJackHint(s as TwoTenJackResponse),

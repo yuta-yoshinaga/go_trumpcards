@@ -4,6 +4,7 @@
  */
 import accordion from '../../../docs/manual/web/accordion.md?raw';
 import acesup from '../../../docs/manual/web/acesup.md?raw';
+import agnes from '../../../docs/manual/web/agnes.md?raw';
 import allfours from '../../../docs/manual/web/allfours.md?raw';
 import baccarat from '../../../docs/manual/web/baccarat.md?raw';
 import badugi from '../../../docs/manual/web/badugi.md?raw';
@@ -213,6 +214,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/canasta': canasta,
   '/handandfoot': handandfoot,
   '/canfield': canfield,
+  '/agnes': agnes,
   '/osmosis': osmosis,
   '/bristol': bristol,
   '/bidwhist': bidwhist,

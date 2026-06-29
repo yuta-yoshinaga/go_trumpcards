@@ -5,6 +5,7 @@
  */
 import accordion from '../../../docs/manual/cui/accordion.md?raw';
 import acesup from '../../../docs/manual/cui/acesup.md?raw';
+import agnes from '../../../docs/manual/cui/agnes.md?raw';
 import allfours from '../../../docs/manual/cui/allfours.md?raw';
 import baccarat from '../../../docs/manual/cui/baccarat.md?raw';
 import badugi from '../../../docs/manual/cui/badugi.md?raw';
@@ -200,6 +201,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/canasta': canasta,
   '/handandfoot': handandfoot,
   '/canfield': canfield,
+  '/agnes': agnes,
   '/osmosis': osmosis,
   '/bristol': bristol,
   '/bidwhist': bidwhist,
