@@ -139,4 +139,12 @@ func init() {
 			return usecase.RestoreAgnesInteractor(data, new(presenter.AgnesWebPresenter))
 		},
 		controller.NewAgnesWebControllerWithProvider)
+	games.RegisterKVGame("sultan", games.CategoryExtra,
+		func() usecase.SultanInteractorIF {
+			return usecase.NewSultanInteractor(domain.NewDefaultSultan(), new(presenter.SultanWebPresenter))
+		},
+		func(data []byte) (usecase.SultanInteractorIF, error) {
+			return usecase.RestoreSultanInteractor(data, new(presenter.SultanWebPresenter))
+		},
+		controller.NewSultanWebControllerWithProvider)
 }

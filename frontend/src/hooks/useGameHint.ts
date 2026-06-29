@@ -371,6 +371,7 @@ const hintFactories = {
   deucetoseven: (s) => getDeuceToSevenHint(s as DeuceToSevenResponse),
   fortythieves: () => null,
   fortyandeight: () => null,
+  sultan: () => null,
   bakersdozen: (s) => getBakersdozenHint(s as BakersDozenResponse),
   beleagueredcastle: (s) => getBeleagueredcastleHint(s as BeleagueredCastleResponse),
   streetsandalleys: (s) => getStreetsandalleysHint(s as StreetsAndAlleysResponse),

@@ -1687,6 +1687,24 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "sultan", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSultanCuiController(usecase.NewSultanInteractor(
+				domain.NewDefaultSultan(), new(presenter.SultanCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "sultan.helpTitle",
+				CommandKeys: []string{
+					"sultan.helpDraw",
+					"sultan.helpRedeal",
+					"sultan.helpMoveDF",
+					"sultan.helpMoveWF",
+					"sultan.helpGiveUp",
+					"sultan.helpHint",
+					"sultan.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "piquet", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewPiquetCuiController(usecase.NewPiquetInteractor(

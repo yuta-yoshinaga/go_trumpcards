@@ -1105,6 +1105,13 @@ export const FortyAndEightPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Sultan of Turkey phase constants (sync: internal/domain/Sultan.go). */
+export const SultanPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Baker's Dozen phase constants (sync: internal/domain/BakersDozen.go). */
 export const BakersDozenPhase = {
   PLAYING: 0,
