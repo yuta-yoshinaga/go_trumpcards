@@ -3,9 +3,9 @@ WASM_OPT ?= wasm-opt
 ASSETS_GEN := go run github.com/syumai/workers/cmd/workers-assets-gen
 COVERAGE_DIR := build/coverage
 
-.PHONY: build-workers build-worker-casino build-worker-classic build-worker-solo clean-workers deploy-workers coverage clean-cov
+.PHONY: build-workers build-worker-casino build-worker-classic build-worker-solo build-worker-extra clean-workers deploy-workers coverage clean-cov
 
-build-workers: build-worker-casino build-worker-classic build-worker-solo
+build-workers: build-worker-casino build-worker-classic build-worker-solo build-worker-extra
 
 define build_worker
 	@echo "Building worker: $(1)"
@@ -40,13 +40,17 @@ build-worker-classic:
 build-worker-solo:
 	$(call build_worker,solo)
 
+build-worker-extra:
+	$(call build_worker,extra)
+
 clean-workers:
-	rm -rf workers/casino/build workers/classic/build workers/solo/build
+	rm -rf workers/casino/build workers/classic/build workers/solo/build workers/extra/build
 
 deploy-workers: build-workers
 	cd workers/casino && bunx wrangler deploy
 	cd workers/classic && bunx wrangler deploy
 	cd workers/solo && bunx wrangler deploy
+	cd workers/extra && bunx wrangler deploy
 
 coverage: ## Run tests with coverage, writing profile and HTML report to build/coverage/.
 	@mkdir -p $(COVERAGE_DIR)

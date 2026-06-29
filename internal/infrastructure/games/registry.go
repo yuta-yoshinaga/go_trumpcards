@@ -28,6 +28,12 @@ const (
 	CategoryClassic
 	// CategorySolo covers solitaire and rummy variants.
 	CategorySolo
+	// CategoryExtra is the fourth size bucket, added when the other three
+	// approached the 1 MB gzip per-worker limit. Like the others it is purely
+	// a binary-size bucket, not a user-facing taxonomy: it holds an overflow
+	// mix of rummy, shedding/matching and light banking games moved off the
+	// other workers to keep every binary under the free-tier limit.
+	CategoryExtra
 )
 
 // String returns the lowercase worker name (casino/classic/solo). Panics on
@@ -42,6 +48,8 @@ func (c Category) String() string {
 		return "classic"
 	case CategorySolo:
 		return "solo"
+	case CategoryExtra:
+		return "extra"
 	default:
 		panic(fmt.Sprintf("games: unknown Category %d", int(c)))
 	}
@@ -514,7 +522,7 @@ func ByCategory(cat Category) []Game {
 // guarantee that consumers (e.g. the CLI --help summary) cannot drift out
 // of sync with the registry.
 func AllCategories() []Category {
-	return []Category{CategoryCasino, CategoryClassic, CategorySolo}
+	return []Category{CategoryCasino, CategoryClassic, CategorySolo, CategoryExtra}
 }
 
 // find locates a game by name; returns nil if not found.
