@@ -1,11 +1,9 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra
 
 package controller
 
 import (
 	"math"
-	"strconv"
-	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -68,25 +66,4 @@ func (c *GinRummyCuiController) Exec(command string) string {
 			}
 		},
 	)
-}
-
-// parseIntList 引数をintスライスに変換する (空→nil)
-func parseIntList(args []string) []int {
-	if len(args) == 0 {
-		return nil
-	}
-	var result []int
-	for _, a := range args {
-		for _, s := range strings.Split(a, ",") {
-			s = strings.TrimSpace(s)
-			if s == "" {
-				continue
-			}
-			v, err := strconv.Atoi(s)
-			if err == nil {
-				result = append(result, v)
-			}
-		}
-	}
-	return result
 }

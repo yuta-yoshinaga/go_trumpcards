@@ -201,6 +201,7 @@ export const sessionId: string = crypto.randomUUID();
 const WORKER_CASINO = import.meta.env.VITE_WORKER_CASINO_URL || '';
 const WORKER_CLASSIC = import.meta.env.VITE_WORKER_CLASSIC_URL || '';
 const WORKER_SOLO = import.meta.env.VITE_WORKER_SOLO_URL || '';
+const WORKER_EXTRA = import.meta.env.VITE_WORKER_EXTRA_URL || '';
 
 /** Maps each game to its Worker base URL. */
 const workerUrl: Record<string, string> = {
@@ -277,13 +278,13 @@ const workerUrl: Record<string, string> = {
   pokersquares: WORKER_SOLO,
   tripeaks: WORKER_SOLO,
   memory: WORKER_SOLO,
-  ginrummy: WORKER_SOLO,
-  conquian: WORKER_SOLO,
-  chinchon: WORKER_SOLO,
-  threethirteen: WORKER_SOLO,
-  canasta: WORKER_SOLO,
-  handandfoot: WORKER_SOLO,
-  burraco: WORKER_SOLO,
+  ginrummy: WORKER_EXTRA,
+  conquian: WORKER_EXTRA,
+  chinchon: WORKER_EXTRA,
+  threethirteen: WORKER_EXTRA,
+  canasta: WORKER_EXTRA,
+  handandfoot: WORKER_EXTRA,
+  burraco: WORKER_EXTRA,
   cribbage: WORKER_SOLO,
   golf: WORKER_SOLO,
   acesup: WORKER_SOLO,
@@ -320,8 +321,8 @@ const workerUrl: Record<string, string> = {
   dragontiger: WORKER_CASINO,
   blackjackswitch: WORKER_CASINO,
   montecarlo: WORKER_SOLO,
-  contractrummy: WORKER_SOLO,
-  kalooki: WORKER_SOLO,
+  contractrummy: WORKER_EXTRA,
+  kalooki: WORKER_EXTRA,
   ultimatetexasholdem: WORKER_CASINO,
   crescent: WORKER_SOLO,
   mississippistud: WORKER_CASINO,
@@ -339,7 +340,7 @@ const workerUrl: Record<string, string> = {
   schnapsen: WORKER_SOLO,
   gaps: WORKER_SOLO,
   fourcardpoker: WORKER_CASINO,
-  rummy500: WORKER_SOLO,
+  rummy500: WORKER_EXTRA,
   eightoff: WORKER_SOLO,
   penguin: WORKER_SOLO,
   chinesepoker: WORKER_CASINO,

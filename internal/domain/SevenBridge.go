@@ -1032,23 +1032,6 @@ func sevenBridgeCardPenalty(card *Card) int {
 	return v
 }
 
-func validateIndexList(indices []int, size int) error {
-	if len(indices) == 0 {
-		return NewDomainError(ErrInvalidCard, "インデックスが空です")
-	}
-	seen := make(map[int]bool)
-	for _, idx := range indices {
-		if idx < 0 || idx >= size {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
-		}
-		if seen[idx] {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが重複しています")
-		}
-		seen[idx] = true
-	}
-	return nil
-}
-
 // validateIndexPair validates a two-element index list. Callers must ensure
 // len(indices) == 2 before calling.
 func validateIndexPair(indices []int, size int) error {
