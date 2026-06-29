@@ -474,4 +474,24 @@ func TestKingAlbert_UnmarshalErrors(t *testing.T) {
 			assert.NotNil(t, foundation[i])
 		}
 	})
+
+	t.Run("rejects a nil tableau card", func(t *testing.T) {
+		var ka domain.KingAlbert
+		// A null element in a tableau column would panic later on a move,
+		// so unmarshaling must reject it.
+		err := json.Unmarshal([]byte(`{"tb":[[null]]}`), &ka)
+		assert.Error(t, err)
+	})
+
+	t.Run("rejects a nil foundation card", func(t *testing.T) {
+		var ka domain.KingAlbert
+		err := json.Unmarshal([]byte(`{"fd":[[null]]}`), &ka)
+		assert.Error(t, err)
+	})
+
+	t.Run("allows a nil reserve cell (depleted slot)", func(t *testing.T) {
+		var ka domain.KingAlbert
+		// Reserve uses nil to mark a played-out cell, so it stays valid.
+		require.NoError(t, json.Unmarshal([]byte(`{"rs":[null]}`), &ka))
+	})
 }

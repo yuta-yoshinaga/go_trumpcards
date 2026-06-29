@@ -707,6 +707,12 @@ func (s *kingAlbertSnapshot) UnmarshalJSON(data []byte) error {
 	for i := range KingAlbertTableauCnt {
 		if s.tableau[i] == nil {
 			s.tableau[i] = make([]*KingAlbertTableauCard, 0)
+			continue
+		}
+		for _, tc := range s.tableau[i] {
+			if tc == nil || tc.Card == nil {
+				return fmt.Errorf("kingalbert: snapshot tableau contains a nil card")
+			}
 		}
 	}
 	s.reserve = j.Reserve
@@ -717,6 +723,12 @@ func (s *kingAlbertSnapshot) UnmarshalJSON(data []byte) error {
 	for i := range KingAlbertFoundationCnt {
 		if s.foundation[i] == nil {
 			s.foundation[i] = make([]*Card, 0)
+			continue
+		}
+		for _, c := range s.foundation[i] {
+			if c == nil {
+				return fmt.Errorf("kingalbert: snapshot foundation contains a nil card")
+			}
 		}
 	}
 	s.phase = j.Phase
@@ -770,6 +782,12 @@ func (ka *KingAlbert) UnmarshalJSON(data []byte) error {
 	for i := range KingAlbertTableauCnt {
 		if ka.tableau[i] == nil {
 			ka.tableau[i] = make([]*KingAlbertTableauCard, 0)
+			continue
+		}
+		for _, tc := range ka.tableau[i] {
+			if tc == nil || tc.Card == nil {
+				return fmt.Errorf("kingalbert: tableau contains a nil card")
+			}
 		}
 	}
 	ka.reserve = j.Reserve
@@ -780,6 +798,12 @@ func (ka *KingAlbert) UnmarshalJSON(data []byte) error {
 	for i := range KingAlbertFoundationCnt {
 		if ka.foundation[i] == nil {
 			ka.foundation[i] = make([]*Card, 0)
+			continue
+		}
+		for _, c := range ka.foundation[i] {
+			if c == nil {
+				return fmt.Errorf("kingalbert: foundation contains a nil card")
+			}
 		}
 	}
 	ka.phase = j.Phase
