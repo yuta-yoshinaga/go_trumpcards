@@ -1599,6 +1599,22 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "streetsandalleys", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewStreetsAndAlleysCuiController(usecase.NewStreetsAndAlleysInteractor(
+				domain.NewDefaultStreetsAndAlleys(), new(presenter.StreetsAndAlleysCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "streetsandalleys.helpTitle",
+				CommandKeys: []string{
+					"streetsandalleys.helpMoveTT",
+					"streetsandalleys.helpMoveTF",
+					"streetsandalleys.helpGiveUp",
+					"streetsandalleys.helpHint",
+					"streetsandalleys.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "piquet", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewPiquetCuiController(usecase.NewPiquetInteractor(

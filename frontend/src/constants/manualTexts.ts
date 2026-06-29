@@ -156,6 +156,7 @@ import spiderette from '../../../docs/manual/web/spiderette.md?raw';
 import spiteandmalice from '../../../docs/manual/web/spiteandmalice.md?raw';
 import spoilfive from '../../../docs/manual/web/spoilfive.md?raw';
 import spoons from '../../../docs/manual/web/spoons.md?raw';
+import streetsandalleys from '../../../docs/manual/web/streetsandalleys.md?raw';
 import sueca from '../../../docs/manual/web/sueca.md?raw';
 import tarneeb from '../../../docs/manual/web/tarneeb.md?raw';
 import teenpatti from '../../../docs/manual/web/teenpatti.md?raw';
@@ -231,6 +232,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/bakersdozen': bakersdozen,
   '/bakersgame': bakersgame,
   '/beleagueredcastle': beleagueredcastle,
+  '/streetsandalleys': streetsandalleys,
   '/egyptianratscrew': egyptianratscrew,
   '/fortythieves': fortythieves,
   '/fourcardpoker': fourcardpoker,
