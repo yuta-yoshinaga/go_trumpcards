@@ -529,7 +529,9 @@ func TestStreetsAndAlleys_ActionLog(t *testing.T) {
 	sa.Reset()
 	clearSATableau(sa)
 	var tableau [domain.StreetsAndAlleysTableauCnt][]*domain.StreetsAndAlleysTableauCard
-	tableau[0] = []*domain.StreetsAndAlleysTableauCard{makeSATableauCard(domain.CardDesignSpade, 2)}
+	// Foundations start empty in Streets and Alleys, so only an Ace can be
+	// moved onto a fresh foundation pile.
+	tableau[0] = []*domain.StreetsAndAlleysTableauCard{makeSATableauCard(domain.CardDesignSpade, 1)}
 	sa.SetTableau(tableau)
 
 	require.NoError(t, sa.MoveTableauToFoundation(0))
