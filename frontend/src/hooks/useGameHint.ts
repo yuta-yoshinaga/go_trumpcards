@@ -113,6 +113,7 @@ import type {
   SpiderResponse,
   SpiteAndMaliceResponse,
   SpoilFiveResponse,
+  StreetsAndAlleysResponse,
   SuecaResponse,
   TarneebResponse,
   TeenPattiResponse,
@@ -255,6 +256,7 @@ import { getSpideretteHint } from '../utils/hints/spideretteHint';
 import { getSpiderHint } from '../utils/hints/spiderHint';
 import { getSpiteAndMaliceHint } from '../utils/hints/spiteAndMaliceHint';
 import { getSpoilFiveHint } from '../utils/hints/spoilFiveHint';
+import { getStreetsandalleysHint } from '../utils/hints/streetsandalleysHint';
 import { getSuecaHint } from '../utils/hints/suecaHint';
 import { getTarneebHint } from '../utils/hints/tarneebHint';
 import { getTeenPattiHint } from '../utils/hints/teenPattiHint';
@@ -363,6 +365,7 @@ const hintFactories = {
   fortythieves: () => null,
   bakersdozen: (s) => getBakersdozenHint(s as BakersDozenResponse),
   beleagueredcastle: (s) => getBeleagueredcastleHint(s as BeleagueredCastleResponse),
+  streetsandalleys: (s) => getStreetsandalleysHint(s as StreetsAndAlleysResponse),
   tonk: () => null,
   thirtyone: (s) => getThirtyOneHint(s as ThirtyOneResponse),
   yaniv: (s) => getYanivHint(s as YanivResponse),

@@ -164,6 +164,8 @@ import type {
   SpiteAndMaliceResponse,
   SpoilFiveResponse,
   SpoonsResponse,
+  StreetsAndAlleysMoveZone,
+  StreetsAndAlleysResponse,
   SuecaResponse,
   TarneebResponse,
   TeenPattiResponse,
@@ -341,6 +343,7 @@ const workerUrl: Record<string, string> = {
   gaps: WORKER_SOLO,
   fourcardpoker: WORKER_CASINO,
   rummy500: WORKER_EXTRA,
+  streetsandalleys: WORKER_EXTRA,
   eightoff: WORKER_SOLO,
   penguin: WORKER_SOLO,
   chinesepoker: WORKER_CASINO,
@@ -3576,6 +3579,13 @@ export const beleagueredCastleApi = createSolitaireMoveApi<
   'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('beleagueredcastle');
 
+/** API client for the Streets and Alleys /streetsandalleys/exec endpoint. */
+export const streetsAndAlleysApi = createSolitaireMoveApi<
+  StreetsAndAlleysResponse,
+  StreetsAndAlleysMoveZone,
+  'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('streetsandalleys');
+
 /** API client for the Calculation /calculation/exec endpoint. */
 export const calculationApi = createSolitaireMoveApi<
   CalculationResponse,
@@ -3776,7 +3786,13 @@ export const maoApi = {
     }),
 };
 
-export type { BakersDozenMoveZone, BeleagueredCastleMoveZone, CrescentMoveZone, FortyThievesMoveZone };
+export type {
+  BakersDozenMoveZone,
+  BeleagueredCastleMoveZone,
+  CrescentMoveZone,
+  FortyThievesMoveZone,
+  StreetsAndAlleysMoveZone,
+};
 
 /** API client for the Whist /whist/exec endpoint. */
 export const whistApi = {
@@ -4054,6 +4070,7 @@ const games = [
   'mighty',
   'oasispoker',
   'beleagueredcastle',
+  'streetsandalleys',
   'piquet',
   'casinoholdem',
   'callbreak',

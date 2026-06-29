@@ -99,4 +99,12 @@ func init() {
 			return usecase.RestoreRummy500Interactor(data, new(presenter.Rummy500WebPresenter))
 		},
 		controller.NewRummy500WebControllerWithProvider)
+	games.RegisterKVGame("streetsandalleys", games.CategoryExtra,
+		func() usecase.StreetsAndAlleysInteractorIF {
+			return usecase.NewStreetsAndAlleysInteractor(domain.NewDefaultStreetsAndAlleys(), new(presenter.StreetsAndAlleysWebPresenter))
+		},
+		func(data []byte) (usecase.StreetsAndAlleysInteractorIF, error) {
+			return usecase.RestoreStreetsAndAlleysInteractor(data, new(presenter.StreetsAndAlleysWebPresenter))
+		},
+		controller.NewStreetsAndAlleysWebControllerWithProvider)
 }

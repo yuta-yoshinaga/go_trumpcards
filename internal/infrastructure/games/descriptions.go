@@ -109,6 +109,7 @@ var gameDescriptions = map[string]string{
 	"mighty":              "Mighty (マイティ)",
 	"oasispoker":          "Oasis Poker (オアシスポーカー)",
 	"beleagueredcastle":   "Beleaguered Castle (包囲された城)",
+	"streetsandalleys":    "Streets and Alleys (ストリート・アンド・アレイズ)",
 	"piquet":              "Piquet (ピケ)",
 	"casinoholdem":        "Casino Hold'em (カジノホールデム)",
 	"callbreak":           "Call Break (コールブレイク)",

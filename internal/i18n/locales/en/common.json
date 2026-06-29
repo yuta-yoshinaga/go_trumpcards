@@ -99,6 +99,7 @@
   "fortythieves.moveUsage": "Usage: m t <col> <idx> t <col>",
   "bakersdozen.promptToZone": "Enter destination (column number, or f=foundation):",
   "beleagueredcastle.promptToZone": "Enter destination (column number, or f=foundation):",
+  "streetsandalleys.promptToZone": "Enter destination (column number, or f=foundation):",
   "webServerRunning": "Server is running at http://{{addr}}",
   "webServerExposureWarning": "WARNING: listening on {{addr}} — reachable from other hosts on your LAN/VPN. Use --host 127.0.0.1 if unintended, or --quiet to silence this warning.",
   "webServerStop": "Press Ctrl+C to stop",

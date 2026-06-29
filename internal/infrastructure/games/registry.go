@@ -208,6 +208,11 @@ var registry = []*Game{
 	{Name: "mighty", Category: CategoryCasino},
 	{Name: "oasispoker", Category: CategoryCasino},
 	{Name: "beleagueredcastle", Category: CategorySolo},
+	// Streets and Alleys is a Beleaguered Castle variant routed to the EXTRA
+	// worker purely for binary-size balancing — the solo worker is at the 1 MB
+	// gzip limit. Category is only a per-worker size bucket with no user-facing
+	// meaning.
+	{Name: "streetsandalleys", Category: CategoryExtra},
 	// Piquet is a trick-taking game bucketed into the SOLO worker purely for
 	// binary-size balancing (#2126). Category is only a size bucket.
 	{Name: "piquet", Category: CategorySolo},

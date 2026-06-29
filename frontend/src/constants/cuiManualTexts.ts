@@ -157,6 +157,7 @@ import spiderette from '../../../docs/manual/cui/spiderette.md?raw';
 import spiteandmalice from '../../../docs/manual/cui/spiteandmalice.md?raw';
 import spoilfive from '../../../docs/manual/cui/spoilfive.md?raw';
 import spoons from '../../../docs/manual/cui/spoons.md?raw';
+import streetsandalleys from '../../../docs/manual/cui/streetsandalleys.md?raw';
 import sueca from '../../../docs/manual/cui/sueca.md?raw';
 import tarneeb from '../../../docs/manual/cui/tarneeb.md?raw';
 import teenpatti from '../../../docs/manual/cui/teenpatti.md?raw';
@@ -222,6 +223,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/bakersdozen': bakersdozen,
   '/bakersgame': bakersgame,
   '/beleagueredcastle': beleagueredcastle,
+  '/streetsandalleys': streetsandalleys,
   '/durak': durak,
   '/egyptianratscrew': egyptianratscrew,
   '/fiftyone': fiftyone,

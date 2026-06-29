@@ -1,0 +1,14 @@
+{
+  "helpTitle": "Streets and Alleys",
+  "helpMoveTF": "  m <col> f            move tableau to foundation",
+  "helpMoveTT": "  m <fromCol> <toCol>  move single card between tableau cols",
+  "helpGiveUp": "  g                    give up",
+  "helpHint": "  h                    hint",
+  "helpAutoComplete": "  ac                   auto-complete",
+  "foundationHeader": "Foundation: ",
+  "columnLabel": "Column {{col}}:",
+  "hintFrom": "tableau column {{col}}[{{idx}}]",
+  "hintToFoundation": "foundation",
+  "hintToTableau": "tableau column {{col}}",
+  "hintLine": "Hint: {{from}} → {{to}}"
+}
