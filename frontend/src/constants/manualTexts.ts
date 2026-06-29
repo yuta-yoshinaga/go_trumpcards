@@ -68,6 +68,7 @@ import fiftyone from '../../../docs/manual/web/fiftyone.md?raw';
 import fivecardstud from '../../../docs/manual/web/fivecardstud.md?raw';
 import fivehundred from '../../../docs/manual/web/fivehundred.md?raw';
 import flowergarden from '../../../docs/manual/web/flowergarden.md?raw';
+import fortyandeight from '../../../docs/manual/web/fortyandeight.md?raw';
 import fortyfives from '../../../docs/manual/web/fortyfives.md?raw';
 import fortythieves from '../../../docs/manual/web/fortythieves.md?raw';
 import fourcardpoker from '../../../docs/manual/web/fourcardpoker.md?raw';
@@ -239,6 +240,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/flowergarden': flowergarden,
   '/egyptianratscrew': egyptianratscrew,
   '/fortythieves': fortythieves,
+  '/fortyandeight': fortyandeight,
   '/fourcardpoker': fourcardpoker,
   '/euchre': euchre,
   '/freecell': freecell,

@@ -112,6 +112,7 @@ var gameDescriptions = map[string]string{
 	"streetsandalleys":    "Streets and Alleys (ストリート・アンド・アレイズ)",
 	"kingalbert":          "King Albert (キング・アルバート)",
 	"flowergarden":        "Flower Garden (フラワーガーデン)",
+	"fortyandeight":       "Forty and Eight (フォーティ・アンド・エイト)",
 	"piquet":              "Piquet (ピケ)",
 	"casinoholdem":        "Casino Hold'em (カジノホールデム)",
 	"callbreak":           "Call Break (コールブレイク)",

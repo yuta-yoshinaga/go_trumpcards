@@ -123,4 +123,12 @@ func init() {
 			return usecase.RestoreFlowerGardenInteractor(data, new(presenter.FlowerGardenWebPresenter))
 		},
 		controller.NewFlowerGardenWebControllerWithProvider)
+	games.RegisterKVGame("fortyandeight", games.CategoryExtra,
+		func() usecase.FortyAndEightInteractorIF {
+			return usecase.NewFortyAndEightInteractor(domain.NewDefaultFortyAndEight(), new(presenter.FortyAndEightWebPresenter))
+		},
+		func(data []byte) (usecase.FortyAndEightInteractorIF, error) {
+			return usecase.RestoreFortyAndEightInteractor(data, new(presenter.FortyAndEightWebPresenter))
+		},
+		controller.NewFortyAndEightWebControllerWithProvider)
 }

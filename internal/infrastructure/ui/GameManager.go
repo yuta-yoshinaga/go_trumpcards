@@ -1651,6 +1651,26 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "fortyandeight", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewFortyAndEightCuiController(usecase.NewFortyAndEightInteractor(
+				domain.NewDefaultFortyAndEight(), new(presenter.FortyAndEightCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "fortyandeight.helpTitle",
+				CommandKeys: []string{
+					"fortyandeight.helpDraw",
+					"fortyandeight.helpRedeal",
+					"fortyandeight.helpMove",
+					"fortyandeight.helpMoveWF",
+					"fortyandeight.helpMoveTF",
+					"fortyandeight.helpMoveTT",
+					"fortyandeight.helpGiveUp",
+					"fortyandeight.helpHint",
+					"fortyandeight.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "piquet", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewPiquetCuiController(usecase.NewPiquetInteractor(
