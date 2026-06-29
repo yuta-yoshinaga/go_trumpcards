@@ -1,0 +1,19 @@
+{
+  "helpTitle": "Flower Garden",
+  "helpMoveTF": "  m <col> f            move flower-bed end card to foundation",
+  "helpMoveTT": "  m <fromCol> <toCol>  move single card between flower beds",
+  "helpMoveRT": "  m r<idx> <toCol>     move bouquet card to flower bed",
+  "helpMoveRF": "  m r<idx> f           move bouquet card to foundation",
+  "helpGiveUp": "  g                    give up",
+  "helpHint": "  h                    hint",
+  "helpAutoComplete": "  ac                   auto-complete",
+  "foundationHeader": "Foundation: ",
+  "reserveHeader": "Bouquet: ",
+  "columnLabel": "Bed {{col}}:",
+  "promptToZone": "destination bed or 'f' for foundation",
+  "hintFrom": "flower bed {{col}}[{{idx}}]",
+  "hintFromReserve": "bouquet {{idx}}",
+  "hintToFoundation": "foundation",
+  "hintToTableau": "flower bed {{col}}",
+  "hintLine": "Hint: {{from}} → {{to}}"
+}

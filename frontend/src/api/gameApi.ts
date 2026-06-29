@@ -71,6 +71,8 @@ import type {
   FiftyOneResponse,
   FiveCardStudResponse,
   FiveHundredResponse,
+  FlowerGardenMoveZone,
+  FlowerGardenResponse,
   FortyFivesResponse,
   FortyThievesMoveZone,
   FortyThievesResponse,
@@ -347,6 +349,7 @@ const workerUrl: Record<string, string> = {
   rummy500: WORKER_EXTRA,
   streetsandalleys: WORKER_EXTRA,
   kingalbert: WORKER_EXTRA,
+  flowergarden: WORKER_EXTRA,
   eightoff: WORKER_SOLO,
   penguin: WORKER_SOLO,
   chinesepoker: WORKER_CASINO,
@@ -3596,6 +3599,13 @@ export const kingAlbertApi = createSolitaireMoveApi<
   'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('kingalbert');
 
+/** API client for the Flower Garden /flowergarden/exec endpoint. */
+export const flowerGardenApi = createSolitaireMoveApi<
+  FlowerGardenResponse,
+  FlowerGardenMoveZone,
+  'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('flowergarden');
+
 /** API client for the Calculation /calculation/exec endpoint. */
 export const calculationApi = createSolitaireMoveApi<
   CalculationResponse,
@@ -3800,6 +3810,7 @@ export type {
   BakersDozenMoveZone,
   BeleagueredCastleMoveZone,
   CrescentMoveZone,
+  FlowerGardenMoveZone,
   FortyThievesMoveZone,
   KingAlbertMoveZone,
   StreetsAndAlleysMoveZone,
@@ -4083,6 +4094,7 @@ const games = [
   'beleagueredcastle',
   'streetsandalleys',
   'kingalbert',
+  'flowergarden',
   'piquet',
   'casinoholdem',
   'callbreak',

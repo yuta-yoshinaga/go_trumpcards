@@ -111,6 +111,7 @@ var gameDescriptions = map[string]string{
 	"beleagueredcastle":   "Beleaguered Castle (包囲された城)",
 	"streetsandalleys":    "Streets and Alleys (ストリート・アンド・アレイズ)",
 	"kingalbert":          "King Albert (キング・アルバート)",
+	"flowergarden":        "Flower Garden (フラワーガーデン)",
 	"piquet":              "Piquet (ピケ)",
 	"casinoholdem":        "Casino Hold'em (カジノホールデム)",
 	"callbreak":           "Call Break (コールブレイク)",
