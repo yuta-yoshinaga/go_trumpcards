@@ -7,9 +7,96 @@
 // Like casino/classic/solo this is purely a binary-size bucket, not a
 // user-facing taxonomy: it holds an overflow mix of games moved off the other
 // three workers to keep every TinyGo WASM binary under the Cloudflare Workers
-// free-tier 1 MB gzipped limit. Game RegisterKVGame calls are appended to the
-// init below as games are rebucketed here.
+// free-tier 1 MB gzipped limit.
 package extra
 
+import (
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/games"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
+)
+
 func init() {
+	games.RegisterKVGame("canasta", games.CategoryExtra,
+		func() usecase.CanastaInteractorIF {
+			return usecase.NewCanastaInteractor(domain.NewDefaultCanasta(), new(presenter.CanastaWebPresenter))
+		},
+		func(data []byte) (usecase.CanastaInteractorIF, error) {
+			return usecase.RestoreCanastaInteractor(data, new(presenter.CanastaWebPresenter))
+		},
+		controller.NewCanastaWebControllerWithProvider)
+	games.RegisterKVGame("ginrummy", games.CategoryExtra,
+		func() usecase.GinRummyInteractorIF {
+			return usecase.NewGinRummyInteractor(domain.NewDefaultGinRummy(), new(presenter.GinRummyWebPresenter))
+		},
+		func(data []byte) (usecase.GinRummyInteractorIF, error) {
+			return usecase.RestoreGinRummyInteractor(data, new(presenter.GinRummyWebPresenter))
+		},
+		controller.NewGinRummyWebControllerWithProvider)
+	games.RegisterKVGame("contractrummy", games.CategoryExtra,
+		func() usecase.ContractRummyInteractorIF {
+			return usecase.NewContractRummyInteractor(domain.NewDefaultContractRummy(), new(presenter.ContractRummyWebPresenter))
+		},
+		func(data []byte) (usecase.ContractRummyInteractorIF, error) {
+			return usecase.RestoreContractRummyInteractor(data, new(presenter.ContractRummyWebPresenter))
+		},
+		controller.NewContractRummyWebControllerWithProvider)
+	games.RegisterKVGame("kalooki", games.CategoryExtra,
+		func() usecase.KalookiInteractorIF {
+			return usecase.NewKalookiInteractor(domain.NewDefaultKalooki(), new(presenter.KalookiWebPresenter))
+		},
+		func(data []byte) (usecase.KalookiInteractorIF, error) {
+			return usecase.RestoreKalookiInteractor(data, new(presenter.KalookiWebPresenter))
+		},
+		controller.NewKalookiWebControllerWithProvider)
+	games.RegisterKVGame("burraco", games.CategoryExtra,
+		func() usecase.BurracoInteractorIF {
+			return usecase.NewBurracoInteractor(domain.NewDefaultBurraco(), new(presenter.BurracoWebPresenter))
+		},
+		func(data []byte) (usecase.BurracoInteractorIF, error) {
+			return usecase.RestoreBurracoInteractor(data, new(presenter.BurracoWebPresenter))
+		},
+		controller.NewBurracoWebControllerWithProvider)
+	games.RegisterKVGame("handandfoot", games.CategoryExtra,
+		func() usecase.HandAndFootInteractorIF {
+			return usecase.NewHandAndFootInteractor(domain.NewDefaultHandAndFoot(), new(presenter.HandAndFootWebPresenter))
+		},
+		func(data []byte) (usecase.HandAndFootInteractorIF, error) {
+			return usecase.RestoreHandAndFootInteractor(data, new(presenter.HandAndFootWebPresenter))
+		},
+		controller.NewHandAndFootWebControllerWithProvider)
+	games.RegisterKVGame("conquian", games.CategoryExtra,
+		func() usecase.ConquianInteractorIF {
+			return usecase.NewConquianInteractor(domain.NewDefaultConquian(), new(presenter.ConquianWebPresenter))
+		},
+		func(data []byte) (usecase.ConquianInteractorIF, error) {
+			return usecase.RestoreConquianInteractor(data, new(presenter.ConquianWebPresenter))
+		},
+		controller.NewConquianWebControllerWithProvider)
+	games.RegisterKVGame("chinchon", games.CategoryExtra,
+		func() usecase.ChinchonInteractorIF {
+			return usecase.NewChinchonInteractor(domain.NewDefaultChinchon(), new(presenter.ChinchonWebPresenter))
+		},
+		func(data []byte) (usecase.ChinchonInteractorIF, error) {
+			return usecase.RestoreChinchonInteractor(data, new(presenter.ChinchonWebPresenter))
+		},
+		controller.NewChinchonWebControllerWithProvider)
+	games.RegisterKVGame("threethirteen", games.CategoryExtra,
+		func() usecase.ThreeThirteenInteractorIF {
+			return usecase.NewThreeThirteenInteractor(domain.NewDefaultThreeThirteen(), new(presenter.ThreeThirteenWebPresenter))
+		},
+		func(data []byte) (usecase.ThreeThirteenInteractorIF, error) {
+			return usecase.RestoreThreeThirteenInteractor(data, new(presenter.ThreeThirteenWebPresenter))
+		},
+		controller.NewThreeThirteenWebControllerWithProvider)
+	games.RegisterKVGame("rummy500", games.CategoryExtra,
+		func() usecase.Rummy500InteractorIF {
+			return usecase.NewRummy500Interactor(domain.NewDefaultRummy500(), new(presenter.Rummy500WebPresenter))
+		},
+		func(data []byte) (usecase.Rummy500InteractorIF, error) {
+			return usecase.RestoreRummy500Interactor(data, new(presenter.Rummy500WebPresenter))
+		},
+		controller.NewRummy500WebControllerWithProvider)
 }

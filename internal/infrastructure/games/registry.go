@@ -114,8 +114,8 @@ var registry = []*Game{
 	{Name: "baccarat", Category: CategoryCasino},
 	{Name: "spades", Category: CategoryClassic},
 	{Name: "crazyeights", Category: CategoryClassic},
-	{Name: "ginrummy", Category: CategorySolo},
-	{Name: "canasta", Category: CategorySolo},
+	{Name: "ginrummy", Category: CategoryExtra},
+	{Name: "canasta", Category: CategoryExtra},
 	{Name: "spider", Category: CategorySolo},
 	// Napoleon is a trick-taking game bucketed into the casino worker purely for
 	// binary-size balancing (#2126): it is one of the heaviest games. Category is
@@ -193,7 +193,7 @@ var registry = []*Game{
 	{Name: "dragontiger", Category: CategoryCasino},
 	{Name: "blackjackswitch", Category: CategoryCasino},
 	{Name: "montecarlo", Category: CategorySolo},
-	{Name: "contractrummy", Category: CategorySolo},
+	{Name: "contractrummy", Category: CategoryExtra},
 	{Name: "ultimatetexasholdem", Category: CategoryCasino},
 	{Name: "crescent", Category: CategorySolo},
 	{Name: "mississippistud", Category: CategoryCasino},
@@ -220,7 +220,7 @@ var registry = []*Game{
 	{Name: "briscola", Category: CategoryClassic},
 	{Name: "gaps", Category: CategorySolo},
 	{Name: "fourcardpoker", Category: CategoryCasino},
-	{Name: "rummy500", Category: CategorySolo},
+	{Name: "rummy500", Category: CategoryExtra},
 	{Name: "eightoff", Category: CategorySolo},
 	{Name: "russianpoker", Category: CategoryCasino},
 	{Name: "penguin", Category: CategorySolo},
@@ -264,7 +264,7 @@ var registry = []*Game{
 	// Burraco is a Canasta-derived rummy game. Bucketed into the solo worker
 	// (the classic worker is at the 1 MB gzip free-tier limit). Category here is
 	// purely a binary-size bucket.
-	{Name: "burraco", Category: CategorySolo},
+	{Name: "burraco", Category: CategoryExtra},
 	// Yaniv (ヤニブ) is a draw-and-discard hand-reduction game. The issue
 	// proposed the classic worker, but that worker is at the 1 MB gzip free-tier
 	// limit, so Yaniv is bucketed into the casino worker. Category here is purely
@@ -378,27 +378,27 @@ var registry = []*Game{
 	// Hand and Foot: Canasta-family two-stage game (each player holds a "hand"
 	// and a "foot"), 4 players / 2 teams, 216-card deck (4 decks + 8 jokers).
 	// Solo worker bucket — it reuses Canasta's (solo) meld/canasta/red-3 helpers.
-	{Name: "handandfoot", Category: CategorySolo},
+	{Name: "handandfoot", Category: CategoryExtra},
 	// Conquian: the Mexican 2-player ancestor of rummy. 40-card Latin deck
 	// (standard 52 minus 8/9/10), table melds (sets + runs with 7–J adjacency),
 	// forced use of a taken discard, win by melding out the whole hand. Solo
 	// worker bucket — it reuses Gin Rummy's (untagged) meld helpers.
-	{Name: "conquian", Category: CategorySolo},
+	{Name: "conquian", Category: CategoryExtra},
 	// Chinchón: Spanish/Argentine 7-card rummy in the Gin Rummy family. 40-card
 	// Latin deck (no 8/9/10), draw/knock/layoff with deadwood scoring, plus the
 	// "Chinchón" instant win (7 consecutive cards of one suit). Solo worker
 	// bucket — it reuses Gin Rummy's (untagged) meld/deadwood helpers.
-	{Name: "chinchon", Category: CategorySolo},
+	{Name: "chinchon", Category: CategoryExtra},
 	// Kalooki: Jamaican/British joker-wild rummy, 2–4 players, two 52-card decks
 	// plus 2 jokers (106 cards). First melds must total ≥51 points (opening
 	// requirement); jokers are wild and a meld containing one scores 1.5×. Solo
 	// worker bucket — it reuses the Contract Rummy meld/layoff structure.
-	{Name: "kalooki", Category: CategorySolo},
+	{Name: "kalooki", Category: CategoryExtra},
 	// Three Thirteen: American progressive rummy, 2–4 players, two 52-card decks
 	// (104 cards). Eleven rounds deal 3..13 cards; the rank equal to the deal
 	// count is wild that round. Lowest cumulative deadwood after round 11 wins.
 	// Solo worker bucket — it reuses the Gin Rummy meld/deadwood approach.
-	{Name: "threethirteen", Category: CategorySolo},
+	{Name: "threethirteen", Category: CategoryExtra},
 	// Mao: a Crazy Eights / Macau–style shedding game with a secret "hidden
 	// rule" the human must infer (penalties for non-compliance, a half-hint
 	// after three correct follows). 4 players, 52-card deck, magic cards
