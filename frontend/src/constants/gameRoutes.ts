@@ -1103,6 +1103,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [5, 1, 5, 1], skill: [1, 3, 5, 0], social: [5, 1, 0, 1, 4], theme: [3, 3, 3, 1, 3, 3] },
       },
       {
+        path: '/fortyandeight',
+        labelKey: 'nav.fortyandeight',
+        icon: '🏰',
+        page: 'FortyAndEight',
+        profile: { mood: [5, 1, 5, 1], skill: [1, 3, 5, 0], social: [5, 1, 0, 1, 4], theme: [3, 3, 3, 1, 3, 3] },
+      },
+      {
         path: '/bakersdozen',
         labelKey: 'nav.bakersdozen',
         icon: '🥖',

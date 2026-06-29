@@ -73,6 +73,8 @@ import type {
   FiveHundredResponse,
   FlowerGardenMoveZone,
   FlowerGardenResponse,
+  FortyAndEightMoveZone,
+  FortyAndEightResponse,
   FortyFivesResponse,
   FortyThievesMoveZone,
   FortyThievesResponse,
@@ -350,6 +352,7 @@ const workerUrl: Record<string, string> = {
   streetsandalleys: WORKER_EXTRA,
   kingalbert: WORKER_EXTRA,
   flowergarden: WORKER_EXTRA,
+  fortyandeight: WORKER_EXTRA,
   eightoff: WORKER_SOLO,
   penguin: WORKER_SOLO,
   chinesepoker: WORKER_CASINO,
@@ -3564,6 +3567,13 @@ export const fortyThievesApi = createSolitaireMoveApi<
   'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('fortythieves');
 
+/** API client for the Forty and Eight /fortyandeight/exec endpoint. */
+export const fortyAndEightApi = createSolitaireMoveApi<
+  FortyAndEightResponse,
+  FortyAndEightMoveZone,
+  'reset' | 'draw' | 'redeal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('fortyandeight');
+
 /** API client for the Crescent Solitaire /crescent/exec endpoint. */
 export const crescentApi = createSolitaireMoveApi<
   CrescentResponse,
@@ -3811,6 +3821,7 @@ export type {
   BeleagueredCastleMoveZone,
   CrescentMoveZone,
   FlowerGardenMoveZone,
+  FortyAndEightMoveZone,
   FortyThievesMoveZone,
   KingAlbertMoveZone,
   StreetsAndAlleysMoveZone,
@@ -4095,6 +4106,7 @@ const games = [
   'streetsandalleys',
   'kingalbert',
   'flowergarden',
+  'fortyandeight',
   'piquet',
   'casinoholdem',
   'callbreak',

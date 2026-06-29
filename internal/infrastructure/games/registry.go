@@ -218,6 +218,7 @@ var registry = []*Game{
 	// 1 MB gzip limit. Category is only a per-worker size bucket.
 	{Name: "kingalbert", Category: CategoryExtra},
 	{Name: "flowergarden", Category: CategoryExtra},
+	{Name: "fortyandeight", Category: CategoryExtra},
 	// Piquet is a trick-taking game bucketed into the SOLO worker purely for
 	// binary-size balancing (#2126). Category is only a size bucket.
 	{Name: "piquet", Category: CategorySolo},

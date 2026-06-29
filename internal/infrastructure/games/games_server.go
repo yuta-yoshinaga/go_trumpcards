@@ -565,6 +565,11 @@ func init() {
 			return usecase.NewFlowerGardenInteractor(domain.NewDefaultFlowerGarden(), new(presenter.FlowerGardenWebPresenter))
 		},
 		controller.NewFlowerGardenWebController)
+	BindWebControllerFor("fortyandeight",
+		func() usecase.FortyAndEightInteractorIF {
+			return usecase.NewFortyAndEightInteractor(domain.NewDefaultFortyAndEight(), new(presenter.FortyAndEightWebPresenter))
+		},
+		controller.NewFortyAndEightWebController)
 	BindWebControllerFor("piquet",
 		func() usecase.PiquetInteractorIF {
 			return usecase.NewPiquetInteractor(domain.NewDefaultPiquet(), new(presenter.PiquetWebPresenter))
