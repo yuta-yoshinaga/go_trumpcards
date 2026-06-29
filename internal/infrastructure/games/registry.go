@@ -213,6 +213,10 @@ var registry = []*Game{
 	// gzip limit. Category is only a per-worker size bucket with no user-facing
 	// meaning.
 	{Name: "streetsandalleys", Category: CategoryExtra},
+	// King Albert is an English open patience (FreeCell family) routed to the
+	// EXTRA worker purely for binary-size balancing — the solo worker is at the
+	// 1 MB gzip limit. Category is only a per-worker size bucket.
+	{Name: "kingalbert", Category: CategoryExtra},
 	// Piquet is a trick-taking game bucketed into the SOLO worker purely for
 	// binary-size balancing (#2126). Category is only a size bucket.
 	{Name: "piquet", Category: CategorySolo},

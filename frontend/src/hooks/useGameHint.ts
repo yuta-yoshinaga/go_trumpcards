@@ -56,6 +56,7 @@ import type {
   HighCardFlushResponse,
   HoldemResponse,
   IndianPokerResponse,
+  KingAlbertResponse,
   KlaverjasResponse,
   KlondikeResponse,
   KnockoutWhistResponse,
@@ -198,6 +199,7 @@ import { getHoldemHint } from '../utils/hints/holdemHint';
 import { getIndianPokerHint } from '../utils/hints/indianpokerHint';
 import { getIrishPokerHint } from '../utils/hints/irishPokerHint';
 import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
+import { getKingalbertHint } from '../utils/hints/kingalbertHint';
 import { getKlaverjasHint } from '../utils/hints/klaverjasHint';
 import { getKlondikeHint } from '../utils/hints/klondikeHint';
 import { getKnockoutWhistHint } from '../utils/hints/knockoutWhistHint';
@@ -366,6 +368,7 @@ const hintFactories = {
   bakersdozen: (s) => getBakersdozenHint(s as BakersDozenResponse),
   beleagueredcastle: (s) => getBeleagueredcastleHint(s as BeleagueredCastleResponse),
   streetsandalleys: (s) => getStreetsandalleysHint(s as StreetsAndAlleysResponse),
+  kingalbert: (s) => getKingalbertHint(s as KingAlbertResponse),
   tonk: () => null,
   thirtyone: (s) => getThirtyOneHint(s as ThirtyOneResponse),
   yaniv: (s) => getYanivHint(s as YanivResponse),

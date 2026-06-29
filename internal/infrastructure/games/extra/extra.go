@@ -107,4 +107,12 @@ func init() {
 			return usecase.RestoreStreetsAndAlleysInteractor(data, new(presenter.StreetsAndAlleysWebPresenter))
 		},
 		controller.NewStreetsAndAlleysWebControllerWithProvider)
+	games.RegisterKVGame("kingalbert", games.CategoryExtra,
+		func() usecase.KingAlbertInteractorIF {
+			return usecase.NewKingAlbertInteractor(domain.NewDefaultKingAlbert(), new(presenter.KingAlbertWebPresenter))
+		},
+		func(data []byte) (usecase.KingAlbertInteractorIF, error) {
+			return usecase.RestoreKingAlbertInteractor(data, new(presenter.KingAlbertWebPresenter))
+		},
+		controller.NewKingAlbertWebControllerWithProvider)
 }

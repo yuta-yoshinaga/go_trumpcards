@@ -1,0 +1,19 @@
+{
+  "helpTitle": "King Albert",
+  "helpMoveTF": "  m <col> f            move tableau to foundation",
+  "helpMoveTT": "  m <fromCol> <toCol>  move single card between tableau cols",
+  "helpMoveRT": "  m r<idx> <toCol>     move reserve card to tableau",
+  "helpMoveRF": "  m r<idx> f           move reserve card to foundation",
+  "helpGiveUp": "  g                    give up",
+  "helpHint": "  h                    hint",
+  "helpAutoComplete": "  ac                   auto-complete",
+  "foundationHeader": "Foundation: ",
+  "reserveHeader": "Reserve: ",
+  "columnLabel": "Column {{col}}:",
+  "promptToZone": "destination column or 'f' for foundation",
+  "hintFrom": "tableau column {{col}}[{{idx}}]",
+  "hintFromReserve": "reserve {{idx}}",
+  "hintToFoundation": "foundation",
+  "hintToTableau": "tableau column {{col}}",
+  "hintLine": "Hint: {{from}} → {{to}}"
+}

@@ -7211,6 +7211,43 @@ export interface StreetsAndAlleysMoveZone {
   cardIndex?: number;
 }
 
+// --- King Albert ---
+
+/** A single tableau card in King Albert. */
+export interface KingAlbertTableauCard {
+  card: Card | null;
+  faceUp: boolean;
+}
+
+/** A suggested move hint in King Albert. */
+export interface KingAlbertHint {
+  fromZone: string;
+  fromCol: number;
+  cardIndex: number;
+  toZone: string;
+  toCol: number;
+}
+
+/** Full King Albert game state returned from the API. */
+export interface KingAlbertResponse extends BaseGameResponse {
+  tableau: KingAlbertTableauCard[][];
+  reserve: (Card | null)[];
+  foundation: Card[][];
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  hint?: KingAlbertHint;
+}
+
+/** Source or target zone for a King Albert card move. */
+export interface KingAlbertMoveZone {
+  zone: string;
+  col?: number;
+  cardIndex?: number;
+}
+
 // --- Tarneeb ---
 
 /** Tarneeb player data with team and current bid. */

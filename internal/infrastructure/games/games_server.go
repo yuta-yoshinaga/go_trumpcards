@@ -555,6 +555,11 @@ func init() {
 			return usecase.NewStreetsAndAlleysInteractor(domain.NewDefaultStreetsAndAlleys(), new(presenter.StreetsAndAlleysWebPresenter))
 		},
 		controller.NewStreetsAndAlleysWebController)
+	BindWebControllerFor("kingalbert",
+		func() usecase.KingAlbertInteractorIF {
+			return usecase.NewKingAlbertInteractor(domain.NewDefaultKingAlbert(), new(presenter.KingAlbertWebPresenter))
+		},
+		controller.NewKingAlbertWebController)
 	BindWebControllerFor("piquet",
 		func() usecase.PiquetInteractorIF {
 			return usecase.NewPiquetInteractor(domain.NewDefaultPiquet(), new(presenter.PiquetWebPresenter))

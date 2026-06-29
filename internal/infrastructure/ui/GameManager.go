@@ -1615,6 +1615,24 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "kingalbert", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewKingAlbertCuiController(usecase.NewKingAlbertInteractor(
+				domain.NewDefaultKingAlbert(), new(presenter.KingAlbertCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "kingalbert.helpTitle",
+				CommandKeys: []string{
+					"kingalbert.helpMoveTT",
+					"kingalbert.helpMoveTF",
+					"kingalbert.helpMoveRT",
+					"kingalbert.helpMoveRF",
+					"kingalbert.helpGiveUp",
+					"kingalbert.helpHint",
+					"kingalbert.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "piquet", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewPiquetCuiController(usecase.NewPiquetInteractor(

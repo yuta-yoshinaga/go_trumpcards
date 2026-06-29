@@ -85,6 +85,7 @@ import irishpoker from '../../../docs/manual/web/irishpoker.md?raw';
 import jokerpoker from '../../../docs/manual/web/jokerpoker.md?raw';
 import kalooki from '../../../docs/manual/web/kalooki.md?raw';
 import kemps from '../../../docs/manual/web/kemps.md?raw';
+import kingalbert from '../../../docs/manual/web/kingalbert.md?raw';
 import klaverjas from '../../../docs/manual/web/klaverjas.md?raw';
 import klondike from '../../../docs/manual/web/klondike.md?raw';
 import knockoutwhist from '../../../docs/manual/web/knockoutwhist.md?raw';
@@ -233,6 +234,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/bakersgame': bakersgame,
   '/beleagueredcastle': beleagueredcastle,
   '/streetsandalleys': streetsandalleys,
+  '/kingalbert': kingalbert,
   '/egyptianratscrew': egyptianratscrew,
   '/fortythieves': fortythieves,
   '/fourcardpoker': fourcardpoker,
