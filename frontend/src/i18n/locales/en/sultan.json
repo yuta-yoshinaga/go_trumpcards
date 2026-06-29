@@ -1,0 +1,38 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "stock": "Stock",
+  "waste": "Waste",
+  "foundation": "Foundation",
+  "divan": "Divan",
+  "moveCount": "Moves",
+  "draw": "Draw",
+  "redeal": "Redeal",
+  "giveup": "Give Up",
+  "empty": "Empty",
+  "landscapeBanner": "Landscape mode recommended",
+  "hint": "Hint",
+  "autoComplete": "Auto Complete",
+  "autoCompleteNotReady": "Available when stock and waste are empty",
+  "undo": "Undo",
+  "stalemate": "Stalemate",
+  "playing": "Play divan and waste cards onto the foundations",
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "hintAvailable": "Hint available",
+  "noHint": "No hint available",
+  "tutorial": {
+    "stockWaste": "Click the stock to draw one card. When the stock runs out you may redeal the waste, up to twice.",
+    "foundation": "Build 8 King-based foundations up by suit: King → Ace → 2 … 10 → Jack → Queen.",
+    "divan": "The 8-slot Divan reserve feeds the foundations. A played slot refills automatically from the stock. Click a divan or waste card to play it.",
+    "controls": "Use redeal, hint, undo, and auto-complete buttons."
+  },
+  "frontendHint": {
+    "waste": "Waste",
+    "divan": "Divan slot {{idx}}",
+    "foundation": "Foundation {{idx}}"
+  }
+}

@@ -157,6 +157,7 @@ export type GameKey =
   | 'kingalbert'
   | 'flowergarden'
   | 'fortyandeight'
+  | 'sultan'
   | 'agnes'
   | 'canfield'
   | 'osmosis'
@@ -490,6 +491,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   kingalbert: CASINO,
   flowergarden: CASINO,
   fortyandeight: CASINO,
+  sultan: CASINO,
   agnes: CASINO,
   canfield: CASINO,
   osmosis: CASINO,

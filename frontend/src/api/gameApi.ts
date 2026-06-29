@@ -174,6 +174,8 @@ import type {
   StreetsAndAlleysMoveZone,
   StreetsAndAlleysResponse,
   SuecaResponse,
+  SultanMoveZone,
+  SultanResponse,
   TarneebResponse,
   TeenPattiResponse,
   TexasHoldemBonusResponse,
@@ -354,6 +356,7 @@ const workerUrl: Record<string, string> = {
   kingalbert: WORKER_EXTRA,
   flowergarden: WORKER_EXTRA,
   fortyandeight: WORKER_EXTRA,
+  sultan: WORKER_EXTRA,
   agnes: WORKER_EXTRA,
   eightoff: WORKER_SOLO,
   penguin: WORKER_SOLO,
@@ -3590,6 +3593,13 @@ export const fortyAndEightApi = createSolitaireMoveApi<
   'reset' | 'draw' | 'redeal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('fortyandeight');
 
+/** API client for the Sultan of Turkey /sultan/exec endpoint. */
+export const sultanApi = createSolitaireMoveApi<
+  SultanResponse,
+  SultanMoveZone,
+  'reset' | 'draw' | 'redeal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('sultan');
+
 /** API client for the Crescent Solitaire /crescent/exec endpoint. */
 export const crescentApi = createSolitaireMoveApi<
   CrescentResponse,
@@ -3841,6 +3851,7 @@ export type {
   FortyThievesMoveZone,
   KingAlbertMoveZone,
   StreetsAndAlleysMoveZone,
+  SultanMoveZone,
 };
 
 /** API client for the Whist /whist/exec endpoint. */
@@ -4123,6 +4134,7 @@ const games = [
   'kingalbert',
   'flowergarden',
   'fortyandeight',
+  'sultan',
   'agnes',
   'piquet',
   'casinoholdem',

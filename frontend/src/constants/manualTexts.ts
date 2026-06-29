@@ -162,6 +162,7 @@ import spoilfive from '../../../docs/manual/web/spoilfive.md?raw';
 import spoons from '../../../docs/manual/web/spoons.md?raw';
 import streetsandalleys from '../../../docs/manual/web/streetsandalleys.md?raw';
 import sueca from '../../../docs/manual/web/sueca.md?raw';
+import sultan from '../../../docs/manual/web/sultan.md?raw';
 import tarneeb from '../../../docs/manual/web/tarneeb.md?raw';
 import teenpatti from '../../../docs/manual/web/teenpatti.md?raw';
 import texasholdembonus from '../../../docs/manual/web/texasholdembonus.md?raw';
@@ -322,6 +323,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/sheepshead': sheepshead,
   '/doppelkopf': doppelkopf,
   '/sueca': sueca,
+  '/sultan': sultan,
   '/klaverjas': klaverjas,
   '/tute': tute,
   '/pitch': pitch,

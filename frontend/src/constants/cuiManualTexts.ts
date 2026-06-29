@@ -163,6 +163,7 @@ import spoilfive from '../../../docs/manual/cui/spoilfive.md?raw';
 import spoons from '../../../docs/manual/cui/spoons.md?raw';
 import streetsandalleys from '../../../docs/manual/cui/streetsandalleys.md?raw';
 import sueca from '../../../docs/manual/cui/sueca.md?raw';
+import sultan from '../../../docs/manual/cui/sultan.md?raw';
 import tarneeb from '../../../docs/manual/cui/tarneeb.md?raw';
 import teenpatti from '../../../docs/manual/cui/teenpatti.md?raw';
 import texasholdembonus from '../../../docs/manual/cui/texasholdembonus.md?raw';
@@ -305,6 +306,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/sheepshead': sheepshead,
   '/doppelkopf': doppelkopf,
   '/sueca': sueca,
+  '/sultan': sultan,
   '/klaverjas': klaverjas,
   '/tute': tute,
   '/pitch': pitch,
