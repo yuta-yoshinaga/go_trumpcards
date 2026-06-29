@@ -253,10 +253,7 @@ func (g *CatchTen) ResolveTrick() {
 	g.leadPlayerIdx = winnerIdx
 
 	if g.trickNumber >= CatchTenHandSize {
-		// Last trick of the deal — tally the round (and the game-end check)
-		// now so the round-end score screen reflects the final scores.
 		g.phase = CatchTenPhaseRoundEnd
-		g.ScoreRound()
 	} else {
 		g.phase = CatchTenPhaseTrickEnd
 	}
@@ -451,10 +448,7 @@ func (g *CatchTen) playCard(playerIdx int, card *Card) {
 	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == CatchTenPlayerCnt {
-		// The trick is full — resolve it immediately so it is scored
-		// regardless of whether a human or a CPU played the last card.
 		g.phase = CatchTenPhaseTrickEnd
-		g.ResolveTrick()
 	} else {
 		g.currentPlayerIdx = (g.currentPlayerIdx + 1) % CatchTenPlayerCnt
 	}

@@ -61,8 +61,11 @@ func (ci *CatchTenInteractor) Play(cardIndex int) string {
 	if err != nil {
 		return ci.cp.Output(ci.Game, err)
 	}
-	// Trick/round resolution is handled automatically in the domain when the
-	// trick becomes full (works whether a human or a CPU played the last card).
+	// If the human played the last card of the trick, resolve it here; when a
+	// CPU plays the last card the trick is resolved inside runCpuTurns' loop.
+	if ci.Game.GetPhase() == domain.CatchTenPhaseTrickEnd {
+		ci.Game.ResolveTrick()
+	}
 	ci.runCpuTurns()
 	return ci.cp.Output(ci.Game, nil)
 }
@@ -76,6 +79,7 @@ func (ci *CatchTenInteractor) NextTrick() string {
 
 // NextRound 次のラウンドへ進む (ラウンドのスコアリングはトリック解決時に自動実行済み)
 func (ci *CatchTenInteractor) NextRound() string {
+	ci.Game.ScoreRound()
 	if out, blocked := guardGameEnd(ci.Game, ci.cp); blocked {
 		return out
 	}
