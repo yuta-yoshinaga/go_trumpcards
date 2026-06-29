@@ -302,6 +302,39 @@ func TestCatchTen_ResolveTrick_LastTrick(t *testing.T) {
 	assert.Equal(t, domain.CatchTenPhaseRoundEnd, g.GetPhase())
 }
 
+// TestCatchTen_PlayCardDoesNotAutoResolve is a regression test: playCard must
+// NOT resolve a full trick by itself. The caller resolves it exactly once (the
+// interactor's human path, or the runCpuTurns loop after a CPU play). If
+// playCard auto-resolved, a CPU completing a trick inside the loop — which then
+// also calls ResolveTrick — would double the winner's trick and honour counts.
+func TestCatchTen_PlayCardDoesNotAutoResolve(t *testing.T) {
+	g := newTestCatchTen()
+	g.Reset()
+	g.SetTrumpSuit(domain.CardDesignSpade)
+	setupCatchTenPlayPhase(g, 3, 0, 1) // seat 3 (a CPU) plays the 4th card
+	g.SetCurrentTrick([]*domain.CatchTenTrickCard{
+		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 7, false)},
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},
+		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 9, false)},
+	})
+
+	g.CpuPlay() // CPU at seat 3 completes the trick
+
+	assert.Equal(t, domain.CatchTenPhaseTrickEnd, g.GetPhase())
+	tricksBefore := 0
+	for i := 0; i < domain.CatchTenPlayerCnt; i++ {
+		tricksBefore += g.GetPlayer(i).GetTrickCount()
+	}
+	assert.Equal(t, 0, tricksBefore, "playCard must not resolve the trick itself")
+
+	g.ResolveTrick()
+	tricksAfter := 0
+	for i := 0; i < domain.CatchTenPlayerCnt; i++ {
+		tricksAfter += g.GetPlayer(i).GetTrickCount()
+	}
+	assert.Equal(t, 1, tricksAfter, "exactly one trick should be awarded after a single ResolveTrick")
+}
+
 func TestCatchTen_NextTrick(t *testing.T) {
 	g := newTestCatchTen()
 	g.Reset()
@@ -633,9 +666,8 @@ func TestCatchTen_FullGame_AllDifficulties(t *testing.T) {
 			g.Reset()
 
 			for round := 0; round < 50 && !g.GetGameEndFlag(); round++ {
-				// playCatchTenRound drives the deal to RoundEnd; the domain
-				// scores the round automatically when the last trick resolves.
-				playCatchTenRound(t, g)
+				playCatchTenRound(t, g) // drives the deal to RoundEnd
+				g.ScoreRound()
 				if g.GetGameEndFlag() {
 					break
 				}
@@ -665,6 +697,7 @@ func playCatchTenRound(t *testing.T, g *domain.CatchTen) {
 				g.CpuPlay()
 			}
 		case domain.CatchTenPhaseTrickEnd:
+			g.ResolveTrick()
 			g.NextTrick()
 		default: // RoundEnd or GameEnd
 			return

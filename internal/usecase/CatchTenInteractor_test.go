@@ -116,9 +116,9 @@ func TestCatchTenInteractor_Play(t *testing.T) {
 		gameMock.AssertNotCalled(t, "PlayerPlay")
 	})
 
-	t.Run("trick resolution handled by domain", func(t *testing.T) {
-		// When a trick completes the domain resolves it inside playCard, so
-		// the interactor must NOT call ResolveTrick itself.
+	t.Run("human completes trick resolves it", func(t *testing.T) {
+		// When the human plays the last card of a trick, the interactor
+		// resolves it (a CPU-completed trick is resolved in runCpuTurns).
 		cpMock := new(presenter.MockCatchTenPresenter)
 		cpMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
 		gameMock := new(interfaces.MockCatchTenGame)
@@ -126,10 +126,11 @@ func TestCatchTenInteractor_Play(t *testing.T) {
 		gameMock.On("IsHumanTurn").Return(true)
 		gameMock.On("PlayerPlay", 1).Return(nil)
 		gameMock.On("GetPhase").Return(domain.CatchTenPhaseTrickEnd)
+		gameMock.On("ResolveTrick").Return()
 
 		ci := usecase.NewCatchTenInteractor(gameMock, cpMock)
 		assert.Equal(t, mockOutput, ci.Play(1))
-		gameMock.AssertNotCalled(t, "ResolveTrick")
+		gameMock.AssertCalled(t, "ResolveTrick")
 	})
 }
 
@@ -151,12 +152,11 @@ func TestCatchTenInteractor_NextTrick(t *testing.T) {
 func TestCatchTenInteractor_NextRound(t *testing.T) {
 	mockOutput := `{"phase":0}`
 
-	t.Run("starts next round", func(t *testing.T) {
-		// The round is already scored by the domain when the last trick
-		// resolved, so NextRound only advances the deal.
+	t.Run("scores round then starts next", func(t *testing.T) {
 		cpMock := new(presenter.MockCatchTenPresenter)
 		cpMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
 		gameMock := new(interfaces.MockCatchTenGame)
+		gameMock.On("ScoreRound").Return()
 		gameMock.On("GetGameEndFlag").Return(false)
 		gameMock.On("NextRound").Return()
 		gameMock.On("GetPhase").Return(domain.CatchTenPhasePlay)
@@ -164,20 +164,20 @@ func TestCatchTenInteractor_NextRound(t *testing.T) {
 
 		ci := usecase.NewCatchTenInteractor(gameMock, cpMock)
 		assert.Equal(t, mockOutput, ci.NextRound())
+		gameMock.AssertCalled(t, "ScoreRound")
 		gameMock.AssertCalled(t, "NextRound")
-		gameMock.AssertNotCalled(t, "ScoreRound")
 	})
 
-	t.Run("game ended guard blocks next round", func(t *testing.T) {
+	t.Run("game ended after scoring", func(t *testing.T) {
 		cpMock := new(presenter.MockCatchTenPresenter)
 		cpMock.On("Output", mock.Anything, mock.Anything).Return("game ended")
 		gameMock := new(interfaces.MockCatchTenGame)
+		gameMock.On("ScoreRound").Return()
 		gameMock.On("GetGameEndFlag").Return(true)
 
 		ci := usecase.NewCatchTenInteractor(gameMock, cpMock)
 		assert.Equal(t, "game ended", ci.NextRound())
 		gameMock.AssertNotCalled(t, "NextRound")
-		gameMock.AssertNotCalled(t, "ScoreRound")
 	})
 }
 
