@@ -1,0 +1,19 @@
+{
+  "helpTitle": "King Albert (キング・アルバート)",
+  "helpMoveTF": "  m <col> f            タブローから組札へ",
+  "helpMoveTT": "  m <fromCol> <toCol>  タブロー間で1枚移動",
+  "helpMoveRT": "  m r<idx> <toCol>     リザーブからタブローへ",
+  "helpMoveRF": "  m r<idx> f           リザーブから組札へ",
+  "helpGiveUp": "  g                    ギブアップ",
+  "helpHint": "  h                    ヒント",
+  "helpAutoComplete": "  ac                   オートコンプリート",
+  "foundationHeader": "Foundation: ",
+  "reserveHeader": "リザーブ: ",
+  "columnLabel": "列{{col}}:",
+  "promptToZone": "移動先の列、または組札なら 'f'",
+  "hintFrom": "タブロー列{{col}}[{{idx}}]",
+  "hintFromReserve": "リザーブ{{idx}}",
+  "hintToFoundation": "ファンデーション",
+  "hintToTableau": "タブロー列{{col}}",
+  "hintLine": "ヒント: {{from}} → {{to}}"
+}

@@ -86,6 +86,7 @@ import irishpoker from '../../../docs/manual/cui/irishpoker.md?raw';
 import jokerpoker from '../../../docs/manual/cui/jokerpoker.md?raw';
 import kalooki from '../../../docs/manual/cui/kalooki.md?raw';
 import kemps from '../../../docs/manual/cui/kemps.md?raw';
+import kingalbert from '../../../docs/manual/cui/kingalbert.md?raw';
 import klaverjas from '../../../docs/manual/cui/klaverjas.md?raw';
 import klondike from '../../../docs/manual/cui/klondike.md?raw';
 import knockoutwhist from '../../../docs/manual/cui/knockoutwhist.md?raw';
@@ -224,6 +225,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/bakersgame': bakersgame,
   '/beleagueredcastle': beleagueredcastle,
   '/streetsandalleys': streetsandalleys,
+  '/kingalbert': kingalbert,
   '/durak': durak,
   '/egyptianratscrew': egyptianratscrew,
   '/fiftyone': fiftyone,

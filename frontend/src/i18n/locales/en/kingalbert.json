@@ -1,0 +1,43 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "foundation": "Foundation",
+  "tableau": "Tableau",
+  "reserve": "Reserve",
+  "moveCount": "Moves",
+  "giveup": "Give Up",
+  "empty": "Empty",
+  "foundationAriaLabel": "{{suit}} foundation {{count}} cards",
+  "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
+  "landscapeBanner": "Landscape mode recommended",
+  "hint": "Hint",
+  "autoComplete": "Auto Complete",
+  "autoCompleteNotReady": "Available once a foundation builds past its ace",
+  "undo": "Undo",
+  "stalemate": "Stalemate",
+  "playing": "Move cards to build foundations",
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "gameOverSummary": "Reached {{count}}/52 cards on the foundations ({{percent}}%)",
+  "hintAvailable": "Hint available",
+  "noHint": "No hint available",
+  "tutorial": {
+    "foundation": "Four foundations sit beside the reserve, pre-seeded with the four Aces. Build each pile by suit from Ace to King.",
+    "reserve": "The reserve (Lawrence) holds seven single face-up cards. They can leave for the tableau or a foundation, but nothing ever moves back into the reserve.",
+    "tableau": "Nine open columns are dealt face-up. Only the rightmost card of each column is playable.",
+    "moves": "Pack the tableau in alternating colors, one rank lower (red on black, black on red). Empty columns accept any card.",
+    "controls": "Use hint, undo, and auto-complete buttons."
+  },
+  "frontendHint": {
+    "tableau": "Tableau column {{col}}",
+    "reserve": "Reserve {{col}}",
+    "foundation": "Foundation"
+  },
+  "hintReason": {
+    "toFoundation": "Send this card to the foundation to free up the column.",
+    "toTableau": "Apply the suggested tableau move to unlock buried cards."
+  }
+}

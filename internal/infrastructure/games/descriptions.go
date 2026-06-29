@@ -110,6 +110,7 @@ var gameDescriptions = map[string]string{
 	"oasispoker":          "Oasis Poker (オアシスポーカー)",
 	"beleagueredcastle":   "Beleaguered Castle (包囲された城)",
 	"streetsandalleys":    "Streets and Alleys (ストリート・アンド・アレイズ)",
+	"kingalbert":          "King Albert (キング・アルバート)",
 	"piquet":              "Piquet (ピケ)",
 	"casinoholdem":        "Casino Hold'em (カジノホールデム)",
 	"callbreak":           "Call Break (コールブレイク)",

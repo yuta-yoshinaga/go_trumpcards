@@ -1383,6 +1383,13 @@ export const StreetsAndAlleysPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** King Albert phase constants (sync: internal/domain/KingAlbert.go). */
+export const KingAlbertPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Tarneeb phase constants (sync: internal/domain/Tarneeb.go). */
 export const TarneebPhase = {
   BID: 0,
