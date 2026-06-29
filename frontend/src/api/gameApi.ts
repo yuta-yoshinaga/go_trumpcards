@@ -3851,6 +3851,7 @@ export type {
   FortyThievesMoveZone,
   KingAlbertMoveZone,
   StreetsAndAlleysMoveZone,
+  SultanMoveZone,
 };
 
 /** API client for the Whist /whist/exec endpoint. */
