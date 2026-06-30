@@ -195,6 +195,7 @@ var gameDescriptions = map[string]string{
 	"beggarmyneighbour":   "Beggar-My-Neighbour (ビガー・マイ・ネイバー)",
 	"allfours":            "All Fours / Seven Up (オールフォーズ/セブンアップ)",
 	"prsi":                "Prší (プルシー/チェコ版クレイジーエイト)",
+	"jass":                "Jass (Schieber) (ヤス/シーバー)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

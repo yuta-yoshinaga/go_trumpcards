@@ -91,6 +91,7 @@ import type {
   HighCardFlushResponse,
   HoldemResponse,
   IndianPokerResponse,
+  JassResponse,
   KalookiResponse,
   KempsResponse,
   KingAlbertMoveZone,
@@ -358,6 +359,7 @@ const workerUrl: Record<string, string> = {
   fortyandeight: WORKER_EXTRA,
   sultan: WORKER_EXTRA,
   agnes: WORKER_EXTRA,
+  jass: WORKER_EXTRA,
   eightoff: WORKER_SOLO,
   penguin: WORKER_SOLO,
   chinesepoker: WORKER_CASINO,
@@ -3259,6 +3261,30 @@ export const beloteApi = {
     }),
 };
 
+/** Jass (Schieber) game configuration input shape. */
+export interface JassConfigInput {
+  cpuDifficulty?: number;
+  targetScore?: number;
+  lastTrickBonus?: number;
+  enableWeis?: boolean;
+}
+
+/** API client for the Jass /jass/exec endpoint. */
+export const jassApi = {
+  exec: (
+    command: 'reset' | 'calltrump' | 'schieben' | 'play' | 'next' | 'nextround' | 'hint',
+    suit?: number,
+    cardIndex?: number,
+    config?: JassConfigInput,
+  ) =>
+    gameExec<JassResponse>('jass', {
+      command,
+      suit,
+      cardIndex,
+      config,
+    }),
+};
+
 /** API client for the Euchre /euchre/exec endpoint. */
 export const euchreApi = {
   exec: (
@@ -4126,6 +4152,7 @@ const games = [
   'crescent',
   'mississippistud',
   'belote',
+  'jass',
   'spiderette',
   'mighty',
   'oasispoker',

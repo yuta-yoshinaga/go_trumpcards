@@ -940,4 +940,9 @@ func init() {
 			return usecase.NewPrsiInteractor(domain.NewDefaultPrsi(), new(presenter.PrsiWebPresenter))
 		},
 		controller.NewPrsiWebController)
+	BindWebControllerFor("jass",
+		func() usecase.JassInteractorIF {
+			return usecase.NewJassInteractor(domain.NewDefaultJass(), new(presenter.JassWebPresenter))
+		},
+		controller.NewJassWebController)
 }

@@ -58,6 +58,7 @@ import type {
   HighCardFlushResponse,
   HoldemResponse,
   IndianPokerResponse,
+  JassResponse,
   KingAlbertResponse,
   KlaverjasResponse,
   KlondikeResponse,
@@ -202,6 +203,7 @@ import { getHighCardFlushHint } from '../utils/hints/highcardflushHint';
 import { getHoldemHint } from '../utils/hints/holdemHint';
 import { getIndianPokerHint } from '../utils/hints/indianpokerHint';
 import { getIrishPokerHint } from '../utils/hints/irishPokerHint';
+import { getJassHint } from '../utils/hints/jassHint';
 import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
 import { getKingalbertHint } from '../utils/hints/kingalbertHint';
 import { getKlaverjasHint } from '../utils/hints/klaverjasHint';
@@ -320,6 +322,7 @@ const hintFactories = {
   highcardflush: (s) => getHighCardFlushHint(s as HighCardFlushResponse),
   euchre: (s) => getEuchreHint(s as EuchreResponse),
   belote: (s) => getBeloteHint(s as BeloteResponse),
+  jass: (s) => getJassHint(s as JassResponse),
   bigtwo: (s) => getBigTwoHint(s as BigTwoResponse),
   tienlen: (s) => getTienLenHint(s as TienLenResponse),
   fivehundred: (s) => getFiveHundredHint(s as FiveHundredResponse),

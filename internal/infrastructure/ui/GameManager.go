@@ -2991,6 +2991,23 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"prsi.helpSetDifficulty"},
 			})
 	}},
+	{Name: "jass", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewJassCuiController(usecase.NewJassInteractor(
+				domain.NewDefaultJass(), new(presenter.JassCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "jass.helpTitle",
+				CommandKeys: []string{
+					"jass.helpCall",
+					"jass.helpSchieben",
+					"jass.helpPlay",
+					"jass.helpNext",
+					"jass.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"jass.helpSetDifficulty", "jass.helpSetTarget"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
