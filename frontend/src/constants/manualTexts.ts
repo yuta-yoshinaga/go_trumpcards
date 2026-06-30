@@ -74,6 +74,7 @@ import fortyfives from '../../../docs/manual/web/fortyfives.md?raw';
 import fortythieves from '../../../docs/manual/web/fortythieves.md?raw';
 import fourcardpoker from '../../../docs/manual/web/fourcardpoker.md?raw';
 import freecell from '../../../docs/manual/web/freecell.md?raw';
+import gaigel from '../../../docs/manual/web/gaigel.md?raw';
 import gaps from '../../../docs/manual/web/gaps.md?raw';
 import ginrummy from '../../../docs/manual/web/ginrummy.md?raw';
 import gofish from '../../../docs/manual/web/gofish.md?raw';
@@ -264,6 +265,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/holdem': holdem,
   '/indianpoker': indianpoker,
   '/jass': jass,
+  '/gaigel': gaigel,
   '/jokerpoker': jokerpoker,
   '/klondike': klondike,
   '/letitride': letitride,

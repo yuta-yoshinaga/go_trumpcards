@@ -49,6 +49,7 @@ import type {
   FortyFivesResponse,
   FourCardPokerResponse,
   FreeCellResponse,
+  GaigelResponse,
   GapsResponse,
   GinRummyResponse,
   GoFishResponse,
@@ -193,6 +194,7 @@ import { getFlowergardenHint } from '../utils/hints/flowergardenHint';
 import { getFortyFivesHint } from '../utils/hints/fortyFivesHint';
 import { getFourCardPokerHint } from '../utils/hints/fourcardpokerHint';
 import { getFreeCellHint } from '../utils/hints/freecellHint';
+import { getGaigelHint } from '../utils/hints/gaigelHint';
 import { getGapsHint } from '../utils/hints/gapsHint';
 import { getGinRummyHint } from '../utils/hints/ginrummyHint';
 import { getGoFishHint } from '../utils/hints/gofishHint';
@@ -323,6 +325,7 @@ const hintFactories = {
   euchre: (s) => getEuchreHint(s as EuchreResponse),
   belote: (s) => getBeloteHint(s as BeloteResponse),
   jass: (s) => getJassHint(s as JassResponse),
+  gaigel: (s) => getGaigelHint(s as GaigelResponse),
   bigtwo: (s) => getBigTwoHint(s as BigTwoResponse),
   tienlen: (s) => getTienLenHint(s as TienLenResponse),
   fivehundred: (s) => getFiveHundredHint(s as FiveHundredResponse),

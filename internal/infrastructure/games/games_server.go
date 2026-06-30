@@ -945,4 +945,9 @@ func init() {
 			return usecase.NewJassInteractor(domain.NewDefaultJass(), new(presenter.JassWebPresenter))
 		},
 		controller.NewJassWebController)
+	BindWebControllerFor("gaigel",
+		func() usecase.GaigelInteractorIF {
+			return usecase.NewGaigelInteractor(domain.NewDefaultGaigel(), new(presenter.GaigelWebPresenter))
+		},
+		controller.NewGaigelWebController)
 }

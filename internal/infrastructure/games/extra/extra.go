@@ -155,4 +155,12 @@ func init() {
 			return usecase.RestoreJassInteractor(data, new(presenter.JassWebPresenter))
 		},
 		controller.NewJassWebControllerWithProvider)
+	games.RegisterKVGame("gaigel", games.CategoryExtra,
+		func() usecase.GaigelInteractorIF {
+			return usecase.NewGaigelInteractor(domain.NewDefaultGaigel(), new(presenter.GaigelWebPresenter))
+		},
+		func(data []byte) (usecase.GaigelInteractorIF, error) {
+			return usecase.RestoreGaigelInteractor(data, new(presenter.GaigelWebPresenter))
+		},
+		controller.NewGaigelWebControllerWithProvider)
 }

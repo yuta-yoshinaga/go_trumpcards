@@ -81,6 +81,7 @@ import type {
   FortyThievesResponse,
   FourCardPokerResponse,
   FreeCellResponse,
+  GaigelResponse,
   GapsResponse,
   GinRummyResponse,
   GoFishResponse,
@@ -360,6 +361,7 @@ const workerUrl: Record<string, string> = {
   sultan: WORKER_EXTRA,
   agnes: WORKER_EXTRA,
   jass: WORKER_EXTRA,
+  gaigel: WORKER_EXTRA,
   eightoff: WORKER_SOLO,
   penguin: WORKER_SOLO,
   chinesepoker: WORKER_CASINO,
@@ -3285,6 +3287,33 @@ export const jassApi = {
     }),
 };
 
+/** Gaigel game configuration input. */
+export interface GaigelConfigInput {
+  cpuDifficulty?: number;
+  targetScore?: number;
+}
+
+/**
+ * API client for the Gaigel /gaigel/exec endpoint.
+ *
+ * The second positional slot is unused (Gaigel has no suit/bid argument); it
+ * exists so the exec signature matches the `(command, arg1?, cardIndex?, config?)`
+ * shape that `useTrickGameBase` dispatches for reset/play.
+ */
+export const gaigelApi = {
+  exec: (
+    command: 'reset' | 'play' | 'marriage' | 'next' | 'nextround' | 'hint',
+    _unused?: number,
+    cardIndex?: number,
+    config?: GaigelConfigInput,
+  ) =>
+    gameExec<GaigelResponse>('gaigel', {
+      command,
+      cardIndex,
+      config,
+    }),
+};
+
 /** API client for the Euchre /euchre/exec endpoint. */
 export const euchreApi = {
   exec: (
@@ -4220,6 +4249,7 @@ const games = [
   'blackhole',
   'beggarmyneighbour',
   'allfours',
+  'gaigel',
 ] as const;
 type Game = (typeof games)[number];
 

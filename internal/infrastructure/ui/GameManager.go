@@ -3008,6 +3008,22 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"jass.helpSetDifficulty", "jass.helpSetTarget"},
 			})
 	}},
+	{Name: "gaigel", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewGaigelCuiController(usecase.NewGaigelInteractor(
+				domain.NewDefaultGaigel(), new(presenter.GaigelCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "gaigel.helpTitle",
+				CommandKeys: []string{
+					"gaigel.helpPlay",
+					"gaigel.helpMarriage",
+					"gaigel.helpNext",
+					"gaigel.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"gaigel.helpSetDifficulty", "gaigel.helpSetTarget"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

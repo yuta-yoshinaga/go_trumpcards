@@ -519,6 +519,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 3, 4, 2], skill: [2, 4, 4, 2], social: [1, 3, 5, 2, 4], theme: [2, 5, 1, 1, 2, 3] },
       },
       {
+        path: '/gaigel',
+        labelKey: 'nav.gaigel',
+        icon: '🇩🇪',
+        page: 'Gaigel',
+        profile: { mood: [2, 3, 4, 2], skill: [2, 4, 4, 2], social: [1, 3, 5, 2, 4], theme: [2, 5, 1, 1, 2, 3] },
+      },
+      {
         path: '/mighty',
         labelKey: 'nav.mighty',
         icon: '👊',

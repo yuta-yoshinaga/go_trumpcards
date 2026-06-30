@@ -100,6 +100,7 @@ export type GameKey =
   | 'skat'
   | 'belote'
   | 'jass'
+  | 'gaigel'
   | 'mighty'
   | 'fivehundred'
   // Matching/Pass
@@ -431,6 +432,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   skat: BLUE,
   belote: BLUE,
   jass: BLUE,
+  gaigel: BLUE,
   mighty: BLUE,
   fivehundred: BLUE,
   callbreak: BLUE,
