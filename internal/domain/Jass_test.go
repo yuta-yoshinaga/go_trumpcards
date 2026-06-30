@@ -381,3 +381,70 @@ func TestJass_Unmarshal_Validation(t *testing.T) {
 	// trumpSuit=0 (unset) is allowed during bidding.
 	assert.NoError(t, json.Unmarshal([]byte(`{"ph":0,"ts":0,"pl":[{},{},{},{}]}`), &g))
 }
+
+// TestJass_GetHint_Coverage exercises GetHint across the bid and play phases
+// (including the not-your-turn early returns), covering playHintReason.
+func TestJass_GetHint_Coverage(t *testing.T) {
+	g := newTestJass()
+	g.Reset()
+
+	// BidTrump, human (forehand) to bid -> a hint (suit or schieben).
+	g.SetPhase(domain.JassPhaseBidTrump)
+	g.SetBidPlayerIdx(0)
+	assert.NotNil(t, g.GetHint())
+
+	// BidTrump but not the human's turn -> nil.
+	g.SetBidPlayerIdx(1)
+	assert.Nil(t, g.GetHint())
+
+	// BidPartner, human to bid -> suit hint.
+	g.SetPhase(domain.JassPhaseBidPartner)
+	g.SetBidPlayerIdx(0)
+	hp := g.GetHint()
+	assert.NotNil(t, hp)
+	assert.NotNil(t, hp.Suit)
+
+	// Play, human's turn -> card-index hint (covers playHintReason).
+	g.SetTrumpSuit(domain.CardDesignSpade)
+	g.SetPhase(domain.JassPhasePlay)
+	g.SetCurrentPlayerIdx(0)
+	g.SetCurrentTrick(nil)
+	hpl := g.GetHint()
+	assert.NotNil(t, hpl)
+	assert.NotNil(t, hpl.CardIndex)
+
+	// Play but not the human's turn -> nil.
+	g.SetCurrentPlayerIdx(1)
+	assert.Nil(t, g.GetHint())
+}
+
+// TestJass_Getters_Coverage exercises the simple accessors and the
+// NextTrick/NextRound phase advancers.
+func TestJass_Getters_Coverage(t *testing.T) {
+	g := newTestJass()
+	g.Reset()
+
+	_ = g.GetForehandIdx()
+	_ = g.GetDealerIdx()
+	_ = g.GetActionLog()
+	_ = g.GetTeamScore(0)
+	_ = g.GetRoundNumber()
+	_ = g.GetTrickNumber()
+	_ = g.GetMakerTeam()
+	_ = g.GetMakerPlayerIdx()
+	_ = g.GetLeadPlayerIdx()
+	_ = g.GetBidPlayerIdx()
+	assert.Equal(t, 1000, g.GetConfig().TargetScore)
+
+	// NextTrick advances from TrickEnd to Play.
+	g.SetPhase(domain.JassPhaseTrickEnd)
+	g.SetLeadPlayerIdx(2)
+	g.NextTrick()
+	assert.Equal(t, domain.JassPhasePlay, g.GetPhase())
+
+	// NextRound re-deals when the round has ended.
+	g.SetPhase(domain.JassPhaseRoundEnd)
+	before := g.GetRoundNumber()
+	g.NextRound()
+	assert.Equal(t, before+1, g.GetRoundNumber())
+}
