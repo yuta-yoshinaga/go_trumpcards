@@ -508,6 +508,12 @@ var registry = []*Game{
 	// shedding code (crazyeights). Classic worker bucket — the issue proposed
 	// casino but that worker is at the 1 MB gzip limit.
 	{Name: "prsi", Category: CategoryClassic},
+	// Jass (Schieber): a 36-card (6..A) 4-player/2-team Swiss trump trick-taker
+	// with Schieber bidding, Weis melds, and the Stöck (trump K+Q) bonus. The
+	// trump Jack (Bauer) and 9 (Nell) outrank the Ace. Modelled on belote.
+	// Extra worker bucket — the issue proposed casino but that worker is at the
+	// 1 MB gzip limit, so it routes to the overflow ("extra") worker.
+	{Name: "jass", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

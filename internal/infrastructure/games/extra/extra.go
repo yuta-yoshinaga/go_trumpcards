@@ -147,4 +147,12 @@ func init() {
 			return usecase.RestoreSultanInteractor(data, new(presenter.SultanWebPresenter))
 		},
 		controller.NewSultanWebControllerWithProvider)
+	games.RegisterKVGame("jass", games.CategoryExtra,
+		func() usecase.JassInteractorIF {
+			return usecase.NewJassInteractor(domain.NewDefaultJass(), new(presenter.JassWebPresenter))
+		},
+		func(data []byte) (usecase.JassInteractorIF, error) {
+			return usecase.RestoreJassInteractor(data, new(presenter.JassWebPresenter))
+		},
+		controller.NewJassWebControllerWithProvider)
 }

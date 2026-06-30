@@ -86,6 +86,7 @@ import highcardflush from '../../../docs/manual/cui/highcardflush.md?raw';
 import holdem from '../../../docs/manual/cui/holdem.md?raw';
 import indianpoker from '../../../docs/manual/cui/indianpoker.md?raw';
 import irishpoker from '../../../docs/manual/cui/irishpoker.md?raw';
+import jass from '../../../docs/manual/cui/jass.md?raw';
 import jokerpoker from '../../../docs/manual/cui/jokerpoker.md?raw';
 import kalooki from '../../../docs/manual/cui/kalooki.md?raw';
 import kemps from '../../../docs/manual/cui/kemps.md?raw';
@@ -256,6 +257,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/hearts': hearts,
   '/holdem': holdem,
   '/indianpoker': indianpoker,
+  '/jass': jass,
   '/jokerpoker': jokerpoker,
   '/klondike': klondike,
   '/letitride': letitride,

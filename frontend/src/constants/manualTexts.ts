@@ -85,6 +85,7 @@ import highcardflush from '../../../docs/manual/web/highcardflush.md?raw';
 import holdem from '../../../docs/manual/web/holdem.md?raw';
 import indianpoker from '../../../docs/manual/web/indianpoker.md?raw';
 import irishpoker from '../../../docs/manual/web/irishpoker.md?raw';
+import jass from '../../../docs/manual/web/jass.md?raw';
 import jokerpoker from '../../../docs/manual/web/jokerpoker.md?raw';
 import kalooki from '../../../docs/manual/web/kalooki.md?raw';
 import kemps from '../../../docs/manual/web/kemps.md?raw';
@@ -262,6 +263,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/hearts': hearts,
   '/holdem': holdem,
   '/indianpoker': indianpoker,
+  '/jass': jass,
   '/jokerpoker': jokerpoker,
   '/klondike': klondike,
   '/letitride': letitride,

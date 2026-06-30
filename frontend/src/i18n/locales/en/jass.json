@@ -1,0 +1,85 @@
+{
+  "phase": {
+    "bidTrump": "Choose Trump",
+    "bidPartner": "Partner Chooses Trump",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetScore": "Target Score",
+    "enableWeis": "Weis / Stöck bonuses",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "cards": "{{count}} cards",
+  "teamScores": "Team Scores",
+  "team": "Team {{n}}",
+  "teamYou": "Team {{n}} (You)",
+  "trumpSuit": "Trump: {{suit}}",
+  "noTrump": "Trump not set",
+  "dealer": "Dealer",
+  "maker": "Maker: Team {{team}}",
+  "currentTrick": "Current Trick",
+  "partnership": "Partner: {{partner}}",
+  "trickCount": "Tricks: {{count}}",
+  "roundPoints": "Round: {{points}} pts",
+  "weisPoints": "Weis: {{points}} pts",
+  "stockPoints": "Stöck: {{points}} pts",
+  "schiebenButton": "Schieben",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "bidTrumpPhase": "Choose a trump suit or pass the bid (Schieben) to your partner",
+  "bidPartnerPhase": "Your partner passed — you must choose a trump suit",
+  "playPhase": {
+    "lead": "Lead a card",
+    "follow": "Play a card (follow suit if able; trump may always be played)"
+  },
+  "trickEnd": "Trick complete — click Next Trick",
+  "roundEnd": "Round complete — click Next Round",
+  "suitSpade": "♠ Spades",
+  "suitClover": "♣ Clubs",
+  "suitHeart": "♥ Hearts",
+  "suitDiamond": "♦ Diamonds",
+  "result": {
+    "team0Win": "Team 0 wins!",
+    "team1Win": "Team 1 wins!",
+    "yourTeamWin": "Your team wins!",
+    "opponentTeamWin": "Opponent team wins!"
+  },
+  "hintPlay": "Recommended card",
+  "hint": {
+    "schiebenRecommended": "Pass the bid (Schieben) with a weak hand",
+    "strategicTrump": "Choose the strongest suit as trump",
+    "leadTrump": "Lead with trump",
+    "leadStrong": "Lead with a strong card",
+    "followSuit": "Follow the led suit",
+    "trumpCut": "Cut with trump",
+    "discardWeak": "Discard the lowest-value card"
+  },
+  "hintReason": {
+    "schieben_recommended": "Pass the bid with a weak hand",
+    "strategic_trump": "Choose the strongest suit as trump",
+    "lead_trump": "Lead with trump",
+    "lead_strong": "Lead with a strong card",
+    "follow_suit": "Follow the led suit",
+    "trump_cut": "Cut with trump",
+    "discard_weak": "Discard the lowest-value card"
+  },
+  "tutorial": {
+    "bidControls": "In the trump-bid phase, choose a trump suit or pass the bid (Schieben) to your partner.",
+    "trickDisplay": "The current trick. The trump suit always wins.",
+    "playerHand": "Your hand. Follow the led suit if you can; trump may always be played.",
+    "playButton": "Press to play the selected card.",
+    "scoreTable": "Team scores. First to {{target}} points wins.",
+    "teamInfo": "The player across from you is your partner.",
+    "resetButton": "Press the reset button to start a new game."
+  }
+}
