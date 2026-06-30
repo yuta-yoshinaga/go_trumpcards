@@ -514,6 +514,14 @@ var registry = []*Game{
 	// Extra worker bucket — the issue proposed casino but that worker is at the
 	// 1 MB gzip limit, so it routes to the overflow ("extra") worker.
 	{Name: "jass", Category: CategoryExtra},
+	// Gaigel: a 48-card (A,10,K,Q,J,7 doubled) 4-player/2-team Schwabian
+	// point-trick game in the Schnapsen/66 family. A stock/talon refills hands
+	// in phase 1 (optional follow); phase 2 enforces must-follow. Marriage
+	// (trump K+Q = 40, else 20) scores to the team. First team to 101 wins.
+	// Composes jass (4p/2-team structure) + schnapsen (marriage/points/stock).
+	// Extra worker bucket — the issue proposed casino but that worker is at the
+	// 1 MB gzip limit, so it routes to the overflow ("extra") worker.
+	{Name: "gaigel", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

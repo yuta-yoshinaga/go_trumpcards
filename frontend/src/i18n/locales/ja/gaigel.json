@@ -1,0 +1,77 @@
+{
+  "phase": {
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetScore": "ターゲットスコア",
+    "easy": "やさしい",
+    "normal": "ふつう",
+    "hard": "むずかしい"
+  },
+  "round": "ラウンド {{n}}",
+  "trick": "トリック {{n}}",
+  "cards": "{{count}}枚",
+  "teamScores": "チームスコア",
+  "team": "チーム{{n}}",
+  "teamYou": "チーム{{n}} (あなた)",
+  "trumpSuit": "切り札: {{suit}}",
+  "noTrump": "切り札未決定",
+  "stock": "山札: {{count}}",
+  "currentTrick": "現在のトリック",
+  "trickCount": "獲得トリック: {{count}}",
+  "roundPoints": "ラウンド: {{points}}点",
+  "marriagePoints": "マリッジ: {{points}}点",
+  "marriageButton": "マリッジ",
+  "declareMarriage": "キング+クイーンを宣言してボーナス点を獲得",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド",
+  "playPhase": {
+    "lead": "リードカードを出してください (キング+クイーンを持っていればマリッジ宣言可)",
+    "follow": "カードを出す (山札が尽きたらフォロースート義務あり)"
+  },
+  "trickEnd": "トリック終了 — 次のトリックへ",
+  "roundEnd": "ラウンド終了 — 次のラウンドへ",
+  "suitSpade": "♠ スペード",
+  "suitClover": "♣ クラブ",
+  "suitHeart": "♥ ハート",
+  "suitDiamond": "♦ ダイヤ",
+  "result": {
+    "team0Win": "チーム0の勝ち！",
+    "team1Win": "チーム1の勝ち！",
+    "yourTeamWin": "あなたのチームの勝ち！",
+    "opponentTeamWin": "相手チームの勝ち"
+  },
+  "hintPlay": "おすすめの一手",
+  "hint": {
+    "marriage": "マリッジ宣言 (キング+クイーン)",
+    "leadTrump": "切り札でリード",
+    "leadLow": "低いカードでリード",
+    "leadValue": "高得点のカードでリード",
+    "followCut": "切り札でカット",
+    "followWin": "トリックを取る",
+    "followDump": "低得点のカードを捨てる"
+  },
+  "hintReason": {
+    "marriage": "マリッジ宣言 (キング+クイーン)",
+    "lead_trump": "切り札でリード",
+    "lead_low": "低いカードでリード",
+    "lead_value": "高得点のカードでリード",
+    "follow_cut": "切り札でカット",
+    "follow_win": "トリックを取る",
+    "follow_dump": "低得点のカードを捨てる"
+  },
+  "tutorial": {
+    "trickDisplay": "現在のトリック。リードスートの最強カード（または最強の切り札）が勝ちます。",
+    "playerHand": "あなたの手札。山札がある間は自由に出せ、尽きたらフォロースート義務が生じます。",
+    "playButton": "選んだカードをプレイします。",
+    "scoreTable": "チームスコア。先に{{target}}点に到達したチームの勝ちです。",
+    "teamInfo": "向かいのプレイヤーはあなたのパートナーです。",
+    "resetButton": "リセットボタンで新しいゲームを開始します。"
+  }
+}

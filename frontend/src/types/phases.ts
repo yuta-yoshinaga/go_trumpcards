@@ -929,6 +929,14 @@ export const JassPhase = {
   GAME_END: 5,
 } as const;
 
+/** Gaigel phase constants (sync: internal/domain/Gaigel.go). */
+export const GaigelPhase = {
+  PLAY: 0,
+  TRICK_END: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Mississippi Stud phase constants (sync: internal/domain/MississippiStud.go). */
 export const MississippiStudPhase = {
   ANTE: 1,

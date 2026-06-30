@@ -196,6 +196,7 @@ var gameDescriptions = map[string]string{
 	"allfours":            "All Fours / Seven Up (オールフォーズ/セブンアップ)",
 	"prsi":                "Prší (プルシー/チェコ版クレイジーエイト)",
 	"jass":                "Jass (Schieber) (ヤス/シーバー)",
+	"gaigel":              "Gaigel (ガイゲル)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).
