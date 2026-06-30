@@ -347,11 +347,22 @@ func TestGaigel_JSON_Invalid(t *testing.T) {
 		`{"ph":0,"ts":9}`,                // bad trump suit
 		`{"ph":0,"pl":[null,null,null]}`, // wrong player count
 		`not json`,                       // malformed
+		`{"ph":0,"pl":[null,null,null,null],"cp":100}`, // currentPlayerIdx out of range
+		`{"ph":0,"pl":[null,null,null,null],"cp":-1}`,  // currentPlayerIdx negative
+		`{"ph":0,"pl":[null,null,null,null],"di":99}`,  // dealerIdx out of range
+		`{"ph":0,"pl":[null,null,null,null],"li":99}`,  // leadPlayerIdx out of range
+		`{"ph":0,"pl":[null,null,null,null],"lw":99}`,  // lastTrickWinner out of range
+		`{"ph":0,"pl":[null,null,null,null],"li":-2}`,  // leadPlayerIdx below -1 sentinel
+		`{"ph":0,"pl":[null,null,null,null],"wt":99}`,  // winnerTeam out of range
 	}
 	for _, c := range cases {
 		var g domain.Gaigel
 		assert.Error(t, json.Unmarshal([]byte(c), &g), c)
 	}
+
+	// Out-of-range player team is rejected.
+	var p domain.GaigelPlayer
+	assert.Error(t, json.Unmarshal([]byte(`{"tm":99}`), &p))
 
 	// Valid trumpSuit=0 (undecided) with 4 players is accepted.
 	valid := domain.NewDefaultGaigel()

@@ -1158,6 +1158,20 @@ func (g *Gaigel) UnmarshalJSON(data []byte) error {
 	if len(j.Players) != GaigelPlayerCnt {
 		return NewDomainError(ErrInvalidPlay, "プレイヤー数が不正です")
 	}
+	// 直接インデックス参照される値の範囲検証 (不正な KV 状態でのパニック防止)。
+	// currentPlayerIdx / dealerIdx は常に有効なプレイヤー。leadPlayerIdx /
+	// lastTrickWinner / winnerTeam は未確定を表す -1 を許可する。
+	if j.CurrentPlayerIdx < 0 || j.CurrentPlayerIdx >= GaigelPlayerCnt ||
+		j.DealerIdx < 0 || j.DealerIdx >= GaigelPlayerCnt {
+		return NewDomainError(ErrInvalidPlay, "プレイヤーインデックスが範囲外です")
+	}
+	if j.LeadPlayerIdx < -1 || j.LeadPlayerIdx >= GaigelPlayerCnt ||
+		j.LastTrickWinner < -1 || j.LastTrickWinner >= GaigelPlayerCnt {
+		return NewDomainError(ErrInvalidPlay, "リード/勝者インデックスが範囲外です")
+	}
+	if j.WinnerTeam < -1 || j.WinnerTeam >= GaigelTeamCnt {
+		return NewDomainError(ErrInvalidPlay, "勝者チームが範囲外です")
+	}
 	if len(j.CurrentTrick) > GaigelPlayerCnt || len(j.ActionLog) > gaigelMaxSliceLen {
 		return NewDomainError(ErrInvalidPlay, "状態スライスが不正です")
 	}

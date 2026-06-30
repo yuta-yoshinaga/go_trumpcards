@@ -59,6 +59,9 @@ func (p *GaigelPlayer) UnmarshalJSON(data []byte) error {
 	if j.TrickHolder != nil {
 		p.TrickHolder = *j.TrickHolder
 	}
+	if j.Team < 0 || j.Team >= GaigelTeamCnt {
+		return NewDomainError(ErrInvalidPlay, "チーム番号が範囲外です")
+	}
 	p.team = j.Team
 	return nil
 }
