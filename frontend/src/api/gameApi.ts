@@ -105,6 +105,7 @@ import type {
   KnockoutWhistResponse,
   LaBelleLucieResponse,
   LetItRideResponse,
+  LooResponse,
   MacauResponse,
   ManilleResponse,
   MaoResponse,
@@ -370,6 +371,7 @@ const workerUrl: Record<string, string> = {
   tysiac: WORKER_EXTRA,
   calabresella: WORKER_EXTRA,
   cinch: WORKER_EXTRA,
+  loo: WORKER_EXTRA,
   eightoff: WORKER_SOLO,
   penguin: WORKER_SOLO,
   chinesepoker: WORKER_CASINO,
@@ -2273,6 +2275,42 @@ export const cinchApi = {
       cardIndex: opts?.cardIndex,
       bid: opts?.bid,
       trumpSuit: opts?.trumpSuit,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Loo (Lanterloo) game settings. */
+export interface LooConfigInput {
+  cpuDifficulty?: number;
+  ante?: number;
+}
+
+/** Commands accepted by the Loo /loo/exec endpoint. */
+export type LooCommand = 'reset' | 'decide' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Loo (Lanterloo) /loo/exec endpoint.
+ *
+ * Loo is a 4-player 52-card pot-based gambling trick-taker. Trump is set from the
+ * turn-up card (no bidding, no trump naming). Each player decides play or pass.
+ *   - `decide` → `{ play: boolean }` (true=play, false=pass)
+ *   - `play` → `{ cardIndex }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const looApi = {
+  exec: (
+    command: LooCommand,
+    opts?: {
+      cardIndex?: number;
+      play?: boolean;
+      config?: LooConfigInput;
+    },
+  ) =>
+    gameExec<LooResponse>('loo', {
+      command,
+      cardIndex: opts?.cardIndex,
+      play: opts?.play,
       config: opts?.config,
     }),
 };
@@ -4417,6 +4455,7 @@ const games = [
   'tysiac',
   'calabresella',
   'cinch',
+  'loo',
 ] as const;
 type Game = (typeof games)[number];
 

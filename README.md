@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した191種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した192種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -197,6 +197,7 @@ Go + Clean Architecture で実装した191種類のトランプゲーム。CLI �
 | オールフォーズ (All Fours / Seven Up) | `allfours` | [CUI](docs/manual/cui/allfours.md) / [Web](docs/manual/web/allfours.md) |
 | キング (King) | `king` | [CUI](docs/manual/cui/king.md) / [Web](docs/manual/web/king.md) |
 | チンチ / ダブル・ペドロ (Cinch / Double Pedro) | `cinch` | [CUI](docs/manual/cui/cinch.md) / [Web](docs/manual/web/cinch.md) |
+| ルー / ランタールー (Loo / Lanterloo) | `loo` | [CUI](docs/manual/cui/loo.md) / [Web](docs/manual/web/loo.md) |
 
 ## Demo
 

@@ -75,6 +75,9 @@
   /* Cinch (Double Pedro) — American saloon deep bronze-olive felt, distinct from Calabresella's terracotta and All Fours' teal. */
   --color-game-bg-cinch: #5c5218;
   --color-game-bg-cinch-dark: #3a340f;
+  /* Loo (Lanterloo) — English Regency gaming-house deep wine/burgundy, distinct from Cinch's bronze-olive and every other game. */
+  --color-game-bg-loo: #6b1f2e;
+  --color-game-bg-loo-dark: #431218;
   /* Sedma — Czech/Slovak deep teal-pine, distinct from Sueca's lighter felt-green and every other game. */
   --color-game-bg-sedma: #0d5c5c;
   --color-game-bg-sedma-dark: #093e3e;

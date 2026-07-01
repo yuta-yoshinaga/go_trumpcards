@@ -100,6 +100,7 @@ import klondike from '../../../docs/manual/cui/klondike.md?raw';
 import knockoutwhist from '../../../docs/manual/cui/knockoutwhist.md?raw';
 import labellelucie from '../../../docs/manual/cui/labellelucie.md?raw';
 import letitride from '../../../docs/manual/cui/letitride.md?raw';
+import loo from '../../../docs/manual/cui/loo.md?raw';
 import macau from '../../../docs/manual/cui/macau.md?raw';
 import manille from '../../../docs/manual/cui/manille.md?raw';
 import mao from '../../../docs/manual/cui/mao.md?raw';
@@ -275,6 +276,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/tysiac': tysiac,
   '/calabresella': calabresella,
   '/cinch': cinch,
+  '/loo': loo,
   '/sedma': sedma,
   '/knockoutwhist': knockoutwhist,
   '/spoilfive': spoilfive,

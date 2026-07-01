@@ -201,6 +201,7 @@ var gameDescriptions = map[string]string{
 	"calabresella":        "Calabresella / Terziglio (カラブレセッラ/テルツィーリオ)",
 	"king":                "King (キング)",
 	"cinch":               "Cinch / Double Pedro (シンチ/ダブルペドロ)",
+	"loo":                 "Loo / Lanterloo (ルー)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

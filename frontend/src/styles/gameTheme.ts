@@ -65,6 +65,7 @@ export type GameKey =
   | 'tysiac'
   | 'calabresella'
   | 'cinch'
+  | 'loo'
   | 'sedma'
   | 'knockoutwhist'
   | 'spoilfive'
@@ -271,6 +272,10 @@ const CINCH = {
   bg: 'bg-game-bg-cinch',
   footer: 'bg-game-bg-cinch-dark border-white/20',
 } as const;
+const LOO = {
+  bg: 'bg-game-bg-loo',
+  footer: 'bg-game-bg-loo-dark border-white/20',
+} as const;
 const SEDMA = {
   bg: 'bg-game-bg-sedma',
   footer: 'bg-game-bg-sedma-dark border-white/20',
@@ -421,6 +426,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   tysiac: TYSIAC,
   calabresella: CALABRESELLA,
   cinch: CINCH,
+  loo: LOO,
   sedma: SEDMA,
   knockoutwhist: KNOCKOUTWHIST,
   spoilfive: SPOILFIVE,

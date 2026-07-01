@@ -1,0 +1,134 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { looApi } from '../api/gameApi';
+import { renderWithProviders } from '../test/renderWithProviders';
+import { makeLooState } from '../test/stateFactories';
+import { LooPage } from './LooPage';
+
+vi.mock('../api/gameApi', () => ({
+  looApi: { exec: vi.fn() },
+  actionLogApi: { loo: vi.fn() },
+}));
+
+const mockExec = vi.mocked(looApi.exec);
+
+const playPhaseState = makeLooState();
+const decidePhaseState = makeLooState({
+  phase: 0,
+  decidePlayerIdx: 0,
+  isHumanTurn: true,
+});
+const roundEndState = makeLooState({
+  phase: 3,
+  lastDealDetail: {
+    potStart: 12,
+    trumpSuit: 1,
+    playing: [true, true, true, false],
+    tricks: { 0: 3, 1: 2, 2: 0, 3: 0 },
+    gained: { 0: 4, 1: 1, 2: -12, 3: 0 },
+    looed: [2],
+    potCarry: 12,
+  },
+});
+const cpuTurnState = makeLooState({ currentTurn: 1, isHumanTurn: false });
+const cpuDecideState = makeLooState({ phase: 0, decidePlayerIdx: 1, isHumanTurn: false });
+
+beforeEach(() => {
+  mockExec.mockReset();
+  mockExec.mockResolvedValue(playPhaseState);
+});
+
+describe('LooPage', () => {
+  it('renders skeleton when no state', () => {
+    mockExec.mockReturnValue(new Promise(() => undefined));
+    renderWithProviders(<LooPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('calls reset on mount with the default config', async () => {
+    renderWithProviders(<LooPage />);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', {
+        config: { cpuDifficulty: 1, ante: 3 },
+      }),
+    );
+  });
+
+  it('renders the play phase with the human cards', async () => {
+    renderWithProviders(<LooPage />);
+    await waitFor(() => {
+      expect(screen.getByAltText('♥ Q')).toBeInTheDocument();
+      expect(screen.getByAltText('♠ A')).toBeInTheDocument();
+    });
+  });
+
+  it('renders the decide phase with play and pass buttons', async () => {
+    mockExec.mockResolvedValue(decidePhaseState);
+    renderWithProviders(<LooPage />);
+    await waitFor(() => expect(screen.getByTestId('loo-decide-prompt')).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '参加' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '降りる' })).toBeInTheDocument();
+  });
+
+  it('deciding to play dispatches decide with play=true', async () => {
+    mockExec.mockResolvedValue(decidePhaseState);
+    renderWithProviders(<LooPage />);
+    const playBtn = await screen.findByRole('button', { name: '参加' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(decidePhaseState);
+    fireEvent.click(playBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('decide', { play: true }));
+  });
+
+  it('deciding to pass dispatches decide with play=false', async () => {
+    mockExec.mockResolvedValue(decidePhaseState);
+    renderWithProviders(<LooPage />);
+    const passBtn = await screen.findByRole('button', { name: '降りる' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(decidePhaseState);
+    fireEvent.click(passBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('decide', { play: false }));
+  });
+
+  it('shows a CPU decide notice on a CPU decide turn', async () => {
+    mockExec.mockResolvedValue(cpuDecideState);
+    renderWithProviders(<LooPage />);
+    await waitFor(() => expect(screen.getByTestId('loo-decide-cpu')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: '参加' })).not.toBeInTheDocument();
+  });
+
+  it('selecting a card then playing dispatches play', async () => {
+    renderWithProviders(<LooPage />);
+    const card = await screen.findByAltText('♥ Q');
+    fireEvent.click(card);
+    const playBtn = await screen.findByRole('button', { name: '出す' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(playBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0 }));
+  });
+
+  it('renders deal end with the next deal button and the deal result', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<LooPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のディール' })).toBeInTheDocument());
+    expect(screen.getByText('ディール結果')).toBeInTheDocument();
+  });
+
+  it('clicking next deal dispatches nextround', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<LooPage />);
+    const nextBtn = await screen.findByRole('button', { name: '次のディール' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(roundEndState);
+    fireEvent.click(nextBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+  });
+
+  it('does not show the play button on a CPU turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<LooPage />);
+    await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
+  });
+});

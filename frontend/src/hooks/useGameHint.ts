@@ -68,6 +68,7 @@ import type {
   KlondikeResponse,
   KnockoutWhistResponse,
   LetItRideResponse,
+  LooResponse,
   MacauResponse,
   ManilleResponse,
   MariasResponse,
@@ -219,6 +220,7 @@ import { getKlaverjasHint } from '../utils/hints/klaverjasHint';
 import { getKlondikeHint } from '../utils/hints/klondikeHint';
 import { getKnockoutWhistHint } from '../utils/hints/knockoutWhistHint';
 import { getLetitrideHint } from '../utils/hints/letitrideHint';
+import { getLooHint } from '../utils/hints/looHint';
 import { getMacauHint } from '../utils/hints/macauHint';
 import { getManilleHint } from '../utils/hints/manilleHint';
 import { getMariasHint } from '../utils/hints/mariasHint';
@@ -453,6 +455,7 @@ const hintFactories = {
   tysiac: (s) => getTysiacHint(s as TysiacResponse),
   calabresella: (s) => getCalabresellaHint(s as CalabresellaResponse),
   cinch: (s) => getCinchHint(s as CinchResponse),
+  loo: (s) => getLooHint(s as LooResponse),
   sedma: (s) => getSedmaHint(s as SedmaResponse),
   knockoutwhist: (s) => getKnockoutWhistHint(s as KnockoutWhistResponse),
   spoilfive: (s) => getSpoilFiveHint(s as SpoilFiveResponse),
