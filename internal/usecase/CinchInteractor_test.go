@@ -132,7 +132,9 @@ func TestCinchInteractor_RealFlow(t *testing.T) {
 	if g.GetPhase() == domain.CinchPhaseNameTrump && g.IsHumanTurn() {
 		ci.NameTrump(domain.CardDesignSpade)
 	}
-	// play フェーズを最後まで進める。
+	// play フェーズを最後まで進める。進行不能になったら (advance 待ちの CPU 手番など)
+	// 外側ループを抜ける。
+driveLoop:
 	for step := 0; step < 500 && !g.GetGameEndFlag(); step++ {
 		switch g.GetPhase() {
 		case domain.CinchPhasePlay:
@@ -142,7 +144,7 @@ func TestCinchInteractor_RealFlow(t *testing.T) {
 				ci.Play(idx[0])
 			} else {
 				// advance がここまで進めているはずだが、念のため。
-				break
+				break driveLoop
 			}
 		case domain.CinchPhaseRoundEnd:
 			ci.NextRound()
@@ -153,7 +155,7 @@ func TestCinchInteractor_RealFlow(t *testing.T) {
 			} else if g.GetPhase() == domain.CinchPhaseNameTrump && g.IsHumanTurn() {
 				ci.NameTrump(domain.CardDesignSpade)
 			} else {
-				break
+				break driveLoop
 			}
 		}
 	}

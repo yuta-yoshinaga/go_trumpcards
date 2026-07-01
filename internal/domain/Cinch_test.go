@@ -238,6 +238,18 @@ func TestCinch_FullDeal_Deterministic(t *testing.T) {
 	}
 	require.Equal(t, domain.CinchPhasePlay, g.GetPhase())
 
+	// 9 枚×4=36 枚しか配られない (52 枚デッキ、ドロー無し) ため、場に出る得点札は
+	// 配られた分だけ。全 14 点が常に配られるわけではないので、配札に含まれる得点
+	// 合計を基準にする (全カードは 9 トリックで必ず取られるため、獲得合計と一致する)。
+	availablePoints := 0
+	for i := 0; i < domain.CinchPlayerCnt; i++ {
+		p := g.GetPlayer(i)
+		for j := 0; j < p.GetCardsSize(); j++ {
+			availablePoints += domain.CinchPointValueForTest(p.GetCard(j), g.GetTrumpSuit())
+		}
+	}
+	require.LessOrEqual(t, availablePoints, domain.CinchTotalPoints)
+
 	// 9 トリックをプレイ。
 	for trick := 0; trick < domain.CinchTotalTricks; trick++ {
 		for c := 0; c < domain.CinchPlayerCnt; c++ {
@@ -265,7 +277,8 @@ func TestCinch_FullDeal_Deterministic(t *testing.T) {
 	for _, p := range det.Points {
 		total += p
 	}
-	assert.Equal(t, domain.CinchTotalPoints, total)
+	// 獲得合計は配られた得点札の合計と一致する (全 36 枚が取られるため)。
+	assert.Equal(t, availablePoints, total)
 }
 
 func TestCinch_JSONRoundTrip(t *testing.T) {

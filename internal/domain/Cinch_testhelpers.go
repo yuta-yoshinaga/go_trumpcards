@@ -21,3 +21,6 @@ func (g *Cinch) ValidatePlayForTest(playerIdx int, c *Card) error {
 
 // CinchSameColorSuitForTest は cinchSameColorSuit を公開する。
 func CinchSameColorSuitForTest(suit int) int { return cinchSameColorSuit(suit) }
+
+// CinchPointValueForTest は cinchPointValue を公開する (得点札の点数検証用)。
+func CinchPointValueForTest(c *Card, trumpSuit int) int { return cinchPointValue(c, trumpSuit) }
