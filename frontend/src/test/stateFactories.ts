@@ -13,6 +13,7 @@ import type {
   KingResponse,
   KlaverjasResponse,
   KnockoutWhistResponse,
+  LooResponse,
   ManilleResponse,
   MariasResponse,
   MusResponse,
@@ -1081,6 +1082,60 @@ const baseCinchState: CinchResponse = {
  */
 export function makeCinchState(overrides?: Partial<CinchResponse>): CinchResponse {
   return { ...baseCinchState, ...overrides };
+}
+
+/** Base Loo state used as the default for {@link makeLooState}. Defaults to a human Play turn (trump = ♠). */
+const baseLooState: LooResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 5,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      playing: true,
+      chips: -3,
+    },
+    { id: 1, isHuman: false, cardCount: 5, cards: [], trickCount: 0, playing: true, chips: -3 },
+    { id: 2, isHuman: false, cardCount: 5, cards: [], trickCount: 0, playing: true, chips: -3 },
+    { id: 3, isHuman: false, cardCount: 5, cards: [], trickCount: 0, playing: false, chips: -3 },
+  ],
+  phase: 1,
+  roundNumber: 1,
+  trickNumber: 1,
+  totalTricks: 5,
+  dealerIdx: 3,
+  currentTurn: 0,
+  decidePlayerIdx: 0,
+  trumpSuit: 1,
+  turnUp: { design: 'SPADE' as const, value: 7 },
+  pot: 12,
+  potStart: 12,
+  currentTrick: [],
+  lastTrick: [],
+  lastTrickWinner: -1,
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  lastDealDetail: null,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, ante: 3 },
+};
+
+/**
+ * Creates a {@link LooResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial LooResponse fields to override.
+ * @returns A complete LooResponse suitable for use in tests.
+ */
+export function makeLooState(overrides?: Partial<LooResponse>): LooResponse {
+  return { ...baseLooState, ...overrides };
 }
 
 /** Base Knockout Whist state used as the default for {@link makeKnockoutWhistState}. Defaults to a human Play turn (round 1, 7-card hand). */

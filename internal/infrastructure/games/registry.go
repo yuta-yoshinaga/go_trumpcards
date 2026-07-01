@@ -557,6 +557,15 @@ var registry = []*Game{
 	// wins. Extra worker bucket — the issue proposed casino but that worker is at the
 	// 1 MB gzip free-tier limit, so it routes to the overflow ("extra") worker.
 	{Name: "cinch", Category: CategoryExtra},
+	// Loo (Lanterloo): a classic English pot/gambling trick-taking game. 4 players
+	// ante to a carried-over pot, a turn-up sets trump, and each player decides to
+	// play or pass. Players who play compete over 5 tricks (must-follow-and-head);
+	// each trick wins 1/5 of the pot, and a player who plays but takes no trick is
+	// "looed" and pays a penalty into the next pot. Chips accumulate over repeated
+	// deals (no target-score race). Extra worker bucket — the issue proposed casino
+	// but that worker is at the 1 MB gzip free-tier limit, so it routes to the
+	// overflow ("extra") worker.
+	{Name: "loo", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

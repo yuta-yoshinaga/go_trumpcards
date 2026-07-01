@@ -449,6 +449,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 3, 5, 3], skill: [2, 4, 5, 3], social: [1, 3, 5, 3, 5], theme: [3, 2, 5, 1, 3, 2] },
       },
       {
+        path: '/loo',
+        labelKey: 'nav.loo',
+        icon: '🕯️',
+        page: 'Loo',
+        profile: { mood: [3, 3, 5, 4], skill: [3, 3, 5, 4], social: [1, 3, 5, 3, 5], theme: [3, 2, 5, 1, 3, 2] },
+      },
+      {
         path: '/sedma',
         labelKey: 'nav.sedma',
         icon: '🇨🇿',

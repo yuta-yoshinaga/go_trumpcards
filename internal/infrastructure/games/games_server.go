@@ -970,4 +970,9 @@ func init() {
 			return usecase.NewCinchInteractor(domain.NewDefaultCinch(), new(presenter.CinchWebPresenter))
 		},
 		controller.NewCinchWebController)
+	BindWebControllerFor("loo",
+		func() usecase.LooInteractorIF {
+			return usecase.NewLooInteractor(domain.NewDefaultLoo(), new(presenter.LooWebPresenter))
+		},
+		controller.NewLooWebController)
 }

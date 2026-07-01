@@ -377,6 +377,8 @@ tags:
     description: King (キング) — a Greek/Brazilian trick-avoidance compendium game for 4 players (1 human + 3 CPU, each scoring individually) on a standard 52-card pack; the match runs for exactly 7 deals, and each deal the dealer (親) chooses one of the 7 contracts not yet played this match, then a full round of 13 must-follow tricks is played and scored per the chosen contract; contracts 0 No Tricks (−2 per trick taken), 1 No Hearts (−2 per heart taken), 2 No Queens (−6 per queen taken), 3 No King of Hearts (−20 for capturing K♥), 4 No Last Two Tricks (−10 for each of the last two tricks taken), 5 No Men (−3 per Jack or King taken), 6 King/Trump — the dealer also chooses a trump suit and each trick taken scores +5 (the only positive contract); the six negative contracts are played no-trump; must follow the led suit if able, otherwise play anything (no overtrump obligation); trick strength A>K>Q>J>10>9>…>2 (trump beats non-trump only in the King contract); after all 7 contracts have each been played once the player with the highest total (least penalty) wins; commands reset (r), contract (c 0-6 [trump 1-4]), play (p), next (n), setdifficulty (sd), hint (h), log (l); phases 0 SelectContract, 1 Play, 2 TrickEnd, 3 RoundEnd, 4 GameEnd
   - name: cinch
     description: Cinch (チンチ / Double Pedro / High Five) — a 4-player (1 human + 3 CPU, each scoring individually) All-Fours/Pitch-family bidding trick-taker on a standard 52-card pack; each player is dealt 9 cards and bids in turn either 0 (pass) or 1-14, and the high bidder names trump and leads; a deal is worth 14 points — High (A of trump)=1, King of trump=1, Ten of trump ("Game")=1, Jack of trump=1, Right Pedro (5 of trump)=5, and Left Pedro (the 5 of the same color as trump)=5, where the Left Pedro ranks just below the trump 5 and counts as trump for following and winning; nine tricks are played per deal and must-follow the led suit if able, otherwise play anything; the bidder side must make its bid (capture at least the bid amount in points) or is set back (loses the bid amount), while non-bidders score the points they capture; the first player to reach the target score (default 21) wins; commands reset (r), bid (b 0-14), trump (t 1-4), play (p), next (n), nextround (nr), setdifficulty (sd), hint (h), log (l); phases 0 Bid, 1 NameTrump, 2 Play, 3 TrickEnd, 4 RoundEnd, 5 GameEnd
+  - name: loo
+    description: Loo (ルー / Lanterloo) — a classic English pot/gambling trick-taker (Five-card Loo) for 4 players (1 human + 3 CPU, each holding an individual chip stack) on a standard 52-card pack; each deal every player antes (default 3) into a carried-over pot, then a face-up turn-up card sets the trump suit; each player looks at their 5 cards and decides to play or pass; players who play compete over 5 tricks with must-follow-and-head (follow suit if able and, if you can beat the current best card, you must; when void of the led suit you must trump if you hold one, again heading if possible); each trick captured wins 1/5 of the pot, and a player who plays but takes no trick is "looed" and pays a penalty (the deal's starting pot) into the next deal's pot; if only one player plays they take the whole pot uncontested, and if nobody plays the pot carries over; chips accumulate over repeated deals (no target-score race — use nextround to settle and start the next deal); commands reset (r), decide (d 0-1 / play / pass), play (p), next (n), nextround (nr), setdifficulty (sd), hint (h), log (l); phases 0 Decide, 1 Play, 2 TrickEnd, 3 RoundEnd
 
 paths:
   /blackjack/exec:
@@ -16749,6 +16751,113 @@ paths:
                   message:
                     type: string
 
+  /loo/exec:
+    post:
+      tags:
+        - loo
+      summary: Execute a Loo (ルー) game command
+      description: |
+        Send a command to advance the Loo (Lanterloo) session identified by
+        `sessionId`. Loo is a 4-player pot/gambling trick-taker (Five-card Loo,
+        1 human + 3 CPU, each holding an individual chip stack) on a standard
+        52-card pack. Each deal every player antes (default 3) into a
+        carried-over pot, then a face-up turn-up card sets the trump suit. Each
+        player looks at their 5 cards and decides to play or pass. Players who
+        play compete over 5 tricks with must-follow-and-head: follow the led
+        suit if able and, if you can beat the current best card, you must; when
+        void of the led suit you must trump if you hold one (again heading if
+        possible). Each trick captured wins 1/5 of the pot; a player who plays
+        but takes no trick is "looed" and pays a penalty (the deal's starting
+        pot) into the next deal's pot. If only one player plays they take the
+        whole pot uncontested; if nobody plays the pot carries over. Chips
+        accumulate over repeated deals (no target-score race). Trump suit
+        encoding: 1=♠, 2=♣, 3=♥, 4=♦.
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Decide   | `0`   | Each player decides to play or pass |
+        | Play     | `1`   | Trick play (active players only) |
+        | TrickEnd | `2`   | A trick has completed |
+        | RoundEnd | `3`   | The deal is settled (pot split, looed penalties) |
+
+        | Command         | Aliases | Description |
+        |-----------------|---------|-------------|
+        | `reset`         | `r`     | Start / restart a game |
+        | `decide`        | `d`     | Play (`d 1`/`play`) or pass (`d 0`/`pass`); web uses `play` boolean |
+        | `play`          | `p`     | Play a card (requires `cardIndex`) |
+        | `next`          | `n`     | Advance / settle to the next deal |
+        | `nextround`     | `nr`    | Settle and advance to the next deal |
+        | `setdifficulty` | `sd`    | Set CPU difficulty (via config on reset) |
+        | `hint`          | `h`     | Get a recommended action |
+        | `log`           | `l`     | View action log |
+      operationId: looExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, decide, d, play, p, next, n, nextround, nr, setdifficulty, sd, hint, h, log, l]
+                play:
+                  type: boolean
+                  description: "Participation decision for the `decide` command: true=play, false=pass."
+                cardIndex:
+                  type: integer
+                  description: Hand index of the card to play (for `play`).
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      minimum: 0
+                      maximum: 2
+                    ante:
+                      type: integer
+                      minimum: 1
+                      maximum: 1000000
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              decide:
+                summary: Decide to play
+                value:
+                  command: decide
+                  play: true
+                  sessionId: my-session-001
+              play:
+                summary: Play the first card in hand
+                value:
+                  command: play
+                  cardIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LooResponse'
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
 components:
   schemas:
     # -------------------------------------------------------------------------
@@ -29443,6 +29552,148 @@ components:
             cpuDifficulty:
               type: integer
             pointLimit:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    LooResponse:
+      type: object
+      description: Current state of the Loo (Lanterloo) game
+      properties:
+        players:
+          type: array
+          description: Array of 4 player objects (0=human, 1-3=CPU)
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              trickCount:
+                type: integer
+              playing:
+                type: boolean
+                description: Whether this player is participating in the current deal
+              chips:
+                type: integer
+                description: Cumulative chip total for this player
+        phase:
+          type: integer
+          description: "Game phase: 0=Decide, 1=Play, 2=TrickEnd, 3=RoundEnd"
+          enum: [0, 1, 2, 3]
+          example: 0
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        totalTricks:
+          type: integer
+          description: Total tricks per deal (5)
+        dealerIdx:
+          type: integer
+        currentTurn:
+          type: integer
+          description: Index of the player whose turn it is
+        decidePlayerIdx:
+          type: integer
+          description: Index of the player deciding play/pass (during the decide phase)
+        trumpSuit:
+          type: integer
+          description: "Trump suit: 0=unset, 1=♠, 2=♣, 3=♥, 4=♦"
+          enum: [0, 1, 2, 3, 4]
+        turnUp:
+          $ref: '#/components/schemas/Card'
+        pot:
+          type: integer
+          description: Current pot size (carried over between deals)
+        potStart:
+          type: integer
+          description: Pot size at the start of the current deal
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        lastTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        lastTrickWinner:
+          type: integer
+          description: Index of the winner of the last completed trick (-1 if none)
+        playableIndices:
+          type: array
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        lastDealDetail:
+          type: object
+          description: Settlement breakdown of the most recent deal
+          properties:
+            potStart:
+              type: integer
+            trumpSuit:
+              type: integer
+            playing:
+              type: array
+              items:
+                type: boolean
+            tricks:
+              type: object
+              additionalProperties:
+                type: integer
+            gained:
+              type: object
+              additionalProperties:
+                type: integer
+            looed:
+              type: array
+              items:
+                type: integer
+            potCarry:
+              type: integer
+        isHumanTurn:
+          type: boolean
+        hint:
+          type: object
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            decision:
+              type: boolean
+            reason:
+              type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            ante:
               type: integer
         message:
           type: string

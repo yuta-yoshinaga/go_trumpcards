@@ -1,0 +1,56 @@
+{
+  "title": "Loo (Lanterloo)",
+  "phase": {
+    "decide": "Decide",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Deal End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "ante": "Ante",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "deal": "Deal {{n}}",
+  "trick": "Trick {{n}}/{{total}}",
+  "pot": "Pot: {{pot}}",
+  "trump": "Trump: {{suit}}",
+  "decidePrompt": "Your turn to decide — play or pass.",
+  "decideCpu": "CPU {{id}} is deciding…",
+  "decidePlay": "Play",
+  "decidePass": "Pass",
+  "statusPlay": "In",
+  "statusPass": "Out",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "currentTrick": "Current Trick",
+  "players": "Players",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "chips": "Chips: {{chips}}",
+  "playButton": "Play",
+  "nextDeal": "Next Deal",
+  "dealResult": {
+    "title": "Deal Result",
+    "looed": "Looed (no tricks): {{names}}",
+    "gained": "{{name}} gained: {{chips}} chips"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "decide_play": "Strong trump — play",
+    "decide_pass": "Weak hand — pass",
+    "lead_high": "Lead a strong card to keep the initiative",
+    "follow_win": "Head the trick with a winning card",
+    "discard_low": "Discard a low card when you cannot win"
+  },
+  "tutorial": {
+    "trickDisplay": "This is the current trick. If you hold the led suit you must follow, and you must head (beat) the current winner when you can. With no card of the led suit you must play trump if you have it. A trumped trick is won by the highest trump; otherwise the highest card of the led suit wins. Rank runs A>K>Q>J>10>…>2.",
+    "playerHand": "This is your hand. Playable cards (filtered by the follow / head rules) are highlighted; click one and play it. A deal is five tricks.",
+    "playButton": "Once a card is selected, play it with this button. In the Decide phase choose Play or Pass.",
+    "info": "Loo (Lanterloo) is a 4-player (you + 3 CPU) pot-based gambling trick-taker on a 52-card deck. Each player is dealt five cards, and the turn-up card sets trump. Everyone antes into a carried-over pot, then decides to play or pass. Participants fight five must-follow / must-head tricks, each trick winning one-fifth of the pot. A participant who wins no trick is 'looed' and pays a penalty into the next deal's pot. There is no target score — it is a repeating deal loop where you build up chips.",
+    "resetButton": "Use the reset button to start a new game."
+  }
+}

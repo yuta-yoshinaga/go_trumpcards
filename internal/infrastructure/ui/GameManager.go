@@ -3080,6 +3080,17 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"cinch.helpSetDifficulty"},
 			})
 	}},
+	{Name: "loo", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewLooCuiController(usecase.NewLooInteractor(
+				domain.NewDefaultLoo(), new(presenter.LooCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "loo.helpTitle",
+				CommandKeys:       []string{"loo.helpDecide", "loo.helpPlay", "loo.helpNext"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"loo.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

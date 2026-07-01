@@ -400,6 +400,14 @@ export const CinchPhase = {
   GAME_END: 5,
 } as const;
 
+/** Loo (Lanterloo) phase constants (sync: internal/domain/Loo.go). */
+export const LooPhase = {
+  DECIDE: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+} as const;
+
 /** Knockout Whist phase constants (sync: internal/domain/KnockoutWhist.go). */
 export const KnockoutWhistPhase = {
   PLAY: 0,

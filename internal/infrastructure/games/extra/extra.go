@@ -195,4 +195,12 @@ func init() {
 			return usecase.RestoreCinchInteractor(data, new(presenter.CinchWebPresenter))
 		},
 		controller.NewCinchWebControllerWithProvider)
+	games.RegisterKVGame("loo", games.CategoryExtra,
+		func() usecase.LooInteractorIF {
+			return usecase.NewLooInteractor(domain.NewDefaultLoo(), new(presenter.LooWebPresenter))
+		},
+		func(data []byte) (usecase.LooInteractorIF, error) {
+			return usecase.RestoreLooInteractor(data, new(presenter.LooWebPresenter))
+		},
+		controller.NewLooWebControllerWithProvider)
 }

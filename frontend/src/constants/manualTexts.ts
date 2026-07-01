@@ -99,6 +99,7 @@ import klondike from '../../../docs/manual/web/klondike.md?raw';
 import knockoutwhist from '../../../docs/manual/web/knockoutwhist.md?raw';
 import labellelucie from '../../../docs/manual/web/labellelucie.md?raw';
 import letitride from '../../../docs/manual/web/letitride.md?raw';
+import loo from '../../../docs/manual/web/loo.md?raw';
 import macau from '../../../docs/manual/web/macau.md?raw';
 import manille from '../../../docs/manual/web/manille.md?raw';
 import mao from '../../../docs/manual/web/mao.md?raw';
@@ -281,6 +282,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/tysiac': tysiac,
   '/calabresella': calabresella,
   '/cinch': cinch,
+  '/loo': loo,
   '/sedma': sedma,
   '/knockoutwhist': knockoutwhist,
   '/spoilfive': spoilfive,
