@@ -182,6 +182,24 @@ func TestKing_SelectContract_MarksUsedAndStartsPlay(t *testing.T) {
 
 // --- Play / trick resolution ---
 
+// TestKing_ValidateTrickPlay_NilCardGuard ensures a nil card in a hand is
+// rejected (excluded from the playable set) rather than being treated as a
+// legal lead and later panicking in card-strength evaluation.
+func TestKing_ValidateTrickPlay_NilCardGuard(t *testing.T) {
+	g := newTestKing()
+	g.SetCurrentContract(domain.KingContractNoTricks)
+	g.SetTrumpSuit(-1)
+	g.SetPhase(domain.KingPhasePlay)
+	g.SetCurrentTurn(1)
+	g.SetCurrentTrick(nil) // leading a fresh trick
+	// Hand holds one real card and one nil (corrupted) card.
+	setKingHand(g, 1, card(domain.CardDesignSpade, 1), nil)
+	assert.NotPanics(t, func() {
+		valid := g.GetPlayableIndices(1)
+		assert.Equal(t, []int{0}, valid, "nil card must be excluded from playable indices")
+	})
+}
+
 func TestKing_FollowSuit(t *testing.T) {
 	g := newTestKing()
 	g.SetCurrentContract(domain.KingContractNoTricks)

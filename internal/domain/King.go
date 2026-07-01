@@ -309,6 +309,9 @@ func (g *King) applyTrickPlay(playerIdx, handIdx int) error {
 
 // validateTrickPlay はトリックプレイの合法性 (フォロースート) を検証する。
 func (g *King) validateTrickPlay(playerIdx int, card *Card) error {
+	if card == nil {
+		return NewDomainError(ErrInvalidCard, "card is nil")
+	}
 	if len(g.currentTrick) == 0 {
 		return nil // リードは任意
 	}
