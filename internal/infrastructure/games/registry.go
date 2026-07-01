@@ -531,6 +531,15 @@ var registry = []*Game{
 	// on mariáš. Extra worker bucket — the issue proposed casino but that worker
 	// is at the 1 MB gzip limit, so it routes to the overflow ("extra") worker.
 	{Name: "tysiac", Category: CategoryExtra},
+	// Calabresella (Terziglio): an Italian (Calabrian) 3-player no-trump trick-taker
+	// in the Tressette family. One soloist plays against a 2-player coalition on a
+	// 40-card deck (A,2..7,J,Q,K). Each player gets 12 cards; 4 form the monte (widow).
+	// Bidding is pass/chiamo (stake 1)/solo (stake 2); the soloist takes the monte and
+	// discards down to 12. Tressette rank (3>2>A>K>Q>J>7>6>5>4) and points (11/deal via
+	// thirds + ultima); the soloist must take more than half to win. Extra worker bucket
+	// — the issue proposed casino but that worker is at the 1 MB gzip limit, so it routes
+	// to the overflow ("extra") worker.
+	{Name: "calabresella", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

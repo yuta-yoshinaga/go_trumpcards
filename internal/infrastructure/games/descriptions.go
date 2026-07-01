@@ -198,6 +198,7 @@ var gameDescriptions = map[string]string{
 	"jass":                "Jass (Schieber) (ヤス/シーバー)",
 	"gaigel":              "Gaigel (ガイゲル)",
 	"tysiac":              "Thousand / Tysiąc (サウザンド/トゥシオンツ)",
+	"calabresella":        "Calabresella / Terziglio (カラブレセッラ/テルツィーリオ)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

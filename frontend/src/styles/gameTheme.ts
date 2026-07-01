@@ -62,6 +62,7 @@ export type GameKey =
   | 'manille'
   | 'marias'
   | 'tysiac'
+  | 'calabresella'
   | 'sedma'
   | 'knockoutwhist'
   | 'spoilfive'
@@ -256,6 +257,10 @@ const TYSIAC = {
   bg: 'bg-game-bg-tysiac',
   footer: 'bg-game-bg-tysiac-dark border-white/20',
 } as const;
+const CALABRESELLA = {
+  bg: 'bg-game-bg-calabresella',
+  footer: 'bg-game-bg-calabresella-dark border-white/20',
+} as const;
 const SEDMA = {
   bg: 'bg-game-bg-sedma',
   footer: 'bg-game-bg-sedma-dark border-white/20',
@@ -403,6 +408,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   manille: MANILLE,
   marias: MARIAS,
   tysiac: TYSIAC,
+  calabresella: CALABRESELLA,
   sedma: SEDMA,
   knockoutwhist: KNOCKOUTWHIST,
   spoilfive: SPOILFIVE,

@@ -3041,6 +3041,23 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"tysiac.helpSetDifficulty"},
 			})
 	}},
+	{Name: "calabresella", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCalabresellaCuiController(usecase.NewCalabresellaInteractor(
+				domain.NewDefaultCalabresella(), new(presenter.CalabresellaCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "calabresella.helpTitle",
+				CommandKeys: []string{
+					"calabresella.helpBid",
+					"calabresella.helpDiscard",
+					"calabresella.helpPlay",
+					"calabresella.helpNext",
+					"calabresella.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"calabresella.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

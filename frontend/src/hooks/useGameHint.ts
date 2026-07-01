@@ -17,6 +17,7 @@ import type {
   BlackJackSwitchResponse,
   BristolResponse,
   BurracoResponse,
+  CalabresellaResponse,
   CalculationResponse,
   CallBreakResponse,
   CanastaResponse,
@@ -161,6 +162,7 @@ import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getBlackjackswitchHint } from '../utils/hints/blackjackswitchHint';
 import { getBristolHint } from '../utils/hints/bristolHint';
 import { getBurracoHint } from '../utils/hints/burracoHint';
+import { getCalabresellaHint } from '../utils/hints/calabresellaHint';
 import { getCalculationHint } from '../utils/hints/calculationHint';
 import { getCallBreakHint } from '../utils/hints/callbreakHint';
 import { getCanastaHint } from '../utils/hints/canastaHint';
@@ -444,6 +446,7 @@ const hintFactories = {
   manille: (s) => getManilleHint(s as ManilleResponse),
   marias: (s) => getMariasHint(s as MariasResponse),
   tysiac: (s) => getTysiacHint(s as TysiacResponse),
+  calabresella: (s) => getCalabresellaHint(s as CalabresellaResponse),
   sedma: (s) => getSedmaHint(s as SedmaResponse),
   knockoutwhist: (s) => getKnockoutWhistHint(s as KnockoutWhistResponse),
   spoilfive: (s) => getSpoilFiveHint(s as SpoilFiveResponse),

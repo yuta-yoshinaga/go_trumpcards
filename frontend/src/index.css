@@ -66,6 +66,9 @@
   /* Tysiąc (Thousand) — Polish amaranth-plum, distinct from Mariáš's garnet crimson and every other felt. */
   --color-game-bg-tysiac: #6e1f4a;
   --color-game-bg-tysiac-dark: #481231;
+  /* Calabresella (Terziglio) — Calabrian warm terracotta-brown felt, distinct from Tysiąc's plum and every other game. */
+  --color-game-bg-calabresella: #7a3b1e;
+  --color-game-bg-calabresella-dark: #4f2513;
   /* Sedma — Czech/Slovak deep teal-pine, distinct from Sueca's lighter felt-green and every other game. */
   --color-game-bg-sedma: #0d5c5c;
   --color-game-bg-sedma-dark: #093e3e;

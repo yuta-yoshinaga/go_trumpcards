@@ -1,0 +1,80 @@
+{
+  "title": "Calabresella (Terziglio)",
+  "phase": {
+    "bid": "Bidding",
+    "discard": "Monte Exchange",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetPoints": "Target Points",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "winningBid": "Bid: {{bid}}",
+  "bidNone": "-",
+  "bidPhase": "Bidding phase — pass / chiamo (stake 1) / solo (stake 2).",
+  "discardPhase": "Monte exchange — discard four cards down to twelve.",
+  "bidChiamo": "Chiamo",
+  "bidSolo": "Solo",
+  "bidPass": "Pass",
+  "discardCard": "Discard card",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "currentTrick": "Current Trick",
+  "players": "Players",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "role": {
+    "soloist": "Soloist",
+    "coalition": "Coalition"
+  },
+  "roleSoloist": "Soloist",
+  "roleCoalition": "Coalition",
+  "soloistBadge": "Soloist",
+  "score": "Score: {{score}}",
+  "playerScore": "{{name}}: {{score}} pts",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "target": "Target: {{points}} pts",
+  "playPhase": {
+    "lead": "Your turn — pick a card to lead.",
+    "follow": "Your turn — follow the led suit."
+  },
+  "trickEnd": "Trick complete — continue.",
+  "roundEnd": "Round complete — go to the next round.",
+  "result": {
+    "humanWin": "Game over! You win!",
+    "cpuWin": "Game over! Player {{player}} wins."
+  },
+  "roundResult": {
+    "title": "Round Result",
+    "thirds": "{{name}} thirds captured: {{thirds}}"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "lead_low": "Lead a low card to conserve points",
+    "follow_win": "Points on the table — win the trick",
+    "follow_duck": "Cannot/should not win — duck",
+    "give_partner": "Your side is winning — feed points",
+    "discard_low": "Cannot follow suit — discard a low card",
+    "bid_chiamo": "Solid hand — call chiamo",
+    "bid_solo": "Very strong hand — declare solo",
+    "bid_pass": "Weak hand — pass"
+  },
+  "tutorial": {
+    "trickDisplay": "This is the current trick. You must follow the led suit. There is no trump. Rank runs 3>2>A>K>Q>J>7>6>5>4. Points: A=1, 2/3/J/Q/K=1/3 each, others 0, plus +1/3 for the last trick — 33 thirds (11 points) per deal.",
+    "playerHand": "This is your hand. Click a playable card to select it. The Soloist plays alone against the coalition of the other two players.",
+    "playButton": "Once a card is selected, play it with this button. In the Bid phase choose chiamo/solo/pass; the Soloist takes the monte and discards four cards.",
+    "info": "Calabresella (Terziglio) is a Calabrian/Italian 3-player 40-card trick-taker. First a Bid phase (pass / chiamo / solo) decides the Soloist, who takes the 4-card monte and discards four cards down to twelve. There is no trump; you must follow the led suit. The Soloist wins the round by capturing more than half of the 33 thirds (18+). Stakes are transferred and the first player to reach the target (default 21) wins.",
+    "resetButton": "Use the reset button to start a new game."
+  }
+}
