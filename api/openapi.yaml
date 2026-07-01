@@ -373,6 +373,8 @@ tags:
     description: Prší (プルシー / Czech Crazy Eights / Mau Mau) — a Czech shedding game for 4 players (1 human + 3 CPU) on a 32-card pack (7,8,9,10,J,Q,K,A × 4 suits); each player is dealt 5 cards and one card starts the discard pile; play a card matching the discard top by suit or rank, otherwise draw 1 and end your turn; action cards — 7 forces the next player to draw 2 and 7s stack (a player facing a pending 7-penalty may stack another 7 or draw the accumulated count), Ace skips the next player (skips stack), and Under (Jack) also skips the next player; the first player to empty their hand wins immediately (no rounds or scoring); commands play (p) with cardIndex, draw (d), setdifficulty (sd), log (l), reset (r), quit (q); phases 0 Play, 1 GameEnd
   - name: calabresella
     description: Calabresella (カラブレセッラ / Terziglio) — an Italian (Calabrian) no-trump bidding trick-taker in the Tressette family for 3 players (1 human + 2 CPU) where a single soloist plays against a 2-player coalition, on a 40-card Italian pack (A,2,3,4,5,6,7,J,Q,K × 4 suits — 8/9/10 removed; same deck as Tressette/Briscola); each player is dealt 12 cards and the remaining 4 form the face-down widow (monte); bidding — each player in turn passes, declares chiamo (call, stake 1), or solo (stake 2), and the highest declaration becomes the soloist (if all pass, the forehand takes chiamo); the soloist then picks up the 4-card monte (16 cards) and discards 4 back down to 12; no trump — must-follow the led suit if able, otherwise play anything; trick rank 3>2>A>K>Q>J>7>6>5>4; card points in thirds A=3, 2/3/J/Q/K=1, others 0, winning the last trick (ultima) +1, total 33 thirds = 11 points per deal; the soloist must take more than half (≥18 of 33 thirds) to win the round and stake-based points transfer between the soloist and the coalition; first player to reach the target score (default 21) wins the match; commands reset (r), bid (b pass|chiamo|solo), discard (d), play (p), next (n), nextround (nr), setdifficulty (sd), hint (h), log (l); phases 0 Bid, 1 Monte, 2 Play, 3 TrickEnd, 4 RoundEnd, 5 GameEnd
+  - name: king
+    description: King (キング) — a Greek/Brazilian trick-avoidance compendium game for 4 players (1 human + 3 CPU, each scoring individually) on a standard 52-card pack; the match runs for exactly 7 deals, and each deal the dealer (親) chooses one of the 7 contracts not yet played this match, then a full round of 13 must-follow tricks is played and scored per the chosen contract; contracts 0 No Tricks (−2 per trick taken), 1 No Hearts (−2 per heart taken), 2 No Queens (−6 per queen taken), 3 No King of Hearts (−20 for capturing K♥), 4 No Last Two Tricks (−10 for each of the last two tricks taken), 5 No Men (−3 per Jack or King taken), 6 King/Trump — the dealer also chooses a trump suit and each trick taken scores +5 (the only positive contract); the six negative contracts are played no-trump; must follow the led suit if able, otherwise play anything (no overtrump obligation); trick strength A>K>Q>J>10>9>…>2 (trump beats non-trump only in the King contract); after all 7 contracts have each been played once the player with the highest total (least penalty) wins; commands reset (r), contract (c 0-6 [trump 1-4]), play (p), next (n), setdifficulty (sd), hint (h), log (l); phases 0 SelectContract, 1 Play, 2 TrickEnd, 3 RoundEnd, 4 GameEnd
 
 paths:
   /blackjack/exec:
@@ -16510,6 +16512,120 @@ paths:
                   message:
                     type: string
 
+  /king/exec:
+    post:
+      tags:
+        - king
+      summary: Execute a King (キング) game command
+      description: |
+        Send a command to advance the King session identified by `sessionId`.
+        King is a Greek/Brazilian trick-avoidance compendium game for 4 players
+        (1 human + 3 CPU, each scoring individually) on a standard 52-card pack.
+        The match runs for exactly 7 deals; each deal the dealer (親) chooses one
+        of the 7 contracts not yet played this match, then a full round of 13
+        must-follow tricks is played and scored per the chosen contract. The six
+        negative contracts are played no-trump; the King contract is played with
+        a dealer-chosen trump suit. Must follow the led suit if able, otherwise
+        play anything (no overtrump obligation). Trick strength
+        A>K>Q>J>10>9>…>2. After all 7 contracts have each been played once, the
+        player with the highest total (least penalty) wins.
+
+        | Contract | Value | Scoring |
+        |----------|-------|---------|
+        | No Tricks         | `0` | −2 per trick taken |
+        | No Hearts         | `1` | −2 per heart taken |
+        | No Queens         | `2` | −6 per queen taken |
+        | No King of Hearts | `3` | −20 for capturing K♥ |
+        | No Last Two Tricks| `4` | −10 for each of the last two tricks taken |
+        | No Men            | `5` | −3 per Jack or King taken |
+        | King (Trump)      | `6` | +5 per trick taken (dealer chooses trump) |
+
+        | Phase          | Value | Description |
+        |----------------|-------|-------------|
+        | SelectContract | `0`   | Dealer picks an unplayed contract (and trump for King) |
+        | Play           | `1`   | Trick play (13 tricks) |
+        | TrickEnd       | `2`   | A trick has completed |
+        | RoundEnd       | `3`   | The deal is scored |
+        | GameEnd        | `4`   | All 7 contracts played — match decided |
+
+        | Command         | Aliases | Description |
+        |-----------------|---------|-------------|
+        | `reset`         | `r`     | Start / restart a game |
+        | `contract`      | `c`     | Choose a contract (requires `contract`: 0-6; for King also `trumpSuit`: 1-4) |
+        | `play`          | `p`     | Play a card (requires `handIndex`) |
+        | `next`          | `n`     | Advance to the next deal |
+        | `setdifficulty` | `sd`    | Set CPU difficulty (via config on reset) |
+        | `hint`          | `h`     | Get a recommended action |
+        | `log`           | `l`     | View action log |
+      operationId: kingExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, contract, c, play, p, next, n, setdifficulty, sd, hint, h, log, l]
+                contract:
+                  type: integer
+                  description: "Contract selection for the `contract` command: 0=No Tricks, 1=No Hearts, 2=No Queens, 3=No King of Hearts, 4=No Last Two Tricks, 5=No Men, 6=King (Trump)."
+                  enum: [0, 1, 2, 3, 4, 5, 6]
+                trumpSuit:
+                  type: integer
+                  description: "Trump suit for the King contract (contract 6 only): 1=♠ Spades, 2=♥ Hearts, 3=♦ Diamonds, 4=♣ Clubs. Ignored for the six negative contracts."
+                handIndex:
+                  type: integer
+                  description: Hand index of the card to play (for `play`).
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      minimum: 0
+                      maximum: 2
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              contract:
+                summary: Choose the King contract with hearts as trump
+                value:
+                  command: contract
+                  contract: 6
+                  trumpSuit: 2
+                  sessionId: my-session-001
+              play:
+                summary: Play the first card in hand
+                value:
+                  command: play
+                  handIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KingResponse'
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
 components:
   schemas:
     # -------------------------------------------------------------------------
@@ -29056,6 +29172,132 @@ components:
             cpuDifficulty:
               type: integer
             targetPoints:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    KingResponse:
+      type: object
+      description: Current state of the King game (mirrors KingWebOutput)
+      properties:
+        players:
+          type: array
+          description: Array of 4 player objects (0=human, 1-3=CPU)
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              trickCount:
+                type: integer
+              totalScore:
+                type: integer
+                description: Cumulative match score for this player (negative = penalty)
+        phase:
+          type: string
+          description: "Game phase"
+          enum: [selectContract, play, dealEnd, gameEnd]
+          example: selectContract
+        dealNumber:
+          type: integer
+          description: Current deal number (0-indexed, 0-6)
+        totalDeals:
+          type: integer
+          description: Total deals in a match (7 = one pass through all contracts)
+        dealerIdx:
+          type: integer
+          description: Dealer (親) index for the current deal
+        currentTurn:
+          type: integer
+        currentContract:
+          type: integer
+          description: "Active contract for the current deal (-1 until chosen): 0=No Tricks, 1=No Hearts, 2=No Queens, 3=No King of Hearts, 4=No Last Two Tricks, 5=No Men, 6=King (Trump)"
+        trumpSuit:
+          type: integer
+          description: "Trump suit for the King (Trump) contract (-1=none for the six negative contracts): 1=♠, 2=♣, 3=♥, 4=♦"
+        trickNumber:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        lastTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        lastTrickWinner:
+          type: integer
+          description: Index of the player who won the most recent trick (-1 if none)
+        usedContracts:
+          type: array
+          items:
+            type: boolean
+          description: Which of the 7 contracts have already been played this match
+        playableIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices the human may legally play (must-follow filtered)
+        gameEndFlag:
+          type: boolean
+        roundWinners:
+          type: array
+          items:
+            type: integer
+          description: Highest-scoring player indices at match end
+        lastDealDetail:
+          type: object
+          nullable: true
+          properties:
+            contract:
+              type: integer
+            trumpSuit:
+              type: integer
+            dealerIdx:
+              type: integer
+            gained:
+              type: object
+              additionalProperties:
+                type: integer
+        isHumanTurn:
+          type: boolean
+        hint:
+          type: object
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
               type: integer
         message:
           type: string

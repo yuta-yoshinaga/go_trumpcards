@@ -540,6 +540,14 @@ var registry = []*Game{
 	// — the issue proposed casino but that worker is at the 1 MB gzip limit, so it routes
 	// to the overflow ("extra") worker.
 	{Name: "calabresella", Category: CategoryExtra},
+	// King (Greek/Brazilian compendium): a 4-player 52-card trick-avoidance game.
+	// Each deal the dealer picks one of 7 not-yet-played contracts (No Tricks /
+	// No Hearts / No Queens / No King♥ / No Last Two / No Men / King-Trump); the
+	// negatives penalise capturing, King-Trump rewards tricks with a chosen trump.
+	// Play all 7 contracts once; highest total (least penalty) wins. Extra worker
+	// bucket — the issue proposed casino but that worker is at the 1 MB gzip
+	// free-tier limit, so it routes to the overflow ("extra") worker.
+	{Name: "king", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

@@ -91,6 +91,7 @@ import jass from '../../../docs/manual/web/jass.md?raw';
 import jokerpoker from '../../../docs/manual/web/jokerpoker.md?raw';
 import kalooki from '../../../docs/manual/web/kalooki.md?raw';
 import kemps from '../../../docs/manual/web/kemps.md?raw';
+import king from '../../../docs/manual/web/king.md?raw';
 import kingalbert from '../../../docs/manual/web/kingalbert.md?raw';
 import klaverjas from '../../../docs/manual/web/klaverjas.md?raw';
 import klondike from '../../../docs/manual/web/klondike.md?raw';
@@ -275,6 +276,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/manille': manille,
   '/mao': mao,
   '/marias': marias,
+  '/king': king,
   '/tysiac': tysiac,
   '/calabresella': calabresella,
   '/sedma': sedma,
