@@ -196,16 +196,21 @@ func TestCinch_NameTrump_Validation(t *testing.T) {
 
 func TestCinch_StuckDealer(t *testing.T) {
 	g := newTestCinch(t, domain.CinchDifficultyEasy)
-	// human(0) と CPU 1,2 が pass、dealer(3) は stuck で強制 CinchMinBid。
+	// dealer を player 1 に据え、ビッド順を 2,3,0,1 とする。これで human(0) が最後の
+	// 非 dealer ビッダーになり、human のパスで advanceBid が dealer(1) に到達して
+	// stuck を強制する (deterministic; CPU の乱数ビッドに依存しない)。
+	g.SetDealerIdx(1)
 	g.SetBidPlayerIdx(0)
 	g.SetCurrentBid(0)
-	g.GetPlayer(1).SetBid(domain.CinchPassBid)
+	g.SetBidWinnerIdx(-1)
+	g.GetPlayer(0).SetBid(-1) // これからパスする human
+	g.GetPlayer(1).SetBid(-1) // dealer (stuck で確定)
 	g.GetPlayer(2).SetBid(domain.CinchPassBid)
-	g.GetPlayer(3).SetBid(-1)
+	g.GetPlayer(3).SetBid(domain.CinchPassBid)
 	require.NoError(t, g.PlayerBid(domain.CinchPassBid))
-	// dealer は stuck されている (最低ビッド)。
-	assert.Equal(t, domain.CinchMinBid, g.GetPlayer(3).GetBid())
-	assert.Equal(t, 3, g.GetBidWinnerIdx())
+	// dealer(1) は stuck されている (最低ビッド)。
+	assert.Equal(t, domain.CinchMinBid, g.GetPlayer(1).GetBid())
+	assert.Equal(t, 1, g.GetBidWinnerIdx())
 }
 
 func TestCinch_FullDeal_Deterministic(t *testing.T) {
