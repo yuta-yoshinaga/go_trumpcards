@@ -170,7 +170,12 @@ func TestCinch_BidFlow(t *testing.T) {
 	// dealer は CinchPlayerCnt-1 = 3, bid start = 0 (human)。
 	assert.Equal(t, 0, g.GetBidPlayerIdx())
 	require.NoError(t, g.PlayerBid(4))
-	// human ビッドで CPU が続く。最終的に nameTrump へ (human が勝者なら) か play へ。
+	// ドメインの PlayerBid は 1 手番進めるだけ (CPU の自動消化は interactor の役目)。
+	// 残りの CPU ビッダーを手動で回してビッドフェーズを終える。
+	for i := 0; i < 10 && g.GetPhase() == domain.CinchPhaseBid; i++ {
+		g.CpuBid()
+	}
+	// 全員ビッド後は nameTrump (勝者が宣言) へ移る。
 	assert.NotEqual(t, domain.CinchPhaseBid, g.GetPhase())
 }
 
