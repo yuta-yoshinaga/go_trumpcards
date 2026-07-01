@@ -1260,6 +1260,14 @@ func (g *Calabresella) UnmarshalJSON(data []byte) error {
 		!calabresellaInRangeOrUnset(j.LastTrickWinner) || !calabresellaInRangeOrUnset(j.WinnerPlayer) {
 		return errCalabresellaInvalidIndex
 	}
+	// フェーズ依存の厳格化: discard 以降は soloist、play 以降は lead が確定していな
+	// ければ後続処理で g.players[-1] にアクセスして panic するため確定を要求する。
+	if j.Phase >= CalabresellaPhaseDiscard && !calabresellaInRange(j.SoloistIdx) {
+		return errCalabresellaInvalidIndex
+	}
+	if j.Phase >= CalabresellaPhasePlay && !calabresellaInRange(j.LeadPlayerIdx) {
+		return errCalabresellaInvalidIndex
+	}
 	if j.DiscardCount < 0 || j.DiscardCount > CalabresellaMonteSize {
 		return errCalabresellaInvalidIndex
 	}

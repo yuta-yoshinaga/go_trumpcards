@@ -78,6 +78,12 @@ func TestCalabresella_DeckIsUnique40(t *testing.T) {
 
 func TestCalabresella_Bidding_ChiamoAndPass(t *testing.T) {
 	g := newTestCalabresella()
+	// Easy CPUs always pass, so no CPU outbids player 0 before their turn; this
+	// keeps the highest bid at None and makes player 0's Chiamo always legal
+	// (chiamo must strictly exceed the current highest bid).
+	cfg := g.GetConfig()
+	cfg.CpuDifficulty = domain.CalabresellaCpuDifficultyEasy
+	g.SetConfig(cfg)
 	g.SetPhase(domain.CalabresellaPhaseBid)
 	// Force the human (player 0) to be the current bidder deterministically by
 	// driving from forehand, but ensure player 0 acts. Directly test PlayerBid.
@@ -611,6 +617,8 @@ func TestCalabresella_JSON_Invalid(t *testing.T) {
 		`{"ph":0,"ps":` + okPlayers + `,"ct":[{"pi":99,"c":{"d":1,"v":13}}]}`, // trick card PlayerIdx out of range
 		`{"ph":0,"ps":` + okPlayers + `,"ct":[{"pi":-1,"c":{"d":1,"v":13}}]}`, // trick card PlayerIdx negative
 		`{"ph":0,"ps":` + okPlayers + `,"mo":[null]}`,                         // nil monte card
+		`{"ph":1,"ps":` + okPlayers + `,"so":-1,"li":-1}`,                     // discard phase requires soloist set
+		`{"ph":2,"ps":` + okPlayers + `,"so":0,"li":-1}`,                      // play phase requires lead set
 	}
 	for _, c := range cases {
 		var g domain.Calabresella

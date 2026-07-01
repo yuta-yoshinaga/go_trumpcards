@@ -131,7 +131,7 @@ func (p *CalabresellaCuiPresenter) HintOutput(g interfaces.CalabresellaGame) str
 		player := g.GetPlayer(playerIdx)
 		cards := make([]string, len(hint.CardIndices))
 		for i, idx := range hint.CardIndices {
-			if player != nil {
+			if player != nil && idx >= 0 && idx < player.GetCardsSize() {
 				cards[i] = "[" + strconv.Itoa(idx) + "]" + cuiCardStr(player.GetCard(idx))
 			} else {
 				cards[i] = strconv.Itoa(idx)
