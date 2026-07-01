@@ -88,9 +88,14 @@ func (ci *CinchInteractor) Play(cardIndex int) string {
 	if err := ci.Game.PlayerPlay(cardIndex); err != nil {
 		return ci.cp.Output(ci.Game, err)
 	}
-	// 人間が最後のカードを出してトリック完了した場合、即座に解決する。
+	// 人間が最後のカードを出してトリック完了した場合、即座に解決する。トリックが
+	// 最終トリックでなければ次トリックへ進める (ResolveTrick は TrickEnd のまま残す
+	// ため、CPU 経路と同様に NextTrick を呼ばないと play に戻れず停止してしまう)。
 	if ci.Game.GetPhase() == domain.CinchPhaseTrickEnd {
 		ci.Game.ResolveTrick()
+		if ci.Game.GetPhase() == domain.CinchPhaseTrickEnd {
+			ci.Game.NextTrick()
+		}
 	}
 	ci.advance()
 	return ci.cp.Output(ci.Game, nil)

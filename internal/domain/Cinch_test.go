@@ -28,7 +28,7 @@ func newTestCinch(t *testing.T, diff domain.CinchCpuDifficulty) *domain.Cinch {
 }
 
 // setHand はプレイヤー idx の手札を指定カードで上書きする。
-func setHand(g *domain.Cinch, idx int, cards ...*domain.Card) {
+func setCinchHand(g *domain.Cinch, idx int, cards ...*domain.Card) {
 	p := g.GetPlayer(idx)
 	p.Reset()
 	for _, c := range cards {
@@ -36,7 +36,7 @@ func setHand(g *domain.Cinch, idx int, cards ...*domain.Card) {
 	}
 }
 
-func card(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
+func cinchCard(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
 
 func TestCinch_NewDefaultCinch(t *testing.T) {
 	g := domain.NewDefaultCinch()
@@ -70,10 +70,10 @@ func TestCinch_TrumpRanking(t *testing.T) {
 	g.SetTrickNumber(1)
 
 	// トリック: P0=5♥(Right Pedro), P1=5♦(Left Pedro), P2=A♥, P3=2♥。A♥ が最強。
-	setHand(g, 0, card(domain.CardDesignHeart, 5))
-	setHand(g, 1, card(domain.CardDesignDiamond, 5))
-	setHand(g, 2, card(domain.CardDesignHeart, 1))
-	setHand(g, 3, card(domain.CardDesignHeart, 2))
+	setCinchHand(g, 0, cinchCard(domain.CardDesignHeart, 5))
+	setCinchHand(g, 1, cinchCard(domain.CardDesignDiamond, 5))
+	setCinchHand(g, 2, cinchCard(domain.CardDesignHeart, 1))
+	setCinchHand(g, 3, cinchCard(domain.CardDesignHeart, 2))
 
 	require.NoError(t, g.PlayerPlay(0)) // 5♥ lead
 	g.CpuPlay()                         // P1 5♦ (must follow trump, only card)
@@ -84,9 +84,9 @@ func TestCinch_TrumpRanking(t *testing.T) {
 	assert.Equal(t, 2, g.GetLastTrickWinner(), "A of trump should win")
 
 	// 5♦ (Left Pedro) が 4♥ より強い (Right Pedro のすぐ下)。
-	assert.True(t, domain.CinchCardBeatsForTest(card(domain.CardDesignDiamond, 5), card(domain.CardDesignHeart, 4), domain.CardDesignHeart))
+	assert.True(t, domain.CinchCardBeatsForTest(cinchCard(domain.CardDesignDiamond, 5), cinchCard(domain.CardDesignHeart, 4), domain.CardDesignHeart))
 	// 5♥ (Right Pedro) が 5♦ (Left Pedro) より強い。
-	assert.True(t, domain.CinchCardBeatsForTest(card(domain.CardDesignHeart, 5), card(domain.CardDesignDiamond, 5), domain.CardDesignHeart))
+	assert.True(t, domain.CinchCardBeatsForTest(cinchCard(domain.CardDesignHeart, 5), cinchCard(domain.CardDesignDiamond, 5), domain.CardDesignHeart))
 }
 
 // TestCinch_LeftPedroIsTrumpNotOffSuit は Left Pedro (同色の 5) が切り札扱いされ、
@@ -102,10 +102,10 @@ func TestCinch_LeftPedroFollowRules(t *testing.T) {
 	g.SetTrickNumber(1)
 
 	// P0 leads Clover K. P1 holds 5♣ (Left Pedro, trump) and Clover 3.
-	setHand(g, 0, card(domain.CardDesignClover, 13))
-	setHand(g, 1, card(domain.CardDesignClover, 5), card(domain.CardDesignClover, 3))
-	setHand(g, 2, card(domain.CardDesignHeart, 7))
-	setHand(g, 3, card(domain.CardDesignHeart, 8))
+	setCinchHand(g, 0, cinchCard(domain.CardDesignClover, 13))
+	setCinchHand(g, 1, cinchCard(domain.CardDesignClover, 5), cinchCard(domain.CardDesignClover, 3))
+	setCinchHand(g, 2, cinchCard(domain.CardDesignHeart, 7))
+	setCinchHand(g, 3, cinchCard(domain.CardDesignHeart, 8))
 
 	require.NoError(t, g.PlayerPlay(0)) // K♣ lead (off-suit clover, not trump)
 	assert.Equal(t, 1, g.GetCurrentTurn())
@@ -127,12 +127,12 @@ func TestCinch_PointScoring(t *testing.T) {
 
 	// P0 が全ポイント札を取ったことにする: A♥,K♥,10♥,J♥,5♥,5♦ = 1+1+1+1+5+5 = 14。
 	g.GetPlayer(0).AddTrick([]*domain.Card{
-		card(domain.CardDesignHeart, 1),
-		card(domain.CardDesignHeart, 13),
-		card(domain.CardDesignHeart, 10),
-		card(domain.CardDesignHeart, 11),
-		card(domain.CardDesignHeart, 5),
-		card(domain.CardDesignDiamond, 5),
+		cinchCard(domain.CardDesignHeart, 1),
+		cinchCard(domain.CardDesignHeart, 13),
+		cinchCard(domain.CardDesignHeart, 10),
+		cinchCard(domain.CardDesignHeart, 11),
+		cinchCard(domain.CardDesignHeart, 5),
+		cinchCard(domain.CardDesignDiamond, 5),
 	})
 
 	g.ScoreRound()
@@ -152,8 +152,8 @@ func TestCinch_SetBack(t *testing.T) {
 	g.SetPhase(domain.CinchPhaseRoundEnd)
 
 	// P0 は A♥ (1点) のみ、P1 が残りを取ったことにする。
-	g.GetPlayer(0).AddTrick([]*domain.Card{card(domain.CardDesignHeart, 1)})
-	g.GetPlayer(1).AddTrick([]*domain.Card{card(domain.CardDesignHeart, 5)}) // Right Pedro 5点
+	g.GetPlayer(0).AddTrick([]*domain.Card{cinchCard(domain.CardDesignHeart, 1)})
+	g.GetPlayer(1).AddTrick([]*domain.Card{cinchCard(domain.CardDesignHeart, 5)}) // Right Pedro 5点
 
 	g.ScoreRound()
 	det := g.GetLastDealDetail()
@@ -339,7 +339,7 @@ func TestCinch_GetHint(t *testing.T) {
 	g.SetTrumpSuit(domain.CardDesignHeart)
 	g.SetCurrentTurn(0)
 	g.SetLeadPlayerIdx(0)
-	setHand(g, 0, card(domain.CardDesignHeart, 1), card(domain.CardDesignSpade, 2))
+	setCinchHand(g, 0, cinchCard(domain.CardDesignHeart, 1), cinchCard(domain.CardDesignSpade, 2))
 	hint = g.GetHint()
 	require.NotNil(t, hint)
 	assert.NotEmpty(t, hint.CardIndices)
