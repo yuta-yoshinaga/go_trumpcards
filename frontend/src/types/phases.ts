@@ -380,6 +380,16 @@ export const TysiacPhase = {
   GAME_END: 5,
 } as const;
 
+/** Calabresella (Terziglio) phase constants (sync: internal/domain/Calabresella.go). */
+export const CalabresellaPhase = {
+  BID: 0,
+  DISCARD: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
 /** Knockout Whist phase constants (sync: internal/domain/KnockoutWhist.go). */
 export const KnockoutWhistPhase = {
   PLAY: 0,

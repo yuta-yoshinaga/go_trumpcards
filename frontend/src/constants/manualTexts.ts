@@ -27,6 +27,7 @@ import bridge from '../../../docs/manual/web/bridge.md?raw';
 import briscola from '../../../docs/manual/web/briscola.md?raw';
 import bristol from '../../../docs/manual/web/bristol.md?raw';
 import burraco from '../../../docs/manual/web/burraco.md?raw';
+import calabresella from '../../../docs/manual/web/calabresella.md?raw';
 import calculation from '../../../docs/manual/web/calculation.md?raw';
 import callbreak from '../../../docs/manual/web/callbreak.md?raw';
 import canasta from '../../../docs/manual/web/canasta.md?raw';
@@ -275,6 +276,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/mao': mao,
   '/marias': marias,
   '/tysiac': tysiac,
+  '/calabresella': calabresella,
   '/sedma': sedma,
   '/knockoutwhist': knockoutwhist,
   '/spoilfive': spoilfive,

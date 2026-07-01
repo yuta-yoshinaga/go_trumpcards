@@ -955,4 +955,9 @@ func init() {
 			return usecase.NewTysiacInteractor(domain.NewDefaultTysiac(), new(presenter.TysiacWebPresenter))
 		},
 		controller.NewTysiacWebController)
+	BindWebControllerFor("calabresella",
+		func() usecase.CalabresellaInteractorIF {
+			return usecase.NewCalabresellaInteractor(domain.NewDefaultCalabresella(), new(presenter.CalabresellaWebPresenter))
+		},
+		controller.NewCalabresellaWebController)
 }

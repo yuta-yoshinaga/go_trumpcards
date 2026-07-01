@@ -1,5 +1,6 @@
 import type {
   BeziqueResponse,
+  CalabresellaResponse,
   CallBreakResponse,
   CourtPieceResponse,
   DoppelkopfResponse,
@@ -917,6 +918,60 @@ const baseTysiacState: TysiacResponse = {
  */
 export function makeTysiacState(overrides?: Partial<TysiacResponse>): TysiacResponse {
   return { ...baseTysiacState, ...overrides };
+}
+
+/** Base Calabresella state used as the default for {@link makeCalabresellaState}. Defaults to a human Play turn. */
+const baseCalabresellaState: CalabresellaResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 12,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      score: 0,
+      isSoloist: true,
+      roundThirds: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 12, cards: [], trickCount: 0, score: 0, isSoloist: false, roundThirds: 0 },
+    { id: 2, isHuman: false, cardCount: 12, cards: [], trickCount: 0, score: 0, isSoloist: false, roundThirds: 0 },
+  ],
+  phase: 2,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  currentBidderIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 2,
+  forehandIdx: 0,
+  soloistIdx: 0,
+  winningBid: 1,
+  currentTrick: [],
+  playerScores: [0, 0, 0],
+  roundThirds: [0, 0, 0],
+  lastTrickWinner: -1,
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 21 },
+};
+
+/**
+ * Creates a {@link CalabresellaResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial CalabresellaResponse fields to override.
+ * @returns A complete CalabresellaResponse suitable for use in tests.
+ */
+export function makeCalabresellaState(overrides?: Partial<CalabresellaResponse>): CalabresellaResponse {
+  return { ...baseCalabresellaState, ...overrides };
 }
 
 /** Base Knockout Whist state used as the default for {@link makeKnockoutWhistState}. Defaults to a human Play turn (round 1, 7-card hand). */

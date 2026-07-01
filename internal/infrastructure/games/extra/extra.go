@@ -171,4 +171,12 @@ func init() {
 			return usecase.RestoreTysiacInteractor(data, new(presenter.TysiacWebPresenter))
 		},
 		controller.NewTysiacWebControllerWithProvider)
+	games.RegisterKVGame("calabresella", games.CategoryExtra,
+		func() usecase.CalabresellaInteractorIF {
+			return usecase.NewCalabresellaInteractor(domain.NewDefaultCalabresella(), new(presenter.CalabresellaWebPresenter))
+		},
+		func(data []byte) (usecase.CalabresellaInteractorIF, error) {
+			return usecase.RestoreCalabresellaInteractor(data, new(presenter.CalabresellaWebPresenter))
+		},
+		controller.NewCalabresellaWebControllerWithProvider)
 }

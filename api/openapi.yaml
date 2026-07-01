@@ -371,6 +371,8 @@ tags:
     description: All Fours / Seven Up (オールフォーズ/セブンアップ) — a two-player (human elder hand vs CPU dealer) trick-taking game on a standard 52-card deck; each deal gives 6 cards each and flips a turn-up whose suit is the provisional trump; the non-dealer stands or begs, and on a beg the dealer gifts 1 point or runs the cards (3 more each plus a fresh trump, re-dealing if the deck is exhausted); must-follow trick play (trump always legal) scores High, Low, Jack and Game per deal; first to PointLimit (default 7) wins, with a Gift→High→Low→Jack→Game peg-out order breaking same-deal ties; commands stand (st), beg (bg), gift (g), run, play (p), next (n), nextround (nr); phases 0 Beg, 1 Gift, 2 Play, 3 TrickEnd, 4 RoundEnd, 5 GameEnd
   - name: prsi
     description: Prší (プルシー / Czech Crazy Eights / Mau Mau) — a Czech shedding game for 4 players (1 human + 3 CPU) on a 32-card pack (7,8,9,10,J,Q,K,A × 4 suits); each player is dealt 5 cards and one card starts the discard pile; play a card matching the discard top by suit or rank, otherwise draw 1 and end your turn; action cards — 7 forces the next player to draw 2 and 7s stack (a player facing a pending 7-penalty may stack another 7 or draw the accumulated count), Ace skips the next player (skips stack), and Under (Jack) also skips the next player; the first player to empty their hand wins immediately (no rounds or scoring); commands play (p) with cardIndex, draw (d), setdifficulty (sd), log (l), reset (r), quit (q); phases 0 Play, 1 GameEnd
+  - name: calabresella
+    description: Calabresella (カラブレセッラ / Terziglio) — an Italian (Calabrian) no-trump bidding trick-taker in the Tressette family for 3 players (1 human + 2 CPU) where a single soloist plays against a 2-player coalition, on a 40-card Italian pack (A,2,3,4,5,6,7,J,Q,K × 4 suits — 8/9/10 removed; same deck as Tressette/Briscola); each player is dealt 12 cards and the remaining 4 form the face-down widow (monte); bidding — each player in turn passes, declares chiamo (call, stake 1), or solo (stake 2), and the highest declaration becomes the soloist (if all pass, the forehand takes chiamo); the soloist then picks up the 4-card monte (16 cards) and discards 4 back down to 12; no trump — must-follow the led suit if able, otherwise play anything; trick rank 3>2>A>K>Q>J>7>6>5>4; card points in thirds A=3, 2/3/J/Q/K=1, others 0, winning the last trick (ultima) +1, total 33 thirds = 11 points per deal; the soloist must take more than half (≥18 of 33 thirds) to win the round and stake-based points transfer between the soloist and the coalition; first player to reach the target score (default 21) wins the match; commands reset (r), bid (b pass|chiamo|solo), discard (d), play (p), next (n), nextround (nr), setdifficulty (sd), hint (h), log (l); phases 0 Bid, 1 Monte, 2 Play, 3 TrickEnd, 4 RoundEnd, 5 GameEnd
 
 paths:
   /blackjack/exec:
@@ -16398,6 +16400,115 @@ paths:
                 properties:
                   message:
                     type: string
+  /calabresella/exec:
+    post:
+      tags:
+        - calabresella
+      summary: Execute a Calabresella (カラブレセッラ) game command
+      description: |
+        Send a command to advance the Calabresella (Terziglio) session
+        identified by `sessionId`. Calabresella is a 3-player no-trump bidding
+        trick-taker (1 human + 2 CPU) where a single soloist plays against a
+        2-player coalition, on a 40-card Italian pack (A,2-7,J,Q,K × 4 suits —
+        no 8/9/10). Each player is dealt 12 cards; the remaining 4 form the
+        face-down widow (monte). In bidding each player passes, declares chiamo
+        (stake 1) or solo (stake 2); the highest declaration becomes the
+        soloist, who picks up the 4-card monte (16 cards) and discards 4 back
+        down to 12. No trump — must-follow the led suit. Trick rank
+        3>2>A>K>Q>J>7>6>5>4. Card points in thirds: A=3, 2/3/J/Q/K=1, others 0,
+        last trick +1 (total 33 thirds = 11 points). The soloist must take more
+        than half (≥18 of 33 thirds) to win the round; stake-based points
+        transfer between soloist and coalition. First to the target score
+        (default 21) wins.
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Bid      | `0`   | Auction (pass / chiamo / solo) |
+        | Monte    | `1`   | Soloist exchanges the 4-card monte |
+        | Play     | `2`   | Trick play |
+        | TrickEnd | `3`   | A trick has completed |
+        | RoundEnd | `4`   | The deal is scored |
+        | GameEnd  | `5`   | A player reached the target score |
+
+        | Command         | Aliases | Description |
+        |-----------------|---------|-------------|
+        | `reset`         | `r`     | Start / restart a game |
+        | `bid`           | `b`     | Declare a bid (requires `bid`: 0=pass, 1=chiamo, 2=solo) |
+        | `discard`       | `d`     | Discard a monte card (requires `cardIndex`; 4 times) |
+        | `play`          | `p`     | Play a card (requires `cardIndex`) |
+        | `next`          | `n`     | Advance to the next trick |
+        | `nextround`     | `nr`    | Advance to the next round |
+        | `setdifficulty` | `sd`    | Set CPU difficulty (via config on reset) |
+        | `hint`          | `h`     | Get a recommended action |
+        | `log`           | `l`     | View action log |
+      operationId: calabresellaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bid, b, discard, d, play, p, next, n, nextround, nr, setdifficulty, sd, hint, h, log, l]
+                bid:
+                  type: integer
+                  description: "Bid declaration for the `bid` command: 0=pass, 1=chiamo (stake 1), 2=solo (stake 2)."
+                  enum: [0, 1, 2]
+                cardIndex:
+                  type: integer
+                  description: Hand index of the card to play (for `play`) or discard (for `discard`).
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      minimum: 0
+                      maximum: 2
+                    targetPoints:
+                      type: integer
+                      minimum: 1
+                      maximum: 1000000
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Declare chiamo
+                value:
+                  command: bid
+                  bid: 1
+                  sessionId: my-session-001
+              play:
+                summary: Play the first card in hand
+                value:
+                  command: play
+                  cardIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalabresellaResponse'
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
 
 components:
   schemas:
@@ -28829,6 +28940,122 @@ components:
           type: object
           properties:
             cpuDifficulty:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    CalabresellaResponse:
+      type: object
+      description: Current state of the Calabresella (Terziglio) game
+      properties:
+        players:
+          type: array
+          description: Array of 3 player objects (0=human, 1-2=CPU)
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              trickCount:
+                type: integer
+              score:
+                type: integer
+                description: Cumulative match score for this player
+              isSoloist:
+                type: boolean
+                description: Whether this player is the soloist for the current deal
+              roundThirds:
+                type: integer
+                description: Thirds-of-a-point captured by this player in the current round
+        phase:
+          type: integer
+          description: "Game phase: 0=Bid, 1=Monte, 2=Play, 3=TrickEnd, 4=RoundEnd, 5=GameEnd"
+          enum: [0, 1, 2, 3, 4, 5]
+          example: 0
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        currentBidderIdx:
+          type: integer
+          description: Index of the player whose turn it is to bid (during the auction)
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        forehandIdx:
+          type: integer
+        soloistIdx:
+          type: integer
+          description: Index of the soloist for the current deal (-1 until decided)
+        winningBid:
+          type: integer
+          description: The winning declaration (0=pass, 1=chiamo, 2=solo)
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        playerScores:
+          type: array
+          items:
+            type: integer
+          description: Cumulative match points for each of the 3 players
+        roundThirds:
+          type: array
+          items:
+            type: integer
+          description: Thirds-of-a-point captured by each of the 3 players in the current round
+        lastTrickWinner:
+          type: integer
+          description: Index of the player who won the most recent trick (-1 if none)
+        playableIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices the human may legally play (must-follow filtered)
+        gameEndFlag:
+          type: boolean
+        winnerPlayer:
+          type: integer
+          description: Winning player index (-1 if undecided)
+        isHumanTurn:
+          type: boolean
+        hint:
+          type: object
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            targetPoints:
               type: integer
         message:
           type: string

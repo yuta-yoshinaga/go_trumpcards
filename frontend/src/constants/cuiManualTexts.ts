@@ -28,6 +28,7 @@ import bridge from '../../../docs/manual/cui/bridge.md?raw';
 import briscola from '../../../docs/manual/cui/briscola.md?raw';
 import bristol from '../../../docs/manual/cui/bristol.md?raw';
 import burraco from '../../../docs/manual/cui/burraco.md?raw';
+import calabresella from '../../../docs/manual/cui/calabresella.md?raw';
 import calculation from '../../../docs/manual/cui/calculation.md?raw';
 import callbreak from '../../../docs/manual/cui/callbreak.md?raw';
 import canasta from '../../../docs/manual/cui/canasta.md?raw';
@@ -269,6 +270,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/mao': mao,
   '/marias': marias,
   '/tysiac': tysiac,
+  '/calabresella': calabresella,
   '/sedma': sedma,
   '/knockoutwhist': knockoutwhist,
   '/spoilfive': spoilfive,
