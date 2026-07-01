@@ -39,6 +39,7 @@ import cassino from '../../../docs/manual/web/cassino.md?raw';
 import catchten from '../../../docs/manual/web/catchten.md?raw';
 import chinchon from '../../../docs/manual/web/chinchon.md?raw';
 import chinesepoker from '../../../docs/manual/web/chinesepoker.md?raw';
+import cinch from '../../../docs/manual/web/cinch.md?raw';
 import clocksolitaire from '../../../docs/manual/web/clocksolitaire.md?raw';
 import conquian from '../../../docs/manual/web/conquian.md?raw';
 import contractrummy from '../../../docs/manual/web/contractrummy.md?raw';
@@ -279,6 +280,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/king': king,
   '/tysiac': tysiac,
   '/calabresella': calabresella,
+  '/cinch': cinch,
   '/sedma': sedma,
   '/knockoutwhist': knockoutwhist,
   '/spoilfive': spoilfive,

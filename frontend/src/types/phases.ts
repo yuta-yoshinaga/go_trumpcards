@@ -390,6 +390,16 @@ export const CalabresellaPhase = {
   GAME_END: 5,
 } as const;
 
+/** Cinch phase constants (sync: internal/domain/Cinch.go). */
+export const CinchPhase = {
+  BID: 0,
+  NAME_TRUMP: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
 /** Knockout Whist phase constants (sync: internal/domain/KnockoutWhist.go). */
 export const KnockoutWhistPhase = {
   PLAY: 0,

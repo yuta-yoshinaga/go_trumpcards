@@ -1,0 +1,61 @@
+{
+  "title": "Cinch (Double Pedro)",
+  "phase": {
+    "bid": "Bidding",
+    "nameTrump": "Name Trump",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Deal End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "pointLimit": "Target Score",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "deal": "Deal {{n}}",
+  "trick": "Trick {{n}}/{{total}}",
+  "highBid": "High Bid: {{bid}}",
+  "trump": "Trump: {{suit}}",
+  "target": "Target: {{points}} pts",
+  "bidPrompt": "Your turn to bid — pass or declare 1-14.",
+  "bidCpu": "CPU {{id}} is bidding…",
+  "bidPass": "Pass",
+  "trumpPrompt": "You won the bid — name the trump suit.",
+  "bidderBadge": "Bidder",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "currentTrick": "Current Trick",
+  "players": "Players",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "score": "Score: {{score}}",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextDeal": "Next Deal",
+  "dealResult": {
+    "title": "Deal Result",
+    "setBack": "The bidding side was set back (bid not made).",
+    "gained": "{{name}} gained: {{points}} pts"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "bid_pass": "Weak hand — pass",
+    "bid_strong": "Strong trump — bid",
+    "name_trump": "Name the suit that captures the most points",
+    "lead_strong": "Lead a strong card to keep the initiative",
+    "trump_cut": "Trump in to secure the points",
+    "follow_suit": "Follow the led suit",
+    "discard_low": "Discard a low card to avoid giving points"
+  },
+  "tutorial": {
+    "trickDisplay": "This is the current trick. You must follow the led suit, but trump may be played at any time. Trump rank runs A>K>Q>J>10>9>8>7>6>5>Left Pedro>4>3>2. There are 14 points per deal (A/K/10/J of trump = 1 each, the Right Pedro (5 of trump) = 5, and the Left Pedro (off-5 of the same color) = 5).",
+    "playerHand": "This is your hand. Click a playable card to select it. Nine cards are dealt; you play one card per trick.",
+    "playButton": "Once a card is selected, play it with this button. In the Bid phase pass or bid 1-14; when you win the bid you name trump and lead.",
+    "info": "Cinch (Double Pedro) is a 4-player (you + 3 CPU, individual scoring) All-Fours/Pitch-family bidding trick-taker on a 52-card deck. Nine cards are dealt to each player; players bid 0 (pass) to 14, and the high bidder names trump and leads. Fourteen points per deal are exchanged, and the bidding side is set back (loses its bid) if it fails to make its bid. The first player to reach the target score (default 21) wins.",
+    "resetButton": "Use the reset button to start a new game."
+  }
+}

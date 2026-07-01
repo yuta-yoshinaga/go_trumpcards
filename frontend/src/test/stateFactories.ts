@@ -2,6 +2,7 @@ import type {
   BeziqueResponse,
   CalabresellaResponse,
   CallBreakResponse,
+  CinchResponse,
   CourtPieceResponse,
   DoppelkopfResponse,
   EcarteResponse,
@@ -1025,6 +1026,61 @@ const baseCalabresellaState: CalabresellaResponse = {
  */
 export function makeCalabresellaState(overrides?: Partial<CalabresellaResponse>): CalabresellaResponse {
   return { ...baseCalabresellaState, ...overrides };
+}
+
+/** Base Cinch state used as the default for {@link makeCinchState}. Defaults to a human Play turn (trump = ♠). */
+const baseCinchState: CinchResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 9,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      bid: 6,
+      totalScore: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 9, cards: [], trickCount: 0, bid: 0, totalScore: 0 },
+    { id: 2, isHuman: false, cardCount: 9, cards: [], trickCount: 0, bid: 0, totalScore: 0 },
+    { id: 3, isHuman: false, cardCount: 9, cards: [], trickCount: 0, bid: 0, totalScore: 0 },
+  ],
+  phase: 2,
+  roundNumber: 1,
+  trickNumber: 1,
+  totalTricks: 9,
+  dealerIdx: 3,
+  currentTurn: 0,
+  bidPlayerIdx: 0,
+  currentBid: 6,
+  bidWinnerIdx: 0,
+  trumpSuit: 1,
+  currentTrick: [],
+  lastTrick: [],
+  lastTrickWinner: -1,
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerIdx: -1,
+  roundWinners: [],
+  lastDealDetail: null,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, pointLimit: 21 },
+};
+
+/**
+ * Creates a {@link CinchResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial CinchResponse fields to override.
+ * @returns A complete CinchResponse suitable for use in tests.
+ */
+export function makeCinchState(overrides?: Partial<CinchResponse>): CinchResponse {
+  return { ...baseCinchState, ...overrides };
 }
 
 /** Base Knockout Whist state used as the default for {@link makeKnockoutWhistState}. Defaults to a human Play turn (round 1, 7-card hand). */
