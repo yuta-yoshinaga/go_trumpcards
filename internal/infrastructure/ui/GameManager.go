@@ -3058,6 +3058,17 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"calabresella.helpSetDifficulty"},
 			})
 	}},
+	{Name: "king", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewKingCuiController(usecase.NewKingInteractor(
+				domain.NewDefaultKing(), new(presenter.KingCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "king.helpTitle",
+				CommandKeys:       []string{"king.helpContract", "king.helpPlay", "king.helpNext"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"king.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

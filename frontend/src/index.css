@@ -63,6 +63,9 @@
   /* Mariáš — Czech/Slovak Bohemian-garnet crimson, distinct from Tute's brown-red and Klaverjas's orange. */
   --color-game-bg-marias: #8c1c3a;
   --color-game-bg-marias-dark: #5e1226;
+  /* King — regal indigo-blue felt, distinct from Tysiąc's plum and Mariáš's garnet crimson. */
+  --color-game-bg-king: #1f2f6e;
+  --color-game-bg-king-dark: #131e48;
   /* Tysiąc (Thousand) — Polish amaranth-plum, distinct from Mariáš's garnet crimson and every other felt. */
   --color-game-bg-tysiac: #6e1f4a;
   --color-game-bg-tysiac-dark: #481231;

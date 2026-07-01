@@ -9,6 +9,7 @@ import type {
   FortyFivesResponse,
   GongZhuResponse,
   HeartsResponse,
+  KingResponse,
   KlaverjasResponse,
   KnockoutWhistResponse,
   ManilleResponse,
@@ -863,6 +864,58 @@ const baseMariasState: MariasResponse = {
  */
 export function makeMariasState(overrides?: Partial<MariasResponse>): MariasResponse {
   return { ...baseMariasState, ...overrides };
+}
+
+/** Base King state used as the default for {@link makeKingState}. Defaults to a human Play turn. */
+const baseKingState: KingResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 13,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      totalScore: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 13, cards: [], trickCount: 0, totalScore: 0 },
+    { id: 2, isHuman: false, cardCount: 13, cards: [], trickCount: 0, totalScore: 0 },
+    { id: 3, isHuman: false, cardCount: 13, cards: [], trickCount: 0, totalScore: 0 },
+  ],
+  phase: 'play',
+  dealNumber: 0,
+  totalDeals: 7,
+  dealerIdx: 0,
+  currentTurn: 0,
+  currentContract: 0,
+  trumpSuit: -1,
+  trickNumber: 1,
+  currentTrick: [],
+  lastTrick: [],
+  lastTrickWinner: -1,
+  usedContracts: [false, false, false, false, false, false, false],
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  config: { cpuDifficulty: 1 },
+  roundWinners: [],
+  lastDealDetail: null,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+};
+
+/**
+ * Creates a {@link KingResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial KingResponse fields to override.
+ * @returns A complete KingResponse suitable for use in tests.
+ */
+export function makeKingState(overrides?: Partial<KingResponse>): KingResponse {
+  return { ...baseKingState, ...overrides };
 }
 
 /** Base Tysiąc state used as the default for {@link makeTysiacState}. Defaults to a human Play turn. */

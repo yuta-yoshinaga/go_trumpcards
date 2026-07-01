@@ -62,6 +62,7 @@ import type {
   IndianPokerResponse,
   JassResponse,
   KingAlbertResponse,
+  KingResponse,
   KlaverjasResponse,
   KlondikeResponse,
   KnockoutWhistResponse,
@@ -211,6 +212,7 @@ import { getIrishPokerHint } from '../utils/hints/irishPokerHint';
 import { getJassHint } from '../utils/hints/jassHint';
 import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
 import { getKingalbertHint } from '../utils/hints/kingalbertHint';
+import { getKingHint } from '../utils/hints/kingHint';
 import { getKlaverjasHint } from '../utils/hints/klaverjasHint';
 import { getKlondikeHint } from '../utils/hints/klondikeHint';
 import { getKnockoutWhistHint } from '../utils/hints/knockoutWhistHint';
@@ -386,6 +388,7 @@ const hintFactories = {
   beleagueredcastle: (s) => getBeleagueredcastleHint(s as BeleagueredCastleResponse),
   streetsandalleys: (s) => getStreetsandalleysHint(s as StreetsAndAlleysResponse),
   kingalbert: (s) => getKingalbertHint(s as KingAlbertResponse),
+  king: (s) => getKingHint(s as KingResponse),
   flowergarden: (s) => getFlowergardenHint(s as FlowerGardenResponse),
   tonk: () => null,
   thirtyone: (s) => getThirtyOneHint(s as ThirtyOneResponse),

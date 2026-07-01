@@ -1,0 +1,72 @@
+{
+  "title": "King",
+  "phase": {
+    "selectContract": "Select Contract",
+    "play": "Play",
+    "dealEnd": "Deal End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "deal": "Deal {{n}}/{{total}}",
+  "trick": "Trick {{n}}",
+  "contract": "Contract: {{name}}",
+  "trump": "Trump: {{suit}}",
+  "dealer": "Dealer: {{name}}",
+  "contracts": {
+    "0": "No Tricks",
+    "1": "No Hearts",
+    "2": "No Queens",
+    "3": "No King of Hearts",
+    "4": "No Last Two",
+    "5": "No Men",
+    "6": "King (Trump)"
+  },
+  "contractDesc": {
+    "0": "Lose points for every trick you take.",
+    "1": "Lose points for every heart you capture.",
+    "2": "Lose points for every queen you capture.",
+    "3": "Lose points for capturing the King of Hearts.",
+    "4": "Lose points for taking the last two tricks.",
+    "5": "Lose points for every Jack/King you capture.",
+    "6": "Lose points for taking a trick with the King (trump in play)."
+  },
+  "selectContractPrompt": "You are the dealer — choose this deal's contract.",
+  "selectContractCpu": "CPU {{id}} is choosing a contract…",
+  "selectTrumpPrompt": "Choose the trump suit for King (Trump).",
+  "selectButton": "Select",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "currentTrick": "Current Trick",
+  "players": "Players",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "score": "Score: {{score}}",
+  "dealerBadge": "Dealer",
+  "playButton": "Play",
+  "playPrompt": "Your turn — pick a card to play.",
+  "nextDeal": "Next Deal",
+  "dealResult": {
+    "title": "Deal Result",
+    "gained": "{{name}}: {{points}} pts"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "avoid_low": "Play a low card to avoid penalties",
+    "win_high": "Safe to win — take the trick with a high card",
+    "avoidLow": "Play a low card to avoid penalties",
+    "winHigh": "Safe to win — take the trick with a high card"
+  },
+  "tutorial": {
+    "trickDisplay": "This is the current trick. You must follow the led suit; when void you may play any card. Each contract punishes a different set of penalty cards.",
+    "playerHand": "This is your hand. Click a playable card to select it. The goal is to avoid capturing the cards the current contract punishes.",
+    "playButton": "Once a card is selected, play it with this button.",
+    "info": "King is a Greek/Brazilian compendium of trick-avoidance games. Four players share a 52-card deck over exactly seven deals. Each deal the dealer picks one of seven unused contracts, then all seats play thirteen must-follow tricks. After all seven deals, the highest total score (fewest penalties) wins.",
+    "resetButton": "Use the reset button to start a new game."
+  }
+}

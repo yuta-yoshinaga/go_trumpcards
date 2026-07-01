@@ -199,6 +199,7 @@ var gameDescriptions = map[string]string{
 	"gaigel":              "Gaigel (ガイゲル)",
 	"tysiac":              "Thousand / Tysiąc (サウザンド/トゥシオンツ)",
 	"calabresella":        "Calabresella / Terziglio (カラブレセッラ/テルツィーリオ)",
+	"king":                "King (キング)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

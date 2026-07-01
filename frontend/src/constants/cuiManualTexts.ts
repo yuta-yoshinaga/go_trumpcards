@@ -92,6 +92,7 @@ import jass from '../../../docs/manual/cui/jass.md?raw';
 import jokerpoker from '../../../docs/manual/cui/jokerpoker.md?raw';
 import kalooki from '../../../docs/manual/cui/kalooki.md?raw';
 import kemps from '../../../docs/manual/cui/kemps.md?raw';
+import king from '../../../docs/manual/cui/king.md?raw';
 import kingalbert from '../../../docs/manual/cui/kingalbert.md?raw';
 import klaverjas from '../../../docs/manual/cui/klaverjas.md?raw';
 import klondike from '../../../docs/manual/cui/klondike.md?raw';
@@ -269,6 +270,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/manille': manille,
   '/mao': mao,
   '/marias': marias,
+  '/king': king,
   '/tysiac': tysiac,
   '/calabresella': calabresella,
   '/sedma': sedma,
