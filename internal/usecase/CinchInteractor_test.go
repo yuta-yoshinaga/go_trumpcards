@@ -163,6 +163,52 @@ driveLoop:
 	assert.NotNil(t, g.GetLastDealDetail())
 }
 
+// TestCinchInteractor_NextRound_GameEnd は ScoreRound でゲームが終了した場合、
+// NextRound の guardGameEnd が発火して NextRound (ドメイン) が呼ばれないことを検証する。
+func TestCinchInteractor_NextRound_GameEnd(t *testing.T) {
+	cp := new(presenter.MockCinchPresenter)
+	cp.On("Output", mock.Anything, mock.Anything).Return(cinchMockOutput)
+
+	g := domain.NewDefaultCinch()
+	g.Reset()
+	g.GetPlayer(0).AddScore(30)
+	g.SetTrumpSuit(domain.CardDesignHeart)
+	g.SetBidWinnerIdx(0)
+	g.SetCurrentBid(1)
+	g.SetPhase(domain.CinchPhaseRoundEnd)
+
+	ci := usecase.NewCinchInteractor(g, cp)
+	round := g.GetRoundNumber()
+	out := ci.NextRound()
+	assert.Equal(t, cinchMockOutput, out)
+	assert.True(t, g.GetGameEndFlag())
+	// ゲーム終了により NextRound は進まない。
+	assert.Equal(t, round, g.GetRoundNumber())
+}
+
+// TestCinchInteractor_NextRound_Advances は ScoreRound 後にゲーム継続なら次ディールへ
+// 進むことを検証する。
+func TestCinchInteractor_NextRound_Advances(t *testing.T) {
+	cp := new(presenter.MockCinchPresenter)
+	cp.On("Output", mock.Anything, mock.Anything).Return(cinchMockOutput)
+
+	g := domain.NewDefaultCinch()
+	cfg := domain.DefaultCinchConfig()
+	cfg.CpuDifficulty = domain.CinchDifficultyNormal
+	g.SetConfig(cfg)
+	g.Reset()
+	g.SetTrumpSuit(domain.CardDesignHeart)
+	g.SetBidWinnerIdx(0)
+	g.SetCurrentBid(1)
+	g.SetPhase(domain.CinchPhaseRoundEnd)
+
+	ci := usecase.NewCinchInteractor(g, cp)
+	round := g.GetRoundNumber()
+	ci.NextRound()
+	assert.False(t, g.GetGameEndFlag())
+	assert.Equal(t, round+1, g.GetRoundNumber())
+}
+
 func TestCinchInteractor_SnapshotAndRestore(t *testing.T) {
 	cp := new(presenter.MockCinchPresenter)
 	cp.On("Output", mock.Anything, mock.Anything).Return(cinchMockOutput)

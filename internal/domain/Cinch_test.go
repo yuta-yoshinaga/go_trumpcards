@@ -281,6 +281,263 @@ func TestCinch_FullDeal_Deterministic(t *testing.T) {
 	assert.Equal(t, availablePoints, total)
 }
 
+// cinchDriveFullDeal は 1 ディールを最後までプレイし、獲得ポイント合計が配られた
+// 得点札の合計と一致することを検証する (全 36 枚が 9 トリックで必ず取られる)。CPU AI を
+// 難易度別に駆動して CinchCPU.go の各分岐を網羅するための共通ドライバ。
+func cinchDriveFullDeal(t *testing.T, g *domain.Cinch) {
+	t.Helper()
+	// bid フェーズ: human 手番はパス、CPU は自動。
+	for i := 0; i < 50 && g.GetPhase() == domain.CinchPhaseBid; i++ {
+		if g.IsHumanTurn() {
+			require.NoError(t, g.PlayerBid(domain.CinchPassBid))
+		} else {
+			g.CpuBid()
+		}
+	}
+	// nameTrump フェーズ。
+	if g.GetPhase() == domain.CinchPhaseNameTrump {
+		if g.IsHumanTurn() {
+			require.NoError(t, g.NameTrump(domain.CardDesignSpade))
+		} else {
+			g.CpuPlay()
+		}
+	}
+	require.Equal(t, domain.CinchPhasePlay, g.GetPhase())
+
+	// 配られた得点札の合計を基準にする。
+	availablePoints := 0
+	for i := 0; i < domain.CinchPlayerCnt; i++ {
+		p := g.GetPlayer(i)
+		for j := 0; j < p.GetCardsSize(); j++ {
+			availablePoints += domain.CinchPointValueForTest(p.GetCard(j), g.GetTrumpSuit())
+		}
+	}
+
+	// 9 トリックをプレイ。
+	for trick := 0; trick < domain.CinchTotalTricks; trick++ {
+		for c := 0; c < domain.CinchPlayerCnt; c++ {
+			if g.IsHumanTurn() {
+				idx := g.GetPlayableIndices(g.GetCurrentTurn())
+				require.NotEmpty(t, idx)
+				require.NoError(t, g.PlayerPlay(idx[0]))
+			} else {
+				g.CpuPlay()
+			}
+		}
+		require.Equal(t, domain.CinchPhaseTrickEnd, g.GetPhase())
+		g.ResolveTrick()
+		if g.GetPhase() == domain.CinchPhaseRoundEnd {
+			break
+		}
+		g.NextTrick()
+	}
+	require.Equal(t, domain.CinchPhaseRoundEnd, g.GetPhase())
+	g.ScoreRound()
+	det := g.GetLastDealDetail()
+	require.NotNil(t, det)
+	total := 0
+	for _, p := range det.Points {
+		total += p
+	}
+	assert.Equal(t, availablePoints, total)
+}
+
+// TestCinch_FullDeal_Hard は Hard 難易度で 1 ディールを駆動し、CPU の
+// bidWithRules(strict)/cpuSelectTrump/cpuPlaySmart 分岐を網羅する。
+func TestCinch_FullDeal_Hard(t *testing.T) {
+	g := newTestCinch(t, domain.CinchDifficultyHard)
+	cinchDriveFullDeal(t, g)
+}
+
+// TestCinch_FullDeal_Easy は Easy 難易度で 1 ディールを駆動し、cpuBidEasy と
+// cpuSelectPlayCard の乱数分岐を実行する。Easy のビッド結果は乱数なので特定値は
+// 主張せず、フェーズが進むまでループを回すだけ。
+func TestCinch_FullDeal_Easy(t *testing.T) {
+	g := newTestCinch(t, domain.CinchDifficultyEasy)
+	cinchDriveFullDeal(t, g)
+}
+
+// TestCinch_GetHint_AllPhases は GetHint が各フェーズで期待どおり non-nil / nil を返す
+// ことを検証する。特に「人間の手番でない」場合に nil を返す分岐を網羅する。
+func TestCinch_GetHint_AllPhases(t *testing.T) {
+	// bid フェーズ、human 手番でない → nil。
+	g := newTestCinch(t, domain.CinchDifficultyNormal)
+	g.SetBidPlayerIdx(1)
+	assert.Nil(t, g.GetHint())
+
+	// bid フェーズ、human 手番 → Bid 付き。
+	g.SetBidPlayerIdx(0)
+	hint := g.GetHint()
+	require.NotNil(t, hint)
+	assert.NotNil(t, hint.Bid)
+
+	// nameTrump フェーズ、勝者が human でない → nil。
+	g.SetPhase(domain.CinchPhaseNameTrump)
+	g.SetBidWinnerIdx(2)
+	assert.Nil(t, g.GetHint())
+
+	// nameTrump フェーズ、勝者が human → TrumpSuit 付き。
+	g.SetBidWinnerIdx(0)
+	hint = g.GetHint()
+	require.NotNil(t, hint)
+	assert.NotNil(t, hint.TrumpSuit)
+
+	// play フェーズ、human の手番でない → nil。
+	g.SetPhase(domain.CinchPhasePlay)
+	g.SetTrumpSuit(domain.CardDesignHeart)
+	g.SetCurrentTurn(1)
+	assert.Nil(t, g.GetHint())
+
+	// play フェーズ、human の手番 → CardIndices 付き。
+	g.SetCurrentTurn(0)
+	g.SetLeadPlayerIdx(0)
+	setCinchHand(g, 0, cinchCard(domain.CardDesignHeart, 1), cinchCard(domain.CardDesignSpade, 2))
+	hint = g.GetHint()
+	require.NotNil(t, hint)
+	assert.NotEmpty(t, hint.CardIndices)
+
+	// TrickEnd フェーズ (default) → nil。
+	g.SetPhase(domain.CinchPhaseTrickEnd)
+	assert.Nil(t, g.GetHint())
+}
+
+// TestCinch_GetHint_PlayReasons は play ヒントの理由キーを各分岐で網羅する
+// (lead_strong / trump_cut / follow_suit / discard_low)。
+func TestCinch_GetHint_PlayReasons(t *testing.T) {
+	newPlay := func() *domain.Cinch {
+		g := newTestCinch(t, domain.CinchDifficultyNormal)
+		g.SetPhase(domain.CinchPhasePlay)
+		g.SetTrumpSuit(domain.CardDesignHeart)
+		g.SetBidWinnerIdx(0)
+		g.SetCurrentBid(3)
+		g.SetCurrentTurn(0)
+		g.SetLeadPlayerIdx(0)
+		g.SetTrickNumber(1)
+		return g
+	}
+
+	// リード (トリック空) → lead_strong。
+	g := newPlay()
+	setCinchHand(g, 0, cinchCard(domain.CardDesignHeart, 1), cinchCard(domain.CardDesignSpade, 2))
+	hint := g.GetHint()
+	require.NotNil(t, hint)
+	assert.Equal(t, "lead_strong", hint.Reason)
+
+	// フォロー中で切り札を切る → trump_cut。リードは Clover、手札に Clover が無く切り札あり。
+	g = newPlay()
+	g.SetCurrentTrick([]*domain.CinchTrickCard{{PlayerIdx: 3, Card: cinchCard(domain.CardDesignClover, 9)}})
+	setCinchHand(g, 0, cinchCard(domain.CardDesignHeart, 1))
+	hint = g.GetHint()
+	require.NotNil(t, hint)
+	assert.Equal(t, "trump_cut", hint.Reason)
+
+	// リードスートに従う → follow_suit。リード Clover、手札に Clover のみ。
+	g = newPlay()
+	g.SetCurrentTrick([]*domain.CinchTrickCard{{PlayerIdx: 3, Card: cinchCard(domain.CardDesignClover, 9)}})
+	setCinchHand(g, 0, cinchCard(domain.CardDesignClover, 3))
+	hint = g.GetHint()
+	require.NotNil(t, hint)
+	assert.Equal(t, "follow_suit", hint.Reason)
+
+	// リードにも切り札にも従えない → discard_low。リード Clover、手札に Diamond のみ (切り札 Heart)。
+	g = newPlay()
+	g.SetCurrentTrick([]*domain.CinchTrickCard{{PlayerIdx: 3, Card: cinchCard(domain.CardDesignClover, 9)}})
+	setCinchHand(g, 0, cinchCard(domain.CardDesignDiamond, 3))
+	hint = g.GetHint()
+	require.NotNil(t, hint)
+	assert.Equal(t, "discard_low", hint.Reason)
+}
+
+// TestCinch_ValidatePlay_Rules はフォロー規則の各エラー分岐を網羅する。
+func TestCinch_ValidatePlay_Rules(t *testing.T) {
+	g := newTestCinch(t, domain.CinchDifficultyNormal)
+	g.SetTrumpSuit(domain.CardDesignHeart)
+	g.SetPhase(domain.CinchPhasePlay)
+
+	// 切り札リードに対し、切り札を持っているのに従わない → エラー。
+	g.SetCurrentTrick([]*domain.CinchTrickCard{{PlayerIdx: 1, Card: cinchCard(domain.CardDesignHeart, 9)}})
+	setCinchHand(g, 0, cinchCard(domain.CardDesignHeart, 2), cinchCard(domain.CardDesignSpade, 3))
+	assert.Error(t, g.ValidatePlayForTest(0, cinchCard(domain.CardDesignSpade, 3)))
+	assert.NoError(t, g.ValidatePlayForTest(0, cinchCard(domain.CardDesignHeart, 2)))
+
+	// 切り札リードだが切り札を持たない → 任意で合法。
+	setCinchHand(g, 0, cinchCard(domain.CardDesignSpade, 3), cinchCard(domain.CardDesignClover, 4))
+	assert.NoError(t, g.ValidatePlayForTest(0, cinchCard(domain.CardDesignSpade, 3)))
+
+	// オフ切り札リード (Clover) に対し、Clover を持っているのに従わない → エラー。
+	g.SetCurrentTrick([]*domain.CinchTrickCard{{PlayerIdx: 1, Card: cinchCard(domain.CardDesignClover, 9)}})
+	setCinchHand(g, 0, cinchCard(domain.CardDesignClover, 3), cinchCard(domain.CardDesignDiamond, 4))
+	assert.Error(t, g.ValidatePlayForTest(0, cinchCard(domain.CardDesignDiamond, 4)))
+	assert.NoError(t, g.ValidatePlayForTest(0, cinchCard(domain.CardDesignClover, 3)))
+	// 切り札で切るのは常に合法。
+	assert.NoError(t, g.ValidatePlayForTest(0, cinchCard(domain.CardDesignHeart, 2)))
+}
+
+// TestCinch_PlayerPlay_Errors は PlayerPlay のガード分岐を網羅する。
+func TestCinch_PlayerPlay_Errors(t *testing.T) {
+	g := newTestCinch(t, domain.CinchDifficultyNormal)
+	// bid フェーズでのプレイは ErrWrongPhase。
+	assert.ErrorIs(t, g.PlayerPlay(0), domain.ErrWrongPhase)
+
+	g.SetPhase(domain.CinchPhasePlay)
+	g.SetTrumpSuit(domain.CardDesignHeart)
+	g.SetCurrentTurn(1) // CPU 手番
+	assert.ErrorIs(t, g.PlayerPlay(0), domain.ErrNotHumanTurn)
+
+	g.SetCurrentTurn(0)
+	setCinchHand(g, 0, cinchCard(domain.CardDesignHeart, 1))
+	assert.Error(t, g.PlayerPlay(-1)) // 範囲外
+	assert.Error(t, g.PlayerPlay(9))  // 範囲外
+}
+
+// TestCinch_NameTrump_Errors は NameTrump のガード分岐を網羅する。
+func TestCinch_NameTrump_Errors(t *testing.T) {
+	g := newTestCinch(t, domain.CinchDifficultyNormal)
+	// bid フェーズでの NameTrump は ErrWrongPhase。
+	assert.ErrorIs(t, g.NameTrump(domain.CardDesignHeart), domain.ErrWrongPhase)
+
+	g.SetPhase(domain.CinchPhaseNameTrump)
+	g.SetBidWinnerIdx(1) // CPU が勝者
+	assert.ErrorIs(t, g.NameTrump(domain.CardDesignHeart), domain.ErrNotHumanTurn)
+}
+
+// TestCinch_GuardsAfterGameEnd はゲーム終了後の各アクションが ErrGameEnded を返すことを
+// 検証する。
+func TestCinch_GuardsAfterGameEnd(t *testing.T) {
+	g := newTestCinch(t, domain.CinchDifficultyNormal)
+	g.GetPlayer(0).AddScore(30)
+	g.SetTrumpSuit(domain.CardDesignHeart)
+	g.SetBidWinnerIdx(0)
+	g.SetCurrentBid(1)
+	g.SetPhase(domain.CinchPhaseRoundEnd)
+	g.ScoreRound()
+	require.True(t, g.GetGameEndFlag())
+
+	assert.ErrorIs(t, g.PlayerBid(1), domain.ErrGameEnded)
+	assert.ErrorIs(t, g.NameTrump(domain.CardDesignHeart), domain.ErrGameEnded)
+	assert.ErrorIs(t, g.PlayerPlay(0), domain.ErrGameEnded)
+	assert.False(t, g.IsHumanTurn())
+	// ゲーム終了後の NextRound は no-op。
+	round := g.GetRoundNumber()
+	g.NextRound()
+	assert.Equal(t, round, g.GetRoundNumber())
+}
+
+// TestCinch_ComputeRoundPoints_NoTrump は切り札未確定のときポイントが 0 になることを
+// 検証する (computeRoundPoints の早期 return)。
+func TestCinch_ComputeRoundPoints_NoTrump(t *testing.T) {
+	g := newTestCinch(t, domain.CinchDifficultyNormal)
+	g.SetTrumpSuit(domain.CinchTrumpUnset)
+	g.SetBidWinnerIdx(0)
+	g.SetCurrentBid(0)
+	g.SetPhase(domain.CinchPhaseRoundEnd)
+	g.GetPlayer(0).AddTrick([]*domain.Card{cinchCard(domain.CardDesignHeart, 1)})
+	g.ScoreRound()
+	det := g.GetLastDealDetail()
+	require.NotNil(t, det)
+	assert.Equal(t, 0, det.Points[0])
+}
+
 func TestCinch_JSONRoundTrip(t *testing.T) {
 	g := newTestCinch(t, domain.CinchDifficultyNormal)
 	g.SetTrumpSuit(domain.CardDesignHeart)
