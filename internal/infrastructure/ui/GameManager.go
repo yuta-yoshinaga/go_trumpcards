@@ -3024,6 +3024,23 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"gaigel.helpSetDifficulty", "gaigel.helpSetTarget"},
 			})
 	}},
+	{Name: "tysiac", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewTysiacCuiController(usecase.NewTysiacInteractor(
+				domain.NewDefaultTysiac(), new(presenter.TysiacCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "tysiac.helpTitle",
+				CommandKeys: []string{
+					"tysiac.helpBid",
+					"tysiac.helpDiscard",
+					"tysiac.helpPlay",
+					"tysiac.helpNext",
+					"tysiac.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"tysiac.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

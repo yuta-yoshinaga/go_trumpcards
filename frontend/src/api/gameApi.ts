@@ -197,6 +197,7 @@ import type {
   TuteResponse,
   TwentyNineResponse,
   TwoTenJackResponse,
+  TysiacResponse,
   UltimateTexasHoldemResponse,
   VideoPokerResponse,
   WarResponse,
@@ -362,6 +363,7 @@ const workerUrl: Record<string, string> = {
   agnes: WORKER_EXTRA,
   jass: WORKER_EXTRA,
   gaigel: WORKER_EXTRA,
+  tysiac: WORKER_EXTRA,
   eightoff: WORKER_SOLO,
   penguin: WORKER_SOLO,
   chinesepoker: WORKER_CASINO,
@@ -2110,6 +2112,44 @@ export const mariasApi = {
     gameExec<MariasResponse>('marias', {
       command,
       cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Tysiąc (Thousand) game settings. */
+export interface TysiacConfigInput {
+  cpuDifficulty?: number;
+  targetPoints?: number;
+}
+
+/** Commands accepted by the Tysiąc /tysiac/exec endpoint. */
+export type TysiacCommand = 'reset' | 'bid' | 'discard' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Tysiąc (Thousand) /tysiac/exec endpoint.
+ *
+ * Tysiąc is a Polish 3-player 24-card trump trick-taker with a Bid phase, a
+ * Talon exchange phase, and marriage (K+Q) declarations during play.
+ *   - `bid` → `{ raise: boolean }` (raise=true means +10, false means pass)
+ *   - `discard` → `{ cardIndex }` (talon exchange: the human Declarer gives one
+ *     card to an opponent; called once per opponent — twice total)
+ *   - `play` → `{ cardIndex }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const tysiacApi = {
+  exec: (
+    command: TysiacCommand,
+    opts?: {
+      cardIndex?: number;
+      raise?: boolean;
+      config?: TysiacConfigInput;
+    },
+  ) =>
+    gameExec<TysiacResponse>('tysiac', {
+      command,
+      cardIndex: opts?.cardIndex,
+      raise: opts?.raise,
       config: opts?.config,
     }),
 };
@@ -4250,6 +4290,7 @@ const games = [
   'beggarmyneighbour',
   'allfours',
   'gaigel',
+  'tysiac',
 ] as const;
 type Game = (typeof games)[number];
 

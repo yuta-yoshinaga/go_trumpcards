@@ -950,4 +950,9 @@ func init() {
 			return usecase.NewGaigelInteractor(domain.NewDefaultGaigel(), new(presenter.GaigelWebPresenter))
 		},
 		controller.NewGaigelWebController)
+	BindWebControllerFor("tysiac",
+		func() usecase.TysiacInteractorIF {
+			return usecase.NewTysiacInteractor(domain.NewDefaultTysiac(), new(presenter.TysiacWebPresenter))
+		},
+		controller.NewTysiacWebController)
 }

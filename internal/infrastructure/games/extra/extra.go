@@ -163,4 +163,12 @@ func init() {
 			return usecase.RestoreGaigelInteractor(data, new(presenter.GaigelWebPresenter))
 		},
 		controller.NewGaigelWebControllerWithProvider)
+	games.RegisterKVGame("tysiac", games.CategoryExtra,
+		func() usecase.TysiacInteractorIF {
+			return usecase.NewTysiacInteractor(domain.NewDefaultTysiac(), new(presenter.TysiacWebPresenter))
+		},
+		func(data []byte) (usecase.TysiacInteractorIF, error) {
+			return usecase.RestoreTysiacInteractor(data, new(presenter.TysiacWebPresenter))
+		},
+		controller.NewTysiacWebControllerWithProvider)
 }

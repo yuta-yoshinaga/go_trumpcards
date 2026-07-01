@@ -28,6 +28,7 @@ import type {
   TuteResponse,
   TwentyNineResponse,
   TwoTenJackResponse,
+  TysiacResponse,
 } from '../types/card';
 
 /** Base Hearts player data for player 0 (human). */
@@ -861,6 +862,61 @@ const baseMariasState: MariasResponse = {
  */
 export function makeMariasState(overrides?: Partial<MariasResponse>): MariasResponse {
   return { ...baseMariasState, ...overrides };
+}
+
+/** Base Tysiąc state used as the default for {@link makeTysiacState}. Defaults to a human Play turn. */
+const baseTysiacState: TysiacResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 7,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      score: 0,
+      isDeclarer: true,
+    },
+    { id: 1, isHuman: false, cardCount: 7, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+    { id: 2, isHuman: false, cardCount: 7, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+  ],
+  phase: 2,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 2,
+  forehandIdx: 0,
+  declarerIdx: 0,
+  contract: 100,
+  currentBid: 100,
+  trumpSuit: 3,
+  currentTrick: [],
+  playerScores: [0, 0, 0],
+  roundCardPoints: [0, 0, 0],
+  roundMarriage: [0, 0, 0],
+  lastTrickWinner: -1,
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 1000 },
+};
+
+/**
+ * Creates a {@link TysiacResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial TysiacResponse fields to override.
+ * @returns A complete TysiacResponse suitable for use in tests.
+ */
+export function makeTysiacState(overrides?: Partial<TysiacResponse>): TysiacResponse {
+  return { ...baseTysiacState, ...overrides };
 }
 
 /** Base Knockout Whist state used as the default for {@link makeKnockoutWhistState}. Defaults to a human Play turn (round 1, 7-card hand). */

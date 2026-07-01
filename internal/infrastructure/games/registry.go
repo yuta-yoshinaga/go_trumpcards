@@ -522,6 +522,15 @@ var registry = []*Game{
 	// Extra worker bucket — the issue proposed casino but that worker is at the
 	// 1 MB gzip limit, so it routes to the overflow ("extra") worker.
 	{Name: "gaigel", Category: CategoryExtra},
+	// Thousand (Tysiąc): a Polish/East-European 3-player bidding trick-taker on
+	// a 24-card pack (9,J,Q,K,10,A). Players bid from 100 in +10 steps; the last
+	// bidder becomes declarer, takes the 3-card talon (widow) and passes one card
+	// to each opponent. Declaring a marriage (K+Q of a suit) on lead sets that
+	// suit as trump and scores 40/60/80/100 (♠/♣/♦/♥); trump changes dynamically.
+	// Declarer scores ±contract; others round to 10. First to 1000 wins. Modelled
+	// on mariáš. Extra worker bucket — the issue proposed casino but that worker
+	// is at the 1 MB gzip limit, so it routes to the overflow ("extra") worker.
+	{Name: "tysiac", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.
