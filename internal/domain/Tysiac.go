@@ -633,13 +633,14 @@ func (g *Tysiac) validatePlay(playerIdx int, card *Card) error {
 		if hasTrump && card.GetDesign() != g.trumpSuit {
 			return NewDomainError(ErrInvalidPlay, "切り札を出してください")
 		}
-		// オーバートランプ義務: 既に場に切り札があり、それより高い切り札を持つなら勝てる札を出す。
-		if hasTrump && card.GetDesign() == g.trumpSuit {
-			highestTrump := g.highestTrumpRankInTrick()
-			if highestTrump > 0 && g.canOvertrump(playerIdx, highestTrump) &&
-				g.tysiacRank(card) <= highestTrump {
-				return NewDomainError(ErrInvalidPlay, "高い切り札で勝ってください")
-			}
+	}
+	// オーバートランプ義務: 切り札を出す場合 (ボイド時の強制切り札でも切り札リードへの
+	// フォローでも)、場の最高切り札を上回れるなら勝てる札を出さねばならない。
+	if g.trumpSuit != 0 && card.GetDesign() == g.trumpSuit {
+		highestTrump := g.highestTrumpRankInTrick()
+		if highestTrump > 0 && g.canOvertrump(playerIdx, highestTrump) &&
+			g.tysiacRank(card) <= highestTrump {
+			return NewDomainError(ErrInvalidPlay, "高い切り札で勝ってください")
 		}
 	}
 	return nil
@@ -1287,6 +1288,9 @@ func (g *Tysiac) UnmarshalJSON(data []byte) error {
 	}
 	for _, tc := range j.CurrentTrick {
 		if tc == nil || tc.Card == nil {
+			return errTysiacInvalidTrick
+		}
+		if !tysiacInRange(tc.PlayerIdx) {
 			return errTysiacInvalidTrick
 		}
 	}

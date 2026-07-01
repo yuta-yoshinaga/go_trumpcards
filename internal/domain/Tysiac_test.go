@@ -372,6 +372,32 @@ func TestTysiac_ValidatePlay_Overtrump(t *testing.T) {
 	assert.Equal(t, []int{kingIdx}, valid, "must overtrump with the higher trump")
 }
 
+// TestTysiac_ValidatePlay_MustOvertrumpOnTrumpLead guards against the overtrump
+// obligation being skipped when the trump suit itself is led. Following suit with
+// a lower trump while holding a higher one must be rejected.
+func TestTysiac_ValidatePlay_MustOvertrumpOnTrumpLead(t *testing.T) {
+	g := newTestTysiac()
+	g.SetTrumpSuit(domain.CardDesignHeart)
+	g.SetPhase(domain.TysiacPhasePlay)
+	// Trump (hearts) is led with a Jack; player 1 follows suit and holds both a
+	// higher trump (King) and a lower trump (9). Only the King is legal.
+	g.SetCurrentTrick([]*domain.TysiacTrickCard{
+		{PlayerIdx: 0, Card: tysCard(domain.CardDesignHeart, 11)}, // trump J led
+	})
+	setTysiacHand(g, 1,
+		tysCard(domain.CardDesignHeart, 13), // trump K (beats J)
+		tysCard(domain.CardDesignHeart, 9))  // trump 9 (loses to J)
+	kingIdx := -1
+	p := g.GetPlayer(1)
+	for i := 0; i < p.GetCardsSize(); i++ {
+		if p.GetCard(i).GetValue() == 13 {
+			kingIdx = i
+		}
+	}
+	valid := g.GetPlayableIndices(1)
+	assert.Equal(t, []int{kingIdx}, valid, "must overtrump even when trump is led")
+}
+
 func TestTysiac_ContractScoring_MetAndFailed(t *testing.T) {
 	// Declarer meets contract -> +contract.
 	g := newTestTysiac()
@@ -643,23 +669,25 @@ func TestTysiac_JSON_RoundTrip(t *testing.T) {
 func TestTysiac_JSON_Invalid(t *testing.T) {
 	const okPlayers = `[{"gp":{},"th":{}},{"gp":{},"th":{}},{"gp":{},"th":{}}]`
 	cases := []string{
-		`not json`,                                    // malformed
-		`{"ph":0,"ps":[null,null]}`,                   // wrong player count
-		`{"ph":0,"ps":[null,null,null]}`,              // nil players
-		`{"ph":0,"ps":` + okPlayers + `,"ci":100}`,    // currentPlayerIdx out of range
-		`{"ph":0,"ps":` + okPlayers + `,"ci":-1}`,     // currentPlayerIdx negative
-		`{"ph":0,"ps":` + okPlayers + `,"di":99}`,     // dealerIdx out of range
-		`{"ph":0,"ps":` + okPlayers + `,"fh":99}`,     // forehandIdx out of range
-		`{"ph":0,"ps":` + okPlayers + `,"li":99}`,     // leadPlayerIdx out of range
-		`{"ph":0,"ps":` + okPlayers + `,"li":-2}`,     // leadPlayerIdx below -1
-		`{"ph":0,"ps":` + okPlayers + `,"dc":99}`,     // declarerIdx out of range
-		`{"ph":0,"ps":` + okPlayers + `,"lt":99}`,     // lastTrickWinner out of range
-		`{"ph":0,"ps":` + okPlayers + `,"wp":99}`,     // winnerPlayer out of range
-		`{"ph":0,"ps":` + okPlayers + `,"dn":99}`,     // discardCount out of range
-		`{"ph":99,"ps":` + okPlayers + `}`,            // bad phase
-		`{"ph":0,"ps":` + okPlayers + `,"ts":9}`,      // bad trumpSuit
-		`{"ph":0,"ps":` + okPlayers + `,"ct":[null]}`, // nil trick card
-		`{"ph":0,"ps":` + okPlayers + `,"tl":[null]}`, // nil talon card
+		`not json`,                                                            // malformed
+		`{"ph":0,"ps":[null,null]}`,                                           // wrong player count
+		`{"ph":0,"ps":[null,null,null]}`,                                      // nil players
+		`{"ph":0,"ps":` + okPlayers + `,"ci":100}`,                            // currentPlayerIdx out of range
+		`{"ph":0,"ps":` + okPlayers + `,"ci":-1}`,                             // currentPlayerIdx negative
+		`{"ph":0,"ps":` + okPlayers + `,"di":99}`,                             // dealerIdx out of range
+		`{"ph":0,"ps":` + okPlayers + `,"fh":99}`,                             // forehandIdx out of range
+		`{"ph":0,"ps":` + okPlayers + `,"li":99}`,                             // leadPlayerIdx out of range
+		`{"ph":0,"ps":` + okPlayers + `,"li":-2}`,                             // leadPlayerIdx below -1
+		`{"ph":0,"ps":` + okPlayers + `,"dc":99}`,                             // declarerIdx out of range
+		`{"ph":0,"ps":` + okPlayers + `,"lt":99}`,                             // lastTrickWinner out of range
+		`{"ph":0,"ps":` + okPlayers + `,"wp":99}`,                             // winnerPlayer out of range
+		`{"ph":0,"ps":` + okPlayers + `,"dn":99}`,                             // discardCount out of range
+		`{"ph":99,"ps":` + okPlayers + `}`,                                    // bad phase
+		`{"ph":0,"ps":` + okPlayers + `,"ts":9}`,                              // bad trumpSuit
+		`{"ph":0,"ps":` + okPlayers + `,"ct":[null]}`,                         // nil trick card
+		`{"ph":0,"ps":` + okPlayers + `,"ct":[{"pi":99,"c":{"d":1,"v":13}}]}`, // trick card PlayerIdx out of range
+		`{"ph":0,"ps":` + okPlayers + `,"ct":[{"pi":-1,"c":{"d":1,"v":13}}]}`, // trick card PlayerIdx negative
+		`{"ph":0,"ps":` + okPlayers + `,"tl":[null]}`,                         // nil talon card
 	}
 	for _, c := range cases {
 		var g domain.Tysiac
