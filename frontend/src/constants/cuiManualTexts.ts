@@ -40,6 +40,7 @@ import cassino from '../../../docs/manual/cui/cassino.md?raw';
 import catchten from '../../../docs/manual/cui/catchten.md?raw';
 import chinchon from '../../../docs/manual/cui/chinchon.md?raw';
 import chinesepoker from '../../../docs/manual/cui/chinesepoker.md?raw';
+import cinch from '../../../docs/manual/cui/cinch.md?raw';
 import clocksolitaire from '../../../docs/manual/cui/clocksolitaire.md?raw';
 import conquian from '../../../docs/manual/cui/conquian.md?raw';
 import contractrummy from '../../../docs/manual/cui/contractrummy.md?raw';
@@ -273,6 +274,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/king': king,
   '/tysiac': tysiac,
   '/calabresella': calabresella,
+  '/cinch': cinch,
   '/sedma': sedma,
   '/knockoutwhist': knockoutwhist,
   '/spoilfive': spoilfive,

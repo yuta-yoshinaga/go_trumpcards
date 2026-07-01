@@ -72,6 +72,9 @@
   /* Calabresella (Terziglio) — Calabrian warm terracotta-brown felt, distinct from Tysiąc's plum and every other game. */
   --color-game-bg-calabresella: #7a3b1e;
   --color-game-bg-calabresella-dark: #4f2513;
+  /* Cinch (Double Pedro) — American saloon deep bronze-olive felt, distinct from Calabresella's terracotta and All Fours' teal. */
+  --color-game-bg-cinch: #5c5218;
+  --color-game-bg-cinch-dark: #3a340f;
   /* Sedma — Czech/Slovak deep teal-pine, distinct from Sueca's lighter felt-green and every other game. */
   --color-game-bg-sedma: #0d5c5c;
   --color-game-bg-sedma-dark: #093e3e;

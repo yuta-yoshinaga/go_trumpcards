@@ -27,6 +27,7 @@ import type {
   CasinoWarResponse,
   CassinoResponse,
   CatchTenResponse,
+  CinchResponse,
   ClockSolitaireResponse,
   CourtPieceResponse,
   CrazyEightsResponse,
@@ -173,6 +174,7 @@ import { getCasinoHoldemHint } from '../utils/hints/casinoholdemHint';
 import { getCasinowarHint } from '../utils/hints/casinowarHint';
 import { getCassinoHint } from '../utils/hints/cassinoHint';
 import { getCatchTenHint } from '../utils/hints/catchtenHint';
+import { getCinchHint } from '../utils/hints/cinchHint';
 import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
 import { getCourtPieceHint } from '../utils/hints/courtPieceHint';
 import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
@@ -450,6 +452,7 @@ const hintFactories = {
   marias: (s) => getMariasHint(s as MariasResponse),
   tysiac: (s) => getTysiacHint(s as TysiacResponse),
   calabresella: (s) => getCalabresellaHint(s as CalabresellaResponse),
+  cinch: (s) => getCinchHint(s as CinchResponse),
   sedma: (s) => getSedmaHint(s as SedmaResponse),
   knockoutwhist: (s) => getKnockoutWhistHint(s as KnockoutWhistResponse),
   spoilfive: (s) => getSpoilFiveHint(s as SpoilFiveResponse),

@@ -548,6 +548,15 @@ var registry = []*Game{
 	// bucket — the issue proposed casino but that worker is at the 1 MB gzip
 	// free-tier limit, so it routes to the overflow ("extra") worker.
 	{Name: "king", Category: CategoryExtra},
+	// Cinch (Double Pedro / High Five): a 4-player All-Fours/Pitch-family auction
+	// trick-taker on a 52-card deck. Deal 9 each; players bid 1-14 or pass; the high
+	// bidder names trump and leads. Capture point cards (14/deal): High(A)=1, King=1,
+	// Ten("Game")=1, Jack=1, Right Pedro (5 of trump)=5, Left Pedro (5 of same colour
+	// as trump)=5. The Left Pedro is treated as a trump ranking just below the trump 5.
+	// The bidder's side must make its bid or is set back; first to the target score
+	// wins. Extra worker bucket — the issue proposed casino but that worker is at the
+	// 1 MB gzip free-tier limit, so it routes to the overflow ("extra") worker.
+	{Name: "cinch", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

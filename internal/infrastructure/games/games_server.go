@@ -965,4 +965,9 @@ func init() {
 			return usecase.NewKingInteractor(domain.NewDefaultKing(), new(presenter.KingWebPresenter))
 		},
 		controller.NewKingWebController)
+	BindWebControllerFor("cinch",
+		func() usecase.CinchInteractorIF {
+			return usecase.NewCinchInteractor(domain.NewDefaultCinch(), new(presenter.CinchWebPresenter))
+		},
+		controller.NewCinchWebController)
 }

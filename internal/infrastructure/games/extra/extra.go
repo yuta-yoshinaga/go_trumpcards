@@ -187,4 +187,12 @@ func init() {
 			return usecase.RestoreKingInteractor(data, new(presenter.KingWebPresenter))
 		},
 		controller.NewKingWebControllerWithProvider)
+	games.RegisterKVGame("cinch", games.CategoryExtra,
+		func() usecase.CinchInteractorIF {
+			return usecase.NewCinchInteractor(domain.NewDefaultCinch(), new(presenter.CinchWebPresenter))
+		},
+		func(data []byte) (usecase.CinchInteractorIF, error) {
+			return usecase.RestoreCinchInteractor(data, new(presenter.CinchWebPresenter))
+		},
+		controller.NewCinchWebControllerWithProvider)
 }
