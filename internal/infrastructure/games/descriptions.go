@@ -197,6 +197,7 @@ var gameDescriptions = map[string]string{
 	"prsi":                "Prší (プルシー/チェコ版クレイジーエイト)",
 	"jass":                "Jass (Schieber) (ヤス/シーバー)",
 	"gaigel":              "Gaigel (ガイゲル)",
+	"tysiac":              "Thousand / Tysiąc (サウザンド/トゥシオンツ)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

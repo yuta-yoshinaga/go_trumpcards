@@ -370,6 +370,16 @@ export const MariasPhase = {
   GAME_END: 3,
 } as const;
 
+/** Tysiąc (Thousand) phase constants (sync: internal/domain/Tysiac.go). */
+export const TysiacPhase = {
+  BID: 0,
+  TALON: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
 /** Knockout Whist phase constants (sync: internal/domain/KnockoutWhist.go). */
 export const KnockoutWhistPhase = {
   PLAY: 0,

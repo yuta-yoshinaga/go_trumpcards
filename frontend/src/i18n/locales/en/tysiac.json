@@ -1,0 +1,91 @@
+{
+  "title": "Thousand (Tysiąc)",
+  "phase": {
+    "bid": "Bidding",
+    "talon": "Talon Exchange",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetPoints": "Target Points",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "trump": "Trump: {{suit}}",
+  "contract": "Contract: {{points}}",
+  "currentBid": "Bid: {{points}}",
+  "bidPhase": "Bidding phase — raise (+10) or pass.",
+  "talonPhase": "Talon exchange — give a card to each opponent.",
+  "bidRaise": "Raise +10",
+  "bidPass": "Pass",
+  "giveCard": "Give card",
+  "marriageAvailable": "Marriage available: {{list}}",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "currentTrick": "Current Trick",
+  "players": "Players",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "role": {
+    "declarer": "Declarer",
+    "player": "Player"
+  },
+  "roleDeclarer": "Declarer",
+  "rolePlayer": "Player",
+  "declarerBadge": "Declarer",
+  "score": "Score: {{score}}",
+  "playerScore": "{{name}}: {{score}} pts",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "target": "Target: {{points}} pts",
+  "lastTrickBonus": "Last trick +10",
+  "playPhase": {
+    "lead": "Your turn — pick a card to lead.",
+    "follow": "Your turn — follow the led suit (trump when void)."
+  },
+  "trickEnd": "Trick complete — continue.",
+  "roundEnd": "Round complete — go to the next round.",
+  "result": {
+    "humanWin": "Game over! You win!",
+    "cpuWin": "Game over! Player {{player}} wins."
+  },
+  "roundResult": {
+    "title": "Round Result",
+    "cardPoints": "{{name}} card points: {{points}}",
+    "marriage": "{{name}} marriage: {{points}}"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "lead_low": "Lead a low card to conserve points",
+    "lead_marriage": "Declare a marriage — lead the King or Queen",
+    "follow_win": "Points on the table — win the trick",
+    "follow_duck": "Cannot/should not win — duck",
+    "discard_low": "Cannot follow suit — discard a low card",
+    "bid_raise": "Your hand is strong — raise the bid",
+    "bid_pass": "Your hand is weak — pass",
+    "talon_discard": "Give away a low card you don't need",
+    "leadLow": "Lead a low card to conserve points",
+    "leadMarriage": "Declare a marriage — lead the King or Queen",
+    "followWin": "Points on the table — win the trick",
+    "followDuck": "Cannot/should not win — duck",
+    "discardLow": "Cannot follow suit — discard a low card",
+    "bidRaise": "Your hand is strong — raise the bid",
+    "bidPass": "Your hand is weak — pass",
+    "talonDiscard": "Give away a low card you don't need"
+  },
+  "tutorial": {
+    "trickDisplay": "This is the current trick. You must follow the led suit. When void you must trump. Points: A=11, 10=10, K=4, Q=3, J=2 (120 per deal).",
+    "playerHand": "This is your hand. Click a playable card to select it. A King + Queen of the same suit is a marriage: leading one sets that suit as trump and scores 40/60/80/100 for ♠/♣/♦/♥.",
+    "playButton": "Once a card is selected, play it with this button. Leading a King or Queen of a marriage declares trump.",
+    "info": "Tysiąc (Thousand) is a Polish 3-player 24-card trick-taker. First a Bid phase (raise +10 or pass) decides the Declarer, who exchanges via the Talon (give one card to each opponent) and must meet the contract. Marriages (K+Q) set trump and score 40/60/80/100 by suit. The first player to reach the target (default 1000) wins.",
+    "resetButton": "Use the reset button to start a new game."
+  }
+}

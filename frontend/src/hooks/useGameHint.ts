@@ -134,6 +134,7 @@ import type {
   TuteResponse,
   TwentyNineResponse,
   TwoTenJackResponse,
+  TysiacResponse,
   UltimateTexasHoldemResponse,
   VideoPokerResponse,
   WarResponse,
@@ -282,6 +283,7 @@ import { getTriPeaksHint } from '../utils/hints/tripeaksHint';
 import { getTuteHint } from '../utils/hints/tuteHint';
 import { getTwentyNineHint } from '../utils/hints/twentyNineHint';
 import { getTwoTenJackHint } from '../utils/hints/twotenjackHint';
+import { getTysiacHint } from '../utils/hints/tysiacHint';
 import { getUltimateTexasHoldemHint } from '../utils/hints/ultimateTexasHoldemHint';
 import { getVideoPokerHint } from '../utils/hints/videopokerHint';
 import { getWarHint } from '../utils/hints/warHint';
@@ -441,6 +443,7 @@ const hintFactories = {
   klaverjas: (s) => getKlaverjasHint(s as KlaverjasResponse),
   manille: (s) => getManilleHint(s as ManilleResponse),
   marias: (s) => getMariasHint(s as MariasResponse),
+  tysiac: (s) => getTysiacHint(s as TysiacResponse),
   sedma: (s) => getSedmaHint(s as SedmaResponse),
   knockoutwhist: (s) => getKnockoutWhistHint(s as KnockoutWhistResponse),
   spoilfive: (s) => getSpoilFiveHint(s as SpoilFiveResponse),

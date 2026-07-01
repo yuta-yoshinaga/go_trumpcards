@@ -183,6 +183,7 @@ import truco from '../../../docs/manual/cui/truco.md?raw';
 import tute from '../../../docs/manual/cui/tute.md?raw';
 import twentynine from '../../../docs/manual/cui/twentynine.md?raw';
 import twotenjack from '../../../docs/manual/cui/twotenjack.md?raw';
+import tysiac from '../../../docs/manual/cui/tysiac.md?raw';
 import ultimatetexasholdem from '../../../docs/manual/cui/ultimatetexasholdem.md?raw';
 import videopoker from '../../../docs/manual/cui/videopoker.md?raw';
 import war from '../../../docs/manual/cui/war.md?raw';
@@ -267,6 +268,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/manille': manille,
   '/mao': mao,
   '/marias': marias,
+  '/tysiac': tysiac,
   '/sedma': sedma,
   '/knockoutwhist': knockoutwhist,
   '/spoilfive': spoilfive,

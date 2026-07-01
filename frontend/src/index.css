@@ -63,6 +63,9 @@
   /* Mariáš — Czech/Slovak Bohemian-garnet crimson, distinct from Tute's brown-red and Klaverjas's orange. */
   --color-game-bg-marias: #8c1c3a;
   --color-game-bg-marias-dark: #5e1226;
+  /* Tysiąc (Thousand) — Polish amaranth-plum, distinct from Mariáš's garnet crimson and every other felt. */
+  --color-game-bg-tysiac: #6e1f4a;
+  --color-game-bg-tysiac-dark: #481231;
   /* Sedma — Czech/Slovak deep teal-pine, distinct from Sueca's lighter felt-green and every other game. */
   --color-game-bg-sedma: #0d5c5c;
   --color-game-bg-sedma-dark: #093e3e;
