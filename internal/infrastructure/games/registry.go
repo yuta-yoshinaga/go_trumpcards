@@ -566,6 +566,16 @@ var registry = []*Game{
 	// but that worker is at the 1 MB gzip free-tier limit, so it routes to the
 	// overflow ("extra") worker.
 	{Name: "loo", Category: CategoryExtra},
+	// Basra (Bastra): an Egyptian/Levantine fishing (capture) game on a 52-card
+	// deck. 4 players (you + 3 CPU, individual scoring); each is dealt 4 cards with
+	// 4 face-up on the table. A played number card captures same-rank cards and any
+	// table subset summing to its value; a Jack sweeps the whole table (except other
+	// Jacks). Clearing the table with a single non-Jack card scores a "Basra" bonus.
+	// Deal fresh hands until the stock is exhausted, then score most cards, 7♦, 10♦,
+	// each Ace, and each Basra. Extra worker bucket — the issue proposed casino but
+	// that worker is at the 1 MB gzip free-tier limit, so it routes to the overflow
+	// ("extra") worker.
+	{Name: "basra", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

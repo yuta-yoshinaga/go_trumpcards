@@ -7,6 +7,7 @@ import type {
   BadugiResponse,
   BakersDozenResponse,
   BarbuResponse,
+  BasraResponse,
   BeggarMyNeighbourResponse,
   BeleagueredCastleResponse,
   BeloteResponse,
@@ -155,6 +156,7 @@ import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBadugiHint } from '../utils/hints/badugiHint';
 import { getBakersdozenHint } from '../utils/hints/bakersdozenHint';
 import { getBarbuHint } from '../utils/hints/barbuHint';
+import { getBasraHint } from '../utils/hints/basraHint';
 import { getBeggarMyNeighbourHint } from '../utils/hints/beggarmyneighbourHint';
 import { getBeleagueredcastleHint } from '../utils/hints/beleagueredcastleHint';
 import { getBeloteHint } from '../utils/hints/beloteHint';
@@ -456,6 +458,7 @@ const hintFactories = {
   calabresella: (s) => getCalabresellaHint(s as CalabresellaResponse),
   cinch: (s) => getCinchHint(s as CinchResponse),
   loo: (s) => getLooHint(s as LooResponse),
+  basra: (s) => getBasraHint(s as BasraResponse),
   sedma: (s) => getSedmaHint(s as SedmaResponse),
   knockoutwhist: (s) => getKnockoutWhistHint(s as KnockoutWhistResponse),
   spoilfive: (s) => getSpoilFiveHint(s as SpoilFiveResponse),

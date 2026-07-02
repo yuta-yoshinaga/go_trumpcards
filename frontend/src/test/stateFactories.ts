@@ -1,4 +1,5 @@
 import type {
+  BasraResponse,
   BeziqueResponse,
   CalabresellaResponse,
   CallBreakResponse,
@@ -1136,6 +1137,58 @@ const baseLooState: LooResponse = {
  */
 export function makeLooState(overrides?: Partial<LooResponse>): LooResponse {
   return { ...baseLooState, ...overrides };
+}
+
+/** Base Basra state used as the default for {@link makeBasraState}. Defaults to a human Play turn. */
+const baseBasraState: BasraResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 4,
+      cards: [
+        { design: 'HEART' as const, value: 5 },
+        { design: 'SPADE' as const, value: 11 },
+        { design: 'DIAMOND' as const, value: 7 },
+        { design: 'CLOVER' as const, value: 3 },
+      ],
+      capturedCount: 0,
+      basraCount: 0,
+      score: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, basraCount: 0, score: 0 },
+    { id: 2, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, basraCount: 0, score: 0 },
+    { id: 3, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, basraCount: 0, score: 0 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  currentTurn: 0,
+  tableCards: [
+    { design: 'SPADE' as const, value: 5 },
+    { design: 'HEART' as const, value: 9 },
+  ],
+  lastCaptureIdx: -1,
+  remainingDeck: 32,
+  playableIndices: [0, 1, 2, 3],
+  captureOptions: { 0: [0] },
+  winners: [],
+  gameEndFlag: false,
+  lastDealDetail: null,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1 },
+};
+
+/**
+ * Creates a {@link BasraResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial BasraResponse fields to override.
+ * @returns A complete BasraResponse suitable for use in tests.
+ */
+export function makeBasraState(overrides?: Partial<BasraResponse>): BasraResponse {
+  return { ...baseBasraState, ...overrides };
 }
 
 /** Base Knockout Whist state used as the default for {@link makeKnockoutWhistState}. Defaults to a human Play turn (round 1, 7-card hand). */

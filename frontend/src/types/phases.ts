@@ -408,6 +408,12 @@ export const LooPhase = {
   ROUND_END: 3,
 } as const;
 
+/** Basra (Bastra) phase constants (sync: internal/domain/Basra.go). */
+export const BasraPhase = {
+  PLAY: 0,
+  GAME_END: 1,
+} as const;
+
 /** Knockout Whist phase constants (sync: internal/domain/KnockoutWhist.go). */
 export const KnockoutWhistPhase = {
   PLAY: 0,

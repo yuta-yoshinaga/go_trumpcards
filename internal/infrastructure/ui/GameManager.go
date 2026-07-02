@@ -3091,6 +3091,17 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"loo.helpSetDifficulty"},
 			})
 	}},
+	{Name: "basra", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBasraCuiController(usecase.NewBasraInteractor(
+				domain.NewDefaultBasra(), new(presenter.BasraCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "basra.helpTitle",
+				CommandKeys:       []string{"basra.helpPlay", "basra.helpNext"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"basra.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

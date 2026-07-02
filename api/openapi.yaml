@@ -379,6 +379,8 @@ tags:
     description: Cinch (チンチ / Double Pedro / High Five) — a 4-player (1 human + 3 CPU, each scoring individually) All-Fours/Pitch-family bidding trick-taker on a standard 52-card pack; each player is dealt 9 cards and bids in turn either 0 (pass) or 1-14, and the high bidder names trump and leads; a deal is worth 14 points — High (A of trump)=1, King of trump=1, Ten of trump ("Game")=1, Jack of trump=1, Right Pedro (5 of trump)=5, and Left Pedro (the 5 of the same color as trump)=5, where the Left Pedro ranks just below the trump 5 and counts as trump for following and winning; nine tricks are played per deal and must-follow the led suit if able, otherwise play anything; the bidder side must make its bid (capture at least the bid amount in points) or is set back (loses the bid amount), while non-bidders score the points they capture; the first player to reach the target score (default 21) wins; commands reset (r), bid (b 0-14), trump (t 1-4), play (p), next (n), nextround (nr), setdifficulty (sd), hint (h), log (l); phases 0 Bid, 1 NameTrump, 2 Play, 3 TrickEnd, 4 RoundEnd, 5 GameEnd
   - name: loo
     description: Loo (ルー / Lanterloo) — a classic English pot/gambling trick-taker (Five-card Loo) for 4 players (1 human + 3 CPU, each holding an individual chip stack) on a standard 52-card pack; each deal every player antes (default 3) into a carried-over pot, then a face-up turn-up card sets the trump suit; each player looks at their 5 cards and decides to play or pass; players who play compete over 5 tricks with must-follow-and-head (follow suit if able and, if you can beat the current best card, you must; when void of the led suit you must trump if you hold one, again heading if possible); each trick captured wins 1/5 of the pot, and a player who plays but takes no trick is "looed" and pays a penalty (the deal's starting pot) into the next deal's pot; if only one player plays they take the whole pot uncontested, and if nobody plays the pot carries over; chips accumulate over repeated deals (no target-score race — use nextround to settle and start the next deal); commands reset (r), decide (d 0-1 / play / pass), play (p), next (n), nextround (nr), setdifficulty (sd), hint (h), log (l); phases 0 Decide, 1 Play, 2 TrickEnd, 3 RoundEnd
+  - name: basra
+    description: Basra (バスラ / Bastra) — an Egyptian/Levantine fishing (capture) card game for 4 players (1 human + 3 CPU, each scoring individually) on a standard 52-card pack; each player is dealt 4 cards and 4 cards are placed face-up on the table; on your turn you play one hand card — a number card (A=1..10) captures table cards of the same rank and/or any table subset whose values sum to the played card's value (multiple groups at once), Q/K capture only by matching rank, and a Jack sweeps all table cards except other Jacks; clearing the whole table with a single non-Jack card scores a "Basra" (+10 bonus), while a Jack sweep is not a Basra, and if nothing is captured the card is left on the table (trail); when all hands are empty fresh 4-card hands are dealt (no new table cards) until the stock is exhausted, and leftover table cards go to the last player who captured; scoring at game end — most captured cards (unique) +3, 7♦ +3, 10♦ +2, each Ace +1, each Basra +10 — highest total wins (ties = multiple winners), with no target-score race (nextround starts a fresh game); commands reset (r), play (p h [t...]), next (n), nextround (nr), setdifficulty (sd), hint (h), log (l); phases 0 Play, 1 GameEnd
 
 paths:
   /blackjack/exec:
@@ -16858,6 +16860,110 @@ paths:
                   message:
                     type: string
 
+  /basra/exec:
+    post:
+      tags:
+        - basra
+      summary: Execute a Basra (バスラ) game command
+      description: |
+        Send a command to advance the Basra (Bastra) session identified by
+        `sessionId`. Basra is a 4-player Egyptian/Levantine fishing (capture)
+        card game (1 human + 3 CPU, each scoring individually) on a standard
+        52-card pack. Each player is dealt 4 cards and 4 cards are placed
+        face-up on the table. On your turn you play one hand card: a number
+        card (A=1..10) captures table cards of the same rank and/or any table
+        subset whose values sum to the played card's value (multiple groups at
+        once); Q/K capture only by matching rank; a Jack sweeps all table cards
+        except other Jacks. Clearing the whole table with a single non-Jack
+        card scores a "Basra" (+10 bonus) — a Jack sweep is not a Basra; if
+        nothing is captured the card is left on the table (trail). When all
+        hands are empty, fresh 4-card hands are dealt (no new table cards)
+        until the stock is exhausted, and leftover table cards go to the last
+        player who captured. Scoring at game end: most captured cards (unique)
+        +3, 7♦ +3, 10♦ +2, each Ace +1, each Basra +10; highest total wins
+        (ties = multiple winners). There is no target-score race.
+
+        | Phase   | Value | Description |
+        |---------|-------|-------------|
+        | Play    | `0`   | Players play cards and capture table cards |
+        | GameEnd | `1`   | The stock is exhausted and the game is scored |
+
+        | Command         | Aliases | Description |
+        |-----------------|---------|-------------|
+        | `reset`         | `r`     | Start / restart a game |
+        | `play`          | `p`     | Play a hand card (requires `cardIndex`; optional `tableIndices` to capture, omit to trail; a Jack always sweeps) |
+        | `next`          | `n`     | Advance to the next game |
+        | `nextround`     | `nr`    | Start a fresh game |
+        | `setdifficulty` | `sd`    | Set CPU difficulty (via config on reset) |
+        | `hint`          | `h`     | Get a recommended action |
+        | `log`           | `l`     | View action log |
+      operationId: basraExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, p, next, n, nextround, nr, setdifficulty, sd, hint, h, log, l]
+                cardIndex:
+                  type: integer
+                  description: Hand index of the card to play (for `play`).
+                tableIndices:
+                  type: array
+                  description: "Indices of the table cards to capture (for `play`); omit to trail. A Jack always sweeps regardless of this field."
+                  items:
+                    type: integer
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      minimum: 0
+                      maximum: 2
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play hand card 0 and capture table cards 1 and 2
+                value:
+                  command: play
+                  cardIndex: 0
+                  tableIndices: [1, 2]
+                  sessionId: my-session-001
+              trail:
+                summary: Play hand card 0 without capturing (trail)
+                value:
+                  command: play
+                  cardIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasraResponse'
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
 components:
   schemas:
     # -------------------------------------------------------------------------
@@ -29694,6 +29800,134 @@ components:
             cpuDifficulty:
               type: integer
             ante:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    BasraResponse:
+      type: object
+      description: Current state of the Basra (Bastra) game
+      properties:
+        players:
+          type: array
+          description: Array of 4 player objects (0=human, 1-3=CPU)
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              capturedCount:
+                type: integer
+                description: Number of cards this player has captured so far
+              basraCount:
+                type: integer
+                description: Number of Basra bonuses this player has scored
+              score:
+                type: integer
+                description: Running / final score for this player
+        phase:
+          type: integer
+          description: "Game phase: 0=Play, 1=GameEnd"
+          enum: [0, 1]
+          example: 0
+        roundNumber:
+          type: integer
+        currentTurn:
+          type: integer
+          description: Index of the player whose turn it is
+        tableCards:
+          type: array
+          description: Cards currently face-up on the table
+          items:
+            $ref: '#/components/schemas/Card'
+        lastCaptureIdx:
+          type: integer
+          description: Index of the last player who captured (-1 if none)
+        remainingDeck:
+          type: integer
+          description: Number of cards left in the stock
+        playableIndices:
+          type: array
+          items:
+            type: integer
+        captureOptions:
+          type: object
+          description: Maps a hand card index (as string) to the table-card indices it can capture
+          additionalProperties:
+            type: array
+            items:
+              type: integer
+        winners:
+          type: array
+          description: Indices of the winning player(s) at game end
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        lastDealDetail:
+          type: object
+          nullable: true
+          description: Scoring breakdown of the finished game (present at GameEnd)
+          properties:
+            cards:
+              type: object
+              additionalProperties:
+                type: integer
+            aces:
+              type: object
+              additionalProperties:
+                type: integer
+            basras:
+              type: object
+              additionalProperties:
+                type: integer
+            hasSevenDiamonds:
+              type: integer
+              description: Index of the player holding 7♦ (-1 if none)
+            hasTenDiamonds:
+              type: integer
+              description: Index of the player holding 10♦ (-1 if none)
+            mostCards:
+              type: integer
+              description: Index of the player with the most captured cards (-1 if tied)
+            gained:
+              type: object
+              additionalProperties:
+                type: integer
+        isHumanTurn:
+          type: boolean
+        hint:
+          type: object
+          nullable: true
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            tableIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
               type: integer
         message:
           type: string

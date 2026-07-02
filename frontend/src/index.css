@@ -78,6 +78,9 @@
   /* Loo (Lanterloo) — English Regency gaming-house deep wine/burgundy, distinct from Cinch's bronze-olive and every other game. */
   --color-game-bg-loo: #6b1f2e;
   --color-game-bg-loo-dark: #431218;
+  /* Basra (Bastra) — Levantine/Nile deep indigo-teal, distinct from Loo's wine and Sedma's pine. */
+  --color-game-bg-basra: #134a54;
+  --color-game-bg-basra-dark: #0b2f36;
   /* Sedma — Czech/Slovak deep teal-pine, distinct from Sueca's lighter felt-green and every other game. */
   --color-game-bg-sedma: #0d5c5c;
   --color-game-bg-sedma-dark: #093e3e;

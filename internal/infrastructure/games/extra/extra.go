@@ -203,4 +203,12 @@ func init() {
 			return usecase.RestoreLooInteractor(data, new(presenter.LooWebPresenter))
 		},
 		controller.NewLooWebControllerWithProvider)
+	games.RegisterKVGame("basra", games.CategoryExtra,
+		func() usecase.BasraInteractorIF {
+			return usecase.NewBasraInteractor(domain.NewDefaultBasra(), new(presenter.BasraWebPresenter))
+		},
+		func(data []byte) (usecase.BasraInteractorIF, error) {
+			return usecase.RestoreBasraInteractor(data, new(presenter.BasraWebPresenter))
+		},
+		controller.NewBasraWebControllerWithProvider)
 }
