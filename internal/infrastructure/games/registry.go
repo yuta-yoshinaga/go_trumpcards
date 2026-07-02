@@ -576,6 +576,16 @@ var registry = []*Game{
 	// that worker is at the 1 MB gzip free-tier limit, so it routes to the overflow
 	// ("extra") worker.
 	{Name: "basra", Category: CategoryExtra},
+	// Tablanet (Tablić): a Balkan fishing (capture) game on a 52-card deck, closely
+	// related to Basra. 4 players (you + 3 CPU, individual scoring); each is dealt 4
+	// cards with 4 face-up on the table. A played number card captures same-rank cards
+	// and any table subset summing to its value; a Jack sweeps the whole table (except
+	// other Jacks). Clearing the table with a single non-Jack card scores a "Tabla"
+	// bonus. Deal fresh hands until the stock is exhausted, then score the traditional
+	// Tablanet points: most cards, each Ace, each Jack, 10♦, 2♣, and each Tabla. Extra
+	// worker bucket — the casino/classic/solo workers are at the 1 MB gzip free-tier
+	// limit, so it routes to the overflow ("extra") worker.
+	{Name: "tablanet", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

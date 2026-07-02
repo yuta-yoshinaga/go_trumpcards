@@ -3102,6 +3102,17 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"basra.helpSetDifficulty"},
 			})
 	}},
+	{Name: "tablanet", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewTablanetCuiController(usecase.NewTablanetInteractor(
+				domain.NewDefaultTablanet(), new(presenter.TablanetCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "tablanet.helpTitle",
+				CommandKeys:       []string{"tablanet.helpPlay", "tablanet.helpNext"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"tablanet.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

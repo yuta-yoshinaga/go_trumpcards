@@ -27,6 +27,7 @@ import type {
   SpadesResponse,
   SpoilFiveResponse,
   SuecaResponse,
+  TablanetResponse,
   TeenPattiResponse,
   ThreeCardBragResponse,
   TressetteResponse,
@@ -1189,6 +1190,58 @@ const baseBasraState: BasraResponse = {
  */
 export function makeBasraState(overrides?: Partial<BasraResponse>): BasraResponse {
   return { ...baseBasraState, ...overrides };
+}
+
+/** Base Tablanet state used as the default for {@link makeTablanetState}. Defaults to a human Play turn. */
+const baseTablanetState: TablanetResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 4,
+      cards: [
+        { design: 'HEART' as const, value: 5 },
+        { design: 'SPADE' as const, value: 11 },
+        { design: 'DIAMOND' as const, value: 7 },
+        { design: 'CLOVER' as const, value: 3 },
+      ],
+      capturedCount: 0,
+      tablaCount: 0,
+      score: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, tablaCount: 0, score: 0 },
+    { id: 2, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, tablaCount: 0, score: 0 },
+    { id: 3, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, tablaCount: 0, score: 0 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  currentTurn: 0,
+  tableCards: [
+    { design: 'SPADE' as const, value: 5 },
+    { design: 'HEART' as const, value: 9 },
+  ],
+  lastCaptureIdx: -1,
+  remainingDeck: 32,
+  playableIndices: [0, 1, 2, 3],
+  captureOptions: { 0: [0] },
+  winners: [],
+  gameEndFlag: false,
+  lastDealDetail: null,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1 },
+};
+
+/**
+ * Creates a {@link TablanetResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial TablanetResponse fields to override.
+ * @returns A complete TablanetResponse suitable for use in tests.
+ */
+export function makeTablanetState(overrides?: Partial<TablanetResponse>): TablanetResponse {
+  return { ...baseTablanetState, ...overrides };
 }
 
 /** Base Knockout Whist state used as the default for {@link makeKnockoutWhistState}. Defaults to a human Play turn (round 1, 7-card hand). */

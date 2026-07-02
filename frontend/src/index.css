@@ -81,6 +81,9 @@
   /* Basra (Bastra) — Levantine/Nile deep indigo-teal, distinct from Loo's wine and Sedma's pine. */
   --color-game-bg-basra: #134a54;
   --color-game-bg-basra-dark: #0b2f36;
+  /* Tablanet (Tablić) — Balkan twilight violet-indigo, distinct from Basra's teal and Loo's wine. */
+  --color-game-bg-tablanet: #3b2d5c;
+  --color-game-bg-tablanet-dark: #241a3a;
   /* Sedma — Czech/Slovak deep teal-pine, distinct from Sueca's lighter felt-green and every other game. */
   --color-game-bg-sedma: #0d5c5c;
   --color-game-bg-sedma-dark: #093e3e;

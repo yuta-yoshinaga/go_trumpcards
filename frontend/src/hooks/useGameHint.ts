@@ -125,6 +125,7 @@ import type {
   SpoilFiveResponse,
   StreetsAndAlleysResponse,
   SuecaResponse,
+  TablanetResponse,
   TarneebResponse,
   TeenPattiResponse,
   TexasHoldemBonusResponse,
@@ -279,6 +280,7 @@ import { getSpiteAndMaliceHint } from '../utils/hints/spiteAndMaliceHint';
 import { getSpoilFiveHint } from '../utils/hints/spoilFiveHint';
 import { getStreetsandalleysHint } from '../utils/hints/streetsandalleysHint';
 import { getSuecaHint } from '../utils/hints/suecaHint';
+import { getTablanetHint } from '../utils/hints/tablanetHint';
 import { getTarneebHint } from '../utils/hints/tarneebHint';
 import { getTeenPattiHint } from '../utils/hints/teenPattiHint';
 import { getTexasHoldemBonusHint } from '../utils/hints/texasHoldemBonusHint';
@@ -459,6 +461,7 @@ const hintFactories = {
   cinch: (s) => getCinchHint(s as CinchResponse),
   loo: (s) => getLooHint(s as LooResponse),
   basra: (s) => getBasraHint(s as BasraResponse),
+  tablanet: (s) => getTablanetHint(s as TablanetResponse),
   sedma: (s) => getSedmaHint(s as SedmaResponse),
   knockoutwhist: (s) => getKnockoutWhistHint(s as KnockoutWhistResponse),
   spoilfive: (s) => getSpoilFiveHint(s as SpoilFiveResponse),

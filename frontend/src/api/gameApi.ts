@@ -183,6 +183,7 @@ import type {
   SuecaResponse,
   SultanMoveZone,
   SultanResponse,
+  TablanetResponse,
   TarneebResponse,
   TeenPattiResponse,
   TexasHoldemBonusResponse,
@@ -374,6 +375,7 @@ const workerUrl: Record<string, string> = {
   cinch: WORKER_EXTRA,
   loo: WORKER_EXTRA,
   basra: WORKER_EXTRA,
+  tablanet: WORKER_EXTRA,
   eightoff: WORKER_SOLO,
   penguin: WORKER_SOLO,
   chinesepoker: WORKER_CASINO,
@@ -2344,6 +2346,40 @@ export const basraApi = {
     },
   ) =>
     gameExec<BasraResponse>('basra', {
+      command,
+      cardIndex: opts?.cardIndex,
+      tableIndices: opts?.tableIndices,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Tablanet (Tablić) game settings (CPU difficulty only). */
+export interface TablanetConfigInput {
+  cpuDifficulty?: number;
+}
+
+/** Commands accepted by the Tablanet /tablanet/exec endpoint. */
+export type TablanetCommand = 'reset' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Tablanet (Tablić) /tablanet/exec endpoint.
+ *
+ * Tablanet is a 4-player 52-card fishing/capture game.
+ *   - `play` → `{ cardIndex, tableIndices? }` (tableIndices = table cards to
+ *     capture; omit to trail, a Jack always sweeps)
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const tablanetApi = {
+  exec: (
+    command: TablanetCommand,
+    opts?: {
+      cardIndex?: number;
+      tableIndices?: number[];
+      config?: TablanetConfigInput;
+    },
+  ) =>
+    gameExec<TablanetResponse>('tablanet', {
       command,
       cardIndex: opts?.cardIndex,
       tableIndices: opts?.tableIndices,
@@ -4493,6 +4529,7 @@ const games = [
   'cinch',
   'loo',
   'basra',
+  'tablanet',
 ] as const;
 type Game = (typeof games)[number];
 

@@ -211,4 +211,12 @@ func init() {
 			return usecase.RestoreBasraInteractor(data, new(presenter.BasraWebPresenter))
 		},
 		controller.NewBasraWebControllerWithProvider)
+	games.RegisterKVGame("tablanet", games.CategoryExtra,
+		func() usecase.TablanetInteractorIF {
+			return usecase.NewTablanetInteractor(domain.NewDefaultTablanet(), new(presenter.TablanetWebPresenter))
+		},
+		func(data []byte) (usecase.TablanetInteractorIF, error) {
+			return usecase.RestoreTablanetInteractor(data, new(presenter.TablanetWebPresenter))
+		},
+		controller.NewTablanetWebControllerWithProvider)
 }
