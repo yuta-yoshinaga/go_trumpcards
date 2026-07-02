@@ -980,4 +980,9 @@ func init() {
 			return usecase.NewBasraInteractor(domain.NewDefaultBasra(), new(presenter.BasraWebPresenter))
 		},
 		controller.NewBasraWebController)
+	BindWebControllerFor("tablanet",
+		func() usecase.TablanetInteractorIF {
+			return usecase.NewTablanetInteractor(domain.NewDefaultTablanet(), new(presenter.TablanetWebPresenter))
+		},
+		controller.NewTablanetWebController)
 }

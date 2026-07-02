@@ -203,6 +203,7 @@ var gameDescriptions = map[string]string{
 	"cinch":               "Cinch / Double Pedro (シンチ/ダブルペドロ)",
 	"loo":                 "Loo / Lanterloo (ルー)",
 	"basra":               "Basra / Bastra (バスラ)",
+	"tablanet":            "Tablanet / Tablić (タブラネット)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).
