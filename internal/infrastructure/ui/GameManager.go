@@ -3113,6 +3113,17 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"tablanet.helpSetDifficulty"},
 			})
 	}},
+	{Name: "trenteetquarante", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewTrenteEtQuaranteCuiController(usecase.NewTrenteEtQuaranteInteractor(
+				domain.NewDefaultTrenteEtQuarante(), new(presenter.TrenteEtQuaranteCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "trenteetquarante.helpTitle",
+				CommandKeys:       []string{"trenteetquarante.helpBet", "trenteetquarante.helpNext"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"trenteetquarante.helpSetDefaultBet"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

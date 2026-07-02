@@ -84,6 +84,9 @@
   /* Tablanet (Tablić) — Balkan twilight violet-indigo, distinct from Basra's teal and Loo's wine. */
   --color-game-bg-tablanet: #3b2d5c;
   --color-game-bg-tablanet-dark: #241a3a;
+  /* Trente et Quarante (Rouge et Noir) — Monte-Carlo crimson-on-charcoal, evoking the red/black felt. */
+  --color-game-bg-trenteetquarante: #6e1420;
+  --color-game-bg-trenteetquarante-dark: #400b13;
   /* Sedma — Czech/Slovak deep teal-pine, distinct from Sueca's lighter felt-green and every other game. */
   --color-game-bg-sedma: #0d5c5c;
   --color-game-bg-sedma-dark: #093e3e;

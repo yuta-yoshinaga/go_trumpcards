@@ -586,6 +586,16 @@ var registry = []*Game{
 	// worker bucket — the casino/classic/solo workers are at the 1 MB gzip free-tier
 	// limit, so it routes to the overflow ("extra") worker.
 	{Name: "tablanet", Category: CategoryExtra},
+	// Trente et Quarante (Rouge et Noir): a French casino banking game — the simplest
+	// possible, with no player card decisions. On a 6-deck (312-card) shoe the dealer
+	// deals a Noir (black) row then a Rouge (red) row, each until its running total (A=1,
+	// 2–10 pip, J/Q/K=10) reaches 31–40; the lower total wins. The player bets, before the
+	// deal, on Noir, Rouge, Couleur (first card's color matches the winning row's color)
+	// or Inverse (differs). Even-money payout; a tie is a push, except a tie at 31
+	// ("Refait") takes half the stake for the house. Chips persist across rounds. Extra
+	// worker bucket — the casino/classic/solo workers are at the 1 MB gzip free-tier limit,
+	// so it routes to the overflow ("extra") worker.
+	{Name: "trenteetquarante", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

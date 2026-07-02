@@ -204,6 +204,7 @@ var gameDescriptions = map[string]string{
 	"loo":                 "Loo / Lanterloo (ルー)",
 	"basra":               "Basra / Bastra (バスラ)",
 	"tablanet":            "Tablanet / Tablić (タブラネット)",
+	"trenteetquarante":    "Trente et Quarante / Rouge et Noir (トラント・エ・カラント)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

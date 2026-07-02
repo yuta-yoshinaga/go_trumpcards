@@ -183,6 +183,7 @@ import tichu from '../../../docs/manual/cui/tichu.md?raw';
 import tienlen from '../../../docs/manual/cui/tienlen.md?raw';
 import tonk from '../../../docs/manual/cui/tonk.md?raw';
 import trash from '../../../docs/manual/cui/trash.md?raw';
+import trenteetquarante from '../../../docs/manual/cui/trenteetquarante.md?raw';
 import tressette from '../../../docs/manual/cui/tressette.md?raw';
 import tripeaks from '../../../docs/manual/cui/tripeaks.md?raw';
 import truco from '../../../docs/manual/cui/truco.md?raw';
@@ -281,6 +282,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/loo': loo,
   '/basra': basra,
   '/tablanet': tablanet,
+  '/trenteetquarante': trenteetquarante,
   '/sedma': sedma,
   '/knockoutwhist': knockoutwhist,
   '/spoilfive': spoilfive,

@@ -30,6 +30,7 @@ import type {
   TablanetResponse,
   TeenPattiResponse,
   ThreeCardBragResponse,
+  TrenteEtQuaranteResponse,
   TressetteResponse,
   TuteResponse,
   TwentyNineResponse,
@@ -1242,6 +1243,39 @@ const baseTablanetState: TablanetResponse = {
  */
 export function makeTablanetState(overrides?: Partial<TablanetResponse>): TablanetResponse {
   return { ...baseTablanetState, ...overrides };
+}
+
+/** Base Trente et Quarante state used as the default for {@link makeTrenteEtQuaranteState}. Defaults to the bet phase. */
+const baseTrenteEtQuaranteState: TrenteEtQuaranteResponse = {
+  phase: 0, // TrenteEtQuarantePhase.BET
+  roundNumber: 0,
+  chips: 1000,
+  currentBet: 0, // Noir
+  stake: 0,
+  noirRow: [],
+  rougeRow: [],
+  noirTotal: 0,
+  rougeTotal: 0,
+  winningRow: -1,
+  firstCardRed: false,
+  refait: false,
+  result: 0,
+  payout: 0,
+  remainingDeck: 312,
+  gameEndFlag: false,
+  config: { defaultBet: 0 },
+  message: '',
+};
+
+/**
+ * Creates a {@link TrenteEtQuaranteResponse} with sensible defaults (the bet phase).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial TrenteEtQuaranteResponse fields to override.
+ * @returns A complete TrenteEtQuaranteResponse suitable for use in tests.
+ */
+export function makeTrenteEtQuaranteState(overrides?: Partial<TrenteEtQuaranteResponse>): TrenteEtQuaranteResponse {
+  return { ...baseTrenteEtQuaranteState, ...overrides };
 }
 
 /** Base Knockout Whist state used as the default for {@link makeKnockoutWhistState}. Defaults to a human Play turn (round 1, 7-card hand). */

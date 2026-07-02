@@ -68,6 +68,7 @@ export type GameKey =
   | 'loo'
   | 'basra'
   | 'tablanet'
+  | 'trenteetquarante'
   | 'sedma'
   | 'knockoutwhist'
   | 'spoilfive'
@@ -286,6 +287,10 @@ const TABLANET = {
   bg: 'bg-game-bg-tablanet',
   footer: 'bg-game-bg-tablanet-dark border-white/20',
 } as const;
+const TRENTEETQUARANTE = {
+  bg: 'bg-game-bg-trenteetquarante',
+  footer: 'bg-game-bg-trenteetquarante-dark border-white/20',
+} as const;
 const SEDMA = {
   bg: 'bg-game-bg-sedma',
   footer: 'bg-game-bg-sedma-dark border-white/20',
@@ -439,6 +444,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   loo: LOO,
   basra: BASRA,
   tablanet: TABLANET,
+  trenteetquarante: TRENTEETQUARANTE,
   sedma: SEDMA,
   knockoutwhist: KNOCKOUTWHIST,
   spoilfive: SPOILFIVE,

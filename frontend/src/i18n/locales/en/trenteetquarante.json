@@ -1,0 +1,50 @@
+{
+  "title": "Trente et Quarante",
+  "betGuide": "Pick a bet and a stake, then deal. Two rows (Noir, then Rouge) are dealt to 31+; the lower row wins.",
+  "previousBet": "Use last bet ({{amount}})",
+  "label": {
+    "chips": "Chips",
+    "stake": "Stake",
+    "betType": "Bet",
+    "noirRow": "Noir",
+    "rougeRow": "Rouge",
+    "total": "Total",
+    "winner": "Winner"
+  },
+  "betType": {
+    "noir": "Noir",
+    "rouge": "Rouge",
+    "couleur": "Couleur",
+    "inverse": "Inverse",
+    "noirDesc": "The black row wins (lower total)",
+    "rougeDesc": "The red row wins (lower total)",
+    "couleurDesc": "First card's color matches the winning color",
+    "inverseDesc": "First card's color differs from the winning color"
+  },
+  "button": {
+    "deal": "Deal",
+    "nextRound": "Next round",
+    "rebet": "Rebet ({{amount}})"
+  },
+  "phase": {
+    "bet": "Bet",
+    "result": "Result"
+  },
+  "result": {
+    "win": "You win!",
+    "lose": "You lose",
+    "push": "Push — your stake is returned.",
+    "refait": "Refait — a tie at 31. Half your stake is lost."
+  },
+  "payout": {
+    "total": "Net payout"
+  },
+  "tutorial": {
+    "betControls": "Choose one of the four bets and enter your stake",
+    "actionButtons": "Deal both rows, then start the next round",
+    "results": "The two rows, their totals, and your result are shown here"
+  },
+  "hint": {
+    "evenMoney": "All four bets are even money with the same edge — Noir is the traditional default"
+  }
+}

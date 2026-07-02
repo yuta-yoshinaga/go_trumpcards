@@ -182,6 +182,7 @@ import tichu from '../../../docs/manual/web/tichu.md?raw';
 import tienlen from '../../../docs/manual/web/tienlen.md?raw';
 import tonk from '../../../docs/manual/web/tonk.md?raw';
 import trash from '../../../docs/manual/web/trash.md?raw';
+import trenteetquarante from '../../../docs/manual/web/trenteetquarante.md?raw';
 import tressette from '../../../docs/manual/web/tressette.md?raw';
 import tripeaks from '../../../docs/manual/web/tripeaks.md?raw';
 import truco from '../../../docs/manual/web/truco.md?raw';
@@ -287,6 +288,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/loo': loo,
   '/basra': basra,
   '/tablanet': tablanet,
+  '/trenteetquarante': trenteetquarante,
   '/sedma': sedma,
   '/knockoutwhist': knockoutwhist,
   '/spoilfive': spoilfive,

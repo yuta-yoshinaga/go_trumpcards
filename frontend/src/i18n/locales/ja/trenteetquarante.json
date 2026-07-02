@@ -1,0 +1,50 @@
+{
+  "title": "トラント・エ・カラント",
+  "betGuide": "ベットと賭け金を選んで配ります。ノワール→ルージュの順に2列を31以上まで配り、合計が小さい列が勝ちです。",
+  "previousBet": "前回額を使う ({{amount}})",
+  "label": {
+    "chips": "チップ",
+    "stake": "賭け金",
+    "betType": "ベット",
+    "noirRow": "ノワール",
+    "rougeRow": "ルージュ",
+    "total": "合計",
+    "winner": "勝ち列"
+  },
+  "betType": {
+    "noir": "ノワール",
+    "rouge": "ルージュ",
+    "couleur": "クルール",
+    "inverse": "アンヴェルス",
+    "noirDesc": "黒の列が勝ち（合計が小さい）",
+    "rougeDesc": "赤の列が勝ち（合計が小さい）",
+    "couleurDesc": "最初のカードの色が勝ち色と一致",
+    "inverseDesc": "最初のカードの色が勝ち色と不一致"
+  },
+  "button": {
+    "deal": "配る",
+    "nextRound": "次のラウンド",
+    "rebet": "再ベット ({{amount}})"
+  },
+  "phase": {
+    "bet": "ベット",
+    "result": "結果"
+  },
+  "result": {
+    "win": "勝利！",
+    "lose": "敗北",
+    "push": "プッシュ — 賭け金は返却されます。",
+    "refait": "ルフェ — 31での引き分け。賭け金の半分を失います。"
+  },
+  "payout": {
+    "total": "収支"
+  },
+  "tutorial": {
+    "betControls": "4種類のベットから1つ選び、賭け金を入力します",
+    "actionButtons": "2列を配り、次のラウンドを始めます",
+    "results": "2つの列と合計、勝敗がここに表示されます"
+  },
+  "hint": {
+    "evenMoney": "4種類のベットはすべて等倍でハウスエッジも同じ — 伝統的にはノワールが基本"
+  }
+}
