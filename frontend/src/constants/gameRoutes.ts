@@ -456,6 +456,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [3, 3, 5, 4], skill: [3, 3, 5, 4], social: [1, 3, 5, 3, 5], theme: [3, 2, 5, 1, 3, 2] },
       },
       {
+        path: '/basra',
+        labelKey: 'nav.basra',
+        icon: '🐟',
+        page: 'Basra',
+        profile: { mood: [3, 4, 4, 3], skill: [3, 3, 4, 3], social: [1, 3, 5, 3, 5], theme: [3, 2, 5, 1, 3, 2] },
+      },
+      {
         path: '/sedma',
         labelKey: 'nav.sedma',
         icon: '🇨🇿',

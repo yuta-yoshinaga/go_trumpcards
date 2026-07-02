@@ -975,4 +975,9 @@ func init() {
 			return usecase.NewLooInteractor(domain.NewDefaultLoo(), new(presenter.LooWebPresenter))
 		},
 		controller.NewLooWebController)
+	BindWebControllerFor("basra",
+		func() usecase.BasraInteractorIF {
+			return usecase.NewBasraInteractor(domain.NewDefaultBasra(), new(presenter.BasraWebPresenter))
+		},
+		controller.NewBasraWebController)
 }

@@ -202,6 +202,7 @@ var gameDescriptions = map[string]string{
 	"king":                "King (キング)",
 	"cinch":               "Cinch / Double Pedro (シンチ/ダブルペドロ)",
 	"loo":                 "Loo / Lanterloo (ルー)",
+	"basra":               "Basra / Bastra (バスラ)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

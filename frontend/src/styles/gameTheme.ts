@@ -66,6 +66,7 @@ export type GameKey =
   | 'calabresella'
   | 'cinch'
   | 'loo'
+  | 'basra'
   | 'sedma'
   | 'knockoutwhist'
   | 'spoilfive'
@@ -276,6 +277,10 @@ const LOO = {
   bg: 'bg-game-bg-loo',
   footer: 'bg-game-bg-loo-dark border-white/20',
 } as const;
+const BASRA = {
+  bg: 'bg-game-bg-basra',
+  footer: 'bg-game-bg-basra-dark border-white/20',
+} as const;
 const SEDMA = {
   bg: 'bg-game-bg-sedma',
   footer: 'bg-game-bg-sedma-dark border-white/20',
@@ -427,6 +432,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   calabresella: CALABRESELLA,
   cinch: CINCH,
   loo: LOO,
+  basra: BASRA,
   sedma: SEDMA,
   knockoutwhist: KNOCKOUTWHIST,
   spoilfive: SPOILFIVE,

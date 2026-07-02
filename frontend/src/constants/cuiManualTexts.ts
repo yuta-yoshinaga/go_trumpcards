@@ -12,6 +12,7 @@ import badugi from '../../../docs/manual/cui/badugi.md?raw';
 import bakersdozen from '../../../docs/manual/cui/bakersdozen.md?raw';
 import bakersgame from '../../../docs/manual/cui/bakersgame.md?raw';
 import barbu from '../../../docs/manual/cui/barbu.md?raw';
+import basra from '../../../docs/manual/cui/basra.md?raw';
 import beggarmyneighbour from '../../../docs/manual/cui/beggarmyneighbour.md?raw';
 import beleagueredcastle from '../../../docs/manual/cui/beleagueredcastle.md?raw';
 import belote from '../../../docs/manual/cui/belote.md?raw';
@@ -277,6 +278,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/calabresella': calabresella,
   '/cinch': cinch,
   '/loo': loo,
+  '/basra': basra,
   '/sedma': sedma,
   '/knockoutwhist': knockoutwhist,
   '/spoilfive': spoilfive,

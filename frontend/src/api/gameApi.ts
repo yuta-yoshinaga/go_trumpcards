@@ -9,6 +9,7 @@ import type {
   BakersDozenMoveZone,
   BakersDozenResponse,
   BarbuResponse,
+  BasraResponse,
   BeggarMyNeighbourResponse,
   BeleagueredCastleMoveZone,
   BeleagueredCastleResponse,
@@ -372,6 +373,7 @@ const workerUrl: Record<string, string> = {
   calabresella: WORKER_EXTRA,
   cinch: WORKER_EXTRA,
   loo: WORKER_EXTRA,
+  basra: WORKER_EXTRA,
   eightoff: WORKER_SOLO,
   penguin: WORKER_SOLO,
   chinesepoker: WORKER_CASINO,
@@ -2311,6 +2313,40 @@ export const looApi = {
       command,
       cardIndex: opts?.cardIndex,
       play: opts?.play,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Basra (Bastra) game settings (CPU difficulty only). */
+export interface BasraConfigInput {
+  cpuDifficulty?: number;
+}
+
+/** Commands accepted by the Basra /basra/exec endpoint. */
+export type BasraCommand = 'reset' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Basra (Bastra) /basra/exec endpoint.
+ *
+ * Basra is a 4-player 52-card fishing/capture game.
+ *   - `play` → `{ cardIndex, tableIndices? }` (tableIndices = table cards to
+ *     capture; omit to trail, a Jack always sweeps)
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const basraApi = {
+  exec: (
+    command: BasraCommand,
+    opts?: {
+      cardIndex?: number;
+      tableIndices?: number[];
+      config?: BasraConfigInput;
+    },
+  ) =>
+    gameExec<BasraResponse>('basra', {
+      command,
+      cardIndex: opts?.cardIndex,
+      tableIndices: opts?.tableIndices,
       config: opts?.config,
     }),
 };
@@ -4456,6 +4492,7 @@ const games = [
   'calabresella',
   'cinch',
   'loo',
+  'basra',
 ] as const;
 type Game = (typeof games)[number];
 
