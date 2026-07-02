@@ -985,4 +985,9 @@ func init() {
 			return usecase.NewTablanetInteractor(domain.NewDefaultTablanet(), new(presenter.TablanetWebPresenter))
 		},
 		controller.NewTablanetWebController)
+	BindWebControllerFor("trenteetquarante",
+		func() usecase.TrenteEtQuaranteInteractorIF {
+			return usecase.NewTrenteEtQuaranteInteractor(domain.NewDefaultTrenteEtQuarante(), new(presenter.TrenteEtQuaranteWebPresenter))
+		},
+		controller.NewTrenteEtQuaranteWebController)
 }

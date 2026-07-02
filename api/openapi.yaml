@@ -383,6 +383,8 @@ tags:
     description: Basra (バスラ / Bastra) — an Egyptian/Levantine fishing (capture) card game for 4 players (1 human + 3 CPU, each scoring individually) on a standard 52-card pack; each player is dealt 4 cards and 4 cards are placed face-up on the table; on your turn you play one hand card — a number card (A=1..10) captures table cards of the same rank and/or any table subset whose values sum to the played card's value (multiple groups at once), Q/K capture only by matching rank, and a Jack sweeps all table cards except other Jacks; clearing the whole table with a single non-Jack card scores a "Basra" (+10 bonus), while a Jack sweep is not a Basra, and if nothing is captured the card is left on the table (trail); when all hands are empty fresh 4-card hands are dealt (no new table cards) until the stock is exhausted, and leftover table cards go to the last player who captured; scoring at game end — most captured cards (unique) +3, 7♦ +3, 10♦ +2, each Ace +1, each Basra +10 — highest total wins (ties = multiple winners), with no target-score race (nextround starts a fresh game); commands reset (r), play (p h [t...]), next (n), nextround (nr), setdifficulty (sd), hint (h), log (l); phases 0 Play, 1 GameEnd
   - name: tablanet
     description: Tablanet (タブラネット / Tablić) — a Balkan (Serbian/Macedonian) fishing (capture) card game for 4 players (1 human + 3 CPU, each scoring individually) on a standard 52-card pack; each player is dealt 4 cards and 4 cards are placed face-up on the table; on your turn you play one hand card — a number card (A=1..10) captures table cards of the same rank and/or any table subset whose values sum to the played card's value (multiple groups at once), Q/K capture only by matching rank, and a Jack sweeps all table cards except other Jacks; clearing the whole table with a single non-Jack card scores a "Tabla" bonus, while a Jack sweep is not a Tabla, and if nothing is captured the card is left on the table (trail); when all hands are empty fresh 4-card hands are dealt (no new table cards) until the stock is exhausted, and leftover table cards go to the last player who captured; scoring at game end — most captured cards (unique) +3, 10♦ +2, each Ace +1, each Jack +1, 2♣ +1, each Tabla +1 — highest total wins (ties = multiple winners), with no target-score race (nextround starts a fresh game); commands reset (r), play (p h [t...]), next (n), nextround (nr), setdifficulty (sd), hint (h), log (l); phases 0 Play, 1 GameEnd
+  - name: trenteetquarante
+    description: Trente et Quarante (トラント・エ・カラント / Rouge et Noir) — a classic Monte-Carlo banking game for 1 player vs the bank on a standard 52-card pack with no player card decisions; the player picks one of four even-money bets — Noir (0), Rouge (1), Couleur (2), Inverse (3) — plus a stake, then the dealer deals two rows (Noir/black first, then Rouge/red), summing each (face cards = 10, Ace = 1) until the total reaches 31 or more; the row with the lower total wins; Noir/Rouge bet on which row wins, while Couleur/Inverse bet on whether the color of the first card dealt matches the winning color; winning bets pay 1:1, and a tie at exactly 31 in both rows is a "Refait" that costs the player half the stake; chips carry over across rounds (reset deals the next round); commands reset (r), bet (b amount noir|rouge|couleur|inverse), log (l); phases 1 Bet, 2 Dealt, 3 End
 
 paths:
   /blackjack/exec:
@@ -17070,6 +17072,96 @@ paths:
                   message:
                     type: string
 
+  /trenteetquarante/exec:
+    post:
+      tags:
+        - trenteetquarante
+      summary: Execute a Trente et Quarante (トラント・エ・カラント) game command
+      description: |
+        Send a command to advance the Trente et Quarante (Rouge et Noir)
+        session identified by `sessionId`. Trente et Quarante is a pure banking
+        game (1 player vs the bank) on a standard 52-card pack with no player
+        card decisions. The player picks one of four even-money bets — Noir (0),
+        Rouge (1), Couleur (2), Inverse (3) — plus a stake, then the dealer deals
+        two rows (Noir/black first, then Rouge/red), summing each (face cards =
+        10, Ace = 1) until the total reaches 31 or more. The row with the lower
+        total wins. Noir/Rouge bet on which row wins; Couleur/Inverse bet on
+        whether the color of the first card dealt matches the winning color.
+        Winning bets pay 1:1; a tie at exactly 31 in both rows is a "Refait" and
+        the player loses half the stake. Chips carry over across rounds. Placing
+        a bet immediately deals both rows and resolves the round, so there are
+        only two phases.
+
+        | Phase  | Value | Description |
+        |--------|-------|-------------|
+        | Bet    | `0`   | The player selects a bet and stake |
+        | Result | `1`   | The round has been dealt, resolved, and scored |
+
+        | Command     | Aliases      | Description |
+        |-------------|--------------|-------------|
+        | `reset`     | `r`          | Start a fresh game (chips persist) |
+        | `bet`       | `b`          | Place a stake on a bet, deal, and resolve (requires `bet` and `stake`) |
+        | `nextround` | `nr`,`n`,`next` | Start the next round |
+        | `hint`      |              | Return an educational betting hint |
+        | `log`       | `l`          | View action log |
+      operationId: trenteetquaranteExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bet, b, nextround, nr, n, next, hint, log, l]
+                bet:
+                  type: integer
+                  description: "Bet selection (for `bet`): 0=Noir, 1=Rouge, 2=Couleur, 3=Inverse."
+                  enum: [0, 1, 2, 3]
+                stake:
+                  type: integer
+                  description: Stake to wager (for `bet`).
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a fresh game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Wager 100 on Noir
+                value:
+                  command: bet
+                  bet: 0
+                  stake: 100
+                  sessionId: my-session-001
+              nextround:
+                summary: Start the next round
+                value:
+                  command: nextround
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrenteEtQuaranteResponse'
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
 components:
   schemas:
     # -------------------------------------------------------------------------
@@ -30167,6 +30259,95 @@ components:
           properties:
             cpuDifficulty:
               type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    TrenteEtQuaranteResponse:
+      type: object
+      description: Current state of the Trente et Quarante (Rouge et Noir) game
+      properties:
+        phase:
+          type: integer
+          description: "Game phase: 0=Bet, 1=Result"
+          enum: [0, 1]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Number of rounds resolved so far
+        chips:
+          type: integer
+          description: Player's remaining chip stack
+        currentBet:
+          type: integer
+          description: "Selected bet: 0=Noir, 1=Rouge, 2=Couleur, 3=Inverse"
+          enum: [0, 1, 2, 3]
+        stake:
+          type: integer
+          description: Amount wagered on the current round
+        noirRow:
+          type: array
+          description: Cards dealt to the Noir (black) row, summed until the total reaches 31+
+          items:
+            $ref: '#/components/schemas/Card'
+        rougeRow:
+          type: array
+          description: Cards dealt to the Rouge (red) row, summed until the total reaches 31+
+          items:
+            $ref: '#/components/schemas/Card'
+        noirTotal:
+          type: integer
+          description: Pip total of the Noir row (31-40 once complete)
+        rougeTotal:
+          type: integer
+          description: Pip total of the Rouge row (31-40 once complete)
+        winningRow:
+          type: integer
+          description: "Winning row (the lower total): 0=Noir, 1=Rouge; -1 for none (push/refait)"
+          enum: [-1, 0, 1]
+        firstCardRed:
+          type: boolean
+          description: Whether the first card dealt (Noir row's first card) is red — drives Couleur/Inverse display
+        refait:
+          type: boolean
+          description: True when both rows tie at 31 (a "Refait" — half the stake goes to the house)
+        result:
+          type: integer
+          description: "Round result from the player's perspective: 1=win, 0=push, -1=lose"
+          enum: [-1, 0, 1]
+        payout:
+          type: integer
+          description: "Gross chips returned to the stack this round (0=lose, stake/2=refait, stake=push, stake*2=win)"
+        remainingDeck:
+          type: integer
+          description: Number of cards remaining in the shoe
+        gameEndFlag:
+          type: boolean
+          description: True once the round has resolved
+        hint:
+          type: object
+          description: Educational hint offered during the bet phase
+          properties:
+            bet:
+              type: integer
+              description: "Suggested bet type: 0=Noir, 1=Rouge, 2=Couleur, 3=Inverse"
+              enum: [0, 1, 2, 3]
+            reason:
+              type: string
+              description: i18n reason key for the suggestion
+        config:
+          type: object
+          description: Local-rule configuration
+          properties:
+            defaultBet:
+              type: integer
+              description: "Bet type pre-selected at the start of each round: 0=Noir, 1=Rouge, 2=Couleur, 3=Inverse"
+              enum: [0, 1, 2, 3]
         message:
           type: string
         messageCode:

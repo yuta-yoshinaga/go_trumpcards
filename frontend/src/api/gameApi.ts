@@ -196,6 +196,7 @@ import type {
   TienLenResponse,
   TonkResponse,
   TrashResponse,
+  TrenteEtQuaranteResponse,
   TressetteResponse,
   TriPeaksResponse,
   TrucoConfig,
@@ -376,6 +377,7 @@ const workerUrl: Record<string, string> = {
   loo: WORKER_EXTRA,
   basra: WORKER_EXTRA,
   tablanet: WORKER_EXTRA,
+  trenteetquarante: WORKER_EXTRA,
   eightoff: WORKER_SOLO,
   penguin: WORKER_SOLO,
   chinesepoker: WORKER_CASINO,
@@ -4274,6 +4276,22 @@ export const dragontigerApi = {
     gameExec<DragonTigerResponse>('dragontiger', { command, amount, betType }),
 };
 
+/**
+ * API client for the Trente et Quarante (Rouge et Noir) /trenteetquarante/exec endpoint.
+ *
+ * Trente et Quarante is a pure banking game (no player card decisions).
+ *   - `bet` → `(bet, stake)` places the stake on one of the four bets
+ *     (0=Noir, 1=Rouge, 2=Couleur, 3=Inverse) and immediately deals both rows
+ *     and resolves the round.
+ *   - `nextround` starts the next round (chips persist server-side).
+ *   - `reset` starts a fresh game (chips persist).
+ *   - `log` and `hint` carry no extra fields.
+ */
+export const trenteetquaranteApi = {
+  exec: (command: 'reset' | 'bet' | 'nextround' | 'log' | 'hint', bet?: number, stake?: number) =>
+    gameExec<TrenteEtQuaranteResponse>('trenteetquarante', { command, bet, stake }),
+};
+
 /** API client for the Blackjack Switch /blackjackswitch/exec endpoint. */
 export const blackjackswitchApi = {
   exec: (command: 'reset' | 'bet' | 'switch' | 'keep' | 'hit' | 'stand' | 'doubledown' | 'log', amount?: number) =>
@@ -4530,6 +4548,7 @@ const games = [
   'loo',
   'basra',
   'tablanet',
+  'trenteetquarante',
 ] as const;
 type Game = (typeof games)[number];
 

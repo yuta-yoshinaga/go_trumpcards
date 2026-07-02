@@ -171,6 +171,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [3, 4, 1, 5], skill: [5, 2, 1, 5], social: [3, 5, 2, 5, 2], theme: [5, 1, 1, 1, 4, 1] },
       },
       {
+        path: '/trenteetquarante',
+        labelKey: 'nav.trenteetquarante',
+        icon: '🔴',
+        page: 'TrenteEtQuarante',
+        profile: { mood: [3, 4, 1, 5], skill: [5, 2, 1, 5], social: [3, 5, 2, 5, 2], theme: [5, 1, 1, 1, 4, 1] },
+      },
+      {
         path: '/dragontiger',
         labelKey: 'nav.dragontiger',
         icon: '🐉',

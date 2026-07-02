@@ -135,6 +135,7 @@ import type {
   TichuResponse,
   TienLenResponse,
   TrashResponse,
+  TrenteEtQuaranteResponse,
   TressetteResponse,
   TriPeaksResponse,
   TuteResponse,
@@ -290,6 +291,7 @@ import { getThreeCardHint } from '../utils/hints/threecardHint';
 import { getTichuHint } from '../utils/hints/tichuHint';
 import { getTienLenHint } from '../utils/hints/tienlenHint';
 import { getTrashHint } from '../utils/hints/trashHint';
+import { getTrenteEtQuaranteHint } from '../utils/hints/trenteetquaranteHint';
 import { getTressetteHint } from '../utils/hints/tressetteHint';
 import { getTriPeaksHint } from '../utils/hints/tripeaksHint';
 import { getTuteHint } from '../utils/hints/tuteHint';
@@ -462,6 +464,7 @@ const hintFactories = {
   loo: (s) => getLooHint(s as LooResponse),
   basra: (s) => getBasraHint(s as BasraResponse),
   tablanet: (s) => getTablanetHint(s as TablanetResponse),
+  trenteetquarante: (s) => getTrenteEtQuaranteHint(s as TrenteEtQuaranteResponse),
   sedma: (s) => getSedmaHint(s as SedmaResponse),
   knockoutwhist: (s) => getKnockoutWhistHint(s as KnockoutWhistResponse),
   spoilfive: (s) => getSpoilFiveHint(s as SpoilFiveResponse),

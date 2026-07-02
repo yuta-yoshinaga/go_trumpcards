@@ -1340,6 +1340,27 @@ export const CasinoWarPhase = {
   END: 5,
 } as const;
 
+/** Trente et Quarante (Rouge et Noir) phase constants (sync: internal/domain/TrenteEtQuarante.go). Betting immediately deals both rows and resolves. */
+export const TrenteEtQuarantePhase = {
+  BET: 0,
+  RESULT: 1,
+} as const;
+
+/** Trente et Quarante bet-type constants (sync: internal/domain/TrenteEtQuaranteConfig.go). */
+export const TrenteEtQuaranteBetType = {
+  NOIR: 0,
+  ROUGE: 1,
+  COULEUR: 2,
+  INVERSE: 3,
+} as const;
+
+/** Trente et Quarante winning-row constants (sync: internal/domain/TrenteEtQuarante.go). A row index, not a color. */
+export const TrenteEtQuaranteWinningRow = {
+  NONE: -1,
+  NOIR: 0,
+  ROUGE: 1,
+} as const;
+
 /** Dragon Tiger phase constants (sync: internal/domain/DragonTiger.go). */
 export const DragonTigerPhase = {
   BET: 1,

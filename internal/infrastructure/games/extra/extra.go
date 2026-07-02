@@ -219,4 +219,12 @@ func init() {
 			return usecase.RestoreTablanetInteractor(data, new(presenter.TablanetWebPresenter))
 		},
 		controller.NewTablanetWebControllerWithProvider)
+	games.RegisterKVGame("trenteetquarante", games.CategoryExtra,
+		func() usecase.TrenteEtQuaranteInteractorIF {
+			return usecase.NewTrenteEtQuaranteInteractor(domain.NewDefaultTrenteEtQuarante(), new(presenter.TrenteEtQuaranteWebPresenter))
+		},
+		func(data []byte) (usecase.TrenteEtQuaranteInteractorIF, error) {
+			return usecase.RestoreTrenteEtQuaranteInteractor(data, new(presenter.TrenteEtQuaranteWebPresenter))
+		},
+		controller.NewTrenteEtQuaranteWebControllerWithProvider)
 }
