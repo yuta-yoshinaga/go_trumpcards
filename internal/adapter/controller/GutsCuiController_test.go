@@ -1,0 +1,95 @@
+//go:build test
+
+package controller_test
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
+	mockUsecases "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+)
+
+func TestGutsCuiController_Exec(t *testing.T) {
+	mockOutput := `{"phase":0}`
+
+	newMock := func() *mockUsecases.MockGutsInteractor {
+		m := new(mockUsecases.MockGutsInteractor)
+		m.On("Reset").Return(mockOutput)
+		m.On("ResetWithConfig", mock.Anything).Return(mockOutput)
+		m.On("Declare", mock.Anything).Return(mockOutput)
+		m.On("NextRound").Return(mockOutput)
+		m.On("GetConfig").Return(domain.DefaultGutsConfig())
+		m.On("Hint").Return("hint")
+		m.On("ActionLog").Return("log")
+		return m
+	}
+
+	t.Run("quit", func(t *testing.T) {
+		assert.Equal(t, "bye.", controller.NewGutsCuiController(newMock()).Exec("q"))
+	})
+	t.Run("reset preserves config", func(t *testing.T) {
+		m := newMock()
+		assert.Equal(t, mockOutput, controller.NewGutsCuiController(m).Exec("r"))
+		m.AssertCalled(t, "ResetWithConfig", mock.Anything)
+	})
+	t.Run("declare in", func(t *testing.T) {
+		m := newMock()
+		assert.Equal(t, mockOutput, controller.NewGutsCuiController(m).Exec("i"))
+		m.AssertCalled(t, "Declare", true)
+	})
+	t.Run("declare out", func(t *testing.T) {
+		m := newMock()
+		assert.Equal(t, mockOutput, controller.NewGutsCuiController(m).Exec("out"))
+		m.AssertCalled(t, "Declare", false)
+	})
+	t.Run("next round", func(t *testing.T) {
+		m := newMock()
+		assert.Equal(t, mockOutput, controller.NewGutsCuiController(m).Exec("nr"))
+		m.AssertCalled(t, "NextRound")
+	})
+	t.Run("set players", func(t *testing.T) {
+		m := newMock()
+		assert.Equal(t, mockOutput, controller.NewGutsCuiController(m).Exec("sp 5"))
+		m.AssertCalled(t, "ResetWithConfig", mock.Anything)
+	})
+	t.Run("set players missing arg", func(t *testing.T) {
+		out := controller.NewGutsCuiController(newMock()).Exec("sp")
+		assert.Contains(t, out, "required")
+	})
+	t.Run("set players invalid", func(t *testing.T) {
+		out := controller.NewGutsCuiController(newMock()).Exec("sp 99")
+		assert.Contains(t, out, "Invalid")
+	})
+	t.Run("set ante", func(t *testing.T) {
+		m := newMock()
+		assert.Equal(t, mockOutput, controller.NewGutsCuiController(m).Exec("sa 20"))
+		m.AssertCalled(t, "ResetWithConfig", mock.Anything)
+	})
+	t.Run("set chips", func(t *testing.T) {
+		m := newMock()
+		assert.Equal(t, mockOutput, controller.NewGutsCuiController(m).Exec("sc 500"))
+		m.AssertCalled(t, "ResetWithConfig", mock.Anything)
+	})
+	t.Run("set rounds", func(t *testing.T) {
+		m := newMock()
+		assert.Equal(t, mockOutput, controller.NewGutsCuiController(m).Exec("st 20"))
+		m.AssertCalled(t, "ResetWithConfig", mock.Anything)
+	})
+	t.Run("hint", func(t *testing.T) {
+		m := newMock()
+		assert.Equal(t, "hint", controller.NewGutsCuiController(m).Exec("h"))
+		m.AssertCalled(t, "Hint")
+	})
+	t.Run("action log", func(t *testing.T) {
+		m := newMock()
+		assert.Equal(t, "log", controller.NewGutsCuiController(m).Exec("l"))
+		m.AssertCalled(t, "ActionLog")
+	})
+	t.Run("unknown", func(t *testing.T) {
+		assert.NotEmpty(t, controller.NewGutsCuiController(newMock()).Exec("zzz"))
+	})
+}

@@ -673,6 +673,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [3, 4, 4, 5], skill: [1, 2, 4, 3], social: [1, 4, 5, 3, 5], theme: [2, 4, 1, 5, 2, 2] },
       },
       {
+        path: '/guts',
+        labelKey: 'nav.guts',
+        icon: '😤',
+        page: 'Guts',
+        profile: { mood: [2, 5, 2, 5], skill: [4, 2, 1, 4], social: [1, 4, 5, 2, 4], theme: [4, 2, 2, 2, 4, 1] },
+      },
+      {
         path: '/spoons',
         labelKey: 'nav.spoons',
         icon: '🥄',

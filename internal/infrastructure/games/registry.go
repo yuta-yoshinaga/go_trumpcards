@@ -596,6 +596,16 @@ var registry = []*Game{
 	// worker bucket — the casino/classic/solo workers are at the 1 MB gzip free-tier limit,
 	// so it routes to the overflow ("extra") worker.
 	{Name: "trenteetquarante", Category: CategoryExtra},
+	// Guts: a simple American poker-vying pot game on a 52-card deck. 2–7 players
+	// ante to a pot and get 2 cards each, then simultaneously declare "in" (stay) or
+	// "out" (fold). Among the players who stayed, the best 2-card hand (a pair beats
+	// two non-paired cards; else high card then kicker, Ace high) takes the whole pot;
+	// every other "in" player must MATCH the pot into the next round's pot — the
+	// escalation/penalty. Chips accumulate; the game ends after a fixed number of
+	// rounds or when fewer than two players can ante, and the richest player wins.
+	// Extra worker bucket — the casino/classic/solo workers are at the 1 MB gzip
+	// free-tier limit, so it routes to the overflow ("extra") worker.
+	{Name: "guts", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

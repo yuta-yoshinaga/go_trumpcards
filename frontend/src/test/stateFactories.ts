@@ -10,6 +10,7 @@ import type {
   EscobaResponse,
   FortyFivesResponse,
   GongZhuResponse,
+  GutsResponse,
   HeartsResponse,
   KingResponse,
   KlaverjasResponse,
@@ -2010,4 +2011,86 @@ const baseEscobaState: EscobaResponse = {
  */
 export function makeEscobaState(overrides?: Partial<EscobaResponse>): EscobaResponse {
   return { ...baseEscobaState, ...overrides };
+}
+
+/** Base Guts state used as the default for {@link makeGutsState}. A 4-player pot-vying gambling game; defaults to the human Declare phase (phase 0). */
+const baseGutsState: GutsResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      chips: 200,
+      in: false,
+      out: false,
+      roundBet: 10,
+      cardCount: 2,
+      cards: [
+        { design: 'SPADE' as const, value: 13 },
+        { design: 'HEART' as const, value: 11 },
+      ],
+      isWinner: false,
+      isMatcher: false,
+    },
+    {
+      id: 1,
+      isHuman: false,
+      chips: 200,
+      in: false,
+      out: false,
+      roundBet: 10,
+      cardCount: 2,
+      cards: [],
+      isWinner: false,
+      isMatcher: false,
+    },
+    {
+      id: 2,
+      isHuman: false,
+      chips: 200,
+      in: false,
+      out: false,
+      roundBet: 10,
+      cardCount: 2,
+      cards: [],
+      isWinner: false,
+      isMatcher: false,
+    },
+    {
+      id: 3,
+      isHuman: false,
+      chips: 200,
+      in: false,
+      out: false,
+      roundBet: 10,
+      cardCount: 2,
+      cards: [],
+      isWinner: false,
+      isMatcher: false,
+    },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  pot: 40,
+  carryPot: 0,
+  ante: 10,
+  chips: 200,
+  winnerIdx: -1,
+  matchWinnerIdx: -1,
+  result: 0,
+  matchers: [],
+  gameEndFlag: false,
+  hint: null,
+  config: { playerCount: 4, ante: 10, startingChips: 200, targetRounds: 10 },
+  message: '',
+};
+
+/**
+ * Creates a {@link GutsResponse} with sensible defaults (the human Declare
+ * phase, phase 0). Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial GutsResponse fields to override.
+ * @returns A complete GutsResponse suitable for use in tests.
+ */
+export function makeGutsState(overrides?: Partial<GutsResponse>): GutsResponse {
+  return { ...baseGutsState, ...overrides };
 }

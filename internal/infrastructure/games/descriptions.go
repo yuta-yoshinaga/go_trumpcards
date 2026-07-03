@@ -205,6 +205,7 @@ var gameDescriptions = map[string]string{
 	"basra":               "Basra / Bastra (バスラ)",
 	"tablanet":            "Tablanet / Tablić (タブラネット)",
 	"trenteetquarante":    "Trente et Quarante / Rouge et Noir (トラント・エ・カラント)",
+	"guts":                "Guts (ガッツ)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

@@ -214,7 +214,8 @@
     "doubleklondike": "ダブル・クロンダイク",
     "blackhole": "ブラックホール",
     "beggarmyneighbour": "ビガー・マイ・ネイバー",
-    "allfours": "オールフォーズ"
+    "allfours": "オールフォーズ",
+    "guts": "ガッツ"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -835,6 +836,13 @@
     "allfours.result.humanWin": "ゲーム終了！ あなたの勝ち！",
     "allfours.result.cpuWin": "ゲーム終了！ CPU {{cpuId}} の勝ち！",
     "allfours.result.draw": "ゲーム終了！ 引き分け",
+    "guts.declarePhase": "あなたの番です — イン（残る）かアウト（降りる）を選んでください。",
+    "guts.roundEndCarry": "誰も残りませんでした — ポットは次のラウンドに繰り越されます。",
+    "guts.roundEndHumanWin": "あなたがポットを獲得しました！",
+    "guts.roundEndHumanLose": "あなたは負けました — ポットと同額を支払います。",
+    "guts.roundEndCpuWin": "CPU {{player}} がポットを獲得しました。",
+    "guts.result.humanWin": "ゲーム終了！ あなたの勝利です！",
+    "guts.result.cpuWin": "ゲーム終了！ CPU {{player}} の勝利です。",
     "catchten.playPhase.lead": "あなたの番です — リードするカードを選んでください。",
     "catchten.playPhase.follow": "あなたの番です — リードスートに従ってください。",
     "catchten.trickEnd": "トリック終了 — 続けてください。",

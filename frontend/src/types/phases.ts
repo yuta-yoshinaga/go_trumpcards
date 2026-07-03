@@ -1586,3 +1586,15 @@ export const AllFoursPhase = {
   ROUND_END: 4,
   GAME_END: 5,
 } as const;
+
+/** Guts phase constants (sync: internal/domain/Guts.go). */
+export const GutsPhase = {
+  DECLARE: 0,
+  RESULT: 1,
+} as const;
+
+/** Guts declaration constants (sync: internal/domain/Guts.go). 0=out (fold), 1=in (stay). */
+export const GutsDeclaration = {
+  OUT: 0,
+  IN: 1,
+} as const;
