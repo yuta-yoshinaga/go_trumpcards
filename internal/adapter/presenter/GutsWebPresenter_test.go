@@ -80,6 +80,9 @@ func TestGutsWebPresenter_ResultHumanLose(t *testing.T) {
 	cpu := players[1].(map[string]any)
 	assert.Equal(t, "pair", cpu["handName"])
 	assert.Equal(t, true, cpu["isWinner"])
+	// The human's own hand name is populated too (revealed cards).
+	human := players[0].(map[string]any)
+	assert.Equal(t, "highcard", human["handName"])
 }
 
 func TestGutsWebPresenter_ResultHumanWin(t *testing.T) {

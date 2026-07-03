@@ -92,7 +92,7 @@ func (p *GutsWebPresenter) buildPlayersOutput(g interfaces.GutsGame) []*controll
 		}
 		showCards := player.GetIsHuman() || (reveal && player.GetIn() && !player.GetOut())
 		handName := ""
-		if showCards && !player.GetIsHuman() {
+		if showCards {
 			handName = gutsHandName(player)
 		}
 		out = append(out, &controller.GutsWebOutputPlayer{

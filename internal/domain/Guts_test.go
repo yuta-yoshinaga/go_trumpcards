@@ -209,6 +209,8 @@ func TestGutsConfig_Validate(t *testing.T) {
 	assert.Error(t, domain.GutsConfig{PlayerCount: 8, Ante: 10, StartingChips: 200, TargetRounds: 10}.Validate())
 	assert.Error(t, domain.GutsConfig{PlayerCount: 4, Ante: 0, StartingChips: 200, TargetRounds: 10}.Validate())
 	assert.Error(t, domain.GutsConfig{PlayerCount: 4, Ante: 10, StartingChips: 1, TargetRounds: 10}.Validate())
+	// Starting chips passes the range check but is below the ante → immediate elimination.
+	assert.Error(t, domain.GutsConfig{PlayerCount: 4, Ante: 50, StartingChips: 10, TargetRounds: 10}.Validate())
 	assert.Error(t, domain.GutsConfig{PlayerCount: 4, Ante: 10, StartingChips: 200, TargetRounds: 0}.Validate())
 }
 

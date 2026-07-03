@@ -2,6 +2,8 @@
 
 package domain
 
+import "errors"
+
 // GutsDeclaration はガッツ (Guts) の宣言種別。各プレイヤーはラウンドごとに手札を見て
 // 「イン (勝負に残る)」か「アウト (降りる)」かを同時に宣言する。
 type GutsDeclaration int
@@ -79,6 +81,9 @@ func (c GutsConfig) Validate() error {
 	}
 	if err := ValidateRange("starting chips", c.StartingChips, GutsMinStartingChips, GutsMaxStartingChips); err != nil {
 		return err
+	}
+	if c.StartingChips < c.Ante {
+		return errors.New("starting chips must be greater than or equal to ante")
 	}
 	return ValidateRange("target rounds", c.TargetRounds, GutsMinTargetRounds, GutsMaxTargetRounds)
 }
