@@ -23,6 +23,7 @@ import bigtwo from '../../../docs/manual/web/bigtwo.md?raw';
 import blackhole from '../../../docs/manual/web/blackhole.md?raw';
 import blackjack from '../../../docs/manual/web/blackjack.md?raw';
 import blackjackswitch from '../../../docs/manual/web/blackjackswitch.md?raw';
+import bouillotte from '../../../docs/manual/web/bouillotte.md?raw';
 import bourre from '../../../docs/manual/web/bourre.md?raw';
 import bridge from '../../../docs/manual/web/bridge.md?raw';
 import briscola from '../../../docs/manual/web/briscola.md?raw';
@@ -270,6 +271,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/acesup': acesup,
   '/gongzhu': gongzhu,
   '/guts': guts,
+  '/bouillotte': bouillotte,
   '/tressette': tressette,
   '/hearts': hearts,
   '/holdem': holdem,

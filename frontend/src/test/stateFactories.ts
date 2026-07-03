@@ -1,6 +1,7 @@
 import type {
   BasraResponse,
   BeziqueResponse,
+  BouillotteResponse,
   CalabresellaResponse,
   CallBreakResponse,
   CinchResponse,
@@ -2093,4 +2094,91 @@ const baseGutsState: GutsResponse = {
  */
 export function makeGutsState(overrides?: Partial<GutsResponse>): GutsResponse {
   return { ...baseGutsState, ...overrides };
+}
+
+/** Base Bouillotte state used as the default for {@link makeBouillotteState}. A 4-player 3-card pot-vying game; defaults to the human Betting phase (phase 0). */
+const baseBouillotteState: BouillotteResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      chips: 190,
+      roundBet: 10,
+      folded: false,
+      out: false,
+      cardCount: 3,
+      cards: [
+        { design: 'SPADE' as const, value: 13 },
+        { design: 'HEART' as const, value: 11 },
+        { design: 'CLOVER' as const, value: 4 },
+      ],
+      handName: 'highcard',
+      isWinner: false,
+    },
+    {
+      id: 1,
+      isHuman: false,
+      chips: 190,
+      roundBet: 10,
+      folded: false,
+      out: false,
+      cardCount: 3,
+      cards: [],
+      isWinner: false,
+    },
+    {
+      id: 2,
+      isHuman: false,
+      chips: 190,
+      roundBet: 10,
+      folded: false,
+      out: false,
+      cardCount: 3,
+      cards: [],
+      isWinner: false,
+    },
+    {
+      id: 3,
+      isHuman: false,
+      chips: 190,
+      roundBet: 10,
+      folded: false,
+      out: false,
+      cardCount: 3,
+      cards: [],
+      isWinner: false,
+    },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  pot: 40,
+  ante: 10,
+  chips: 190,
+  currentBet: 10,
+  raiseCount: 0,
+  maxRaises: 4,
+  currentPlayerIdx: 0,
+  dealerIdx: 0,
+  retourne: { design: 'CLOVER' as const, value: 13 },
+  isHumanTurn: true,
+  canRaise: true,
+  winnerIdx: -1,
+  matchWinnerIdx: -1,
+  result: 0,
+  gameEndFlag: false,
+  hint: null,
+  config: { playerCount: 4, ante: 10, startingChips: 200, targetRounds: 10 },
+  message: '',
+};
+
+/**
+ * Creates a {@link BouillotteResponse} with sensible defaults (the human
+ * Betting phase, phase 0). Any field can be overridden via the `overrides`
+ * parameter.
+ *
+ * @param overrides - Partial BouillotteResponse fields to override.
+ * @returns A complete BouillotteResponse suitable for use in tests.
+ */
+export function makeBouillotteState(overrides?: Partial<BouillotteResponse>): BouillotteResponse {
+  return { ...baseBouillotteState, ...overrides };
 }

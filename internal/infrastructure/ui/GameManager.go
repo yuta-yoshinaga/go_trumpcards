@@ -3135,6 +3135,17 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"guts.helpSetPlayers", "guts.helpSetAnte", "guts.helpSetChips", "guts.helpSetRounds"},
 			})
 	}},
+	{Name: "bouillotte", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBouillotteCuiController(usecase.NewBouillotteInteractor(
+				domain.NewDefaultBouillotte(), new(presenter.BouillotteCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "bouillotte.helpTitle",
+				CommandKeys:       []string{"bouillotte.helpBet", "bouillotte.helpNext"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"bouillotte.helpSetPlayers", "bouillotte.helpSetAnte", "bouillotte.helpSetChips", "bouillotte.helpSetRounds"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

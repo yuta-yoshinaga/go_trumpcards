@@ -1598,3 +1598,9 @@ export const GutsDeclaration = {
   OUT: 0,
   IN: 1,
 } as const;
+
+/** Bouillotte phase constants (sync: internal/domain/Bouillotte.go). */
+export const BouillottePhase = {
+  BETTING: 0,
+  RESULT: 1,
+} as const;

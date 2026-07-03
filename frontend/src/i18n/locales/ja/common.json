@@ -215,7 +215,8 @@
     "blackhole": "ブラックホール",
     "beggarmyneighbour": "ビガー・マイ・ネイバー",
     "allfours": "オールフォーズ",
-    "guts": "ガッツ"
+    "guts": "ガッツ",
+    "bouillotte": "ブイヨット"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -843,6 +844,13 @@
     "guts.roundEndCpuWin": "CPU {{player}} がポットを獲得しました。",
     "guts.result.humanWin": "ゲーム終了！ あなたの勝利です！",
     "guts.result.cpuWin": "ゲーム終了！ CPU {{player}} の勝利です。",
+    "bouillotte.bettingPhase": "あなたの番です — コール・レイズ（ヴィ）・フォールドを選んでください。",
+    "bouillotte.roundEnd": "このラウンドは終了しました。",
+    "bouillotte.roundEndHumanWin": "あなたがポットを獲得しました！",
+    "bouillotte.roundEndHumanLose": "CPU {{player}} がポットを獲得しました。",
+    "bouillotte.roundEndCpuWin": "CPU {{player}} がポットを獲得しました。",
+    "bouillotte.result.humanWin": "ゲーム終了！ あなたの勝利です！",
+    "bouillotte.result.cpuWin": "ゲーム終了！ CPU {{player}} の勝利です。",
     "catchten.playPhase.lead": "あなたの番です — リードするカードを選んでください。",
     "catchten.playPhase.follow": "あなたの番です — リードスートに従ってください。",
     "catchten.trickEnd": "トリック終了 — 続けてください。",

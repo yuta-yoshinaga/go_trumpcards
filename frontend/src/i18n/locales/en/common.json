@@ -215,7 +215,8 @@
     "blackhole": "Black Hole",
     "beggarmyneighbour": "Beggar-My-Neighbour",
     "allfours": "All Fours",
-    "guts": "Guts"
+    "guts": "Guts",
+    "bouillotte": "Bouillotte"
   },
   "sound": {
     "mute": "Mute sound",
@@ -843,6 +844,13 @@
     "guts.roundEndCpuWin": "CPU {{player}} won the pot.",
     "guts.result.humanWin": "Game over! You win!",
     "guts.result.cpuWin": "Game over! CPU {{player}} wins.",
+    "bouillotte.bettingPhase": "Your turn — call, raise (vie), or fold.",
+    "bouillotte.roundEnd": "The round is over.",
+    "bouillotte.roundEndHumanWin": "You win the pot!",
+    "bouillotte.roundEndHumanLose": "CPU {{player}} wins the pot.",
+    "bouillotte.roundEndCpuWin": "CPU {{player}} wins the pot.",
+    "bouillotte.result.humanWin": "Game over! You win!",
+    "bouillotte.result.cpuWin": "Game over! CPU {{player}} wins.",
     "catchten.playPhase.lead": "Your turn — pick a card to lead.",
     "catchten.playPhase.follow": "Your turn — follow the lead suit.",
     "catchten.trickEnd": "Trick complete — continue.",

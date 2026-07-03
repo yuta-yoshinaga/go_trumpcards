@@ -16,6 +16,7 @@ import type {
   BigTwoResponse,
   BlackJackResponse,
   BlackJackSwitchResponse,
+  BouillotteResponse,
   BristolResponse,
   BurracoResponse,
   CalabresellaResponse,
@@ -168,6 +169,7 @@ import { getBidWhistHint } from '../utils/hints/bidwhistHint';
 import { getBigTwoHint } from '../utils/hints/bigtwoHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getBlackjackswitchHint } from '../utils/hints/blackjackswitchHint';
+import { getBouillotteHint } from '../utils/hints/bouillotteHint';
 import { getBristolHint } from '../utils/hints/bristolHint';
 import { getBurracoHint } from '../utils/hints/burracoHint';
 import { getCalabresellaHint } from '../utils/hints/calabresellaHint';
@@ -483,6 +485,7 @@ const hintFactories = {
   beggarmyneighbour: (s) => getBeggarMyNeighbourHint(s as BeggarMyNeighbourResponse),
   allfours: (s) => getAllFoursHint(s as AllFoursResponse),
   guts: (s) => getGutsHint(s as GutsResponse),
+  bouillotte: (s) => getBouillotteHint(s as BouillotteResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */
