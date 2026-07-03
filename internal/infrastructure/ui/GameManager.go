@@ -3124,6 +3124,17 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"trenteetquarante.helpSetDefaultBet"},
 			})
 	}},
+	{Name: "guts", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewGutsCuiController(usecase.NewGutsInteractor(
+				domain.NewDefaultGuts(), new(presenter.GutsCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "guts.helpTitle",
+				CommandKeys:       []string{"guts.helpDeclare", "guts.helpNext"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"guts.helpSetPlayers", "guts.helpSetAnte", "guts.helpSetChips", "guts.helpSetRounds"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

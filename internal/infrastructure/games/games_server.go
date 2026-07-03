@@ -990,4 +990,9 @@ func init() {
 			return usecase.NewTrenteEtQuaranteInteractor(domain.NewDefaultTrenteEtQuarante(), new(presenter.TrenteEtQuaranteWebPresenter))
 		},
 		controller.NewTrenteEtQuaranteWebController)
+	BindWebControllerFor("guts",
+		func() usecase.GutsInteractorIF {
+			return usecase.NewGutsInteractor(domain.NewDefaultGuts(), new(presenter.GutsWebPresenter))
+		},
+		controller.NewGutsWebController)
 }

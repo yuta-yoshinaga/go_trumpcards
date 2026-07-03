@@ -214,7 +214,8 @@
     "doubleklondike": "Double Klondike",
     "blackhole": "Black Hole",
     "beggarmyneighbour": "Beggar-My-Neighbour",
-    "allfours": "All Fours"
+    "allfours": "All Fours",
+    "guts": "Guts"
   },
   "sound": {
     "mute": "Mute sound",
@@ -835,6 +836,13 @@
     "allfours.result.humanWin": "Game over! You win!",
     "allfours.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
     "allfours.result.draw": "Game over! It's a draw.",
+    "guts.declarePhase": "Your turn — declare In (stay) or Out (fold).",
+    "guts.roundEndCarry": "Nobody stayed — the pot carries over to the next round.",
+    "guts.roundEndHumanWin": "You won the pot!",
+    "guts.roundEndHumanLose": "You lost — you must match the pot.",
+    "guts.roundEndCpuWin": "CPU {{player}} won the pot.",
+    "guts.result.humanWin": "Game over! You win!",
+    "guts.result.cpuWin": "Game over! CPU {{player}} wins.",
     "catchten.playPhase.lead": "Your turn — pick a card to lead.",
     "catchten.playPhase.follow": "Your turn — follow the lead suit.",
     "catchten.trickEnd": "Trick complete — continue.",

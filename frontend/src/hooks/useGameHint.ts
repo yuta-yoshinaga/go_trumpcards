@@ -58,6 +58,7 @@ import type {
   GoFishResponse,
   GolfResponse,
   GongZhuResponse,
+  GutsResponse,
   HeartsResponse,
   HighCardFlushResponse,
   HoldemResponse,
@@ -211,6 +212,7 @@ import { getGinRummyHint } from '../utils/hints/ginrummyHint';
 import { getGoFishHint } from '../utils/hints/gofishHint';
 import { getGolfHint } from '../utils/hints/golfHint';
 import { getGongZhuHint } from '../utils/hints/gongzhuHint';
+import { getGutsHint } from '../utils/hints/gutsHint';
 import { getHeartsHint } from '../utils/hints/heartsHint';
 import { getHighCardFlushHint } from '../utils/hints/highcardflushHint';
 import { getHoldemHint } from '../utils/hints/holdemHint';
@@ -480,6 +482,7 @@ const hintFactories = {
   teenpatti: (s) => getTeenPattiHint(s as TeenPattiResponse),
   beggarmyneighbour: (s) => getBeggarMyNeighbourHint(s as BeggarMyNeighbourResponse),
   allfours: (s) => getAllFoursHint(s as AllFoursResponse),
+  guts: (s) => getGutsHint(s as GutsResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

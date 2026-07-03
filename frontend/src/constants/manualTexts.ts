@@ -83,6 +83,7 @@ import ginrummy from '../../../docs/manual/web/ginrummy.md?raw';
 import gofish from '../../../docs/manual/web/gofish.md?raw';
 import golf from '../../../docs/manual/web/golf.md?raw';
 import gongzhu from '../../../docs/manual/web/gongzhu.md?raw';
+import guts from '../../../docs/manual/web/guts.md?raw';
 import handandfoot from '../../../docs/manual/web/handandfoot.md?raw';
 import hearts from '../../../docs/manual/web/hearts.md?raw';
 import highcardflush from '../../../docs/manual/web/highcardflush.md?raw';
@@ -268,6 +269,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/golf': golf,
   '/acesup': acesup,
   '/gongzhu': gongzhu,
+  '/guts': guts,
   '/tressette': tressette,
   '/hearts': hearts,
   '/holdem': holdem,

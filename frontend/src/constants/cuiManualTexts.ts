@@ -84,6 +84,7 @@ import ginrummy from '../../../docs/manual/cui/ginrummy.md?raw';
 import gofish from '../../../docs/manual/cui/gofish.md?raw';
 import golf from '../../../docs/manual/cui/golf.md?raw';
 import gongzhu from '../../../docs/manual/cui/gongzhu.md?raw';
+import guts from '../../../docs/manual/cui/guts.md?raw';
 import handandfoot from '../../../docs/manual/cui/handandfoot.md?raw';
 import hearts from '../../../docs/manual/cui/hearts.md?raw';
 import highcardflush from '../../../docs/manual/cui/highcardflush.md?raw';
@@ -262,6 +263,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/golf': golf,
   '/acesup': acesup,
   '/gongzhu': gongzhu,
+  '/guts': guts,
   '/tressette': tressette,
   '/hearts': hearts,
   '/holdem': holdem,

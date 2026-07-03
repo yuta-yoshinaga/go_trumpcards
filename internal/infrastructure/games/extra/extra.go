@@ -227,4 +227,12 @@ func init() {
 			return usecase.RestoreTrenteEtQuaranteInteractor(data, new(presenter.TrenteEtQuaranteWebPresenter))
 		},
 		controller.NewTrenteEtQuaranteWebControllerWithProvider)
+	games.RegisterKVGame("guts", games.CategoryExtra,
+		func() usecase.GutsInteractorIF {
+			return usecase.NewGutsInteractor(domain.NewDefaultGuts(), new(presenter.GutsWebPresenter))
+		},
+		func(data []byte) (usecase.GutsInteractorIF, error) {
+			return usecase.RestoreGutsInteractor(data, new(presenter.GutsWebPresenter))
+		},
+		controller.NewGutsWebControllerWithProvider)
 }

@@ -156,6 +156,9 @@
   /* Ninety-Nine — a deep teal-indigo felt evoking the bury-3 bidding trick-taker, distinct from BLUE's navy and Catch-the-Ten's slate-teal. */
   --color-game-bg-ninetynine: #234e6e;
   --color-game-bg-ninetynine-dark: #163349;
+  /* Guts — a bold saloon ember-rust felt evoking the nerve/guts gamble, distinct from Faro's wine and Twenty-Nine's spice-orange. */
+  --color-game-bg-guts: #8a3b1a;
+  --color-game-bg-guts-dark: #562310;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;
