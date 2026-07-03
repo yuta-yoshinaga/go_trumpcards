@@ -606,6 +606,17 @@ var registry = []*Game{
 	// Extra worker bucket — the casino/classic/solo workers are at the 1 MB gzip
 	// free-tier limit, so it routes to the overflow ("extra") worker.
 	{Name: "guts", Category: CategoryExtra},
+	// Bouillotte: an 18th-century French poker ancestor, a vying/betting pot game
+	// on a 20-card deck (A, K, Q, 9, 8 × 4 suits). 3–4 players ante to a pot, are
+	// dealt 3 cards each, and a shared "retourne" card is turned face up. Players
+	// bet in turn (call / raise "vie" by the ante, capped; or fold). At showdown the
+	// best hand wins the whole pot: a brelan (three of a kind) beats everything —
+	// a "favori" (a pair completed by the retourne) beats a same-rank "simple" —
+	// otherwise high card wins (ties to the earliest seat). Chips accumulate; the
+	// game ends after a fixed number of rounds, and the richest player wins. Extra
+	// worker bucket — the casino/classic/solo workers are at the 1 MB gzip
+	// free-tier limit, so it routes to the overflow ("extra") worker.
+	{Name: "bouillotte", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

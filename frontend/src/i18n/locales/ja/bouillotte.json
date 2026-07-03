@@ -1,0 +1,56 @@
+{
+  "title": "ブイヨット",
+  "phase": {
+    "betting": "ベッティング",
+    "result": "結果"
+  },
+  "settings": {
+    "title": "設定",
+    "playerCount": "プレイヤー人数",
+    "ante": "アンティ",
+    "startingChips": "初期チップ",
+    "targetRounds": "ラウンド数"
+  },
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "round": "ラウンド {{n}}",
+  "pot": "ポット: {{amount}}",
+  "ante": "アンティ: {{amount}}",
+  "chips": "チップ: {{amount}}",
+  "currentBet": "現在のベット: {{amount}}",
+  "roundBet": "賭け: {{amount}}",
+  "retourneLabel": "ルトゥルヌ（共有カード）",
+  "handLabel": "あなたの手札",
+  "playersTitle": "プレイヤー",
+  "bettingNotice": "あなたの番です — コール・レイズ（ヴィ）・フォールドを選んでください。",
+  "badge": {
+    "active": "参加中",
+    "folded": "降りた",
+    "out": "脱落",
+    "winner": "勝者"
+  },
+  "hand": {
+    "brelan": "ブルラン",
+    "highcard": "ハイカード"
+  },
+  "callButton": "コール",
+  "raiseButton": "レイズ（ヴィ）",
+  "foldButton": "フォールド（降りる）",
+  "nextRound": "次のラウンド",
+  "roundResult": {
+    "title": "ラウンド結果",
+    "winner": "{{name}} がポット {{pot}} を獲得しました。"
+  },
+  "matchWinner": "{{name}} がマッチに勝利しました！",
+  "hint": {
+    "strong_hand": "強い手 — レイズする価値があります",
+    "medium_hand": "そこそこの手 — コールして様子を見ましょう",
+    "weak_hand": "弱い手 — 降りたほうが無難です"
+  },
+  "tutorial": {
+    "info": "ここにラウンド番号・ポット・アンティ・現在のベット・各プレイヤーのチップと状態が表示されます。ブイヨットは各自3枚の手札と共有の「ルトゥルヌ」カードを使う、18世紀フランス発祥の3枚ポーカーのポット争奪ゲームです。",
+    "hand": "あなたの3枚の手札です。ルトゥルヌを含めて同じランクが3枚そろう「ブルラン」が最強で、なければハイカードで比較します。",
+    "actions": "コールで現在のベットに合わせ、レイズ（ヴィ）で賭け金を上げ、フォールドでこのラウンドを降ります。ベッティングが終わると手役を比較してポットの行方が決まります。",
+    "resetButton": "ゲームをリセットして最初からやり直します。"
+  }
+}

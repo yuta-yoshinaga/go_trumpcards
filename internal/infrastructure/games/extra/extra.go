@@ -235,4 +235,12 @@ func init() {
 			return usecase.RestoreGutsInteractor(data, new(presenter.GutsWebPresenter))
 		},
 		controller.NewGutsWebControllerWithProvider)
+	games.RegisterKVGame("bouillotte", games.CategoryExtra,
+		func() usecase.BouillotteInteractorIF {
+			return usecase.NewBouillotteInteractor(domain.NewDefaultBouillotte(), new(presenter.BouillotteWebPresenter))
+		},
+		func(data []byte) (usecase.BouillotteInteractorIF, error) {
+			return usecase.RestoreBouillotteInteractor(data, new(presenter.BouillotteWebPresenter))
+		},
+		controller.NewBouillotteWebControllerWithProvider)
 }

@@ -159,6 +159,9 @@
   /* Guts — a bold saloon ember-rust felt evoking the nerve/guts gamble, distinct from Faro's wine and Twenty-Nine's spice-orange. */
   --color-game-bg-guts: #8a3b1a;
   --color-game-bg-guts-dark: #562310;
+  /* Bouillotte — a candle-lit royal aubergine-plum felt evoking the 18th-century French salon gamble, distinct from Guts's ember-rust and Faro's wine. */
+  --color-game-bg-bouillotte: #4a2151;
+  --color-game-bg-bouillotte-dark: #2c1230;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;
