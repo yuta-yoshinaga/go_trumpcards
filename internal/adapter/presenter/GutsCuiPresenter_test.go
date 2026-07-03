@@ -17,7 +17,8 @@ func TestGutsCuiPresenter_OutputDeclarePhase(t *testing.T) {
 	out := p.Output(g, nil)
 	assert.NotEmpty(t, out)
 	// Round line + declare prompt should be present.
-	assert.Contains(t, out, "guts")
+	assert.Contains(t, out, "ラウンド")
+	assert.Contains(t, out, "宣言")
 }
 
 func TestGutsCuiPresenter_OutputError(t *testing.T) {
