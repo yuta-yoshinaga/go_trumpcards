@@ -34,8 +34,14 @@ func TestBouillotte_ResetDealsRound(t *testing.T) {
 	assert.Equal(t, 1, g.GetRoundNumber())
 	assert.False(t, g.GetGameEndFlag())
 	cfg := g.GetConfig()
-	// pot = ante * playerCount, retourne is up, human holds 3 cards.
-	assert.Equal(t, cfg.Ante*cfg.PlayerCount, g.GetPot())
+	// After the deal the CPUs left of the dealer bet before the human acts, so
+	// the pot equals the sum of every player's round bet and is at least the antes.
+	sumBets := 0
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		sumBets += g.GetPlayer(i).GetRoundBet()
+	}
+	assert.Equal(t, sumBets, g.GetPot())
+	assert.GreaterOrEqual(t, g.GetPot(), cfg.Ante*cfg.PlayerCount)
 	assert.NotNil(t, g.GetRetourne())
 	assert.Equal(t, domain.BouillotteHandSize, g.GetPlayer(0).GetCardsSize())
 	// Human paid the ante; before any of their own bets, chips = starting - ante.
@@ -194,6 +200,9 @@ func TestBouillotte_PlayerRaise_FoldsAroundToCleanWin(t *testing.T) {
 	bouillotteSetHand(g.GetPlayer(0), bouillotteCard(domain.CardDesignSpade, 1), bouillotteCard(domain.CardDesignClover, 13), bouillotteCard(domain.CardDesignHeart, 12))
 	bouillotteSetHand(g.GetPlayer(1), bouillotteCard(domain.CardDesignSpade, 9), bouillotteCard(domain.CardDesignClover, 9), bouillotteCard(domain.CardDesignHeart, 8))
 	bouillotteSetHand(g.GetPlayer(2), bouillotteCard(domain.CardDesignHeart, 9), bouillotteCard(domain.CardDesignDiamond, 9), bouillotteCard(domain.CardDesignClover, 8))
+	// Reset() auto-ran the CPUs' opening bets, leaving stray raise/acted counters;
+	// clear them so the human's single raise is the only one counted.
+	g.ClearBettingForTest()
 
 	require.True(t, g.IsHumanTurn())
 	require.True(t, g.CanRaise())

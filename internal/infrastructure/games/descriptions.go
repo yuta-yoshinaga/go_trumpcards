@@ -206,6 +206,7 @@ var gameDescriptions = map[string]string{
 	"tablanet":            "Tablanet / Tablić (タブラネット)",
 	"trenteetquarante":    "Trente et Quarante / Rouge et Noir (トラント・エ・カラント)",
 	"guts":                "Guts (ガッツ)",
+	"bouillotte":          "Bouillotte (ブイヨット)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).
