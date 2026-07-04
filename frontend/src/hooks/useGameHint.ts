@@ -98,6 +98,7 @@ import type {
   PokerSquaresResponse,
   PreferenceResponse,
   PresidentResponse,
+  PrimeroResponse,
   PrsiResponse,
   PyramidResponse,
   RedDogResponse,
@@ -256,6 +257,7 @@ import { getPokerHint } from '../utils/hints/pokerHint';
 import { getPokersquaresHint } from '../utils/hints/pokersquaresHint';
 import { getPreferenceHint } from '../utils/hints/preferenceHint';
 import { getPresidentHint } from '../utils/hints/presidentHint';
+import { getPrimeroHint } from '../utils/hints/primeroHint';
 import { getPrsiHint } from '../utils/hints/prsiHint';
 import { getPyramidHint } from '../utils/hints/pyramidHint';
 import { getRazzHint } from '../utils/hints/razzHint';
@@ -486,6 +488,7 @@ const hintFactories = {
   allfours: (s) => getAllFoursHint(s as AllFoursResponse),
   guts: (s) => getGutsHint(s as GutsResponse),
   bouillotte: (s) => getBouillotteHint(s as BouillotteResponse),
+  primero: (s) => getPrimeroHint(s as PrimeroResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

@@ -243,4 +243,12 @@ func init() {
 			return usecase.RestoreBouillotteInteractor(data, new(presenter.BouillotteWebPresenter))
 		},
 		controller.NewBouillotteWebControllerWithProvider)
+	games.RegisterKVGame("primero", games.CategoryExtra,
+		func() usecase.PrimeroInteractorIF {
+			return usecase.NewPrimeroInteractor(domain.NewDefaultPrimero(), new(presenter.PrimeroWebPresenter))
+		},
+		func(data []byte) (usecase.PrimeroInteractorIF, error) {
+			return usecase.RestorePrimeroInteractor(data, new(presenter.PrimeroWebPresenter))
+		},
+		controller.NewPrimeroWebControllerWithProvider)
 }

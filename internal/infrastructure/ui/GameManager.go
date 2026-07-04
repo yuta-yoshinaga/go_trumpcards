@@ -3146,6 +3146,17 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"bouillotte.helpSetPlayers", "bouillotte.helpSetAnte", "bouillotte.helpSetChips", "bouillotte.helpSetRounds"},
 			})
 	}},
+	{Name: "primero", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPrimeroCuiController(usecase.NewPrimeroInteractor(
+				domain.NewDefaultPrimero(), new(presenter.PrimeroCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "primero.helpTitle",
+				CommandKeys:       []string{"primero.helpBet", "primero.helpNext"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"primero.helpSetPlayers", "primero.helpSetAnte", "primero.helpSetChips", "primero.helpSetRounds"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

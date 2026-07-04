@@ -211,7 +211,8 @@ export type GameKey =
   | 'beggarmyneighbour'
   | 'allfours'
   | 'guts'
-  | 'bouillotte';
+  | 'bouillotte'
+  | 'primero';
 
 /** Theme classes (Tailwind) applied to the page background and footer for each game. */
 export interface GameThemeClasses {
@@ -392,6 +393,10 @@ const GUTS = {
 const BOUILLOTTE = {
   bg: 'bg-game-bg-bouillotte',
   footer: 'bg-game-bg-bouillotte-dark border-white/20',
+} as const;
+const PRIMERO = {
+  bg: 'bg-game-bg-primero',
+  footer: 'bg-game-bg-primero-dark border-white/20',
 } as const;
 
 export const gameTheme: Record<GameKey, GameThemeClasses> = {
@@ -598,4 +603,5 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   allfours: ALLFOURS,
   guts: GUTS,
   bouillotte: BOUILLOTTE,
+  primero: PRIMERO,
 };

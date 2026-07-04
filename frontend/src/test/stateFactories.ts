@@ -22,6 +22,7 @@ import type {
   MusResponse,
   NapResponse,
   PreferenceResponse,
+  PrimeroResponse,
   ScoponeResponse,
   SedmaResponse,
   SheepsheadResponse,
@@ -2181,4 +2182,90 @@ const baseBouillotteState: BouillotteResponse = {
  */
 export function makeBouillotteState(overrides?: Partial<BouillotteResponse>): BouillotteResponse {
   return { ...baseBouillotteState, ...overrides };
+}
+
+/** Base Primero state used as the default for {@link makePrimeroState}. A 4-player 4-card pot-vying game; defaults to the human Betting phase (phase 0). */
+const basePrimeroState: PrimeroResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      chips: 190,
+      roundBet: 10,
+      folded: false,
+      out: false,
+      cardCount: 4,
+      cards: [
+        { design: 'SPADE' as const, value: 13 },
+        { design: 'HEART' as const, value: 11 },
+        { design: 'CLOVER' as const, value: 7 },
+        { design: 'DIAMOND' as const, value: 4 },
+      ],
+      handName: 'primero',
+      isWinner: false,
+    },
+    {
+      id: 1,
+      isHuman: false,
+      chips: 190,
+      roundBet: 10,
+      folded: false,
+      out: false,
+      cardCount: 4,
+      cards: [],
+      isWinner: false,
+    },
+    {
+      id: 2,
+      isHuman: false,
+      chips: 190,
+      roundBet: 10,
+      folded: false,
+      out: false,
+      cardCount: 4,
+      cards: [],
+      isWinner: false,
+    },
+    {
+      id: 3,
+      isHuman: false,
+      chips: 190,
+      roundBet: 10,
+      folded: false,
+      out: false,
+      cardCount: 4,
+      cards: [],
+      isWinner: false,
+    },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  pot: 40,
+  ante: 10,
+  chips: 190,
+  currentBet: 10,
+  raiseCount: 0,
+  maxRaises: 4,
+  currentPlayerIdx: 0,
+  dealerIdx: 0,
+  isHumanTurn: true,
+  canRaise: true,
+  winnerIdx: -1,
+  matchWinnerIdx: -1,
+  result: 0,
+  gameEndFlag: false,
+  hint: null,
+  config: { playerCount: 4, ante: 10, startingChips: 200, targetRounds: 10 },
+  message: '',
+};
+
+/**
+ * Creates a {@link PrimeroResponse} with sensible defaults (the human Betting
+ * phase, phase 0). Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial PrimeroResponse fields to override.
+ * @returns A complete PrimeroResponse suitable for use in tests.
+ */
+export function makePrimeroState(overrides?: Partial<PrimeroResponse>): PrimeroResponse {
+  return { ...basePrimeroState, ...overrides };
 }

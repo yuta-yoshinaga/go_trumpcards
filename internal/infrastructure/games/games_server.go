@@ -1000,4 +1000,9 @@ func init() {
 			return usecase.NewBouillotteInteractor(domain.NewDefaultBouillotte(), new(presenter.BouillotteWebPresenter))
 		},
 		controller.NewBouillotteWebController)
+	BindWebControllerFor("primero",
+		func() usecase.PrimeroInteractorIF {
+			return usecase.NewPrimeroInteractor(domain.NewDefaultPrimero(), new(presenter.PrimeroWebPresenter))
+		},
+		controller.NewPrimeroWebController)
 }
