@@ -114,6 +114,7 @@ import type {
   MaoResponse,
   MariasResponse,
   MemoryResponse,
+  MichiganResponse,
   MightyResponse,
   MississippiStudResponse,
   MonteCarloResponse,
@@ -386,6 +387,7 @@ const workerUrl: Record<string, string> = {
   guts: WORKER_EXTRA,
   bouillotte: WORKER_EXTRA,
   primero: WORKER_EXTRA,
+  michigan: WORKER_EXTRA,
   eightoff: WORKER_SOLO,
   penguin: WORKER_SOLO,
   chinesepoker: WORKER_CASINO,
@@ -4427,6 +4429,39 @@ export const primeroApi = {
   ) => gameExec<PrimeroResponse>('primero', { command, action, config }),
 };
 
+/** Configuration options accepted by {@link michiganApi}.exec on `reset`. */
+export interface MichiganConfigInput {
+  /** Number of players at the table (3–8, default 4). */
+  playerCount?: number;
+  /** Total chips each player distributes across the four boodles per round (default 8). */
+  ante?: number;
+  /** Chips each player starts the match with (default 200). */
+  startingChips?: number;
+  /** Rounds played before the richest player wins the match (default 10). */
+  targetRounds?: number;
+}
+
+/**
+ * API client for the Michigan (Newmarket) /michigan/exec endpoint.
+ *
+ * Michigan is a "stops" chip-betting game.
+ *   - `reset` starts a fresh game, optionally applying a {@link MichiganConfigInput}.
+ *   - `bet` → `(boodleBets)` distributes the human's chips across the four
+ *     boodles (order A♥, K♣, Q♦, J♠); the array must sum to `betBudget`.
+ *   - `play` → `(cardIndex)` plays the hand card at that index (must be in
+ *     `playableIndices`).
+ *   - `nextround` deals the next round (chips persist server-side).
+ *   - `log` and `hint` carry no extra fields.
+ */
+export const michiganApi = {
+  exec: (
+    command: 'reset' | 'bet' | 'play' | 'nextround' | 'log' | 'hint',
+    boodleBets?: number[],
+    cardIndex?: number,
+    config?: MichiganConfigInput,
+  ) => gameExec<MichiganResponse>('michigan', { command, boodleBets, cardIndex, config }),
+};
+
 /** API client for the Blackjack Switch /blackjackswitch/exec endpoint. */
 export const blackjackswitchApi = {
   exec: (command: 'reset' | 'bet' | 'switch' | 'keep' | 'hit' | 'stand' | 'doubledown' | 'log', amount?: number) =>
@@ -4688,6 +4723,7 @@ const games = [
   'guts',
   'bouillotte',
   'primero',
+  'michigan',
 ] as const;
 type Game = (typeof games)[number];
 

@@ -1010,4 +1010,9 @@ func init() {
 			return usecase.NewPrimeroInteractor(domain.NewDefaultPrimero(), new(presenter.PrimeroWebPresenter))
 		},
 		controller.NewPrimeroWebController)
+	BindWebControllerFor("michigan",
+		func() usecase.MichiganInteractorIF {
+			return usecase.NewMichiganInteractor(domain.NewDefaultMichigan(), new(presenter.MichiganWebPresenter))
+		},
+		controller.NewMichiganWebController)
 }

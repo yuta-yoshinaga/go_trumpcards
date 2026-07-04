@@ -19,6 +19,7 @@ import type {
   LooResponse,
   ManilleResponse,
   MariasResponse,
+  MichiganResponse,
   MusResponse,
   NapResponse,
   OmbreResponse,
@@ -2239,6 +2240,71 @@ const baseBouillotteState: BouillotteResponse = {
  */
 export function makeBouillotteState(overrides?: Partial<BouillotteResponse>): BouillotteResponse {
   return { ...baseBouillotteState, ...overrides };
+}
+
+/** Base Michigan state used as the default for {@link makeMichiganState}. A 4-player "stops" chip-betting game; defaults to the human Bet phase (phase 0). */
+const baseMichiganState: MichiganResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      chips: 192,
+      roundBet: 8,
+      cardCount: 5,
+      cards: [
+        { design: 'HEART' as const, value: 3 },
+        { design: 'HEART' as const, value: 4 },
+        { design: 'CLOVER' as const, value: 7 },
+        { design: 'DIAMOND' as const, value: 10 },
+        { design: 'SPADE' as const, value: 2 },
+      ],
+      isCurrent: true,
+      isWinner: false,
+    },
+    { id: 1, isHuman: false, chips: 192, roundBet: 8, cardCount: 5, cards: [], isCurrent: false, isWinner: false },
+    { id: 2, isHuman: false, chips: 192, roundBet: 8, cardCount: 5, cards: [], isCurrent: false, isWinner: false },
+    { id: 3, isHuman: false, chips: 192, roundBet: 8, cardCount: 5, cards: [], isCurrent: false, isWinner: false },
+  ],
+  boodles: [
+    { card: { design: 'HEART' as const, value: 1 }, chips: 2, claimedBy: -1 },
+    { card: { design: 'CLOVER' as const, value: 13 }, chips: 2, claimedBy: -1 },
+    { card: { design: 'DIAMOND' as const, value: 12 }, chips: 2, claimedBy: -1 },
+    { card: { design: 'SPADE' as const, value: 11 }, chips: 2, claimedBy: -1 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  ante: 8,
+  chips: 192,
+  betBudget: 8,
+  humanBetPlaced: false,
+  currentPlayerIdx: 0,
+  dealerIdx: 0,
+  leadPlayerIdx: 0,
+  seqSuit: 0,
+  seqSuitName: '',
+  seqHighValue: 0,
+  needNewSequence: true,
+  deadHandCount: 3,
+  isHumanTurn: true,
+  playableIndices: [0, 1, 2, 3, 4],
+  winnerIdx: -1,
+  matchWinnerIdx: -1,
+  result: 0,
+  gameEndFlag: false,
+  hint: null,
+  config: { playerCount: 4, ante: 8, startingChips: 200, targetRounds: 10 },
+  message: '',
+};
+
+/**
+ * Creates a {@link MichiganResponse} with sensible defaults (the human Bet
+ * phase, phase 0). Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial MichiganResponse fields to override.
+ * @returns A complete MichiganResponse suitable for use in tests.
+ */
+export function makeMichiganState(overrides?: Partial<MichiganResponse>): MichiganResponse {
+  return { ...baseMichiganState, ...overrides };
 }
 
 /** Base Primero state used as the default for {@link makePrimeroState}. A 4-player 4-card pot-vying game; defaults to the human Betting phase (phase 0). */

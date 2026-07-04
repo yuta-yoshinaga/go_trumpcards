@@ -168,6 +168,9 @@
   /* Primero — a rich Renaissance emerald-forest felt evoking the 16th-century Tudor-court gamble, distinct from Bouillotte's aubergine and the standard table green. */
   --color-game-bg-primero: #14654a;
   --color-game-bg-primero-dark: #0a3628;
+  /* Michigan (Newmarket) — a crisp racing-green turf evoking the English Newmarket racecourse, distinct from Primero's emerald and the standard table green. */
+  --color-game-bg-michigan: #2f6b34;
+  --color-game-bg-michigan-dark: #1a3d1e;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;

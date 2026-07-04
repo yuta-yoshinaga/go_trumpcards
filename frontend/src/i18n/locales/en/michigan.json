@@ -1,0 +1,60 @@
+{
+  "title": "Michigan",
+  "phase": {
+    "bet": "Bet",
+    "play": "Play",
+    "result": "Result"
+  },
+  "settings": {
+    "title": "Settings",
+    "playerCount": "Players",
+    "ante": "Ante",
+    "startingChips": "Starting chips",
+    "targetRounds": "Rounds"
+  },
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "round": "Round {{n}}",
+  "ante": "Ante: {{amount}}",
+  "chips": "Chips: {{amount}}",
+  "handCount": "Hand: {{count}}",
+  "deadHand": "Dead hand: {{count}}",
+  "boodlesTitle": "Boodles (A♥ K♣ Q♦ J♠)",
+  "boodleChips": "Chips: {{amount}}",
+  "boodleClaimed": "Won by {{name}}",
+  "boodleOpen": "Open",
+  "sequence": {
+    "new": "Start a new sequence.",
+    "active": "Sequence: {{suit}} up to {{value}}"
+  },
+  "playersTitle": "Players",
+  "badge": {
+    "waiting": "Waiting",
+    "toPlay": "To play",
+    "wentOut": "Went out"
+  },
+  "handLabel": "Your hand",
+  "betPrompt": "Distribute {{budget}} chips across the boodles.",
+  "betRemaining": "Remaining: {{amount}}",
+  "betMinusAria": "Remove a chip from boodle {{index}}",
+  "betPlusAria": "Add a chip to boodle {{index}}",
+  "placeBets": "Place bets",
+  "playPrompt": "Play a card in an ascending same-suit run.",
+  "playCardAria": "Play hand card {{index}}",
+  "nextRound": "Next Round",
+  "roundResult": {
+    "title": "Round Result",
+    "winner": "{{name}} emptied their hand to end the round."
+  },
+  "hint": {
+    "forced": "The next card is forced — play it.",
+    "claim_boodle": "This card matches a boodle — collect its chips.",
+    "lead_low": "Lead with your lowest card."
+  },
+  "tutorial": {
+    "info": "This shows the round number, ante, dead-hand size, the four boodle cards with the chips staked on them, the current sequence, and each player's chips and status. Michigan (Newmarket) is a 'stops' chip-betting game.",
+    "hand": "Your hand. During the play phase, cards you may legally play are highlighted; click one to play it in an ascending same-suit run.",
+    "actions": "On your bet turn, distribute your chips across the four boodles and place your bets. During play, click a playable card. At the result phase, deal the next round.",
+    "resetButton": "Reset the game and start over."
+  }
+}

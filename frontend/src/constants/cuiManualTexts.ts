@@ -109,6 +109,7 @@ import manille from '../../../docs/manual/cui/manille.md?raw';
 import mao from '../../../docs/manual/cui/mao.md?raw';
 import marias from '../../../docs/manual/cui/marias.md?raw';
 import memory from '../../../docs/manual/cui/memory.md?raw';
+import michigan from '../../../docs/manual/cui/michigan.md?raw';
 import mighty from '../../../docs/manual/cui/mighty.md?raw';
 import mississippistud from '../../../docs/manual/cui/mississippistud.md?raw';
 import montecarlo from '../../../docs/manual/cui/montecarlo.md?raw';
@@ -269,6 +270,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/guts': guts,
   '/bouillotte': bouillotte,
   '/primero': primero,
+  '/michigan': michigan,
   '/tressette': tressette,
   '/hearts': hearts,
   '/holdem': holdem,

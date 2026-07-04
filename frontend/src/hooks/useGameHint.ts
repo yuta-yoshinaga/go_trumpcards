@@ -76,6 +76,7 @@ import type {
   ManilleResponse,
   MariasResponse,
   MemoryResponse,
+  MichiganResponse,
   MightyResponse,
   MississippiStudResponse,
   MonteCarloResponse,
@@ -235,6 +236,7 @@ import { getMacauHint } from '../utils/hints/macauHint';
 import { getManilleHint } from '../utils/hints/manilleHint';
 import { getMariasHint } from '../utils/hints/mariasHint';
 import { getMemoryHint } from '../utils/hints/memoryHint';
+import { getMichiganHint } from '../utils/hints/michiganHint';
 import { getMightyHint } from '../utils/hints/mightyHint';
 import { getMississippiStudHint } from '../utils/hints/mississippiStudHint';
 import { getMonteCarloHint } from '../utils/hints/montecarloHint';
@@ -492,6 +494,7 @@ const hintFactories = {
   guts: (s) => getGutsHint(s as GutsResponse),
   bouillotte: (s) => getBouillotteHint(s as BouillotteResponse),
   primero: (s) => getPrimeroHint(s as PrimeroResponse),
+  michigan: (s) => getMichiganHint(s as MichiganResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

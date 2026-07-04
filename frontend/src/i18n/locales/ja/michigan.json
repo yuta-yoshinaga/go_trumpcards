@@ -1,0 +1,60 @@
+{
+  "title": "ミシガン",
+  "phase": {
+    "bet": "ベット",
+    "play": "プレイ",
+    "result": "結果"
+  },
+  "settings": {
+    "title": "設定",
+    "playerCount": "プレイヤー数",
+    "ante": "アンティ",
+    "startingChips": "初期チップ",
+    "targetRounds": "ラウンド数"
+  },
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "round": "ラウンド {{n}}",
+  "ante": "アンティ: {{amount}}",
+  "chips": "チップ: {{amount}}",
+  "handCount": "手札: {{count}}",
+  "deadHand": "デッドハンド: {{count}}",
+  "boodlesTitle": "ブードル（A♥ K♣ Q♦ J♠）",
+  "boodleChips": "チップ: {{amount}}",
+  "boodleClaimed": "{{name}} が獲得",
+  "boodleOpen": "未獲得",
+  "sequence": {
+    "new": "新しいシーケンスを始めてください。",
+    "active": "シーケンス: {{suit}} {{value}} まで"
+  },
+  "playersTitle": "プレイヤー",
+  "badge": {
+    "waiting": "待機",
+    "toPlay": "手番",
+    "wentOut": "上がり"
+  },
+  "handLabel": "あなたの手札",
+  "betPrompt": "{{budget}} チップを 4 つのブードルに分配してください。",
+  "betRemaining": "残り: {{amount}}",
+  "betMinusAria": "ブードル {{index}} からチップを 1 枚減らす",
+  "betPlusAria": "ブードル {{index}} にチップを 1 枚足す",
+  "placeBets": "賭ける",
+  "playPrompt": "同じスートの昇順でカードを出してください。",
+  "playCardAria": "手札 {{index}} を出す",
+  "nextRound": "次のラウンド",
+  "roundResult": {
+    "title": "ラウンド結果",
+    "winner": "{{name}} が手札を出し切ってラウンドを終えました。"
+  },
+  "hint": {
+    "forced": "次の札は強制です — 出しましょう。",
+    "claim_boodle": "この札はブードルと一致します — チップを獲得できます。",
+    "lead_low": "最小の札でリードしましょう。"
+  },
+  "tutorial": {
+    "info": "ラウンド番号・アンティ・デッドハンドの枚数、4 枚のブードル札とそこに賭けられたチップ、現在のシーケンス、各プレイヤーのチップと状態を表示します。ミシガン（ニューマーケット）は「ストップ系」のチップ賭けゲームです。",
+    "hand": "あなたの手札です。プレイフェーズでは出せる札がハイライトされます。クリックすると同じスートの昇順で出せます。",
+    "actions": "ベットの手番では、チップを 4 つのブードルに分配して賭けます。プレイ中は出せる札をクリックします。結果フェーズでは次のラウンドを配ります。",
+    "resetButton": "ゲームをリセットして最初からやり直します。"
+  }
+}
