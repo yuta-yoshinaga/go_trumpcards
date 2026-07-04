@@ -102,6 +102,13 @@ func TestPrimeroEval_Categories(t *testing.T) {
 	badCat, badTb := domain.PrimeroEval([]*domain.Card{primeroCard(domain.CardDesignSpade, 7)})
 	assert.Equal(t, -1, badCat)
 	assert.Nil(t, badTb)
+
+	// A nil card in the hand is skipped, not dereferenced (no panic).
+	nilCat, _ := domain.PrimeroEval([]*domain.Card{
+		primeroCard(domain.CardDesignSpade, 7), nil,
+		primeroCard(domain.CardDesignHeart, 6), primeroCard(domain.CardDesignClover, 5),
+	})
+	assert.Equal(t, domain.PrimeroHandNumerus, nilCat)
 }
 
 // primeroShowdownGame は 4 人ゲームを組み立て、全員をアクティブにして決定的な

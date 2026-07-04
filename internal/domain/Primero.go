@@ -545,6 +545,9 @@ func PrimeroEval(cards []*Card) (int, []int) {
 	total := 0
 	distinct := 0
 	for _, c := range cards {
+		if c == nil {
+			continue
+		}
 		pts := primeroPoints(c)
 		total += pts
 		d := c.GetDesign()
