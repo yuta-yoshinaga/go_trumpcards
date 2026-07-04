@@ -19,7 +19,7 @@ import { btnDanger, btnOutline, btnPrimary, focusRingWhite } from '../styles/but
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, CariocaContractSlot, CariocaResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
-import { evaluateContractSlot } from '../utils/contractRummyUtils';
+import { evaluateCariocaContractSlot } from '../utils/cariocaUtils';
 
 /** Phase identifiers for Carioca. */
 const CA_PHASE = {
@@ -182,7 +182,7 @@ function CariocaPageContent() {
     return state.contractSlots.map((slot, slotIdx) => {
       const cardIdxs = contractSlots[slotIdx] ?? [];
       const cards = cardIdxs.map((i) => humanPlayer.cards[i]).filter(Boolean);
-      return evaluateContractSlot(slot, cards);
+      return evaluateCariocaContractSlot(slot, cards);
     });
   }, [state, humanPlayer, contractSlots]);
 

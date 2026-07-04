@@ -50,6 +50,10 @@ func TestCarioca_IsRun_Branches(t *testing.T) {
 		{"duplicate value rejected", []*Card{cariocaCard(1, 5), cariocaCard(1, 5), cariocaCard(1, 6), cariocaCard(1, 7)}, false},
 		{"span too wide rejected", []*Card{cariocaCard(1, 2), cariocaCard(1, 4), cariocaCard(1, 6), cariocaCard(1, 8)}, false},
 		{"wraparound rejected", []*Card{cariocaCard(1, 12), cariocaCard(1, 13), cariocaCard(1, 1), cariocaCard(1, 2)}, false},
+		// Unsorted input must still be evaluated correctly (regression for the
+		// span-of-unsorted-values bug): 7-5-8-6 is the valid run 5-6-7-8.
+		{"unsorted valid run", []*Card{cariocaCard(1, 7), cariocaCard(1, 5), cariocaCard(1, 8), cariocaCard(1, 6)}, true},
+		{"unsorted invalid run", []*Card{cariocaCard(1, 8), cariocaCard(1, 5), cariocaCard(1, 2), cariocaCard(1, 6)}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -581,12 +585,19 @@ func TestCarioca_Unmarshal_DefaultsNilFields(t *testing.T) {
 	}
 }
 
-func TestCarioca_Unmarshal_EmptyPlayersAllowsAnyIndex(t *testing.T) {
-	// No players (n==0): index checks are skipped, sentinel branch returns nil.
-	data, _ := json.Marshal(map[string]any{"pl": []map[string]any{}, "ps": 0, "rn": 0, "wi": 5, "rw": -1})
-	var g Carioca
-	if err := json.Unmarshal(data, &g); err != nil {
-		t.Errorf("empty-player doc should unmarshal: %v", err)
+func TestCarioca_Unmarshal_RejectsInvalidPlayerCount(t *testing.T) {
+	// An empty (n==0) or out-of-range player count is rejected: a restored game
+	// with fewer than the minimum players would panic on players[currentPlayerIdx].
+	empty, _ := json.Marshal(map[string]any{"pl": []map[string]any{}, "ps": 0, "rn": 0, "wi": 5, "rw": -1})
+	var g1 Carioca
+	if err := json.Unmarshal(empty, &g1); err == nil {
+		t.Error("empty-player doc should be rejected")
+	}
+	// Two players is below CariocaPlayerCountMin (3).
+	twoPlayers, _ := json.Marshal(map[string]any{"pl": []map[string]any{{}, {}}, "ps": 0, "rn": 1})
+	var g2 Carioca
+	if err := json.Unmarshal(twoPlayers, &g2); err == nil {
+		t.Error("two-player doc should be rejected")
 	}
 }
 

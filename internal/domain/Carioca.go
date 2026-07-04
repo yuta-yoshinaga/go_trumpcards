@@ -571,8 +571,8 @@ func (g *Carioca) cpuShouldTakeDiscard(top *Card) bool {
 	// コントラクト未達 → 引いた後にコントラクトを満たせる確率が上がるか簡易評価
 	current := cariocaCollectCards(player)
 	withTop := append(current, top)
-	beforeScore := scoreContractProgress(CariocaContractForRound(g.roundNumber), current)
-	afterScore := scoreContractProgress(CariocaContractForRound(g.roundNumber), withTop)
+	beforeScore := cariocaScoreContractProgress(CariocaContractForRound(g.roundNumber), current)
+	afterScore := cariocaScoreContractProgress(CariocaContractForRound(g.roundNumber), withTop)
 	if afterScore > beforeScore {
 		return true
 	}
@@ -593,7 +593,7 @@ func (g *Carioca) cpuPlay() {
 
 	// コントラクト未達なら、達成可能か確認 → 達成可能なら一気にメルドする
 	if !player.IsContractMet() {
-		if indicesPerSlot, ok := FindContractMeld(CariocaContractForRound(g.roundNumber), cariocaCollectCards(player)); ok {
+		if indicesPerSlot, ok := cariocaFindContractMeld(CariocaContractForRound(g.roundNumber), cariocaCollectCards(player)); ok {
 			handIdx := cariocaMapCardsToHandIndices(player, indicesPerSlot)
 			if handIdx != nil {
 				_ = g.applyContractMeld(handIdx)
@@ -606,8 +606,8 @@ func (g *Carioca) cpuPlay() {
 		// 追加メルド: 残った手札からメルドを 1 つ作って出す
 		for {
 			cards := cariocaCollectCards(player)
-			extra := findExtraMeld(cards)
-			if extra == nil {
+			extra, ok := cariocaFindExtraMeld(cards)
+			if !ok {
 				break
 			}
 			handIdx := cariocaMapSelectionToHandIndices(player, extra)
@@ -982,6 +982,9 @@ func cariocaIsRun(cards []*Card) bool {
 		if len(variant) == 0 {
 			continue
 		}
+		// cards may arrive unsorted (user-selected indices, or a layoff card
+		// appended at the end), so sort each variant before measuring the span.
+		sort.Ints(variant)
 		span := variant[len(variant)-1] - variant[0]
 		if span <= total-1 {
 			return true
@@ -1057,6 +1060,345 @@ func cariocaMapSelectionToHandIndices(p *CariocaPlayer, selection []*Card) []int
 	return result
 }
 
+// --- Joker-aware CPU helpers ---
+
+// cariocaFindContractMeld は与えられたカード集合がコントラクトを満たせるか判定し、満たすなら
+// スロットごとのカード（手札を直接参照）を返す。ジョーカーをワイルド（各グループ最大 1 枚）として扱う。
+// ContractRummy の FindContractMeld と同じ再帰構造だが、候補生成／検証をジョーカー対応版に置き換える。
+func cariocaFindContractMeld(contract Contract, cards []*Card) ([][]*Card, bool) {
+	if len(contract.Slots) == 0 {
+		return nil, false
+	}
+	used := make([]bool, len(cards))
+	result := make([][]*Card, len(contract.Slots))
+	if cariocaFindContractMeldRecursive(contract.Slots, 0, cards, used, result) {
+		return result, true
+	}
+	return nil, false
+}
+
+func cariocaFindContractMeldRecursive(slots []ContractSlot, slotIdx int, cards []*Card, used []bool, result [][]*Card) bool {
+	if slotIdx >= len(slots) {
+		return true
+	}
+	slot := slots[slotIdx]
+	for _, combo := range cariocaCandidateCardsForSlot(slot, cards, used) {
+		for _, idx := range combo {
+			used[idx] = true
+		}
+		comboCards := make([]*Card, len(combo))
+		for i, idx := range combo {
+			comboCards[i] = cards[idx]
+		}
+		result[slotIdx] = comboCards
+		if cariocaFindContractMeldRecursive(slots, slotIdx+1, cards, used, result) {
+			return true
+		}
+		for _, idx := range combo {
+			used[idx] = false
+		}
+	}
+	return false
+}
+
+// cariocaCandidateCardsForSlot スロットを満たすカードの組み合わせ候補（手札インデックス）を返す。
+// 生成した各候補は cariocaValidateContractSlot（ジョーカー対応）で検証してから返す。
+func cariocaCandidateCardsForSlot(slot ContractSlot, cards []*Card, used []bool) [][]int {
+	var raw [][]int
+	switch slot.Kind {
+	case ContractSlotSet:
+		raw = cariocaFindSetCandidates(slot.Size, cards, used)
+	case ContractSlotRun:
+		raw = cariocaFindRunCandidates(slot.Size, cards, used)
+	default:
+		return nil
+	}
+	result := make([][]int, 0, len(raw))
+	for _, combo := range raw {
+		comboCards := make([]*Card, len(combo))
+		for i, idx := range combo {
+			comboCards[i] = cards[idx]
+		}
+		if cariocaValidateContractSlot(slot, comboCards) {
+			result = append(result, combo)
+		}
+	}
+	return result
+}
+
+// cariocaFindSetCandidates サイズ size の同ランクセット候補を返す。
+// 純粋なセット（同ランク size 枚）に加え、実カード size-1 枚 + ジョーカー 1 枚の組も列挙する。
+func cariocaFindSetCandidates(size int, cards []*Card, used []bool) [][]int {
+	byRank := make(map[int][]int)
+	jokerIdx := -1
+	for i, c := range cards {
+		if used[i] {
+			continue
+		}
+		if cariocaIsJoker(c) {
+			if jokerIdx == -1 {
+				jokerIdx = i
+			}
+			continue
+		}
+		byRank[c.GetValue()] = append(byRank[c.GetValue()], i)
+	}
+	var result [][]int
+	for _, idxs := range byRank {
+		sort.Ints(idxs)
+		if len(idxs) >= size {
+			for _, combo := range chooseIntCombinations(idxs, size) {
+				result = append(result, append([]int(nil), combo...))
+			}
+		}
+		if jokerIdx >= 0 && size >= 2 && len(idxs) >= size-1 {
+			for _, combo := range chooseIntCombinations(idxs, size-1) {
+				pick := append([]int(nil), combo...)
+				result = append(result, append(pick, jokerIdx))
+			}
+		}
+	}
+	return result
+}
+
+// cariocaFindRunCandidates サイズ size の同スート連続ラン候補を返す。
+// 実カードのみで連続する窓に加え、ジョーカー 1 枚で隙間／端 1 箇所を補える窓も列挙する。
+func cariocaFindRunCandidates(size int, cards []*Card, used []bool) [][]int {
+	jokerIdx := -1
+	bySuit := make(map[int]map[int]int) // suit → value → idx
+	for i, c := range cards {
+		if used[i] {
+			continue
+		}
+		if cariocaIsJoker(c) {
+			if jokerIdx == -1 {
+				jokerIdx = i
+			}
+			continue
+		}
+		s := c.GetDesign()
+		if bySuit[s] == nil {
+			bySuit[s] = make(map[int]int)
+		}
+		if _, ok := bySuit[s][c.GetValue()]; !ok {
+			bySuit[s][c.GetValue()] = i
+		}
+	}
+	var result [][]int
+	seen := make(map[string]bool)
+	for _, byVal := range bySuit {
+		lookup := func(v int) (int, bool) {
+			if v == 14 {
+				idx, ok := byVal[1] // Ace-high
+				return idx, ok
+			}
+			idx, ok := byVal[v]
+			return idx, ok
+		}
+		for start := 1; start+size-1 <= 14; start++ {
+			present := make([]int, 0, size)
+			missing := 0
+			for v := start; v < start+size; v++ {
+				if idx, ok := lookup(v); ok {
+					present = append(present, idx)
+				} else {
+					missing++
+				}
+			}
+			switch {
+			case missing == 0:
+				cariocaAddRunCandidate(&result, seen, append([]int(nil), present...))
+			case missing == 1 && jokerIdx >= 0:
+				cariocaAddRunCandidate(&result, seen, append(present, jokerIdx))
+			}
+		}
+	}
+	return result
+}
+
+// cariocaAddRunCandidate は重複するインデックス集合を除外しつつ候補を追加する。
+func cariocaAddRunCandidate(result *[][]int, seen map[string]bool, pick []int) {
+	key := append([]int(nil), pick...)
+	sort.Ints(key)
+	s := fmt.Sprint(key)
+	if seen[s] {
+		return
+	}
+	seen[s] = true
+	*result = append(*result, pick)
+}
+
+// cariocaScoreContractProgress コントラクト進捗の簡易スコアを返す。
+// 手札のジョーカーはワイルドとして、あと 1 枚で揃うセット（ペア）やラン（3 連）を完成扱いに引き上げる。
+func cariocaScoreContractProgress(contract Contract, cards []*Card) int {
+	if len(contract.Slots) == 0 {
+		return 0
+	}
+	setSlots, runSlots := 0, 0
+	for _, s := range contract.Slots {
+		if s.Kind == ContractSlotSet {
+			setSlots++
+		} else {
+			runSlots++
+		}
+	}
+	availJokers := 0
+	reals := make([]*Card, 0, len(cards))
+	for _, c := range cards {
+		if cariocaIsJoker(c) {
+			availJokers++
+			continue
+		}
+		reals = append(reals, c)
+	}
+
+	score := 0
+	if setSlots > 0 {
+		byRank := make(map[int]int)
+		for _, c := range reals {
+			byRank[c.GetValue()]++
+		}
+		hits := 0
+		pairs := 0
+		for _, n := range byRank {
+			hits += n / CariocaSetSize
+			if n%CariocaSetSize == CariocaSetSize-1 {
+				pairs++
+			}
+		}
+		if hits > setSlots {
+			hits = setSlots
+		}
+		score += hits * 10
+		remaining := setSlots - hits
+		// ジョーカーでペアをセットに完成させる。
+		for pairs > 0 && availJokers > 0 && remaining > 0 {
+			score += 10
+			pairs--
+			availJokers--
+			remaining--
+		}
+		score += pairs // 完成に至らないペアは部分点。
+	}
+	if runSlots > 0 {
+		bySuit := make(map[int][]int)
+		for _, c := range reals {
+			bySuit[c.GetDesign()] = append(bySuit[c.GetDesign()], c.GetValue())
+		}
+		hits := 0
+		near := 0
+		for _, vals := range bySuit {
+			switch best := longestRun(vals); {
+			case best >= CariocaRunSize:
+				hits++
+			case best == CariocaRunSize-1:
+				near++
+			}
+		}
+		if hits > runSlots {
+			hits = runSlots
+		}
+		score += hits * 10
+		remaining := runSlots - hits
+		// ジョーカーで 3 連ランを 4 連に完成させる。
+		for near > 0 && availJokers > 0 && remaining > 0 {
+			score += 10
+			near--
+			availJokers--
+			remaining--
+		}
+	}
+	return score
+}
+
+// cariocaFindExtraMeld 残った手札からセット (3+) またはラン (4+) を 1 つ見つけて返す。
+// ジョーカーをワイルド（最大 1 枚）として扱う。見つからなければ ok=false。
+func cariocaFindExtraMeld(cards []*Card) ([]*Card, bool) {
+	var joker *Card
+	byRank := make(map[int][]*Card)
+	bySuit := make(map[int]map[int]*Card)
+	for _, c := range cards {
+		if cariocaIsJoker(c) {
+			if joker == nil {
+				joker = c
+			}
+			continue
+		}
+		byRank[c.GetValue()] = append(byRank[c.GetValue()], c)
+		s := c.GetDesign()
+		if bySuit[s] == nil {
+			bySuit[s] = make(map[int]*Card)
+		}
+		if _, ok := bySuit[s][c.GetValue()]; !ok {
+			bySuit[s][c.GetValue()] = c
+		}
+	}
+	// セット: 同ランク 3 枚、または 同ランク 2 枚 + ジョーカー。
+	for _, group := range byRank {
+		if len(group) >= CariocaSetSize {
+			pick := append([]*Card(nil), group[:CariocaSetSize]...)
+			if cariocaIsSet(pick) {
+				return pick, true
+			}
+		}
+	}
+	if joker != nil {
+		for _, group := range byRank {
+			if len(group) >= CariocaSetSize-1 {
+				pick := append([]*Card(nil), group[:CariocaSetSize-1]...)
+				pick = append(pick, joker)
+				if cariocaIsSet(pick) {
+					return pick, true
+				}
+			}
+		}
+	}
+	// ラン: 同スート連続 4 枚、または 3 枚 + ジョーカー。
+	for _, byVal := range bySuit {
+		if pick, ok := cariocaFindRunInSuit(byVal, CariocaRunSize, joker); ok {
+			return pick, true
+		}
+	}
+	return nil, false
+}
+
+// cariocaFindRunInSuit 単一スートの value→card から size 枚の連続ランを 1 つ探す。
+// joker が非 nil なら隙間／端 1 箇所を補える。見つからなければ ok=false。
+func cariocaFindRunInSuit(byVal map[int]*Card, size int, joker *Card) ([]*Card, bool) {
+	lookup := func(v int) (*Card, bool) {
+		if v == 14 {
+			c, ok := byVal[1] // Ace-high
+			return c, ok
+		}
+		c, ok := byVal[v]
+		return c, ok
+	}
+	for start := 1; start+size-1 <= 14; start++ {
+		present := make([]*Card, 0, size)
+		missing := 0
+		for v := start; v < start+size; v++ {
+			if c, ok := lookup(v); ok {
+				present = append(present, c)
+			} else {
+				missing++
+			}
+		}
+		switch {
+		case missing == 0:
+			pick := append([]*Card(nil), present...)
+			if cariocaIsRun(pick) {
+				return pick, true
+			}
+		case missing == 1 && joker != nil:
+			pick := append(present, joker)
+			if cariocaIsRun(pick) {
+				return pick, true
+			}
+		}
+	}
+	return nil, false
+}
+
 // --- JSON ---
 
 // cariocaJSON は Carioca の JSON 表現
@@ -1118,10 +1460,16 @@ func (g *Carioca) UnmarshalJSON(data []byte) error {
 		g.players = make([]*CariocaPlayer, 0)
 	}
 	n := len(g.players)
+	if n < CariocaPlayerCountMin || n > CariocaPlayerCountMax {
+		return fmt.Errorf("carioca: invalid player count %d", n)
+	}
 
 	g.config = j.Config
 	if g.config.PlayerCount <= 0 {
 		g.config.PlayerCount = n
+	}
+	if err := g.config.Validate(); err != nil {
+		return fmt.Errorf("carioca: invalid config: %w", err)
 	}
 
 	// フェーズ検証

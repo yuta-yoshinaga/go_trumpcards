@@ -310,6 +310,45 @@ describe('CariocaPage', () => {
     expect(screen.getByTestId('ca-submit-contract')).not.toBeDisabled();
   });
 
+  it('enables Submit for a joker-wild contract meld', async () => {
+    // Slot 0 = 5,5,JOKER (a set completed by a wild); slot 1 = three 13s.
+    const jokerHand: Card[] = [
+      card('SPADE', 5),
+      card('HEART', 5),
+      { design: 'JOKER', value: 0 },
+      card('CLOVER', 13),
+      card('SPADE', 13),
+      card('HEART', 13),
+    ];
+    const jokerState: CariocaResponse = {
+      ...playState,
+      players: [
+        { ...playState.players[0], cards: jokerHand, cardCount: jokerHand.length },
+        playState.players[1],
+        playState.players[2],
+      ],
+    };
+    mockExec.mockResolvedValue(jokerState);
+    renderWithProviders(<CariocaPage />);
+    await waitFor(() => expect(screen.getByTestId('ca-slot-progress-0')).toBeInTheDocument());
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.querySelector('img'));
+
+    // Slot 0: 5, 5, joker — a set only because the joker acts as a wildcard.
+    fireEvent.click(cardButtons[0]);
+    fireEvent.click(cardButtons[1]);
+    fireEvent.click(cardButtons[2]);
+    fireEvent.click(screen.getByRole('button', { name: /Add to slot|スロットに追加/ }));
+    await waitFor(() => expect(screen.getByTestId('ca-slot-progress-0')).toHaveAttribute('data-state', 'satisfied'));
+    expect(screen.getByTestId('ca-submit-contract')).toBeDisabled();
+
+    // Slot 1: three 13s.
+    fireEvent.click(cardButtons[3]);
+    fireEvent.click(cardButtons[4]);
+    fireEvent.click(cardButtons[5]);
+    fireEvent.click(screen.getByRole('button', { name: /Add to slot|スロットに追加/ }));
+    await waitFor(() => expect(screen.getByTestId('ca-submit-contract')).not.toBeDisabled());
+  });
+
   it('flags an invalid set as invalid in the slot progress chip', async () => {
     mockExec.mockResolvedValue(playState);
     renderWithProviders(<CariocaPage />);

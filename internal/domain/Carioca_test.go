@@ -925,3 +925,170 @@ func TestCarioca_GetterSetterCoverage(t *testing.T) {
 		t.Error("out-of-range index should not be human")
 	}
 }
+
+// --- Joker-aware CPU helper tests (FIX A) ---
+
+// TestCariocaFindContractMeld_SetUsesJoker はセットスロットでジョーカーをワイルドとして使えることを検証する。
+func TestCariocaFindContractMeld_SetUsesJoker(t *testing.T) {
+	contract := CariocaContractForRound(1) // 2 セット
+	// 7 のトリオ + 5 のペア + ジョーカー1枚（ジョーカー無しでは 2 セット目を作れない）。
+	cards := []*Card{
+		cariocaCard(CardDesignSpade, 7), cariocaCard(CardDesignHeart, 7), cariocaCard(CardDesignDiamond, 7),
+		cariocaCard(CardDesignSpade, 5), cariocaCard(CardDesignHeart, 5), cariocaJoker(1),
+	}
+	// ジョーカー非対応の探索では 2 セット目を作れない。
+	if _, ok := FindContractMeld(contract, cards); ok {
+		t.Fatal("non-joker FindContractMeld should NOT satisfy the contract")
+	}
+	groups, ok := cariocaFindContractMeld(contract, cards)
+	if !ok {
+		t.Fatal("cariocaFindContractMeld should satisfy the contract using a joker")
+	}
+	if len(groups) != 2 {
+		t.Fatalf("expected 2 groups, got %d", len(groups))
+	}
+	usedJoker := false
+	for _, g := range groups {
+		if !cariocaIsSet(g) {
+			t.Errorf("group %v is not a valid set", g)
+		}
+		for _, c := range g {
+			if cariocaIsJoker(c) {
+				usedJoker = true
+			}
+		}
+	}
+	if !usedJoker {
+		t.Error("expected the contract meld to consume the joker as a wildcard")
+	}
+}
+
+// TestCariocaFindContractMeld_RunUsesJoker はランスロットでジョーカーが隙間を埋められることを検証する。
+func TestCariocaFindContractMeld_RunUsesJoker(t *testing.T) {
+	contract := CariocaContractForRound(3) // 2 ラン
+	cards := []*Card{
+		// 完成ラン: 2-3-4-5 スペード
+		cariocaCard(CardDesignSpade, 2), cariocaCard(CardDesignSpade, 3),
+		cariocaCard(CardDesignSpade, 4), cariocaCard(CardDesignSpade, 5),
+		// 隙間ラン: 7-8-[9=joker]-10 ハート
+		cariocaCard(CardDesignHeart, 7), cariocaCard(CardDesignHeart, 8),
+		cariocaCard(CardDesignHeart, 10), cariocaJoker(1),
+	}
+	if _, ok := FindContractMeld(contract, cards); ok {
+		t.Fatal("non-joker FindContractMeld should NOT satisfy the two-run contract")
+	}
+	groups, ok := cariocaFindContractMeld(contract, cards)
+	if !ok {
+		t.Fatal("cariocaFindContractMeld should satisfy the two-run contract using a joker")
+	}
+	for _, g := range groups {
+		if !cariocaIsRun(g) {
+			t.Errorf("group %v is not a valid run", g)
+		}
+	}
+}
+
+// TestCarioca_CpuPlay_MeldsContractWithJoker は CPU がジョーカーを使ってコントラクトを達成することを検証する。
+func TestCarioca_CpuPlay_MeldsContractWithJoker(t *testing.T) {
+	g := NewDefaultCarioca()
+	g.Reset()
+	g.SetRoundNumber(1) // 2 セット
+	g.SetCurrentPlayerIdx(1)
+	g.SetPhase(CariocaPhasePlay)
+	cpu := g.GetPlayer(1)
+	cariocaSetHand(cpu, []*Card{
+		cariocaCard(CardDesignSpade, 7), cariocaCard(CardDesignHeart, 7), cariocaCard(CardDesignDiamond, 7),
+		cariocaCard(CardDesignSpade, 5), cariocaCard(CardDesignHeart, 5), cariocaJoker(1),
+		cariocaCard(CardDesignSpade, 2), cariocaCard(CardDesignHeart, 9),
+		cariocaCard(CardDesignDiamond, 11), cariocaCard(CardDesignClover, 13),
+	})
+	if cpu.IsContractMet() {
+		t.Fatal("precondition: contract must not be met yet")
+	}
+	g.CpuPlay()
+	if !cpu.IsContractMet() {
+		t.Error("CPU should meet the contract using the joker as a wildcard")
+	}
+}
+
+// TestCariocaScoreContractProgress_JokerHelps はジョーカーが進捗スコアを引き上げることを検証する。
+func TestCariocaScoreContractProgress_JokerHelps(t *testing.T) {
+	contract := CariocaContractForRound(1) // 2 セット
+	base := []*Card{
+		cariocaCard(CardDesignSpade, 5), cariocaCard(CardDesignHeart, 5),
+		cariocaCard(CardDesignSpade, 2), cariocaCard(CardDesignHeart, 9),
+	}
+	before := cariocaScoreContractProgress(contract, base)
+	after := cariocaScoreContractProgress(contract, append(append([]*Card(nil), base...), cariocaJoker(1)))
+	if after <= before {
+		t.Errorf("joker should raise progress score: before=%d after=%d", before, after)
+	}
+	if after < 10 {
+		t.Errorf("joker-completed set should score at least 10, got %d", after)
+	}
+
+	// ランスロットでも同様（3 連 → 4 連へ完成）。
+	runContract := CariocaContractForRound(3) // 2 ラン
+	runBase := []*Card{
+		cariocaCard(CardDesignSpade, 2), cariocaCard(CardDesignSpade, 3), cariocaCard(CardDesignSpade, 4),
+	}
+	rb := cariocaScoreContractProgress(runContract, runBase)
+	ra := cariocaScoreContractProgress(runContract, append(append([]*Card(nil), runBase...), cariocaJoker(1)))
+	if ra <= rb {
+		t.Errorf("joker should raise run progress: before=%d after=%d", rb, ra)
+	}
+}
+
+// TestCariocaCpuShouldTakeDiscard_PicksUsefulJoker は CPU が役に立つジョーカーを拾うことを検証する。
+func TestCariocaCpuShouldTakeDiscard_PicksUsefulJoker(t *testing.T) {
+	g := NewDefaultCarioca()
+	g.Reset()
+	g.SetRoundNumber(1) // 2 セット
+	g.SetCurrentPlayerIdx(1)
+	cpu := g.GetPlayer(1)
+	cariocaSetHand(cpu, []*Card{
+		cariocaCard(CardDesignSpade, 5), cariocaCard(CardDesignHeart, 5),
+		cariocaCard(CardDesignSpade, 2), cariocaCard(CardDesignHeart, 9),
+		cariocaCard(CardDesignDiamond, 11),
+	})
+	if !g.cpuShouldTakeDiscard(cariocaJoker(1)) {
+		t.Error("CPU should take a joker that completes a set")
+	}
+}
+
+// TestCariocaFindExtraMeld_UsesJoker は追加メルド探索がジョーカーを活用することを検証する。
+func TestCariocaFindExtraMeld_UsesJoker(t *testing.T) {
+	// セット: 5-5 + ジョーカー
+	if meld, ok := cariocaFindExtraMeld([]*Card{
+		cariocaCard(CardDesignSpade, 5), cariocaCard(CardDesignHeart, 5), cariocaJoker(1),
+	}); !ok || len(meld) != 3 || !cariocaIsSet(meld) {
+		t.Errorf("expected joker set extra meld, got ok=%v meld=%v", ok, meld)
+	}
+	// ラン（隙間埋め）: 6-7-[8]-9 スペード
+	if meld, ok := cariocaFindExtraMeld([]*Card{
+		cariocaCard(CardDesignSpade, 6), cariocaCard(CardDesignSpade, 7),
+		cariocaCard(CardDesignSpade, 9), cariocaJoker(1),
+	}); !ok || !cariocaIsRun(meld) {
+		t.Errorf("expected joker gap-fill run, got ok=%v meld=%v", ok, meld)
+	}
+	// ラン（端延長）: 6-7-8-[9] スペード
+	if meld, ok := cariocaFindExtraMeld([]*Card{
+		cariocaCard(CardDesignSpade, 6), cariocaCard(CardDesignSpade, 7),
+		cariocaCard(CardDesignSpade, 8), cariocaJoker(1),
+	}); !ok || !cariocaIsRun(meld) {
+		t.Errorf("expected joker end-extend run, got ok=%v meld=%v", ok, meld)
+	}
+	// メルド無し
+	if _, ok := cariocaFindExtraMeld([]*Card{
+		cariocaCard(CardDesignSpade, 2), cariocaCard(CardDesignHeart, 9),
+	}); ok {
+		t.Error("no meld should be found in a junk hand")
+	}
+}
+
+// TestCariocaIsSet_RejectsTwoJokers はセットが 2 枚のジョーカーを拒否することを検証する。
+func TestCariocaIsSet_RejectsTwoJokers(t *testing.T) {
+	if cariocaIsSet([]*Card{cariocaCard(CardDesignSpade, 5), cariocaJoker(1), cariocaJoker(2)}) {
+		t.Error("a set may contain at most one joker")
+	}
+}
