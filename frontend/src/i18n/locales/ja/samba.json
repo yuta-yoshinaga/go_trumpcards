@@ -1,0 +1,77 @@
+{
+  "discardTop": "捨て札",
+  "phase": {
+    "draw": "ドロー",
+    "meld": "メルド",
+    "discard": "ディスカード",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "drawPhase": "山札からカードを引くか、捨て札の山を取ってください。",
+  "meldPhase": "メルドを出すか、スキップしてください。",
+  "discardPhase": "カードを1枚捨てるか、上がってください。",
+  "roundEnd": "ラウンド終了。次のラウンドに進んでください。",
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "pointLimit": "目標スコア",
+    "easy": "簡単",
+    "normal": "普通",
+    "hard": "難しい"
+  },
+  "round": "ラウンド {{n}}",
+  "drawPile": "山札: {{count}}枚",
+  "discardPile": "捨て札: {{count}}枚",
+  "frozen": "フリーズ中",
+  "teamScores": "チーム0: {{a}} / チーム1: {{b}}",
+  "teamLabel": "チーム{{n}}",
+  "melds": "メルド",
+  "red3s": "赤3",
+  "naturalCanasta": "ナチュラルカナスタ",
+  "mixedCanasta": "ミックスカナスタ",
+  "samba": "サンバ",
+  "sequence": "シーケンス",
+  "drawStockButton": "山札から引く",
+  "drawDiscardButton": "捨て札を取る",
+  "meldButton": "メルドする",
+  "meldPoints": {
+    "initial": "初回メルド最低点: {{min}} / 選択合計: {{points}}",
+    "selected": "選択合計: {{points}}"
+  },
+  "skipMeldButton": "スキップ",
+  "discardButton": "捨てる",
+  "goOutButton": "上がる",
+  "nextRound": "次のラウンド",
+  "selectPair": "ペアを選択してください（トップカードと同ランクの2枚）",
+  "drawDiscardReason": {
+    "selectTwo": "手札からトップカードと同ランクの2枚を選択してください",
+    "frozen": "フリーズ中はワイルドカードでの代用ができません",
+    "selectOneMore": "もう1枚選択してください",
+    "tooMany": "選択は2枚までです"
+  },
+  "frozenIndicator": "❄️ フリーズ",
+  "selectMeld": "メルドするカードを選択してください",
+  "result": {
+    "humanWin": "あなたのチームの勝利！",
+    "cpuWin": "CPUチームの勝利！"
+  },
+  "score": {
+    "cumulative": "累積",
+    "round": "ラウンド",
+    "team": "チーム"
+  },
+  "tutorial": {
+    "drawArea": "山札と捨て札エリアです。ここからカードを引きます。",
+    "playerHand": "あなたの手札です。メルドやディスカードするカードを選びます。",
+    "meldArea": "メルドエリアです。出したメルドがここに表示されます。",
+    "actionButtons": "アクションボタンです。フェーズに応じた操作ができます。"
+  },
+  "hint": {
+    "drawStock": "山札から引くことを推奨",
+    "takeDiscardPile": "捨て札の山をまとめて引き取る選択も有効",
+    "meldInitial": "初回メルド条件を満たしてメルド推奨",
+    "buildSamba": "同スート7枚の連続でサンバを狙いましょう",
+    "meldExtend": "既存メルドに追加カードを出すと得点が伸びます",
+    "discardHighSafe": "相手に使われにくい高ランクのカードを捨てる"
+  }
+}

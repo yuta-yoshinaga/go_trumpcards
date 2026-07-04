@@ -283,4 +283,12 @@ func init() {
 			return usecase.RestoreCariocaInteractor(data, new(presenter.CariocaWebPresenter))
 		},
 		controller.NewCariocaWebControllerWithProvider)
+	games.RegisterKVGame("samba", games.CategoryExtra,
+		func() usecase.SambaInteractorIF {
+			return usecase.NewSambaInteractor(domain.NewDefaultSamba(), new(presenter.SambaWebPresenter))
+		},
+		func(data []byte) (usecase.SambaInteractorIF, error) {
+			return usecase.RestoreSambaInteractor(data, new(presenter.SambaWebPresenter))
+		},
+		controller.NewSambaWebControllerWithProvider)
 }

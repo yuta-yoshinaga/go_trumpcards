@@ -3219,6 +3219,24 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"carioca.helpSetPlayers", "carioca.helpSetDifficulty", "carioca.helpSetPenalty"},
 			})
 	}},
+	{Name: "samba", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSambaCuiController(usecase.NewSambaInteractor(
+				domain.NewDefaultSamba(), new(presenter.SambaCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "samba.helpTitle",
+				CommandKeys: []string{
+					"samba.helpDrawStock",
+					"samba.helpDrawDiscard",
+					"samba.helpMeld",
+					"samba.helpSkipMeld",
+					"samba.helpDiscard",
+					"samba.helpGoOut",
+					"samba.helpNextRound",
+				},
+				SettingKeys: []string{"samba.helpSetDifficulty", "samba.helpSetLimit"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

@@ -212,6 +212,7 @@ var gameDescriptions = map[string]string{
 	"michigan":            "Michigan / Newmarket (ミシガン)",
 	"watten":              "Watten (ヴァッテン)",
 	"carioca":             "Carioca (カリオカ)",
+	"samba":               "Samba (サンバ)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).
