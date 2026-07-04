@@ -789,7 +789,7 @@ func ombreCardStrength(c *Card, trump int) int {
 		}
 		return ombreTrumpSuitRank(v)
 	}
-	return ombrePlainRank(v)
+	return ombrePlainRank(d, v)
 }
 
 // ombreTrumpSuitRank 切り札スートの残り札 K>Q>J>6>5>4>3>2 の強さ。
@@ -814,8 +814,34 @@ func ombreTrumpSuitRank(v int) int {
 	}
 }
 
-// ombrePlainRank 平札 (非切り札) の強さ K>Q>J>7>6>5>4>3>2>A (A は最弱)。
-func ombrePlainRank(v int) int {
+// ombrePlainRank 平札 (非切り札) の強さ。伝統的オンブルの非対称ランクを再現する:
+// 黒スート (♠♣): K>Q>J>7>6>5>4>3>2>A (A が最弱)。
+// 赤スート (♥♦): K>Q>J>A>2>3>4>5>6>7 (A が 4 番目、7 が最弱)。
+func ombrePlainRank(d, v int) int {
+	if d == CardDesignHeart || d == CardDesignDiamond {
+		switch v {
+		case 13: // K
+			return 10
+		case 12: // Q
+			return 9
+		case 11: // J
+			return 8
+		case 1: // A
+			return 7
+		case 2:
+			return 6
+		case 3:
+			return 5
+		case 4:
+			return 4
+		case 5:
+			return 3
+		case 6:
+			return 2
+		default: // 7
+			return 1
+		}
+	}
 	switch v {
 	case 13:
 		return 10

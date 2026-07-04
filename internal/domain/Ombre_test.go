@@ -189,22 +189,24 @@ func TestOmbre_PlainSuit_AceLowAndOffSuit(t *testing.T) {
 	g.SetTrumpSuit(domain.CardDesignHeart)
 	g.SetTrickNumber(1)
 	g.SetPhase(domain.OmbrePhaseTrickEnd)
-	// Plain diamonds: K > 2 > A (Ace is LOW in plain suits).
+	// Plain red suit (diamonds): K>Q>J>A>2>3>4>5>6>7 — the Ace is the
+	// 4th-highest (outranking 2..7), NOT low as in the black plain suits.
 	g.SetCurrentTrick([]*domain.OmbreTrickCard{
-		{PlayerIdx: 0, Card: ombreCard(domain.CardDesignDiamond, 1)},  // A (low)
-		{PlayerIdx: 1, Card: ombreCard(domain.CardDesignDiamond, 2)},  // 2
-		{PlayerIdx: 2, Card: ombreCard(domain.CardDesignDiamond, 13)}, // K (highest)
+		{PlayerIdx: 0, Card: ombreCard(domain.CardDesignDiamond, 2)}, // 2
+		{PlayerIdx: 1, Card: ombreCard(domain.CardDesignDiamond, 1)}, // A beats 2 and 7
+		{PlayerIdx: 2, Card: ombreCard(domain.CardDesignDiamond, 7)}, // 7 (lowest red plain)
 	})
 	g.ResolveTrick()
-	assert.Equal(t, 2, g.GetLeadPlayerIdx())
+	assert.Equal(t, 1, g.GetLeadPlayerIdx(), "red plain Ace outranks 2 and 7")
 
-	// Off-suit plain cannot win when no trump is present.
+	// Off-suit plain cannot win; a higher follower of the led suit does.
+	// Red ranking: diamond 3 outranks diamond 7.
 	g.SetTrickNumber(1)
 	g.SetPhase(domain.OmbrePhaseTrickEnd)
 	g.SetCurrentTrick([]*domain.OmbreTrickCard{
-		{PlayerIdx: 0, Card: ombreCard(domain.CardDesignDiamond, 4)}, // lead low
+		{PlayerIdx: 0, Card: ombreCard(domain.CardDesignDiamond, 7)}, // lead 7 (lowest red)
 		{PlayerIdx: 1, Card: ombreCard(domain.CardDesignClover, 13)}, // off-suit K (cannot win, ♣K is plain)
-		{PlayerIdx: 2, Card: ombreCard(domain.CardDesignDiamond, 5)}, // follows, higher
+		{PlayerIdx: 2, Card: ombreCard(domain.CardDesignDiamond, 3)}, // follows, higher (red 3 > red 7)
 	})
 	g.ResolveTrick()
 	assert.Equal(t, 2, g.GetLeadPlayerIdx(), "off-suit plain cannot win")
