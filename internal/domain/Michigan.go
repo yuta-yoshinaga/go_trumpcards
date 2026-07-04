@@ -662,6 +662,17 @@ func michiganCardStr(c *Card) string {
 	return fmt.Sprintf("%s %d", suits[d], c.GetValue())
 }
 
+// michiganValidCard は復元カードが有効なスート (1..4) と値 (1..CardValueMax) を
+// 持つかを検証する (JSON 復元時の防御用: 範囲外カードは後段の design 参照で破綻する)。
+func michiganValidCard(c *Card) bool {
+	if c == nil {
+		return false
+	}
+	d := c.GetDesign()
+	v := c.GetValue()
+	return d >= CardDesignSpade && d <= CardDesignDiamond && v >= 1 && v <= CardValueMax
+}
+
 func (g *Michigan) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
 	g.state.actionLog = append(g.state.actionLog, &ActionLogEntry{
 		TurnNumber: len(g.state.actionLog) + 1,
@@ -938,7 +949,7 @@ func (g *Michigan) UnmarshalJSON(data []byte) error {
 		return errMichiganSnapshot
 	}
 	for _, b := range boodles {
-		if b == nil || b.card == nil || b.chips < 0 || b.claimedBy < -1 || b.claimedBy >= n {
+		if b == nil || !michiganValidCard(b.card) || b.chips < 0 || b.claimedBy < -1 || b.claimedBy >= n {
 			return errMichiganSnapshot
 		}
 	}
@@ -948,7 +959,7 @@ func (g *Michigan) UnmarshalJSON(data []byte) error {
 		}
 	}
 	for _, c := range j.DeadHand {
-		if c == nil {
+		if !michiganValidCard(c) {
 			return errMichiganSnapshot
 		}
 	}
@@ -963,6 +974,11 @@ func (g *Michigan) UnmarshalJSON(data []byte) error {
 		rs = make([]int, n)
 	} else if len(rs) != n {
 		return errMichiganSnapshot
+	}
+	for _, c := range rs {
+		if c < 0 {
+			return errMichiganSnapshot
+		}
 	}
 
 	g.trumpCards = j.TrumpCards

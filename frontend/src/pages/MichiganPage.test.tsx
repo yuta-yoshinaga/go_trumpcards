@@ -95,6 +95,39 @@ describe('MichiganPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', [2, 2, 2, 2]));
   });
 
+  it('disables the increment buttons and enables Place bets when the full budget is allocated', async () => {
+    renderWithProviders(<MichiganPage />);
+    const plus0 = await screen.findByRole('button', { name: 'ブードル 0 にチップを 1 枚足す' });
+    expect(plus0).toBeDisabled();
+    expect(screen.getByRole('button', { name: '賭ける' })).toBeEnabled();
+  });
+
+  it('redistributes chips with the +/- steppers and blocks Place bets until the sum matches the budget', async () => {
+    renderWithProviders(<MichiganPage />);
+    const minus0 = await screen.findByRole('button', { name: 'ブードル 0 からチップを 1 枚減らす' });
+    fireEvent.click(minus0); // [1,2,2,2] — one chip freed, sum 7 != 8
+    expect(screen.getByRole('button', { name: '賭ける' })).toBeDisabled();
+    const plus0 = screen.getByRole('button', { name: 'ブードル 0 にチップを 1 枚足す' });
+    expect(plus0).toBeEnabled();
+    fireEvent.click(plus0); // back to [2,2,2,2]
+    await waitFor(() => expect(screen.getByRole('button', { name: '賭ける' })).toBeEnabled());
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '賭ける' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', [2, 2, 2, 2]));
+  });
+
+  it('clamps a boodle bet at zero when decremented past its minimum', async () => {
+    renderWithProviders(<MichiganPage />);
+    const minus0 = await screen.findByRole('button', { name: 'ブードル 0 からチップを 1 枚減らす' });
+    fireEvent.click(minus0); // 2 -> 1
+    fireEvent.click(minus0); // 1 -> 0
+    fireEvent.click(minus0); // stays 0 (clamped)
+    const plus0 = screen.getByRole('button', { name: 'ブードル 0 にチップを 1 枚足す' });
+    fireEvent.click(plus0); // 0 -> 1
+    fireEvent.click(plus0); // 1 -> 2, budget fully re-allocated
+    await waitFor(() => expect(screen.getByRole('button', { name: '賭ける' })).toBeEnabled());
+  });
+
   it('hides the place-bets button when it is not the human turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<MichiganPage />);

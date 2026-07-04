@@ -158,7 +158,10 @@ function MichiganPageContent() {
       const next = [...prev];
       const value = (next[index] ?? 0) + delta;
       if (value < 0) return prev;
-      if (delta > 0 && betRemaining <= 0) return prev;
+      // Derive the remaining budget from prev (not the render-closure value) so
+      // rapid successive clicks can't overspend via a stale betRemaining.
+      const remaining = state.betBudget - prev.reduce((a, b) => a + b, 0);
+      if (delta > 0 && remaining <= 0) return prev;
       next[index] = value;
       return next;
     });
