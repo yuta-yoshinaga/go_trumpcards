@@ -208,6 +208,7 @@ export type GameKey =
   | 'cribbage'
   | 'sevenbridge'
   | 'contractrummy'
+  | 'carioca'
   | 'kalooki'
   | 'rummy500'
   | 'beggarmyneighbour'
@@ -408,6 +409,10 @@ const BOUILLOTTE = {
 const PRIMERO = {
   bg: 'bg-game-bg-primero',
   footer: 'bg-game-bg-primero-dark border-white/20',
+} as const;
+const CARIOCA = {
+  bg: 'bg-game-bg-carioca',
+  footer: 'bg-game-bg-carioca-dark border-white/20',
 } as const;
 const MICHIGAN = {
   bg: 'bg-game-bg-michigan',
@@ -614,6 +619,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   cribbage: BLUE,
   sevenbridge: BLUE,
   contractrummy: BLUE,
+  carioca: CARIOCA,
   kalooki: GREEN,
   rummy500: BLUE,
   beggarmyneighbour: GREEN,

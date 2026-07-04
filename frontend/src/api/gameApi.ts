@@ -36,6 +36,7 @@ import type {
   CanastaResponse,
   CanfieldResponse,
   CaribbeanStudResponse,
+  CariocaResponse,
   CasinoHoldemResponse,
   CasinoWarResponse,
   CassinoResponse,
@@ -349,6 +350,7 @@ const workerUrl: Record<string, string> = {
   blackjackswitch: WORKER_CASINO,
   montecarlo: WORKER_SOLO,
   contractrummy: WORKER_EXTRA,
+  carioca: WORKER_EXTRA,
   kalooki: WORKER_EXTRA,
   ultimatetexasholdem: WORKER_CASINO,
   crescent: WORKER_SOLO,
@@ -4545,6 +4547,30 @@ export const contractrummyApi = {
   ) => gameExec<ContractRummyResponse>('contractrummy', { command, ...(params ?? {}) }),
 };
 
+/** API client for the Carioca /carioca/exec endpoint. */
+export const cariocaApi = {
+  exec: (
+    command:
+      | 'reset'
+      | 'drawstock'
+      | 'drawdiscard'
+      | 'meldcontract'
+      | 'meldextra'
+      | 'layoff'
+      | 'discard'
+      | 'nextround'
+      | 'log',
+    params?: {
+      cardIndex?: number;
+      cardIndices?: number[];
+      indicesPerSlot?: number[][];
+      targetPlayerIdx?: number;
+      meldIdx?: number;
+      config?: { playerCount?: number; cpuDifficulty?: number; failContractPenalty?: number };
+    },
+  ) => gameExec<CariocaResponse>('carioca', { command, ...(params ?? {}) }),
+};
+
 /** API client for the Kalooki /kalooki/exec endpoint. */
 export const kalookiApi = {
   exec: (
@@ -4673,6 +4699,7 @@ const games = [
   'blackjackswitch',
   'montecarlo',
   'contractrummy',
+  'carioca',
   'kalooki',
   'ultimatetexasholdem',
   'crescent',

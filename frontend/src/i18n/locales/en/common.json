@@ -220,7 +220,8 @@
     "guts": "Guts",
     "bouillotte": "Bouillotte",
     "primero": "Primero",
-    "michigan": "Michigan"
+    "michigan": "Michigan",
+    "carioca": "Carioca"
   },
   "sound": {
     "mute": "Mute sound",
@@ -351,6 +352,11 @@
     "errorBoundaryDetails": "Show error details"
   },
   "messageCode": {
+    "carioca.drawPhase": "Your turn — draw from the stock or take the discard.",
+    "carioca.playPhase": "Your turn — meet the contract, lay melds, then discard.",
+    "carioca.roundEnd": "Round complete — go to the next round.",
+    "carioca.result.humanWin": "Game over! You win!",
+    "carioca.result.cpuWin": "Game over! CPU {{cpuId}} wins.",
     "sheepshead.pickPhase": "Pick phase — choose to take the blind or pass.",
     "sheepshead.buryPhase": "You are the picker — bury two cards.",
     "sheepshead.callPhase": "Choose a suit to call your partner.",

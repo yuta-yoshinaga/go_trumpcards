@@ -659,6 +659,13 @@ var registry = []*Game{
 	// jass (4p/2-team) + truco (raise/respond). Extra worker bucket — the casino/
 	// classic/solo workers are at the 1 MB gzip free-tier limit.
 	{Name: "watten", Category: CategoryExtra},
+	// Carioca is a South-American contract rummy (7 progressive rounds of
+	// set/run contracts) played with 108 cards (two 52-card decks + 4 wild
+	// jokers), 3-6 players. Modelled on contractrummy (same 7-round contract
+	// table + draw/discard/meld/go-out engine) with a double-deck+jokers deck
+	// and configurable player count. Extra worker bucket — the casino/classic/
+	// solo workers are at the 1 MB gzip free-tier limit.
+	{Name: "carioca", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.
