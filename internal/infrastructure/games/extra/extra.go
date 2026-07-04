@@ -275,4 +275,12 @@ func init() {
 			return usecase.RestoreWattenInteractor(data, new(presenter.WattenWebPresenter))
 		},
 		controller.NewWattenWebControllerWithProvider)
+	games.RegisterKVGame("carioca", games.CategoryExtra,
+		func() usecase.CariocaInteractorIF {
+			return usecase.NewCariocaInteractor(domain.NewDefaultCarioca(), new(presenter.CariocaWebPresenter))
+		},
+		func(data []byte) (usecase.CariocaInteractorIF, error) {
+			return usecase.RestoreCariocaInteractor(data, new(presenter.CariocaWebPresenter))
+		},
+		controller.NewCariocaWebControllerWithProvider)
 }

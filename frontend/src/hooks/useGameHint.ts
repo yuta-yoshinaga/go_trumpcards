@@ -456,6 +456,7 @@ const hintFactories = {
   slapjack: (s) => getSlapjackHint(s as SlapjackResponse),
   egyptianratscrew: (s) => getEgyptianRatscrewHint(s as EgyptianRatscrewResponse),
   contractrummy: () => null,
+  carioca: () => null,
   crescent: () => null,
   spiderette: (s) => getSpideretteHint(s as SpideretteResponse),
   gaps: (s) => getGapsHint(s as GapsResponse),

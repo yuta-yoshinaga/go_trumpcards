@@ -36,6 +36,7 @@ import callbreak from '../../../docs/manual/cui/callbreak.md?raw';
 import canasta from '../../../docs/manual/cui/canasta.md?raw';
 import canfield from '../../../docs/manual/cui/canfield.md?raw';
 import caribbeanstud from '../../../docs/manual/cui/caribbeanstud.md?raw';
+import carioca from '../../../docs/manual/cui/carioca.md?raw';
 import casinoholdem from '../../../docs/manual/cui/casinoholdem.md?raw';
 import casinowar from '../../../docs/manual/cui/casinowar.md?raw';
 import cassino from '../../../docs/manual/cui/cassino.md?raw';
@@ -230,6 +231,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/texasholdembonus': texasholdembonus,
   '/clocksolitaire': clocksolitaire,
   '/contractrummy': contractrummy,
+  '/carioca': carioca,
   '/kalooki': kalooki,
   '/ultimatetexasholdem': ultimatetexasholdem,
   '/crescent': crescent,

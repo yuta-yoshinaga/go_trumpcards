@@ -1020,4 +1020,9 @@ func init() {
 			return usecase.NewWattenInteractor(domain.NewDefaultWatten(), new(presenter.WattenWebPresenter))
 		},
 		controller.NewWattenWebController)
+	BindWebControllerFor("carioca",
+		func() usecase.CariocaInteractorIF {
+			return usecase.NewCariocaInteractor(domain.NewDefaultCarioca(), new(presenter.CariocaWebPresenter))
+		},
+		controller.NewCariocaWebController)
 }

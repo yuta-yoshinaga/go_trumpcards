@@ -211,6 +211,7 @@ var gameDescriptions = map[string]string{
 	"primero":             "Primero / Primiera (プリメロ)",
 	"michigan":            "Michigan / Newmarket (ミシガン)",
 	"watten":              "Watten (ヴァッテン)",
+	"carioca":             "Carioca (カリオカ)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

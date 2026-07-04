@@ -3201,6 +3201,24 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"watten.helpSetDifficulty", "watten.helpSetTarget"},
 			})
 	}},
+	{Name: "carioca", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCariocaCuiController(usecase.NewCariocaInteractor(
+				domain.NewDefaultCarioca(), new(presenter.CariocaCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "carioca.helpTitle",
+				CommandKeys: []string{
+					"carioca.helpDrawStock",
+					"carioca.helpDrawDiscard",
+					"carioca.helpMeldContract",
+					"carioca.helpMeldExtra",
+					"carioca.helpLayoff",
+					"carioca.helpDiscard",
+					"carioca.helpNextRound",
+				},
+				SettingKeys: []string{"carioca.helpSetPlayers", "carioca.helpSetDifficulty", "carioca.helpSetPenalty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

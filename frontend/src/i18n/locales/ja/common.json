@@ -220,7 +220,8 @@
     "guts": "ガッツ",
     "bouillotte": "ブイヨット",
     "primero": "プリメロ",
-    "michigan": "ミシガン"
+    "michigan": "ミシガン",
+    "carioca": "カリオカ"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -351,6 +352,11 @@
     "errorBoundaryDetails": "エラーの詳細を表示"
   },
   "messageCode": {
+    "carioca.drawPhase": "あなたの番です — 山札から引くか、捨て札を取ってください。",
+    "carioca.playPhase": "あなたの番です — コントラクトを達成し、メルドを出して、カードを捨ててください。",
+    "carioca.roundEnd": "ラウンド終了 — 次のラウンドへ進んでください。",
+    "carioca.result.humanWin": "ゲーム終了！ あなたの勝ち！",
+    "carioca.result.cpuWin": "ゲーム終了！ CPU {{cpuId}} の勝ち。",
     "sheepshead.pickPhase": "ピックフェーズ — ブラインドを取るか、パスするか選んでください。",
     "sheepshead.buryPhase": "あなたがピッカーです — 埋める2枚を選んでください。",
     "sheepshead.callPhase": "パートナーを呼ぶスートを選んでください。",
