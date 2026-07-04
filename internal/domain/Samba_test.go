@@ -545,6 +545,25 @@ func TestSamba_GoOut_TeamScoring(t *testing.T) {
 	assert.Equal(t, 0, g.GetTeamScore(1))
 }
 
+func TestSamba_Red3Penalty_WhenTeamHasNotMelded(t *testing.T) {
+	g := newTestSamba()
+	g.Reset()
+	setupSambaDiscardPhase(g, 0)
+	for i := 0; i < domain.SambaPlayerCnt; i++ {
+		g.GetPlayer(i).ResetRound()
+	}
+	// team 0 melds a canasta + a samba and goes out.
+	g.GetPlayer(0).SetMelds([]*domain.SambaMeld{sambaSevenSet(5), sambaSevenSequence()})
+	g.GetPlayer(0).SetHasInitMeld(true)
+	// team 1 never melded but holds two red 3s (empty hand) → they must be
+	// SUBTRACTED, not added, per the standard Samba/Canasta rule.
+	g.GetPlayer(1).AddRed3(sambaCard(domain.CardDesignHeart, 3))
+	g.GetPlayer(1).AddRed3(sambaCard(domain.CardDesignDiamond, 3))
+
+	require.NoError(t, g.PlayerGoOut())
+	assert.Equal(t, -2*domain.SambaRed3Bonus, g.GetTeamScore(1))
+}
+
 func TestSamba_MixedCanastaScoresLess(t *testing.T) {
 	g := newTestSamba()
 	g.Reset()
@@ -846,6 +865,17 @@ func TestSamba_JSON_ValidatesCorruptIndices(t *testing.T) {
 	assert.Equal(t, domain.SambaPhaseDraw, g2.GetPhase())
 	assert.Equal(t, 0, g2.GetCurrentPlayerIdx())
 	assert.Equal(t, -1, g2.GetWinnerIdx())
+}
+
+func TestSamba_JSON_RejectsNilPlayer(t *testing.T) {
+	var g domain.Samba
+	assert.Error(t, json.Unmarshal([]byte(`{"pl":[null]}`), &g))
+}
+
+func TestSambaPlayer_JSON_FiltersNilMeld(t *testing.T) {
+	var p domain.SambaPlayer
+	require.NoError(t, json.Unmarshal([]byte(`{"ml":[null]}`), &p))
+	assert.Empty(t, p.GetMelds())
 }
 
 func TestSambaPlayer_JSON_RoundTrip(t *testing.T) {

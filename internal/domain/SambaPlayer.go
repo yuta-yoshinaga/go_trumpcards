@@ -194,14 +194,17 @@ func (p *SambaPlayer) UnmarshalJSON(data []byte) error {
 		p.RoundScoreHolder = *j.RoundScoreHolder
 	}
 	p.team = j.Team
-	p.melds = j.Melds
-	if p.melds == nil {
-		p.melds = make([]*SambaMeld, 0)
-	}
-	for _, m := range p.melds {
-		if m != nil && m.Kind != SambaMeldSet && m.Kind != SambaMeldSequence {
+	// nil メルドは除外する (残すと CompletedMeldCount / HasCanasta / スコア計算で
+	// nil ポインタ参照によりパニックする)。Kind は既知値へクランプする。
+	p.melds = make([]*SambaMeld, 0, len(j.Melds))
+	for _, m := range j.Melds {
+		if m == nil {
+			continue
+		}
+		if m.Kind != SambaMeldSet && m.Kind != SambaMeldSequence {
 			m.Kind = SambaMeldSet
 		}
+		p.melds = append(p.melds, m)
 	}
 	p.red3s = j.Red3s
 	if p.red3s == nil {

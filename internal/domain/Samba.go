@@ -1172,11 +1172,24 @@ func (g *Samba) scoreRound(goOutPlayerIdx int, goOutBonus int) {
 			}
 		}
 
+		// 赤3はチームが初回メルドを完了している場合のみプラス。ラウンド終了時に
+		// チームが一度もメルドしていなければ赤3の点は減算される (サンバ/カナスタの標準ルール)。
+		teamMelded := false
+		for _, tp := range g.players {
+			if tp.team == player.team && tp.hasInitMeld {
+				teamMelded = true
+				break
+			}
+		}
 		red3Count := len(player.red3s)
+		red3Score := red3Count * SambaRed3Bonus
 		if red3Count >= SambaRed3Count {
-			score += SambaAllRed3Bonus
+			red3Score = SambaAllRed3Bonus
+		}
+		if teamMelded {
+			score += red3Score
 		} else {
-			score += red3Count * SambaRed3Bonus
+			score -= red3Score
 		}
 
 		if i == goOutPlayerIdx {
@@ -1723,6 +1736,11 @@ func (g *Samba) UnmarshalJSON(data []byte) error {
 	g.players = j.Players
 	if g.players == nil {
 		g.players = make([]*SambaPlayer, 0)
+	}
+	for i, p := range g.players {
+		if p == nil {
+			return fmt.Errorf("samba: player %d is nil", i)
+		}
 	}
 	g.config = j.Config
 
