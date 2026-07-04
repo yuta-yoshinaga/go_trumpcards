@@ -54,18 +54,23 @@ func TestMichigan_ResetEntersBetPhase(t *testing.T) {
 
 func TestMichigan_PlaceHumanBet_TransitionsToPlay(t *testing.T) {
 	g := domain.NewDefaultMichigan()
+	// Put the human (seat 0) on lead so no CPU auto-plays before we count the
+	// deal — finishBetting drives CPU turns immediately, and a CPU lead would
+	// have removed cards from play, making the total non-deterministic.
+	g.SetDealerIdx(g.GetPlayerCnt() - 1)
 	budget := g.GetBetBudget()
 	require.NoError(t, g.PlaceHumanBet(michiganEvenBet(budget)))
 	assert.Equal(t, domain.MichiganPhasePlay, g.GetPhase())
 	assert.True(t, g.GetHumanBetPlaced())
-	// All 52 cards dealt to players + dead hand.
+	// All 52 cards dealt to players + dead hand (nothing played yet: human leads).
 	dealt := g.GetDeadHandCount()
 	for i := 0; i < g.GetPlayerCnt(); i++ {
 		dealt += g.GetPlayer(i).GetCardsSize()
 	}
 	assert.Equal(t, 52, dealt)
-	// Lead player is to the dealer's left.
-	assert.Equal(t, (g.GetDealerIdx()+1)%g.GetPlayerCnt(), g.GetLeadPlayerIdx())
+	// Lead player is to the dealer's left — seat 0, the human.
+	assert.Equal(t, 0, g.GetLeadPlayerIdx())
+	assert.True(t, g.IsHumanTurn())
 }
 
 // michiganEvenBet は budget を 4 分割した賭けスライスを返す。
@@ -183,7 +188,12 @@ func TestMichigan_DoPlay_RoundEndOnEmptyHand(t *testing.T) {
 	michiganSetHand(g.GetPlayer(2), michiganCard(domain.CardDesignDiamond, 9))
 	g.SetBoodleForTest(0, 20, -1)
 	g.SetRoundStartChipsForTest([]int{100, 100, 100})
-	g.GetPlayer(0).SetChips(100)
+	// Reset every player's chips to the recorded round-start baseline so the
+	// human's net gain (the 20-chip boodle) is the only movement this round;
+	// michiganSetupPlay's bet phase left the opponents below their baseline.
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		g.GetPlayer(i).SetChips(100)
+	}
 	g.SetPlayStateForTest(0, 0, 0, 0)
 
 	g.DoPlayForTest(0, 0)
