@@ -155,6 +155,7 @@ import type {
   RussianBankResponse,
   RussianPokerResponse,
   RussianSolitaireResponse,
+  SambaResponse,
   SchnapsenConfig,
   SchnapsenResponse,
   ScopaResponse,
@@ -311,6 +312,7 @@ const workerUrl: Record<string, string> = {
   chinchon: WORKER_EXTRA,
   threethirteen: WORKER_EXTRA,
   canasta: WORKER_EXTRA,
+  samba: WORKER_EXTRA,
   handandfoot: WORKER_EXTRA,
   burraco: WORKER_EXTRA,
   cribbage: WORKER_SOLO,
@@ -1582,6 +1584,30 @@ export const canastaApi = {
     meldGroups?: number[][],
   ) =>
     gameExec<CanastaResponse>('canasta', {
+      command,
+      cardIndex,
+      config,
+      naturalPairIndices,
+      meldGroups,
+    }),
+};
+
+/** Configuration options for Samba game settings. */
+export interface SambaConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Samba /samba/exec endpoint. */
+export const sambaApi = {
+  exec: (
+    command: 'reset' | 'drawstock' | 'drawdiscard' | 'meld' | 'skipmeld' | 'discard' | 'goout' | 'nextround' | 'log',
+    cardIndex?: number,
+    config?: SambaConfigInput,
+    naturalPairIndices?: number[],
+    meldGroups?: number[][],
+  ) =>
+    gameExec<SambaResponse>('samba', {
       command,
       cardIndex,
       config,
@@ -4629,6 +4655,7 @@ const games = [
   'chinchon',
   'threethirteen',
   'canasta',
+  'samba',
   'handandfoot',
   'burraco',
   'spider',

@@ -107,6 +107,7 @@ import type {
   Rummy500Response,
   RussianPokerResponse,
   RussianSolitaireResponse,
+  SambaResponse,
   SchnapsenResponse,
   ScopaResponse,
   ScorpionResponse,
@@ -270,6 +271,7 @@ import { getReddogHint } from '../utils/hints/reddogHint';
 import { getRummy500Hint } from '../utils/hints/rummy500Hint';
 import { getRussianPokerHint } from '../utils/hints/russianpokerHint';
 import { getRussianSolitaireHint } from '../utils/hints/russianSolitaireHint';
+import { getSambaHint } from '../utils/hints/sambaHint';
 import { getSchnapsenHint } from '../utils/hints/schnapsenHint';
 import { getScopaHint } from '../utils/hints/scopaHint';
 import { getScorpionHint } from '../utils/hints/scorpionHint';
@@ -392,6 +394,7 @@ const hintFactories = {
   mississippistud: (s) => getMississippiStudHint(s as MississippiStudResponse),
   durak: (s) => getDurakHint(s as DurakResponse),
   canasta: (s) => getCanastaHint(s as CanastaResponse),
+  samba: (s) => getSambaHint(s as SambaResponse),
   bristol: (s) => getBristolHint(s as BristolResponse),
   burraco: (s) => getBurracoHint(s as BurracoResponse),
   canfield: (s) => getCanfieldHint(s as CanfieldResponse),

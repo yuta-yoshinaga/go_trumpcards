@@ -666,6 +666,13 @@ var registry = []*Game{
 	// and configurable player count. Extra worker bucket — the casino/classic/
 	// solo workers are at the 1 MB gzip free-tier limit.
 	{Name: "carioca", Category: CategoryExtra},
+	// Samba is a Canasta variant that adds sequence melds ("sambas") and a third
+	// deck (3 decks + 6 jokers = 162 cards). It is a 4-player partnership rummy
+	// game (seats 0 & 2 vs 1 & 3). Modelled on canasta (same wild-aware set
+	// melds, canasta/red-3/take-the-pile/go-out engine) extended with same-suit
+	// sequence melds and team scoring. Extra worker bucket — the casino/classic/
+	// solo workers are at the 1 MB gzip free-tier limit.
+	{Name: "samba", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

@@ -177,6 +177,9 @@
   /* Carioca — a vivid Rio tropical teal-jade felt evoking the Brazilian/Chilean contract-rummy party game, distinct from Primero's emerald, Michigan's turf-green, and BLUE's navy. */
   --color-game-bg-carioca: #0e7c6b;
   --color-game-bg-carioca-dark: #085247;
+  /* Samba — a carnival magenta/fuchsia evoking the Brazilian samba-parade festivity of this three-deck Canasta variant, distinct from every other game's felt. */
+  --color-game-bg-samba: #a5236e;
+  --color-game-bg-samba-dark: #6e1749;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;

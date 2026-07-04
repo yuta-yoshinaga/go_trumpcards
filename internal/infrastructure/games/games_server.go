@@ -1025,4 +1025,9 @@ func init() {
 			return usecase.NewCariocaInteractor(domain.NewDefaultCarioca(), new(presenter.CariocaWebPresenter))
 		},
 		controller.NewCariocaWebController)
+	BindWebControllerFor("samba",
+		func() usecase.SambaInteractorIF {
+			return usecase.NewSambaInteractor(domain.NewDefaultSamba(), new(presenter.SambaWebPresenter))
+		},
+		controller.NewSambaWebController)
 }

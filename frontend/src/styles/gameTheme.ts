@@ -203,6 +203,7 @@ export type GameKey =
   | 'gongzhu'
   | 'tressette'
   | 'canasta'
+  | 'samba'
   | 'handandfoot'
   | 'burraco'
   | 'cribbage'
@@ -418,6 +419,10 @@ const MICHIGAN = {
   bg: 'bg-game-bg-michigan',
   footer: 'bg-game-bg-michigan-dark border-white/20',
 } as const;
+const SAMBA = {
+  bg: 'bg-game-bg-samba',
+  footer: 'bg-game-bg-samba-dark border-white/20',
+} as const;
 
 export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Table games
@@ -614,6 +619,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   gongzhu: GREEN,
   tressette: GREEN,
   canasta: BLUE,
+  samba: SAMBA,
   handandfoot: BLUE,
   burraco: GREEN,
   cribbage: BLUE,
