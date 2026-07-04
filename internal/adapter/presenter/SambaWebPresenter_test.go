@@ -134,6 +134,11 @@ func TestSambaWebPresenter_Output(t *testing.T) {
 
 	t.Run("team scores exposed", func(t *testing.T) {
 		m, _ := setupSambaWebMockWithPlayers()
+		// setupSambaWebMock registers two GetTeamScore defaults (arg 0 and arg 1),
+		// and removeMockCall drops only the first match, so remove twice before
+		// re-adding — otherwise the leftover GetTeamScore(1)->0 default shadows
+		// the new GetTeamScore(1)->300 (testify matches the first expectation).
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTeamScore")
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTeamScore")
 		m.On("GetTeamScore", 0).Return(1500)
 		m.On("GetTeamScore", 1).Return(300)

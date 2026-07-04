@@ -523,9 +523,12 @@ func TestSamba_GoOut_TeamScoring(t *testing.T) {
 	g.Reset()
 	setupSambaDiscardPhase(g, 0)
 
+	// ResetRound clears hand, melds, red3s and round score for every player.
+	// Reset() alone leaves the red 3s dealt in Reset(), which team 1 would then
+	// score (+100 each) — this is correct per the implemented rule, so we clear
+	// them here to make "team 1 contributes nothing" genuinely hold.
 	for i := 0; i < domain.SambaPlayerCnt; i++ {
-		g.GetPlayer(i).Reset()
-		g.GetPlayer(i).SetMelds(nil)
+		g.GetPlayer(i).ResetRound()
 	}
 	player := g.GetPlayer(0)
 	// team 0 gets a natural canasta of 5s and a heart samba
