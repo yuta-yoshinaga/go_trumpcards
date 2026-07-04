@@ -687,6 +687,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 5, 2, 5], skill: [3, 2, 2, 4], social: [1, 4, 5, 2, 4], theme: [4, 2, 2, 2, 4, 1] },
       },
       {
+        path: '/primero',
+        labelKey: 'nav.primero',
+        icon: '👑',
+        page: 'Primero',
+        profile: { mood: [2, 5, 2, 5], skill: [3, 2, 2, 4], social: [1, 4, 5, 2, 4], theme: [4, 2, 2, 2, 4, 1] },
+      },
+      {
         path: '/spoons',
         labelKey: 'nav.spoons',
         icon: '🥄',

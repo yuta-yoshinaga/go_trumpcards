@@ -144,6 +144,7 @@ import type {
   PokerSquaresResponse,
   PreferenceResponse,
   PresidentResponse,
+  PrimeroResponse,
   PrsiResponse,
   PyramidResponse,
   RedDogResponse,
@@ -382,6 +383,7 @@ const workerUrl: Record<string, string> = {
   trenteetquarante: WORKER_EXTRA,
   guts: WORKER_EXTRA,
   bouillotte: WORKER_EXTRA,
+  primero: WORKER_EXTRA,
   eightoff: WORKER_SOLO,
   penguin: WORKER_SOLO,
   chinesepoker: WORKER_CASINO,
@@ -4353,6 +4355,36 @@ export const bouillotteApi = {
   ) => gameExec<BouillotteResponse>('bouillotte', { command, action, config }),
 };
 
+/** Configuration options accepted by {@link primeroApi}.exec on `reset`. */
+export interface PrimeroConfigInput {
+  /** Number of players at the table (2–6, default 4). */
+  playerCount?: number;
+  /** Chips each player antes into the pot per round (default 10). */
+  ante?: number;
+  /** Chips each player starts the match with (default 200). */
+  startingChips?: number;
+  /** Rounds played before the richest player wins the match (default 10). */
+  targetRounds?: number;
+}
+
+/**
+ * API client for the Primero /primero/exec endpoint.
+ *
+ * Primero is a Renaissance (16th-century) 4-card poker-vying pot game.
+ *   - `reset` starts a fresh game, optionally applying a {@link PrimeroConfigInput}.
+ *   - `bet` → `(action)` submits the human's betting action (`"call"` /
+ *     `"raise"` / `"fold"`). Raise uses a fixed increment (no amount field).
+ *   - `nextround` deals the next round (chips persist server-side).
+ *   - `log` and `hint` carry no extra fields.
+ */
+export const primeroApi = {
+  exec: (
+    command: 'reset' | 'bet' | 'nextround' | 'log' | 'hint',
+    action?: 'call' | 'raise' | 'fold',
+    config?: PrimeroConfigInput,
+  ) => gameExec<PrimeroResponse>('primero', { command, action, config }),
+};
+
 /** API client for the Blackjack Switch /blackjackswitch/exec endpoint. */
 export const blackjackswitchApi = {
   exec: (command: 'reset' | 'bet' | 'switch' | 'keep' | 'hit' | 'stand' | 'doubledown' | 'log', amount?: number) =>
@@ -4612,6 +4644,7 @@ const games = [
   'trenteetquarante',
   'guts',
   'bouillotte',
+  'primero',
 ] as const;
 type Game = (typeof games)[number];
 

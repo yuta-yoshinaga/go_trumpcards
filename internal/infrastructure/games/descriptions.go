@@ -207,6 +207,7 @@ var gameDescriptions = map[string]string{
 	"trenteetquarante":    "Trente et Quarante / Rouge et Noir (トラント・エ・カラント)",
 	"guts":                "Guts (ガッツ)",
 	"bouillotte":          "Bouillotte (ブイヨット)",
+	"primero":             "Primero / Primiera (プリメロ)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

@@ -1604,3 +1604,9 @@ export const BouillottePhase = {
   BETTING: 0,
   RESULT: 1,
 } as const;
+
+/** Primero phase constants (sync: internal/domain/Primero.go). */
+export const PrimeroPhase = {
+  BETTING: 0,
+  RESULT: 1,
+} as const;

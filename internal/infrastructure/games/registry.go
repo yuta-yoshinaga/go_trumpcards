@@ -617,6 +617,18 @@ var registry = []*Game{
 	// worker bucket — the casino/classic/solo workers are at the 1 MB gzip
 	// free-tier limit, so it routes to the overflow ("extra") worker.
 	{Name: "bouillotte", Category: CategoryExtra},
+	// Primero: a 16th-century Renaissance vying/betting pot game, an ancestor of
+	// poker, on a 40-card deck (A,2,3,4,5,6,7,J,Q,K × 4 suits). 2–6 players ante
+	// to a pot and are dealt 4 cards each (no shared card). Players bet in turn
+	// (call / raise "vie" by the ante, capped; or fold). At showdown the best hand
+	// wins the whole pot, ranked by bespoke prime-point values: a Fluxus (flush)
+	// beats a Supremus (four suits, points >= 50), which beats a Primero (four
+	// suits, points < 50), which beats a Numerus (best single-suit point sum);
+	// ties go to the earliest seat. Chips accumulate; the game ends after a fixed
+	// number of rounds, and the richest player wins. Extra worker bucket — the
+	// casino/classic/solo workers are at the 1 MB gzip free-tier limit, so it
+	// routes to the overflow ("extra") worker.
+	{Name: "primero", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

@@ -136,6 +136,7 @@ import poker from '../../../docs/manual/web/poker.md?raw';
 import pokersquares from '../../../docs/manual/web/pokersquares.md?raw';
 import preference from '../../../docs/manual/web/preference.md?raw';
 import president from '../../../docs/manual/web/president.md?raw';
+import primero from '../../../docs/manual/web/primero.md?raw';
 import prsi from '../../../docs/manual/web/prsi.md?raw';
 import pyramid from '../../../docs/manual/web/pyramid.md?raw';
 import razz from '../../../docs/manual/web/razz.md?raw';
@@ -272,6 +273,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/gongzhu': gongzhu,
   '/guts': guts,
   '/bouillotte': bouillotte,
+  '/primero': primero,
   '/tressette': tressette,
   '/hearts': hearts,
   '/holdem': holdem,

@@ -216,7 +216,8 @@
     "beggarmyneighbour": "Beggar-My-Neighbour",
     "allfours": "All Fours",
     "guts": "Guts",
-    "bouillotte": "Bouillotte"
+    "bouillotte": "Bouillotte",
+    "primero": "Primero"
   },
   "sound": {
     "mute": "Mute sound",
@@ -851,6 +852,13 @@
     "bouillotte.roundEndCpuWin": "CPU {{player}} wins the pot.",
     "bouillotte.result.humanWin": "Game over! You win!",
     "bouillotte.result.cpuWin": "Game over! CPU {{player}} wins.",
+    "primero.bettingPhase": "Your turn — call, raise (vie), or fold.",
+    "primero.roundEnd": "The round is over.",
+    "primero.roundEndHumanWin": "You win the pot!",
+    "primero.roundEndHumanLose": "CPU {{player}} wins the pot.",
+    "primero.roundEndCpuWin": "CPU {{player}} wins the pot.",
+    "primero.result.humanWin": "Game over! You win!",
+    "primero.result.cpuWin": "Game over! CPU {{player}} wins.",
     "catchten.playPhase.lead": "Your turn — pick a card to lead.",
     "catchten.playPhase.follow": "Your turn — follow the lead suit.",
     "catchten.trickEnd": "Trick complete — continue.",
