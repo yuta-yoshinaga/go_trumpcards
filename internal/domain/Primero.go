@@ -557,11 +557,11 @@ func PrimeroEval(cards []*Card) (int, []int) {
 		suitCount[d]++
 		suitSum[d] += pts
 	}
-	switch {
-	case distinct == 1:
+	switch distinct {
+	case 1:
 		// フルクサス: 4 枚同スート。
 		return PrimeroHandFluxus, []int{total}
-	case distinct == 4:
+	case 4:
 		// 4 スート 1 枚ずつ: 合計で Supremus / Primero を判定。
 		if total >= primeroSupremusThreshold {
 			return PrimeroHandSupremus, []int{total}
