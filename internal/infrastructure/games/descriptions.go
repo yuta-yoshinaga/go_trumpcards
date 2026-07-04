@@ -199,6 +199,7 @@ var gameDescriptions = map[string]string{
 	"gaigel":              "Gaigel (ガイゲル)",
 	"tysiac":              "Thousand / Tysiąc (サウザンド/トゥシオンツ)",
 	"calabresella":        "Calabresella / Terziglio (カラブレセッラ/テルツィーリオ)",
+	"ombre":               "Ombre / Hombre (オンブル)",
 	"king":                "King (キング)",
 	"cinch":               "Cinch / Double Pedro (シンチ/ダブルペドロ)",
 	"loo":                 "Loo / Lanterloo (ルー)",

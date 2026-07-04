@@ -21,6 +21,7 @@ import type {
   MariasResponse,
   MusResponse,
   NapResponse,
+  OmbreResponse,
   PreferenceResponse,
   PrimeroResponse,
   ScoponeResponse,
@@ -1033,6 +1034,62 @@ const baseCalabresellaState: CalabresellaResponse = {
  */
 export function makeCalabresellaState(overrides?: Partial<CalabresellaResponse>): CalabresellaResponse {
   return { ...baseCalabresellaState, ...overrides };
+}
+
+/** Base Ombre state used as the default for {@link makeOmbreState}. Defaults to a human Play turn (trump = ♠, human is Ombre). */
+const baseOmbreState: OmbreResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 9,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      score: 0,
+      isOmbre: true,
+    },
+    { id: 1, isHuman: false, cardCount: 9, cards: [], trickCount: 0, score: 0, isOmbre: false },
+    { id: 2, isHuman: false, cardCount: 9, cards: [], trickCount: 0, score: 0, isOmbre: false },
+  ],
+  phase: 1,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  currentBidderIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 2,
+  forehandIdx: 0,
+  ombreIdx: 0,
+  winningBid: 1,
+  trumpSuit: 1,
+  currentTrick: [],
+  playerScores: [0, 0, 0],
+  lastTrickWinner: -1,
+  outcome: 0,
+  result: 0,
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  isHumanBidTurn: false,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetRounds: 5 },
+};
+
+/**
+ * Creates an {@link OmbreResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial OmbreResponse fields to override.
+ * @returns A complete OmbreResponse suitable for use in tests.
+ */
+export function makeOmbreState(overrides?: Partial<OmbreResponse>): OmbreResponse {
+  return { ...baseOmbreState, ...overrides };
 }
 
 /** Base Cinch state used as the default for {@link makeCinchState}. Defaults to a human Play turn (trump = ♠). */

@@ -540,6 +540,15 @@ var registry = []*Game{
 	// — the issue proposed casino but that worker is at the 1 MB gzip limit, so it routes
 	// to the overflow ("extra") worker.
 	{Name: "calabresella", Category: CategoryExtra},
+	// Ombre (Hombre): a 17th-century Spanish 3-player soloist-vs-coalition trick-taker,
+	// ancestor of all solo games. 40-card deck (A,2..7,J,Q,K); 9 cards each, 13 unused.
+	// Bidding is pass/entrar/solo; the winner (Ombre) picks trump and plays alone against
+	// the other two. The trump group is Spadille (♠A) > Manille (7 of trump) > Basto (♣A)
+	// > Punto (A of a red trump) > K>Q>J>6..2. Must-follow; more tricks than each opponent
+	// = Sacar (win), tied = Puesta, beaten = Codille. Extra worker bucket — the issue
+	// proposed casino but that worker is at the 1 MB gzip limit, so it routes to the
+	// overflow ("extra") worker.
+	{Name: "ombre", Category: CategoryExtra},
 	// King (Greek/Brazilian compendium): a 4-player 52-card trick-avoidance game.
 	// Each deal the dealer picks one of 7 not-yet-played contracts (No Tricks /
 	// No Hearts / No Queens / No King♥ / No Last Two / No Men / King-Trump); the

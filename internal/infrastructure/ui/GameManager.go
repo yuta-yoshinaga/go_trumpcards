@@ -3058,6 +3058,22 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"calabresella.helpSetDifficulty"},
 			})
 	}},
+	{Name: "ombre", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewOmbreCuiController(usecase.NewOmbreInteractor(
+				domain.NewDefaultOmbre(), new(presenter.OmbreCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "ombre.helpTitle",
+				CommandKeys: []string{
+					"ombre.helpBid",
+					"ombre.helpPlay",
+					"ombre.helpNext",
+					"ombre.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"ombre.helpSetDifficulty"},
+			})
+	}},
 	{Name: "king", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewKingCuiController(usecase.NewKingInteractor(

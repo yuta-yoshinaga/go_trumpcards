@@ -128,6 +128,7 @@ import type {
   OhHellResponse,
   OldMaidResponse,
   OmahaResponse,
+  OmbreResponse,
   OpenFaceChineseResponse,
   OsmosisResponse,
   PageOneResponse,
@@ -376,6 +377,7 @@ const workerUrl: Record<string, string> = {
   king: WORKER_EXTRA,
   tysiac: WORKER_EXTRA,
   calabresella: WORKER_EXTRA,
+  ombre: WORKER_EXTRA,
   cinch: WORKER_EXTRA,
   loo: WORKER_EXTRA,
   basra: WORKER_EXTRA,
@@ -2248,6 +2250,46 @@ export const calabresellaApi = {
       command,
       cardIndex: opts?.cardIndex,
       bid: opts?.bid,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Ombre (Hombre) game settings. */
+export interface OmbreConfigInput {
+  cpuDifficulty?: number;
+  targetRounds?: number;
+}
+
+/** Commands accepted by the Ombre /ombre/exec endpoint. */
+export type OmbreCommand = 'reset' | 'bid' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Ombre (Hombre) /ombre/exec endpoint.
+ *
+ * Ombre is a 3-player soloist-vs-coalition trick-taker on a 40-card Spanish
+ * deck. A Bid phase (pass / entrar / solo) plus a chosen trump suit decides the
+ * Ombre, who then plays alone against the coalition of the other two.
+ *   - `bid` → `{ bid, trumpSuit? }` (bid 0=pass, 1=entrar, 2=solo; trumpSuit
+ *     1=♠ 2=♣ 3=♥ 4=♦, sent with a winning entrar/solo)
+ *   - `play` → `{ cardIndex }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const ombreApi = {
+  exec: (
+    command: OmbreCommand,
+    opts?: {
+      cardIndex?: number;
+      bid?: number;
+      trumpSuit?: number;
+      config?: OmbreConfigInput;
+    },
+  ) =>
+    gameExec<OmbreResponse>('ombre', {
+      command,
+      cardIndex: opts?.cardIndex,
+      bid: opts?.bid,
+      trumpSuit: opts?.trumpSuit,
       config: opts?.config,
     }),
 };
@@ -4637,6 +4679,7 @@ const games = [
   'king',
   'tysiac',
   'calabresella',
+  'ombre',
   'cinch',
   'loo',
   'basra',

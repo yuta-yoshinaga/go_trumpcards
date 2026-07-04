@@ -179,6 +179,14 @@ func init() {
 			return usecase.RestoreCalabresellaInteractor(data, new(presenter.CalabresellaWebPresenter))
 		},
 		controller.NewCalabresellaWebControllerWithProvider)
+	games.RegisterKVGame("ombre", games.CategoryExtra,
+		func() usecase.OmbreInteractorIF {
+			return usecase.NewOmbreInteractor(domain.NewDefaultOmbre(), new(presenter.OmbreWebPresenter))
+		},
+		func(data []byte) (usecase.OmbreInteractorIF, error) {
+			return usecase.RestoreOmbreInteractor(data, new(presenter.OmbreWebPresenter))
+		},
+		controller.NewOmbreWebControllerWithProvider)
 	games.RegisterKVGame("king", games.CategoryExtra,
 		func() usecase.KingInteractorIF {
 			return usecase.NewKingInteractor(domain.NewDefaultKing(), new(presenter.KingWebPresenter))

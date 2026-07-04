@@ -1,0 +1,85 @@
+{
+  "title": "オンブル（オンブレ）",
+  "phase": {
+    "bid": "入札",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ディール終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetRounds": "マッチのディール数",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ディール {{n}}",
+  "trick": "トリック {{n}}",
+  "winningBid": "入札: {{bid}}",
+  "trump": "切り札: {{suit}}",
+  "bidNone": "-",
+  "bidEntrar": "エントラール",
+  "bidSolo": "ソロ",
+  "bidPass": "パス",
+  "bidPhase": "入札 — パス、または切り札スートを選んでエントラール／ソロを宣言します。",
+  "chooseTrump": "切り札",
+  "suitNone": "-",
+  "suitSpade": "スペード",
+  "suitClub": "クラブ",
+  "suitHeart": "ハート",
+  "suitDiamond": "ダイヤ",
+  "cards": "{{count}}枚",
+  "tricks": "{{count}}トリック",
+  "currentTrick": "現在のトリック",
+  "players": "プレイヤー",
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "roleOmbre": "オンブル",
+  "roleCoalition": "連合",
+  "ombreBadge": "オンブル",
+  "score": "得点: {{score}}",
+  "playerScore": "{{name}}: {{score}}点",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のディール",
+  "outcomeNone": "-",
+  "outcomeSacar": "サカール（オンブル勝ち）",
+  "outcomePuesta": "プエスタ（並ばれ・オンブル負け）",
+  "outcomeCodille": "コディール（連合勝ち）",
+  "playPhase": {
+    "lead": "あなたの番です — リードするカードを選んでください。",
+    "follow": "あなたの番です — リードスートに従ってカードを選んでください。"
+  },
+  "trickEnd": "トリック終了 — 次へ進んでください。",
+  "roundEnd": "ディール終了 — 次のディールへ進んでください。",
+  "result": {
+    "humanWin": "ゲーム終了！ あなたの勝ち！",
+    "cpuWin": "ゲーム終了！ プレイヤー {{player}} の勝ち！"
+  },
+  "roundResult": {
+    "title": "ディール結果",
+    "outcome": "結果: {{outcome}}",
+    "ombre": "オンブル: {{name}}"
+  },
+  "hintAvailable": "ヒント",
+  "hint": {
+    "lead_high": "オンブルなので強い札でリードして主導する",
+    "lead_low": "連合なので低い札でリードして温存する",
+    "follow_win": "勝てるので取りに行く",
+    "follow_duck": "取れない／取る価値がないのでダック",
+    "give_partner": "味方が勝っているので上書きしない",
+    "discard_low": "フォローできないので低い札を捨てる",
+    "bid_entrar": "手堅い手なのでエントラールを宣言",
+    "bid_solo": "非常に強い手なのでソロを宣言",
+    "bid_pass": "弱い手なのでパスする"
+  },
+  "tutorial": {
+    "trickDisplay": "現在のトリックです。リードされたスートにマストフォロー。切り札の強さは スパディーユ（♠A）＞マニーユ（切り札の7）＞バスト（♣A）＞プント（切り札のA、赤のみ）＞K＞Q＞J＞6..2。他スートは K＞Q＞J＞7..A（黒）／K＞Q＞J＞A..7（赤）。",
+    "playerHand": "あなたの手札です。出せるカードをクリックして選びます。オンブルは連合の2人を相手に1人で戦います。",
+    "playButton": "カードを選んだら、このボタンで出します。入札フェーズでは切り札スートを選んでエントラール／ソロを宣言するか、パスします。",
+    "info": "オンブル（オンブレ）は40枚のスペイン式デッキ（8/9/10を除く）で遊ぶ3人用のソロイスト対連合トリックテイキングです。入札（パス／エントラール／ソロ）と切り札スートの指定でオンブルを決め、その人は連合の2人を相手に9トリックを1人で戦います。サカール（オンブルが最多トリック）でオンブルが得点、プエスタ（並び）でオンブルが軽い失点、コディール（相手がオンブルを上回る）で失点が倍になります。規定ディール数の後、累積得点最上位がマッチ勝者です。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}
