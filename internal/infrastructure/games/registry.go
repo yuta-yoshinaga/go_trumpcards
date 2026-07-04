@@ -638,6 +638,19 @@ var registry = []*Game{
 	// casino/classic/solo workers are at the 1 MB gzip free-tier limit, so it
 	// routes to the overflow ("extra") worker.
 	{Name: "primero", Category: CategoryExtra},
+	// Michigan (a.k.a. Newmarket / Boodle / Chicago): a "stops" family gambling
+	// party game on a standard 52-card deck. 3–8 players each spread an ante across
+	// four fixed center "boodle" cards (A♥, K♣, Q♦, J♠), then all 52 cards are dealt
+	// round-robin to the players plus one face-down "dead hand" (widow). The player
+	// left of the dealer leads the lowest card of a suit; the sequence climbs in that
+	// suit (♥3→♥4→♥5) passing to whoever holds the next card, until a STOP (the next
+	// card is in the dead hand or past the King), when the last player starts a new
+	// sequence. Playing a card matching a boodle collects that boodle's chips. The
+	// round ends the instant a player empties their hand; unclaimed boodle chips carry
+	// over. Chips accumulate; the game ends after a fixed number of rounds, and the
+	// richest player wins. Extra worker bucket — the casino/classic/solo workers are
+	// at the 1 MB gzip free-tier limit, so it routes to the overflow ("extra") worker.
+	{Name: "michigan", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

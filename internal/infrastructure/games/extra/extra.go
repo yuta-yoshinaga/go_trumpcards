@@ -259,4 +259,12 @@ func init() {
 			return usecase.RestorePrimeroInteractor(data, new(presenter.PrimeroWebPresenter))
 		},
 		controller.NewPrimeroWebControllerWithProvider)
+	games.RegisterKVGame("michigan", games.CategoryExtra,
+		func() usecase.MichiganInteractorIF {
+			return usecase.NewMichiganInteractor(domain.NewDefaultMichigan(), new(presenter.MichiganWebPresenter))
+		},
+		func(data []byte) (usecase.MichiganInteractorIF, error) {
+			return usecase.RestoreMichiganInteractor(data, new(presenter.MichiganWebPresenter))
+		},
+		controller.NewMichiganWebControllerWithProvider)
 }

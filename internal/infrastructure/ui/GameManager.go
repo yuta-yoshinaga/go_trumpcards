@@ -3173,6 +3173,17 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"primero.helpSetPlayers", "primero.helpSetAnte", "primero.helpSetChips", "primero.helpSetRounds"},
 			})
 	}},
+	{Name: "michigan", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewMichiganCuiController(usecase.NewMichiganInteractor(
+				domain.NewDefaultMichigan(), new(presenter.MichiganCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "michigan.helpTitle",
+				CommandKeys:       []string{"michigan.helpBet", "michigan.helpPlay", "michigan.helpNext"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"michigan.helpSetPlayers", "michigan.helpSetAnte", "michigan.helpSetChips", "michigan.helpSetRounds"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

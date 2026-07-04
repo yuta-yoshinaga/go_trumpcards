@@ -1619,3 +1619,10 @@ export const PrimeroPhase = {
   BETTING: 0,
   RESULT: 1,
 } as const;
+
+/** Michigan phase constants (sync: internal/domain/Michigan.go). 0=Bet, 1=Play, 2=Result. */
+export const MichiganPhase = {
+  BET: 0,
+  PLAY: 1,
+  RESULT: 2,
+} as const;

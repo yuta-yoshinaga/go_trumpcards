@@ -218,7 +218,8 @@
     "allfours": "オールフォーズ",
     "guts": "ガッツ",
     "bouillotte": "ブイヨット",
-    "primero": "プリメロ"
+    "primero": "プリメロ",
+    "michigan": "ミシガン"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -860,6 +861,13 @@
     "primero.roundEndCpuWin": "CPU {{player}} がポットを獲得しました。",
     "primero.result.humanWin": "ゲーム終了！ あなたの勝利です！",
     "primero.result.cpuWin": "ゲーム終了！ CPU {{player}} の勝利です。",
+    "michigan.betPhase": "ブードルに賭けてください。",
+    "michigan.playPhase": "カードを出してください。",
+    "michigan.roundEnd": "このラウンドは終了しました。",
+    "michigan.roundEndHumanWin": "あなたが今ラウンドで最も稼ぎました！",
+    "michigan.roundEndHumanLose": "他のプレイヤーの方が稼ぎました。",
+    "michigan.result.humanWin": "ゲーム終了！ あなたの勝利です！",
+    "michigan.result.cpuWin": "ゲーム終了！ CPU {{player}} の勝利です！",
     "catchten.playPhase.lead": "あなたの番です — リードするカードを選んでください。",
     "catchten.playPhase.follow": "あなたの番です — リードスートに従ってください。",
     "catchten.trickEnd": "トリック終了 — 続けてください。",

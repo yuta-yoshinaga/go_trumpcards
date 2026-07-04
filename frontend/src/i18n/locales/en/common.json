@@ -218,7 +218,8 @@
     "allfours": "All Fours",
     "guts": "Guts",
     "bouillotte": "Bouillotte",
-    "primero": "Primero"
+    "primero": "Primero",
+    "michigan": "Michigan"
   },
   "sound": {
     "mute": "Mute sound",
@@ -860,6 +861,13 @@
     "primero.roundEndCpuWin": "CPU {{player}} wins the pot.",
     "primero.result.humanWin": "Game over! You win!",
     "primero.result.cpuWin": "Game over! CPU {{player}} wins.",
+    "michigan.betPhase": "Place your boodle bets.",
+    "michigan.playPhase": "Play a card.",
+    "michigan.roundEnd": "The round is over.",
+    "michigan.roundEndHumanWin": "You had the best round!",
+    "michigan.roundEndHumanLose": "A rival did better this round.",
+    "michigan.result.humanWin": "Game over! You win!",
+    "michigan.result.cpuWin": "Game over! CPU {{player}} wins!",
     "catchten.playPhase.lead": "Your turn — pick a card to lead.",
     "catchten.playPhase.follow": "Your turn — follow the lead suit.",
     "catchten.trickEnd": "Trick complete — continue.",

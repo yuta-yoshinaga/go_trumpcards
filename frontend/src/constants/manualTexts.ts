@@ -108,6 +108,7 @@ import manille from '../../../docs/manual/web/manille.md?raw';
 import mao from '../../../docs/manual/web/mao.md?raw';
 import marias from '../../../docs/manual/web/marias.md?raw';
 import memory from '../../../docs/manual/web/memory.md?raw';
+import michigan from '../../../docs/manual/web/michigan.md?raw';
 import mighty from '../../../docs/manual/web/mighty.md?raw';
 import mississippistud from '../../../docs/manual/web/mississippistud.md?raw';
 import montecarlo from '../../../docs/manual/web/montecarlo.md?raw';
@@ -275,6 +276,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/guts': guts,
   '/bouillotte': bouillotte,
   '/primero': primero,
+  '/michigan': michigan,
   '/tressette': tressette,
   '/hearts': hearts,
   '/holdem': holdem,
