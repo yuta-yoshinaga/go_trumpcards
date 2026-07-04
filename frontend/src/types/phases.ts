@@ -988,6 +988,16 @@ export const JassPhase = {
   GAME_END: 5,
 } as const;
 
+/** Watten phase constants (sync: internal/domain/Watten.go). */
+export const WattenPhase = {
+  DECLARE: 0,
+  PLAY: 1,
+  RESPOND: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
 /** Gaigel phase constants (sync: internal/domain/Gaigel.go). */
 export const GaigelPhase = {
   PLAY: 0,

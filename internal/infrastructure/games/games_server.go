@@ -1015,4 +1015,9 @@ func init() {
 			return usecase.NewMichiganInteractor(domain.NewDefaultMichigan(), new(presenter.MichiganWebPresenter))
 		},
 		controller.NewMichiganWebController)
+	BindWebControllerFor("watten",
+		func() usecase.WattenInteractorIF {
+			return usecase.NewWattenInteractor(domain.NewDefaultWatten(), new(presenter.WattenWebPresenter))
+		},
+		controller.NewWattenWebController)
 }

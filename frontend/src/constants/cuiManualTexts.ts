@@ -200,6 +200,7 @@ import ultimatetexasholdem from '../../../docs/manual/cui/ultimatetexasholdem.md
 import videopoker from '../../../docs/manual/cui/videopoker.md?raw';
 import war from '../../../docs/manual/cui/war.md?raw';
 import wasp from '../../../docs/manual/cui/wasp.md?raw';
+import watten from '../../../docs/manual/cui/watten.md?raw';
 import whist from '../../../docs/manual/cui/whist.md?raw';
 import yaniv from '../../../docs/manual/cui/yaniv.md?raw';
 import yukon from '../../../docs/manual/cui/yukon.md?raw';
@@ -276,6 +277,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/holdem': holdem,
   '/indianpoker': indianpoker,
   '/jass': jass,
+  '/watten': watten,
   '/gaigel': gaigel,
   '/jokerpoker': jokerpoker,
   '/klondike': klondike,

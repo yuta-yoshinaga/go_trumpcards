@@ -267,4 +267,12 @@ func init() {
 			return usecase.RestoreMichiganInteractor(data, new(presenter.MichiganWebPresenter))
 		},
 		controller.NewMichiganWebControllerWithProvider)
+	games.RegisterKVGame("watten", games.CategoryExtra,
+		func() usecase.WattenInteractorIF {
+			return usecase.NewWattenInteractor(domain.NewDefaultWatten(), new(presenter.WattenWebPresenter))
+		},
+		func(data []byte) (usecase.WattenInteractorIF, error) {
+			return usecase.RestoreWattenInteractor(data, new(presenter.WattenWebPresenter))
+		},
+		controller.NewWattenWebControllerWithProvider)
 }

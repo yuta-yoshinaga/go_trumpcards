@@ -651,6 +651,14 @@ var registry = []*Game{
 	// richest player wins. Extra worker bucket — the casino/classic/solo workers are
 	// at the 1 MB gzip free-tier limit, so it routes to the overflow ("extra") worker.
 	{Name: "michigan", Category: CategoryExtra},
+	// Watten: a Bavarian/Austrian 4-player/2-team trick-taker on a 32-card pack
+	// (7..A) with a bluff-raise stake mechanic. The dealer declares a Schlag rank
+	// and a critical (trump) suit; ranking is fixed Max(♥K) > Belli(♦K) > Spitz(♦7)
+	// > Schlag cards > critical-suit cards > plain. Teams may raise the deal's stake
+	// ("gehen"); the opposing team holds or folds. First team to 15 wins. Modelled on
+	// jass (4p/2-team) + truco (raise/respond). Extra worker bucket — the casino/
+	// classic/solo workers are at the 1 MB gzip free-tier limit.
+	{Name: "watten", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

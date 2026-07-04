@@ -214,6 +214,7 @@ import type {
   VideoPokerResponse,
   WarResponse,
   WaspResponse,
+  WattenResponse,
   WhistConfig,
   WhistResponse,
   YanivResponse,
@@ -388,6 +389,7 @@ const workerUrl: Record<string, string> = {
   bouillotte: WORKER_EXTRA,
   primero: WORKER_EXTRA,
   michigan: WORKER_EXTRA,
+  watten: WORKER_EXTRA,
   eightoff: WORKER_SOLO,
   penguin: WORKER_SOLO,
   chinesepoker: WORKER_CASINO,
@@ -3612,6 +3614,40 @@ export const jassApi = {
     }),
 };
 
+/** Watten (ヴァッテン) game configuration input shape. */
+export interface WattenConfigInput {
+  cpuDifficulty?: number;
+  targetScore?: number;
+  maxRaises?: number;
+}
+
+/**
+ * API client for the Watten /watten/exec endpoint.
+ *
+ * Watten is a Bavarian/Austrian 4-player, 2-team trick-taker with a raise/bluff
+ * stake mechanic. `declare` carries the Schlag `rank` and critical `suit`, `play`
+ * carries a `cardIndex`, `raise` takes no args, and `respond` carries `hold`
+ * (true = hold/accept, false = fold/concede).
+ */
+export const wattenApi = {
+  exec: (
+    command: 'reset' | 'declare' | 'play' | 'raise' | 'respond' | 'nextround' | 'hint',
+    rank?: number,
+    suit?: number,
+    cardIndex?: number,
+    hold?: boolean,
+    config?: WattenConfigInput,
+  ) =>
+    gameExec<WattenResponse>('watten', {
+      command,
+      rank,
+      suit,
+      cardIndex,
+      hold,
+      config,
+    }),
+};
+
 /** Gaigel game configuration input. */
 export interface GaigelConfigInput {
   cpuDifficulty?: number;
@@ -4643,6 +4679,7 @@ const games = [
   'mississippistud',
   'belote',
   'jass',
+  'watten',
   'spiderette',
   'mighty',
   'oasispoker',

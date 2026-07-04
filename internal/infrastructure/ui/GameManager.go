@@ -3184,6 +3184,23 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"michigan.helpSetPlayers", "michigan.helpSetAnte", "michigan.helpSetChips", "michigan.helpSetRounds"},
 			})
 	}},
+	{Name: "watten", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewWattenCuiController(usecase.NewWattenInteractor(
+				domain.NewDefaultWatten(), new(presenter.WattenCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "watten.helpTitle",
+				CommandKeys: []string{
+					"watten.helpDeclare",
+					"watten.helpPlay",
+					"watten.helpRaise",
+					"watten.helpRespond",
+					"watten.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"watten.helpSetDifficulty", "watten.helpSetTarget"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

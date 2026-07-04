@@ -1,0 +1,71 @@
+{
+  "title": "Watten",
+  "phase": {
+    "declare": "Declare",
+    "play": "Play",
+    "respond": "Respond",
+    "trickEnd": "Trick End",
+    "roundEnd": "Deal End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetScore": "Target Score",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "deal": "Deal {{n}}",
+  "trick": "Trick {{n}}",
+  "schlag": "Schlag: {{rank}}",
+  "critical": "Trump: {{suit}}",
+  "schlagNone": "-",
+  "suitNone": "-",
+  "suitSpade": "Spades",
+  "suitClub": "Clubs",
+  "suitHeart": "Hearts",
+  "suitDiamond": "Diamonds",
+  "currentTrick": "Current trick",
+  "players": "Players",
+  "you": "You",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "team": "Team {{n}}",
+  "teamShort": "T{{n}}",
+  "score": "{{score}} pts",
+  "stake": "Stake: {{stake}}",
+  "stakePending": "Stake: {{stake}} (proposed {{pending}})",
+  "declarePhase": "Declare — pick a Schlag rank and a critical (trump) suit.",
+  "chooseSchlag": "Schlag rank",
+  "chooseCritical": "Trump suit",
+  "declareButton": "Declare",
+  "playButton": "Play",
+  "raiseButton": "Raise (Watten)",
+  "respondPhase": "Stake raised to {{stake}} — hold or fold.",
+  "holdButton": "Hold",
+  "foldButton": "Fold",
+  "nextRound": "Next deal",
+  "dealResult": {
+    "title": "Deal result",
+    "winner": "Team {{team}} takes {{stake}} points"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "declare_strong": "Strong hand — declare your Schlag and trump",
+    "raise_strong": "You are ahead — raise the stake",
+    "lead_trump": "Lead a trump to take control",
+    "lead_plain": "Lead a plain card and hold trumps back",
+    "follow_win": "You can win — take the trick",
+    "follow_dump": "You cannot win — dump a low card",
+    "hold_ok": "Strong enough to hold the raise",
+    "fold_weak": "Weak hand — fold the raise"
+  },
+  "tutorial": {
+    "trickDisplay": "The current trick. The three permanent top trumps are Max (K♥) > Belli (K♦) > Spitz (7♦), then all cards of the Schlag rank, then the critical suit, then plain cards.",
+    "playerHand": "Your hand. Click a card to select it, then Play. You are seat 0 (team 0); the player across from you is your partner.",
+    "playButton": "Once a card is selected, play it with this button. As lead you may Raise the stake; if raised, respond with Hold or Fold. In the Declare phase, pick a Schlag rank and critical suit and declare.",
+    "info": "Watten is a Bavarian/Austrian 4-player, 2-team trick-taker. Five cards are dealt from a 32-card pack; the dealer declares a Schlag rank and a critical (trump) suit. A team that wins at least three of the five tricks scores the stake, and the first team to 15 (configurable) wins the match.",
+    "resetButton": "Use the reset button to start a new game."
+  }
+}

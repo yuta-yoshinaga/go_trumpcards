@@ -199,6 +199,7 @@ import ultimatetexasholdem from '../../../docs/manual/web/ultimatetexasholdem.md
 import videopoker from '../../../docs/manual/web/videopoker.md?raw';
 import war from '../../../docs/manual/web/war.md?raw';
 import wasp from '../../../docs/manual/web/wasp.md?raw';
+import watten from '../../../docs/manual/web/watten.md?raw';
 import whist from '../../../docs/manual/web/whist.md?raw';
 import yaniv from '../../../docs/manual/web/yaniv.md?raw';
 import yukon from '../../../docs/manual/web/yukon.md?raw';
@@ -282,6 +283,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/holdem': holdem,
   '/indianpoker': indianpoker,
   '/jass': jass,
+  '/watten': watten,
   '/gaigel': gaigel,
   '/jokerpoker': jokerpoker,
   '/klondike': klondike,
