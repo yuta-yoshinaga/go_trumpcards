@@ -87,6 +87,7 @@ import type {
   OhHellResponse,
   OldMaidResponse,
   OmahaResponse,
+  OmbreResponse,
   OsmosisResponse,
   PageOneResponse,
   PenguinResponse,
@@ -246,6 +247,7 @@ import { getOhHellHint } from '../utils/hints/ohhellHint';
 import { getOldMaidHint } from '../utils/hints/oldmaidHint';
 import { getOmahaHiLoHint } from '../utils/hints/omahaHiLoHint';
 import { getOmahaHint } from '../utils/hints/omahaHint';
+import { getOmbreHint } from '../utils/hints/ombreHint';
 import { getOsmosisHint } from '../utils/hints/osmosisHint';
 import { getPageOneHint } from '../utils/hints/pageoneHint';
 import { getPenguinHint } from '../utils/hints/penguinHint';
@@ -466,6 +468,7 @@ const hintFactories = {
   marias: (s) => getMariasHint(s as MariasResponse),
   tysiac: (s) => getTysiacHint(s as TysiacResponse),
   calabresella: (s) => getCalabresellaHint(s as CalabresellaResponse),
+  ombre: (s) => getOmbreHint(s as OmbreResponse),
   cinch: (s) => getCinchHint(s as CinchResponse),
   loo: (s) => getLooHint(s as LooResponse),
   basra: (s) => getBasraHint(s as BasraResponse),

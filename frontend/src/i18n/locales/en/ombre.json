@@ -1,0 +1,85 @@
+{
+  "title": "Ombre (Hombre)",
+  "phase": {
+    "bid": "Bidding",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Deal End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetRounds": "Deals per Match",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Deal {{n}}",
+  "trick": "Trick {{n}}",
+  "winningBid": "Bid: {{bid}}",
+  "trump": "Trump: {{suit}}",
+  "bidNone": "-",
+  "bidEntrar": "Entrar",
+  "bidSolo": "Solo",
+  "bidPass": "Pass",
+  "bidPhase": "Bidding — pass, or pick a trump suit and declare entrar / solo.",
+  "chooseTrump": "Trump",
+  "suitNone": "-",
+  "suitSpade": "Spades",
+  "suitClub": "Clubs",
+  "suitHeart": "Hearts",
+  "suitDiamond": "Diamonds",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "currentTrick": "Current Trick",
+  "players": "Players",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "roleOmbre": "Ombre",
+  "roleCoalition": "Coalition",
+  "ombreBadge": "Ombre",
+  "score": "Score: {{score}}",
+  "playerScore": "{{name}}: {{score}} pts",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Deal",
+  "outcomeNone": "-",
+  "outcomeSacar": "Sacar (Ombre wins)",
+  "outcomePuesta": "Puesta (tied — Ombre loses)",
+  "outcomeCodille": "Codille (coalition wins)",
+  "playPhase": {
+    "lead": "Your turn — pick a card to lead.",
+    "follow": "Your turn — follow the led suit."
+  },
+  "trickEnd": "Trick complete — continue.",
+  "roundEnd": "Deal complete — go to the next deal.",
+  "result": {
+    "humanWin": "Game over! You win!",
+    "cpuWin": "Game over! Player {{player}} wins."
+  },
+  "roundResult": {
+    "title": "Deal Result",
+    "outcome": "Outcome: {{outcome}}",
+    "ombre": "Ombre: {{name}}"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "lead_high": "You are Ombre — lead a strong card to take control",
+    "lead_low": "You are coalition — lead a low card to conserve",
+    "follow_win": "You can win — take the trick",
+    "follow_duck": "Cannot/should not win — duck",
+    "give_partner": "Your side is winning — do not overtake",
+    "discard_low": "Cannot follow suit — discard a low card",
+    "bid_entrar": "Solid hand — declare entrar",
+    "bid_solo": "Very strong hand — declare solo",
+    "bid_pass": "Weak hand — pass"
+  },
+  "tutorial": {
+    "trickDisplay": "This is the current trick. You must follow the led suit. The trump group ranks Spadille (♠A) > Manille (7 of trump) > Basto (♣A) > Punto (Ace of trump, red trumps only) > K > Q > J > 6..2 of trump; other suits rank K > Q > J > 7..A (black) or K > Q > J > A..7 (red).",
+    "playerHand": "This is your hand. Click a playable card to select it. The Ombre plays alone against the coalition of the other two players.",
+    "playButton": "Once a card is selected, play it with this button. In the Bid phase pick a trump suit and declare entrar / solo, or pass.",
+    "info": "Ombre (Hombre) is a 3-player soloist-vs-coalition trick-taker on a 40-card Spanish deck (no 8/9/10). A Bid phase (pass / entrar / solo) plus a chosen trump suit decides the Ombre, who plays alone against the coalition of the other two over nine tricks. Sacar (Ombre takes the most tricks) scores for the Ombre; Puesta (a tie) penalizes the Ombre; Codille (an opponent beats the Ombre) doubles the penalty. The highest cumulative score after the set number of deals wins the match.",
+    "resetButton": "Use the reset button to start a new game."
+  }
+}

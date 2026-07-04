@@ -960,6 +960,11 @@ func init() {
 			return usecase.NewCalabresellaInteractor(domain.NewDefaultCalabresella(), new(presenter.CalabresellaWebPresenter))
 		},
 		controller.NewCalabresellaWebController)
+	BindWebControllerFor("ombre",
+		func() usecase.OmbreInteractorIF {
+			return usecase.NewOmbreInteractor(domain.NewDefaultOmbre(), new(presenter.OmbreWebPresenter))
+		},
+		controller.NewOmbreWebController)
 	BindWebControllerFor("king",
 		func() usecase.KingInteractorIF {
 			return usecase.NewKingInteractor(domain.NewDefaultKing(), new(presenter.KingWebPresenter))

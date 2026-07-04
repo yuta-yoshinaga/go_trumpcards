@@ -390,6 +390,15 @@ export const CalabresellaPhase = {
   GAME_END: 5,
 } as const;
 
+/** Ombre (Hombre) phase constants (sync: internal/domain/Ombre.go). */
+export const OmbrePhase = {
+  BID: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Cinch phase constants (sync: internal/domain/Cinch.go). */
 export const CinchPhase = {
   BID: 0,
