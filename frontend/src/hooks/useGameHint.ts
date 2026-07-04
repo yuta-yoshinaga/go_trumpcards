@@ -151,6 +151,7 @@ import type {
   VideoPokerResponse,
   WarResponse,
   WaspResponse,
+  WattenResponse,
   WhistResponse,
   YanivResponse,
   YukonResponse,
@@ -312,6 +313,7 @@ import { getUltimateTexasHoldemHint } from '../utils/hints/ultimateTexasHoldemHi
 import { getVideoPokerHint } from '../utils/hints/videopokerHint';
 import { getWarHint } from '../utils/hints/warHint';
 import { getWaspHint } from '../utils/hints/waspHint';
+import { getWattenHint } from '../utils/hints/wattenHint';
 import { getWhistHint } from '../utils/hints/whistHint';
 import { getYanivHint } from '../utils/hints/yanivHint';
 import { getYukonHint } from '../utils/hints/yukonHint';
@@ -426,6 +428,7 @@ const hintFactories = {
   dragontiger: (s) => getDragontigerHint(s as DragonTigerResponse),
   blackjackswitch: (s) => getBlackjackswitchHint(s as BlackJackSwitchResponse),
   war: (s) => getWarHint(s as WarResponse),
+  watten: (s) => getWattenHint(s as WattenResponse),
   whist: (s) => getWhistHint(s as WhistResponse),
   catchten: (s) => getCatchTenHint(s as CatchTenResponse),
   yukon: (s) => getYukonHint(s as YukonResponse),

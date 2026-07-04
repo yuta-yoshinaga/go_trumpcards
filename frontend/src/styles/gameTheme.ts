@@ -109,6 +109,7 @@ export type GameKey =
   | 'skat'
   | 'belote'
   | 'jass'
+  | 'watten'
   | 'gaigel'
   | 'mighty'
   | 'fivehundred'
@@ -279,6 +280,10 @@ const CALABRESELLA = {
 const OMBRE = {
   bg: 'bg-game-bg-ombre',
   footer: 'bg-game-bg-ombre-dark border-white/20',
+} as const;
+const WATTEN = {
+  bg: 'bg-game-bg-watten',
+  footer: 'bg-game-bg-watten-dark border-white/20',
 } as const;
 const CINCH = {
   bg: 'bg-game-bg-cinch',
@@ -506,6 +511,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   skat: BLUE,
   belote: BLUE,
   jass: BLUE,
+  watten: WATTEN,
   gaigel: BLUE,
   mighty: BLUE,
   fivehundred: BLUE,

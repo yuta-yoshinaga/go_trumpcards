@@ -75,6 +75,9 @@
   /* Ombre (Hombre) — Spanish-court vivid crimson felt, distinct from Mariáš's garnet, Loo/Trente's wine, and Calabresella's terracotta. */
   --color-game-bg-ombre: #a11d29;
   --color-game-bg-ombre-dark: #6b111a;
+  /* Watten (ヴァッテン) — Alpine/Bavarian glacier blue felt, cooler and brighter than Jass's navy blue and distinct from every other game. */
+  --color-game-bg-watten: #1c5b8c;
+  --color-game-bg-watten-dark: #113a5a;
   /* Cinch (Double Pedro) — American saloon deep bronze-olive felt, distinct from Calabresella's terracotta and All Fours' teal. */
   --color-game-bg-cinch: #5c5218;
   --color-game-bg-cinch-dark: #3a340f;

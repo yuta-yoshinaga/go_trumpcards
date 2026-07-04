@@ -41,6 +41,7 @@ import type {
   TwentyNineResponse,
   TwoTenJackResponse,
   TysiacResponse,
+  WattenResponse,
 } from '../types/card';
 
 /** Base Hearts player data for player 0 (human). */
@@ -1091,6 +1092,62 @@ const baseOmbreState: OmbreResponse = {
  */
 export function makeOmbreState(overrides?: Partial<OmbreResponse>): OmbreResponse {
   return { ...baseOmbreState, ...overrides };
+}
+
+/** Base Watten state used as the default for {@link makeWattenState}. Defaults to a human Play turn (Schlag = K, critical suit = ♥, human leads). */
+const baseWattenState: WattenResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 5,
+      cards: [
+        { design: 'HEART' as const, value: 13 },
+        { design: 'DIAMOND' as const, value: 7 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      team: 0,
+      trickCount: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 5, cards: [], team: 1, trickCount: 0 },
+    { id: 2, isHuman: false, cardCount: 5, cards: [], team: 0, trickCount: 0 },
+    { id: 3, isHuman: false, cardCount: 5, cards: [], team: 1, trickCount: 0 },
+  ],
+  phase: 1,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  dealerIdx: 0,
+  leadPlayerIdx: 0,
+  schlagRank: 13,
+  criticalSuit: 3,
+  stake: 2,
+  pendingStake: 0,
+  raiseCount: 0,
+  raiserTeam: -1,
+  responderIdx: -1,
+  canRaise: true,
+  currentTrick: [],
+  teamScores: [0, 0],
+  teamTricks: [0, 0],
+  dealWinnerTeam: -1,
+  gameEndFlag: false,
+  winnerTeam: -1,
+  result: 0,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetScore: 15, maxRaises: 4 },
+};
+
+/**
+ * Creates a {@link WattenResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial WattenResponse fields to override.
+ * @returns A complete WattenResponse suitable for use in tests.
+ */
+export function makeWattenState(overrides?: Partial<WattenResponse>): WattenResponse {
+  return { ...baseWattenState, ...overrides };
 }
 
 /** Base Cinch state used as the default for {@link makeCinchState}. Defaults to a human Play turn (trump = ♠). */

@@ -210,6 +210,7 @@ var gameDescriptions = map[string]string{
 	"bouillotte":          "Bouillotte (ブイヨット)",
 	"primero":             "Primero / Primiera (プリメロ)",
 	"michigan":            "Michigan / Newmarket (ミシガン)",
+	"watten":              "Watten (ヴァッテン)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

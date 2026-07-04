@@ -201,6 +201,7 @@
     "mississippistud": "ミシシッピ・スタッド",
     "belote": "ベロート",
     "jass": "ヤス（シーバー）",
+    "watten": "ヴァッテン",
     "gaigel": "ガイゲル",
     "rummy500": "ラミー 500",
     "bigtwo": "大老二",
@@ -901,7 +902,14 @@
     "cuarenta.result.scores": "ゲーム終了。スコア: {{scores}}",
     "faro.result.callWon": "コール的中！",
     "faro.result.callLost": "コール外れ。",
-    "faro.result.gameEnd": "チップが尽きました。ゲーム終了です。"
+    "faro.result.gameEnd": "チップが尽きました。ゲーム終了です。",
+    "watten.result.team0Win": "ゲーム終了！ チーム0の勝ち！",
+    "watten.result.team1Win": "ゲーム終了！ チーム1の勝ち！",
+    "watten.declarePhase": "宣言 — Schlag ランクと切り札スートを選んでください。",
+    "watten.playPhase.lead": "あなたの番です — リードするカードを選んでください。",
+    "watten.playPhase.follow": "あなたの番です — カードを選んでください。",
+    "watten.respondPhase": "レイズされました — hold か fold を選んでください。",
+    "watten.roundEnd": "ディール終了 — 次のディールへ進んでください。"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",
