@@ -579,6 +579,12 @@ func TestWatten_Unmarshal_Validation(t *testing.T) {
 	assert.Error(t, json.Unmarshal([]byte(`{"ph":0,"cs":9,"pl":[{},{},{},{}]}`), &g))
 	// OOB dealer.
 	assert.Error(t, json.Unmarshal([]byte(`{"ph":0,"di":9,"pl":[{},{},{},{}]}`), &g))
+	// Player team out of range (must be 0 or 1).
+	assert.Error(t, json.Unmarshal([]byte(`{"ph":0,"pl":[{"tm":5},{},{},{}]}`), &g))
+	// Winner team index validated against WattenTeamCnt (2), not the player count.
+	assert.Error(t, json.Unmarshal([]byte(`{"ph":0,"pl":[{},{},{},{}],"wt":3}`), &g))
+	// Raiser team index out of range.
+	assert.Error(t, json.Unmarshal([]byte(`{"ph":0,"pl":[{},{},{},{}],"rt":2}`), &g))
 	// Valid declare-phase state (undeclared allowed).
 	assert.NoError(t, json.Unmarshal([]byte(`{"ph":0,"sr":0,"cs":0,"di":0,"cp":0,"pl":[{},{},{},{}]}`), &g))
 }

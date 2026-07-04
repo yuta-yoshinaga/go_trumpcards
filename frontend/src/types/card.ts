@@ -5292,7 +5292,7 @@ export interface WattenResponse extends BaseGameResponse {
   leadPlayerIdx: number;
   /** The declared Schlag rank (1=A, 7..13), or 0 when unset. */
   schlagRank: number;
-  /** The declared critical (trump) suit (1=♠ 2=♣ 3=♥ 4=♦), or -1 when unset. */
+  /** The declared critical (trump) suit (1=♠ 2=♣ 3=♥ 4=♦), or 0 when unset. */
   criticalSuit: number;
   /** The current accepted stake (starts at 2). */
   stake: number;

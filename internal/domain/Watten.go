@@ -1311,6 +1311,9 @@ func (g *Watten) UnmarshalJSON(data []byte) error {
 		if p == nil {
 			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("プレイヤー %d が nil です", i))
 		}
+		if t := p.GetTeam(); t < 0 || t >= WattenTeamCnt {
+			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("プレイヤー %d のチームが範囲外です", i))
+		}
 	}
 	if len(j.CurrentTrick) > WattenPlayerCnt {
 		return NewDomainError(ErrInvalidPlay, "トリックカードが多すぎます")
@@ -1344,12 +1347,17 @@ func (g *Watten) UnmarshalJSON(data []byte) error {
 	if j.DealerIdx < 0 || j.DealerIdx >= WattenPlayerCnt {
 		return NewDomainError(ErrInvalidPlay, "dealerIdx が範囲外です")
 	}
-	// -1 センチネル許可、それ以外は範囲内。
-	for _, b := range []struct {
-		val int
-	}{{j.LeadPlayerIdx}, {j.ResponderIdx}, {j.RaiserTeam}, {j.DealWinnerTeam}, {j.WinnerTeam}} {
-		if b.val < -1 || b.val >= WattenPlayerCnt {
-			return NewDomainError(ErrInvalidPlay, "インデックスが範囲外です")
+	// -1 センチネル許可のプレイヤーインデックス (0..WattenPlayerCnt-1)。
+	for _, v := range []int{j.LeadPlayerIdx, j.ResponderIdx} {
+		if v < -1 || v >= WattenPlayerCnt {
+			return NewDomainError(ErrInvalidPlay, "プレイヤーインデックスが範囲外です")
+		}
+	}
+	// -1 センチネル許可のチームインデックス (0..WattenTeamCnt-1)。teamScores/teamTricks
+	// を直接インデックスするため WattenTeamCnt で検証する (WattenPlayerCnt ではない)。
+	for _, v := range []int{j.RaiserTeam, j.DealWinnerTeam, j.WinnerTeam} {
+		if v < -1 || v >= WattenTeamCnt {
+			return NewDomainError(ErrInvalidPlay, "チームインデックスが範囲外です")
 		}
 	}
 
