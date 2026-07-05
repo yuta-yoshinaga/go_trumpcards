@@ -31,7 +31,6 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"sort"
 )
 
@@ -208,10 +207,8 @@ func (g *Pan) dealInitialCards() {
 		}
 		g.drawPile = append(g.drawPile, card)
 	}
-
-	rand.Shuffle(len(g.drawPile), func(i, j int) {
-		g.drawPile[i], g.drawPile[j] = g.drawPile[j], g.drawPile[i]
-	})
+	// The deck is already shuffled by trumpCards.Shuffle() in Reset; a second
+	// shuffle here only added non-determinism to tests.
 
 	for range PanHandSize {
 		for j := range len(g.players) {
@@ -824,6 +821,24 @@ func panIsValidSet(cards []*Card) bool {
 }
 
 // panIsValidRun 同スートで連続する 3 枚以上（Ace は low または high、ラップ不可）。
+// panRankOrder maps a card value to its position in Pan's reduced deck
+// (ranks A,2,3,4,5,6,7,J,Q,K — the 8s, 9s and 10s are removed), so that 7 and
+// J are adjacent. A run's consecutiveness must be judged on these indices, not
+// on raw card values (7→11 looks like a gap but is a valid Pan sequence).
+var panRankOrder = map[int]int{1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 7: 6, 11: 7, 12: 8, 13: 9}
+
+// panAceHighRank is the Ace's index when it ranks above the King (Q-K-A).
+const panAceHighRank = 10
+
+// panRankIndex returns the Pan rank index for a card value, or -1 if the value
+// is not part of the Pan deck (i.e. an 8, 9 or 10).
+func panRankIndex(value int) int {
+	if idx, ok := panRankOrder[value]; ok {
+		return idx
+	}
+	return -1
+}
+
 func panIsValidRun(cards []*Card) bool {
 	if len(cards) < PanMeldMin {
 		return false
@@ -834,24 +849,28 @@ func panIsValidRun(cards []*Card) bool {
 			return false
 		}
 	}
-	values := make([]int, len(cards))
+	idx := make([]int, len(cards))
 	for i, c := range cards {
-		values[i] = c.GetValue()
+		ri := panRankIndex(c.GetValue())
+		if ri < 0 {
+			return false
+		}
+		idx[i] = ri
 	}
-	sort.Ints(values)
-	for i := 1; i < len(values); i++ {
-		if values[i] == values[i-1] {
-			return false // 連続ランに重複値は不可
+	sort.Ints(idx)
+	for i := 1; i < len(idx); i++ {
+		if idx[i] == idx[i-1] {
+			return false // 連続ランに重複ランクは不可
 		}
 	}
-	if isConsecutive(values) {
+	if isConsecutive(idx) {
 		return true
 	}
-	// Ace を high(14) として再評価（Q-K-A など）。
-	if values[0] == 1 {
-		high := make([]int, len(values))
-		copy(high, values)
-		high[0] = 14
+	// Ace を high(K の上) として再評価（Q-K-A など）。
+	if idx[0] == 0 {
+		high := make([]int, len(idx))
+		copy(high, idx)
+		high[0] = panAceHighRank
 		sort.Ints(high)
 		if isConsecutive(high) {
 			return true
@@ -937,7 +956,7 @@ func findFirstPanMeld(cards []*Card) []*Card {
 		for i := 0; i+PanMeldMin <= len(uniq); i++ {
 			run := []*Card{uniq[i]}
 			for j := i + 1; j < len(uniq); j++ {
-				if uniq[j].GetValue() == run[len(run)-1].GetValue()+1 {
+				if panRankIndex(uniq[j].GetValue()) == panRankIndex(run[len(run)-1].GetValue())+1 {
 					run = append(run, uniq[j])
 				} else {
 					break

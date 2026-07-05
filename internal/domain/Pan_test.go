@@ -100,7 +100,8 @@ func TestPanIsValidMeld(t *testing.T) {
 		{"run mixed suits", []*domain.Card{panCard(panSp, 1), panCard(panCl, 2), panCard(panSp, 3)}, false},
 		{"set different ranks", []*domain.Card{panCard(panSp, 5), panCard(panCl, 6), panCard(panHe, 5)}, false},
 		{"too few cards", []*domain.Card{panCard(panSp, 5), panCard(panCl, 5)}, false},
-		{"run with gap (7 then J)", []*domain.Card{panCard(panSp, 6), panCard(panSp, 7), panCard(panSp, 11)}, false},
+		{"run across the 7-J boundary (8/9/10 removed)", []*domain.Card{panCard(panSp, 6), panCard(panSp, 7), panCard(panSp, 11)}, true},
+		{"run with a real gap (5 then 7)", []*domain.Card{panCard(panSp, 4), panCard(panSp, 5), panCard(panSp, 7)}, false},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
