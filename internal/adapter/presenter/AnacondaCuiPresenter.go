@@ -46,7 +46,13 @@ func anacondaPlayerStr(g interfaces.AnacondaGame, i int) string {
 	))
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		line := cuiIndexedCardListStr(player)
+		// Once the human's kept hand is fully revealed (final roll / showdown),
+		// label its poker category too, matching the CPU rows.
+		if g.IsHandFullyRevealed(i) {
+			line += "  (" + i18n.T("anaconda.hand."+anacondaHandName(g.GetRevealedCards(i))) + ")"
+		}
+		b.WriteString(line + "\n")
 	} else if revealed := g.GetRevealedCards(i); len(revealed) > 0 {
 		line := cuiCardSliceStr(revealed)
 		if g.IsHandFullyRevealed(i) {
