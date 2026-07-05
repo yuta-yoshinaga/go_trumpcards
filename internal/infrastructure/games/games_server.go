@@ -970,6 +970,11 @@ func init() {
 			return usecase.NewOmbreInteractor(domain.NewDefaultOmbre(), new(presenter.OmbreWebPresenter))
 		},
 		controller.NewOmbreWebController)
+	BindWebControllerFor("ulti",
+		func() usecase.UltiInteractorIF {
+			return usecase.NewUltiInteractor(domain.NewDefaultUlti(), new(presenter.UltiWebPresenter))
+		},
+		controller.NewUltiWebController)
 	BindWebControllerFor("king",
 		func() usecase.KingInteractorIF {
 			return usecase.NewKingInteractor(domain.NewDefaultKing(), new(presenter.KingWebPresenter))

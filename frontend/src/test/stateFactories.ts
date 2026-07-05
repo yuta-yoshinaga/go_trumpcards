@@ -44,6 +44,7 @@ import type {
   TwentyNineResponse,
   TwoTenJackResponse,
   TysiacResponse,
+  UltiResponse,
   WattenResponse,
 } from '../types/card';
 
@@ -1095,6 +1096,64 @@ const baseOmbreState: OmbreResponse = {
  */
 export function makeOmbreState(overrides?: Partial<OmbreResponse>): OmbreResponse {
   return { ...baseOmbreState, ...overrides };
+}
+
+/** Base Ulti state used as the default for {@link makeUltiState}. Defaults to a human Play turn (declarer, Party contract, trump = ♠). */
+const baseUltiState: UltiResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 10,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+      ],
+      trickCount: 0,
+      cardPoints: 0,
+      coins: 0,
+      isDeclarer: true,
+    },
+    { id: 1, isHuman: false, cardCount: 10, cards: [], trickCount: 0, cardPoints: 0, coins: 0, isDeclarer: false },
+    { id: 2, isHuman: false, cardCount: 10, cards: [], trickCount: 0, cardPoints: 0, coins: 0, isDeclarer: false },
+  ],
+  phase: 2,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 2,
+  declarerIdx: 0,
+  contract: 1,
+  trumpSuit: 1,
+  talonCount: 0,
+  talonTaken: true,
+  discardCount: 2,
+  currentTrick: [],
+  playerCoins: [0, 0, 0],
+  lastTrickWinner: -1,
+  outcome: 0,
+  result: 0,
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  isHumanBidTurn: false,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetRounds: 5 },
+};
+
+/**
+ * Creates a {@link UltiResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial UltiResponse fields to override.
+ * @returns A complete UltiResponse suitable for use in tests.
+ */
+export function makeUltiState(overrides?: Partial<UltiResponse>): UltiResponse {
+  return { ...baseUltiState, ...overrides };
 }
 
 /** Base Watten state used as the default for {@link makeWattenState}. Defaults to a human Play turn (Schlag = K, critical suit = ♥, human leads). */

@@ -401,6 +401,16 @@ export const OmbrePhase = {
   GAME_END: 4,
 } as const;
 
+/** Ulti (Ultimo) phase constants (sync: internal/domain/Ulti.go). */
+export const UltiPhase = {
+  BID: 0,
+  DISCARD: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
 /** Cinch phase constants (sync: internal/domain/Cinch.go). */
 export const CinchPhase = {
   BID: 0,

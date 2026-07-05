@@ -153,6 +153,7 @@ import type {
   TwoTenJackResponse,
   TysiacResponse,
   UltimateTexasHoldemResponse,
+  UltiResponse,
   VideoPokerResponse,
   WarResponse,
   WaspResponse,
@@ -319,6 +320,7 @@ import { getTuteHint } from '../utils/hints/tuteHint';
 import { getTwentyNineHint } from '../utils/hints/twentyNineHint';
 import { getTwoTenJackHint } from '../utils/hints/twotenjackHint';
 import { getTysiacHint } from '../utils/hints/tysiacHint';
+import { getUltiHint } from '../utils/hints/ultiHint';
 import { getUltimateTexasHoldemHint } from '../utils/hints/ultimateTexasHoldemHint';
 import { getVideoPokerHint } from '../utils/hints/videopokerHint';
 import { getWarHint } from '../utils/hints/warHint';
@@ -488,6 +490,7 @@ const hintFactories = {
   tysiac: (s) => getTysiacHint(s as TysiacResponse),
   calabresella: (s) => getCalabresellaHint(s as CalabresellaResponse),
   ombre: (s) => getOmbreHint(s as OmbreResponse),
+  ulti: (s) => getUltiHint(s as UltiResponse),
   cinch: (s) => getCinchHint(s as CinchResponse),
   loo: (s) => getLooHint(s as LooResponse),
   basra: (s) => getBasraHint(s as BasraResponse),

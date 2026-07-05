@@ -551,6 +551,14 @@ var registry = []*Game{
 	// proposed casino but that worker is at the 1 MB gzip limit, so it routes to the
 	// overflow ("extra") worker.
 	{Name: "ombre", Category: CategoryExtra},
+	// Ulti (Ulti / Ultimó): a Hungarian 3-player contract trick-taker. One declarer
+	// (the human) vs a 2-CPU coalition. 32-card deck (A,10,K,Q,J,9,8,7); trick rank
+	// A>10>K>Q>J>9>8>7. 10 cards each + a 2-card talon. Reduced ruleset: the declarer
+	// non-competitively declares one of three contracts — Party (name trump, take >half
+	// the 126 card points), Betli (no trump, lose every trick), or Durchmarsch (no trump,
+	// win every trick) — takes the talon, discards 2, then leads 10 tricks. Coin
+	// settlement ±2/±5/±6 per defender. Extra worker bucket.
+	{Name: "ulti", Category: CategoryExtra},
 	// King (Greek/Brazilian compendium): a 4-player 52-card trick-avoidance game.
 	// Each deal the dealer picks one of 7 not-yet-played contracts (No Tricks /
 	// No Hearts / No Queens / No King♥ / No Last Two / No Men / King-Trump); the

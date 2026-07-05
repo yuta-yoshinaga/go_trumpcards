@@ -3091,6 +3091,23 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"ombre.helpSetDifficulty"},
 			})
 	}},
+	{Name: "ulti", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewUltiCuiController(usecase.NewUltiInteractor(
+				domain.NewDefaultUlti(), new(presenter.UltiCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "ulti.helpTitle",
+				CommandKeys: []string{
+					"ulti.helpBid",
+					"ulti.helpDiscard",
+					"ulti.helpPlay",
+					"ulti.helpNext",
+					"ulti.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"ulti.helpSetDifficulty"},
+			})
+	}},
 	{Name: "king", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewKingCuiController(usecase.NewKingInteractor(
