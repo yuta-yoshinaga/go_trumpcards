@@ -1,0 +1,53 @@
+{
+  "phase": {
+    "turn": "手番",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "playerCount": "プレイヤー数",
+    "cpuDifficulty": "CPU難易度",
+    "targetRounds": "ラウンド数",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}/{{total}}",
+  "drawPile": "山札: {{count}}枚",
+  "table": "場のメルド",
+  "tableEmpty": "まだメルドはありません",
+  "meldKindSet": "セット",
+  "meldKindRun": "シーケンス",
+  "cards": "{{count}}枚",
+  "cumulativeScore": "累計: {{score}}",
+  "deadwoodShort": "デッドウッド {{score}}",
+  "scores": "スコア",
+  "scoresPlayer": "プレイヤー",
+  "scoresRound": "ラウンド",
+  "scoresTotal": "累計",
+  "drawButton": "山札から引く",
+  "newMeldButton": "メルドを出す",
+  "layoffButton": "レイオフ",
+  "layoffHelp": "手札を1枚選んでから、場のメルドの「レイオフ」を押してください",
+  "nextRound": "次のラウンド",
+  "turnPhase": "あなたの手番です。引くかプレイしてください",
+  "roundEnd": "ラウンド終了",
+  "result": {
+    "humanWin": "あなたの勝利！",
+    "cpuWin": "CPU {{cpuId}} の勝利！"
+  },
+  "hint": {
+    "newMeld": "手札で有効なメルドを作れます。カードを選んで「メルドを出す」",
+    "layoff": "場のメルドに手札を1枚レイオフできます",
+    "draw": "出せる手がありません。山札から1枚引きましょう"
+  },
+  "tutorial": {
+    "table": "全員で共有する「場」です。ここに並んだメルドは自由に組み替えられます。",
+    "playerHand": "あなたの13枚の手札です。3枚以上でセットまたはシーケンスを作りましょう。",
+    "drawButton": "出せる手がなければ山札から1枚引きます（ターン終了）。",
+    "newMeldButton": "手札を3枚以上選んで、新しいメルドを場に出します。",
+    "scoreTable": "各プレイヤーのスコアが表示されます。累計最少が勝利です。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}

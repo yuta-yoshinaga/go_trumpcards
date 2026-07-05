@@ -1,0 +1,53 @@
+{
+  "phase": {
+    "turn": "Turn",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "playerCount": "Players",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetRounds": "Rounds",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}/{{total}}",
+  "drawPile": "Stock: {{count}} cards",
+  "table": "Table melds",
+  "tableEmpty": "No melds yet",
+  "meldKindSet": "Set",
+  "meldKindRun": "Run",
+  "cards": "{{count}} cards",
+  "cumulativeScore": "Total: {{score}}",
+  "deadwoodShort": "Deadwood {{score}}",
+  "scores": "Scores",
+  "scoresPlayer": "Player",
+  "scoresRound": "Round",
+  "scoresTotal": "Total",
+  "drawButton": "Draw",
+  "newMeldButton": "New meld",
+  "layoffButton": "Lay off",
+  "layoffHelp": "Select one hand card, then press \"Lay off\" on a table meld",
+  "nextRound": "Next Round",
+  "turnPhase": "Your turn. Draw or play a meld",
+  "roundEnd": "Round over",
+  "result": {
+    "humanWin": "You win!",
+    "cpuWin": "CPU {{cpuId}} wins!"
+  },
+  "hint": {
+    "newMeld": "You can form a valid meld from your hand. Select the cards and press \"New meld\"",
+    "layoff": "You can lay a card off onto a table meld",
+    "draw": "No play available. Draw a card from the stock"
+  },
+  "tutorial": {
+    "table": "This is the shared table. Melds laid here can be freely rearranged by everyone.",
+    "playerHand": "This is your 13-card hand. Form sets or runs of 3 or more cards.",
+    "drawButton": "Draw one card from the stock when you have no play (ends your turn).",
+    "newMeldButton": "Select 3 or more hand cards to lay a new meld on the table.",
+    "scoreTable": "Player scores are shown here. Lowest cumulative total wins.",
+    "resetButton": "Press the reset button to start a new game."
+  }
+}

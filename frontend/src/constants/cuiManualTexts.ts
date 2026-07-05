@@ -108,6 +108,7 @@ import labellelucie from '../../../docs/manual/cui/labellelucie.md?raw';
 import letitride from '../../../docs/manual/cui/letitride.md?raw';
 import loo from '../../../docs/manual/cui/loo.md?raw';
 import macau from '../../../docs/manual/cui/macau.md?raw';
+import machiavelli from '../../../docs/manual/cui/machiavelli.md?raw';
 import manille from '../../../docs/manual/cui/manille.md?raw';
 import mao from '../../../docs/manual/cui/mao.md?raw';
 import marias from '../../../docs/manual/cui/marias.md?raw';
@@ -266,6 +267,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/seahaventowers': seahaventowers,
   '/ginrummy': ginrummy,
   '/indianrummy': indianrummy,
+  '/machiavelli': machiavelli,
   '/conquian': conquian,
   '/chinchon': chinchon,
   '/threethirteen': threethirteen,

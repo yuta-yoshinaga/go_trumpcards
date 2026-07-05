@@ -75,6 +75,7 @@ import type {
   LetItRideResponse,
   LooResponse,
   MacauResponse,
+  MachiavelliResponse,
   ManilleResponse,
   MariasResponse,
   MemoryResponse,
@@ -239,6 +240,7 @@ import { getKnockoutWhistHint } from '../utils/hints/knockoutWhistHint';
 import { getLetitrideHint } from '../utils/hints/letitrideHint';
 import { getLooHint } from '../utils/hints/looHint';
 import { getMacauHint } from '../utils/hints/macauHint';
+import { getMachiavelliHint } from '../utils/hints/machiavelliHint';
 import { getManilleHint } from '../utils/hints/manilleHint';
 import { getMariasHint } from '../utils/hints/mariasHint';
 import { getMemoryHint } from '../utils/hints/memoryHint';
@@ -389,6 +391,7 @@ const hintFactories = {
   memory: (s) => getMemoryHint(s as MemoryResponse),
   ginrummy: (s) => getGinRummyHint(s as GinRummyResponse),
   indianrummy: (s) => getIndianRummyHint(s as IndianRummyResponse),
+  machiavelli: (s) => getMachiavelliHint(s as MachiavelliResponse),
   cribbage: (s) => getCribbageHint(s as CribbageResponse),
   gofish: (s) => getGoFishHint(s as GoFishResponse),
   golf: (s) => getGolfHint(s as GolfResponse),

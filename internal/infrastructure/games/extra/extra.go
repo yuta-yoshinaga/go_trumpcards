@@ -307,4 +307,12 @@ func init() {
 			return usecase.RestoreAnacondaInteractor(data, new(presenter.AnacondaWebPresenter))
 		},
 		controller.NewAnacondaWebControllerWithProvider)
+	games.RegisterKVGame("machiavelli", games.CategoryExtra,
+		func() usecase.MachiavelliInteractorIF {
+			return usecase.NewMachiavelliInteractor(domain.NewDefaultMachiavelli(), new(presenter.MachiavelliWebPresenter))
+		},
+		func(data []byte) (usecase.MachiavelliInteractorIF, error) {
+			return usecase.RestoreMachiavelliInteractor(data, new(presenter.MachiavelliWebPresenter))
+		},
+		controller.NewMachiavelliWebControllerWithProvider)
 }

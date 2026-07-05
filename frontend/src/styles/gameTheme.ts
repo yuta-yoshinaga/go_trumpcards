@@ -195,6 +195,7 @@ export type GameKey =
   // Counting/Rummy
   | 'ginrummy'
   | 'indianrummy'
+  | 'machiavelli'
   | 'conquian'
   | 'chinchon'
   | 'threethirteen'
@@ -433,6 +434,10 @@ const INDIANRUMMY = {
   bg: 'bg-game-bg-indianrummy',
   footer: 'bg-game-bg-indianrummy-dark border-white/20',
 } as const;
+const MACHIAVELLI = {
+  bg: 'bg-game-bg-machiavelli',
+  footer: 'bg-game-bg-machiavelli-dark border-white/20',
+} as const;
 
 export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Table games
@@ -621,6 +626,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Counting/Rummy
   ginrummy: BLUE,
   indianrummy: INDIANRUMMY,
+  machiavelli: MACHIAVELLI,
   conquian: BLUE,
   chinchon: GREEN,
   threethirteen: BLUE,
