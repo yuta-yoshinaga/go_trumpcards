@@ -194,6 +194,7 @@ export type GameKey =
   | 'crescent'
   // Counting/Rummy
   | 'ginrummy'
+  | 'indianrummy'
   | 'conquian'
   | 'chinchon'
   | 'threethirteen'
@@ -423,6 +424,10 @@ const SAMBA = {
   bg: 'bg-game-bg-samba',
   footer: 'bg-game-bg-samba-dark border-white/20',
 } as const;
+const INDIANRUMMY = {
+  bg: 'bg-game-bg-indianrummy',
+  footer: 'bg-game-bg-indianrummy-dark border-white/20',
+} as const;
 
 export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Table games
@@ -610,6 +615,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   crescent: CASINO,
   // Counting/Rummy
   ginrummy: BLUE,
+  indianrummy: INDIANRUMMY,
   conquian: BLUE,
   chinchon: GREEN,
   threethirteen: BLUE,

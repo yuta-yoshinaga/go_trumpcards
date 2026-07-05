@@ -64,6 +64,7 @@ import type {
   HighCardFlushResponse,
   HoldemResponse,
   IndianPokerResponse,
+  IndianRummyResponse,
   JassResponse,
   KingAlbertResponse,
   KingResponse,
@@ -224,6 +225,7 @@ import { getHeartsHint } from '../utils/hints/heartsHint';
 import { getHighCardFlushHint } from '../utils/hints/highcardflushHint';
 import { getHoldemHint } from '../utils/hints/holdemHint';
 import { getIndianPokerHint } from '../utils/hints/indianpokerHint';
+import { getIndianRummyHint } from '../utils/hints/indianRummyHint';
 import { getIrishPokerHint } from '../utils/hints/irishPokerHint';
 import { getJassHint } from '../utils/hints/jassHint';
 import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
@@ -384,6 +386,7 @@ const hintFactories = {
   tripeaks: (s) => getTriPeaksHint(s as TriPeaksResponse),
   memory: (s) => getMemoryHint(s as MemoryResponse),
   ginrummy: (s) => getGinRummyHint(s as GinRummyResponse),
+  indianrummy: (s) => getIndianRummyHint(s as IndianRummyResponse),
   cribbage: (s) => getCribbageHint(s as CribbageResponse),
   gofish: (s) => getGoFishHint(s as GoFishResponse),
   golf: (s) => getGolfHint(s as GolfResponse),

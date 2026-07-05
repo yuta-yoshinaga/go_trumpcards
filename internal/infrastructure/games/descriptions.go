@@ -36,6 +36,7 @@ var gameDescriptions = map[string]string{
 	"spades":              "Spades (スペード)",
 	"crazyeights":         "Crazy Eights (クレイジーエイト)",
 	"ginrummy":            "Gin Rummy (ジンラミー)",
+	"indianrummy":         "Indian Rummy (インドラミー)",
 	"canasta":             "Canasta (カナスタ)",
 	"spider":              "Spider Solitaire (スパイダーソリティア)",
 	"napoleon":            "Napoleon (ナポレオン)",

@@ -92,6 +92,7 @@ import hearts from '../../../docs/manual/cui/hearts.md?raw';
 import highcardflush from '../../../docs/manual/cui/highcardflush.md?raw';
 import holdem from '../../../docs/manual/cui/holdem.md?raw';
 import indianpoker from '../../../docs/manual/cui/indianpoker.md?raw';
+import indianrummy from '../../../docs/manual/cui/indianrummy.md?raw';
 import irishpoker from '../../../docs/manual/cui/irishpoker.md?raw';
 import jass from '../../../docs/manual/cui/jass.md?raw';
 import jokerpoker from '../../../docs/manual/cui/jokerpoker.md?raw';
@@ -263,6 +264,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/penguin': penguin,
   '/seahaventowers': seahaventowers,
   '/ginrummy': ginrummy,
+  '/indianrummy': indianrummy,
   '/conquian': conquian,
   '/chinchon': chinchon,
   '/threethirteen': threethirteen,

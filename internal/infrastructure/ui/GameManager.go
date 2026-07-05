@@ -482,6 +482,23 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"ginrummy.helpSetDifficulty", "ginrummy.helpSetLimit"},
 			})
 	}},
+	{Name: "indianrummy", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewIndianRummyCuiController(usecase.NewIndianRummyInteractor(
+				domain.NewDefaultIndianRummy(), new(presenter.IndianRummyCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "indianrummy.helpTitle",
+				CommandKeys: []string{
+					"indianrummy.helpDrawStock",
+					"indianrummy.helpDrawDiscard",
+					"indianrummy.helpDiscard",
+					"indianrummy.helpDeclare",
+					"indianrummy.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"indianrummy.helpSetPlayers", "indianrummy.helpSetDifficulty", "indianrummy.helpSetRounds"},
+			})
+	}},
 	{Name: "canasta", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewCanastaCuiController(usecase.NewCanastaInteractor(

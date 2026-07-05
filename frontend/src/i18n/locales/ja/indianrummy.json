@@ -1,0 +1,56 @@
+{
+  "phase": {
+    "draw": "ドロー",
+    "discard": "ディスカード",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "playerCount": "プレイヤー数",
+    "cpuDifficulty": "CPU難易度",
+    "targetRounds": "ラウンド数",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}/{{total}}",
+  "drawPile": "山札: {{count}}枚",
+  "wildJoker": "ワイルドジョーカー",
+  "discardTop": "捨て札",
+  "cards": "{{count}}枚",
+  "cumulativeScore": "累計: {{score}}",
+  "deadwoodShort": "デッドウッド {{score}}",
+  "pureSequenceBadge": "純シーケンス有",
+  "scores": "スコア",
+  "scoresPlayer": "プレイヤー",
+  "scoresRound": "ラウンド",
+  "scoresTotal": "累計",
+  "drawStockButton": "山札から引く",
+  "drawDiscardButton": "捨て札から引く",
+  "discardButton": "捨てる",
+  "declareButton": "宣言",
+  "nextRound": "次のラウンド",
+  "drawPhase": "山札または捨て札から1枚引いてください",
+  "discardPhase": "1枚捨てるか、13枚が有効なら宣言してください",
+  "roundEnd": "ラウンド終了",
+  "result": {
+    "humanWin": "あなたの勝利！",
+    "cpuWin": "CPU {{cpuId}} の勝利！"
+  },
+  "hint": {
+    "drawFromDiscard": "捨て札から引きましょう — 手札に合います",
+    "drawFromStock": "山札から引きましょう",
+    "discardDeadwood": "デッドウッドが最も高いカードを捨てましょう",
+    "declareNow": "宣言できます！13枚が有効な組み合わせです"
+  },
+  "tutorial": {
+    "wildJoker": "このカードのランクがワイルド（印刷ジョーカーと同じく万能札）になります。",
+    "drawArea": "山札または捨て札から1枚引きます。",
+    "playerHand": "あなたの13枚の手札です。シーケンスやセットを作りましょう。",
+    "discardButton": "不要なカードを1枚捨てます。",
+    "declareButton": "13枚が有効な組み合わせ（2つ以上のシーケンス、うち1つは純シーケンス）なら宣言して上がれます。",
+    "scoreTable": "各プレイヤーのスコアが表示されます。累計最少が勝利です。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}

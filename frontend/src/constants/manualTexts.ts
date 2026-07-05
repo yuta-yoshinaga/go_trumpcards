@@ -91,6 +91,7 @@ import hearts from '../../../docs/manual/web/hearts.md?raw';
 import highcardflush from '../../../docs/manual/web/highcardflush.md?raw';
 import holdem from '../../../docs/manual/web/holdem.md?raw';
 import indianpoker from '../../../docs/manual/web/indianpoker.md?raw';
+import indianrummy from '../../../docs/manual/web/indianrummy.md?raw';
 import irishpoker from '../../../docs/manual/web/irishpoker.md?raw';
 import jass from '../../../docs/manual/web/jass.md?raw';
 import jokerpoker from '../../../docs/manual/web/jokerpoker.md?raw';
@@ -270,6 +271,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/penguin': penguin,
   '/seahaventowers': seahaventowers,
   '/ginrummy': ginrummy,
+  '/indianrummy': indianrummy,
   '/conquian': conquian,
   '/chinchon': chinchon,
   '/threethirteen': threethirteen,
