@@ -1113,14 +1113,23 @@ func (g *Anaconda) GetChips() int {
 
 // IsHumanTurn は現在がロールフェーズの人間 (seat 0) 手番かどうかを返す。
 func (g *Anaconda) IsHumanTurn() bool {
-	if g.state.phase != AnacondaPhaseRoll || g.state.gameEndFlag {
+	if g.state.gameEndFlag {
 		return false
 	}
-	idx := g.state.currentPlayer
-	if idx < 0 || idx >= len(g.players) {
+	switch g.state.phase {
+	case AnacondaPhasePass, AnacondaPhaseSet:
+		// Pass and Set are simultaneous phases: the human (seat 0) selects and
+		// submits once, so they are always "on turn" until the phase advances.
+		return !g.players[0].GetFolded() && !g.players[0].GetOut()
+	case AnacondaPhaseRoll:
+		idx := g.state.currentPlayer
+		if idx < 0 || idx >= len(g.players) {
+			return false
+		}
+		return g.players[idx].GetIsHuman()
+	default:
 		return false
 	}
-	return g.players[idx].GetIsHuman()
 }
 
 // CanRaise は現在の手番プレイヤーがレイズ可能か (回数上限未満かつ増分を払える) を返す。

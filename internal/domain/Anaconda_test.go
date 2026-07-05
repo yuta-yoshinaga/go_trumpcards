@@ -200,6 +200,18 @@ func setupControlledRoll(t *testing.T) *domain.Anaconda {
 	return g
 }
 
+func TestAnaconda_IsHumanTurn_DuringPassAndSet(t *testing.T) {
+	g := domain.NewDefaultAnaconda()
+	// A fresh deal opens in the Pass phase; Pass and Set are simultaneous, so the
+	// human is on turn immediately (otherwise the GUI never shows Pass/Keep).
+	require.Equal(t, domain.AnacondaPhasePass, g.GetPhase())
+	require.True(t, g.IsHumanTurn())
+	g.SetPhase(domain.AnacondaPhaseSet)
+	require.True(t, g.IsHumanTurn())
+	g.SetPhase(domain.AnacondaPhaseResult)
+	require.False(t, g.IsHumanTurn())
+}
+
 func TestAnaconda_Roll_CallShowdown(t *testing.T) {
 	g := setupControlledRoll(t)
 	require.True(t, g.IsHumanTurn())
