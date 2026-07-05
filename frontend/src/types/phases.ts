@@ -1636,6 +1636,14 @@ export const GutsDeclaration = {
   IN: 1,
 } as const;
 
+/** Anaconda phase constants (sync: internal/domain/Anaconda.go). */
+export const AnacondaPhase = {
+  PASS: 0,
+  SET: 1,
+  ROLL: 2,
+  RESULT: 3,
+} as const;
+
 /** Bouillotte phase constants (sync: internal/domain/Bouillotte.go). */
 export const BouillottePhase = {
   BETTING: 0,

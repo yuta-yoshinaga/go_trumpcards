@@ -299,4 +299,12 @@ func init() {
 			return usecase.RestoreSambaInteractor(data, new(presenter.SambaWebPresenter))
 		},
 		controller.NewSambaWebControllerWithProvider)
+	games.RegisterKVGame("anaconda", games.CategoryExtra,
+		func() usecase.AnacondaInteractorIF {
+			return usecase.NewAnacondaInteractor(domain.NewDefaultAnaconda(), new(presenter.AnacondaWebPresenter))
+		},
+		func(data []byte) (usecase.AnacondaInteractorIF, error) {
+			return usecase.RestoreAnacondaInteractor(data, new(presenter.AnacondaWebPresenter))
+		},
+		controller.NewAnacondaWebControllerWithProvider)
 }

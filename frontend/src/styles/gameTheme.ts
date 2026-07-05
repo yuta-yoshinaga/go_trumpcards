@@ -216,6 +216,7 @@ export type GameKey =
   | 'beggarmyneighbour'
   | 'allfours'
   | 'guts'
+  | 'anaconda'
   | 'bouillotte'
   | 'primero'
   | 'michigan';
@@ -403,6 +404,10 @@ const NINETYNINE = {
 const GUTS = {
   bg: 'bg-game-bg-guts',
   footer: 'bg-game-bg-guts-dark border-white/20',
+} as const;
+const ANACONDA = {
+  bg: 'bg-game-bg-anaconda',
+  footer: 'bg-game-bg-anaconda-dark border-white/20',
 } as const;
 const BOUILLOTTE = {
   bg: 'bg-game-bg-bouillotte',
@@ -637,6 +642,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   beggarmyneighbour: GREEN,
   allfours: ALLFOURS,
   guts: GUTS,
+  anaconda: ANACONDA,
   bouillotte: BOUILLOTTE,
   primero: PRIMERO,
   michigan: MICHIGAN,

@@ -1,0 +1,72 @@
+{
+  "title": "Anaconda",
+  "phase": {
+    "pass": "Pass",
+    "set": "Set",
+    "roll": "Roll",
+    "result": "Result"
+  },
+  "settings": {
+    "title": "Settings",
+    "playerCount": "Players",
+    "ante": "Ante",
+    "startingChips": "Starting chips",
+    "targetRounds": "Rounds"
+  },
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "round": "Round {{n}}",
+  "pot": "Pot: {{amount}}",
+  "ante": "Ante: {{amount}}",
+  "chips": "Chips: {{amount}}",
+  "roundBet": "Bet: {{amount}}",
+  "currentBet": "To call: {{amount}}",
+  "handLabel": "Your hand",
+  "playersTitle": "Players",
+  "selectedCount": "selected: {{n}}",
+  "passNotice": "Pass phase — choose {{count}} card(s) to pass left.",
+  "setNotice": "Set phase — keep your best 5 cards (discard 2).",
+  "rollNotice": "Roll phase — {{revealed}}/5 revealed. Call, raise, or fold.",
+  "badge": {
+    "folded": "Folded",
+    "out": "Out",
+    "waiting": "Waiting",
+    "winner": "Winner",
+    "turn": "To act"
+  },
+  "hand": {
+    "straightflush": "Straight flush",
+    "fourkind": "Four of a kind",
+    "fullhouse": "Full house",
+    "flush": "Flush",
+    "straight": "Straight",
+    "threekind": "Three of a kind",
+    "twopair": "Two pair",
+    "onepair": "One pair",
+    "highcard": "High card"
+  },
+  "passButton": "Pass",
+  "keepButton": "Keep",
+  "callButton": "Call / Check",
+  "raiseButton": "Raise",
+  "foldButton": "Fold",
+  "nextRound": "Next Round",
+  "roundResult": {
+    "title": "Round Result",
+    "winner": "{{name}} won the pot of {{pot}}."
+  },
+  "matchWinner": "{{name}} won the match!",
+  "hint": {
+    "pass_weakest": "Pass your weakest cards",
+    "keep_best": "Keep your strongest 5 cards",
+    "strong_hand": "Strong hand — worth raising",
+    "medium_hand": "Decent hand — call to see more",
+    "weak_hand": "Weak hand — better to fold"
+  },
+  "tutorial": {
+    "info": "This shows the round number, pot, ante, current bet, and each player's chips and status. Anaconda (Pass the Trash) is a poker pot game: you are dealt 7 cards, pass 3 then 2 then 1 to the left, keep your best 5, then reveal them one at a time with a betting round between reveals.",
+    "hand": "Your cards. During the Pass phase tap cards to pass left; during the Set phase tap exactly 5 cards to keep. During the Roll they are revealed one at a time.",
+    "actions": "Pass or Keep the selected cards, then during the Roll choose Call/Check, Raise, or Fold. The best 5-card poker hand still in the round wins the pot.",
+    "resetButton": "Reset the game and start over."
+  }
+}

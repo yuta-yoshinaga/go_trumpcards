@@ -3,6 +3,7 @@ import type {
   AccordionResponse,
   AgnesResponse,
   AllFoursResponse,
+  AnacondaResponse,
   BaccaratResponse,
   BadugiResponse,
   BakersDozenResponse,
@@ -162,6 +163,7 @@ import type { HintResult } from '../types/hint';
 import { getAccordionHint } from '../utils/hints/accordionHint';
 import { getAgnesHint } from '../utils/hints/agnesHint';
 import { getAllFoursHint } from '../utils/hints/allfoursHint';
+import { getAnacondaHint } from '../utils/hints/anacondaHint';
 import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBadugiHint } from '../utils/hints/badugiHint';
 import { getBakersdozenHint } from '../utils/hints/bakersdozenHint';
@@ -502,6 +504,7 @@ const hintFactories = {
   beggarmyneighbour: (s) => getBeggarMyNeighbourHint(s as BeggarMyNeighbourResponse),
   allfours: (s) => getAllFoursHint(s as AllFoursResponse),
   guts: (s) => getGutsHint(s as GutsResponse),
+  anaconda: (s) => getAnacondaHint(s as AnacondaResponse),
   bouillotte: (s) => getBouillotteHint(s as BouillotteResponse),
   primero: (s) => getPrimeroHint(s as PrimeroResponse),
   michigan: (s) => getMichiganHint(s as MichiganResponse),

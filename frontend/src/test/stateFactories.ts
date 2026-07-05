@@ -1,4 +1,5 @@
 import type {
+  AnacondaResponse,
   BasraResponse,
   BeziqueResponse,
   BouillotteResponse,
@@ -2212,6 +2213,100 @@ const baseGutsState: GutsResponse = {
  */
 export function makeGutsState(overrides?: Partial<GutsResponse>): GutsResponse {
   return { ...baseGutsState, ...overrides };
+}
+
+/** Base Anaconda state used as the default for {@link makeAnacondaState}. A 4-player Pass-the-Trash poker pot game; defaults to the human Pass phase (phase 0, passCount 3). */
+const baseAnacondaState: AnacondaResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      chips: 190,
+      folded: false,
+      out: false,
+      roundBet: 10,
+      streetBet: 0,
+      cardCount: 7,
+      cards: [
+        { design: 'SPADE' as const, value: 14 },
+        { design: 'SPADE' as const, value: 13 },
+        { design: 'HEART' as const, value: 11 },
+        { design: 'CLOVER' as const, value: 9 },
+        { design: 'DIA' as const, value: 6 },
+        { design: 'CLOVER' as const, value: 4 },
+        { design: 'DIA' as const, value: 2 },
+      ],
+      isWinner: false,
+    },
+    {
+      id: 1,
+      isHuman: false,
+      chips: 190,
+      folded: false,
+      out: false,
+      roundBet: 10,
+      streetBet: 0,
+      cardCount: 7,
+      cards: [],
+      isWinner: false,
+    },
+    {
+      id: 2,
+      isHuman: false,
+      chips: 190,
+      folded: false,
+      out: false,
+      roundBet: 10,
+      streetBet: 0,
+      cardCount: 7,
+      cards: [],
+      isWinner: false,
+    },
+    {
+      id: 3,
+      isHuman: false,
+      chips: 190,
+      folded: false,
+      out: false,
+      roundBet: 10,
+      streetBet: 0,
+      cardCount: 7,
+      cards: [],
+      isWinner: false,
+    },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  dealerIdx: 0,
+  currentPlayer: 0,
+  passCount: 3,
+  rollIndex: 0,
+  pot: 40,
+  currentBet: 0,
+  raiseCount: 0,
+  maxRaises: 3,
+  ante: 10,
+  chips: 190,
+  winnerIdx: -1,
+  matchWinnerIdx: -1,
+  result: 0,
+  gameEndFlag: false,
+  isHumanTurn: true,
+  canRaise: false,
+  hint: null,
+  config: { playerCount: 4, ante: 10, startingChips: 200, targetRounds: 10 },
+  message: '',
+};
+
+/**
+ * Creates an {@link AnacondaResponse} with sensible defaults (the human Pass
+ * phase, phase 0). Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial AnacondaResponse fields to override.
+ * @returns A complete AnacondaResponse suitable for use in tests.
+ */
+export function makeAnacondaState(overrides?: Partial<AnacondaResponse>): AnacondaResponse {
+  return { ...baseAnacondaState, ...overrides };
 }
 
 /** Base Bouillotte state used as the default for {@link makeBouillotteState}. A 4-player 3-card pot-vying game; defaults to the human Betting phase (phase 0). */
