@@ -1040,4 +1040,9 @@ func init() {
 			return usecase.NewAnacondaInteractor(domain.NewDefaultAnaconda(), new(presenter.AnacondaWebPresenter))
 		},
 		controller.NewAnacondaWebController)
+	BindWebControllerFor("machiavelli",
+		func() usecase.MachiavelliInteractorIF {
+			return usecase.NewMachiavelliInteractor(domain.NewDefaultMachiavelli(), new(presenter.MachiavelliWebPresenter))
+		},
+		controller.NewMachiavelliWebController)
 }

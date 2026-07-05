@@ -186,6 +186,9 @@
   /* Indian Rummy — a warm saffron/marigold orange evoking the Indian 13-card rummy tradition, distinct from Klaverjas's burnt-orange and Twenty-Nine's spice-orange. */
   --color-game-bg-indianrummy: #c8651a;
   --color-game-bg-indianrummy-dark: #8a4310;
+  /* Machiavelli — a Renaissance-Florence deep crimson with a gilded undertone, evoking the Italian rummy's Medici-era heritage; distinct from other reds in the palette. */
+  --color-game-bg-machiavelli: #8c1c2b;
+  --color-game-bg-machiavelli-dark: #5e0f1c;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;

@@ -24,6 +24,7 @@ import {
   indianRummyApi,
   klondikeApi,
   letitrideApi,
+  machiavelliApi,
   memoryApi,
   montecarloApi,
   oldmaidApi,
@@ -2764,6 +2765,92 @@ describe('gameApi', () => {
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(indianRummyApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
+  describe('machiavelliApi.exec', () => {
+    const payload = {
+      players: [],
+      table: [],
+      phase: 0,
+      roundNumber: 1,
+      targetRounds: 3,
+      currentPlayerIdx: 0,
+      dealerIdx: 0,
+      drawPileCount: 0,
+      gameEndFlag: false,
+      winnerIdx: -1,
+      roundWinnerIdx: -1,
+      message: '',
+      config: { playerCount: 4, cpuDifficulty: 1, targetRounds: 3 },
+    };
+
+    it('calls the correct URL with reset command and config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await machiavelliApi.exec('reset', undefined, {
+        playerCount: 4,
+        cpuDifficulty: 1,
+        targetRounds: 3,
+      });
+      expect(mockFetch).toHaveBeenCalledWith('/machiavelli/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          config: { playerCount: 4, cpuDifficulty: 1, targetRounds: 3 },
+          sessionId,
+        }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with draw command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await machiavelliApi.exec('draw');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/machiavelli/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'draw', sessionId }),
+        }),
+      );
+    });
+
+    it('calls with newmeld command and hand indices', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await machiavelliApi.exec('newmeld', { handIndices: [0, 1, 2] });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/machiavelli/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'newmeld', handIndices: [0, 1, 2], sessionId }),
+        }),
+      );
+    });
+
+    it('calls with layoff command and meld/hand indices', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await machiavelliApi.exec('layoff', { meldIdx: 1, handIndex: 4 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/machiavelli/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'layoff', meldIdx: 1, handIndex: 4, sessionId }),
+        }),
+      );
+    });
+
+    it('calls with log command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await machiavelliApi.exec('log');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/machiavelli/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'log', sessionId }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(machiavelliApi.exec('reset')).rejects.toThrow('HTTP error: 500');
     });
   });
 

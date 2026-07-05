@@ -12,6 +12,7 @@
  *   - FreeCell:    internal/domain/FreeCell.go    (FreeCellPhasePlaying, FreeCellPhaseGameClear, FreeCellPhaseGameOver)
  *   - GinRummy:    internal/domain/GinRummy.go    (GinRummyPhaseDraw, GinRummyPhaseDiscard, GinRummyPhaseLayoff, GinRummyPhaseRoundEnd, GinRummyPhaseGameEnd)
  *   - IndianRummy: internal/domain/IndianRummy.go  (IndianRummyPhaseDraw, IndianRummyPhaseDiscard, IndianRummyPhaseRoundEnd, IndianRummyPhaseGameEnd)
+ *   - Machiavelli: internal/domain/Machiavelli.go  (MachiavelliPhaseTurn, MachiavelliPhaseRoundEnd, MachiavelliPhaseGameEnd)
  *   - Hearts:      internal/domain/Hearts.go      (HeartsPhasePass, HeartsPhasePlay, HeartsPhaseTrickEnd, HeartsPhaseRoundEnd, HeartsPhaseGameEnd)
  *   - Holdem:      internal/domain/Holdem.go      (HoldemPhaseInit, HoldemPhasePreFlop, HoldemPhaseFlop, HoldemPhaseTurn, HoldemPhaseRiver, HoldemPhaseShowdown, HoldemPhaseEnd, HoldemPhaseRebuy)
  *   - IndianPoker: internal/domain/IndianPoker.go (IndianPokerPhaseInit, IndianPokerPhaseAnte, IndianPokerPhaseBetting, IndianPokerPhaseShowdown, IndianPokerPhaseEnd)
@@ -706,6 +707,13 @@ export const IndianRummyPhase = {
   DISCARD: 1,
   ROUND_END: 2,
   GAME_END: 3,
+} as const;
+
+/** Machiavelli phase constants (sync: internal/domain/Machiavelli.go). */
+export const MachiavelliPhase = {
+  TURN: 0,
+  ROUND_END: 1,
+  GAME_END: 2,
 } as const;
 
 /** Conquian phase constants (sync: internal/domain/Conquian.go). */

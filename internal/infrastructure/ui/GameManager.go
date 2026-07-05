@@ -3265,6 +3265,22 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"anaconda.helpSetPlayers", "anaconda.helpSetAnte", "anaconda.helpSetChips", "anaconda.helpSetRounds"},
 			})
 	}},
+	{Name: "machiavelli", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewMachiavelliCuiController(usecase.NewMachiavelliInteractor(
+				domain.NewDefaultMachiavelli(), new(presenter.MachiavelliCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "machiavelli.helpTitle",
+				CommandKeys: []string{
+					"machiavelli.helpDraw",
+					"machiavelli.helpNewMeld",
+					"machiavelli.helpLayoff",
+					"machiavelli.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"machiavelli.helpSetPlayers", "machiavelli.helpSetDifficulty", "machiavelli.helpSetRounds"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

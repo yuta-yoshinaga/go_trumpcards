@@ -215,6 +215,7 @@ var gameDescriptions = map[string]string{
 	"carioca":             "Carioca (カリオカ)",
 	"samba":               "Samba (サンバ)",
 	"anaconda":            "Anaconda / Pass the Trash (アナコンダ)",
+	"machiavelli":         "Machiavelli (マキャヴェッリ)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

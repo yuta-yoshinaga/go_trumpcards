@@ -684,6 +684,14 @@ var registry = []*Game{
 	// after a fixed number of rounds and the richest player wins. Extra worker
 	// bucket — the casino/classic/solo workers are at the 1 MB gzip free-tier limit.
 	{Name: "anaconda", Category: CategoryExtra},
+	// Machiavelli (マキャヴェッリ) is an Italian rummy — Rummikub with cards — where
+	// all melds live on a single SHARED TABLE that a player may freely rebuild on
+	// their turn (moving cards between melds) as long as every meld stays valid and
+	// at least one hand card is added. Two 52-card decks (104 cards, no jokers),
+	// 2–5 players, sets (same rank, distinct suits) and runs (same-suit consecutive).
+	// Extra worker bucket — the casino/classic/solo workers are at the 1 MB gzip
+	// free-tier limit, so it routes to the overflow ("extra") worker.
+	{Name: "machiavelli", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.
