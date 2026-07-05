@@ -220,7 +220,8 @@ export type GameKey =
   | 'anaconda'
   | 'bouillotte'
   | 'primero'
-  | 'michigan';
+  | 'michigan'
+  | 'pan';
 
 /** Theme classes (Tailwind) applied to the page background and footer for each game. */
 export interface GameThemeClasses {
@@ -438,6 +439,10 @@ const MACHIAVELLI = {
   bg: 'bg-game-bg-machiavelli',
   footer: 'bg-game-bg-machiavelli-dark border-white/20',
 } as const;
+const PAN = {
+  bg: 'bg-game-bg-pan',
+  footer: 'bg-game-bg-pan-dark border-white/20',
+} as const;
 
 export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Table games
@@ -652,4 +657,5 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   bouillotte: BOUILLOTTE,
   primero: PRIMERO,
   michigan: MICHIGAN,
+  pan: PAN,
 };

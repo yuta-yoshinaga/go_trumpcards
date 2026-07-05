@@ -132,6 +132,7 @@ import openfacechinese from '../../../docs/manual/cui/openfacechinese.md?raw';
 import osmosis from '../../../docs/manual/cui/osmosis.md?raw';
 import pageone from '../../../docs/manual/cui/pageone.md?raw';
 import paigow from '../../../docs/manual/cui/paigow.md?raw';
+import pan from '../../../docs/manual/cui/pan.md?raw';
 import penguin from '../../../docs/manual/cui/penguin.md?raw';
 import pigtail from '../../../docs/manual/cui/pigtail.md?raw';
 import pineapple from '../../../docs/manual/cui/pineapple.md?raw';
@@ -268,6 +269,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/ginrummy': ginrummy,
   '/indianrummy': indianrummy,
   '/machiavelli': machiavelli,
+  '/pan': pan,
   '/conquian': conquian,
   '/chinchon': chinchon,
   '/threethirteen': threethirteen,

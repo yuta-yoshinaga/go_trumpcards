@@ -189,6 +189,9 @@
   /* Machiavelli — a Renaissance-Florence deep crimson with a gilded undertone, evoking the Italian rummy's Medici-era heritage; distinct from other reds in the palette. */
   --color-game-bg-machiavelli: #8c1c2b;
   --color-game-bg-machiavelli-dark: #5e0f1c;
+  /* Panguingue (Pan) — a rich Talavera cobalt-azure evoking the Mexican/Southwest saloon heritage of this multi-deck rummy, distinct from carioca's teal-jade and every other felt. */
+  --color-game-bg-pan: #175d9c;
+  --color-game-bg-pan-dark: #0d3a63;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;

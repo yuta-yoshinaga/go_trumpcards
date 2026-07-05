@@ -1045,4 +1045,9 @@ func init() {
 			return usecase.NewMachiavelliInteractor(domain.NewDefaultMachiavelli(), new(presenter.MachiavelliWebPresenter))
 		},
 		controller.NewMachiavelliWebController)
+	BindWebControllerFor("pan",
+		func() usecase.PanInteractorIF {
+			return usecase.NewPanInteractor(domain.NewDefaultPan(), new(presenter.PanWebPresenter))
+		},
+		controller.NewPanWebController)
 }

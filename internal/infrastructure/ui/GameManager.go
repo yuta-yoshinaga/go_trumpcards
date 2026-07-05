@@ -3281,6 +3281,24 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"machiavelli.helpSetPlayers", "machiavelli.helpSetDifficulty", "machiavelli.helpSetRounds"},
 			})
 	}},
+	{Name: "pan", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPanCuiController(usecase.NewPanInteractor(
+				domain.NewDefaultPan(), new(presenter.PanCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "pan.helpTitle",
+				CommandKeys: []string{
+					"pan.helpDrawStock",
+					"pan.helpDrawDiscard",
+					"pan.helpMeld",
+					"pan.helpLayoff",
+					"pan.helpDiscard",
+					"pan.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"pan.helpSetPlayers", "pan.helpSetDifficulty", "pan.helpSetRounds"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

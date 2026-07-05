@@ -1403,6 +1403,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [3, 3, 4, 3], skill: [3, 5, 4, 3], social: [3, 3, 4, 3, 4], theme: [3, 2, 4, 2, 3, 2] },
       },
       {
+        path: '/pan',
+        labelKey: 'nav.pan',
+        icon: '🌵',
+        page: 'Pan',
+        profile: { mood: [3, 3, 4, 3], skill: [3, 5, 4, 3], social: [3, 3, 5, 3, 4], theme: [3, 2, 4, 2, 3, 2] },
+      },
+      {
         path: '/conquian',
         labelKey: 'nav.conquian',
         icon: '🇲🇽',

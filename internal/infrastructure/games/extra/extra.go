@@ -315,4 +315,12 @@ func init() {
 			return usecase.RestoreMachiavelliInteractor(data, new(presenter.MachiavelliWebPresenter))
 		},
 		controller.NewMachiavelliWebControllerWithProvider)
+	games.RegisterKVGame("pan", games.CategoryExtra,
+		func() usecase.PanInteractorIF {
+			return usecase.NewPanInteractor(domain.NewDefaultPan(), new(presenter.PanWebPresenter))
+		},
+		func(data []byte) (usecase.PanInteractorIF, error) {
+			return usecase.RestorePanInteractor(data, new(presenter.PanWebPresenter))
+		},
+		controller.NewPanWebControllerWithProvider)
 }

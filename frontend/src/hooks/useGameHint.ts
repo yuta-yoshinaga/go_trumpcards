@@ -94,6 +94,7 @@ import type {
   OmbreResponse,
   OsmosisResponse,
   PageOneResponse,
+  PanResponse,
   PenguinResponse,
   PigsTailResponse,
   PineappleResponse,
@@ -260,6 +261,7 @@ import { getOmahaHint } from '../utils/hints/omahaHint';
 import { getOmbreHint } from '../utils/hints/ombreHint';
 import { getOsmosisHint } from '../utils/hints/osmosisHint';
 import { getPageOneHint } from '../utils/hints/pageoneHint';
+import { getPanHint } from '../utils/hints/panHint';
 import { getPenguinHint } from '../utils/hints/penguinHint';
 import { getPigstailHint } from '../utils/hints/pigstailHint';
 import { getPineappleHint } from '../utils/hints/pineappleHint';
@@ -511,6 +513,7 @@ const hintFactories = {
   bouillotte: (s) => getBouillotteHint(s as BouillotteResponse),
   primero: (s) => getPrimeroHint(s as PrimeroResponse),
   michigan: (s) => getMichiganHint(s as MichiganResponse),
+  pan: (s) => getPanHint(s as PanResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */
