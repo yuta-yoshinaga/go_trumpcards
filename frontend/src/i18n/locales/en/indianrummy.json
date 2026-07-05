@@ -1,0 +1,56 @@
+{
+  "phase": {
+    "draw": "Draw",
+    "discard": "Discard",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "playerCount": "Players",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetRounds": "Rounds",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}/{{total}}",
+  "drawPile": "Draw pile: {{count}} cards",
+  "wildJoker": "Wild Joker",
+  "discardTop": "Discard",
+  "cards": "{{count}} cards",
+  "cumulativeScore": "Total: {{score}}",
+  "deadwoodShort": "Deadwood {{score}}",
+  "pureSequenceBadge": "Pure seq.",
+  "scores": "Scores",
+  "scoresPlayer": "Player",
+  "scoresRound": "Round",
+  "scoresTotal": "Total",
+  "drawStockButton": "Draw Stock",
+  "drawDiscardButton": "Draw Discard",
+  "discardButton": "Discard",
+  "declareButton": "Declare",
+  "nextRound": "Next Round",
+  "drawPhase": "Draw a card from the stock or discard pile",
+  "discardPhase": "Discard a card, or declare if your 13 cards are valid",
+  "roundEnd": "Round over",
+  "result": {
+    "humanWin": "You win!",
+    "cpuWin": "CPU {{cpuId}} wins!"
+  },
+  "hint": {
+    "drawFromDiscard": "Draw from the discard pile — it fits your hand",
+    "drawFromStock": "Draw from the stock pile",
+    "discardDeadwood": "Discard your highest deadwood card",
+    "declareNow": "You can declare! Your 13 cards form valid melds"
+  },
+  "tutorial": {
+    "wildJoker": "This card's rank becomes wild (a joker substitute), together with the printed jokers.",
+    "drawArea": "Draw a card from the stock pile or discard pile.",
+    "playerHand": "This is your 13-card hand. Form sequences and sets to reduce deadwood.",
+    "discardButton": "Discard one card from your hand.",
+    "declareButton": "Declare to go out when your 13 cards form valid melds (2+ sequences, one of them a pure sequence).",
+    "scoreTable": "Player scores are shown here. Lowest cumulative total wins.",
+    "resetButton": "Press the reset button to start a new game."
+  }
+}

@@ -98,6 +98,7 @@ import type {
   HighCardFlushResponse,
   HoldemResponse,
   IndianPokerResponse,
+  IndianRummyResponse,
   JassResponse,
   KalookiResponse,
   KempsResponse,
@@ -308,6 +309,7 @@ const workerUrl: Record<string, string> = {
   tripeaks: WORKER_SOLO,
   memory: WORKER_SOLO,
   ginrummy: WORKER_EXTRA,
+  indianrummy: WORKER_EXTRA,
   conquian: WORKER_EXTRA,
   chinchon: WORKER_EXTRA,
   threethirteen: WORKER_EXTRA,
@@ -1404,6 +1406,27 @@ export const ginrummyApi = {
       command,
       cardIndex,
       cardIndices,
+      config,
+    }),
+};
+
+/** Configuration options for Indian Rummy game settings. */
+export interface IndianRummyConfigInput {
+  playerCount?: number;
+  cpuDifficulty?: number;
+  targetRounds?: number;
+}
+
+/** API client for the Indian Rummy /indianrummy/exec endpoint. */
+export const indianRummyApi = {
+  exec: (
+    command: 'reset' | 'drawstock' | 'drawdiscard' | 'discard' | 'declare' | 'nextround' | 'log',
+    cardIndex?: number,
+    config?: IndianRummyConfigInput,
+  ) =>
+    gameExec<IndianRummyResponse>('indianrummy', {
+      command,
+      cardIndex,
       config,
     }),
 };
@@ -4651,6 +4674,7 @@ const games = [
   'crazyeights',
   'prsi',
   'ginrummy',
+  'indianrummy',
   'conquian',
   'chinchon',
   'threethirteen',

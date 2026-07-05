@@ -11,6 +11,7 @@
  *   - Euchre:      internal/domain/Euchre.go      (EuchrePhasePickUp, EuchrePhaseCallTrump, EuchrePhaseDiscard, EuchrePhasePlay, EuchrePhaseTrickEnd, EuchrePhaseRoundEnd, EuchrePhaseGameEnd)
  *   - FreeCell:    internal/domain/FreeCell.go    (FreeCellPhasePlaying, FreeCellPhaseGameClear, FreeCellPhaseGameOver)
  *   - GinRummy:    internal/domain/GinRummy.go    (GinRummyPhaseDraw, GinRummyPhaseDiscard, GinRummyPhaseLayoff, GinRummyPhaseRoundEnd, GinRummyPhaseGameEnd)
+ *   - IndianRummy: internal/domain/IndianRummy.go  (IndianRummyPhaseDraw, IndianRummyPhaseDiscard, IndianRummyPhaseRoundEnd, IndianRummyPhaseGameEnd)
  *   - Hearts:      internal/domain/Hearts.go      (HeartsPhasePass, HeartsPhasePlay, HeartsPhaseTrickEnd, HeartsPhaseRoundEnd, HeartsPhaseGameEnd)
  *   - Holdem:      internal/domain/Holdem.go      (HoldemPhaseInit, HoldemPhasePreFlop, HoldemPhaseFlop, HoldemPhaseTurn, HoldemPhaseRiver, HoldemPhaseShowdown, HoldemPhaseEnd, HoldemPhaseRebuy)
  *   - IndianPoker: internal/domain/IndianPoker.go (IndianPokerPhaseInit, IndianPokerPhaseAnte, IndianPokerPhaseBetting, IndianPokerPhaseShowdown, IndianPokerPhaseEnd)
@@ -697,6 +698,14 @@ export const GinRummyPhase = {
   LAYOFF: 2,
   ROUND_END: 3,
   GAME_END: 4,
+} as const;
+
+/** Indian Rummy phase constants (sync: internal/domain/IndianRummy.go). */
+export const IndianRummyPhase = {
+  DRAW: 0,
+  DISCARD: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
 } as const;
 
 /** Conquian phase constants (sync: internal/domain/Conquian.go). */

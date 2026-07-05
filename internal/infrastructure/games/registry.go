@@ -115,6 +115,8 @@ var registry = []*Game{
 	{Name: "spades", Category: CategoryClassic},
 	{Name: "crazyeights", Category: CategoryClassic},
 	{Name: "ginrummy", Category: CategoryExtra},
+	// Indian Rummy (13-card) is a draw-and-discard rummy in the extra worker bucket.
+	{Name: "indianrummy", Category: CategoryExtra},
 	{Name: "canasta", Category: CategoryExtra},
 	{Name: "spider", Category: CategorySolo},
 	// Napoleon is a trick-taking game bucketed into the casino worker purely for

@@ -21,6 +21,7 @@ import {
   heartsApi,
   holdemApi,
   indianpokerApi,
+  indianRummyApi,
   klondikeApi,
   letitrideApi,
   memoryApi,
@@ -2672,6 +2673,100 @@ describe('gameApi', () => {
     });
   });
 
+  describe('indianRummyApi.exec', () => {
+    const payload = {
+      players: [],
+      phase: 0,
+      roundNumber: 1,
+      targetRounds: 3,
+      currentPlayerIdx: 0,
+      dealerIdx: 0,
+      discardTop: null,
+      drawPileCount: 0,
+      wildJoker: null,
+      wildRank: 0,
+      gameEndFlag: false,
+      winnerIdx: -1,
+      declarerIdx: -1,
+      declarationValid: false,
+      message: '',
+      config: { playerCount: 4, cpuDifficulty: 1, targetRounds: 3 },
+    };
+
+    it('calls the correct URL with reset command and config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await indianRummyApi.exec('reset', undefined, {
+        playerCount: 4,
+        cpuDifficulty: 1,
+        targetRounds: 3,
+      });
+      expect(mockFetch).toHaveBeenCalledWith('/indianrummy/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          cardIndex: undefined,
+          config: { playerCount: 4, cpuDifficulty: 1, targetRounds: 3 },
+          sessionId,
+        }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with discard command and cardIndex', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await indianRummyApi.exec('discard', 3);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/indianrummy/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'discard',
+            cardIndex: 3,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with declare command and cardIndex', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await indianRummyApi.exec('declare', 13);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/indianrummy/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'declare',
+            cardIndex: 13,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with log command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await indianRummyApi.exec('log');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/indianrummy/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'log',
+            cardIndex: undefined,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(indianRummyApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
   describe('conquianApi.exec', () => {
     const payload = {
       players: [],
@@ -3008,6 +3103,7 @@ describe('gameApi', () => {
       ['baccarat', actionLogApi.baccarat],
       ['crazyeights', actionLogApi.crazyeights],
       ['ginrummy', actionLogApi.ginrummy],
+      ['indianrummy', actionLogApi.indianrummy],
       ['spider', actionLogApi.spider],
       ['indianpoker', actionLogApi.indianpoker],
     ])('actionLogApi.%s', (gameName, apiFn) => {

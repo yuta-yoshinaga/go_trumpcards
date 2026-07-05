@@ -35,6 +35,14 @@ func init() {
 			return usecase.RestoreGinRummyInteractor(data, new(presenter.GinRummyWebPresenter))
 		},
 		controller.NewGinRummyWebControllerWithProvider)
+	games.RegisterKVGame("indianrummy", games.CategoryExtra,
+		func() usecase.IndianRummyInteractorIF {
+			return usecase.NewIndianRummyInteractor(domain.NewDefaultIndianRummy(), new(presenter.IndianRummyWebPresenter))
+		},
+		func(data []byte) (usecase.IndianRummyInteractorIF, error) {
+			return usecase.RestoreIndianRummyInteractor(data, new(presenter.IndianRummyWebPresenter))
+		},
+		controller.NewIndianRummyWebControllerWithProvider)
 	games.RegisterKVGame("contractrummy", games.CategoryExtra,
 		func() usecase.ContractRummyInteractorIF {
 			return usecase.NewContractRummyInteractor(domain.NewDefaultContractRummy(), new(presenter.ContractRummyWebPresenter))

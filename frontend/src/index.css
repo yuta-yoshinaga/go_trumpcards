@@ -180,6 +180,9 @@
   /* Samba — a carnival magenta/fuchsia evoking the Brazilian samba-parade festivity of this three-deck Canasta variant, distinct from every other game's felt. */
   --color-game-bg-samba: #a5236e;
   --color-game-bg-samba-dark: #6e1749;
+  /* Indian Rummy — a warm saffron/marigold orange evoking the Indian 13-card rummy tradition, distinct from Klaverjas's burnt-orange and Twenty-Nine's spice-orange. */
+  --color-game-bg-indianrummy: #c8651a;
+  --color-game-bg-indianrummy-dark: #8a4310;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;

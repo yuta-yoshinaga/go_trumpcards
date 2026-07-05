@@ -150,6 +150,11 @@ func init() {
 			return usecase.NewGinRummyInteractor(domain.NewDefaultGinRummy(), new(presenter.GinRummyWebPresenter))
 		},
 		controller.NewGinRummyWebController)
+	BindWebControllerFor("indianrummy",
+		func() usecase.IndianRummyInteractorIF {
+			return usecase.NewIndianRummyInteractor(domain.NewDefaultIndianRummy(), new(presenter.IndianRummyWebPresenter))
+		},
+		controller.NewIndianRummyWebController)
 	BindWebControllerFor("canasta",
 		func() usecase.CanastaInteractorIF {
 			return usecase.NewCanastaInteractor(domain.NewDefaultCanasta(), new(presenter.CanastaWebPresenter))
