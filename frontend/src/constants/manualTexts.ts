@@ -201,6 +201,7 @@ import tute from '../../../docs/manual/web/tute.md?raw';
 import twentynine from '../../../docs/manual/web/twentynine.md?raw';
 import twotenjack from '../../../docs/manual/web/twotenjack.md?raw';
 import tysiac from '../../../docs/manual/web/tysiac.md?raw';
+import ulti from '../../../docs/manual/web/ulti.md?raw';
 import ultimatetexasholdem from '../../../docs/manual/web/ultimatetexasholdem.md?raw';
 import videopoker from '../../../docs/manual/web/videopoker.md?raw';
 import war from '../../../docs/manual/web/war.md?raw';
@@ -307,6 +308,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/tysiac': tysiac,
   '/calabresella': calabresella,
   '/ombre': ombre,
+  '/ulti': ulti,
   '/cinch': cinch,
   '/loo': loo,
   '/basra': basra,

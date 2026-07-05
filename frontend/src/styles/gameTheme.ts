@@ -65,6 +65,7 @@ export type GameKey =
   | 'tysiac'
   | 'calabresella'
   | 'ombre'
+  | 'ulti'
   | 'cinch'
   | 'loo'
   | 'basra'
@@ -287,6 +288,10 @@ const OMBRE = {
   bg: 'bg-game-bg-ombre',
   footer: 'bg-game-bg-ombre-dark border-white/20',
 } as const;
+const ULTI = {
+  bg: 'bg-game-bg-ulti',
+  footer: 'bg-game-bg-ulti-dark border-white/20',
+} as const;
 const WATTEN = {
   bg: 'bg-game-bg-watten',
   footer: 'bg-game-bg-watten-dark border-white/20',
@@ -501,6 +506,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   tysiac: TYSIAC,
   calabresella: CALABRESELLA,
   ombre: OMBRE,
+  ulti: ULTI,
   cinch: CINCH,
   loo: LOO,
   basra: BASRA,
