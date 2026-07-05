@@ -675,6 +675,15 @@ var registry = []*Game{
 	// sequence melds and team scoring. Extra worker bucket — the casino/classic/
 	// solo workers are at the 1 MB gzip free-tier limit.
 	{Name: "samba", Category: CategoryExtra},
+	// Anaconda ("Pass the Trash") is an American home-poker variant on a 52-card
+	// deck, 3-7 players. Everyone antes and is dealt 7 cards, then passes cards to
+	// the left in three sub-rounds (3, then 2, then 1), keeps the best 5, and
+	// reveals them one at a time with a betting round (check/call, raise, fold)
+	// before each reveal. The best 5-card poker hand at showdown wins the pot;
+	// folding to a single player wins immediately. Chips accumulate; the game ends
+	// after a fixed number of rounds and the richest player wins. Extra worker
+	// bucket — the casino/classic/solo workers are at the 1 MB gzip free-tier limit.
+	{Name: "anaconda", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

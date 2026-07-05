@@ -1035,4 +1035,9 @@ func init() {
 			return usecase.NewSambaInteractor(domain.NewDefaultSamba(), new(presenter.SambaWebPresenter))
 		},
 		controller.NewSambaWebController)
+	BindWebControllerFor("anaconda",
+		func() usecase.AnacondaInteractorIF {
+			return usecase.NewAnacondaInteractor(domain.NewDefaultAnaconda(), new(presenter.AnacondaWebPresenter))
+		},
+		controller.NewAnacondaWebController)
 }

@@ -3254,6 +3254,17 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"samba.helpSetDifficulty", "samba.helpSetLimit"},
 			})
 	}},
+	{Name: "anaconda", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewAnacondaCuiController(usecase.NewAnacondaInteractor(
+				domain.NewDefaultAnaconda(), new(presenter.AnacondaCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "anaconda.helpTitle",
+				CommandKeys:       []string{"anaconda.helpPass", "anaconda.helpKeep", "anaconda.helpBet", "anaconda.helpNext"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"anaconda.helpSetPlayers", "anaconda.helpSetAnte", "anaconda.helpSetChips", "anaconda.helpSetRounds"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

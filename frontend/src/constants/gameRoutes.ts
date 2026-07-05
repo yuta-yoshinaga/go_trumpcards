@@ -694,6 +694,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 5, 2, 5], skill: [4, 2, 1, 4], social: [1, 4, 5, 2, 4], theme: [4, 2, 2, 2, 4, 1] },
       },
       {
+        path: '/anaconda',
+        labelKey: 'nav.anaconda',
+        icon: '🐍',
+        page: 'Anaconda',
+        profile: { mood: [2, 5, 3, 4], skill: [3, 3, 2, 4], social: [1, 4, 5, 3, 4], theme: [3, 3, 2, 3, 4, 1] },
+      },
+      {
         path: '/bouillotte',
         labelKey: 'nav.bouillotte',
         icon: '🕯️',

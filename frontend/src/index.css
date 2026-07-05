@@ -165,6 +165,9 @@
   /* Guts — a bold saloon ember-rust felt evoking the nerve/guts gamble, distinct from Faro's wine and Twenty-Nine's spice-orange. */
   --color-game-bg-guts: #8a3b1a;
   --color-game-bg-guts-dark: #562310;
+  /* Anaconda (Pass the Trash) — a murky jungle moss-green felt evoking the serpent's swamp camouflage, distinct from Primero's emerald and Michigan's racing-green. */
+  --color-game-bg-anaconda: #3a5a1e;
+  --color-game-bg-anaconda-dark: #243c11;
   /* Bouillotte — a candle-lit royal aubergine-plum felt evoking the 18th-century French salon gamble, distinct from Guts's ember-rust and Faro's wine. */
   --color-game-bg-bouillotte: #4a2151;
   --color-game-bg-bouillotte-dark: #2c1230;
