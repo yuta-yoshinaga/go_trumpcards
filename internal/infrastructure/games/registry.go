@@ -692,6 +692,8 @@ var registry = []*Game{
 	// Extra worker bucket — the casino/classic/solo workers are at the 1 MB gzip
 	// free-tier limit, so it routes to the overflow ("extra") worker.
 	{Name: "machiavelli", Category: CategoryExtra},
+	// Panguingue (Pan) is a multi-deck draw-and-discard rummy in the extra worker bucket.
+	{Name: "pan", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

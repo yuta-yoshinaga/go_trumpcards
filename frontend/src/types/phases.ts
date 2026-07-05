@@ -716,6 +716,14 @@ export const MachiavelliPhase = {
   GAME_END: 2,
 } as const;
 
+/** Panguingue / Pan phase constants (sync: internal/domain/Pan.go). */
+export const PanPhase = {
+  DRAW: 0,
+  PLAY: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Conquian phase constants (sync: internal/domain/Conquian.go). */
 export const ConquianPhase = {
   DRAW: 0,

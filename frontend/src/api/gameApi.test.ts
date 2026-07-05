@@ -29,6 +29,7 @@ import {
   montecarloApi,
   oldmaidApi,
   omahaApi,
+  panApi,
   pokerApi,
   pyramidApi,
   sessionId,
@@ -2768,6 +2769,130 @@ describe('gameApi', () => {
     });
   });
 
+  describe('panApi.exec', () => {
+    const payload = {
+      players: [],
+      phase: 0,
+      roundNumber: 1,
+      targetRounds: 3,
+      currentPlayerIdx: 0,
+      dealerIdx: 0,
+      discardTop: null,
+      drawPileCount: 0,
+      deckSize: 320,
+      winMeldCount: 11,
+      gameEndFlag: false,
+      winnerIdx: -1,
+      panDeclarerIdx: -1,
+      message: '',
+      config: { playerCount: 4, cpuDifficulty: 1, targetRounds: 3 },
+    };
+
+    it('calls the correct URL with reset command and config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await panApi.exec('reset', undefined, {
+        playerCount: 4,
+        cpuDifficulty: 1,
+        targetRounds: 3,
+      });
+      expect(mockFetch).toHaveBeenCalledWith('/pan/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          cardIndices: undefined,
+          cardIndex: undefined,
+          meldOwner: undefined,
+          meldIdx: undefined,
+          config: { playerCount: 4, cpuDifficulty: 1, targetRounds: 3 },
+          sessionId,
+        }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with drawstock command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await panApi.exec('drawstock');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/pan/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'drawstock',
+            cardIndices: undefined,
+            cardIndex: undefined,
+            meldOwner: undefined,
+            meldIdx: undefined,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with meld command and cardIndices', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await panApi.exec('meld', { cardIndices: [0, 1, 2] });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/pan/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'meld',
+            cardIndices: [0, 1, 2],
+            cardIndex: undefined,
+            meldOwner: undefined,
+            meldIdx: undefined,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with layoff command and meld target', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await panApi.exec('layoff', { meldOwner: 1, meldIdx: 0, cardIndex: 3 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/pan/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'layoff',
+            cardIndices: undefined,
+            cardIndex: 3,
+            meldOwner: 1,
+            meldIdx: 0,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with discard command and cardIndex', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await panApi.exec('discard', { cardIndex: 5 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/pan/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'discard',
+            cardIndices: undefined,
+            cardIndex: 5,
+            meldOwner: undefined,
+            meldIdx: undefined,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(panApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
   describe('machiavelliApi.exec', () => {
     const payload = {
       players: [],
@@ -3191,6 +3316,7 @@ describe('gameApi', () => {
       ['crazyeights', actionLogApi.crazyeights],
       ['ginrummy', actionLogApi.ginrummy],
       ['indianrummy', actionLogApi.indianrummy],
+      ['pan', actionLogApi.pan],
       ['spider', actionLogApi.spider],
       ['indianpoker', actionLogApi.indianpoker],
     ])('actionLogApi.%s', (gameName, apiFn) => {

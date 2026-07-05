@@ -131,6 +131,7 @@ import openfacechinese from '../../../docs/manual/web/openfacechinese.md?raw';
 import osmosis from '../../../docs/manual/web/osmosis.md?raw';
 import pageone from '../../../docs/manual/web/pageone.md?raw';
 import paigow from '../../../docs/manual/web/paigow.md?raw';
+import pan from '../../../docs/manual/web/pan.md?raw';
 import penguin from '../../../docs/manual/web/penguin.md?raw';
 import pigtail from '../../../docs/manual/web/pigtail.md?raw';
 import pineapple from '../../../docs/manual/web/pineapple.md?raw';
@@ -275,6 +276,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/ginrummy': ginrummy,
   '/indianrummy': indianrummy,
   '/machiavelli': machiavelli,
+  '/pan': pan,
   '/conquian': conquian,
   '/chinchon': chinchon,
   '/threethirteen': threethirteen,
