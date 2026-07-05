@@ -231,4 +231,9 @@ describe('calcDeadwood', () => {
     const hand = [card('HEART', 4), card('HEART', 5), card('HEART', 6), card('SPADE', 10)];
     expect(calcDeadwood(hand, 0)).toBe(10);
   });
+
+  it('scores an unmatched Ace as 10 points, not 1 (matching the backend)', () => {
+    const hand = [card('SPADE', 1), card('HEART', 4), card('CLOVER', 8)];
+    expect(calcDeadwood(hand, 0)).toBe(22);
+  });
 });

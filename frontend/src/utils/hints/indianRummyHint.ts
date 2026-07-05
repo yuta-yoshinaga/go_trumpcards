@@ -94,9 +94,10 @@ export function calcDeadwood(hand: Card[], wildRank: number): number {
   return leftover.slice(wildCount).reduce((sum, v) => sum + v, 0);
 }
 
-/** Point value of a card (J/Q/K = 10, Ace = 1, joker = 0, else face value). */
+/** Point value of a card (Ace = 10, 10/J/Q/K = 10, joker = 0, else pip). Matches the backend indianRummyCardPoints. */
 function cardPoint(card: Card): number {
   if (card.design === 'JOKER') return 0;
+  if (card.value === 1) return 10; // Ace scores 10, not 1
   if (card.value >= 10) return 10;
   return card.value;
 }
