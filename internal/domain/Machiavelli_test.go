@@ -369,15 +369,19 @@ func TestMachiavelli_Layoff(t *testing.T) {
 		machiavelliCard(domain.CardDesignSpade, 6),
 		machiavelliCard(domain.CardDesignHeart, 9),
 	})
-	err := g.PlayerLayoff(0, 0)
-	require.NoError(t, err)
-	assert.Len(t, g.GetTable()[0], 4)
-	assert.Equal(t, 1, g.GetPlayer(0).GetCardsSize())
 
+	// Invalid inputs are rejected before any play is applied, so they must be
+	// checked while it is still the human's turn (a successful play ends it).
 	// 無効なメルドインデックス
 	assert.ErrorIs(t, g.PlayerLayoff(9, 0), domain.ErrInvalidPlay)
 	// 範囲外の手札インデックス
 	assert.ErrorIs(t, g.PlayerLayoff(0, 99), domain.ErrInvalidCard)
+
+	// 有効なレイオフ（Spade 6 を 3-4-5 のランに追加）。成功すると手番が進む。
+	err := g.PlayerLayoff(0, 0)
+	require.NoError(t, err)
+	assert.Len(t, g.GetTable()[0], 4)
+	assert.Equal(t, 1, g.GetPlayer(0).GetCardsSize())
 }
 
 func TestMachiavelli_Draw(t *testing.T) {
