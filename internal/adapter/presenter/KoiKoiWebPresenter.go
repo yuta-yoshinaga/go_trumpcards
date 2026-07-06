@@ -20,7 +20,7 @@ func koikoiFace(card *domain.Card) *CardFace {
 	if card == nil {
 		return nil
 	}
-	color := "black"
+	var color string
 	switch domain.KoiKoiCardCategory(card) {
 	case domain.KoiKoiBright:
 		color = "gold"
@@ -52,7 +52,7 @@ func (p *KoiKoiWebPresenter) Output(g interfaces.KoiKoiGame, lastErr error) stri
 	resObj := p.buildBase(g)
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
-	} else if g.GetGameEndFlag() {
+	} else if g.GetGameEndFlag() || g.GetPhase() == domain.KoiKoiPhaseGameEnd {
 		resObj.Message = p.buildResultMessage(g)
 		resObj.MessageCode = "koikoi.result.scores"
 		resObj.MessageParams = map[string]string{"scores": p.encodeScoresParam(g)}
