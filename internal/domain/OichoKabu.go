@@ -15,6 +15,18 @@ const (
 	OichoKabuPhaseEnd  = 3 // 終了フェーズ（結果表示）
 )
 
+// OichoKabuResult は子（human）から見たラウンド結果。BlackJack の GameResult は
+// casino ビルドタグで extra ワーカーから到達できないため、extra 到達可能な形で
+// 再定義する（Guts/Anaconda と同じ理由）。
+type OichoKabuResult int
+
+// OichoKabuResult 定数（値は GameResult と同一）
+const (
+	OichoKabuResultLose OichoKabuResult = -1 // 子の負け（親の勝ち）
+	OichoKabuResultDraw OichoKabuResult = 0  // 引き分け（プッシュ、掛け金返却）
+	OichoKabuResultWin  OichoKabuResult = 1  // 子の勝ち
+)
+
 // おいちょかぶデフォルト値
 const (
 	OichoKabuDefaultChips = 1000  // デフォルトチップ
@@ -47,7 +59,7 @@ type OichoKabu struct {
 	bet         int
 	phase       int
 	gameEndFlag bool
-	result      GameResult
+	result      OichoKabuResult
 	totalPayout int
 	actionLog   []*ActionLogEntry
 }
@@ -165,17 +177,17 @@ func (o *OichoKabu) resolve() {
 	pr, br := o.playerRank(), o.bankerRank()
 	switch {
 	case pr > br:
-		o.result = GameResultWin
+		o.result = OichoKabuResultWin
 		o.totalPayout = o.bet * 2 // 掛け金返却 + 1:1 配当
 		o.chips.AddChips(o.totalPayout)
 		o.appendLog(-1, "result", "player wins", nil)
 	case pr < br:
-		o.result = GameResultLose
+		o.result = OichoKabuResultLose
 		o.totalPayout = 0
 		o.appendLog(-1, "result", "banker wins", nil)
 	default:
-		o.result = GameResultDraw // プッシュ
-		o.totalPayout = o.bet     // 掛け金返却
+		o.result = OichoKabuResultDraw // プッシュ
+		o.totalPayout = o.bet          // 掛け金返却
 		o.chips.AddChips(o.totalPayout)
 		o.appendLog(-1, "result", "push", nil)
 	}
@@ -252,7 +264,7 @@ func (o *OichoKabu) GetGameEndFlag() bool { return o.gameEndFlag }
 func (o *OichoKabu) GetBet() int { return o.bet }
 
 // GetResult 結果
-func (o *OichoKabu) GetResult() GameResult { return o.result }
+func (o *OichoKabu) GetResult() OichoKabuResult { return o.result }
 
 // GetTotalPayout 合計配当
 func (o *OichoKabu) GetTotalPayout() int { return o.totalPayout }
@@ -292,7 +304,7 @@ type oichoKabuJSON struct {
 	Bet         int               `json:"bt"`
 	Phase       int               `json:"ps"`
 	GameEndFlag bool              `json:"ge"`
-	Result      GameResult        `json:"gr"`
+	Result      OichoKabuResult   `json:"gr"`
 	TotalPayout int               `json:"tp"`
 	ActionLog   []*ActionLogEntry `json:"al"`
 }

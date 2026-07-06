@@ -31,7 +31,7 @@ type OichoKabuGame interface {
 	// GetBet 掛け金
 	GetBet() int
 	// GetResult 勝敗結果
-	GetResult() domain.GameResult
+	GetResult() domain.OichoKabuResult
 	// GetTotalPayout 合計配当
 	GetTotalPayout() int
 	// GetChips チップ

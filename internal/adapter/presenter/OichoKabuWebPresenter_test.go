@@ -24,7 +24,7 @@ func setupOichoKabuWebMockDefaults(m *interfaces.MockOichoKabuGame) {
 	m.On("GetBankerRank").Return(0).Maybe()
 	m.On("GetGameEndFlag").Return(false).Maybe()
 	m.On("GetBet").Return(0).Maybe()
-	m.On("GetResult").Return(domain.GameResult(0)).Maybe()
+	m.On("GetResult").Return(domain.OichoKabuResult(0)).Maybe()
 	m.On("GetTotalPayout").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 }
@@ -69,7 +69,7 @@ func TestOichoKabuWebPresenter_Output_DrawPhaseHidesBanker(t *testing.T) {
 	m.On("GetBankerRank").Return(9)
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetBet").Return(100)
-	m.On("GetResult").Return(domain.GameResult(0))
+	m.On("GetResult").Return(domain.OichoKabuResult(0))
 	m.On("GetTotalPayout").Return(0)
 
 	out := p.Output(m, nil)
@@ -95,7 +95,7 @@ func TestOichoKabuWebPresenter_Output_EndRevealsBanker(t *testing.T) {
 	m.On("GetBankerRank").Return(8)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetBet").Return(100)
-	m.On("GetResult").Return(domain.GameResultWin)
+	m.On("GetResult").Return(domain.OichoKabuResultWin)
 	m.On("GetTotalPayout").Return(200)
 
 	r := parseOichoKabuOutput(t, p.Output(m, nil))
@@ -108,12 +108,12 @@ func TestOichoKabuWebPresenter_Output_EndRevealsBanker(t *testing.T) {
 func TestOichoKabuWebPresenter_Output_EndMessages(t *testing.T) {
 	for _, tt := range []struct {
 		name    string
-		result  domain.GameResult
+		result  domain.OichoKabuResult
 		wantKey string
 	}{
-		{"win", domain.GameResultWin, "oichokabu.result.playerWins"},
-		{"lose", domain.GameResultLose, "oichokabu.result.bankerWins"},
-		{"push", domain.GameResultDraw, "oichokabu.result.push"},
+		{"win", domain.OichoKabuResultWin, "oichokabu.result.playerWins"},
+		{"lose", domain.OichoKabuResultLose, "oichokabu.result.bankerWins"},
+		{"push", domain.OichoKabuResultDraw, "oichokabu.result.push"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			p := new(OichoKabuWebPresenter)

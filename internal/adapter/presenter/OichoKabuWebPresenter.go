@@ -71,9 +71,9 @@ func (p *OichoKabuWebPresenter) ActionLogOutput(o interfaces.OichoKabuGame) stri
 // oichoKabuEndMessage は終了時の表示メッセージと i18n キーを返す。
 func oichoKabuEndMessage(o interfaces.OichoKabuGame) (string, string) {
 	switch o.GetResult() {
-	case domain.GameResultWin:
+	case domain.OichoKabuResultWin:
 		return "Player wins!", "oichokabu.result.playerWins"
-	case domain.GameResultLose:
+	case domain.OichoKabuResultLose:
 		return "Banker wins.", "oichokabu.result.bankerWins"
 	default:
 		return "Push.", "oichokabu.result.push"

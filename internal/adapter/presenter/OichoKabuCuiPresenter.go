@@ -66,9 +66,9 @@ func (p *OichoKabuCuiPresenter) Output(o interfaces.OichoKabuGame, lastErr error
 
 	if o.GetGameEndFlag() {
 		switch o.GetResult() {
-		case domain.GameResultWin:
+		case domain.OichoKabuResultWin:
 			sb.WriteString(color.Green(i18n.T("oichokabu.playerWins")) + "\n")
-		case domain.GameResultLose:
+		case domain.OichoKabuResultLose:
 			sb.WriteString(color.Red(i18n.T("oichokabu.bankerWins")) + "\n")
 		default:
 			sb.WriteString(color.Yellow(i18n.T("oichokabu.push")) + "\n")

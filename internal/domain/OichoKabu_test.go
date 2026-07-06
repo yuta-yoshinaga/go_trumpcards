@@ -155,7 +155,7 @@ func TestOichoKabu_Stand_PlayerWins(t *testing.T) {
 	o := setupResolve([]int{9}, []int{8}) // banker rank 8 > 6 → stands
 	o.SetChips(900)
 	require.NoError(t, o.Stand())
-	assert.Equal(t, domain.GameResultWin, o.GetResult())
+	assert.Equal(t, domain.OichoKabuResultWin, o.GetResult())
 	assert.Equal(t, domain.OichoKabuPhaseEnd, o.GetPhase())
 	assert.True(t, o.GetGameEndFlag())
 	assert.Len(t, o.GetBankerHand(), 1) // no draw
@@ -167,7 +167,7 @@ func TestOichoKabu_Stand_BankerWins(t *testing.T) {
 	o := setupResolve([]int{7}, []int{8}) // banker 8 stands, player 7 loses
 	o.SetChips(900)
 	require.NoError(t, o.Stand())
-	assert.Equal(t, domain.GameResultLose, o.GetResult())
+	assert.Equal(t, domain.OichoKabuResultLose, o.GetResult())
 	assert.Equal(t, 0, o.GetTotalPayout())
 	assert.Equal(t, 900, o.GetChips())
 }
@@ -176,7 +176,7 @@ func TestOichoKabu_Stand_Push(t *testing.T) {
 	o := setupResolve([]int{8}, []int{8}) // both rank 8, banker stands → push
 	o.SetChips(900)
 	require.NoError(t, o.Stand())
-	assert.Equal(t, domain.GameResultDraw, o.GetResult())
+	assert.Equal(t, domain.OichoKabuResultDraw, o.GetResult())
 	assert.Equal(t, 100, o.GetTotalPayout()) // bet returned
 	assert.Equal(t, 900+100, o.GetChips())
 }
@@ -187,7 +187,7 @@ func TestOichoKabu_Stand_BankerDrawsWhenRankLow(t *testing.T) {
 	require.NoError(t, o.Stand())
 	assert.Len(t, o.GetBankerHand(), 2)
 	assert.Equal(t, 9, o.GetBankerRank())
-	assert.Equal(t, domain.GameResultLose, o.GetResult()) // player 5 < banker 9
+	assert.Equal(t, domain.OichoKabuResultLose, o.GetResult()) // player 5 < banker 9
 }
 
 func TestOichoKabu_Stand_BankerStandsWhenRankHigh(t *testing.T) {
@@ -196,7 +196,7 @@ func TestOichoKabu_Stand_BankerStandsWhenRankHigh(t *testing.T) {
 	require.NoError(t, o.Stand())
 	assert.Len(t, o.GetBankerHand(), 1) // no draw despite deck available
 	assert.Equal(t, 7, o.GetBankerRank())
-	assert.Equal(t, domain.GameResultWin, o.GetResult())
+	assert.Equal(t, domain.OichoKabuResultWin, o.GetResult())
 }
 
 func TestOichoKabu_TenScoresZero(t *testing.T) {
@@ -204,7 +204,7 @@ func TestOichoKabu_TenScoresZero(t *testing.T) {
 	o := setupResolve([]int{10, 9}, []int{8})
 	require.NoError(t, o.Stand())
 	assert.Equal(t, 9, o.GetPlayerRank())
-	assert.Equal(t, domain.GameResultWin, o.GetResult())
+	assert.Equal(t, domain.OichoKabuResultWin, o.GetResult())
 }
 
 func TestOichoKabu_RankWrapsAroundModulo(t *testing.T) {

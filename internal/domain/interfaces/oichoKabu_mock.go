@@ -73,9 +73,9 @@ func (m *MockOichoKabuGame) GetBet() int {
 	return args.Int(0)
 }
 
-func (m *MockOichoKabuGame) GetResult() domain.GameResult {
+func (m *MockOichoKabuGame) GetResult() domain.OichoKabuResult {
 	args := m.Called()
-	return args.Get(0).(domain.GameResult)
+	return args.Get(0).(domain.OichoKabuResult)
 }
 
 func (m *MockOichoKabuGame) GetTotalPayout() int {
