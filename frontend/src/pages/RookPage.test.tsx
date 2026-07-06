@@ -1,0 +1,172 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { rookApi } from '../api/gameApi';
+import { renderWithProviders } from '../test/renderWithProviders';
+import type { Card, RookResponse } from '../types/card';
+import { RookPage } from './RookPage';
+
+vi.mock('../api/gameApi', () => ({
+  rookApi: { exec: vi.fn() },
+  actionLogApi: { rook: vi.fn() },
+}));
+
+const mockExec = vi.mocked(rookApi.exec);
+
+const card = (label: string, value: number, color = 'red'): Card =>
+  ({ design: 'SPADE', value, label, glyph: label, color, deck: 'rook' }) as unknown as Card;
+
+function player(id: number, isHuman: boolean, cards: Card[], over: Partial<RookResponse['players'][number]> = {}) {
+  return {
+    id,
+    isHuman,
+    cardCount: cards.length,
+    cards,
+    team: id % 2,
+    trickCount: 0,
+    points: 0,
+    bid: 0,
+    passed: false,
+    isDeclarer: false,
+    ...over,
+  };
+}
+
+function makeState(overrides: Partial<RookResponse> = {}): RookResponse {
+  return {
+    players: [
+      player(0, true, [card('5', 5), card('10', 10, 'green'), card('14', 14, 'black')]),
+      player(1, false, []),
+      player(2, false, []),
+      player(3, false, []),
+    ],
+    phase: 0,
+    roundNumber: 1,
+    trickNumber: 0,
+    currentPlayerIdx: 0,
+    bidPlayerIdx: 0,
+    dealerIdx: 3,
+    leadPlayerIdx: 0,
+    trumpColor: -1,
+    contractBid: 0,
+    declarerIdx: -1,
+    highestBid: 0,
+    highestBidder: -1,
+    nestCount: 5,
+    nest: [],
+    currentTrick: [],
+    teamScores: [0, 0],
+    teamPoints: [0, 0],
+    gameEndFlag: false,
+    winnerTeam: -1,
+    config: { cpuDifficulty: 1, targetScore: 500 },
+    message: '',
+    ...overrides,
+  };
+}
+
+beforeEach(() => {
+  localStorage.clear();
+  mockExec.mockReset();
+  mockExec.mockResolvedValue(makeState());
+});
+
+describe('RookPage', () => {
+  it('calls reset on mount', async () => {
+    renderWithProviders(<RookPage />);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', expect.objectContaining({ config: expect.any(Object) })),
+    );
+  });
+
+  it('shows bid controls on the human bid turn', async () => {
+    renderWithProviders(<RookPage />);
+    expect(await screen.findByTestId('pass-button')).toBeEnabled();
+    expect(screen.getByTestId('bid-button')).toBeEnabled();
+  });
+
+  it('shows a visible label associated with the bid selector', async () => {
+    renderWithProviders(<RookPage />);
+    const label = await screen.findByTestId('rook-bid-label');
+    expect(label).toHaveAttribute('for', 'rook-bid');
+  });
+
+  it('bids the selected value', async () => {
+    renderWithProviders(<RookPage />);
+    fireEvent.change(await screen.findByLabelText(/70/), { target: { value: '85' } });
+    fireEvent.click(screen.getByTestId('bid-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bid: 85 }));
+  });
+
+  it('offers only bids above the current highest bid', async () => {
+    mockExec.mockResolvedValue(makeState({ highestBid: 90, highestBidder: 2 }));
+    renderWithProviders(<RookPage />);
+    const select = (await screen.findByLabelText(/選択/)) as HTMLSelectElement;
+    const values = Array.from(select.options).map((o) => o.value);
+    expect(values).toEqual(['95', '100', '105', '110', '115', '120']);
+  });
+
+  it('passes when pass is clicked', async () => {
+    renderWithProviders(<RookPage />);
+    fireEvent.click(await screen.findByTestId('pass-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pass'));
+  });
+
+  it('exchanges five cards and a trump color in the nest exchange phase', async () => {
+    const cards = [card('5', 5), card('6', 6), card('7', 7), card('8', 8), card('9', 9), card('10', 10)];
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 1,
+        declarerIdx: 0,
+        contractBid: 75,
+        players: [
+          player(0, true, cards, { isDeclarer: true }),
+          player(1, false, []),
+          player(2, false, []),
+          player(3, false, []),
+        ] as RookResponse['players'],
+      }),
+    );
+    renderWithProviders(<RookPage />);
+    for (let i = 0; i < 5; i++) fireEvent.click(await screen.findByTestId(`hand-card-${i}`));
+    const exchangeBtn = screen.getByTestId('exchange-button');
+    // still disabled until a trump color is chosen
+    expect(exchangeBtn).toBeDisabled();
+    fireEvent.click(screen.getByTestId('trump-choice-3'));
+    expect(exchangeBtn).toBeEnabled();
+    fireEvent.click(exchangeBtn);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('exchange', { discardIndices: [0, 1, 2, 3, 4], trumpColor: 3 }),
+    );
+  });
+
+  it('plays a selected card in the play phase', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 2, currentPlayerIdx: 0, contractBid: 75, trumpColor: 1 }));
+    renderWithProviders(<RookPage />);
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    const playBtn = screen.getByTestId('play-button');
+    expect(playBtn).toBeEnabled();
+    fireEvent.click(playBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0 }));
+  });
+
+  it('shows the trump color swatch once declared', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 2, currentPlayerIdx: 0, contractBid: 75, trumpColor: 1 }));
+    renderWithProviders(<RookPage />);
+    expect(await screen.findByTestId('trump-swatch')).toBeInTheDocument();
+    expect(screen.getByTestId('trump-name')).toBeInTheDocument();
+  });
+
+  it('advances to the next trick', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 3 }));
+    renderWithProviders(<RookPage />);
+    fireEvent.click(await screen.findByTestId('next-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
+  });
+
+  it('advances to the next round', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 4 }));
+    renderWithProviders(<RookPage />);
+    fireEvent.click(await screen.findByTestId('nextround-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+  });
+});

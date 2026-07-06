@@ -1,0 +1,47 @@
+{
+  "phase": {
+    "bid": "ビッド",
+    "nestExchange": "ネスト交換",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "round": "ラウンド {{n}}",
+  "trick": "トリック {{n}}",
+  "highestBid": "最高ビッド: {{value}}点",
+  "contractUndecided": "契約: 未決定",
+  "contractLine": "契約: {{value}}点 / 切り札",
+  "trumpUndeclared": "未宣言",
+  "teamScores": "チーム0: {{t0}}点 / チーム1: {{t1}}点",
+  "teamShort": "T{{team}}",
+  "passed": "パス",
+  "pointsSuffix": "点",
+  "currentTrick": "現在のトリック",
+  "trickEmpty": "(まだカードがありません)",
+  "selectBid": "ビッドを選択 (70-120):",
+  "bidButton": "ビッド",
+  "passButton": "パス",
+  "nestExchangeHint": "ネストを含む18枚から5枚を捨て、切り札色を宣言してください。",
+  "selectTrump": "切り札色:",
+  "exchangeButton": "交換 ({{count}}/5)",
+  "playButton": "出す",
+  "nextTrickButton": "次のトリック",
+  "nextRoundButton": "次のラウンド",
+  "color": {
+    "red": "赤",
+    "gold": "黄",
+    "green": "緑",
+    "black": "黒"
+  },
+  "settings": {
+    "cpuDifficulty": "CPU難易度",
+    "targetScore": "目標スコア"
+  },
+  "tutorial": {
+    "info": "ここにラウンド・契約・切り札色・チームスコアが表示されます。先に500点に到達したチームの勝ちです。",
+    "trick": "場に出されたカードがここに並びます。切り札または最強のカードを出したプレイヤーがトリックを取ります。",
+    "hand": "あなたの手札です。プレイ時はカードを選んでから「出す」を押します。ネスト交換時は5枚選び、切り札色を宣言します。",
+    "actions": "ビッド・ネスト交換・プレイなど、フェーズに応じた操作ボタンがここに表示されます。"
+  }
+}

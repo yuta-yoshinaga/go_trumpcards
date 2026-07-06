@@ -220,6 +220,7 @@ var gameDescriptions = map[string]string{
 	"pan":                 "Panguingue / Pan (パングインゲ)",
 	"wizard":              "Wizard (ウィザード)",
 	"oichokabu":           "Oicho-Kabu (おいちょかぶ)",
+	"rook":                "Rook (ルーク)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

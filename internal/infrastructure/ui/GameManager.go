@@ -3337,6 +3337,17 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},
+	{Name: "rook", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewRookCuiController(usecase.NewRookInteractor(
+				domain.NewDefaultRook(), new(presenter.RookCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "rook.helpTitle",
+				CommandKeys:       []string{"rook.helpBid", "rook.helpPass", "rook.helpExchange", "rook.helpPlay", "rook.helpNext", "rook.helpNextRound"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"rook.helpSetDifficulty", "rook.helpSetTarget"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
