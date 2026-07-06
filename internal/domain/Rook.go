@@ -388,7 +388,7 @@ func (g *Rook) CpuExchange() {
 	}
 	trump := g.cpuSelectTrump(g.declarerIdx)
 	g.trumpColor = trump
-	_ = g.doExchange(g.cpuSelectDiscards(g.declarerIdx), trump)
+	_ = g.doExchange(g.cpuSelectDiscards(g.declarerIdx, trump), trump)
 }
 
 // doExchange ネスト交換の共通処理。捨てた5枚をネストとして脇に置き、その得点を
@@ -792,19 +792,21 @@ func (g *Rook) cpuSelectTrump(playerIdx int) int {
 
 // cpuSelectDiscards CPU(落札者)が捨てる5枚のインデックスを選ぶ。
 // 得点札・切り札・ルーク鳥を温存し、価値の低い札から捨てる。
-func (g *Rook) cpuSelectDiscards(playerIdx int) []int {
+func (g *Rook) cpuSelectDiscards(playerIdx int, trumpColor int) []int {
 	p := g.players[playerIdx]
 	n := p.GetCardsSize()
 	idxs := make([]int, n)
 	for i := range idxs {
 		idxs[i] = i
 	}
+	// trumpColor は宣言予定/推奨の切り札色を渡す。g.trumpColor はネスト交換時点で
+	// まだ -1（未宣言）のことがあり、それを使うと切り札を安く評価して捨ててしまう。
 	keepValue := func(c *Card) int {
 		v := rookCardPoints(c) * 10
 		if g.isRookBird(c) {
 			v += 1000
 		}
-		if g.trumpColor >= 1 && c.GetDesign() == g.trumpColor {
+		if trumpColor >= 1 && c.GetDesign() == trumpColor {
 			v += 200
 		}
 		return v + rookRankStrength(c.GetValue())
@@ -951,7 +953,7 @@ func (g *Rook) GetHint() *RookHint {
 			return nil
 		}
 		trump := g.cpuSelectTrump(humanIdx)
-		return &RookHint{DiscardIndices: g.cpuSelectDiscards(humanIdx), TrumpColor: &trump, Reason: "discard_weakest"}
+		return &RookHint{DiscardIndices: g.cpuSelectDiscards(humanIdx, trump), TrumpColor: &trump, Reason: "discard_weakest"}
 	case RookPhasePlay:
 		if g.currentPlayerIdx != humanIdx {
 			return nil
@@ -1312,7 +1314,7 @@ func rookValidCard(c *Card) bool {
 	if d == RookBirdDesign {
 		return v == RookBirdValue
 	}
-	return d >= 1 && d <= RookColorCnt && v >= 0 && v <= 14
+	return d >= 1 && d <= RookColorCnt && v >= 1 && v <= 14
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
