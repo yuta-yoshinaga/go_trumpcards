@@ -1,0 +1,90 @@
+{
+  "phase": {
+    "bid": "ビッド",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}/{{total}}",
+  "trick": "トリック {{n}}",
+  "handSize": "手札枚数: {{n}}",
+  "trump": "切り札: {{suit}}",
+  "dealer": "ディーラー: {{name}}",
+  "restrictedBid": "※ ビッド {{n}} は選択できません",
+  "restrictedBidTooltip": "制約のため選択できません",
+  "cards": "{{count}}枚",
+  "cumulativeScore": "累計: {{score}}",
+  "roundScore": "ラウンド: {{score}}",
+  "bid": "ビッド {{n}}",
+  "bidNone": "未ビッド",
+  "bidProgress": "宣言: {{bid}} / 獲得: {{won}}",
+  "bidTotal": "総ビッド {{total}} / 手札 {{handSize}}",
+  "bidOverUnder": {
+    "over": "(オーバー)",
+    "under": "(アンダー)",
+    "exact": "(ぴったり)"
+  },
+  "currentTrick": "現在のトリック",
+  "scores": "スコア",
+  "scoresPlayer": "プレイヤー",
+  "scoresBid": "ビッド",
+  "scoresTricks": "トリック",
+  "scoresRound": "ラウンド",
+  "scoresTotal": "累計",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド",
+  "bidPhase": "ビッド宣言 (0-{{max}})",
+  "playPhase": {
+    "lead": "リードしてください",
+    "follow": "カードを出してください"
+  },
+  "trickEnd": "トリック終了",
+  "roundEnd": "ラウンド終了",
+  "result": {
+    "humanWin": "あなたの勝利！",
+    "cpuWin": "CPU {{cpuId}} の勝利！"
+  },
+  "hintBid": "推奨ビッド",
+  "hintPlay": "推奨カード",
+  "hintReason": {
+    "strategic_bid": "戦略的なビッド",
+    "lead_strong": "強いカードでリード",
+    "lead_low": "低いカードでリード",
+    "follow_suit": "リードスートに追随",
+    "trump_cut": "切り札でカット",
+    "discard_high": "高いカードを捨てる"
+  },
+  "suitName": {
+    "0": "なし",
+    "1": "スペード",
+    "2": "クローバー",
+    "3": "ハート",
+    "4": "ダイヤ"
+  },
+  "tutorial": {
+    "bidControls": "ビッドフェーズでは取れると思うトリック数（0〜手札枚数）を宣言します。ウィザードやジェスターも読みに含めましょう。",
+    "trickDisplay": "現在のトリックです。切り札は各ラウンドでめくったカードのスート（最終ラウンドは切り札なし）です。",
+    "playerHand": "あなたの手札です。ウィザードとジェスターはいつでも出せます。それ以外はリードスートに従います。",
+    "playButton": "カードを選んだらこのボタンで出します。ウィザードは常にそのトリックに勝ちます。",
+    "scoreTable": "スコア表です。ビッドをぴったり達成すると 20 + 10×ビッド数、外すと -10×差分です。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "hint": {
+    "bidEstimate": "ウィザードと高いカードに基づくビッド推奨",
+    "leadStrategic": "戦略的にリード推奨",
+    "playWizard": "ウィザードでトリックを確実に取る",
+    "followSuit": "リードされたスートに従ってプレイ推奨",
+    "trumpWithCard": "切り札を使うチャンス",
+    "dumpJester": "ジェスターを捨てる好機",
+    "discardLowest": "最も低いカードを捨てることを推奨"
+  }
+}

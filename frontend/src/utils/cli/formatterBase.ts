@@ -15,8 +15,10 @@ const VALUE_NAMES: Record<number, string> = {
   13: 'K',
 };
 
-/** Format a single card as a Unicode symbol string (e.g., "♠5", "♥K", "🃏"). */
+/** Format a single card as a Unicode symbol string (e.g., "♠5", "♥K", "🃏").
+ * Procedural (non-52 deck) cards fall back to their descriptor glyph/label. */
 export function formatCard(card: Card): string {
+  if (card.label || card.glyph) return `${card.glyph ?? ''}${card.label ?? ''}`;
   if (card.design === 'JOKER') return '🃏';
   const suit = SUIT_SYMBOLS[card.design] ?? '?';
   const value = VALUE_NAMES[card.value] ?? String(card.value);

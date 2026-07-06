@@ -159,6 +159,7 @@ import type {
   WaspResponse,
   WattenResponse,
   WhistResponse,
+  WizardResponse,
   YanivResponse,
   YukonResponse,
 } from '../types/card';
@@ -327,6 +328,7 @@ import { getWarHint } from '../utils/hints/warHint';
 import { getWaspHint } from '../utils/hints/waspHint';
 import { getWattenHint } from '../utils/hints/wattenHint';
 import { getWhistHint } from '../utils/hints/whistHint';
+import { getWizardHint } from '../utils/hints/wizardHint';
 import { getYanivHint } from '../utils/hints/yanivHint';
 import { getYukonHint } from '../utils/hints/yukonHint';
 import { useLocalStorageToggle } from './useLocalStorageToggle';
@@ -374,6 +376,7 @@ const hintFactories = {
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
   mighty: (s) => getMightyHint(s as MightyResponse),
   ohhell: (s) => getOhHellHint(s as OhHellResponse),
+  wizard: (s) => getWizardHint(s as WizardResponse),
   ninetynine: (s) => getNinetyNineHint(s as NinetyNineResponse),
   oldmaid: (s) => getOldMaidHint(s as OldMaidResponse),
   doubt: (s) => getDoubtHint(s as DoubtResponse),

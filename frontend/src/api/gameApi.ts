@@ -224,6 +224,7 @@ import type {
   WattenResponse,
   WhistConfig,
   WhistResponse,
+  WizardResponse,
   YanivResponse,
   YukonResponse,
 } from '../types/card';
@@ -285,6 +286,7 @@ const workerUrl: Record<string, string> = {
   napoleon: WORKER_CASINO,
   ninetynine: WORKER_CLASSIC,
   ohhell: WORKER_CLASSIC,
+  wizard: WORKER_EXTRA,
   oldmaid: WORKER_CLASSIC,
   doubt: WORKER_CLASSIC,
   durak: WORKER_CLASSIC,
@@ -1071,6 +1073,14 @@ export interface OhHellConfigInput {
 
 /** API client for the Oh Hell /ohhell/exec endpoint. */
 export const ohHellApi = createBidPlayApi<OhHellResponse, OhHellConfigInput>('ohhell');
+
+/** Configuration options for Wizard game settings. */
+export interface WizardConfigInput {
+  cpuDifficulty?: number;
+}
+
+/** API client for the Wizard /wizard/exec endpoint. */
+export const wizardApi = createBidPlayApi<WizardResponse, WizardConfigInput>('wizard');
 
 /** Configuration options for Ninety-Nine game settings. */
 export interface NinetyNineConfigInput {
@@ -4817,6 +4827,7 @@ const games = [
   'twotenjack',
   'napoleon',
   'ohhell',
+  'wizard',
   'ninetynine',
   'memory',
   'klondike',

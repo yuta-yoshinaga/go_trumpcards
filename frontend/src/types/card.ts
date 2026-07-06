@@ -13,10 +13,28 @@ export interface BaseGameResponse {
   messageParams?: Record<string, string>;
 }
 
-/** A playing card with suit design and numeric value. */
+/**
+ * A playing card with suit design and numeric value.
+ *
+ * Standard 52-card French-deck cards carry only `design` + `value` and render
+ * via a static PNG (`/images/{prefix}{NN}.png`). Cards from non-52 decks
+ * (tarot, hanafuda, kabu, Wizard, …) have no PNG art, so the backend
+ * additionally sends a self-describing face descriptor (`glyph`/`label`/
+ * `color`/`deck`) and the frontend draws them procedurally via `CardFace`.
+ * When `deck` is set, `CardImage` switches to the procedural path. See
+ * ADR-0033.
+ */
 export interface Card {
   design: CardDesign;
   value: number;
+  /** Center face symbol for procedurally-drawn cards (e.g. "✦"). */
+  glyph?: string;
+  /** Corner rank/name label for procedurally-drawn cards (e.g. "Wizard"). */
+  label?: string;
+  /** Color tint token (e.g. "red", "black", "purple", "green"). */
+  color?: string;
+  /** Deck family id (e.g. "wizard"); when set, the card renders procedurally. */
+  deck?: string;
 }
 
 /** A face-down card sentinel returned by the backend when the card must remain hidden
@@ -5836,6 +5854,60 @@ export interface OhHellResponse extends BaseGameResponse {
   leadPlayerIdx: number;
   hint?: OhHellHint;
   config: OhHellConfig;
+}
+
+// --- Wizard (ウィザード) ---
+
+/** Wizard player data with scores. */
+export interface WizardPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  bid: number;
+  roundScore: number;
+  cumulativeScore: number;
+  trickCount: number;
+}
+
+/** A card played in a Wizard trick. */
+export interface WizardTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Wizard game configuration. */
+export interface WizardConfig {
+  cpuDifficulty: number;
+}
+
+/** A suggested hint for Wizard. */
+export interface WizardHint {
+  cardIndex?: number;
+  bid?: number;
+  reason: string;
+}
+
+/** Full Wizard game state returned from the API. */
+export interface WizardResponse extends BaseGameResponse {
+  players: WizardPlayerData[];
+  phase: number;
+  roundNumber: number;
+  totalRounds: number;
+  handSize: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  bidPlayerIdx: number;
+  dealerIdx: number;
+  currentTrick: WizardTrickCard[];
+  trumpCard: Card | null;
+  trumpSuit: number;
+  restrictedBid: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  leadPlayerIdx: number;
+  hint?: WizardHint;
+  config: WizardConfig;
 }
 
 // --- Ninety-Nine (ナインティナイン) ---

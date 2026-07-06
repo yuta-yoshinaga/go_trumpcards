@@ -3316,6 +3316,17 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"pan.helpSetPlayers", "pan.helpSetDifficulty", "pan.helpSetRounds"},
 			})
 	}},
+	{Name: "wizard", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewWizardCuiController(usecase.NewWizardInteractor(
+				domain.NewDefaultWizard(), new(presenter.WizardCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "wizard.helpTitle",
+				CommandKeys:       []string{"wizard.helpBid", "wizard.helpPlay", "wizard.helpNext", "wizard.helpNextRound"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"wizard.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

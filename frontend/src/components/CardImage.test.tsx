@@ -59,6 +59,30 @@ describe('CardImage', () => {
     expect(screen.getByRole('img')).toHaveAttribute('src', '/images/x00.png');
   });
 
+  it('dispatches to procedural CardFace (no img src) when the card carries a deck descriptor', () => {
+    const card: Card = {
+      design: 'JOKER',
+      value: 1,
+      glyph: '✦',
+      label: 'Wizard',
+      color: 'purple',
+      deck: 'wizard',
+    };
+    render(<CardImage card={card} />);
+    const el = screen.getByRole('img');
+    expect(el.tagName).toBe('DIV');
+    expect(el).not.toHaveAttribute('src');
+    expect(screen.getByText('✦')).toBeInTheDocument();
+  });
+
+  it('still renders a standard PNG img when no descriptor is present', () => {
+    const card: Card = { design: 'SPADE', value: 1 };
+    render(<CardImage card={card} />);
+    const el = screen.getByRole('img');
+    expect(el.tagName).toBe('IMG');
+    expect(el).toHaveAttribute('src', '/images/s01.png');
+  });
+
   it('defaults to 80px width when width prop is omitted', () => {
     const card: Card = { design: 'SPADE', value: 1 };
     render(<CardImage card={card} />);

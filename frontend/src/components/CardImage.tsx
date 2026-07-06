@@ -2,6 +2,12 @@ import { useTranslation } from 'react-i18next';
 import { focusRingWhite } from '../styles/buttonStyles';
 import type { Card } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
+import { CardFace } from './CardFace';
+
+/** True when a card carries a non-52 deck descriptor and must render procedurally. */
+function isProceduralCard(card: Card): boolean {
+  return Boolean(card.deck || card.glyph || card.label);
+}
 
 function getImagePath(card: Card): string {
   const zeroPad = (n: number) => String(n).padStart(2, '0');
@@ -50,6 +56,20 @@ export function CardImage({
   onDrop,
 }: CardImageProps) {
   const w = width ?? 80;
+  if (isProceduralCard(card)) {
+    return (
+      <CardFace
+        card={card}
+        width={width}
+        style={style}
+        className={className}
+        draggable={draggable}
+        onDragStart={onDragStart}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
+      />
+    );
+  }
   return (
     <img
       src={getImagePath(card)}

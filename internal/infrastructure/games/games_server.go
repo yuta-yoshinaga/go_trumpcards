@@ -1055,4 +1055,9 @@ func init() {
 			return usecase.NewPanInteractor(domain.NewDefaultPan(), new(presenter.PanWebPresenter))
 		},
 		controller.NewPanWebController)
+	BindWebControllerFor("wizard",
+		func() usecase.WizardInteractorIF {
+			return usecase.NewWizardInteractor(domain.NewDefaultWizard(), new(presenter.WizardWebPresenter))
+		},
+		controller.NewWizardWebController)
 }
