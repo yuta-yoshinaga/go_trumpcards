@@ -219,6 +219,7 @@ var gameDescriptions = map[string]string{
 	"machiavelli":         "Machiavelli (マキャヴェッリ)",
 	"pan":                 "Panguingue / Pan (パングインゲ)",
 	"wizard":              "Wizard (ウィザード)",
+	"oichokabu":           "Oicho-Kabu (おいちょかぶ)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

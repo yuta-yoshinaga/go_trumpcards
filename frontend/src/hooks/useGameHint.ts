@@ -89,6 +89,7 @@ import type {
   NertzResponse,
   NinetyNineResponse,
   OhHellResponse,
+  OichoKabuResponse,
   OldMaidResponse,
   OmahaResponse,
   OmbreResponse,
@@ -257,6 +258,7 @@ import { getNapoleonHint } from '../utils/hints/napoleonHint';
 import { getNertzHint } from '../utils/hints/nertzHint';
 import { getNinetyNineHint } from '../utils/hints/ninetynineHint';
 import { getOhHellHint } from '../utils/hints/ohhellHint';
+import { getOichokabuHint } from '../utils/hints/oichokabuHint';
 import { getOldMaidHint } from '../utils/hints/oldmaidHint';
 import { getOmahaHiLoHint } from '../utils/hints/omahaHiLoHint';
 import { getOmahaHint } from '../utils/hints/omahaHint';
@@ -443,6 +445,7 @@ const hintFactories = {
   letitride: (s) => getLetitrideHint(s as LetItRideResponse),
   reddog: (s) => getReddogHint(s as RedDogResponse),
   casinowar: (s) => getCasinowarHint(s as CasinoWarResponse),
+  oichokabu: (s) => getOichokabuHint(s as OichoKabuResponse),
   dragontiger: (s) => getDragontigerHint(s as DragonTigerResponse),
   blackjackswitch: (s) => getBlackjackswitchHint(s as BlackJackSwitchResponse),
   war: (s) => getWarHint(s as WarResponse),

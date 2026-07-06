@@ -1412,6 +1412,13 @@ export const CasinoWarPhase = {
   END: 5,
 } as const;
 
+/** Oicho-Kabu phase constants (sync: internal/domain/OichoKabu.go). */
+export const OichoKabuPhase = {
+  BET: 1,
+  DRAW: 2,
+  END: 3,
+} as const;
+
 /** Trente et Quarante (Rouge et Noir) phase constants (sync: internal/domain/TrenteEtQuarante.go). Betting immediately deals both rows and resolves. */
 export const TrenteEtQuarantePhase = {
   BET: 0,

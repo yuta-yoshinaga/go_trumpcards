@@ -131,6 +131,7 @@ import type {
   NinetyNineResponse,
   OasisPokerResponse,
   OhHellResponse,
+  OichoKabuResponse,
   OldMaidResponse,
   OmahaResponse,
   OmbreResponse,
@@ -406,6 +407,7 @@ const workerUrl: Record<string, string> = {
   michigan: WORKER_EXTRA,
   watten: WORKER_EXTRA,
   pan: WORKER_EXTRA,
+  oichokabu: WORKER_EXTRA,
   eightoff: WORKER_SOLO,
   penguin: WORKER_SOLO,
   chinesepoker: WORKER_CASINO,
@@ -4536,6 +4538,11 @@ export const casinowarApi = createBetAmountApi<CasinoWarResponse, 'reset' | 'bet
   'casinowar',
 );
 
+/** API client for the Oicho-Kabu /oichokabu/exec endpoint. */
+export const oichokabuApi = createBetAmountApi<OichoKabuResponse, 'reset' | 'bet' | 'draw' | 'stand' | 'log'>(
+  'oichokabu',
+);
+
 /** API client for the Dragon Tiger /dragontiger/exec endpoint. */
 export const dragontigerApi = {
   exec: (command: 'reset' | 'bet' | 'clear' | 'log', amount?: number, betType?: number) =>
@@ -5008,6 +5015,7 @@ const games = [
   'primero',
   'michigan',
   'pan',
+  'oichokabu',
 ] as const;
 type Game = (typeof games)[number];
 

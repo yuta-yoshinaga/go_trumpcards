@@ -706,6 +706,9 @@ var registry = []*Game{
 	// wizard/jester cards are the first to use the non-52 procedural render path
 	// (ADR-0033). Routed to the extra worker bucket.
 	{Name: "wizard", Category: CategoryExtra},
+	// Oicho-Kabu is a kabufuda (40-card, values 1-10) baccarat-style banking
+	// game; its cards use the non-52 procedural render path (ADR-0033). Extra bucket.
+	{Name: "oichokabu", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

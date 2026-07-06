@@ -27,6 +27,7 @@ export type GameKey =
   | 'letitride'
   | 'reddog'
   | 'casinowar'
+  | 'oichokabu'
   | 'dragontiger'
   | 'blackjackswitch'
   | 'fourcardpoker'
@@ -469,6 +470,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   letitride: CASINO,
   reddog: CASINO,
   casinowar: CASINO,
+  oichokabu: CASINO,
   dragontiger: CASINO,
   blackjackswitch: BRIGHT_GREEN,
   fourcardpoker: CASINO,

@@ -197,6 +197,7 @@
     "gongzhu": "Gong Zhu",
     "tressette": "Tressette",
     "casinowar": "Casino War",
+    "oichokabu": "Oicho-Kabu",
     "dragontiger": "Dragon Tiger",
     "blackjackswitch": "Blackjack Switch",
     "montecarlo": "Monte Carlo Solitaire",
@@ -359,6 +360,9 @@
     "errorBoundaryDetails": "Show error details"
   },
   "messageCode": {
+    "oichokabu.result.playerWins": "You win!",
+    "oichokabu.result.bankerWins": "The banker wins.",
+    "oichokabu.result.push": "Push (tie).",
     "carioca.drawPhase": "Your turn — draw from the stock or take the discard.",
     "carioca.playPhase": "Your turn — meet the contract, lay melds, then discard.",
     "carioca.roundEnd": "Round complete — go to the next round.",

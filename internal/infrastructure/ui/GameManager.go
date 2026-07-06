@@ -3327,6 +3327,16 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"wizard.helpSetDifficulty"},
 			})
 	}},
+	{Name: "oichokabu", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewOichoKabuCuiController(usecase.NewOichoKabuInteractor(
+				domain.NewDefaultOichoKabu(), new(presenter.OichoKabuCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "oichokabu.helpTitle",
+				CommandKeys:       []string{"oichokabu.helpBet", "oichokabu.helpDraw", "oichokabu.helpStand"},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

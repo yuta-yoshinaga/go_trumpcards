@@ -339,4 +339,12 @@ func init() {
 			return usecase.RestoreWizardInteractor(data, new(presenter.WizardWebPresenter))
 		},
 		controller.NewWizardWebControllerWithProvider)
+	games.RegisterKVGame("oichokabu", games.CategoryExtra,
+		func() usecase.OichoKabuInteractorIF {
+			return usecase.NewOichoKabuInteractor(domain.NewDefaultOichoKabu(), new(presenter.OichoKabuWebPresenter))
+		},
+		func(data []byte) (usecase.OichoKabuInteractorIF, error) {
+			return usecase.RestoreOichoKabuInteractor(data, new(presenter.OichoKabuWebPresenter))
+		},
+		controller.NewOichoKabuWebControllerWithProvider)
 }
