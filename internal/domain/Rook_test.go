@@ -152,9 +152,10 @@ func TestRookTrickWinner(t *testing.T) {
 		if g2.GetPlayer(2).GetTrickCount() != 1 {
 			t.Errorf("rook bird should win the trick")
 		}
-		// Captured points recorded on winner: rook(20)+1(15)+trumps(0) = 35.
-		if g2.GetPlayer(2).GetPoints() != 35 {
-			t.Errorf("winner points = %d, want 35", g2.GetPlayer(2).GetPoints())
+		// Captured points on winner: rook(20)+1(15)+color4-2(0)+color4-14(10) = 45.
+		// (The 14 scores 10 even as a trump — point cards score their value regardless of suit.)
+		if g2.GetPlayer(2).GetPoints() != 45 {
+			t.Errorf("winner points = %d, want 45", g2.GetPlayer(2).GetPoints())
 		}
 	})
 }
