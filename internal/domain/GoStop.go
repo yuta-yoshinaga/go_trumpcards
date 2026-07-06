@@ -357,8 +357,8 @@ func gostopEvaluateScore(captured []*Card, goCount int) (*GoStopBreakdown, int) 
 	if ribbonMonth[4] && ribbonMonth[5] && ribbonMonth[7] {
 		b.Tti += gostopPointsChodan
 	}
-	if ribbons > gostopTtiThreshold {
-		b.Tti += ribbons - gostopTtiThreshold
+	if ribbons >= gostopTtiThreshold {
+		b.Tti += 1 + (ribbons - gostopTtiThreshold)
 	}
 
 	// 열끗。
@@ -780,8 +780,8 @@ func gostopBakMultiplier(winner *GoStopBreakdown, loser *GoStopBreakdown, loserG
 		mult *= 2
 		gwangBak = true
 	}
-	// 피박: 敗者の피が 5 枚未満。
-	if loser.PiCount < 5 {
+	// 피박: 勝者が피で得点 (피点 > 0) しており、かつ敗者の피が 5 枚未満。
+	if winner.Pi > 0 && loser.PiCount < 5 {
 		mult *= 2
 		piBak = true
 	}

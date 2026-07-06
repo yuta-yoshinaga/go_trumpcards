@@ -120,7 +120,7 @@ func TestGoStopScore_TtiExtraNoTriple(t *testing.T) {
 		gostopCard(6, 2), gostopCard(9, 2), // 청단 2 枚
 		gostopCard(4, 2), gostopCard(5, 2), // 초단 2 枚
 	}, 0)
-	assert.Equal(t, 1, bd.Tti)
+	assert.Equal(t, 2, bd.Tti) // 三役無しの 6 枚띠 → 1 + (6-5) = 2
 	assert.Equal(t, 6, bd.RibbonCount)
 }
 
@@ -326,8 +326,8 @@ func TestGoStopBak_PiBak(t *testing.T) {
 	g := newTestGoStop(t, domain.GoStopCpuDifficultyNormal)
 	g.SetCurrentTurn(0)
 	g.SetPhase(domain.GoStopPhaseGoDecision)
-	g.GetPlayer(0).AddCaptured(gostopGodori()) // gwang=0 → 光박なし
-	g.GetPlayer(1).AddCaptured(gostopChaff(3)) // 피<5 → 피박
+	g.GetPlayer(0).AddCaptured(append(gostopGodori(), gostopChaff(10)...)) // Godori(5) + Pi(1) = 6 pts
+	g.GetPlayer(1).AddCaptured(gostopChaff(3))                             // 피<5 → 피박
 	require.NoError(t, g.PlayerDecide(false))
 	res := g.GetLastRoundResult()
 	require.NotNil(t, res)
@@ -335,7 +335,7 @@ func TestGoStopBak_PiBak(t *testing.T) {
 	assert.True(t, res.PiBak)
 	assert.False(t, res.GoBak)
 	assert.Equal(t, 2, res.BakMult)
-	assert.Equal(t, 10, res.Total) // 5 * 2
+	assert.Equal(t, 12, res.Total) // 6 * 2
 }
 
 func TestGoStopBak_GoBak(t *testing.T) {
@@ -360,14 +360,14 @@ func TestGoStopBak_Stacked(t *testing.T) {
 	g := newTestGoStop(t, domain.GoStopCpuDifficultyNormal)
 	g.SetCurrentTurn(0)
 	g.SetPhase(domain.GoStopPhaseGoDecision)
-	g.GetPlayer(0).AddCaptured(gostopGwang3()) // gwang=3
-	g.GetPlayer(1).AddCaptured(gostopChaff(2)) // 光札0 + 피<5 → 光박×피박
-	g.GetPlayer(1).IncGoCount()                // 고박
+	g.GetPlayer(0).AddCaptured(append(gostopGwang3(), gostopChaff(10)...)) // Gwang(3)+Pi(1) = 4 pts
+	g.GetPlayer(1).AddCaptured(gostopChaff(2))                             // 光札0 + 피<5 → 光박×피박
+	g.GetPlayer(1).IncGoCount()                                            // 고박
 	require.NoError(t, g.PlayerDecide(false))
 	res := g.GetLastRoundResult()
 	require.NotNil(t, res)
 	assert.Equal(t, 8, res.BakMult) // 2*2*2
-	assert.Equal(t, 24, res.Total)  // 3 * 8
+	assert.Equal(t, 32, res.Total)  // 4 * 8
 }
 
 func TestGoStopEndRound_GoScoreMultiplier(t *testing.T) {

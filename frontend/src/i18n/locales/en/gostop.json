@@ -38,7 +38,7 @@
     "go": "Go-bak"
   },
   "decision": {
-    "title": "You reached the target! Go or Stop?",
+    "title": "You have a scoring hand! Go or Stop?",
     "points": "{{points}} pts",
     "go": "Go",
     "stop": "Stop"
