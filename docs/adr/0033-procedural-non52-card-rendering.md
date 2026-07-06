@@ -49,7 +49,7 @@ Accepted
 | `color` | 色調トークン（例 `"red"`, `"black"`, `"purple"`, `"green"`） |
 | `deck`  | デッキ系統ID（例 `"wizard"`）。非空なら手続き描画へ切り替える |
 
-バックエンドの各ゲームは `internal/adapter/presenter/card_output_helper.go` の `faceProvider`（`func(*domain.Card) *CardFace`）を実装し、`cardToOutputWithFace` / `cardsToOutputWithFace` / `playerCardsToOutputWithFace` 経由で自デッキの札に記述子を付与する。標準札には `nil` を返し、既存の `cardToOutput` 系はそのまま使い続ける（オプトイン方式）。
+バックエンドの各ゲームは `internal/adapter/presenter/card_output_helper.go` の `faceProvider`（`func(*domain.Card) *CardFace`）を実装し、`cardToOutputWithFace` / `playerCardsToOutputWithFace` 経由で自デッキの札に記述子を付与する。標準札には `nil` を返し、既存の `cardToOutput` 系はそのまま使い続ける（オプトイン方式）。
 
 フロントエンドは `Card` 型に任意の `glyph?/label?/color?/deck?` を追加し、`CardImage` が記述子の有無で `<CardFace>`（白地カード＋色付きインク、2:3、角ラベル＋中央グリフ）と従来の `<img>` を振り分ける。CLI／alt テキストも記述子があれば `label`/`glyph` を用いる。
 

@@ -48,16 +48,6 @@ func cardToOutputWithFace(card *domain.Card, fp faceProvider) *controller.WebOut
 	return out
 }
 
-// cardsToOutputWithFace はカードスライスを faceProvider 付きで変換する
-// (nil → 空スライス)。
-func cardsToOutputWithFace(cards []*domain.Card, fp faceProvider) []*controller.WebOutputCard {
-	result := make([]*controller.WebOutputCard, 0, len(cards))
-	for _, c := range cards {
-		result = append(result, cardToOutputWithFace(c, fp))
-	}
-	return result
-}
-
 // playerCardsToOutputWithFace は cardHolder のカードを faceProvider 付きで
 // WebOutputCard スライスに変換する。shouldShow が false の場合は空スライス。
 // playerCardsToOutput の非52枚デッキ版。

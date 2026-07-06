@@ -705,6 +705,7 @@ func TestWizard_TrickWinner_AllJestersFirstWins(t *testing.T) {
 func TestWizard_TrickWinner_NoTrumpOnlyLeadCounts(t *testing.T) {
 	o := newTestWizard()
 	o.Reset()
+	o.SetTrumpSuit(-1) // Reset() flips a random trump; force no-trump so off-suit cards can't win
 	// No trump; off-suit high cards cannot win
 	resolveWizardTrick(o, []*domain.WizardTrickCard{
 		{PlayerIdx: 0, Card: wizardCard(domain.CardDesignHeart, 5)},
