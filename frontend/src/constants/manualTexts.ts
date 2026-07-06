@@ -149,6 +149,7 @@ import prsi from '../../../docs/manual/web/prsi.md?raw';
 import pyramid from '../../../docs/manual/web/pyramid.md?raw';
 import razz from '../../../docs/manual/web/razz.md?raw';
 import reddog from '../../../docs/manual/web/reddog.md?raw';
+import rook from '../../../docs/manual/web/rook.md?raw';
 import rummy500 from '../../../docs/manual/web/rummy500.md?raw';
 import russianbank from '../../../docs/manual/web/russianbank.md?raw';
 import russianpoker from '../../../docs/manual/web/russianpoker.md?raw';
@@ -364,6 +365,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/badugi': badugi,
   '/deucetoseven': deucetoseven,
   '/reddog': reddog,
+  '/rook': rook,
   '/rummy500': rummy500,
   '/sevencardstud': sevencardstud,
   '/fivecardstud': fivecardstud,

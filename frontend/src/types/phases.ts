@@ -1704,3 +1704,13 @@ export const MichiganPhase = {
   PLAY: 1,
   RESULT: 2,
 } as const;
+
+/** Rook (ルーク) phase constants (sync: internal/domain/Rook.go). */
+export const RookPhase = {
+  BID: 0,
+  NEST_EXCHANGE: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;

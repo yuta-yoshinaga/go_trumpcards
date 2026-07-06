@@ -347,4 +347,12 @@ func init() {
 			return usecase.RestoreOichoKabuInteractor(data, new(presenter.OichoKabuWebPresenter))
 		},
 		controller.NewOichoKabuWebControllerWithProvider)
+	games.RegisterKVGame("rook", games.CategoryExtra,
+		func() usecase.RookInteractorIF {
+			return usecase.NewRookInteractor(domain.NewDefaultRook(), new(presenter.RookWebPresenter))
+		},
+		func(data []byte) (usecase.RookInteractorIF, error) {
+			return usecase.RestoreRookInteractor(data, new(presenter.RookWebPresenter))
+		},
+		controller.NewRookWebControllerWithProvider)
 }

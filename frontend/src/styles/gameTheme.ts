@@ -116,6 +116,7 @@ export type GameKey =
   | 'gaigel'
   | 'mighty'
   | 'fivehundred'
+  | 'rook'
   // Matching/Pass
   | 'oldmaid'
   | 'doubt'
@@ -555,6 +556,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   gaigel: BLUE,
   mighty: BLUE,
   fivehundred: BLUE,
+  rook: BLUE,
   callbreak: BLUE,
   tarneeb: BLUE,
   briscola: BLUE,

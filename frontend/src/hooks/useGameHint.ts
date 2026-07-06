@@ -109,6 +109,7 @@ import type {
   PrsiResponse,
   PyramidResponse,
   RedDogResponse,
+  RookResponse,
   Rummy500Response,
   RussianPokerResponse,
   RussianSolitaireResponse,
@@ -280,6 +281,7 @@ import { getPrsiHint } from '../utils/hints/prsiHint';
 import { getPyramidHint } from '../utils/hints/pyramidHint';
 import { getRazzHint } from '../utils/hints/razzHint';
 import { getReddogHint } from '../utils/hints/reddogHint';
+import { getRookHint } from '../utils/hints/rookHint';
 import { getRummy500Hint } from '../utils/hints/rummy500Hint';
 import { getRussianPokerHint } from '../utils/hints/russianpokerHint';
 import { getRussianSolitaireHint } from '../utils/hints/russianSolitaireHint';
@@ -373,6 +375,7 @@ const hintFactories = {
   bigtwo: (s) => getBigTwoHint(s as BigTwoResponse),
   tienlen: (s) => getTienLenHint(s as TienLenResponse),
   fivehundred: (s) => getFiveHundredHint(s as FiveHundredResponse),
+  rook: (s) => getRookHint(s as RookResponse),
   schnapsen: (s) => getSchnapsenHint(s as SchnapsenResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
