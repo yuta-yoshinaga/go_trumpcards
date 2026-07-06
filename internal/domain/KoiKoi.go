@@ -42,6 +42,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"math/rand"
 	"sort"
 )
@@ -799,7 +800,11 @@ func (g *KoiKoi) chooseCpuPlay(playerIdx int) (int, int) {
 		return idx, g.cpuFieldChoice(player.GetCard(idx))
 	}
 	bestIdx := 0
-	bestScore := -1
+	// 下限で初期化する。捨て札スコアは -koikoiCardWeight (=-1..-5) で、以前の
+	// 初期値 -1 は「カス捨て」の最大値と同値だったため、全札が捨て札の手番では
+	// 厳密比較 (>) が一度も成立せず bestIdx が 0 のまま = hand[0] を無条件に捨てる
+	// バグになっていた (最安の札を捨てる意図を無効化)。
+	bestScore := math.MinInt
 	for i := 0; i < size; i++ {
 		card := player.GetCard(i)
 		matches := g.koikoiFieldMatches(card)
