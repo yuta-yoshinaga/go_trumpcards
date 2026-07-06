@@ -1,0 +1,22 @@
+{
+  "helpTitle": "Oicho-Kabu",
+  "helpBet": "  b <amount>           bet (places the stake and deals two cards each)",
+  "helpDraw": "  draw                 draw a third card and settle",
+  "helpStand": "  stand                stand pat and settle",
+  "chipsLine": "chips: {{chips}}",
+  "phaseLine": "phase: {{phase}}",
+  "betLine": "bet: {{bet}}",
+  "handLine": "hand: {{cards}}",
+  "rankLine": "rank: {{rank}}",
+  "playerHeader": "Player (You)",
+  "bankerHeader": "Banker (House)",
+  "hidden": "?? (hidden)",
+  "phaseBet": "BET",
+  "phaseDraw": "DRAW",
+  "phaseEnd": "END",
+  "phaseUnknown": "UNKNOWN",
+  "playerWins": "Player wins!",
+  "bankerWins": "Banker wins.",
+  "push": "Push.",
+  "totalPayoutLine": "total payout: {{payout}}"
+}

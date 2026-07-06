@@ -1,0 +1,44 @@
+{
+  "title": "Oicho-Kabu",
+  "betGuide": "Place a bet; two cards are dealt to you (the child) and two to the banker.",
+  "drawGuide": "Draw a third card, or stand and settle against the banker.",
+  "previousBet": "Use last bet ({{amount}})",
+  "label": {
+    "chips": "Chips",
+    "bet": "Bet",
+    "playerHand": "You (child)",
+    "bankerHand": "Banker",
+    "playerRank": "Your kabu",
+    "bankerRank": "Banker kabu",
+    "rank": "Kabu"
+  },
+  "button": {
+    "bet": "Bet",
+    "draw": "Draw",
+    "stand": "Stand",
+    "reset": "Reset",
+    "rebet": "Rebet ({{amount}})"
+  },
+  "phase": {
+    "bet": "Bet",
+    "draw": "Draw or stand",
+    "end": "Result"
+  },
+  "result": {
+    "playerWins": "You win!",
+    "bankerWins": "You lose",
+    "push": "Push"
+  },
+  "payout": {
+    "total": "Total payout"
+  },
+  "tutorial": {
+    "betControls": "Enter your bet and place it",
+    "actionButtons": "Draw a third card or stand to settle",
+    "results": "Both kabu and the payout are shown here"
+  },
+  "hint": {
+    "drawLow": "Your kabu is low (0–3) — drawing a third card is favorable",
+    "standHigh": "Your kabu is high enough — standing is the basic play"
+  }
+}

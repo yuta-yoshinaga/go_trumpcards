@@ -197,6 +197,7 @@
     "gongzhu": "拱猪（ゴングジュー）",
     "tressette": "トレセッテ",
     "casinowar": "カジノウォー",
+    "oichokabu": "おいちょかぶ",
     "dragontiger": "ドラゴンタイガー",
     "blackjackswitch": "ブラックジャック・スイッチ",
     "montecarlo": "モンテカルロ・ソリティア",
@@ -359,6 +360,9 @@
     "errorBoundaryDetails": "エラーの詳細を表示"
   },
   "messageCode": {
+    "oichokabu.result.playerWins": "あなたの勝ち！",
+    "oichokabu.result.bankerWins": "親の勝ち。",
+    "oichokabu.result.push": "引き分け（プッシュ）。",
     "carioca.drawPhase": "あなたの番です — 山札から引くか、捨て札を取ってください。",
     "carioca.playPhase": "あなたの番です — コントラクトを達成し、メルドを出して、カードを捨ててください。",
     "carioca.roundEnd": "ラウンド終了 — 次のラウンドへ進んでください。",

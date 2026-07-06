@@ -124,6 +124,7 @@ import nertz from '../../../docs/manual/cui/nertz.md?raw';
 import ninetynine from '../../../docs/manual/cui/ninetynine.md?raw';
 import oasispoker from '../../../docs/manual/cui/oasispoker.md?raw';
 import ohhell from '../../../docs/manual/cui/ohhell.md?raw';
+import oichokabu from '../../../docs/manual/cui/oichokabu.md?raw';
 import oldmaid from '../../../docs/manual/cui/oldmaid.md?raw';
 import omaha from '../../../docs/manual/cui/omaha.md?raw';
 import omahahilo from '../../../docs/manual/cui/omahahilo.md?raw';
@@ -322,6 +323,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/mighty': mighty,
   '/napoleon': napoleon,
   '/ohhell': ohhell,
+  '/oichokabu': oichokabu,
   '/wizard': wizard,
   '/ninetynine': ninetynine,
   '/oldmaid': oldmaid,

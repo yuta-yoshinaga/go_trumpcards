@@ -1060,4 +1060,9 @@ func init() {
 			return usecase.NewWizardInteractor(domain.NewDefaultWizard(), new(presenter.WizardWebPresenter))
 		},
 		controller.NewWizardWebController)
+	BindWebControllerFor("oichokabu",
+		func() usecase.OichoKabuInteractorIF {
+			return usecase.NewOichoKabuInteractor(domain.NewDefaultOichoKabu(), new(presenter.OichoKabuWebPresenter))
+		},
+		controller.NewOichoKabuWebController)
 }

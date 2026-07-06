@@ -123,6 +123,7 @@ import nertz from '../../../docs/manual/web/nertz.md?raw';
 import ninetynine from '../../../docs/manual/web/ninetynine.md?raw';
 import oasispoker from '../../../docs/manual/web/oasispoker.md?raw';
 import ohhell from '../../../docs/manual/web/ohhell.md?raw';
+import oichokabu from '../../../docs/manual/web/oichokabu.md?raw';
 import oldmaid from '../../../docs/manual/web/oldmaid.md?raw';
 import omaha from '../../../docs/manual/web/omaha.md?raw';
 import omahahilo from '../../../docs/manual/web/omahahilo.md?raw';
@@ -330,6 +331,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/oasispoker': oasispoker,
   '/russianpoker': russianpoker,
   '/ohhell': ohhell,
+  '/oichokabu': oichokabu,
   '/wizard': wizard,
   '/ninetynine': ninetynine,
   '/oldmaid': oldmaid,
