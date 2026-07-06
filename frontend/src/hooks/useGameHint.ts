@@ -60,6 +60,7 @@ import type {
   GoFishResponse,
   GolfResponse,
   GongZhuResponse,
+  GoStopResponse,
   GutsResponse,
   HeartsResponse,
   HighCardFlushResponse,
@@ -229,6 +230,7 @@ import { getGinRummyHint } from '../utils/hints/ginrummyHint';
 import { getGoFishHint } from '../utils/hints/gofishHint';
 import { getGolfHint } from '../utils/hints/golfHint';
 import { getGongZhuHint } from '../utils/hints/gongzhuHint';
+import { getGoStopHint } from '../utils/hints/gostopHint';
 import { getGutsHint } from '../utils/hints/gutsHint';
 import { getHeartsHint } from '../utils/hints/heartsHint';
 import { getHighCardFlushHint } from '../utils/hints/highcardflushHint';
@@ -506,6 +508,7 @@ const hintFactories = {
   loo: (s) => getLooHint(s as LooResponse),
   basra: (s) => getBasraHint(s as BasraResponse),
   koikoi: (s) => getKoiKoiHint(s as KoiKoiResponse),
+  gostop: (s) => getGoStopHint(s as GoStopResponse),
   tablanet: (s) => getTablanetHint(s as TablanetResponse),
   trenteetquarante: (s) => getTrenteEtQuaranteHint(s as TrenteEtQuaranteResponse),
   sedma: (s) => getSedmaHint(s as SedmaResponse),

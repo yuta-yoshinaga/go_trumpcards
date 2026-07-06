@@ -12,6 +12,8 @@ import type {
   EscobaResponse,
   FortyFivesResponse,
   GongZhuResponse,
+  GoStopBreakdown,
+  GoStopResponse,
   GutsResponse,
   HeartsResponse,
   KingResponse,
@@ -1449,6 +1451,86 @@ const baseKoiKoiState: KoiKoiResponse = {
  */
 export function makeKoiKoiState(overrides?: Partial<KoiKoiResponse>): KoiKoiResponse {
   return { ...baseKoiKoiState, ...overrides };
+}
+
+/** Base Go-Stop scoring breakdown with everything zeroed. */
+const zeroGoStopBreakdown: GoStopBreakdown = {
+  gwang: 0,
+  godori: 0,
+  tti: 0,
+  yeol: 0,
+  pi: 0,
+  base: 0,
+  goCount: 0,
+  goMult: 1,
+  goScore: 0,
+  brightCount: 0,
+  ribbonCount: 0,
+  animalCount: 0,
+  piCount: 0,
+};
+
+/** Base Go-Stop state used as the default for {@link makeGoStopState}. Defaults to a human Play turn. */
+const baseGoStopState: GoStopResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 10,
+      cards: [
+        hanafudaCard('🌸', '3月 タネ', 'purple'),
+        hanafudaCard('🎋', '7月 カス', 'black'),
+        hanafudaCard('🐦', '2月 タネ', 'purple'),
+      ],
+      captured: [],
+      capturedCount: 0,
+      score: 0,
+      goCount: 0,
+      breakdown: { ...zeroGoStopBreakdown },
+      points: 0,
+    },
+    {
+      id: 1,
+      isHuman: false,
+      cardCount: 10,
+      cards: [],
+      captured: [],
+      capturedCount: 0,
+      score: 0,
+      goCount: 0,
+      breakdown: { ...zeroGoStopBreakdown },
+      points: 0,
+    },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  currentTurn: 0,
+  fieldCards: [hanafudaCard('🌸', '3月 カス', 'black'), hanafudaCard('🌕', '8月 光', 'gold')],
+  remainingDeck: 20,
+  playableIndices: [0, 1, 2],
+  captureOptions: { 0: [0] },
+  pendingBreakdown: null,
+  pendingPoints: 0,
+  roundWinner: -1,
+  winner: -1,
+  result: 0,
+  gameEndFlag: false,
+  isHumanTurn: true,
+  lastRoundResult: null,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetScore: 7 },
+};
+
+/**
+ * Creates a {@link GoStopResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial GoStopResponse fields to override.
+ * @returns A complete GoStopResponse suitable for use in tests.
+ */
+export function makeGoStopState(overrides?: Partial<GoStopResponse>): GoStopResponse {
+  return { ...baseGoStopState, ...overrides };
 }
 
 /** Base Tablanet state used as the default for {@link makeTablanetState}. Defaults to a human Play turn. */

@@ -86,6 +86,7 @@ import ginrummy from '../../../docs/manual/web/ginrummy.md?raw';
 import gofish from '../../../docs/manual/web/gofish.md?raw';
 import golf from '../../../docs/manual/web/golf.md?raw';
 import gongzhu from '../../../docs/manual/web/gongzhu.md?raw';
+import gostop from '../../../docs/manual/web/gostop.md?raw';
 import guts from '../../../docs/manual/web/guts.md?raw';
 import handandfoot from '../../../docs/manual/web/handandfoot.md?raw';
 import hearts from '../../../docs/manual/web/hearts.md?raw';
@@ -317,6 +318,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/loo': loo,
   '/basra': basra,
   '/koikoi': koikoi,
+  '/gostop': gostop,
   '/tablanet': tablanet,
   '/trenteetquarante': trenteetquarante,
   '/sedma': sedma,

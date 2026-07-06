@@ -1,0 +1,71 @@
+{
+  "title": "ゴーストップ",
+  "phase": {
+    "play": "プレイ",
+    "decision": "ゴー／ストップ決断",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard",
+    "targetScore": "目標点"
+  },
+  "round": "ラウンド {{n}}",
+  "deck": "山札: {{count}}",
+  "target": "目標: {{count}}点",
+  "field": "場",
+  "fieldEmpty": "（なし）",
+  "pickField": "捕獲する場札を選んでください（2枚が一致しています）。",
+  "you": "あなた",
+  "cpu": "CPU",
+  "captured": "捕獲: {{count}}",
+  "score": "得点: {{score}}",
+  "points": "現在: {{points}}点",
+  "turnYours": "あなたの手番です — 手札を1枚選んで場札を捕獲します。",
+  "turnCpu": "CPU がプレイ中です…",
+  "gwang": "光",
+  "godori": "五鳥",
+  "tti": "띠",
+  "yeol": "열",
+  "pi": "피",
+  "bak": {
+    "gwang": "光バク",
+    "pi": "ピバク",
+    "go": "ゴーバク"
+  },
+  "decision": {
+    "title": "目標点に到達！ ゴー？ それともストップ？",
+    "points": "{{points}}点",
+    "go": "ゴー",
+    "stop": "ストップ"
+  },
+  "roundResult": {
+    "title": "ラウンド結果",
+    "winner": "勝者: {{name}}",
+    "draw": "引き分け",
+    "total": "基本 {{base}} × ゴー {{go}} × バク {{bak}} = {{total}}点"
+  },
+  "result": {
+    "title": "最終得点",
+    "winner": "勝者: {{name}}",
+    "score": "{{name}}: {{score}}点"
+  },
+  "nextRound": "次のラウンド",
+  "newGame": "新しいゲーム",
+  "hint": {
+    "capture": "価値の高い場札を捕獲する",
+    "discard_low": "価値の低い札を捨てる",
+    "go_lowscore": "ゴーして得点を伸ばす",
+    "stop_secure": "ストップして得点を確定する"
+  },
+  "tutorial": {
+    "field": "場の札です。出した手札と同じ月（花）の場札を捕獲します。2枚が一致する場合はどちらを取るか選びます。",
+    "hand": "あなたの手札です。1枚を選ぶと同じ月の場札を捕獲し、続けて山札を1枚めくります。",
+    "info": "ゴーストップ（Go-Stop）は花札48枚を使う韓国の2人用キャプチャゲームです。捕獲した札を光・五鳥・띠・열・피の5カテゴリで採点し、目標点に達したら「ゴー（続行）」か「ストップ（確定）」を選びます。ゴーは倍率が上がりますが、相手に逆転されると光バク・ピバク・ゴーバクの罰則で失点します。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}

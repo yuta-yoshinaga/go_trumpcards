@@ -363,4 +363,12 @@ func init() {
 			return usecase.RestoreKoiKoiInteractor(data, new(presenter.KoiKoiWebPresenter))
 		},
 		controller.NewKoiKoiWebControllerWithProvider)
+	games.RegisterKVGame("gostop", games.CategoryExtra,
+		func() usecase.GoStopInteractorIF {
+			return usecase.NewGoStopInteractor(domain.NewDefaultGoStop(), new(presenter.GoStopWebPresenter))
+		},
+		func(data []byte) (usecase.GoStopInteractorIF, error) {
+			return usecase.RestoreGoStopInteractor(data, new(presenter.GoStopWebPresenter))
+		},
+		controller.NewGoStopWebControllerWithProvider)
 }

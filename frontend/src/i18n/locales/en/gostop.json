@@ -1,0 +1,71 @@
+{
+  "title": "Go-Stop",
+  "phase": {
+    "play": "Play",
+    "decision": "Go / Stop Decision",
+    "roundEnd": "Round End",
+    "gameEnd": "Game Over"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard",
+    "targetScore": "Target Score"
+  },
+  "round": "Round {{n}}",
+  "deck": "Stock: {{count}}",
+  "target": "Target: {{count}}",
+  "field": "Field",
+  "fieldEmpty": "(empty)",
+  "pickField": "Pick a field card to capture (two cards match).",
+  "you": "You",
+  "cpu": "CPU",
+  "captured": "Captured: {{count}}",
+  "score": "Score: {{score}}",
+  "points": "Now: {{points}}",
+  "turnYours": "Your turn — pick a hand card to capture a field card.",
+  "turnCpu": "CPU is playing…",
+  "gwang": "Gwang",
+  "godori": "Godori",
+  "tti": "Tti",
+  "yeol": "Yeol",
+  "pi": "Pi",
+  "bak": {
+    "gwang": "Gwang-bak",
+    "pi": "Pi-bak",
+    "go": "Go-bak"
+  },
+  "decision": {
+    "title": "You reached the target! Go or Stop?",
+    "points": "{{points}} pts",
+    "go": "Go",
+    "stop": "Stop"
+  },
+  "roundResult": {
+    "title": "Round Result",
+    "winner": "Winner: {{name}}",
+    "draw": "Draw",
+    "total": "base {{base}} × go {{go}} × bak {{bak}} = {{total}} pts"
+  },
+  "result": {
+    "title": "Final Score",
+    "winner": "Winner: {{name}}",
+    "score": "{{name}}: {{score}} pts"
+  },
+  "nextRound": "Next Round",
+  "newGame": "New Game",
+  "hint": {
+    "capture": "Capture the higher-value field card",
+    "discard_low": "Discard a low-value card",
+    "go_lowscore": "Call go to build a bigger score",
+    "stop_secure": "Call stop to lock in your points"
+  },
+  "tutorial": {
+    "field": "These are the field cards. A played hand card captures a field card of the same month (flower). When two cards match, you choose which to take.",
+    "hand": "This is your hand. Playing a card captures a same-month field card, then draws one card from the stock.",
+    "info": "Go-Stop is a two-player Korean capture game played with the 48-card hanafuda deck. Captured cards are scored in five categories (Gwang / Godori / Tti / Yeol / Pi). When you reach the target score you choose go (continue, raising the stakes) or stop (bank the points). Calling go risks the gwang-bak, pi-bak, and go-bak penalties if your opponent turns the tables.",
+    "resetButton": "Use the reset button to start a new game."
+  }
+}
