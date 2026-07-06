@@ -1,0 +1,164 @@
+package presenter
+
+import (
+	"strconv"
+	"strings"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
+)
+
+// wizardCuiCardStr は非52枚デッキのウィザード/ジェスター札を含むカードを
+// テキスト描画する。design 5 → "Wizard"、design 6 → "Jester"、それ以外は
+// 標準の "SPADE 5" 形式 (cuiCardStr)。
+func wizardCuiCardStr(card *domain.Card) string {
+	if card == nil {
+		return "??"
+	}
+	switch card.GetDesign() {
+	case domain.WizardDesignWizard:
+		return color.BoldYellow("Wizard")
+	case domain.WizardDesignJester:
+		return color.Green("Jester")
+	}
+	return cuiCardStr(card)
+}
+
+// wizardIndexedCardListStr は手札をインデックス付き (ウィザード/ジェスター対応) で描画する。
+func wizardIndexedCardListStr(hand cuiCardList) string {
+	return formatCardList(hand, wizardCuiCardStr, "  ", true)
+}
+
+// wizardPlayerStr returns the display string for a single Wizard player.
+func wizardPlayerStr(player *domain.WizardPlayer, i int) string {
+	var b strings.Builder
+	bidStr := i18n.T("wizard.bidPending")
+	if player.GetBid() >= 0 {
+		bidStr = strconv.Itoa(player.GetBid())
+	}
+	b.WriteString(i18n.Tf("wizard.playerLine",
+		"name", cuiPlayerName(player, i),
+		"bid", bidStr,
+		"tricks", strconv.Itoa(player.GetTrickCount()),
+		"cum", strconv.Itoa(player.GetCumulativeScore()),
+		"round", strconv.Itoa(player.GetRoundScore()),
+		"cards", strconv.Itoa(player.GetCardsSize()),
+	))
+	b.WriteString("\n")
+	if player.GetIsHuman() && player.GetCardsSize() > 0 {
+		b.WriteString(wizardIndexedCardListStr(player) + "\n")
+	}
+	return b.String()
+}
+
+// WizardCuiPresenter renders the Wizard CUI view.
+type WizardCuiPresenter struct{}
+
+// Output renders the current game state for the active locale (#1699).
+func (p *WizardCuiPresenter) Output(o interfaces.WizardGame, lastErr error) string {
+	return buildCuiOutput(i18n.T("wizard.helpTitle"), func(b *strings.Builder) {
+		b.WriteString(i18n.Tf("wizard.header",
+			"round", strconv.Itoa(o.GetRoundNumber()),
+			"total", strconv.Itoa(o.GetTotalRounds()),
+			"hand", strconv.Itoa(o.GetHandSize()),
+			"trick", strconv.Itoa(o.GetTrickNumber())) + "\n")
+
+		if trumpCard := o.GetTrumpCard(); trumpCard != nil {
+			b.WriteString(i18n.Tf("wizard.trumpCard", "card", wizardCuiCardStr(trumpCard)) + "\n")
+		} else {
+			b.WriteString(i18n.T("wizard.trumpNone") + "\n")
+		}
+
+		dealerIdx := o.GetDealerIdx()
+		b.WriteString(i18n.Tf("wizard.dealer",
+			"name", cuiPlayerName(o.GetPlayer(dealerIdx), dealerIdx)) + "\n")
+
+		for i := 0; i < o.GetPlayerCnt(); i++ {
+			b.WriteString(wizardPlayerStr(o.GetPlayer(i), i))
+		}
+
+		b.WriteString("----------\n")
+
+		// Current trick
+		trick := o.GetCurrentTrick()
+		cuiTrickBlock(b, trick,
+			func(tc *domain.WizardTrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.WizardTrickCard) string { return wizardCuiCardStr(tc.Card) },
+			func(idx int) string { return cuiPlayerName(o.GetPlayer(idx), idx) },
+		)
+
+		cuiErrorBlock(b, lastErr)
+
+		// Game state
+		if o.GetGameEndFlag() {
+			winnerIdx := o.GetWinnerIdx()
+			player := o.GetPlayer(winnerIdx)
+			banner := i18n.Tf("wizard.gameEnd", "name", cuiPlayerName(player, winnerIdx))
+			b.WriteString(color.Green(banner) + "\n")
+			return
+		}
+		switch o.GetPhase() {
+		case domain.WizardPhaseBid:
+			bidIdx := o.GetBidPlayerIdx()
+			name := cuiPlayerName(o.GetPlayer(bidIdx), bidIdx)
+			if restricted := o.GetRestrictedBid(); restricted >= 0 {
+				b.WriteString(i18n.Tf("wizard.promptBidRestricted",
+					"name", name,
+					"restricted", strconv.Itoa(restricted)) + "\n")
+			} else {
+				b.WriteString(i18n.Tf("wizard.promptBid", "name", name) + "\n")
+			}
+			b.WriteString(i18n.T("wizard.promptBidHelp") + "\n")
+		case domain.WizardPhasePlay:
+			currentIdx := o.GetCurrentPlayerIdx()
+			b.WriteString(i18n.Tf("wizard.promptPlay",
+				"name", cuiPlayerName(o.GetPlayer(currentIdx), currentIdx)) + "\n")
+			b.WriteString(i18n.T("wizard.promptPlayHelp") + "\n")
+		case domain.WizardPhaseTrickEnd:
+			b.WriteString(i18n.T("wizard.promptTrickEnd") + "\n")
+			b.WriteString(i18n.T("wizard.promptTrickEndHelp") + "\n")
+		case domain.WizardPhaseRoundEnd:
+			b.WriteString(i18n.T("wizard.promptRoundEnd") + "\n")
+			b.WriteString(i18n.T("wizard.promptRoundEndHelp") + "\n")
+		}
+	})
+}
+
+// HintOutput emits the current Wizard hint.
+func (p *WizardCuiPresenter) HintOutput(o interfaces.WizardGame) string {
+	hint := o.GetHint()
+	if hint == nil {
+		return i18n.T("wizard.hintNone") + "\n"
+	}
+	reason := hintReasonStr(hint.Reason, nil)
+	if hint.Bid != nil {
+		return color.Yellow(i18n.Tf("wizard.hintBid",
+			"bid", strconv.Itoa(*hint.Bid),
+			"reason", reason)) + "\n"
+	}
+	if hint.CardIndex == nil {
+		return i18n.T("wizard.hintNone") + "\n"
+	}
+	humanIdx := -1
+	for i := 0; i < o.GetPlayerCnt(); i++ {
+		if o.GetPlayer(i).GetIsHuman() {
+			humanIdx = i
+			break
+		}
+	}
+	if humanIdx < 0 {
+		return i18n.T("wizard.hintNone") + "\n"
+	}
+	card := o.GetPlayer(humanIdx).GetCard(*hint.CardIndex)
+	return color.Yellow(i18n.Tf("wizard.hintCard",
+		"idx", strconv.Itoa(*hint.CardIndex),
+		"card", wizardCuiCardStr(card),
+		"reason", reason)) + "\n"
+}
+
+// ActionLogOutput emits the action-log transcript as plain text.
+func (p *WizardCuiPresenter) ActionLogOutput(o interfaces.WizardGame) string {
+	return actionLogOutputText(o)
+}

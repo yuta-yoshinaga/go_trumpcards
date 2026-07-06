@@ -209,6 +209,7 @@ import war from '../../../docs/manual/cui/war.md?raw';
 import wasp from '../../../docs/manual/cui/wasp.md?raw';
 import watten from '../../../docs/manual/cui/watten.md?raw';
 import whist from '../../../docs/manual/cui/whist.md?raw';
+import wizard from '../../../docs/manual/cui/wizard.md?raw';
 import yaniv from '../../../docs/manual/cui/yaniv.md?raw';
 import yukon from '../../../docs/manual/cui/yukon.md?raw';
 
@@ -321,6 +322,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/mighty': mighty,
   '/napoleon': napoleon,
   '/ohhell': ohhell,
+  '/wizard': wizard,
   '/ninetynine': ninetynine,
   '/oldmaid': oldmaid,
   '/omaha': omaha,

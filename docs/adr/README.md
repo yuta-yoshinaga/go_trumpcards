@@ -49,3 +49,5 @@ ADR番号は連番ではない — 欠番はリトマステスト導入時に非
 | [ADR-0029](0029-design-system.md) | デザインシステム (DESIGN.md) の導入 | Accepted | 2026-04-04 |
 | [ADR-0030](0030-design-tokens-only-in-source.md) | ソースコードではデザイントークンのみ使用 / 生Tailwindパレット禁止 | Accepted | 2026-04-19 |
 | [ADR-0031](0031-registry-consolidation.md) | 4 レイヤーゲームレジストリの取り扱い方針 | Accepted | 2026-05-02 |
+| [ADR-0032](0032-fourth-worker-capacity.md) | 4 つ目の Cloudflare Worker（容量バケット）の追加 | Accepted | 2026-06-29 |
+| [ADR-0033](0033-procedural-non52-card-rendering.md) | 非52枚デッキ札の手続き的（CSS/SVG）レンダリング | Accepted | 2026-07-06 |

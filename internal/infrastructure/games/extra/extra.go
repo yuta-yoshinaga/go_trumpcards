@@ -331,4 +331,12 @@ func init() {
 			return usecase.RestorePanInteractor(data, new(presenter.PanWebPresenter))
 		},
 		controller.NewPanWebControllerWithProvider)
+	games.RegisterKVGame("wizard", games.CategoryExtra,
+		func() usecase.WizardInteractorIF {
+			return usecase.NewWizardInteractor(domain.NewDefaultWizard(), new(presenter.WizardWebPresenter))
+		},
+		func(data []byte) (usecase.WizardInteractorIF, error) {
+			return usecase.RestoreWizardInteractor(data, new(presenter.WizardWebPresenter))
+		},
+		controller.NewWizardWebControllerWithProvider)
 }

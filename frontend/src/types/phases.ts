@@ -645,6 +645,15 @@ export const OhHellPhase = {
   GAME_END: 4,
 } as const;
 
+/** Wizard phase constants (sync: internal/domain/Wizard.go). */
+export const WizardPhase = {
+  BID: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Ninety-Nine phase constants (sync: internal/domain/NinetyNine.go). */
 export const NinetyNinePhase = {
   BID: 0,

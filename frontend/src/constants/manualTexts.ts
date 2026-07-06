@@ -208,6 +208,7 @@ import war from '../../../docs/manual/web/war.md?raw';
 import wasp from '../../../docs/manual/web/wasp.md?raw';
 import watten from '../../../docs/manual/web/watten.md?raw';
 import whist from '../../../docs/manual/web/whist.md?raw';
+import wizard from '../../../docs/manual/web/wizard.md?raw';
 import yaniv from '../../../docs/manual/web/yaniv.md?raw';
 import yukon from '../../../docs/manual/web/yukon.md?raw';
 
@@ -329,6 +330,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/oasispoker': oasispoker,
   '/russianpoker': russianpoker,
   '/ohhell': ohhell,
+  '/wizard': wizard,
   '/ninetynine': ninetynine,
   '/oldmaid': oldmaid,
   '/omaha': omaha,

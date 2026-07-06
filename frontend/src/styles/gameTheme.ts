@@ -95,6 +95,7 @@ export type GameKey =
   | 'pitch'
   | 'twotenjack'
   | 'ohhell'
+  | 'wizard'
   | 'ninetynine'
   | 'euchre'
   | 'bridge'
@@ -536,6 +537,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   pitch: BLUE,
   twotenjack: BLUE,
   ohhell: BLUE,
+  wizard: BLUE,
   ninetynine: NINETYNINE,
   euchre: BLUE,
   bridge: BLUE,

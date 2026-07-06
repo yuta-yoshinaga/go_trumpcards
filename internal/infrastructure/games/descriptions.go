@@ -218,6 +218,7 @@ var gameDescriptions = map[string]string{
 	"anaconda":            "Anaconda / Pass the Trash (アナコンダ)",
 	"machiavelli":         "Machiavelli (マキャヴェッリ)",
 	"pan":                 "Panguingue / Pan (パングインゲ)",
+	"wizard":              "Wizard (ウィザード)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

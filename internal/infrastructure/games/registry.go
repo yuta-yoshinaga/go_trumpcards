@@ -702,6 +702,10 @@ var registry = []*Game{
 	{Name: "machiavelli", Category: CategoryExtra},
 	// Panguingue (Pan) is a multi-deck draw-and-discard rummy in the extra worker bucket.
 	{Name: "pan", Category: CategoryExtra},
+	// Wizard is a 60-card (52 + 4 wizards + 4 jesters) exact-bid trick-taker; its
+	// wizard/jester cards are the first to use the non-52 procedural render path
+	// (ADR-0033). Routed to the extra worker bucket.
+	{Name: "wizard", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.
