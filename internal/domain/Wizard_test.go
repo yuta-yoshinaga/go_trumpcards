@@ -1049,6 +1049,8 @@ func TestWizard_UnmarshalJSON_InvalidIndices(t *testing.T) {
 		{"bidPlayerIdx out of range", `{"ps":[{},{},{},{}],"bi":99}`},
 		{"leadPlayerIdx out of range", `{"ps":[{},{},{},{}],"li":99}`},
 		{"trickNumber negative", `{"ps":[{},{},{},{}],"tn":-1}`},
+		{"players count not 4", `{"ps":[{},{},{}]}`},
+		{"nil player element", `{"ps":[{},null,{},{}]}`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

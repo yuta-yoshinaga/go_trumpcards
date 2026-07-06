@@ -1316,6 +1316,19 @@ func (o *Wizard) UnmarshalJSON(data []byte) error {
 	if o.deck == nil {
 		o.deck = make([]*Card, 0)
 	}
+	// プレイヤー数と nil 要素のバリデーション: Wizard は常に WizardPlayerCnt(4)
+	// 人で、コードは players[0..3] を直接インデックスするため、数が異なる／nil を
+	// 含む状態を復元すると後続処理で範囲外・nil 参照パニックになる。
+	if len(j.Players) > 0 {
+		if len(j.Players) != WizardPlayerCnt {
+			return fmt.Errorf("wizard: players count %d must be %d", len(j.Players), WizardPlayerCnt)
+		}
+		for i, p := range j.Players {
+			if p == nil {
+				return fmt.Errorf("wizard: player %d is nil", i)
+			}
+		}
+	}
 	o.players = j.Players
 	if o.players == nil {
 		o.players = make([]*WizardPlayer, 0)
