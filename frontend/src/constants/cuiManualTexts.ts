@@ -87,6 +87,7 @@ import ginrummy from '../../../docs/manual/cui/ginrummy.md?raw';
 import gofish from '../../../docs/manual/cui/gofish.md?raw';
 import golf from '../../../docs/manual/cui/golf.md?raw';
 import gongzhu from '../../../docs/manual/cui/gongzhu.md?raw';
+import gostop from '../../../docs/manual/cui/gostop.md?raw';
 import guts from '../../../docs/manual/cui/guts.md?raw';
 import handandfoot from '../../../docs/manual/cui/handandfoot.md?raw';
 import hearts from '../../../docs/manual/cui/hearts.md?raw';
@@ -311,6 +312,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/loo': loo,
   '/basra': basra,
   '/koikoi': koikoi,
+  '/gostop': gostop,
   '/tablanet': tablanet,
   '/trenteetquarante': trenteetquarante,
   '/sedma': sedma,

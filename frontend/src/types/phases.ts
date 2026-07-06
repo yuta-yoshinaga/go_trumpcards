@@ -443,6 +443,14 @@ export const KoiKoiPhase = {
   GAME_END: 3,
 } as const;
 
+/** Go-Stop (Godori / ゴーストップ) phase constants (sync: internal/domain/GoStop.go). */
+export const GoStopPhase = {
+  PLAY: 0,
+  GO_DECISION: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Tablanet (Tablić) phase constants (sync: internal/domain/Tablanet.go). */
 export const TablanetPhase = {
   PLAY: 0,

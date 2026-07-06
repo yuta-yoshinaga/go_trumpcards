@@ -715,6 +715,9 @@ var registry = []*Game{
 	// Koi-Koi is a 48-card hanafuda capture game with yaku scoring; the hanafuda
 	// cards use the non-52 procedural render path (ADR-0033). Extra bucket.
 	{Name: "koikoi", Category: CategoryExtra},
+	// Go-Stop (Godori) is a Korean hanafuda capture game (same 48-card Hwatu deck
+	// as Koi-Koi) with Gwang/Godori scoring + Go/Stop; procedural render (ADR-0033).
+	{Name: "gostop", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

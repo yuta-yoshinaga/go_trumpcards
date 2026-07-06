@@ -71,6 +71,7 @@ export type GameKey =
   | 'loo'
   | 'basra'
   | 'koikoi'
+  | 'gostop'
   | 'tablanet'
   | 'trenteetquarante'
   | 'sedma'
@@ -516,6 +517,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   loo: LOO,
   basra: BASRA,
   koikoi: GREEN,
+  gostop: GREEN,
   tablanet: TABLANET,
   trenteetquarante: TRENTEETQUARANTE,
   sedma: SEDMA,

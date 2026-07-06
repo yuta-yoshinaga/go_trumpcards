@@ -1075,4 +1075,9 @@ func init() {
 			return usecase.NewKoiKoiInteractor(domain.NewDefaultKoiKoi(), new(presenter.KoiKoiWebPresenter))
 		},
 		controller.NewKoiKoiWebController)
+	BindWebControllerFor("gostop",
+		func() usecase.GoStopInteractorIF {
+			return usecase.NewGoStopInteractor(domain.NewDefaultGoStop(), new(presenter.GoStopWebPresenter))
+		},
+		controller.NewGoStopWebController)
 }

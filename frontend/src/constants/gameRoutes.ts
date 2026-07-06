@@ -498,6 +498,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [4, 4, 3, 3], skill: [3, 4, 3, 3], social: [1, 2, 5, 3, 5], theme: [5, 2, 3, 1, 2, 4] },
       },
       {
+        path: '/gostop',
+        labelKey: 'nav.gostop',
+        icon: '🐦',
+        page: 'GoStop',
+        profile: { mood: [4, 4, 3, 3], skill: [3, 4, 3, 3], social: [1, 2, 5, 3, 5], theme: [5, 2, 3, 1, 2, 4] },
+      },
+      {
         path: '/tablanet',
         labelKey: 'nav.tablanet',
         icon: '🎣',
