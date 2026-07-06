@@ -104,6 +104,7 @@ import kingalbert from '../../../docs/manual/cui/kingalbert.md?raw';
 import klaverjas from '../../../docs/manual/cui/klaverjas.md?raw';
 import klondike from '../../../docs/manual/cui/klondike.md?raw';
 import knockoutwhist from '../../../docs/manual/cui/knockoutwhist.md?raw';
+import koikoi from '../../../docs/manual/cui/koikoi.md?raw';
 import labellelucie from '../../../docs/manual/cui/labellelucie.md?raw';
 import letitride from '../../../docs/manual/cui/letitride.md?raw';
 import loo from '../../../docs/manual/cui/loo.md?raw';
@@ -309,6 +310,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/cinch': cinch,
   '/loo': loo,
   '/basra': basra,
+  '/koikoi': koikoi,
   '/tablanet': tablanet,
   '/trenteetquarante': trenteetquarante,
   '/sedma': sedma,

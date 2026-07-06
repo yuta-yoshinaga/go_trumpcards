@@ -103,6 +103,7 @@ import kingalbert from '../../../docs/manual/web/kingalbert.md?raw';
 import klaverjas from '../../../docs/manual/web/klaverjas.md?raw';
 import klondike from '../../../docs/manual/web/klondike.md?raw';
 import knockoutwhist from '../../../docs/manual/web/knockoutwhist.md?raw';
+import koikoi from '../../../docs/manual/web/koikoi.md?raw';
 import labellelucie from '../../../docs/manual/web/labellelucie.md?raw';
 import letitride from '../../../docs/manual/web/letitride.md?raw';
 import loo from '../../../docs/manual/web/loo.md?raw';
@@ -315,6 +316,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/cinch': cinch,
   '/loo': loo,
   '/basra': basra,
+  '/koikoi': koikoi,
   '/tablanet': tablanet,
   '/trenteetquarante': trenteetquarante,
   '/sedma': sedma,

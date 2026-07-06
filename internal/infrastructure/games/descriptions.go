@@ -221,6 +221,7 @@ var gameDescriptions = map[string]string{
 	"wizard":              "Wizard (ウィザード)",
 	"oichokabu":           "Oicho-Kabu (おいちょかぶ)",
 	"rook":                "Rook (ルーク)",
+	"koikoi":              "Koi-Koi (こいこい)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

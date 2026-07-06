@@ -712,6 +712,9 @@ var registry = []*Game{
 	// Rook is a 57-card (4 colors 1-14 + Rook bird) 2-team point-trick game; its
 	// special-deck cards use the non-52 procedural render path (ADR-0033). Extra bucket.
 	{Name: "rook", Category: CategoryExtra},
+	// Koi-Koi is a 48-card hanafuda capture game with yaku scoring; the hanafuda
+	// cards use the non-52 procedural render path (ADR-0033). Extra bucket.
+	{Name: "koikoi", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

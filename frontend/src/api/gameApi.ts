@@ -109,6 +109,7 @@ import type {
   KlaverjasResponse,
   KlondikeResponse,
   KnockoutWhistResponse,
+  KoiKoiResponse,
   LaBelleLucieResponse,
   LetItRideResponse,
   LooResponse,
@@ -400,6 +401,7 @@ const workerUrl: Record<string, string> = {
   cinch: WORKER_EXTRA,
   loo: WORKER_EXTRA,
   basra: WORKER_EXTRA,
+  koikoi: WORKER_EXTRA,
   tablanet: WORKER_EXTRA,
   trenteetquarante: WORKER_EXTRA,
   guts: WORKER_EXTRA,
@@ -2630,6 +2632,45 @@ export const basraApi = {
       command,
       cardIndex: opts?.cardIndex,
       tableIndices: opts?.tableIndices,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Koi-Koi (こいこい) game settings. */
+export interface KoiKoiConfigInput {
+  cpuDifficulty?: number;
+  /** Target cumulative score that ends the match. */
+  targetScore?: number;
+}
+
+/** Commands accepted by the Koi-Koi /koikoi/exec endpoint. */
+export type KoiKoiCommand = 'reset' | 'play' | 'koikoi' | 'stop' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Koi-Koi (こいこい) /koikoi/exec endpoint.
+ *
+ * Koi-Koi is a 2-player hanafuda capture game with yaku scoring.
+ *   - `play` → `{ cardIndex, fieldIndex? }` (fieldIndex disambiguates a 2-way
+ *     field match; omit when there is at most one match)
+ *   - `koikoi` → continue the round (double the stakes) after completing a yaku
+ *   - `stop` → shobu: stop and score the completed yaku
+ *   - `nextround` → deal the next round
+ *   - `reset` → `{ config }`
+ *   - `hint` / `log` carry no extra fields.
+ */
+export const koikoiApi = {
+  exec: (
+    command: KoiKoiCommand,
+    opts?: {
+      cardIndex?: number;
+      fieldIndex?: number;
+      config?: KoiKoiConfigInput;
+    },
+  ) =>
+    gameExec<KoiKoiResponse>('koikoi', {
+      command,
+      cardIndex: opts?.cardIndex,
+      fieldIndex: opts?.fieldIndex,
       config: opts?.config,
     }),
 };
@@ -5053,6 +5094,7 @@ const games = [
   'cinch',
   'loo',
   'basra',
+  'koikoi',
   'tablanet',
   'trenteetquarante',
   'guts',

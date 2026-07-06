@@ -435,6 +435,14 @@ export const BasraPhase = {
   GAME_END: 1,
 } as const;
 
+/** Koi-Koi (こいこい) phase constants (sync: internal/domain/KoiKoi.go). */
+export const KoiKoiPhase = {
+  PLAY: 0,
+  KOIKOI_DECISION: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Tablanet (Tablić) phase constants (sync: internal/domain/Tablanet.go). */
 export const TablanetPhase = {
   PLAY: 0,

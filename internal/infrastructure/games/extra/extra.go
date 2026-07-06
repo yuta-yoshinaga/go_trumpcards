@@ -355,4 +355,12 @@ func init() {
 			return usecase.RestoreRookInteractor(data, new(presenter.RookWebPresenter))
 		},
 		controller.NewRookWebControllerWithProvider)
+	games.RegisterKVGame("koikoi", games.CategoryExtra,
+		func() usecase.KoiKoiInteractorIF {
+			return usecase.NewKoiKoiInteractor(domain.NewDefaultKoiKoi(), new(presenter.KoiKoiWebPresenter))
+		},
+		func(data []byte) (usecase.KoiKoiInteractorIF, error) {
+			return usecase.RestoreKoiKoiInteractor(data, new(presenter.KoiKoiWebPresenter))
+		},
+		controller.NewKoiKoiWebControllerWithProvider)
 }
