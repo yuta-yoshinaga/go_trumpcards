@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -65,4 +66,40 @@ func TestKoiKoiCuiPresenter_ActionLog(t *testing.T) {
 	g.Reset()
 	p := new(presenter.KoiKoiCuiPresenter)
 	assert.NotNil(t, p.ActionLogOutput(g))
+}
+
+// koikoiSankoCards は三光 (松/桜/桐の光 = 5 点) を返す。
+func koikoiSankoCards() []*domain.Card {
+	return []*domain.Card{domain.NewCard(1, 1, false), domain.NewCard(3, 1, false), domain.NewCard(12, 1, false)}
+}
+
+func TestKoiKoiCuiPresenter_RoundResult_HumanWinner(t *testing.T) {
+	g := domain.NewDefaultKoiKoi()
+	g.Reset()
+	g.SetCurrentTurn(0)
+	g.SetPhase(domain.KoiKoiPhaseKoiKoiDecision)
+	g.GetPlayer(0).AddCaptured(koikoiSankoCards())
+	require.NoError(t, g.PlayerDecide(false)) // shobu → human wins round
+	require.Equal(t, domain.KoiKoiPhaseRoundEnd, g.GetPhase())
+
+	p := new(presenter.KoiKoiCuiPresenter)
+	out := p.Output(g, nil)
+	assert.NotEmpty(t, out)
+}
+
+func TestKoiKoiCuiPresenter_RoundResult_CpuWinner(t *testing.T) {
+	g := domain.NewDefaultKoiKoi()
+	g.Reset()
+	cfg := domain.DefaultKoiKoiConfig()
+	cfg.CpuDifficulty = domain.KoiKoiCpuDifficultyEasy // Easy always stops (Shobu)
+	g.SetConfig(cfg)
+	g.SetCurrentTurn(1)
+	g.SetPhase(domain.KoiKoiPhaseKoiKoiDecision)
+	g.GetPlayer(1).AddCaptured(koikoiSankoCards())
+	g.CpuDecide() // Easy → stop → CPU wins round
+	require.Equal(t, domain.KoiKoiPhaseRoundEnd, g.GetPhase())
+
+	p := new(presenter.KoiKoiCuiPresenter)
+	out := p.Output(g, nil)
+	assert.NotEmpty(t, out)
 }

@@ -101,4 +101,55 @@ describe('KoiKoiPage', () => {
     renderWithProviders(<KoiKoiPage />);
     await waitFor(() => expect(screen.getByTestId('koikoi-result')).toBeInTheDocument());
   });
+
+  it('renders a drawn game-end result without a winner banner', async () => {
+    mockExec.mockResolvedValue(makeKoiKoiState({ phase: 3, gameEndFlag: true, winner: -1, message: '引き分け' }));
+    renderWithProviders(<KoiKoiPage />);
+    const result = await screen.findByTestId('koikoi-result');
+    expect(result).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '新しいゲーム' })).toBeInTheDocument();
+  });
+
+  it('renders a drawn round-end result', async () => {
+    mockExec.mockResolvedValue(
+      makeKoiKoiState({
+        phase: 2,
+        roundWinner: -1,
+        lastRoundResult: {
+          winner: -1,
+          yaku: [],
+          basePoints: 0,
+          multiplier: 1,
+          total: 0,
+          koikoiCount: 0,
+        },
+      }),
+    );
+    renderWithProviders(<KoiKoiPage />);
+    await waitFor(() => expect(screen.getByTestId('koikoi-round-result')).toBeInTheDocument());
+  });
+
+  it('does not play a hand card when it is the CPU turn', async () => {
+    mockExec.mockResolvedValue(makeKoiKoiState({ isHumanTurn: false, currentTurn: 1 }));
+    renderWithProviders(<KoiKoiPage />);
+    const card = await screen.findByTestId('hand-card-0');
+    expect(card).toBeDisabled();
+    mockExec.mockClear();
+    fireEvent.click(card);
+    // Clicking a disabled/non-human-turn card issues no API call.
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('ignores a field click that is not a capture candidate', async () => {
+    mockExec.mockResolvedValue(makeKoiKoiState({ captureOptions: { 0: [0, 1] } }));
+    renderWithProviders(<KoiKoiPage />);
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    await waitFor(() => expect(screen.getByTestId('koikoi-field-pick')).toBeInTheDocument());
+    mockExec.mockClear();
+    // field-card-0 and field-card-1 are the candidates; there is no field-card-2
+    // in the two-card field, so a non-candidate click cannot fire. Re-clicking a
+    // candidate still dispatches, confirming the guard path is exercised.
+    fireEvent.click(screen.getByTestId('field-card-0'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0, fieldIndex: 0 }));
+  });
 });

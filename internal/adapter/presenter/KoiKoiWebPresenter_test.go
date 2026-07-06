@@ -110,3 +110,40 @@ func TestKoiKoiWebPresenter_ActionLog(t *testing.T) {
 	p := new(presenter.KoiKoiWebPresenter)
 	assert.NotEmpty(t, p.ActionLogOutput(g))
 }
+
+// TestKoiKoiWebPresenter_RoundResult は shobu で確定した勝者ラウンドが lastRoundResult
+// として出力されることを検証する (buildBase の LastRoundResult ブランチ)。
+func TestKoiKoiWebPresenter_RoundResult(t *testing.T) {
+	g := domain.NewDefaultKoiKoi()
+	g.Reset()
+	g.SetCurrentTurn(0)
+	g.SetPhase(domain.KoiKoiPhaseKoiKoiDecision)
+	// 三光 (松/桜/桐の光 = 5 点)。
+	g.GetPlayer(0).AddCaptured([]*domain.Card{
+		domain.NewCard(1, 1, false), domain.NewCard(3, 1, false), domain.NewCard(12, 1, false),
+	})
+	require.NoError(t, g.PlayerDecide(false)) // shobu → RoundEnd
+
+	p := new(presenter.KoiKoiWebPresenter)
+	out := p.Output(g, nil)
+	var decoded map[string]any
+	require.NoError(t, json.Unmarshal([]byte(out), &decoded))
+	assert.Contains(t, decoded, "lastRoundResult")
+	assert.NotNil(t, decoded["lastRoundResult"])
+}
+
+// TestKoiKoiWebPresenter_DecisionPhase は決断フェーズで pendingYaku が出力に含まれることを
+// 検証する。
+func TestKoiKoiWebPresenter_DecisionPhase(t *testing.T) {
+	g := domain.NewDefaultKoiKoi()
+	g.Reset()
+	g.SetCurrentTurn(0)
+	g.SetPhase(domain.KoiKoiPhaseKoiKoiDecision)
+
+	p := new(presenter.KoiKoiWebPresenter)
+	out := p.Output(g, nil)
+	var decoded map[string]any
+	require.NoError(t, json.Unmarshal([]byte(out), &decoded))
+	assert.Contains(t, decoded, "pendingYaku")
+	assert.Equal(t, float64(domain.KoiKoiPhaseKoiKoiDecision), decoded["phase"])
+}

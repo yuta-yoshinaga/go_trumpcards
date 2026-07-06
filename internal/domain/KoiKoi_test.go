@@ -4,6 +4,7 @@ package domain_test
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -348,6 +349,217 @@ func TestKoiKoiJSON_Invalid(t *testing.T) {
 	assert.Error(t, json.Unmarshal([]byte(`{"pl":[{"gp":{}},{"gp":{}}],"cf":{"cd":0,"ts":15},"ph":9,"ct":0,"rw":-1,"wn":-1}`), &g))
 	// out-of-range card in field
 	assert.Error(t, json.Unmarshal([]byte(`{"pl":[{"gp":{}},{"gp":{}}],"cf":{"cd":0,"ts":15},"ph":0,"ct":0,"rw":-1,"wn":-1,"fd":[{"d":99,"v":1}]}`), &g))
+}
+
+// koikoiSanko は三光 (松/桜/桐の光 3 枚 = 5 点) を返すヘルパー。
+func koikoiSanko() []*domain.Card {
+	return []*domain.Card{koikoiCard(1, 1), koikoiCard(3, 1), koikoiCard(12, 1)}
+}
+
+func TestKoiKoiDecide_KoiKoiContinues(t *testing.T) {
+	g := newTestKoiKoi(t, domain.KoiKoiCpuDifficultyNormal)
+	g.SetCurrentTurn(0)
+	g.SetPhase(domain.KoiKoiPhaseKoiKoiDecision)
+	require.NoError(t, g.PlayerDecide(true))
+	assert.Equal(t, 1, g.GetKoikoiCount())
+	assert.True(t, g.GetPlayer(0).GetCalledKoiKoi())
+	assert.Equal(t, domain.KoiKoiPhasePlay, g.GetPhase())
+}
+
+func TestKoiKoiDecide_StopWinsRound(t *testing.T) {
+	g := newTestKoiKoi(t, domain.KoiKoiCpuDifficultyNormal)
+	g.SetCurrentTurn(0)
+	g.SetPhase(domain.KoiKoiPhaseKoiKoiDecision)
+	g.GetPlayer(0).AddCaptured(koikoiSanko())
+	require.NoError(t, g.PlayerDecide(false))
+	assert.Equal(t, domain.KoiKoiPhaseRoundEnd, g.GetPhase())
+	assert.Equal(t, 0, g.GetRoundWinner())
+	res := g.GetLastRoundResult()
+	require.NotNil(t, res)
+	assert.Equal(t, 5, res.BasePoints)
+	assert.Equal(t, 1, res.Multiplier)
+	assert.Equal(t, 5, res.Total)
+	assert.Equal(t, 5, g.GetPlayer(0).GetScore())
+}
+
+func TestKoiKoiEndRound_MultiplierAfterKoiKoi(t *testing.T) {
+	g := newTestKoiKoi(t, domain.KoiKoiCpuDifficultyNormal)
+	g.SetCurrentTurn(0)
+	g.SetPhase(domain.KoiKoiPhaseKoiKoiDecision)
+	require.NoError(t, g.PlayerDecide(true)) // koikoiCount=1, back to Play
+	g.SetCurrentTurn(0)
+	g.SetPhase(domain.KoiKoiPhaseKoiKoiDecision)
+	g.GetPlayer(0).AddCaptured(koikoiSanko())
+	require.NoError(t, g.PlayerDecide(false))
+	res := g.GetLastRoundResult()
+	require.NotNil(t, res)
+	assert.Equal(t, 2, res.Multiplier)
+	assert.Equal(t, 10, res.Total)
+}
+
+func TestKoiKoiEndRound_FinishesGameOnTarget(t *testing.T) {
+	g := domain.NewDefaultKoiKoi()
+	cfg := domain.DefaultKoiKoiConfig()
+	cfg.TargetScore = 1
+	g.SetConfig(cfg)
+	g.Reset()
+	g.SetCurrentTurn(0)
+	g.SetPhase(domain.KoiKoiPhaseKoiKoiDecision)
+	g.GetPlayer(0).AddCaptured(koikoiSanko())
+	require.NoError(t, g.PlayerDecide(false))
+	assert.True(t, g.GetGameEndFlag())
+	assert.Equal(t, domain.KoiKoiPhaseGameEnd, g.GetPhase())
+	assert.Equal(t, 0, g.GetWinner())
+	assert.False(t, g.IsHumanTurn()) // game over → never a human turn
+}
+
+func TestKoiKoiNextRound_Advances(t *testing.T) {
+	g := newTestKoiKoi(t, domain.KoiKoiCpuDifficultyNormal)
+	g.SetCurrentTurn(0)
+	g.SetPhase(domain.KoiKoiPhaseKoiKoiDecision)
+	g.GetPlayer(0).AddCaptured(koikoiSanko())
+	require.NoError(t, g.PlayerDecide(false))
+	require.Equal(t, domain.KoiKoiPhaseRoundEnd, g.GetPhase())
+	g.NextRound()
+	assert.Equal(t, 2, g.GetRoundNumber())
+	assert.Equal(t, domain.KoiKoiPhasePlay, g.GetPhase())
+}
+
+func TestKoiKoiCpuPlay_TwoMatchFieldChoice(t *testing.T) {
+	g := newTestKoiKoi(t, domain.KoiKoiCpuDifficultyNormal)
+	g.SetCurrentTurn(1) // CPU
+	cpu := g.GetPlayer(1)
+	cpu.Reset()
+	cpu.AddCard(koikoiCard(3, 1)) // 桜 光 (month 3)
+	g.SetFieldCards([]*domain.Card{koikoiCard(3, 2), koikoiCard(3, 3), koikoiCard(7, 4)})
+	g.CpuPlay()
+	assert.GreaterOrEqual(t, cpu.CapturedCount(), 2)
+}
+
+func TestKoiKoiCpuPlay_ThreeMatchSweep(t *testing.T) {
+	g := newTestKoiKoi(t, domain.KoiKoiCpuDifficultyHard)
+	g.SetCurrentTurn(1)
+	cpu := g.GetPlayer(1)
+	cpu.Reset()
+	cpu.AddCard(koikoiCard(5, 1))
+	g.SetFieldCards([]*domain.Card{koikoiCard(5, 2), koikoiCard(5, 3), koikoiCard(5, 4)})
+	g.CpuPlay()
+	assert.GreaterOrEqual(t, cpu.CapturedCount(), 4)
+}
+
+func TestKoiKoiCpuGuards(t *testing.T) {
+	g := newTestKoiKoi(t, domain.KoiKoiCpuDifficultyNormal)
+	g.SetCurrentTurn(0) // human turn
+	g.CpuPlay()         // not CPU → no-op
+	g.SetPhase(domain.KoiKoiPhaseKoiKoiDecision)
+	g.CpuDecide() // human → no-op
+	g.SetPhase(domain.KoiKoiPhaseRoundEnd)
+	g.CpuPlay() // wrong phase → no-op
+	assert.Equal(t, domain.KoiKoiPhaseRoundEnd, g.GetPhase())
+}
+
+func TestKoiKoiCaptureOptions(t *testing.T) {
+	g := newTestKoiKoi(t, domain.KoiKoiCpuDifficultyNormal)
+	g.SetCurrentTurn(0)
+	human := g.GetPlayer(0)
+	human.Reset()
+	human.AddCard(koikoiCard(3, 1))  // matches field month 3
+	human.AddCard(koikoiCard(12, 1)) // no match
+	g.SetFieldCards([]*domain.Card{koikoiCard(3, 2), koikoiCard(3, 3)})
+	opts := g.GetCaptureOptions(0)
+	assert.Contains(t, opts, 0)
+	assert.NotContains(t, opts, 1)
+	// wrong phase → empty
+	g.SetPhase(domain.KoiKoiPhaseRoundEnd)
+	assert.Empty(t, g.GetCaptureOptions(0))
+	// out-of-range player
+	g.SetPhase(domain.KoiKoiPhasePlay)
+	assert.Empty(t, g.GetCaptureOptions(99))
+}
+
+func TestKoiKoiPlayableIndices(t *testing.T) {
+	g := newTestKoiKoi(t, domain.KoiKoiCpuDifficultyNormal)
+	g.SetCurrentTurn(0)
+	assert.Len(t, g.GetPlayableIndices(0), domain.KoiKoiHandSize)
+	assert.Nil(t, g.GetPlayableIndices(99))
+	g.SetPhase(domain.KoiKoiPhaseRoundEnd)
+	assert.Nil(t, g.GetPlayableIndices(0))
+}
+
+func TestKoiKoiAccessors(t *testing.T) {
+	g := newTestKoiKoi(t, domain.KoiKoiCpuDifficultyNormal)
+	assert.Nil(t, g.GetPlayer(-1))
+	assert.Nil(t, g.GetPlayer(99))
+	y, pts := g.GetYaku(99)
+	assert.Nil(t, y)
+	assert.Equal(t, 0, pts)
+	assert.Equal(t, domain.KoiKoiCpuDifficultyNormal, g.GetConfig().CpuDifficulty)
+	assert.NotNil(t, g.GetActionLog())
+	assert.Equal(t, -1, g.GetWinner())
+	assert.Equal(t, -1, g.GetRoundWinner())
+	assert.Equal(t, 0, g.GetKoikoiCount())
+}
+
+func TestKoiKoiCardAccessors(t *testing.T) {
+	crane := koikoiCard(1, 1)
+	assert.NotEmpty(t, domain.KoiKoiCardGlyph(crane))
+	assert.Equal(t, domain.KoiKoiBright, domain.KoiKoiCardCategory(crane))
+	assert.Equal(t, domain.KoiKoiRibbonBlue, domain.KoiKoiCardRibbonColor(koikoiCard(6, 2)))
+	assert.NotEmpty(t, domain.KoiKoiCardLabel(crane))
+	// nil-safe fallbacks
+	assert.Equal(t, domain.KoiKoiChaff, domain.KoiKoiCardCategory(nil))
+	assert.Equal(t, "??", domain.KoiKoiCardLabel(nil))
+}
+
+func TestKoiKoiIsHumanTurn(t *testing.T) {
+	g := newTestKoiKoi(t, domain.KoiKoiCpuDifficultyNormal)
+	g.SetCurrentTurn(0)
+	assert.True(t, g.IsHumanTurn())
+	g.SetCurrentTurn(1)
+	assert.False(t, g.IsHumanTurn())
+	g.SetCurrentTurn(0)
+	g.SetPhase(domain.KoiKoiPhaseRoundEnd)
+	assert.False(t, g.IsHumanTurn())
+}
+
+func TestKoiKoiJSON_MoreInvalid(t *testing.T) {
+	valid2 := `"pl":[{"gp":{}},{"gp":{}}]`
+	base := func(tail string) string {
+		return `{` + valid2 + `,"cf":{"cd":0,"ts":15},"ph":0,"ct":0,"rw":-1,"wn":-1` + tail + `}`
+	}
+	cases := []string{
+		// invalid config (bad difficulty)
+		`{` + valid2 + `,"cf":{"cd":99,"ts":15},"ph":0,"ct":0,"rw":-1,"wn":-1}`,
+		// nil player
+		`{"pl":[null,null],"cf":{"cd":0,"ts":15},"ph":0,"ct":0,"rw":-1,"wn":-1}`,
+		// current turn out of range
+		`{` + valid2 + `,"cf":{"cd":0,"ts":15},"ph":0,"ct":9,"rw":-1,"wn":-1}`,
+		// round winner out of range
+		`{` + valid2 + `,"cf":{"cd":0,"ts":15},"ph":0,"ct":0,"rw":9,"wn":-1}`,
+		// winner out of range
+		`{` + valid2 + `,"cf":{"cd":0,"ts":15},"ph":0,"ct":0,"rw":-1,"wn":9}`,
+		// bad card in draw pile
+		base(`,"dp":[{"d":0,"v":0}]`),
+		// nil card in field
+		base(`,"fd":[null]`),
+	}
+	for i, c := range cases {
+		var g domain.KoiKoi
+		assert.Errorf(t, json.Unmarshal([]byte(c), &g), "case %d should error", i)
+	}
+
+	// oversized slice (pendingYaku > koikoiMaxSliceLen)
+	var sb strings.Builder
+	sb.WriteString(`{` + valid2 + `,"cf":{"cd":0,"ts":15},"ph":0,"ct":0,"rw":-1,"wn":-1,"py":[`)
+	for i := 0; i < 1001; i++ {
+		if i > 0 {
+			sb.WriteByte(',')
+		}
+		sb.WriteString(`{"key":"x","points":0}`)
+	}
+	sb.WriteString(`]}`)
+	var g domain.KoiKoi
+	assert.Error(t, json.Unmarshal([]byte(sb.String()), &g))
 }
 
 func TestKoiKoiPlayerJSON(t *testing.T) {
