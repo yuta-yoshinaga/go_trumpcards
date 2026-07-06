@@ -1,0 +1,74 @@
+{
+  "title": "こいこい",
+  "phase": {
+    "play": "プレイ",
+    "decision": "こいこい決断",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard",
+    "targetScore": "目標点"
+  },
+  "round": "ラウンド {{n}}",
+  "deck": "山札: {{count}}",
+  "koikoiCount": "こいこい: {{count}}回",
+  "field": "場",
+  "fieldEmpty": "（なし）",
+  "pickField": "捕獲する場札を選んでください（2枚が一致しています）。",
+  "you": "あなた",
+  "cpu": "CPU",
+  "captured": "捕獲: {{count}}",
+  "score": "得点: {{score}}",
+  "turnYours": "あなたの手番です — 手札を1枚選んで場札を捕獲します。",
+  "turnCpu": "CPU がプレイ中です…",
+  "decision": {
+    "title": "役が成立しました！ こいこい？ それとも勝負？",
+    "points": "{{points}}文",
+    "koikoi": "こいこい",
+    "shobu": "勝負"
+  },
+  "roundResult": {
+    "title": "ラウンド結果",
+    "winner": "勝者: {{name}}",
+    "draw": "引き分け",
+    "total": "{{base}} × {{mult}} = {{total}}文"
+  },
+  "result": {
+    "title": "最終得点",
+    "winner": "勝者: {{name}}",
+    "score": "{{name}}: {{score}}文"
+  },
+  "nextRound": "次のラウンド",
+  "newGame": "新しいゲーム",
+  "yaku": {
+    "goko": "五光",
+    "shiko": "四光",
+    "ameshiko": "雨四光",
+    "sanko": "三光",
+    "inoshikacho": "猪鹿蝶",
+    "akatan": "赤短",
+    "aotan": "青短",
+    "tanzaku": "短冊",
+    "tane": "タネ",
+    "kasu": "カス",
+    "hanami": "花見酒",
+    "tsukimi": "月見酒"
+  },
+  "hint": {
+    "koikoi_capture": "価値の高い場札を捕獲する",
+    "koikoi_play": "手札から札を出す",
+    "koikoi_continue": "こいこいして役を伸ばす",
+    "koikoi_stop": "勝負して得点を確定する"
+  },
+  "tutorial": {
+    "field": "場の札です。出した手札と同じ月（花）の場札を捕獲します。2枚が一致する場合はどちらを取るか選びます。",
+    "hand": "あなたの手札です。1枚を選ぶと同じ月の場札を捕獲し、続けて山札を1枚めくります。",
+    "info": "こいこいは花札48枚を使う2人用のキャプチャゲームです。捕獲した札で「役」を作り、役が成立したら「こいこい（続行）」か「勝負（確定）」を選びます。こいこいすると得点は2倍になりますが、相手に先に役を作られると失点します。目標点に達したプレイヤーが勝ちです。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}

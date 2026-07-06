@@ -1070,4 +1070,9 @@ func init() {
 			return usecase.NewRookInteractor(domain.NewDefaultRook(), new(presenter.RookWebPresenter))
 		},
 		controller.NewRookWebController)
+	BindWebControllerFor("koikoi",
+		func() usecase.KoiKoiInteractorIF {
+			return usecase.NewKoiKoiInteractor(domain.NewDefaultKoiKoi(), new(presenter.KoiKoiWebPresenter))
+		},
+		controller.NewKoiKoiWebController)
 }

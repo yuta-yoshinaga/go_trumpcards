@@ -72,6 +72,7 @@ import type {
   KlaverjasResponse,
   KlondikeResponse,
   KnockoutWhistResponse,
+  KoiKoiResponse,
   LetItRideResponse,
   LooResponse,
   MacauResponse,
@@ -242,6 +243,7 @@ import { getKingHint } from '../utils/hints/kingHint';
 import { getKlaverjasHint } from '../utils/hints/klaverjasHint';
 import { getKlondikeHint } from '../utils/hints/klondikeHint';
 import { getKnockoutWhistHint } from '../utils/hints/knockoutWhistHint';
+import { getKoiKoiHint } from '../utils/hints/koikoiHint';
 import { getLetitrideHint } from '../utils/hints/letitrideHint';
 import { getLooHint } from '../utils/hints/looHint';
 import { getMacauHint } from '../utils/hints/macauHint';
@@ -503,6 +505,7 @@ const hintFactories = {
   cinch: (s) => getCinchHint(s as CinchResponse),
   loo: (s) => getLooHint(s as LooResponse),
   basra: (s) => getBasraHint(s as BasraResponse),
+  koikoi: (s) => getKoiKoiHint(s as KoiKoiResponse),
   tablanet: (s) => getTablanetHint(s as TablanetResponse),
   trenteetquarante: (s) => getTrenteEtQuaranteHint(s as TrenteEtQuaranteResponse),
   sedma: (s) => getSedmaHint(s as SedmaResponse),

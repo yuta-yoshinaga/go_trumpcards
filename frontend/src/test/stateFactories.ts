@@ -17,6 +17,7 @@ import type {
   KingResponse,
   KlaverjasResponse,
   KnockoutWhistResponse,
+  KoiKoiResponse,
   LooResponse,
   ManilleResponse,
   MariasResponse,
@@ -1371,6 +1372,83 @@ const baseBasraState: BasraResponse = {
  */
 export function makeBasraState(overrides?: Partial<BasraResponse>): BasraResponse {
   return { ...baseBasraState, ...overrides };
+}
+
+/**
+ * A sample hanafuda card face descriptor (renders procedurally via CardFace).
+ * The `deck` flag — not `design` — drives the procedural render path, so `design`
+ * is a placeholder valid CardDesign.
+ */
+const hanafudaCard = (glyph: string, label: string, color: string) => ({
+  design: 'SPADE' as const,
+  value: 0,
+  glyph,
+  label,
+  color,
+  deck: 'hanafuda',
+});
+
+/** Base Koi-Koi state used as the default for {@link makeKoiKoiState}. Defaults to a human Play turn. */
+const baseKoiKoiState: KoiKoiResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 8,
+      cards: [
+        hanafudaCard('🌸', '3月 タネ', 'purple'),
+        hanafudaCard('🎋', '7月 カス', 'black'),
+        hanafudaCard('🐦', '2月 タネ', 'purple'),
+      ],
+      captured: [],
+      capturedCount: 0,
+      score: 0,
+      calledKoiKoi: false,
+      yaku: [],
+      yakuPoints: 0,
+    },
+    {
+      id: 1,
+      isHuman: false,
+      cardCount: 8,
+      cards: [],
+      captured: [],
+      capturedCount: 0,
+      score: 0,
+      calledKoiKoi: false,
+      yaku: [],
+      yakuPoints: 0,
+    },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  currentTurn: 0,
+  fieldCards: [hanafudaCard('🌸', '3月 カス', 'black'), hanafudaCard('🌕', '8月 光', 'gold')],
+  remainingDeck: 24,
+  koikoiCount: 0,
+  playableIndices: [0, 1, 2],
+  captureOptions: { 0: [0] },
+  pendingYaku: [],
+  pendingPoints: 0,
+  roundWinner: -1,
+  winner: -1,
+  gameEndFlag: false,
+  isHumanTurn: true,
+  lastRoundResult: null,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetScore: 50 },
+};
+
+/**
+ * Creates a {@link KoiKoiResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial KoiKoiResponse fields to override.
+ * @returns A complete KoiKoiResponse suitable for use in tests.
+ */
+export function makeKoiKoiState(overrides?: Partial<KoiKoiResponse>): KoiKoiResponse {
+  return { ...baseKoiKoiState, ...overrides };
 }
 
 /** Base Tablanet state used as the default for {@link makeTablanetState}. Defaults to a human Play turn. */
