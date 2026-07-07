@@ -15,6 +15,7 @@ import type {
   GoStopBreakdown,
   GoStopResponse,
   GutsResponse,
+  HachiHachiResponse,
   HeartsResponse,
   KingResponse,
   KlaverjasResponse,
@@ -1451,6 +1452,78 @@ const baseKoiKoiState: KoiKoiResponse = {
  */
 export function makeKoiKoiState(overrides?: Partial<KoiKoiResponse>): KoiKoiResponse {
   return { ...baseKoiKoiState, ...overrides };
+}
+
+/** Base Hachi-Hachi state used as the default for {@link makeHachiHachiState}. Defaults to a human Play turn. */
+const baseHachiHachiState: HachiHachiResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 7,
+      cards: [
+        hanafudaCard('🌸', '3月 タネ', 'purple'),
+        hanafudaCard('🎋', '7月 カス', 'black'),
+        hanafudaCard('🐦', '2月 タネ', 'purple'),
+      ],
+      captured: [],
+      capturedCount: 0,
+      score: 0,
+      roundDelta: 0,
+      rawScore: 0,
+      yaku: [],
+    },
+    {
+      id: 1,
+      isHuman: false,
+      cardCount: 7,
+      cards: [],
+      captured: [],
+      capturedCount: 0,
+      score: 0,
+      roundDelta: 0,
+      rawScore: 0,
+      yaku: [],
+    },
+    {
+      id: 2,
+      isHuman: false,
+      cardCount: 7,
+      cards: [],
+      captured: [],
+      capturedCount: 0,
+      score: 0,
+      roundDelta: 0,
+      rawScore: 0,
+      yaku: [],
+    },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  currentTurn: 0,
+  fieldCards: [hanafudaCard('🌸', '3月 カス', 'black'), hanafudaCard('🌕', '8月 光', 'gold')],
+  remainingDeck: 21,
+  playableIndices: [0, 1, 2],
+  captureOptions: { 0: [0] },
+  winner: -1,
+  result: 0,
+  gameEndFlag: false,
+  isHumanTurn: true,
+  lastRoundResult: null,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetRounds: 3 },
+};
+
+/**
+ * Creates a {@link HachiHachiResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial HachiHachiResponse fields to override.
+ * @returns A complete HachiHachiResponse suitable for use in tests.
+ */
+export function makeHachiHachiState(overrides?: Partial<HachiHachiResponse>): HachiHachiResponse {
+  return { ...baseHachiHachiState, ...overrides };
 }
 
 /** Base Go-Stop scoring breakdown with everything zeroed. */

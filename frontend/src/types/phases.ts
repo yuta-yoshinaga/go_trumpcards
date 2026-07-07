@@ -443,6 +443,13 @@ export const KoiKoiPhase = {
   GAME_END: 3,
 } as const;
 
+/** Hachi-Hachi (八八) phase constants (sync: internal/domain/HachiHachi.go). */
+export const HachiHachiPhase = {
+  PLAY: 0,
+  ROUND_END: 1,
+  GAME_END: 2,
+} as const;
+
 /** Go-Stop (Godori / ゴーストップ) phase constants (sync: internal/domain/GoStop.go). */
 export const GoStopPhase = {
   PLAY: 0,

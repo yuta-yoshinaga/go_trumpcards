@@ -1080,4 +1080,9 @@ func init() {
 			return usecase.NewGoStopInteractor(domain.NewDefaultGoStop(), new(presenter.GoStopWebPresenter))
 		},
 		controller.NewGoStopWebController)
+	BindWebControllerFor("hachihachi",
+		func() usecase.HachiHachiInteractorIF {
+			return usecase.NewHachiHachiInteractor(domain.NewDefaultHachiHachi(), new(presenter.HachiHachiWebPresenter))
+		},
+		controller.NewHachiHachiWebController)
 }

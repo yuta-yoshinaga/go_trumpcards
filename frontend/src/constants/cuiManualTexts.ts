@@ -89,6 +89,7 @@ import golf from '../../../docs/manual/cui/golf.md?raw';
 import gongzhu from '../../../docs/manual/cui/gongzhu.md?raw';
 import gostop from '../../../docs/manual/cui/gostop.md?raw';
 import guts from '../../../docs/manual/cui/guts.md?raw';
+import hachihachi from '../../../docs/manual/cui/hachihachi.md?raw';
 import handandfoot from '../../../docs/manual/cui/handandfoot.md?raw';
 import hearts from '../../../docs/manual/cui/hearts.md?raw';
 import highcardflush from '../../../docs/manual/cui/highcardflush.md?raw';
@@ -311,6 +312,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/cinch': cinch,
   '/loo': loo,
   '/basra': basra,
+  '/hachihachi': hachihachi,
   '/koikoi': koikoi,
   '/gostop': gostop,
   '/tablanet': tablanet,

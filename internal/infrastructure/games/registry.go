@@ -718,6 +718,9 @@ var registry = []*Game{
 	// Go-Stop (Godori) is a Korean hanafuda capture game (same 48-card Hwatu deck
 	// as Koi-Koi) with Gwang/Godori scoring + Go/Stop; procedural render (ADR-0033).
 	{Name: "gostop", Category: CategoryExtra},
+	// Hachi-Hachi is the classic 3-player Japanese hanafuda game (88-point
+	// settlement); reuses the hanafuda deck + procedural render path (ADR-0033).
+	{Name: "hachihachi", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.
