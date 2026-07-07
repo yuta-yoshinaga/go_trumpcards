@@ -575,6 +575,9 @@ func (g *Koenigrufen) playerHoldsKing(playerIdx, suit int) bool {
 	p := g.players[playerIdx]
 	for i := 0; i < p.GetCardsSize(); i++ {
 		c := p.GetCard(i)
+		if c == nil {
+			continue
+		}
 		if !koenigrufenIsTrumpLike(c) && c.GetDesign() == suit && c.GetValue() == KoenigrufenKingValue {
 			return true
 		}
@@ -1132,6 +1135,9 @@ func (g *Koenigrufen) suitOf(player *KoenigrufenPlayer, design int) []int {
 	var out []int
 	for i := 0; i < player.GetCardsSize(); i++ {
 		c := player.GetCard(i)
+		if c == nil {
+			continue
+		}
 		if koenigrufenIsTrumpLike(c) {
 			continue
 		}
@@ -1183,6 +1189,9 @@ func (g *Koenigrufen) trickWinner() int {
 // koenigrufenWinRank トリック勝敗比較用のランクを返す (高いほど強い)。切り札系 = 1000+切り札値
 // (スキュース=1022 で最強)、リードスート = 値、それ以外 = -1。
 func koenigrufenWinRank(c *Card, led int) int {
+	if c == nil {
+		return -1
+	}
 	if koenigrufenIsTrumpLike(c) {
 		return 1000 + koenigrufenTrumpValue(c)
 	}
@@ -1220,6 +1229,9 @@ func (g *Koenigrufen) evalHand(playerIdx int) int {
 	trumps := 0
 	for i := 0; i < p.GetCardsSize(); i++ {
 		c := p.GetCard(i)
+		if c == nil {
+			continue
+		}
 		switch {
 		case koenigrufenIsTrull(c):
 			score += 6
@@ -1250,6 +1262,9 @@ func (g *Koenigrufen) cpuSelectDiscards(playerIdx int) []int {
 		idxs[i] = i
 	}
 	keepValue := func(c *Card) int {
+		if c == nil {
+			return 0
+		}
 		if koenigrufenIsTrull(c) {
 			return 100000
 		}
