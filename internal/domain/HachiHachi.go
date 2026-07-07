@@ -760,7 +760,10 @@ func (g *HachiHachi) chooseCpuPlay(playerIdx int) (int, int) {
 		s := 0
 		if len(matches) > 0 {
 			// 捕獲価値 = 出す札 + 取れる最良の場札の素点。
-			s = hachihachiCardPoints(card) + hachihachiCardPoints(g.state.fieldCards[g.hachihachiBestFieldMatch(matches)])
+			bestMatch := g.hachihachiBestFieldMatch(matches)
+			if bestMatch >= 0 {
+				s = hachihachiCardPoints(card) + hachihachiCardPoints(g.state.fieldCards[bestMatch])
+			}
 			if len(matches) >= 3 {
 				s += 20
 			}
@@ -1111,6 +1114,34 @@ func (g *HachiHachi) UnmarshalJSON(data []byte) error {
 	for _, p := range j.Players {
 		if p == nil {
 			return fmt.Errorf("hachihachi: nil player in state")
+		}
+		if err := hachihachiValidateCards(p.GetCapturedCards()); err != nil {
+			return fmt.Errorf("hachihachi: invalid captured cards: %w", err)
+		}
+		hand := make([]*Card, p.GetCardsSize())
+		for i := 0; i < p.GetCardsSize(); i++ {
+			hand[i] = p.GetCard(i)
+		}
+		if err := hachihachiValidateCards(hand); err != nil {
+			return fmt.Errorf("hachihachi: invalid hand cards: %w", err)
+		}
+	}
+	if j.LastRoundResult != nil {
+		if len(j.LastRoundResult.Scores) > hachihachiMaxSliceLen {
+			return fmt.Errorf("hachihachi: last round result scores exceeds maximum allowed size")
+		}
+		if j.LastRoundResult.Best < -1 || j.LastRoundResult.Best >= len(j.Players) {
+			return fmt.Errorf("hachihachi: last round result best out of range")
+		}
+		for _, s := range j.LastRoundResult.Scores {
+			if s.PlayerIdx < 0 || s.PlayerIdx >= len(j.Players) {
+				return fmt.Errorf("hachihachi: last round result player index out of range")
+			}
+			for _, y := range s.Yaku {
+				if y.Key == "" {
+					return fmt.Errorf("hachihachi: empty yaku key in last round result")
+				}
+			}
 		}
 	}
 	if !hachihachiValidPhase(j.Phase) {
