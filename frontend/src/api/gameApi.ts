@@ -402,7 +402,7 @@ const workerUrl: Record<string, string> = {
   calabresella: WORKER_EXTRA,
   ombre: WORKER_EXTRA,
   ulti: WORKER_EXTRA,
-  scarto: WORKER_EXTRA,
+  scarto: WORKER_SOLO,
   frenchtarot: WORKER_EXTRA,
   koenigrufen: WORKER_EXTRA,
   rook: WORKER_EXTRA,

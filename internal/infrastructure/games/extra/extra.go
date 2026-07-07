@@ -395,12 +395,4 @@ func init() {
 			return usecase.RestoreKoenigrufenInteractor(data, new(presenter.KoenigrufenWebPresenter))
 		},
 		controller.NewKoenigrufenWebControllerWithProvider)
-	games.RegisterKVGame("scarto", games.CategoryExtra,
-		func() usecase.ScartoInteractorIF {
-			return usecase.NewScartoInteractor(domain.NewDefaultScarto(), new(presenter.ScartoWebPresenter))
-		},
-		func(data []byte) (usecase.ScartoInteractorIF, error) {
-			return usecase.RestoreScartoInteractor(data, new(presenter.ScartoWebPresenter))
-		},
-		controller.NewScartoWebControllerWithProvider)
 }
