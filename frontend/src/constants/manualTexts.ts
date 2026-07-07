@@ -88,6 +88,7 @@ import golf from '../../../docs/manual/web/golf.md?raw';
 import gongzhu from '../../../docs/manual/web/gongzhu.md?raw';
 import gostop from '../../../docs/manual/web/gostop.md?raw';
 import guts from '../../../docs/manual/web/guts.md?raw';
+import hachihachi from '../../../docs/manual/web/hachihachi.md?raw';
 import handandfoot from '../../../docs/manual/web/handandfoot.md?raw';
 import hearts from '../../../docs/manual/web/hearts.md?raw';
 import highcardflush from '../../../docs/manual/web/highcardflush.md?raw';
@@ -317,6 +318,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/cinch': cinch,
   '/loo': loo,
   '/basra': basra,
+  '/hachihachi': hachihachi,
   '/koikoi': koikoi,
   '/gostop': gostop,
   '/tablanet': tablanet,

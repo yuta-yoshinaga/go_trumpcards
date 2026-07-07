@@ -3370,6 +3370,17 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"gostop.helpSetDifficulty"},
 			})
 	}},
+	{Name: "hachihachi", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewHachiHachiCuiController(usecase.NewHachiHachiInteractor(
+				domain.NewDefaultHachiHachi(), new(presenter.HachiHachiCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "hachihachi.helpTitle",
+				CommandKeys:       []string{"hachihachi.helpPlay", "hachihachi.helpNextRound"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"hachihachi.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

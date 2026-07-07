@@ -62,6 +62,7 @@ import type {
   GongZhuResponse,
   GoStopResponse,
   GutsResponse,
+  HachiHachiResponse,
   HeartsResponse,
   HighCardFlushResponse,
   HoldemResponse,
@@ -232,6 +233,7 @@ import { getGolfHint } from '../utils/hints/golfHint';
 import { getGongZhuHint } from '../utils/hints/gongzhuHint';
 import { getGoStopHint } from '../utils/hints/gostopHint';
 import { getGutsHint } from '../utils/hints/gutsHint';
+import { getHachiHachiHint } from '../utils/hints/hachihachiHint';
 import { getHeartsHint } from '../utils/hints/heartsHint';
 import { getHighCardFlushHint } from '../utils/hints/highcardflushHint';
 import { getHoldemHint } from '../utils/hints/holdemHint';
@@ -507,6 +509,7 @@ const hintFactories = {
   cinch: (s) => getCinchHint(s as CinchResponse),
   loo: (s) => getLooHint(s as LooResponse),
   basra: (s) => getBasraHint(s as BasraResponse),
+  hachihachi: (s) => getHachiHachiHint(s as HachiHachiResponse),
   koikoi: (s) => getKoiKoiHint(s as KoiKoiResponse),
   gostop: (s) => getGoStopHint(s as GoStopResponse),
   tablanet: (s) => getTablanetHint(s as TablanetResponse),

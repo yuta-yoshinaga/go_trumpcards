@@ -95,6 +95,7 @@ import type {
   GongZhuResponse,
   GoStopResponse,
   GutsResponse,
+  HachiHachiResponse,
   HandAndFootResponse,
   HeartsResponse,
   HighCardFlushResponse,
@@ -402,6 +403,7 @@ const workerUrl: Record<string, string> = {
   cinch: WORKER_EXTRA,
   loo: WORKER_EXTRA,
   basra: WORKER_EXTRA,
+  hachihachi: WORKER_EXTRA,
   koikoi: WORKER_EXTRA,
   gostop: WORKER_EXTRA,
   tablanet: WORKER_EXTRA,
@@ -2634,6 +2636,43 @@ export const basraApi = {
       command,
       cardIndex: opts?.cardIndex,
       tableIndices: opts?.tableIndices,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Hachi-Hachi (八八) game settings. */
+export interface HachiHachiConfigInput {
+  cpuDifficulty?: number;
+  /** Number of rounds (deals) played before the match is settled. */
+  targetRounds?: number;
+}
+
+/** Commands accepted by the Hachi-Hachi /hachihachi/exec endpoint. */
+export type HachiHachiCommand = 'reset' | 'play' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Hachi-Hachi (八八) /hachihachi/exec endpoint.
+ *
+ * Hachi-Hachi is a 3-player hanafuda capture game with card-point scoring.
+ *   - `play` → `{ cardIndex, fieldIndex? }` (fieldIndex disambiguates a 2-way
+ *     field match; omit when there is at most one match)
+ *   - `nextround` → deal the next round
+ *   - `reset` → `{ config }`
+ *   - `hint` / `log` carry no extra fields.
+ */
+export const hachihachiApi = {
+  exec: (
+    command: HachiHachiCommand,
+    opts?: {
+      cardIndex?: number;
+      fieldIndex?: number;
+      config?: HachiHachiConfigInput;
+    },
+  ) =>
+    gameExec<HachiHachiResponse>('hachihachi', {
+      command,
+      cardIndex: opts?.cardIndex,
+      fieldIndex: opts?.fieldIndex,
       config: opts?.config,
     }),
 };
@@ -5136,6 +5175,7 @@ const games = [
   'cinch',
   'loo',
   'basra',
+  'hachihachi',
   'koikoi',
   'gostop',
   'tablanet',

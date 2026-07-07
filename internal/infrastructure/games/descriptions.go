@@ -223,6 +223,7 @@ var gameDescriptions = map[string]string{
 	"rook":                "Rook (ルーク)",
 	"koikoi":              "Koi-Koi (こいこい)",
 	"gostop":              "Go-Stop / Godori (ゴーストップ)",
+	"hachihachi":          "Hachi-Hachi (八八)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

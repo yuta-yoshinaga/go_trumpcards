@@ -371,4 +371,12 @@ func init() {
 			return usecase.RestoreGoStopInteractor(data, new(presenter.GoStopWebPresenter))
 		},
 		controller.NewGoStopWebControllerWithProvider)
+	games.RegisterKVGame("hachihachi", games.CategoryExtra,
+		func() usecase.HachiHachiInteractorIF {
+			return usecase.NewHachiHachiInteractor(domain.NewDefaultHachiHachi(), new(presenter.HachiHachiWebPresenter))
+		},
+		func(data []byte) (usecase.HachiHachiInteractorIF, error) {
+			return usecase.RestoreHachiHachiInteractor(data, new(presenter.HachiHachiWebPresenter))
+		},
+		controller.NewHachiHachiWebControllerWithProvider)
 }
