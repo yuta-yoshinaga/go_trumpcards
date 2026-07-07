@@ -419,4 +419,13 @@ func init() {
 			return usecase.RestoreScartoInteractor(data, new(presenter.ScartoWebPresenter))
 		},
 		controller.NewScartoWebControllerWithProvider)
+	// Cego (54-card Baden tarock, Cego-blind swap) — bucketed in solo (extra full).
+	games.RegisterKVGame("cego", games.CategorySolo,
+		func() usecase.CegoInteractorIF {
+			return usecase.NewCegoInteractor(domain.NewDefaultCego(), new(presenter.CegoWebPresenter))
+		},
+		func(data []byte) (usecase.CegoInteractorIF, error) {
+			return usecase.RestoreCegoInteractor(data, new(presenter.CegoWebPresenter))
+		},
+		controller.NewCegoWebControllerWithProvider)
 }

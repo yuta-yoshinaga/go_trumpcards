@@ -441,6 +441,17 @@ export const KoenigrufenPhase = {
   GAME_END: 6,
 } as const;
 
+/** Cego (チェゴ) phase constants (sync: internal/domain/Cego.go). */
+export const CegoPhase = {
+  BID: 0,
+  CONTRACT: 1,
+  EXCHANGE: 2,
+  PLAY: 3,
+  TRICK_END: 4,
+  ROUND_END: 5,
+  GAME_END: 6,
+} as const;
+
 /** Cinch phase constants (sync: internal/domain/Cinch.go). */
 export const CinchPhase = {
   BID: 0,
