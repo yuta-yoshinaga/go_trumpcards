@@ -24,6 +24,11 @@ describe('parseCegoCommand', () => {
     expect(parseCegoCommand('solo')).toEqual({ args: ['contract', { contract: 'handspiel' }] });
   });
 
+  it('parses the single-letter contract shorthands', () => {
+    expect(parseCegoCommand('ct c')).toEqual({ args: ['contract', { contract: 'cego' }] });
+    expect(parseCegoCommand('contract h')).toEqual({ args: ['contract', { contract: 'handspiel' }] });
+  });
+
   it('rejects an invalid contract argument', () => {
     expect(parseCegoCommand('contract')).toHaveProperty('error');
     expect(parseCegoCommand('ct zzz')).toHaveProperty('error');

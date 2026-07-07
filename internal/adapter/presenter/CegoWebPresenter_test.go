@@ -159,6 +159,56 @@ func TestCegoWebPresenter_ActionLog(t *testing.T) {
 	}
 }
 
+// cegoDriveToGameEnd drives a single terminal deal (TargetDeals=1) where the
+// human declarer (seat 0) captures exactly 53 points (a loss: -30 for the
+// declarer, +10 for each opponent) starting from the supplied cumulative scores,
+// then returns the finished game so the winner message can be asserted.
+func cegoDriveToGameEnd(pre [domain.CegoPlayerCnt]int) *domain.Cego {
+	g := domain.NewDefaultCego()
+	g.Reset()
+	g.SetConfig(domain.CegoConfig{CpuDifficulty: domain.CegoCpuDifficultyNormal, TargetDeals: 1})
+	g.SetRoundNumber(1)
+	g.SetDeclarerIdx(0)
+	g.SetContract(domain.CegoBidPlay)
+	g.SetContractType(domain.CegoContractHandspiel)
+	stash := make([]*domain.Card, 0, 11)
+	for i := 0; i < 10; i++ {
+		stash = append(stash, domain.NewCard(domain.CardDesignSpade, domain.CegoKingValue, false)) // 5 pts each
+	}
+	stash = append(stash, domain.NewCard(domain.CardDesignSpade, 6, false)) // Cavalier -> 3 pts
+	g.SetStash(stash)
+	g.SetStashOwner(0)
+	g.SetPlayerScores(pre)
+	g.SetPhase(domain.CegoPhaseRoundEnd)
+	g.ScoreRound()
+	return g
+}
+
+func TestCegoWebPresenter_WinnerMessages(t *testing.T) {
+	p := &presenter.CegoWebPresenter{}
+	cases := []struct {
+		name string
+		pre  [domain.CegoPlayerCnt]int
+		want string
+	}{
+		{"human win", [domain.CegoPlayerCnt]int{100, 0, 0, 0}, "cego.result.humanWin"},
+		{"cpu win", [domain.CegoPlayerCnt]int{0, 100, 0, 0}, "cego.result.cpuWin"},
+		{"draw", [domain.CegoPlayerCnt]int{40, 0, 0, 0}, "cego.result.draw"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			g := cegoDriveToGameEnd(tc.pre)
+			if !g.GetGameEndFlag() {
+				t.Fatalf("expected game end")
+			}
+			out := p.Output(g, nil)
+			if !strings.Contains(out, tc.want) {
+				t.Errorf("message code %q not found in %s", tc.want, out)
+			}
+		})
+	}
+}
+
 func TestCegoWebPresenter_PhaseMessages(t *testing.T) {
 	p := &presenter.CegoWebPresenter{}
 	for _, phase := range []domain.CegoPhase{

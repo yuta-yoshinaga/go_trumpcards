@@ -81,6 +81,25 @@ func TestCegoCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestCegoCuiPresenter_GameEnd(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.CegoCuiPresenter)
+
+	t.Run("solo winner", func(t *testing.T) {
+		g := cegoDriveToGameEnd([domain.CegoPlayerCnt]int{0, 100, 0, 0}) // CPU 1 wins
+		assert.True(t, g.GetGameEndFlag())
+		assert.NotEmpty(t, p.Output(g, nil))
+	})
+
+	t.Run("draw", func(t *testing.T) {
+		g := cegoDriveToGameEnd([domain.CegoPlayerCnt]int{40, 0, 0, 0}) // tie -> no winner name
+		assert.Equal(t, -1, g.GetWinnerPlayer())
+		assert.NotEmpty(t, p.Output(g, nil))
+	})
+}
+
 func TestCegoCuiPresenter_HintAndLog(t *testing.T) {
 	orig := color.NoColor()
 	color.SetNoColor(true)
