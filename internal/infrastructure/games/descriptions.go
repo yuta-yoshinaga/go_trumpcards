@@ -227,6 +227,7 @@ var gameDescriptions = map[string]string{
 	"frenchtarot":         "French Tarot (フレンチタロット)",
 	"koenigrufen":         "Königrufen / Tarock (ケーニッヒルーフェン)",
 	"scarto":              "Scarto (スカルト)",
+	"cego":                "Cego (チェゴ)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

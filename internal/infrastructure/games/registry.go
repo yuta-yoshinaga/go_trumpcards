@@ -733,6 +733,11 @@ var registry = []*Game{
 	// reached the 1 MB gzip free-tier limit; Category is a size bucket, not a
 	// user-facing taxonomy.
 	{Name: "scarto", Category: CategorySolo},
+	// Cego is a German (Baden) tarock trick-taker on the 54-card tarock deck with
+	// the signature Cego-blind swap; procedural render path (ADR-0033). Bucketed
+	// into solo (not extra, which hit the 1 MB gzip limit); Category is a size
+	// bucket, not a user-facing taxonomy.
+	{Name: "cego", Category: CategorySolo},
 }
 
 // All returns a value-level copy of the registry in canonical order.

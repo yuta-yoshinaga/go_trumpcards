@@ -42,6 +42,7 @@ import casinoholdem from '../../../docs/manual/cui/casinoholdem.md?raw';
 import casinowar from '../../../docs/manual/cui/casinowar.md?raw';
 import cassino from '../../../docs/manual/cui/cassino.md?raw';
 import catchten from '../../../docs/manual/cui/catchten.md?raw';
+import cego from '../../../docs/manual/cui/cego.md?raw';
 import chinchon from '../../../docs/manual/cui/chinchon.md?raw';
 import chinesepoker from '../../../docs/manual/cui/chinesepoker.md?raw';
 import cinch from '../../../docs/manual/cui/cinch.md?raw';
@@ -312,6 +313,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/calabresella': calabresella,
   '/ombre': ombre,
   '/ulti': ulti,
+  '/cego': cego,
   '/frenchtarot': frenchtarot,
   '/koenigrufen': koenigrufen,
   '/cinch': cinch,

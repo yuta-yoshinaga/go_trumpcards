@@ -30,6 +30,7 @@ import type {
   CasinoWarResponse,
   CassinoResponse,
   CatchTenResponse,
+  CegoResponse,
   CinchResponse,
   ClockSolitaireResponse,
   CourtPieceResponse,
@@ -202,6 +203,7 @@ import { getCasinoHoldemHint } from '../utils/hints/casinoholdemHint';
 import { getCasinowarHint } from '../utils/hints/casinowarHint';
 import { getCassinoHint } from '../utils/hints/cassinoHint';
 import { getCatchTenHint } from '../utils/hints/catchtenHint';
+import { getCegoHint } from '../utils/hints/cegoHint';
 import { getCinchHint } from '../utils/hints/cinchHint';
 import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
 import { getCourtPieceHint } from '../utils/hints/courtPieceHint';
@@ -513,6 +515,7 @@ const hintFactories = {
   ombre: (s) => getOmbreHint(s as OmbreResponse),
   ulti: (s) => getUltiHint(s as UltiResponse),
   scarto: (s) => getScartoHint(s as ScartoResponse),
+  cego: (s) => getCegoHint(s as CegoResponse),
   frenchtarot: (s) => getFrenchTarotHint(s as FrenchTarotResponse),
   koenigrufen: (s) => getKoenigrufenHint(s as KoenigrufenResponse),
   cinch: (s) => getCinchHint(s as CinchResponse),

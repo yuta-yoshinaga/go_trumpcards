@@ -5,6 +5,7 @@ import type {
   BouillotteResponse,
   CalabresellaResponse,
   CallBreakResponse,
+  CegoResponse,
   CinchResponse,
   CourtPieceResponse,
   DoppelkopfResponse,
@@ -1381,6 +1382,72 @@ const baseKoenigrufenState: KoenigrufenResponse = {
  */
 export function makeKoenigrufenState(overrides?: Partial<KoenigrufenResponse>): KoenigrufenResponse {
   return { ...baseKoenigrufenState, ...overrides };
+}
+
+/** Base Cego state used as the default for {@link makeCegoState}. Defaults to a human Play turn (declarer, Cego contract). */
+const baseCegoState: CegoResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 11,
+      cards: [
+        { design: 'HEART' as const, value: 8, glyph: '♥', label: 'K', color: 'red', deck: 'tarot' },
+        { design: 'SPADE' as const, value: 5, glyph: '♠', label: 'J', color: 'black', deck: 'tarot' },
+        { design: 'CLOVER' as const, value: 3, glyph: '♣', label: '3', color: 'black', deck: 'tarot' },
+        { design: 'JOKER' as const, value: 21, glyph: '✦', label: '21', color: 'purple', deck: 'tarot' },
+        { design: 'JOKER' as const, value: 0, glyph: '★', label: 'Sküs', color: 'gold', deck: 'tarot' },
+      ],
+      trickCount: 0,
+      cardPoints: 0,
+      score: 0,
+      isDeclarer: true,
+    },
+    { id: 1, isHuman: false, cardCount: 11, cards: [], trickCount: 0, cardPoints: 0, score: 0, isDeclarer: false },
+    { id: 2, isHuman: false, cardCount: 11, cards: [], trickCount: 0, cardPoints: 0, score: 0, isDeclarer: false },
+    { id: 3, isHuman: false, cardCount: 11, cards: [], trickCount: 0, cardPoints: 0, score: 0, isDeclarer: false },
+  ],
+  phase: 3,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  bidPlayerIdx: 0,
+  highestBid: 1,
+  highestBidder: 0,
+  declarerIdx: 0,
+  contract: 1,
+  contractType: 1,
+  blindCount: 10,
+  blind: [],
+  stashOwner: 0,
+  currentTrick: [],
+  playerScores: [0, 0, 0, 0],
+  lastTrickWinner: -1,
+  outcome: 0,
+  result: 0,
+  playableIndices: [0, 1, 2, 3, 4],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  isHumanBidTurn: false,
+  isHumanContract: false,
+  isHumanExchange: false,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetDeals: 5 },
+};
+
+/**
+ * Creates a {@link CegoResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial CegoResponse fields to override.
+ * @returns A complete CegoResponse suitable for use in tests.
+ */
+export function makeCegoState(overrides?: Partial<CegoResponse>): CegoResponse {
+  return { ...baseCegoState, ...overrides };
 }
 
 /** Base Watten state used as the default for {@link makeWattenState}. Defaults to a human Play turn (Schlag = K, critical suit = ♥, human leads). */

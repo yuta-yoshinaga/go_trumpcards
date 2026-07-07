@@ -1,0 +1,81 @@
+{
+  "title": "Cego",
+  "phase": {
+    "bid": "Auction",
+    "contract": "Choose Contract",
+    "exchange": "Cego Exchange",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Deal End",
+    "gameEnd": "Game Over"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetDeals": "Deals per Match",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Deal {{n}}",
+  "trick": "Trick {{n}}",
+  "contract": "Contract: {{contract}}",
+  "contractNone": "-",
+  "contractCego": "Cego",
+  "contractHandspiel": "Handspiel",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "points": "{{points}} pts",
+  "score": "Score: {{score}}",
+  "currentTrick": "Current Trick",
+  "players": "Players",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "declarerBadge": "Declarer",
+  "blind": "Blind (Cego): {{count}} cards (hidden)",
+  "bidPass": "Pass",
+  "bidPlay": "Declare",
+  "bidPhase": "Auction — declare to play, or pass. The first to declare becomes the declarer.",
+  "contractPhase": "Choose your contract. Cego: lay down all but one card and take the blind — a gamble. Handspiel: keep your dealt hand.",
+  "contractCegoDesc": "Cego: keep just 1 card, lay down the other 10, and take the 10-card blind (a gamble).",
+  "contractHandspielDesc": "Handspiel: keep your dealt hand as is.",
+  "exchangePhase": "Cego exchange — pick the 1 card to keep ({{count}}/1 selected). The other 10 are laid down and you take the blind.",
+  "exchangeKeep": "Choose the single card to keep.",
+  "exchangeButton": "Keep ({{count}}/1)",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Deal",
+  "outcomeNone": "-",
+  "outcomeWin": "Made (declarer wins)",
+  "outcomeLoss": "Failed (defenders win)",
+  "result": {
+    "humanWin": "Game over! You win!",
+    "cpuWin": "Game over! Player {{player}} wins!",
+    "draw": "Game over! It's a draw!"
+  },
+  "roundResult": {
+    "title": "Deal Result",
+    "outcome": "Result: {{outcome}}",
+    "declarer": "Declarer: {{name}}",
+    "captured": "Captured: {{points}} pts"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "bid_take": "Strong hand — declare to play",
+    "bid_pass": "Weak hand — pass",
+    "contract_cego": "Gamble on the blind — choose Cego",
+    "contract_handspiel": "Strong hand — choose Handspiel",
+    "keep_best": "Keep your single strongest card",
+    "lead_high": "As the declarer, lead high to seize the initiative",
+    "lead_low": "As a defender, lead low to conserve strength",
+    "follow_win": "You can win this trick — take it",
+    "follow_duck": "Cannot win or not worth it — duck"
+  },
+  "tutorial": {
+    "trickDisplay": "The current trick. You must follow the led suit; if you cannot, you must play a trump (tarock); failing that, any card. The highest trump wins the trick.",
+    "playerHand": "Your hand. Click a legal card to select it. Cego is a 4-player trick-taker on the 54-card tarock deck (four 8-card suits with J/C/Q/K courts, 21 trumps, and the Sküs).",
+    "playButton": "Once a card is selected, play it with this button. In the auction you pass or declare; then choose Cego or Handspiel; if you chose Cego, keep 1 card in the exchange.",
+    "info": "Cego is a 4-player trick-taker on the 54-card Baden tarock deck. Once the auction settles the declarer, they choose Cego (keep just one card, lay down the rest, and take the 10-card blind — a gamble) or Handspiel (keep the dealt hand). The declarer plays 1-vs-3 and wins the deal by capturing more than half of the card-points. The player with the highest cumulative score after the set number of deals wins.",
+    "resetButton": "Use the reset button to start a new game."
+  }
+}

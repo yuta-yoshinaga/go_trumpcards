@@ -3414,6 +3414,17 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"scarto.helpSetDifficulty"},
 			})
 	}},
+	{Name: "cego", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCegoCuiController(usecase.NewCegoInteractor(
+				domain.NewDefaultCego(), new(presenter.CegoCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "cego.helpTitle",
+				CommandKeys:       []string{"cego.helpBid", "cego.helpPass", "cego.helpCego", "cego.helpHandspiel", "cego.helpDiscard", "cego.helpPlay", "cego.helpNext", "cego.helpNextRound"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"cego.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

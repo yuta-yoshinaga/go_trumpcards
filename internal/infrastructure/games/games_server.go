@@ -1100,4 +1100,9 @@ func init() {
 			return usecase.NewScartoInteractor(domain.NewDefaultScarto(), new(presenter.ScartoWebPresenter))
 		},
 		controller.NewScartoWebController)
+	BindWebControllerFor("cego",
+		func() usecase.CegoInteractorIF {
+			return usecase.NewCegoInteractor(domain.NewDefaultCego(), new(presenter.CegoWebPresenter))
+		},
+		controller.NewCegoWebController)
 }

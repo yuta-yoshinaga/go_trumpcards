@@ -1,0 +1,81 @@
+{
+  "title": "チェゴ",
+  "phase": {
+    "bid": "オークション",
+    "contract": "コントラクト選択",
+    "exchange": "場札交換",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ディール終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetDeals": "マッチのディール数",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ディール {{n}}",
+  "trick": "トリック {{n}}",
+  "contract": "契約: {{contract}}",
+  "contractNone": "-",
+  "contractCego": "チェゴ",
+  "contractHandspiel": "ハントシュピール",
+  "cards": "{{count}}枚",
+  "tricks": "{{count}}トリック",
+  "points": "{{points}}点",
+  "score": "得点: {{score}}",
+  "currentTrick": "現在のトリック",
+  "players": "プレイヤー",
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "declarerBadge": "デクレアラー",
+  "blind": "場札（チェゴ）: {{count}}枚（伏せ札）",
+  "bidPass": "パス",
+  "bidPlay": "プレイ宣言",
+  "bidPhase": "オークション — プレイを宣言するか、パスします。最初にプレイを宣言した人がデクレアラーです。",
+  "contractPhase": "コントラクトを選びます。チェゴ＝手札を1枚だけ残して伏せ、10枚の場札を取る勝負手。ハントシュピール＝配られた手札のまま戦います。",
+  "contractCegoDesc": "チェゴ: 手札を1枚だけ残して残り10枚を伏せ、場札10枚を取ります（勝負手）。",
+  "contractHandspielDesc": "ハントシュピール: 配られた手札をそのまま使います。",
+  "exchangePhase": "場札交換 — 手元に残す1枚を選びます（{{count}}/1 枚選択中）。残り10枚を伏せて場札を取ります。",
+  "exchangeKeep": "手元に残す1枚を選んでください。",
+  "exchangeButton": "残す（{{count}}/1）",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のディール",
+  "outcomeNone": "-",
+  "outcomeWin": "成功（デクレアラーの勝ち）",
+  "outcomeLoss": "失敗（対戦側の勝ち）",
+  "result": {
+    "humanWin": "ゲーム終了！ あなたの勝ち！",
+    "cpuWin": "ゲーム終了！ プレイヤー {{player}} の勝ち！",
+    "draw": "ゲーム終了！ 引き分け！"
+  },
+  "roundResult": {
+    "title": "ディール結果",
+    "outcome": "結果: {{outcome}}",
+    "declarer": "デクレアラー: {{name}}",
+    "captured": "獲得点: {{points}} 点"
+  },
+  "hintAvailable": "ヒント",
+  "hint": {
+    "bid_take": "強い手なのでプレイを宣言する",
+    "bid_pass": "弱い手なのでパスする",
+    "contract_cego": "場札に賭けてチェゴを選ぶ",
+    "contract_handspiel": "手札が強いのでハントシュピールを選ぶ",
+    "keep_best": "最も強い1枚を残す",
+    "lead_high": "デクレアラーなので強い札でリードして主導する",
+    "lead_low": "対戦側なので低い札でリードして温存する",
+    "follow_win": "勝てるので取りに行く",
+    "follow_duck": "取れない／取る価値がないのでダック"
+  },
+  "tutorial": {
+    "trickDisplay": "現在のトリックです。リードされたスートにマストフォロー、フォローできなければ切り札（タロック）を出します。切り札もなければ任意の札を出します。トリックの最強は最も高い切り札です。",
+    "playerHand": "あなたの手札です。出せるカードをクリックして選びます。チェゴは54枚のタロックデッキ（4スート×8枚／コート札 J・C・Q・K、切り札1〜21、スキュース）を使う4人用のトリックテイキングです。",
+    "playButton": "カードを選んだら、このボタンで出します。オークションではパスするかプレイを宣言し、コントラクト選択でチェゴ／ハントシュピールを選び、チェゴなら場札交換で残す1枚を選びます。",
+    "info": "チェゴはドイツ・バーデン地方の54枚タロックデッキで遊ぶ4人用トリックテイキングです。オークションでデクレアラーが決まると、チェゴ（手札を1枚だけ残して伏せ、10枚の場札を取る勝負手）かハントシュピール（配られた手札のまま）を選びます。デクレアラー1人が残り3人と1対3で戦い、得点札の合計が過半に達すれば契約成功。規定ディール後に最多得点のプレイヤーが勝者です。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}
