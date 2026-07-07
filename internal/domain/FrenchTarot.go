@@ -572,6 +572,11 @@ func (g *FrenchTarot) validateDiscards(player *FrenchTarotPlayer, cardIndices []
 		if frenchTarotIsExcuse(c) {
 			return NewDomainError(ErrInvalidPlay, "エクスキューズは捨てられません")
 		}
+		// プティ (切り札1) と 21 は bout であり、公式ルール上いかなる場合も écart に
+		// 出せない (手札24枚中 bout は最大3枚なので、除外しても捨て札6枚は必ず確保できる)。
+		if frenchTarotIsTrump(c) && frenchTarotIsBout(c) {
+			return NewDomainError(ErrInvalidPlay, "プティ・21 は捨てられません")
+		}
 		if !frenchTarotIsTrump(c) && c.GetValue() == FrenchTarotKingValue {
 			return NewDomainError(ErrInvalidPlay, "キングは捨てられません")
 		}
