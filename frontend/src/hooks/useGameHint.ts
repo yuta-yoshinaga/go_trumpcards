@@ -54,6 +54,7 @@ import type {
   FortyFivesResponse,
   FourCardPokerResponse,
   FreeCellResponse,
+  FrenchTarotResponse,
   GaigelResponse,
   GapsResponse,
   GinRummyResponse,
@@ -225,6 +226,7 @@ import { getFlowergardenHint } from '../utils/hints/flowergardenHint';
 import { getFortyFivesHint } from '../utils/hints/fortyFivesHint';
 import { getFourCardPokerHint } from '../utils/hints/fourcardpokerHint';
 import { getFreeCellHint } from '../utils/hints/freecellHint';
+import { getFrenchTarotHint } from '../utils/hints/frenchtarotHint';
 import { getGaigelHint } from '../utils/hints/gaigelHint';
 import { getGapsHint } from '../utils/hints/gapsHint';
 import { getGinRummyHint } from '../utils/hints/ginrummyHint';
@@ -506,6 +508,7 @@ const hintFactories = {
   calabresella: (s) => getCalabresellaHint(s as CalabresellaResponse),
   ombre: (s) => getOmbreHint(s as OmbreResponse),
   ulti: (s) => getUltiHint(s as UltiResponse),
+  frenchtarot: (s) => getFrenchTarotHint(s as FrenchTarotResponse),
   cinch: (s) => getCinchHint(s as CinchResponse),
   loo: (s) => getLooHint(s as LooResponse),
   basra: (s) => getBasraHint(s as BasraResponse),

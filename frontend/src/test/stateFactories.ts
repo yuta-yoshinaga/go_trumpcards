@@ -11,6 +11,7 @@ import type {
   EcarteResponse,
   EscobaResponse,
   FortyFivesResponse,
+  FrenchTarotResponse,
   GongZhuResponse,
   GoStopBreakdown,
   GoStopResponse,
@@ -1158,6 +1159,71 @@ const baseUltiState: UltiResponse = {
  */
 export function makeUltiState(overrides?: Partial<UltiResponse>): UltiResponse {
   return { ...baseUltiState, ...overrides };
+}
+
+/** Base French Tarot state used as the default for {@link makeFrenchTarotState}. Defaults to a human Play turn (declarer, Petite contract). */
+const baseFrenchTarotState: FrenchTarotResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 18,
+      cards: [
+        { design: 'HEART' as const, value: 13, glyph: '♥', label: 'D', color: 'red', deck: 'tarot' },
+        { design: 'SPADE' as const, value: 14, glyph: '♠', label: 'R', color: 'black', deck: 'tarot' },
+        { design: 'CLOVER' as const, value: 1, glyph: '♣', label: '1', color: 'black', deck: 'tarot' },
+        { design: 'JOKER' as const, value: 21, glyph: '✦', label: '21', color: 'purple', deck: 'tarot' },
+        { design: 'JOKER' as const, value: 0, glyph: '★', label: 'Excuse', color: 'gold', deck: 'tarot' },
+      ],
+      trickCount: 0,
+      cardPoints: 0,
+      score: 0,
+      isDeclarer: true,
+    },
+    { id: 1, isHuman: false, cardCount: 18, cards: [], trickCount: 0, cardPoints: 0, score: 0, isDeclarer: false },
+    { id: 2, isHuman: false, cardCount: 18, cards: [], trickCount: 0, cardPoints: 0, score: 0, isDeclarer: false },
+    { id: 3, isHuman: false, cardCount: 18, cards: [], trickCount: 0, cardPoints: 0, score: 0, isDeclarer: false },
+  ],
+  phase: 2,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  bidPlayerIdx: 0,
+  highestBid: 1,
+  highestBidder: 0,
+  declarerIdx: 0,
+  contract: 1,
+  chienCount: 6,
+  chien: [],
+  chienRevealed: false,
+  stashOwner: 0,
+  currentTrick: [],
+  playerScores: [0, 0, 0, 0],
+  lastTrickWinner: -1,
+  outcome: 0,
+  result: 0,
+  playableIndices: [0, 1, 2, 3, 4],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  isHumanBidTurn: false,
+  isHumanDiscard: false,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetDeals: 5 },
+};
+
+/**
+ * Creates a {@link FrenchTarotResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial FrenchTarotResponse fields to override.
+ * @returns A complete FrenchTarotResponse suitable for use in tests.
+ */
+export function makeFrenchTarotState(overrides?: Partial<FrenchTarotResponse>): FrenchTarotResponse {
+  return { ...baseFrenchTarotState, ...overrides };
 }
 
 /** Base Watten state used as the default for {@link makeWattenState}. Defaults to a human Play turn (Schlag = K, critical suit = ♥, human leads). */

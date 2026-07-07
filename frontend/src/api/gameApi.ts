@@ -87,6 +87,7 @@ import type {
   FortyThievesResponse,
   FourCardPokerResponse,
   FreeCellResponse,
+  FrenchTarotResponse,
   GaigelResponse,
   GapsResponse,
   GinRummyResponse,
@@ -399,6 +400,7 @@ const workerUrl: Record<string, string> = {
   calabresella: WORKER_EXTRA,
   ombre: WORKER_EXTRA,
   ulti: WORKER_EXTRA,
+  frenchtarot: WORKER_EXTRA,
   rook: WORKER_EXTRA,
   cinch: WORKER_EXTRA,
   loo: WORKER_EXTRA,
@@ -2482,6 +2484,46 @@ export const ultiApi = {
       command,
       contract: opts?.contract,
       trumpSuit: opts?.trumpSuit,
+      cardIndices: opts?.cardIndices,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for French Tarot (フレンチタロット) game settings. */
+export interface FrenchTarotConfigInput {
+  cpuDifficulty?: number;
+  targetDeals?: number;
+}
+
+/** Commands accepted by the French Tarot /frenchtarot/exec endpoint. */
+export type FrenchTarotCommand = 'reset' | 'bid' | 'pass' | 'discard' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the French Tarot (フレンチタロット) /frenchtarot/exec endpoint.
+ *
+ * French Tarot is a 4-player trick-taker on the 78-card tarot deck. The human is
+ * seat 0.
+ *   - `bid` → `{ bid }` (contract string 'petite'|'garde'|'gardesans'|'gardecontre')
+ *   - `pass` → carries no extra fields (pass the auction)
+ *   - `discard` → `{ cardIndices }` (the 6 écart cards to bury; Petite/Garde only)
+ *   - `play` → `{ cardIndex }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const frenchtarotApi = {
+  exec: (
+    command: FrenchTarotCommand,
+    opts?: {
+      bid?: string;
+      cardIndices?: number[];
+      cardIndex?: number;
+      config?: FrenchTarotConfigInput;
+    },
+  ) =>
+    gameExec<FrenchTarotResponse>('frenchtarot', {
+      command,
+      bid: opts?.bid,
       cardIndices: opts?.cardIndices,
       cardIndex: opts?.cardIndex,
       config: opts?.config,
@@ -5187,6 +5229,7 @@ const games = [
   'michigan',
   'pan',
   'oichokabu',
+  'frenchtarot',
 ] as const;
 type Game = (typeof games)[number];
 

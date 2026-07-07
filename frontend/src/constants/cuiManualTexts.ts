@@ -81,6 +81,7 @@ import fortyfives from '../../../docs/manual/cui/fortyfives.md?raw';
 import fortythieves from '../../../docs/manual/cui/fortythieves.md?raw';
 import fourcardpoker from '../../../docs/manual/cui/fourcardpoker.md?raw';
 import freecell from '../../../docs/manual/cui/freecell.md?raw';
+import frenchtarot from '../../../docs/manual/cui/frenchtarot.md?raw';
 import gaigel from '../../../docs/manual/cui/gaigel.md?raw';
 import gaps from '../../../docs/manual/cui/gaps.md?raw';
 import ginrummy from '../../../docs/manual/cui/ginrummy.md?raw';
@@ -309,6 +310,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/calabresella': calabresella,
   '/ombre': ombre,
   '/ulti': ulti,
+  '/frenchtarot': frenchtarot,
   '/cinch': cinch,
   '/loo': loo,
   '/basra': basra,
