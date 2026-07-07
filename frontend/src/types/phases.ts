@@ -421,6 +421,15 @@ export const FrenchTarotPhase = {
   GAME_END: 5,
 } as const;
 
+/** Scarto (スカルト) phase constants (sync: internal/domain/Scarto.go). */
+export const ScartoPhase = {
+  SCARTO: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Königrufen (ケーニッヒルーフェン) phase constants (sync: internal/domain/Koenigrufen.go). */
 export const KoenigrufenPhase = {
   BID: 0,

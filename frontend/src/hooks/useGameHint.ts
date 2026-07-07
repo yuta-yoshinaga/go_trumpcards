@@ -119,6 +119,7 @@ import type {
   RussianPokerResponse,
   RussianSolitaireResponse,
   SambaResponse,
+  ScartoResponse,
   SchnapsenResponse,
   ScopaResponse,
   ScorpionResponse,
@@ -296,6 +297,7 @@ import { getRummy500Hint } from '../utils/hints/rummy500Hint';
 import { getRussianPokerHint } from '../utils/hints/russianpokerHint';
 import { getRussianSolitaireHint } from '../utils/hints/russianSolitaireHint';
 import { getSambaHint } from '../utils/hints/sambaHint';
+import { getScartoHint } from '../utils/hints/scartoHint';
 import { getSchnapsenHint } from '../utils/hints/schnapsenHint';
 import { getScopaHint } from '../utils/hints/scopaHint';
 import { getScorpionHint } from '../utils/hints/scorpionHint';
@@ -510,6 +512,7 @@ const hintFactories = {
   calabresella: (s) => getCalabresellaHint(s as CalabresellaResponse),
   ombre: (s) => getOmbreHint(s as OmbreResponse),
   ulti: (s) => getUltiHint(s as UltiResponse),
+  scarto: (s) => getScartoHint(s as ScartoResponse),
   frenchtarot: (s) => getFrenchTarotHint(s as FrenchTarotResponse),
   koenigrufen: (s) => getKoenigrufenHint(s as KoenigrufenResponse),
   cinch: (s) => getCinchHint(s as CinchResponse),

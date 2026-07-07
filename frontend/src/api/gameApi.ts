@@ -167,6 +167,7 @@ import type {
   RussianPokerResponse,
   RussianSolitaireResponse,
   SambaResponse,
+  ScartoResponse,
   SchnapsenConfig,
   SchnapsenResponse,
   ScopaResponse,
@@ -401,6 +402,7 @@ const workerUrl: Record<string, string> = {
   calabresella: WORKER_EXTRA,
   ombre: WORKER_EXTRA,
   ulti: WORKER_EXTRA,
+  scarto: WORKER_SOLO,
   frenchtarot: WORKER_EXTRA,
   koenigrufen: WORKER_EXTRA,
   rook: WORKER_EXTRA,
@@ -2486,6 +2488,42 @@ export const ultiApi = {
       command,
       contract: opts?.contract,
       trumpSuit: opts?.trumpSuit,
+      cardIndices: opts?.cardIndices,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Scarto (スカルト) game settings. */
+export interface ScartoConfigInput {
+  cpuDifficulty?: number;
+  targetDeals?: number;
+}
+
+/** Commands accepted by the Scarto /scarto/exec endpoint. */
+export type ScartoCommand = 'reset' | 'scarto' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Scarto (スカルト) /scarto/exec endpoint.
+ *
+ * Scarto is a 3-player Italian tarocchi trick-taker on the 78-card tarot deck.
+ * The human is seat 0. There is no bidding, chien, or partnership.
+ *   - `scarto` → `{ cardIndices }` (the 3 low pip cards the dealer buries)
+ *   - `play` → `{ cardIndex }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const scartoApi = {
+  exec: (
+    command: ScartoCommand,
+    opts?: {
+      cardIndices?: number[];
+      cardIndex?: number;
+      config?: ScartoConfigInput;
+    },
+  ) =>
+    gameExec<ScartoResponse>('scarto', {
+      command,
       cardIndices: opts?.cardIndices,
       cardIndex: opts?.cardIndex,
       config: opts?.config,
@@ -5284,6 +5322,7 @@ const games = [
   'michigan',
   'pan',
   'oichokabu',
+  'scarto',
   'frenchtarot',
   'koenigrufen',
 ] as const;

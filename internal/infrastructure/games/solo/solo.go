@@ -408,5 +408,15 @@ func init() {
 			return usecase.RestoreBlackHoleInteractor(data, new(presenter.BlackHoleWebPresenter))
 		},
 		controller.NewBlackHoleWebControllerWithProvider)
-
+	// Scarto (78-card Italian tarot trick-taker) is bucketed here for binary-size
+	// headroom; the extra worker hit the 1 MB gzip free-tier limit. Category is a
+	// size bucket, not a user-facing taxonomy.
+	games.RegisterKVGame("scarto", games.CategorySolo,
+		func() usecase.ScartoInteractorIF {
+			return usecase.NewScartoInteractor(domain.NewDefaultScarto(), new(presenter.ScartoWebPresenter))
+		},
+		func(data []byte) (usecase.ScartoInteractorIF, error) {
+			return usecase.RestoreScartoInteractor(data, new(presenter.ScartoWebPresenter))
+		},
+		controller.NewScartoWebControllerWithProvider)
 }
