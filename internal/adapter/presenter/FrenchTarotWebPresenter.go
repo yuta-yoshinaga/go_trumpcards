@@ -129,7 +129,7 @@ func (p *FrenchTarotWebPresenter) playableIndices(g interfaces.FrenchTarotGame) 
 
 // buildChienOutput シアンを構築。人間デクレアラーのシアン交換フェーズでのみ内容を公開する。
 func (p *FrenchTarotWebPresenter) buildChienOutput(g interfaces.FrenchTarotGame) []*controller.WebOutputCard {
-	if !g.GetChienRevealed() || !g.IsHumanDiscardTurn() {
+	if !g.IsHumanDiscardTurn() {
 		return make([]*controller.WebOutputCard, 0)
 	}
 	chien := g.GetChien()
@@ -212,6 +212,9 @@ func frenchTarotOutcomeMessageCode(o domain.FrenchTarotOutcome) string {
 // winnerMessage 勝者プレイヤーメッセージを構築する
 func (p *FrenchTarotWebPresenter) winnerMessage(g interfaces.FrenchTarotGame) (string, string, map[string]string) {
 	winner := g.GetWinnerPlayer()
+	if winner < 0 {
+		return "ゲーム終了！ 引き分け！", "frenchtarot.result.draw", nil
+	}
 	humanIdx := -1
 	for i := 0; i < g.GetPlayerCnt(); i++ {
 		if player := g.GetPlayer(i); player != nil && player.GetIsHuman() {

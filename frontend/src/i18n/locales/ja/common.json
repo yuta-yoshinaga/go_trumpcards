@@ -446,6 +446,7 @@
     "frenchtarot.roundEnd.loss": "ディール終了 — 契約失敗（防御側の勝ち）。",
     "frenchtarot.result.humanWin": "ゲーム終了！ あなたの勝ちです！",
     "frenchtarot.result.cpuWin": "ゲーム終了！ プレイヤー {{player}} の勝ちです。",
+    "frenchtarot.result.draw": "ゲーム終了！ 引き分けです！",
     "solowhist.bidPhase": "入札フェーズ — 入札してください。",
     "solowhist.playPhase.lead": "あなたの番です — リードするカードを選んでください。",
     "solowhist.playPhase.follow": "あなたの番です — リードスートに従ってカードを選んでください。",

@@ -446,6 +446,7 @@
     "frenchtarot.roundEnd.loss": "Deal over — contract failed (defenders win).",
     "frenchtarot.result.humanWin": "Game over! You win!",
     "frenchtarot.result.cpuWin": "Game over! Player {{player}} wins.",
+    "frenchtarot.result.draw": "Game over! It's a draw!",
     "solowhist.bidPhase": "Bidding phase — place your bid.",
     "solowhist.playPhase.lead": "Your turn — pick a card to lead.",
     "solowhist.playPhase.follow": "Your turn — follow the led suit.",

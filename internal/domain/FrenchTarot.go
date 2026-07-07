@@ -801,10 +801,17 @@ func (g *FrenchTarot) checkGameEnd() {
 		}
 	}
 	g.gameEndFlag = true
-	g.winnerPlayer = leader
 	g.phase = FrenchTarotPhaseGameEnd
 	g.result = g.humanResult(leader, tie)
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", g.playerName(leader)), nil)
+	if tie {
+		// 同点トップは引き分け: winnerPlayer を -1 にして勝者演出/メッセージを抑制する
+		// (GoStop/HachiHachi と同様。GetResult も None を返す)。
+		g.winnerPlayer = -1
+		g.appendLog(-1, "game_end", "the match ends in a draw", nil)
+	} else {
+		g.winnerPlayer = leader
+		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", g.playerName(leader)), nil)
+	}
 }
 
 // humanResult 人間 (seat 0) 視点でマッチ結果を返す。単独トップなら Win、トップ同点なら None。
@@ -1722,7 +1729,12 @@ func (g *FrenchTarot) GetConfig() FrenchTarotConfig { return g.config }
 func (g *FrenchTarot) SetConfig(cfg FrenchTarotConfig) { g.config = cfg }
 
 // GetActionLog 棋譜取得
-func (g *FrenchTarot) GetActionLog() []*ActionLogEntry { return g.actionLog }
+func (g *FrenchTarot) GetActionLog() []*ActionLogEntry {
+	if g.actionLog == nil {
+		return []*ActionLogEntry{}
+	}
+	return g.actionLog
+}
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *FrenchTarot) GetPlayableIndices(playerIdx int) []int {
@@ -1862,10 +1874,10 @@ func frenchTarotValidCard(c *Card) bool {
 		return false
 	}
 	d, v := c.GetDesign(), c.GetValue()
-	switch {
-	case d == FrenchTarotExcuseDesign:
+	switch d {
+	case FrenchTarotExcuseDesign:
 		return v == FrenchTarotExcuseValue
-	case d == FrenchTarotTrumpDesign:
+	case FrenchTarotTrumpDesign:
 		return v >= 1 && v <= FrenchTarotMaxTrump
 	default:
 		return d >= 1 && d <= FrenchTarotSuitCnt && v >= 1 && v <= FrenchTarotKingValue
