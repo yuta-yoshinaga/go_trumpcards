@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { makeFrenchTarotState } from '../../../test/stateFactories';
+import type { FrenchTarotPhaseValue } from '../../../types/card';
 import { formatFrenchTarotState } from './frenchtarotFormatter';
 
 describe('formatFrenchTarotState', () => {
@@ -53,7 +54,9 @@ describe('formatFrenchTarotState', () => {
   });
 
   it('falls back to raw numbers for out-of-range phase / contract / bid', () => {
-    const out = formatFrenchTarotState(makeFrenchTarotState({ phase: 99, contract: 99, highestBid: 99 }));
+    const out = formatFrenchTarotState(
+      makeFrenchTarotState({ phase: 99 as FrenchTarotPhaseValue, contract: 99, highestBid: 99 }),
+    );
     // Unknown enum indices fall through the `?? state.x` fallbacks and print the raw number.
     expect(out).toContain('phase: 99');
     expect(out).toContain('contract: 99');
