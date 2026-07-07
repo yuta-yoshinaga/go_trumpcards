@@ -84,7 +84,7 @@ const OUTCOME_KEYS = ['outcomeNone', 'outcomeWin', 'outcomeLoss'] as const;
  * `scartoDiscardable` rule.
  */
 function isUndiscardable(card: Card): boolean {
-  return card.color === 'purple' || card.color === 'gold' || card.value >= 11;
+  return card?.color === 'purple' || card?.color === 'gold' || (card?.value ?? 0) >= 11;
 }
 
 /** Renders the Scarto (スカルト) game page: a 3-player 78-card Italian tarocchi trick-taker with a dealer scarto (discard) and trump-priority tricks — no bidding, chien, or partnership. */

@@ -63,7 +63,7 @@ const ScartoDeckSize = 78
 const ScartoTrickCount = 25
 
 // ScartoDefaultDeals マッチを構成するディール数 (既定)
-const ScartoDefaultDeals = 3
+const ScartoDefaultDeals = 5
 
 // ScartoSuitCnt スート数
 const ScartoSuitCnt = 4
