@@ -1,0 +1,59 @@
+{
+  "title": "スカルト",
+  "phase": {
+    "scarto": "スカルト（捨て札）",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ディール終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetDeals": "マッチのディール数",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ディール {{n}}",
+  "trick": "トリック {{n}}",
+  "cards": "{{count}}枚",
+  "tricks": "{{count}}トリック",
+  "points": "{{points}}点",
+  "score": "得点: {{score}}",
+  "currentTrick": "現在のトリック",
+  "players": "プレイヤー",
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "dealerBadge": "親（ディーラー）",
+  "scartoPhase": "スカルト — 手札から低い{{total}}枚を選んで伏せて捨てます（{{count}}/{{total}} 枚選択中）。切り札・エクスキューズ・得点札（K・コート札）は捨てられません。",
+  "scartoWaiting": "親のスカルト（捨て札）を待っています…",
+  "scartoRestricted": "このカードは捨てられません（切り札・エクスキューズ・得点札）。",
+  "discardButton": "捨てる（{{count}}/{{total}}）",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のディール",
+  "outcomeNone": "平均どおり",
+  "outcomeWin": "平均より上",
+  "outcomeLoss": "平均より下",
+  "roundResult": {
+    "title": "ディール結果",
+    "outcome": "あなたの結果: {{outcome}}",
+    "playerLine": "{{name}}: {{delta}}（累計 {{score}}）"
+  },
+  "hintAvailable": "ヒント",
+  "hint": {
+    "scarto_weak": "最も弱い低点札を捨てる",
+    "lead_low": "低い札でリードして温存する",
+    "follow_win": "勝てるので取りに行く",
+    "follow_duck": "取れない／取る価値がないのでダック",
+    "play_excuse": "エクスキューズを出して札を温存する"
+  },
+  "tutorial": {
+    "trickDisplay": "現在のトリックです。リードされたスートにマストフォロー、フォローできなければ切り札を出します。切り札もなければ任意の札を出します。トリックの最強は最も高い切り札です。",
+    "playerHand": "あなたの手札です。出せるカードをクリックして選びます。スカルトは78枚のタロットデッキ（4スート×14枚＋切り札21枚＋エクスキューズ）を使う3人用のトリックテイキングです。",
+    "playButton": "カードを選んだら、このボタンで出します。あなたが親のときはスカルト（捨て札）フェーズで低い3枚を伏せて捨てます。",
+    "info": "スカルトはピエモンテ発祥の3人用タロッキ・トリックテイキングです。ビッド・シアン・パートナーはありません。親が余剰の3枚を伏せて捨て（スカルト）、残り札でトリックを戦います。各ディールは3人の取り札点数を平均と比較したゼロサム精算で採点し、規定ディール後に累計得点が最多のプレイヤーが勝者です。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}

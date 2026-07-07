@@ -161,6 +161,7 @@ import russianbank from '../../../docs/manual/cui/russianbank.md?raw';
 import russianpoker from '../../../docs/manual/cui/russianpoker.md?raw';
 import russiansolitaire from '../../../docs/manual/cui/russiansolitaire.md?raw';
 import samba from '../../../docs/manual/cui/samba.md?raw';
+import scarto from '../../../docs/manual/cui/scarto.md?raw';
 import schnapsen from '../../../docs/manual/cui/schnapsen.md?raw';
 import scopa from '../../../docs/manual/cui/scopa.md?raw';
 import scopone from '../../../docs/manual/cui/scopone.md?raw';
@@ -425,6 +426,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/tarneeb': tarneeb,
   '/highcardflush': highcardflush,
   '/briscola': briscola,
+  '/scarto': scarto,
   '/schnapsen': schnapsen,
   '/bigtwo': bigtwo,
   '/tienlen': tienlen,

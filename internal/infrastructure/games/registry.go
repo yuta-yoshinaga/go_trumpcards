@@ -727,6 +727,9 @@ var registry = []*Game{
 	// Königrufen is an Austrian tarock trick-taker (54-card tarock deck) with the
 	// call-a-king hidden-partnership mechanic; procedural render path (ADR-0033).
 	{Name: "koenigrufen", Category: CategoryExtra},
+	// Scarto is the simplest Italian (Piedmontese) tarocchi trick-taker on the
+	// 78-card tarot deck; procedural render path (ADR-0033).
+	{Name: "scarto", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

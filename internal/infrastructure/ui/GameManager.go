@@ -3403,6 +3403,17 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"koenigrufen.helpSetDifficulty"},
 			})
 	}},
+	{Name: "scarto", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewScartoCuiController(usecase.NewScartoInteractor(
+				domain.NewDefaultScarto(), new(presenter.ScartoCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "scarto.helpTitle",
+				CommandKeys:       []string{"scarto.helpScarto", "scarto.helpPlay", "scarto.helpNext", "scarto.helpNextRound"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"scarto.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

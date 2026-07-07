@@ -34,6 +34,7 @@ import type {
   PrimeroResponse,
   SambaPlayerData,
   SambaResponse,
+  ScartoResponse,
   ScoponeResponse,
   SedmaResponse,
   SheepsheadResponse,
@@ -1225,6 +1226,62 @@ const baseFrenchTarotState: FrenchTarotResponse = {
  */
 export function makeFrenchTarotState(overrides?: Partial<FrenchTarotResponse>): FrenchTarotResponse {
   return { ...baseFrenchTarotState, ...overrides };
+}
+
+/** Base Scarto state used as the default for {@link makeScartoState}. Defaults to a human Play turn. */
+const baseScartoState: ScartoResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 25,
+      cards: [
+        { design: 'HEART' as const, value: 13, glyph: '♥', label: 'D', color: 'red', deck: 'tarot' },
+        { design: 'SPADE' as const, value: 14, glyph: '♠', label: 'R', color: 'black', deck: 'tarot' },
+        { design: 'CLOVER' as const, value: 4, glyph: '♣', label: '4', color: 'black', deck: 'tarot' },
+        { design: 'JOKER' as const, value: 21, glyph: '✦', label: '21', color: 'purple', deck: 'tarot' },
+        { design: 'JOKER' as const, value: 0, glyph: '★', label: 'Excuse', color: 'gold', deck: 'tarot' },
+      ],
+      trickCount: 0,
+      cardPoints: 0,
+      score: 0,
+      isDealer: false,
+    },
+    { id: 1, isHuman: false, cardCount: 25, cards: [], trickCount: 0, cardPoints: 0, score: 0, isDealer: false },
+    { id: 2, isHuman: false, cardCount: 25, cards: [], trickCount: 0, cardPoints: 0, score: 0, isDealer: true },
+  ],
+  phase: 1,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 2,
+  scartoCount: 3,
+  currentTrick: [],
+  playerScores: [0, 0, 0],
+  dealScores: [0, 0, 0],
+  lastTrickWinner: -1,
+  outcome: 0,
+  result: 0,
+  playableIndices: [0, 1, 2, 3, 4],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  isHumanScarto: false,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetDeals: 5 },
+};
+
+/**
+ * Creates a {@link ScartoResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial ScartoResponse fields to override.
+ * @returns A complete ScartoResponse suitable for use in tests.
+ */
+export function makeScartoState(overrides?: Partial<ScartoResponse>): ScartoResponse {
+  return { ...baseScartoState, ...overrides };
 }
 
 /** Base Königrufen state used as the default for {@link makeKoenigrufenState}. Defaults to a human Play turn (declarer, Rufer contract). */

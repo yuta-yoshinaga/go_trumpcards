@@ -1,0 +1,141 @@
+//go:build !js || !wasm || extra
+
+package controller
+
+import (
+	"net/http"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
+)
+
+// ScartoWebInput スカルト (Scarto) のWebインプット
+type ScartoWebInput struct {
+	BaseWebInput
+	// CardIndex プレイするカードのインデックス
+	CardIndex *int `json:"cardIndex,omitempty"`
+	// CardIndices スカルトで捨てるカードのインデックス (3 枚)
+	CardIndices []int `json:"cardIndices,omitempty"`
+	// Config ゲーム設定
+	Config *ScartoWebConfig `json:"config,omitempty"`
+}
+
+// ScartoWebConfig スカルトのWeb設定
+type ScartoWebConfig struct {
+	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
+	TargetDeals   *int `json:"targetDeals,omitempty"`
+}
+
+// ScartoWebOutputPlayer スカルトのWebアウトプットプレイヤー
+type ScartoWebOutputPlayer struct {
+	ID         int              `json:"id"`
+	IsHuman    bool             `json:"isHuman"`
+	CardCount  int              `json:"cardCount"`
+	Cards      []*WebOutputCard `json:"cards"`
+	TrickCount int              `json:"trickCount"`
+	CardPoints int              `json:"cardPoints"`
+	Score      int              `json:"score"`
+	IsDealer   bool             `json:"isDealer"`
+}
+
+// ScartoWebOutputTrickCard トリック中の1枚
+type ScartoWebOutputTrickCard struct {
+	PlayerIdx int            `json:"playerIdx"`
+	Card      *WebOutputCard `json:"card"`
+}
+
+// ScartoWebOutputHint ヒント出力
+type ScartoWebOutputHint struct {
+	CardIndices []int  `json:"cardIndices"`
+	Reason      string `json:"reason"`
+}
+
+// ScartoWebOutput スカルトのWebアウトプット
+type ScartoWebOutput struct {
+	Players          []*ScartoWebOutputPlayer    `json:"players"`
+	Phase            int                         `json:"phase"`
+	RoundNumber      int                         `json:"roundNumber"`
+	TrickNumber      int                         `json:"trickNumber"`
+	CurrentPlayerIdx int                         `json:"currentPlayerIdx"`
+	LeadPlayerIdx    int                         `json:"leadPlayerIdx"`
+	DealerIdx        int                         `json:"dealerIdx"`
+	ScartoCount      int                         `json:"scartoCount"`
+	CurrentTrick     []*ScartoWebOutputTrickCard `json:"currentTrick"`
+	PlayerScores     [domain.ScartoPlayerCnt]int `json:"playerScores"`
+	DealScores       [domain.ScartoPlayerCnt]int `json:"dealScores"`
+	LastTrickWinner  int                         `json:"lastTrickWinner"`
+	Outcome          int                         `json:"outcome"`
+	Result           int                         `json:"result"`
+	PlayableIndices  []int                       `json:"playableIndices"`
+	GameEndFlag      bool                        `json:"gameEndFlag"`
+	WinnerPlayer     int                         `json:"winnerPlayer"`
+	IsHumanTurn      bool                        `json:"isHumanTurn"`
+	IsHumanScarto    bool                        `json:"isHumanScarto"`
+	Hint             *ScartoWebOutputHint        `json:"hint,omitempty"`
+	WebOutputBase
+	Config ScartoWebOutputConfig `json:"config"`
+}
+
+// ScartoWebOutputConfig スカルトの設定アウトプット
+type ScartoWebOutputConfig struct {
+	CpuDifficulty int `json:"cpuDifficulty"`
+	TargetDeals   int `json:"targetDeals"`
+}
+
+// ToConfig builds a ScartoConfig from the nested web config, applying bounds checking.
+func (c *ScartoWebConfig) ToConfig() domain.ScartoConfig {
+	cfg := domain.DefaultScartoConfig()
+	cfg.CpuDifficulty = domain.ScartoCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty, int(domain.ScartoCpuDifficultyEasy), int(domain.ScartoCpuDifficultyHard), int(cfg.CpuDifficulty)))
+	webutil.ApplyBoundedInt(&cfg.TargetDeals, c.TargetDeals, 1, 1000)
+	return cfg
+}
+
+// ToConfig builds a ScartoConfig from the web input.
+func (p ScartoWebInput) ToConfig() domain.ScartoConfig {
+	return configOrDefault(p.Config, (*ScartoWebConfig).ToConfig, domain.DefaultScartoConfig())
+}
+
+// ScartoWebController スカルトのWebコントローラークラス
+type ScartoWebController = GameWebController[usecase.ScartoInteractorIF, ScartoWebInput, *ScartoWebOutput]
+
+// NewScartoWebController and NewScartoWebControllerWithProvider are the standard
+// and provider-backed constructors for ScartoWebController.
+var NewScartoWebController, NewScartoWebControllerWithProvider = webControllerPair[usecase.ScartoInteractorIF, ScartoWebInput, *ScartoWebOutput](
+	newScartoDefaultOutput, scartoDispatch,
+)
+
+func newScartoDefaultOutput(msg string) *ScartoWebOutput {
+	return &ScartoWebOutput{
+		Players:         make([]*ScartoWebOutputPlayer, 0),
+		CurrentTrick:    make([]*ScartoWebOutputTrickCard, 0),
+		PlayableIndices: make([]int, 0),
+		LastTrickWinner: -1,
+		WinnerPlayer:    -1,
+		WebOutputBase:   WebOutputBase{Message: msg},
+	}
+}
+
+func scartoDispatch(bc *baseController, w http.ResponseWriter, di usecase.ScartoInteractorIF, param ScartoWebInput, newDefault func(string) *ScartoWebOutput) bool {
+	switch param.Command {
+	case "r", "reset":
+		bc.writePresenterResponse(w, di.ResetWithConfig(param.ToConfig()))
+	case "s", "scarto", "d", "discard":
+		if !requireParam(bc, w, newDefault, param.CardIndices == nil, "param error: cardIndices is required.") {
+			return true
+		}
+		bc.writePresenterResponse(w, di.Discard(param.CardIndices))
+	case "p", "play":
+		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
+			return true
+		}
+		bc.writePresenterResponse(w, di.Play(*param.CardIndex))
+	case "n", "next":
+		bc.writePresenterResponse(w, di.NextTrick())
+	case "nr", "nextround":
+		bc.writePresenterResponse(w, di.NextRound())
+	default:
+		return dispatchHintAndLog(param.Command, bc, w, di.Hint, di.ActionLog)
+	}
+	return true
+}

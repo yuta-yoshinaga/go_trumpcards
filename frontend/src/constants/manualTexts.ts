@@ -160,6 +160,7 @@ import russianbank from '../../../docs/manual/web/russianbank.md?raw';
 import russianpoker from '../../../docs/manual/web/russianpoker.md?raw';
 import russiansolitaire from '../../../docs/manual/web/russiansolitaire.md?raw';
 import samba from '../../../docs/manual/web/samba.md?raw';
+import scarto from '../../../docs/manual/web/scarto.md?raw';
 import schnapsen from '../../../docs/manual/web/schnapsen.md?raw';
 import scopa from '../../../docs/manual/web/scopa.md?raw';
 import scopone from '../../../docs/manual/web/scopone.md?raw';
@@ -428,6 +429,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/tarneeb': tarneeb,
   '/highcardflush': highcardflush,
   '/briscola': briscola,
+  '/scarto': scarto,
   '/schnapsen': schnapsen,
   '/bigtwo': bigtwo,
   '/tienlen': tienlen,
