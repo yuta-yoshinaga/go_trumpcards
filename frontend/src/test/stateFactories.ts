@@ -21,6 +21,7 @@ import type {
   KingResponse,
   KlaverjasResponse,
   KnockoutWhistResponse,
+  KoenigrufenResponse,
   KoiKoiResponse,
   LooResponse,
   ManilleResponse,
@@ -1224,6 +1225,105 @@ const baseFrenchTarotState: FrenchTarotResponse = {
  */
 export function makeFrenchTarotState(overrides?: Partial<FrenchTarotResponse>): FrenchTarotResponse {
   return { ...baseFrenchTarotState, ...overrides };
+}
+
+/** Base Königrufen state used as the default for {@link makeKoenigrufenState}. Defaults to a human Play turn (declarer, Rufer contract). */
+const baseKoenigrufenState: KoenigrufenResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 12,
+      cards: [
+        { design: 'HEART' as const, value: 8, glyph: '♥', label: 'K', color: 'red', deck: 'tarot' },
+        { design: 'SPADE' as const, value: 5, glyph: '♠', label: 'J', color: 'black', deck: 'tarot' },
+        { design: 'CLOVER' as const, value: 3, glyph: '♣', label: '3', color: 'black', deck: 'tarot' },
+        { design: 'JOKER' as const, value: 21, glyph: '✦', label: '21', color: 'purple', deck: 'tarot' },
+        { design: 'JOKER' as const, value: 0, glyph: '★', label: 'Sküs', color: 'gold', deck: 'tarot' },
+      ],
+      trickCount: 0,
+      cardPoints: 0,
+      score: 0,
+      isDeclarer: true,
+      isPartner: false,
+    },
+    {
+      id: 1,
+      isHuman: false,
+      cardCount: 12,
+      cards: [],
+      trickCount: 0,
+      cardPoints: 0,
+      score: 0,
+      isDeclarer: false,
+      isPartner: false,
+    },
+    {
+      id: 2,
+      isHuman: false,
+      cardCount: 12,
+      cards: [],
+      trickCount: 0,
+      cardPoints: 0,
+      score: 0,
+      isDeclarer: false,
+      isPartner: false,
+    },
+    {
+      id: 3,
+      isHuman: false,
+      cardCount: 12,
+      cards: [],
+      trickCount: 0,
+      cardPoints: 0,
+      score: 0,
+      isDeclarer: false,
+      isPartner: false,
+    },
+  ],
+  phase: 3,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  bidPlayerIdx: 0,
+  highestBid: 1,
+  highestBidder: 0,
+  declarerIdx: 0,
+  contract: 1,
+  calledKing: 4,
+  partnerIdx: -1,
+  partnerRevealed: false,
+  talonCount: 6,
+  talon: [],
+  stashOwner: 0,
+  currentTrick: [],
+  playerScores: [0, 0, 0, 0],
+  lastTrickWinner: -1,
+  outcome: 0,
+  result: 0,
+  playableIndices: [0, 1, 2, 3, 4],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  isHumanBidTurn: false,
+  isHumanCall: false,
+  isHumanDiscard: false,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetDeals: 5 },
+};
+
+/**
+ * Creates a {@link KoenigrufenResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial KoenigrufenResponse fields to override.
+ * @returns A complete KoenigrufenResponse suitable for use in tests.
+ */
+export function makeKoenigrufenState(overrides?: Partial<KoenigrufenResponse>): KoenigrufenResponse {
+  return { ...baseKoenigrufenState, ...overrides };
 }
 
 /** Base Watten state used as the default for {@link makeWattenState}. Defaults to a human Play turn (Schlag = K, critical suit = ♥, human leads). */

@@ -421,6 +421,17 @@ export const FrenchTarotPhase = {
   GAME_END: 5,
 } as const;
 
+/** Königrufen (ケーニッヒルーフェン) phase constants (sync: internal/domain/Koenigrufen.go). */
+export const KoenigrufenPhase = {
+  BID: 0,
+  CALL: 1,
+  TALON: 2,
+  PLAY: 3,
+  TRICK_END: 4,
+  ROUND_END: 5,
+  GAME_END: 6,
+} as const;
+
 /** Cinch phase constants (sync: internal/domain/Cinch.go). */
 export const CinchPhase = {
   BID: 0,

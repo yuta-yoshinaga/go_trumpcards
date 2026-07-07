@@ -1,0 +1,83 @@
+{
+  "title": "Königrufen",
+  "phase": {
+    "bid": "Auction",
+    "call": "Call a King",
+    "talon": "Talon Exchange",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Deal End",
+    "gameEnd": "Game Over"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetDeals": "Deals per Match",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Deal {{n}}",
+  "trick": "Trick {{n}}",
+  "contract": "Contract: {{contract}}",
+  "contractNone": "-",
+  "contractRufer": "Rufer",
+  "suitSpade": "Spades",
+  "suitClover": "Clubs",
+  "suitHeart": "Hearts",
+  "suitDiamond": "Diamonds",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "points": "{{points}} pts",
+  "score": "Score: {{score}}",
+  "currentTrick": "Current Trick",
+  "players": "Players",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "declarerBadge": "Declarer",
+  "partnerBadge": "Partner",
+  "calledKing": "Called King: {{suit}}",
+  "partnerRevealed": "Partner: {{name}}",
+  "bidPass": "Pass",
+  "bidRufer": "Rufer",
+  "bidPhase": "Auction — declare the Rufer (King-calling) contract, or pass.",
+  "callPhase": "Call a King — choose the King's suit to call. Whoever holds that King becomes your secret partner (you cannot call a King you hold yourself).",
+  "talonPhase": "Talon exchange — bury 6 cards from your hand ({{count}}/6 selected). Kings and the Trull honours (trumps 1, 21, and the Sküs) cannot be buried.",
+  "talonRestricted": "This card cannot be buried (King / Trull honour).",
+  "discardButton": "Bury ({{count}}/6)",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Deal",
+  "outcomeNone": "-",
+  "outcomeWin": "Made (declarer team wins)",
+  "outcomeLoss": "Failed (defenders win)",
+  "result": {
+    "humanWin": "Game over! You win!",
+    "cpuWin": "Game over! Player {{player}} wins!",
+    "draw": "Game over! It's a draw!"
+  },
+  "roundResult": {
+    "title": "Deal Result",
+    "outcome": "Result: {{outcome}}",
+    "declarer": "Declarer: {{name}}",
+    "captured": "Captured: {{points}} pts"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "bid_take": "Strong hand — declare the Rufer",
+    "bid_pass": "Weak hand — pass",
+    "call_king": "Call a King you do not hold to gain a partner",
+    "discard_weak": "Bury the weakest cards",
+    "lead_high": "As the declarer side, lead high to seize the initiative",
+    "lead_low": "As a defender, lead low to conserve strength",
+    "follow_win": "You can win this trick — take it",
+    "follow_duck": "Cannot win or not worth it — duck"
+  },
+  "tutorial": {
+    "trickDisplay": "The current trick. You must follow the led suit; if you cannot, you must play a trump (tarock); failing that, any card. The highest trump wins the trick.",
+    "playerHand": "Your hand. Click a legal card to select it. Königrufen is a 4-player trick-taker on the 54-card tarock deck (four 8-card suits, 21 trumps, and the Sküs).",
+    "playButton": "Once a card is selected, play it with this button. In the auction you pass or declare the Rufer; in the call phase you pick the King's suit to call; in the talon phase you bury 6 cards.",
+    "info": "Königrufen is a 4-player trick-taker on the 54-card tarock deck. Once the auction settles the declarer, calling a King makes whoever holds it the declarer's secret partner (their identity stays hidden until that King is first played). The declarer merges the 6-card talon into hand, buries 6 cards, and partners up against the other two. The declaring team wins the deal by capturing enough card-points. The player with the highest cumulative score after the set number of deals wins.",
+    "resetButton": "Use the reset button to start a new game."
+  }
+}

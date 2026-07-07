@@ -1090,4 +1090,9 @@ func init() {
 			return usecase.NewFrenchTarotInteractor(domain.NewDefaultFrenchTarot(), new(presenter.FrenchTarotWebPresenter))
 		},
 		controller.NewFrenchTarotWebController)
+	BindWebControllerFor("koenigrufen",
+		func() usecase.KoenigrufenInteractorIF {
+			return usecase.NewKoenigrufenInteractor(domain.NewDefaultKoenigrufen(), new(presenter.KoenigrufenWebPresenter))
+		},
+		controller.NewKoenigrufenWebController)
 }
