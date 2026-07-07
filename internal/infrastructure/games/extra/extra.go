@@ -387,4 +387,12 @@ func init() {
 			return usecase.RestoreFrenchTarotInteractor(data, new(presenter.FrenchTarotWebPresenter))
 		},
 		controller.NewFrenchTarotWebControllerWithProvider)
+	games.RegisterKVGame("koenigrufen", games.CategoryExtra,
+		func() usecase.KoenigrufenInteractorIF {
+			return usecase.NewKoenigrufenInteractor(domain.NewDefaultKoenigrufen(), new(presenter.KoenigrufenWebPresenter))
+		},
+		func(data []byte) (usecase.KoenigrufenInteractorIF, error) {
+			return usecase.RestoreKoenigrufenInteractor(data, new(presenter.KoenigrufenWebPresenter))
+		},
+		controller.NewKoenigrufenWebControllerWithProvider)
 }

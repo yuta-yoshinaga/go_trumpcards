@@ -724,6 +724,9 @@ var registry = []*Game{
 	// French Tarot is a 78-card tarot trick-taker (4 suits×14 + 21 atouts + Excuse);
 	// the first tarot-deck game on the non-52 procedural render path (ADR-0033).
 	{Name: "frenchtarot", Category: CategoryExtra},
+	// Königrufen is an Austrian tarock trick-taker (54-card tarock deck) with the
+	// call-a-king hidden-partnership mechanic; procedural render path (ADR-0033).
+	{Name: "koenigrufen", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

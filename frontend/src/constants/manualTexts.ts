@@ -106,6 +106,7 @@ import kingalbert from '../../../docs/manual/web/kingalbert.md?raw';
 import klaverjas from '../../../docs/manual/web/klaverjas.md?raw';
 import klondike from '../../../docs/manual/web/klondike.md?raw';
 import knockoutwhist from '../../../docs/manual/web/knockoutwhist.md?raw';
+import koenigrufen from '../../../docs/manual/web/koenigrufen.md?raw';
 import koikoi from '../../../docs/manual/web/koikoi.md?raw';
 import labellelucie from '../../../docs/manual/web/labellelucie.md?raw';
 import letitride from '../../../docs/manual/web/letitride.md?raw';
@@ -317,6 +318,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/ombre': ombre,
   '/ulti': ulti,
   '/frenchtarot': frenchtarot,
+  '/koenigrufen': koenigrufen,
   '/cinch': cinch,
   '/loo': loo,
   '/basra': basra,

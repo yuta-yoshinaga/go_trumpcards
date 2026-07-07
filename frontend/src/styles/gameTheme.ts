@@ -68,6 +68,7 @@ export type GameKey =
   | 'ombre'
   | 'ulti'
   | 'frenchtarot'
+  | 'koenigrufen'
   | 'cinch'
   | 'loo'
   | 'basra'
@@ -516,6 +517,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   ombre: OMBRE,
   ulti: ULTI,
   frenchtarot: OMBRE,
+  koenigrufen: OMBRE,
   cinch: CINCH,
   loo: LOO,
   basra: BASRA,

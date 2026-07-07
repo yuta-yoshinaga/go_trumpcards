@@ -3392,6 +3392,17 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"frenchtarot.helpSetDifficulty"},
 			})
 	}},
+	{Name: "koenigrufen", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewKoenigrufenCuiController(usecase.NewKoenigrufenInteractor(
+				domain.NewDefaultKoenigrufen(), new(presenter.KoenigrufenCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "koenigrufen.helpTitle",
+				CommandKeys:       []string{"koenigrufen.helpBid", "koenigrufen.helpPass", "koenigrufen.helpCallKing", "koenigrufen.helpDiscard", "koenigrufen.helpPlay", "koenigrufen.helpNext", "koenigrufen.helpNextRound"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"koenigrufen.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

@@ -75,6 +75,7 @@ import type {
   KlaverjasResponse,
   KlondikeResponse,
   KnockoutWhistResponse,
+  KoenigrufenResponse,
   KoiKoiResponse,
   LetItRideResponse,
   LooResponse,
@@ -249,6 +250,7 @@ import { getKingHint } from '../utils/hints/kingHint';
 import { getKlaverjasHint } from '../utils/hints/klaverjasHint';
 import { getKlondikeHint } from '../utils/hints/klondikeHint';
 import { getKnockoutWhistHint } from '../utils/hints/knockoutWhistHint';
+import { getKoenigrufenHint } from '../utils/hints/koenigrufenHint';
 import { getKoiKoiHint } from '../utils/hints/koikoiHint';
 import { getLetitrideHint } from '../utils/hints/letitrideHint';
 import { getLooHint } from '../utils/hints/looHint';
@@ -509,6 +511,7 @@ const hintFactories = {
   ombre: (s) => getOmbreHint(s as OmbreResponse),
   ulti: (s) => getUltiHint(s as UltiResponse),
   frenchtarot: (s) => getFrenchTarotHint(s as FrenchTarotResponse),
+  koenigrufen: (s) => getKoenigrufenHint(s as KoenigrufenResponse),
   cinch: (s) => getCinchHint(s as CinchResponse),
   loo: (s) => getLooHint(s as LooResponse),
   basra: (s) => getBasraHint(s as BasraResponse),
