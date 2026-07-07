@@ -80,6 +80,7 @@ import fortyfives from '../../../docs/manual/web/fortyfives.md?raw';
 import fortythieves from '../../../docs/manual/web/fortythieves.md?raw';
 import fourcardpoker from '../../../docs/manual/web/fourcardpoker.md?raw';
 import freecell from '../../../docs/manual/web/freecell.md?raw';
+import frenchtarot from '../../../docs/manual/web/frenchtarot.md?raw';
 import gaigel from '../../../docs/manual/web/gaigel.md?raw';
 import gaps from '../../../docs/manual/web/gaps.md?raw';
 import ginrummy from '../../../docs/manual/web/ginrummy.md?raw';
@@ -315,6 +316,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/calabresella': calabresella,
   '/ombre': ombre,
   '/ulti': ulti,
+  '/frenchtarot': frenchtarot,
   '/cinch': cinch,
   '/loo': loo,
   '/basra': basra,

@@ -721,6 +721,9 @@ var registry = []*Game{
 	// Hachi-Hachi is the classic 3-player Japanese hanafuda game (88-point
 	// settlement); reuses the hanafuda deck + procedural render path (ADR-0033).
 	{Name: "hachihachi", Category: CategoryExtra},
+	// French Tarot is a 78-card tarot trick-taker (4 suits×14 + 21 atouts + Excuse);
+	// the first tarot-deck game on the non-52 procedural render path (ADR-0033).
+	{Name: "frenchtarot", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

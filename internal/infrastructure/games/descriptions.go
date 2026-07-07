@@ -224,6 +224,7 @@ var gameDescriptions = map[string]string{
 	"koikoi":              "Koi-Koi (こいこい)",
 	"gostop":              "Go-Stop / Godori (ゴーストップ)",
 	"hachihachi":          "Hachi-Hachi (八八)",
+	"frenchtarot":         "French Tarot (フレンチタロット)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

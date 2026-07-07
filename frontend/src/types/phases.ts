@@ -411,6 +411,16 @@ export const UltiPhase = {
   GAME_END: 5,
 } as const;
 
+/** French Tarot (フレンチタロット) phase constants (sync: internal/domain/FrenchTarot.go). */
+export const FrenchTarotPhase = {
+  BID: 0,
+  CHIEN: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
 /** Cinch phase constants (sync: internal/domain/Cinch.go). */
 export const CinchPhase = {
   BID: 0,

@@ -3381,6 +3381,17 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"hachihachi.helpSetDifficulty"},
 			})
 	}},
+	{Name: "frenchtarot", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewFrenchTarotCuiController(usecase.NewFrenchTarotInteractor(
+				domain.NewDefaultFrenchTarot(), new(presenter.FrenchTarotCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "frenchtarot.helpTitle",
+				CommandKeys:       []string{"frenchtarot.helpBid", "frenchtarot.helpPass", "frenchtarot.helpDiscard", "frenchtarot.helpPlay", "frenchtarot.helpNext", "frenchtarot.helpNextRound"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"frenchtarot.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

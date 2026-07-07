@@ -379,4 +379,12 @@ func init() {
 			return usecase.RestoreHachiHachiInteractor(data, new(presenter.HachiHachiWebPresenter))
 		},
 		controller.NewHachiHachiWebControllerWithProvider)
+	games.RegisterKVGame("frenchtarot", games.CategoryExtra,
+		func() usecase.FrenchTarotInteractorIF {
+			return usecase.NewFrenchTarotInteractor(domain.NewDefaultFrenchTarot(), new(presenter.FrenchTarotWebPresenter))
+		},
+		func(data []byte) (usecase.FrenchTarotInteractorIF, error) {
+			return usecase.RestoreFrenchTarotInteractor(data, new(presenter.FrenchTarotWebPresenter))
+		},
+		controller.NewFrenchTarotWebControllerWithProvider)
 }

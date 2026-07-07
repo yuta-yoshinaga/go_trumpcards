@@ -1,0 +1,82 @@
+{
+  "title": "French Tarot",
+  "phase": {
+    "bid": "Auction",
+    "chien": "Chien Exchange",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Deal End",
+    "gameEnd": "Game Over"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetDeals": "Deals per Match",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Deal {{n}}",
+  "trick": "Trick {{n}}",
+  "contract": "Contract: {{contract}}",
+  "contractNone": "-",
+  "contractPetite": "Petite",
+  "contractGarde": "Garde",
+  "contractGardeSans": "Garde Sans",
+  "contractGardeContre": "Garde Contre",
+  "bidNone": "None",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "points": "{{points}} pts",
+  "score": "Score: {{score}}",
+  "currentTrick": "Current Trick",
+  "players": "Players",
+  "chienLabel": "Chien (revealed)",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "declarerBadge": "Declarer",
+  "bidPass": "Pass",
+  "bidPetite": "Petite",
+  "bidGarde": "Garde",
+  "bidGardeSans": "Garde Sans",
+  "bidGardeContre": "Garde Contre",
+  "bidPhase": "Auction — pass, or declare a higher contract (current highest bid: {{bid}}).",
+  "chienPhase": "Chien exchange — bury 6 cards from your hand ({{count}}/6 selected). Kings and the Excuse cannot be buried.",
+  "chienRestricted": "This card cannot be buried (King / Excuse).",
+  "discardButton": "Bury ({{count}}/6)",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Deal",
+  "outcomeNone": "-",
+  "outcomeWin": "Made (declarer wins)",
+  "outcomeLoss": "Failed (defenders win)",
+  "result": {
+    "humanWin": "Game over! You win!",
+    "cpuWin": "Game over! Player {{player}} wins!"
+  },
+  "roundResult": {
+    "title": "Deal Result",
+    "outcome": "Result: {{outcome}}",
+    "declarer": "Declarer: {{name}}",
+    "contract": "Contract: {{contract}}",
+    "captured": "Captured: {{points}} pts"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "bid_take": "Strong hand — declare a contract",
+    "bid_pass": "Weak hand — pass",
+    "discard_weak": "Bury the weakest cards",
+    "lead_high": "As declarer, lead high to seize the initiative",
+    "lead_low": "As a defender, lead low to conserve strength",
+    "follow_win": "You can win this trick — take it",
+    "follow_duck": "Cannot win or not worth it — duck",
+    "play_excuse": "Play the Excuse to keep it and conserve your cards"
+  },
+  "tutorial": {
+    "trickDisplay": "The current trick. You must follow the led suit; if you cannot, you must play a trump; failing that, any card. The highest trump wins the trick.",
+    "playerHand": "Your hand. Click a legal card to select it. French Tarot is a 4-player trick-taker on the 78-card tarot deck (four 14-card suits, 21 trumps, and the Excuse).",
+    "playButton": "Once a card is selected, play it with this button. In the auction you pass or declare Petite / Garde / Garde Sans / Garde Contre. In the chien phase you bury 6 cards.",
+    "info": "French Tarot is a 4-player trick-taker on the 78-card deck. The highest bidder in the auction becomes the declarer versus three CPU defenders. On Petite/Garde the 6-card chien is revealed and merged into the hand, then 6 cards are buried. The declarer wins the deal by reaching a card-point target that depends on the number of bouts (trumps 1, 21, and the Excuse). Multipliers: Petite ×1, Garde ×2, Garde Sans ×4, Garde Contre ×6. The player with the highest cumulative score after the set number of deals wins.",
+    "resetButton": "Use the reset button to start a new game."
+  }
+}

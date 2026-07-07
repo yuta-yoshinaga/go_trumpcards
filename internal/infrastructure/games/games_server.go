@@ -1085,4 +1085,9 @@ func init() {
 			return usecase.NewHachiHachiInteractor(domain.NewDefaultHachiHachi(), new(presenter.HachiHachiWebPresenter))
 		},
 		controller.NewHachiHachiWebController)
+	BindWebControllerFor("frenchtarot",
+		func() usecase.FrenchTarotInteractorIF {
+			return usecase.NewFrenchTarotInteractor(domain.NewDefaultFrenchTarot(), new(presenter.FrenchTarotWebPresenter))
+		},
+		controller.NewFrenchTarotWebController)
 }
