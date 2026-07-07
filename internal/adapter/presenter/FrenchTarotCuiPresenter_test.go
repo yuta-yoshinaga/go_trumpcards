@@ -99,6 +99,24 @@ func TestFrenchTarotCuiPresenter_Output(t *testing.T) {
 		result := p.Output(g, errors.New("boom"))
 		assert.Contains(t, result, "boom")
 	})
+
+	t.Run("game end draw banner (no winner)", func(t *testing.T) {
+		// Pre-load scores so a single deal ends the match in a four-way tie:
+		// declarer −243, each defender +81 -> all seats level at 81 (winnerPlayer -1).
+		g := frenchTarotCuiGame()
+		cfg := domain.DefaultFrenchTarotConfig()
+		cfg.TargetDeals = 1
+		g.SetConfig(cfg)
+		g.SetRoundNumber(1)
+		g.SetDeclarerIdx(0)
+		g.SetContract(domain.FrenchTarotBidPetite)
+		g.SetPlayerScores([domain.FrenchTarotPlayerCnt]int{324, 0, 0, 0})
+		g.SetPhase(domain.FrenchTarotPhaseRoundEnd)
+		g.ScoreRound()
+		assert.True(t, g.GetGameEndFlag())
+		assert.Equal(t, -1, g.GetWinnerPlayer())
+		assert.NotEmpty(t, p.Output(g, nil))
+	})
 }
 
 func TestFrenchTarotCuiPresenter_HintOutput(t *testing.T) {

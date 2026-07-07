@@ -51,4 +51,28 @@ describe('formatFrenchTarotState', () => {
     expect(out).toContain('HINT: card indices [1, 2] (discard_weak)');
     expect(out).toContain('hello');
   });
+
+  it('falls back to raw numbers for out-of-range phase / contract / bid', () => {
+    const out = formatFrenchTarotState(makeFrenchTarotState({ phase: 99, contract: 99, highestBid: 99 }));
+    // Unknown enum indices fall through the `?? state.x` fallbacks and print the raw number.
+    expect(out).toContain('phase: 99');
+    expect(out).toContain('contract: 99');
+    expect(out).toContain('highestBid: 99');
+  });
+
+  it('falls back to the raw outcome number when out of range', () => {
+    const out = formatFrenchTarotState(makeFrenchTarotState({ phase: 5, outcome: 99 }));
+    expect(out).toContain('deal result: 99');
+  });
+
+  it('renders a trick card whose playerIdx is not a seated player', () => {
+    const out = formatFrenchTarotState(
+      makeFrenchTarotState({
+        currentTrick: [
+          { playerIdx: 9, card: { design: 'SPADE', value: 5, glyph: '♠', label: '5', color: 'black', deck: 'tarot' } },
+        ],
+      }),
+    );
+    expect(out).toContain('trick:');
+  });
 });

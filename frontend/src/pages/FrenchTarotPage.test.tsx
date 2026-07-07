@@ -240,10 +240,37 @@ describe('FrenchTarotPage', () => {
     await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたの勝ち！')).toBeInTheDocument());
   });
 
+  it('the next-game button at game end resets immediately', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<FrenchTarotPage />);
+    const nextGame = await screen.findByRole('button', { name: '次のゲーム' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(gameEndState);
+    fireEvent.click(nextGame);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', expect.anything()));
+  });
+
   it('does not show the play button on a CPU turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<FrenchTarotPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'D ♥' })).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
+  });
+
+  it('changing the CPU difficulty and target-deals selects updates the config', async () => {
+    renderWithProviders(<FrenchTarotPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'D ♥' })).toBeInTheDocument());
+    const difficulty = screen.getByLabelText('CPU難易度') as HTMLSelectElement;
+    fireEvent.change(difficulty, { target: { value: '2' } });
+    expect(difficulty.value).toBe('2');
+    const deals = screen.getByLabelText('マッチのディール数') as HTMLSelectElement;
+    fireEvent.change(deals, { target: { value: '3' } });
+    expect(deals.value).toBe('3');
+  });
+
+  it('renders the backend hint banner with its card indices', async () => {
+    mockExec.mockResolvedValue(makeFrenchTarotState({ hint: { cardIndices: [0, 2], reason: 'lead_high' } }));
+    renderWithProviders(<FrenchTarotPage />);
+    await waitFor(() => expect(screen.getByText(/\[0\], \[2\]/)).toBeInTheDocument());
   });
 });

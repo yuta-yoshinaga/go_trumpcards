@@ -177,6 +177,54 @@ func TestFrenchTarotWebPresenter_PhaseMessages(t *testing.T) {
 	}
 }
 
+// frenchTarotForceEnd builds a match that ends after one deal, pre-loading the
+// player scores so the post-deal totals resolve to a specific leader (or a tie).
+// The declarer captures nothing (a heavy Petite loss: declarer −243, each
+// defender +81), so the final standings are fully determined by the presets.
+func frenchTarotForceEnd(declarer int, preset [domain.FrenchTarotPlayerCnt]int) *domain.FrenchTarot {
+	g := domain.NewDefaultFrenchTarot()
+	g.Reset()
+	cfg := domain.DefaultFrenchTarotConfig()
+	cfg.TargetDeals = 1
+	g.SetConfig(cfg)
+	g.SetRoundNumber(1)
+	g.SetDeclarerIdx(declarer)
+	g.SetContract(domain.FrenchTarotBidPetite)
+	g.SetPlayerScores(preset)
+	g.SetPhase(domain.FrenchTarotPhaseRoundEnd)
+	g.ScoreRound()
+	return g
+}
+
+func TestFrenchTarotWebPresenter_WinnerMessages(t *testing.T) {
+	p := &presenter.FrenchTarotWebPresenter{}
+	cases := []struct {
+		name     string
+		declarer int
+		preset   [domain.FrenchTarotPlayerCnt]int
+		wantCode string
+	}{
+		{"humanWin", 1, [domain.FrenchTarotPlayerCnt]int{300, 0, 0, 0}, "frenchtarot.result.humanWin"},
+		{"cpuWin", 0, [domain.FrenchTarotPlayerCnt]int{0, 10, 0, 0}, "frenchtarot.result.cpuWin"},
+		{"draw", 0, [domain.FrenchTarotPlayerCnt]int{324, 0, 0, 0}, "frenchtarot.result.draw"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			g := frenchTarotForceEnd(c.declarer, c.preset)
+			if !g.GetGameEndFlag() {
+				t.Fatalf("expected game-end state")
+			}
+			var parsed controller.FrenchTarotWebOutput
+			if err := json.Unmarshal([]byte(p.Output(g, nil)), &parsed); err != nil {
+				t.Fatalf("unmarshal: %v", err)
+			}
+			if parsed.MessageCode != c.wantCode {
+				t.Errorf("messageCode = %q, want %q", parsed.MessageCode, c.wantCode)
+			}
+		})
+	}
+}
+
 func TestFrenchTarotWebPresenter_GameEnd(t *testing.T) {
 	g := newFrenchTarotGame()
 	g.Reset()
