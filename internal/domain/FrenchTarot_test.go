@@ -594,7 +594,9 @@ func TestFrenchTarotFullGameDrive(t *testing.T) {
 		}
 	}
 	assert.True(t, g.GetGameEndFlag())
-	assert.GreaterOrEqual(t, g.GetWinnerPlayer(), 0)
+	// -1 は同点トップ (引き分け)、0..3 は単独勝者。どちらも有効な終局。
+	assert.GreaterOrEqual(t, g.GetWinnerPlayer(), -1)
+	assert.Less(t, g.GetWinnerPlayer(), domain.FrenchTarotPlayerCnt)
 }
 
 // frenchTarotFirstLegalDiscards returns 6 indices of legal écart cards from the
