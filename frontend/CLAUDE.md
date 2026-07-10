@@ -30,7 +30,7 @@ Shared building blocks:
 | `useGameApi(apiFn, opts)` | Server-state management with loading / error / retry |
 | `GamePageShell` | Background + heading + phase indicator + reset dialog wrapper (most pages use this) |
 | `TutorialWrapper` | Tutorial provider + i18n init (always wraps the exported `XPage`) |
-| `useCliMode` + `useCliGame` + `<CliTerminal>` + `<CliToggle>` | CLI fallback mode, available on most pages (~127). Per-game parsing/formatting lives in `src/utils/cli/commands/<game>Commands.ts` + `src/utils/cli/formatters/<game>Formatter.ts` |
+| `useCliMode` + `useCliGame` + `<CliTerminal>` + `<CliToggle>` | CLI fallback mode, available on most pages (~191). Per-game parsing/formatting lives in `src/utils/cli/commands/<game>Commands.ts` + `src/utils/cli/formatters/<game>Formatter.ts` |
 
 ## Package Manager Rule
 

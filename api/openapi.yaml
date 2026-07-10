@@ -385,6 +385,70 @@ tags:
     description: Tablanet (タブラネット / Tablić) — a Balkan (Serbian/Macedonian) fishing (capture) card game for 4 players (1 human + 3 CPU, each scoring individually) on a standard 52-card pack; each player is dealt 4 cards and 4 cards are placed face-up on the table; on your turn you play one hand card — a number card (A=1..10) captures table cards of the same rank and/or any table subset whose values sum to the played card's value (multiple groups at once), Q/K capture only by matching rank, and a Jack sweeps all table cards except other Jacks; clearing the whole table with a single non-Jack card scores a "Tabla" bonus, while a Jack sweep is not a Tabla, and if nothing is captured the card is left on the table (trail); when all hands are empty fresh 4-card hands are dealt (no new table cards) until the stock is exhausted, and leftover table cards go to the last player who captured; scoring at game end — most captured cards (unique) +3, 10♦ +2, each Ace +1, each Jack +1, 2♣ +1, each Tabla +1 — highest total wins (ties = multiple winners), with no target-score race (nextround starts a fresh game); commands reset (r), play (p h [t...]), next (n), nextround (nr), setdifficulty (sd), hint (h), log (l); phases 0 Play, 1 GameEnd
   - name: trenteetquarante
     description: Trente et Quarante (トラント・エ・カラント / Rouge et Noir) — a classic Monte-Carlo banking game for 1 player vs the bank on a standard 52-card pack with no player card decisions; the player picks one of four even-money bets — Noir (0), Rouge (1), Couleur (2), Inverse (3) — plus a stake, then the dealer deals two rows (Noir/black first, then Rouge/red), summing each (face cards = 10, Ace = 1) until the total reaches 31 or more; the row with the lower total wins; Noir/Rouge bet on which row wins, while Couleur/Inverse bet on whether the color of the first card dealt matches the winning color; winning bets pay 1:1, and a tie at exactly 31 in both rows is a "Refait" that costs the player half the stake; chips carry over across rounds (reset deals the next round); commands reset (r), bet (b amount noir|rouge|couleur|inverse), log (l); phases 1 Bet, 2 Dealt, 3 End
+  - name: agnes
+    description: Agnes Sorel (アグネス・ソレル) game
+  - name: anaconda
+    description: Anaconda (アナコンダ) game
+  - name: bouillotte
+    description: Bouillotte (ブイヨット) game
+  - name: carioca
+    description: Carioca (カリオカ) game
+  - name: cego
+    description: Cego (チェゴ) game
+  - name: flowergarden
+    description: Flower Garden (フラワーガーデン) game
+  - name: fortyandeight
+    description: Forty and Eight (フォーティ・アンド・エイト) game
+  - name: frenchtarot
+    description: French Tarot (フレンチタロット) game
+  - name: gaigel
+    description: Gaigel (ガイゲル) game
+  - name: gostop
+    description: Go-Stop (ゴーストップ) game
+  - name: guts
+    description: Guts (ガッツ) game
+  - name: hachihachi
+    description: Hachi-Hachi (八八) game
+  - name: indianrummy
+    description: Indian Rummy (インドラミー) game
+  - name: jass
+    description: Jass (ヤス／シーバー) game
+  - name: kingalbert
+    description: King Albert (キング・アルバート) game
+  - name: koenigrufen
+    description: Königrufen (ケーニッヒルーフェン) game
+  - name: koikoi
+    description: Koi-Koi (こいこい) game
+  - name: machiavelli
+    description: Machiavelli (マキャヴェッリ) game
+  - name: michigan
+    description: Michigan (ミシガン) game
+  - name: oichokabu
+    description: Oicho-Kabu (おいちょかぶ) game
+  - name: ombre
+    description: Ombre / Hombre (オンブル) game
+  - name: pan
+    description: Panguingue / Pan (パングインゲ) game
+  - name: primero
+    description: Primero (プリメロ) game
+  - name: rook
+    description: Rook (ルーク) game
+  - name: samba
+    description: Samba (サンバ) game
+  - name: scarto
+    description: Scarto (スカルト) game
+  - name: streetsandalleys
+    description: Streets and Alleys (ストリート・アンド・アレイズ) game
+  - name: sultan
+    description: Sultan (スルタン) game
+  - name: tysiac
+    description: Thousand / Tysiąc (トゥシオンツ) game
+  - name: ulti
+    description: Ulti / Ultimó (ウルティ) game
+  - name: watten
+    description: Watten (ヴァッテン) game
+  - name: wizard
+    description: Wizard (ウィザード) game
 
 paths:
   /blackjack/exec:
@@ -17152,6 +17216,1895 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TrenteEtQuaranteResponse'
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /agnes/exec:
+    post:
+      tags:
+        - agnes
+      summary: Execute a Agnes Sorel (アグネス・ソレル) game command
+      description: |
+        Send a command to advance the Agnes Sorel (アグネス・ソレル) game session identified by
+        `sessionId`. Klondike-family single-deck solitaire in which the foundation base rank is set by the first card dealt and tableau builds down by alternating colour.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: agnesExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /anaconda/exec:
+    post:
+      tags:
+        - anaconda
+      summary: Execute a Anaconda (アナコンダ) game command
+      description: |
+        Send a command to advance the Anaconda (アナコンダ) game session identified by
+        `sessionId`. Anaconda (pass-the-trash) poker variant: each player is dealt seven cards, passes unwanted cards to a neighbour over several rounds, then reveals the best five-card poker hand.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: anacondaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /bouillotte/exec:
+    post:
+      tags:
+        - bouillotte
+      summary: Execute a Bouillotte (ブイヨット) game command
+      description: |
+        Send a command to advance the Bouillotte (ブイヨット) game session identified by
+        `sessionId`. Bouillotte, an 18th-century French vying/gambling game related to Brelan, played with a stripped pack where players bet and bluff over the best combination.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: bouillotteExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /carioca/exec:
+    post:
+      tags:
+        - carioca
+      summary: Execute a Carioca (カリオカ) game command
+      description: |
+        Send a command to advance the Carioca (カリオカ) game session identified by
+        `sessionId`. Carioca, a South American contract-rummy variant played over several deals in which each deal has a mandatory meld contract to fulfil before going out.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: cariocaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /cego/exec:
+    post:
+      tags:
+        - cego
+      summary: Execute a Cego (チェゴ) game command
+      description: |
+        Send a command to advance the Cego (チェゴ) game session identified by
+        `sessionId`. Cego, a German Baden tarock trick-taker on a 54-card tarot pack featuring the Cego blind-swap contract (declarer versus the field).
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: cegoExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /flowergarden/exec:
+    post:
+      tags:
+        - flowergarden
+      summary: Execute a Flower Garden (フラワーガーデン) game command
+      description: |
+        Send a command to advance the Flower Garden (フラワーガーデン) game session identified by
+        `sessionId`. Flower Garden, a single-deck open solitaire with six tableau columns and a large 'flower bed' reserve of loose cards all available for play.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: flowergardenExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /fortyandeight/exec:
+    post:
+      tags:
+        - fortyandeight
+      summary: Execute a Forty and Eight (フォーティ・アンド・エイト) game command
+      description: |
+        Send a command to advance the Forty and Eight (フォーティ・アンド・エイト) game session identified by
+        `sessionId`. Forty and Eight, a two-deck solitaire with eight tableau columns of five cards, building down by suit and dealing from a stock through the waste.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: fortyandeightExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /frenchtarot/exec:
+    post:
+      tags:
+        - frenchtarot
+      summary: Execute a French Tarot (フレンチタロット) game command
+      description: |
+        Send a command to advance the French Tarot (フレンチタロット) game session identified by
+        `sessionId`. French Tarot, a 78-card tarot trick-taker with bidding, a chien (dog), and the declarer playing alone against three defenders; scoring depends on captured bouts.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: frenchtarotExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /gaigel/exec:
+    post:
+      tags:
+        - gaigel
+      summary: Execute a Gaigel (ガイゲル) game command
+      description: |
+        Send a command to advance the Gaigel (ガイゲル) game session identified by
+        `sessionId`. Gaigel, a German Swabian point-trick game of the Sixty-Six family played with a doubled Piquet pack, featuring marriages and a race to a target score.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: gaigelExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /gostop/exec:
+    post:
+      tags:
+        - gostop
+      summary: Execute a Go-Stop (ゴーストップ) game command
+      description: |
+        Send a command to advance the Go-Stop (ゴーストップ) game session identified by
+        `sessionId`. Go-Stop, a Korean flower-card (hanafuda) capture game in which players match cards by month to score sets and decide to 'Go' (continue) or 'Stop' (settle).
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: gostopExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /guts/exec:
+    post:
+      tags:
+        - guts
+      summary: Execute a Guts (ガッツ) game command
+      description: |
+        Send a command to advance the Guts (ガッツ) game session identified by
+        `sessionId`. Guts, a fast gambling poker game where players simultaneously declare whether they are in or out and the losers of a showdown match the pot.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: gutsExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /hachihachi/exec:
+    post:
+      tags:
+        - hachihachi
+      summary: Execute a Hachi-Hachi (八八) game command
+      description: |
+        Send a command to advance the Hachi-Hachi (八八) game session identified by
+        `sessionId`. Hachi-Hachi (88), a three-player hanafuda game where players capture matching flower cards to score yaku and settle points around a base of 88.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: hachihachiExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /indianrummy/exec:
+    post:
+      tags:
+        - indianrummy
+      summary: Execute a Indian Rummy (インドラミー) game command
+      description: |
+        Send a command to advance the Indian Rummy (インドラミー) game session identified by
+        `sessionId`. Indian Rummy, a 13-card rummy variant using jokers/wild cards in which players form pure and impure sequences plus sets before declaring.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: indianrummyExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /jass/exec:
+    post:
+      tags:
+        - jass
+      summary: Execute a Jass (ヤス／シーバー) game command
+      description: |
+        Send a command to advance the Jass (ヤス／シーバー) game session identified by
+        `sessionId`. Jass (Schieber), a Swiss trick-taking point game in which the Jack (Jass) and Nine (Nell) of trumps are the top cards and melds add bonus points.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: jassExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /kingalbert/exec:
+    post:
+      tags:
+        - kingalbert
+      summary: Execute a King Albert (キング・アルバート) game command
+      description: |
+        Send a command to advance the King Albert (キング・アルバート) game session identified by
+        `sessionId`. King Albert, a single-deck open solitaire dealing a nine-column staircase tableau plus a seven-card reserve, building down by alternating colour.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: kingalbertExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /koenigrufen/exec:
+    post:
+      tags:
+        - koenigrufen
+      summary: Execute a Königrufen (ケーニッヒルーフェン) game command
+      description: |
+        Send a command to advance the Königrufen (ケーニッヒルーフェン) game session identified by
+        `sessionId`. Königrufen, an Austrian tarock game on a 54-card pack featuring the 'call a king' secret-partnership mechanism and declarer-versus-field play.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: koenigrufenExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /koikoi/exec:
+    post:
+      tags:
+        - koikoi
+      summary: Execute a Koi-Koi (こいこい) game command
+      description: |
+        Send a command to advance the Koi-Koi (こいこい) game session identified by
+        `sessionId`. Koi-Koi, a two-player hanafuda game where players capture matching flower cards to build yaku and choose to 'Koi-Koi' (continue) or stop for points.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: koikoiExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /machiavelli/exec:
+    post:
+      tags:
+        - machiavelli
+      summary: Execute a Machiavelli (マキャヴェッリ) game command
+      description: |
+        Send a command to advance the Machiavelli (マキャヴェッリ) game session identified by
+        `sessionId`. Machiavelli, an Italian rummy played with two packs in which players may rearrange the cards already on the table to make room for their own melds.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: machiavelliExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /michigan/exec:
+    post:
+      tags:
+        - michigan
+      summary: Execute a Michigan (ミシガン) game command
+      description: |
+        Send a command to advance the Michigan (ミシガン) game session identified by
+        `sessionId`. Michigan (Newmarket/stops family): players stake chips on boodle cards, then play cards up in suit sequence, claiming stakes as matching cards appear.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: michiganExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /oichokabu/exec:
+    post:
+      tags:
+        - oichokabu
+      summary: Execute a Oicho-Kabu (おいちょかぶ) game command
+      description: |
+        Send a command to advance the Oicho-Kabu (おいちょかぶ) game session identified by
+        `sessionId`. Oicho-Kabu, a Japanese kabufuda gambling game similar to baccarat where players aim for a hand total whose last digit is closest to nine (kabu).
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: oichokabuExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /ombre/exec:
+    post:
+      tags:
+        - ombre
+      summary: Execute a Ombre / Hombre (オンブル) game command
+      description: |
+        Send a command to advance the Ombre / Hombre (オンブル) game session identified by
+        `sessionId`. Ombre (Hombre), a classic three-player trick-taker on a 40-card Spanish-style pack with a bidding declarer (the Ombre) contending against two opponents.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: ombreExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /pan/exec:
+    post:
+      tags:
+        - pan
+      summary: Execute a Panguingue / Pan (パングインゲ) game command
+      description: |
+        Send a command to advance the Panguingue / Pan (パングインゲ) game session identified by
+        `sessionId`. Panguingue (Pan), a multi-pack rummy game in which players draw and meld runs and sets, paying and collecting chips for scoring 'conditions'.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: panExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /primero/exec:
+    post:
+      tags:
+        - primero
+      summary: Execute a Primero (プリメロ) game command
+      description: |
+        Send a command to advance the Primero (プリメロ) game session identified by
+        `sessionId`. Primero, a Renaissance gambling/vying game (an ancestor of poker) where players bet on four-card combinations such as flush, prime, and supremus.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: primeroExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /rook/exec:
+    post:
+      tags:
+        - rook
+      summary: Execute a Rook (ルーク) game command
+      description: |
+        Send a command to advance the Rook (ルーク) game session identified by
+        `sessionId`. Rook, a trick-taking game played with the dedicated 57-card Rook deck (four coloured suits 1-14 plus the Rook bird card) featuring bidding and a nest/kitty.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: rookExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /samba/exec:
+    post:
+      tags:
+        - samba
+      summary: Execute a Samba (サンバ) game command
+      description: |
+        Send a command to advance the Samba (サンバ) game session identified by
+        `sessionId`. Samba, a three-deck Canasta variant that additionally allows same-suit sequences (sambas) alongside standard rank melds and canastas.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: sambaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /scarto/exec:
+    post:
+      tags:
+        - scarto
+      summary: Execute a Scarto (スカルト) game command
+      description: |
+        Send a command to advance the Scarto (スカルト) game session identified by
+        `sessionId`. Scarto, a Piedmontese three-player tarot trick-taker on a 78-card pack with no bidding; the dealer discards to the talon and then leads the tricks.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: scartoExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /streetsandalleys/exec:
+    post:
+      tags:
+        - streetsandalleys
+      summary: Execute a Streets and Alleys (ストリート・アンド・アレイズ) game command
+      description: |
+        Send a command to advance the Streets and Alleys (ストリート・アンド・アレイズ) game session identified by
+        `sessionId`. Streets and Alleys, a single-deck open solitaire (a FreeCell relative without free cells) dealing all 52 cards into eight tableau columns.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: streetsandalleysExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /sultan/exec:
+    post:
+      tags:
+        - sultan
+      summary: Execute a Sultan (スルタン) game command
+      description: |
+        Send a command to advance the Sultan (スルタン) game session identified by
+        `sessionId`. Sultan (Sultan of Turkey), a two-deck builder solitaire arranging eight Kings and a Queen into a decorative rosette built up in suit.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: sultanExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /tysiac/exec:
+    post:
+      tags:
+        - tysiac
+      summary: Execute a Thousand / Tysiąc (トゥシオンツ) game command
+      description: |
+        Send a command to advance the Thousand / Tysiąc (トゥシオンツ) game session identified by
+        `sessionId`. Tysiąc (Thousand), a Polish point-trick game on a 24-card pack featuring marriage bonuses and bidding, with the first player to 1000 points winning.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: tysiacExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /ulti/exec:
+    post:
+      tags:
+        - ulti
+      summary: Execute a Ulti / Ultimó (ウルティ) game command
+      description: |
+        Send a command to advance the Ulti / Ultimó (ウルティ) game session identified by
+        `sessionId`. Ulti (Ultimó), a Hungarian tarokk-influenced trick-taker on a 32-card Hungarian pack where the declarer bids compound contracts against two opponents.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: ultiExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /watten/exec:
+    post:
+      tags:
+        - watten
+      summary: Execute a Watten (ヴァッテン) game command
+      description: |
+        Send a command to advance the Watten (ヴァッテン) game session identified by
+        `sessionId`. Watten, a Bavarian/Tyrolean trick game on a 33-card pack with a fixed set of top cards (the Critical cards) and bluff-driven raising over the deal's value.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: wattenExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /wizard/exec:
+    post:
+      tags:
+        - wizard
+      summary: Execute a Wizard (ウィザード) game command
+      description: |
+        Send a command to advance the Wizard (ウィザード) game session identified by
+        `sessionId`. Wizard, a 60-card exact-bid trick-taker (a standard pack plus four Wizards and four Jesters) in which players bid the exact number of tricks they will win.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: wizardExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
         '400':
           description: Bad request (unsupported command, invalid parameters, or session error)
           content:
