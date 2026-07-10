@@ -126,6 +126,8 @@ tags:
     description: Texas Hold'em Bonus Poker (テキサスホールデムボーナスポーカー) game
   - name: ohhell
     description: Oh Hell (オー・ヘル) game
+  - name: ninetynine
+    description: Ninety-Nine (ナインティナイン) game
   - name: bridge
     description: Contract Bridge (コントラクトブリッジ) game
   - name: pineapple
@@ -289,6 +291,8 @@ tags:
     description: Aces Up (四つ葉のクローバー) - single-player solitaire with a standard 52-card deck. 4 tableau columns dealt 1 card each (48 to stock). Aces rank highest. Remove a column's top card when another column's top is the same suit and higher rank; deal one card onto each column; move a top card into an empty column. Win by clearing the board down to the four Aces.
   - name: whist
     description: Whist (ホイスト) - 4-player partnership trick-taking on a standard 52-card deck; 13-card hands, the last dealt card fixes the trump suit, must-follow trick play, the highest trump (or highest lead-suit card if none) wins each trick, and the team taking more than 6 tricks scores 1 point per trick over the book of 6.
+  - name: catchten
+    description: Catch the Ten (Scotch Whist / キャッチ・ザ・テン) - 4-player 2v2 partnership trick-taking on a Scottish 36-card deck (ranks 6-A × 4 suits); 9-card hands, the last dealt card fixes the trump suit, must-follow trick play. In the trump suit the rank order is special - J highest, then A, K, Q, 10, 9, 8, 7, 6; non-trump suits are A high down to 6. Honor capture - the trick winner scores trump J=11, 10=10, A=4, K=3, Q=2 (non-trump cards score nothing). First side to the point limit (default 41) wins; an exact tie when both reach the target in the same deal is a draw.
   - name: canfield
     description: Canfield (キャンフィールド) - single-player solitaire with a standard 52-card deck; 4 tableau columns, a 13-card reserve, a stock dealt 3 at a time, and 4 foundations built up by suit from a randomly chosen base rank with K-A wraparound. Tableau builds down alternating colors with wraparound; the reserve feeds the tableau.
   - name: sixcardgolf
@@ -361,6 +365,90 @@ tags:
     description: Double Klondike (ダブル・クロンダイク) — a two-deck (104-card) Klondike single-player solitaire; cards are dealt into 9 tableau columns (1..9 cards, only the top face-up) with the rest forming a three-card-draw stock, plus 8 foundations (two per suit); the tableau builds down in alternating colours (an empty column accepts only a King) and foundations build up by suit from Ace to King; the stock turns over three cards at a time and recycles the waste when empty, and moving a tableau top auto-flips the newly exposed card; moving all 104 cards to the foundations wins while running out of legal moves loses; commands d draw, mwt with col (waste to tableau), mwf (waste to foundation), mtt with fromCol, cardIndex and toCol (tableau to tableau), mtf with col (tableau to foundation), ac autocomplete, u undo, undo_n, g giveup, hint, log (l), reset (r); phases 0 Playing, 1 GameClear, 2 GameOver
   - name: blackhole
     description: Black Hole (ブラックホール) — a single-player logic-puzzle patience by David Parlett on a standard 52-card deck; the Ace of Spades seeds a single central foundation (the black hole) and the other 51 cards are dealt face-up into 17 fans of three; only a fan top can move, and a card may be played onto the black hole when its rank is one away from the current top (any suit, no King-Ace wrap); cards never leave the black hole, absorbing all 52 cards wins and running out of legal moves loses; commands m with fan, u undo, undo_n, g giveup, hint, log (l), reset (r); phases 0 Playing, 1 GameClear, 2 GameOver
+  - name: beggarmyneighbour
+    description: Beggar-My-Neighbour (ビガー・マイ・ネイバー) — a two-player (human vs CPU) war-style card game played with a standard 52-card deck split evenly 26-26 face-down; players alternate turning top cards onto a central pile; penalty cards (J=1, Q=2, K=3, A=4) force the opponent to pay that many cards; if a penalty card appears during payment the obligation flips; if the count is exhausted with no penalty card the last penalty player collects the entire central pile; collecting all 52 cards wins; command step (s) advances one action, autoplay runs to completion or round cap; phases 0 Play, 1 PayPenalty, 2 Collect, 3 GameEnd
+  - name: allfours
+    description: All Fours / Seven Up (オールフォーズ/セブンアップ) — a two-player (human elder hand vs CPU dealer) trick-taking game on a standard 52-card deck; each deal gives 6 cards each and flips a turn-up whose suit is the provisional trump; the non-dealer stands or begs, and on a beg the dealer gifts 1 point or runs the cards (3 more each plus a fresh trump, re-dealing if the deck is exhausted); must-follow trick play (trump always legal) scores High, Low, Jack and Game per deal; first to PointLimit (default 7) wins, with a Gift→High→Low→Jack→Game peg-out order breaking same-deal ties; commands stand (st), beg (bg), gift (g), run, play (p), next (n), nextround (nr); phases 0 Beg, 1 Gift, 2 Play, 3 TrickEnd, 4 RoundEnd, 5 GameEnd
+  - name: prsi
+    description: Prší (プルシー / Czech Crazy Eights / Mau Mau) — a Czech shedding game for 4 players (1 human + 3 CPU) on a 32-card pack (7,8,9,10,J,Q,K,A × 4 suits); each player is dealt 5 cards and one card starts the discard pile; play a card matching the discard top by suit or rank, otherwise draw 1 and end your turn; action cards — 7 forces the next player to draw 2 and 7s stack (a player facing a pending 7-penalty may stack another 7 or draw the accumulated count), Ace skips the next player (skips stack), and Under (Jack) also skips the next player; the first player to empty their hand wins immediately (no rounds or scoring); commands play (p) with cardIndex, draw (d), setdifficulty (sd), log (l), reset (r), quit (q); phases 0 Play, 1 GameEnd
+  - name: calabresella
+    description: Calabresella (カラブレセッラ / Terziglio) — an Italian (Calabrian) no-trump bidding trick-taker in the Tressette family for 3 players (1 human + 2 CPU) where a single soloist plays against a 2-player coalition, on a 40-card Italian pack (A,2,3,4,5,6,7,J,Q,K × 4 suits — 8/9/10 removed; same deck as Tressette/Briscola); each player is dealt 12 cards and the remaining 4 form the face-down widow (monte); bidding — each player in turn passes, declares chiamo (call, stake 1), or solo (stake 2), and the highest declaration becomes the soloist (if all pass, the forehand takes chiamo); the soloist then picks up the 4-card monte (16 cards) and discards 4 back down to 12; no trump — must-follow the led suit if able, otherwise play anything; trick rank 3>2>A>K>Q>J>7>6>5>4; card points in thirds A=3, 2/3/J/Q/K=1, others 0, winning the last trick (ultima) +1, total 33 thirds = 11 points per deal; the soloist must take more than half (≥18 of 33 thirds) to win the round and stake-based points transfer between the soloist and the coalition; first player to reach the target score (default 21) wins the match; commands reset (r), bid (b pass|chiamo|solo), discard (d), play (p), next (n), nextround (nr), setdifficulty (sd), hint (h), log (l); phases 0 Bid, 1 Monte, 2 Play, 3 TrickEnd, 4 RoundEnd, 5 GameEnd
+  - name: king
+    description: King (キング) — a Greek/Brazilian trick-avoidance compendium game for 4 players (1 human + 3 CPU, each scoring individually) on a standard 52-card pack; the match runs for exactly 7 deals, and each deal the dealer (親) chooses one of the 7 contracts not yet played this match, then a full round of 13 must-follow tricks is played and scored per the chosen contract; contracts 0 No Tricks (−2 per trick taken), 1 No Hearts (−2 per heart taken), 2 No Queens (−6 per queen taken), 3 No King of Hearts (−20 for capturing K♥), 4 No Last Two Tricks (−10 for each of the last two tricks taken), 5 No Men (−3 per Jack or King taken), 6 King/Trump — the dealer also chooses a trump suit and each trick taken scores +5 (the only positive contract); the six negative contracts are played no-trump; must follow the led suit if able, otherwise play anything (no overtrump obligation); trick strength A>K>Q>J>10>9>…>2 (trump beats non-trump only in the King contract); after all 7 contracts have each been played once the player with the highest total (least penalty) wins; commands reset (r), contract (c 0-6 [trump 1-4]), play (p), next (n), setdifficulty (sd), hint (h), log (l); phases 0 SelectContract, 1 Play, 2 TrickEnd, 3 RoundEnd, 4 GameEnd
+  - name: cinch
+    description: Cinch (チンチ / Double Pedro / High Five) — a 4-player (1 human + 3 CPU, each scoring individually) All-Fours/Pitch-family bidding trick-taker on a standard 52-card pack; each player is dealt 9 cards and bids in turn either 0 (pass) or 1-14, and the high bidder names trump and leads; a deal is worth 14 points — High (A of trump)=1, King of trump=1, Ten of trump ("Game")=1, Jack of trump=1, Right Pedro (5 of trump)=5, and Left Pedro (the 5 of the same color as trump)=5, where the Left Pedro ranks just below the trump 5 and counts as trump for following and winning; nine tricks are played per deal and must-follow the led suit if able, otherwise play anything; the bidder side must make its bid (capture at least the bid amount in points) or is set back (loses the bid amount), while non-bidders score the points they capture; the first player to reach the target score (default 21) wins; commands reset (r), bid (b 0-14), trump (t 1-4), play (p), next (n), nextround (nr), setdifficulty (sd), hint (h), log (l); phases 0 Bid, 1 NameTrump, 2 Play, 3 TrickEnd, 4 RoundEnd, 5 GameEnd
+  - name: loo
+    description: Loo (ルー / Lanterloo) — a classic English pot/gambling trick-taker (Five-card Loo) for 4 players (1 human + 3 CPU, each holding an individual chip stack) on a standard 52-card pack; each deal every player antes (default 3) into a carried-over pot, then a face-up turn-up card sets the trump suit; each player looks at their 5 cards and decides to play or pass; players who play compete over 5 tricks with must-follow-and-head (follow suit if able and, if you can beat the current best card, you must; when void of the led suit you must trump if you hold one, again heading if possible); each trick captured wins 1/5 of the pot, and a player who plays but takes no trick is "looed" and pays a penalty (the deal's starting pot) into the next deal's pot; if only one player plays they take the whole pot uncontested, and if nobody plays the pot carries over; chips accumulate over repeated deals (no target-score race — use nextround to settle and start the next deal); commands reset (r), decide (d 0-1 / play / pass), play (p), next (n), nextround (nr), setdifficulty (sd), hint (h), log (l); phases 0 Decide, 1 Play, 2 TrickEnd, 3 RoundEnd
+  - name: basra
+    description: Basra (バスラ / Bastra) — an Egyptian/Levantine fishing (capture) card game for 4 players (1 human + 3 CPU, each scoring individually) on a standard 52-card pack; each player is dealt 4 cards and 4 cards are placed face-up on the table; on your turn you play one hand card — a number card (A=1..10) captures table cards of the same rank and/or any table subset whose values sum to the played card's value (multiple groups at once), Q/K capture only by matching rank, and a Jack sweeps all table cards except other Jacks; clearing the whole table with a single non-Jack card scores a "Basra" (+10 bonus), while a Jack sweep is not a Basra, and if nothing is captured the card is left on the table (trail); when all hands are empty fresh 4-card hands are dealt (no new table cards) until the stock is exhausted, and leftover table cards go to the last player who captured; scoring at game end — most captured cards (unique) +3, 7♦ +3, 10♦ +2, each Ace +1, each Basra +10 — highest total wins (ties = multiple winners), with no target-score race (nextround starts a fresh game); commands reset (r), play (p h [t...]), next (n), nextround (nr), setdifficulty (sd), hint (h), log (l); phases 0 Play, 1 GameEnd
+  - name: tablanet
+    description: Tablanet (タブラネット / Tablić) — a Balkan (Serbian/Macedonian) fishing (capture) card game for 4 players (1 human + 3 CPU, each scoring individually) on a standard 52-card pack; each player is dealt 4 cards and 4 cards are placed face-up on the table; on your turn you play one hand card — a number card (A=1..10) captures table cards of the same rank and/or any table subset whose values sum to the played card's value (multiple groups at once), Q/K capture only by matching rank, and a Jack sweeps all table cards except other Jacks; clearing the whole table with a single non-Jack card scores a "Tabla" bonus, while a Jack sweep is not a Tabla, and if nothing is captured the card is left on the table (trail); when all hands are empty fresh 4-card hands are dealt (no new table cards) until the stock is exhausted, and leftover table cards go to the last player who captured; scoring at game end — most captured cards (unique) +3, 10♦ +2, each Ace +1, each Jack +1, 2♣ +1, each Tabla +1 — highest total wins (ties = multiple winners), with no target-score race (nextround starts a fresh game); commands reset (r), play (p h [t...]), next (n), nextround (nr), setdifficulty (sd), hint (h), log (l); phases 0 Play, 1 GameEnd
+  - name: trenteetquarante
+    description: Trente et Quarante (トラント・エ・カラント / Rouge et Noir) — a classic Monte-Carlo banking game for 1 player vs the bank on a standard 52-card pack with no player card decisions; the player picks one of four even-money bets — Noir (0), Rouge (1), Couleur (2), Inverse (3) — plus a stake, then the dealer deals two rows (Noir/black first, then Rouge/red), summing each (face cards = 10, Ace = 1) until the total reaches 31 or more; the row with the lower total wins; Noir/Rouge bet on which row wins, while Couleur/Inverse bet on whether the color of the first card dealt matches the winning color; winning bets pay 1:1, and a tie at exactly 31 in both rows is a "Refait" that costs the player half the stake; chips carry over across rounds (reset deals the next round); commands reset (r), bet (b amount noir|rouge|couleur|inverse), log (l); phases 1 Bet, 2 Dealt, 3 End
+  - name: agnes
+    description: Agnes Sorel (アグネス・ソレル) game
+  - name: anaconda
+    description: Anaconda (アナコンダ) game
+  - name: bouillotte
+    description: Bouillotte (ブイヨット) game
+  - name: carioca
+    description: Carioca (カリオカ) game
+  - name: cego
+    description: Cego (チェゴ) game
+  - name: flowergarden
+    description: Flower Garden (フラワーガーデン) game
+  - name: fortyandeight
+    description: Forty and Eight (フォーティ・アンド・エイト) game
+  - name: frenchtarot
+    description: French Tarot (フレンチタロット) game
+  - name: gaigel
+    description: Gaigel (ガイゲル) game
+  - name: gostop
+    description: Go-Stop (ゴーストップ) game
+  - name: guts
+    description: Guts (ガッツ) game
+  - name: hachihachi
+    description: Hachi-Hachi (八八) game
+  - name: indianrummy
+    description: Indian Rummy (インドラミー) game
+  - name: jass
+    description: Jass (ヤス／シーバー) game
+  - name: kingalbert
+    description: King Albert (キング・アルバート) game
+  - name: koenigrufen
+    description: Königrufen (ケーニッヒルーフェン) game
+  - name: koikoi
+    description: Koi-Koi (こいこい) game
+  - name: machiavelli
+    description: Machiavelli (マキャヴェッリ) game
+  - name: michigan
+    description: Michigan (ミシガン) game
+  - name: oichokabu
+    description: Oicho-Kabu (おいちょかぶ) game
+  - name: ombre
+    description: Ombre / Hombre (オンブル) game
+  - name: pan
+    description: Panguingue / Pan (パングインゲ) game
+  - name: primero
+    description: Primero (プリメロ) game
+  - name: rook
+    description: Rook (ルーク) game
+  - name: samba
+    description: Samba (サンバ) game
+  - name: scarto
+    description: Scarto (スカルト) game
+  - name: streetsandalleys
+    description: Streets and Alleys (ストリート・アンド・アレイズ) game
+  - name: sultan
+    description: Sultan (スルタン) game
+  - name: tysiac
+    description: Thousand / Tysiąc (トゥシオンツ) game
+  - name: ulti
+    description: Ulti / Ultimó (ウルティ) game
+  - name: watten
+    description: Watten (ヴァッテン) game
+  - name: wizard
+    description: Wizard (ウィザード) game
 
 paths:
   /blackjack/exec:
@@ -4740,6 +4828,81 @@ paths:
               schema:
                 $ref: '#/components/schemas/OhHellResponse'
 
+  /ninetynine/exec:
+    post:
+      tags:
+        - ninetynine
+      summary: Execute a Ninety-Nine game command
+      description: |
+        Send a command to advance the Ninety-Nine (ナインティナイン) game session identified
+        by `sessionId`.  Ninety-Nine (David Parlett) is a 3-player trick-taking game on a
+        36-card pack (A,6,7,8,9,10,J,Q,K × 4 suits).  Each deal 12 cards are dealt to each
+        player.  The signature mechanic is bidding by burying: each player sets aside
+        exactly 3 cards, whose suits encode the exact trick declaration via ♦=0, ♠=1, ♥=2,
+        ♣=3 summed to 0-9.  The buried cards are out of play, leaving 9 cards / 9 tricks
+        (must-follow).  Trump is a fixed suit per deal, rotating ♠→♥→♣→♦ by deal number.
+        Scoring: exact declaration = 10 + declared tricks plus a success bonus that
+        escalates as fewer players succeed (1→+30, 2→+20, 3→+10); miss = 0.  First to the
+        target score (default 100) wins.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Bid       | `0`   | Each player buries 3 cards to declare their bid |
+        | Play      | `1`   | Trick play (follow suit; trump suit wins) |
+        | TrickEnd  | `2`   | Trick resolved; advance with `next` |
+        | RoundEnd  | `3`   | All 9 tricks played; advance with `nextround` |
+        | GameEnd   | `4`   | A player reached the target score |
+
+        | Command     | Aliases | Description |
+        |-------------|---------|-------------|
+        | `reset`     | `r`     | Start / restart a game |
+        | `bid`       | `b`     | Bury 3 cards (requires `buryIndices`, 3 distinct card indices) |
+        | `play`      | `p`     | Play a card (requires `cardIndex`) |
+        | `next`      | `n`     | Advance to the next trick |
+        | `nextround` | `nr`    | Score the deal and start the next |
+        | `hint`      | `h`     | Get recommended bury or play |
+        | `log`       | `l`     | View action log |
+      operationId: ninetynineExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NinetyNineRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Bury cards at indices 0, 1, 2
+                value:
+                  command: bid
+                  buryIndices: [0, 1, 2]
+                  sessionId: my-session-001
+              play:
+                summary: Play card at index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NinetyNineResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NinetyNineResponse'
+
   /bridge/exec:
     post:
       tags:
@@ -8736,6 +8899,59 @@ paths:
                         type: integer
         '400':
           description: Bad request
+
+  /catchten/exec:
+    post:
+      tags:
+        - catchten
+      summary: Execute a Catch the Ten (Scotch Whist) game command
+      description: |
+        4-player 2v2 partnership trick-taking game on a 36-card deck (ranks 6-A).
+        The trump suit is fixed by the last card dealt to the dealer. In the trump
+        suit only, J is the highest card, then A, K, Q, 10, 9, 8, 7, 6; non-trump
+        suits are A high down to 6. The trick winner scores the trump honors it
+        contains (J=11, 10=10, A=4, K=3, Q=2). First side to the point limit
+        (default 41) wins; an exact same-deal tie is a draw (winnerTeam = -2).
+        Commands: reset, play, next, nextround, hint, log.
+      operationId: catchTenExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [command, sessionId]
+              properties:
+                command:
+                  type: string
+                  enum: [reset, play, next, nextround, hint, log, quit]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      minimum: 0
+                      maximum: 2
+                    pointLimit:
+                      type: integer
+                      minimum: 1
+      responses:
+        '200':
+          description: Game state after executing the command
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatchTenResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatchTenResponse'
 
   /letitride/exec:
     post:
@@ -15947,6 +16163,2958 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BlackHoleResponse'
+
+  /beggarmyneighbour/exec:
+    post:
+      tags:
+        - beggarmyneighbour
+      summary: Execute a Beggar-My-Neighbour (ビガー・マイ・ネイバー) game command
+      description: |
+        Send a command to advance the Beggar-My-Neighbour session identified by
+        `sessionId`.  Beggar-My-Neighbour is a two-player (human vs CPU) war-style
+        card game played with a standard 52-card deck split evenly 26 cards each,
+        face-down.  Players alternate turning top cards onto a central pile.
+        Penalty cards (J=1, Q=2, K=3, A=4) force the opponent to pay that many
+        cards; if a penalty card appears during payment the obligation flips back.
+        When the required count is exhausted with no penalty card the last
+        penalty-card player collects the entire central pile to the bottom of their
+        hand.  The player who collects all 52 cards wins.
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Play       | `0`   | Normal turn; current player turns top card |
+        | PayPenalty | `1`   | Opponent paying penalty cards |
+        | Collect    | `2`   | Central pile being collected |
+        | GameEnd    | `3`   | Game over |
+
+        | Command    | Aliases | Description |
+        |------------|---------|-------------|
+        | `reset`    | `r`     | Start / restart a game (optional `maxRounds` 10-50000) |
+        | `step`     | `s`     | Advance one step of the state machine |
+        | `autoplay` | `a`     | Run to completion (up to round cap) |
+        | `log`      | `l`     | View action log |
+      operationId: beggarMyNeighbourExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, step, s, autoplay, a, log, l]
+                maxRounds:
+                  type: integer
+                  description: Round cap (10-50000, default 2000). Used only with reset.
+                  minimum: 10
+                  maximum: 50000
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              step:
+                summary: Turn next card / pay penalty / collect pile
+                value:
+                  command: step
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        isHuman:
+                          type: boolean
+                        drawPileSize:
+                          type: integer
+                        discardPileSize:
+                          type: integer
+                        totalCards:
+                          type: integer
+                  phase:
+                    type: integer
+                    description: "0 Play, 1 PayPenalty, 2 Collect, 3 GameEnd"
+                  gameEndFlag:
+                    type: boolean
+                  winnerIdx:
+                    type: integer
+                  currentPlayerIdx:
+                    type: integer
+                  penaltyOwnerIdx:
+                    type: integer
+                  penaltyRemaining:
+                    type: integer
+                  centralPileSize:
+                    type: integer
+                  lastCardPlayed:
+                    nullable: true
+                    allOf:
+                      - $ref: '#/components/schemas/Card'
+                  roundsPlayed:
+                    type: integer
+                  config:
+                    type: object
+                    properties:
+                      maxRounds:
+                        type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                    items:
+                      type: object
+                  phase:
+                    type: integer
+                  gameEndFlag:
+                    type: boolean
+                  message:
+                    type: string
+
+  /allfours/exec:
+    post:
+      tags:
+        - allfours
+      summary: Execute an All Fours (オールフォーズ) game command
+      description: |
+        Send a command to advance the All Fours (Seven Up) session identified by
+        `sessionId`. All Fours is a two-player (human elder hand vs CPU dealer)
+        trick-taking game on a standard 52-card deck. Each deal gives 6 cards
+        each and flips a turn-up whose suit is the provisional trump. The
+        non-dealer stands or begs; on a beg the dealer gifts 1 point or runs the
+        cards (deals 3 more each and turns a fresh trump). Must-follow trick play
+        (trump always legal) scores High, Low, Jack and Game per deal; first to
+        PointLimit (default 7) wins.
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Beg      | `0`   | Non-dealer stands or begs |
+        | Gift     | `1`   | Dealer gifts a point or runs the cards |
+        | Play     | `2`   | Trick play |
+        | TrickEnd | `3`   | Trick resolved; advance to next trick |
+        | RoundEnd | `4`   | Deal scored; advance to next deal |
+        | GameEnd  | `5`   | Game over |
+
+        | Command     | Aliases | Description |
+        |-------------|---------|-------------|
+        | `reset`     | `r`     | Start / restart a game |
+        | `beg`       |         | Stand (`beg=false`) or beg (`beg=true`) |
+        | `respond`   |         | Gift (`run=false`) or run the cards (`run=true`) |
+        | `play`      | `p`     | Play a card (requires `cardIndex`) |
+        | `next`      | `n`     | Advance to next trick |
+        | `nextround` | `nr`    | Score the deal and advance |
+        | `hint`      | `h`     | Get a recommended action |
+        | `log`       | `l`     | View action log |
+      operationId: allFoursExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, beg, respond, play, p, next, n, nextround, nr, hint, h, log, l]
+                beg:
+                  type: boolean
+                  description: For the `beg` command — true to beg, false to stand.
+                run:
+                  type: boolean
+                  description: For the `respond` command — true to run the cards, false to gift.
+                cardIndex:
+                  type: integer
+                  description: Hand index of the card to play (for `play`).
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      minimum: 0
+                      maximum: 2
+                    pointLimit:
+                      type: integer
+                      minimum: 1
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              stand:
+                summary: Non-dealer stands
+                value:
+                  command: beg
+                  beg: false
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllFoursResponse'
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /prsi/exec:
+    post:
+      tags:
+        - prsi
+      summary: Execute a Prší (プルシー) game command
+      description: |
+        Send a command to advance the Prší (Czech Crazy Eights / Mau Mau)
+        session identified by `sessionId`. Prší is a 4-player shedding game
+        (1 human + 3 CPU) on a 32-card pack (7,8,9,10,J,Q,K,A × 4 suits). Play
+        a card matching the discard top by suit or rank; otherwise draw 1 and
+        end your turn. Action cards: 7 forces the next player to draw 2 (7s
+        stack), Ace skips the next player, Under (Jack) also skips. First to
+        empty their hand wins.
+
+        | Phase   | Value | Description |
+        |---------|-------|-------------|
+        | Play    | `0`   | Normal play |
+        | GameEnd | `1`   | A player emptied their hand and won |
+
+        | Command         | Aliases | Description |
+        |-----------------|---------|-------------|
+        | `reset`         | `r`     | Start / restart a game |
+        | `play`          | `p`     | Play a card (requires `cardIndex`) |
+        | `draw`          | `d`     | Draw (takes the whole 7-penalty stack when pending) |
+        | `setdifficulty` | `sd`    | Set CPU difficulty (via config on reset) |
+        | `log`           | `l`     | View action log |
+      operationId: prsiExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, p, draw, d, log, l]
+                cardIndex:
+                  type: integer
+                  description: Hand index of the card to play (for `play`).
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      minimum: 0
+                      maximum: 2
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play the first card in hand
+                value:
+                  command: play
+                  cardIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrsiResponse'
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /calabresella/exec:
+    post:
+      tags:
+        - calabresella
+      summary: Execute a Calabresella (カラブレセッラ) game command
+      description: |
+        Send a command to advance the Calabresella (Terziglio) session
+        identified by `sessionId`. Calabresella is a 3-player no-trump bidding
+        trick-taker (1 human + 2 CPU) where a single soloist plays against a
+        2-player coalition, on a 40-card Italian pack (A,2-7,J,Q,K × 4 suits —
+        no 8/9/10). Each player is dealt 12 cards; the remaining 4 form the
+        face-down widow (monte). In bidding each player passes, declares chiamo
+        (stake 1) or solo (stake 2); the highest declaration becomes the
+        soloist, who picks up the 4-card monte (16 cards) and discards 4 back
+        down to 12. No trump — must-follow the led suit. Trick rank
+        3>2>A>K>Q>J>7>6>5>4. Card points in thirds: A=3, 2/3/J/Q/K=1, others 0,
+        last trick +1 (total 33 thirds = 11 points). The soloist must take more
+        than half (≥18 of 33 thirds) to win the round; stake-based points
+        transfer between soloist and coalition. First to the target score
+        (default 21) wins.
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Bid      | `0`   | Auction (pass / chiamo / solo) |
+        | Monte    | `1`   | Soloist exchanges the 4-card monte |
+        | Play     | `2`   | Trick play |
+        | TrickEnd | `3`   | A trick has completed |
+        | RoundEnd | `4`   | The deal is scored |
+        | GameEnd  | `5`   | A player reached the target score |
+
+        | Command         | Aliases | Description |
+        |-----------------|---------|-------------|
+        | `reset`         | `r`     | Start / restart a game |
+        | `bid`           | `b`     | Declare a bid (requires `bid`: 0=pass, 1=chiamo, 2=solo) |
+        | `discard`       | `d`     | Discard a monte card (requires `cardIndex`; 4 times) |
+        | `play`          | `p`     | Play a card (requires `cardIndex`) |
+        | `next`          | `n`     | Advance to the next trick |
+        | `nextround`     | `nr`    | Advance to the next round |
+        | `setdifficulty` | `sd`    | Set CPU difficulty (via config on reset) |
+        | `hint`          | `h`     | Get a recommended action |
+        | `log`           | `l`     | View action log |
+      operationId: calabresellaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bid, b, discard, d, play, p, next, n, nextround, nr, setdifficulty, sd, hint, h, log, l]
+                bid:
+                  type: integer
+                  description: "Bid declaration for the `bid` command: 0=pass, 1=chiamo (stake 1), 2=solo (stake 2)."
+                  enum: [0, 1, 2]
+                cardIndex:
+                  type: integer
+                  description: Hand index of the card to play (for `play`) or discard (for `discard`).
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      minimum: 0
+                      maximum: 2
+                    targetPoints:
+                      type: integer
+                      minimum: 1
+                      maximum: 1000000
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Declare chiamo
+                value:
+                  command: bid
+                  bid: 1
+                  sessionId: my-session-001
+              play:
+                summary: Play the first card in hand
+                value:
+                  command: play
+                  cardIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalabresellaResponse'
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /king/exec:
+    post:
+      tags:
+        - king
+      summary: Execute a King (キング) game command
+      description: |
+        Send a command to advance the King session identified by `sessionId`.
+        King is a Greek/Brazilian trick-avoidance compendium game for 4 players
+        (1 human + 3 CPU, each scoring individually) on a standard 52-card pack.
+        The match runs for exactly 7 deals; each deal the dealer (親) chooses one
+        of the 7 contracts not yet played this match, then a full round of 13
+        must-follow tricks is played and scored per the chosen contract. The six
+        negative contracts are played no-trump; the King contract is played with
+        a dealer-chosen trump suit. Must follow the led suit if able, otherwise
+        play anything (no overtrump obligation). Trick strength
+        A>K>Q>J>10>9>…>2. After all 7 contracts have each been played once, the
+        player with the highest total (least penalty) wins.
+
+        | Contract | Value | Scoring |
+        |----------|-------|---------|
+        | No Tricks         | `0` | −2 per trick taken |
+        | No Hearts         | `1` | −2 per heart taken |
+        | No Queens         | `2` | −6 per queen taken |
+        | No King of Hearts | `3` | −20 for capturing K♥ |
+        | No Last Two Tricks| `4` | −10 for each of the last two tricks taken |
+        | No Men            | `5` | −3 per Jack or King taken |
+        | King (Trump)      | `6` | +5 per trick taken (dealer chooses trump) |
+
+        | Phase          | Value | Description |
+        |----------------|-------|-------------|
+        | SelectContract | `0`   | Dealer picks an unplayed contract (and trump for King) |
+        | Play           | `1`   | Trick play (13 tricks) |
+        | TrickEnd       | `2`   | A trick has completed |
+        | RoundEnd       | `3`   | The deal is scored |
+        | GameEnd        | `4`   | All 7 contracts played — match decided |
+
+        | Command         | Aliases | Description |
+        |-----------------|---------|-------------|
+        | `reset`         | `r`     | Start / restart a game |
+        | `contract`      | `c`     | Choose a contract (requires `contract`: 0-6; for King also `trumpSuit`: 1-4) |
+        | `play`          | `p`     | Play a card (requires `handIndex`) |
+        | `next`          | `n`     | Advance to the next deal |
+        | `setdifficulty` | `sd`    | Set CPU difficulty (via config on reset) |
+        | `hint`          | `h`     | Get a recommended action |
+        | `log`           | `l`     | View action log |
+      operationId: kingExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, contract, c, play, p, next, n, setdifficulty, sd, hint, h, log, l]
+                contract:
+                  type: integer
+                  description: "Contract selection for the `contract` command: 0=No Tricks, 1=No Hearts, 2=No Queens, 3=No King of Hearts, 4=No Last Two Tricks, 5=No Men, 6=King (Trump)."
+                  enum: [0, 1, 2, 3, 4, 5, 6]
+                trumpSuit:
+                  type: integer
+                  description: "Trump suit for the King contract (contract 6 only): 1=♠ Spades, 2=♥ Hearts, 3=♦ Diamonds, 4=♣ Clubs. Ignored for the six negative contracts."
+                handIndex:
+                  type: integer
+                  description: Hand index of the card to play (for `play`).
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      minimum: 0
+                      maximum: 2
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              contract:
+                summary: Choose the King contract with hearts as trump
+                value:
+                  command: contract
+                  contract: 6
+                  trumpSuit: 2
+                  sessionId: my-session-001
+              play:
+                summary: Play the first card in hand
+                value:
+                  command: play
+                  handIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KingResponse'
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /cinch/exec:
+    post:
+      tags:
+        - cinch
+      summary: Execute a Cinch (チンチ) game command
+      description: |
+        Send a command to advance the Cinch (Double Pedro / High Five) session
+        identified by `sessionId`. Cinch is a 4-player All-Fours/Pitch-family
+        bidding trick-taker (1 human + 3 CPU, each scoring individually) on a
+        standard 52-card pack. Each player is dealt 9 cards and bids in turn
+        either 0 (pass) or 1-14; the high bidder names trump and leads. A deal
+        is worth 14 points: High (A of trump)=1, King of trump=1, Ten of trump
+        ("Game")=1, Jack of trump=1, Right Pedro (5 of trump)=5, and Left Pedro
+        (the 5 of the same color as trump)=5. The Left Pedro ranks just below
+        the trump 5 and counts as trump for following and winning. Nine tricks
+        are played per deal; must-follow the led suit if able, otherwise play
+        anything. The bidder side must make its bid (capture at least the bid
+        amount in points) or is set back (loses the bid amount), while
+        non-bidders score the points they capture. First to the target score
+        (default 21) wins. Trump suit encoding: 1=♠, 2=♣, 3=♥, 4=♦.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Bid       | `0`   | Auction (0=pass, 1-14) |
+        | NameTrump | `1`   | High bidder names the trump suit |
+        | Play      | `2`   | Trick play |
+        | TrickEnd  | `3`   | A trick has completed |
+        | RoundEnd  | `4`   | The deal is scored (make or set back) |
+        | GameEnd   | `5`   | A player reached the target score |
+
+        | Command         | Aliases | Description |
+        |-----------------|---------|-------------|
+        | `reset`         | `r`     | Start / restart a game |
+        | `bid`           | `b`     | Declare a bid (requires `bid`: 0=pass, 1-14) |
+        | `trump`         | `t`     | Name the trump suit (requires `trumpSuit`: 1-4) |
+        | `play`          | `p`     | Play a card (requires `cardIndex`) |
+        | `next`          | `n`     | Advance to the next trick / round |
+        | `nextround`     | `nr`    | Advance to the next round |
+        | `setdifficulty` | `sd`    | Set CPU difficulty (via config on reset) |
+        | `hint`          | `h`     | Get a recommended action |
+        | `log`           | `l`     | View action log |
+      operationId: cinchExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bid, b, trump, t, play, p, next, n, nextround, nr, setdifficulty, sd, hint, h, log, l]
+                bid:
+                  type: integer
+                  description: "Bid declaration for the `bid` command: 0=pass, 1-14."
+                  minimum: 0
+                  maximum: 14
+                trumpSuit:
+                  type: integer
+                  description: "Trump suit for the `trump` command: 1=♠, 2=♣, 3=♥, 4=♦."
+                  enum: [1, 2, 3, 4]
+                cardIndex:
+                  type: integer
+                  description: Hand index of the card to play (for `play`).
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      minimum: 0
+                      maximum: 2
+                    pointLimit:
+                      type: integer
+                      minimum: 1
+                      maximum: 1000000
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Bid 6
+                value:
+                  command: bid
+                  bid: 6
+                  sessionId: my-session-001
+              trump:
+                summary: Name spades as trump
+                value:
+                  command: trump
+                  trumpSuit: 1
+                  sessionId: my-session-001
+              play:
+                summary: Play the first card in hand
+                value:
+                  command: play
+                  cardIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CinchResponse'
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /loo/exec:
+    post:
+      tags:
+        - loo
+      summary: Execute a Loo (ルー) game command
+      description: |
+        Send a command to advance the Loo (Lanterloo) session identified by
+        `sessionId`. Loo is a 4-player pot/gambling trick-taker (Five-card Loo,
+        1 human + 3 CPU, each holding an individual chip stack) on a standard
+        52-card pack. Each deal every player antes (default 3) into a
+        carried-over pot, then a face-up turn-up card sets the trump suit. Each
+        player looks at their 5 cards and decides to play or pass. Players who
+        play compete over 5 tricks with must-follow-and-head: follow the led
+        suit if able and, if you can beat the current best card, you must; when
+        void of the led suit you must trump if you hold one (again heading if
+        possible). Each trick captured wins 1/5 of the pot; a player who plays
+        but takes no trick is "looed" and pays a penalty (the deal's starting
+        pot) into the next deal's pot. If only one player plays they take the
+        whole pot uncontested; if nobody plays the pot carries over. Chips
+        accumulate over repeated deals (no target-score race). Trump suit
+        encoding: 1=♠, 2=♣, 3=♥, 4=♦.
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Decide   | `0`   | Each player decides to play or pass |
+        | Play     | `1`   | Trick play (active players only) |
+        | TrickEnd | `2`   | A trick has completed |
+        | RoundEnd | `3`   | The deal is settled (pot split, looed penalties) |
+
+        | Command         | Aliases | Description |
+        |-----------------|---------|-------------|
+        | `reset`         | `r`     | Start / restart a game |
+        | `decide`        | `d`     | Play (`d 1`/`play`) or pass (`d 0`/`pass`); web uses `play` boolean |
+        | `play`          | `p`     | Play a card (requires `cardIndex`) |
+        | `next`          | `n`     | Advance / settle to the next deal |
+        | `nextround`     | `nr`    | Settle and advance to the next deal |
+        | `setdifficulty` | `sd`    | Set CPU difficulty (via config on reset) |
+        | `hint`          | `h`     | Get a recommended action |
+        | `log`           | `l`     | View action log |
+      operationId: looExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, decide, d, play, p, next, n, nextround, nr, setdifficulty, sd, hint, h, log, l]
+                play:
+                  type: boolean
+                  description: "Participation decision for the `decide` command: true=play, false=pass."
+                cardIndex:
+                  type: integer
+                  description: Hand index of the card to play (for `play`).
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      minimum: 0
+                      maximum: 2
+                    ante:
+                      type: integer
+                      minimum: 1
+                      maximum: 1000000
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              decide:
+                summary: Decide to play
+                value:
+                  command: decide
+                  play: true
+                  sessionId: my-session-001
+              play:
+                summary: Play the first card in hand
+                value:
+                  command: play
+                  cardIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LooResponse'
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /basra/exec:
+    post:
+      tags:
+        - basra
+      summary: Execute a Basra (バスラ) game command
+      description: |
+        Send a command to advance the Basra (Bastra) session identified by
+        `sessionId`. Basra is a 4-player Egyptian/Levantine fishing (capture)
+        card game (1 human + 3 CPU, each scoring individually) on a standard
+        52-card pack. Each player is dealt 4 cards and 4 cards are placed
+        face-up on the table. On your turn you play one hand card: a number
+        card (A=1..10) captures table cards of the same rank and/or any table
+        subset whose values sum to the played card's value (multiple groups at
+        once); Q/K capture only by matching rank; a Jack sweeps all table cards
+        except other Jacks. Clearing the whole table with a single non-Jack
+        card scores a "Basra" (+10 bonus) — a Jack sweep is not a Basra; if
+        nothing is captured the card is left on the table (trail). When all
+        hands are empty, fresh 4-card hands are dealt (no new table cards)
+        until the stock is exhausted, and leftover table cards go to the last
+        player who captured. Scoring at game end: most captured cards (unique)
+        +3, 7♦ +3, 10♦ +2, each Ace +1, each Basra +10; highest total wins
+        (ties = multiple winners). There is no target-score race.
+
+        | Phase   | Value | Description |
+        |---------|-------|-------------|
+        | Play    | `0`   | Players play cards and capture table cards |
+        | GameEnd | `1`   | The stock is exhausted and the game is scored |
+
+        | Command         | Aliases | Description |
+        |-----------------|---------|-------------|
+        | `reset`         | `r`     | Start / restart a game |
+        | `play`          | `p`     | Play a hand card (requires `cardIndex`; optional `tableIndices` to capture, omit to trail; a Jack always sweeps) |
+        | `next`          | `n`     | Advance to the next game |
+        | `nextround`     | `nr`    | Start a fresh game |
+        | `setdifficulty` | `sd`    | Set CPU difficulty (via config on reset) |
+        | `hint`          | `h`     | Get a recommended action |
+        | `log`           | `l`     | View action log |
+      operationId: basraExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, p, next, n, nextround, nr, setdifficulty, sd, hint, h, log, l]
+                cardIndex:
+                  type: integer
+                  description: Hand index of the card to play (for `play`).
+                tableIndices:
+                  type: array
+                  description: "Indices of the table cards to capture (for `play`); omit to trail. A Jack always sweeps regardless of this field."
+                  items:
+                    type: integer
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      minimum: 0
+                      maximum: 2
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play hand card 0 and capture table cards 1 and 2
+                value:
+                  command: play
+                  cardIndex: 0
+                  tableIndices: [1, 2]
+                  sessionId: my-session-001
+              trail:
+                summary: Play hand card 0 without capturing (trail)
+                value:
+                  command: play
+                  cardIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasraResponse'
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /tablanet/exec:
+    post:
+      tags:
+        - tablanet
+      summary: Execute a Tablanet (タブラネット) game command
+      description: |
+        Send a command to advance the Tablanet (Tablić) session identified by
+        `sessionId`. Tablanet is a 4-player Balkan (Serbian/Macedonian) fishing
+        (capture) card game (1 human + 3 CPU, each scoring individually) on a
+        standard 52-card pack. Each player is dealt 4 cards and 4 cards are placed
+        face-up on the table. On your turn you play one hand card: a number
+        card (A=1..10) captures table cards of the same rank and/or any table
+        subset whose values sum to the played card's value (multiple groups at
+        once); Q/K capture only by matching rank; a Jack sweeps all table cards
+        except other Jacks. Clearing the whole table with a single non-Jack
+        card scores a "Tabla" bonus — a Jack sweep is not a Tabla; if
+        nothing is captured the card is left on the table (trail). When all
+        hands are empty, fresh 4-card hands are dealt (no new table cards)
+        until the stock is exhausted, and leftover table cards go to the last
+        player who captured. Scoring at game end: most captured cards (unique)
+        +3, 10♦ +2, each Ace +1, each Jack +1, 2♣ +1, each Tabla +1; highest
+        total wins (ties = multiple winners). There is no target-score race.
+
+        | Phase   | Value | Description |
+        |---------|-------|-------------|
+        | Play    | `0`   | Players play cards and capture table cards |
+        | GameEnd | `1`   | The stock is exhausted and the game is scored |
+
+        | Command         | Aliases | Description |
+        |-----------------|---------|-------------|
+        | `reset`         | `r`     | Start / restart a game |
+        | `play`          | `p`     | Play a hand card (requires `cardIndex`; optional `tableIndices` to capture, omit to trail; a Jack always sweeps) |
+        | `next`          | `n`     | Advance to the next game |
+        | `nextround`     | `nr`    | Start a fresh game |
+        | `setdifficulty` | `sd`    | Set CPU difficulty (via config on reset) |
+        | `hint`          | `h`     | Get a recommended action |
+        | `log`           | `l`     | View action log |
+      operationId: tablanetExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, p, next, n, nextround, nr, setdifficulty, sd, hint, h, log, l]
+                cardIndex:
+                  type: integer
+                  description: Hand index of the card to play (for `play`).
+                tableIndices:
+                  type: array
+                  description: "Indices of the table cards to capture (for `play`); omit to trail. A Jack always sweeps regardless of this field."
+                  items:
+                    type: integer
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      minimum: 0
+                      maximum: 2
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play hand card 0 and capture table cards 1 and 2
+                value:
+                  command: play
+                  cardIndex: 0
+                  tableIndices: [1, 2]
+                  sessionId: my-session-001
+              trail:
+                summary: Play hand card 0 without capturing (trail)
+                value:
+                  command: play
+                  cardIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TablanetResponse'
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /trenteetquarante/exec:
+    post:
+      tags:
+        - trenteetquarante
+      summary: Execute a Trente et Quarante (トラント・エ・カラント) game command
+      description: |
+        Send a command to advance the Trente et Quarante (Rouge et Noir)
+        session identified by `sessionId`. Trente et Quarante is a pure banking
+        game (1 player vs the bank) on a standard 52-card pack with no player
+        card decisions. The player picks one of four even-money bets — Noir (0),
+        Rouge (1), Couleur (2), Inverse (3) — plus a stake, then the dealer deals
+        two rows (Noir/black first, then Rouge/red), summing each (face cards =
+        10, Ace = 1) until the total reaches 31 or more. The row with the lower
+        total wins. Noir/Rouge bet on which row wins; Couleur/Inverse bet on
+        whether the color of the first card dealt matches the winning color.
+        Winning bets pay 1:1; a tie at exactly 31 in both rows is a "Refait" and
+        the player loses half the stake. Chips carry over across rounds. Placing
+        a bet immediately deals both rows and resolves the round, so there are
+        only two phases.
+
+        | Phase  | Value | Description |
+        |--------|-------|-------------|
+        | Bet    | `0`   | The player selects a bet and stake |
+        | Result | `1`   | The round has been dealt, resolved, and scored |
+
+        | Command     | Aliases      | Description |
+        |-------------|--------------|-------------|
+        | `reset`     | `r`          | Start a fresh game (chips persist) |
+        | `bet`       | `b`          | Place a stake on a bet, deal, and resolve (requires `bet` and `stake`) |
+        | `nextround` | `nr`,`n`,`next` | Start the next round |
+        | `hint`      |              | Return an educational betting hint |
+        | `log`       | `l`          | View action log |
+      operationId: trenteetquaranteExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bet, b, nextround, nr, n, next, hint, log, l]
+                bet:
+                  type: integer
+                  description: "Bet selection (for `bet`): 0=Noir, 1=Rouge, 2=Couleur, 3=Inverse."
+                  enum: [0, 1, 2, 3]
+                stake:
+                  type: integer
+                  description: Stake to wager (for `bet`).
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a fresh game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Wager 100 on Noir
+                value:
+                  command: bet
+                  bet: 0
+                  stake: 100
+                  sessionId: my-session-001
+              nextround:
+                summary: Start the next round
+                value:
+                  command: nextround
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrenteEtQuaranteResponse'
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /agnes/exec:
+    post:
+      tags:
+        - agnes
+      summary: Execute a Agnes Sorel (アグネス・ソレル) game command
+      description: |
+        Send a command to advance the Agnes Sorel (アグネス・ソレル) game session identified by
+        `sessionId`. Klondike-family single-deck solitaire in which the foundation base rank is set by the first card dealt and tableau builds down by alternating colour.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: agnesExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /anaconda/exec:
+    post:
+      tags:
+        - anaconda
+      summary: Execute a Anaconda (アナコンダ) game command
+      description: |
+        Send a command to advance the Anaconda (アナコンダ) game session identified by
+        `sessionId`. Anaconda (pass-the-trash) poker variant: each player is dealt seven cards, passes unwanted cards to a neighbour over several rounds, then reveals the best five-card poker hand.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: anacondaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /bouillotte/exec:
+    post:
+      tags:
+        - bouillotte
+      summary: Execute a Bouillotte (ブイヨット) game command
+      description: |
+        Send a command to advance the Bouillotte (ブイヨット) game session identified by
+        `sessionId`. Bouillotte, an 18th-century French vying/gambling game related to Brelan, played with a stripped pack where players bet and bluff over the best combination.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: bouillotteExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /carioca/exec:
+    post:
+      tags:
+        - carioca
+      summary: Execute a Carioca (カリオカ) game command
+      description: |
+        Send a command to advance the Carioca (カリオカ) game session identified by
+        `sessionId`. Carioca, a South American contract-rummy variant played over several deals in which each deal has a mandatory meld contract to fulfil before going out.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: cariocaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /cego/exec:
+    post:
+      tags:
+        - cego
+      summary: Execute a Cego (チェゴ) game command
+      description: |
+        Send a command to advance the Cego (チェゴ) game session identified by
+        `sessionId`. Cego, a German Baden tarock trick-taker on a 54-card tarot pack featuring the Cego blind-swap contract (declarer versus the field).
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: cegoExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /flowergarden/exec:
+    post:
+      tags:
+        - flowergarden
+      summary: Execute a Flower Garden (フラワーガーデン) game command
+      description: |
+        Send a command to advance the Flower Garden (フラワーガーデン) game session identified by
+        `sessionId`. Flower Garden, a single-deck open solitaire with six tableau columns and a large 'flower bed' reserve of loose cards all available for play.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: flowergardenExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /fortyandeight/exec:
+    post:
+      tags:
+        - fortyandeight
+      summary: Execute a Forty and Eight (フォーティ・アンド・エイト) game command
+      description: |
+        Send a command to advance the Forty and Eight (フォーティ・アンド・エイト) game session identified by
+        `sessionId`. Forty and Eight, a two-deck solitaire with eight tableau columns of five cards, building down by suit and dealing from a stock through the waste.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: fortyandeightExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /frenchtarot/exec:
+    post:
+      tags:
+        - frenchtarot
+      summary: Execute a French Tarot (フレンチタロット) game command
+      description: |
+        Send a command to advance the French Tarot (フレンチタロット) game session identified by
+        `sessionId`. French Tarot, a 78-card tarot trick-taker with bidding, a chien (dog), and the declarer playing alone against three defenders; scoring depends on captured bouts.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: frenchtarotExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /gaigel/exec:
+    post:
+      tags:
+        - gaigel
+      summary: Execute a Gaigel (ガイゲル) game command
+      description: |
+        Send a command to advance the Gaigel (ガイゲル) game session identified by
+        `sessionId`. Gaigel, a German Swabian point-trick game of the Sixty-Six family played with a doubled Piquet pack, featuring marriages and a race to a target score.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: gaigelExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /gostop/exec:
+    post:
+      tags:
+        - gostop
+      summary: Execute a Go-Stop (ゴーストップ) game command
+      description: |
+        Send a command to advance the Go-Stop (ゴーストップ) game session identified by
+        `sessionId`. Go-Stop, a Korean flower-card (hanafuda) capture game in which players match cards by month to score sets and decide to 'Go' (continue) or 'Stop' (settle).
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: gostopExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /guts/exec:
+    post:
+      tags:
+        - guts
+      summary: Execute a Guts (ガッツ) game command
+      description: |
+        Send a command to advance the Guts (ガッツ) game session identified by
+        `sessionId`. Guts, a fast gambling poker game where players simultaneously declare whether they are in or out and the losers of a showdown match the pot.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: gutsExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /hachihachi/exec:
+    post:
+      tags:
+        - hachihachi
+      summary: Execute a Hachi-Hachi (八八) game command
+      description: |
+        Send a command to advance the Hachi-Hachi (八八) game session identified by
+        `sessionId`. Hachi-Hachi (88), a three-player hanafuda game where players capture matching flower cards to score yaku and settle points around a base of 88.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: hachihachiExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /indianrummy/exec:
+    post:
+      tags:
+        - indianrummy
+      summary: Execute a Indian Rummy (インドラミー) game command
+      description: |
+        Send a command to advance the Indian Rummy (インドラミー) game session identified by
+        `sessionId`. Indian Rummy, a 13-card rummy variant using jokers/wild cards in which players form pure and impure sequences plus sets before declaring.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: indianrummyExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /jass/exec:
+    post:
+      tags:
+        - jass
+      summary: Execute a Jass (ヤス／シーバー) game command
+      description: |
+        Send a command to advance the Jass (ヤス／シーバー) game session identified by
+        `sessionId`. Jass (Schieber), a Swiss trick-taking point game in which the Jack (Jass) and Nine (Nell) of trumps are the top cards and melds add bonus points.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: jassExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /kingalbert/exec:
+    post:
+      tags:
+        - kingalbert
+      summary: Execute a King Albert (キング・アルバート) game command
+      description: |
+        Send a command to advance the King Albert (キング・アルバート) game session identified by
+        `sessionId`. King Albert, a single-deck open solitaire dealing a nine-column staircase tableau plus a seven-card reserve, building down by alternating colour.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: kingalbertExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /koenigrufen/exec:
+    post:
+      tags:
+        - koenigrufen
+      summary: Execute a Königrufen (ケーニッヒルーフェン) game command
+      description: |
+        Send a command to advance the Königrufen (ケーニッヒルーフェン) game session identified by
+        `sessionId`. Königrufen, an Austrian tarock game on a 54-card pack featuring the 'call a king' secret-partnership mechanism and declarer-versus-field play.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: koenigrufenExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /koikoi/exec:
+    post:
+      tags:
+        - koikoi
+      summary: Execute a Koi-Koi (こいこい) game command
+      description: |
+        Send a command to advance the Koi-Koi (こいこい) game session identified by
+        `sessionId`. Koi-Koi, a two-player hanafuda game where players capture matching flower cards to build yaku and choose to 'Koi-Koi' (continue) or stop for points.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: koikoiExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /machiavelli/exec:
+    post:
+      tags:
+        - machiavelli
+      summary: Execute a Machiavelli (マキャヴェッリ) game command
+      description: |
+        Send a command to advance the Machiavelli (マキャヴェッリ) game session identified by
+        `sessionId`. Machiavelli, an Italian rummy played with two packs in which players may rearrange the cards already on the table to make room for their own melds.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: machiavelliExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /michigan/exec:
+    post:
+      tags:
+        - michigan
+      summary: Execute a Michigan (ミシガン) game command
+      description: |
+        Send a command to advance the Michigan (ミシガン) game session identified by
+        `sessionId`. Michigan (Newmarket/stops family): players stake chips on boodle cards, then play cards up in suit sequence, claiming stakes as matching cards appear.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: michiganExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /oichokabu/exec:
+    post:
+      tags:
+        - oichokabu
+      summary: Execute a Oicho-Kabu (おいちょかぶ) game command
+      description: |
+        Send a command to advance the Oicho-Kabu (おいちょかぶ) game session identified by
+        `sessionId`. Oicho-Kabu, a Japanese kabufuda gambling game similar to baccarat where players aim for a hand total whose last digit is closest to nine (kabu).
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: oichokabuExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /ombre/exec:
+    post:
+      tags:
+        - ombre
+      summary: Execute a Ombre / Hombre (オンブル) game command
+      description: |
+        Send a command to advance the Ombre / Hombre (オンブル) game session identified by
+        `sessionId`. Ombre (Hombre), a classic three-player trick-taker on a 40-card Spanish-style pack with a bidding declarer (the Ombre) contending against two opponents.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: ombreExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /pan/exec:
+    post:
+      tags:
+        - pan
+      summary: Execute a Panguingue / Pan (パングインゲ) game command
+      description: |
+        Send a command to advance the Panguingue / Pan (パングインゲ) game session identified by
+        `sessionId`. Panguingue (Pan), a multi-pack rummy game in which players draw and meld runs and sets, paying and collecting chips for scoring 'conditions'.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: panExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /primero/exec:
+    post:
+      tags:
+        - primero
+      summary: Execute a Primero (プリメロ) game command
+      description: |
+        Send a command to advance the Primero (プリメロ) game session identified by
+        `sessionId`. Primero, a Renaissance gambling/vying game (an ancestor of poker) where players bet on four-card combinations such as flush, prime, and supremus.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: primeroExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /rook/exec:
+    post:
+      tags:
+        - rook
+      summary: Execute a Rook (ルーク) game command
+      description: |
+        Send a command to advance the Rook (ルーク) game session identified by
+        `sessionId`. Rook, a trick-taking game played with the dedicated 57-card Rook deck (four coloured suits 1-14 plus the Rook bird card) featuring bidding and a nest/kitty.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: rookExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /samba/exec:
+    post:
+      tags:
+        - samba
+      summary: Execute a Samba (サンバ) game command
+      description: |
+        Send a command to advance the Samba (サンバ) game session identified by
+        `sessionId`. Samba, a three-deck Canasta variant that additionally allows same-suit sequences (sambas) alongside standard rank melds and canastas.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: sambaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /scarto/exec:
+    post:
+      tags:
+        - scarto
+      summary: Execute a Scarto (スカルト) game command
+      description: |
+        Send a command to advance the Scarto (スカルト) game session identified by
+        `sessionId`. Scarto, a Piedmontese three-player tarot trick-taker on a 78-card pack with no bidding; the dealer discards to the talon and then leads the tricks.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: scartoExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /streetsandalleys/exec:
+    post:
+      tags:
+        - streetsandalleys
+      summary: Execute a Streets and Alleys (ストリート・アンド・アレイズ) game command
+      description: |
+        Send a command to advance the Streets and Alleys (ストリート・アンド・アレイズ) game session identified by
+        `sessionId`. Streets and Alleys, a single-deck open solitaire (a FreeCell relative without free cells) dealing all 52 cards into eight tableau columns.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: streetsandalleysExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /sultan/exec:
+    post:
+      tags:
+        - sultan
+      summary: Execute a Sultan (スルタン) game command
+      description: |
+        Send a command to advance the Sultan (スルタン) game session identified by
+        `sessionId`. Sultan (Sultan of Turkey), a two-deck builder solitaire arranging eight Kings and a Queen into a decorative rosette built up in suit.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: sultanExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /tysiac/exec:
+    post:
+      tags:
+        - tysiac
+      summary: Execute a Thousand / Tysiąc (トゥシオンツ) game command
+      description: |
+        Send a command to advance the Thousand / Tysiąc (トゥシオンツ) game session identified by
+        `sessionId`. Tysiąc (Thousand), a Polish point-trick game on a 24-card pack featuring marriage bonuses and bidding, with the first player to 1000 points winning.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: tysiacExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /ulti/exec:
+    post:
+      tags:
+        - ulti
+      summary: Execute a Ulti / Ultimó (ウルティ) game command
+      description: |
+        Send a command to advance the Ulti / Ultimó (ウルティ) game session identified by
+        `sessionId`. Ulti (Ultimó), a Hungarian tarokk-influenced trick-taker on a 32-card Hungarian pack where the declarer bids compound contracts against two opponents.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: ultiExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /watten/exec:
+    post:
+      tags:
+        - watten
+      summary: Execute a Watten (ヴァッテン) game command
+      description: |
+        Send a command to advance the Watten (ヴァッテン) game session identified by
+        `sessionId`. Watten, a Bavarian/Tyrolean trick game on a 33-card pack with a fixed set of top cards (the Critical cards) and bluff-driven raising over the deal's value.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: wattenExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /wizard/exec:
+    post:
+      tags:
+        - wizard
+      summary: Execute a Wizard (ウィザード) game command
+      description: |
+        Send a command to advance the Wizard (ウィザード) game session identified by
+        `sessionId`. Wizard, a 60-card exact-bid trick-taker (a standard pack plus four Wizards and four Jesters) in which players bid the exact number of tricks they will win.
+
+        Use `reset` (`r`) to start or restart a game and `quit` (`q`) to end
+        the session. Consult the in-app manual for the full command set and
+        phase progression specific to this game.
+      operationId: wizardExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: The game command to execute (e.g. reset, or a game-specific action).
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one (e.g. a bet, index, or selection).
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                description: Game state after the command was processed.
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
 components:
   schemas:
     # -------------------------------------------------------------------------
@@ -25877,6 +29045,168 @@ components:
               description: Machine-readable reason key for the hint
 
     # -------------------------------------------------------------------------
+    # Ninety-Nine
+    # -------------------------------------------------------------------------
+    NinetyNineRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `bid` (`b`),
+            `play` (`p`), `next` (`n`), `nextround` (`nr`), `hint` (`h`),
+            `log` (`l`).
+          enum: [reset, r, bid, b, play, p, next, n, nextround, nr, hint, h, log, l]
+          example: reset
+        buryIndices:
+          type: array
+          description: Indices of the 3 cards to bury (encodes the bid).  Required for `bid` command.
+          items:
+            type: integer
+          example: [0, 1, 2]
+        cardIndex:
+          type: integer
+          description: Index of the card to play.  Required for `play` command.
+          example: 2
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            targetScore:
+              type: integer
+              minimum: 10
+              maximum: 1000
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    NinetyNineResponse:
+      type: object
+      description: Current state of the Ninety-Nine game
+      properties:
+        players:
+          type: array
+          description: Array of player objects
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              bid:
+                type: integer
+                description: Declared trick count from buried suits (-1 if not yet declared)
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+              trickCount:
+                type: integer
+              buriedCount:
+                type: integer
+                description: Number of cards this player has buried this deal
+        phase:
+          type: integer
+          description: "Game phase: 0 = Bid, 1 = Play, 2 = TrickEnd, 3 = RoundEnd, 4 = GameEnd"
+          enum: [0, 1, 2, 3, 4]
+          example: 0
+        dealNumber:
+          type: integer
+          description: Current deal number
+        targetScore:
+          type: integer
+          description: Cumulative score required to win the game
+        handSize:
+          type: integer
+          description: Number of cards in hand during play (9)
+        trickNumber:
+          type: integer
+          description: Current trick number within the deal
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        bidPlayerIdx:
+          type: integer
+          description: Index of the player currently bidding
+        dealerIdx:
+          type: integer
+          description: Index of the dealer for the current deal
+        currentTrick:
+          type: array
+          description: Cards played in the current trick
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        trumpSuit:
+          type: integer
+          description: "Trump suit for the deal (1=Spade, 2=Clover, 3=Heart, 4=Diamond)"
+        gameEndFlag:
+          type: boolean
+          description: Whether the game has ended
+        winnerIdx:
+          type: integer
+          description: Index of the winning player (-1 if not ended)
+        leadPlayerIdx:
+          type: integer
+          description: Index of the player who leads the current trick
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            targetScore:
+              type: integer
+        message:
+          type: string
+          description: Game status message
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+        hint:
+          type: object
+          nullable: true
+          description: Recommended play or bury hint (only present when hint command is used)
+          properties:
+            cardIndex:
+              type: integer
+              nullable: true
+              description: Recommended card index (null during bid phase)
+            buryIndices:
+              type: array
+              nullable: true
+              description: Recommended 3 card indices to bury (null during play phase)
+              items:
+                type: integer
+            reason:
+              type: string
+              description: Machine-readable reason key for the hint
+
+    # -------------------------------------------------------------------------
     # Contract Bridge
     # -------------------------------------------------------------------------
     BridgeRequest:
@@ -28059,6 +31389,1044 @@ components:
               type: integer
             reason:
               type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    AllFoursResponse:
+      type: object
+      description: Current state of the All Fours (Seven Up) game
+      properties:
+        players:
+          type: array
+          description: Array of player objects (0=non-dealer/human, 1=dealer/CPU)
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+              trickCount:
+                type: integer
+        phase:
+          type: integer
+          description: "Game phase: 0=Beg, 1=Gift, 2=Play, 3=TrickEnd, 4=RoundEnd, 5=GameEnd."
+          enum: [0, 1, 2, 3, 4, 5]
+          example: 0
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        dealerIdx:
+          type: integer
+        nonDealerIdx:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        trumpSuit:
+          type: integer
+          description: "Trump suit: 0=unset, 1=Spades, 2=Clubs, 3=Hearts, 4=Diamonds."
+        turnUp:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          description: The turn-up card that set the provisional trump, or null.
+        runCount:
+          type: integer
+          description: Number of "run the cards" attempts this deal.
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        validPlayIndices:
+          type: array
+          items:
+            type: integer
+          description: Indices of cards in the human player's hand that are legal to play.
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+        hint:
+          type: object
+          properties:
+            cardIndex:
+              type: integer
+            beg:
+              type: boolean
+            run:
+              type: boolean
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    PrsiResponse:
+      type: object
+      description: Current state of the Prší (Czech Crazy Eights) game
+      properties:
+        players:
+          type: array
+          description: Array of 4 player objects (0=human, 1-3=CPU)
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 0=Play, 1=GameEnd."
+          enum: [0, 1]
+          example: 0
+        currentPlayerIdx:
+          type: integer
+        discardTop:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          description: Top card of the discard pile, or null.
+        drawPileCount:
+          type: integer
+        penaltyDrawCount:
+          type: integer
+          description: Accumulated 7-stack penalty the current player must take or stack onto (0 = none).
+        pendingSkips:
+          type: integer
+          description: Accumulated skip count from Aces/Unders pending on the next turn advance.
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    CalabresellaResponse:
+      type: object
+      description: Current state of the Calabresella (Terziglio) game
+      properties:
+        players:
+          type: array
+          description: Array of 3 player objects (0=human, 1-2=CPU)
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              trickCount:
+                type: integer
+              score:
+                type: integer
+                description: Cumulative match score for this player
+              isSoloist:
+                type: boolean
+                description: Whether this player is the soloist for the current deal
+              roundThirds:
+                type: integer
+                description: Thirds-of-a-point captured by this player in the current round
+        phase:
+          type: integer
+          description: "Game phase: 0=Bid, 1=Monte, 2=Play, 3=TrickEnd, 4=RoundEnd, 5=GameEnd"
+          enum: [0, 1, 2, 3, 4, 5]
+          example: 0
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        currentBidderIdx:
+          type: integer
+          description: Index of the player whose turn it is to bid (during the auction)
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        forehandIdx:
+          type: integer
+        soloistIdx:
+          type: integer
+          description: Index of the soloist for the current deal (-1 until decided)
+        winningBid:
+          type: integer
+          description: The winning declaration (0=pass, 1=chiamo, 2=solo)
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        playerScores:
+          type: array
+          items:
+            type: integer
+          description: Cumulative match points for each of the 3 players
+        roundThirds:
+          type: array
+          items:
+            type: integer
+          description: Thirds-of-a-point captured by each of the 3 players in the current round
+        lastTrickWinner:
+          type: integer
+          description: Index of the player who won the most recent trick (-1 if none)
+        playableIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices the human may legally play (must-follow filtered)
+        gameEndFlag:
+          type: boolean
+        winnerPlayer:
+          type: integer
+          description: Winning player index (-1 if undecided)
+        isHumanTurn:
+          type: boolean
+        hint:
+          type: object
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            targetPoints:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    CinchResponse:
+      type: object
+      description: Current state of the Cinch (Double Pedro / High Five) game
+      properties:
+        players:
+          type: array
+          description: Array of 4 player objects (0=human, 1-3=CPU)
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              trickCount:
+                type: integer
+              bid:
+                type: integer
+                description: This player's bid for the current deal (0=pass, 1-14)
+              totalScore:
+                type: integer
+                description: Cumulative match score for this player
+        phase:
+          type: integer
+          description: "Game phase: 0=Bid, 1=NameTrump, 2=Play, 3=TrickEnd, 4=RoundEnd, 5=GameEnd"
+          enum: [0, 1, 2, 3, 4, 5]
+          example: 0
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        totalTricks:
+          type: integer
+          description: Total tricks per deal (9)
+        dealerIdx:
+          type: integer
+        currentTurn:
+          type: integer
+          description: Index of the player whose turn it is
+        bidPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is to bid (during the auction)
+        currentBid:
+          type: integer
+          description: The current highest bid (0 if none yet)
+        bidWinnerIdx:
+          type: integer
+          description: Index of the high bidder (-1 until decided)
+        trumpSuit:
+          type: integer
+          description: "Trump suit: 0=unset, 1=♠, 2=♣, 3=♥, 4=♦"
+          enum: [0, 1, 2, 3, 4]
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        lastTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        lastTrickWinner:
+          type: integer
+          description: Index of the player who won the most recent trick (-1 if none)
+        playableIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices the human may legally play (must-follow filtered)
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: Winning player index (-1 if undecided)
+        roundWinners:
+          type: array
+          items:
+            type: integer
+          description: Player indices that reached the target this round
+        lastDealDetail:
+          type: object
+          description: Scoring breakdown for the most recently completed deal
+          properties:
+            trumpSuit:
+              type: integer
+            bidderIdx:
+              type: integer
+            bid:
+              type: integer
+            setBack:
+              type: boolean
+              description: Whether the bidder failed to make the bid and was set back
+            points:
+              type: object
+              additionalProperties:
+                type: integer
+              description: Points captured per player this deal
+            gained:
+              type: object
+              additionalProperties:
+                type: integer
+              description: Net score change per player this deal
+        isHumanTurn:
+          type: boolean
+        hint:
+          type: object
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            bid:
+              type: integer
+            trumpSuit:
+              type: integer
+            reason:
+              type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    LooResponse:
+      type: object
+      description: Current state of the Loo (Lanterloo) game
+      properties:
+        players:
+          type: array
+          description: Array of 4 player objects (0=human, 1-3=CPU)
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              trickCount:
+                type: integer
+              playing:
+                type: boolean
+                description: Whether this player is participating in the current deal
+              chips:
+                type: integer
+                description: Cumulative chip total for this player
+        phase:
+          type: integer
+          description: "Game phase: 0=Decide, 1=Play, 2=TrickEnd, 3=RoundEnd"
+          enum: [0, 1, 2, 3]
+          example: 0
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        totalTricks:
+          type: integer
+          description: Total tricks per deal (5)
+        dealerIdx:
+          type: integer
+        currentTurn:
+          type: integer
+          description: Index of the player whose turn it is
+        decidePlayerIdx:
+          type: integer
+          description: Index of the player deciding play/pass (during the decide phase)
+        trumpSuit:
+          type: integer
+          description: "Trump suit: 0=unset, 1=♠, 2=♣, 3=♥, 4=♦"
+          enum: [0, 1, 2, 3, 4]
+        turnUp:
+          $ref: '#/components/schemas/Card'
+        pot:
+          type: integer
+          description: Current pot size (carried over between deals)
+        potStart:
+          type: integer
+          description: Pot size at the start of the current deal
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        lastTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        lastTrickWinner:
+          type: integer
+          description: Index of the winner of the last completed trick (-1 if none)
+        playableIndices:
+          type: array
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        lastDealDetail:
+          type: object
+          description: Settlement breakdown of the most recent deal
+          properties:
+            potStart:
+              type: integer
+            trumpSuit:
+              type: integer
+            playing:
+              type: array
+              items:
+                type: boolean
+            tricks:
+              type: object
+              additionalProperties:
+                type: integer
+            gained:
+              type: object
+              additionalProperties:
+                type: integer
+            looed:
+              type: array
+              items:
+                type: integer
+            potCarry:
+              type: integer
+        isHumanTurn:
+          type: boolean
+        hint:
+          type: object
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            decision:
+              type: boolean
+            reason:
+              type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            ante:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    BasraResponse:
+      type: object
+      description: Current state of the Basra (Bastra) game
+      properties:
+        players:
+          type: array
+          description: Array of 4 player objects (0=human, 1-3=CPU)
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              capturedCount:
+                type: integer
+                description: Number of cards this player has captured so far
+              basraCount:
+                type: integer
+                description: Number of Basra bonuses this player has scored
+              score:
+                type: integer
+                description: Running / final score for this player
+        phase:
+          type: integer
+          description: "Game phase: 0=Play, 1=GameEnd"
+          enum: [0, 1]
+          example: 0
+        roundNumber:
+          type: integer
+        currentTurn:
+          type: integer
+          description: Index of the player whose turn it is
+        tableCards:
+          type: array
+          description: Cards currently face-up on the table
+          items:
+            $ref: '#/components/schemas/Card'
+        lastCaptureIdx:
+          type: integer
+          description: Index of the last player who captured (-1 if none)
+        remainingDeck:
+          type: integer
+          description: Number of cards left in the stock
+        playableIndices:
+          type: array
+          items:
+            type: integer
+        captureOptions:
+          type: object
+          description: Maps a hand card index (as string) to the table-card indices it can capture
+          additionalProperties:
+            type: array
+            items:
+              type: integer
+        winners:
+          type: array
+          description: Indices of the winning player(s) at game end
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        lastDealDetail:
+          type: object
+          nullable: true
+          description: Scoring breakdown of the finished game (present at GameEnd)
+          properties:
+            cards:
+              type: object
+              additionalProperties:
+                type: integer
+            aces:
+              type: object
+              additionalProperties:
+                type: integer
+            basras:
+              type: object
+              additionalProperties:
+                type: integer
+            hasSevenDiamonds:
+              type: integer
+              description: Index of the player holding 7♦ (-1 if none)
+            hasTenDiamonds:
+              type: integer
+              description: Index of the player holding 10♦ (-1 if none)
+            mostCards:
+              type: integer
+              description: Index of the player with the most captured cards (-1 if tied)
+            gained:
+              type: object
+              additionalProperties:
+                type: integer
+        isHumanTurn:
+          type: boolean
+        hint:
+          type: object
+          nullable: true
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            tableIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    TablanetResponse:
+      type: object
+      description: Current state of the Tablanet (Tablić) game
+      properties:
+        players:
+          type: array
+          description: Array of 4 player objects (0=human, 1-3=CPU)
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              capturedCount:
+                type: integer
+                description: Number of cards this player has captured so far
+              tablaCount:
+                type: integer
+                description: Number of Tabla bonuses this player has scored
+              score:
+                type: integer
+                description: Running / final score for this player
+        phase:
+          type: integer
+          description: "Game phase: 0=Play, 1=GameEnd"
+          enum: [0, 1]
+          example: 0
+        roundNumber:
+          type: integer
+        currentTurn:
+          type: integer
+          description: Index of the player whose turn it is
+        tableCards:
+          type: array
+          description: Cards currently face-up on the table
+          items:
+            $ref: '#/components/schemas/Card'
+        lastCaptureIdx:
+          type: integer
+          description: Index of the last player who captured (-1 if none)
+        remainingDeck:
+          type: integer
+          description: Number of cards left in the stock
+        playableIndices:
+          type: array
+          items:
+            type: integer
+        captureOptions:
+          type: object
+          description: Maps a hand card index (as string) to the table-card indices it can capture
+          additionalProperties:
+            type: array
+            items:
+              type: integer
+        winners:
+          type: array
+          description: Indices of the winning player(s) at game end
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        lastDealDetail:
+          type: object
+          nullable: true
+          description: Scoring breakdown of the finished game (present at GameEnd)
+          properties:
+            cards:
+              type: object
+              additionalProperties:
+                type: integer
+            aces:
+              type: object
+              additionalProperties:
+                type: integer
+            jacks:
+              type: object
+              additionalProperties:
+                type: integer
+            tablas:
+              type: object
+              additionalProperties:
+                type: integer
+            hasTenDiamonds:
+              type: integer
+              description: Index of the player holding 10♦ (-1 if none)
+            hasTwoClubs:
+              type: integer
+              description: Index of the player holding 2♣ (-1 if none)
+            mostCards:
+              type: integer
+              description: Index of the player with the most captured cards (-1 if tied)
+            gained:
+              type: object
+              additionalProperties:
+                type: integer
+        isHumanTurn:
+          type: boolean
+        hint:
+          type: object
+          nullable: true
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            tableIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    TrenteEtQuaranteResponse:
+      type: object
+      description: Current state of the Trente et Quarante (Rouge et Noir) game
+      properties:
+        phase:
+          type: integer
+          description: "Game phase: 0=Bet, 1=Result"
+          enum: [0, 1]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Number of rounds resolved so far
+        chips:
+          type: integer
+          description: Player's remaining chip stack
+        currentBet:
+          type: integer
+          description: "Selected bet: 0=Noir, 1=Rouge, 2=Couleur, 3=Inverse"
+          enum: [0, 1, 2, 3]
+        stake:
+          type: integer
+          description: Amount wagered on the current round
+        noirRow:
+          type: array
+          description: Cards dealt to the Noir (black) row, summed until the total reaches 31+
+          items:
+            $ref: '#/components/schemas/Card'
+        rougeRow:
+          type: array
+          description: Cards dealt to the Rouge (red) row, summed until the total reaches 31+
+          items:
+            $ref: '#/components/schemas/Card'
+        noirTotal:
+          type: integer
+          description: Pip total of the Noir row (31-40 once complete)
+        rougeTotal:
+          type: integer
+          description: Pip total of the Rouge row (31-40 once complete)
+        winningRow:
+          type: integer
+          description: "Winning row (the lower total): 0=Noir, 1=Rouge; -1 for none (push/refait)"
+          enum: [-1, 0, 1]
+        firstCardRed:
+          type: boolean
+          description: Whether the first card dealt (Noir row's first card) is red — drives Couleur/Inverse display
+        refait:
+          type: boolean
+          description: True when both rows tie at 31 (a "Refait" — half the stake goes to the house)
+        result:
+          type: integer
+          description: "Round result from the player's perspective: 1=win, 0=push, -1=lose"
+          enum: [-1, 0, 1]
+        payout:
+          type: integer
+          description: "Gross chips returned to the stack this round (0=lose, stake/2=refait, stake=push, stake*2=win)"
+        remainingDeck:
+          type: integer
+          description: Number of cards remaining in the shoe
+        gameEndFlag:
+          type: boolean
+          description: True once the round has resolved
+        hint:
+          type: object
+          description: Educational hint offered during the bet phase
+          properties:
+            bet:
+              type: integer
+              description: "Suggested bet type: 0=Noir, 1=Rouge, 2=Couleur, 3=Inverse"
+              enum: [0, 1, 2, 3]
+            reason:
+              type: string
+              description: i18n reason key for the suggestion
+        config:
+          type: object
+          description: Local-rule configuration
+          properties:
+            defaultBet:
+              type: integer
+              description: "Bet type pre-selected at the start of each round: 0=Noir, 1=Rouge, 2=Couleur, 3=Inverse"
+              enum: [0, 1, 2, 3]
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    KingResponse:
+      type: object
+      description: Current state of the King game (mirrors KingWebOutput)
+      properties:
+        players:
+          type: array
+          description: Array of 4 player objects (0=human, 1-3=CPU)
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              trickCount:
+                type: integer
+              totalScore:
+                type: integer
+                description: Cumulative match score for this player (negative = penalty)
+        phase:
+          type: string
+          description: "Game phase"
+          enum: [selectContract, play, dealEnd, gameEnd]
+          example: selectContract
+        dealNumber:
+          type: integer
+          description: Current deal number (0-indexed, 0-6)
+        totalDeals:
+          type: integer
+          description: Total deals in a match (7 = one pass through all contracts)
+        dealerIdx:
+          type: integer
+          description: Dealer (親) index for the current deal
+        currentTurn:
+          type: integer
+        currentContract:
+          type: integer
+          description: "Active contract for the current deal (-1 until chosen): 0=No Tricks, 1=No Hearts, 2=No Queens, 3=No King of Hearts, 4=No Last Two Tricks, 5=No Men, 6=King (Trump)"
+        trumpSuit:
+          type: integer
+          description: "Trump suit for the King (Trump) contract (-1=none for the six negative contracts): 1=♠, 2=♣, 3=♥, 4=♦"
+        trickNumber:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        lastTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        lastTrickWinner:
+          type: integer
+          description: Index of the player who won the most recent trick (-1 if none)
+        usedContracts:
+          type: array
+          items:
+            type: boolean
+          description: Which of the 7 contracts have already been played this match
+        playableIndices:
+          type: array
+          items:
+            type: integer
+          description: Hand indices the human may legally play (must-follow filtered)
+        gameEndFlag:
+          type: boolean
+        roundWinners:
+          type: array
+          items:
+            type: integer
+          description: Highest-scoring player indices at match end
+        lastDealDetail:
+          type: object
+          nullable: true
+          properties:
+            contract:
+              type: integer
+            trumpSuit:
+              type: integer
+            dealerIdx:
+              type: integer
+            gained:
+              type: object
+              additionalProperties:
+                type: integer
+        isHumanTurn:
+          type: boolean
+        hint:
+          type: object
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
         message:
           type: string
         messageCode:
@@ -32642,6 +37010,95 @@ components:
             cpuDifficulty:
               type: integer
             targetScore:
+              type: integer
+
+    CatchTenResponse:
+      type: object
+      description: Current state of the Catch the Ten (Scotch Whist) game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              roundScore:
+                type: integer
+                description: Honor points captured this deal
+              cumulativeScore:
+                type: integer
+              trickCount:
+                type: integer
+              team:
+                type: integer
+                description: "Partnership index (0 = human side, 1 = opponents)"
+        phase:
+          type: integer
+          description: "Game phase: 0=Play, 1=TrickEnd, 2=RoundEnd, 3=GameEnd"
+          enum: [0, 1, 2, 3]
+          example: 0
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        trumpSuit:
+          type: integer
+          description: "Trump suit: 1=Spades, 2=Clubs, 3=Hearts, 4=Diamonds"
+          minimum: 1
+          maximum: 4
+        dealerIdx:
+          type: integer
+        teamScores:
+          type: array
+          items:
+            type: integer
+          description: Cumulative honor points per team [team0, team1]
+          minItems: 2
+          maxItems: 2
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: "Winning team (0 or 1); -1 if undecided, -2 if the game ended in a draw"
+        leadPlayerIdx:
+          type: integer
+        hint:
+          type: object
+          properties:
+            cardIndex:
+              type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
               type: integer
 
     KnockoutWhistRequest:

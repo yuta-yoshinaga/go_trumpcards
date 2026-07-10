@@ -32,6 +32,14 @@ describe('gameTheme', () => {
     expect(gameTheme.cribbage.bg).toContain('blue');
   });
 
+  it('Indian Rummy uses its saffron/marigold theme', () => {
+    expect(gameTheme.indianrummy.bg).toContain('indianrummy');
+  });
+
+  it('Machiavelli uses its Renaissance crimson theme', () => {
+    expect(gameTheme.machiavelli.bg).toContain('machiavelli');
+  });
+
   it('every entry has bg and footer fields', () => {
     for (const [key, value] of Object.entries(gameTheme)) {
       expect(value.bg, `${key}.bg`).toBeTruthy();

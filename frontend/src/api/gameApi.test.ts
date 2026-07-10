@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   actionLogApi,
+  agnesApi,
   baccaratApi,
   bidWhistApi,
   bigOApi,
@@ -20,12 +21,15 @@ import {
   heartsApi,
   holdemApi,
   indianpokerApi,
+  indianRummyApi,
   klondikeApi,
   letitrideApi,
+  machiavelliApi,
   memoryApi,
   montecarloApi,
   oldmaidApi,
   omahaApi,
+  panApi,
   pokerApi,
   pyramidApi,
   sessionId,
@@ -2671,6 +2675,310 @@ describe('gameApi', () => {
     });
   });
 
+  describe('indianRummyApi.exec', () => {
+    const payload = {
+      players: [],
+      phase: 0,
+      roundNumber: 1,
+      targetRounds: 3,
+      currentPlayerIdx: 0,
+      dealerIdx: 0,
+      discardTop: null,
+      drawPileCount: 0,
+      wildJoker: null,
+      wildRank: 0,
+      gameEndFlag: false,
+      winnerIdx: -1,
+      declarerIdx: -1,
+      declarationValid: false,
+      message: '',
+      config: { playerCount: 4, cpuDifficulty: 1, targetRounds: 3 },
+    };
+
+    it('calls the correct URL with reset command and config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await indianRummyApi.exec('reset', undefined, {
+        playerCount: 4,
+        cpuDifficulty: 1,
+        targetRounds: 3,
+      });
+      expect(mockFetch).toHaveBeenCalledWith('/indianrummy/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          cardIndex: undefined,
+          config: { playerCount: 4, cpuDifficulty: 1, targetRounds: 3 },
+          sessionId,
+        }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with discard command and cardIndex', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await indianRummyApi.exec('discard', 3);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/indianrummy/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'discard',
+            cardIndex: 3,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with declare command and cardIndex', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await indianRummyApi.exec('declare', 13);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/indianrummy/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'declare',
+            cardIndex: 13,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with log command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await indianRummyApi.exec('log');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/indianrummy/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'log',
+            cardIndex: undefined,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(indianRummyApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
+  describe('panApi.exec', () => {
+    const payload = {
+      players: [],
+      phase: 0,
+      roundNumber: 1,
+      targetRounds: 3,
+      currentPlayerIdx: 0,
+      dealerIdx: 0,
+      discardTop: null,
+      drawPileCount: 0,
+      deckSize: 320,
+      winMeldCount: 11,
+      gameEndFlag: false,
+      winnerIdx: -1,
+      panDeclarerIdx: -1,
+      message: '',
+      config: { playerCount: 4, cpuDifficulty: 1, targetRounds: 3 },
+    };
+
+    it('calls the correct URL with reset command and config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await panApi.exec('reset', undefined, {
+        playerCount: 4,
+        cpuDifficulty: 1,
+        targetRounds: 3,
+      });
+      expect(mockFetch).toHaveBeenCalledWith('/pan/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          cardIndices: undefined,
+          cardIndex: undefined,
+          meldOwner: undefined,
+          meldIdx: undefined,
+          config: { playerCount: 4, cpuDifficulty: 1, targetRounds: 3 },
+          sessionId,
+        }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with drawstock command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await panApi.exec('drawstock');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/pan/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'drawstock',
+            cardIndices: undefined,
+            cardIndex: undefined,
+            meldOwner: undefined,
+            meldIdx: undefined,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with meld command and cardIndices', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await panApi.exec('meld', { cardIndices: [0, 1, 2] });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/pan/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'meld',
+            cardIndices: [0, 1, 2],
+            cardIndex: undefined,
+            meldOwner: undefined,
+            meldIdx: undefined,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with layoff command and meld target', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await panApi.exec('layoff', { meldOwner: 1, meldIdx: 0, cardIndex: 3 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/pan/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'layoff',
+            cardIndices: undefined,
+            cardIndex: 3,
+            meldOwner: 1,
+            meldIdx: 0,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with discard command and cardIndex', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await panApi.exec('discard', { cardIndex: 5 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/pan/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'discard',
+            cardIndices: undefined,
+            cardIndex: 5,
+            meldOwner: undefined,
+            meldIdx: undefined,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(panApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
+  describe('machiavelliApi.exec', () => {
+    const payload = {
+      players: [],
+      table: [],
+      phase: 0,
+      roundNumber: 1,
+      targetRounds: 3,
+      currentPlayerIdx: 0,
+      dealerIdx: 0,
+      drawPileCount: 0,
+      gameEndFlag: false,
+      winnerIdx: -1,
+      roundWinnerIdx: -1,
+      message: '',
+      config: { playerCount: 4, cpuDifficulty: 1, targetRounds: 3 },
+    };
+
+    it('calls the correct URL with reset command and config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await machiavelliApi.exec('reset', undefined, {
+        playerCount: 4,
+        cpuDifficulty: 1,
+        targetRounds: 3,
+      });
+      expect(mockFetch).toHaveBeenCalledWith('/machiavelli/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          config: { playerCount: 4, cpuDifficulty: 1, targetRounds: 3 },
+          sessionId,
+        }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with draw command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await machiavelliApi.exec('draw');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/machiavelli/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'draw', sessionId }),
+        }),
+      );
+    });
+
+    it('calls with newmeld command and hand indices', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await machiavelliApi.exec('newmeld', { handIndices: [0, 1, 2] });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/machiavelli/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'newmeld', handIndices: [0, 1, 2], sessionId }),
+        }),
+      );
+    });
+
+    it('calls with layoff command and meld/hand indices', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await machiavelliApi.exec('layoff', { meldIdx: 1, handIndex: 4 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/machiavelli/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'layoff', meldIdx: 1, handIndex: 4, sessionId }),
+        }),
+      );
+    });
+
+    it('calls with log command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await machiavelliApi.exec('log');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/machiavelli/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'log', sessionId }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(machiavelliApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
   describe('conquianApi.exec', () => {
     const payload = {
       players: [],
@@ -3007,6 +3315,8 @@ describe('gameApi', () => {
       ['baccarat', actionLogApi.baccarat],
       ['crazyeights', actionLogApi.crazyeights],
       ['ginrummy', actionLogApi.ginrummy],
+      ['indianrummy', actionLogApi.indianrummy],
+      ['pan', actionLogApi.pan],
       ['spider', actionLogApi.spider],
       ['indianpoker', actionLogApi.indianpoker],
     ])('actionLogApi.%s', (gameName, apiFn) => {
@@ -3437,6 +3747,35 @@ describe('gameApi', () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ command: 'undo_n', from: undefined, to: undefined, n: 3, sessionId }),
+      });
+    });
+  });
+
+  describe('agnesApi.exec', () => {
+    it('sends deal command with no zones', async () => {
+      const mockResponse = { tableau: [], stockCount: 0, foundation: [], baseRank: 0, phase: 0, message: '' };
+      mockFetch.mockReturnValue(makeResponse(mockResponse));
+      const result = await agnesApi.exec('deal');
+      expect(mockFetch).toHaveBeenCalledWith('/agnes/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'deal', from: undefined, to: undefined, sessionId }),
+      });
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('sends move command with from and to zones', async () => {
+      mockFetch.mockReturnValue(makeResponse({ phase: 0 }));
+      await agnesApi.exec('move', { zone: 'tableau', col: 0, cardIndex: 0 }, { zone: 'foundation' });
+      expect(mockFetch).toHaveBeenCalledWith('/agnes/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'move',
+          from: { zone: 'tableau', col: 0, cardIndex: 0 },
+          to: { zone: 'foundation' },
+          sessionId,
+        }),
       });
     });
   });

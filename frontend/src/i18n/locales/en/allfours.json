@@ -1,0 +1,67 @@
+{
+  "phase": {
+    "beg": "Beg",
+    "gift": "Gift",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Deal End",
+    "gameEnd": "Game Over"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "pointLimit": "Target Score",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "dealer": "Dealer: {{name}}",
+  "trumpSuit": "Trump: {{suit}}",
+  "trumpUnset": "undecided",
+  "turnUp": "Turn-up: {{card}}",
+  "cards": "{{count}} cards",
+  "currentTrick": "Current Trick",
+  "scoresPlayer": "Player",
+  "scoresTricks": "Tricks",
+  "scoresRound": "Deal",
+  "scoresTotal": "Total",
+  "standButton": "Stand",
+  "begButton": "Beg",
+  "giftButton": "Gift (give 1 point)",
+  "runButton": "Run (re-deal)",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Deal",
+  "begPhase": "Choose to Stand (keep trump) or Beg (ask for a new trump)",
+  "giftPhase": "Choose to Gift (give 1 point) or Run (re-deal)",
+  "result": {
+    "humanWin": "You win!",
+    "cpuWin": "CPU {{cpuId}} wins!"
+  },
+  "scoring": {
+    "high": "High (highest trump)",
+    "low": "Low (lowest trump)",
+    "jack": "Jack (capturing the trump Jack)",
+    "game": "Game (most card pips)"
+  },
+  "hint": {
+    "begBeg": "weak hand, so beg",
+    "begStand": "decent hand, so stand",
+    "giftGift": "strong hand, so gift and play on",
+    "giftRun": "weak hand, so re-deal",
+    "leadStrong": "lead a strong card",
+    "followSuit": "follow the led suit",
+    "trumpCut": "cut with a trump",
+    "discardLow": "discard a low card"
+  },
+  "tutorial": {
+    "begControls": "The non-dealer chooses Stand (keep the turn-up trump) or Beg (ask for a new trump).",
+    "trickDisplay": "The current trick. The turn-up card's suit is trump.",
+    "playerHand": "Your hand. Follow the led suit or cut with a trump.",
+    "playButton": "Select a card, then play it with this button.",
+    "scoreTable": "The score table. Compete for High/Low/Jack/Game; first to 7 points wins.",
+    "resetButton": "The reset button starts a new game."
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "title": "Koi-Koi",
+  "phase": {
+    "play": "Play",
+    "decision": "Koi-Koi Decision",
+    "roundEnd": "Round End",
+    "gameEnd": "Game Over"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard",
+    "targetScore": "Target Score"
+  },
+  "round": "Round {{n}}",
+  "deck": "Stock: {{count}}",
+  "koikoiCount": "Koi-Koi: {{count}}",
+  "field": "Field",
+  "fieldEmpty": "(empty)",
+  "pickField": "Pick a field card to capture (two cards match).",
+  "you": "You",
+  "cpu": "CPU",
+  "captured": "Captured: {{count}}",
+  "score": "Score: {{score}}",
+  "turnYours": "Your turn — pick a hand card to capture a field card.",
+  "turnCpu": "CPU is playing…",
+  "decision": {
+    "title": "You completed a yaku! Koi-Koi or Shobu?",
+    "points": "{{points}} pts",
+    "koikoi": "Koi-Koi",
+    "shobu": "Shobu"
+  },
+  "roundResult": {
+    "title": "Round Result",
+    "winner": "Winner: {{name}}",
+    "draw": "Draw",
+    "total": "{{base}} × {{mult}} = {{total}} pts"
+  },
+  "result": {
+    "title": "Final Score",
+    "winner": "Winner: {{name}}",
+    "score": "{{name}}: {{score}} pts"
+  },
+  "nextRound": "Next Round",
+  "newGame": "New Game",
+  "yaku": {
+    "goko": "Five Brights",
+    "shiko": "Four Brights",
+    "ameshiko": "Rainy Four Brights",
+    "sanko": "Three Brights",
+    "inoshikacho": "Boar-Deer-Butterfly",
+    "akatan": "Red Ribbons",
+    "aotan": "Blue Ribbons",
+    "tanzaku": "Ribbons",
+    "tane": "Animals",
+    "kasu": "Chaff",
+    "hanami": "Flower Viewing",
+    "tsukimi": "Moon Viewing"
+  },
+  "hint": {
+    "koikoi_capture": "Capture the higher-value field card",
+    "koikoi_play": "Play a card from your hand",
+    "koikoi_continue": "Call koi-koi to build a bigger yaku",
+    "koikoi_stop": "Call shobu to lock in your points"
+  },
+  "tutorial": {
+    "field": "These are the field cards. A played hand card captures a field card of the same month (flower). When two cards match, you choose which to take.",
+    "hand": "This is your hand. Playing a card captures a same-month field card, then draws one card from the stock.",
+    "info": "Koi-Koi is a two-player capture game played with a 48-card hanafuda deck. Captured cards form 'yaku' (combinations). When a yaku completes you choose koi-koi (continue, doubling the stakes) or shobu (stop and score). First to the target score wins.",
+    "resetButton": "Use the reset button to start a new game."
+  }
+}

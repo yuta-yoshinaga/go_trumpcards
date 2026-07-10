@@ -1,0 +1,155 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { tysiacApi } from '../api/gameApi';
+import { renderWithProviders } from '../test/renderWithProviders';
+import { makeTysiacState } from '../test/stateFactories';
+import { TysiacPage } from './TysiacPage';
+
+vi.mock('../api/gameApi', () => ({
+  tysiacApi: { exec: vi.fn() },
+  actionLogApi: { tysiac: vi.fn() },
+}));
+
+const mockExec = vi.mocked(tysiacApi.exec);
+
+const playPhaseState = makeTysiacState();
+const bidPhaseState = makeTysiacState({
+  phase: 0,
+  trumpSuit: 0,
+  currentPlayerIdx: 0,
+  isHumanTurn: true,
+  currentBid: 100,
+});
+const talonPhaseState = makeTysiacState({ phase: 1, declarerIdx: 0 });
+const trickEndState = makeTysiacState({
+  phase: 3,
+  currentTrick: [
+    { playerIdx: 0, card: { design: 'HEART', value: 12 } },
+    { playerIdx: 1, card: { design: 'CLOVER', value: 13 } },
+  ],
+});
+const roundEndState = makeTysiacState({
+  phase: 4,
+  roundCardPoints: [55, 35, 30],
+  roundMarriage: [100, 0, 0],
+});
+const gameEndState = makeTysiacState({
+  phase: 5,
+  gameEndFlag: true,
+  winnerPlayer: 0,
+  message: 'ゲーム終了！ あなたの勝ちです！',
+});
+const cpuTurnState = makeTysiacState({ currentPlayerIdx: 1, isHumanTurn: false });
+
+beforeEach(() => {
+  mockExec.mockReset();
+  mockExec.mockResolvedValue(playPhaseState);
+});
+
+describe('TysiacPage', () => {
+  it('renders skeleton when no state', () => {
+    mockExec.mockReturnValue(new Promise(() => undefined));
+    renderWithProviders(<TysiacPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('calls reset on mount with the default config', async () => {
+    renderWithProviders(<TysiacPage />);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', {
+        config: { cpuDifficulty: 1, targetPoints: 1000 },
+      }),
+    );
+  });
+
+  it('renders the play phase with the human cards and the Declarer badge', async () => {
+    renderWithProviders(<TysiacPage />);
+    await waitFor(() => {
+      expect(screen.getByAltText('♥ Q')).toBeInTheDocument();
+      expect(screen.getByAltText('♠ A')).toBeInTheDocument();
+    });
+    // The human (seat 0) is the default Declarer.
+    expect(screen.getByText('デクレアラー')).toBeInTheDocument();
+  });
+
+  it('shows a marriage banner during play (trump-suit K-Q ♥ scores +100)', async () => {
+    // Default hand: ♥K + ♥Q with trump ♥ → a +100 marriage.
+    renderWithProviders(<TysiacPage />);
+    const banner = await screen.findByTestId('tysiac-marriage');
+    expect(banner).toHaveTextContent('マリッジ可能');
+    expect(banner).toHaveTextContent('♥ K-Q (+100)');
+  });
+
+  it('renders the bid phase with raise and pass buttons', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<TysiacPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'レイズ +10' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'パス' })).toBeInTheDocument();
+  });
+
+  it('raising the bid dispatches bid with raise=true', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<TysiacPage />);
+    const raiseBtn = await screen.findByRole('button', { name: 'レイズ +10' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(bidPhaseState);
+    fireEvent.click(raiseBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { raise: true }));
+  });
+
+  it('renders the talon phase with the give-card button and prompt', async () => {
+    mockExec.mockResolvedValue(talonPhaseState);
+    renderWithProviders(<TysiacPage />);
+    await waitFor(() => expect(screen.getByTestId('tysiac-talon-prompt')).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'カードを渡す' })).toBeInTheDocument();
+  });
+
+  it('selecting a card then discarding dispatches discard', async () => {
+    mockExec.mockResolvedValue(talonPhaseState);
+    renderWithProviders(<TysiacPage />);
+    const card = await screen.findByAltText('♥ Q');
+    fireEvent.click(card);
+    const giveBtn = await screen.findByRole('button', { name: 'カードを渡す' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(talonPhaseState);
+    fireEvent.click(giveBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', { cardIndex: 0 }));
+  });
+
+  it('selecting a card then playing dispatches play', async () => {
+    renderWithProviders(<TysiacPage />);
+    const card = await screen.findByAltText('♥ Q');
+    fireEvent.click(card);
+    const playBtn = await screen.findByRole('button', { name: '出す' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(playBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0 }));
+  });
+
+  it('renders trick end with the next trick button', async () => {
+    mockExec.mockResolvedValue(trickEndState);
+    renderWithProviders(<TysiacPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+  });
+
+  it('renders round end with the next round button and the round result', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<TysiacPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
+    expect(screen.getByText('ラウンド結果')).toBeInTheDocument();
+  });
+
+  it('renders the game end message', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<TysiacPage />);
+    await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたの勝ちです！')).toBeInTheDocument());
+  });
+
+  it('does not show the play button on a CPU turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<TysiacPage />);
+    await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
+  });
+});

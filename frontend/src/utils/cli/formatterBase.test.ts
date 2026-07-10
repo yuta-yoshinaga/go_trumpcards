@@ -42,6 +42,14 @@ describe('formatCard', () => {
   it('formats queen', () => {
     expect(formatCard({ design: 'HEART', value: 12 })).toBe(`${H}Q`);
   });
+
+  it('formats a procedural card from its glyph and label', () => {
+    expect(formatCard({ design: 'JOKER', value: 1, glyph: '✦', label: 'Wizard', deck: 'wizard' })).toBe('✦Wizard');
+  });
+
+  it('formats a procedural card from label alone when glyph is absent', () => {
+    expect(formatCard({ design: 'JOKER', value: 1, label: 'Jester', deck: 'wizard' })).toBe('Jester');
+  });
 });
 
 describe('formatCardList', () => {

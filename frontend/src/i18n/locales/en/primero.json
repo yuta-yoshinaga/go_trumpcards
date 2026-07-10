@@ -1,0 +1,57 @@
+{
+  "title": "Primero",
+  "phase": {
+    "betting": "Betting",
+    "result": "Result"
+  },
+  "settings": {
+    "title": "Settings",
+    "playerCount": "Players",
+    "ante": "Ante",
+    "startingChips": "Starting chips",
+    "targetRounds": "Rounds"
+  },
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "round": "Round {{n}}",
+  "pot": "Pot: {{amount}}",
+  "ante": "Ante: {{amount}}",
+  "chips": "Chips: {{amount}}",
+  "currentBet": "Current bet: {{amount}}",
+  "roundBet": "Bet: {{amount}}",
+  "handLabel": "Your hand",
+  "playersTitle": "Players",
+  "bettingNotice": "Your turn — call, raise (vie), or fold.",
+  "badge": {
+    "active": "In",
+    "folded": "Folded",
+    "out": "Out",
+    "winner": "Winner"
+  },
+  "hand": {
+    "fluxus": "Fluxus (flush)",
+    "supremus": "Supremus",
+    "primero": "Primero",
+    "numerus": "Numerus"
+  },
+  "callButton": "Call",
+  "raiseButton": "Raise (Vie)",
+  "foldButton": "Fold",
+  "nextRound": "Next Round",
+  "roundResult": {
+    "title": "Round Result",
+    "winner": "{{name}} won the pot of {{pot}}."
+  },
+  "matchWinner": "{{name}} won the match!",
+  "hint": {
+    "strong_hand": "Strong hand — worth raising",
+    "medium_hand": "Decent hand — call and see",
+    "weak_hand": "Weak hand — better to fold"
+  },
+  "tutorial": {
+    "info": "This shows the round number, pot, ante, current bet, and each player's chips and status. Primero is a Renaissance (16th-century) 4-card vying pot game and an ancestor of poker.",
+    "hand": "Your four cards. Hands rank (low to high): Numerus, Primero (one card of each suit), Supremus, and Fluxus (four of a suit); the strongest hand takes the pot.",
+    "actions": "Call to match the current bet, raise (vie) to increase it, or fold to sit out the round. When betting ends the hands are compared to decide the pot.",
+    "resetButton": "Reset the game and start over."
+  }
+}

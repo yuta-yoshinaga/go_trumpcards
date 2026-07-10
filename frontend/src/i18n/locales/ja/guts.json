@@ -1,0 +1,53 @@
+{
+  "title": "ガッツ",
+  "phase": {
+    "declare": "コール",
+    "result": "結果"
+  },
+  "settings": {
+    "title": "設定",
+    "playerCount": "プレイヤー人数",
+    "ante": "アンティ",
+    "startingChips": "初期チップ",
+    "targetRounds": "ラウンド数"
+  },
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "round": "ラウンド {{n}}",
+  "pot": "ポット: {{amount}}",
+  "ante": "アンティ: {{amount}}",
+  "chips": "チップ: {{amount}}",
+  "roundBet": "賭け: {{amount}}",
+  "handLabel": "あなたの手札",
+  "playersTitle": "プレイヤー",
+  "declareNotice": "あなたの番です — イン（残る）かアウト（降りる）を選んでください。",
+  "badge": {
+    "in": "イン",
+    "out": "脱落",
+    "waiting": "待機",
+    "winner": "勝者",
+    "matcher": "マッチ"
+  },
+  "hand": {
+    "pair": "ペア",
+    "highcard": "ハイカード"
+  },
+  "inButton": "イン（残る）",
+  "outButton": "アウト（降りる）",
+  "nextRound": "次のラウンド",
+  "roundResult": {
+    "title": "ラウンド結果",
+    "winner": "{{name}} がポット {{pot}} を獲得しました。"
+  },
+  "matchWinner": "{{name}} がマッチに勝利しました！",
+  "hint": {
+    "strong_hand": "強い手 — 残る価値があります",
+    "weak_hand": "弱い手 — 降りたほうが無難です"
+  },
+  "tutorial": {
+    "info": "ここにラウンド番号・ポット・アンティ・各プレイヤーのチップと状態が表示されます。ガッツは各自2枚の手札で「イン（残る）」か「アウト（降りる）」を同時に宣言する、テンポの速いポット争奪の賭けゲームです。",
+    "hand": "あなたの2枚の手札です。手役はペア＞ハイカードの順で強く、残ったプレイヤー同士で最強の手がポットを獲得します。",
+    "actions": "イン（残る）を選ぶと勝負に加わり、負けた場合はポットと同額を支払います。アウト（降りる）を選ぶとこのラウンドを見送ります。",
+    "resetButton": "ゲームをリセットして最初からやり直します。"
+  }
+}

@@ -1,0 +1,15 @@
+name = "go-trumpcards-extra"
+main = "./build/worker.mjs"
+compatibility_date = "2024-09-23"
+
+[[kv_namespaces]]
+binding = "GAME_SESSIONS"
+id = "72d56b39ea0244b38a765e41466bfbba"
+preview_id = "8879e8e454a748958d109a7d135c7912"
+
+[env.staging]
+name = "go-trumpcards-extra-staging"
+
+[[env.staging.kv_namespaces]]
+binding = "GAME_SESSIONS"
+id = "3de03ff8456a4ab2b96490dbe7aef6a8"

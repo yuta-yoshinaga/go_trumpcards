@@ -1,0 +1,82 @@
+{
+  "title": "フレンチタロット",
+  "phase": {
+    "bid": "オークション",
+    "chien": "シアン交換",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ディール終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetDeals": "マッチのディール数",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ディール {{n}}",
+  "trick": "トリック {{n}}",
+  "contract": "契約: {{contract}}",
+  "contractNone": "-",
+  "contractPetite": "プティット",
+  "contractGarde": "ガルド",
+  "contractGardeSans": "ガルド・サン",
+  "contractGardeContre": "ガルド・コントル",
+  "bidNone": "なし",
+  "cards": "{{count}}枚",
+  "tricks": "{{count}}トリック",
+  "points": "{{points}}点",
+  "score": "得点: {{score}}",
+  "currentTrick": "現在のトリック",
+  "players": "プレイヤー",
+  "chienLabel": "シアン（公開）",
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "declarerBadge": "デクレアラー",
+  "bidPass": "パス",
+  "bidPetite": "プティット",
+  "bidGarde": "ガルド",
+  "bidGardeSans": "ガルド・サン",
+  "bidGardeContre": "ガルド・コントル",
+  "bidPhase": "オークション — パス、またはより高いコントラクトを宣言します（現在の最高入札: {{bid}}）。",
+  "chienPhase": "シアン交換 — 手札から6枚を選んで伏せて捨てます（{{count}}/6 枚選択中）。キングとエクスキューズは捨てられません。",
+  "chienRestricted": "このカードは捨てられません（キング／エクスキューズ）。",
+  "discardButton": "捨てる（{{count}}/6）",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のディール",
+  "outcomeNone": "-",
+  "outcomeWin": "成功（デクレアラー勝ち）",
+  "outcomeLoss": "失敗（防御側勝ち）",
+  "result": {
+    "humanWin": "ゲーム終了！ あなたの勝ち！",
+    "cpuWin": "ゲーム終了！ プレイヤー {{player}} の勝ち！"
+  },
+  "roundResult": {
+    "title": "ディール結果",
+    "outcome": "結果: {{outcome}}",
+    "declarer": "デクレアラー: {{name}}",
+    "contract": "契約: {{contract}}",
+    "captured": "獲得点: {{points}} 点"
+  },
+  "hintAvailable": "ヒント",
+  "hint": {
+    "bid_take": "強い手なのでコントラクトを宣言する",
+    "bid_pass": "弱い手なのでパスする",
+    "discard_weak": "最も弱いカードを捨てる",
+    "lead_high": "デクレアラーなので強い札でリードして主導する",
+    "lead_low": "防御側なので低い札でリードして温存する",
+    "follow_win": "勝てるので取りに行く",
+    "follow_duck": "取れない／取る価値がないのでダック",
+    "play_excuse": "エクスキューズを出して札を温存する"
+  },
+  "tutorial": {
+    "trickDisplay": "現在のトリックです。リードされたスートにマストフォロー、フォローできなければ切り札（トランプ）を出します。切り札もなければ任意の札を出します。トリックの最強は最も高い切り札です。",
+    "playerHand": "あなたの手札です。出せるカードをクリックして選びます。フレンチタロットは78枚のタロットデッキ（4スート×14枚＋切り札21枚＋エクスキューズ）を使う4人用のトリックテイキングです。",
+    "playButton": "カードを選んだら、このボタンで出します。オークションではパスするか、プティット／ガルド／ガルド・サン／ガルド・コントルを宣言します。シアン交換フェーズでは6枚を伏せて捨てます。",
+    "info": "フレンチタロットは78枚デッキで遊ぶ4人用のトリックテイキングです。オークションで最高入札者がデクレアラーとなり、CPU3人の防御側と対戦します。プティット／ガルドではシアン（6枚の伏せ札）を公開して手札に加え、6枚を捨てます。ウードラー（切り札1・21・エクスキューズ）の枚数に応じた必要点を獲得すれば契約成功。倍率はプティット×1、ガルド×2、ガルド・サン×4、ガルド・コントル×6です。規定ディール後に最多得点のプレイヤーが勝者です。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}

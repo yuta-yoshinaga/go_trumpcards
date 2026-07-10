@@ -27,6 +27,14 @@ describe('cardAlt', () => {
   it('falls back to raw design for unknown design', () => {
     expect(cardAlt({ design: 'UNKNOWN' as CardDesign, value: 3 })).toBe('UNKNOWN 3');
   });
+
+  it('uses the descriptor label and glyph for procedural (non-52 deck) cards', () => {
+    expect(cardAlt({ design: 'JOKER', value: 1, label: 'Wizard', glyph: '✦', deck: 'wizard' })).toBe('Wizard ✦');
+  });
+
+  it('uses the descriptor label alone when no glyph is present', () => {
+    expect(cardAlt({ design: 'JOKER', value: 1, label: 'Jester', deck: 'wizard' })).toBe('Jester');
+  });
 });
 
 describe('suitSymbol', () => {

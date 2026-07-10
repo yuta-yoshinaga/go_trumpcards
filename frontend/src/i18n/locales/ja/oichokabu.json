@@ -1,0 +1,44 @@
+{
+  "title": "おいちょかぶ",
+  "betGuide": "賭け金を置くと、子（あなた）と親に2枚ずつ配られます",
+  "drawGuide": "3枚目を引くか、このまま勝負（スタンド）するか選択",
+  "previousBet": "前回額を使う ({{amount}})",
+  "label": {
+    "chips": "チップ",
+    "bet": "賭け金",
+    "playerHand": "子（あなた）",
+    "bankerHand": "親",
+    "playerRank": "あなたのカブ",
+    "bankerRank": "親のカブ",
+    "rank": "カブ"
+  },
+  "button": {
+    "bet": "ベット",
+    "draw": "引く",
+    "stand": "勝負",
+    "reset": "リセット",
+    "rebet": "再ベット ({{amount}})"
+  },
+  "phase": {
+    "bet": "ベット",
+    "draw": "引くか勝負",
+    "end": "結果"
+  },
+  "result": {
+    "playerWins": "勝利！",
+    "bankerWins": "敗北",
+    "push": "引き分け"
+  },
+  "payout": {
+    "total": "合計配当"
+  },
+  "tutorial": {
+    "betControls": "賭け金を入力してベットします",
+    "actionButtons": "3枚目を引くか、このまま勝負するかを選びます",
+    "results": "両者のカブと配当が表示されます"
+  },
+  "hint": {
+    "drawLow": "カブが低い（0〜3）— 3枚目を引くのが有利",
+    "standHigh": "カブが十分高い — このまま勝負するのが基本"
+  }
+}

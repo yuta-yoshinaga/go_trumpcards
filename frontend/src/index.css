@@ -63,12 +63,51 @@
   /* Mariáš — Czech/Slovak Bohemian-garnet crimson, distinct from Tute's brown-red and Klaverjas's orange. */
   --color-game-bg-marias: #8c1c3a;
   --color-game-bg-marias-dark: #5e1226;
+  /* King — regal indigo-blue felt, distinct from Tysiąc's plum and Mariáš's garnet crimson. */
+  --color-game-bg-king: #1f2f6e;
+  --color-game-bg-king-dark: #131e48;
+  /* Tysiąc (Thousand) — Polish amaranth-plum, distinct from Mariáš's garnet crimson and every other felt. */
+  --color-game-bg-tysiac: #6e1f4a;
+  --color-game-bg-tysiac-dark: #481231;
+  /* Calabresella (Terziglio) — Calabrian warm terracotta-brown felt, distinct from Tysiąc's plum and every other game. */
+  --color-game-bg-calabresella: #7a3b1e;
+  --color-game-bg-calabresella-dark: #4f2513;
+  /* Ombre (Hombre) — Spanish-court vivid crimson felt, distinct from Mariáš's garnet, Loo/Trente's wine, and Calabresella's terracotta. */
+  --color-game-bg-ombre: #a11d29;
+  --color-game-bg-ombre-dark: #6b111a;
+  /* Ulti (Ultimó) — Hungarian Tokaji-gold amber felt, a warm golden tone distinct from Cuarenta's olive-gold, Calabresella's terracotta, and Ombre's crimson. */
+  --color-game-bg-ulti: #9a6b0f;
+  --color-game-bg-ulti-dark: #664709;
+  /* Watten (ヴァッテン) — Alpine/Bavarian glacier blue felt, cooler and brighter than Jass's navy blue and distinct from every other game. */
+  --color-game-bg-watten: #1c5b8c;
+  --color-game-bg-watten-dark: #113a5a;
+  /* Cinch (Double Pedro) — American saloon deep bronze-olive felt, distinct from Calabresella's terracotta and All Fours' teal. */
+  --color-game-bg-cinch: #5c5218;
+  --color-game-bg-cinch-dark: #3a340f;
+  /* Loo (Lanterloo) — English Regency gaming-house deep wine/burgundy, distinct from Cinch's bronze-olive and every other game. */
+  --color-game-bg-loo: #6b1f2e;
+  --color-game-bg-loo-dark: #431218;
+  /* Basra (Bastra) — Levantine/Nile deep indigo-teal, distinct from Loo's wine and Sedma's pine. */
+  --color-game-bg-basra: #134a54;
+  --color-game-bg-basra-dark: #0b2f36;
+  /* Tablanet (Tablić) — Balkan twilight violet-indigo, distinct from Basra's teal and Loo's wine. */
+  --color-game-bg-tablanet: #3b2d5c;
+  --color-game-bg-tablanet-dark: #241a3a;
+  /* Trente et Quarante (Rouge et Noir) — Monte-Carlo crimson-on-charcoal, evoking the red/black felt. */
+  --color-game-bg-trenteetquarante: #6e1420;
+  --color-game-bg-trenteetquarante-dark: #400b13;
   /* Sedma — Czech/Slovak deep teal-pine, distinct from Sueca's lighter felt-green and every other game. */
   --color-game-bg-sedma: #0d5c5c;
   --color-game-bg-sedma-dark: #093e3e;
+  /* Prší — Czech tricolour deep cobalt-blue felt, distinct from BLUE's navy and Manille's royal blue (Bohemian pub card game). */
+  --color-game-bg-prsi: #1b3a8c;
+  --color-game-bg-prsi-dark: #122759;
   /* Solo Whist — British racing-green felt with a club-room navy undertone, distinct from every other felt. */
   --color-game-bg-solowhist: #1f4d3a;
   --color-game-bg-solowhist-dark: #143324;
+  /* Catch the Ten (Scotch Whist) — Scottish slate-teal felt, distinct from Solo Whist's green and Sedma's deeper teal. */
+  --color-game-bg-catchten: #2a5d6e;
+  --color-game-bg-catchten-dark: #1a3d49;
   /* Auction Forty-Fives — Irish/Canadian deep shamrock-on-amber, a warm bronze-gold felt distinct from Solo Whist's cool green and Spoil Five's vivid emerald. */
   --color-game-bg-fortyfives: #8a5a16;
   --color-game-bg-fortyfives-dark: #5c3a0d;
@@ -120,6 +159,42 @@
   /* Faro — a deep saloon-burgundy felt evoking the 19th-century American banking game, distinct from the casino greens. */
   --color-game-bg-faro: #5e1f33;
   --color-game-bg-faro-dark: #3e1322;
+  /* All Fours — a muted slate-teal felt evoking the old English pub trick-taker, distinct from the casino greens. */
+  --color-game-bg-allfours: #1f4a4a;
+  --color-game-bg-allfours-dark: #143131;
+  /* Ninety-Nine — a deep teal-indigo felt evoking the bury-3 bidding trick-taker, distinct from BLUE's navy and Catch-the-Ten's slate-teal. */
+  --color-game-bg-ninetynine: #234e6e;
+  --color-game-bg-ninetynine-dark: #163349;
+  /* Guts — a bold saloon ember-rust felt evoking the nerve/guts gamble, distinct from Faro's wine and Twenty-Nine's spice-orange. */
+  --color-game-bg-guts: #8a3b1a;
+  --color-game-bg-guts-dark: #562310;
+  /* Anaconda (Pass the Trash) — a murky jungle moss-green felt evoking the serpent's swamp camouflage, distinct from Primero's emerald and Michigan's racing-green. */
+  --color-game-bg-anaconda: #3a5a1e;
+  --color-game-bg-anaconda-dark: #243c11;
+  /* Bouillotte — a candle-lit royal aubergine-plum felt evoking the 18th-century French salon gamble, distinct from Guts's ember-rust and Faro's wine. */
+  --color-game-bg-bouillotte: #4a2151;
+  --color-game-bg-bouillotte-dark: #2c1230;
+  /* Primero — a rich Renaissance emerald-forest felt evoking the 16th-century Tudor-court gamble, distinct from Bouillotte's aubergine and the standard table green. */
+  --color-game-bg-primero: #14654a;
+  --color-game-bg-primero-dark: #0a3628;
+  /* Michigan (Newmarket) — a crisp racing-green turf evoking the English Newmarket racecourse, distinct from Primero's emerald and the standard table green. */
+  --color-game-bg-michigan: #2f6b34;
+  --color-game-bg-michigan-dark: #1a3d1e;
+  /* Carioca — a vivid Rio tropical teal-jade felt evoking the Brazilian/Chilean contract-rummy party game, distinct from Primero's emerald, Michigan's turf-green, and BLUE's navy. */
+  --color-game-bg-carioca: #0e7c6b;
+  --color-game-bg-carioca-dark: #085247;
+  /* Samba — a carnival magenta/fuchsia evoking the Brazilian samba-parade festivity of this three-deck Canasta variant, distinct from every other game's felt. */
+  --color-game-bg-samba: #a5236e;
+  --color-game-bg-samba-dark: #6e1749;
+  /* Indian Rummy — a warm saffron/marigold orange evoking the Indian 13-card rummy tradition, distinct from Klaverjas's burnt-orange and Twenty-Nine's spice-orange. */
+  --color-game-bg-indianrummy: #c8651a;
+  --color-game-bg-indianrummy-dark: #8a4310;
+  /* Machiavelli — a Renaissance-Florence deep crimson with a gilded undertone, evoking the Italian rummy's Medici-era heritage; distinct from other reds in the palette. */
+  --color-game-bg-machiavelli: #8c1c2b;
+  --color-game-bg-machiavelli-dark: #5e0f1c;
+  /* Panguingue (Pan) — a rich Talavera cobalt-azure evoking the Mexican/Southwest saloon heritage of this multi-deck rummy, distinct from carioca's teal-jade and every other felt. */
+  --color-game-bg-pan: #175d9c;
+  --color-game-bg-pan-dark: #0d3a63;
   /* Design system colors (from DESIGN.md) */
   --color-ds-bg: #0f1419;
   --color-ds-surface: #1a2332;

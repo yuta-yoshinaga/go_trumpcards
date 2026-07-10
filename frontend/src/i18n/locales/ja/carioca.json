@@ -1,0 +1,36 @@
+{
+  "title": "カリオカ",
+  "phase": {
+    "draw": "ドロー",
+    "play": "プレイ",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "roundLabel": "ラウンド {{round}} / {{total}}",
+  "contractLabel": "今回のコントラクト",
+  "stockLabel": "山札",
+  "discardLabel": "捨て札",
+  "yourHand": "あなたの手札",
+  "cards": "枚数",
+  "scoreLabel": "累計",
+  "slotsBuilt": "組成済スロット",
+  "slotSet": "{{n}}枚セット",
+  "slotRun": "{{n}}枚ラン",
+  "drawStock": "山札から引く",
+  "drawDiscard": "捨て札を取る",
+  "addSlot": "スロットに追加",
+  "removeLastSlot": "最後のスロットを取り消す",
+  "submitContract": "コントラクトを場に出す",
+  "meldExtra": "追加メルド",
+  "layoff": "レイオフ",
+  "meldAria": "{{player}}のメルド{{meld}}",
+  "layoffTargetSummary": "→ レイオフ先: {{player}} メルド{{meld}}",
+  "discard": "カードを捨てる",
+  "nextRound": "次のラウンドへ",
+  "viewLog": "棋譜を表示",
+  "tutorial": {
+    "contract": "ラウンドごとに「達成すべきメルドの組み合わせ（コントラクト）」が決まっています。画面上部のコントラクト表示を確認しましょう。",
+    "hand": "手札からカードを選び、コントラクトの各スロットに割り当てます。同じカードは複数スロットに使えません。ジョーカーはワイルドとして使えます。",
+    "actions": "ドロー → コントラクト達成 → 追加メルド/レイオフ → カード1枚を捨てる、の流れで進行します。"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "phase": {
+    "draw": "Draw",
+    "play": "Play",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "playerCount": "Players",
+    "cpuDifficulty": "CPU Difficulty",
+    "targetRounds": "Rounds",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}/{{total}}",
+  "drawPile": "Draw pile: {{count}} cards",
+  "discardTop": "Discard",
+  "cards": "{{count}} cards",
+  "chips": "Chips: {{count}}",
+  "melded": "Melded: {{count}}",
+  "winMeld": "Melds needed to go out: {{count}}",
+  "cumulativeScore": "Total: {{score}}",
+  "meldsTitle": "Table Melds",
+  "noMelds": "No melds yet",
+  "meldOwner": "{{name}}'s melds",
+  "scores": "Scores",
+  "scoresPlayer": "Player",
+  "scoresRound": "Round",
+  "scoresTotal": "Total",
+  "scoresChips": "Chips",
+  "drawStockButton": "Draw Stock",
+  "drawDiscardButton": "Draw Discard",
+  "meldButton": "Meld",
+  "layoffButton": "Lay off",
+  "discardButton": "Discard",
+  "nextRound": "Next Round",
+  "drawPhase": "Draw a card from the stock or discard pile",
+  "playPhase": "Meld or lay off, then discard one card",
+  "roundEnd": "Round over",
+  "result": {
+    "humanWin": "You win!",
+    "cpuWin": "CPU {{cpuId}} wins!"
+  },
+  "hint": {
+    "drawFromDiscard": "Draw from the discard pile — it fits your hand",
+    "drawFromStock": "Draw from the stock pile",
+    "meld": "You can lay down a meld — select and play it",
+    "discard": "Discard a card you don't need"
+  },
+  "tutorial": {
+    "drawArea": "Draw a card from the stock or discard pile to start your turn.",
+    "playerHand": "This is your hand. Form sets or ropes (runs) of 3+ cards.",
+    "meldArea": "Select 3+ cards and press Meld to lay them down. Lay off single cards onto existing melds.",
+    "discardButton": "Discard one card to end your turn.",
+    "scoreTable": "Each player's chips and scores are shown here.",
+    "resetButton": "Press the reset button to start a new game."
+  }
+}

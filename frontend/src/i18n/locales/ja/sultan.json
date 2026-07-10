@@ -1,0 +1,38 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "stock": "山札",
+  "waste": "ウェイスト",
+  "foundation": "組札",
+  "divan": "ディヴァン",
+  "moveCount": "手数",
+  "draw": "引く",
+  "redeal": "リディール",
+  "giveup": "ギブアップ",
+  "empty": "空",
+  "landscapeBanner": "横向き表示推奨",
+  "hint": "ヒント",
+  "autoComplete": "自動完成",
+  "autoCompleteNotReady": "山札とウェイストが空のときに使えます",
+  "undo": "元に戻す",
+  "stalemate": "手詰まり",
+  "playing": "ディヴァンとウェイストのカードを組札へ出してください",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "hintAvailable": "ヒントがあります",
+  "noHint": "ヒントはありません",
+  "tutorial": {
+    "stockWaste": "山札をクリックして1枚引きます。山札を使い切ったら、ウェイストを最大2回まで再構築（リディール）できます。",
+    "foundation": "8つのキング始まりの組札を、スート別にK→A→2…10→J→Qの順に積み上げます。",
+    "divan": "8スロットのディヴァン（控え札）が組札へカードを供給します。出したスロットは山札から自動補充されます。ディヴァンかウェイストのカードをクリックして出します。",
+    "controls": "リディール・ヒント・元に戻す・自動完成ボタンを使えます。"
+  },
+  "frontendHint": {
+    "waste": "ウェイスト",
+    "divan": "ディヴァン スロット{{idx}}",
+    "foundation": "組札{{idx}}"
+  }
+}

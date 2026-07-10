@@ -1,0 +1,91 @@
+{
+  "title": "トゥシオンツ（1000）",
+  "phase": {
+    "bid": "入札",
+    "talon": "タロン交換",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetPoints": "目標ポイント",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "trick": "トリック {{n}}",
+  "trump": "切り札: {{suit}}",
+  "contract": "コントラクト: {{points}}",
+  "currentBid": "入札: {{points}}",
+  "bidPhase": "入札フェーズ — レイズ（+10）またはパス。",
+  "talonPhase": "タロン交換 — 各対戦相手に1枚ずつカードを渡します。",
+  "bidRaise": "レイズ +10",
+  "bidPass": "パス",
+  "giveCard": "カードを渡す",
+  "marriageAvailable": "マリッジ可能: {{list}}",
+  "cards": "{{count}}枚",
+  "tricks": "{{count}}トリック",
+  "currentTrick": "現在のトリック",
+  "players": "プレイヤー",
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "role": {
+    "declarer": "デクレアラー",
+    "player": "プレイヤー"
+  },
+  "roleDeclarer": "デクレアラー",
+  "rolePlayer": "プレイヤー",
+  "declarerBadge": "デクレアラー",
+  "score": "得点: {{score}}",
+  "playerScore": "{{name}}: {{score}}点",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド",
+  "target": "目標: {{points}}点",
+  "lastTrickBonus": "ラストトリック +10",
+  "playPhase": {
+    "lead": "あなたの番です — リードするカードを選んでください。",
+    "follow": "あなたの番です — リードスートに従って（フォローできなければ切り札を出して）カードを選んでください。"
+  },
+  "trickEnd": "トリック終了 — 次へ進んでください。",
+  "roundEnd": "ラウンド終了 — 次のラウンドへ進んでください。",
+  "result": {
+    "humanWin": "ゲーム終了！ あなたの勝ちです！",
+    "cpuWin": "ゲーム終了！ プレイヤー {{player}} の勝ちです。"
+  },
+  "roundResult": {
+    "title": "ラウンド結果",
+    "cardPoints": "{{name}} カード点: {{points}}",
+    "marriage": "{{name}} マリッジ: {{points}}"
+  },
+  "hintAvailable": "ヒント",
+  "hint": {
+    "lead_low": "低い札でリードして温存することを推奨",
+    "lead_marriage": "マリッジを宣言 — キングかクイーンでリード",
+    "follow_win": "得点があるので勝てる札で取りに行く",
+    "follow_duck": "取れない／取る価値がないのでダック推奨",
+    "discard_low": "フォローできないので低い札を捨てる",
+    "bid_raise": "手札が強いので入札をレイズ",
+    "bid_pass": "手札が弱いのでパス",
+    "talon_discard": "不要な低い札を渡す",
+    "leadLow": "低い札でリードして温存することを推奨",
+    "leadMarriage": "マリッジを宣言 — キングかクイーンでリード",
+    "followWin": "得点があるので勝てる札で取りに行く",
+    "followDuck": "取れない／取る価値がないのでダック推奨",
+    "discardLow": "フォローできないので低い札を捨てる",
+    "bidRaise": "手札が強いので入札をレイズ",
+    "bidPass": "手札が弱いのでパス",
+    "talonDiscard": "不要な低い札を渡す"
+  },
+  "tutorial": {
+    "trickDisplay": "現在のトリックです。リードされたスートにマストフォロー。フォローできないときは切り札を出します。点数は A=11, 10=10, K=4, Q=3, J=2（1ディールで合計120点）。",
+    "playerHand": "あなたの手札です。出せるカードをクリックして選びます。同スートのK+Qはマリッジで、どちらかをリードするとそのスートが切り札になり、♠/♣/♦/♥ で 40/60/80/100 点が入ります。",
+    "playButton": "カードを選んだら、このボタンで出します。マリッジのキングかクイーンをリードすると切り札が宣言されます。",
+    "info": "トゥシオンツ（1000）はポーランドの3人用24枚トリックテイキングです。まず入札フェーズ（レイズ+10かパス）でデクレアラーを決め、その人はタロンで各対戦相手に1枚ずつカードを渡し、コントラクト達成を目指します。マリッジ（K+Q）で切り札が決まり、スート別に 40/60/80/100 点。先に目標（初期値1000）へ達したプレイヤーの勝ちです。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}

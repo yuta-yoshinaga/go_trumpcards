@@ -1,0 +1,22 @@
+{
+  "helpTitle": "Agnes Sorel (アグネス・ソレル)",
+  "helpDeal": "  d                    各列に1枚ずつ配る",
+  "helpMoveTT": "  m <from> <to>        タブローの末尾カードをタブローに移動",
+  "helpMoveTF": "  m <col> f            タブローの末尾カードをファンデーションに移動",
+  "helpGiveUp": "  g                    ギブアップ",
+  "helpHint": "  h                    ヒント",
+  "promptToZone": "移動先を入力 (<col>=tableau, f=foundation)",
+  "playing": "プレイ中",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "hintAvailable": "ヒントがあります",
+  "noHint": "ヒントはありません",
+  "baseRank": "Base rank: {{rank}}",
+  "foundationHeader": "Foundation: ",
+  "stockLine": "Stock: {{count}}枚",
+  "columnLabel": "列{{col}}:",
+  "hintFromTableau": "タブロー列{{col}}[{{idx}}]",
+  "hintToFoundation": "ファンデーション",
+  "hintToTableau": "タブロー列{{col}}",
+  "hintLine": "ヒント: {{from}} → {{to}}"
+}

@@ -1,0 +1,24 @@
+import type { OmbreResponse } from '../../types/card';
+import type { HintResult } from '../../types/hint';
+
+/**
+ * Returns a frontend {@link HintResult} for Ombre (Hombre), or null when no
+ * suggestion is available.
+ *
+ * Like Calabresella, Ombre's hint is computed entirely by the Go backend and
+ * surfaced on the response's `hint` field (with a `reason` i18n suffix such as
+ * `lead_high`, `lead_low`, `follow_win`, `follow_duck`, `give_partner`,
+ * `discard_low`, `bid_entrar`, `bid_solo`, or `bid_pass`). This adapter re-maps
+ * that server hint into the frontend HintResult shape so the shared
+ * {@link useGameHint} tooltip can render it. The `targetAction` is fixed to
+ * `play` because every hint ultimately points the player at a card.
+ */
+export function getOmbreHint(state: OmbreResponse): HintResult | null {
+  const hint = state.hint;
+  if (!hint || !hint.reason) return null;
+  return {
+    targetAction: 'play',
+    reason: `hint.${hint.reason}`,
+    confidence: 'moderate',
+  };
+}

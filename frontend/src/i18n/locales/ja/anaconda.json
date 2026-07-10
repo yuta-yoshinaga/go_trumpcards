@@ -1,0 +1,72 @@
+{
+  "title": "アナコンダ",
+  "phase": {
+    "pass": "パス",
+    "set": "セット",
+    "roll": "ロール",
+    "result": "結果"
+  },
+  "settings": {
+    "title": "設定",
+    "playerCount": "プレイヤー人数",
+    "ante": "アンティ",
+    "startingChips": "初期チップ",
+    "targetRounds": "ラウンド数"
+  },
+  "you": "あなた",
+  "cpu": "CPU {{id}}",
+  "round": "ラウンド {{n}}",
+  "pot": "ポット: {{amount}}",
+  "ante": "アンティ: {{amount}}",
+  "chips": "チップ: {{amount}}",
+  "roundBet": "賭け: {{amount}}",
+  "currentBet": "コール額: {{amount}}",
+  "handLabel": "あなたの手札",
+  "playersTitle": "プレイヤー",
+  "selectedCount": "選択中: {{n}}",
+  "passNotice": "パスフェーズ — 左隣へ渡すカードを {{count}} 枚選んでください。",
+  "setNotice": "セットフェーズ — 残す5枚を選んでください（2枚を捨てる）。",
+  "rollNotice": "ロールフェーズ — {{revealed}}/5 公開。コール・レイズ・フォールドを選択。",
+  "badge": {
+    "folded": "フォールド",
+    "out": "脱落",
+    "waiting": "待機",
+    "winner": "勝者",
+    "turn": "手番"
+  },
+  "hand": {
+    "straightflush": "ストレートフラッシュ",
+    "fourkind": "フォーカード",
+    "fullhouse": "フルハウス",
+    "flush": "フラッシュ",
+    "straight": "ストレート",
+    "threekind": "スリーカード",
+    "twopair": "ツーペア",
+    "onepair": "ワンペア",
+    "highcard": "ハイカード"
+  },
+  "passButton": "パスする",
+  "keepButton": "キープ",
+  "callButton": "コール / チェック",
+  "raiseButton": "レイズ",
+  "foldButton": "フォールド",
+  "nextRound": "次のラウンド",
+  "roundResult": {
+    "title": "ラウンド結果",
+    "winner": "{{name}} がポット {{pot}} を獲得しました。"
+  },
+  "matchWinner": "{{name}} がマッチに勝利しました！",
+  "hint": {
+    "pass_weakest": "最も弱いカードを渡しましょう",
+    "keep_best": "最も強い5枚を残しましょう",
+    "strong_hand": "強い手 — レイズする価値があります",
+    "medium_hand": "そこそこの手 — コールして様子を見ましょう",
+    "weak_hand": "弱い手 — フォールドが無難です"
+  },
+  "tutorial": {
+    "info": "ここにラウンド番号・ポット・アンティ・現在のベット額・各プレイヤーのチップと状態が表示されます。アナコンダ（Pass the Trash）はポーカー系のポット争奪ゲームです。7枚が配られ、3枚→2枚→1枚を左隣へ渡し、最良の5枚を残して1枚ずつ公開しながら公開の合間にベッティングを行います。",
+    "hand": "あなたの手札です。パスフェーズではカードをタップして左隣へ渡し、セットフェーズでは残す5枚をちょうど選びます。ロールでは1枚ずつ公開されます。",
+    "actions": "選んだカードをパスまたはキープし、ロールではコール／チェック・レイズ・フォールドを選択します。ラウンドに残った中で最強の5枚役がポットを獲得します。",
+    "resetButton": "ゲームをリセットして最初からやり直します。"
+  }
+}

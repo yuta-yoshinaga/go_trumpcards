@@ -1,0 +1,22 @@
+{
+  "helpTitle": "Oicho-Kabu (おいちょかぶ) コマンド",
+  "helpBet": "  b <金額>             ベット (掛け金を置き2枚ずつ配る)",
+  "helpDraw": "  draw                 3枚目を引いて勝負する",
+  "helpStand": "  stand                引かずに勝負する",
+  "chipsLine": "チップ: {{chips}}",
+  "phaseLine": "フェーズ: {{phase}}",
+  "betLine": "掛け金: {{bet}}",
+  "handLine": "手札: {{cards}}",
+  "rankLine": "目: {{rank}}",
+  "playerHeader": "子 (あなた)",
+  "bankerHeader": "親 (胴元)",
+  "hidden": "?? (伏せ札)",
+  "phaseBet": "BET",
+  "phaseDraw": "DRAW",
+  "phaseEnd": "END",
+  "phaseUnknown": "UNKNOWN",
+  "playerWins": "子の勝ち！",
+  "bankerWins": "親の勝ち。",
+  "push": "引き分け (プッシュ)。",
+  "totalPayoutLine": "合計払戻し: {{payout}}"
+}

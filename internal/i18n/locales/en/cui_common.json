@@ -16,6 +16,7 @@
   "cuiHintDiscardHigh": "Discard a high card",
   "cuiHintTrumpCut": "Cut with a trump",
   "cuiHintStrategicBid": "Make a strategic bid",
+  "cuiHintStrategicBury": "Bury for a strategic bid",
   "cuiHintStrongHand": "Strong hand",
   "cuiHintWeakHand": "Weak hand",
   "cuiHintNone": "No hint available.",

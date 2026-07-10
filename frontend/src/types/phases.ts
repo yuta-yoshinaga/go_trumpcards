@@ -11,6 +11,8 @@
  *   - Euchre:      internal/domain/Euchre.go      (EuchrePhasePickUp, EuchrePhaseCallTrump, EuchrePhaseDiscard, EuchrePhasePlay, EuchrePhaseTrickEnd, EuchrePhaseRoundEnd, EuchrePhaseGameEnd)
  *   - FreeCell:    internal/domain/FreeCell.go    (FreeCellPhasePlaying, FreeCellPhaseGameClear, FreeCellPhaseGameOver)
  *   - GinRummy:    internal/domain/GinRummy.go    (GinRummyPhaseDraw, GinRummyPhaseDiscard, GinRummyPhaseLayoff, GinRummyPhaseRoundEnd, GinRummyPhaseGameEnd)
+ *   - IndianRummy: internal/domain/IndianRummy.go  (IndianRummyPhaseDraw, IndianRummyPhaseDiscard, IndianRummyPhaseRoundEnd, IndianRummyPhaseGameEnd)
+ *   - Machiavelli: internal/domain/Machiavelli.go  (MachiavelliPhaseTurn, MachiavelliPhaseRoundEnd, MachiavelliPhaseGameEnd)
  *   - Hearts:      internal/domain/Hearts.go      (HeartsPhasePass, HeartsPhasePlay, HeartsPhaseTrickEnd, HeartsPhaseRoundEnd, HeartsPhaseGameEnd)
  *   - Holdem:      internal/domain/Holdem.go      (HoldemPhaseInit, HoldemPhasePreFlop, HoldemPhaseFlop, HoldemPhaseTurn, HoldemPhaseRiver, HoldemPhaseShowdown, HoldemPhaseEnd, HoldemPhaseRebuy)
  *   - IndianPoker: internal/domain/IndianPoker.go (IndianPokerPhaseInit, IndianPokerPhaseAnte, IndianPokerPhaseBetting, IndianPokerPhaseShowdown, IndianPokerPhaseEnd)
@@ -182,6 +184,13 @@ export const KlondikeScoringMode = {
 
 /** Canfield phase constants (sync: internal/domain/Canfield.go). */
 export const CanfieldPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** Agnes Sorel phase constants (sync: internal/domain/Agnes.go). */
+export const AgnesPhase = {
   PLAYING: 0,
   GAME_CLEAR: 1,
   GAME_OVER: 2,
@@ -361,6 +370,139 @@ export const MariasPhase = {
   TRICK_END: 1,
   ROUND_END: 2,
   GAME_END: 3,
+} as const;
+
+/** Tysiąc (Thousand) phase constants (sync: internal/domain/Tysiac.go). */
+export const TysiacPhase = {
+  BID: 0,
+  TALON: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
+/** Calabresella (Terziglio) phase constants (sync: internal/domain/Calabresella.go). */
+export const CalabresellaPhase = {
+  BID: 0,
+  DISCARD: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
+/** Ombre (Hombre) phase constants (sync: internal/domain/Ombre.go). */
+export const OmbrePhase = {
+  BID: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/** Ulti (Ultimo) phase constants (sync: internal/domain/Ulti.go). */
+export const UltiPhase = {
+  BID: 0,
+  DISCARD: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
+/** French Tarot (フレンチタロット) phase constants (sync: internal/domain/FrenchTarot.go). */
+export const FrenchTarotPhase = {
+  BID: 0,
+  CHIEN: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
+/** Scarto (スカルト) phase constants (sync: internal/domain/Scarto.go). */
+export const ScartoPhase = {
+  SCARTO: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/** Königrufen (ケーニッヒルーフェン) phase constants (sync: internal/domain/Koenigrufen.go). */
+export const KoenigrufenPhase = {
+  BID: 0,
+  CALL: 1,
+  TALON: 2,
+  PLAY: 3,
+  TRICK_END: 4,
+  ROUND_END: 5,
+  GAME_END: 6,
+} as const;
+
+/** Cego (チェゴ) phase constants (sync: internal/domain/Cego.go). */
+export const CegoPhase = {
+  BID: 0,
+  CONTRACT: 1,
+  EXCHANGE: 2,
+  PLAY: 3,
+  TRICK_END: 4,
+  ROUND_END: 5,
+  GAME_END: 6,
+} as const;
+
+/** Cinch phase constants (sync: internal/domain/Cinch.go). */
+export const CinchPhase = {
+  BID: 0,
+  NAME_TRUMP: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
+/** Loo (Lanterloo) phase constants (sync: internal/domain/Loo.go). */
+export const LooPhase = {
+  DECIDE: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+} as const;
+
+/** Basra (Bastra) phase constants (sync: internal/domain/Basra.go). */
+export const BasraPhase = {
+  PLAY: 0,
+  GAME_END: 1,
+} as const;
+
+/** Koi-Koi (こいこい) phase constants (sync: internal/domain/KoiKoi.go). */
+export const KoiKoiPhase = {
+  PLAY: 0,
+  KOIKOI_DECISION: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/** Hachi-Hachi (八八) phase constants (sync: internal/domain/HachiHachi.go). */
+export const HachiHachiPhase = {
+  PLAY: 0,
+  ROUND_END: 1,
+  GAME_END: 2,
+} as const;
+
+/** Go-Stop (Godori / ゴーストップ) phase constants (sync: internal/domain/GoStop.go). */
+export const GoStopPhase = {
+  PLAY: 0,
+  GO_DECISION: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/** Tablanet (Tablić) phase constants (sync: internal/domain/Tablanet.go). */
+export const TablanetPhase = {
+  PLAY: 0,
+  GAME_END: 1,
 } as const;
 
 /** Knockout Whist phase constants (sync: internal/domain/KnockoutWhist.go). */
@@ -567,12 +709,36 @@ export const OhHellPhase = {
   GAME_END: 4,
 } as const;
 
+/** Wizard phase constants (sync: internal/domain/Wizard.go). */
+export const WizardPhase = {
+  BID: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/** Ninety-Nine phase constants (sync: internal/domain/NinetyNine.go). */
+export const NinetyNinePhase = {
+  BID: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Crazy Eights phase constants (sync: internal/domain/CrazyEights.go). */
 export const CrazyEightsPhase = {
   PLAY: 0,
   CHOOSE_SUIT: 1,
   ROUND_END: 2,
   GAME_END: 3,
+} as const;
+
+/** Prší phase constants (sync: internal/domain/Prsi.go). */
+export const PrsiPhase = {
+  PLAY: 0,
+  GAME_END: 1,
 } as const;
 
 /** Page One phase constants (sync: internal/domain/PageOne.go). */
@@ -616,6 +782,29 @@ export const GinRummyPhase = {
   LAYOFF: 2,
   ROUND_END: 3,
   GAME_END: 4,
+} as const;
+
+/** Indian Rummy phase constants (sync: internal/domain/IndianRummy.go). */
+export const IndianRummyPhase = {
+  DRAW: 0,
+  DISCARD: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/** Machiavelli phase constants (sync: internal/domain/Machiavelli.go). */
+export const MachiavelliPhase = {
+  TURN: 0,
+  ROUND_END: 1,
+  GAME_END: 2,
+} as const;
+
+/** Panguingue / Pan phase constants (sync: internal/domain/Pan.go). */
+export const PanPhase = {
+  DRAW: 0,
+  PLAY: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
 } as const;
 
 /** Conquian phase constants (sync: internal/domain/Conquian.go). */
@@ -897,6 +1086,34 @@ export const BelotePhase = {
   GAME_END: 5,
 } as const;
 
+/** Jass (Schieber) phase constants (sync: internal/domain/Jass.go). */
+export const JassPhase = {
+  BID_TRUMP: 0,
+  BID_PARTNER: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
+/** Watten phase constants (sync: internal/domain/Watten.go). */
+export const WattenPhase = {
+  DECLARE: 0,
+  PLAY: 1,
+  RESPOND: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
+/** Gaigel phase constants (sync: internal/domain/Gaigel.go). */
+export const GaigelPhase = {
+  PLAY: 0,
+  TRICK_END: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Mississippi Stud phase constants (sync: internal/domain/MississippiStud.go). */
 export const MississippiStudPhase = {
   ANTE: 1,
@@ -936,6 +1153,15 @@ export const GoFishPhase = {
 
 /** Canasta phase constants (sync: internal/domain/Canasta.go). */
 export const CanastaPhase = {
+  DRAW: 0,
+  MELD: 1,
+  DISCARD: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/** Samba phase constants (sync: internal/domain/Samba.go). */
+export const SambaPhase = {
   DRAW: 0,
   MELD: 1,
   DISCARD: 2,
@@ -1076,6 +1302,20 @@ export const FortyThievesPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Forty and Eight phase constants (sync: internal/domain/FortyAndEight.go). */
+export const FortyAndEightPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** Sultan of Turkey phase constants (sync: internal/domain/Sultan.go). */
+export const SultanPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Baker's Dozen phase constants (sync: internal/domain/BakersDozen.go). */
 export const BakersDozenPhase = {
   PLAYING: 0,
@@ -1166,6 +1406,14 @@ export const WhistPhase = {
   GAME_END: 3,
 } as const;
 
+/** Catch the Ten phase constants (sync: internal/domain/CatchTen.go). */
+export const CatchTenPhase = {
+  PLAY: 0,
+  TRICK_END: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Briscola phase constants (sync: internal/domain/Briscola.go). */
 export const BriscolaPhase = {
   PLAY: 0,
@@ -1226,6 +1474,34 @@ export const CasinoWarPhase = {
   TIE_DECISION: 3,
   WAR_DEALT: 4,
   END: 5,
+} as const;
+
+/** Oicho-Kabu phase constants (sync: internal/domain/OichoKabu.go). */
+export const OichoKabuPhase = {
+  BET: 1,
+  DRAW: 2,
+  END: 3,
+} as const;
+
+/** Trente et Quarante (Rouge et Noir) phase constants (sync: internal/domain/TrenteEtQuarante.go). Betting immediately deals both rows and resolves. */
+export const TrenteEtQuarantePhase = {
+  BET: 0,
+  RESULT: 1,
+} as const;
+
+/** Trente et Quarante bet-type constants (sync: internal/domain/TrenteEtQuaranteConfig.go). */
+export const TrenteEtQuaranteBetType = {
+  NOIR: 0,
+  ROUGE: 1,
+  COULEUR: 2,
+  INVERSE: 3,
+} as const;
+
+/** Trente et Quarante winning-row constants (sync: internal/domain/TrenteEtQuarante.go). A row index, not a color. */
+export const TrenteEtQuaranteWinningRow = {
+  NONE: -1,
+  NOIR: 0,
+  ROUGE: 1,
 } as const;
 
 /** Dragon Tiger phase constants (sync: internal/domain/DragonTiger.go). */
@@ -1353,6 +1629,27 @@ export const BeleagueredCastlePhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Streets and Alleys phase constants (sync: internal/domain/StreetsAndAlleys.go). */
+export const StreetsAndAlleysPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** King Albert phase constants (sync: internal/domain/KingAlbert.go). */
+export const KingAlbertPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** Flower Garden phase constants (sync: internal/domain/FlowerGarden.go). */
+export const FlowerGardenPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Tarneeb phase constants (sync: internal/domain/Tarneeb.go). */
 export const TarneebPhase = {
   BID: 0,
@@ -1413,4 +1710,71 @@ export const RussianBankPhase = {
   IDLE: 0,
   PLAYING: 1,
   GAME_END: 2,
+} as const;
+
+/** Beggar-My-Neighbour phase constants (sync: internal/domain/BeggarMyNeighbour.go). */
+export const BeggarMyNeighbourPhase = {
+  PLAY: 0,
+  PAY_PENALTY: 1,
+  COLLECT: 2,
+  GAME_END: 3,
+} as const;
+
+/** All Fours (Seven Up) phase constants (sync: internal/domain/AllFours.go). */
+export const AllFoursPhase = {
+  BEG: 0,
+  GIFT: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
+/** Guts phase constants (sync: internal/domain/Guts.go). */
+export const GutsPhase = {
+  DECLARE: 0,
+  RESULT: 1,
+} as const;
+
+/** Guts declaration constants (sync: internal/domain/Guts.go). 0=out (fold), 1=in (stay). */
+export const GutsDeclaration = {
+  OUT: 0,
+  IN: 1,
+} as const;
+
+/** Anaconda phase constants (sync: internal/domain/Anaconda.go). */
+export const AnacondaPhase = {
+  PASS: 0,
+  SET: 1,
+  ROLL: 2,
+  RESULT: 3,
+} as const;
+
+/** Bouillotte phase constants (sync: internal/domain/Bouillotte.go). */
+export const BouillottePhase = {
+  BETTING: 0,
+  RESULT: 1,
+} as const;
+
+/** Primero phase constants (sync: internal/domain/Primero.go). */
+export const PrimeroPhase = {
+  BETTING: 0,
+  RESULT: 1,
+} as const;
+
+/** Michigan phase constants (sync: internal/domain/Michigan.go). 0=Bet, 1=Play, 2=Result. */
+export const MichiganPhase = {
+  BET: 0,
+  PLAY: 1,
+  RESULT: 2,
+} as const;
+
+/** Rook (ルーク) phase constants (sync: internal/domain/Rook.go). */
+export const RookPhase = {
+  BID: 0,
+  NEST_EXCHANGE: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
 } as const;

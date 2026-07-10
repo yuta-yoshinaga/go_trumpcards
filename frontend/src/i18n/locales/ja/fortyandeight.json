@@ -1,0 +1,40 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "stock": "山札",
+  "waste": "ウェイスト",
+  "foundation": "組札",
+  "tableau": "タブロー",
+  "moveCount": "手数",
+  "draw": "引く",
+  "redeal": "リディール",
+  "giveup": "ギブアップ",
+  "empty": "空",
+  "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
+  "emptyFoundationAriaLabel": "空の組札 ({{suit}})",
+  "landscapeBanner": "横向き表示推奨",
+  "hint": "ヒント",
+  "autoComplete": "自動完成",
+  "autoCompleteNotReady": "山札とウェイストが空のときに使えます",
+  "undo": "元に戻す",
+  "stalemate": "手詰まり",
+  "playing": "カードを移動してください",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "hintAvailable": "ヒントがあります",
+  "noHint": "ヒントはありません",
+  "tutorial": {
+    "stockWaste": "山札をクリックして1枚引きます。山札を使い切ったら、ウェイストを1回だけ再構築（リディール）できます。",
+    "foundation": "8つの組札をスート別にA→Kの順に積み上げます。",
+    "tableau": "8列×5枚のタブロー。同スート降順で1枚ずつ移動できます。空の列にはどのカードでも置けます。",
+    "controls": "リディール・ヒント・元に戻す・自動完成ボタンを使えます。"
+  },
+  "frontendHint": {
+    "waste": "ウェイスト",
+    "tableau": "タブロー列{{col}}",
+    "foundation": "組札"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "phase": {
+    "bid": "Bidding",
+    "nestExchange": "Nest Exchange",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game Over"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "highestBid": "Highest bid: {{value}}",
+  "contractUndecided": "Contract: undecided",
+  "contractLine": "Contract: {{value}} / trump",
+  "trumpUndeclared": "undeclared",
+  "teamScores": "Team 0: {{t0}} / Team 1: {{t1}}",
+  "teamShort": "T{{team}}",
+  "passed": "pass",
+  "pointsSuffix": " pts",
+  "currentTrick": "Current trick",
+  "trickEmpty": "(no cards yet)",
+  "selectBid": "Select bid (70-120):",
+  "bidButton": "Bid",
+  "passButton": "Pass",
+  "nestExchangeHint": "Discard 5 of your 18 cards (hand + nest) and declare a trump color.",
+  "selectTrump": "Trump color:",
+  "exchangeButton": "Exchange ({{count}}/5)",
+  "playButton": "Play",
+  "nextTrickButton": "Next trick",
+  "nextRoundButton": "Next round",
+  "color": {
+    "red": "Red",
+    "gold": "Gold",
+    "green": "Green",
+    "black": "Black"
+  },
+  "settings": {
+    "cpuDifficulty": "CPU difficulty",
+    "targetScore": "Target score"
+  },
+  "tutorial": {
+    "info": "Round, contract, trump color, and team scores show here. The first team to reach 500 points wins.",
+    "trick": "Cards played to the table appear here. The highest trump (or lead-color) card wins the trick.",
+    "hand": "Your hand. To play, select a card then press Play. In nest exchange, select 5 cards and declare a trump color.",
+    "actions": "Phase-specific action buttons (bid, nest exchange, play) appear here."
+  }
+}

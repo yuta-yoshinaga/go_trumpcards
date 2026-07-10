@@ -65,22 +65,6 @@ func init() {
 			return usecase.RestoreCruelInteractor(data, new(presenter.CruelWebPresenter))
 		},
 		controller.NewCruelWebControllerWithProvider)
-	games.RegisterKVGame("ginrummy", games.CategorySolo,
-		func() usecase.GinRummyInteractorIF {
-			return usecase.NewGinRummyInteractor(domain.NewDefaultGinRummy(), new(presenter.GinRummyWebPresenter))
-		},
-		func(data []byte) (usecase.GinRummyInteractorIF, error) {
-			return usecase.RestoreGinRummyInteractor(data, new(presenter.GinRummyWebPresenter))
-		},
-		controller.NewGinRummyWebControllerWithProvider)
-	games.RegisterKVGame("canasta", games.CategorySolo,
-		func() usecase.CanastaInteractorIF {
-			return usecase.NewCanastaInteractor(domain.NewDefaultCanasta(), new(presenter.CanastaWebPresenter))
-		},
-		func(data []byte) (usecase.CanastaInteractorIF, error) {
-			return usecase.RestoreCanastaInteractor(data, new(presenter.CanastaWebPresenter))
-		},
-		controller.NewCanastaWebControllerWithProvider)
 	games.RegisterKVGame("spider", games.CategorySolo,
 		func() usecase.SpiderInteractorIF {
 			return usecase.NewSpiderInteractor(domain.NewDefaultSpider(), new(presenter.SpiderWebPresenter))
@@ -225,14 +209,6 @@ func init() {
 			return usecase.RestoreMonteCarloInteractor(data, new(presenter.MonteCarloWebPresenter))
 		},
 		controller.NewMonteCarloWebControllerWithProvider)
-	games.RegisterKVGame("contractrummy", games.CategorySolo,
-		func() usecase.ContractRummyInteractorIF {
-			return usecase.NewContractRummyInteractor(domain.NewDefaultContractRummy(), new(presenter.ContractRummyWebPresenter))
-		},
-		func(data []byte) (usecase.ContractRummyInteractorIF, error) {
-			return usecase.RestoreContractRummyInteractor(data, new(presenter.ContractRummyWebPresenter))
-		},
-		controller.NewContractRummyWebControllerWithProvider)
 	games.RegisterKVGame("crescent", games.CategorySolo,
 		func() usecase.CrescentInteractorIF {
 			return usecase.NewCrescentInteractor(domain.NewDefaultCrescent(), new(presenter.CrescentWebPresenter))
@@ -265,14 +241,6 @@ func init() {
 			return usecase.RestoreGapsInteractor(data, new(presenter.GapsWebPresenter))
 		},
 		controller.NewGapsWebControllerWithProvider)
-	games.RegisterKVGame("rummy500", games.CategorySolo,
-		func() usecase.Rummy500InteractorIF {
-			return usecase.NewRummy500Interactor(domain.NewDefaultRummy500(), new(presenter.Rummy500WebPresenter))
-		},
-		func(data []byte) (usecase.Rummy500InteractorIF, error) {
-			return usecase.RestoreRummy500Interactor(data, new(presenter.Rummy500WebPresenter))
-		},
-		controller.NewRummy500WebControllerWithProvider)
 	games.RegisterKVGame("eightoff", games.CategorySolo,
 		func() usecase.EightOffInteractorIF {
 			return usecase.NewEightOffInteractor(domain.NewDefaultEightOff(), new(presenter.EightOffWebPresenter))
@@ -360,14 +328,6 @@ func init() {
 			return usecase.RestoreSchnapsenInteractor(data, new(presenter.SchnapsenWebPresenter))
 		},
 		controller.NewSchnapsenWebControllerWithProvider)
-	games.RegisterKVGame("burraco", games.CategorySolo,
-		func() usecase.BurracoInteractorIF {
-			return usecase.NewBurracoInteractor(domain.NewDefaultBurraco(), new(presenter.BurracoWebPresenter))
-		},
-		func(data []byte) (usecase.BurracoInteractorIF, error) {
-			return usecase.RestoreBurracoInteractor(data, new(presenter.BurracoWebPresenter))
-		},
-		controller.NewBurracoWebControllerWithProvider)
 	games.RegisterKVGame("euchre", games.CategorySolo,
 		func() usecase.EuchreInteractorIF {
 			return usecase.NewEuchreInteractor(domain.NewDefaultEuchre(), new(presenter.EuchreWebPresenter))
@@ -422,51 +382,6 @@ func init() {
 		},
 		controller.NewEasthavenWebControllerWithProvider)
 
-	games.RegisterKVGame("handandfoot", games.CategorySolo,
-		func() usecase.HandAndFootInteractorIF {
-			return usecase.NewHandAndFootInteractor(domain.NewDefaultHandAndFoot(), new(presenter.HandAndFootWebPresenter))
-		},
-		func(data []byte) (usecase.HandAndFootInteractorIF, error) {
-			return usecase.RestoreHandAndFootInteractor(data, new(presenter.HandAndFootWebPresenter))
-		},
-		controller.NewHandAndFootWebControllerWithProvider)
-
-	games.RegisterKVGame("conquian", games.CategorySolo,
-		func() usecase.ConquianInteractorIF {
-			return usecase.NewConquianInteractor(domain.NewDefaultConquian(), new(presenter.ConquianWebPresenter))
-		},
-		func(data []byte) (usecase.ConquianInteractorIF, error) {
-			return usecase.RestoreConquianInteractor(data, new(presenter.ConquianWebPresenter))
-		},
-		controller.NewConquianWebControllerWithProvider)
-
-	games.RegisterKVGame("chinchon", games.CategorySolo,
-		func() usecase.ChinchonInteractorIF {
-			return usecase.NewChinchonInteractor(domain.NewDefaultChinchon(), new(presenter.ChinchonWebPresenter))
-		},
-		func(data []byte) (usecase.ChinchonInteractorIF, error) {
-			return usecase.RestoreChinchonInteractor(data, new(presenter.ChinchonWebPresenter))
-		},
-		controller.NewChinchonWebControllerWithProvider)
-
-	games.RegisterKVGame("kalooki", games.CategorySolo,
-		func() usecase.KalookiInteractorIF {
-			return usecase.NewKalookiInteractor(domain.NewDefaultKalooki(), new(presenter.KalookiWebPresenter))
-		},
-		func(data []byte) (usecase.KalookiInteractorIF, error) {
-			return usecase.RestoreKalookiInteractor(data, new(presenter.KalookiWebPresenter))
-		},
-		controller.NewKalookiWebControllerWithProvider)
-
-	games.RegisterKVGame("threethirteen", games.CategorySolo,
-		func() usecase.ThreeThirteenInteractorIF {
-			return usecase.NewThreeThirteenInteractor(domain.NewDefaultThreeThirteen(), new(presenter.ThreeThirteenWebPresenter))
-		},
-		func(data []byte) (usecase.ThreeThirteenInteractorIF, error) {
-			return usecase.RestoreThreeThirteenInteractor(data, new(presenter.ThreeThirteenWebPresenter))
-		},
-		controller.NewThreeThirteenWebControllerWithProvider)
-
 	games.RegisterKVGame("mao", games.CategorySolo,
 		func() usecase.MaoInteractorIF {
 			return usecase.NewMaoInteractor(domain.NewDefaultMao(), new(presenter.MaoWebPresenter))
@@ -493,5 +408,24 @@ func init() {
 			return usecase.RestoreBlackHoleInteractor(data, new(presenter.BlackHoleWebPresenter))
 		},
 		controller.NewBlackHoleWebControllerWithProvider)
-
+	// Scarto (78-card Italian tarot trick-taker) is bucketed here for binary-size
+	// headroom; the extra worker hit the 1 MB gzip free-tier limit. Category is a
+	// size bucket, not a user-facing taxonomy.
+	games.RegisterKVGame("scarto", games.CategorySolo,
+		func() usecase.ScartoInteractorIF {
+			return usecase.NewScartoInteractor(domain.NewDefaultScarto(), new(presenter.ScartoWebPresenter))
+		},
+		func(data []byte) (usecase.ScartoInteractorIF, error) {
+			return usecase.RestoreScartoInteractor(data, new(presenter.ScartoWebPresenter))
+		},
+		controller.NewScartoWebControllerWithProvider)
+	// Cego (54-card Baden tarock, Cego-blind swap) — bucketed in solo (extra full).
+	games.RegisterKVGame("cego", games.CategorySolo,
+		func() usecase.CegoInteractorIF {
+			return usecase.NewCegoInteractor(domain.NewDefaultCego(), new(presenter.CegoWebPresenter))
+		},
+		func(data []byte) (usecase.CegoInteractorIF, error) {
+			return usecase.RestoreCegoInteractor(data, new(presenter.CegoWebPresenter))
+		},
+		controller.NewCegoWebControllerWithProvider)
 }

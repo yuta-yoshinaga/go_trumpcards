@@ -1,0 +1,339 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { actionLogApi, sultanApi } from '../api/gameApi';
+import { useGameHint } from '../hooks/useGameHint';
+import { renderWithProviders } from '../test/renderWithProviders';
+import type { Card, CardDesign, SultanResponse } from '../types/card';
+import { SultanPage } from './SultanPage';
+
+vi.mock('../api/gameApi', () => ({
+  sultanApi: { exec: vi.fn() },
+  actionLogApi: { sultan: vi.fn() },
+}));
+
+vi.mock('../hooks/useGameHint', () => ({
+  useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
+}));
+
+const mockExec = vi.mocked(sultanApi.exec);
+
+const card = (design: CardDesign, value: number): Card => ({ design, value });
+
+const playingState: SultanResponse = {
+  foundation: [
+    [card('SPADE', 13)],
+    [card('SPADE', 13)],
+    [card('CLOVER', 13)],
+    [card('CLOVER', 13)],
+    [card('HEART', 13)],
+    [card('HEART', 13)],
+    [card('DIAMOND', 13)],
+    [card('DIAMOND', 13)],
+  ],
+  divan: [card('CLOVER', 3), null, card('HEART', 5), null, null, null, null, null],
+  stockCount: 60,
+  waste: [card('CLOVER', 9)],
+  redealCount: 0,
+  canRedeal: false,
+  phase: 0,
+  moveCount: 5,
+  canUndo: false,
+  isStalemate: false,
+  message: '',
+};
+
+const playingNoWasteState: SultanResponse = {
+  ...playingState,
+  waste: [],
+};
+
+const playingEmptyStockState: SultanResponse = {
+  ...playingState,
+  stockCount: 0,
+};
+
+const canRedealState: SultanResponse = {
+  ...playingState,
+  stockCount: 0,
+  canRedeal: true,
+};
+
+const gameClearState: SultanResponse = {
+  ...playingState,
+  phase: 1,
+  message: 'ゲームクリア！',
+  messageCode: 'sultan.gameClear',
+  messageParams: { moveCount: '42' },
+};
+
+const gameOverState: SultanResponse = {
+  ...playingState,
+  phase: 2,
+  message: 'ゲームオーバー',
+  messageCode: 'sultan.gameOver',
+};
+
+const withHintState: SultanResponse = {
+  ...playingState,
+  hint: { fromZone: 'waste', fromIdx: -1, toFoundation: 3 },
+};
+
+beforeEach(() => {
+  mockExec.mockResolvedValue(playingState);
+  vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+});
+
+describe('SultanPage', () => {
+  it('renders skeleton when no state', () => {
+    mockExec.mockReturnValue(new Promise(() => undefined));
+    renderWithProviders(<SultanPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('renders stock count', async () => {
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    expect(screen.getByText(/\(60\)/)).toBeInTheDocument();
+  });
+
+  it('renders move count', async () => {
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(/手数: 5/));
+  });
+
+  it('renders waste card', async () => {
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+    const images = screen.getAllByRole('img');
+    expect(images.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('renders empty waste', async () => {
+    mockExec.mockResolvedValue(playingNoWasteState);
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getAllByText('空').length).toBeGreaterThanOrEqual(1));
+  });
+
+  it('renders empty stock placeholder', async () => {
+    mockExec.mockResolvedValue(playingEmptyStockState);
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+    expect(screen.getAllByText('空').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('renders foundation piles with King bases', async () => {
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+    // 8 foundations each pre-seeded with a King → at least 8 card images plus waste/divan.
+    const imgs = screen.getAllByRole('img');
+    expect(imgs.length).toBeGreaterThanOrEqual(8);
+  });
+
+  it('renders empty foundation placeholder with K', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[], [], [], [], [], [], [], []],
+    });
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+    const kElements = screen.getAllByText('K');
+    expect(kElements.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('renders divan slots, empty ones show placeholder', async () => {
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+    // 6 of the 8 divan slots are null → empty placeholders present.
+    expect(screen.getAllByText('空').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('clicking draw button dispatches draw', async () => {
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    const drawBtns = screen.getAllByRole('button', { name: '引く' });
+    const drawBtn = drawBtns[drawBtns.length - 1];
+    fireEvent.click(drawBtn);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
+  });
+
+  it('redeal button shown and dispatches redeal when canRedeal', async () => {
+    mockExec.mockResolvedValue(canRedealState);
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リディール' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(canRedealState);
+    fireEvent.click(screen.getByRole('button', { name: 'リディール' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('redeal'));
+  });
+
+  it('redeal button hidden when canRedeal is false', async () => {
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'リディール' })).not.toBeInTheDocument();
+  });
+
+  it('clicking waste card dispatches move from waste', async () => {
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    const wasteImg = screen.getByAltText('♣ 9');
+    const wasteButton = wasteImg.closest('button') as HTMLButtonElement;
+    fireEvent.click(wasteButton);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.objectContaining({ zone: 'waste' })));
+  });
+
+  it('clicking a divan card dispatches move from divan', async () => {
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    const divanImg = screen.getByAltText('♣ 3');
+    const divanButton = divanImg.closest('button') as HTMLButtonElement;
+    fireEvent.click(divanButton);
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', expect.objectContaining({ zone: 'divan', divanIdx: 0 })),
+    );
+  });
+
+  it('clicking hint button dispatches hint', async () => {
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...playingState, hint: undefined });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+  });
+
+  it('clicking auto complete button dispatches autocomplete when ready', async () => {
+    const readyState: SultanResponse = { ...playingState, stockCount: 0, waste: [] };
+    mockExec.mockResolvedValue(readyState);
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(readyState);
+    fireEvent.click(screen.getByRole('button', { name: '自動完成' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
+  });
+
+  it('auto complete button is disabled while stock or waste has cards', async () => {
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeInTheDocument());
+    expect(screen.getByTestId('autocomplete-button')).toBeDisabled();
+  });
+
+  it('clicking give up button opens a confirm dialog and only dispatches giveup after confirm', async () => {
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(gameOverState);
+    fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    expect(mockExec).not.toHaveBeenCalledWith('giveup');
+    expect(screen.getByText('投了確認')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
+  });
+
+  it('clicking reset button dispatches reset', async () => {
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('shows hint text after clicking hint', async () => {
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValue(withHintState);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    await waitFor(() => expect(screen.getByText(/ヒントがあります/)).toBeInTheDocument());
+  });
+
+  it('game clear shows action log button', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument());
+  });
+
+  it('game over shows action log button', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument());
+  });
+
+  it('action log button fetches and shows log', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    const mockLogApi = vi.mocked(actionLogApi.sultan);
+    mockLogApi.mockResolvedValue({
+      entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'move', detail: 'waste→foundation' }],
+    });
+
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: '棋譜を見る' }));
+    await waitFor(() => expect(screen.getByText('棋譜')).toBeInTheDocument());
+  });
+
+  it('playing buttons not shown when game is over', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+
+    expect(screen.queryByRole('button', { name: 'ヒント' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '自動完成' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'ギブアップ' })).not.toBeInTheDocument();
+  });
+
+  it('displays message with messageCode', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      message: 'カードを移動してください',
+      messageCode: 'sultan.playing',
+    });
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getAllByText('カードを移動してください').length).toBeGreaterThanOrEqual(1));
+  });
+
+  it('displays hint error when hint fetch fails', async () => {
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    mockExec.mockRejectedValue(new Error('Network error'));
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+  });
+
+  it('draw button disabled when stock is empty', async () => {
+    mockExec.mockResolvedValue(playingEmptyStockState);
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    const drawBtns = screen.getAllByRole('button', { name: '引く' });
+    const drawBtn = drawBtns[drawBtns.length - 1];
+    expect(drawBtn).toBeDisabled();
+  });
+});

@@ -2,11 +2,16 @@ import type {
   AccordionResponse,
   AcesUpResponse,
   ActionLogResponse,
+  AgnesResponse,
+  AllFoursResponse,
+  AnacondaResponse,
   BaccaratResponse,
   BadugiResponse,
   BakersDozenMoveZone,
   BakersDozenResponse,
   BarbuResponse,
+  BasraResponse,
+  BeggarMyNeighbourResponse,
   BeleagueredCastleMoveZone,
   BeleagueredCastleResponse,
   BeloteResponse,
@@ -17,6 +22,7 @@ import type {
   BlackHoleResponse,
   BlackJackResponse,
   BlackJackSwitchResponse,
+  BouillotteResponse,
   BourreResponse,
   BridgeResponse,
   BriscolaConfig,
@@ -24,17 +30,23 @@ import type {
   BristolMoveZone,
   BristolResponse,
   BurracoResponse,
+  CalabresellaResponse,
   CalculationMoveZone,
   CalculationResponse,
   CallBreakResponse,
   CanastaResponse,
   CanfieldResponse,
   CaribbeanStudResponse,
+  CariocaResponse,
   CasinoHoldemResponse,
   CasinoWarResponse,
   CassinoResponse,
+  CatchTenConfig,
+  CatchTenResponse,
+  CegoResponse,
   ChinchonResponse,
   ChinesePokerResponse,
+  CinchResponse,
   ClockSolitaireResponse,
   ConquianResponse,
   ContractRummyResponse,
@@ -67,33 +79,52 @@ import type {
   FiftyOneResponse,
   FiveCardStudResponse,
   FiveHundredResponse,
+  FlowerGardenMoveZone,
+  FlowerGardenResponse,
+  FortyAndEightMoveZone,
+  FortyAndEightResponse,
   FortyFivesResponse,
   FortyThievesMoveZone,
   FortyThievesResponse,
   FourCardPokerResponse,
   FreeCellResponse,
+  FrenchTarotResponse,
+  GaigelResponse,
   GapsResponse,
   GinRummyResponse,
   GoFishResponse,
   GolfResponse,
   GongZhuResponse,
+  GoStopResponse,
+  GutsResponse,
+  HachiHachiResponse,
   HandAndFootResponse,
   HeartsResponse,
   HighCardFlushResponse,
   HoldemResponse,
   IndianPokerResponse,
+  IndianRummyResponse,
+  JassResponse,
   KalookiResponse,
   KempsResponse,
+  KingAlbertMoveZone,
+  KingAlbertResponse,
+  KingResponse,
   KlaverjasResponse,
   KlondikeResponse,
   KnockoutWhistResponse,
+  KoenigrufenResponse,
+  KoiKoiResponse,
   LaBelleLucieResponse,
   LetItRideResponse,
+  LooResponse,
   MacauResponse,
+  MachiavelliResponse,
   ManilleResponse,
   MaoResponse,
   MariasResponse,
   MemoryResponse,
+  MichiganResponse,
   MightyResponse,
   MississippiStudResponse,
   MonteCarloResponse,
@@ -103,14 +134,18 @@ import type {
   NertzConfig as NertzConfigType,
   NertzMoveZone,
   NertzResponse,
+  NinetyNineResponse,
   OasisPokerResponse,
   OhHellResponse,
+  OichoKabuResponse,
   OldMaidResponse,
   OmahaResponse,
+  OmbreResponse,
   OpenFaceChineseResponse,
   OsmosisResponse,
   PageOneResponse,
   PaiGowResponse,
+  PanResponse,
   PenguinResponse,
   PigsTailResponse,
   PineappleResponse,
@@ -123,12 +158,17 @@ import type {
   PokerSquaresResponse,
   PreferenceResponse,
   PresidentResponse,
+  PrimeroResponse,
+  PrsiResponse,
   PyramidResponse,
   RedDogResponse,
+  RookResponse,
   Rummy500Response,
   RussianBankResponse,
   RussianPokerResponse,
   RussianSolitaireResponse,
+  SambaResponse,
+  ScartoResponse,
   SchnapsenConfig,
   SchnapsenResponse,
   ScopaResponse,
@@ -158,7 +198,12 @@ import type {
   SpiteAndMaliceResponse,
   SpoilFiveResponse,
   SpoonsResponse,
+  StreetsAndAlleysMoveZone,
+  StreetsAndAlleysResponse,
   SuecaResponse,
+  SultanMoveZone,
+  SultanResponse,
+  TablanetResponse,
   TarneebResponse,
   TeenPattiResponse,
   TexasHoldemBonusResponse,
@@ -171,6 +216,7 @@ import type {
   TienLenResponse,
   TonkResponse,
   TrashResponse,
+  TrenteEtQuaranteResponse,
   TressetteResponse,
   TriPeaksResponse,
   TrucoConfig,
@@ -178,12 +224,16 @@ import type {
   TuteResponse,
   TwentyNineResponse,
   TwoTenJackResponse,
+  TysiacResponse,
   UltimateTexasHoldemResponse,
+  UltiResponse,
   VideoPokerResponse,
   WarResponse,
   WaspResponse,
+  WattenResponse,
   WhistConfig,
   WhistResponse,
+  WizardResponse,
   YanivResponse,
   YukonResponse,
 } from '../types/card';
@@ -195,6 +245,7 @@ export const sessionId: string = crypto.randomUUID();
 const WORKER_CASINO = import.meta.env.VITE_WORKER_CASINO_URL || '';
 const WORKER_CLASSIC = import.meta.env.VITE_WORKER_CLASSIC_URL || '';
 const WORKER_SOLO = import.meta.env.VITE_WORKER_SOLO_URL || '';
+const WORKER_EXTRA = import.meta.env.VITE_WORKER_EXTRA_URL || '';
 
 /** Maps each game to its Worker base URL. */
 const workerUrl: Record<string, string> = {
@@ -242,7 +293,9 @@ const workerUrl: Record<string, string> = {
   euchre: WORKER_SOLO,
   bridge: WORKER_CASINO,
   napoleon: WORKER_CASINO,
+  ninetynine: WORKER_CLASSIC,
   ohhell: WORKER_CLASSIC,
+  wizard: WORKER_EXTRA,
   oldmaid: WORKER_CLASSIC,
   doubt: WORKER_CLASSIC,
   durak: WORKER_CLASSIC,
@@ -251,6 +304,7 @@ const workerUrl: Record<string, string> = {
   tienlen: WORKER_SOLO,
   sevens: WORKER_CLASSIC,
   crazyeights: WORKER_CLASSIC,
+  prsi: WORKER_CLASSIC,
   pageone: WORKER_CLASSIC,
   speed: WORKER_CLASSIC,
   war: WORKER_CLASSIC,
@@ -269,13 +323,16 @@ const workerUrl: Record<string, string> = {
   pokersquares: WORKER_SOLO,
   tripeaks: WORKER_SOLO,
   memory: WORKER_SOLO,
-  ginrummy: WORKER_SOLO,
-  conquian: WORKER_SOLO,
-  chinchon: WORKER_SOLO,
-  threethirteen: WORKER_SOLO,
-  canasta: WORKER_SOLO,
-  handandfoot: WORKER_SOLO,
-  burraco: WORKER_SOLO,
+  ginrummy: WORKER_EXTRA,
+  indianrummy: WORKER_EXTRA,
+  machiavelli: WORKER_EXTRA,
+  conquian: WORKER_EXTRA,
+  chinchon: WORKER_EXTRA,
+  threethirteen: WORKER_EXTRA,
+  canasta: WORKER_EXTRA,
+  samba: WORKER_EXTRA,
+  handandfoot: WORKER_EXTRA,
+  burraco: WORKER_EXTRA,
   cribbage: WORKER_SOLO,
   golf: WORKER_SOLO,
   acesup: WORKER_SOLO,
@@ -292,6 +349,7 @@ const workerUrl: Record<string, string> = {
   sevenbridge: WORKER_SOLO,
   trash: WORKER_CLASSIC,
   whist: WORKER_CLASSIC,
+  catchten: WORKER_CLASSIC,
   letitride: WORKER_CASINO,
   reddog: WORKER_CASINO,
   casinowar: WORKER_CASINO,
@@ -311,8 +369,9 @@ const workerUrl: Record<string, string> = {
   dragontiger: WORKER_CASINO,
   blackjackswitch: WORKER_CASINO,
   montecarlo: WORKER_SOLO,
-  contractrummy: WORKER_SOLO,
-  kalooki: WORKER_SOLO,
+  contractrummy: WORKER_EXTRA,
+  carioca: WORKER_EXTRA,
+  kalooki: WORKER_EXTRA,
   ultimatetexasholdem: WORKER_CASINO,
   crescent: WORKER_SOLO,
   mississippistud: WORKER_CASINO,
@@ -330,7 +389,41 @@ const workerUrl: Record<string, string> = {
   schnapsen: WORKER_SOLO,
   gaps: WORKER_SOLO,
   fourcardpoker: WORKER_CASINO,
-  rummy500: WORKER_SOLO,
+  rummy500: WORKER_EXTRA,
+  streetsandalleys: WORKER_EXTRA,
+  kingalbert: WORKER_EXTRA,
+  flowergarden: WORKER_EXTRA,
+  fortyandeight: WORKER_EXTRA,
+  sultan: WORKER_EXTRA,
+  agnes: WORKER_EXTRA,
+  jass: WORKER_EXTRA,
+  gaigel: WORKER_EXTRA,
+  king: WORKER_EXTRA,
+  tysiac: WORKER_EXTRA,
+  calabresella: WORKER_EXTRA,
+  ombre: WORKER_EXTRA,
+  ulti: WORKER_EXTRA,
+  scarto: WORKER_SOLO,
+  cego: WORKER_SOLO,
+  frenchtarot: WORKER_EXTRA,
+  koenigrufen: WORKER_EXTRA,
+  rook: WORKER_EXTRA,
+  cinch: WORKER_EXTRA,
+  loo: WORKER_EXTRA,
+  basra: WORKER_EXTRA,
+  hachihachi: WORKER_EXTRA,
+  koikoi: WORKER_EXTRA,
+  gostop: WORKER_EXTRA,
+  tablanet: WORKER_EXTRA,
+  trenteetquarante: WORKER_EXTRA,
+  guts: WORKER_EXTRA,
+  anaconda: WORKER_EXTRA,
+  bouillotte: WORKER_EXTRA,
+  primero: WORKER_EXTRA,
+  michigan: WORKER_EXTRA,
+  watten: WORKER_EXTRA,
+  pan: WORKER_EXTRA,
+  oichokabu: WORKER_EXTRA,
   eightoff: WORKER_SOLO,
   penguin: WORKER_SOLO,
   chinesepoker: WORKER_CASINO,
@@ -372,6 +465,8 @@ const workerUrl: Record<string, string> = {
   twentynine: WORKER_CASINO,
   courtpiece: WORKER_CASINO,
   bezique: WORKER_CLASSIC,
+  beggarmyneighbour: WORKER_CASINO,
+  allfours: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -997,6 +1092,30 @@ export interface OhHellConfigInput {
 /** API client for the Oh Hell /ohhell/exec endpoint. */
 export const ohHellApi = createBidPlayApi<OhHellResponse, OhHellConfigInput>('ohhell');
 
+/** Configuration options for Wizard game settings. */
+export interface WizardConfigInput {
+  cpuDifficulty?: number;
+}
+
+/** API client for the Wizard /wizard/exec endpoint. */
+export const wizardApi = createBidPlayApi<WizardResponse, WizardConfigInput>('wizard');
+
+/** Configuration options for Ninety-Nine game settings. */
+export interface NinetyNineConfigInput {
+  cpuDifficulty?: number;
+  targetScore?: number;
+}
+
+/** API client for the Ninety-Nine /ninetynine/exec endpoint. Bidding submits 3 bury-card indices. */
+export const ninetyNineApi = {
+  exec: (
+    command: 'reset' | 'bid' | 'play' | 'next' | 'nextround' | 'hint' | 'log',
+    buryIndices?: number[],
+    cardIndex?: number,
+    config?: NinetyNineConfigInput,
+  ) => gameExec<NinetyNineResponse>('ninetynine', { command, buryIndices, cardIndex, config }),
+};
+
 /** Configuration options for Memory game settings. */
 export interface MemoryConfigInput {
   cpuDifficulty?: number;
@@ -1077,6 +1196,20 @@ export const canfieldApi = createSolitaireMoveApi<
   CanfieldMoveZone,
   'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('canfield');
+
+/** Source or target zone for an Agnes Sorel card move. */
+export interface AgnesMoveZone {
+  zone: string;
+  col?: number;
+  cardIndex?: number;
+}
+
+/** API client for the Agnes Sorel /agnes/exec endpoint. */
+export const agnesApi = createSolitaireMoveApi<
+  AgnesResponse,
+  AgnesMoveZone,
+  'reset' | 'deal' | 'move' | 'giveup' | 'hint' | 'log' | 'undo' | 'undo_n'
+>('agnes');
 
 /** Source or target zone for an Osmosis card move. */
 export interface OsmosisMoveZone {
@@ -1256,6 +1389,21 @@ export const crazyeightsApi = {
     }),
 };
 
+/** Configuration options for Prší game settings. */
+export interface PrsiConfigInput {
+  cpuDifficulty?: number;
+}
+
+/** API client for the Prší /prsi/exec endpoint. */
+export const prsiApi = {
+  exec: (command: 'reset' | 'play' | 'draw' | 'log', cardIndex?: number, config?: PrsiConfigInput) =>
+    gameExec<PrsiResponse>('prsi', {
+      command,
+      cardIndex,
+      config,
+    }),
+};
+
 /** Configuration options for Page One game settings. */
 export interface PageOneConfigInput {
   cpuDifficulty?: number;
@@ -1294,6 +1442,96 @@ export const ginrummyApi = {
       command,
       cardIndex,
       cardIndices,
+      config,
+    }),
+};
+
+/** Configuration options for Indian Rummy game settings. */
+export interface IndianRummyConfigInput {
+  playerCount?: number;
+  cpuDifficulty?: number;
+  targetRounds?: number;
+}
+
+/** API client for the Indian Rummy /indianrummy/exec endpoint. */
+export const indianRummyApi = {
+  exec: (
+    command: 'reset' | 'drawstock' | 'drawdiscard' | 'discard' | 'declare' | 'nextround' | 'log',
+    cardIndex?: number,
+    config?: IndianRummyConfigInput,
+  ) =>
+    gameExec<IndianRummyResponse>('indianrummy', {
+      command,
+      cardIndex,
+      config,
+    }),
+};
+
+/** Move parameters for a Machiavelli turn action (newmeld / layoff / play). */
+export interface MachiavelliMoveParams {
+  /** Full proposed table for the `play` power move (card refs by design + value). */
+  tableMelds?: { design: number; value: number }[][];
+  /** Hand-card indices for `newmeld` (or the cards added by `play`). */
+  handIndices?: number[];
+  /** Target table meld index for `layoff`. */
+  meldIdx?: number;
+  /** Hand-card index added to an existing meld for `layoff`. */
+  handIndex?: number;
+}
+
+/** Configuration options for Machiavelli game settings. */
+export interface MachiavelliConfigInput {
+  playerCount?: number;
+  cpuDifficulty?: number;
+  targetRounds?: number;
+}
+
+/** API client for the Machiavelli /machiavelli/exec endpoint. */
+export const machiavelliApi = {
+  exec: (
+    command: 'reset' | 'draw' | 'play' | 'newmeld' | 'layoff' | 'nextround' | 'log',
+    params?: MachiavelliMoveParams,
+    config?: MachiavelliConfigInput,
+  ) =>
+    gameExec<MachiavelliResponse>('machiavelli', {
+      command,
+      ...(params ?? {}),
+      config,
+    }),
+};
+
+/** Configuration options for Panguingue (Pan) game settings. */
+export interface PanConfigInput {
+  playerCount?: number;
+  cpuDifficulty?: number;
+  targetRounds?: number;
+}
+
+/** Action parameters for a Panguingue (Pan) turn. */
+export interface PanActionParams {
+  /** Hand-card indices forming a new meld (set or rope). */
+  cardIndices?: number[];
+  /** Hand-card index to discard or lay off. */
+  cardIndex?: number;
+  /** Owning player id of the target meld for a layoff. */
+  meldOwner?: number;
+  /** Index of the target meld within the owner's laid melds for a layoff. */
+  meldIdx?: number;
+}
+
+/** API client for the Panguingue (Pan) /pan/exec endpoint. */
+export const panApi = {
+  exec: (
+    command: 'reset' | 'drawstock' | 'drawdiscard' | 'meld' | 'layoff' | 'discard' | 'nextround' | 'log',
+    params?: PanActionParams,
+    config?: PanConfigInput,
+  ) =>
+    gameExec<PanResponse>('pan', {
+      command,
+      cardIndices: params?.cardIndices,
+      cardIndex: params?.cardIndex,
+      meldOwner: params?.meldOwner,
+      meldIdx: params?.meldIdx,
       config,
     }),
 };
@@ -1474,6 +1712,30 @@ export const canastaApi = {
     meldGroups?: number[][],
   ) =>
     gameExec<CanastaResponse>('canasta', {
+      command,
+      cardIndex,
+      config,
+      naturalPairIndices,
+      meldGroups,
+    }),
+};
+
+/** Configuration options for Samba game settings. */
+export interface SambaConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Samba /samba/exec endpoint. */
+export const sambaApi = {
+  exec: (
+    command: 'reset' | 'drawstock' | 'drawdiscard' | 'meld' | 'skipmeld' | 'discard' | 'goout' | 'nextround' | 'log',
+    cardIndex?: number,
+    config?: SambaConfigInput,
+    naturalPairIndices?: number[],
+    meldGroups?: number[][],
+  ) =>
+    gameExec<SambaResponse>('samba', {
       command,
       cardIndex,
       config,
@@ -2032,6 +2294,688 @@ export const mariasApi = {
     gameExec<MariasResponse>('marias', {
       command,
       cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for King game settings. */
+export interface KingConfigInput {
+  cpuDifficulty?: number;
+}
+
+/** Commands accepted by the King /king/exec endpoint. */
+export type KingCommand = 'reset' | 'contract' | 'play' | 'next' | 'hint' | 'log';
+
+/**
+ * API client for the King /king/exec endpoint.
+ *
+ * King is a 4-player 52-card compendium trick-avoidance game. Each match runs
+ * exactly seven deals; the dealer of each deal selects one of seven unused
+ * contracts and all four seats play thirteen must-follow tricks.
+ *   - `contract` → `{ contract, trumpSuit }` (the dealer picks the deal's
+ *     contract 0..6; `trumpSuit` is 1..4 for contract 6 "King (Trump)", else -1)
+ *   - `play` → `{ handIndex }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `hint` / `log` carry no extra fields.
+ */
+export const kingApi = {
+  exec: (
+    command: KingCommand,
+    opts?: {
+      contract?: number;
+      trumpSuit?: number;
+      handIndex?: number;
+      config?: KingConfigInput;
+    },
+  ) =>
+    gameExec<KingResponse>('king', {
+      command,
+      contract: opts?.contract,
+      trumpSuit: opts?.trumpSuit,
+      handIndex: opts?.handIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Tysiąc (Thousand) game settings. */
+export interface TysiacConfigInput {
+  cpuDifficulty?: number;
+  targetPoints?: number;
+}
+
+/** Commands accepted by the Tysiąc /tysiac/exec endpoint. */
+export type TysiacCommand = 'reset' | 'bid' | 'discard' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Tysiąc (Thousand) /tysiac/exec endpoint.
+ *
+ * Tysiąc is a Polish 3-player 24-card trump trick-taker with a Bid phase, a
+ * Talon exchange phase, and marriage (K+Q) declarations during play.
+ *   - `bid` → `{ raise: boolean }` (raise=true means +10, false means pass)
+ *   - `discard` → `{ cardIndex }` (talon exchange: the human Declarer gives one
+ *     card to an opponent; called once per opponent — twice total)
+ *   - `play` → `{ cardIndex }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const tysiacApi = {
+  exec: (
+    command: TysiacCommand,
+    opts?: {
+      cardIndex?: number;
+      raise?: boolean;
+      config?: TysiacConfigInput;
+    },
+  ) =>
+    gameExec<TysiacResponse>('tysiac', {
+      command,
+      cardIndex: opts?.cardIndex,
+      raise: opts?.raise,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Calabresella (Terziglio) game settings. */
+export interface CalabresellaConfigInput {
+  cpuDifficulty?: number;
+  targetPoints?: number;
+}
+
+/** Commands accepted by the Calabresella /calabresella/exec endpoint. */
+export type CalabresellaCommand = 'reset' | 'bid' | 'discard' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Calabresella (Terziglio) /calabresella/exec endpoint.
+ *
+ * Calabresella is a Calabrian/Italian 3-player 40-card (Tressette-family)
+ * trick-taker with a Bid phase, a monte exchange (discard four) phase, and no
+ * trump. One Soloist plays alone against the coalition of the other two.
+ *   - `bid` → `{ bid: number }` (0=pass, 1=chiamo, 2=solo)
+ *   - `discard` → `{ cardIndex }` (monte exchange: the Soloist discards one card
+ *     per call, four times, from 16 down to 12)
+ *   - `play` → `{ cardIndex }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const calabresellaApi = {
+  exec: (
+    command: CalabresellaCommand,
+    opts?: {
+      cardIndex?: number;
+      bid?: number;
+      config?: CalabresellaConfigInput;
+    },
+  ) =>
+    gameExec<CalabresellaResponse>('calabresella', {
+      command,
+      cardIndex: opts?.cardIndex,
+      bid: opts?.bid,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Ombre (Hombre) game settings. */
+export interface OmbreConfigInput {
+  cpuDifficulty?: number;
+  targetRounds?: number;
+}
+
+/** Commands accepted by the Ombre /ombre/exec endpoint. */
+export type OmbreCommand = 'reset' | 'bid' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Ombre (Hombre) /ombre/exec endpoint.
+ *
+ * Ombre is a 3-player soloist-vs-coalition trick-taker on a 40-card Spanish
+ * deck. A Bid phase (pass / entrar / solo) plus a chosen trump suit decides the
+ * Ombre, who then plays alone against the coalition of the other two.
+ *   - `bid` → `{ bid, trumpSuit? }` (bid 0=pass, 1=entrar, 2=solo; trumpSuit
+ *     1=♠ 2=♣ 3=♥ 4=♦, sent with a winning entrar/solo)
+ *   - `play` → `{ cardIndex }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const ombreApi = {
+  exec: (
+    command: OmbreCommand,
+    opts?: {
+      cardIndex?: number;
+      bid?: number;
+      trumpSuit?: number;
+      config?: OmbreConfigInput;
+    },
+  ) =>
+    gameExec<OmbreResponse>('ombre', {
+      command,
+      cardIndex: opts?.cardIndex,
+      bid: opts?.bid,
+      trumpSuit: opts?.trumpSuit,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Ulti (Ultimo) game settings. */
+export interface UltiConfigInput {
+  cpuDifficulty?: number;
+  targetRounds?: number;
+}
+
+/** Commands accepted by the Ulti /ulti/exec endpoint. */
+export type UltiCommand = 'reset' | 'bid' | 'discard' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Ulti (Ultimo) /ulti/exec endpoint.
+ *
+ * Ulti is a 3-player Hungarian contract trick-taker on a 32-card deck. The human
+ * (seat 0) is always the declarer versus a 2-CPU defending coalition.
+ *   - `bid` → `{ contract, trumpSuit? }` (contract 'party'|'betli'|'durchmarsch';
+ *     trumpSuit 1=♠ 2=♣ 3=♥ 4=♦, meaningful only for a Party contract)
+ *   - `discard` → `{ cardIndices }` (the 2 talon cards to discard)
+ *   - `play` → `{ cardIndex }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const ultiApi = {
+  exec: (
+    command: UltiCommand,
+    opts?: {
+      contract?: string;
+      trumpSuit?: number;
+      cardIndices?: number[];
+      cardIndex?: number;
+      config?: UltiConfigInput;
+    },
+  ) =>
+    gameExec<UltiResponse>('ulti', {
+      command,
+      contract: opts?.contract,
+      trumpSuit: opts?.trumpSuit,
+      cardIndices: opts?.cardIndices,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Scarto (スカルト) game settings. */
+export interface ScartoConfigInput {
+  cpuDifficulty?: number;
+  targetDeals?: number;
+}
+
+/** Commands accepted by the Scarto /scarto/exec endpoint. */
+export type ScartoCommand = 'reset' | 'scarto' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Scarto (スカルト) /scarto/exec endpoint.
+ *
+ * Scarto is a 3-player Italian tarocchi trick-taker on the 78-card tarot deck.
+ * The human is seat 0. There is no bidding, chien, or partnership.
+ *   - `scarto` → `{ cardIndices }` (the 3 low pip cards the dealer buries)
+ *   - `play` → `{ cardIndex }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const scartoApi = {
+  exec: (
+    command: ScartoCommand,
+    opts?: {
+      cardIndices?: number[];
+      cardIndex?: number;
+      config?: ScartoConfigInput;
+    },
+  ) =>
+    gameExec<ScartoResponse>('scarto', {
+      command,
+      cardIndices: opts?.cardIndices,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for French Tarot (フレンチタロット) game settings. */
+export interface FrenchTarotConfigInput {
+  cpuDifficulty?: number;
+  targetDeals?: number;
+}
+
+/** Commands accepted by the French Tarot /frenchtarot/exec endpoint. */
+export type FrenchTarotCommand = 'reset' | 'bid' | 'pass' | 'discard' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the French Tarot (フレンチタロット) /frenchtarot/exec endpoint.
+ *
+ * French Tarot is a 4-player trick-taker on the 78-card tarot deck. The human is
+ * seat 0.
+ *   - `bid` → `{ bid }` (contract string 'petite'|'garde'|'gardesans'|'gardecontre')
+ *   - `pass` → carries no extra fields (pass the auction)
+ *   - `discard` → `{ cardIndices }` (the 6 écart cards to bury; Petite/Garde only)
+ *   - `play` → `{ cardIndex }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const frenchtarotApi = {
+  exec: (
+    command: FrenchTarotCommand,
+    opts?: {
+      bid?: string;
+      cardIndices?: number[];
+      cardIndex?: number;
+      config?: FrenchTarotConfigInput;
+    },
+  ) =>
+    gameExec<FrenchTarotResponse>('frenchtarot', {
+      command,
+      bid: opts?.bid,
+      cardIndices: opts?.cardIndices,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Königrufen (ケーニッヒルーフェン) game settings. */
+export interface KoenigrufenConfigInput {
+  cpuDifficulty?: number;
+  targetDeals?: number;
+}
+
+/** Commands accepted by the Königrufen /koenigrufen/exec endpoint. */
+export type KoenigrufenCommand =
+  | 'reset'
+  | 'bid'
+  | 'pass'
+  | 'callking'
+  | 'discard'
+  | 'play'
+  | 'next'
+  | 'nextround'
+  | 'hint'
+  | 'log';
+
+/**
+ * API client for the Königrufen (ケーニッヒルーフェン) /koenigrufen/exec endpoint.
+ *
+ * Königrufen is a 4-player tarock trick-taker on the 54-card tarock deck. The
+ * human is seat 0.
+ *   - `bid` → `{ bid }` (contract string 'rufer')
+ *   - `pass` → carries no extra fields (pass the auction)
+ *   - `callking` → `{ callSuit }` (1-4: the King suit the declarer calls)
+ *   - `discard` → `{ cardIndices }` (the 6 talon cards to bury)
+ *   - `play` → `{ cardIndex }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const koenigrufenApi = {
+  exec: (
+    command: KoenigrufenCommand,
+    opts?: {
+      bid?: string;
+      callSuit?: number;
+      cardIndices?: number[];
+      cardIndex?: number;
+      config?: KoenigrufenConfigInput;
+    },
+  ) =>
+    gameExec<KoenigrufenResponse>('koenigrufen', {
+      command,
+      bid: opts?.bid,
+      callSuit: opts?.callSuit,
+      cardIndices: opts?.cardIndices,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Cego (チェゴ) game settings. */
+export interface CegoConfigInput {
+  cpuDifficulty?: number;
+  targetDeals?: number;
+}
+
+/** Commands accepted by the Cego /cego/exec endpoint. */
+export type CegoCommand =
+  | 'reset'
+  | 'bid'
+  | 'pass'
+  | 'contract'
+  | 'discard'
+  | 'play'
+  | 'next'
+  | 'nextround'
+  | 'hint'
+  | 'log';
+
+/**
+ * API client for the Cego (チェゴ) /cego/exec endpoint.
+ *
+ * Cego is a 4-player Baden tarock trick-taker on the 54-card tarock deck. The
+ * human is seat 0.
+ *   - `bid` → `{ bid }` (bid string 'play')
+ *   - `pass` → carries no extra fields (pass the auction)
+ *   - `contract` → `{ contract }` ('cego' or 'handspiel')
+ *   - `discard` → `{ cardIndices }` (the single card to KEEP in the Cego exchange)
+ *   - `play` → `{ cardIndex }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const cegoApi = {
+  exec: (
+    command: CegoCommand,
+    opts?: {
+      bid?: string;
+      contract?: string;
+      cardIndices?: number[];
+      cardIndex?: number;
+      config?: CegoConfigInput;
+    },
+  ) =>
+    gameExec<CegoResponse>('cego', {
+      command,
+      bid: opts?.bid,
+      contract: opts?.contract,
+      cardIndices: opts?.cardIndices,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Rook (ルーク) game settings. */
+export interface RookConfigInput {
+  cpuDifficulty?: number;
+  targetScore?: number;
+}
+
+/** Commands accepted by the Rook /rook/exec endpoint. */
+export type RookCommand = 'reset' | 'bid' | 'pass' | 'exchange' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Rook (ルーク) /rook/exec endpoint.
+ *
+ * Rook is a 4-player, 2-team point-trick game on a special 57-card deck (four
+ * colors ×1–14 plus the Rook bird). The human is seat 0.
+ *   - `bid` → `{ bid }` (a numeric point bid, 70–120 in steps of 5)
+ *   - `pass` → carries no extra fields
+ *   - `exchange` → `{ discardIndices, trumpColor }` (discard 5 nest cards and
+ *     declare a trump color: 1=red 2=gold 3=green 4=black)
+ *   - `play` → `{ cardIndex }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const rookApi = {
+  exec: (
+    command: RookCommand,
+    opts?: {
+      bid?: number;
+      discardIndices?: number[];
+      trumpColor?: number;
+      cardIndex?: number;
+      config?: RookConfigInput;
+    },
+  ) =>
+    gameExec<RookResponse>('rook', {
+      command,
+      bid: opts?.bid,
+      discardIndices: opts?.discardIndices,
+      trumpColor: opts?.trumpColor,
+      cardIndex: opts?.cardIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Cinch (Double Pedro) game settings. */
+export interface CinchConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** Commands accepted by the Cinch /cinch/exec endpoint. */
+export type CinchCommand = 'reset' | 'bid' | 'trump' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Cinch (Double Pedro / High Five) /cinch/exec endpoint.
+ *
+ * Cinch is a 4-player 52-card All-Fours/Pitch-family bidding trick-taker. A Bid
+ * phase (0=pass, 1-14) decides the bidder, who then names trump and leads.
+ *   - `bid` → `{ bid: number }` (0=pass, 1-14)
+ *   - `trump` → `{ trumpSuit: number }` (1=♠ 2=♣ 3=♥ 4=♦)
+ *   - `play` → `{ cardIndex }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const cinchApi = {
+  exec: (
+    command: CinchCommand,
+    opts?: {
+      cardIndex?: number;
+      bid?: number;
+      trumpSuit?: number;
+      config?: CinchConfigInput;
+    },
+  ) =>
+    gameExec<CinchResponse>('cinch', {
+      command,
+      cardIndex: opts?.cardIndex,
+      bid: opts?.bid,
+      trumpSuit: opts?.trumpSuit,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Loo (Lanterloo) game settings. */
+export interface LooConfigInput {
+  cpuDifficulty?: number;
+  ante?: number;
+}
+
+/** Commands accepted by the Loo /loo/exec endpoint. */
+export type LooCommand = 'reset' | 'decide' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Loo (Lanterloo) /loo/exec endpoint.
+ *
+ * Loo is a 4-player 52-card pot-based gambling trick-taker. Trump is set from the
+ * turn-up card (no bidding, no trump naming). Each player decides play or pass.
+ *   - `decide` → `{ play: boolean }` (true=play, false=pass)
+ *   - `play` → `{ cardIndex }`
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const looApi = {
+  exec: (
+    command: LooCommand,
+    opts?: {
+      cardIndex?: number;
+      play?: boolean;
+      config?: LooConfigInput;
+    },
+  ) =>
+    gameExec<LooResponse>('loo', {
+      command,
+      cardIndex: opts?.cardIndex,
+      play: opts?.play,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Basra (Bastra) game settings (CPU difficulty only). */
+export interface BasraConfigInput {
+  cpuDifficulty?: number;
+}
+
+/** Commands accepted by the Basra /basra/exec endpoint. */
+export type BasraCommand = 'reset' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Basra (Bastra) /basra/exec endpoint.
+ *
+ * Basra is a 4-player 52-card fishing/capture game.
+ *   - `play` → `{ cardIndex, tableIndices? }` (tableIndices = table cards to
+ *     capture; omit to trail, a Jack always sweeps)
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const basraApi = {
+  exec: (
+    command: BasraCommand,
+    opts?: {
+      cardIndex?: number;
+      tableIndices?: number[];
+      config?: BasraConfigInput;
+    },
+  ) =>
+    gameExec<BasraResponse>('basra', {
+      command,
+      cardIndex: opts?.cardIndex,
+      tableIndices: opts?.tableIndices,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Hachi-Hachi (八八) game settings. */
+export interface HachiHachiConfigInput {
+  cpuDifficulty?: number;
+  /** Number of rounds (deals) played before the match is settled. */
+  targetRounds?: number;
+}
+
+/** Commands accepted by the Hachi-Hachi /hachihachi/exec endpoint. */
+export type HachiHachiCommand = 'reset' | 'play' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Hachi-Hachi (八八) /hachihachi/exec endpoint.
+ *
+ * Hachi-Hachi is a 3-player hanafuda capture game with card-point scoring.
+ *   - `play` → `{ cardIndex, fieldIndex? }` (fieldIndex disambiguates a 2-way
+ *     field match; omit when there is at most one match)
+ *   - `nextround` → deal the next round
+ *   - `reset` → `{ config }`
+ *   - `hint` / `log` carry no extra fields.
+ */
+export const hachihachiApi = {
+  exec: (
+    command: HachiHachiCommand,
+    opts?: {
+      cardIndex?: number;
+      fieldIndex?: number;
+      config?: HachiHachiConfigInput;
+    },
+  ) =>
+    gameExec<HachiHachiResponse>('hachihachi', {
+      command,
+      cardIndex: opts?.cardIndex,
+      fieldIndex: opts?.fieldIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Koi-Koi (こいこい) game settings. */
+export interface KoiKoiConfigInput {
+  cpuDifficulty?: number;
+  /** Target cumulative score that ends the match. */
+  targetScore?: number;
+}
+
+/** Commands accepted by the Koi-Koi /koikoi/exec endpoint. */
+export type KoiKoiCommand = 'reset' | 'play' | 'koikoi' | 'stop' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Koi-Koi (こいこい) /koikoi/exec endpoint.
+ *
+ * Koi-Koi is a 2-player hanafuda capture game with yaku scoring.
+ *   - `play` → `{ cardIndex, fieldIndex? }` (fieldIndex disambiguates a 2-way
+ *     field match; omit when there is at most one match)
+ *   - `koikoi` → continue the round (double the stakes) after completing a yaku
+ *   - `stop` → shobu: stop and score the completed yaku
+ *   - `nextround` → deal the next round
+ *   - `reset` → `{ config }`
+ *   - `hint` / `log` carry no extra fields.
+ */
+export const koikoiApi = {
+  exec: (
+    command: KoiKoiCommand,
+    opts?: {
+      cardIndex?: number;
+      fieldIndex?: number;
+      config?: KoiKoiConfigInput;
+    },
+  ) =>
+    gameExec<KoiKoiResponse>('koikoi', {
+      command,
+      cardIndex: opts?.cardIndex,
+      fieldIndex: opts?.fieldIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Go-Stop (Godori / ゴーストップ) game settings. */
+export interface GoStopConfigInput {
+  cpuDifficulty?: number;
+  /** Target cumulative score that ends the match. */
+  targetScore?: number;
+}
+
+/** Commands accepted by the Go-Stop /gostop/exec endpoint. */
+export type GoStopCommand = 'reset' | 'play' | 'go' | 'stop' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Go-Stop (Godori / ゴーストップ) /gostop/exec endpoint.
+ *
+ * Go-Stop is the Korean sibling of Koi-Koi, a 2-player hanafuda capture game
+ * with a Korean scoring breakdown (gwang/godori/tti/yeol/pi) plus Go/Stop.
+ *   - `play` → `{ cardIndex, fieldIndex? }` (fieldIndex disambiguates a 2-way
+ *     field match; omit when there is at most one match)
+ *   - `go` → continue the round after reaching the target score
+ *   - `stop` → bank the points and end the round
+ *   - `nextround` → deal the next round
+ *   - `reset` → `{ config }`
+ *   - `hint` / `log` carry no extra fields.
+ */
+export const gostopApi = {
+  exec: (
+    command: GoStopCommand,
+    opts?: {
+      cardIndex?: number;
+      fieldIndex?: number;
+      config?: GoStopConfigInput;
+    },
+  ) =>
+    gameExec<GoStopResponse>('gostop', {
+      command,
+      cardIndex: opts?.cardIndex,
+      fieldIndex: opts?.fieldIndex,
+      config: opts?.config,
+    }),
+};
+
+/** Configuration options for Tablanet (Tablić) game settings (CPU difficulty only). */
+export interface TablanetConfigInput {
+  cpuDifficulty?: number;
+}
+
+/** Commands accepted by the Tablanet /tablanet/exec endpoint. */
+export type TablanetCommand = 'reset' | 'play' | 'next' | 'nextround' | 'hint' | 'log';
+
+/**
+ * API client for the Tablanet (Tablić) /tablanet/exec endpoint.
+ *
+ * Tablanet is a 4-player 52-card fishing/capture game.
+ *   - `play` → `{ cardIndex, tableIndices? }` (tableIndices = table cards to
+ *     capture; omit to trail, a Jack always sweeps)
+ *   - `reset` → `{ config }`
+ *   - `next` / `nextround` / `hint` / `log` carry no extra fields.
+ */
+export const tablanetApi = {
+  exec: (
+    command: TablanetCommand,
+    opts?: {
+      cardIndex?: number;
+      tableIndices?: number[];
+      config?: TablanetConfigInput;
+    },
+  ) =>
+    gameExec<TablanetResponse>('tablanet', {
+      command,
+      cardIndex: opts?.cardIndex,
+      tableIndices: opts?.tableIndices,
       config: opts?.config,
     }),
 };
@@ -3185,6 +4129,91 @@ export const beloteApi = {
     }),
 };
 
+/** Jass (Schieber) game configuration input shape. */
+export interface JassConfigInput {
+  cpuDifficulty?: number;
+  targetScore?: number;
+  lastTrickBonus?: number;
+  enableWeis?: boolean;
+}
+
+/** API client for the Jass /jass/exec endpoint. */
+export const jassApi = {
+  exec: (
+    command: 'reset' | 'calltrump' | 'schieben' | 'play' | 'next' | 'nextround' | 'hint',
+    suit?: number,
+    cardIndex?: number,
+    config?: JassConfigInput,
+  ) =>
+    gameExec<JassResponse>('jass', {
+      command,
+      suit,
+      cardIndex,
+      config,
+    }),
+};
+
+/** Watten (ヴァッテン) game configuration input shape. */
+export interface WattenConfigInput {
+  cpuDifficulty?: number;
+  targetScore?: number;
+  maxRaises?: number;
+}
+
+/**
+ * API client for the Watten /watten/exec endpoint.
+ *
+ * Watten is a Bavarian/Austrian 4-player, 2-team trick-taker with a raise/bluff
+ * stake mechanic. `declare` carries the Schlag `rank` and critical `suit`, `play`
+ * carries a `cardIndex`, `raise` takes no args, and `respond` carries `hold`
+ * (true = hold/accept, false = fold/concede).
+ */
+export const wattenApi = {
+  exec: (
+    command: 'reset' | 'declare' | 'play' | 'raise' | 'respond' | 'nextround' | 'hint',
+    rank?: number,
+    suit?: number,
+    cardIndex?: number,
+    hold?: boolean,
+    config?: WattenConfigInput,
+  ) =>
+    gameExec<WattenResponse>('watten', {
+      command,
+      rank,
+      suit,
+      cardIndex,
+      hold,
+      config,
+    }),
+};
+
+/** Gaigel game configuration input. */
+export interface GaigelConfigInput {
+  cpuDifficulty?: number;
+  targetScore?: number;
+}
+
+/**
+ * API client for the Gaigel /gaigel/exec endpoint.
+ *
+ * The second positional slot is unused (Gaigel has no suit/bid argument); it
+ * exists so the exec signature matches the `(command, arg1?, cardIndex?, config?)`
+ * shape that `useTrickGameBase` dispatches for reset/play.
+ */
+export const gaigelApi = {
+  exec: (
+    command: 'reset' | 'play' | 'marriage' | 'next' | 'nextround' | 'hint',
+    _unused?: number,
+    cardIndex?: number,
+    config?: GaigelConfigInput,
+  ) =>
+    gameExec<GaigelResponse>('gaigel', {
+      command,
+      cardIndex,
+      config,
+    }),
+};
+
 /** API client for the Euchre /euchre/exec endpoint. */
 export const euchreApi = {
   exec: (
@@ -3251,6 +4280,29 @@ export const jokerpokerApi = createVideoPokerApi('jokerpoker');
 export const warApi = {
   exec: (command: 'reset' | 'step' | 'autoplay' | 'log', config?: { maxRounds?: number }) =>
     gameExec<WarResponse>('war', { command, ...config }),
+};
+
+/** API client for the Beggar-My-Neighbour /beggarmyneighbour/exec endpoint. */
+export const beggarmyneighbourApi = {
+  exec: (command: 'reset' | 'step' | 'autoplay' | 'log', config?: { maxRounds?: number }) =>
+    gameExec<BeggarMyNeighbourResponse>('beggarmyneighbour', { command, ...config }),
+};
+
+/** Configuration options for All Fours (Seven Up) game settings. */
+export interface AllFoursConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** API client for the All Fours /allfours/exec endpoint. */
+export const allfoursApi = {
+  exec: (
+    command: 'reset' | 'beg' | 'respond' | 'play' | 'next' | 'nextround' | 'hint' | 'log',
+    beg?: boolean,
+    run?: boolean,
+    cardIndex?: number,
+    config?: AllFoursConfigInput,
+  ) => gameExec<AllFoursResponse>('allfours', { command, beg, run, cardIndex, config }),
 };
 
 /** Configuration options for Slapjack game settings. */
@@ -3489,6 +4541,20 @@ export const fortyThievesApi = createSolitaireMoveApi<
   'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('fortythieves');
 
+/** API client for the Forty and Eight /fortyandeight/exec endpoint. */
+export const fortyAndEightApi = createSolitaireMoveApi<
+  FortyAndEightResponse,
+  FortyAndEightMoveZone,
+  'reset' | 'draw' | 'redeal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('fortyandeight');
+
+/** API client for the Sultan of Turkey /sultan/exec endpoint. */
+export const sultanApi = createSolitaireMoveApi<
+  SultanResponse,
+  SultanMoveZone,
+  'reset' | 'draw' | 'redeal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('sultan');
+
 /** API client for the Crescent Solitaire /crescent/exec endpoint. */
 export const crescentApi = createSolitaireMoveApi<
   CrescentResponse,
@@ -3509,6 +4575,27 @@ export const beleagueredCastleApi = createSolitaireMoveApi<
   BeleagueredCastleMoveZone,
   'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('beleagueredcastle');
+
+/** API client for the Streets and Alleys /streetsandalleys/exec endpoint. */
+export const streetsAndAlleysApi = createSolitaireMoveApi<
+  StreetsAndAlleysResponse,
+  StreetsAndAlleysMoveZone,
+  'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('streetsandalleys');
+
+/** API client for the King Albert /kingalbert/exec endpoint. */
+export const kingAlbertApi = createSolitaireMoveApi<
+  KingAlbertResponse,
+  KingAlbertMoveZone,
+  'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('kingalbert');
+
+/** API client for the Flower Garden /flowergarden/exec endpoint. */
+export const flowerGardenApi = createSolitaireMoveApi<
+  FlowerGardenResponse,
+  FlowerGardenMoveZone,
+  'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('flowergarden');
 
 /** API client for the Calculation /calculation/exec endpoint. */
 export const calculationApi = createSolitaireMoveApi<
@@ -3710,7 +4797,17 @@ export const maoApi = {
     }),
 };
 
-export type { BakersDozenMoveZone, BeleagueredCastleMoveZone, CrescentMoveZone, FortyThievesMoveZone };
+export type {
+  BakersDozenMoveZone,
+  BeleagueredCastleMoveZone,
+  CrescentMoveZone,
+  FlowerGardenMoveZone,
+  FortyAndEightMoveZone,
+  FortyThievesMoveZone,
+  KingAlbertMoveZone,
+  StreetsAndAlleysMoveZone,
+  SultanMoveZone,
+};
 
 /** API client for the Whist /whist/exec endpoint. */
 export const whistApi = {
@@ -3719,6 +4816,15 @@ export const whistApi = {
     cardIndex?: number,
     config?: Partial<WhistConfig>,
   ) => gameExec<WhistResponse>('whist', { command, cardIndex, config }),
+};
+
+/** API client for the Catch the Ten /catchten/exec endpoint. */
+export const catchtenApi = {
+  exec: (
+    command: 'reset' | 'play' | 'next' | 'nextround' | 'hint' | 'log',
+    cardIndex?: number,
+    config?: Partial<CatchTenConfig>,
+  ) => gameExec<CatchTenResponse>('catchten', { command, cardIndex, config }),
 };
 
 /** API client for the Briscola /briscola/exec endpoint. */
@@ -3789,10 +4895,186 @@ export const casinowarApi = createBetAmountApi<CasinoWarResponse, 'reset' | 'bet
   'casinowar',
 );
 
+/** API client for the Oicho-Kabu /oichokabu/exec endpoint. */
+export const oichokabuApi = createBetAmountApi<OichoKabuResponse, 'reset' | 'bet' | 'draw' | 'stand' | 'log'>(
+  'oichokabu',
+);
+
 /** API client for the Dragon Tiger /dragontiger/exec endpoint. */
 export const dragontigerApi = {
   exec: (command: 'reset' | 'bet' | 'clear' | 'log', amount?: number, betType?: number) =>
     gameExec<DragonTigerResponse>('dragontiger', { command, amount, betType }),
+};
+
+/**
+ * API client for the Trente et Quarante (Rouge et Noir) /trenteetquarante/exec endpoint.
+ *
+ * Trente et Quarante is a pure banking game (no player card decisions).
+ *   - `bet` → `(bet, stake)` places the stake on one of the four bets
+ *     (0=Noir, 1=Rouge, 2=Couleur, 3=Inverse) and immediately deals both rows
+ *     and resolves the round.
+ *   - `nextround` starts the next round (chips persist server-side).
+ *   - `reset` starts a fresh game (chips persist).
+ *   - `log` and `hint` carry no extra fields.
+ */
+export const trenteetquaranteApi = {
+  exec: (command: 'reset' | 'bet' | 'nextround' | 'log' | 'hint', bet?: number, stake?: number) =>
+    gameExec<TrenteEtQuaranteResponse>('trenteetquarante', { command, bet, stake }),
+};
+
+/** Configuration options accepted by {@link gutsApi}.exec on `reset`. */
+export interface GutsConfigInput {
+  /** Number of players at the table (2–7, default 4). */
+  playerCount?: number;
+  /** Chips each player antes into the pot per round (1–1000, default 10). */
+  ante?: number;
+  /** Chips each player starts the match with (10–100000, default 200). */
+  startingChips?: number;
+  /** Rounds played before the richest player wins the match (1–100, default 10). */
+  targetRounds?: number;
+}
+
+/**
+ * API client for the Guts /guts/exec endpoint.
+ *
+ * Guts is a fast multi-player pot-vying gambling game.
+ *   - `reset` starts a fresh game, optionally applying a {@link GutsConfigInput}.
+ *   - `declare` → `(declaration)` submits the human's call (0=out/fold,
+ *     1=in/stay) and resolves the round.
+ *   - `nextround` deals the next round (chips persist server-side).
+ *   - `log` and `hint` carry no extra fields.
+ */
+export const gutsApi = {
+  exec: (command: 'reset' | 'declare' | 'nextround' | 'log' | 'hint', declaration?: number, config?: GutsConfigInput) =>
+    gameExec<GutsResponse>('guts', { command, declaration, config }),
+};
+
+/** Configuration options accepted by {@link anacondaApi}.exec on `reset`. */
+export interface AnacondaConfigInput {
+  /** Number of players at the table (3–7, default 4). */
+  playerCount?: number;
+  /** Chips each player antes into the pot per round (default 10). */
+  ante?: number;
+  /** Chips each player starts the match with (default 200). */
+  startingChips?: number;
+  /** Rounds played before the richest player wins the match (default 10). */
+  targetRounds?: number;
+}
+
+/** Bet action accepted by {@link anacondaApi}.exec on the `bet` command. */
+export type AnacondaBetAction = 'call' | 'raise' | 'fold';
+
+/**
+ * API client for the Anaconda (Pass the Trash) /anaconda/exec endpoint.
+ *
+ * Anaconda is a poker pot game.
+ *   - `reset` starts a fresh game, optionally applying an {@link AnacondaConfigInput}.
+ *   - `pass` → `(cardIndices)` passes the selected cards left (3→2→1).
+ *   - `keep` → `(cardIndices)` keeps exactly 5 cards (discarding the other 2).
+ *   - `bet` → `(action)` calls (also checks), raises, or folds during Roll.
+ *   - `nextround` deals the next round (chips persist server-side).
+ *   - `log` and `hint` carry no extra fields.
+ */
+export const anacondaApi = {
+  exec: (
+    command: 'reset' | 'pass' | 'keep' | 'bet' | 'nextround' | 'log' | 'hint',
+    cardIndices?: number[],
+    action?: AnacondaBetAction,
+    config?: AnacondaConfigInput,
+  ) => gameExec<AnacondaResponse>('anaconda', { command, cardIndices, action, config }),
+};
+
+/** Configuration options accepted by {@link bouillotteApi}.exec on `reset`. */
+export interface BouillotteConfigInput {
+  /** Number of players at the table (3–4, default 4). */
+  playerCount?: number;
+  /** Chips each player antes into the pot per round (default 10). */
+  ante?: number;
+  /** Chips each player starts the match with (default 200). */
+  startingChips?: number;
+  /** Rounds played before the richest player wins the match (default 10). */
+  targetRounds?: number;
+}
+
+/**
+ * API client for the Bouillotte /bouillotte/exec endpoint.
+ *
+ * Bouillotte is an 18th-century French 3-card poker-vying pot game.
+ *   - `reset` starts a fresh game, optionally applying a {@link BouillotteConfigInput}.
+ *   - `bet` → `(action)` submits the human's betting action (`"call"` /
+ *     `"raise"` / `"fold"`). Raise uses a fixed increment (no amount field).
+ *   - `nextround` deals the next round (chips persist server-side).
+ *   - `log` and `hint` carry no extra fields.
+ */
+export const bouillotteApi = {
+  exec: (
+    command: 'reset' | 'bet' | 'nextround' | 'log' | 'hint',
+    action?: 'call' | 'raise' | 'fold',
+    config?: BouillotteConfigInput,
+  ) => gameExec<BouillotteResponse>('bouillotte', { command, action, config }),
+};
+
+/** Configuration options accepted by {@link primeroApi}.exec on `reset`. */
+export interface PrimeroConfigInput {
+  /** Number of players at the table (2–6, default 4). */
+  playerCount?: number;
+  /** Chips each player antes into the pot per round (default 10). */
+  ante?: number;
+  /** Chips each player starts the match with (default 200). */
+  startingChips?: number;
+  /** Rounds played before the richest player wins the match (default 10). */
+  targetRounds?: number;
+}
+
+/**
+ * API client for the Primero /primero/exec endpoint.
+ *
+ * Primero is a Renaissance (16th-century) 4-card poker-vying pot game.
+ *   - `reset` starts a fresh game, optionally applying a {@link PrimeroConfigInput}.
+ *   - `bet` → `(action)` submits the human's betting action (`"call"` /
+ *     `"raise"` / `"fold"`). Raise uses a fixed increment (no amount field).
+ *   - `nextround` deals the next round (chips persist server-side).
+ *   - `log` and `hint` carry no extra fields.
+ */
+export const primeroApi = {
+  exec: (
+    command: 'reset' | 'bet' | 'nextround' | 'log' | 'hint',
+    action?: 'call' | 'raise' | 'fold',
+    config?: PrimeroConfigInput,
+  ) => gameExec<PrimeroResponse>('primero', { command, action, config }),
+};
+
+/** Configuration options accepted by {@link michiganApi}.exec on `reset`. */
+export interface MichiganConfigInput {
+  /** Number of players at the table (3–8, default 4). */
+  playerCount?: number;
+  /** Total chips each player distributes across the four boodles per round (default 8). */
+  ante?: number;
+  /** Chips each player starts the match with (default 200). */
+  startingChips?: number;
+  /** Rounds played before the richest player wins the match (default 10). */
+  targetRounds?: number;
+}
+
+/**
+ * API client for the Michigan (Newmarket) /michigan/exec endpoint.
+ *
+ * Michigan is a "stops" chip-betting game.
+ *   - `reset` starts a fresh game, optionally applying a {@link MichiganConfigInput}.
+ *   - `bet` → `(boodleBets)` distributes the human's chips across the four
+ *     boodles (order A♥, K♣, Q♦, J♠); the array must sum to `betBudget`.
+ *   - `play` → `(cardIndex)` plays the hand card at that index (must be in
+ *     `playableIndices`).
+ *   - `nextround` deals the next round (chips persist server-side).
+ *   - `log` and `hint` carry no extra fields.
+ */
+export const michiganApi = {
+  exec: (
+    command: 'reset' | 'bet' | 'play' | 'nextround' | 'log' | 'hint',
+    boodleBets?: number[],
+    cardIndex?: number,
+    config?: MichiganConfigInput,
+  ) => gameExec<MichiganResponse>('michigan', { command, boodleBets, cardIndex, config }),
 };
 
 /** API client for the Blackjack Switch /blackjackswitch/exec endpoint. */
@@ -3842,6 +5124,30 @@ export const contractrummyApi = {
   ) => gameExec<ContractRummyResponse>('contractrummy', { command, ...(params ?? {}) }),
 };
 
+/** API client for the Carioca /carioca/exec endpoint. */
+export const cariocaApi = {
+  exec: (
+    command:
+      | 'reset'
+      | 'drawstock'
+      | 'drawdiscard'
+      | 'meldcontract'
+      | 'meldextra'
+      | 'layoff'
+      | 'discard'
+      | 'nextround'
+      | 'log',
+    params?: {
+      cardIndex?: number;
+      cardIndices?: number[];
+      indicesPerSlot?: number[][];
+      targetPlayerIdx?: number;
+      meldIdx?: number;
+      config?: { playerCount?: number; cpuDifficulty?: number; failContractPenalty?: number };
+    },
+  ) => gameExec<CariocaResponse>('carioca', { command, ...(params ?? {}) }),
+};
+
 /** API client for the Kalooki /kalooki/exec endpoint. */
 export const kalookiApi = {
   exec: (
@@ -3885,6 +5191,8 @@ const games = [
   'twotenjack',
   'napoleon',
   'ohhell',
+  'wizard',
+  'ninetynine',
   'memory',
   'klondike',
   'freecell',
@@ -3893,11 +5201,15 @@ const games = [
   'cruel',
   'baccarat',
   'crazyeights',
+  'prsi',
   'ginrummy',
+  'indianrummy',
+  'machiavelli',
   'conquian',
   'chinchon',
   'threethirteen',
   'canasta',
+  'samba',
   'handandfoot',
   'burraco',
   'spider',
@@ -3935,6 +5247,7 @@ const games = [
   'sevenbridge',
   'trash',
   'whist',
+  'catchten',
   'letitride',
   'pokersquares',
   'pageone',
@@ -3967,15 +5280,24 @@ const games = [
   'blackjackswitch',
   'montecarlo',
   'contractrummy',
+  'carioca',
   'kalooki',
   'ultimatetexasholdem',
   'crescent',
   'mississippistud',
   'belote',
+  'jass',
+  'watten',
   'spiderette',
   'mighty',
   'oasispoker',
   'beleagueredcastle',
+  'streetsandalleys',
+  'kingalbert',
+  'flowergarden',
+  'fortyandeight',
+  'sultan',
+  'agnes',
   'piquet',
   'casinoholdem',
   'callbreak',
@@ -4031,6 +5353,34 @@ const games = [
   'simplesimon',
   'doubleklondike',
   'blackhole',
+  'beggarmyneighbour',
+  'allfours',
+  'gaigel',
+  'king',
+  'tysiac',
+  'calabresella',
+  'ombre',
+  'ulti',
+  'rook',
+  'cinch',
+  'loo',
+  'basra',
+  'hachihachi',
+  'koikoi',
+  'gostop',
+  'tablanet',
+  'trenteetquarante',
+  'guts',
+  'anaconda',
+  'bouillotte',
+  'primero',
+  'michigan',
+  'pan',
+  'oichokabu',
+  'scarto',
+  'cego',
+  'frenchtarot',
+  'koenigrufen',
 ] as const;
 type Game = (typeof games)[number];
 

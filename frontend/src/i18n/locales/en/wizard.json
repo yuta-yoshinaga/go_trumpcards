@@ -1,0 +1,90 @@
+{
+  "phase": {
+    "bid": "Bid",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}/{{total}}",
+  "trick": "Trick {{n}}",
+  "handSize": "Hand size: {{n}}",
+  "trump": "Trump: {{suit}}",
+  "dealer": "Dealer: {{name}}",
+  "restrictedBid": "* Cannot bid {{n}}",
+  "restrictedBidTooltip": "Disabled by constraint",
+  "cards": "{{count}} cards",
+  "cumulativeScore": "Total: {{score}}",
+  "roundScore": "Round: {{score}}",
+  "bid": "Bid {{n}}",
+  "bidNone": "No bid",
+  "bidProgress": "Bid: {{bid}} / Won: {{won}}",
+  "bidTotal": "Total bids {{total}} / hand {{handSize}}",
+  "bidOverUnder": {
+    "over": "(over)",
+    "under": "(under)",
+    "exact": "(exact)"
+  },
+  "currentTrick": "Current Trick",
+  "scores": "Scores",
+  "scoresPlayer": "Player",
+  "scoresBid": "Bid",
+  "scoresTricks": "Tricks",
+  "scoresRound": "Round",
+  "scoresTotal": "Total",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "bidPhase": "Place your bid (0-{{max}})",
+  "playPhase": {
+    "lead": "Lead a card",
+    "follow": "Play a card"
+  },
+  "trickEnd": "Trick complete",
+  "roundEnd": "Round complete",
+  "result": {
+    "humanWin": "You win!",
+    "cpuWin": "CPU {{cpuId}} wins!"
+  },
+  "hintBid": "Recommended bid",
+  "hintPlay": "Recommended card",
+  "hintReason": {
+    "strategic_bid": "Strategic bid",
+    "lead_strong": "Lead with a strong card",
+    "lead_low": "Lead with a low card",
+    "follow_suit": "Follow the lead suit",
+    "trump_cut": "Cut with trump",
+    "discard_high": "Discard a high card"
+  },
+  "suitName": {
+    "0": "None",
+    "1": "Spades",
+    "2": "Clubs",
+    "3": "Hearts",
+    "4": "Diamonds"
+  },
+  "tutorial": {
+    "bidControls": "In the bid phase, declare how many tricks you expect to win (0 to your hand size). Factor in your Wizards and Jesters.",
+    "trickDisplay": "The current trick. Trump is the suit of the card flipped each round (no trump in the final round).",
+    "playerHand": "Your hand. Wizards and Jesters may be played anytime; otherwise you must follow the lead suit.",
+    "playButton": "Press this button to play the selected card. A Wizard always wins the trick.",
+    "scoreTable": "Score table. Hit your bid exactly for 20 + 10x bid; miss it for -10x the difference.",
+    "resetButton": "Press the reset button to start a new game."
+  },
+  "hint": {
+    "bidEstimate": "Bid based on Wizards and high cards",
+    "leadStrategic": "Lead strategically",
+    "playWizard": "Play a Wizard to secure the trick",
+    "followSuit": "Follow the led suit",
+    "trumpWithCard": "Trump with a card",
+    "dumpJester": "Good chance to dump a Jester",
+    "discardLowest": "Discard your lowest card"
+  }
+}

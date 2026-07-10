@@ -27,6 +27,7 @@ export type GameKey =
   | 'letitride'
   | 'reddog'
   | 'casinowar'
+  | 'oichokabu'
   | 'dragontiger'
   | 'blackjackswitch'
   | 'fourcardpoker'
@@ -61,6 +62,23 @@ export type GameKey =
   | 'klaverjas'
   | 'manille'
   | 'marias'
+  | 'king'
+  | 'tysiac'
+  | 'calabresella'
+  | 'ombre'
+  | 'ulti'
+  | 'scarto'
+  | 'cego'
+  | 'frenchtarot'
+  | 'koenigrufen'
+  | 'cinch'
+  | 'loo'
+  | 'basra'
+  | 'hachihachi'
+  | 'koikoi'
+  | 'gostop'
+  | 'tablanet'
+  | 'trenteetquarante'
   | 'sedma'
   | 'knockoutwhist'
   | 'spoilfive'
@@ -85,10 +103,13 @@ export type GameKey =
   | 'pitch'
   | 'twotenjack'
   | 'ohhell'
+  | 'wizard'
+  | 'ninetynine'
   | 'euchre'
   | 'bridge'
   | 'napoleon'
   | 'whist'
+  | 'catchten'
   | 'pinochle'
   | 'piquet'
   | 'callbreak'
@@ -97,8 +118,12 @@ export type GameKey =
   | 'schnapsen'
   | 'skat'
   | 'belote'
+  | 'jass'
+  | 'watten'
+  | 'gaigel'
   | 'mighty'
   | 'fivehundred'
+  | 'rook'
   // Matching/Pass
   | 'oldmaid'
   | 'doubt'
@@ -116,6 +141,7 @@ export type GameKey =
   | 'mao'
   | 'sevens'
   | 'crazyeights'
+  | 'prsi'
   | 'pageone'
   | 'speed'
   | 'gofish'
@@ -150,6 +176,12 @@ export type GameKey =
   | 'fortythieves'
   | 'bakersdozen'
   | 'beleagueredcastle'
+  | 'streetsandalleys'
+  | 'kingalbert'
+  | 'flowergarden'
+  | 'fortyandeight'
+  | 'sultan'
+  | 'agnes'
   | 'canfield'
   | 'osmosis'
   | 'bristol'
@@ -173,6 +205,8 @@ export type GameKey =
   | 'crescent'
   // Counting/Rummy
   | 'ginrummy'
+  | 'indianrummy'
+  | 'machiavelli'
   | 'conquian'
   | 'chinchon'
   | 'threethirteen'
@@ -182,13 +216,23 @@ export type GameKey =
   | 'gongzhu'
   | 'tressette'
   | 'canasta'
+  | 'samba'
   | 'handandfoot'
   | 'burraco'
   | 'cribbage'
   | 'sevenbridge'
   | 'contractrummy'
+  | 'carioca'
   | 'kalooki'
-  | 'rummy500';
+  | 'rummy500'
+  | 'beggarmyneighbour'
+  | 'allfours'
+  | 'guts'
+  | 'anaconda'
+  | 'bouillotte'
+  | 'primero'
+  | 'michigan'
+  | 'pan';
 
 /** Theme classes (Tailwind) applied to the page background and footer for each game. */
 export interface GameThemeClasses {
@@ -238,9 +282,57 @@ const MARIAS = {
   bg: 'bg-game-bg-marias',
   footer: 'bg-game-bg-marias-dark border-white/20',
 } as const;
+const KING = {
+  bg: 'bg-game-bg-king',
+  footer: 'bg-game-bg-king-dark border-white/20',
+} as const;
+const TYSIAC = {
+  bg: 'bg-game-bg-tysiac',
+  footer: 'bg-game-bg-tysiac-dark border-white/20',
+} as const;
+const CALABRESELLA = {
+  bg: 'bg-game-bg-calabresella',
+  footer: 'bg-game-bg-calabresella-dark border-white/20',
+} as const;
+const OMBRE = {
+  bg: 'bg-game-bg-ombre',
+  footer: 'bg-game-bg-ombre-dark border-white/20',
+} as const;
+const ULTI = {
+  bg: 'bg-game-bg-ulti',
+  footer: 'bg-game-bg-ulti-dark border-white/20',
+} as const;
+const WATTEN = {
+  bg: 'bg-game-bg-watten',
+  footer: 'bg-game-bg-watten-dark border-white/20',
+} as const;
+const CINCH = {
+  bg: 'bg-game-bg-cinch',
+  footer: 'bg-game-bg-cinch-dark border-white/20',
+} as const;
+const LOO = {
+  bg: 'bg-game-bg-loo',
+  footer: 'bg-game-bg-loo-dark border-white/20',
+} as const;
+const BASRA = {
+  bg: 'bg-game-bg-basra',
+  footer: 'bg-game-bg-basra-dark border-white/20',
+} as const;
+const TABLANET = {
+  bg: 'bg-game-bg-tablanet',
+  footer: 'bg-game-bg-tablanet-dark border-white/20',
+} as const;
+const TRENTEETQUARANTE = {
+  bg: 'bg-game-bg-trenteetquarante',
+  footer: 'bg-game-bg-trenteetquarante-dark border-white/20',
+} as const;
 const SEDMA = {
   bg: 'bg-game-bg-sedma',
   footer: 'bg-game-bg-sedma-dark border-white/20',
+} as const;
+const PRSI = {
+  bg: 'bg-game-bg-prsi',
+  footer: 'bg-game-bg-prsi-dark border-white/20',
 } as const;
 const KNOCKOUTWHIST = {
   bg: 'bg-game-bg-knockoutwhist',
@@ -253,6 +345,10 @@ const SPOILFIVE = {
 const SOLOWHIST = {
   bg: 'bg-game-bg-solowhist',
   footer: 'bg-game-bg-solowhist-dark border-white/20',
+} as const;
+const CATCHTEN = {
+  bg: 'bg-game-bg-catchten',
+  footer: 'bg-game-bg-catchten-dark border-white/20',
 } as const;
 const FORTYFIVES = {
   bg: 'bg-game-bg-fortyfives',
@@ -314,6 +410,54 @@ const FARO = {
   bg: 'bg-game-bg-faro',
   footer: 'bg-game-bg-faro-dark border-white/20',
 } as const;
+const ALLFOURS = {
+  bg: 'bg-game-bg-allfours',
+  footer: 'bg-game-bg-allfours-dark border-white/20',
+} as const;
+const NINETYNINE = {
+  bg: 'bg-game-bg-ninetynine',
+  footer: 'bg-game-bg-ninetynine-dark border-white/20',
+} as const;
+const GUTS = {
+  bg: 'bg-game-bg-guts',
+  footer: 'bg-game-bg-guts-dark border-white/20',
+} as const;
+const ANACONDA = {
+  bg: 'bg-game-bg-anaconda',
+  footer: 'bg-game-bg-anaconda-dark border-white/20',
+} as const;
+const BOUILLOTTE = {
+  bg: 'bg-game-bg-bouillotte',
+  footer: 'bg-game-bg-bouillotte-dark border-white/20',
+} as const;
+const PRIMERO = {
+  bg: 'bg-game-bg-primero',
+  footer: 'bg-game-bg-primero-dark border-white/20',
+} as const;
+const CARIOCA = {
+  bg: 'bg-game-bg-carioca',
+  footer: 'bg-game-bg-carioca-dark border-white/20',
+} as const;
+const MICHIGAN = {
+  bg: 'bg-game-bg-michigan',
+  footer: 'bg-game-bg-michigan-dark border-white/20',
+} as const;
+const SAMBA = {
+  bg: 'bg-game-bg-samba',
+  footer: 'bg-game-bg-samba-dark border-white/20',
+} as const;
+const INDIANRUMMY = {
+  bg: 'bg-game-bg-indianrummy',
+  footer: 'bg-game-bg-indianrummy-dark border-white/20',
+} as const;
+const MACHIAVELLI = {
+  bg: 'bg-game-bg-machiavelli',
+  footer: 'bg-game-bg-machiavelli-dark border-white/20',
+} as const;
+const PAN = {
+  bg: 'bg-game-bg-pan',
+  footer: 'bg-game-bg-pan-dark border-white/20',
+} as const;
 
 export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Table games
@@ -334,6 +478,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   letitride: CASINO,
   reddog: CASINO,
   casinowar: CASINO,
+  oichokabu: CASINO,
   dragontiger: CASINO,
   blackjackswitch: BRIGHT_GREEN,
   fourcardpoker: CASINO,
@@ -368,6 +513,23 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   klaverjas: KLAVERJAS,
   manille: MANILLE,
   marias: MARIAS,
+  king: KING,
+  tysiac: TYSIAC,
+  calabresella: CALABRESELLA,
+  ombre: OMBRE,
+  ulti: ULTI,
+  scarto: OMBRE,
+  cego: OMBRE,
+  frenchtarot: OMBRE,
+  koenigrufen: OMBRE,
+  cinch: CINCH,
+  loo: LOO,
+  basra: BASRA,
+  hachihachi: GREEN,
+  koikoi: GREEN,
+  gostop: GREEN,
+  tablanet: TABLANET,
+  trenteetquarante: TRENTEETQUARANTE,
   sedma: SEDMA,
   knockoutwhist: KNOCKOUTWHIST,
   spoilfive: SPOILFIVE,
@@ -392,16 +554,23 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   pitch: BLUE,
   twotenjack: BLUE,
   ohhell: BLUE,
+  wizard: BLUE,
+  ninetynine: NINETYNINE,
   euchre: BLUE,
   bridge: BLUE,
   napoleon: BLUE,
   whist: BLUE,
+  catchten: CATCHTEN,
   pinochle: BLUE,
   piquet: BLUE,
   skat: BLUE,
   belote: BLUE,
+  jass: BLUE,
+  watten: WATTEN,
+  gaigel: BLUE,
   mighty: BLUE,
   fivehundred: BLUE,
+  rook: BLUE,
   callbreak: BLUE,
   tarneeb: BLUE,
   briscola: BLUE,
@@ -423,6 +592,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   mao: BLUE,
   sevens: GREEN,
   crazyeights: GREEN,
+  prsi: PRSI,
   pageone: GREEN,
   speed: GREEN,
   gofish: GREEN,
@@ -457,6 +627,12 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   fortythieves: CASINO,
   bakersdozen: CASINO,
   beleagueredcastle: CASINO,
+  streetsandalleys: CASINO,
+  kingalbert: CASINO,
+  flowergarden: CASINO,
+  fortyandeight: CASINO,
+  sultan: CASINO,
+  agnes: CASINO,
   canfield: CASINO,
   osmosis: CASINO,
   bristol: CASINO,
@@ -480,6 +656,8 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   crescent: CASINO,
   // Counting/Rummy
   ginrummy: BLUE,
+  indianrummy: INDIANRUMMY,
+  machiavelli: MACHIAVELLI,
   conquian: BLUE,
   chinchon: GREEN,
   threethirteen: BLUE,
@@ -489,11 +667,21 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   gongzhu: GREEN,
   tressette: GREEN,
   canasta: BLUE,
+  samba: SAMBA,
   handandfoot: BLUE,
   burraco: GREEN,
   cribbage: BLUE,
   sevenbridge: BLUE,
   contractrummy: BLUE,
+  carioca: CARIOCA,
   kalooki: GREEN,
   rummy500: BLUE,
+  beggarmyneighbour: GREEN,
+  allfours: ALLFOURS,
+  guts: GUTS,
+  anaconda: ANACONDA,
+  bouillotte: BOUILLOTTE,
+  primero: PRIMERO,
+  michigan: MICHIGAN,
+  pan: PAN,
 };

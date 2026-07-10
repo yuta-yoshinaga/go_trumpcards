@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した174種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した218種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -193,6 +193,50 @@ Go + Clean Architecture で実装した174種類のトランプゲーム。CLI �
 | シンプル・サイモン (Simple Simon) | `simplesimon` | [CUI](docs/manual/cui/simplesimon.md) / [Web](docs/manual/web/simplesimon.md) |
 | ダブル・クロンダイク (Double Klondike) | `doubleklondike` | [CUI](docs/manual/cui/doubleklondike.md) / [Web](docs/manual/web/doubleklondike.md) |
 | ブラックホール (Black Hole) | `blackhole` | [CUI](docs/manual/cui/blackhole.md) / [Web](docs/manual/web/blackhole.md) |
+| ビガー・マイ・ネイバー (Beggar-My-Neighbour) | `beggarmyneighbour` | [CUI](docs/manual/cui/beggarmyneighbour.md) / [Web](docs/manual/web/beggarmyneighbour.md) |
+| オールフォーズ (All Fours / Seven Up) | `allfours` | [CUI](docs/manual/cui/allfours.md) / [Web](docs/manual/web/allfours.md) |
+| キング (King) | `king` | [CUI](docs/manual/cui/king.md) / [Web](docs/manual/web/king.md) |
+| チンチ / ダブル・ペドロ (Cinch / Double Pedro) | `cinch` | [CUI](docs/manual/cui/cinch.md) / [Web](docs/manual/web/cinch.md) |
+| ルー / ランタールー (Loo / Lanterloo) | `loo` | [CUI](docs/manual/cui/loo.md) / [Web](docs/manual/web/loo.md) |
+| バスラ / バストラ (Basra / Bastra) | `basra` | [CUI](docs/manual/cui/basra.md) / [Web](docs/manual/web/basra.md) |
+| キャッチ・ザ・テン (Catch the Ten / Scotch Whist) | `catchten` | [CUI](docs/manual/cui/catchten.md) / [Web](docs/manual/web/catchten.md) |
+| プルシー (Prší) | `prsi` | [CUI](docs/manual/cui/prsi.md) / [Web](docs/manual/web/prsi.md) |
+| ナインティナイン (Ninety-Nine) | `ninetynine` | [CUI](docs/manual/cui/ninetynine.md) / [Web](docs/manual/web/ninetynine.md) |
+| インドラミー (Indian Rummy) | `indianrummy` | [CUI](docs/manual/cui/indianrummy.md) / [Web](docs/manual/web/indianrummy.md) |
+| オンブル (Ombre / Hombre) | `ombre` | [CUI](docs/manual/cui/ombre.md) / [Web](docs/manual/web/ombre.md) |
+| ウルティ (Ulti / Ultimó) | `ulti` | [CUI](docs/manual/cui/ulti.md) / [Web](docs/manual/web/ulti.md) |
+| ガッツ (Guts) | `guts` | [CUI](docs/manual/cui/guts.md) / [Web](docs/manual/web/guts.md) |
+| ブイヨット (Bouillotte) | `bouillotte` | [CUI](docs/manual/cui/bouillotte.md) / [Web](docs/manual/web/bouillotte.md) |
+| プリメロ (Primero) | `primero` | [CUI](docs/manual/cui/primero.md) / [Web](docs/manual/web/primero.md) |
+| ミシガン (Michigan) | `michigan` | [CUI](docs/manual/cui/michigan.md) / [Web](docs/manual/web/michigan.md) |
+| ヴァッテン (Watten) | `watten` | [CUI](docs/manual/cui/watten.md) / [Web](docs/manual/web/watten.md) |
+| カリオカ (Carioca) | `carioca` | [CUI](docs/manual/cui/carioca.md) / [Web](docs/manual/web/carioca.md) |
+| サンバ (Samba) | `samba` | [CUI](docs/manual/cui/samba.md) / [Web](docs/manual/web/samba.md) |
+| アナコンダ (Anaconda) | `anaconda` | [CUI](docs/manual/cui/anaconda.md) / [Web](docs/manual/web/anaconda.md) |
+| マキャヴェッリ (Machiavelli) | `machiavelli` | [CUI](docs/manual/cui/machiavelli.md) / [Web](docs/manual/web/machiavelli.md) |
+| パングインゲ (Panguingue / Pan) | `pan` | [CUI](docs/manual/cui/pan.md) / [Web](docs/manual/web/pan.md) |
+| アグネス・ソレル (Agnes Sorel) | `agnes` | [CUI](docs/manual/cui/agnes.md) / [Web](docs/manual/web/agnes.md) |
+| フラワーガーデン (Flower Garden) | `flowergarden` | [CUI](docs/manual/cui/flowergarden.md) / [Web](docs/manual/web/flowergarden.md) |
+| フォーティ・アンド・エイト (Forty and Eight) | `fortyandeight` | [CUI](docs/manual/cui/fortyandeight.md) / [Web](docs/manual/web/fortyandeight.md) |
+| キング・アルバート (King Albert) | `kingalbert` | [CUI](docs/manual/cui/kingalbert.md) / [Web](docs/manual/web/kingalbert.md) |
+| ストリート・アンド・アレイズ (Streets and Alleys) | `streetsandalleys` | [CUI](docs/manual/cui/streetsandalleys.md) / [Web](docs/manual/web/streetsandalleys.md) |
+| スルタン (Sultan) | `sultan` | [CUI](docs/manual/cui/sultan.md) / [Web](docs/manual/web/sultan.md) |
+| ガイゲル (Gaigel) | `gaigel` | [CUI](docs/manual/cui/gaigel.md) / [Web](docs/manual/web/gaigel.md) |
+| ヤス / シーバー (Jass / Schieber) | `jass` | [CUI](docs/manual/cui/jass.md) / [Web](docs/manual/web/jass.md) |
+| トゥシオンツ (Thousand / Tysiąc) | `tysiac` | [CUI](docs/manual/cui/tysiac.md) / [Web](docs/manual/web/tysiac.md) |
+| カラブレセッラ (Calabresella / Terziglio) | `calabresella` | [CUI](docs/manual/cui/calabresella.md) / [Web](docs/manual/web/calabresella.md) |
+| タブラネット (Tablanet / Tablić) | `tablanet` | [CUI](docs/manual/cui/tablanet.md) / [Web](docs/manual/web/tablanet.md) |
+| トラント・エ・カラント (Trente et Quarante) | `trenteetquarante` | [CUI](docs/manual/cui/trenteetquarante.md) / [Web](docs/manual/web/trenteetquarante.md) |
+| ウィザード (Wizard) | `wizard` | [CUI](docs/manual/cui/wizard.md) / [Web](docs/manual/web/wizard.md) |
+| おいちょかぶ (Oicho-Kabu) | `oichokabu` | [CUI](docs/manual/cui/oichokabu.md) / [Web](docs/manual/web/oichokabu.md) |
+| ルーク (Rook) | `rook` | [CUI](docs/manual/cui/rook.md) / [Web](docs/manual/web/rook.md) |
+| こいこい (Koi-Koi) | `koikoi` | [CUI](docs/manual/cui/koikoi.md) / [Web](docs/manual/web/koikoi.md) |
+| ゴーストップ (Go-Stop) | `gostop` | [CUI](docs/manual/cui/gostop.md) / [Web](docs/manual/web/gostop.md) |
+| 八八 (Hachi-Hachi) | `hachihachi` | [CUI](docs/manual/cui/hachihachi.md) / [Web](docs/manual/web/hachihachi.md) |
+| フレンチタロット (French Tarot) | `frenchtarot` | [CUI](docs/manual/cui/frenchtarot.md) / [Web](docs/manual/web/frenchtarot.md) |
+| ケーニッヒルーフェン (Königrufen) | `koenigrufen` | [CUI](docs/manual/cui/koenigrufen.md) / [Web](docs/manual/web/koenigrufen.md) |
+| スカルト (Scarto) | `scarto` | [CUI](docs/manual/cui/scarto.md) / [Web](docs/manual/web/scarto.md) |
+| チェゴ (Cego) | `cego` | [CUI](docs/manual/cui/cego.md) / [Web](docs/manual/web/cego.md) |
 
 ## Demo
 

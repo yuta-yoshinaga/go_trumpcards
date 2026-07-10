@@ -1,0 +1,71 @@
+{
+  "title": "ヴァッテン",
+  "phase": {
+    "declare": "宣言",
+    "play": "プレイ",
+    "respond": "応答",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ディール終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "targetScore": "目標スコア",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "deal": "ディール {{n}}",
+  "trick": "トリック {{n}}",
+  "schlag": "Schlag: {{rank}}",
+  "critical": "切り札: {{suit}}",
+  "schlagNone": "-",
+  "suitNone": "-",
+  "suitSpade": "スペード",
+  "suitClub": "クラブ",
+  "suitHeart": "ハート",
+  "suitDiamond": "ダイヤ",
+  "currentTrick": "現在のトリック",
+  "players": "プレイヤー",
+  "you": "あなた",
+  "cards": "{{count}}枚",
+  "tricks": "{{count}}トリック",
+  "team": "チーム{{n}}",
+  "teamShort": "T{{n}}",
+  "score": "{{score}}点",
+  "stake": "ステーク: {{stake}}点",
+  "stakePending": "ステーク: {{stake}}点（提案 {{pending}}点）",
+  "declarePhase": "宣言 — Schlag ランクと切り札スートを選んで宣言します。",
+  "chooseSchlag": "Schlag ランク",
+  "chooseCritical": "切り札スート",
+  "declareButton": "宣言",
+  "playButton": "出す",
+  "raiseButton": "レイズ（Watten）",
+  "respondPhase": "ステーク {{stake}}点にレイズされました — hold か fold を選びます。",
+  "holdButton": "hold（受ける）",
+  "foldButton": "fold（降りる）",
+  "nextRound": "次のディール",
+  "dealResult": {
+    "title": "ディール結果",
+    "winner": "チーム{{team}}が{{stake}}点を獲得"
+  },
+  "hintAvailable": "ヒント",
+  "hint": {
+    "declare_strong": "強い手なので Schlag と切り札を宣言",
+    "raise_strong": "有利なのでステークをレイズ",
+    "lead_trump": "切り札でリードして主導する",
+    "lead_plain": "平札でリードして温存する",
+    "follow_win": "勝てるので取りに行く",
+    "follow_dump": "取れないので価値の低い札を捨てる",
+    "hold_ok": "十分に戦えるので hold で受ける",
+    "fold_weak": "手が弱いので fold で降りる"
+  },
+  "tutorial": {
+    "trickDisplay": "現在のトリックです。永久最強札 Max（K♥）＞ Belli（K♦）＞ Spitz（7♦）に続き、Schlag ランクの4枚、切り札スート、平札の順で強くなります。",
+    "playerHand": "あなたの手札です。出せるカードをクリックして選び、「出す」ボタンでプレイします。あなたはシート0（チーム0）で、正面のプレイヤーがパートナーです。",
+    "playButton": "カードを選んだら、このボタンで出します。リード時は「レイズ」でステークを引き上げられ、レイズされたら hold／fold で応答します。宣言フェーズでは Schlag ランクと切り札スートを選んで宣言します。",
+    "info": "ヴァッテンはバイエルン／オーストリアの4人2チームのトリックテイキングです。32枚デッキで各5枚を配り、ディーラーが Schlag ランクと切り札スートを宣言します。5トリック中3トリック以上を取ったチームがステークを得点し、先に15点（変更可）に達したチームがマッチ勝者です。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}

@@ -87,6 +87,14 @@ func init() {
 			return usecase.RestoreOhHellInteractor(data, new(presenter.OhHellWebPresenter))
 		},
 		controller.NewOhHellWebControllerWithProvider)
+	games.RegisterKVGame("ninetynine", games.CategoryClassic,
+		func() usecase.NinetyNineInteractorIF {
+			return usecase.NewNinetyNineInteractor(domain.NewDefaultNinetyNine(), new(presenter.NinetyNineWebPresenter))
+		},
+		func(data []byte) (usecase.NinetyNineInteractorIF, error) {
+			return usecase.RestoreNinetyNineInteractor(data, new(presenter.NinetyNineWebPresenter))
+		},
+		controller.NewNinetyNineWebControllerWithProvider)
 	games.RegisterKVGame("speed", games.CategoryClassic,
 		func() usecase.SpeedInteractorIF {
 			return usecase.NewSpeedInteractor(domain.NewDefaultSpeed(), new(presenter.SpeedWebPresenter))
@@ -159,6 +167,14 @@ func init() {
 			return usecase.RestoreWhistInteractor(data, new(presenter.WhistWebPresenter))
 		},
 		controller.NewWhistWebControllerWithProvider)
+	games.RegisterKVGame("catchten", games.CategoryClassic,
+		func() usecase.CatchTenInteractorIF {
+			return usecase.NewCatchTenInteractor(domain.NewDefaultCatchTen(), new(presenter.CatchTenWebPresenter))
+		},
+		func(data []byte) (usecase.CatchTenInteractorIF, error) {
+			return usecase.RestoreCatchTenInteractor(data, new(presenter.CatchTenWebPresenter))
+		},
+		controller.NewCatchTenWebControllerWithProvider)
 	games.RegisterKVGame("pageone", games.CategoryClassic,
 		func() usecase.PageOneInteractorIF {
 			return usecase.NewPageOneInteractor(domain.NewDefaultPageOne(), new(presenter.PageOneWebPresenter))
@@ -442,5 +458,23 @@ func init() {
 			return usecase.RestoreDoubleKlondikeInteractor(data, new(presenter.DoubleKlondikeWebPresenter))
 		},
 		controller.NewDoubleKlondikeWebControllerWithProvider)
+
+	games.RegisterKVGame("allfours", games.CategoryClassic,
+		func() usecase.AllFoursInteractorIF {
+			return usecase.NewAllFoursInteractor(domain.NewDefaultAllFours(), new(presenter.AllFoursWebPresenter))
+		},
+		func(data []byte) (usecase.AllFoursInteractorIF, error) {
+			return usecase.RestoreAllFoursInteractor(data, new(presenter.AllFoursWebPresenter))
+		},
+		controller.NewAllFoursWebControllerWithProvider)
+
+	games.RegisterKVGame("prsi", games.CategoryClassic,
+		func() usecase.PrsiInteractorIF {
+			return usecase.NewPrsiInteractor(domain.NewDefaultPrsi(), new(presenter.PrsiWebPresenter))
+		},
+		func(data []byte) (usecase.PrsiInteractorIF, error) {
+			return usecase.RestorePrsiInteractor(data, new(presenter.PrsiWebPresenter))
+		},
+		controller.NewPrsiWebControllerWithProvider)
 
 }

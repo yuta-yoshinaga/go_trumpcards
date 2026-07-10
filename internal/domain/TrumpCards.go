@@ -158,6 +158,26 @@ func NewTrumpCardsBelote() *TrumpCards {
 	return t
 }
 
+// NewTrumpCardsPrsi プルシー(チェコ版クレイジーエイト/Mau Mau)用32枚デッキコンストラクタ
+// 7,8,9,10,J,Q,K,A (値: 1,7,8,9,10,11,12,13) × 4スート = 32枚
+// ベロートと同一構成 (German/Czech 32-card pack)。
+func NewTrumpCardsPrsi() *TrumpCards {
+	prsiValues := []int{1, 7, 8, 9, 10, 11, 12, 13} // A,7,8,9,10,J,Q,K
+	suits := []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond}
+	totalCards := len(prsiValues) * len(suits) // 32
+
+	t := new(TrumpCards)
+	t.deckCnt = totalCards
+	t.deck = make([]*Card, 0, totalCards)
+	for _, suit := range suits {
+		for _, val := range prsiValues {
+			t.deck = append(t.deck, NewCard(suit, val, false))
+		}
+	}
+	t.deckInit()
+	return t
+}
+
 // NewTrumpCardsPinochle ピノクル用48枚デッキコンストラクタ
 // 9,10,J,Q,K,A (値: 1,9,10,11,12,13) × 4スート × 2セット = 48枚
 func NewTrumpCardsPinochle() *TrumpCards {
@@ -268,6 +288,27 @@ var ShortDeckValues = []int{1, 6, 7, 8, 9, 10, 11, 12, 13}
 // NewTrumpCardsShortDeck ショートデック(6+)用36枚デッキコンストラクタ
 // A,6,7,8,9,10,J,Q,K (値: 1,6,7,8,9,10,11,12,13) × 4スート = 36枚
 func NewTrumpCardsShortDeck() *TrumpCards {
+	suits := []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond}
+	totalCards := len(ShortDeckValues) * len(suits) // 36
+
+	t := new(TrumpCards)
+	t.deckCnt = totalCards
+	t.deck = make([]*Card, 0, totalCards)
+	for _, suit := range suits {
+		for _, val := range ShortDeckValues {
+			t.deck = append(t.deck, NewCard(suit, val, false))
+		}
+	}
+	t.deckInit()
+	return t
+}
+
+// NewTrumpCardsNinetyNine ナインティナイン(David Parlett)用36枚デッキコンストラクタ
+// 正規のNinety-Nineパックは2,3,4,5を抜き、A,6,7,8,9,10,J,Q,K
+// (値: 1,6,7,8,9,10,11,12,13) × 4スート = 36枚で構成される。
+// これはショートデック(6+)と同一の36枚構成のため ShortDeckValues を共有する。
+// 3人に12枚ずつ配ると過不足なく0枚残る。
+func NewTrumpCardsNinetyNine() *TrumpCards {
 	suits := []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond}
 	totalCards := len(ShortDeckValues) * len(suits) // 36
 

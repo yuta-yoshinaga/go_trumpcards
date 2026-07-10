@@ -1,0 +1,19 @@
+{
+  "helpTitle": "タブラネット（Tablanet / Tablić）",
+  "helpPlay": "  p <h> [t...]              手札 h を出す。t... は捕獲する場札のインデックス",
+  "helpNext": "  nr                        新しいゲーム",
+  "helpSetDifficulty": "  sd [0-2]                  CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "deckLine": "配布: {{deal}}  山札: {{deck}}",
+  "tableLine": "場: {{table}}",
+  "playerLine": "{{name}}: 手札{{hand}}枚  捕獲: {{captured}}  タブラ: {{tabla}}",
+  "promptPlay": "手番: {{name}}",
+  "promptGameEnd": "ゲーム終了。nr で新しいゲームを始めます。",
+  "promptHelp": "p <h> [t...] でプレイ（t 省略でトレイル。ジャックは場を一掃）",
+  "hintNone": "ヒントはありません。",
+  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintReasonTabla": "場を一掃してタブラ・ボーナスを狙う",
+  "hintReasonJack": "ジャックで場を一掃する",
+  "hintReasonCapture": "価値の高い場札を捕獲する",
+  "hintReasonTrail": "捕獲できないので低い札を捨てる",
+  "result.scores": "ゲーム終了！ 得点: {{scores}}"
+}

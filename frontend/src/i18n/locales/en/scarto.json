@@ -1,0 +1,59 @@
+{
+  "title": "Scarto",
+  "phase": {
+    "scarto": "Scarto (discard)",
+    "play": "Play",
+    "trickEnd": "Trick over",
+    "roundEnd": "Deal over",
+    "gameEnd": "Game over"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU difficulty",
+    "targetDeals": "Deals per match",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Deal {{n}}",
+  "trick": "Trick {{n}}",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "points": "{{points}} pts",
+  "score": "Score: {{score}}",
+  "currentTrick": "Current trick",
+  "players": "Players",
+  "you": "You",
+  "cpu": "CPU {{id}}",
+  "dealerBadge": "Dealer",
+  "scartoPhase": "Scarto — bury {{total}} low cards from your hand ({{count}}/{{total}} selected). Trumps, the Excuse, and counting cards (Kings and courts) cannot be buried.",
+  "scartoWaiting": "Waiting for the dealer's scarto (discard)…",
+  "scartoRestricted": "This card cannot be buried (trump / Excuse / counting card).",
+  "discardButton": "Bury ({{count}}/{{total}})",
+  "playButton": "Play",
+  "nextTrick": "Next trick",
+  "nextRound": "Next deal",
+  "outcomeNone": "At the average",
+  "outcomeWin": "Above average",
+  "outcomeLoss": "Below average",
+  "roundResult": {
+    "title": "Deal result",
+    "outcome": "Your result: {{outcome}}",
+    "playerLine": "{{name}}: {{delta}} (total {{score}})"
+  },
+  "hintAvailable": "Hint",
+  "hint": {
+    "scarto_weak": "Bury the weakest low-value cards",
+    "lead_low": "Lead a low card to conserve strength",
+    "follow_win": "You can win the trick — take it",
+    "follow_duck": "You cannot / need not win — duck",
+    "play_excuse": "Play the Excuse to conserve your cards"
+  },
+  "tutorial": {
+    "trickDisplay": "This is the current trick. Follow the led suit if you can; otherwise play a trump; otherwise play any card. The highest trump wins the trick.",
+    "playerHand": "This is your hand. Click a card to select it. Scarto is a 3-player trick-taker on the 78-card tarot deck (four 14-card suits, 21 numbered trumps, and the Excuse).",
+    "playButton": "Once a card is selected, play it with this button. When you are the dealer, bury three low cards in the scarto phase.",
+    "info": "Scarto is a 3-player Piedmontese tarocchi trick-taker. There is no bidding, chien, or partnership. The dealer buries three surplus cards (the scarto), then the three players play out the tricks. Each deal is scored as a zero-sum settlement against the average of the players' captured card-points; the highest cumulative score after the set deals wins.",
+    "resetButton": "Use the reset button to start a new game."
+  }
+}

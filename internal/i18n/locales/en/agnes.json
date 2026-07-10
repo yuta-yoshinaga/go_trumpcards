@@ -1,0 +1,22 @@
+{
+  "helpTitle": "Agnes Sorel Solitaire",
+  "helpDeal": "  d                    deal one card to each column",
+  "helpMoveTT": "  m <from> <to>        move tableau end card to tableau",
+  "helpMoveTF": "  m <col> f            move tableau end card to foundation",
+  "helpGiveUp": "  g                    give up",
+  "helpHint": "  h                    hint",
+  "promptToZone": "Enter destination (<col>=tableau, f=foundation)",
+  "playing": "Playing",
+  "gameClear": "Game cleared! Moves: {{moveCount}}",
+  "gameOver": "Game over",
+  "hintAvailable": "Hint available",
+  "noHint": "No hint",
+  "baseRank": "Base rank: {{rank}}",
+  "foundationHeader": "Foundation: ",
+  "stockLine": "Stock: {{count}}",
+  "columnLabel": "Column {{col}}:",
+  "hintFromTableau": "tableau column {{col}}[{{idx}}]",
+  "hintToFoundation": "foundation",
+  "hintToTableau": "tableau column {{col}}",
+  "hintLine": "Hint: {{from}} → {{to}}"
+}

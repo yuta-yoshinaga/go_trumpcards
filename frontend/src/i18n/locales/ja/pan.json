@@ -1,0 +1,60 @@
+{
+  "phase": {
+    "draw": "ドロー",
+    "play": "プレイ",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "playerCount": "プレイヤー数",
+    "cpuDifficulty": "CPU難易度",
+    "targetRounds": "ラウンド数",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}/{{total}}",
+  "drawPile": "山札: {{count}}枚",
+  "discardTop": "捨て札",
+  "cards": "{{count}}枚",
+  "chips": "チップ: {{count}}",
+  "melded": "メルド: {{count}}枚",
+  "winMeld": "上がりに必要なメルド数: {{count}}枚",
+  "cumulativeScore": "累計: {{score}}",
+  "meldsTitle": "場のメルド",
+  "noMelds": "まだメルドはありません",
+  "meldOwner": "{{name}} のメルド",
+  "scores": "スコア",
+  "scoresPlayer": "プレイヤー",
+  "scoresRound": "ラウンド",
+  "scoresTotal": "累計",
+  "scoresChips": "チップ",
+  "drawStockButton": "山札から引く",
+  "drawDiscardButton": "捨て札から引く",
+  "meldButton": "メルド",
+  "layoffButton": "レイオフ",
+  "discardButton": "捨てる",
+  "nextRound": "次のラウンド",
+  "drawPhase": "山札または捨て札から1枚引いてください",
+  "playPhase": "メルドやレイオフをしてから1枚捨ててください",
+  "roundEnd": "ラウンド終了",
+  "result": {
+    "humanWin": "あなたの勝利！",
+    "cpuWin": "CPU {{cpuId}} の勝利！"
+  },
+  "hint": {
+    "drawFromDiscard": "捨て札から引きましょう — 手札に合います",
+    "drawFromStock": "山札から引きましょう",
+    "meld": "メルドを場に出せます — 選んで出しましょう",
+    "discard": "不要なカードを捨てましょう"
+  },
+  "tutorial": {
+    "drawArea": "山札または捨て札から1枚引いてターンを始めます。",
+    "playerHand": "あなたの手札です。3枚以上でセットやロープ（ラン）を作りましょう。",
+    "meldArea": "3枚以上を選んで「メルド」で場に出します。既存のメルドにはレイオフで1枚足せます。",
+    "discardButton": "1枚捨ててターンを終えます。",
+    "scoreTable": "各プレイヤーのチップとスコアが表示されます。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}

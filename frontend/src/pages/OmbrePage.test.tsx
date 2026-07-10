@@ -1,0 +1,143 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { ombreApi } from '../api/gameApi';
+import { renderWithProviders } from '../test/renderWithProviders';
+import { makeOmbreState } from '../test/stateFactories';
+import { OmbrePage } from './OmbrePage';
+
+vi.mock('../api/gameApi', () => ({
+  ombreApi: { exec: vi.fn() },
+  actionLogApi: { ombre: vi.fn() },
+}));
+
+const mockExec = vi.mocked(ombreApi.exec);
+
+const playPhaseState = makeOmbreState();
+const bidPhaseState = makeOmbreState({
+  phase: 0,
+  currentBidderIdx: 0,
+  isHumanTurn: false,
+  isHumanBidTurn: true,
+  winningBid: 0,
+  ombreIdx: -1,
+  trumpSuit: -1,
+});
+const trickEndState = makeOmbreState({
+  phase: 2,
+  currentTrick: [
+    { playerIdx: 0, card: { design: 'HEART', value: 12 } },
+    { playerIdx: 1, card: { design: 'CLOVER', value: 13 } },
+  ],
+});
+const roundEndState = makeOmbreState({
+  phase: 3,
+  outcome: 1,
+});
+const gameEndState = makeOmbreState({
+  phase: 4,
+  gameEndFlag: true,
+  winnerPlayer: 0,
+  message: 'ゲーム終了！ あなたの勝ち！',
+});
+const cpuTurnState = makeOmbreState({ currentPlayerIdx: 1, isHumanTurn: false });
+
+beforeEach(() => {
+  mockExec.mockReset();
+  mockExec.mockResolvedValue(playPhaseState);
+});
+
+describe('OmbrePage', () => {
+  it('renders skeleton when no state', () => {
+    mockExec.mockReturnValue(new Promise(() => undefined));
+    renderWithProviders(<OmbrePage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('calls reset on mount with the default config', async () => {
+    renderWithProviders(<OmbrePage />);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', {
+        config: { cpuDifficulty: 1, targetRounds: 5 },
+      }),
+    );
+  });
+
+  it('renders the play phase with the human cards and the Ombre badge', async () => {
+    renderWithProviders(<OmbrePage />);
+    await waitFor(() => {
+      expect(screen.getByAltText('♥ Q')).toBeInTheDocument();
+      expect(screen.getByAltText('♠ A')).toBeInTheDocument();
+    });
+    // The human (seat 0) is the default Ombre — the badge renders (heading also reads オンブル).
+    expect(screen.getAllByText('オンブル').length).toBeGreaterThan(1);
+  });
+
+  it('renders the bid phase with entrar, solo and pass buttons', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<OmbrePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'エントラール' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'ソロ' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'パス' })).toBeInTheDocument();
+  });
+
+  it('entrar is disabled until a trump suit is picked, then dispatches bid with the suit', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<OmbrePage />);
+    const entrarBtn = await screen.findByRole('button', { name: 'エントラール' });
+    expect(entrarBtn).toBeDisabled();
+    // Pick spades (♠) as trump.
+    fireEvent.click(screen.getByRole('button', { name: 'スペード' }));
+    expect(screen.getByRole('button', { name: 'エントラール' })).toBeEnabled();
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(bidPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'エントラール' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bid: 1, trumpSuit: 1 }));
+  });
+
+  it('passing dispatches bid with bid=0 and no trump requirement', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<OmbrePage />);
+    const passBtn = await screen.findByRole('button', { name: 'パス' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(bidPhaseState);
+    fireEvent.click(passBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bid: 0, trumpSuit: undefined }));
+  });
+
+  it('selecting a card then playing dispatches play', async () => {
+    renderWithProviders(<OmbrePage />);
+    const card = await screen.findByAltText('♥ Q');
+    fireEvent.click(card);
+    const playBtn = await screen.findByRole('button', { name: '出す' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(playBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0 }));
+  });
+
+  it('renders trick end with the next trick button', async () => {
+    mockExec.mockResolvedValue(trickEndState);
+    renderWithProviders(<OmbrePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+  });
+
+  it('renders round end with the next deal button and the deal result', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<OmbrePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のディール' })).toBeInTheDocument());
+    expect(screen.getByText('ディール結果')).toBeInTheDocument();
+  });
+
+  it('renders the game end message', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<OmbrePage />);
+    await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたの勝ち！')).toBeInTheDocument());
+  });
+
+  it('does not show the play button on a CPU turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<OmbrePage />);
+    await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
+  });
+});

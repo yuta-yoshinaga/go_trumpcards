@@ -14,8 +14,10 @@ export function suitSymbol(design: Card['design']): string {
   return DESIGN_SYMBOLS[design] ?? design;
 }
 
-/** Return accessible alt text for a card: localized "Joker" for jokers, "♠ A" style for normal cards. */
+/** Return accessible alt text for a card: procedural cards use their descriptor
+ * label/glyph, "Joker" for jokers, "♠ A" style for normal cards. */
 export function cardAlt(card: Card): string {
+  if (card.label) return card.glyph ? `${card.label} ${card.glyph}` : card.label;
   if (card.design === 'JOKER') return i18n.t('common:card.joker');
   return `${suitSymbol(card.design)} ${valueName(card.value)}`;
 }
