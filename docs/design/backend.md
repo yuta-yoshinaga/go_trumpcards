@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全174ゲーム)](#12-ゲームドメイン-全174ゲーム)
+  - [1.2 ゲームドメイン (全218ゲーム)](#12-ゲームドメイン-全218ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -154,7 +154,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全174ゲーム)
+### 1.2 ゲームドメイン (全218ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -1715,7 +1715,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全174ゲーム共通)**
+**Interactor パターン (全218ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -1787,8 +1787,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "174ゲーム × CUI/Web = 348 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
-    note for GameCuiPresenter "174ゲーム × CUI/Web = 348 Presenter 実装"
+    note for GameCuiController "218ゲーム × CUI/Web = 436 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
+    note for GameCuiPresenter "218ゲーム × CUI/Web = 436 Presenter 実装"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -1796,46 +1796,17 @@ classDiagram
 ```mermaid
 classDiagram
     class TrumpCardsWeb {
-        -blackjack *BlackJackWebController
-        -poker *PokerWebController
-        -oldmaid *OldMaidWebController
-        -daifugo *DaifugoWebController
-        -sevens *SevensWebController
-        -doubt *DoubtWebController
-        -holdem *HoldemWebController
-        -omaha *OmahaWebController
-        -shortdeck *ShortDeckWebController
-        -hearts *HeartsWebController
-        -memory *MemoryWebController
-        -klondike *KlondikeWebController
-        -freecell *FreeCellWebController
-        -baccarat *BaccaratWebController
-        -spades *SpadesWebController
-        -crazyeights *CrazyEightsWebController
-        -ginrummy *GinRummyWebController
-        -spider *SpiderWebController
-        -napoleon *NapoleonWebController
-        -mighty *MightyWebController
-        -indianpoker *IndianPokerWebController
-        -videopoker *VideoPokerWebController
-        -deuceswild *DeucesWildWebController
-        -jokerpoker *JokerPokerWebController
-        -euchre *EuchreWebController
-        -pyramid *PyramidWebController
-        -tripeaks *TriPeaksWebController
-        -cribbage *CribbageWebController
-        -threecard *ThreeCardWebController
-        -ohhell *OhHellWebController
-        -bridge *BridgeWebController
-        -speed *SpeedWebController
-        -gofish *GoFishWebController
-        -pigtail *PigsTailWebController
-        -sevencardstud *SevenCardStudWebController
-        -clocksolitaire *ClockSolitaireWebController
-        -durak *DurakWebController
-        -fortythieves *FortyThievesWebController
-        -paigow *PaiGowWebController
-        +Exec()
+        -games []gameEntry
+        -quiet bool
+        -stderr io.Writer
+        -onReady func(string)
+        +Exec() error
+        -registerAll()
+    }
+
+    class gameEntry {
+        -name string
+        -controller games.WebController
     }
 
     class GameManager {
@@ -1856,8 +1827,9 @@ classDiagram
         +Exec(input string) string
     }
 
-    TrumpCardsWeb --> "*" GameWebController : holds 87 controllers
-    GameManager --> "*" CuiExecer : holds 87 games
+    TrumpCardsWeb --> "*" gameEntry : registerAll() over games.All()
+    gameEntry --> GameWebController : holds 218 controllers
+    GameManager --> "*" CuiExecer : holds 218 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```
