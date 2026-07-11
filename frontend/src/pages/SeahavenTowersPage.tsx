@@ -463,8 +463,10 @@ function SeahavenTowersPageContent() {
             {/* Hint display */}
             {hint && (
               <div className="text-ds-warning text-sm mb-2">
-                {t('hintAvailable')}: {hint.fromZone}
-                {hint.fromCol >= 0 ? ` ${hint.fromCol}` : ''} → {hint.toZone}
+                {/* Zone identifiers (tableau/reserved/foundation) double as i18n
+                    keys, matching the CUI HintOutput terminology. */}
+                {t('hintAvailable')}: {t(hint.fromZone)}
+                {hint.fromCol >= 0 ? ` ${hint.fromCol}` : ''} → {t(hint.toZone)}
                 {hint.toCol >= 0 ? ` ${hint.toCol}` : ''}
               </div>
             )}

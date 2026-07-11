@@ -150,6 +150,18 @@ describe('SeahavenTowersPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
   });
 
+  it('hint display localizes zone names instead of raw English', async () => {
+    renderWithProviders(<SeahavenTowersPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    mockExec.mockResolvedValue({
+      ...withHintState,
+      hint: { fromZone: 'reserved', fromCol: 1, cardIndex: -1, toZone: 'foundation', toCol: -1 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    // Zone identifiers render as localized names (ja), matching the CUI terminology.
+    await waitFor(() => expect(screen.getByText(/リザーブセル 1.*→.*ファンデーション/)).toBeInTheDocument());
+  });
+
   it('autocomplete button triggers autocomplete API call', async () => {
     renderWithProviders(<SeahavenTowersPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'オートコンプリート' })).toBeInTheDocument());
