@@ -162,6 +162,18 @@ describe('SeahavenTowersPage', () => {
     await waitFor(() => expect(screen.getByText(/リザーブセル 1.*→.*ファンデーション/)).toBeInTheDocument());
   });
 
+  it('hint display omits column when col is negative and localizes both zones', async () => {
+    renderWithProviders(<SeahavenTowersPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    mockExec.mockResolvedValue({
+      ...withHintState,
+      hint: { fromZone: 'foundation', fromCol: -1, cardIndex: -1, toZone: 'tableau', toCol: 2 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    // fromCol < 0 -> no number after the source zone; toCol >= 0 -> "タブロー 2".
+    await waitFor(() => expect(screen.getByText(/ファンデーション.*→.*タブロー 2/)).toBeInTheDocument());
+  });
+
   it('autocomplete button triggers autocomplete API call', async () => {
     renderWithProviders(<SeahavenTowersPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'オートコンプリート' })).toBeInTheDocument());
