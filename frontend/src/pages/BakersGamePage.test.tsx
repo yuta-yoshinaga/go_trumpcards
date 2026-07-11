@@ -344,6 +344,8 @@ describe('BakersGamePage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
     await waitFor(() => expect(screen.getAllByText(/ヒント/).length).toBeGreaterThanOrEqual(1));
+    // Zone identifiers are localized (ja), not shown as raw English.
+    await waitFor(() => expect(screen.getByText(/フリーセル.*→.*タブロー 3/)).toBeInTheDocument());
   });
 
   it('hint display shows fromCol when fromCol is non-negative', async () => {
@@ -353,7 +355,7 @@ describe('BakersGamePage', () => {
     mockExec.mockResolvedValue(withHintFromColState);
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
-    await waitFor(() => expect(screen.getByText(/tableau 2/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/タブロー 2/)).toBeInTheDocument());
   });
 
   // --- Keyboard shortcuts ---
