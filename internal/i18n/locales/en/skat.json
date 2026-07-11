@@ -32,6 +32,7 @@
   "gameTypeGrand": "Grand",
   "gameTypeNull": "Null",
   "gameTypeNone": "None",
+  "roleDeclarer": " [Declarer]",
   "hintNone": "No hint available.",
   "hintBid": "[HINT: {{choice}} ({{reason}})]",
   "hintPickSkat": "[HINT: {{choice}} the skat ({{reason}})]",

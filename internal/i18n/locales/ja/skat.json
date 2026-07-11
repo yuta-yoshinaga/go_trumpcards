@@ -32,6 +32,7 @@
   "gameTypeGrand": "グランド",
   "gameTypeNull": "ヌル",
   "gameTypeNone": "なし",
+  "roleDeclarer": " [宣言者]",
   "hintNone": "ヒントはありません。",
   "hintBid": "[ヒント: {{choice}} ({{reason}})]",
   "hintPickSkat": "[ヒント: スカートを{{choice}} ({{reason}})]",

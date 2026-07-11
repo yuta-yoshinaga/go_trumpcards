@@ -259,10 +259,19 @@ func TestSkatCuiPresenter_PlayerSummaryRoles(t *testing.T) {
 	m.On("GetPlayer", 1).Return(pDecl)
 	m.On("GetPlayer", 2).Return(pPass)
 
+	i18n.SetLang("en")
+	defer i18n.SetLang("ja")
 	out := p.Output(m, nil)
 	assert.Contains(t, out, "[Declarer]")
 	assert.Contains(t, out, "bid=18")
 	assert.Contains(t, out, "bid=pass")
+
+	// The declarer role and pass label are localized under ja.
+	i18n.SetLang("ja")
+	outJa := p.Output(m, nil)
+	assert.Contains(t, outJa, "[宣言者]")
+	assert.Contains(t, outJa, "bid=パス")
+	assert.NotContains(t, outJa, "[Declarer]")
 }
 
 // TestSkatCuiPresenter_HintOutputAllBranches covers every hint-render branch:

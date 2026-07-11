@@ -19,11 +19,11 @@ func skatPlayerStr(player *domain.SkatPlayer, i int) string {
 	name := cuiPlayerName(player, i)
 	role := ""
 	if player.GetIsDeclarer() {
-		role = " [Declarer]"
+		role = i18n.T("skat.roleDeclarer")
 	}
 	bidStr := "-"
 	if player.GetBid() == 0 {
-		bidStr = "pass"
+		bidStr = i18n.T("skat.choiceBidPass")
 	} else if player.GetBid() > 0 {
 		bidStr = fmt.Sprintf("%d", player.GetBid())
 	}
