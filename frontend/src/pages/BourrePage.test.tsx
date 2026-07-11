@@ -87,6 +87,39 @@ describe('BourrePage', () => {
     });
   });
 
+  it('shows localized CPU status for finished, folded, and bourréd players', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          player({ id: 0, isHuman: true }),
+          player({ id: 1, isFinished: true }),
+          player({ id: 2, folded: true }),
+          player({ id: 3, bourreed: true }),
+        ],
+      }),
+    );
+    renderWithProviders(<BourrePage />);
+    // playerStatus resolves each state through i18n (ja).
+    await waitFor(() => expect(screen.getByText('脱落')).toBeInTheDocument());
+    expect(screen.getAllByText('フォールド').length).toBeGreaterThanOrEqual(1);
+    // "ブーレ" is also the sr-only page title, so the bourréd status adds a second.
+    expect(screen.getAllByText('ブーレ').length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('names the winner via playerName when a CPU wins at game end', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'roundEnd',
+        gameEndFlag: true,
+        winnerIdx: 2,
+        results: [player({ id: 2, tricks: 3 })],
+      }),
+    );
+    renderWithProviders(<BourrePage />);
+    // result.youLose interpolates the localized CPU winner name.
+    await waitFor(() => expect(screen.getByText(/CPU 2 の勝ち/)).toBeInTheDocument());
+  });
+
   it('decide phase: shows the pot/penalty summary, flagged in warning color when the pot is high', async () => {
     renderWithProviders(<BourrePage />); // default: pot 25, carryPot 0 → penalty 25 (>= threshold)
     const summary = await screen.findByTestId('bourre-decide-summary');
