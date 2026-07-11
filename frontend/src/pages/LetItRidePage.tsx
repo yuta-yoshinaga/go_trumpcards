@@ -257,8 +257,8 @@ function LetItRidePageContent() {
               <div className="mb-4" data-tutorial="lir-results">
                 <div className="text-ds-warning font-bold text-center mb-1">
                   <span aria-hidden="true">🟡</span> {t('player')}
-                  {isEndPhase && (
-                    <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.handRank] ?? 'handRank.0')})</span>
+                  {isEndPhase && HAND_RANK_KEYS[state.handRank] && (
+                    <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.handRank])})</span>
                   )}
                 </div>
                 <div className="flex justify-center gap-2 flex-wrap">
