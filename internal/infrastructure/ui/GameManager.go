@@ -3425,6 +3425,16 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"cego.helpSetDifficulty"},
 			})
 	}},
+	{Name: "zheng", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewZhengCuiController(usecase.NewZhengInteractor(
+				domain.NewDefaultZheng(), new(presenter.ZhengCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:    "zheng.helpTitle",
+				CommandKeys: []string{"zheng.helpPlay"},
+				SettingKeys: []string{"zheng.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

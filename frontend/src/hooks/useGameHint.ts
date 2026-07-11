@@ -171,6 +171,7 @@ import type {
   WizardResponse,
   YanivResponse,
   YukonResponse,
+  ZhengResponse,
 } from '../types/card';
 import type { HintResult } from '../types/hint';
 import { getAccordionHint } from '../utils/hints/accordionHint';
@@ -349,6 +350,7 @@ import { getWhistHint } from '../utils/hints/whistHint';
 import { getWizardHint } from '../utils/hints/wizardHint';
 import { getYanivHint } from '../utils/hints/yanivHint';
 import { getYukonHint } from '../utils/hints/yukonHint';
+import { getZhengHint } from '../utils/hints/zhengHint';
 import { useLocalStorageToggle } from './useLocalStorageToggle';
 
 /** Hint function that takes game state and returns a hint result or null. */
@@ -388,6 +390,7 @@ const hintFactories = {
   gaigel: (s) => getGaigelHint(s as GaigelResponse),
   bigtwo: (s) => getBigTwoHint(s as BigTwoResponse),
   tienlen: (s) => getTienLenHint(s as TienLenResponse),
+  zheng: (s) => getZhengHint(s as ZhengResponse),
   fivehundred: (s) => getFiveHundredHint(s as FiveHundredResponse),
   rook: (s) => getRookHint(s as RookResponse),
   schnapsen: (s) => getSchnapsenHint(s as SchnapsenResponse),

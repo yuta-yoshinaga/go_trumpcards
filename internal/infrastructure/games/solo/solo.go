@@ -428,4 +428,13 @@ func init() {
 			return usecase.RestoreCegoInteractor(data, new(presenter.CegoWebPresenter))
 		},
 		controller.NewCegoWebControllerWithProvider)
+	// Zheng Shangyou (54-card Chinese climbing game, suit-blind ranks).
+	games.RegisterKVGame("zheng", games.CategorySolo,
+		func() usecase.ZhengInteractorIF {
+			return usecase.NewZhengInteractor(domain.NewDefaultZheng(), new(presenter.ZhengWebPresenter))
+		},
+		func(data []byte) (usecase.ZhengInteractorIF, error) {
+			return usecase.RestoreZhengInteractor(data, new(presenter.ZhengWebPresenter))
+		},
+		controller.NewZhengWebControllerWithProvider)
 }
