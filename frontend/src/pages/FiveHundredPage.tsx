@@ -312,7 +312,10 @@ function FiveHundredPageContent() {
                     id: 'cpuDifficulty',
                     label: t('settings.cpuDifficulty'),
                     value: String(config.cpuDifficulty ?? 1),
-                    options: CPU_DIFFICULTY_SELECT,
+                    options: CPU_DIFFICULTY_SELECT.map((o) => ({
+                      value: o.value,
+                      label: t(`settings.${o.label.toLowerCase()}`),
+                    })),
                     onSelect: (v: string) => handleConfigChange('cpuDifficulty', v),
                   },
                   {
