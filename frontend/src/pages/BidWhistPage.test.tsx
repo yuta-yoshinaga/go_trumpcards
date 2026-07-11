@@ -78,6 +78,15 @@ describe('BidWhistPage', () => {
     );
   });
 
+  it('renders CPU difficulty options with localized labels', async () => {
+    renderWithProviders(<BidWhistPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    // Difficulty options are localized (ja), not the hardcoded Easy/Normal/Hard.
+    expect(screen.getByRole('option', { name: 'かんたん' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'ふつう' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'むずかしい' })).toBeInTheDocument();
+  });
+
   it('shows bid controls on the human bid turn', async () => {
     renderWithProviders(<BidWhistPage />);
     expect(await screen.findByTestId('pass-button')).toBeEnabled();

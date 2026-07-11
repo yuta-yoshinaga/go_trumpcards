@@ -32,7 +32,10 @@
   "nextRoundButton": "Next round",
   "settings": {
     "cpuDifficulty": "CPU difficulty",
-    "targetScore": "Target score"
+    "targetScore": "Target score",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
   },
   "tutorial": {
     "info": "Round, contract, and team scores appear here. The first team to 7 points wins.",
