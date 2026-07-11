@@ -86,6 +86,16 @@ describe('FiftyOnePage', () => {
     await waitFor(() => expect(screen.getByText(/スコア: 21/)).toBeInTheDocument());
   });
 
+  it('renders CPU difficulty options with localized labels', async () => {
+    const { FiftyOnePage } = await import('./FiftyOnePage');
+    renderWithProviders(<FiftyOnePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // Difficulty options are localized (ja), not the hardcoded Easy/Normal/Hard.
+    expect(screen.getByRole('option', { name: '簡単' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: '普通' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: '難しい' })).toBeInTheDocument();
+  });
+
   it('exchange all button calls exchangeall', async () => {
     const { FiftyOnePage } = await import('./FiftyOnePage');
     renderWithProviders(<FiftyOnePage />);

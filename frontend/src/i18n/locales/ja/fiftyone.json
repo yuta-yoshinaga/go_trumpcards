@@ -23,7 +23,10 @@
     "suitScores": "スート別合計"
   },
   "settings": {
-    "cpuDifficulty": "CPU難易度"
+    "cpuDifficulty": "CPU難易度",
+    "difficultyEasy": "簡単",
+    "difficultyNormal": "普通",
+    "difficultyHard": "難しい"
   },
   "hint": {
     "exchangeStrong": "スコアを大幅に改善できる交換があります",
