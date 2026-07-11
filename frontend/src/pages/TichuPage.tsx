@@ -27,6 +27,7 @@ import type { TichuResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { playerName } from '../utils/playerUtils';
 import { tichuBombIndices } from '../utils/tichuBomb';
 
 type ApiArgs = {
@@ -199,12 +200,12 @@ function TichuPageContent() {
   const phaseName = useMemo(() => {
     if (!state) return '';
     if (isGameEnd) return t('phase.end');
-    return t(`phase.${phase}`, { defaultValue: phase });
+    return t(`phase.${phase}`);
   }, [state, phase, isGameEnd, t]);
 
   const declLabel = (declType: number): string => {
-    if (declType === 1) return t('label.tichu', { defaultValue: 'Tichu' });
-    if (declType === 2) return t('label.grandTichu', { defaultValue: 'Grand Tichu' });
+    if (declType === 1) return t('label.tichu');
+    if (declType === 2) return t('label.grandTichu');
     return '';
   };
 
@@ -227,7 +228,7 @@ function TichuPageContent() {
       headerExtra={
         <div className="flex items-center gap-2">
           <span className="text-xs opacity-75">
-            {t('label.bombs', { defaultValue: 'Bombs' })}: {state.bombCount}
+            {t('label.bombs')}: {state.bombCount}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </div>
@@ -237,7 +238,7 @@ function TichuPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <div className="flex flex-col gap-3 p-3 overflow-y-auto">
-          <LandscapeBanner message={t('landscapeBanner', { defaultValue: '' })} />
+          <LandscapeBanner message={t('landscapeBanner')} />
           {error && <ErrorAlert message={error} onRetry={retry} />}
           <GameMessageBox messageCode={state.messageCode} messageParams={state.messageParams} message={state.message} />
           {hint && hintEnabled && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
@@ -249,10 +250,10 @@ function TichuPageContent() {
               .map((p) => (
                 <div key={p.id} className="text-center text-ds-text-primary text-sm">
                   <div className="font-bold">
-                    CPU {p.id} [{t('label.team', { defaultValue: 'Team' })} {p.team}]
+                    {playerName(p.id, p.isHuman)} [{t('label.team')} {p.team}]
                   </div>
                   <div>
-                    {p.cardCount} {t('label.cards', { defaultValue: 'cards' })}
+                    {p.cardCount} {t('label.cards')}
                     {p.declType > 0 ? ` · ${declLabel(p.declType)}` : ''}
                   </div>
                 </div>
@@ -269,7 +270,7 @@ function TichuPageContent() {
                 <span className="text-ds-text-primary text-xs ml-2">{state.tableCombo}</span>
               </>
             ) : (
-              <span className="text-ds-text-secondary text-sm">{t('label.table', { defaultValue: 'Table' })}: ---</span>
+              <span className="text-ds-text-secondary text-sm">{t('label.table')}: ---</span>
             )}
           </div>
 
@@ -277,13 +278,13 @@ function TichuPageContent() {
           {phase === 'declare' && isHumanTurn && (
             <div className="flex justify-center gap-2" data-tutorial="tichu-declare">
               <button type="button" className={btnSecondary} onClick={() => handleDeclare(0)}>
-                {t('button.declareNone', { defaultValue: 'No declaration' })}
+                {t('button.declareNone')}
               </button>
               <button type="button" className={btnWarning} onClick={() => handleDeclare(1)}>
-                {t('button.tichu', { defaultValue: 'Tichu' })}
+                {t('button.tichu')}
               </button>
               <button type="button" className={btnWarning} onClick={() => handleDeclare(2)}>
-                {t('button.grandTichu', { defaultValue: 'Grand Tichu' })}
+                {t('button.grandTichu')}
               </button>
             </div>
           )}
@@ -326,11 +327,11 @@ function TichuPageContent() {
               {phase === 'play' && isHumanTurn && (
                 <div className="flex justify-center gap-2 mt-2">
                   <button type="button" className={btnPrimary} onClick={handlePlay} disabled={selectedCards.size === 0}>
-                    {t('button.play', { defaultValue: 'Play' })}
+                    {t('button.play')}
                   </button>
                   {state.tableCards.length > 0 && (
                     <button type="button" className={btnSecondary} onClick={handlePass}>
-                      {t('button.pass', { defaultValue: 'Pass' })}
+                      {t('button.pass')}
                     </button>
                   )}
                 </div>
@@ -341,20 +342,14 @@ function TichuPageContent() {
           {/* End phase scores */}
           {isGameEnd && (
             <div className="text-center text-ds-text-primary space-y-1">
-              <div className="text-lg font-bold">
-                {humanWon
-                  ? t('result.youWin', { defaultValue: 'Your team wins!' })
-                  : t('result.youLose', { defaultValue: 'Opponents win' })}
+              <div className="text-lg font-bold">{humanWon ? t('result.youWin') : t('result.youLose')}</div>
+              <div className="text-sm">
+                {t('label.teamA')}: {state.scores[0]}
               </div>
               <div className="text-sm">
-                {t('label.teamA', { defaultValue: 'Team A (P0/P2)' })}: {state.scores[0]}
+                {t('label.teamB')}: {state.scores[1]}
               </div>
-              <div className="text-sm">
-                {t('label.teamB', { defaultValue: 'Team B (P1/P3)' })}: {state.scores[1]}
-              </div>
-              {state.isOneTwo && (
-                <div className="text-xs opacity-75">{t('label.oneTwo', { defaultValue: '1-2 finish (+200)' })}</div>
-              )}
+              {state.isOneTwo && <div className="text-xs opacity-75">{t('label.oneTwo')}</div>}
             </div>
           )}
 
