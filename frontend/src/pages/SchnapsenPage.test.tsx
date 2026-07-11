@@ -72,15 +72,15 @@ describe('SchnapsenPage', () => {
 
   it('shows the human hand as play buttons', async () => {
     renderWithProviders(<SchnapsenPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Play SPADE 1' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: 'Play HEART 10' })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ A を出す' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '♥ 10 を出す' })).toBeInTheDocument();
   });
 
   it('fires play with the selected card index when a card is clicked', async () => {
     renderWithProviders(<SchnapsenPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Play HEART 10' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '♥ 10 を出す' })).toBeInTheDocument());
     mockExec.mockClear();
-    fireEvent.click(screen.getByRole('button', { name: 'Play HEART 10' }));
+    fireEvent.click(screen.getByRole('button', { name: '♥ 10 を出す' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 1));
   });
 
@@ -107,8 +107,8 @@ describe('SchnapsenPage', () => {
     mockExec.mockResolvedValue(makeState({ isEndgame: true, validPlays: [0] }));
     renderWithProviders(<SchnapsenPage />);
     await waitFor(() => expect(screen.getByTestId('schnapsen-phase')).toHaveTextContent(/第2フェーズ/));
-    expect(screen.getByRole('button', { name: 'Play SPADE 1' })).not.toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Play HEART 10' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '♠ A を出す' })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: '♥ 10 を出す' })).toBeDisabled();
   });
 
   it('shows "Next trick" button on trick-end and dispatches next', async () => {
@@ -162,7 +162,7 @@ describe('SchnapsenPage', () => {
     mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
     renderWithProviders(<SchnapsenPage />);
     await waitFor(() => {
-      const btn = screen.getByRole('button', { name: 'Play SPADE 1' });
+      const btn = screen.getByRole('button', { name: '♠ A を出す' });
       expect(btn).toBeDisabled();
     });
   });
