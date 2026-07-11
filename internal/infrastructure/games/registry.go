@@ -5,7 +5,7 @@
 // binaries (TinyGo / WASM) stay under the 1 MB gzipped free-tier limit:
 //
 //   - registry.go (this file, no tag)  — types and bare metadata (Name +
-//     Category) for all 218 games. Cheap; no references to game code.
+//     Category) for all 219 games. Cheap; no references to game code.
 //   - games_server.go (!js || !wasm)   — installs Web-server factories for
 //     every game via BindWebController. Imported by TrumpCardsWeb.
 //   - casino/, classic/, solo/ (js && wasm) — per-category worker bindings.
@@ -738,6 +738,11 @@ var registry = []*Game{
 	// into solo (not extra, which hit the 1 MB gzip limit); Category is a size
 	// bucket, not a user-facing taxonomy.
 	{Name: "cego", Category: CategorySolo},
+	// Zheng Shangyou is a Chinese climbing/shedding game (ancestor of Big Two /
+	// Daifugo) on a 54-card deck (52 + 2 jokers); suits are irrelevant to rank
+	// strength. Bucketed into solo (extra hit the 1 MB gzip limit); Category is
+	// a size bucket, not a user-facing taxonomy.
+	{Name: "zheng", Category: CategorySolo},
 }
 
 // All returns a value-level copy of the registry in canonical order.

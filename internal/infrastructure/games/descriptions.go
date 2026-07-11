@@ -228,6 +228,7 @@ var gameDescriptions = map[string]string{
 	"koenigrufen":         "Königrufen / Tarock (ケーニッヒルーフェン)",
 	"scarto":              "Scarto (スカルト)",
 	"cego":                "Cego (チェゴ)",
+	"zheng":               "Zheng Shangyou (ジェンシャンヨウ)",
 }
 
 // descriptionCache aliases gameDescriptions (kept for internal call sites).

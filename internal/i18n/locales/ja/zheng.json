@@ -1,0 +1,15 @@
+{
+  "helpTitle": "Zheng Shangyou (争上游)",
+  "helpPlay": "  p [idx ...]          カードを出す (指定なし = パス)",
+  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Normal, 1=Easy, 2=Hard)",
+  "playerFinished": ": 上がり ({{rank}}位)",
+  "playerCardCount": ": {{count}}枚",
+  "tableCards": "場",
+  "tableEmpty": "場: なし (自由に出せます)",
+  "gameEnd": "ゲーム終了！",
+  "rankN": "{{rank}}位",
+  "playerYou": "あなた",
+  "yourTurn": "あなたのターンです",
+  "comboRulesHint": "役: シングル/ペア/3カード/連番(3..A)/連続ペア(3..A)。強さは 3<...<A<2<小J<大J でスートは無関係。爆弾(同ランク4枚)は通常役を切れ、ジョーカー2枚は全てに勝ちます。",
+  "actionPass": "パス"
+}

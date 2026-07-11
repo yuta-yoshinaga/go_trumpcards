@@ -236,6 +236,8 @@ import type {
   WizardResponse,
   YanivResponse,
   YukonResponse,
+  ZhengConfigInput,
+  ZhengResponse,
 } from '../types/card';
 
 /** Unique session identifier for correlating API requests. */
@@ -302,6 +304,7 @@ const workerUrl: Record<string, string> = {
   daifugo: WORKER_CLASSIC,
   bigtwo: WORKER_CLASSIC,
   tienlen: WORKER_SOLO,
+  zheng: WORKER_SOLO,
   sevens: WORKER_CLASSIC,
   crazyeights: WORKER_CLASSIC,
   prsi: WORKER_CLASSIC,
@@ -660,6 +663,12 @@ export const bigtwoApi = {
 export const tienlenApi = {
   exec: (command: 'reset' | 'play', indices?: number[], config?: TienLenConfigInput) =>
     gameExec<TienLenResponse>('tienlen', { command, indices, config }),
+};
+
+/** API client for the Zheng Shangyou /zheng/exec endpoint (empty indices = pass). */
+export const zhengApi = {
+  exec: (command: 'reset' | 'play', indices?: number[], config?: ZhengConfigInput) =>
+    gameExec<ZhengResponse>('zheng', { command, indices, config }),
 };
 
 /** API client for the Durak /durak/exec endpoint. */
@@ -5381,6 +5390,7 @@ const games = [
   'cego',
   'frenchtarot',
   'koenigrufen',
+  'zheng',
 ] as const;
 type Game = (typeof games)[number];
 
