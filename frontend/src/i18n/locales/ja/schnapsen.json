@@ -24,7 +24,8 @@
     "reset": "リセット",
     "marriage": "マリアージュ宣言",
     "hint": "ヒント",
-    "marriageAria": "マリアージュ宣言: {{suit}} のKとQで{{points}}点"
+    "marriageAria": "マリアージュ宣言: {{suit}} のKとQで{{points}}点",
+    "playAria": "{{card}} を出す"
   },
   "tutorial": {
     "trump": "切り札のアップカードと山札です。切り札のスートが各トリックで最強になります。山札が尽きるとフェーズ2に入ります。",

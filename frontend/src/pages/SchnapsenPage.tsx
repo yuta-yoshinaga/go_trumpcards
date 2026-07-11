@@ -20,7 +20,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { SchnapsenResponse } from '../types/card';
 import { SchnapsenPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { suitSymbol } from '../utils/cardAlt';
+import { cardAlt, suitSymbol } from '../utils/cardAlt';
 
 /** Card design → Schnapsen trump-suit id (1=♠ 2=♣ 3=♥ 4=♦). */
 const DESIGN_TO_SUIT: Readonly<Record<string, number>> = { SPADE: 1, CLOVER: 2, HEART: 3, DIAMOND: 4 };
@@ -223,7 +223,7 @@ function SchnapsenPageContent() {
                       type="button"
                       onClick={() => handlePlay(idx)}
                       disabled={loading || !playable}
-                      aria-label={`Play ${card.design} ${card.value}`}
+                      aria-label={t('actions.playAria', { card: cardAlt(card) })}
                       className="disabled:opacity-50"
                     >
                       <CardImage card={card} width={cardWidth} />
