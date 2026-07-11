@@ -703,6 +703,29 @@ func TestZheng_JSON_NilTrumpCards(t *testing.T) {
 	assert.NotNil(t, restored.trumpCards)
 }
 
+// 復元時に "tb" が非nilの空スライス ([]) でも場クリア (リード) として扱う。
+func TestZheng_UnmarshalJSON_EmptyTableCardsIsLead(t *testing.T) {
+	z := newZhengTestGame()
+	for i := 0; i < ZhengPlayerCnt; i++ {
+		z.players[i].AddCard(zhengCard(5+i, CardDesignSpade))
+	}
+	data, err := json.Marshal(z)
+	require.NoError(t, err)
+
+	var raw map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(data, &raw))
+	raw["tb"] = json.RawMessage(`[]`)
+	data, err = json.Marshal(raw)
+	require.NoError(t, err)
+
+	var restored Zheng
+	require.NoError(t, json.Unmarshal(data, &restored))
+
+	// リード扱いなのでパスは拒否され、任意の有効役を出せる
+	require.Error(t, restored.PlayerPlay(nil))
+	require.NoError(t, restored.PlayerPlay([]int{0}))
+}
+
 func TestZheng_UnmarshalJSON_Invalid(t *testing.T) {
 	marshal := func(t *testing.T, z *Zheng) []byte {
 		t.Helper()

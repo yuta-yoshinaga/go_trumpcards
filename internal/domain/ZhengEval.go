@@ -218,7 +218,7 @@ func zhengIsPlayable(cards []*Card, tableCards []*Card, tablePlayType ZhengPlayT
 	}
 
 	// リード時は任意の有効な組み合わせを出せる。
-	if tableCards == nil {
+	if len(tableCards) == 0 {
 		return true
 	}
 

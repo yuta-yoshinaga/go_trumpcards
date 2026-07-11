@@ -121,7 +121,7 @@ func (z *Zheng) PlayerPlay(indices []int) error {
 	z.round.cpuActions = nil
 
 	if len(indices) == 0 {
-		if z.round.tableCards == nil {
+		if len(z.round.tableCards) == 0 {
 			return NewDomainError(ErrInvalidPlay, "must play cards when table is empty")
 		}
 		z.round.passCount++
@@ -240,7 +240,7 @@ func (z *Zheng) clearTable() {
 // 残りのアクティブプレイヤー全員がパスし切った時点でクリアし、上がった
 // プレイヤーの次のアクティブプレイヤーがリードを取る。
 func (z *Zheng) checkPassClear() {
-	if z.round.tableCards == nil || z.round.lastPlayPlayerIdx < 0 {
+	if len(z.round.tableCards) == 0 || z.round.lastPlayPlayerIdx < 0 {
 		return
 	}
 	if z.players[z.round.lastPlayPlayerIdx].GetIsFinished() {

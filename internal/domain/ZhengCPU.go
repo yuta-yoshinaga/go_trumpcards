@@ -43,7 +43,7 @@ func (z *Zheng) findBestPlayHard(player *ZhengPlayer) []int {
 	}
 
 	// 相手が上がり間際なら強い手 (爆弾を含む) で蓋をする
-	if z.round.tableCards != nil && z.opponentMinCards(player) <= 2 {
+	if len(z.round.tableCards) > 0 && z.opponentMinCards(player) <= 2 {
 		z.sortCandidatesByStrength(player, candidates, true)
 		return candidates[0]
 	}
@@ -102,7 +102,7 @@ func (z *Zheng) indicesToCards(player *ZhengPlayer, indices []int) []*Card {
 // findAllPlayableSets 出せる全てのカードセットを探す
 func (z *Zheng) findAllPlayableSets(player *ZhengPlayer) [][]int {
 	var raw [][]int
-	if z.round.tableCards == nil {
+	if len(z.round.tableCards) == 0 {
 		raw = append(raw, z.findSingles(player)...)
 		raw = append(raw, z.findPairs(player)...)
 		raw = append(raw, z.findTriples(player)...)
