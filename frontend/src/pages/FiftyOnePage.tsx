@@ -30,9 +30,9 @@ import { fiftyOneBestSuit, fiftyOneSuitScores } from '../utils/fiftyOneSuitScore
 type FiftyOneArgs = Parameters<typeof fiftyoneApi.exec>;
 
 const DIFFICULTY_OPTIONS = [
-  { value: '0', label: 'Easy' },
-  { value: '1', label: 'Normal' },
-  { value: '2', label: 'Hard' },
+  { value: '0', labelKey: 'settings.difficultyEasy' },
+  { value: '1', labelKey: 'settings.difficultyNormal' },
+  { value: '2', labelKey: 'settings.difficultyHard' },
 ];
 
 /** Tutorial steps for the Fifty-one game. */
@@ -302,7 +302,7 @@ function FiftyOnePageContent() {
                     id: 'cpuDifficulty',
                     label: t('settings.cpuDifficulty'),
                     value: String(cpuDifficulty),
-                    options: DIFFICULTY_OPTIONS,
+                    options: DIFFICULTY_OPTIONS.map((opt) => ({ value: opt.value, label: t(opt.labelKey) })),
                     onSelect: (v: string) => setCpuDifficulty(Number.parseInt(v, 10)),
                   },
                   {

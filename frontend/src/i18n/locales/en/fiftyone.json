@@ -23,7 +23,10 @@
     "suitScores": "Suit totals"
   },
   "settings": {
-    "cpuDifficulty": "CPU Difficulty"
+    "cpuDifficulty": "CPU Difficulty",
+    "difficultyEasy": "Easy",
+    "difficultyNormal": "Normal",
+    "difficultyHard": "Hard"
   },
   "hint": {
     "exchangeStrong": "A card exchange can greatly improve your score",
