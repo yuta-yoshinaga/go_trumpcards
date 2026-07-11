@@ -354,6 +354,7 @@
     "cpuActions": "[CPUの行動]",
     "cpuOpponents": "CPU対戦相手 ({{count}})",
     "pot": "ポット:",
+    "blinds": "SB/BB:",
     "dealer": "ディーラー:",
     "networkError": "通信エラーが発生しました。もう一度お試しください。",
     "chipsWon": "+{{amount}}チップ",

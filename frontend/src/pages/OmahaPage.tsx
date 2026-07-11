@@ -236,7 +236,7 @@ function OmahaPageContent() {
             {tc('label.pot')} <strong>{state?.pot ?? 0}</strong>
           </span>
           <span>
-            SB/BB:{' '}
+            {tc('label.blinds')}{' '}
             <strong>
               {state?.smallBlind ?? 0}/{state?.bigBlind ?? 0}
             </strong>

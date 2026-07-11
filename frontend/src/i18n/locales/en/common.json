@@ -354,6 +354,7 @@
     "cpuActions": "[CPU Actions]",
     "cpuOpponents": "CPU Opponents ({{count}})",
     "pot": "Pot:",
+    "blinds": "SB/BB:",
     "dealer": "Dealer:",
     "networkError": "A network error occurred. Please try again.",
     "chipsWon": "+{{amount}} chips",
