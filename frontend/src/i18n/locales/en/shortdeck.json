@@ -24,6 +24,7 @@
   },
   "communityCards": "Community Cards",
   "rankOverrideReminder": "Short Deck special rule: Flush beats Full House",
+  "rankWatermark": "♣♠♥♦ Flush > Full House",
   "yourHand": "Your Hand",
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
   "rebuy": {

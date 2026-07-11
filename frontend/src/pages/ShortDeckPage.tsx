@@ -261,7 +261,7 @@ function ShortDeckPageContent() {
                       className={`${badgeWarning} px-2 py-0.5 text-[11px] uppercase tracking-wider`}
                       title={t('rankOverrideReminder')}
                     >
-                      ♣♠♥♦ Flush &gt; Full House
+                      {t('rankWatermark')}
                     </span>
                   </div>
                   <div className="flex flex-wrap gap-2">
