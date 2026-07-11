@@ -150,6 +150,30 @@ describe('SeahavenTowersPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
   });
 
+  it('hint display localizes zone names instead of raw English', async () => {
+    renderWithProviders(<SeahavenTowersPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    mockExec.mockResolvedValue({
+      ...withHintState,
+      hint: { fromZone: 'reserved', fromCol: 1, cardIndex: -1, toZone: 'foundation', toCol: -1 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    // Zone identifiers render as localized names (ja), matching the CUI terminology.
+    await waitFor(() => expect(screen.getByText(/リザーブセル 1.*→.*ファンデーション/)).toBeInTheDocument());
+  });
+
+  it('hint display omits column when col is negative and localizes both zones', async () => {
+    renderWithProviders(<SeahavenTowersPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    mockExec.mockResolvedValue({
+      ...withHintState,
+      hint: { fromZone: 'foundation', fromCol: -1, cardIndex: -1, toZone: 'tableau', toCol: 2 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    // fromCol < 0 -> no number after the source zone; toCol >= 0 -> "タブロー 2".
+    await waitFor(() => expect(screen.getByText(/ファンデーション.*→.*タブロー 2/)).toBeInTheDocument());
+  });
+
   it('autocomplete button triggers autocomplete API call', async () => {
     renderWithProviders(<SeahavenTowersPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'オートコンプリート' })).toBeInTheDocument());
