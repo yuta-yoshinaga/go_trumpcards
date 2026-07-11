@@ -210,7 +210,8 @@ describe('BelotePage', () => {
     mockExec.mockResolvedValue(playState);
     renderWithProviders(<BelotePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
-    mockExec.mockResolvedValueOnce({ ...playState, hint: { cardIndex: 1, reason: 'brand_new_reason' } });
+    // Omit cardIndex to also exercise the `?? '-'` fallback for a missing index.
+    mockExec.mockResolvedValueOnce({ ...playState, hint: { reason: 'brand_new_reason' } });
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
     // Unknown reason -> hintReason.fallback, not the raw identifier.
     await waitFor(() => expect(screen.getByText(/最善手/)).toBeInTheDocument());
