@@ -24,6 +24,7 @@
   },
   "communityCards": "コミュニティカード",
   "rankOverrideReminder": "ショートデック特殊ルール：フラッシュ > フルハウス",
+  "rankWatermark": "♣♠♥♦ フラッシュ ＞ フルハウス",
   "yourHand": "あなたの手札",
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
   "rebuy": {

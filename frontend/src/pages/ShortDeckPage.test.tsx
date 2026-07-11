@@ -1149,8 +1149,11 @@ describe('ShortDeckPage', () => {
     renderWithProviders(<ShortDeckPage />);
     const chip = await screen.findByTestId('shortdeck-rank-watermark');
     expect(chip).toBeInTheDocument();
-    expect(chip.textContent).toContain('Flush');
-    expect(chip.textContent).toContain('Full House');
+    // Visible text now comes from the i18n key (ja locale in tests); suit
+    // symbols stay locale-independent.
+    expect(chip.textContent).toContain('フラッシュ');
+    expect(chip.textContent).toContain('フルハウス');
+    expect(chip.textContent).toContain('♣♠♥♦');
     // Uses the design-system warning state-badge tokens, not opacity-modified ones.
     expect(chip.className).toContain('border-ds-warning');
     expect(chip.className).toContain('text-ds-warning');
