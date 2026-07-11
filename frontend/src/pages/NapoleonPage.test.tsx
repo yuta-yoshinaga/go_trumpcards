@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, napoleonApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -227,7 +227,7 @@ describe('NapoleonPage', () => {
     renderWithProviders(<NapoleonPage />);
     await waitFor(() => {
       expect(screen.getByRole('button', { name: '\u30d3\u30c3\u30c9' })).toBeInTheDocument();
-      expect(screen.getByLabelText('bid-input')).toBeInTheDocument();
+      expect(screen.getByLabelText('ビッド数入力')).toBeInTheDocument();
     });
   });
 
@@ -261,7 +261,7 @@ describe('NapoleonPage', () => {
     renderWithProviders(<NapoleonPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '\u30d3\u30c3\u30c9' })).toBeInTheDocument());
 
-    const input = screen.getByLabelText('bid-input');
+    const input = screen.getByLabelText('ビッド数入力');
     fireEvent.change(input, { target: { value: '14' } });
 
     mockExec.mockClear();
@@ -301,8 +301,8 @@ describe('NapoleonPage', () => {
     mockExec.mockResolvedValue(trumpDeclarationState);
     renderWithProviders(<NapoleonPage />);
     await waitFor(() => {
-      expect(screen.getByLabelText('trump-suit')).toBeInTheDocument();
-      expect(screen.getByLabelText('adjutant-suit')).toBeInTheDocument();
+      expect(screen.getByLabelText('切り札スート')).toBeInTheDocument();
+      expect(screen.getByLabelText('副官カードのスート')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: '\u5ba3\u8a00' })).toBeInTheDocument();
     });
   });
@@ -311,7 +311,7 @@ describe('NapoleonPage', () => {
     mockExec.mockResolvedValue(trumpDeclarationCpuState);
     renderWithProviders(<NapoleonPage />);
     await waitFor(() => expect(screen.getByText('\u30b9\u30b3\u30a2')).toBeInTheDocument());
-    expect(screen.queryByLabelText('trump-suit')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('切り札スート')).not.toBeInTheDocument();
   });
 
   it('shows trump declaration instruction when human is napoleon', async () => {
@@ -341,24 +341,32 @@ describe('NapoleonPage', () => {
   it('shows adjutant value selector when adjutant suit is non-joker', async () => {
     mockExec.mockResolvedValue(trumpDeclarationState);
     renderWithProviders(<NapoleonPage />);
-    await waitFor(() => expect(screen.getByLabelText('adjutant-value')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByLabelText('副官カードのランク')).toBeInTheDocument());
   });
 
   it('hides adjutant value selector when adjutant suit is joker', async () => {
     mockExec.mockResolvedValue(trumpDeclarationState);
     renderWithProviders(<NapoleonPage />);
-    await waitFor(() => expect(screen.getByLabelText('adjutant-suit')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByLabelText('副官カードのスート')).toBeInTheDocument());
 
-    fireEvent.change(screen.getByLabelText('adjutant-suit'), { target: { value: '0' } });
-    expect(screen.queryByLabelText('adjutant-value')).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('副官カードのスート'), { target: { value: '0' } });
+    expect(screen.queryByLabelText('副官カードのランク')).not.toBeInTheDocument();
+  });
+
+  it('renders the joker option with a localized label', async () => {
+    mockExec.mockResolvedValue(trumpDeclarationState);
+    renderWithProviders(<NapoleonPage />);
+    const select = await screen.findByLabelText('副官カードのスート');
+    // The value=0 option is localized (ja) rather than the raw "JOKER".
+    expect(within(select).getByRole('option', { name: 'ジョーカー' })).toBeInTheDocument();
   });
 
   it('sends adjutant value 0 when joker is selected', async () => {
     mockExec.mockResolvedValue(trumpDeclarationState);
     renderWithProviders(<NapoleonPage />);
-    await waitFor(() => expect(screen.getByLabelText('adjutant-suit')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByLabelText('副官カードのスート')).toBeInTheDocument());
 
-    fireEvent.change(screen.getByLabelText('adjutant-suit'), { target: { value: '0' } });
+    fireEvent.change(screen.getByLabelText('副官カードのスート'), { target: { value: '0' } });
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(playPhaseState);
@@ -820,7 +828,7 @@ describe('NapoleonPage', () => {
   it('does not show bid controls in play phase', async () => {
     renderWithProviders(<NapoleonPage />);
     await waitFor(() => expect(screen.getByText('\u30b9\u30b3\u30a2')).toBeInTheDocument());
-    expect(screen.queryByLabelText('bid-input')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('ビッド数入力')).not.toBeInTheDocument();
   });
 
   it('disables buttons while loading', async () => {

@@ -620,7 +620,7 @@ function NapoleonPageContent() {
                     value={bidValue}
                     onChange={(e) => setBidValue(Number(e.target.value))}
                     className="w-16 px-2 py-1 rounded bg-white/20 text-ds-text-primary text-center"
-                    aria-label="bid-input"
+                    aria-label={t('bidInputLabel')}
                   />
                   <button type="button" className={btnPrimary} onClick={() => handleBid(bidValue)} disabled={loading}>
                     {t('bidButton')}
@@ -638,7 +638,7 @@ function NapoleonPageContent() {
                     value={trumpSuitValue}
                     onChange={(e) => setTrumpSuitValue(Number(e.target.value))}
                     className="px-2 py-1 rounded bg-white/20 text-ds-text-primary"
-                    aria-label="trump-suit"
+                    aria-label={t('trumpSuitLabel')}
                   >
                     {[1, 2, 3, 4].map((s) => (
                       <option key={s} value={s}>
@@ -650,9 +650,9 @@ function NapoleonPageContent() {
                     value={adjSuitValue}
                     onChange={(e) => setAdjSuitValue(Number(e.target.value))}
                     className="px-2 py-1 rounded bg-white/20 text-ds-text-primary"
-                    aria-label="adjutant-suit"
+                    aria-label={t('adjutantSuitLabel')}
                   >
-                    <option value={0}>JOKER</option>
+                    <option value={0}>{t('joker')}</option>
                     {[1, 2, 3, 4].map((s) => (
                       <option key={s} value={s}>
                         {t(`suitName.${SUIT_KEYS[s]}`)}
@@ -664,7 +664,7 @@ function NapoleonPageContent() {
                       value={adjValueValue}
                       onChange={(e) => setAdjValueValue(Number(e.target.value))}
                       className="px-2 py-1 rounded bg-white/20 text-ds-text-primary"
-                      aria-label="adjutant-value"
+                      aria-label={t('adjutantValueLabel')}
                     >
                       {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => (
                         <option key={v} value={v}>
