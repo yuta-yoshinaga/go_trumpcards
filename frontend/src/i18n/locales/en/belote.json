@@ -73,7 +73,8 @@
     "lead_strong": "Lead with a strong card",
     "follow_suit": "Follow the led suit",
     "trump_cut": "Cut with trump",
-    "discard_weak": "Discard the lowest-value card"
+    "discard_weak": "Discard the lowest-value card",
+    "fallback": "Best play"
   },
   "tutorial": {
     "bidControls": "In the pick-up phase, decide whether to take the face-up card's suit as trump.",
