@@ -252,8 +252,8 @@ function CaribbeanStudPageContent() {
               <div className="mb-4" data-tutorial="csp-results">
                 <div className="text-ds-warning font-bold text-center mb-1">
                   <span aria-hidden="true">🟡</span> {t('player')}
-                  {isEndPhase && (
-                    <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.playerHandRank] ?? 'handRank.0')})</span>
+                  {isEndPhase && HAND_RANK_KEYS[state.playerHandRank] && (
+                    <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.playerHandRank])})</span>
                   )}
                 </div>
                 <div className="flex justify-center gap-2 flex-wrap">
@@ -268,8 +268,8 @@ function CaribbeanStudPageContent() {
               <div className="mb-4">
                 <div className="text-ds-error font-bold text-center mb-1">
                   <span aria-hidden="true">🔴</span> {t('dealer')}
-                  {isEndPhase && (
-                    <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.dealerHandRank] ?? 'handRank.0')})</span>
+                  {isEndPhase && HAND_RANK_KEYS[state.dealerHandRank] && (
+                    <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.dealerHandRank])})</span>
                   )}
                   {isEndPhase && (
                     <span className="ml-2 text-xs">

@@ -187,6 +187,14 @@ describe('TexasHoldemBonusPage', () => {
     await waitFor(() => expect(screen.getByText('ディーラー勝利！')).toBeInTheDocument());
   });
 
+  it('does not label an unevaluated hand rank as High Card', async () => {
+    mockApi.mockResolvedValue({ ...endPlayerWins, playerHandRank: -1, dealerHandRank: -1 });
+    renderWithProviders(<TexasHoldemBonusPage />);
+    await waitFor(() => expect(screen.getByText('勝利！')).toBeInTheDocument());
+    // Ranks of -1 (unevaluated) must not fall back to the handRank.0 "High Card" label.
+    expect(screen.queryByText(/ハイカード/)).not.toBeInTheDocument();
+  });
+
   it('shows end phase with fold', async () => {
     mockApi.mockResolvedValue(endFold);
     renderWithProviders(<TexasHoldemBonusPage />);

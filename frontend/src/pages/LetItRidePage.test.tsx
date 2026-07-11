@@ -199,6 +199,14 @@ describe('LetItRidePage', () => {
     await waitFor(() => expect(screen.getByText(/ロイヤルフラッシュ/)).toBeInTheDocument());
   });
 
+  it('does not label an unevaluated hand rank as High Card', async () => {
+    mockApi.mockResolvedValue({ ...endPhaseWin, handRank: -1 });
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    // handRank of -1 (unevaluated) must not fall back to the "High Card" label.
+    expect(screen.queryByText(/ハイカード/)).not.toBeInTheDocument();
+  });
+
   it('shows individual bet payouts when non-zero', async () => {
     mockApi.mockResolvedValue(endPhaseWin);
     renderWithProviders(<LetItRidePage />);

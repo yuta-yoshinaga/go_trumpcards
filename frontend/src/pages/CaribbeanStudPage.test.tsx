@@ -274,6 +274,14 @@ describe('CaribbeanStudPage', () => {
     expect(screen.getByText('🔴')).toBeInTheDocument();
   });
 
+  it('does not label unevaluated hand ranks as High Card', async () => {
+    mockApi.mockResolvedValue({ ...endPhasePlayerWins, playerHandRank: -1, dealerHandRank: -1 });
+    renderWithProviders(<CaribbeanStudPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    // Ranks of -1 (unevaluated) must not fall back to the "High Card" label.
+    expect(screen.queryByText(/ハイカード/)).not.toBeInTheDocument();
+  });
+
   it('renders 1 face-up and 4 face-down dealer cards in action phase', async () => {
     mockApi.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(actionPhaseState);
     renderWithProviders(<CaribbeanStudPage />);
