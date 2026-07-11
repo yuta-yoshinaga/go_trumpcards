@@ -112,7 +112,7 @@ describe('BourrePage', () => {
         phase: 'roundEnd',
         gameEndFlag: true,
         winnerIdx: 2,
-        results: [player({ id: 2, tricks: 3 })],
+        results: [{ playerIdx: 2, tricks: 3, wonAmount: 0, bourreed: false, folded: false }],
       }),
     );
     renderWithProviders(<BourrePage />);
