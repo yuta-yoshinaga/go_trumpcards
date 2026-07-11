@@ -42,7 +42,8 @@
     "lead_strong": "Lead with a strong card",
     "follow_suit": "Follow the lead suit",
     "trump_cut": "Cut with trump",
-    "discard_high": "Discard a high card"
+    "discard_high": "Discard a high card",
+    "fallback": "Best play"
   },
   "suitNames": {
     "1": "♠ Spades",

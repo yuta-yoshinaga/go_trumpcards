@@ -444,7 +444,13 @@ function WhistPageContent() {
 
             {hint && (
               <div className="text-ds-warning text-sm mb-2">
-                {`${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
+                {/* hint.reason is a raw backend identifier; when a new reason is
+                    added, add its key under hintReason in whist.json (ja/en).
+                    Unknown reasons fall back to hintReason.fallback instead of
+                    showing the raw key. */}
+                {`${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`, {
+                  defaultValue: t('hintReason.fallback'),
+                })})`}
               </div>
             )}
 

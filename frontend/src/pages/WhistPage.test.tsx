@@ -64,6 +64,24 @@ describe('WhistPage', () => {
     );
   });
 
+  it('shows a known hint reason translated', async () => {
+    renderWithProviders(<WhistPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    mockExec.mockResolvedValueOnce(makeState({ hint: { cardIndex: 0, reason: 'trump_cut' } }));
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByText(/トランプでカット/)).toBeInTheDocument());
+  });
+
+  it('falls back to generic text for an unknown hint reason', async () => {
+    renderWithProviders(<WhistPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    mockExec.mockResolvedValueOnce(makeState({ hint: { cardIndex: 1, reason: 'brand_new_reason' } }));
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    // Unknown reason -> hintReason.fallback, not the raw "brand_new_reason" key.
+    await waitFor(() => expect(screen.getByText(/最善手/)).toBeInTheDocument());
+    expect(screen.queryByText(/brand_new_reason/)).not.toBeInTheDocument();
+  });
+
   it('advances to the next trick when pressing n at trick end', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 1 }));
     renderWithProviders(<WhistPage />);
