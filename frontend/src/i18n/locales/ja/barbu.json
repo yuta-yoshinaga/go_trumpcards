@@ -58,7 +58,10 @@
   },
   "settings": {
     "title": "設定",
-    "cpuDifficulty": "CPU 難易度"
+    "cpuDifficulty": "CPU 難易度",
+    "easy": "かんたん",
+    "normal": "ふつう",
+    "hard": "むずかしい"
   },
   "result": {
     "win": "勝ち",

@@ -64,6 +64,15 @@ describe('BarbuPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('r'));
   });
 
+  it('renders CPU difficulty options with localized labels', async () => {
+    renderWithProviders(<BarbuPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('r'));
+    // Difficulty options are localized (ja), not the hardcoded Easy/Normal/Hard.
+    expect(screen.getByRole('option', { name: 'かんたん' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'ふつう' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'むずかしい' })).toBeInTheDocument();
+  });
+
   it('renders contract buttons in the select phase', async () => {
     renderWithProviders(<BarbuPage />);
     await waitFor(() => expect(screen.getByTestId('contract-0')).toBeInTheDocument());
