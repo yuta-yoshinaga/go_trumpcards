@@ -61,6 +61,21 @@ const BJ_PHASE_KEYS: Readonly<Record<number, string>> = {
   [BjPhase.EARLY_SURRENDER]: 'earlySurrender',
 };
 
+/**
+ * Strips the i18n namespace segment from a backend bonus key so it can be
+ * resolved by the page's namespaced `t()`. Backend bonus keys are the fully
+ * qualified `<namespace>.<...path>` form (e.g. `spanish21.bonus.777.spade`,
+ * see `BlackJackVariant.go`); `t()` here is already scoped to the variant
+ * namespace, so only the leading namespace segment is removed — the rest of
+ * the dotted path is preserved. Namespace-agnostic (not coupled to the literal
+ * `spanish21.` prefix) so a namespace rename cannot silently drop translation.
+ */
+function bonusBadgeKey(fullKey: string): string {
+  // indexOf('.') is -1 when there is no namespace segment, so slice(0) returns
+  // the key unchanged — no branch needed.
+  return fullKey.slice(fullKey.indexOf('.') + 1);
+}
+
 function useSuggestionLabels(t: (key: string) => string): Record<number, string> {
   return {
     [BJ_SUGGEST_HIT]: t('suggest.hit'),
@@ -514,7 +529,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
                     data-testid="bj-bonus-badge"
                     className="rounded-full border border-ds-warning bg-ds-surface px-3 py-0.5 text-ds-warning text-sm font-bold motion-safe:animate-pulse-once"
                   >
-                    🎉 {t(key.replace(/^spanish21\./, ''))}
+                    🎉 {t(bonusBadgeKey(key))}
                   </span>
                 ))}
               </div>
