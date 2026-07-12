@@ -59,5 +59,10 @@
     "drawAll": "No strong holds — draw all"
   },
   "card": "Card {{index}}",
-  "dealGuide": "Select coins and deal to start"
+  "dealGuide": "Select coins and deal to start",
+  "a11y": {
+    "holdOn": "Hold card {{index}}",
+    "holdOff": "Release card {{index}}",
+    "kbdHint": "Press number keys 1-5 to toggle holding each card"
+  }
 }
