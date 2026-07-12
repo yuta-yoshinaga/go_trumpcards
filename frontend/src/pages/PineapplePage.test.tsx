@@ -248,6 +248,35 @@ describe('PineapplePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', undefined, { cardIdxs: [0] }));
   });
 
+  it('keyboard: a number key selects a card and Enter steps through confirm to commit', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+    mockExec.mockClear();
+    // "1" selects the first hole card.
+    fireEvent.keyDown(document.body, { key: '1' });
+    await waitFor(() => expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'true'));
+    // First Enter opens the confirm step without committing.
+    fireEvent.keyDown(document.body, { key: 'Enter' });
+    expect(screen.getByTestId('discard-confirm')).toBeInTheDocument();
+    expect(mockExec).not.toHaveBeenCalledWith('discard', undefined, { cardIdxs: [0] });
+    // Second Enter commits the discard.
+    fireEvent.keyDown(document.body, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', undefined, { cardIdxs: [0] }));
+  });
+
+  it('keyboard: Escape deselects a discard candidate', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+    fireEvent.keyDown(document.body, { key: '1' });
+    await waitFor(() => expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'true'));
+    fireEvent.keyDown(document.body, { key: 'Escape' });
+    await waitFor(() => expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'false'));
+  });
+
   it('previews the kept cards and tentative hand for Irish Poker discard', async () => {
     const irishDiscardState: PineappleResponse = {
       ...discardState,
