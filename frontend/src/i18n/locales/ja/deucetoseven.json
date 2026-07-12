@@ -42,5 +42,17 @@
     "lose": "あなたの負けです。",
     "folded": "あなたはフォールドしました。",
     "gameOver": "ゲーム終了"
+  },
+  "hand": {
+    "highCard": "ハイカード",
+    "onePair": "ワンペア",
+    "twoPair": "ツーペア",
+    "threeOfAKind": "スリーカード",
+    "straight": "ストレート",
+    "flush": "フラッシュ",
+    "fullHouse": "フルハウス",
+    "fourOfAKind": "フォーカード",
+    "straightFlush": "ストレートフラッシュ",
+    "royalFlush": "ロイヤルフラッシュ"
   }
 }

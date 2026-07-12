@@ -42,5 +42,17 @@
     "lose": "You lose.",
     "folded": "You folded.",
     "gameOver": "Game over."
+  },
+  "hand": {
+    "highCard": "High Card",
+    "onePair": "One Pair",
+    "twoPair": "Two Pair",
+    "threeOfAKind": "Three of a Kind",
+    "straight": "Straight",
+    "flush": "Flush",
+    "fullHouse": "Full House",
+    "fourOfAKind": "Four of a Kind",
+    "straightFlush": "Straight Flush",
+    "royalFlush": "Royal Flush"
   }
 }
