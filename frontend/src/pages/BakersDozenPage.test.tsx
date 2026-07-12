@@ -144,6 +144,17 @@ describe('BakersDozenPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeInTheDocument());
   });
 
+  it('advertises the keyboard shortcuts on the control buttons', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BakersDozenPage />);
+    const giveUp = await screen.findByRole('button', { name: 'ギブアップ' });
+    expect(giveUp).toHaveAttribute('aria-keyshortcuts', 'g');
+    expect(giveUp.querySelector('kbd')?.textContent).toBe('G');
+    // The KbdBadge text is aria-hidden, so the hint button's accessible name stays clean.
+    const hint = screen.getByRole('button', { name: 'ヒント' });
+    expect(hint).toHaveAttribute('aria-keyshortcuts', 'h');
+  });
+
   it('hides giveup button when game cleared', async () => {
     mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<BakersDozenPage />);

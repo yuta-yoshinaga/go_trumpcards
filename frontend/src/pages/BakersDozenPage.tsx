@@ -11,6 +11,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { KbdBadge } from '../components/KbdBadge';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
@@ -467,8 +468,10 @@ function BakersDozenPageContent() {
                     className={btnPrimary}
                     onClick={handleUndo}
                     disabled={loading || isAutoCompleting || !state.canUndo}
+                    aria-keyshortcuts="z"
                   >
                     {t('undo')}
+                    <KbdBadge label={t('kbd.undo')} />
                   </button>
                   {state.isStalemate && (
                     <StalemateEscapeButton
@@ -482,8 +485,10 @@ function BakersDozenPageContent() {
                     className={btnSuccess}
                     onClick={handleHint}
                     disabled={loading || isAutoCompleting}
+                    aria-keyshortcuts="h"
                   >
                     {t('hint')}
+                    <KbdBadge label={t('kbd.hint')} />
                   </button>
                   <button
                     type="button"
@@ -491,16 +496,20 @@ function BakersDozenPageContent() {
                     onClick={handleAutoComplete}
                     disabled={loading || isAutoCompleting}
                     data-testid="autocomplete-button"
+                    aria-keyshortcuts="a"
                   >
                     {t('autoComplete')}
+                    <KbdBadge label={t('kbd.autoComplete')} />
                   </button>
                   <button
                     type="button"
                     className={btnDanger}
                     onClick={confirmGiveUpAction}
                     disabled={loading || isAutoCompleting}
+                    aria-keyshortcuts="g"
                   >
                     {t('giveup')}
+                    <KbdBadge label={t('kbd.giveUp')} />
                   </button>
                 </div>
               )}
