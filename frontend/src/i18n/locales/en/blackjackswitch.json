@@ -41,5 +41,13 @@
   },
   "rules": {
     "summary": "You play two hands and may swap the second card between them. In return, blackjacks pay 1:1 and a dealer 22 is a push."
+  },
+  "kbd": {
+    "bet": "B",
+    "switch": "S",
+    "keep": "K",
+    "hit": "H",
+    "stand": "T",
+    "doubleDown": "D"
   }
 }
