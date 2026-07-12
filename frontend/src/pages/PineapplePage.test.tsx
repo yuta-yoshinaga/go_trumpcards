@@ -248,6 +248,24 @@ describe('PineapplePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', undefined, { cardIdxs: [0] }));
   });
 
+  it('a card click is inert once the confirm step has started', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+    // Select the first card and open the confirm step.
+    fireEvent.click(cardButtons[0]);
+    const discardBtn = screen.getByRole('button', { name: '1枚捨ててください。' });
+    await waitFor(() => expect(discardBtn).not.toBeDisabled());
+    fireEvent.click(discardBtn);
+    expect(screen.getByTestId('discard-confirm')).toBeInTheDocument();
+    // Clicking another card during confirm must not change the selection or
+    // dismiss the dialog (consistent with the keyboard behavior).
+    fireEvent.click(cardButtons[1]);
+    expect(cardButtons[1]).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByTestId('discard-confirm')).toBeInTheDocument();
+  });
+
   it('keyboard: a number key selects a card and Enter steps through confirm to commit', async () => {
     mockExec.mockResolvedValue(discardState);
     renderWithProviders(<PineapplePage />);
