@@ -88,7 +88,8 @@ func (p *BouillotteCuiPresenter) Output(g interfaces.BouillotteGame, lastErr err
 		cuiErrorBlock(b, lastErr)
 
 		if g.GetGameEndFlag() {
-			banner := i18n.Tf("bouillotte.gameEnd", "player", strconv.Itoa(g.GetMatchWinnerIdx()))
+			winIdx := g.GetMatchWinnerIdx()
+			banner := i18n.Tf("bouillotte.gameEnd", "name", cuiPlayerName(g.GetPlayer(winIdx), winIdx))
 			b.WriteString(color.Green(banner) + "\n")
 			return
 		}
@@ -117,7 +118,8 @@ func (p *BouillotteCuiPresenter) resultLine(g interfaces.BouillotteGame) string 
 	case domain.BouillotteResultLose:
 		return color.Red(i18n.T("bouillotte.result.lose")) + "\n"
 	default:
-		return color.Yellow(i18n.Tf("bouillotte.result.cpuWin", "player", strconv.Itoa(g.GetWinnerIdx()))) + "\n"
+		winIdx := g.GetWinnerIdx()
+		return color.Yellow(i18n.Tf("bouillotte.result.cpuWin", "name", cuiPlayerName(g.GetPlayer(winIdx), winIdx))) + "\n"
 	}
 }
 

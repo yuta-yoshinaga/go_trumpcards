@@ -2,6 +2,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -48,7 +49,11 @@ func TestBouillotteCuiPresenter_OutputGameEnd(t *testing.T) {
 	}
 	require.True(t, g.GetGameEndFlag())
 	p := new(presenter.BouillotteCuiPresenter)
-	assert.NotEmpty(t, p.Output(g, nil))
+	out := p.Output(g, nil)
+	assert.Contains(t, out, "の勝ち")
+	// The winner is shown via cuiPlayerName (あなた / CPU N), not a raw index.
+	assert.True(t, strings.Contains(out, "あなた") || strings.Contains(out, "CPU"),
+		"game-end banner should name the winner, got: %s", out)
 }
 
 func TestBouillotteCuiPresenter_HintOutput(t *testing.T) {
