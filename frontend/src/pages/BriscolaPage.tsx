@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { briscolaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -10,6 +10,7 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
@@ -68,6 +69,35 @@ function BriscolaPageContent() {
   const handleNext = useCallback(() => {
     void dispatch('next');
   }, [dispatch]);
+
+  // Keyboard hand selection: number keys highlight a card, Enter plays it,
+  // Escape clears. Mouse/touch still plays a card directly on click.
+  const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+  const isHumanTurnForKbd =
+    state?.phase === BriscolaPhase.PLAY && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
+  // Drop any stale highlight when the turn or trick moves on.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset the highlight whenever the turn/phase changes.
+  useEffect(() => {
+    setSelectedIdx(null);
+  }, [state?.currentPlayerIdx, state?.phase]);
+  const toggleSelect = useCallback((idx: number) => {
+    setSelectedIdx((prev) => (prev === idx ? null : idx));
+  }, []);
+  const clearSelect = useCallback(() => setSelectedIdx(null), []);
+  const confirmPlay = useCallback(() => {
+    if (selectedIdx !== null) {
+      handlePlay(selectedIdx);
+      setSelectedIdx(null);
+    }
+  }, [selectedIdx, handlePlay]);
+  useCardKeyboardNav({
+    cardCount: humanCardCountForKbd,
+    onToggle: toggleSelect,
+    onConfirm: confirmPlay,
+    onClear: clearSelect,
+    enabled: !!isHumanTurnForKbd && !loading,
+  });
 
   if (!state) {
     return <GameSkeleton gameKey="briscola" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 3 }} />;
@@ -213,7 +243,10 @@ function BriscolaPageContent() {
                   onClick={() => handlePlay(idx)}
                   disabled={loading || !isHumanTurn}
                   aria-label={tc('card.play', { card: cardAlt(card) })}
-                  className="disabled:opacity-50"
+                  aria-pressed={selectedIdx === idx}
+                  className={`rounded disabled:opacity-50 ${
+                    selectedIdx === idx ? 'ring-2 ring-ds-accent -translate-y-1 transition-transform' : ''
+                  }`}
                 >
                   <CardImage card={card} width={cardWidth} />
                 </button>
