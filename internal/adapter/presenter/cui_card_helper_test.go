@@ -82,6 +82,23 @@ func TestCuiSuitName(t *testing.T) {
 	}
 }
 
+func TestCuiRankLabel(t *testing.T) {
+	tests := []struct {
+		rank     int
+		expected string
+	}{
+		{1, "A"},
+		{7, "7"},
+		{10, "10"},
+		{11, "J"},
+		{12, "Q"},
+		{13, "K"},
+	}
+	for _, tt := range tests {
+		assert.Equal(t, tt.expected, cuiRankLabel(tt.rank))
+	}
+}
+
 func TestCuiPokerHandName(t *testing.T) {
 	orig := i18n.Lang()
 	i18n.SetLang("ja")
