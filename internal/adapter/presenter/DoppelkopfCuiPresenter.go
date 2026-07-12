@@ -80,9 +80,9 @@ func (p *DoppelkopfCuiPresenter) Output(g interfaces.DoppelkopfGame, lastErr err
 			b.WriteString(i18n.T("doppelkopf.promptTrickEndHelp") + "\n")
 		case domain.DoppelkopfPhaseRoundEnd:
 			reWon := g.GetRoundReWon()
-			outcome := "Kontra wins"
+			outcome := i18n.T("doppelkopf.outcomeKontraWins")
 			if reWon {
-				outcome = "Re wins"
+				outcome = i18n.T("doppelkopf.outcomeReWins")
 			}
 			b.WriteString(i18n.Tf("doppelkopf.promptRoundEnd",
 				"rePts", strconv.Itoa(g.GetRoundRePoints()),

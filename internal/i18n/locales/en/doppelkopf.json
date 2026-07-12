@@ -15,6 +15,8 @@
   "promptTrickEnd": "Trick complete",
   "promptTrickEndHelp": "n / next ... go to the next trick",
   "promptRoundEnd": "Round complete (Re {{rePts}} pts, {{outcome}}, {{gamePts}} game pts)",
+  "outcomeReWins": "Re wins",
+  "outcomeKontraWins": "Kontra wins",
   "promptRoundEndHelp": "nr / nextround ... go to the next round",
   "hintNone": "No hint available.",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
