@@ -426,6 +426,16 @@ function TonkPageContent() {
                       </span>
                     )}
                   </button>
+                  {undercutRisk && (
+                    <div
+                      className="text-ds-warning text-xs w-full text-center"
+                      role="status"
+                      data-testid="tonk-undercut-warning"
+                    >
+                      <span aria-hidden="true">⚠️ </span>
+                      {t('knockUndercutWarning')}
+                    </div>
+                  )}
                 </>
               )}
               {isRoundEnd && (
