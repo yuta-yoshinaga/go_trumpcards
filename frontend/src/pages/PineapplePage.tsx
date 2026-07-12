@@ -24,6 +24,7 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -287,6 +288,42 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   useActionKeyboardNav({
     bindings: actionBindings,
     enabled: canAct && !loading,
+  });
+
+  // Discard phase keyboard control: number keys toggle a hole card, Enter steps
+  // through the two-stage confirm (select -> confirm -> commit), Escape backs out.
+  const discardCardCount = humanPlayer?.cards?.length ?? 0;
+  const discardToggle = useCallback(
+    (idx: number) => {
+      if (!canDiscard || discardConfirming) return;
+      setSelectedDiscards((prev) => {
+        if (prev.includes(idx)) return prev.filter((i) => i !== idx);
+        if (prev.length >= discardCount) return prev; // cap reached
+        return [...prev, idx];
+      });
+    },
+    [canDiscard, discardConfirming, discardCount],
+  );
+  const discardConfirm = useCallback(() => {
+    if (selectedDiscards.length !== discardCount) return;
+    if (discardConfirming) {
+      void apiExec('discard', undefined, { cardIdxs: [...selectedDiscards] });
+      setSelectedDiscards([]);
+      setDiscardConfirming(false);
+    } else {
+      setDiscardConfirming(true);
+    }
+  }, [selectedDiscards, discardCount, discardConfirming, apiExec]);
+  const discardClear = useCallback(() => {
+    if (discardConfirming) setDiscardConfirming(false);
+    else setSelectedDiscards([]);
+  }, [discardConfirming]);
+  useCardKeyboardNav({
+    cardCount: discardCardCount,
+    onToggle: discardToggle,
+    onConfirm: discardConfirm,
+    onClear: discardClear,
+    enabled: canDiscard && !loading,
   });
 
   if (!state)
