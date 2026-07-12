@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { blackjackswitchApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -10,8 +10,10 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { KbdBadge } from '../components/KbdBadge';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -77,6 +79,43 @@ function BlackJackSwitchPageContent() {
   const isActionPhase = state?.phase === BlackJackSwitchPhase.ACTION;
   const isEndPhase = state?.phase === BlackJackSwitchPhase.END;
 
+  // Defined above the loading early-return so the keyboard hook keeps a stable
+  // call order. Double-down is only offered on a fresh two-card hand.
+  const canDoubleDown = isActionPhase && state?.hands[state.currentHandIdx]?.cards.length === 2;
+  const handleBet = useCallback(() => execApi('bet', betAmount), [execApi, betAmount]);
+  const handleSwitch = useCallback(() => execApi('switch'), [execApi]);
+  const handleKeep = useCallback(() => execApi('keep'), [execApi]);
+  const handleHit = useCallback(() => execApi('hit'), [execApi]);
+  const handleStand = useCallback(() => execApi('stand'), [execApi]);
+  const handleDoubleDown = useCallback(() => execApi('doubledown'), [execApi]);
+  const handleReset = useCallback(() => execApi('reset'), [execApi]);
+  const actionBindings = useMemo(
+    () => [
+      { key: 'b', action: handleBet, enabled: isBetPhase },
+      { key: 's', action: handleSwitch, enabled: isSwitchPhase },
+      { key: 'k', action: handleKeep, enabled: isSwitchPhase },
+      { key: 'h', action: handleHit, enabled: isActionPhase },
+      { key: 't', action: handleStand, enabled: isActionPhase },
+      { key: 'd', action: handleDoubleDown, enabled: canDoubleDown },
+      { key: 'r', action: handleReset, enabled: isEndPhase },
+    ],
+    [
+      handleBet,
+      handleSwitch,
+      handleKeep,
+      handleHit,
+      handleStand,
+      handleDoubleDown,
+      handleReset,
+      isBetPhase,
+      isSwitchPhase,
+      isActionPhase,
+      isEndPhase,
+      canDoubleDown,
+    ],
+  );
+  useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
+
   if (!state) {
     return (
       <div className={`flex-1 flex items-center justify-center ${gameTheme.blackjackswitch.bg}`}>
@@ -92,17 +131,6 @@ function BlackJackSwitchPageContent() {
       : isActionPhase
         ? t('phase.action')
         : t('phase.end');
-
-  const handleBet = () => execApi('bet', betAmount);
-  const handleSwitch = () => execApi('switch');
-  const handleKeep = () => execApi('keep');
-  const handleHit = () => execApi('hit');
-  const handleStand = () => execApi('stand');
-  const handleDoubleDown = () => execApi('doubledown');
-  const handleReset = () => execApi('reset');
-
-  const currentHand = state.hands[state.currentHandIdx];
-  const canDoubleDown = isActionPhase && currentHand && currentHand.cards.length === 2;
 
   const previewScores =
     isSwitchPhase && (switchPreview || alwaysPreview) && state.hands.length >= 2
@@ -260,8 +288,15 @@ function BlackJackSwitchPageContent() {
                   onChange={setBetAmount}
                   max={Math.min(Math.floor(state.chips / 2), BJSWITCH_MAX_BET)}
                 />
-                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handleBet}
+                  disabled={loading}
+                  aria-keyshortcuts="b"
+                >
                   {t('button.bet')}
+                  <KbdBadge label={t('kbd.bet')} />
                 </button>
               </div>
             )}
@@ -280,29 +315,54 @@ function BlackJackSwitchPageContent() {
                   onTouchCancel={() => setSwitchPreview(false)}
                   data-testid="switch-button"
                   disabled={loading}
+                  aria-keyshortcuts="s"
                 >
                   {t('button.switch')}
+                  <KbdBadge label={t('kbd.switch')} />
                 </button>
-                <button type="button" className={btnSecondary} onClick={handleKeep} disabled={loading}>
+                <button
+                  type="button"
+                  className={btnSecondary}
+                  onClick={handleKeep}
+                  disabled={loading}
+                  aria-keyshortcuts="k"
+                >
                   {t('button.keep')}
+                  <KbdBadge label={t('kbd.keep')} />
                 </button>
               </div>
             )}
             {isActionPhase && (
               <div className="flex justify-center gap-2 pb-2 flex-wrap">
-                <button type="button" className={btnPrimary} onClick={handleHit} disabled={loading}>
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handleHit}
+                  disabled={loading}
+                  aria-keyshortcuts="h"
+                >
                   {t('button.hit')}
+                  <KbdBadge label={t('kbd.hit')} />
                 </button>
-                <button type="button" className={btnSuccess} onClick={handleStand} disabled={loading}>
+                <button
+                  type="button"
+                  className={btnSuccess}
+                  onClick={handleStand}
+                  disabled={loading}
+                  aria-keyshortcuts="t"
+                >
                   {t('button.stand')}
+                  <KbdBadge label={t('kbd.stand')} />
                 </button>
                 <button
                   type="button"
                   className={btnSecondary}
                   onClick={handleDoubleDown}
                   disabled={loading || !canDoubleDown}
+                  aria-keyshortcuts="d"
                 >
                   {t('button.doubleDown')}
+                  <KbdBadge label={t('kbd.doubleDown')} />
                 </button>
               </div>
             )}
