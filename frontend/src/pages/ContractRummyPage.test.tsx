@@ -128,6 +128,16 @@ describe('ContractRummyPage', () => {
     );
   });
 
+  it('exposes hand cards as accessible buttons with aria-pressed selection state', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<ContractRummyPage />);
+    // cardAlt('DIAMOND', 5) => "♦ 5"
+    const cardBtn = await screen.findByRole('button', { name: '♦ 5' });
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(cardBtn);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♦ 5' })).toHaveAttribute('aria-pressed', 'true'));
+  });
+
   it('shows next-round button at round end', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<ContractRummyPage />);
