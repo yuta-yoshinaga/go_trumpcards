@@ -34,5 +34,11 @@
     "actionButtons": "Action buttons: deal, hint, undo, give up.",
     "resetButton": "Start a new game."
   },
-  "columnActions": "Actions"
+  "columnActions": "Actions",
+  "kbd": {
+    "deal": "D",
+    "hint": "H",
+    "undo": "Z",
+    "giveup": "G"
+  }
 }

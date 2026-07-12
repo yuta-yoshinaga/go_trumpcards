@@ -34,5 +34,11 @@
     "actionButtons": "配る・ヒント・元に戻す・ギブアップなどの操作ボタンです。",
     "resetButton": "新しいゲームを始めるボタンです。"
   },
-  "columnActions": "操作"
+  "columnActions": "操作",
+  "kbd": {
+    "deal": "D",
+    "hint": "H",
+    "undo": "Z",
+    "giveup": "G"
+  }
 }
