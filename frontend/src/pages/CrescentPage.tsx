@@ -214,7 +214,9 @@ function CrescentPageContent() {
           <span>
             {t('moveCount')}: {state.moveCount}
           </span>
-          <span>{t('redealsLeft', { count: state.redealsRemaining })}</span>
+          <span role="status" aria-live="polite">
+            {t('redealsLeft', { count: state.redealsRemaining })}
+          </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
       }
@@ -457,11 +459,17 @@ function CrescentPageContent() {
                     {t('undo')}
                   </button>
                   {state.isStalemate && (
-                    <StalemateEscapeButton
-                      undoToEscape={state.undoToEscape ?? 0}
-                      onEscape={handleUndoEscape}
-                      disabled={loading || isAutoCompleting}
-                    />
+                    <>
+                      {/* role=alert announces the stalemate the moment it appears. */}
+                      <div className="sr-only" role="alert">
+                        {t('stalemateAlert', { count: state.undoToEscape ?? 0 })}
+                      </div>
+                      <StalemateEscapeButton
+                        undoToEscape={state.undoToEscape ?? 0}
+                        onEscape={handleUndoEscape}
+                        disabled={loading || isAutoCompleting}
+                      />
+                    </>
                   )}
                   <button
                     type="button"
