@@ -112,6 +112,55 @@ describe('AgnesPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
   });
 
+  it('keyboard: "d" deals and "h" hints', async () => {
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'd' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('deal'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'h' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+  });
+
+  it('keyboard: "z" undoes only when canUndo is true', async () => {
+    mockExec.mockResolvedValue({ ...playingState, canUndo: true });
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '元に戻す' })).toBeEnabled());
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'z' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
+  });
+
+  it('keyboard: "z" is a no-op when canUndo is false', async () => {
+    mockExec.mockResolvedValue(playingState); // canUndo: false
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'z' });
+    expect(mockExec).not.toHaveBeenCalledWith('undo');
+  });
+
+  it('keyboard: "g" opens the give-up confirm and only gives up after confirming', async () => {
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'g' });
+    expect(mockExec).not.toHaveBeenCalledWith('giveup');
+    expect(screen.getByText('投了確認')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
+  });
+
+  it('advertises the keyboard shortcuts on the action buttons', async () => {
+    renderWithProviders(<AgnesPage />);
+    const deal = await screen.findByRole('button', { name: '配る' });
+    expect(deal).toHaveAttribute('aria-keyshortcuts', 'd');
+    expect(deal.querySelector('kbd')?.textContent).toBe('D');
+    expect(screen.getByRole('button', { name: 'ヒント' })).toHaveAttribute('aria-keyshortcuts', 'h');
+    expect(screen.getByRole('button', { name: 'ギブアップ' })).toHaveAttribute('aria-keyshortcuts', 'g');
+  });
+
   it('giveup button opens a confirm dialog and only dispatches giveup after confirm', async () => {
     renderWithProviders(<AgnesPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
