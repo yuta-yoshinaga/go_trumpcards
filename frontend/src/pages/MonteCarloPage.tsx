@@ -269,6 +269,7 @@ function MonteCarloPageContent() {
                           }
                           onClick={() => handleCellClick(rowIdx, colIdx)}
                           disabled={!isPlaying || loading || !filled}
+                          aria-pressed={filled ? isSelected : undefined}
                           data-pair-match={isMatchingPair ? 'true' : undefined}
                           data-dimmed={dimmed ? 'true' : undefined}
                           className={`p-0 border-0 bg-transparent rounded transition ${focusRingWhite} ${
@@ -294,7 +295,12 @@ function MonteCarloPageContent() {
               </div>
             </div>
 
-            <div className="text-center text-ds-text-muted text-sm mb-2" data-testid="mc-prompt">
+            <div
+              className="text-center text-ds-text-muted text-sm mb-2"
+              data-testid="mc-prompt"
+              role="status"
+              aria-live="polite"
+            >
               {selected === null ? t('label.selectFirst') : t('label.selectSecond')}
             </div>
 
