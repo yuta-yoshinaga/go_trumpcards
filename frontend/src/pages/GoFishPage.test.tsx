@@ -141,7 +141,7 @@ describe('GoFishPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('ask', expect.any(Number), 7));
   });
 
-  it('keyboard: number key selects an opponent and arrows cycle the rank, then Enter asks', async () => {
+  it('keyboard: number key selects an opponent and arrows cycle the rank, then "a" asks', async () => {
     renderWithProviders(<GoFishPage />);
     await waitFor(() => expect(screen.getByText(/CPU 2/)).toBeInTheDocument());
     // "1" picks the first opponent (CPU 1) and announces it.
@@ -155,8 +155,8 @@ describe('GoFishPage', () => {
     await waitFor(() => expect(screen.getByTestId('gf-kbd-announce').textContent).toMatch(/7/));
     mockExec.mockClear();
     mockExec.mockResolvedValue(baseState);
-    // Enter asks the selected opponent for the selected rank.
-    fireEvent.keyDown(document.body, { key: 'Enter' });
+    // "a" asks the selected opponent for the selected rank.
+    fireEvent.keyDown(document.body, { key: 'a' });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('ask', 1, 7));
   });
 
@@ -178,7 +178,7 @@ describe('GoFishPage', () => {
     mockExec.mockClear();
     fireEvent.keyDown(document.body, { key: '1' });
     fireEvent.keyDown(document.body, { key: 'ArrowRight' });
-    fireEvent.keyDown(document.body, { key: 'Enter' });
+    fireEvent.keyDown(document.body, { key: 'a' });
     expect(mockExec).not.toHaveBeenCalledWith('ask', expect.anything(), expect.anything());
     expect(screen.getByTestId('gf-kbd-announce').textContent).toBe('');
   });

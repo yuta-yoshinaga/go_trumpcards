@@ -46,6 +46,6 @@
   "a11y": {
     "targetSelected": "Selected {{name}}",
     "rankSelected": "Selected rank {{rank}}",
-    "kbdHint": "Number keys pick the opponent, arrows change rank, Enter asks"
+    "kbdHint": "Number keys pick the opponent, arrows change rank, a asks"
   }
 }
