@@ -112,6 +112,49 @@ describe('PitchPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /出す/ })).toBeInTheDocument());
   });
 
+  it('bid phase: pressing "p" passes and "2" bids two', async () => {
+    mockApi.mockResolvedValue(bidState);
+    renderWithProviders(<PitchPage />);
+    await screen.findByRole('button', { name: /パス/ });
+    mockApi.mockClear();
+    fireEvent.keyDown(document.body, { key: 'p' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bid', 0));
+    mockApi.mockClear();
+    fireEvent.keyDown(document.body, { key: '2' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bid', 2));
+  });
+
+  it('play phase: a number key selects a valid card and Enter plays it', async () => {
+    mockApi.mockResolvedValue(playState);
+    renderWithProviders(<PitchPage />);
+    await screen.findByRole('button', { name: /出す/ });
+    mockApi.mockClear();
+    // "1" → hand index 0 (a valid play index); Enter confirms.
+    fireEvent.keyDown(document.body, { key: '1' });
+    fireEvent.keyDown(document.body, { key: 'Enter' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('play', undefined, 0));
+  });
+
+  it('play phase: an invalid card cannot be selected or played', async () => {
+    // Only index 0 is a legal play; pressing "2" (index 1) must not select.
+    mockApi.mockResolvedValue({ ...playState, validPlayIndices: [0] });
+    renderWithProviders(<PitchPage />);
+    await screen.findByRole('button', { name: /出す/ });
+    mockApi.mockClear();
+    fireEvent.keyDown(document.body, { key: '2' });
+    fireEvent.keyDown(document.body, { key: 'Enter' });
+    // No selection means handlePlay early-returns; no play command is sent.
+    await waitFor(() => expect(mockApi).not.toHaveBeenCalled());
+  });
+
+  it('advertises the bid keyboard shortcut on the pass button', async () => {
+    mockApi.mockResolvedValue(bidState);
+    renderWithProviders(<PitchPage />);
+    const pass = await screen.findByRole('button', { name: /パス/ });
+    expect(pass).toHaveAttribute('aria-keyshortcuts', 'p');
+    expect(pass.querySelector('kbd')?.textContent).toBe('P');
+  });
+
   it('shows score table with players', async () => {
     mockApi.mockResolvedValue(bidState);
     renderWithProviders(<PitchPage />);

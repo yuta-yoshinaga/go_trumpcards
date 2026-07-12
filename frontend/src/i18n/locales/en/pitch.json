@@ -78,5 +78,13 @@
     "scoreTable": "Score table — High / Low / Jack / Game make 4 points per round.",
     "scoringInfo": "Make your bid: +points won. Miss it: -bid value (set back).",
     "resetButton": "Use this button to start a new game."
+  },
+  "kbd": {
+    "pass": "P",
+    "bid2": "2",
+    "bid3": "3",
+    "bid4": "4",
+    "play": "↵",
+    "next": "N"
   }
 }

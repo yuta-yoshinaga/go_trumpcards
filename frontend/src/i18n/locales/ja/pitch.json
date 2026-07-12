@@ -78,5 +78,13 @@
     "scoreTable": "スコア表です。High/Low/Jack/Game の4ポイントを競います。",
     "scoringInfo": "ビッド達成で +ポイント獲得、未達なら -ビッド数 (set back) になります。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "kbd": {
+    "pass": "P",
+    "bid2": "2",
+    "bid3": "3",
+    "bid4": "4",
+    "play": "↵",
+    "next": "N"
   }
 }
