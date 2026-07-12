@@ -120,6 +120,28 @@ describe('CrescentPage', () => {
     expect(screen.getByRole('button', { name: /再配り \(3\)/ })).toBeInTheDocument();
   });
 
+  it('exposes the redeal count via an aria-live status region', async () => {
+    renderWithProviders(<CrescentPage />);
+    const status = await screen.findByText(/残り再配り回数/);
+    expect(status).toHaveAttribute('aria-live', 'polite');
+  });
+
+  it('announces a stalemate via a role=alert region', async () => {
+    mockExec.mockResolvedValue({ ...playingState, isStalemate: true, undoToEscape: 2 });
+    renderWithProviders(<CrescentPage />);
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toMatch(/手詰まり/);
+    expect(alert.textContent).toMatch(/2/);
+  });
+
+  it('defaults the escape count to 0 when undoToEscape is absent', async () => {
+    mockExec.mockResolvedValue({ ...playingState, isStalemate: true, undoToEscape: undefined });
+    renderWithProviders(<CrescentPage />);
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toMatch(/手詰まり/);
+    expect(alert.textContent).toMatch(/0/);
+  });
+
   it('clicking redeal dispatches redeal', async () => {
     renderWithProviders(<CrescentPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /再配り \(3\)/ })).toBeInTheDocument());
