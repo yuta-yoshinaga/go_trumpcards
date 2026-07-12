@@ -190,6 +190,25 @@ describe('MachiavelliPage', () => {
     expect(layoff.getAttribute('aria-label')).toMatch(/3枚/);
   });
 
+  it('labels a set meld with its shared rank', async () => {
+    // kind 0 = set (three 9s): the aria-label uses the single shared rank.
+    const setMeld: MachiavelliMeld = {
+      kind: 0,
+      cards: [
+        { design: 'SPADE', value: 9 },
+        { design: 'HEART', value: 9 },
+        { design: 'CLOVER', value: 9 },
+      ],
+    };
+    mockExec.mockResolvedValue({ ...turnState, table: [setMeld] });
+    renderWithProviders(<MachiavelliPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ 9')).toBeInTheDocument());
+    const meldGroup = screen.getByRole('group', { name: /3枚/ });
+    // The label carries "9" and, unlike a run, no en-dash range.
+    expect(meldGroup.getAttribute('aria-label')).toMatch(/9/);
+    expect(meldGroup.getAttribute('aria-label')).not.toContain('–');
+  });
+
   it('highlights table melds as drop targets when exactly one card is selected', async () => {
     renderWithProviders(<MachiavelliPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());

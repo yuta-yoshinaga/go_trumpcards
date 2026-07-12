@@ -178,10 +178,9 @@ function MachiavelliPageContent() {
   /** Describes a table meld for assistive tech: kind, size, and rank(s). */
   const meldAria = (meld: { kind: number; cards: { design: string; value: number }[] }): string => {
     const kind = meld.kind === 0 ? t('meldKindSet') : t('meldKindRun');
-    const rank =
-      meld.kind === 0
-        ? valueName(meld.cards[0]?.value ?? 0)
-        : `${valueName(meld.cards[0]?.value ?? 0)}–${valueName(meld.cards[meld.cards.length - 1]?.value ?? 0)}`;
+    // A set shares one rank; a run spans a range from its first to last card.
+    const first = valueName(meld.cards[0].value);
+    const rank = meld.kind === 0 ? first : `${first}–${valueName(meld.cards[meld.cards.length - 1].value)}`;
     return t('a11y.meldLabel', { kind, count: meld.cards.length, rank });
   };
 
