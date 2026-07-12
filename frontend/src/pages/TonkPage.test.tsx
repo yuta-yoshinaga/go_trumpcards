@@ -87,6 +87,12 @@ describe('TonkPage', () => {
     expect(knock.className).toContain('ring-ds-warning');
     expect(knock.className).toContain('motion-safe:animate-pulse');
     expect(knock.textContent).toContain('⚠️');
+    // A visible, screen-reader-announced warning accompanies the button (not just the hover title).
+    const warning = screen.getByTestId('tonk-undercut-warning');
+    expect(warning).toHaveAttribute('role', 'status');
+    const title = knock.getAttribute('title');
+    expect(title).toBeTruthy();
+    expect(warning.textContent).toContain(title as string);
   });
 
   const meldHandState = () =>
@@ -193,5 +199,6 @@ describe('TonkPage', () => {
     await waitFor(() =>
       expect(screen.getByRole('button', { name: /ノック/ })).not.toHaveAttribute('data-undercut-risk'),
     );
+    expect(screen.queryByTestId('tonk-undercut-warning')).not.toBeInTheDocument();
   });
 });
