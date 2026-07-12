@@ -47,5 +47,11 @@
   },
   "hint": {
     "warEv": "Going to war has a smaller house edge than surrender — recommended"
+  },
+  "kbd": {
+    "bet": "B",
+    "war": "W",
+    "surrender": "S",
+    "rebet": "E"
   }
 }
