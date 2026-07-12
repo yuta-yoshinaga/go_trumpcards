@@ -259,14 +259,6 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
       return rank == null ? null : pokerHandKey(rank);
     });
   }, [variant, isDiscardPhase, humanPlayer, state?.communityCards]);
-  const toggleDiscard = (idx: number) => {
-    if (!canDiscard) return;
-    setSelectedDiscards((prev) => {
-      if (prev.includes(idx)) return prev.filter((i) => i !== idx);
-      if (prev.length >= discardCount) return prev; // cap reached
-      return [...prev, idx];
-    });
-  };
 
   const actionBindings = useMemo(
     () => [
@@ -290,10 +282,13 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
     enabled: canAct && !loading,
   });
 
-  // Discard phase keyboard control: number keys toggle a hole card, Enter steps
-  // through the two-stage confirm (select -> confirm -> commit), Escape backs out.
+  // Discard phase control shared by mouse and keyboard: toggle a hole card into
+  // the discard selection. Guarded so nothing changes once the two-stage confirm
+  // has started (the player must commit or cancel), keeping both input methods
+  // consistent. Keyboard: number keys toggle, Enter steps select -> confirm ->
+  // commit, Escape backs out.
   const discardCardCount = humanPlayer?.cards?.length ?? 0;
-  const discardToggle = useCallback(
+  const toggleDiscard = useCallback(
     (idx: number) => {
       if (!canDiscard || discardConfirming) return;
       setSelectedDiscards((prev) => {
@@ -320,7 +315,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   }, [discardConfirming]);
   useCardKeyboardNav({
     cardCount: discardCardCount,
-    onToggle: discardToggle,
+    onToggle: toggleDiscard,
     onConfirm: discardConfirm,
     onClear: discardClear,
     enabled: canDiscard && !loading,
