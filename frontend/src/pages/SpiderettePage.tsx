@@ -321,8 +321,22 @@ function SpiderettePageContent() {
         </div>
 
         {hint && (
-          <div className="text-ds-warning text-sm mb-2">
+          <div className="text-ds-warning text-sm mb-2" role="status" aria-live="polite">
             {t('hintAvailable')}: {t('tableau')} {hint.fromCol} [{hint.cardIndex}] → {t('tableau')} {hint.toCol}
+          </div>
+        )}
+
+        {/* Announce the empty-column deal guard for screen readers; the key
+            forces a remount on each blocked attempt so it re-announces, mirroring
+            the visual shake animation. */}
+        {emptyDealAttemptKey > 0 && (
+          <div
+            key={`deal-warn-${emptyDealAttemptKey.toString()}`}
+            className="sr-only"
+            role="status"
+            aria-live="assertive"
+          >
+            {t('cannotDealEmptyColExists')}
           </div>
         )}
 
