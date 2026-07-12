@@ -170,13 +170,33 @@ describe('MachiavelliPage', () => {
     renderWithProviders(<MachiavelliPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
     // Layoff button disabled with no selection.
-    expect(screen.getByRole('button', { name: 'レイオフ' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /レイオフ/ })).toBeDisabled();
     fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
-    expect(screen.getByRole('button', { name: 'レイオフ' })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: /レイオフ/ })).not.toBeDisabled();
     mockExec.mockClear();
     mockExec.mockResolvedValue(turnState);
-    fireEvent.click(screen.getByRole('button', { name: 'レイオフ' }));
+    fireEvent.click(screen.getByRole('button', { name: /レイオフ/ }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('layoff', { meldIdx: 0, handIndex: 0 }));
+  });
+
+  it('labels each table meld and its layoff button for assistive tech', async () => {
+    renderWithProviders(<MachiavelliPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
+    // The meld row is a labelled group describing kind + size + rank range.
+    const meldGroup = screen.getByRole('group', { name: /3枚/ });
+    expect(meldGroup).toBeInTheDocument();
+    // The layoff button's accessible name includes the target meld description.
+    const layoff = screen.getByRole('button', { name: /にレイオフ/ });
+    expect(layoff.getAttribute('aria-label')).toMatch(/3枚/);
+  });
+
+  it('highlights table melds as drop targets when exactly one card is selected', async () => {
+    renderWithProviders(<MachiavelliPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    const meldGroup = screen.getByRole('group', { name: /3枚/ });
+    expect(meldGroup.className).not.toContain('ring-2');
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    await waitFor(() => expect(meldGroup.className).toContain('ring-2'));
   });
 
   it('shows the table-empty placeholder when there are no melds', async () => {
@@ -191,7 +211,7 @@ describe('MachiavelliPage', () => {
     await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: '山札から引く' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'メルドを出す' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'レイオフ' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /レイオフ/ })).not.toBeInTheDocument();
   });
 
   it('shows next round button on round end and calls nextround', async () => {

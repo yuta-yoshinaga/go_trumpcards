@@ -35,6 +35,7 @@ import type { MachiavelliResponse } from '../types/card';
 import { MachiavelliPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { valueName } from '../utils/cardUtils';
 import { MACHIAVELLI_HELP, parseMachiavelliCommand } from '../utils/cli/commands/machiavelliCommands';
 import { formatMachiavelliState } from '../utils/cli/formatters/machiavelliFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -170,6 +171,19 @@ function MachiavelliPageContent() {
   const isGameEnd = state.phase === MachiavelliPhase.GAME_END || state.gameEndFlag;
   const revealCpu = isRoundEnd || isGameEnd;
   const isHumanTurn = isTurnPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
+  // When exactly one hand card is selected it can be laid off onto any table
+  // meld, so highlight the melds as drop targets and describe the layoff.
+  const canLayoff = isHumanTurn && selectedCardIndices.length === 1;
+
+  /** Describes a table meld for assistive tech: kind, size, and rank(s). */
+  const meldAria = (meld: { kind: number; cards: { design: string; value: number }[] }): string => {
+    const kind = meld.kind === 0 ? t('meldKindSet') : t('meldKindRun');
+    const rank =
+      meld.kind === 0
+        ? valueName(meld.cards[0]?.value ?? 0)
+        : `${valueName(meld.cards[0]?.value ?? 0)}–${valueName(meld.cards[meld.cards.length - 1]?.value ?? 0)}`;
+    return t('a11y.meldLabel', { kind, count: meld.cards.length, rank });
+  };
 
   return (
     <GamePageShell
@@ -250,9 +264,14 @@ function MachiavelliPageContent() {
                   ) : (
                     <div className="flex flex-col gap-2">
                       {state.table.map((meld, meldIdx) => (
+                        // biome-ignore lint/a11y/useSemanticElements: a labelled group of cards forming one meld; <fieldset> would be semantically wrong here
                         <div
                           key={`meld-${meldIdx}-${meld.kind}-${meld.cards.map((c) => `${c.design}${c.value}`).join('')}`}
-                          className="flex items-center gap-2 flex-wrap"
+                          role="group"
+                          aria-label={meldAria(meld)}
+                          className={`flex items-center gap-2 flex-wrap rounded transition-colors ${
+                            canLayoff ? 'ring-2 ring-ds-accent/70 p-1' : ''
+                          }`}
                         >
                           <span className="text-ds-text-muted text-xs w-14">
                             {meld.kind === 0 ? t('meldKindSet') : t('meldKindRun')}
@@ -272,6 +291,7 @@ function MachiavelliPageContent() {
                               className={btnPrimary}
                               onClick={() => handleLayoff(meldIdx)}
                               disabled={loading || selectedCardIndices.length !== 1}
+                              aria-label={t('a11y.layoffTo', { meld: meldAria(meld) })}
                             >
                               {t('layoffButton')}
                             </button>
