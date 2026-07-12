@@ -135,6 +135,19 @@ describe('FortyFivesPage', () => {
     expect(screen.getByText('落札者')).toBeInTheDocument();
   });
 
+  it('shows the localized bid name (Jink) in the contract line for a 25 contract', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, contract: 25 });
+    renderWithProviders(<FortyFivesPage />);
+    // Contract line shows "25 (Jink)", not the bare number.
+    await waitFor(() => expect(screen.getByText(/落札者:.*25 \(Jink\)/)).toBeInTheDocument());
+  });
+
+  it('shows the localized bid name for the current highest bid', async () => {
+    mockExec.mockResolvedValue(makeFortyFivesState({ bids: [25, 0, 0, 0] }));
+    renderWithProviders(<FortyFivesPage />);
+    await waitFor(() => expect(screen.getByText(/現在の最高ビッド: 25 \(Jink\)/)).toBeInTheDocument());
+  });
+
   it('does not show the play button on a CPU turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<FortyFivesPage />);

@@ -149,7 +149,13 @@ function FortyFivesPageContent() {
   const highestBidder = highestBid > 0 ? state.players[state.bids.indexOf(highestBid)] : undefined;
   const highestBidderName = highestBidder ? playerName(highestBidder.id, highestBidder.isHuman) : '';
 
-  const contractLabel = state.contract === 0 ? t('contractUndecided') : String(state.contract);
+  // Map a bid value to its localized name (e.g. 25 -> "25 (Jink)"), matching the
+  // CUI's fortyFivesBidName; fall back to the raw number for any unknown value.
+  const bidName = (value: number): string => {
+    const bid = BIDS.find((b) => b.value === value);
+    return bid ? t(bid.key) : String(value);
+  };
+  const contractLabel = state.contract === 0 ? t('contractUndecided') : bidName(state.contract);
 
   const handleManualReset = () => {
     hideActionLog();
@@ -329,7 +335,9 @@ function FortyFivesPageContent() {
                 <>
                   <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>
                   <span className="text-xs text-ds-text-muted self-center mr-1" data-testid="ff-highest-bid">
-                    {highestBid > 0 ? t('bidHighest', { bid: highestBid, player: highestBidderName }) : t('bidNone')}
+                    {highestBid > 0
+                      ? t('bidHighest', { bid: bidName(highestBid), player: highestBidderName })
+                      : t('bidNone')}
                   </span>
                   {BIDS.map((b) => {
                     // Pass (0) is always allowed; a non-pass bid must beat the current highest.
