@@ -38,6 +38,10 @@
       "pair": "ペア！",
       "sandwich": "サンドイッチ！",
       "miss": "ミス！"
+    },
+    "slapAnnounce": {
+      "correct": "{{player}}がスラップ成功（{{reason}}）",
+      "wrong": "{{player}}がスラップ失敗"
     }
   },
   "hint": {
