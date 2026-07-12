@@ -12,8 +12,11 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { KbdBadge } from '../components/KbdBadge';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -197,6 +200,43 @@ function PitchPageContent() {
     },
     [execApi, cpuDifficulty, pointLimit],
   );
+
+  // Keyboard: number keys select a hand card, Enter plays it (play phase only,
+  // and only cards in validPlayIndices are selectable).
+  const selectValidCard = useCallback(
+    (idx: number) => {
+      if (state?.validPlayIndices.includes(idx)) setSelectedCardIdx(idx);
+    },
+    [state?.validPlayIndices],
+  );
+  const clearSelection = useCallback(() => setSelectedCardIdx(null), []);
+  useCardKeyboardNav({
+    cardCount: human?.cards.length ?? 0,
+    onToggle: selectValidCard,
+    onConfirm: handlePlay,
+    onClear: clearSelection,
+    enabled: isHumanPlayTurn && !loading,
+  });
+
+  // Keyboard: bid keys (p / 2 / 3 / 4) in the bid phase, n to advance a
+  // finished trick or round.
+  const handleNext = useCallback(() => {
+    if (isTrickEnd) handleNextTrick();
+    else if (isRoundEnd && !isGameEnd) handleNextRound();
+  }, [isTrickEnd, isRoundEnd, isGameEnd, handleNextTrick, handleNextRound]);
+  const currentBid = state?.currentBid ?? 0;
+  const canBid = isHumanBidTurn && !loading;
+  const actionBindings = useMemo(
+    () => [
+      { key: 'p', action: () => handleBid(0), enabled: canBid },
+      { key: '2', action: () => handleBid(2), enabled: canBid && 2 > currentBid },
+      { key: '3', action: () => handleBid(3), enabled: canBid && 3 > currentBid },
+      { key: '4', action: () => handleBid(4), enabled: canBid && 4 > currentBid },
+      { key: 'n', action: handleNext, enabled: (isTrickEnd || (isRoundEnd && !isGameEnd)) && !loading },
+    ],
+    [handleBid, handleNext, canBid, currentBid, isTrickEnd, isRoundEnd, isGameEnd, loading],
+  );
+  useActionKeyboardNav({ bindings: actionBindings, enabled: !!state });
 
   if (!state) {
     return (
@@ -420,8 +460,10 @@ function PitchPageContent() {
                   className={btnSecondary}
                   disabled={!isHumanBidTurn || loading}
                   onClick={() => handleBid(0)}
+                  aria-keyshortcuts="p"
                 >
                   {t('passButton')}
+                  <KbdBadge label={t('kbd.pass')} />
                 </button>
                 {[2, 3, 4].map((n) => (
                   <button
@@ -430,8 +472,10 @@ function PitchPageContent() {
                     className={btnPrimary}
                     disabled={!isHumanBidTurn || loading || n <= state.currentBid}
                     onClick={() => handleBid(n)}
+                    aria-keyshortcuts={String(n)}
                   >
                     {t('bid', { n })}
+                    <KbdBadge label={t(`kbd.bid${n}`)} />
                   </button>
                 ))}
               </div>
@@ -445,24 +489,40 @@ function PitchPageContent() {
                   className={btnSuccess}
                   onClick={handlePlay}
                   disabled={selectedCardIdx === null || loading}
+                  aria-keyshortcuts="Enter"
                 >
                   {t('playButton')}
+                  <KbdBadge label={t('kbd.play')} />
                 </button>
               </div>
             )}
 
             {isTrickEnd && (
               <div className="flex justify-center pb-2">
-                <button type="button" className={btnPrimary} onClick={handleNextTrick} disabled={loading}>
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handleNextTrick}
+                  disabled={loading}
+                  aria-keyshortcuts="n"
+                >
                   {t('nextTrick')}
+                  <KbdBadge label={t('kbd.next')} />
                 </button>
               </div>
             )}
 
             {isRoundEnd && !isGameEnd && (
               <div className="flex justify-center pb-2">
-                <button type="button" className={btnPrimary} onClick={handleNextRound} disabled={loading}>
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handleNextRound}
+                  disabled={loading}
+                  aria-keyshortcuts="n"
+                >
                   {t('nextRound')}
+                  <KbdBadge label={t('kbd.next')} />
                 </button>
               </div>
             )}
