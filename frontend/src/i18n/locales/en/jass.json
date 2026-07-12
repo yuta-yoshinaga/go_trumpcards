@@ -71,7 +71,8 @@
     "lead_strong": "Lead with a strong card",
     "follow_suit": "Follow the led suit",
     "trump_cut": "Cut with trump",
-    "discard_weak": "Discard the lowest-value card"
+    "discard_weak": "Discard the lowest-value card",
+    "fallback": "Best play"
   },
   "tutorial": {
     "bidControls": "In the trump-bid phase, choose a trump suit or pass the bid (Schieben) to your partner.",

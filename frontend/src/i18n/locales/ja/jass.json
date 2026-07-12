@@ -71,7 +71,8 @@
     "lead_strong": "強いカードでリード",
     "follow_suit": "リードスートに従う",
     "trump_cut": "切り札でカット",
-    "discard_weak": "最低点のカードを捨てる"
+    "discard_weak": "最低点のカードを捨てる",
+    "fallback": "最善手"
   },
   "tutorial": {
     "bidControls": "切り札ビッド: 切り札スートを選ぶか、シーバーでパートナーに委ねます。",
