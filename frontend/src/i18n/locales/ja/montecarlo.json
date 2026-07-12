@@ -12,7 +12,6 @@
     "dealCount": "補充回数",
     "selectFirst": "1枚目のカードを選択してください",
     "selectSecond": "隣接する同ランクのカードを選択してください",
-    "selectSecondWithCard": "{{card}} を選択中。隣接する同ランクのカードを選んでください",
     "stalemate": "手詰まり",
     "win": "全52枚を取り除きました！",
     "loss": "ゲームオーバー"

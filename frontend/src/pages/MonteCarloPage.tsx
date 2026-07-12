@@ -103,8 +103,6 @@ function MonteCarloPageContent() {
   const isGameClear = state?.phase === MonteCarloPhase.GAME_CLEAR;
   const isGameOver = state?.phase === MonteCarloPhase.GAME_OVER;
   const gameEnded = isGameClear || isGameOver;
-  // The card at the first-selected cell, used to name it in the aria-live prompt.
-  const selectedFirstCard = selected ? (state?.board[selected.row]?.[selected.col]?.card ?? null) : null;
 
   const handleCellClick = useCallback(
     (row: number, col: number) => {
@@ -303,9 +301,7 @@ function MonteCarloPageContent() {
               role="status"
               aria-live="polite"
             >
-              {selectedFirstCard
-                ? t('label.selectSecondWithCard', { card: cardAlt(selectedFirstCard) })
-                : t('label.selectFirst')}
+              {selected === null ? t('label.selectFirst') : t('label.selectSecond')}
             </div>
 
             {pairRemoved && (

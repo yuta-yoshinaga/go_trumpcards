@@ -101,7 +101,8 @@ describe('MonteCarloPage', () => {
     expect(cell00).toHaveAttribute('aria-pressed', 'true');
     const prompt = screen.getByTestId('mc-prompt');
     expect(prompt).toHaveAttribute('aria-live', 'polite');
-    expect(prompt.textContent).toMatch(/選択中/);
+    // Selecting the first card switches the (aria-live) prompt to the second-pick guidance.
+    expect(prompt.textContent).toMatch(/隣接/);
     fireEvent.click(cell00);
     expect(cell00).toHaveAttribute('aria-pressed', 'false');
     expect(mockExec).not.toHaveBeenCalled();

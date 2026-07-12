@@ -12,7 +12,6 @@
     "dealCount": "Deals",
     "selectFirst": "Select the first card",
     "selectSecond": "Select an adjacent same-rank card",
-    "selectSecondWithCard": "{{card}} selected. Pick an adjacent same-rank card",
     "stalemate": "No moves available",
     "win": "All 52 cards removed!",
     "loss": "Game Over"
