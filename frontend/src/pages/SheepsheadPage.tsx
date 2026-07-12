@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import type { sheepsheadApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -15,6 +15,7 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -96,6 +97,7 @@ function SheepsheadPageContent() {
     handleConfigChange,
     selectedCardIndices,
     toggleCard,
+    clearSelection,
     reset,
     handlePick,
     handlePass,
@@ -132,6 +134,25 @@ function SheepsheadPageContent() {
   } = useGameHint('sheepshead', state);
   const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('sheepshead', SHEEPSHEAD_PHASE_KEYS);
+
+  // Keyboard hand navigation (arrow keys move, space toggles, Enter confirms).
+  // BURY needs two cards and PLAY needs one; both handlers self-guard on the
+  // selected count, so confirmAction just routes to the active phase's handler.
+  const humanIdxForKbd = state?.players.findIndex((p) => p.isHuman) ?? -1;
+  const canBuryForKbd = state?.phase === SheepsheadPhase.BURY && state.pickerIdx === humanIdxForKbd;
+  const canPlayForKbd = state?.phase === SheepsheadPhase.PLAY && state.currentPlayerIdx === humanIdxForKbd;
+  const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
+  const confirmAction = useCallback(() => {
+    if (canBuryForKbd) handleBury();
+    else if (canPlayForKbd) handlePlay();
+  }, [canBuryForKbd, canPlayForKbd, handleBury, handlePlay]);
+  useCardKeyboardNav({
+    cardCount: humanCardCountForKbd,
+    onToggle: toggleCard,
+    onConfirm: confirmAction,
+    onClear: clearSelection,
+    enabled: (canBuryForKbd || canPlayForKbd) && !loading,
+  });
 
   if (!state)
     return <GameSkeleton gameKey="sheepshead" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 6 }} />;

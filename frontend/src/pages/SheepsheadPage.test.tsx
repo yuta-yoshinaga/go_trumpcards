@@ -77,6 +77,39 @@ describe('SheepsheadPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0 }));
   });
 
+  it('play phase: a number key selects a card and Enter plays it', async () => {
+    renderWithProviders(<SheepsheadPage />);
+    await screen.findByAltText('♠ A');
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    // "1" toggles the first hand card (index 0); Enter confirms the play.
+    fireEvent.keyDown(document.body, { key: '1' });
+    fireEvent.keyDown(document.body, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0 }));
+  });
+
+  it('bury phase: two number keys select cards and Enter buries them', async () => {
+    mockExec.mockResolvedValue(buryPhaseState);
+    renderWithProviders(<SheepsheadPage />);
+    await screen.findByAltText('♠ A');
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(buryPhaseState);
+    fireEvent.keyDown(document.body, { key: '1' });
+    fireEvent.keyDown(document.body, { key: '2' });
+    fireEvent.keyDown(document.body, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bury', { buryIndices: [0, 1] }));
+  });
+
+  it('keyboard play is disabled on a CPU turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<SheepsheadPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', expect.anything()));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: '1' });
+    fireEvent.keyDown(document.body, { key: 'Enter' });
+    expect(mockExec).not.toHaveBeenCalledWith('play', expect.anything());
+  });
+
   it('renders pick / pass buttons in the pick phase on the human turn', async () => {
     mockExec.mockResolvedValue(pickPhaseState);
     renderWithProviders(<SheepsheadPage />);
