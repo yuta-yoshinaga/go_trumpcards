@@ -43,5 +43,9 @@
     "discardButton": "メルドしたら不要なカードを1枚捨てます。",
     "scoreTable": "各プレイヤーの勝利数が表示されます。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "kbd": {
+    "stock": "S",
+    "discard": "D"
   }
 }
