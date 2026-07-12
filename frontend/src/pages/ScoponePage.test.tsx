@@ -28,6 +28,15 @@ describe('ScoponePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('r'));
   });
 
+  it('renders CPU difficulty options with localized labels', async () => {
+    renderWithProviders(<ScoponePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    // Difficulty options are localized (ja), not the hardcoded Easy/Normal/Hard.
+    expect(screen.getByRole('option', { name: 'かんたん' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'ふつう' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'むずかしい' })).toBeInTheDocument();
+  });
+
   it('renders the human hand', async () => {
     renderWithProviders(<ScoponePage />);
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
