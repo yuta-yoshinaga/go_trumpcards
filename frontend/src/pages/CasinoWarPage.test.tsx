@@ -83,6 +83,15 @@ describe('CasinoWarPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /ベット/ })).toBeInTheDocument());
   });
 
+  it('advertises the bet keyboard shortcut on the button', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<CasinoWarPage />);
+    const betBtn = await screen.findByRole('button', { name: /ベット/ });
+    expect(betBtn).toHaveAttribute('aria-keyshortcuts', 'b');
+    // The KbdBadge chip is present (its text is aria-hidden, so the accessible name is unaffected).
+    expect(betBtn.querySelector('kbd')?.textContent).toBe('B');
+  });
+
   it('triggers bet action with current amount', async () => {
     mockApi.mockResolvedValue(betState);
     renderWithProviders(<CasinoWarPage />);

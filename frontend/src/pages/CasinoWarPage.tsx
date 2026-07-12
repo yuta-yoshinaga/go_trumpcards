@@ -11,6 +11,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { KbdBadge } from '../components/KbdBadge';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -262,8 +263,15 @@ function CasinoWarPageContent() {
                     {t('previousBet', { amount: lastBetAmount })}
                   </button>
                 )}
-                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handleBet}
+                  disabled={loading}
+                  aria-keyshortcuts="b"
+                >
                   {t('button.bet')}
+                  <KbdBadge label={t('kbd.bet')} />
                 </button>
               </div>
             )}
@@ -287,11 +295,20 @@ function CasinoWarPageContent() {
                     className={btnSuccess}
                     onClick={handleWar}
                     disabled={loading || state.chips < state.ante}
+                    aria-keyshortcuts="w"
                   >
                     {t('button.war')}
+                    <KbdBadge label={t('kbd.war')} />
                   </button>
-                  <button type="button" className={btnDanger} onClick={handleSurrender} disabled={loading}>
+                  <button
+                    type="button"
+                    className={btnDanger}
+                    onClick={handleSurrender}
+                    disabled={loading}
+                    aria-keyshortcuts="s"
+                  >
                     {t('button.surrender')}
+                    <KbdBadge label={t('kbd.surrender')} />
                   </button>
                 </div>
               </div>
@@ -305,8 +322,10 @@ function CasinoWarPageContent() {
                     onClick={handleRebet}
                     disabled={loading}
                     data-testid="cw-rebet-button"
+                    aria-keyshortcuts="e"
                   >
                     {t('button.rebet', { amount: lastBetAmount })}
+                    <KbdBadge label={t('kbd.rebet')} />
                   </button>
                 )}
                 <GameResetButton
