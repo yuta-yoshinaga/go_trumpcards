@@ -39,7 +39,7 @@ func (up *UltimateTexasHoldemCuiPresenter) Output(g interfaces.UltimateTexasHold
 		if g.GetPhase() == domain.UltimateTexasHoldemPhaseEnd {
 			rank := g.GetPlayerHandRank()
 			if rank >= 0 && rank < len(domain.PokerHandNames) {
-				fmt.Fprintf(&sb, "%s\n", i18n.Tf("ultimatetexasholdem.handLine", "hand", domain.PokerHandNames[rank]))
+				fmt.Fprintf(&sb, "%s\n", i18n.Tf("ultimatetexasholdem.handLine", "hand", cuiPokerHandName(rank)))
 			}
 		}
 		parts := make([]string, len(playerHand))
@@ -55,7 +55,7 @@ func (up *UltimateTexasHoldemCuiPresenter) Output(g interfaces.UltimateTexasHold
 		if g.GetPhase() == domain.UltimateTexasHoldemPhaseEnd {
 			rank := g.GetDealerHandRank()
 			if rank >= 0 && rank < len(domain.PokerHandNames) {
-				fmt.Fprintf(&sb, "%s\n", i18n.Tf("ultimatetexasholdem.handLine", "hand", domain.PokerHandNames[rank]))
+				fmt.Fprintf(&sb, "%s\n", i18n.Tf("ultimatetexasholdem.handLine", "hand", cuiPokerHandName(rank)))
 			}
 			parts := make([]string, len(dealerHand))
 			for i, card := range dealerHand {

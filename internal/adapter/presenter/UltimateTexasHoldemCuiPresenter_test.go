@@ -8,6 +8,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupUltimateTexasHoldemCuiMockDefaults(m *interfaces.MockUltimateTexasHoldemGame) {
@@ -120,6 +121,13 @@ func TestUltimateTexasHoldemCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "1100")
+	// The player's One Pair rank is localized (ja by default), not raw English.
+	assert.Contains(t, result, "ワンペア")
+	assert.NotContains(t, result, "One Pair")
+
+	i18n.SetLang("en")
+	defer i18n.SetLang("ja")
+	assert.Contains(t, p.Output(m, nil), "One Pair")
 }
 
 func TestUltimateTexasHoldemCuiPresenter_Output_EndPhase_Folded(t *testing.T) {

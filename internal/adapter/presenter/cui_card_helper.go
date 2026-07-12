@@ -109,6 +109,18 @@ func cuiSuitName(suit int) string {
 	return "UNKNOWN"
 }
 
+// cuiPokerHandName returns the localized display name for a poker hand rank
+// (0=High Card .. 10=Five of a Kind), resolved via the shared pokerHandRank*
+// keys in cui_common. Out-of-range ranks fall back to the raw English
+// domain.PokerHandNames entry (or "" when the index is invalid). Used by the
+// UltimateTexasHoldem and MississippiStud CUI presenters.
+func cuiPokerHandName(rank int) string {
+	if rank < 0 || rank >= len(domain.PokerHandNames) {
+		return ""
+	}
+	return i18n.T("pokerHandRank" + strconv.Itoa(rank))
+}
+
 // cuiPlayerName returns the human-friendly display name for a player:
 // "You" / "あなた" for the human, "CPU N" for CPU opponents, or
 // "UNKNOWN" if the player is nil/zero. Locale-aware via i18n.T (issue
