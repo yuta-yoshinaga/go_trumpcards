@@ -4,7 +4,7 @@ import { callBreakApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeCallBreakState } from '../test/stateFactories';
-import { CallBreakPage } from './CallBreakPage';
+import { CallBreakPage, fmtScore } from './CallBreakPage';
 
 vi.mock('../api/gameApi', () => ({
   callBreakApi: { exec: vi.fn() },
@@ -56,6 +56,21 @@ const cpuTurnState = makeCallBreakState({ currentPlayerIdx: 1 });
 
 beforeEach(() => {
   mockExec.mockResolvedValue(playPhaseState);
+});
+
+describe('fmtScore', () => {
+  it('formats int×10 scores as X.Y for en/ja locales (period separator)', () => {
+    expect(fmtScore(41, 'en')).toBe('4.1');
+    expect(fmtScore(40, 'en')).toBe('4.0');
+    expect(fmtScore(5, 'en')).toBe('0.5');
+    expect(fmtScore(-41, 'en')).toBe('-4.1');
+    expect(fmtScore(105, 'ja')).toBe('10.5');
+  });
+
+  it('uses the locale decimal separator for comma-decimal locales', () => {
+    expect(fmtScore(41, 'de-DE')).toBe('4,1');
+    expect(fmtScore(-5, 'de-DE')).toBe('-0,5');
+  });
 });
 
 describe('CallBreakPage', () => {
