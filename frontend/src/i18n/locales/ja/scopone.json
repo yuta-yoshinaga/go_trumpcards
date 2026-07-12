@@ -31,7 +31,10 @@
   "settings": {
     "title": "設定",
     "cpuDifficulty": "CPU難易度",
-    "targetScore": "目標点"
+    "targetScore": "目標点",
+    "easy": "かんたん",
+    "normal": "ふつう",
+    "hard": "むずかしい"
   },
   "result": {
     "win": "勝ち",
