@@ -137,6 +137,9 @@ export function VideoPokerGameContent({
 
   const [betAmount, setBetAmount] = useState(1);
   const [heldCards, setHeldCards] = useState<boolean[]>([false, false, false, false, false]);
+  // Screen-reader announcement for a hold toggle (aria-pressed alone is not
+  // reliably re-announced by every AT when toggled via the keyboard).
+  const [holdAnnounce, setHoldAnnounce] = useState('');
 
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(apiExec);
@@ -187,18 +190,22 @@ export function VideoPokerGameContent({
       }
     }
     setHeldCards(next);
+    // Clear any stale hold announcement carried over from the previous hand.
+    setHoldAnnounce('');
   }, [isDrawPhase]);
 
   const toggleHold = useCallback(
     (index: number) => {
       if (!isDrawPhase) return;
+      const willHold = !heldCards[index];
       setHeldCards((prev) => {
         const next = [...prev];
         next[index] = !next[index];
         return next;
       });
+      setHoldAnnounce(tNs(willHold ? 'a11y.holdOn' : 'a11y.holdOff', { index: index + 1 }));
     },
-    [isDrawPhase],
+    [isDrawPhase, heldCards, tNs],
   );
 
   const handleDeal = useCallback(() => {
@@ -234,8 +241,15 @@ export function VideoPokerGameContent({
       { key: 'b', action: handleDeal, enabled: isBetPhase },
       { key: 'd', action: handleDraw, enabled: isDrawPhase },
       { key: 'r', action: handleReset, enabled: isResultPhase },
+      // Number keys 1-5 toggle HOLD on the matching card (DRAW phase only),
+      // mirroring the physical hold buttons on a real video-poker machine.
+      ...[0, 1, 2, 3, 4].map((i) => ({
+        key: String(i + 1),
+        action: () => toggleHold(i),
+        enabled: isDrawPhase,
+      })),
     ],
-    [handleDeal, handleDraw, handleReset, isBetPhase, isDrawPhase, isResultPhase],
+    [handleDeal, handleDraw, handleReset, toggleHold, isBetPhase, isDrawPhase, isResultPhase],
   );
 
   useActionKeyboardNav({
@@ -280,6 +294,10 @@ export function VideoPokerGameContent({
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+
+            <div className="sr-only" role="status" aria-live="polite" data-testid="vp-hold-announce">
+              {holdAnnounce}
+            </div>
 
             {state.hand.length > 0 && (
               <div className="mb-4" data-tutorial="vp-hand">
@@ -378,10 +396,11 @@ export function VideoPokerGameContent({
             {!isBetPhase && <ErrorAlert message={error} onRetry={retry} />}
             {hintEnabled && hint && <HintTooltip reason={tNs(hint.reason)} confidence={hint.confidence} />}
             {isDrawPhase && (
-              <div className="flex justify-center gap-2 pb-2" data-tutorial="vp-draw-button">
+              <div className="flex flex-col items-center gap-1 pb-2" data-tutorial="vp-draw-button">
                 <button type="button" className={btnPrimary} onClick={handleDraw} disabled={loading}>
                   {t('button.draw')}
                 </button>
+                <p className="text-ds-text-muted text-xs">{tNs('a11y.kbdHint')}</p>
               </div>
             )}
             {isResultPhase && (
