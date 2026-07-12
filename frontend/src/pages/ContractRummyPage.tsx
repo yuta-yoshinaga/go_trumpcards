@@ -19,6 +19,7 @@ import { btnDanger, btnOutline, btnPrimary, focusRingWhite } from '../styles/but
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, ContractRummyContractSlot, ContractRummyResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { evaluateContractSlot } from '../utils/contractRummyUtils';
 
 /** Phase identifiers for Contract Rummy. */
@@ -336,6 +337,8 @@ function ContractRummyPageContent() {
                   key={`${idx}-${c.design}-${c.value}`}
                   onClick={() => toggleCard(idx)}
                   disabled={isInSlot}
+                  aria-pressed={isSelected}
+                  aria-label={isInSlot ? `${cardAlt(c)} (${t('cardInSlotAria')})` : cardAlt(c)}
                   className={`${focusRingWhite} ${isSelected ? 'ring-2 ring-ds-warning' : ''} ${
                     isInSlot ? 'opacity-40' : ''
                   }`}
