@@ -134,6 +134,14 @@ describe('CrescentPage', () => {
     expect(alert.textContent).toMatch(/2/);
   });
 
+  it('defaults the escape count to 0 when undoToEscape is absent', async () => {
+    mockExec.mockResolvedValue({ ...playingState, isStalemate: true, undoToEscape: undefined });
+    renderWithProviders(<CrescentPage />);
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toMatch(/手詰まり/);
+    expect(alert.textContent).toMatch(/0/);
+  });
+
   it('clicking redeal dispatches redeal', async () => {
     renderWithProviders(<CrescentPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /再配り \(3\)/ })).toBeInTheDocument());
