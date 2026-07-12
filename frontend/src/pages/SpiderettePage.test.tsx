@@ -92,6 +92,22 @@ describe('SpiderettePage', () => {
     expect(screen.getByTestId('spdt-col-0').className).toContain('ring-ds-success');
     // A non-target column is not highlighted.
     expect(screen.getByTestId('spdt-col-2').className).not.toContain('ring-ds-success');
+    // The hint text is exposed to screen readers via an aria-live status region.
+    const status = screen.getByRole('status');
+    expect(status).toHaveAttribute('aria-live', 'polite');
+    expect(status.textContent).toContain('場札');
+  });
+
+  it('announces the empty-column deal guard to screen readers', async () => {
+    renderWithProviders(<SpiderettePage />);
+    // playingState has empty columns and stock remaining, so a deal is guarded.
+    const dealBtn = (await screen.findAllByRole('button', { name: '配る' }))[0];
+    fireEvent.click(dealBtn);
+    await waitFor(() => {
+      const warn = screen.getByText('空の列をすべて埋めないと配れません');
+      expect(warn).toHaveAttribute('role', 'status');
+      expect(warn).toHaveAttribute('aria-live', 'assertive');
+    });
   });
 
   it('renders stock count', async () => {
