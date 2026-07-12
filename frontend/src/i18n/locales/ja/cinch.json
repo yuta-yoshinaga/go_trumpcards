@@ -19,7 +19,6 @@
   "deal": "ディール {{n}}",
   "trick": "トリック {{n}}/{{total}}",
   "highBid": "最高ビッド: {{bid}}",
-  "trump": "切り札: {{suit}}",
   "target": "目標: {{points}}点",
   "bidPrompt": "あなたのビッド番です — パスするか 1〜14 を宣言してください。",
   "bidCpu": "CPU {{id}} がビッド中です…",

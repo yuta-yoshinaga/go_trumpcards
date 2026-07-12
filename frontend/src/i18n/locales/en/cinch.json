@@ -19,7 +19,6 @@
   "deal": "Deal {{n}}",
   "trick": "Trick {{n}}/{{total}}",
   "highBid": "High Bid: {{bid}}",
-  "trump": "Trump: {{suit}}",
   "target": "Target: {{points}} pts",
   "bidPrompt": "Your turn to bid — pass or declare 1-14.",
   "bidCpu": "CPU {{id}} is bidding…",
