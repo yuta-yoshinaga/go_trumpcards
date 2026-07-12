@@ -137,6 +137,9 @@ export function VideoPokerGameContent({
 
   const [betAmount, setBetAmount] = useState(1);
   const [heldCards, setHeldCards] = useState<boolean[]>([false, false, false, false, false]);
+  // Screen-reader announcement for a hold toggle (aria-pressed alone is not
+  // reliably re-announced by every AT when toggled via the keyboard).
+  const [holdAnnounce, setHoldAnnounce] = useState('');
 
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(apiExec);
@@ -187,11 +190,10 @@ export function VideoPokerGameContent({
       }
     }
     setHeldCards(next);
+    // Clear any stale hold announcement carried over from the previous hand.
+    setHoldAnnounce('');
   }, [isDrawPhase]);
 
-  // Screen-reader announcement for a hold toggle (aria-pressed alone is not
-  // reliably re-announced by every AT when toggled via the keyboard).
-  const [holdAnnounce, setHoldAnnounce] = useState('');
   const toggleHold = useCallback(
     (index: number) => {
       if (!isDrawPhase) return;
