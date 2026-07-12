@@ -103,6 +103,8 @@ function MonteCarloPageContent() {
   const isGameClear = state?.phase === MonteCarloPhase.GAME_CLEAR;
   const isGameOver = state?.phase === MonteCarloPhase.GAME_OVER;
   const gameEnded = isGameClear || isGameOver;
+  // The card at the first-selected cell, used to name it in the aria-live prompt.
+  const selectedFirstCard = selected ? (state?.board[selected.row]?.[selected.col]?.card ?? null) : null;
 
   const handleCellClick = useCallback(
     (row: number, col: number) => {
@@ -269,6 +271,7 @@ function MonteCarloPageContent() {
                           }
                           onClick={() => handleCellClick(rowIdx, colIdx)}
                           disabled={!isPlaying || loading || !filled}
+                          aria-pressed={filled ? isSelected : undefined}
                           data-pair-match={isMatchingPair ? 'true' : undefined}
                           data-dimmed={dimmed ? 'true' : undefined}
                           className={`p-0 border-0 bg-transparent rounded transition ${focusRingWhite} ${
@@ -294,8 +297,15 @@ function MonteCarloPageContent() {
               </div>
             </div>
 
-            <div className="text-center text-ds-text-muted text-sm mb-2" data-testid="mc-prompt">
-              {selected === null ? t('label.selectFirst') : t('label.selectSecond')}
+            <div
+              className="text-center text-ds-text-muted text-sm mb-2"
+              data-testid="mc-prompt"
+              role="status"
+              aria-live="polite"
+            >
+              {selectedFirstCard
+                ? t('label.selectSecondWithCard', { card: cardAlt(selectedFirstCard) })
+                : t('label.selectFirst')}
             </div>
 
             {pairRemoved && (

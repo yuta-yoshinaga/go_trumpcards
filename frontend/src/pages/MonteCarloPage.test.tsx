@@ -94,9 +94,16 @@ describe('MonteCarloPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     const cell00 = screen.getByTestId('mc-cell-0-0');
+    expect(cell00).toHaveAttribute('aria-pressed', 'false');
     fireEvent.click(cell00);
     expect(cell00.className).toContain('ring-ds-accent');
+    // Selection state is exposed via aria-pressed, and the prompt announces the card.
+    expect(cell00).toHaveAttribute('aria-pressed', 'true');
+    const prompt = screen.getByTestId('mc-prompt');
+    expect(prompt).toHaveAttribute('aria-live', 'polite');
+    expect(prompt.textContent).toMatch(/選択中/);
     fireEvent.click(cell00);
+    expect(cell00).toHaveAttribute('aria-pressed', 'false');
     expect(mockExec).not.toHaveBeenCalled();
   });
 
