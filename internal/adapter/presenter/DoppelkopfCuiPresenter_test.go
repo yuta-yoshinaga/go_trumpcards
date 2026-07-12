@@ -12,6 +12,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func makeDoppelkopfPlayers() []*domain.DoppelkopfPlayer {
@@ -82,12 +83,25 @@ func TestDoppelkopfCuiPresenter_Output(t *testing.T) {
 		assert.NotEmpty(t, result)
 	})
 
-	t.Run("round end prompt", func(t *testing.T) {
+	t.Run("round end prompt shows localized Kontra-wins outcome", func(t *testing.T) {
 		m, _ := setupDoppelkopfCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.DoppelkopfPhaseRoundEnd)
-		result := p.Output(m, nil)
-		assert.NotEmpty(t, result)
+		// GetRoundReWon defaults to false -> Kontra wins. Default locale is ja.
+		assert.Contains(t, p.Output(m, nil), "Kontra の勝ち")
+
+		i18n.SetLang("en")
+		defer i18n.SetLang("ja")
+		assert.Contains(t, p.Output(m, nil), "Kontra wins")
+	})
+
+	t.Run("round end prompt shows localized Re-wins outcome", func(t *testing.T) {
+		m, _ := setupDoppelkopfCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.DoppelkopfPhaseRoundEnd)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundReWon")
+		m.On("GetRoundReWon").Return(true)
+		assert.Contains(t, p.Output(m, nil), "Re の勝ち")
 	})
 
 	t.Run("game end banner", func(t *testing.T) {
