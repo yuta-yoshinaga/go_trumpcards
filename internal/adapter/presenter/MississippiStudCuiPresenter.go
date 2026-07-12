@@ -62,7 +62,7 @@ func (mp *MississippiStudCuiPresenter) Output(g interfaces.MississippiStudGame, 
 
 		if g.GetGameEndFlag() {
 			if rank := g.GetHandRank(); rank >= 0 && rank < len(domain.PokerHandNames) && !g.GetFolded() {
-				fmt.Fprintf(b, "%s\n", i18n.Tf("mississippistud.handLine", "hand", domain.PokerHandNames[rank]))
+				fmt.Fprintf(b, "%s\n", i18n.Tf("mississippistud.handLine", "hand", cuiPokerHandName(rank)))
 			}
 			switch g.GetResult() {
 			case domain.GameResultWin:
