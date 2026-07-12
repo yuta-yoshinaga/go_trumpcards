@@ -54,5 +54,10 @@
     "foundations": "The central foundations are shared. Start with an Ace and build up by suit.",
     "stock": "Draw from the stock to pull more cards through your waste.",
     "resetButton": "Reset to start a new game."
+  },
+  "foundationAnnounce": {
+    "human": "You placed on foundation {{foundation}}",
+    "cpu": "CPU placed on foundation {{foundation}}",
+    "collision": "Move to foundation {{foundation}} rejected"
   }
 }
