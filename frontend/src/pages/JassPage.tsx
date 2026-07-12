@@ -317,7 +317,11 @@ function JassPageContent() {
 
         {hint && (
           <div className="text-ds-warning text-sm mb-2">
-            {`${t('hintPlay')}: [${hint.cardIndex ?? '-'}] (${hint.reason})`}
+            {/* hint.reason is a raw backend identifier; translate via hintReason.*,
+                falling back to a generic label for any unknown reason. */}
+            {`${t('hintPlay')}: [${hint.cardIndex ?? '-'}] (${t(`hintReason.${hint.reason}`, {
+              defaultValue: t('hintReason.fallback'),
+            })})`}
           </div>
         )}
 

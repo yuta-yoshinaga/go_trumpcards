@@ -144,6 +144,28 @@ describe('JassPage', () => {
     await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());
   });
 
+  it('translates a known hint reason', async () => {
+    const playState = makeState({ phase: JassPhase.PLAY, trumpSuit: 1, currentPlayerIdx: 0 });
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<JassPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    mockExec.mockResolvedValueOnce({ ...playState, hint: { cardIndex: 0, reason: 'trump_cut' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByText(/切り札でカット/)).toBeInTheDocument());
+  });
+
+  it('falls back to a generic label for an unknown hint reason', async () => {
+    const playState = makeState({ phase: JassPhase.PLAY, trumpSuit: 1, currentPlayerIdx: 0 });
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<JassPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    // Omit cardIndex to also exercise the `?? '-'` fallback for a missing index.
+    mockExec.mockResolvedValueOnce({ ...playState, hint: { reason: 'brand_new_reason' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByText(/最善手/)).toBeInTheDocument());
+    expect(screen.queryByText(/brand_new_reason/)).not.toBeInTheDocument();
+  });
+
   it('shows reset button mid-game and opens confirm dialog', async () => {
     renderWithProviders(<JassPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
