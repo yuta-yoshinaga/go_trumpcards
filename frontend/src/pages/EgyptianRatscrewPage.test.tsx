@@ -4,7 +4,7 @@ import { egyptianRatscrewApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { EgyptianRatscrewResponse } from '../types/card';
-import { EgyptianRatscrewPhase, EgyptianRatscrewSlapReason } from '../types/phases';
+import { EgyptianRatscrewEventKind, EgyptianRatscrewPhase, EgyptianRatscrewSlapReason } from '../types/phases';
 import { EgyptianRatscrewPage } from './EgyptianRatscrewPage';
 
 vi.mock('../hooks/useCliMode', () => ({
@@ -120,6 +120,32 @@ describe('EgyptianRatscrewPage', () => {
     await waitFor(() => expect(screen.getByTestId('slap-button')).toBeInTheDocument());
     fireEvent.click(screen.getByTestId('slap-button'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('slap'));
+  });
+
+  it('announces a correct sandwich slap to screen readers', async () => {
+    mockExec.mockResolvedValue({
+      ...slappableState,
+      lastEventKind: EgyptianRatscrewEventKind.SLAP_CORRECT,
+      lastEventPlayerIdx: 0,
+      lastSlapReason: EgyptianRatscrewSlapReason.SANDWICH,
+    });
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => {
+      const announce = screen.getByTestId('er-slap-announce');
+      expect(announce).toHaveAttribute('aria-live', 'polite');
+      expect(announce.textContent).toMatch(/スラップ成功/);
+      expect(announce.textContent).toMatch(/サンドイッチ/);
+    });
+  });
+
+  it('announces a wrong slap to screen readers', async () => {
+    mockExec.mockResolvedValue({
+      ...slappableState,
+      lastEventKind: EgyptianRatscrewEventKind.SLAP_WRONG,
+      lastEventPlayerIdx: 1,
+    });
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('er-slap-announce').textContent).toMatch(/スラップ失敗/));
   });
 
   it('disables slap button when pile is empty', async () => {
