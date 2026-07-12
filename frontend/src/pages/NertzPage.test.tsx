@@ -267,6 +267,24 @@ describe('NertzPage', () => {
     });
   });
 
+  it("announces the human's own foundation placement", async () => {
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => expect(screen.getByAltText('♥ 7')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♥ 7').closest('button') as HTMLElement);
+    // The move to foundation 0 succeeds and grows it, so pendingFoundationRef → 0
+    // makes the growth attribute to the human.
+    const grown: NertzResponse['foundations'] = Array.from({ length: 8 }, () => ({ suit: -1, size: 0 }));
+    grown[0] = { suit: 3, size: 1, top: { design: 'HEART', value: 1 } };
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...playingState, foundations: grown });
+    fireEvent.click(screen.getByLabelText(/ファウンデーション0|Foundation 0/));
+    await waitFor(() => expect(screen.getByTestId('nertz-announce').textContent).toMatch(/あなたが配置/));
+  });
+
   it('announces a collision when a foundation move is rejected', async () => {
     renderWithProviders(
       <MemoryRouter initialEntries={['/nertz']}>

@@ -191,9 +191,13 @@ function NertzPageContent() {
         }
         return next;
       });
-      const lastIdx = grown[grown.length - 1];
+      // Prefer announcing the human's own placement when it grew this tick, so a
+      // simultaneous CPU growth never drowns out the player's own action.
+      const announceIdx = humanIdx !== null && grown.includes(humanIdx) ? humanIdx : grown[grown.length - 1];
       setFoundationAnnounce(
-        t(humanIdx === lastIdx ? 'foundationAnnounce.human' : 'foundationAnnounce.cpu', { foundation: lastIdx + 1 }),
+        t(announceIdx === humanIdx ? 'foundationAnnounce.human' : 'foundationAnnounce.cpu', {
+          foundation: announceIdx + 1,
+        }),
       );
       // Schedule a removal for each idx independently so the visible flash
       // duration is constant regardless of when sibling flashes start.
