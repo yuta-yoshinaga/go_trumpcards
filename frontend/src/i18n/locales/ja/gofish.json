@@ -42,5 +42,10 @@
   "hint": {
     "askKnownRank": "直前に相手が取ったランクを要求推奨",
     "askMostCopies": "最も多く持っているランクを要求推奨"
+  },
+  "a11y": {
+    "targetSelected": "{{name}} を選択",
+    "rankSelected": "ランク {{rank}} を選択",
+    "kbdHint": "数字キーで相手、←→ でランク、Enter で要求"
   }
 }
