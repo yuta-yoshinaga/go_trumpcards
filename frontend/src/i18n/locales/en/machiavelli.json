@@ -49,5 +49,9 @@
     "newMeldButton": "Select 3 or more hand cards to lay a new meld on the table.",
     "scoreTable": "Player scores are shown here. Lowest cumulative total wins.",
     "resetButton": "Press the reset button to start a new game."
+  },
+  "a11y": {
+    "meldLabel": "{{kind}}, {{count}} cards, {{rank}}",
+    "layoffTo": "Lay off onto {{meld}}"
   }
 }

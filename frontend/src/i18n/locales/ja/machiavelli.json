@@ -49,5 +49,9 @@
     "newMeldButton": "手札を3枚以上選んで、新しいメルドを場に出します。",
     "scoreTable": "各プレイヤーのスコアが表示されます。累計最少が勝利です。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "a11y": {
+    "meldLabel": "{{kind}} {{count}}枚 {{rank}}",
+    "layoffTo": "{{meld}} にレイオフ"
   }
 }
