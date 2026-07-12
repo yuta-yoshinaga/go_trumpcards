@@ -135,9 +135,10 @@ function SheepsheadPageContent() {
   const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('sheepshead', SHEEPSHEAD_PHASE_KEYS);
 
-  // Keyboard hand navigation (arrow keys move, space toggles, Enter confirms).
-  // BURY needs two cards and PLAY needs one; both handlers self-guard on the
-  // selected count, so confirmAction just routes to the active phase's handler.
+  // Keyboard hand navigation: number keys toggle a card, Enter confirms,
+  // Escape clears. BURY needs two cards and PLAY needs one; both handlers
+  // self-guard on the selected count, so confirmAction just routes to the
+  // active phase's handler.
   const humanIdxForKbd = state?.players.findIndex((p) => p.isHuman) ?? -1;
   const canBuryForKbd = state?.phase === SheepsheadPhase.BURY && state.pickerIdx === humanIdxForKbd;
   const canPlayForKbd = state?.phase === SheepsheadPhase.PLAY && state.currentPlayerIdx === humanIdxForKbd;
