@@ -277,6 +277,47 @@ describe('PineapplePage', () => {
     await waitFor(() => expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'false'));
   });
 
+  it('keyboard: re-pressing deselects, the 1-card cap blocks a second pick, and empty Enter is a no-op', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+    mockExec.mockClear();
+    // Select card 0.
+    fireEvent.keyDown(document.body, { key: '1' });
+    await waitFor(() => expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'true'));
+    // Crazy Pineapple discards exactly 1, so pressing "2" must not also select card 1.
+    fireEvent.keyDown(document.body, { key: '2' });
+    expect(cardButtons[1]).toHaveAttribute('aria-pressed', 'false');
+    // Re-pressing "1" deselects card 0.
+    fireEvent.keyDown(document.body, { key: '1' });
+    await waitFor(() => expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'false'));
+    // With nothing selected, Enter neither opens the confirm step nor commits.
+    fireEvent.keyDown(document.body, { key: 'Enter' });
+    expect(screen.queryByTestId('discard-confirm')).not.toBeInTheDocument();
+    expect(mockExec).not.toHaveBeenCalledWith('discard', undefined, expect.anything());
+  });
+
+  it('keyboard: Escape from the confirm step returns to selection without committing', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: '1' });
+    await waitFor(() => expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'true'));
+    fireEvent.keyDown(document.body, { key: 'Enter' });
+    expect(screen.getByTestId('discard-confirm')).toBeInTheDocument();
+    // Number keys are inert while confirming — the selection can't be changed.
+    fireEvent.keyDown(document.body, { key: '2' });
+    expect(cardButtons[1]).toHaveAttribute('aria-pressed', 'false');
+    // Escape backs out of the confirm step; the selection is kept.
+    fireEvent.keyDown(document.body, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByTestId('discard-confirm')).not.toBeInTheDocument());
+    expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'true');
+    expect(mockExec).not.toHaveBeenCalledWith('discard', undefined, expect.anything());
+  });
+
   it('previews the kept cards and tentative hand for Irish Poker discard', async () => {
     const irishDiscardState: PineappleResponse = {
       ...discardState,
