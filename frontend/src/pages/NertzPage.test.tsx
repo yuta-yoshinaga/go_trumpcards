@@ -251,6 +251,54 @@ describe('NertzPage', () => {
     );
   });
 
+  it('announces a foundation placement to screen readers', async () => {
+    const foundations: NertzResponse['foundations'] = Array.from({ length: 8 }, () => ({ suit: -1, size: 0 }));
+    foundations[2] = { suit: 3, size: 1, top: { design: 'HEART', value: 1 } };
+    mockExec.mockResolvedValue({ ...playingState, foundations });
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => {
+      const announce = screen.getByTestId('nertz-announce');
+      expect(announce).toHaveAttribute('aria-live', 'polite');
+      expect(announce.textContent).toMatch(/ファウンデーション3/);
+    });
+  });
+
+  it("announces the human's own foundation placement", async () => {
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => expect(screen.getByAltText('♥ 7')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♥ 7').closest('button') as HTMLElement);
+    // The move to foundation 0 succeeds and grows it, so pendingFoundationRef → 0
+    // makes the growth attribute to the human.
+    const grown: NertzResponse['foundations'] = Array.from({ length: 8 }, () => ({ suit: -1, size: 0 }));
+    grown[0] = { suit: 3, size: 1, top: { design: 'HEART', value: 1 } };
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...playingState, foundations: grown });
+    fireEvent.click(screen.getByLabelText(/ファウンデーション0|Foundation 0/));
+    await waitFor(() => expect(screen.getByTestId('nertz-announce').textContent).toMatch(/あなたが配置/));
+  });
+
+  it('announces a collision when a foundation move is rejected', async () => {
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => expect(screen.getByAltText('♥ 7')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♥ 7').closest('button') as HTMLElement);
+    mockExec.mockClear();
+    mockExec.mockRejectedValue(new Error('invalid move'));
+    fireEvent.click(screen.getByLabelText(/ファウンデーション0|Foundation 0/));
+    await waitFor(() => expect(screen.getByTestId('nertz-announce').textContent).toMatch(/移動が失敗/));
+  });
+
   it('shows the next-round button at round end', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(

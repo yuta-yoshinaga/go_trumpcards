@@ -140,6 +140,7 @@ function NertzPageContent() {
   );
 
   const [collidedFoundationIdx, setCollidedFoundationIdx] = useState<number | null>(null);
+  const [foundationAnnounce, setFoundationAnnounce] = useState('');
   const [collisionTick, setCollisionTick] = useState(0);
   /**
    * Map of foundation index → active placement flash. Multiple CPUs (or a CPU
@@ -190,6 +191,14 @@ function NertzPageContent() {
         }
         return next;
       });
+      // Prefer announcing the human's own placement when it grew this tick, so a
+      // simultaneous CPU growth never drowns out the player's own action.
+      const announceIdx = humanIdx !== null && grown.includes(humanIdx) ? humanIdx : grown[grown.length - 1];
+      setFoundationAnnounce(
+        t(announceIdx === humanIdx ? 'foundationAnnounce.human' : 'foundationAnnounce.cpu', {
+          foundation: announceIdx + 1,
+        }),
+      );
       // Schedule a removal for each idx independently so the visible flash
       // duration is constant regardless of when sibling flashes start.
       for (const idx of grown) {
@@ -205,14 +214,16 @@ function NertzPageContent() {
     }
     prevFoundationSizesRef.current = state.foundations.map((f) => f.size);
     pendingFoundationRef.current = null;
-  }, [state]);
+  }, [state, t]);
 
   useEffect(() => {
     if (error && error !== prevErrorRef.current) {
       if (pendingFoundationRef.current !== null) {
-        setCollidedFoundationIdx(pendingFoundationRef.current);
+        const collidedIdx = pendingFoundationRef.current;
+        setCollidedFoundationIdx(collidedIdx);
         setCollisionTick((n) => n + 1);
         setIsCollisionError(true);
+        setFoundationAnnounce(t('foundationAnnounce.collision', { foundation: collidedIdx + 1 }));
         pendingFoundationRef.current = null;
       } else {
         setIsCollisionError(false);
@@ -221,7 +232,7 @@ function NertzPageContent() {
       setIsCollisionError(false);
     }
     prevErrorRef.current = error;
-  }, [error]);
+  }, [error, t]);
 
   useEffect(() => {
     // `collisionTick` ensures repeated collisions on the same foundation reset the timer.
@@ -333,6 +344,9 @@ function NertzPageContent() {
       ) : (
         <>
           <div className="flex-1 overflow-y-auto px-3 py-2 space-y-4">
+            <div className="sr-only" role="status" aria-live="polite" aria-atomic="true" data-testid="nertz-announce">
+              {foundationAnnounce}
+            </div>
             <div className="bg-black/30 text-ds-text-primary p-3 rounded text-sm">
               <div className="flex flex-wrap gap-x-4 gap-y-1">
                 <span>
