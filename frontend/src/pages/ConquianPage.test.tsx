@@ -159,6 +159,53 @@ describe('ConquianPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawdiscard'));
   });
 
+  it('keyboard: "s" draws from the stock and "d" takes the discard', async () => {
+    const { unmount } = renderWithProviders(<ConquianPage />);
+    await screen.findByRole('button', { name: '山札から引く' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(meldPhaseState);
+    fireEvent.keyDown(document.body, { key: 's' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawstock'));
+    unmount();
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<ConquianPage />);
+    await screen.findByRole('button', { name: '捨て札から引く' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(meldPhaseTookDiscard);
+    fireEvent.keyDown(document.body, { key: 'd' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawdiscard'));
+  });
+
+  it('keyboard: "d" does nothing when there is no discard top', async () => {
+    mockExec.mockResolvedValue(noDiscardState);
+    renderWithProviders(<ConquianPage />);
+    await screen.findByRole('button', { name: '捨て札から引く' });
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'd' });
+    expect(mockExec).not.toHaveBeenCalledWith('drawdiscard');
+  });
+
+  it('keyboard: draw keys are disabled on a CPU turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<ConquianPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, expect.anything()));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 's' });
+    fireEvent.keyDown(document.body, { key: 'd' });
+    expect(mockExec).not.toHaveBeenCalledWith('drawstock');
+    expect(mockExec).not.toHaveBeenCalledWith('drawdiscard');
+  });
+
+  it('advertises the draw keyboard shortcuts on the buttons', async () => {
+    renderWithProviders(<ConquianPage />);
+    const stockBtn = await screen.findByRole('button', { name: '山札から引く' });
+    expect(stockBtn).toHaveAttribute('aria-keyshortcuts', 's');
+    expect(stockBtn.querySelector('kbd')?.textContent).toBe('S');
+    expect(screen.getByRole('button', { name: '捨て札から引く' })).toHaveAttribute('aria-keyshortcuts', 'd');
+  });
+
   it('renders meld and discard buttons during meld phase', async () => {
     mockExec.mockResolvedValue(meldPhaseState);
     renderWithProviders(<ConquianPage />);

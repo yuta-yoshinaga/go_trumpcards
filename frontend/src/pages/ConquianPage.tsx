@@ -9,9 +9,11 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { KbdBadge } from '../components/KbdBadge';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
@@ -143,6 +145,19 @@ function ConquianPageContent() {
     onClear: clearSelection,
     enabled: !!isHumanTurn && !loading,
   });
+
+  // DRAW phase: s draws from the stock, d takes the discard top. Number keys
+  // and Enter/Escape are handled by useCardKeyboardNav; these letter keys don't
+  // collide with it.
+  const canDrawForKbd = isDrawPhase && !!isHumanTurn && !loading;
+  const drawBindings = useMemo(
+    () => [
+      { key: 's', action: handleDrawStock, enabled: canDrawForKbd },
+      { key: 'd', action: handleDrawDiscard, enabled: canDrawForKbd && !!state?.discardTop },
+    ],
+    [handleDrawStock, handleDrawDiscard, canDrawForKbd, state?.discardTop],
+  );
+  useActionKeyboardNav({ bindings: drawBindings, enabled: canDrawForKbd });
 
   if (!state) {
     return (
@@ -341,16 +356,25 @@ function ConquianPageContent() {
             <div className="flex gap-2 items-center flex-wrap">
               {isDrawPhase && isHumanTurn && (
                 <div className="flex gap-2">
-                  <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleDrawStock}
+                    disabled={loading}
+                    aria-keyshortcuts="s"
+                  >
                     {t('drawStockButton')}
+                    <KbdBadge label={t('kbd.stock')} />
                   </button>
                   <button
                     type="button"
                     className={btnPrimary}
                     onClick={handleDrawDiscard}
                     disabled={loading || !state.discardTop}
+                    aria-keyshortcuts="d"
                   >
                     {t('drawDiscardButton')}
+                    <KbdBadge label={t('kbd.discard')} />
                   </button>
                 </div>
               )}

@@ -43,5 +43,9 @@
     "discardButton": "After melding, discard one card from your hand.",
     "scoreTable": "Each player's rounds won are shown here.",
     "resetButton": "Press the reset button to start a new game."
+  },
+  "kbd": {
+    "stock": "S",
+    "discard": "D"
   }
 }
