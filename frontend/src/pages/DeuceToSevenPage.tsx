@@ -40,6 +40,7 @@ import { formatDeuceToSevenState } from '../utils/cli/formatters/deuceToSevenFor
 import type { CliGameConfig } from '../utils/cli/types';
 import { deuceToSevenBestIndices, isMadePatLow } from '../utils/deuceToSevenUtils';
 import { findPlayerName } from '../utils/playerUtils';
+import { type PokerHandRank, pokerHandKey } from '../utils/pokerSquaresUtils';
 
 /** 2-7 Triple Draw tutorial step definitions. */
 const D7_TUTORIAL_STEPS: TutorialStep[] = [
@@ -84,6 +85,10 @@ function DeuceToSevenPageContent() {
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
   const isMobile = useIsMobile();
+  // Translate the poker category via its stable rank so the badge follows the
+  // UI locale; fall back to the server's string if the rank is out of range.
+  const handLabel = (handRank: number, handName: string): string =>
+    t(`hand.${pokerHandKey(handRank as PokerHandRank)}`, { defaultValue: handName });
   const gameHook = useDeuceToSevenGame();
   const { state, loading, error, retry, selected, toggleCard, clearSelection, canExchange } = gameHook;
   const execAction = gameHook.exec;
@@ -240,7 +245,7 @@ function DeuceToSevenPageContent() {
                     currentBet: p.currentBet,
                     folded: p.folded,
                     allIn: p.allIn,
-                    handName: p.handName,
+                    handName: handLabel(p.handRank, p.handName),
                     cards: p.cards,
                   }}
                   showCards={isEnd}
@@ -292,7 +297,7 @@ function DeuceToSevenPageContent() {
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                   {isEnd && !humanPlayer.folded && humanPlayer.handName && (
                     <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
-                      {humanPlayer.handName}
+                      {handLabel(humanPlayer.handRank, humanPlayer.handName)}
                     </span>
                   )}
                 </div>
