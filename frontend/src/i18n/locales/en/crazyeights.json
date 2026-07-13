@@ -17,6 +17,13 @@
   "drawPile": "Draw pile: {{count}} cards",
   "discardTop": "Discard",
   "chosenSuit": "Chosen suit",
+  "suitChanged": "Chosen suit changed to {{suit}}",
+  "suitName": {
+    "spade": "Spades",
+    "clover": "Clubs",
+    "heart": "Hearts",
+    "diamond": "Diamonds"
+  },
   "cards": "{{count}} cards",
   "cumulativeScore": "Total: {{score}}",
   "roundScore": "Round: {{score}}",

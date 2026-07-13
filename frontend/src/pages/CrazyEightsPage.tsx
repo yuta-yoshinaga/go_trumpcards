@@ -57,6 +57,17 @@ const SUIT_SYMBOLS: Record<number, string> = {
   [CrazyEightsSuit.DIAMOND]: '♦',
 };
 
+/** Chosen-suit number → i18n key for the spoken suit name (used in the live-region announcement). */
+const SUIT_NAME_KEYS: Record<number, string> = {
+  [CrazyEightsSuit.SPADE]: 'suitName.spade',
+  [CrazyEightsSuit.CLOVER]: 'suitName.clover',
+  [CrazyEightsSuit.HEART]: 'suitName.heart',
+  [CrazyEightsSuit.DIAMOND]: 'suitName.diamond',
+};
+
+/** DOM id linking each illegal card button to the shared screen-reader reason text. */
+const ILLEGAL_REASON_ID = 'ce-illegal-reason';
+
 /** Crazy Eights tutorial step definitions. */
 const CE_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -169,6 +180,12 @@ function CrazyEightsPageContent() {
   const isGameEnd = state.phase === CrazyEightsPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
 
+  // Announce the active suit whenever an 8 has changed it. The watermark and the
+  // sidebar readout are aria-hidden / static, so this sr-only live region is the
+  // only channel that tells a screen-reader user a suit was chosen (e.g. by a CPU).
+  const suitNameKey = SUIT_NAME_KEYS[state.chosenSuit];
+  const suitAnnouncement = state.chosenSuit > 0 && suitNameKey ? t('suitChanged', { suit: t(suitNameKey) }) : '';
+
   return (
     <GamePageShell
       title={tc('nav.crazyeights')}
@@ -228,6 +245,12 @@ function CrazyEightsPageContent() {
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span>{t('drawPile', { count: state.drawPileCount })}</span>
+            </div>
+
+            {/* Always-rendered polite live region announcing the active suit after an 8.
+                Empty when no suit is chosen so the announcement fires on the transition. */}
+            <div className="sr-only" role="status" aria-live="polite" data-testid="ce-suit-live-region">
+              {suitAnnouncement}
             </div>
 
             <div className={lgTwoColGrid}>
@@ -324,6 +347,11 @@ function CrazyEightsPageContent() {
           <GameFooter className={`${gameTheme.crazyeights.footer} px-4 py-2.5`}>
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ce-player-hand">
+                {/* Shared screen-reader reason, referenced by every illegal card via
+                    aria-describedby so the "why" is spoken (title alone is skipped by SRs). */}
+                <span id={ILLEGAL_REASON_ID} className="sr-only">
+                  {t('illegalHint')}
+                </span>
                 {humanPlayer.cards.map((card, idx) => {
                   // On the human's turn, highlight playable cards (matching suit/rank or an 8)
                   // and dim the rest with a reason tooltip, so the rule is visible at a glance.
@@ -336,6 +364,7 @@ function CrazyEightsPageContent() {
                       aria-label={cardAlt(card)}
                       aria-pressed={selectedCardIndices.includes(idx)}
                       title={isHumanTurn && !legal ? t('illegalHint') : undefined}
+                      aria-describedby={isHumanTurn && !legal ? ILLEGAL_REASON_ID : undefined}
                       data-legal={isHumanTurn ? legal : undefined}
                       className={`transition-transform ${focusRingCard} ${
                         isHumanTurn && legal ? 'rounded-lg ring-2 ring-ds-success' : ''
