@@ -379,11 +379,12 @@ function PaiGowPageContent() {
             )}
             {isSetHandsPhase && (
               <div className="flex flex-col items-center gap-1 pb-2">
-                {foul.isFoul && (
-                  <p data-testid="foul-warning" className="text-ds-error text-sm font-medium">
-                    {t('foulWarning')}
-                  </p>
-                )}
+                {/* Always-rendered assertive live region so both the onset and the
+                    clearing of a foul are announced (an unmounted region can't
+                    announce its own removal). Empty <p> collapses to no height. */}
+                <p data-testid="foul-warning" aria-live="assertive" className="text-ds-error text-sm font-medium">
+                  {foul.isFoul ? t('foulWarning') : ''}
+                </p>
                 <details data-testid="foul-rule-help" className="text-xs text-ds-text-muted max-w-sm text-center">
                   <summary className="cursor-pointer text-ds-info">{t('foulRuleHelpTitle')}</summary>
                   <p className="pt-1">{t('foulRuleHelp')}</p>

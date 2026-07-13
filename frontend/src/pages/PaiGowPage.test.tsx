@@ -201,13 +201,23 @@ describe('PaiGowPage', () => {
     renderWithProviders(<PaiGowPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'セット' })).toBeInTheDocument());
 
+    // Before selecting, the assertive live region is present but empty (so a
+    // later foul — and its clearing — are both announced).
+    const foulRegion = screen.getByTestId('foul-warning');
+    expect(foulRegion).toHaveAttribute('aria-live', 'assertive');
+    expect(foulRegion).toHaveTextContent('');
+
     // Low = [D13, S3] (top 13); high = [S10, H11, C5, H7, D9] (top 11) → foul.
     const cardButtons = getCardButtons();
     fireEvent.click(cardButtons[2]);
     fireEvent.click(cardButtons[5]);
 
-    expect(screen.getByTestId('foul-warning')).toBeInTheDocument();
+    expect(foulRegion).not.toHaveTextContent('');
     expect(screen.getByTestId('set-hands-button')).toBeDisabled();
+
+    // Deselecting a card clears the foul → the region empties (announcing the change).
+    fireEvent.click(cardButtons[5]);
+    await waitFor(() => expect(screen.getByTestId('foul-warning')).toHaveTextContent(''));
   });
 
   it('deselects a card when clicked again', async () => {
