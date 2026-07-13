@@ -81,5 +81,6 @@
     "pairOrBetter": "Pair or better — call recommended",
     "aceKingHigh": "Ace-King high — call recommended",
     "weakHand": "Weak hand — fold recommended"
-  }
+  },
+  "hiddenCard": "Hidden card"
 }
