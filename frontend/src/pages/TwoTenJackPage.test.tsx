@@ -104,6 +104,13 @@ describe('TwoTenJackPage', () => {
     });
   });
 
+  it('gives the score table an sr-only caption describing its purpose', async () => {
+    renderWithProviders(<TwoTenJackPage />);
+    const captions = await screen.findAllByText('チーム別の得点集計');
+    expect(captions.length).toBeGreaterThan(0);
+    expect(captions[0].tagName).toBe('CAPTION');
+  });
+
   it('shows four suit buttons during human declare phase', async () => {
     mockExec.mockResolvedValue(declarePhaseState);
     renderWithProviders(<TwoTenJackPage />);
