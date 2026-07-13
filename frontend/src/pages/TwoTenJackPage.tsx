@@ -312,6 +312,7 @@ function TwoTenJackPageContent() {
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
                     <div className="overflow-x-auto -mx-2 px-2">
                       <table className="w-full text-sm text-ds-text-muted min-w-[320px] mt-1">
+                        <caption className="sr-only">{t('scoresCaption')}</caption>
                         <thead>
                           <tr>
                             <th scope="col" className="text-left">
@@ -342,6 +343,7 @@ function TwoTenJackPageContent() {
                     <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
                     <div className="overflow-x-auto -mx-2 px-2">
                       <table className="w-full text-sm text-ds-text-muted min-w-[320px]">
+                        <caption className="sr-only">{t('scoresCaption')}</caption>
                         <thead>
                           <tr>
                             <th scope="col" className="text-left">

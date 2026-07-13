@@ -53,5 +53,6 @@
     "follow_suit": "Follow the lead suit with this card",
     "trump_cut": "Cut the trick with a trump",
     "discard": "Cannot win — discard a low card"
-  }
+  },
+  "scoresCaption": "Score summary by team"
 }
