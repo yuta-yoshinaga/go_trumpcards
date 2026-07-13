@@ -114,6 +114,40 @@ describe('ClockSolitairePage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('ゲームクリア'));
   });
 
+  it('mirrors the resolved message in a polite live region', async () => {
+    renderWithProviders(<ClockSolitairePage />);
+    const live = await screen.findByTestId('cs-live-region');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveAttribute('role', 'status');
+    await waitFor(() => expect(live).toHaveTextContent('プレイ中'));
+  });
+
+  it('announces the game-clear result (with step count) in the live region', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<ClockSolitairePage />);
+    const live = await screen.findByTestId('cs-live-region');
+    await waitFor(() => expect(live).toHaveTextContent('ゲームクリア'));
+    expect(live.textContent).toMatch(/48/);
+  });
+
+  it('falls back to the raw message when there is no messageCode', async () => {
+    mockExec.mockResolvedValue({ ...playingState, messageCode: undefined, message: 'カスタムメッセージ' });
+    renderWithProviders(<ClockSolitairePage />);
+    const live = await screen.findByTestId('cs-live-region');
+    await waitFor(() => expect(live).toHaveTextContent('カスタムメッセージ'));
+  });
+
+  it('falls back to the raw message when the messageCode has no translation', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      messageCode: 'clocksolitaire.unknownCode',
+      message: '生メッセージ',
+    });
+    renderWithProviders(<ClockSolitairePage />);
+    const live = await screen.findByTestId('cs-live-region');
+    await waitFor(() => expect(live).toHaveTextContent('生メッセージ'));
+  });
+
   it('shows game over phase name', async () => {
     mockExec.mockResolvedValue(gameOverState);
     renderWithProviders(<ClockSolitairePage />);
