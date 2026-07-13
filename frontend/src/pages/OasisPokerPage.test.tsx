@@ -118,6 +118,14 @@ describe('OasisPokerPage', () => {
     await waitFor(() => expect(screen.getByTestId('dealer-qualify-pending')).toBeInTheDocument());
   });
 
+  it('labels the masked dealer cards as hidden for assistive tech', async () => {
+    mockApi.mockResolvedValue(exchangePhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    // 4 masked dealer cards each announced as "hidden card" (1 dealer card is face-up).
+    const hidden = await screen.findAllByRole('img', { name: '非公開のカード' });
+    expect(hidden).toHaveLength(4);
+  });
+
   it('hides the pending note and shows the qualification state at the end phase', async () => {
     mockApi.mockResolvedValue(endPhasePlayerWins);
     renderWithProviders(<OasisPokerPage />);
