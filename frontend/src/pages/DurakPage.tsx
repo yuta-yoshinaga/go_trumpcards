@@ -310,7 +310,12 @@ function DurakPageContent() {
 
                 {/* CPU actions */}
                 {state.cpuActions.length > 0 && (
-                  <div className="bg-black/40 rounded-lg text-game-text-muted py-2 px-3.5 my-2 whitespace-pre-line text-xs">
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    data-testid="durak-cpu-actions"
+                    className="bg-black/40 rounded-lg text-game-text-muted py-2 px-3.5 my-2 whitespace-pre-line text-xs"
+                  >
                     {[
                       tc('label.cpuActions'),
                       ...state.cpuActions.map(

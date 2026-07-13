@@ -89,6 +89,17 @@ describe('DurakPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, defaultConfig));
   });
 
+  it('announces CPU actions in a polite live region', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      cpuActions: [{ playerIdx: 1, actionType: 0, card: null, attackIdx: -1 }],
+    });
+    renderWithProviders(<DurakPage />);
+    const log = await screen.findByTestId('durak-cpu-actions');
+    expect(log).toHaveAttribute('aria-live', 'polite');
+    expect(log).toHaveAttribute('role', 'status');
+  });
+
   it('renders CPU player areas', async () => {
     renderWithProviders(<DurakPage />);
     await waitFor(() => {
