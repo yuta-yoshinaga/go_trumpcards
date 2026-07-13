@@ -83,6 +83,17 @@ beforeEach(() => {
 });
 
 describe('PyramidPage', () => {
+  it('conveys blocked / selected / pair-candidate state in the card aria-labels', async () => {
+    renderWithProviders(<PyramidPage />);
+    await screen.findByLabelText('♠ 10');
+    // Top-row cards are covered by the row below → blocked.
+    expect(screen.getByRole('button', { name: '♠ K （ブロック中）' })).toBeInTheDocument();
+    // Selecting ♠10 marks it selected and makes ♦3 (sum 13) a pair candidate.
+    fireEvent.click(screen.getByLabelText('♠ 10'));
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ 10 （選択中）' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '♦ 3 （合計13の相手）' })).toBeInTheDocument();
+  });
+
   it('rings both cards of a pair hint on the board', async () => {
     renderWithProviders(<PyramidPage />);
     await waitFor(() => expect(screen.getByLabelText('♦ 3')).toBeInTheDocument());
@@ -99,14 +110,15 @@ describe('PyramidPage', () => {
     await waitFor(() => expect(screen.getByLabelText('♠ 10')).toBeInTheDocument());
 
     // Select ♠10 (partner value 3) so ♦3 becomes a pair candidate…
+    // (its aria-label now gains the "（合計13の相手）" suffix, so match by regex).
     fireEvent.click(screen.getByLabelText('♠ 10'));
-    await waitFor(() => expect(screen.getByLabelText('♦ 3')).toHaveClass('ring-ds-success'));
+    await waitFor(() => expect(screen.getByLabelText(/♦ 3/)).toHaveClass('ring-ds-success'));
 
     // …then request a hint that also targets ♦3: the hint ring must win alone.
     mockExec.mockResolvedValueOnce({ ...playingState, hint: { type: 'pair', row1: 2, col1: 0, row2: 2, col2: 1 } });
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
-    await waitFor(() => expect(screen.getByLabelText('♦ 3')).toHaveClass('ring-ds-warning'));
-    expect(screen.getByLabelText('♦ 3')).not.toHaveClass('ring-ds-success');
+    await waitFor(() => expect(screen.getByLabelText(/♦ 3/)).toHaveClass('ring-ds-warning'));
+    expect(screen.getByLabelText(/♦ 3/)).not.toHaveClass('ring-ds-success');
   });
 
   it('rings the king cell for a king hint and clears it on the next card click', async () => {

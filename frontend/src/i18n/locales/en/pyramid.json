@@ -39,5 +39,10 @@
     "useWasteKing": "The waste King can be removed directly",
     "useWaste": "The waste card can pair with an exposed card to sum to 13",
     "drawFromStock": "No immediate matches — try drawing from the stock"
+  },
+  "a11y": {
+    "blocked": "(blocked)",
+    "selected": "(selected)",
+    "pairCandidate": "(pairs to 13)"
   }
 }
