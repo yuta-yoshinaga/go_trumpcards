@@ -119,6 +119,17 @@ describe('DaifugoPage', () => {
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
+  it('marks the active sort button with aria-pressed under an sr-only legend', async () => {
+    // humanTurnState has sortMode 0 (strength).
+    renderWithProviders(<DaifugoPage />);
+    const strength = await screen.findByTestId('df-sort-0');
+    expect(strength).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('df-sort-1')).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByTestId('df-sort-2')).toHaveAttribute('aria-pressed', 'false');
+    // The three buttons are grouped with an accessible legend.
+    expect(screen.getByRole('group', { name: '手札の並べ替え' })).toBeInTheDocument();
+  });
+
   it('shows phase indicator with プレイ during gameplay', async () => {
     renderWithProviders(<DaifugoPage />);
     await waitFor(() => {

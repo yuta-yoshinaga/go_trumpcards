@@ -48,7 +48,8 @@
   "sort": {
     "strength": "By Strength",
     "suit": "By Suit",
-    "number": "By Number"
+    "number": "By Number",
+    "label": "Sort hand"
   },
   "phase": {
     "play": "Play",
