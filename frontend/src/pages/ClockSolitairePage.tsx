@@ -142,6 +142,17 @@ function ClockSolitairePageContent() {
 
   const radius = Math.min(cardWidth * 5, 180);
 
+  // Resolve the same text GameMessageBox shows so it can also be announced in a
+  // dedicated live region (the visible box is not guaranteed to be a live region).
+  const liveMessage = (() => {
+    if (state.messageCode) {
+      const key = `messageCode.${state.messageCode}`;
+      const translated = tc(key, state.messageParams ?? {});
+      if (translated !== key) return translated;
+    }
+    return state.message ?? '';
+  })();
+
   return (
     <GamePageShell
       title={tc('nav.clocksolitaire')}
@@ -291,6 +302,10 @@ function ClockSolitairePageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+            {/* Announce each step's result (and game clear/over) to screen readers. */}
+            <div className="sr-only" role="status" aria-live="polite" data-testid="cs-live-region">
+              {liveMessage}
+            </div>
 
             <ActionLogSection
               isEndPhase={isEnded}
