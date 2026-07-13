@@ -60,6 +60,13 @@ describe('HachiHachiPage', () => {
     expect(screen.getByTestId('hachihachi-cpu-2')).toBeInTheDocument();
   });
 
+  it('explains the three-player 88-baseline settlement in the scoring note', async () => {
+    renderWithProviders(<HachiHachiPage />);
+    await screen.findByTestId('hand-card-0');
+    // The note ties the raw-score terms to the 3-player settlement rule.
+    expect(screen.getByText(/3人で基準88点との差を精算/)).toBeInTheDocument();
+  });
+
   it('plays a hand card with a single match immediately', async () => {
     renderWithProviders(<HachiHachiPage />);
     const card = await screen.findByTestId('hand-card-0');
