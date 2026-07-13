@@ -280,7 +280,11 @@ function CaribbeanStudPageContent() {
                 <div className="flex justify-center gap-2 flex-wrap">
                   {state.dealerHand.map((card, i) =>
                     isMaskedCard(card) ? (
-                      <AnimatedCardBack key={`d-back-${i}`} width={cardWidth} />
+                      // role="img" + aria-label makes AT announce "hidden card"
+                      // instead of the generic card-back alt on the inner image.
+                      <span key={`d-back-${i}`} role="img" aria-label={t('hiddenCard')} className="inline-flex">
+                        <AnimatedCardBack width={cardWidth} />
+                      </span>
                     ) : (
                       <AnimatedCard key={`d-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
                     ),

@@ -290,9 +290,8 @@ describe('CaribbeanStudPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
     await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
 
-    // 5 player face-up + 1 dealer face-up + 4 dealer face-down (CardBack images) = 10 imgs
-    const imgs = screen.getAllByRole('img');
-    expect(imgs.length).toBe(10);
+    // The 4 masked dealer cards are each announced as "hidden card".
+    expect(screen.getAllByRole('img', { name: '非公開のカード' })).toHaveLength(4);
     // Dealer section is shown
     expect(screen.getByText('🔴')).toBeInTheDocument();
   });

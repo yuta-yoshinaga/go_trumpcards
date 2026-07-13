@@ -81,5 +81,6 @@
     "pairOrBetter": "ペア以上 — コール推奨",
     "aceKingHigh": "A-K ハイ — コール推奨",
     "weakHand": "弱い手札 — フォールド推奨"
-  }
+  },
+  "hiddenCard": "非公開のカード"
 }
