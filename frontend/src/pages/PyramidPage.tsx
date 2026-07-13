@@ -265,6 +265,16 @@ function PyramidPageContent() {
                         !!hint &&
                         ((hint.row1 === rowIdx && hint.col1 === colIdx) ||
                           (hint.row2 === rowIdx && hint.col2 === colIdx));
+                      // Convey the card's actionability (blocked / selected / pair
+                      // candidate) to assistive tech, not just via disabled/color.
+                      const cellSelected = isSelected('pyramid', rowIdx, colIdx);
+                      const statusSuffix = !exposed
+                        ? ` ${t('a11y.blocked')}`
+                        : cellSelected
+                          ? ` ${t('a11y.selected')}`
+                          : isPairCandidate
+                            ? ` ${t('a11y.pairCandidate')}`
+                            : '';
                       return (
                         <div key={`pc-${rowIdx.toString()}-${colIdx.toString()}`} className="absolute" style={{ left }}>
                           <button
@@ -274,8 +284,8 @@ function PyramidPageContent() {
                               handleSelectCard({ zone: 'pyramid', row: rowIdx, col: colIdx }, pc.card.value);
                             }}
                             disabled={!isPlaying || loading || !exposed}
-                            aria-label={cardAlt(pc.card)}
-                            aria-pressed={isSelected('pyramid', rowIdx, colIdx)}
+                            aria-label={`${cardAlt(pc.card)}${statusSuffix}`}
+                            aria-pressed={cellSelected}
                             data-pair-candidate={isPairCandidate ? 'true' : undefined}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
                               isSelected('pyramid', rowIdx, colIdx)
