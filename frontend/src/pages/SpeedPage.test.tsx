@@ -164,8 +164,9 @@ describe('SpeedPage', () => {
     mockExec.mockResolvedValue(stuckState);
     renderWithProviders(<SpeedPage />);
     await waitFor(() => expect(screen.getByText('めくる')).toBeInTheDocument());
-    // Card buttons should be disabled in stuck phase
-    const cardButtons = screen.queryAllByRole('button', { name: /SPADE|HEART|CLOVER|DIAMOND/ });
+    // Card buttons (cardAlt labels use suit symbols) should be disabled in stuck phase.
+    const cardButtons = screen.queryAllByRole('button', { name: /[♠♥♣♦]/ });
+    expect(cardButtons.length).toBeGreaterThan(0);
     for (const btn of cardButtons) {
       expect(btn).toBeDisabled();
     }
@@ -181,18 +182,26 @@ describe('SpeedPage', () => {
     renderWithProviders(<SpeedPage />);
     await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
     // DIAMOND 2 is not adjacent to either center pile (5 or 9), so it toggles normally
-    const cardBtn = screen.getByRole('button', { name: 'DIAMOND 2' });
+    const cardBtn = screen.getByRole('button', { name: '♦ 2' });
     fireEvent.click(cardBtn);
     expect(cardBtn).toHaveAttribute('aria-pressed', 'true');
     fireEvent.click(cardBtn);
     expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
   });
 
+  it('includes the localized top-card name in the center pile aria-labels', async () => {
+    renderWithProviders(<SpeedPage />);
+    await screen.findByText('手札');
+    // Center piles top with ♦5 and ♠9 → the labels name the card to play onto.
+    expect(screen.getByRole('button', { name: '台札1: ♦ 5' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '台札2: ♠ 9' })).toBeInTheDocument();
+  });
+
   it('auto-plays a card via smart-click when only one valid pile exists', async () => {
     renderWithProviders(<SpeedPage />);
     await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
     // SPADE 4 is adjacent to pile 0 (value 5) only → smart-click auto-plays
-    fireEvent.click(screen.getByRole('button', { name: 'SPADE 4' }));
+    fireEvent.click(screen.getByRole('button', { name: '♠ 4' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0, 0));
   });
 
@@ -200,7 +209,7 @@ describe('SpeedPage', () => {
     renderWithProviders(<SpeedPage />);
     await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
     // DIAMOND 2 has no valid piles, so it toggles selection first
-    fireEvent.click(screen.getByRole('button', { name: 'DIAMOND 2' }));
+    fireEvent.click(screen.getByRole('button', { name: '♦ 2' }));
     // Then click first center pile manually
     const pileBtns = screen.getAllByRole('button', { name: /台札/ });
     fireEvent.click(pileBtns[0]);
@@ -306,7 +315,7 @@ describe('SpeedPage', () => {
     renderWithProviders(<SpeedPage />);
     await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
     // Select a card with no auto-pile so it stays selected
-    fireEvent.click(screen.getByRole('button', { name: 'DIAMOND 2' }));
+    fireEvent.click(screen.getByRole('button', { name: '♦ 2' }));
     fireEvent.keyDown(window, { key: 'ArrowRight' });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 3, 1));
   });
@@ -314,7 +323,7 @@ describe('SpeedPage', () => {
   it('keyboard shortcut: ArrowLeft plays the selected card to left pile', async () => {
     renderWithProviders(<SpeedPage />);
     await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
-    fireEvent.click(screen.getByRole('button', { name: 'DIAMOND 2' }));
+    fireEvent.click(screen.getByRole('button', { name: '♦ 2' }));
     fireEvent.keyDown(window, { key: 'ArrowLeft' });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 3, 0));
   });

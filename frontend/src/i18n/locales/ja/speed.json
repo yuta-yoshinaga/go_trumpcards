@@ -8,7 +8,6 @@
   "yourHand": "手札",
   "cpuHand": "CPU手札",
   "drawPile": "山札",
-  "centerPile": "台札",
   "selectCard": "手札からカードを選択",
   "selectPile": "台札をクリックして出す",
   "playButton": "出す",
@@ -36,5 +35,6 @@
     "playerHand": "あなたの手札：タップして台札に出します",
     "drawPile": "山札：カードを出すと自動で補充されます",
     "flipButton": "めくるボタン：膠着時に押してカードをめくります"
-  }
+  },
+  "centerPileCard": "台札{{n}}: {{card}}"
 }

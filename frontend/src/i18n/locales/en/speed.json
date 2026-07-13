@@ -8,7 +8,6 @@
   "yourHand": "Your Hand",
   "cpuHand": "CPU Hand",
   "drawPile": "Draw Pile",
-  "centerPile": "Center Pile",
   "selectCard": "Select a card from your hand",
   "selectPile": "Click a center pile to play",
   "playButton": "Play",
@@ -36,5 +35,6 @@
     "playerHand": "Your hand: tap a card to select, then tap a center pile to play",
     "drawPile": "Draw pile: cards are automatically drawn when you play",
     "flipButton": "Flip button: press when stuck to turn over new center cards"
-  }
+  },
+  "centerPileCard": "Center pile {{n}}: {{card}}"
 }

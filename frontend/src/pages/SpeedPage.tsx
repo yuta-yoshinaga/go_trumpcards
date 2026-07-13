@@ -27,6 +27,7 @@ import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import type { SpeedResponse } from '../types/card';
 import { SpeedPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseSpeedCommand, SPEED_HELP } from '../utils/cli/commands/speedCommands';
 import { formatSpeedState } from '../utils/cli/formatters/speedFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -198,7 +199,11 @@ function SpeedPageContent() {
                   onClick={isStuck ? handleFlip : () => handlePlay(pi)}
                   disabled={isStuck ? loading : !isPlayPhase || selectedCardIndices.length !== 1 || loading}
                   className={`transition-transform hover:scale-105 disabled:opacity-50 ${focusRingCard}${isStuck && !loading ? ' animate-pulse cursor-pointer' : ''}`}
-                  aria-label={isStuck ? t('flipCenterPile', { n: pi + 1 }) : `${t('centerPile')} ${pi}`}
+                  aria-label={
+                    isStuck
+                      ? t('flipCenterPile', { n: pi + 1 })
+                      : t('centerPileCard', { n: pi + 1, card: cardAlt(card) })
+                  }
                 >
                   {card && <AnimatedCard card={card} width={cardWidth * 1.2} />}
                 </button>
@@ -238,7 +243,7 @@ function SpeedPageContent() {
                     key={`${card.design}-${card.value}-${idx}`}
                     onClick={() => handleSmartClick(idx, humanPlayer.cards, state.centerPiles)}
                     disabled={!isPlayPhase || loading}
-                    aria-label={`${card.design} ${card.value}`}
+                    aria-label={cardAlt(card)}
                     aria-pressed={selectedCardIndices.includes(idx)}
                     className={`transition-transform ${focusRingCard}`}
                     style={selectedCardStyle(selectedCardIndices.includes(idx))}
