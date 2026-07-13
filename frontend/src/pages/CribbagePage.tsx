@@ -422,9 +422,12 @@ function CribbagePageContent() {
                   <div className="my-3 p-2 rounded bg-black/30">
                     <div className="text-ds-text-muted text-sm mb-1">{t('score')}</div>
                     <table className="w-full text-sm text-ds-text-muted">
+                      <caption className="sr-only">{t('scoreDetail.caption')}</caption>
                       <thead>
                         <tr>
-                          <th scope="col" className="text-left" />
+                          <th scope="col" className="text-left">
+                            <span className="sr-only">{t('scoreDetail.subject')}</span>
+                          </th>
                           <th scope="col">{t('scoreDetail.fifteens')}</th>
                           <th scope="col">{t('scoreDetail.pairs')}</th>
                           <th scope="col">{t('scoreDetail.runs')}</th>
@@ -495,6 +498,7 @@ function CribbagePageContent() {
                 <div className="my-3 p-2 rounded bg-black/30">
                   <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
                   <table className="w-full text-sm text-ds-text-muted">
+                    <caption className="sr-only">{t('scoresCaption')}</caption>
                     <thead>
                       <tr>
                         <th scope="col" className="text-left">

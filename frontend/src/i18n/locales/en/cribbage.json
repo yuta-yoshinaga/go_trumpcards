@@ -49,7 +49,9 @@
     "runs": "Runs",
     "flush": "Flush",
     "nobs": "Nobs",
-    "total": "Total"
+    "total": "Total",
+    "caption": "Show scoring breakdown",
+    "subject": "Subject"
   },
   "handScoreLabels": {
     "you": "Your Hand",
@@ -79,5 +81,6 @@
     "resetButton": "Press the reset button to start a new game."
   },
   "pegBoardAria": "Peg board (scores)",
-  "scoreSummary": "{{name}}: {{score}} of {{limit}} points"
+  "scoreSummary": "{{name}}: {{score}} of {{limit}} points",
+  "scoresCaption": "Score by player"
 }
