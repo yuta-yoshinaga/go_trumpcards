@@ -260,8 +260,8 @@ describe('TexasHoldemBonusPage', () => {
   it('renders board and player cards in flop phase', async () => {
     mockApi.mockResolvedValue(flopState);
     renderWithProviders(<TexasHoldemBonusPage />);
-    // 2 player face-up + 3 community face-up + 2 dealer face-down = 7 imgs
-    await waitFor(() => expect(screen.getAllByRole('img').length).toBe(7));
+    // 2 dealer face-down cards are each announced as "hidden card".
+    await waitFor(() => expect(screen.getAllByRole('img', { name: '非公開のカード' })).toHaveLength(2));
     expect(screen.getByText('🟡')).toBeInTheDocument();
     expect(screen.getByText('🔴')).toBeInTheDocument();
     expect(screen.getByText('🃏')).toBeInTheDocument();

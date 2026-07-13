@@ -87,5 +87,6 @@
     "broadwayCards": "ブロードウェイ — プレイ推奨",
     "pairOrBetter": "ペア以上 — レイズ推奨",
     "weakHand": "弱い手札"
-  }
+  },
+  "hiddenCard": "非公開のカード"
 }
