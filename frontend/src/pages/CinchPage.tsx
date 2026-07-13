@@ -35,6 +35,12 @@ import { playerName } from '../utils/playerUtils';
 /** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; 0 = unset). */
 const SUIT_SYMBOLS = ['-', '♠', '♣', '♥', '♦'] as const;
 
+/** i18n suit-name key by suit number (1=♠ 2=♣ 3=♥ 4=♦). */
+const SUIT_KEYS: Readonly<Record<number, string>> = { 1: 'spade', 2: 'club', 3: 'heart', 4: 'diamond' };
+
+/** Hearts and diamonds render red; spades and clubs stay the default text color. */
+const isRedSuit = (suit: number): boolean => suit === 3 || suit === 4;
+
 /** Selectable trump suits named by the bid winner. */
 const TRUMP_SUITS = [1, 2, 3, 4] as const;
 
@@ -152,7 +158,12 @@ function CinchPageContent() {
   const bidChoices: number[] = [];
   for (let b = minRaise; b <= MAX_BID; b++) bidChoices.push(b);
 
-  const trumpSymbol = state.trumpSuit >= 1 ? (SUIT_SYMBOLS[state.trumpSuit] ?? '-') : '-';
+  /** Localized suit name for a suit number (e.g. 3 -> "ハート"). */
+  const suitLabel = (suit: number): string => (SUIT_KEYS[suit] ? t(`suit.${SUIT_KEYS[suit]}`) : '');
+  /** Colored suit symbol: hearts/diamonds red, spades/clubs default. */
+  const renderSuitSymbol = (suit: number) => (
+    <span className={isRedSuit(suit) ? 'text-ds-error' : undefined}>{SUIT_SYMBOLS[suit]}</span>
+  );
 
   const handleManualReset = () => {
     hideActionLog();
@@ -219,7 +230,16 @@ function CinchPageContent() {
               <span className="mr-4">{t('deal', { n: state.roundNumber })}</span>
               <span className="mr-4">{t('trick', { n: state.trickNumber, total: state.totalTricks })}</span>
               <span className="mr-4">{t('highBid', { bid: state.currentBid })}</span>
-              <span className="mr-4">{t('trump', { suit: trumpSymbol })}</span>
+              <span className="mr-4" data-testid="cinch-trump-header">
+                {t('trumpLabel')}:{' '}
+                {state.trumpSuit >= 1 ? (
+                  <>
+                    {renderSuitSymbol(state.trumpSuit)} {suitLabel(state.trumpSuit)}
+                  </>
+                ) : (
+                  '-'
+                )}
+              </span>
               <span>{t('target', { points: state.config.pointLimit })}</span>
             </div>
 
@@ -387,8 +407,9 @@ function CinchPageContent() {
                       className={btnPrimary}
                       onClick={() => handleNameTrump(suit)}
                       disabled={loading}
+                      aria-label={suitLabel(suit)}
                     >
-                      {SUIT_SYMBOLS[suit]}
+                      {renderSuitSymbol(suit)}
                     </button>
                   ))}
                 </div>

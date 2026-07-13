@@ -107,18 +107,36 @@ describe('CinchPage', () => {
     mockExec.mockResolvedValue(nameTrumpState);
     renderWithProviders(<CinchPage />);
     await waitFor(() => expect(screen.getByTestId('cinch-trump-prompt')).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: '♠' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♦' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'スペード' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ダイヤ' })).toBeInTheDocument();
   });
 
   it('naming a trump suit dispatches trump with the suit index', async () => {
     mockExec.mockResolvedValue(nameTrumpState);
     renderWithProviders(<CinchPage />);
-    const spadeBtn = await screen.findByRole('button', { name: '♠' });
+    const spadeBtn = await screen.findByRole('button', { name: 'スペード' });
     mockExec.mockClear();
     mockExec.mockResolvedValue(nameTrumpState);
     fireEvent.click(spadeBtn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('trump', { trumpSuit: 1 }));
+  });
+
+  it('colors red suits red and keeps black suits default on the trump buttons', async () => {
+    mockExec.mockResolvedValue(nameTrumpState);
+    renderWithProviders(<CinchPage />);
+    const diamondBtn = await screen.findByRole('button', { name: 'ダイヤ' });
+    expect(diamondBtn.querySelector('span')?.className).toContain('text-ds-error');
+    const spadeBtn = screen.getByRole('button', { name: 'スペード' });
+    expect(spadeBtn.querySelector('span')?.className ?? '').not.toContain('text-ds-error');
+  });
+
+  it('shows the trump suit name and a red symbol in the header when declared', async () => {
+    mockExec.mockResolvedValue(makeCinchState({ trumpSuit: 3, isHumanTurn: false }));
+    renderWithProviders(<CinchPage />);
+    const header = await screen.findByTestId('cinch-trump-header');
+    expect(header).toHaveTextContent('ハート');
+    // The ♥ symbol is wrapped in a red span.
+    expect(header.querySelector('.text-ds-error')?.textContent).toBe('♥');
   });
 
   it('selecting a card then playing dispatches play', async () => {
