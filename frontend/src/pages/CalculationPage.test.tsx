@@ -60,6 +60,23 @@ describe('CalculationPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('labels the stock button with its top card and empty waste piles explicitly', async () => {
+    renderWithProviders(<CalculationPage />);
+    const stock = await screen.findByTestId('calc-stock-button');
+    expect(stock).toHaveAttribute('aria-label', '山札のトップ: ♠ 7');
+    // Empty waste piles now carry an explicit name (previously undefined).
+    expect(screen.getByTestId('calc-waste-button-0')).toHaveAttribute('aria-label', 'ウェイスト0: 空');
+    expect(screen.getByTestId('calc-waste-button-3')).toHaveAttribute('aria-label', 'ウェイスト3: 空');
+  });
+
+  it('labels a non-empty waste pile with its top ranks, not the empty text', async () => {
+    mockExec.mockResolvedValue({ ...playingState, wastes: [[card('HEART', 9)], [], [], []] });
+    renderWithProviders(<CalculationPage />);
+    const waste0 = await screen.findByTestId('calc-waste-button-0');
+    await waitFor(() => expect(waste0.getAttribute('aria-label')).toContain('ウェイスト0'));
+    expect(waste0).not.toHaveAttribute('aria-label', 'ウェイスト0: 空');
+  });
+
   it('shows move count', async () => {
     renderWithProviders(<CalculationPage />);
     await waitFor(() => expect(screen.getByText(/手数/)).toBeInTheDocument());
@@ -150,12 +167,14 @@ describe('CalculationPage', () => {
     expect(btn).toHaveAttribute('aria-label', 'ウェイスト0（上3枚）: 5・K・A');
   });
 
-  it('omits the rank tooltip on an empty waste pile', async () => {
+  it('omits the rank tooltip on an empty waste pile but still names it for SR users', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<CalculationPage />);
     const btn = await screen.findByTestId('calc-waste-button-0');
+    // No hover tooltip when empty…
     expect(btn).not.toHaveAttribute('title');
-    expect(btn).not.toHaveAttribute('aria-label');
+    // …but an explicit spoken name so the empty pile isn't anonymous.
+    expect(btn).toHaveAttribute('aria-label', 'ウェイスト0: 空');
   });
 
   it('clicking foundation without a source has no effect', async () => {
