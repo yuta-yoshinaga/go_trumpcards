@@ -106,4 +106,17 @@ describe('SedmaPage', () => {
     expect(screen.getByTestId('sedma-player-1')).toHaveClass('border-ds-error');
     expect(screen.getByTestId('sedma-player-3')).toHaveAttribute('data-team', '1');
   });
+
+  it('marks each team with a colour-independent label (badge + sr-only name)', async () => {
+    renderWithProviders(<SedmaPage />);
+    await waitFor(() => expect(screen.getByTestId('sedma-player-0')).toBeInTheDocument());
+    // Team A (even id): visible 'A' badge + sr-only 'チームA'.
+    const teamA = screen.getByTestId('sedma-player-0');
+    expect(teamA).toHaveTextContent('A');
+    expect(teamA).toHaveTextContent('チームA');
+    // Team B (odd id): visible 'B' badge + sr-only 'チームB'.
+    const teamB = screen.getByTestId('sedma-player-1');
+    expect(teamB).toHaveTextContent('B');
+    expect(teamB).toHaveTextContent('チームB');
+  });
 });

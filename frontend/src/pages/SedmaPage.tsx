@@ -138,6 +138,7 @@ function SedmaPageContent() {
   // Shared by the mobile (<details>) and desktop layouts.
   const renderPlayerRow = (p: (typeof state.players)[number]) => {
     const team = p.id % 2;
+    const teamName = team === 0 ? t('team.a') : t('team.b');
     return (
       <div
         key={p.id}
@@ -147,6 +148,17 @@ function SedmaPageContent() {
           team === 0 ? 'border-ds-info' : 'border-ds-error'
         }`}
       >
+        {/* Colour-independent team marker (WCAG 1.4.1): a visible A/B badge plus an
+            sr-only full team name, so team membership isn't conveyed by colour alone. */}
+        <span
+          className={`inline-block mr-1 px-1 rounded text-xs font-bold text-white ${
+            team === 0 ? 'bg-ds-info' : 'bg-ds-error'
+          }`}
+          aria-hidden="true"
+        >
+          {team === 0 ? 'A' : 'B'}
+        </span>
+        <span className="sr-only">{teamName}: </span>
         {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
       </div>
     );
