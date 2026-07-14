@@ -62,6 +62,15 @@ const gameEndState: PageOneResponse = {
 
 const cpuTurnState: PageOneResponse = { ...playPhaseState, currentPlayerIdx: 1 };
 
+const cpuAtOneCardState: PageOneResponse = {
+  ...playPhaseState,
+  players: [
+    playPhaseState.players[0],
+    { ...playPhaseState.players[1], cardCount: 1 },
+    ...playPhaseState.players.slice(2),
+  ],
+};
+
 beforeEach(() => {
   mockExec.mockResolvedValue(playPhaseState);
 });
@@ -81,6 +90,16 @@ describe('PageOnePage', () => {
         pointLimit: 200,
       }),
     );
+  });
+
+  it('exposes the CPU last-card badge to assistive tech via a polite live region', async () => {
+    mockExec.mockResolvedValue(cpuAtOneCardState);
+    renderWithProviders(<PageOnePage />);
+    const badge = await screen.findByTestId('po-cpu-1-last-card-badge');
+    expect(badge).toHaveAttribute('role', 'status');
+    expect(badge).toHaveAttribute('aria-live', 'polite');
+    // The accessible name names the CPU so the announcement has context.
+    expect(badge).toHaveAttribute('aria-label', expect.stringContaining('残り1枚'));
   });
 
   it('renders play and draw buttons when human turn', async () => {
