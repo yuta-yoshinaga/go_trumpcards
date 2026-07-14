@@ -530,7 +530,11 @@ function RussianSolitairePageContent() {
                                   );
                                 })()
                               ) : (
-                                <div role="img" aria-label={t('faceDownRule')} title={t('faceDownRule')}>
+                                <div
+                                  role="img"
+                                  aria-label={t('faceDownCardLabel', { col: colIdx, pos: cardIdx + 1 })}
+                                  title={t('faceDownRule')}
+                                >
                                   <AnimatedCardBack width={rs.cw} />
                                 </div>
                               )}
