@@ -201,11 +201,10 @@ describe('PiquetPage', () => {
     );
     renderWithProviders(<PiquetPage />);
     const log = await screen.findByTestId('piquet-declaration-list');
-    // role="log" + aria-relevant="additions" announces only newly-appended results,
-    // not the whole list on every update.
+    // role="log" (default aria-atomic="false") announces only newly-appended
+    // results, not the whole list on every update.
     expect(log).toHaveAttribute('role', 'log');
     expect(log).toHaveAttribute('aria-live', 'polite');
-    expect(log).toHaveAttribute('aria-relevant', 'additions');
   });
 
   it('renders the translated trick header during the play phase', async () => {
