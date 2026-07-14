@@ -149,7 +149,9 @@ function PinochlePageContent() {
 
   useEffect(() => {
     if (state?.highestBid && state.highestBid > 0) {
-      setBidAmount(state.highestBid + 1);
+      // Pinochle bids move in 5s; start at the next multiple of 5 above the
+      // current high (e.g. high 25 → 30) so the steppers land on clean values.
+      setBidAmount(Math.ceil((state.highestBid + 1) / 5) * 5);
     } else {
       setBidAmount(20);
     }
@@ -451,7 +453,7 @@ function PinochlePageContent() {
                     value={bidAmount}
                     onChange={setBidAmount}
                     min={minBid}
-                    step={10}
+                    step={5}
                     showSteppers
                     autoClamp={false}
                     disabled={loading}

@@ -153,7 +153,7 @@ describe('PinochlePage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'ビッド' })).toBeInTheDocument());
     // Accessible label including the minimum (highestBid 0 → min 20).
     expect(screen.getByLabelText('ビッド額（最低 20）')).toBeInTheDocument();
-    const stepper = screen.getByRole('button', { name: 'ビッド額（最低 20） −10' });
+    const stepper = screen.getByRole('button', { name: 'ビッド額（最低 20） −5' });
     expect(stepper.className).toContain('min-h-[44px]');
     expect(stepper.className).toContain('min-w-[44px]');
   });
