@@ -29,6 +29,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { HighCardFlushResponse } from '../types/card';
 import { HighCardFlushPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { HIGHCARDFLUSH_HELP, parseHighcardflushCommand } from '../utils/cli/commands/highcardflushCommands';
 import { formatHighcardflushState } from '../utils/cli/formatters/highcardflushFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -243,6 +244,8 @@ function HighCardFlushPageContent() {
                     return (
                       <div
                         key={`p-${card.design}-${card.value}-${i}`}
+                        role="img"
+                        aria-label={`${cardAlt(card)} ${inFlush ? t('flushCardAria') : t('nonFlushCardAria')}`}
                         className={`transition-all ${
                           inFlush ? 'drop-shadow-[0_0_8px_var(--color-ds-warning)] -translate-y-1' : 'opacity-50'
                         }`}
@@ -278,6 +281,14 @@ function HighCardFlushPageContent() {
                     return (
                       <div
                         key={`d-${card.design}-${card.value}-${i}`}
+                        role="img"
+                        // Only announce flush status once the dealer's flush is
+                        // revealed (end phase); during the action phase it's hidden.
+                        aria-label={
+                          dealerFlushSuit === null
+                            ? cardAlt(card)
+                            : `${cardAlt(card)} ${inFlush ? t('flushCardAria') : t('nonFlushCardAria')}`
+                        }
                         className={`transition-all ${
                           dealerFlushSuit === null
                             ? ''

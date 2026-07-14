@@ -123,6 +123,22 @@ describe('HighCardFlushPage', () => {
     expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument();
   });
 
+  it('labels player flush vs non-flush cards with text, not just glow/opacity', async () => {
+    mockExec.mockResolvedValue(actionPhase5Flush);
+    renderWithProviders(<HighCardFlushPage />);
+    // ♠ cards form the flush; the ♥ is not part of it.
+    await waitFor(() => expect(screen.getByRole('img', { name: '♠ 5 フラッシュ対象' })).toBeInTheDocument());
+    expect(screen.getByRole('img', { name: '♥ 9 フラッシュ対象外' })).toBeInTheDocument();
+  });
+
+  it('labels the dealer flush cards at showdown', async () => {
+    mockExec.mockResolvedValue(endPhasePlayerWins);
+    renderWithProviders(<HighCardFlushPage />);
+    // Dealer's ♣ cards form its 3-card flush; the ♥ is not in it.
+    await waitFor(() => expect(screen.getByRole('img', { name: '♣ 4 フラッシュ対象' })).toBeInTheDocument());
+    expect(screen.getByRole('img', { name: '♥ 8 フラッシュ対象外' })).toBeInTheDocument();
+  });
+
   it('shows action phase with raise/fold buttons matching multiplier cap', async () => {
     mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(actionPhase5Flush);
     renderWithProviders(<HighCardFlushPage />);
