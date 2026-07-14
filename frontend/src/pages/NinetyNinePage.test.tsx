@@ -218,7 +218,9 @@ describe('NinetyNinePage', () => {
     fireEvent.click(screen.getByAltText('♣ 5').closest('button') as HTMLButtonElement);
     fireEvent.click(screen.getByAltText('♦ 8').closest('button') as HTMLButtonElement);
 
-    expect(screen.getByTestId('nn-bury-progress')).toHaveTextContent('1 枚多く選択されています。ちょうど3枚にしてください');
+    expect(screen.getByTestId('nn-bury-progress')).toHaveTextContent(
+      '1 枚多く選択されています。ちょうど3枚にしてください',
+    );
     // Button stays aria-disabled (not ready) with the deselect-reason label.
     const btn = screen.getByRole('button', { name: '3枚埋める（1 枚多いため選択を減らしてください）' });
     expect(btn).toHaveAttribute('aria-disabled', 'true');
