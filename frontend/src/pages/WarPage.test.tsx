@@ -220,6 +220,15 @@ describe('WarPage', () => {
     expect(stack.querySelectorAll('[data-testid="animated-card-back"]')).toHaveLength(4);
   });
 
+  it('hides the decorative pot stack from AT while keeping the count text readable', async () => {
+    mockExec.mockResolvedValueOnce({ ...warPhaseState, warPotSize: 4 });
+    renderWithProviders(<WarPage />);
+    const stack = await screen.findByTestId('war-pot-stack');
+    expect(stack).toHaveAttribute('aria-hidden', 'true');
+    // The count is still conveyed by the adjacent text (not hidden).
+    expect(screen.getByText(/4/)).toBeInTheDocument();
+  });
+
   it('caps the visual pot stack at 10 cards even when warPotSize is larger', async () => {
     mockExec.mockResolvedValueOnce({ ...warPhaseState, warPotSize: 15 });
     renderWithProviders(<WarPage />);
