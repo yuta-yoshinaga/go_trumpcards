@@ -198,6 +198,24 @@ function TrashPageContent() {
       ? state.pending.value - 1
       : null;
 
+  // Announce a freshly drawn (pending) card and where it can go, since the pulse
+  // ring, "保留中" label, and slot highlight are all purely visual. Wild cards
+  // (K / Joker) let the player choose any slot; J/Q are dead and get discarded.
+  const pendingIsWild = !!state.pending && (state.pending.value === 13 || state.pending.design === 'JOKER');
+  const pendingAnnounce = (() => {
+    if (!state.pending || !isHumanTurn) return '';
+    const cardName = cardAlt(state.pending);
+    if (isAwaitWild || pendingIsWild) return t('pendingAnnounce.wild', { card: cardName });
+    // Announce a target slot only when that slot is still face-down (placeable);
+    // if it is already filled the card is dead, mirroring the visual highlight
+    // (pendingHighlight is gated on !slot.faceUp).
+    const targetSlot = pendingTargetIdx !== null ? state.players[0].slots[pendingTargetIdx] : null;
+    if (targetSlot && !targetSlot.faceUp) {
+      return t('pendingAnnounce.slot', { card: cardName, slot: (pendingTargetIdx ?? 0) + 1 });
+    }
+    return t('pendingAnnounce.dead', { card: cardName });
+  })();
+
   return (
     <GamePageShell
       title={tc('nav.trash')}
@@ -252,6 +270,11 @@ function TrashPageContent() {
                   <AnimatedCard card={state.pending} width={cardWidth} />
                 </div>
               )}
+              {/* Always-mounted live region (only its text is conditional) so screen
+                  readers reliably announce each drawn card and its placement target. */}
+              <div className="sr-only" role="status" aria-live="polite" data-testid="tr-pending-announce">
+                {pendingAnnounce}
+              </div>
               <DiscardPile
                 top={state.discardTop}
                 size={state.discardSize}

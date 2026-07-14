@@ -266,6 +266,54 @@ describe('TrashPage', () => {
     }
   });
 
+  it('announces a normal pending card and its target slot in a polite live region', async () => {
+    mockExec.mockResolvedValue({ ...playerTurnState, pending: card('HEART', 4) });
+    renderWithProviders(<TrashPage />);
+    const region = await screen.findByTestId('tr-pending-announce');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    await waitFor(() => expect(region).toHaveTextContent('引いたカード: ♥ 4。スロット 4 に置けます'));
+  });
+
+  it('announces a wild pending card as a free-choice placement', async () => {
+    mockExec.mockResolvedValue(awaitWildState); // ♦ K, AWAIT_WILD
+    renderWithProviders(<TrashPage />);
+    const region = await screen.findByTestId('tr-pending-announce');
+    await waitFor(() =>
+      expect(region).toHaveTextContent('引いたカード: ♦ K。ワイルドカードです。空いているスロットを選んでください'),
+    );
+  });
+
+  it('announces a dead (J/Q) pending card as discarded', async () => {
+    mockExec.mockResolvedValue({ ...playerTurnState, pending: card('SPADE', 11) });
+    renderWithProviders(<TrashPage />);
+    const region = await screen.findByTestId('tr-pending-announce');
+    await waitFor(() => expect(region).toHaveTextContent('引いたカード: ♠ J。置けるスロットがなく捨て札になります'));
+  });
+
+  it('announces a normal pending card as discarded when its target slot is already face-up', async () => {
+    // Slot 4 (index 3) already filled → a pending 4 cannot be placed and is dead.
+    const filledSlot4 = faceDownSlots();
+    filledSlot4[3] = { faceUp: true, card: card('HEART', 4) };
+    mockExec.mockResolvedValue({
+      ...playerTurnState,
+      players: [
+        { slots: filledSlot4, isCpu: false },
+        { slots: faceDownSlots(), isCpu: true },
+      ],
+      pending: card('SPADE', 4),
+    });
+    renderWithProviders(<TrashPage />);
+    const region = await screen.findByTestId('tr-pending-announce');
+    await waitFor(() => expect(region).toHaveTextContent('引いたカード: ♠ 4。置けるスロットがなく捨て札になります'));
+  });
+
+  it('keeps the pending live region empty when no card is pending', async () => {
+    renderWithProviders(<TrashPage />);
+    const region = await screen.findByTestId('tr-pending-announce');
+    expect(region).toHaveTextContent('');
+  });
+
   it('surfaces an error alert when the API fails on mount', async () => {
     mockExec.mockRejectedValue(new Error('network error'));
     renderWithProviders(<TrashPage />);
