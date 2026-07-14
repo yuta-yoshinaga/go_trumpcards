@@ -197,6 +197,30 @@ describe('SevensPage', () => {
     });
   });
 
+  it('shows the number-key hint and per-card aria-keyshortcuts on the human turn', async () => {
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByTestId('sevens-key-hints')).toBeInTheDocument());
+    expect(screen.getByTestId('sevens-key-hints')).toHaveTextContent('数字キー: 対応する手札をプレイ');
+    // ♠6 is hand index 0 → key "1"; ♣8 is index 2 → key "3" (♥5 at index 1 is not playable).
+    expect(screen.getByAltText('♠ 6').closest('button')).toHaveAttribute('aria-keyshortcuts', '1');
+    expect(screen.getByAltText('♣ 8').closest('button')).toHaveAttribute('aria-keyshortcuts', '3');
+    expect(screen.getByAltText('♥ 5').closest('button')).not.toHaveAttribute('aria-keyshortcuts');
+  });
+
+  it('hides the number-key hint when it is not the human turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('CPU 1')).toBeInTheDocument());
+    expect(screen.queryByTestId('sevens-key-hints')).not.toBeInTheDocument();
+  });
+
+  it('hides the number-key hint at game end', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('あなた')).toBeInTheDocument());
+    expect(screen.queryByTestId('sevens-key-hints')).not.toBeInTheDocument();
+  });
+
   it('pass button is enabled on human turn with passes remaining', async () => {
     renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());

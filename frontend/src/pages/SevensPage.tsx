@@ -424,6 +424,13 @@ function SevensPageContent() {
                   loading={loading}
                   onPlay={handleCardPlay}
                 />
+                {/* Number-key shortcut hint, shown while the human's card bindings are
+                    active (matches useCardKeyboardNav onDirectPlay above). */}
+                {isHumanTurn && (
+                  <p className="text-center text-game-text-muted text-xs mt-1" data-testid="sevens-key-hints">
+                    {t('keyHints')}
+                  </p>
+                )}
               </div>
             )}
 
