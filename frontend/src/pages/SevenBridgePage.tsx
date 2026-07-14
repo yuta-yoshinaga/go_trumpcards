@@ -337,11 +337,20 @@ function SevenBridgePageContent() {
                   <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
                     {t('drawStockButton')}
                   </button>
+                  {/*
+                   * Pon and Chi both need exactly two selected cards; expose the
+                   * requirement (and its satisfaction) to assistive tech so a SR
+                   * user knows why the button is disabled and when it becomes usable.
+                   */}
+                  <span id="sb-select-two-hint" className="sr-only" data-testid="sb-select-two-hint">
+                    {selectedCardIndices.length === 2 ? t('requirementMet') : t('requireTwo')}
+                  </span>
                   <button
                     type="button"
                     className={btnPrimary}
                     onClick={handlePon}
                     disabled={loading || selectedCardIndices.length !== 2}
+                    aria-describedby="sb-select-two-hint"
                   >
                     {t('ponButton')}
                   </button>
@@ -350,6 +359,7 @@ function SevenBridgePageContent() {
                     className={btnPrimary}
                     onClick={handleChi}
                     disabled={loading || selectedCardIndices.length !== 2}
+                    aria-describedby="sb-select-two-hint"
                   >
                     {t('chiButton')}
                   </button>
@@ -357,11 +367,15 @@ function SevenBridgePageContent() {
               )}
               {isPlayPhase && isHumanTurn && (
                 <>
+                  <span id="sb-meld-hint" className="sr-only" data-testid="sb-meld-hint">
+                    {selectedCardIndices.length >= 3 ? t('requirementMet') : t('requireThree')}
+                  </span>
                   <button
                     type="button"
                     className={btnPrimary}
                     onClick={handleMeld}
                     disabled={loading || selectedCardIndices.length < 3}
+                    aria-describedby="sb-meld-hint"
                     data-tutorial="sb-meld-button"
                   >
                     {t('meldButton')}
