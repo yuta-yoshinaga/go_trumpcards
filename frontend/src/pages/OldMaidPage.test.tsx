@@ -83,18 +83,22 @@ describe('OldMaidPage', () => {
     );
   });
 
-  it('shows keyboard shortcut hints and aria-keyshortcuts on the human turn', async () => {
+  it('shows keyboard shortcut hints and lowercase aria-keyshortcuts on the human turn', async () => {
     await startGame();
     expect(screen.getByTestId('oldmaid-key-hints')).toHaveTextContent('D: 引く / S: シャッフル');
-    expect(screen.getByRole('button', { name: 'ランダムに引く' })).toHaveAttribute('aria-keyshortcuts', 'D');
-    expect(screen.getByRole('button', { name: 'シャッフル' })).toHaveAttribute('aria-keyshortcuts', 'S');
+    // Lowercase: an unmodified key (uppercase would imply Shift+D per WAI-ARIA).
+    expect(screen.getByRole('button', { name: 'ランダムに引く' })).toHaveAttribute('aria-keyshortcuts', 'd');
+    expect(screen.getByRole('button', { name: 'シャッフル' })).toHaveAttribute('aria-keyshortcuts', 's');
   });
 
-  it('hides the key hints on a CPU turn', async () => {
+  it('hides the key hints and drops aria-keyshortcuts on a CPU turn (bindings inactive)', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<OldMaidPage />);
     await waitFor(() => expect(screen.getAllByText('あなた').length).toBeGreaterThan(0));
     expect(screen.queryByTestId('oldmaid-key-hints')).not.toBeInTheDocument();
+    // The shuffle button stays clickable on a CPU turn, but the `s` key binding is
+    // inactive, so it must not advertise a shortcut that does nothing.
+    expect(screen.getByRole('button', { name: 'シャッフル' })).not.toHaveAttribute('aria-keyshortcuts');
   });
 
   it('renders skeleton while API call is pending on mount', () => {

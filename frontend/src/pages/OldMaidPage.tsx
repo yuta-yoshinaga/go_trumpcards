@@ -405,7 +405,9 @@ function OldMaidPageContent() {
                   className={`${btnPrimary} min-w-[110px]`}
                   disabled={loading || !isHumanTurn || state.gameEndFlag}
                   onClick={() => gameExec('draw')}
-                  aria-keyshortcuts="D"
+                  // Lowercase to mean the unmodified key; only advertised while the
+                  // keyboard bindings are actually active (the human's turn).
+                  aria-keyshortcuts={isHumanTurn ? 'd' : undefined}
                 >
                   {t('button.drawRandom')}
                 </button>
@@ -415,7 +417,7 @@ function OldMaidPageContent() {
                 className={`${btnSecondary} min-w-[110px]`}
                 disabled={loading || state.gameEndFlag}
                 onClick={() => gameExec('shuffle')}
-                aria-keyshortcuts="S"
+                aria-keyshortcuts={isHumanTurn ? 's' : undefined}
               >
                 {t('button.shuffle')}
               </button>
