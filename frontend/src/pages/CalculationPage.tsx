@@ -29,6 +29,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { CalculationResponse } from '../types/card';
 import { CalculationPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 
@@ -466,6 +467,7 @@ function CalculationPageContent() {
                     onClick={handleSelectStock}
                     disabled={!isPlaying || loading}
                     aria-pressed={sourceIsStock}
+                    aria-label={t('stockTopAria', { card: cardAlt(state.stockTop) })}
                     data-testid="calc-stock-button"
                     className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${sourceIsStock ? 'ring-2 ring-ds-warning' : ''} ${hintStock ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
                   >
@@ -499,7 +501,12 @@ function CalculationPageContent() {
                   .slice(-3)
                   .map((c) => valueName(c.value))
                   .join('・');
-                const wasteLabel = pile.length > 0 ? t('wasteRanksTooltip', { idx, ranks: wasteRanks }) : undefined;
+                // Non-empty piles get the top-ranks tooltip; empty piles still
+                // need a spoken name so SR users can tell them apart (they were
+                // previously unlabeled, unlike the always-labeled foundations).
+                const wasteRanksLabel =
+                  pile.length > 0 ? t('wasteRanksTooltip', { idx, ranks: wasteRanks }) : undefined;
+                const wasteAriaLabel = wasteRanksLabel ?? t('wasteEmptyAria', { idx });
                 return (
                   <div key={`w-${idx.toString()}`} className="flex flex-col items-center">
                     <div className="text-[11px] mb-0.5 text-ds-text-muted">
@@ -516,8 +523,8 @@ function CalculationPageContent() {
                       }}
                       disabled={!isPlaying || loading || (!top && !canAcceptStock)}
                       aria-pressed={selected}
-                      title={wasteLabel}
-                      aria-label={wasteLabel}
+                      title={wasteRanksLabel}
+                      aria-label={wasteAriaLabel}
                       data-testid={`calc-waste-button-${idx.toString()}`}
                       className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${selected ? 'ring-2 ring-ds-warning' : ''} ${isHintSource ? 'ring-2 ring-ds-success animate-pulse' : ''} ${canAcceptStock ? 'ring-2 ring-ds-info/70' : ''}`}
                     >

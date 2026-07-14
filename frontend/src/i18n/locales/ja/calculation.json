@@ -25,6 +25,8 @@
   "nextRankAria": "次に置くべきカード {{rank}}",
   "upcomingRanksTooltip": "今後の必要カード: {{sequence}}",
   "wasteRanksTooltip": "ウェイスト{{idx}}（上3枚）: {{ranks}}",
+  "wasteEmptyAria": "ウェイスト{{idx}}: 空",
+  "stockTopAria": "山札のトップ: {{card}}",
   "foundationCompleteAria": "完成",
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
   "gameOver": "ゲームオーバー",
