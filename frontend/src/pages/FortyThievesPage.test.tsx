@@ -406,6 +406,26 @@ describe('FortyThievesPage', () => {
     await waitFor(() => expect(screen.getByText(/ヒントがあります/)).toBeInTheDocument());
   });
 
+  it('announces the hinted card and destination in a polite live region', async () => {
+    renderWithProviders(<FortyThievesPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    // withHintState: waste top ♣3 → tableau column 3.
+    mockExec.mockResolvedValue(withHintState);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    const region = await screen.findByTestId('ft-hint-announcement');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toHaveTextContent('ヒント: ♣ 3をタブロー列3へ移動');
+  });
+
+  it('does not render the hint announcement region when there is no hint', async () => {
+    renderWithProviders(<FortyThievesPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    expect(screen.queryByTestId('ft-hint-announcement')).not.toBeInTheDocument();
+  });
+
   it('game clear shows action log button', async () => {
     mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<FortyThievesPage />);
