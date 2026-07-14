@@ -37,6 +37,7 @@
   "suitHeart": "♥ Heart",
   "suitDiamond": "♦ Diamond",
   "penaltyBanner": "Draw penalty: {{count}}! Stack a 2 or take them",
+  "mustDeclareBanner": "You have one card left. Declare 'Macau!'? If you don't, you may be penalized.",
   "playPhase": "Play a card or draw from the stock",
   "chooseSuitPhase": "Choose a suit",
   "mustDeclarePhase": "One card left! Declare \"Macau!\"",

@@ -70,6 +70,21 @@ describe('MacauPage', () => {
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
+  it('shows a role=status must-declare banner on the human MUST_DECLARE turn', async () => {
+    mockExec.mockResolvedValue(mustDeclareState); // phase 2, human's turn
+    renderWithProviders(<MacauPage />);
+    const banner = await screen.findByTestId('macau-must-declare-banner');
+    expect(banner).toHaveAttribute('role', 'status');
+    expect(banner).toHaveTextContent('マカオ');
+  });
+
+  it('does not show the must-declare banner on a CPU turn', async () => {
+    mockExec.mockResolvedValue({ ...mustDeclareState, currentPlayerIdx: 1 });
+    renderWithProviders(<MacauPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, expect.any(Object)));
+    expect(screen.queryByTestId('macau-must-declare-banner')).not.toBeInTheDocument();
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<MacauPage />);
     await waitFor(() =>
