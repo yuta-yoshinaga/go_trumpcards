@@ -21,6 +21,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { FiveHundredResponse } from '../types/card';
 import { FiveHundredContract, FiveHundredPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import {
   FIVE_HUNDRED_HELP,
   type FiveHundredCliArgs,
@@ -282,6 +283,8 @@ function FiveHundredPageContent() {
                       type="button"
                       onClick={() => selectable && toggleCard(i)}
                       disabled={!selectable}
+                      aria-label={cardAlt(c)}
+                      aria-pressed={selected}
                       className={cardClass}
                       data-testid={`hand-card-${i}`}
                     >
