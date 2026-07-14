@@ -64,6 +64,22 @@ describe('CatchTenPage', () => {
     );
   });
 
+  it('renders CPU stats as a structured definition list with labeled fields', async () => {
+    renderWithProviders(<CatchTenPage />);
+    // Each CPU stat block is a <dl>; every field is a term/definition pair so
+    // screen readers announce hand, team and scores independently instead of
+    // one pipe-joined string.
+    await waitFor(() => expect(screen.getAllByRole('term').length).toBeGreaterThan(0));
+    // The sr-only labels give each value its own accessible name.
+    expect(screen.getAllByText('手札').length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('definition').length).toBeGreaterThan(0);
+    // The decorative pipe separators are hidden from assistive tech.
+    const pipes = screen.getAllByText('|');
+    for (const pipe of pipes) {
+      expect(pipe).toHaveAttribute('aria-hidden', 'true');
+    }
+  });
+
   it('advances to the next trick when pressing n at trick end', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 1 }));
     renderWithProviders(<CatchTenPage />);
