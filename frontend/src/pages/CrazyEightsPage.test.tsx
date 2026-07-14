@@ -383,6 +383,50 @@ describe('CrazyEightsPage', () => {
     });
   });
 
+  it('announces the chosen suit in a polite live region when chosenSuit > 0', async () => {
+    mockExec.mockResolvedValue(chosenSuitState); // chosenSuit: 1 → spade
+    renderWithProviders(<CrazyEightsPage />);
+    const region = await screen.findByTestId('ce-suit-live-region');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toHaveTextContent('スートが スペード に変更されました');
+  });
+
+  it('keeps the suit live region empty when no suit is chosen', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    const region = await screen.findByTestId('ce-suit-live-region');
+    expect(region).toHaveTextContent('');
+  });
+
+  it('keeps the suit live region empty for an unknown suit value', async () => {
+    mockExec.mockResolvedValue(unknownSuitState); // chosenSuit: 99
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByText(/指定スート: \?/)).toBeInTheDocument());
+    expect(screen.getByTestId('ce-suit-live-region')).toHaveTextContent('');
+  });
+
+  it('associates the illegal-play reason with illegal cards via aria-describedby', async () => {
+    // Discard top ♥7; ♠A is illegal on the human turn.
+    renderWithProviders(<CrazyEightsPage />);
+    const illegal = await screen.findByLabelText('♠ A');
+    expect(illegal).toHaveAttribute('aria-describedby', 'ce-illegal-reason');
+    const reason = document.getElementById('ce-illegal-reason');
+    expect(reason).toHaveTextContent('このカードは出せません（スート・数字・8 のいずれも不一致）');
+  });
+
+  it('does not set aria-describedby on legal cards', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    const legal = await screen.findByLabelText('♥ J');
+    expect(legal).not.toHaveAttribute('aria-describedby');
+  });
+
+  it('does not set aria-describedby on cards during a CPU turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<CrazyEightsPage />);
+    const card = await screen.findByLabelText('♠ A');
+    expect(card).not.toHaveAttribute('aria-describedby');
+  });
+
   it('card selection toggle via aria-pressed', async () => {
     renderWithProviders(<CrazyEightsPage />);
     await waitFor(() => expect(screen.getByAltText('\u2660 A')).toBeInTheDocument());
