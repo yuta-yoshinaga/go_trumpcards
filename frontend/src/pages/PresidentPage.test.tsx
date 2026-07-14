@@ -66,6 +66,16 @@ describe('PresidentPage', () => {
     expect(screen.getByTestId('hand-card-2')).toBeInTheDocument();
   });
 
+  it('gives each display-only table card an accessible name', async () => {
+    // Table cards not present in the human hand (S3/H5/D7) so the labels are unambiguous.
+    mockExec.mockResolvedValue(makeState({ tableCards: [card('SPADE', 12), card('CLOVER', 1)], lastPlayPlayerIdx: 1 }));
+    renderWithProviders(<PresidentPage />);
+    // aria-label on the role="img" wrapper (getByLabelText matches aria-label, not the inner <img alt>).
+    await waitFor(() => expect(screen.getByLabelText('♠ Q')).toBeInTheDocument());
+    expect(screen.getByLabelText('♣ A')).toBeInTheDocument();
+    expect(screen.getByLabelText('♠ Q')).toHaveAttribute('role', 'img');
+  });
+
   it('enables Play button when a card is selected', async () => {
     renderWithProviders(<PresidentPage />);
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
