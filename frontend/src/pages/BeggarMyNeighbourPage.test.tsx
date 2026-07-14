@@ -147,13 +147,15 @@ describe('BeggarMyNeighbourPage', () => {
     await waitFor(() => expect(region).toHaveTextContent('フェーズ: ペナルティ支払い中。残りペナルティ 3 枚'));
   });
 
-  it('labels each pile with its card counts for screen readers', async () => {
+  it('conveys pile counts via accessible text and hides the decorative visuals', async () => {
     mockExec.mockResolvedValueOnce(penaltyState);
     renderWithProviders(<BeggarMyNeighbourPage />);
-    const stack = await screen.findByTestId('bmn-central-pile-stack');
-    expect(stack).toHaveAttribute('aria-label', '場の山 3 枚');
-    expect(screen.getByLabelText('CPU のパイル 山札 26 枚 捨札 0 枚')).toBeInTheDocument();
-    expect(screen.getByLabelText('あなたのパイル 山札 26 枚 捨札 0 枚')).toBeInTheDocument();
+    // Counts are readable as plain text (no redundant aria-label on the card visuals).
+    await waitFor(() => expect(screen.getByText(/場の山.*3/)).toBeInTheDocument());
+    expect(screen.getAllByText(/山札.*26/).length).toBeGreaterThan(0);
+    // The decorative pile stack is hidden from assistive tech.
+    const stack = screen.getByTestId('bmn-central-pile-stack');
+    expect(stack).toHaveAttribute('aria-hidden', 'true');
   });
 
   it('renders a role=alert ErrorAlert (not a bare button) on error', async () => {

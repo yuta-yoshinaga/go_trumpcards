@@ -37,8 +37,5 @@
     "resetButton": "Start a new game."
   },
   "phaseAnnounce": "Phase: {{phase}}",
-  "phaseAnnouncePenalty": "Phase: {{phase}}. Penalty remaining {{count}} cards",
-  "pileAriaCentral": "Central pile {{count}} cards",
-  "pileAriaCpu": "CPU pile: draw {{draw}}, discard {{discard}}",
-  "pileAriaYou": "Your pile: draw {{draw}}, discard {{discard}}"
+  "phaseAnnouncePenalty": "Phase: {{phase}}. Penalty remaining {{count}} cards"
 }

@@ -177,7 +177,9 @@ function BeggarMyNeighbourPageContent() {
                   {tc('player.cpu', { id: 1 })} — {t('label.drawPile')}: {cpu.drawPileSize} / {t('label.discardPile')}:{' '}
                   {cpu.discardPileSize}
                 </div>
-                <div role="img" aria-label={t('pileAriaCpu', { draw: cpu.drawPileSize, discard: cpu.discardPileSize })}>
+                {/* Decorative: the count is already conveyed by the text line above,
+                    so hide the card back from AT to avoid a redundant double read. */}
+                <div aria-hidden="true">
                   {cpu.drawPileSize > 0 ? (
                     <AnimatedCardBack width={cardWidth * 0.9} />
                   ) : (
@@ -207,8 +209,7 @@ function BeggarMyNeighbourPageContent() {
                 {state.centralPileSize > 0 ? (
                   <div
                     className="relative mx-auto mt-1"
-                    role="img"
-                    aria-label={t('pileAriaCentral', { count: state.centralPileSize })}
+                    aria-hidden="true"
                     data-testid="bmn-central-pile-stack"
                     data-pile-size={state.centralPileSize}
                     style={{
@@ -248,10 +249,8 @@ function BeggarMyNeighbourPageContent() {
                   {tc('player.you')} — {t('label.drawPile')}: {human.drawPileSize} / {t('label.discardPile')}:{' '}
                   {human.discardPileSize}
                 </div>
-                <div
-                  role="img"
-                  aria-label={t('pileAriaYou', { draw: human.drawPileSize, discard: human.discardPileSize })}
-                >
+                {/* Decorative: count is in the text line above; hide from AT. */}
+                <div aria-hidden="true">
                   {human.drawPileSize > 0 ? (
                     <AnimatedCardBack width={cardWidth * 0.9} />
                   ) : (
