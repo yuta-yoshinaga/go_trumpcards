@@ -566,7 +566,11 @@ function OhHellPageContent() {
                         // attribute) so they stay focusable and a screen reader can
                         // read why they can't be chosen; the click is guarded instead.
                         // Mirrors the Cribbage pegRestricted / Call Break pattern.
-                        className={`${btnPrimary}${isRestricted ? ' opacity-50 cursor-not-allowed' : ''}`}
+                        // Neutralize btnPrimary's interactive feedback (press-scale,
+                        // hover shadow) when restricted so it doesn't feel clickable.
+                        className={`${btnPrimary}${
+                          isRestricted ? ' opacity-50 cursor-not-allowed active:scale-100 hover:shadow-none' : ''
+                        }`}
                         onClick={() => {
                           if (!isRestricted) handleBid(i);
                         }}
