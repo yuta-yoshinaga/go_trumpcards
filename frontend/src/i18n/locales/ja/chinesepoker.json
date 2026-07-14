@@ -59,6 +59,7 @@
   "previewFront": "フロント",
   "previewMiddle": "ミドル",
   "previewBack": "バック",
+  "cardAssignedAria": "{{card}}（{{row}}）",
   "foulWarning": "ファウル: バック ≧ ミドル ≧ フロント の順になるように配置してください",
   "royalty": "ロイヤリティ: +{{points}}",
   "tutorial": {
