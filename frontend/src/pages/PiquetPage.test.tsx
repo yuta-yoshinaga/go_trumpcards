@@ -181,6 +181,33 @@ describe('PiquetPage', () => {
     expect(screen.getByText(/\? \+3/)).toBeInTheDocument(); // declScored with "?" scorer
   });
 
+  it('exposes the declaration list as an additions-only live log for screen readers', async () => {
+    const claim = { length: 0, topRank: 0, pipTotal: 0, suit: 0, cards: [] };
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: PiquetPhase.DECLARATION,
+        declStage: PiquetDeclarationKind.SEQUENCE,
+        declResults: [
+          {
+            kind: PiquetDeclarationKind.POINT,
+            elderClaim: claim,
+            youngerClaim: claim,
+            winner: 0,
+            scoredBy: 0,
+            score: 4,
+          },
+        ],
+      }),
+    );
+    renderWithProviders(<PiquetPage />);
+    const log = await screen.findByTestId('piquet-declaration-list');
+    // role="log" + aria-relevant="additions" announces only newly-appended results,
+    // not the whole list on every update.
+    expect(log).toHaveAttribute('role', 'log');
+    expect(log).toHaveAttribute('aria-live', 'polite');
+    expect(log).toHaveAttribute('aria-relevant', 'additions');
+  });
+
   it('renders the translated trick header during the play phase', async () => {
     mockExec.mockResolvedValue(
       makeState({

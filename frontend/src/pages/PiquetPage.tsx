@@ -289,7 +289,15 @@ function DeclarationList({ results, elderIdx }: { results: PiquetDeclaration[]; 
   const { t } = useTranslation('piquet');
   const youngerIdx = elderIdx === 0 ? 1 : 0;
   return (
-    <div className="rounded border border-white/20 p-2 mx-2 text-sm">
+    // role="log" + aria-relevant="additions" so a screen reader announces only
+    // each newly-resolved declaration as it is appended, not the whole list again.
+    <div
+      className="rounded border border-white/20 p-2 mx-2 text-sm"
+      role="log"
+      aria-live="polite"
+      aria-relevant="additions"
+      data-testid="piquet-declaration-list"
+    >
       <div className="mb-1 font-bold">{t('declarationsList')}</div>
       {results.map((r) => {
         const playerLabel =
