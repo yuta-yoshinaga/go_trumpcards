@@ -24,6 +24,7 @@
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
   "gameOver": "ゲームオーバー",
   "hintAvailable": "ヒントがあります",
+  "hintAnnouncement": "ヒント: {{card}}を{{dest}}へ移動",
   "noHint": "ヒントはありません",
   "tutorial": {
     "stockWaste": "山札をクリックしてカードを1枚引きます。リサイクル（再ドロー）はできません。",

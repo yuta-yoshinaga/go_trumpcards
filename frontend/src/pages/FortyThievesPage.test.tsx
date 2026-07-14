@@ -406,6 +406,76 @@ describe('FortyThievesPage', () => {
     await waitFor(() => expect(screen.getByText(/ヒントがあります/)).toBeInTheDocument());
   });
 
+  it('announces the hinted card and destination in a polite live region', async () => {
+    renderWithProviders(<FortyThievesPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    // withHintState: waste top ♣3 → tableau column 3.
+    mockExec.mockResolvedValue(withHintState);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    const region = await screen.findByTestId('ft-hint-announcement');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toHaveTextContent('ヒント: ♣ 3をタブロー列3へ移動');
+  });
+
+  it('renders an empty hint announcement region when there is no hint', async () => {
+    renderWithProviders(<FortyThievesPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    // The region stays mounted (only its text is conditional) so AT announces the first hint.
+    expect(screen.getByTestId('ft-hint-announcement')).toHaveTextContent('');
+  });
+
+  it('announces a tableau-origin hint by resolving the card at [fromCol][cardIndex]', async () => {
+    renderWithProviders(<FortyThievesPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    // playingState.tableau[1][0] is ♥5; move it to tableau column 3.
+    const tableauHintState: FortyThievesResponse = {
+      ...playingState,
+      hint: { fromZone: 'tableau', fromCol: 1, cardIndex: 0, toZone: 'tableau', toCol: 3 },
+    };
+    mockExec.mockResolvedValue(tableauHintState);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    const region = await screen.findByTestId('ft-hint-announcement');
+    await waitFor(() => expect(region).toHaveTextContent('ヒント: ♥ 5をタブロー列3へ移動'));
+  });
+
+  it('announces with an empty card name when a waste hint has no waste card', async () => {
+    // Mount with an empty waste pile so state.waste stays empty (handleHint updates
+    // only the hint, not state) — a waste-origin hint then resolves to a null card.
+    mockExec.mockResolvedValue(playingNoWasteState);
+    renderWithProviders(<FortyThievesPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValue({
+      ...playingNoWasteState,
+      hint: { fromZone: 'waste', fromCol: -1, cardIndex: -1, toZone: 'foundation', toCol: 0 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    const region = await screen.findByTestId('ft-hint-announcement');
+    await waitFor(() => expect(region).toHaveTextContent('ヒント: を組札へ移動'));
+  });
+
+  it('announces with an empty card name when a tableau hint points at a missing card', async () => {
+    renderWithProviders(<FortyThievesPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    // Column 2 is empty in playingState, so [2][0] is undefined → card resolves to null.
+    const missingCardHintState: FortyThievesResponse = {
+      ...playingState,
+      hint: { fromZone: 'tableau', fromCol: 2, cardIndex: 0, toZone: 'tableau', toCol: 3 },
+    };
+    mockExec.mockResolvedValue(missingCardHintState);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    const region = await screen.findByTestId('ft-hint-announcement');
+    await waitFor(() => expect(region).toHaveTextContent('ヒント: をタブロー列3へ移動'));
+  });
+
   it('game clear shows action log button', async () => {
     mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<FortyThievesPage />);

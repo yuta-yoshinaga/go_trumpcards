@@ -192,6 +192,19 @@ function FortyThievesPageContent() {
   const isEnded = isGameClear || isGameOver;
   const autoCompleteReady = state.stockCount === 0 && state.waste.length === 0 && isTableauAllFaceUp(state.tableau);
 
+  // Resolve the hinted card + destination so the hint can also be announced to
+  // screen readers (the visible hintAvailable row is a plain div, not a live
+  // region). For a waste hint only the top card is movable; for a tableau hint
+  // the card is at [fromCol][cardIndex]. Mirrors the Yukon hintAnnouncement pattern.
+  const hintCard =
+    hint === null
+      ? null
+      : hint.fromZone === 'waste'
+        ? (state.waste[state.waste.length - 1] ?? null)
+        : (state.tableau[hint.fromCol]?.[hint.cardIndex]?.card ?? null);
+  const hintCardName = hintCard ? cardAlt(hintCard) : '';
+  const hintDest = hint ? formatHintZone(t, hint.toZone, hint.toCol) : '';
+
   const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
     selectedSource !== null &&
     selectedSource.zone === zone &&
@@ -427,6 +440,14 @@ function FortyThievesPageContent() {
                   {formatHintZone(t, hint.toZone, hint.toCol)}
                 </div>
               )}
+              {/* Visually hidden so the announcement adds no layout, but the hinted
+                  card and destination are read out to screen-reader users. The
+                  container is always mounted (only its text is conditional) so AT
+                  reliably announces the first hint — some readers miss a live region
+                  that is inserted already-populated. */}
+              <div className="sr-only" role="status" aria-live="polite" data-testid="ft-hint-announcement">
+                {hint ? t('hintAnnouncement', { card: hintCardName, dest: hintDest }) : ''}
+              </div>
             </div>
             {frontendHintEnabled && frontendHint && (
               <div className="flex justify-center">

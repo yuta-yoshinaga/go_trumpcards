@@ -24,6 +24,7 @@
   "gameClear": "Game Clear! Moves: {{moveCount}}",
   "gameOver": "Game Over",
   "hintAvailable": "Hint available",
+  "hintAnnouncement": "Hint: move {{card}} to {{dest}}",
   "noHint": "No hint available",
   "tutorial": {
     "stockWaste": "Click the stock pile to draw one card. No recycling allowed.",
