@@ -90,6 +90,17 @@ describe('BeleagueredCastlePage', () => {
     await waitFor(() => expect(screen.getAllByLabelText(/組札 1枚/).length).toBe(4));
   });
 
+  it('gives each empty tableau column a distinct column-numbered aria-label', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    // Columns 3 and 8 (1-based) are empty and each reads distinctly, unlike the
+    // previous shared "empty" text.
+    await waitFor(() => expect(screen.getByRole('button', { name: '空のタブロー列 3' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '空のタブロー列 8' })).toBeInTheDocument();
+    // The two filled columns (1, 2) are not rendered as empty-column buttons.
+    expect(screen.queryByRole('button', { name: '空のタブロー列 1' })).not.toBeInTheDocument();
+  });
+
   it('renders giveup button when playing', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BeleagueredCastlePage />);
