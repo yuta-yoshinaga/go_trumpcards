@@ -26,6 +26,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BristolMoveZone, BristolResponse } from '../types/card';
 import { BristolPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { BRISTOL_HELP, parseBristolCommand } from '../utils/cli/commands/bristolCommands';
 import { formatBristolState } from '../utils/cli/formatters/bristolFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -229,7 +230,11 @@ function BristolPageContent() {
                     type="button"
                     onClick={() => handleFoundationClick(i)}
                     disabled={!isPlaying || !selected || loading}
-                    aria-label={`${t('foundation')} ${i}`}
+                    aria-label={
+                      pile.length > 0
+                        ? t('foundationAria', { num: i, card: cardAlt(pile[pile.length - 1]), count: pile.length })
+                        : t('foundationAriaEmpty', { num: i })
+                    }
                     className={
                       selected
                         ? `rounded border p-0.5 ${focusRingWhite} border-ds-info`
@@ -313,7 +318,7 @@ function BristolPageContent() {
                           type="button"
                           onClick={() => handleFanClick(i)}
                           disabled={!isPlaying || loading}
-                          aria-label={`${t('fan')} ${i}`}
+                          aria-label={t('fanAria', { num: i, card: cardAlt(top), count: pile.length })}
                           aria-pressed={isSelected(zone)}
                           className={`relative rounded border-2 bg-transparent p-0 ${focusRingWhite} ${
                             isSelected(zone) ? 'border-ds-info' : 'border-transparent'
@@ -332,6 +337,8 @@ function BristolPageContent() {
                         </button>
                       ) : (
                         <div
+                          role="img"
+                          aria-label={t('fanAriaEmpty', { num: i })}
                           className="rounded border border-dashed border-white/30"
                           style={{ width: cardWidth, height: cardHeight }}
                         />

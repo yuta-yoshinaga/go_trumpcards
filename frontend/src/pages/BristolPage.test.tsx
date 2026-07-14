@@ -65,6 +65,22 @@ describe('BristolPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('labels foundations and fans with the top card + count, or empty', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BristolPage />);
+    // All foundations empty.
+    await waitFor(() => expect(screen.getByRole('button', { name: '組札 0: 空' })).toBeInTheDocument());
+    // Fan 0 holds ♥4; fans 1 and 2 are empty (rendered as role=img placeholders).
+    expect(screen.getByRole('button', { name: 'ファン 0: ♥ 4（1枚）' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'ファン 1: 空' })).toBeInTheDocument();
+  });
+
+  it('includes the top card + count on a non-empty foundation', async () => {
+    mockExec.mockResolvedValue({ ...playingState, foundation: [[card('SPADE', 1)], [], [], []] });
+    renderWithProviders(<BristolPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '組札 0: ♠ A（1枚）' })).toBeInTheDocument());
+  });
+
   it('gives tableau columns a contextual aria-label (1-based number, role, depth) and a rule header', async () => {
     renderWithProviders(<BristolPage />);
     // Column 1 (0-based idx 0) holds 1 card → "降順ビルド列 1（1枚）".
@@ -120,8 +136,8 @@ describe('BristolPage', () => {
     renderWithProviders(<BristolPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     screen.getByRole('button', { name: /降順ビルド列 1/ }).click();
-    await waitFor(() => expect(screen.getByRole('button', { name: '組札 0' })).toBeEnabled());
-    screen.getByRole('button', { name: '組札 0' }).click();
+    await waitFor(() => expect(screen.getByRole('button', { name: /^組札 0/ })).toBeEnabled());
+    screen.getByRole('button', { name: /^組札 0/ }).click();
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0 }, { zone: 'foundation', col: 0 }),
     );
@@ -130,9 +146,9 @@ describe('BristolPage', () => {
   it('selects a fan then moves it to a foundation', async () => {
     renderWithProviders(<BristolPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    screen.getByRole('button', { name: 'ファン 0' }).click();
-    await waitFor(() => expect(screen.getByRole('button', { name: '組札 1' })).toBeEnabled());
-    screen.getByRole('button', { name: '組札 1' }).click();
+    screen.getByRole('button', { name: /^ファン 0/ }).click();
+    await waitFor(() => expect(screen.getByRole('button', { name: /^組札 1/ })).toBeEnabled());
+    screen.getByRole('button', { name: /^組札 1/ }).click();
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'fan', col: 0 }, { zone: 'foundation', col: 1 }),
     );
@@ -141,7 +157,7 @@ describe('BristolPage', () => {
   it('foundations are disabled until a source is selected', async () => {
     renderWithProviders(<BristolPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    expect(screen.getByRole('button', { name: '組札 0' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /^組札 0/ })).toBeDisabled();
   });
 
   it('hint button triggers hint command', async () => {
