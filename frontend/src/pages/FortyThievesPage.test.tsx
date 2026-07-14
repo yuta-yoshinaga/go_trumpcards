@@ -420,10 +420,27 @@ describe('FortyThievesPage', () => {
     expect(region).toHaveTextContent('ヒント: ♣ 3をタブロー列3へ移動');
   });
 
-  it('does not render the hint announcement region when there is no hint', async () => {
+  it('renders an empty hint announcement region when there is no hint', async () => {
     renderWithProviders(<FortyThievesPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
-    expect(screen.queryByTestId('ft-hint-announcement')).not.toBeInTheDocument();
+    // The region stays mounted (only its text is conditional) so AT announces the first hint.
+    expect(screen.getByTestId('ft-hint-announcement')).toHaveTextContent('');
+  });
+
+  it('announces a tableau-origin hint by resolving the card at [fromCol][cardIndex]', async () => {
+    renderWithProviders(<FortyThievesPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    // playingState.tableau[1][0] is ♥5; move it to tableau column 3.
+    const tableauHintState: FortyThievesResponse = {
+      ...playingState,
+      hint: { fromZone: 'tableau', fromCol: 1, cardIndex: 0, toZone: 'tableau', toCol: 3 },
+    };
+    mockExec.mockResolvedValue(tableauHintState);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    const region = await screen.findByTestId('ft-hint-announcement');
+    await waitFor(() => expect(region).toHaveTextContent('ヒント: ♥ 5をタブロー列3へ移動'));
   });
 
   it('game clear shows action log button', async () => {

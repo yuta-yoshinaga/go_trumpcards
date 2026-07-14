@@ -441,12 +441,13 @@ function FortyThievesPageContent() {
                 </div>
               )}
               {/* Visually hidden so the announcement adds no layout, but the hinted
-                  card and destination are read out to screen-reader users. */}
-              {hint && (
-                <div className="sr-only" role="status" aria-live="polite" data-testid="ft-hint-announcement">
-                  {t('hintAnnouncement', { card: hintCardName, dest: hintDest })}
-                </div>
-              )}
+                  card and destination are read out to screen-reader users. The
+                  container is always mounted (only its text is conditional) so AT
+                  reliably announces the first hint — some readers miss a live region
+                  that is inserted already-populated. */}
+              <div className="sr-only" role="status" aria-live="polite" data-testid="ft-hint-announcement">
+                {hint ? t('hintAnnouncement', { card: hintCardName, dest: hintDest }) : ''}
+              </div>
             </div>
             {frontendHintEnabled && frontendHint && (
               <div className="flex justify-center">
