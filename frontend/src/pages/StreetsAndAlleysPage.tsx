@@ -220,6 +220,12 @@ function StreetsAndAlleysPageContent() {
                   cardIndex: cardIdx,
                 };
                 const isTop = cardIdx === col.length - 1;
+                const isSelfSource = isSourceSelected('tableau', colIdx, cardIdx);
+                // When a source is picked, each column's top card is a drop
+                // target. Give it a subtle ring so keyboard/Tab users can see
+                // which cards are now selectable as a destination (the disabled
+                // state alone was invisible). Excludes the picked source itself.
+                const isTargetCandidate = !!selectedSource && isTop && !isSelfSource;
                 return (
                   <div
                     key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
@@ -238,11 +244,12 @@ function StreetsAndAlleysPageContent() {
                         }}
                         disabled={!isPlaying || loading || (!isTop && !selectedSource)}
                         aria-label={cardAlt(tc.card)}
-                        aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
+                        aria-pressed={isSelfSource}
+                        data-target-candidate={isTargetCandidate || undefined}
                         draggable={isPlaying && !loading && isTop}
                         onDragStart={dnd.handleDragStart(cardZone)}
                         onDragEnd={dnd.handleDragEnd}
-                        className={`p-0 border-0 bg-transparent w-full rounded ${focusRingWhite} ${isTop ? 'cursor-pointer' : 'cursor-default'} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                        className={`p-0 border-0 bg-transparent w-full rounded ${focusRingWhite} ${isTop ? 'cursor-pointer' : 'cursor-default'} ${isSelfSource ? 'ring-2 ring-ds-warning' : ''} ${isTargetCandidate ? 'ring-1 ring-ds-info motion-safe:hover:ring-2 focus:ring-2' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
                       >
                         <AnimatedCard
                           card={tc.card}
