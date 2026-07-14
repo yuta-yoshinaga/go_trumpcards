@@ -129,7 +129,9 @@ function EightOffPageContent() {
   const [hintAnnounce, setHintAnnounce] = useState('');
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally react only to a new hint request (hintNonce); adding hint/state/t would re-run on unrelated updates and re-announce.
   useEffect(() => {
-    if (hintNonce === 0 || !state) return;
+    // Skip on a failed hint fetch (hintError set, hint left null) so we don't
+    // wrongly announce "no moves" alongside the network-error banner.
+    if (hintNonce === 0 || !state || hintError) return;
     if (!hint) {
       setHintAnnounce(t('hintNoMoves'));
       return;

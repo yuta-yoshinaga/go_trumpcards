@@ -254,6 +254,20 @@ describe('EightOffPage', () => {
     expect(region).toHaveTextContent('');
   });
 
+  it('does not announce "no moves" when the hint request fails', async () => {
+    renderWithProviders(<EightOffPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    // hint fetch rejects → hintError is set, hint stays null; the region must stay
+    // empty rather than falsely announcing "移動可能な手がありません".
+    mockExec.mockRejectedValueOnce(new Error('network error'));
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    const region = screen.getByTestId('eo-hint-announce');
+    expect(region).toHaveTextContent('');
+  });
+
   it('announces an empty card name when a free-cell hint points at an empty cell', async () => {
     renderWithProviders(<EightOffPage />); // playingState: all free cells null
     await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());

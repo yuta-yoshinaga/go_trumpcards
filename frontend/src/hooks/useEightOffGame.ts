@@ -27,10 +27,13 @@ export function useEightOffGame() {
   // hint value — a null hint after a request is indistinguishable from the
   // initial null without this signal.
   const [hintNonce, setHintNonce] = useState(0);
+  // Depend on the stable base.handleHint reference, not the whole `base` object
+  // (which is re-created whenever state/loading change), so this callback stays stable.
+  const baseHandleHint = base.handleHint;
   const handleHint = useCallback(async () => {
-    await base.handleHint();
+    await baseHandleHint();
     setHintNonce((n) => n + 1);
-  }, [base]);
+  }, [baseHandleHint]);
 
   const handleSelectSource = useCallback((zone: EightOffMoveZone) => {
     setSelectedSource((prev) => {
