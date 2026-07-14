@@ -134,7 +134,11 @@ function UltiPageContent() {
   useEffect(() => {
     if (!state) return;
     const coins = state.players.map((p) => p.coins);
-    if (state.phase === UltiPhase.ROUND_END) {
+    // The backend skips ROUND_END on the match-deciding round (it settles then
+    // jumps straight to GAME_END), so treat GAME_END as a settlement too or the
+    // final round's deltas would never appear.
+    const isSettlement = state.phase === UltiPhase.ROUND_END || state.phase === UltiPhase.GAME_END || state.gameEndFlag;
+    if (isSettlement) {
       if (prevCoinsRef.current) {
         const prev = prevCoinsRef.current;
         setCoinDeltas(coins.map((c, i) => c - (prev[i] ?? c)));
@@ -282,7 +286,7 @@ function UltiPageContent() {
                       <span className={p.isDeclarer ? 'text-ds-warning font-semibold' : ''}>
                         {playerName(p.id, p.isHuman)}: {t('coins', { coins: p.coins })}
                       </span>
-                      {isRoundEnd && coinDeltas && coinDeltas[i] !== 0 && (
+                      {(isRoundEnd || isGameEnd) && coinDeltas && coinDeltas[i] !== 0 && (
                         <span
                           className={`text-xs font-semibold ${coinDeltas[i] > 0 ? 'text-ds-success' : 'text-ds-error'}`}
                           data-testid={`ulti-coin-delta-${p.id}`}
@@ -340,7 +344,7 @@ function UltiPageContent() {
                         })}
                       </div>
                     )}
-                    {isRoundEnd && coinDeltas && humanIdx >= 0 && (
+                    {(isRoundEnd || isGameEnd) && coinDeltas && humanIdx >= 0 && (
                       <div
                         className={
                           coinDeltas[humanIdx] > 0 ? 'text-ds-success' : coinDeltas[humanIdx] < 0 ? 'text-ds-error' : ''

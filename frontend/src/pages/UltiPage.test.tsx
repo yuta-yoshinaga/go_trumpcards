@@ -187,6 +187,31 @@ describe('UltiPage', () => {
     expect(panel).toHaveTextContent('あなた: +2コイン');
   });
 
+  it('shows coin deltas on the final round even though the backend jumps to GAME_END', async () => {
+    // The match-deciding round settles straight into GAME_END (no ROUND_END).
+    const finalSettle = makeUltiState({
+      phase: 5,
+      isHumanTurn: false,
+      gameEndFlag: true,
+      outcome: 1,
+      winnerPlayer: 0,
+      players: [
+        { id: 0, isHuman: true, cardCount: 0, cards: [], trickCount: 0, cardPoints: 0, coins: 3, isDeclarer: true },
+        { id: 1, isHuman: false, cardCount: 0, cards: [], trickCount: 0, cardPoints: 0, coins: -3, isDeclarer: false },
+        { id: 2, isHuman: false, cardCount: 0, cards: [], trickCount: 0, cardPoints: 0, coins: 0, isDeclarer: false },
+      ],
+    });
+    mockExec.mockResolvedValueOnce(trickEndState); // mount → trick end (coins 0)
+    renderWithProviders(<UltiPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValueOnce(finalSettle);
+    fireEvent.click(screen.getByRole('button', { name: '次のトリック' }));
+
+    await waitFor(() => expect(screen.getByTestId('ulti-coin-delta-0')).toHaveTextContent('+3'));
+    expect(screen.getByTestId('ulti-coin-delta-1')).toHaveTextContent('-3');
+  });
+
   it('does not show coin deltas outside the settlement phase', async () => {
     mockExec.mockResolvedValue(playPhaseState);
     renderWithProviders(<UltiPage />);
