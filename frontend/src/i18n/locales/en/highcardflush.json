@@ -71,6 +71,8 @@
   "dealerQualified": "Qualified",
   "dealerNotQualified": "Not Qualified",
   "flushLine": "{{count}}-card flush",
+  "flushCardAria": "in flush",
+  "nonFlushCardAria": "not in flush",
   "tutorial": {
     "betControls": "Set the ante and optional side bets, then press Bet.",
     "actionButtons": "Raise up to the multiplier allowed by your flush length, or Fold to forfeit the ante.",

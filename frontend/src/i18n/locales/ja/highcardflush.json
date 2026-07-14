@@ -71,6 +71,8 @@
   "dealerQualified": "クオリファイ",
   "dealerNotQualified": "未クオリファイ",
   "flushLine": "{{count}}枚フラッシュ",
+  "flushCardAria": "フラッシュ対象",
+  "nonFlushCardAria": "フラッシュ対象外",
   "tutorial": {
     "betControls": "アンテと任意のサイドベットを設定し、ベットを押してください。",
     "actionButtons": "プレイヤーのフラッシュ枚数で許される最大倍率まで「レイズ」できます。「フォールド」でアンテを放棄します。",
