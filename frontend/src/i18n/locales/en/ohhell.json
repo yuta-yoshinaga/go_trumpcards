@@ -90,5 +90,6 @@
     "followSuit": "Follow the led suit",
     "trumpWithCard": "Trump with a card",
     "discardLowest": "Discard your lowest card"
-  }
+  },
+  "restrictedBidAria": "Bid {{n}} (unavailable due to the dealer restriction)"
 }
