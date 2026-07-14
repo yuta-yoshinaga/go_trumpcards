@@ -44,5 +44,5 @@
     "actionButtons": "ヒント・自動完成・元に戻すなどの操作ボタンです。",
     "resetButton": "新しいゲームを始めるボタンです。"
   },
-  "columnActions": "操作"
+  "columnActionsFor": "列 {{n}} の操作"
 }

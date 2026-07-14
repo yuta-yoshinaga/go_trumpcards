@@ -166,6 +166,10 @@ describe('CanfieldPage', () => {
       expect(details.tagName.toLowerCase()).toBe('details');
       // Collapsed by default (no open attribute).
       expect(details).not.toHaveAttribute('open');
+      // The <summary> itself carries the (0-based, matching the UI) column number
+      // so the accordion labels are distinguishable to a screen reader.
+      expect(details.querySelector('summary')).toHaveTextContent('列 0 の操作');
+      expect(screen.getByTestId('cf-col-actions-1').querySelector('summary')).toHaveTextContent('列 1 の操作');
     } finally {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: orig });
       window.dispatchEvent(new Event('resize'));
