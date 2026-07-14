@@ -18,7 +18,9 @@
     "select": "Select a card to discard",
     "confirm": "Discard {{card}}?",
     "confirmYes": "Confirm",
-    "confirmNo": "Cancel"
+    "confirmNo": "Cancel",
+    "limitReached": "You can select up to {{count}} card(s). Deselect one first.",
+    "limitDescription": "You can select at most {{count}} card(s) to discard."
   },
   "rebuy": {
     "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",

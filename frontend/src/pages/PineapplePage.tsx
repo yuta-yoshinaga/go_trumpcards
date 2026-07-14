@@ -145,6 +145,11 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   const [selectedDiscards, setSelectedDiscards] = useState<number[]>([]);
   // Two-step discard: pressing "discard" enters a confirm step before committing.
   const [discardConfirming, setDiscardConfirming] = useState(false);
+  // Feedback when a click is ignored because the discard cap is already reached:
+  // a message for the live region and a nonce that re-fires it (and the shake)
+  // on every repeated over-limit attempt, even with identical text.
+  const [limitAnnounce, setLimitAnnounce] = useState('');
+  const [limitNonce, setLimitNonce] = useState(0);
   const turnStartRef = useRef(0);
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode(variant);
@@ -291,13 +296,18 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   const toggleDiscard = useCallback(
     (idx: number) => {
       if (!canDiscard || discardConfirming) return;
-      setSelectedDiscards((prev) => {
-        if (prev.includes(idx)) return prev.filter((i) => i !== idx);
-        if (prev.length >= discardCount) return prev; // cap reached
-        return [...prev, idx];
-      });
+      const isSelected = selectedDiscards.includes(idx);
+      // Selecting a new card while already at the cap is ignored — but tell the
+      // user why (live region + shake) instead of silently swallowing the click.
+      if (!isSelected && selectedDiscards.length >= discardCount) {
+        setLimitAnnounce(t('discard.limitReached', { count: discardCount }));
+        setLimitNonce((n) => n + 1);
+        return;
+      }
+      setLimitAnnounce('');
+      setSelectedDiscards((prev) => (prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]));
     },
-    [canDiscard, discardConfirming, discardCount],
+    [canDiscard, discardConfirming, discardCount, selectedDiscards, t],
   );
   const discardConfirm = useCallback(() => {
     if (selectedDiscards.length !== discardCount) return;
@@ -492,7 +502,17 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                     </span>
                   )}
                 </div>
-                <div className="flex flex-wrap gap-1.5 mb-2">
+                {/* Screen-reader description of the discard cap, associated with the
+                    hand group so AT conveys the limit up front. */}
+                {canDiscard && (
+                  <span id="pn-discard-limit-desc" className="sr-only">
+                    {t('discard.limitDescription', { count: discardCount })}
+                  </span>
+                )}
+                <div
+                  className="flex flex-wrap gap-1.5 mb-2"
+                  aria-describedby={canDiscard ? 'pn-discard-limit-desc' : undefined}
+                >
                   {humanPlayer.cards?.length
                     ? humanPlayer.cards.map((card, idx) => {
                         const isSelected = selectedDiscards.includes(idx);
@@ -528,6 +548,20 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                         <AnimatedCardBack key={i} width={cardWidth} />
                       ))}
                 </div>
+                {/* Over-limit feedback: visible (color-blind-safe) + announced to AT.
+                    Keyed on the nonce so a repeated over-limit click re-fires the
+                    announcement and restarts the shake even with identical text. */}
+                {limitAnnounce && (
+                  <div
+                    key={limitNonce}
+                    role="status"
+                    aria-live="polite"
+                    data-testid="pn-discard-limit-announce"
+                    className="text-center text-ds-warning text-xs mb-2 motion-safe:animate-shake"
+                  >
+                    {limitAnnounce}
+                  </div>
+                )}
               </div>
             )}
 
