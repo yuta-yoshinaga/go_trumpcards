@@ -78,6 +78,15 @@ describe('MariasPage', () => {
     await waitFor(() => expect(screen.getByTestId('marias-marriage')).toHaveTextContent('♥ K-Q (+20)'));
   });
 
+  it('announces the marriage banner with a spoken suit name (symbol hidden from SR)', async () => {
+    // Default hand: ♥K + ♥Q with trump ♥ → +40. SR reads the suit name, not the glyph.
+    renderWithProviders(<MariasPage />);
+    const banner = await screen.findByTestId('marias-marriage');
+    expect(banner).toHaveAttribute('role', 'status');
+    expect(banner).toHaveAttribute('aria-live', 'polite');
+    expect(banner).toHaveAttribute('aria-label', 'マリッジ可能: ハート K-Q +40');
+  });
+
   it('shows no marriage banner when the hand has no K-Q pair', async () => {
     mockExec.mockResolvedValue(
       makeMariasState({

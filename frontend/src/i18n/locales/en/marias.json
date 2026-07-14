@@ -17,6 +17,12 @@
   "trick": "Trick {{n}}",
   "trump": "Trump: {{suit}}",
   "marriageAvailable": "Marriage available: {{list}}",
+  "suitName": {
+    "spade": "Spade",
+    "club": "Club",
+    "heart": "Heart",
+    "diamond": "Diamond"
+  },
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",
   "currentTrick": "Current Trick",
