@@ -408,9 +408,10 @@ function CanfieldPageContent() {
                         return isMobile ? (
                           <details className="mt-1 w-full" data-testid={`cf-col-actions-${i}`}>
                             {/* Include the column number so a screen reader can tell the
-                                per-column action panels apart when read in sequence. */}
+                                per-column action panels apart. 0-based to match the rest
+                                of the UI (the column header "#{i}" and the "→T0" buttons). */}
                             <summary className="text-xs text-ds-text-muted cursor-pointer min-h-[44px] flex items-center justify-center">
-                              {t('columnActionsFor', { n: i + 1 })}
+                              {t('columnActionsFor', { n: i })}
                             </summary>
                             {actionButtons}
                           </details>
