@@ -10,6 +10,7 @@
   "moveCount": "手数",
   "giveup": "ギブアップ",
   "empty": "空",
+  "emptyReserveSlot": "空のリザーブ枠 {{idx}}",
   "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
   "emptyFoundationAriaLabel": "空の組札 ({{suit}})",
   "landscapeBanner": "横画面での表示を推奨します",

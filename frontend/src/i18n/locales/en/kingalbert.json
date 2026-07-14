@@ -10,6 +10,7 @@
   "moveCount": "Moves",
   "giveup": "Give Up",
   "empty": "Empty",
+  "emptyReserveSlot": "Empty reserve slot {{idx}}",
   "foundationAriaLabel": "{{suit}} foundation {{count}} cards",
   "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
   "landscapeBanner": "Landscape mode recommended",
