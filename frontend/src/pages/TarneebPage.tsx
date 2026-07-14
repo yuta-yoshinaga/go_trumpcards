@@ -103,6 +103,9 @@ const TRUMP_LABELS: Record<number, string> = {
   4: '♦',
 };
 
+/** Maps a trump suit value to its `suitName.*` i18n key (mirrors MightyPage). */
+const SUIT_KEYS: Record<number, string> = { 1: 'spade', 2: 'club', 3: 'heart', 4: 'diamond' };
+
 /** Render the Tarneeb game page (partnership trick-taking with chosen trump). */
 export const TarneebPage = withTutorial(TarneebPageContent, 'tarneeb', TARNEEB_TUTORIAL_STEPS);
 
@@ -467,7 +470,7 @@ function TarneebPageContent() {
                       className={btnPrimary}
                       onClick={() => handleDeclareTrump(suit)}
                       disabled={loading}
-                      aria-label={`trump-${suit}`}
+                      aria-label={t(`suitName.${SUIT_KEYS[suit]}`)}
                     >
                       {TRUMP_LABELS[suit]}
                     </button>

@@ -20,6 +20,12 @@
   "trick": "トリック {{n}}",
   "trump": "トランプ",
   "trumpUndeclared": "未宣言",
+  "suitName": {
+    "spade": "スペード",
+    "club": "クラブ",
+    "heart": "ハート",
+    "diamond": "ダイヤ"
+  },
   "highestBid": "現在の最高ビッド",
   "cards": "{{count}}枚",
   "bid": "ビッド {{n}}",
