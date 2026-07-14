@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { trucoApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -8,6 +8,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -63,6 +64,39 @@ function TrucoPageContent() {
   const handleAccept = useCallback(() => void dispatch('accept'), [dispatch]);
   const handleDecline = useCallback(() => void dispatch('decline'), [dispatch]);
   const handleNext = useCallback(() => void dispatch('next'), [dispatch]);
+
+  // Keyboard shortcuts (must run before the early return): 1/2/3 play a card,
+  // t declares truco, a/d accept/decline a truco call, n advances at a boundary.
+  const kbHumanIdx = state?.players.findIndex((p) => p.isHuman) ?? -1;
+  const kbHumanCardCount = state?.players[kbHumanIdx]?.cards?.length ?? 0;
+  const kbIsHumanPlayTurn = state?.phase === TrucoPhase.PLAY && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const kbIsHumanRespond = state?.phase === TrucoPhase.RESPOND && state.responderIdx === kbHumanIdx;
+  const kbCanTruco = !!state?.canDeclareTruco;
+  const kbIsBoundary = state?.phase === TrucoPhase.TRICK_END || state?.phase === TrucoPhase.HAND_END;
+  const actionBindings = useMemo(
+    () => [
+      { key: '1', action: () => handlePlay(0), enabled: kbIsHumanPlayTurn && kbHumanCardCount >= 1 },
+      { key: '2', action: () => handlePlay(1), enabled: kbIsHumanPlayTurn && kbHumanCardCount >= 2 },
+      { key: '3', action: () => handlePlay(2), enabled: kbIsHumanPlayTurn && kbHumanCardCount >= 3 },
+      { key: 't', action: handleTruco, enabled: (kbIsHumanPlayTurn || kbIsHumanRespond) && kbCanTruco },
+      { key: 'a', action: handleAccept, enabled: kbIsHumanRespond },
+      { key: 'd', action: handleDecline, enabled: kbIsHumanRespond },
+      { key: 'n', action: handleNext, enabled: kbIsBoundary },
+    ],
+    [
+      handlePlay,
+      handleTruco,
+      handleAccept,
+      handleDecline,
+      handleNext,
+      kbIsHumanPlayTurn,
+      kbHumanCardCount,
+      kbIsHumanRespond,
+      kbCanTruco,
+      kbIsBoundary,
+    ],
+  );
+  useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
 
   if (!state) {
     return <GameSkeleton gameKey="truco" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 3 }} />;
