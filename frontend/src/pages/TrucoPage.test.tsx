@@ -62,6 +62,41 @@ describe('TrucoPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('plays a card with number keys and declares truco with t during the play turn', async () => {
+    mockExec.mockResolvedValue(makeState()); // PLAY phase, human turn, canDeclareTruco
+    renderWithProviders(<TrucoPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: '1' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
+    fireEvent.keyDown(document, { key: 't' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('truco'));
+  });
+
+  it('accepts and declines with a/d during the respond phase', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1, responderIdx: 0, trucoCallerIdx: 1 }));
+    renderWithProviders(<TrucoPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'a' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('accept'));
+    fireEvent.keyDown(document, { key: 'd' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('decline'));
+  });
+
+  it('ignores play/respond shortcuts outside their phases', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 4, gameEndFlag: true })); // GAME_END
+    renderWithProviders(<TrucoPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: '1' });
+    fireEvent.keyDown(document, { key: 'a' });
+    fireEvent.keyDown(document, { key: 't' });
+    expect(mockExec).not.toHaveBeenCalledWith('play', 0);
+    expect(mockExec).not.toHaveBeenCalledWith('accept');
+    expect(mockExec).not.toHaveBeenCalledWith('truco');
+  });
+
   it('renders match score and stake header', async () => {
     renderWithProviders(<TrucoPage />);
     await waitFor(() => expect(screen.getByText(/マッチ得点/)).toBeInTheDocument());
