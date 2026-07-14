@@ -291,6 +291,23 @@ describe('TrashPage', () => {
     await waitFor(() => expect(region).toHaveTextContent('引いたカード: ♠ J。置けるスロットがなく捨て札になります'));
   });
 
+  it('announces a normal pending card as discarded when its target slot is already face-up', async () => {
+    // Slot 4 (index 3) already filled → a pending 4 cannot be placed and is dead.
+    const filledSlot4 = faceDownSlots();
+    filledSlot4[3] = { faceUp: true, card: card('HEART', 4) };
+    mockExec.mockResolvedValue({
+      ...playerTurnState,
+      players: [
+        { slots: filledSlot4, isCpu: false },
+        { slots: faceDownSlots(), isCpu: true },
+      ],
+      pending: card('SPADE', 4),
+    });
+    renderWithProviders(<TrashPage />);
+    const region = await screen.findByTestId('tr-pending-announce');
+    await waitFor(() => expect(region).toHaveTextContent('引いたカード: ♠ 4。置けるスロットがなく捨て札になります'));
+  });
+
   it('keeps the pending live region empty when no card is pending', async () => {
     renderWithProviders(<TrashPage />);
     const region = await screen.findByTestId('tr-pending-announce');

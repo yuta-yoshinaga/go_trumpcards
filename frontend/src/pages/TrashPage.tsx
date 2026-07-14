@@ -206,7 +206,13 @@ function TrashPageContent() {
     if (!state.pending || !isHumanTurn) return '';
     const cardName = cardAlt(state.pending);
     if (isAwaitWild || pendingIsWild) return t('pendingAnnounce.wild', { card: cardName });
-    if (pendingTargetIdx !== null) return t('pendingAnnounce.slot', { card: cardName, slot: pendingTargetIdx + 1 });
+    // Announce a target slot only when that slot is still face-down (placeable);
+    // if it is already filled the card is dead, mirroring the visual highlight
+    // (pendingHighlight is gated on !slot.faceUp).
+    const targetSlot = pendingTargetIdx !== null ? state.players[0].slots[pendingTargetIdx] : null;
+    if (targetSlot && !targetSlot.faceUp) {
+      return t('pendingAnnounce.slot', { card: cardName, slot: (pendingTargetIdx ?? 0) + 1 });
+    }
     return t('pendingAnnounce.dead', { card: cardName });
   })();
 
