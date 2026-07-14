@@ -129,6 +129,64 @@ describe('PokerSquaresPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('place', 2, 3));
   });
 
+  it('announces the row score preview in a live region on focus and clears it on blur', async () => {
+    const b = emptyBoard();
+    b[0][1] = { card: card('HEART', 2) };
+    b[0][2] = { card: card('HEART', 3) };
+    b[0][3] = { card: card('HEART', 4) };
+    b[0][4] = { card: card('HEART', 5) };
+    // Placing HEART 6 at (0,0) completes row 0 as a straight flush; column 0 is
+    // still empty so only the row preview is announced.
+    mockApi.mockResolvedValue({
+      ...playingState,
+      board: b,
+      currentCard: card('HEART', 6),
+      placedCount: 4,
+    });
+    renderWithProviders(<PokerSquaresPage />);
+    await waitFor(() => expect(screen.getByTestId('cell-0-0')).toBeInTheDocument());
+    const live = screen.getByTestId('ps-preview-live');
+    expect(live).toHaveTextContent('');
+    fireEvent.focus(screen.getByTestId('cell-0-0'));
+    await waitFor(() => expect(live).toHaveTextContent(/1行目.*完成.*点/));
+    fireEvent.blur(screen.getByTestId('cell-0-0'));
+    await waitFor(() => expect(live).toHaveTextContent(''));
+  });
+
+  it('announces the column score preview when focusing a cell that completes a column', async () => {
+    const b = emptyBoard();
+    b[1][0] = { card: card('HEART', 2) };
+    b[2][0] = { card: card('HEART', 3) };
+    b[3][0] = { card: card('HEART', 4) };
+    b[4][0] = { card: card('HEART', 5) };
+    // Placing HEART 6 at (0,0) completes column 0; row 0 is otherwise empty so
+    // only the column preview is announced.
+    mockApi.mockResolvedValue({
+      ...playingState,
+      board: b,
+      currentCard: card('HEART', 6),
+      placedCount: 4,
+    });
+    renderWithProviders(<PokerSquaresPage />);
+    await waitFor(() => expect(screen.getByTestId('cell-0-0')).toBeInTheDocument());
+    const live = screen.getByTestId('ps-preview-live');
+    fireEvent.focus(screen.getByTestId('cell-0-0'));
+    await waitFor(() => expect(live).toHaveTextContent(/1列目.*完成.*点/));
+  });
+
+  it('does not announce a preview when the focused cell completes no line', async () => {
+    // Only two cards in row 0 — focusing (0,0) completes nothing.
+    const b = emptyBoard();
+    b[0][1] = { card: card('HEART', 2) };
+    b[0][2] = { card: card('HEART', 3) };
+    mockApi.mockResolvedValue({ ...playingState, board: b, currentCard: card('SPADE', 9), placedCount: 2 });
+    renderWithProviders(<PokerSquaresPage />);
+    await waitFor(() => expect(screen.getByTestId('cell-0-0')).toBeInTheDocument());
+    fireEvent.focus(screen.getByTestId('cell-0-0'));
+    // No completed line -> live region stays empty.
+    expect(screen.getByTestId('ps-preview-live')).toHaveTextContent('');
+  });
+
   it('does not call place when a filled cell is clicked (button is disabled)', async () => {
     const filledState: PokerSquaresResponse = {
       ...playingState,

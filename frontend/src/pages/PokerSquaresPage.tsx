@@ -154,6 +154,40 @@ function PokerSquaresPageContent() {
     };
   }, [state, crossHover]);
 
+  // Mirror the visual `+N / hand` score preview into a polite live region so
+  // keyboard users hear how the focused cell would change the row/column score.
+  // Stays empty when the placement completes nothing (or scores 0), so screen
+  // readers aren't spammed while tabbing across cells.
+  const previewAnnouncement = useMemo(() => {
+    if (!state || !crossHover || !preview) return '';
+    const parts: string[] = [];
+    if (preview.row) {
+      const delta = preview.row.score - state.rowScores[crossHover.row];
+      if (delta !== 0) {
+        parts.push(
+          t('previewRowAnnounce', {
+            row: crossHover.row + 1,
+            hand: t(`hand.${pokerHandKey(preview.row.rank)}`),
+            delta,
+          }),
+        );
+      }
+    }
+    if (preview.col) {
+      const delta = preview.col.score - state.colScores[crossHover.col];
+      if (delta !== 0) {
+        parts.push(
+          t('previewColAnnounce', {
+            col: crossHover.col + 1,
+            hand: t(`hand.${pokerHandKey(preview.col.rank)}`),
+            delta,
+          }),
+        );
+      }
+    }
+    return parts.join(' ');
+  }, [state, crossHover, preview, t]);
+
   const handlePlace = (row: number, col: number) => {
     execApi('place', row, col);
   };
@@ -203,6 +237,9 @@ function PokerSquaresPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
+          <div className="sr-only" role="status" aria-live="polite" data-testid="ps-preview-live">
+            {previewAnnouncement}
+          </div>
           <SettingsPanel
             title={t('settings.title')}
             groups={[
