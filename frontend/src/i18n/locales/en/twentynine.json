@@ -41,6 +41,7 @@
   "nextRound": "Next Round",
   "target": "Target: {{points}} game pts",
   "bidPrompt": "Place a bid (only a higher bid is allowed):",
+  "bidDisabledReason": "Must exceed the current highest bid of {{currentBid}}",
   "bid": {
     "pass": "Pass",
     "sixteen": "16",

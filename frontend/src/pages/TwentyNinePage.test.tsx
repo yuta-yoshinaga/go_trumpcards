@@ -110,6 +110,21 @@ describe('TwentyNinePage', () => {
     expect(screen.getByTestId('bid-0')).toBeEnabled();
   });
 
+  it('explains why a disabled bid cannot be chosen via title and aria-label', async () => {
+    mockExec.mockResolvedValue(makeTwentyNineState({ bids: [20, 0, 0, 0] }));
+    renderWithProviders(<TwentyNinePage />);
+    const bid16 = await screen.findByTestId('bid-16');
+    const reason = '現在の最高ビッド 20 を超える必要があります';
+    // aria-disabled + reason-bearing aria-label on the button.
+    expect(bid16).toHaveAttribute('aria-disabled', 'true');
+    expect(bid16).toHaveAttribute('aria-label', `16 — ${reason}`);
+    // The hover tooltip lives on the wrapping span (browsers suppress it on disabled buttons).
+    expect(screen.getByTestId('bid-wrap-16')).toHaveAttribute('title', reason);
+    // An enabled bid gets neither a reason label nor a title.
+    expect(screen.getByTestId('bid-24')).not.toHaveAttribute('aria-label');
+    expect(screen.getByTestId('bid-wrap-24')).not.toHaveAttribute('title');
+  });
+
   it('hides the trump suit until it is revealed', async () => {
     // Bid-phase fixture has trumpRevealed false; the trump should read "非公開" (hidden).
     renderWithProviders(<TwentyNinePage />);
