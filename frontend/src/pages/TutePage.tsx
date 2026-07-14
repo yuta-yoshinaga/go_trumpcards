@@ -34,6 +34,8 @@ import { playerName } from '../utils/playerUtils';
 
 /** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 unused). */
 const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
+/** Suit id → `suitName.*` i18n key (1=♠ .. 4=♦). */
+const SUIT_KEYS = ['', 'spade', 'club', 'heart', 'diamond'] as const;
 
 /** Tute tutorial step definitions. */
 const TUTE_TUTORIAL_STEPS: TutorialStep[] = [
@@ -343,6 +345,10 @@ function TutePageContent() {
                           className={btnSecondary}
                           onClick={() => handleDeclareMarriage(suit)}
                           disabled={loading}
+                          aria-label={t('marriageAria', {
+                            suit: t(`suitName.${SUIT_KEYS[suit]}`),
+                            points: suit === state.trumpSuit ? 40 : 20,
+                          })}
                         >
                           {t('declareMarriage', { suit: SUIT_SYMBOLS[suit] })}
                         </button>

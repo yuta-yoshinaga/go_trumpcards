@@ -74,9 +74,18 @@ describe('TutePage', () => {
   it('shows marriage declaration buttons when allowed and dispatches a suit', async () => {
     mockExec.mockResolvedValue(marriageState);
     renderWithProviders(<TutePage />);
-    const heartBtn = await screen.findByRole('button', { name: '結婚宣言 ♥' });
+    // The button's accessible name is now the spoken aria-label (suit name + points);
+    // heart is not the trump (♦) so the marriage is worth 20.
+    const heartBtn = await screen.findByRole('button', { name: 'ハートのマリッジを宣言（20点）' });
     fireEvent.click(heartBtn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('marriage', { suit: 3 }));
+  });
+
+  it('labels a trump-suit marriage as worth 40 points', async () => {
+    // Make heart (the human's K+Q suit) the trump so the marriage is worth 40.
+    mockExec.mockResolvedValue(makeTuteState({ canDeclareMarriage: true, trumpSuit: 3 }));
+    renderWithProviders(<TutePage />);
+    expect(await screen.findByRole('button', { name: 'ハートのマリッジを宣言（40点）' })).toBeInTheDocument();
   });
 
   it('shows the Tute declaration button when allowed and dispatches', async () => {

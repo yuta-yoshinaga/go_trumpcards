@@ -30,6 +30,13 @@
   "teamScore": "{{team}}: {{score}}点",
   "playButton": "出す",
   "declareMarriage": "結婚宣言 {{suit}}",
+  "marriageAria": "{{suit}}のマリッジを宣言（{{points}}点）",
+  "suitName": {
+    "spade": "スペード",
+    "club": "クラブ",
+    "heart": "ハート",
+    "diamond": "ダイヤ"
+  },
   "declareTute": "Tute 宣言",
   "declarationsLabel": "宣言できる役",
   "tuteHelp": "Tute: 4枚の King（または 4枚の Queen）を揃えると宣言でき、大きなボーナス点になります。",
