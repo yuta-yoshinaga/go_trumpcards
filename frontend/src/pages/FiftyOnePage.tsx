@@ -24,6 +24,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { FiftyOneResponse } from '../types/card';
 import { FiftyOnePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { fiftyOneBestSuit, fiftyOneSuitScores } from '../utils/fiftyOneSuitScores';
 
@@ -221,6 +222,8 @@ function FiftyOnePageContent() {
                     type="button"
                     onClick={() => isHumanTurn && setSelectedTableIdx(i === selectedTableIdx ? null : i)}
                     disabled={!isHumanTurn}
+                    aria-label={cardAlt(c)}
+                    aria-pressed={isHumanTurn ? selectedTableIdx === i : undefined}
                     className={`rounded transition-all ${
                       selectedTableIdx === i ? 'ring-2 ring-ds-warning -translate-y-1' : ''
                     } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
@@ -272,6 +275,8 @@ function FiftyOnePageContent() {
                     type="button"
                     onClick={() => isHumanTurn && setSelectedHandIdx(i === selectedHandIdx ? null : i)}
                     disabled={!isHumanTurn}
+                    aria-label={cardAlt(c)}
+                    aria-pressed={isHumanTurn ? selectedHandIdx === i : undefined}
                     className={`rounded transition-all ${
                       selectedHandIdx === i ? 'ring-2 ring-ds-info -translate-y-2' : ''
                     } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}

@@ -74,6 +74,25 @@ describe('FiftyOnePage', () => {
     mockExec.mockResolvedValue(baseState);
   });
 
+  it('labels hand and table cards and toggles aria-pressed on selection', async () => {
+    const { FiftyOnePage } = await import('./FiftyOnePage');
+    renderWithProviders(<FiftyOnePage />);
+    // Hand ♠A and table ♠K are distinct, labeled, selectable buttons.
+    const handAce = await screen.findByRole('button', { name: '♠ A' });
+    const tableKing = screen.getByRole('button', { name: '♠ K' });
+    expect(handAce).toHaveAttribute('aria-pressed', 'false');
+    expect(tableKing).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(handAce);
+    expect(handAce).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(tableKing);
+    expect(tableKing).toHaveAttribute('aria-pressed', 'true');
+
+    // Clicking the same hand card again deselects it.
+    fireEvent.click(handAce);
+    expect(handAce).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('calls reset on mount', async () => {
     const { FiftyOnePage } = await import('./FiftyOnePage');
     renderWithProviders(<FiftyOnePage />);
