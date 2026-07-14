@@ -278,6 +278,8 @@ function KingAlbertPageContent() {
       return (
         <div
           key={`r-${cellIdx.toString()}`}
+          role="img"
+          aria-label={t('emptyReserveSlot', { idx: cellIdx + 1 })}
           className="rounded border border-dashed border-white/10"
           style={{ width: dims.cw, height: dims.ch }}
         />
