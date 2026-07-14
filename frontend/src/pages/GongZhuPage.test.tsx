@@ -60,6 +60,16 @@ describe('GongZhuPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '公開しない' })).toBeInTheDocument());
   });
 
+  it('names the exposable cards (index + card name) in a role=status hint', async () => {
+    mockExec.mockResolvedValue(exposePhaseState); // exposableIndices [0, 1] → ♠ Q, ♦ J
+    const { container } = renderWithProviders(<GongZhuPage />);
+    await waitFor(() => expect(container.querySelector('[data-tutorial="gz-expose-area"]')).not.toBeNull());
+    const hint = container.querySelector('[data-tutorial="gz-expose-area"]') as HTMLElement;
+    expect(hint).toHaveAttribute('role', 'status');
+    expect(hint.textContent).toContain('[0] ♠ Q');
+    expect(hint.textContent).toContain('[1] ♦ J');
+  });
+
   it('shows exposed point cards with localized symbols and an aria-label', async () => {
     mockExec.mockResolvedValue(makeGongZhuState({ exposed: { pig: true, sheep: true, ace: true, doubler: true } }));
     renderWithProviders(<GongZhuPage />);

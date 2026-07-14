@@ -29,6 +29,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { GongZhuResponse } from '../types/card';
 import { GongZhuPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { GONGZHU_HELP, parseGongZhuCommand } from '../utils/cli/commands/gongzhuCommands';
 import { formatGongZhuState } from '../utils/cli/formatters/gongzhuFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -258,9 +259,18 @@ function GongZhuPageContent() {
               <div>
                 {/* Exposure hint (expose phase) */}
                 {isExposePhase && (
-                  <div className="text-ds-warning text-center mb-2" data-tutorial="gz-expose-area">
+                  <div className="text-ds-warning text-center mb-2" data-tutorial="gz-expose-area" role="status">
                     {state.exposableIndices.length > 0
-                      ? t('exposableHint', { indices: state.exposableIndices.map((i) => `[${i}]`).join(', ') })
+                      ? t('exposableHint', {
+                          // Include the card name after each index so SR users and
+                          // beginners know which card [0]/[3]… refers to.
+                          indices: state.exposableIndices
+                            .map((i) => {
+                              const c = humanPlayer?.cards[i];
+                              return c ? `[${i}] ${cardAlt(c)}` : `[${i}]`;
+                            })
+                            .join(', '),
+                        })
                       : t('exposableNone')}
                   </div>
                 )}
