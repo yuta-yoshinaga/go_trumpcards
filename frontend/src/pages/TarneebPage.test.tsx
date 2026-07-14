@@ -63,6 +63,18 @@ describe('TarneebPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, expect.any(Object)));
   });
 
+  it('labels the trump-declaration buttons with translated suit names', async () => {
+    // Trump-declaration phase with the human (player 0) as bid winner.
+    mockExec.mockResolvedValue(makeState({ phase: 1, bidWinnerIdx: 0, highestBid: 8 }));
+    renderWithProviders(<TarneebPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'スペード' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'クラブ' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ハート' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ダイヤ' })).toBeInTheDocument();
+    // The old untranslated "trump-N" label is gone.
+    expect(screen.queryByRole('button', { name: 'trump-1' })).not.toBeInTheDocument();
+  });
+
   it('labels the human team and opponents and shows round tricks + total per team', async () => {
     const { container } = renderWithProviders(<TarneebPage />);
     await waitFor(() => expect(container.querySelector('[data-tutorial="tn-score-table"] table')).not.toBeNull());

@@ -20,6 +20,12 @@
   "trick": "Trick {{n}}",
   "trump": "Trump",
   "trumpUndeclared": "not yet declared",
+  "suitName": {
+    "spade": "Spade",
+    "club": "Club",
+    "heart": "Heart",
+    "diamond": "Diamond"
+  },
   "highestBid": "Current high bid",
   "cards": "{{count}} cards",
   "bid": "bid {{n}}",
