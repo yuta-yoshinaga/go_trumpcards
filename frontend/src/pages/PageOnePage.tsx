@@ -270,6 +270,9 @@ function PageOnePageContent() {
                           {cpuAtOne && (
                             <span
                               data-testid={`po-cpu-${p.id}-last-card-badge`}
+                              role="status"
+                              aria-live="polite"
+                              aria-label={t('cpuLastCardAnnounce', { name: playerName(p.id, p.isHuman) })}
                               className={`ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold ${badgeWarningColors}`}
                             >
                               <span
