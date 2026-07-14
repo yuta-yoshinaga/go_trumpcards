@@ -69,6 +69,18 @@ describe('AccordionPage', () => {
     expect(screen.getByText(/パイル数/)).toBeInTheDocument();
   });
 
+  it('lists the keyboard shortcuts in a collapsible panel and tags action buttons', async () => {
+    renderWithProviders(<AccordionPage />);
+    const panel = await screen.findByTestId('ac-kbd-shortcuts');
+    // Closed by default so it stays discreet.
+    expect(panel).not.toHaveAttribute('open');
+    expect(screen.getByText('キーボードショートカット')).toBeInTheDocument();
+    expect(screen.getByText('選択を解除')).toBeInTheDocument();
+    // Action buttons advertise their single-key shortcuts to assistive tech.
+    expect(screen.getByRole('button', { name: 'ヒント' })).toHaveAttribute('aria-keyshortcuts', 'h');
+    expect(screen.getByRole('button', { name: 'ギブアップ' })).toHaveAttribute('aria-keyshortcuts', 'g');
+  });
+
   it('shows game clear phase', async () => {
     mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<AccordionPage />);
