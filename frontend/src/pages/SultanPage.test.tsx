@@ -90,6 +90,17 @@ describe('SultanPage', () => {
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
+  it('gives each empty divan slot a role=img with a numbered aria-label', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<SultanPage />);
+    // Empty divan slots (idx 1, 3..7) are now announced with their slot number,
+    // matching the visible 0-based header.
+    await waitFor(() => expect(screen.getByRole('img', { name: '空のディヴァン枠 1' })).toBeInTheDocument());
+    expect(screen.getByRole('img', { name: '空のディヴァン枠 7' })).toBeInTheDocument();
+    // Slots 0 and 2 hold cards (buttons), so they are not empty-slot images.
+    expect(screen.queryByRole('img', { name: '空のディヴァン枠 0' })).not.toBeInTheDocument();
+  });
+
   it('renders stock count', async () => {
     renderWithProviders(<SultanPage />);
     await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());

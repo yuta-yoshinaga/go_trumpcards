@@ -13,6 +13,7 @@
   "redeal": "Redeal",
   "giveup": "Give Up",
   "empty": "Empty",
+  "emptyDivanSlot": "Empty divan slot {{idx}}",
   "landscapeBanner": "Landscape mode recommended",
   "hint": "Hint",
   "autoComplete": "Auto Complete",

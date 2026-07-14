@@ -294,6 +294,8 @@ function SultanPageContent() {
                     </button>
                   ) : (
                     <div
+                      role="img"
+                      aria-label={t('emptyDivanSlot', { idx })}
                       style={{ width: sultan.cw, height: sultan.ch }}
                       className="rounded border border-white/20 flex items-center justify-center text-game-text-muted text-xs"
                     >

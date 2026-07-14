@@ -13,6 +13,7 @@
   "redeal": "リディール",
   "giveup": "ギブアップ",
   "empty": "空",
+  "emptyDivanSlot": "空のディヴァン枠 {{idx}}",
   "landscapeBanner": "横向き表示推奨",
   "hint": "ヒント",
   "autoComplete": "自動完成",
