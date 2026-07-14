@@ -15,6 +15,10 @@
   "label": {
     "tableCards": "Table",
     "tableEmpty": "No table cards",
+    "selected": "selected",
+    "takeCandidate": "capture candidate",
+    "takeCandidateAnnounce": "{{count}} capture candidate(s) available",
+    "noTakeCandidate": "No capture candidates",
     "yourCaptures": "Captures",
     "cpuStats": "{{cards}} cards / {{score}} pt",
     "humanStats": "Hand {{cards}} / Captured {{captured}} / Scopa {{scopa}} / Total {{score}} pt"

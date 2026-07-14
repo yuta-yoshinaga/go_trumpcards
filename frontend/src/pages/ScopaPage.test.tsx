@@ -70,6 +70,24 @@ describe('ScopaPage', () => {
     expect(screen.getByTestId('table-card-1')).toBeInTheDocument();
   });
 
+  it('exposes capture candidates, selection state, and a candidate-count live region', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<ScopaPage />);
+    await waitFor(() => expect(screen.getByTestId('table-card-0')).toBeInTheDocument());
+    // Base state: no hand card selected → plain labels, not pressed, empty live region.
+    expect(screen.getByTestId('table-card-0')).toHaveAttribute('aria-label', '♠ 2');
+    expect(screen.getByTestId('table-card-0')).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByTestId('sc-take-candidate-live')).toHaveTextContent('');
+    // Selecting the ♥5 hand card makes the matching ♥5 table card a capture candidate.
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+    await waitFor(() => expect(screen.getByTestId('table-card-1')).toHaveAttribute('aria-label', '♥ 5 取り札候補'));
+    expect(screen.getByTestId('sc-take-candidate-live')).toHaveTextContent('取り札候補があります');
+    // Selecting that candidate flips its aria-pressed to true and updates the label.
+    fireEvent.click(screen.getByTestId('table-card-1'));
+    await waitFor(() => expect(screen.getByTestId('table-card-1')).toHaveAttribute('aria-pressed', 'true'));
+    expect(screen.getByTestId('table-card-1')).toHaveAttribute('aria-label', '♥ 5 選択中');
+  });
+
   it('renders human stats via i18n (no hardcoded Japanese under en locale)', async () => {
     await i18n.changeLanguage('en');
     renderWithProviders(<ScopaPage />);
