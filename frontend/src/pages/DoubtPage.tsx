@@ -314,6 +314,19 @@ function DoubtPageContent() {
                   <div className="bg-black/40 rounded-[10px] py-3 px-4 my-2" data-tutorial="dt-doubt-window">
                     {cpuPlayed ? (
                       <>
+                        {/* Assertive one-shot alert so a screen-reader user is told a
+                            time-limited decision has begun (it auto-skips otherwise).
+                            Uses the fixed window length, not the live countdown, so the
+                            alert text is stable and fires once per window rather than
+                            re-announcing every second. */}
+                        {state.lastAction && (
+                          <div className="sr-only" role="alert" data-testid="doubt-window-alert">
+                            {t('doubtWindowAlert', {
+                              action: actionDesc(state.lastAction, state.players, t),
+                              sec: state.doubtWindowSec,
+                            })}
+                          </div>
+                        )}
                         <div className="text-ds-text-primary font-bold mb-2">{t('doubtQuestion')}</div>
                         {state.lastAction && (
                           <div

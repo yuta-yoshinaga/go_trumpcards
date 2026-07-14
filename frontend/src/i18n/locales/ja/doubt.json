@@ -62,5 +62,6 @@
     "doubtTell": "相手にテル（癖）が見えます — ダウト推奨",
     "skipSafe": "明確なテルなし — スキップが安全"
   },
-  "keyHints": "Space: ダウト ／ Esc: スキップ"
+  "keyHints": "Space: ダウト ／ Esc: スキップ",
+  "doubtWindowAlert": "{{action}} ダウトしますか？{{sec}}秒以内に判断してください（時間切れで自動スキップ）"
 }
