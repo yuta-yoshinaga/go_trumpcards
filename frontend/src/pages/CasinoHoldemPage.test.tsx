@@ -112,6 +112,14 @@ describe('CasinoHoldemPage', () => {
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
+  it('gives the hint-toggle checkbox a keyboard focus ring', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<CasinoHoldemPage />);
+    const checkbox = await screen.findByRole('checkbox', { name: 'ヒント表示' });
+    // Matches the focus-ring style used by the page's other interactive controls.
+    expect(checkbox.className).toContain('focus-visible:ring');
+  });
+
   it('shows flop with call and fold buttons', async () => {
     mockApi.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(flopState);
     renderWithProviders(<CasinoHoldemPage />);
