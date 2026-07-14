@@ -217,6 +217,9 @@ function WarPageContent() {
                 </div>
                 {state.warPotSize > 2 && (
                   <div
+                    // Purely decorative stacked card backs; the count is already
+                    // conveyed by the adjacent label.potCount text, so hide from AT.
+                    aria-hidden="true"
                     className="relative mx-auto mt-1"
                     data-testid="war-pot-stack"
                     data-pot-size={state.warPotSize}
