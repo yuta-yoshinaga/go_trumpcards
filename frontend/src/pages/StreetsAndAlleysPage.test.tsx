@@ -77,6 +77,32 @@ describe('StreetsAndAlleysPage', () => {
     expect(mockExec.mock.calls[0]?.[0]).toBe('reset');
   });
 
+  it('highlights column tops as drop targets once a source card is selected', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<StreetsAndAlleysPage />);
+    // No source selected yet → no target-candidate highlight.
+    const heart6 = await screen.findByRole('button', { name: '♥ 6' });
+    expect(heart6).not.toHaveAttribute('data-target-candidate');
+    // Select the top of column 0 (♠5) as the move source.
+    fireEvent.click(screen.getByRole('button', { name: '♠ 5' }));
+    // Column 1's top (♥6) is now a drop target with the info ring.
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: '♥ 6' })).toHaveAttribute('data-target-candidate', 'true'),
+    );
+    expect(screen.getByRole('button', { name: '♥ 6' }).className).toContain('ring-ds-info');
+    // The selected source card itself is not a target candidate.
+    expect(screen.getByRole('button', { name: '♠ 5' })).not.toHaveAttribute('data-target-candidate');
+  });
+
+  it('dims a tableau card while it is being dragged', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<StreetsAndAlleysPage />);
+    const top = await screen.findByRole('button', { name: '♠ 5' });
+    // jsdom doesn't attach a DataTransfer to synthetic drag events, so provide one.
+    fireEvent.dragStart(top, { dataTransfer: { setData: () => {}, effectAllowed: '' } });
+    await waitFor(() => expect(top.className).toContain('opacity-50'));
+  });
+
   it('renders heading and move count', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<StreetsAndAlleysPage />);
