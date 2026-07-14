@@ -19,6 +19,7 @@
   "foundationAriaLabel": "{{suit}} Foundation ({{cardCount}} cards)",
   "emptyFoundationAriaLabel": "{{suit}} Foundation (empty)",
   "emptyFreecellAriaLabel": "Free Cell {{idx}} (empty)",
+  "emptyColumnAriaLabel": "Empty column (only {{rank}} may be placed)",
   "supermoveLimitTooltip": "Only {{limit}} card(s) can be moved at once",
   "tutorial": {
     "freeCells": "Seven free cells. Three start occupied after the deal. More empty cells allow moving more cards at once.",
