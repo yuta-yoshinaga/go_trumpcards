@@ -13,6 +13,8 @@
   "button.reset": "リセット",
   "label.tableCards": "場",
   "label.tableEmpty": "なし",
+  "label.selected": "選択中",
+  "label.takeCandidate": "テイク候補",
   "label.builds": "ビルド",
   "build.label": "値{{value}} ({{kind}}) / 所有:{{owner}}",
   "build.single": "単一",
