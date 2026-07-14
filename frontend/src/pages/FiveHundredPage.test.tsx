@@ -81,6 +81,25 @@ describe('FiveHundredPage', () => {
     );
   });
 
+  it('labels hand cards with cardAlt and reflects selection via aria-pressed during play', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 2, currentPlayerIdx: 0 })); // PLAY, human turn
+    renderWithProviders(<FiveHundredPage />);
+    const card0 = await screen.findByTestId('hand-card-0');
+    expect(card0).toHaveAttribute('aria-label', '♠ 5');
+    expect(card0).toHaveAttribute('aria-pressed', 'false');
+    expect(card0).not.toBeDisabled();
+    fireEvent.click(card0);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toHaveAttribute('aria-pressed', 'true'));
+  });
+
+  it('keeps hand cards labeled but disabled in a non-selectable phase (bid)', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 0 })); // BID
+    renderWithProviders(<FiveHundredPage />);
+    const card0 = await screen.findByTestId('hand-card-0');
+    expect(card0).toHaveAttribute('aria-label', '♠ 5');
+    expect(card0).toBeDisabled();
+  });
+
   it('renders CPU difficulty options with localized labels', async () => {
     renderWithProviders(<FiveHundredPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
