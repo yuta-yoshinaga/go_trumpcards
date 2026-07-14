@@ -60,7 +60,8 @@
   "roundResult": {
     "title": "Deal Result",
     "outcome": "Outcome: {{outcome}}",
-    "declarer": "Declarer: {{name}}"
+    "declarer": "Declarer: {{name}}",
+    "yourCoins": "You: {{delta}} coins"
   },
   "hintAvailable": "Hint",
   "hint": {
@@ -80,5 +81,6 @@
     "playButton": "Once a card is selected, play it with this button. In the Bid phase pick a trump suit for Party, or declare Betli / Durchmarsch. In the Discard phase drop your 2 unwanted talon cards.",
     "info": "Ulti (Ultimo) is a 3-player Hungarian contract trick-taker on a 32-card deck (A,10,K,Q,J,9,8,7). You (seat 0) are always the declarer against a coalition of two CPU players. Declare Party (score the most points), Betli (win no trick), or Durchmarsch (win every trick), naming a trump suit for Party. Take the 2-card talon, discard 2, and play out ten tricks. Coins are exchanged on the contract's success or failure, and the highest coin balance after the set number of deals wins the match.",
     "resetButton": "Use the reset button to start a new game."
-  }
+  },
+  "coinDelta": "({{delta}} coins)"
 }
