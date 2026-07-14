@@ -418,8 +418,14 @@ describe('OmahaHiLoPage', () => {
     renderWithProviders(<OmahaHiLoPage />);
     await waitFor(() => expect(screen.getByTestId('omahahilo-split')).toBeInTheDocument());
     // At least one card (hole and/or board) is ringed as a low card.
-    expect(screen.getAllByTestId('omahahilo-lo-card').length).toBeGreaterThan(0);
-    // The low winner badge lists the qualifying card ranks.
+    const loCards = screen.getAllByTestId('omahahilo-lo-card');
+    expect(loCards.length).toBeGreaterThan(0);
+    // Each low card keeps the blue ring AND gains screen-reader text plus a
+    // color-independent "LO" badge (not just color).
+    expect(loCards[0].className).toContain('ring-ds-info');
+    expect(within(loCards[0]).getByText('ロー構成カード')).toBeInTheDocument();
+    expect(screen.getAllByTestId('omahahilo-lo-card-badge')[0]).toHaveTextContent('LO');
+    // The low winner badge still lists the qualifying card ranks.
     expect(screen.getByTestId('omahahilo-lo-badge')).toHaveTextContent('A 5 8 2 5');
   });
 

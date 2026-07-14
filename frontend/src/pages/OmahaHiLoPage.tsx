@@ -260,19 +260,34 @@ function OmahaHiLoPageContent() {
                   <div className="text-ds-text-primary text-lg mb-1.5">{t('communityCards')}</div>
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
-                      ? state.communityCards.map((card, idx) => (
-                          <div
-                            key={`${card.design}-${card.value}`}
-                            className={
-                              lowSets.loBoardSet.has(idx)
-                                ? 'rounded-lg ring-2 ring-ds-info motion-safe:animate-pulse'
-                                : ''
-                            }
-                            data-testid={lowSets.loBoardSet.has(idx) ? 'omahahilo-lo-card' : undefined}
-                          >
-                            <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
-                          </div>
-                        ))
+                      ? state.communityCards.map((card, idx) => {
+                          const isLo = lowSets.loBoardSet.has(idx);
+                          return (
+                            <div
+                              key={`${card.design}-${card.value}`}
+                              className={
+                                isLo ? 'relative rounded-lg ring-2 ring-ds-info motion-safe:animate-pulse' : ''
+                              }
+                              data-testid={isLo ? 'omahahilo-lo-card' : undefined}
+                            >
+                              <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                              {isLo && (
+                                <>
+                                  {/* Screen-reader text (a plain div can't take aria-label). */}
+                                  <span className="sr-only">{t('loCardAria')}</span>
+                                  {/* Visible color-independent marker for sighted (incl. color-blind) users. */}
+                                  <span
+                                    aria-hidden="true"
+                                    className="absolute top-0.5 left-0.5 px-1 rounded bg-ds-info text-ds-text-on-accent text-[9px] font-extrabold leading-tight shadow"
+                                    data-testid="omahahilo-lo-card-badge"
+                                  >
+                                    {t('loBadge')}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          );
+                        })
                       : Array.from({ length: 5 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                   </div>
                 </>
@@ -434,17 +449,30 @@ function OmahaHiLoPageContent() {
                 </div>
                 <div className="flex flex-wrap gap-1.5 mb-2" data-tutorial="ohl-combination-rule">
                   {humanPlayer.cards?.length
-                    ? humanPlayer.cards.map((card, idx) => (
-                        <div
-                          key={`${card.design}-${card.value}`}
-                          className={
-                            lowSets.loHoleSet.has(idx) ? 'rounded-lg ring-2 ring-ds-info motion-safe:animate-pulse' : ''
-                          }
-                          data-testid={lowSets.loHoleSet.has(idx) ? 'omahahilo-lo-card' : undefined}
-                        >
-                          <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
-                        </div>
-                      ))
+                    ? humanPlayer.cards.map((card, idx) => {
+                        const isLo = lowSets.loHoleSet.has(idx);
+                        return (
+                          <div
+                            key={`${card.design}-${card.value}`}
+                            className={isLo ? 'relative rounded-lg ring-2 ring-ds-info motion-safe:animate-pulse' : ''}
+                            data-testid={isLo ? 'omahahilo-lo-card' : undefined}
+                          >
+                            <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                            {isLo && (
+                              <>
+                                <span className="sr-only">{t('loCardAria')}</span>
+                                <span
+                                  aria-hidden="true"
+                                  className="absolute top-0.5 left-0.5 px-1 rounded bg-ds-info text-ds-text-on-accent text-[9px] font-extrabold leading-tight shadow"
+                                  data-testid="omahahilo-lo-card-badge"
+                                >
+                                  {t('loBadge')}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        );
+                      })
                     : !humanPlayer.folded &&
                       Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                 </div>

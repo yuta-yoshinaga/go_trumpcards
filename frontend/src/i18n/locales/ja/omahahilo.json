@@ -76,5 +76,7 @@
     "weakHandRank": "弱いハンド — フォールド推奨",
     "scoopChance": "ハイ＋ローのスクープ圏内 — レイズ推奨",
     "lowDraw": "ロー成立濃厚 — 半分狙いでコール推奨"
-  }
+  },
+  "loCardAria": "ロー構成カード",
+  "loBadge": "LO"
 }
