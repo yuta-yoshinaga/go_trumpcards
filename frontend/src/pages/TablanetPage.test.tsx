@@ -87,8 +87,10 @@ describe('TablanetPage', () => {
     mockExec.mockResolvedValue(afterCapture);
     fireEvent.click(screen.getByRole('button', { name: '捕獲' }));
 
-    const region = await screen.findByTestId('tablanet-live-region');
-    await waitFor(() => expect(region).toHaveTextContent('あなた が場札を捕獲しました'));
+    // The region remounts (key={announceNonce}) on each event, so query it fresh.
+    await waitFor(() =>
+      expect(screen.getByTestId('tablanet-live-region')).toHaveTextContent('あなた が場札を捕獲しました'),
+    );
   });
 
   it('announces a tabla when a player clears the table', async () => {
@@ -104,8 +106,33 @@ describe('TablanetPage', () => {
     mockExec.mockResolvedValue(afterTabla);
     fireEvent.click(screen.getByRole('button', { name: '捕獲' }));
 
-    const region = await screen.findByTestId('tablanet-live-region');
-    await waitFor(() => expect(region).toHaveTextContent('あなた がタブラ（場を一掃）を達成しました'));
+    await waitFor(() =>
+      expect(screen.getByTestId('tablanet-live-region')).toHaveTextContent('あなた がタブラ（場を一掃）を達成しました'),
+    );
+  });
+
+  it('attributes a tabla to the achiever, not merely the last capturer', async () => {
+    renderWithProviders(<TablanetPage />);
+    const handCard = await screen.findByTestId('hand-card-0');
+    fireEvent.click(handCard);
+    fireEvent.click(screen.getByTestId('table-card-0'));
+
+    // One response bundles CPU auto-plays: CPU 1 (seat 1) scored the tabla while
+    // CPU 2 (seat 2) was the LAST to capture. The tabla must name CPU 1.
+    const bundled = makeTablanetState({
+      lastCaptureIdx: 2,
+      players: playPhaseState.players.map((p, i) => {
+        if (i === 1) return { ...p, capturedCount: 3, tablaCount: 1 };
+        if (i === 2) return { ...p, capturedCount: 2 };
+        return p;
+      }),
+    });
+    mockExec.mockResolvedValue(bundled);
+    fireEvent.click(screen.getByRole('button', { name: '捕獲' }));
+
+    await waitFor(() =>
+      expect(screen.getByTestId('tablanet-live-region')).toHaveTextContent('CPU 1 がタブラ（場を一掃）を達成しました'),
+    );
   });
 
   it('keeps the live region empty before any capture', async () => {

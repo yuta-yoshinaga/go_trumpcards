@@ -47,5 +47,6 @@
     "resetButton": "Use the reset button to start a new game."
   },
   "captureAnnounce": "{{player}} captured cards",
-  "tablaAnnounce": "{{player}} scored a tabla (cleared the table)"
+  "tablaAnnounce": "{{player}} scored a tabla (cleared the table)",
+  "listSeparator": ", "
 }

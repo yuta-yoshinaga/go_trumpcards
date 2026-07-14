@@ -95,26 +95,35 @@ function TablanetPageContent() {
 
   // Captures and tablas are shown only via animation and count updates (the web
   // presenter never puts them in state.message), so a screen-reader user gets no
-  // notification. Detect them by watching the running totals and announce the
-  // event — attributed to the last capturer — in an sr-only live region.
-  const prevTotalsRef = useRef<{ captured: number; tabla: number } | null>(null);
+  // notification. A single `play` response can bundle several CPU auto-plays, so
+  // we diff EACH player's captured/tabla counts (not the total, and not
+  // lastCaptureIdx which only names the most recent capturer) and attribute the
+  // event to exactly the players whose counts rose. The nonce keys the live
+  // region so it re-announces even when consecutive events yield identical text.
+  const prevPerPlayerRef = useRef<{ captured: number; tabla: number }[] | null>(null);
   const [captureAnnounce, setCaptureAnnounce] = useState('');
-  // biome-ignore lint/correctness/useExhaustiveDependencies: react to each state update; reads t/playerName snapshot deliberately.
+  const [announceNonce, setAnnounceNonce] = useState(0);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: react to each state update; reads the t snapshot deliberately.
   useEffect(() => {
     if (!state) return;
-    const captured = state.players.reduce((sum, p) => sum + p.capturedCount, 0);
-    const tabla = state.players.reduce((sum, p) => sum + p.tablaCount, 0);
-    const prev = prevTotalsRef.current;
-    prevTotalsRef.current = { captured, tabla };
+    const cur = state.players.map((p) => ({ captured: p.capturedCount, tabla: p.tablaCount }));
+    const prev = prevPerPlayerRef.current;
+    prevPerPlayerRef.current = cur;
     if (!prev) return;
-    const idx = state.lastCaptureIdx;
-    if (idx < 0) return;
-    const p = state.players[idx];
-    const name = p?.isHuman ? t('you') : t('cpu', { id: p?.id ?? idx });
-    if (tabla > prev.tabla) {
-      setCaptureAnnounce(t('tablaAnnounce', { player: name }));
-    } else if (captured > prev.captured) {
-      setCaptureAnnounce(t('captureAnnounce', { player: name }));
+    const nameOf = (i: number) => {
+      const p = state.players[i];
+      return p?.isHuman ? t('you') : t('cpu', { id: p?.id ?? i });
+    };
+    const tablaPlayers = cur.map((c, i) => (c.tabla > (prev[i]?.tabla ?? c.tabla) ? i : -1)).filter((i) => i >= 0);
+    const capturePlayers = cur
+      .map((c, i) => (c.captured > (prev[i]?.captured ?? c.captured) ? i : -1))
+      .filter((i) => i >= 0);
+    if (tablaPlayers.length > 0) {
+      setCaptureAnnounce(t('tablaAnnounce', { player: tablaPlayers.map(nameOf).join(t('listSeparator')) }));
+      setAnnounceNonce((n) => n + 1);
+    } else if (capturePlayers.length > 0) {
+      setCaptureAnnounce(t('captureAnnounce', { player: capturePlayers.map(nameOf).join(t('listSeparator')) }));
+      setAnnounceNonce((n) => n + 1);
     }
   }, [state]);
 
@@ -286,8 +295,15 @@ function TablanetPageContent() {
               messageParams={state.messageParams}
             />
 
-            {/* Announce capture / tabla events (visual-only otherwise) to screen readers. */}
-            <div className="sr-only" role="status" aria-live="polite" data-testid="tablanet-live-region">
+            {/* Announce capture / tabla events (visual-only otherwise) to screen readers.
+                Keyed on the nonce so repeated identical events still re-announce. */}
+            <div
+              key={announceNonce}
+              className="sr-only"
+              role="status"
+              aria-live="polite"
+              data-testid="tablanet-live-region"
+            >
               {captureAnnounce}
             </div>
 

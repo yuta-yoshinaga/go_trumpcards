@@ -47,5 +47,6 @@
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
   "captureAnnounce": "{{player}} が場札を捕獲しました",
-  "tablaAnnounce": "{{player}} がタブラ（場を一掃）を達成しました"
+  "tablaAnnounce": "{{player}} がタブラ（場を一掃）を達成しました",
+  "listSeparator": "、"
 }
