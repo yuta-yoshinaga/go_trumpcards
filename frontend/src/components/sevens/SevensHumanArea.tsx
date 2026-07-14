@@ -106,6 +106,9 @@ function HumanArea({
               disabled={!playable}
               onClick={() => onPlay(i)}
               title={playable ? t('playTitle', { design: card.design, value: valueName(card.value) }) : undefined}
+              // Number keys 1-9 directly play the matching card (useCardKeyboardNav);
+              // advertise the shortcut only where it is a legal move this turn.
+              aria-keyshortcuts={playable && i < 9 ? String(i + 1) : undefined}
               data-testid={playable ? 'playable-card' : undefined}
               style={{
                 background: 'none',

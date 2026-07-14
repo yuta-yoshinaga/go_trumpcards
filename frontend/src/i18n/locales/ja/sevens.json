@@ -68,5 +68,6 @@
     "playExtend": "出せるカードがあります — 範囲を広げましょう",
     "passAvailable": "出せるカードなし — パス",
     "passLimitWarning": "パス残り回数わずか — 慎重に"
-  }
+  },
+  "keyHints": "数字キー: 対応する手札をプレイ"
 }
