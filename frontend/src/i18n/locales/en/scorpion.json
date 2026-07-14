@@ -15,6 +15,7 @@
   "autoComplete": "Auto Complete",
   "undo": "Undo",
   "empty": "Empty",
+  "cardSelected": "selected",
   "gameClear": "Game Clear! Moves: {{moveCount}}",
   "gameOver": "Game Over",
   "playing": "Playing",
