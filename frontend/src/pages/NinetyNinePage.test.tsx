@@ -155,24 +155,75 @@ describe('NinetyNinePage', () => {
     );
   });
 
-  it('bury button disabled until exactly 3 cards selected, then calls bid', async () => {
+  it('bury button is focusable + aria-disabled with a reason until 3 cards selected, then calls bid', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<NinetyNinePage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
-    const buryBtn = screen.getByRole('button', { name: '3枚埋める' });
-    expect(buryBtn).toBeDisabled();
+    // Not enough cards: the button exposes the reason in its accessible name and
+    // is aria-disabled, but NOT HTML-disabled — it stays focusable.
+    const disabledBtn = screen.getByRole('button', { name: '3枚埋める（あと 3 枚のカード選択が必要です）' });
+    expect(disabledBtn).toHaveAttribute('aria-disabled', 'true');
+    expect(disabledBtn).not.toBeDisabled();
 
     fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
     fireEvent.click(screen.getByAltText('♥ J').closest('button') as HTMLButtonElement);
-    expect(buryBtn).toBeDisabled();
+    expect(screen.getByRole('button', { name: '3枚埋める（あと 1 枚のカード選択が必要です）' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
     fireEvent.click(screen.getByAltText('♣ 5').closest('button') as HTMLButtonElement);
-    expect(buryBtn).not.toBeDisabled();
+
+    // Exactly 3 selected: plain label, no aria-disabled.
+    const readyBtn = screen.getByRole('button', { name: '3枚埋める' });
+    expect(readyBtn).not.toHaveAttribute('aria-disabled');
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(playPhaseState);
-    fireEvent.click(buryBtn);
+    fireEvent.click(readyBtn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', [0, 1, 2]));
+  });
+
+  it('announces the remaining bury count in a polite live region as cards are selected', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<NinetyNinePage />);
+    const region = await screen.findByTestId('nn-bury-progress');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toHaveTextContent('あと 3 枚選択してください');
+
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    expect(screen.getByTestId('nn-bury-progress')).toHaveTextContent('あと 2 枚選択してください');
+  });
+
+  it('announces readiness once exactly 3 cards are selected', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<NinetyNinePage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♥ J').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♣ 5').closest('button') as HTMLButtonElement);
+    expect(screen.getByTestId('nn-bury-progress')).toHaveTextContent('3枚選択しました。埋めるボタンで確定できます');
+  });
+
+  it('announces an over-selection message instead of a negative count when more than 3 are picked', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<NinetyNinePage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    // The bid-phase hand has 4 cards; selecting all 4 over-selects by 1.
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♥ J').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♣ 5').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♦ 8').closest('button') as HTMLButtonElement);
+
+    expect(screen.getByTestId('nn-bury-progress')).toHaveTextContent(
+      '1 枚多く選択されています。ちょうど3枚にしてください',
+    );
+    // Button stays aria-disabled (not ready) with the deselect-reason label.
+    const btn = screen.getByRole('button', { name: '3枚埋める（1 枚多いため選択を減らしてください）' });
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('does not show bury controls on cpu bid turn', async () => {

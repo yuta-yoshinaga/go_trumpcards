@@ -176,6 +176,15 @@ function NinetyNinePageContent() {
   const isGameEnd = state.phase === NinetyNinePhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const isHumanBidTurn = isBidPhase && state.players[state.bidPlayerIdx]?.isHuman === true;
+  // Bury-selection progress. Selection is not capped, so the player can pick
+  // more than BURY_COUNT; clamp both directions so neither the remaining nor
+  // the over-selected count ever goes negative. `buryReady` is an exact match
+  // (over-selection is not ready). Drives the aria-live announcement and the
+  // focusable aria-disabled bury button.
+  const burySelectedCount = selectedCardIndices.length;
+  const buryRemaining = Math.max(0, BURY_COUNT - burySelectedCount);
+  const buryOverBy = Math.max(0, burySelectedCount - BURY_COUNT);
+  const buryReady = burySelectedCount === BURY_COUNT;
 
   const dealerName = playerName(
     state.players[state.dealerIdx]?.id ?? state.dealerIdx,
@@ -252,7 +261,15 @@ function NinetyNinePageContent() {
                 {isHumanBidTurn && (
                   <div className="text-ds-warning text-center mb-2" data-tutorial="nn-bid-controls">
                     <div>{t('buryPhase')}</div>
-                    <div className="text-sm">{t('burySelected', { count: selectedCardIndices.length })}</div>
+                    {/* Announce the remaining-count as it changes so a screen-reader user
+                        knows how many more cards to select before Bury becomes actionable. */}
+                    <div className="text-sm" role="status" aria-live="polite" data-testid="nn-bury-progress">
+                      {buryReady
+                        ? t('buryReady')
+                        : buryOverBy > 0
+                          ? t('buryTooMany', { count: buryOverBy })
+                          : t('buryRemaining', { count: buryRemaining })}
+                    </div>
                   </div>
                 )}
 
@@ -396,11 +413,24 @@ function NinetyNinePageContent() {
             )}
             <div className="flex gap-2 items-center" data-tutorial="nn-play-button">
               {isHumanBidTurn && (
+                // Use aria-disabled (not the HTML `disabled` attribute) for the
+                // not-enough-cards state so the button stays focusable and a screen
+                // reader can read why it can't be pressed yet; handleBury guards the
+                // count so activating it while not-ready is a no-op. `disabled` is
+                // still applied while loading. Mirrors the Cribbage pegRestricted pattern.
                 <button
                   type="button"
-                  className={btnPrimary}
+                  className={`${btnPrimary}${buryReady ? '' : ' opacity-50 cursor-not-allowed'}`}
                   onClick={handleBury}
-                  disabled={loading || selectedCardIndices.length !== BURY_COUNT}
+                  disabled={loading}
+                  aria-disabled={!buryReady || undefined}
+                  aria-label={
+                    buryReady
+                      ? undefined
+                      : buryOverBy > 0
+                        ? t('buryButtonTooManyAria', { count: buryOverBy })
+                        : t('buryButtonDisabledAria', { count: buryRemaining })
+                  }
                 >
                   {t('buryButton')}
                 </button>
