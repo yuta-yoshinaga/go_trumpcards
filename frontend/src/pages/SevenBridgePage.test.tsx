@@ -80,6 +80,39 @@ describe('SevenBridgePage', () => {
     expect(screen.getByRole('button', { name: /捨てる|Discard/i })).toBeInTheDocument();
   });
 
+  it('describes the pon/chi selection requirement and flips it to "met" via aria-describedby', async () => {
+    mockExec.mockResolvedValue(drawState);
+    renderWithProviders(<SevenBridgePage />);
+    const pon = await screen.findByRole('button', { name: /ポン|Pon/i });
+    const chi = screen.getByRole('button', { name: /チー|Chi/i });
+    expect(pon).toHaveAttribute('aria-describedby', 'sb-select-two-hint');
+    expect(chi).toHaveAttribute('aria-describedby', 'sb-select-two-hint');
+    // With nothing selected the hint states the 2-card requirement and pon is disabled.
+    expect(screen.getByTestId('sb-select-two-hint')).toHaveTextContent('2枚');
+    expect(pon).toBeDisabled();
+    // Selecting exactly two cards satisfies the requirement.
+    fireEvent.click(screen.getByRole('button', { name: '♠ 9' }));
+    fireEvent.click(screen.getByRole('button', { name: '♣ 9' }));
+    await waitFor(() => expect(screen.getByTestId('sb-select-two-hint')).toHaveTextContent('実行'));
+    expect(pon).not.toBeDisabled();
+  });
+
+  it('describes the meld selection requirement and flips it to "met" via aria-describedby', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<SevenBridgePage />);
+    const meld = await screen.findByRole('button', { name: /メルド|Meld/i });
+    expect(meld).toHaveAttribute('aria-describedby', 'sb-meld-hint');
+    // With fewer than 3 selected the hint states the requirement and meld is disabled.
+    expect(screen.getByTestId('sb-meld-hint')).toHaveTextContent('3枚以上');
+    expect(meld).toBeDisabled();
+    // Selecting three cards satisfies the requirement.
+    fireEvent.click(screen.getByRole('button', { name: '♠ 9' }));
+    fireEvent.click(screen.getByRole('button', { name: '♣ 9' }));
+    fireEvent.click(screen.getByRole('button', { name: '♦ 3' }));
+    await waitFor(() => expect(screen.getByTestId('sb-meld-hint')).toHaveTextContent('実行'));
+    expect(meld).not.toBeDisabled();
+  });
+
   it('renders layoff target melds as clickable card-row buttons and highlights the selection', async () => {
     const meldState: SevenBridgeResponse = {
       ...playState,
