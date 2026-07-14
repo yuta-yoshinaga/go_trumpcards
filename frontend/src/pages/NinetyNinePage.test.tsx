@@ -207,6 +207,23 @@ describe('NinetyNinePage', () => {
     expect(screen.getByTestId('nn-bury-progress')).toHaveTextContent('3枚選択しました。埋めるボタンで確定できます');
   });
 
+  it('announces an over-selection message instead of a negative count when more than 3 are picked', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<NinetyNinePage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    // The bid-phase hand has 4 cards; selecting all 4 over-selects by 1.
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♥ J').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♣ 5').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♦ 8').closest('button') as HTMLButtonElement);
+
+    expect(screen.getByTestId('nn-bury-progress')).toHaveTextContent('1 枚多く選択されています。ちょうど3枚にしてください');
+    // Button stays aria-disabled (not ready) with the deselect-reason label.
+    const btn = screen.getByRole('button', { name: '3枚埋める（1 枚多いため選択を減らしてください）' });
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
+  });
+
   it('does not show bury controls on cpu bid turn', async () => {
     mockExec.mockResolvedValue(bidPhaseCpuState);
     renderWithProviders(<NinetyNinePage />);

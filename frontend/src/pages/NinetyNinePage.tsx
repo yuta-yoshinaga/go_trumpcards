@@ -176,11 +176,15 @@ function NinetyNinePageContent() {
   const isGameEnd = state.phase === NinetyNinePhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const isHumanBidTurn = isBidPhase && state.players[state.bidPlayerIdx]?.isHuman === true;
-  // Bury-selection progress: how many more cards are needed, and whether the
-  // exact count is reached. Drives the aria-live remaining-count announcement
-  // and the focusable aria-disabled bury button.
-  const buryRemaining = BURY_COUNT - selectedCardIndices.length;
-  const buryReady = buryRemaining === 0;
+  // Bury-selection progress. Selection is not capped, so the player can pick
+  // more than BURY_COUNT; clamp both directions so neither the remaining nor
+  // the over-selected count ever goes negative. `buryReady` is an exact match
+  // (over-selection is not ready). Drives the aria-live announcement and the
+  // focusable aria-disabled bury button.
+  const burySelectedCount = selectedCardIndices.length;
+  const buryRemaining = Math.max(0, BURY_COUNT - burySelectedCount);
+  const buryOverBy = Math.max(0, burySelectedCount - BURY_COUNT);
+  const buryReady = burySelectedCount === BURY_COUNT;
 
   const dealerName = playerName(
     state.players[state.dealerIdx]?.id ?? state.dealerIdx,
@@ -260,7 +264,11 @@ function NinetyNinePageContent() {
                     {/* Announce the remaining-count as it changes so a screen-reader user
                         knows how many more cards to select before Bury becomes actionable. */}
                     <div className="text-sm" role="status" aria-live="polite" data-testid="nn-bury-progress">
-                      {buryReady ? t('buryReady') : t('buryRemaining', { count: buryRemaining })}
+                      {buryReady
+                        ? t('buryReady')
+                        : buryOverBy > 0
+                          ? t('buryTooMany', { count: buryOverBy })
+                          : t('buryRemaining', { count: buryRemaining })}
                     </div>
                   </div>
                 )}
@@ -416,7 +424,13 @@ function NinetyNinePageContent() {
                   onClick={handleBury}
                   disabled={loading}
                   aria-disabled={!buryReady || undefined}
-                  aria-label={buryReady ? undefined : t('buryButtonDisabledAria', { count: buryRemaining })}
+                  aria-label={
+                    buryReady
+                      ? undefined
+                      : buryOverBy > 0
+                        ? t('buryButtonTooManyAria', { count: buryOverBy })
+                        : t('buryButtonDisabledAria', { count: buryRemaining })
+                  }
                 >
                   {t('buryButton')}
                 </button>
