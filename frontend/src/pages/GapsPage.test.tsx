@@ -77,6 +77,21 @@ describe('GapsPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(/手数: 5/));
   });
 
+  it('reflects the gap ghost hint (needed / anySuit / blocked) in each cell aria-label', async () => {
+    const grid: (Card | null)[][] = [
+      Array(13).fill(null), // row 0: col 0 gap → any suit 2
+      [card('SPADE', 3), ...Array(12).fill(null)], // row 1: col 1 gap → needs ♠4
+      [card('HEART', 13), ...Array(12).fill(null)], // row 2: col 1 gap → blocked (follows K)
+      Array(13).fill(null),
+    ];
+    mockedRun.mockResolvedValue({ ...playingState, grid });
+    renderWithProviders(<GapsPage />);
+    await waitFor(() => expect(screen.getByTestId('gaps-cell-0-0')).toBeInTheDocument());
+    expect(screen.getByTestId('gaps-cell-0-0')).toHaveAttribute('aria-label', '空き（任意のスートの 2 を置けます）');
+    expect(screen.getByTestId('gaps-cell-1-1')).toHaveAttribute('aria-label', '空き（♠ 4 を置けます）');
+    expect(screen.getByTestId('gaps-cell-2-1')).toHaveAttribute('aria-label', '空き（K の後ろのため使用不可）');
+  });
+
   it('renders redeals remaining', async () => {
     renderWithProviders(<GapsPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(/再配り残り: 3/));
