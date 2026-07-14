@@ -24,7 +24,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSound } from '../providers/SoundProvider';
-import { btnDanger, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
+import { btnDanger, btnPrimary, btnSecondary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { CasinoHoldemResponse } from '../types/card';
@@ -191,6 +191,7 @@ function CasinoHoldemPageContent() {
                 type="checkbox"
                 checked={frontendHintEnabled}
                 onChange={(e) => setFrontendHintEnabled(e.target.checked)}
+                className={`${focusRingWhite} rounded cursor-pointer`}
               />
               {tc('hint.toggle', { ns: 'tutorial' })}
             </label>
