@@ -37,6 +37,9 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
+// Localized suit-name keys parallel to FOUNDATION_SUITS, used for aria-labels so
+// screen readers announce "スペード / Spades" rather than the bare "♠" glyph (#3153).
+const FOUNDATION_SUIT_KEYS = ['spade', 'club', 'heart', 'diamond'] as const;
 const noop = () => {};
 
 /** Yukon tutorial step definitions. */
@@ -397,11 +400,11 @@ function YukonPageContent() {
                       aria-label={
                         topCard
                           ? t('foundationAriaLabel', {
-                              suit: FOUNDATION_SUITS[i],
+                              suit: t(`suitNames.${FOUNDATION_SUIT_KEYS[i]}`),
                               count: pile.length,
                             })
                           : t('emptyFoundationAriaLabel', {
-                              suit: FOUNDATION_SUITS[i],
+                              suit: t(`suitNames.${FOUNDATION_SUIT_KEYS[i]}`),
                             })
                       }
                       style={{ width: yk.cw, height: yk.ch }}

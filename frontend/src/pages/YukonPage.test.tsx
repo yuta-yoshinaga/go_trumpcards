@@ -220,4 +220,19 @@ describe('YukonPage', () => {
     expect(screen.getByText('♥')).toBeInTheDocument();
     expect(screen.getByText('♦')).toBeInTheDocument();
   });
+
+  it('announces foundations with localized suit names, not bare glyphs', async () => {
+    // Fill the spade foundation so the filled-foundation label path is exercised too.
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[card('SPADE', 1)], [], [], []],
+    });
+    renderWithProviders(<YukonPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // Filled spade foundation reads "スペード 組札 1枚"; empty ones read "空の組札 (<name>)".
+    expect(screen.getByRole('button', { name: 'スペード 組札 1枚' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空の組札 (クラブ)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空の組札 (ハート)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空の組札 (ダイヤ)' })).toBeInTheDocument();
+  });
 });
