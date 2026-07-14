@@ -35,5 +35,10 @@
     "stepButton": "このボタンでカードを出します。",
     "autoplayButton": "決着まで自動で進めるボタンです。",
     "resetButton": "新しいゲームを始めるボタンです。"
-  }
+  },
+  "phaseAnnounce": "フェーズ: {{phase}}",
+  "phaseAnnouncePenalty": "フェーズ: {{phase}}。残りペナルティ {{count}} 枚",
+  "pileAriaCentral": "場の山 {{count}} 枚",
+  "pileAriaCpu": "CPU のパイル 山札 {{draw}} 枚 捨札 {{discard}} 枚",
+  "pileAriaYou": "あなたのパイル 山札 {{draw}} 枚 捨札 {{discard}} 枚"
 }

@@ -132,6 +132,39 @@ describe('BeggarMyNeighbourPage', () => {
     expect(stack).toHaveAttribute('data-pile-size', '3');
   });
 
+  it('announces the current phase in a polite live region', async () => {
+    renderWithProviders(<BeggarMyNeighbourPage />); // baseState: PLAY phase
+    const region = await screen.findByTestId('bmn-phase-announce');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toHaveTextContent('フェーズ: プレイ中');
+  });
+
+  it('announces the penalty countdown during PAY_PENALTY', async () => {
+    mockExec.mockResolvedValueOnce(penaltyState);
+    renderWithProviders(<BeggarMyNeighbourPage />);
+    const region = await screen.findByTestId('bmn-phase-announce');
+    await waitFor(() => expect(region).toHaveTextContent('フェーズ: ペナルティ支払い中。残りペナルティ 3 枚'));
+  });
+
+  it('labels each pile with its card counts for screen readers', async () => {
+    mockExec.mockResolvedValueOnce(penaltyState);
+    renderWithProviders(<BeggarMyNeighbourPage />);
+    const stack = await screen.findByTestId('bmn-central-pile-stack');
+    expect(stack).toHaveAttribute('aria-label', '場の山 3 枚');
+    expect(screen.getByLabelText('CPU のパイル 山札 26 枚 捨札 0 枚')).toBeInTheDocument();
+    expect(screen.getByLabelText('あなたのパイル 山札 26 枚 捨札 0 枚')).toBeInTheDocument();
+  });
+
+  it('renders a role=alert ErrorAlert (not a bare button) on error', async () => {
+    // Mount succeeds so the page (not the skeleton) is shown, then a step fails.
+    renderWithProviders(<BeggarMyNeighbourPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    mockExec.mockRejectedValueOnce(new Error('network error'));
+    fireEvent.click(screen.getByTestId('step-button'));
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+  });
+
   it('caps the central pile stack at 10 cards visually', async () => {
     mockExec.mockResolvedValueOnce({ ...penaltyState, centralPileSize: 15 });
     renderWithProviders(<BeggarMyNeighbourPage />);
