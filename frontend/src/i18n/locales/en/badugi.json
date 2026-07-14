@@ -18,6 +18,8 @@
   "cpuExchangeEntry": "Player {{idx}} (draw {{draw}}): exchanged {{count}}",
   "exchangeCount": "Drew: {{count}}",
   "cardSelected": "(selected to exchange)",
+  "subsetBest": "part of best hand",
+  "subsetExchange": "exchange candidate",
   "settings": {
     "title": "Settings",
     "cpuMetaAI": "Meta-AI (CPUs learn your style)"
