@@ -41,5 +41,7 @@
     "fourOfAKind": "フォーカード",
     "straightFlush": "ストレートフラッシュ",
     "royalFlush": "ロイヤルフラッシュ"
-  }
+  },
+  "previewRowAnnounce": "{{row}}行目が{{hand}}で完成し、{{delta}}点獲得します",
+  "previewColAnnounce": "{{col}}列目が{{hand}}で完成し、{{delta}}点獲得します"
 }
