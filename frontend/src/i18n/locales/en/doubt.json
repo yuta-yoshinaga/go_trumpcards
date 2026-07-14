@@ -62,5 +62,6 @@
     "doubtTell": "Opponent showed a tell — consider doubting",
     "skipSafe": "No obvious tell — safer to skip"
   },
-  "keyHints": "Space: Doubt / Esc: Skip"
+  "keyHints": "Space: Doubt / Esc: Skip",
+  "doubtWindowAlert": "{{action}} Doubt? Decide within {{sec}} seconds (auto-skips on timeout)."
 }
