@@ -88,6 +88,20 @@ describe('SpiteAndMalicePage', () => {
     await waitFor(() => expect(screen.getByText(/手数|Moves/)).toBeInTheDocument());
   });
 
+  it('explains why discard is disabled until a hand card is selected', async () => {
+    mockExec.mockResolvedValue(baseState);
+    renderWithProviders(<SpiteAndMalicePage />);
+    const discardBtns = await screen.findAllByRole('button', { name: 'ディスカード' });
+    expect(discardBtns[0]).toHaveAttribute('aria-describedby', 'sam-discard-hint');
+    // Nothing selected → the shared hint states the requirement and discard is disabled.
+    expect(discardBtns[0]).toBeDisabled();
+    expect(screen.getByTestId('sam-discard-hint')).toHaveTextContent('先に手札');
+    // Selecting a hand card (♠5) flips the hint to "ready" and enables discard.
+    fireEvent.click(screen.getByRole('button', { name: /♠ 5/ }));
+    await waitFor(() => expect(screen.getByTestId('sam-discard-hint')).toHaveTextContent('ディスカードできます'));
+    expect(screen.getAllByRole('button', { name: 'ディスカード' })[0]).not.toBeDisabled();
+  });
+
   it('localizes the hand heading, card aria-labels, and CPU goal (no raw English)', async () => {
     renderWithProviders(<SpiteAndMalicePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
