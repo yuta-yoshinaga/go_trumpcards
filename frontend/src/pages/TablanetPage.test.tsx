@@ -73,6 +73,74 @@ describe('TablanetPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0, tableIndices: [0] }));
   });
 
+  it('announces a capture in the live region attributed to the capturer', async () => {
+    renderWithProviders(<TablanetPage />); // mount: captured totals 0
+    const handCard = await screen.findByTestId('hand-card-0');
+    fireEvent.click(handCard);
+    fireEvent.click(screen.getByTestId('table-card-0'));
+
+    // Resolve the play into a state where the human (seat 0) has captured.
+    const afterCapture = makeTablanetState({
+      lastCaptureIdx: 0,
+      players: playPhaseState.players.map((p, i) => (i === 0 ? { ...p, capturedCount: 2 } : p)),
+    });
+    mockExec.mockResolvedValue(afterCapture);
+    fireEvent.click(screen.getByRole('button', { name: '捕獲' }));
+
+    // The region remounts (key={announceNonce}) on each event, so query it fresh.
+    await waitFor(() =>
+      expect(screen.getByTestId('tablanet-live-region')).toHaveTextContent('あなた が場札を捕獲しました'),
+    );
+  });
+
+  it('announces a tabla when a player clears the table', async () => {
+    renderWithProviders(<TablanetPage />);
+    const handCard = await screen.findByTestId('hand-card-0');
+    fireEvent.click(handCard);
+    fireEvent.click(screen.getByTestId('table-card-0'));
+
+    const afterTabla = makeTablanetState({
+      lastCaptureIdx: 0,
+      players: playPhaseState.players.map((p, i) => (i === 0 ? { ...p, capturedCount: 2, tablaCount: 1 } : p)),
+    });
+    mockExec.mockResolvedValue(afterTabla);
+    fireEvent.click(screen.getByRole('button', { name: '捕獲' }));
+
+    await waitFor(() =>
+      expect(screen.getByTestId('tablanet-live-region')).toHaveTextContent('あなた がタブラ（場を一掃）を達成しました'),
+    );
+  });
+
+  it('attributes a tabla to the achiever, not merely the last capturer', async () => {
+    renderWithProviders(<TablanetPage />);
+    const handCard = await screen.findByTestId('hand-card-0');
+    fireEvent.click(handCard);
+    fireEvent.click(screen.getByTestId('table-card-0'));
+
+    // One response bundles CPU auto-plays: CPU 1 (seat 1) scored the tabla while
+    // CPU 2 (seat 2) was the LAST to capture. The tabla must name CPU 1.
+    const bundled = makeTablanetState({
+      lastCaptureIdx: 2,
+      players: playPhaseState.players.map((p, i) => {
+        if (i === 1) return { ...p, capturedCount: 3, tablaCount: 1 };
+        if (i === 2) return { ...p, capturedCount: 2 };
+        return p;
+      }),
+    });
+    mockExec.mockResolvedValue(bundled);
+    fireEvent.click(screen.getByRole('button', { name: '捕獲' }));
+
+    await waitFor(() =>
+      expect(screen.getByTestId('tablanet-live-region')).toHaveTextContent('CPU 1 がタブラ（場を一掃）を達成しました'),
+    );
+  });
+
+  it('keeps the live region empty before any capture', async () => {
+    renderWithProviders(<TablanetPage />);
+    const region = await screen.findByTestId('tablanet-live-region');
+    expect(region).toHaveTextContent('');
+  });
+
   it('trailing (no table cards) dispatches play with an empty capture set', async () => {
     renderWithProviders(<TablanetPage />);
     const handCard = await screen.findByTestId('hand-card-1');

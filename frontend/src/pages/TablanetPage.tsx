@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { tablanetApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -92,6 +92,40 @@ function TablanetPageContent() {
   useEffect(() => {
     callApi('reset');
   }, []);
+
+  // Captures and tablas are shown only via animation and count updates (the web
+  // presenter never puts them in state.message), so a screen-reader user gets no
+  // notification. A single `play` response can bundle several CPU auto-plays, so
+  // we diff EACH player's captured/tabla counts (not the total, and not
+  // lastCaptureIdx which only names the most recent capturer) and attribute the
+  // event to exactly the players whose counts rose. The nonce keys the live
+  // region so it re-announces even when consecutive events yield identical text.
+  const prevPerPlayerRef = useRef<{ captured: number; tabla: number }[] | null>(null);
+  const [captureAnnounce, setCaptureAnnounce] = useState('');
+  const [announceNonce, setAnnounceNonce] = useState(0);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: react to each state update; reads the t snapshot deliberately.
+  useEffect(() => {
+    if (!state) return;
+    const cur = state.players.map((p) => ({ captured: p.capturedCount, tabla: p.tablaCount }));
+    const prev = prevPerPlayerRef.current;
+    prevPerPlayerRef.current = cur;
+    if (!prev) return;
+    const nameOf = (i: number) => {
+      const p = state.players[i];
+      return p?.isHuman ? t('you') : t('cpu', { id: p?.id ?? i });
+    };
+    const tablaPlayers = cur.map((c, i) => (c.tabla > (prev[i]?.tabla ?? c.tabla) ? i : -1)).filter((i) => i >= 0);
+    const capturePlayers = cur
+      .map((c, i) => (c.captured > (prev[i]?.captured ?? c.captured) ? i : -1))
+      .filter((i) => i >= 0);
+    if (tablaPlayers.length > 0) {
+      setCaptureAnnounce(t('tablaAnnounce', { player: tablaPlayers.map(nameOf).join(t('listSeparator')) }));
+      setAnnounceNonce((n) => n + 1);
+    } else if (capturePlayers.length > 0) {
+      setCaptureAnnounce(t('captureAnnounce', { player: capturePlayers.map(nameOf).join(t('listSeparator')) }));
+      setAnnounceNonce((n) => n + 1);
+    }
+  }, [state]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('tablanet');
   const cliConfig: CliGameConfig<TablanetResponse, Parameters<typeof tablanetApi.exec>> = useMemo(
@@ -260,6 +294,18 @@ function TablanetPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+
+            {/* Announce capture / tabla events (visual-only otherwise) to screen readers.
+                Keyed on the nonce so repeated identical events still re-announce. */}
+            <div
+              key={announceNonce}
+              className="sr-only"
+              role="status"
+              aria-live="polite"
+              data-testid="tablanet-live-region"
+            >
+              {captureAnnounce}
+            </div>
 
             <ErrorAlert message={error} onRetry={retry} />
 
