@@ -405,6 +405,9 @@ function OldMaidPageContent() {
                   className={`${btnPrimary} min-w-[110px]`}
                   disabled={loading || !isHumanTurn || state.gameEndFlag}
                   onClick={() => gameExec('draw')}
+                  // Lowercase to mean the unmodified key; only advertised while the
+                  // keyboard bindings are actually active (the human's turn).
+                  aria-keyshortcuts={isHumanTurn ? 'd' : undefined}
                 >
                   {t('button.drawRandom')}
                 </button>
@@ -414,10 +417,19 @@ function OldMaidPageContent() {
                 className={`${btnSecondary} min-w-[110px]`}
                 disabled={loading || state.gameEndFlag}
                 onClick={() => gameExec('shuffle')}
+                aria-keyshortcuts={isHumanTurn ? 's' : undefined}
               >
                 {t('button.shuffle')}
               </button>
             </div>
+
+            {/* Keyboard shortcut hints, shown on the human's turn (matches the d/s
+                bindings in useActionKeyboardNav above). */}
+            {isHumanTurn && (
+              <p className="text-center text-game-text-muted text-xs mt-2" data-testid="oldmaid-key-hints">
+                {t('keyHints')}
+              </p>
+            )}
           </GameFooter>
         </>
       )}
