@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { tablanetApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -92,6 +92,31 @@ function TablanetPageContent() {
   useEffect(() => {
     callApi('reset');
   }, []);
+
+  // Captures and tablas are shown only via animation and count updates (the web
+  // presenter never puts them in state.message), so a screen-reader user gets no
+  // notification. Detect them by watching the running totals and announce the
+  // event — attributed to the last capturer — in an sr-only live region.
+  const prevTotalsRef = useRef<{ captured: number; tabla: number } | null>(null);
+  const [captureAnnounce, setCaptureAnnounce] = useState('');
+  // biome-ignore lint/correctness/useExhaustiveDependencies: react to each state update; reads t/playerName snapshot deliberately.
+  useEffect(() => {
+    if (!state) return;
+    const captured = state.players.reduce((sum, p) => sum + p.capturedCount, 0);
+    const tabla = state.players.reduce((sum, p) => sum + p.tablaCount, 0);
+    const prev = prevTotalsRef.current;
+    prevTotalsRef.current = { captured, tabla };
+    if (!prev) return;
+    const idx = state.lastCaptureIdx;
+    if (idx < 0) return;
+    const p = state.players[idx];
+    const name = p?.isHuman ? t('you') : t('cpu', { id: p?.id ?? idx });
+    if (tabla > prev.tabla) {
+      setCaptureAnnounce(t('tablaAnnounce', { player: name }));
+    } else if (captured > prev.captured) {
+      setCaptureAnnounce(t('captureAnnounce', { player: name }));
+    }
+  }, [state]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('tablanet');
   const cliConfig: CliGameConfig<TablanetResponse, Parameters<typeof tablanetApi.exec>> = useMemo(
@@ -260,6 +285,11 @@ function TablanetPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+
+            {/* Announce capture / tabla events (visual-only otherwise) to screen readers. */}
+            <div className="sr-only" role="status" aria-live="polite" data-testid="tablanet-live-region">
+              {captureAnnounce}
+            </div>
 
             <ErrorAlert message={error} onRetry={retry} />
 
