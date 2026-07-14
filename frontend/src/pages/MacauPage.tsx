@@ -277,6 +277,16 @@ function MacauPageContent() {
                   </div>
                 )}
 
+                {isMustDeclare && state.players[state.currentPlayerIdx]?.isHuman && (
+                  <div
+                    className="my-2 p-2 rounded bg-ds-info/20 text-ds-info text-sm font-semibold"
+                    role="status"
+                    data-testid="macau-must-declare-banner"
+                  >
+                    {t('mustDeclareBanner')}
+                  </div>
+                )}
+
                 <GameMessageBox
                   message={state.message}
                   messageCode={state.messageCode}
