@@ -24,6 +24,12 @@
   "hintAnnouncement": "Hint: move {{card}} to {{dest}}",
   "foundationAriaLabel": "{{suit}} foundation {{count}} cards",
   "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
+  "suitNames": {
+    "spade": "Spades",
+    "club": "Clubs",
+    "heart": "Hearts",
+    "diamond": "Diamonds"
+  },
   "stalemate": "Stalemate",
   "frontendHint": {
     "moveToFoundation": "A card can be moved to the foundation",
