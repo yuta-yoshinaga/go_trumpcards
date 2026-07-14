@@ -10,6 +10,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { KeyboardShortcutsPanel } from '../components/KeyboardShortcutsPanel';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
@@ -463,7 +464,13 @@ function AccordionPageContent() {
 
               {isPlaying && (
                 <>
-                  <button type="button" className={btnOutline} onClick={handleHint} disabled={loading}>
+                  <button
+                    type="button"
+                    className={btnOutline}
+                    onClick={handleHint}
+                    disabled={loading}
+                    aria-keyshortcuts="h"
+                  >
                     {t('hint')}
                   </button>
                   <button
@@ -471,10 +478,17 @@ function AccordionPageContent() {
                     className={btnOutline}
                     onClick={handleUndo}
                     disabled={loading || !state.canUndo}
+                    aria-keyshortcuts="u"
                   >
                     {t('undo')}
                   </button>
-                  <button type="button" className={btnDanger} onClick={confirmGiveUpAction} disabled={loading}>
+                  <button
+                    type="button"
+                    className={btnDanger}
+                    onClick={confirmGiveUpAction}
+                    disabled={loading}
+                    aria-keyshortcuts="g"
+                  >
                     {t('giveup')}
                   </button>
                   {state.isStalemate && (
@@ -487,6 +501,20 @@ function AccordionPageContent() {
                 </>
               )}
             </GameFooter>
+            {isPlaying && (
+              <KeyboardShortcutsPanel
+                title={t('kbd.title')}
+                data-testid="ac-kbd-shortcuts"
+                shortcuts={[
+                  { keys: ['←', '→'], description: t('kbd.move') },
+                  { keys: ['1', '3'], description: t('kbd.merge') },
+                  { keys: ['h'], description: t('kbd.hint') },
+                  { keys: ['u'], description: t('kbd.undo') },
+                  { keys: ['g'], description: t('kbd.giveup') },
+                  { keys: ['Esc'], description: t('kbd.clear') },
+                ]}
+              />
+            )}
           </div>
         </>
       )}
