@@ -176,6 +176,11 @@ function NinetyNinePageContent() {
   const isGameEnd = state.phase === NinetyNinePhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const isHumanBidTurn = isBidPhase && state.players[state.bidPlayerIdx]?.isHuman === true;
+  // Bury-selection progress: how many more cards are needed, and whether the
+  // exact count is reached. Drives the aria-live remaining-count announcement
+  // and the focusable aria-disabled bury button.
+  const buryRemaining = BURY_COUNT - selectedCardIndices.length;
+  const buryReady = buryRemaining === 0;
 
   const dealerName = playerName(
     state.players[state.dealerIdx]?.id ?? state.dealerIdx,
@@ -252,7 +257,11 @@ function NinetyNinePageContent() {
                 {isHumanBidTurn && (
                   <div className="text-ds-warning text-center mb-2" data-tutorial="nn-bid-controls">
                     <div>{t('buryPhase')}</div>
-                    <div className="text-sm">{t('burySelected', { count: selectedCardIndices.length })}</div>
+                    {/* Announce the remaining-count as it changes so a screen-reader user
+                        knows how many more cards to select before Bury becomes actionable. */}
+                    <div className="text-sm" role="status" aria-live="polite" data-testid="nn-bury-progress">
+                      {buryReady ? t('buryReady') : t('buryRemaining', { count: buryRemaining })}
+                    </div>
                   </div>
                 )}
 
@@ -396,11 +405,18 @@ function NinetyNinePageContent() {
             )}
             <div className="flex gap-2 items-center" data-tutorial="nn-play-button">
               {isHumanBidTurn && (
+                // Use aria-disabled (not the HTML `disabled` attribute) for the
+                // not-enough-cards state so the button stays focusable and a screen
+                // reader can read why it can't be pressed yet; handleBury guards the
+                // count so activating it while not-ready is a no-op. `disabled` is
+                // still applied while loading. Mirrors the Cribbage pegRestricted pattern.
                 <button
                   type="button"
-                  className={btnPrimary}
+                  className={`${btnPrimary}${buryReady ? '' : ' opacity-50 cursor-not-allowed'}`}
                   onClick={handleBury}
-                  disabled={loading || selectedCardIndices.length !== BURY_COUNT}
+                  disabled={loading}
+                  aria-disabled={!buryReady || undefined}
+                  aria-label={buryReady ? undefined : t('buryButtonDisabledAria', { count: buryRemaining })}
                 >
                   {t('buryButton')}
                 </button>
