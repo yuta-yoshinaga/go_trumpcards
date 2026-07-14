@@ -24,6 +24,10 @@
     "win": "{{handName}}! {{payout}}コイン獲得!",
     "lose": "役なし。次のハンドで頑張りましょう!"
   },
+  "resultAnnounce": {
+    "win": "役: {{handName}}、配当 {{payout}} 枚",
+    "lose": "役なし、ベット没収"
+  },
   "payoutTable": {
     "title": "配当表",
     "hand": "役",

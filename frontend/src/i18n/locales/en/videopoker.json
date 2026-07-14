@@ -23,6 +23,10 @@
     "win": "{{handName}}! You win {{payout}} coins!",
     "lose": "No winning hand."
   },
+  "resultAnnounce": {
+    "win": "Hand: {{handName}}, payout {{payout}} coins",
+    "lose": "No winning hand, bet forfeited"
+  },
   "payoutTable": {
     "title": "Payout Table",
     "hand": "Hand",
