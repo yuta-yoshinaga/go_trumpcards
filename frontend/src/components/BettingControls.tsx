@@ -165,9 +165,11 @@ export function BettingControls({
         {t('action.allIn')}
       </button>
       {/* Keyboard shortcut hint. BettingControls only renders while the human can
-          act, so the shortcuts are always live here — advertising them is safe. */}
+          act, so the shortcuts are always live here. Show only the actions that are
+          actually on screen (call/raise vs check/bet) to avoid advertising the
+          mutually-exclusive one. */}
       <p className="text-game-text-muted text-xs mt-2" data-testid="betting-key-hints">
-        {t('betting.keyHints')}
+        {t(hasOutstandingBet ? 'betting.keyHintsOutstanding' : 'betting.keyHintsNormal')}
       </p>
     </div>
   );

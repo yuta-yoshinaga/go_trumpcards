@@ -288,7 +288,8 @@
       "pot": "Pot",
       "max": "Max"
     },
-    "keyHints": "C: Call / R: Bet/Raise / K: Check / F: Fold / A: All-in"
+    "keyHintsOutstanding": "C: Call / R: Raise / F: Fold / A: All-in",
+    "keyHintsNormal": "K: Check / R: Bet / F: Fold / A: All-in"
   },
   "button": {
     "reset": "Reset",

@@ -37,17 +37,22 @@ describe('BettingControls', () => {
     expect(screen.queryByRole('button', { name: 'チェック' })).not.toBeInTheDocument();
   });
 
-  it('renders the key-hint line and per-button aria-keyshortcuts (outstanding bet)', () => {
+  it('renders the call/raise key-hint line and per-button aria-keyshortcuts (outstanding bet)', () => {
     render(<BettingControls {...makeProps({ hasOutstandingBet: true })} />);
-    expect(screen.getByTestId('betting-key-hints')).toHaveTextContent('C: コール');
+    const hints = screen.getByTestId('betting-key-hints');
+    expect(hints).toHaveTextContent('C: コール');
+    expect(hints).not.toHaveTextContent('K: チェック'); // check isn't available now
     expect(screen.getByRole('button', { name: 'コール' })).toHaveAttribute('aria-keyshortcuts', 'c');
     expect(screen.getByRole('button', { name: 'レイズ' })).toHaveAttribute('aria-keyshortcuts', 'r');
     expect(screen.getByRole('button', { name: 'フォールド' })).toHaveAttribute('aria-keyshortcuts', 'f');
     expect(screen.getByRole('button', { name: 'オールイン' })).toHaveAttribute('aria-keyshortcuts', 'a');
   });
 
-  it('assigns aria-keyshortcuts to bet/check when there is no outstanding bet', () => {
+  it('renders the check/bet key-hint line and aria-keyshortcuts when there is no outstanding bet', () => {
     render(<BettingControls {...makeProps()} />);
+    const hints = screen.getByTestId('betting-key-hints');
+    expect(hints).toHaveTextContent('K: チェック');
+    expect(hints).not.toHaveTextContent('C: コール'); // call isn't available now
     expect(screen.getByRole('button', { name: 'ベット' })).toHaveAttribute('aria-keyshortcuts', 'r');
     expect(screen.getByRole('button', { name: 'チェック' })).toHaveAttribute('aria-keyshortcuts', 'k');
   });

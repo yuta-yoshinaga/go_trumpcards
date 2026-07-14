@@ -288,7 +288,8 @@
       "pot": "Pot",
       "max": "Max"
     },
-    "keyHints": "C: コール / R: ベット・レイズ / K: チェック / F: フォールド / A: オールイン"
+    "keyHintsOutstanding": "C: コール / R: レイズ / F: フォールド / A: オールイン",
+    "keyHintsNormal": "K: チェック / R: ベット / F: フォールド / A: オールイン"
   },
   "button": {
     "reset": "リセット",
