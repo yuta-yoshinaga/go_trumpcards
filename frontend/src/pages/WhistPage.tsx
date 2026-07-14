@@ -10,6 +10,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { KeyboardShortcutsPanel } from '../components/KeyboardShortcutsPanel';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { ScrollFadeHint } from '../components/ScrollFadeHint';
@@ -466,17 +467,30 @@ function WhistPageContent() {
                   className={btnPrimary}
                   onClick={handlePlay}
                   disabled={loading || selectedCardIndices.length !== 1}
+                  aria-keyshortcuts="Enter"
                 >
                   {t('playButton')}
                 </button>
               )}
               {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                <button
+                  type="button"
+                  className={btnSuccess}
+                  onClick={handleNextTrick}
+                  disabled={loading}
+                  aria-keyshortcuts="n"
+                >
                   {t('nextTrick')}
                 </button>
               )}
               {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                <button
+                  type="button"
+                  className={btnSuccess}
+                  onClick={handleNextRound}
+                  disabled={loading}
+                  aria-keyshortcuts="n"
+                >
                   {t('nextRound')}
                 </button>
               )}
@@ -488,6 +502,18 @@ function WhistPageContent() {
                 dataTutorial="wh-reset-button"
               />
             </div>
+            <KeyboardShortcutsPanel
+              title={t('kbd.title')}
+              data-testid="wh-kbd-shortcuts"
+              shortcuts={[
+                // 1–9 select the first nine cards; 0 selects the tenth (see useCardKeyboardNav).
+                { keys: ['1', '0'], description: t('kbd.selectCard') },
+                { keys: ['Enter'], description: t('kbd.confirm') },
+                { keys: ['Esc'], description: t('kbd.clear') },
+                // Binding is a case-sensitive match on lowercase 'n'.
+                { keys: ['n'], description: t('kbd.advance') },
+              ]}
+            />
           </GameFooter>
         </>
       )}

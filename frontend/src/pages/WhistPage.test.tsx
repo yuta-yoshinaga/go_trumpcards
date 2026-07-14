@@ -64,6 +64,17 @@ describe('WhistPage', () => {
     );
   });
 
+  it('lists the keyboard shortcuts in a collapsible panel', async () => {
+    renderWithProviders(<WhistPage />);
+    const panel = await screen.findByTestId('wh-kbd-shortcuts');
+    // Closed by default so it stays discreet.
+    expect(panel).not.toHaveAttribute('open');
+    expect(screen.getByText('キーボードショートカット')).toBeInTheDocument();
+    // The 'n' advance shortcut and card-selection keys are advertised.
+    expect(screen.getByText('次のトリック / ラウンドへ進む')).toBeInTheDocument();
+    expect(screen.getByText('数字キーで手札のカードを選択')).toBeInTheDocument();
+  });
+
   it('shows a known hint reason translated', async () => {
     renderWithProviders(<WhistPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());

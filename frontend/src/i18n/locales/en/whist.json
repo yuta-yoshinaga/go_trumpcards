@@ -64,5 +64,12 @@
     "followSuit": "Follow the lead suit",
     "trumpCut": "Opportunity to cut with trump",
     "discardLowest": "Discard your lowest card"
+  },
+  "kbd": {
+    "title": "Keyboard shortcuts",
+    "selectCard": "Select a card in your hand by number",
+    "confirm": "Play the selected card",
+    "clear": "Clear the card selection",
+    "advance": "Advance to the next trick / round"
   }
 }
