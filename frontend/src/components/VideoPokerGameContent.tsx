@@ -140,6 +140,14 @@ export function VideoPokerGameContent({
   // Screen-reader announcement for a hold toggle (aria-pressed alone is not
   // reliably re-announced by every AT when toggled via the keyboard).
   const [holdAnnounce, setHoldAnnounce] = useState('');
+  // Screen-reader announcement summarising the draw result (winning hand +
+  // payout, or the loss message). The payout text and the payout-table row
+  // highlight are static, so this sr-only live region is the only channel
+  // that tells a non-visual user the outcome. `resultNonce` is an invisible
+  // counter that forces re-announcement even when two consecutive hands
+  // produce identical text.
+  const [resultAnnounce, setResultAnnounce] = useState('');
+  const [resultNonce, setResultNonce] = useState(0);
 
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(apiExec);
@@ -167,6 +175,25 @@ export function VideoPokerGameContent({
   const isBetPhase = state?.phase === VideoPokerPhase.BET;
   const isDrawPhase = state?.phase === VideoPokerPhase.DRAW;
   const isResultPhase = state?.phase === VideoPokerPhase.RESULT;
+
+  // Announce the draw outcome once per hand. Keying on the state reference (a
+  // fresh object on every API result) re-fires the effect even for an identical
+  // hand, so a repeated result is read aloud again.
+  useEffect(() => {
+    if (!isResultPhase || !state) {
+      return;
+    }
+    const rowKey = videoPokerHandNameToRowKey(state.handName);
+    const msg =
+      state.payout > 0
+        ? tNs('resultAnnounce.win', {
+            handName: rowKey ? tNs(`payoutTable.name.${rowKey}`) : state.handName,
+            payout: state.payout,
+          })
+        : tNs('resultAnnounce.lose');
+    setResultAnnounce(msg);
+    setResultNonce((n) => n + 1);
+  }, [isResultPhase, state, tNs]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: re-apply auto-hold only on the phase transition into DRAW (a fresh hand). Adding autoHoldEnabled / state / gameName to the deps would overwrite the player's manual hold edits whenever any of those change mid-draw.
   useEffect(() => {
@@ -297,6 +324,21 @@ export function VideoPokerGameContent({
 
             <div className="sr-only" role="status" aria-live="polite" data-testid="vp-hold-announce">
               {holdAnnounce}
+            </div>
+
+            {/* Keying the live region on resultNonce remounts it on each result, so
+                assistive tech re-announces even two identical consecutive hands (an
+                aria-hidden counter would be invisible to the accessibility tree and
+                never trigger a re-read). data-nonce exposes the counter to tests. */}
+            <div
+              key={resultNonce}
+              className="sr-only"
+              role="status"
+              aria-live="polite"
+              data-testid="vp-result-announce"
+              data-nonce={resultNonce}
+            >
+              {resultAnnounce}
             </div>
 
             {state.hand.length > 0 && (
