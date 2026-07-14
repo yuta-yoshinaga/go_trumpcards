@@ -90,6 +90,28 @@ describe('KlaverjasPage', () => {
     expect(roem).toHaveTextContent('20');
   });
 
+  it('exposes the live Roem panel as a polite live region', async () => {
+    mockExec.mockResolvedValue(makeKlaverjasState({ phase: 0, roundRoem: [20, 0] }));
+    renderWithProviders(<KlaverjasPage />);
+    const roem = await screen.findByTestId('klaverjas-roem');
+    expect(roem).toHaveAttribute('role', 'status');
+    expect(roem).toHaveAttribute('aria-live', 'polite');
+    // No pulse highlight before any increase.
+    expect(roem.className).not.toContain('animate-pulse');
+  });
+
+  it('pulses the Roem panel when the combined Roem total increases', async () => {
+    mockExec.mockResolvedValue(makeKlaverjasState({ phase: 0, roundRoem: [20, 0] }));
+    renderWithProviders(<KlaverjasPage />);
+    const card = await screen.findByAltText('♥ Q');
+    fireEvent.click(card);
+    const playBtn = await screen.findByRole('button', { name: '出す' });
+    // The play resolves to a state with higher Roem (20 → 40), triggering the pulse.
+    mockExec.mockResolvedValue(makeKlaverjasState({ phase: 0, roundRoem: [40, 0] }));
+    fireEvent.click(playBtn);
+    await waitFor(() => expect(screen.getByTestId('klaverjas-roem').className).toContain('animate-pulse'));
+  });
+
   it('falls back to 0 Roem when the array is empty', async () => {
     mockExec.mockResolvedValue(makeKlaverjasState({ phase: 0, roundRoem: [] }));
     renderWithProviders(<KlaverjasPage />);
