@@ -20,6 +20,7 @@ import { useScopaGame } from '../hooks/useScopaGame';
 import { gameTheme } from '../styles/gameTheme';
 import type { ScopaResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import {
   formatScopaState,
   parseScopaCommand,
@@ -134,6 +135,14 @@ function ScopaPageContent() {
       : new Set<number>();
   const canTake = isHumanTurn && handIndex !== null && tableIndices.length > 0;
   const canLay = isHumanTurn && handIndex !== null && tableIndices.length === 0;
+  // Announce how many table cards the selected hand card could capture, since the
+  // green candidate rings are purely visual.
+  const takeCandidateAnnounce =
+    handIndex !== null && isHumanTurn
+      ? takeCandidateIndices.size > 0
+        ? t('label.takeCandidateAnnounce', { count: takeCandidateIndices.size })
+        : t('label.noTakeCandidate')
+      : '';
   const phaseName = isGameEnd ? t('phase.end') : t(`phase.${state.phase}`, t('phase.play'));
 
   return (
@@ -183,6 +192,9 @@ function ScopaPageContent() {
 
             {/* Table cards */}
             <div className="py-3 bg-black/20 rounded-lg" data-tutorial="sc-table-cards">
+              <div className="sr-only" role="status" aria-live="polite" data-testid="sc-take-candidate-live">
+                {takeCandidateAnnounce}
+              </div>
               <div className="text-center text-xs text-ds-text-muted mb-2">{t('label.tableCards')}</div>
               <div className="flex justify-center gap-2 min-h-[60px] flex-wrap">
                 {state.tableCards.length === 0 ? (
@@ -196,6 +208,14 @@ function ScopaPageContent() {
                         type="button"
                         onClick={() => isHumanTurn && toggleTable(i)}
                         disabled={!isHumanTurn}
+                        aria-pressed={tableIndices.includes(i)}
+                        aria-label={`${cardAlt(c)}${
+                          tableIndices.includes(i)
+                            ? ` ${t('label.selected')}`
+                            : isCandidate
+                              ? ` ${t('label.takeCandidate')}`
+                              : ''
+                        }`}
                         className={`rounded transition-all ${
                           tableIndices.includes(i)
                             ? 'ring-2 ring-ds-warning -translate-y-1'
