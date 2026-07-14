@@ -106,6 +106,22 @@ describe('FortyAndEightPage', () => {
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
+  it('distinguishes the two same-suit foundation piles in their aria-labels', async () => {
+    mockExec.mockResolvedValue(playingState); // all 8 foundations empty
+    renderWithProviders(<FortyAndEightPage />);
+    // The two spade foundations (idx 0, 1) now read as pile 1 and pile 2.
+    await waitFor(() => expect(screen.getByRole('button', { name: '空の組札 ♠ 1' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '空の組札 ♠ 2' })).toBeInTheDocument();
+  });
+
+  it('numbers a filled same-suit foundation pile distinctly from its empty twin', async () => {
+    mockExec.mockResolvedValue(withFoundationState);
+    renderWithProviders(<FortyAndEightPage />);
+    // idx 0 = ♠ foundation pile 1 with 1 card; idx 1 = the still-empty ♠ pile 2.
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ 組札 1 1枚' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '空の組札 ♠ 2' })).toBeInTheDocument();
+  });
+
   it('renders stock count', async () => {
     renderWithProviders(<FortyAndEightPage />);
     await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());

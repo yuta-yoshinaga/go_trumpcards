@@ -310,6 +310,9 @@ function FortyAndEightPageContent() {
                             disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
                             aria-label={t('foundationAriaLabel', {
                               suit: FOUNDATION_SUITS[idx],
+                              // Two piles per suit (idx pairs 0/1, 2/3, …); number
+                              // them 1/2 so the duplicate-suit piles read distinctly.
+                              pile: (idx % 2) + 1,
                               count: pile.length,
                             })}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
@@ -326,7 +329,10 @@ function FortyAndEightPageContent() {
                             type="button"
                             onClick={() => handleSelectTarget(foundationZone)}
                             disabled={!isPlaying || loading || !selectedSource}
-                            aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
+                            aria-label={t('emptyFoundationAriaLabel', {
+                              suit: FOUNDATION_SUITS[idx],
+                              pile: (idx % 2) + 1,
+                            })}
                             style={{ width: f8.cw, height: f8.ch }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                           >
