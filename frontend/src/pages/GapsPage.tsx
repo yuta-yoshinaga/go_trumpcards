@@ -186,6 +186,16 @@ function GapsPageContent() {
                   const isHintTo = state.hint && state.hint.toRow === rIdx && state.hint.toCol === cIdx;
                   if (cell === null) {
                     const ghost = computeGapsGhostHint(row, cIdx);
+                    // Mirror the (aria-hidden) ghost hint into the cell's label so
+                    // SR users learn which card each gap accepts, or that it's blocked.
+                    const gapAria =
+                      ghost?.kind === 'needed'
+                        ? t('gapAriaNeeded', { card: cardAlt({ design: ghost.design, value: ghost.value }) })
+                        : ghost?.kind === 'anySuit'
+                          ? t('gapAriaAnySuit', { value: valueName(ghost.value) })
+                          : ghost?.kind === 'blocked'
+                            ? t('gapAriaBlocked')
+                            : t('gap');
                     return (
                       <button
                         type="button"
@@ -193,7 +203,7 @@ function GapsPageContent() {
                         onDragOver={dnd.handleDragOver(zone)}
                         onDragLeave={dnd.handleDragLeave}
                         onDrop={dnd.handleDrop(zone)}
-                        aria-label={t('gap')}
+                        aria-label={gapAria}
                         data-testid={`gaps-cell-${rIdx.toString()}-${cIdx.toString()}`}
                         className={`relative flex items-center justify-center rounded border-2 ${
                           dnd.isDropTarget(zone)
