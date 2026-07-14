@@ -320,7 +320,14 @@ function DoubtPageContent() {
                             alert text is stable and fires once per window rather than
                             re-announcing every second. */}
                         {state.lastAction && (
-                          <div className="sr-only" role="alert" data-testid="doubt-window-alert">
+                          // Key on the running table count so two consecutive CPU turns
+                          // with an identical claim still remount → re-announce the alert.
+                          <div
+                            key={state.tableCardCount}
+                            className="sr-only"
+                            role="alert"
+                            data-testid="doubt-window-alert"
+                          >
                             {t('doubtWindowAlert', {
                               action: actionDesc(state.lastAction, state.players, t),
                               sec: state.doubtWindowSec,

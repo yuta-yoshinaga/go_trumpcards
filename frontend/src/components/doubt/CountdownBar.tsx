@@ -54,14 +54,9 @@ export function CountdownBar({ remaining, total, label }: CountdownBarProps) {
           {/* Throttled screen-reader timer: announces only at 5-second marks and
               each of the final 3 seconds, so the readout conveys urgency without
               flooding. Empty on other ticks so no announcement fires. */}
-          <div
-            className="sr-only"
-            role="timer"
-            aria-label={label}
-            aria-live="polite"
-            aria-atomic="true"
-            data-testid="countdown-sr-timer"
-          >
+          {/* No aria-label: it would carry the unthrottled per-second `label` and
+              defeat the throttling. The child text (throttled) is the accessible name. */}
+          <div className="sr-only" role="timer" aria-live="polite" aria-atomic="true" data-testid="countdown-sr-timer">
             {remaining <= 3 || remaining % 5 === 0 ? label : ''}
           </div>
         </>
