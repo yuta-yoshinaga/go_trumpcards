@@ -148,6 +148,37 @@ describe('PinochlePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', undefined, undefined, expect.any(Number)));
   });
 
+  it('labels the bid input and renders 44px steppers', async () => {
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ビッド' })).toBeInTheDocument());
+    // Accessible label including the minimum (highestBid 0 → min 20).
+    expect(screen.getByLabelText('ビッド額（最低 20）')).toBeInTheDocument();
+    const stepper = screen.getByRole('button', { name: 'ビッド額（最低 20） −10' });
+    expect(stepper.className).toContain('min-h-[44px]');
+    expect(stepper.className).toContain('min-w-[44px]');
+  });
+
+  it('blocks a below-minimum bid on the client and shows the reason', async () => {
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ビッド' })).toBeInTheDocument());
+
+    fireEvent.change(screen.getByLabelText('ビッド額（最低 20）'), { target: { value: '5' } });
+    const bidBtn = screen.getByRole('button', { name: 'ビッド' });
+    expect(bidBtn).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('alert')).toHaveTextContent('ビッド額は 20 以上にしてください');
+
+    mockExec.mockClear();
+    fireEvent.click(bidBtn);
+    expect(mockExec).not.toHaveBeenCalledWith('bid', undefined, undefined, expect.anything());
+  });
+
+  it('blocks an empty (NaN) bid on the client', async () => {
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ビッド' })).toBeInTheDocument());
+    fireEvent.change(screen.getByLabelText('ビッド額（最低 20）'), { target: { value: '' } });
+    expect(screen.getByRole('button', { name: 'ビッド' })).toHaveAttribute('aria-disabled', 'true');
+  });
+
   it('calls pass command when pass button is clicked', async () => {
     renderWithProviders(<PinochlePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).toBeInTheDocument());
