@@ -326,13 +326,19 @@ export function VideoPokerGameContent({
               {holdAnnounce}
             </div>
 
-            <div className="sr-only" role="status" aria-live="polite" data-testid="vp-result-announce">
+            {/* Keying the live region on resultNonce remounts it on each result, so
+                assistive tech re-announces even two identical consecutive hands (an
+                aria-hidden counter would be invisible to the accessibility tree and
+                never trigger a re-read). data-nonce exposes the counter to tests. */}
+            <div
+              key={resultNonce}
+              className="sr-only"
+              role="status"
+              aria-live="polite"
+              data-testid="vp-result-announce"
+              data-nonce={resultNonce}
+            >
               {resultAnnounce}
-              {/* Invisible incrementing nonce so assistive tech re-announces even
-                  two identical consecutive results; aria-hidden keeps it silent. */}
-              <span aria-hidden="true" data-testid="vp-result-nonce">
-                {resultNonce}
-              </span>
             </div>
 
             {state.hand.length > 0 && (

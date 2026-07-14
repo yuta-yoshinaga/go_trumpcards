@@ -99,22 +99,25 @@ describe('JokerPokerPage', () => {
 
   it('announces the winning hand and payout in a polite live region on result', async () => {
     await playToResult(winResultState);
-    const region = await screen.findByTestId('vp-result-announce');
+    // The region remounts (key={resultNonce}) on each result, so query it fresh
+    // after the announcement lands rather than holding a stale node reference.
+    await waitFor(() =>
+      expect(screen.getByTestId('vp-result-announce')).toHaveTextContent('役: フルハウス、配当 40 枚'),
+    );
+    const region = screen.getByTestId('vp-result-announce');
     expect(region).toHaveAttribute('role', 'status');
     expect(region).toHaveAttribute('aria-live', 'polite');
-    await waitFor(() => expect(region).toHaveTextContent('役: フルハウス、配当 40 枚'));
   });
 
   it('announces the loss message when the payout is zero', async () => {
     await playToResult(loseResultState);
-    const region = await screen.findByTestId('vp-result-announce');
-    await waitFor(() => expect(region).toHaveTextContent('役なし、ベット没収'));
+    await waitFor(() => expect(screen.getByTestId('vp-result-announce')).toHaveTextContent('役なし、ベット没収'));
   });
 
   it('re-announces (nonce advances) even when two consecutive results are identical', async () => {
     await playToResult(winResultState);
     await waitFor(() => expect(screen.getByTestId('vp-result-announce')).toHaveTextContent('役: フルハウス'));
-    const firstNonce = screen.getByTestId('vp-result-nonce').textContent;
+    const firstNonce = screen.getByTestId('vp-result-announce').getAttribute('data-nonce');
 
     // Next hand: reset → deal → draw → an identical winning result.
     mockExec.mockResolvedValueOnce(betPhaseState);
@@ -129,6 +132,6 @@ describe('JokerPokerPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /ドロー/ }));
     await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
 
-    expect(screen.getByTestId('vp-result-nonce').textContent).not.toBe(firstNonce);
+    expect(screen.getByTestId('vp-result-announce').getAttribute('data-nonce')).not.toBe(firstNonce);
   });
 });
