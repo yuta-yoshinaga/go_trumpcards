@@ -19,6 +19,7 @@
   "foundationAriaLabel": "{{suit}} ファンデーション ({{cardCount}}枚)",
   "emptyFoundationAriaLabel": "{{suit}} ファンデーション (空)",
   "emptyFreecellAriaLabel": "フリーセル {{idx}} (空)",
+  "emptyColumnAriaLabel": "空き列（{{rank}} のみ置けます）",
   "supermoveLimitTooltip": "一度に動かせるのは{{limit}}枚までです",
   "tutorial": {
     "freeCells": "7つのフリーセルです。初期配置で3セルが使用済みの状態からスタートします。空きセルが多いほど多くのカードを一度に移動できます。",

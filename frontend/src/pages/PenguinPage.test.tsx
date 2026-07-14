@@ -90,6 +90,21 @@ describe('PenguinPage', () => {
     expect(threeElements.length).toBeGreaterThanOrEqual(1);
   });
 
+  it('gives empty tableau columns a descriptive aria-label whose rank follows baseRank', async () => {
+    renderWithProviders(<PenguinPage />);
+    // baseRank 4 → only the rank one below (3) may be placed on an empty column.
+    await waitFor(() =>
+      expect(screen.getAllByRole('button', { name: '空き列（3 のみ置けます）' }).length).toBeGreaterThanOrEqual(1),
+    );
+
+    // Changing the base rank moves the placeable rank (baseRank 1 → K).
+    mockExec.mockResolvedValue({ ...playingState, baseRank: 1 });
+    renderWithProviders(<PenguinPage />);
+    await waitFor(() =>
+      expect(screen.getAllByRole('button', { name: '空き列（K のみ置けます）' }).length).toBeGreaterThanOrEqual(1),
+    );
+  });
+
   // --- Foundation ---
 
   it('renders foundation piles with suit symbols', async () => {

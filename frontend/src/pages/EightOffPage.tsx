@@ -403,6 +403,7 @@ function EightOffPageContent() {
                               type="button"
                               onClick={() => handleSelectTarget(tableauColZone)}
                               disabled={!isPlaying || loading || !selectedSource}
+                              aria-label={t('emptyColumnAriaLabel', { rank: 'K' })}
                               style={{ height: cardHeight }}
                               className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                             >
