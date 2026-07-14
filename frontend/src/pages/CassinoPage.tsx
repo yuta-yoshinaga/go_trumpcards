@@ -20,6 +20,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { gameTheme } from '../styles/gameTheme';
 import type { CassinoResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { cassinoTakeCandidates } from '../utils/cassinoTakeCandidates';
 import { suggestCassinoAction } from '../utils/cassinoUtils';
 import {
@@ -252,6 +253,13 @@ function CassinoPageContent() {
                         } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
                         data-testid={`table-card-${i}`}
                         data-take-candidate={isCandidate || undefined}
+                        aria-label={`${cardAlt(c)}${
+                          tableIndices.includes(i)
+                            ? ` ${t('label.selected')}`
+                            : isCandidate
+                              ? ` ${t('label.takeCandidate')}`
+                              : ''
+                        }`}
                       >
                         <AnimatedCard card={c} width={cardWidth * 0.9} />
                       </button>
@@ -282,6 +290,7 @@ function CassinoPageContent() {
                           buildIndices.includes(i) ? 'ring-2 ring-ds-info bg-ds-info/20' : 'border-white/20 bg-black/20'
                         } ${isHumanTurn ? 'cursor-pointer' : ''}`}
                         data-testid={`build-${i}`}
+                        aria-label={`${buildLabel}${buildIndices.includes(i) ? ` ${t('label.selected')}` : ''}`}
                       >
                         {buildLabel}
                       </button>

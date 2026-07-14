@@ -87,6 +87,21 @@ describe('CassinoPage', () => {
     expect(screen.getByTestId('table-card-1')).toBeInTheDocument();
   });
 
+  it('labels table cards with content, take-candidate, and selected state', async () => {
+    renderWithProviders(<CassinoPage />);
+    await waitFor(() => expect(screen.getByTestId('table-card-0')).toBeInTheDocument());
+    // Base label = card content only.
+    expect(screen.getByTestId('table-card-0')).toHaveAttribute('aria-label', '♠ 2');
+    // Selecting the ♥5 hand card makes the matching ♥5 table card a take candidate.
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+    await waitFor(() => expect(screen.getByTestId('table-card-1')).toHaveAttribute('aria-label', '♥ 5 テイク候補'));
+    // The non-matching ♠2 keeps its plain label.
+    expect(screen.getByTestId('table-card-0')).toHaveAttribute('aria-label', '♠ 2');
+    // Selecting the candidate flips its label to "selected".
+    fireEvent.click(screen.getByTestId('table-card-1'));
+    await waitFor(() => expect(screen.getByTestId('table-card-1')).toHaveAttribute('aria-label', '♥ 5 選択中'));
+  });
+
   it('take button is disabled until both hand and table are selected', async () => {
     renderWithProviders(<CassinoPage />);
     await waitFor(() => expect(screen.getByTestId('take-button')).toBeInTheDocument());
