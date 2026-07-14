@@ -106,6 +106,33 @@ describe('BadugiPage', () => {
     await waitFor(() => expect(screen.getAllByText('ドロー 2/3').length).toBeGreaterThan(0));
   });
 
+  it('annotates card aria-labels with best-subset / exchange-candidate hints during the draw phase', async () => {
+    // S1,H2,D3 form the best 3-card subset (lowest sum); the duplicate-suit S5
+    // is the exchange candidate.
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: BadugiPhase.DRAW,
+        currentTurn: 0,
+        players: [
+          humanPlayer({
+            cards: [
+              { design: 'SPADE', value: 1 },
+              { design: 'HEART', value: 2 },
+              { design: 'DIAMOND', value: 3 },
+              { design: 'SPADE', value: 5 },
+            ],
+          }),
+          cpuPlayer(1),
+          cpuPlayer(2),
+          cpuPlayer(3),
+        ],
+      }),
+    );
+    renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(screen.getAllByRole('button', { name: /ベストハンドの一部/ }).length).toBe(3));
+    expect(screen.getAllByRole('button', { name: /交換候補/ })).toHaveLength(1);
+  });
+
   it('shows the end message at showdown', async () => {
     mockExec.mockResolvedValue(
       baseState({
