@@ -28,7 +28,7 @@ import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { CatchTenResponse } from '../types/card';
+import type { CatchTenPlayerData, CatchTenResponse } from '../types/card';
 import { CatchTenPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { CATCHTEN_HELP, parseCatchTenCommand } from '../utils/cli/commands/catchtenCommands';
@@ -193,6 +193,54 @@ function CatchTenPageContent() {
   const isGameEnd = state.phase === CatchTenPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
 
+  // Render a CPU player's stats as a definition list so screen readers
+  // announce each field (hand size, team, cumulative/round score) as an
+  // independent item instead of one long pipe-joined sentence. The visual `|`
+  // separators are decorative and hidden from assistive tech.
+  const renderCpuStats = (p: CatchTenPlayerData) => (
+    <>
+      <span className="font-medium">{playerName(p.id, p.isHuman)}</span>
+      {/*
+       * Only <dt>/<dd> (optionally wrapped in a <div>) are valid direct
+       * children of <dl>, so the decorative `|` separators live inside each
+       * <dd> (all but the last) rather than as bare <span>s in the list.
+       */}
+      <dl className="inline-flex flex-wrap items-center gap-x-2 ml-1 align-middle">
+        <div className="inline-flex items-center gap-1">
+          <dt className="sr-only">{t('stats.hand')}</dt>
+          <dd className="inline-flex items-center gap-2">
+            {t('cards', { count: p.cardCount })}
+            <span aria-hidden="true" className="opacity-40">
+              |
+            </span>
+          </dd>
+        </div>
+        <div className="inline-flex items-center gap-1">
+          <dt className="sr-only">{t('stats.team')}</dt>
+          <dd className="inline-flex items-center gap-2">
+            <span className={teamBadgeClass(p.team)}>{t('team', { n: p.team })}</span>
+            <span aria-hidden="true" className="opacity-40">
+              |
+            </span>
+          </dd>
+        </div>
+        <div className="inline-flex items-center gap-1">
+          <dt className="sr-only">{t('stats.total')}</dt>
+          <dd className="inline-flex items-center gap-2">
+            {t('cumulativeScore', { score: p.cumulativeScore })}
+            <span aria-hidden="true" className="opacity-40">
+              |
+            </span>
+          </dd>
+        </div>
+        <div className="inline-flex items-center gap-1">
+          <dt className="sr-only">{t('stats.round')}</dt>
+          <dd>{t('roundScore', { score: p.roundScore })}</dd>
+        </div>
+      </dl>
+    </>
+  );
+
   return (
     <GamePageShell
       title={tc('nav.catchten')}
@@ -287,10 +335,7 @@ function CatchTenPageContent() {
                         .filter((p) => !p.isHuman)
                         .map((p) => (
                           <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                            <span className={teamBadgeClass(p.team)}>{t('team', { n: p.team })}</span> |{' '}
-                            {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
-                            {t('roundScore', { score: p.roundScore })}
+                            {renderCpuStats(p)}
                           </div>
                         ))}
                     </div>
@@ -300,12 +345,7 @@ function CatchTenPageContent() {
                     .filter((p) => !p.isHuman)
                     .map((p) => (
                       <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                        <div className="text-ds-text-muted text-sm">
-                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                          <span className={teamBadgeClass(p.team)}>{t('team', { n: p.team })}</span> |{' '}
-                          {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
-                          {t('roundScore', { score: p.roundScore })}
-                        </div>
+                        <div className="text-ds-text-muted text-sm">{renderCpuStats(p)}</div>
                       </div>
                     ))
                 )}
