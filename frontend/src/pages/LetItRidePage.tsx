@@ -307,7 +307,14 @@ function LetItRidePageContent() {
                     </div>
                   ))}
                 </div>
-                <div className="mt-1 text-center text-ds-text-primary text-sm" data-testid="current-risk">
+                {/* aria-live so each pull (which lowers the total at risk) is announced
+                    to screen-reader users as the amount changes. Layout is unchanged. */}
+                <div
+                  className="mt-1 text-center text-ds-text-primary text-sm"
+                  data-testid="current-risk"
+                  role="status"
+                  aria-live="polite"
+                >
                   {t('label.currentRisk')}: {currentRisk}
                 </div>
               </div>

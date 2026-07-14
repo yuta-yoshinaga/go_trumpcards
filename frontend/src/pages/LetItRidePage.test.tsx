@@ -185,6 +185,15 @@ describe('LetItRidePage', () => {
     expect(screen.getByTestId('current-risk')).toHaveTextContent('200');
   });
 
+  it('exposes the current risk total as a polite live region so pulls are announced', async () => {
+    mockApi.mockResolvedValue(firstDecisionState);
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByTestId('bet-status')).toBeInTheDocument());
+    const risk = screen.getByTestId('current-risk');
+    expect(risk).toHaveAttribute('role', 'status');
+    expect(risk).toHaveAttribute('aria-live', 'polite');
+  });
+
   it('shows END phase with reset button and payout breakdown on win', async () => {
     mockApi.mockResolvedValue(endPhaseWin);
     renderWithProviders(<LetItRidePage />);
