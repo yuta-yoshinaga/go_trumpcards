@@ -51,6 +51,15 @@ describe('SuecaPage', () => {
     expect(screen.getAllByRole('img', { name: '切り札: ダイヤ' }).length).toBeGreaterThanOrEqual(2);
   });
 
+  it('falls back to the raw symbol when the trump suit is unset', async () => {
+    // trumpSuit 0 has no suit-name key → the label falls back to the symbol string.
+    mockExec.mockResolvedValue(makeSuecaState({ trumpSuit: 0 }));
+    renderWithProviders(<SuecaPage />);
+    const sidebar = await screen.findByTestId('sueca-sidebar-trump');
+    expect(sidebar).toHaveAttribute('role', 'img');
+    expect(sidebar).toHaveAttribute('aria-label', '切り札: ');
+  });
+
   it('calls reset on mount with the default config', async () => {
     renderWithProviders(<SuecaPage />);
     await waitFor(() =>
