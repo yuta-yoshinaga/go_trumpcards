@@ -37,7 +37,7 @@ import { placeholderCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { OmahaResponse } from '../types/card';
+import type { Card, OmahaResponse } from '../types/card';
 import { OmahaPhase, OmahaRebuyPhaseType } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { valueName } from '../utils/cardUtils';
@@ -102,6 +102,42 @@ const OMAHA_PHASE_KEYS: Readonly<Record<number, string>> = {
   [OmahaPhase.END]: 'end',
   [OmahaPhase.REBUY]: 'rebuy',
 };
+
+/** A community or hole card that, when part of the qualifying low hand (`isLo`),
+ * gets the blue ring plus color-independent markers: sr-only text (a plain div
+ * can't carry aria-label) and a visible, aria-hidden "LO" badge. */
+function OmahaLoCard({
+  card,
+  isLo,
+  cardWidth,
+  t,
+}: {
+  card: Card;
+  isLo: boolean;
+  cardWidth: number;
+  t: (key: string) => string;
+}) {
+  return (
+    <div
+      className={isLo ? 'relative rounded-lg ring-2 ring-ds-info motion-safe:animate-pulse' : ''}
+      data-testid={isLo ? 'omahahilo-lo-card' : undefined}
+    >
+      <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+      {isLo && (
+        <>
+          <span className="sr-only">{t('loCardAria')}</span>
+          <span
+            aria-hidden="true"
+            className="absolute top-0.5 left-0.5 px-1 rounded bg-ds-info text-ds-text-on-accent text-[11px] font-extrabold leading-tight shadow"
+            data-testid="omahahilo-lo-card-badge"
+          >
+            {t('loBadge')}
+          </span>
+        </>
+      )}
+    </div>
+  );
+}
 
 /** Renders the Omaha Hi-Lo (8 or Better) game page with community cards,
  * betting, and split-pot showdown. */
@@ -261,17 +297,13 @@ function OmahaHiLoPageContent() {
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
                       ? state.communityCards.map((card, idx) => (
-                          <div
+                          <OmahaLoCard
                             key={`${card.design}-${card.value}`}
-                            className={
-                              lowSets.loBoardSet.has(idx)
-                                ? 'rounded-lg ring-2 ring-ds-info motion-safe:animate-pulse'
-                                : ''
-                            }
-                            data-testid={lowSets.loBoardSet.has(idx) ? 'omahahilo-lo-card' : undefined}
-                          >
-                            <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
-                          </div>
+                            card={card}
+                            isLo={lowSets.loBoardSet.has(idx)}
+                            cardWidth={cardWidth}
+                            t={t}
+                          />
                         ))
                       : Array.from({ length: 5 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                   </div>
@@ -435,15 +467,13 @@ function OmahaHiLoPageContent() {
                 <div className="flex flex-wrap gap-1.5 mb-2" data-tutorial="ohl-combination-rule">
                   {humanPlayer.cards?.length
                     ? humanPlayer.cards.map((card, idx) => (
-                        <div
+                        <OmahaLoCard
                           key={`${card.design}-${card.value}`}
-                          className={
-                            lowSets.loHoleSet.has(idx) ? 'rounded-lg ring-2 ring-ds-info motion-safe:animate-pulse' : ''
-                          }
-                          data-testid={lowSets.loHoleSet.has(idx) ? 'omahahilo-lo-card' : undefined}
-                        >
-                          <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
-                        </div>
+                          card={card}
+                          isLo={lowSets.loHoleSet.has(idx)}
+                          cardWidth={cardWidth}
+                          t={t}
+                        />
                       ))
                     : !humanPlayer.folded &&
                       Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}

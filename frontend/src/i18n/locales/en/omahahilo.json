@@ -76,5 +76,7 @@
     "weakHandRank": "Weak hand — fold recommended",
     "scoopChance": "Scoop range (hi + lo) — raise recommended",
     "lowDraw": "Low likely to qualify — call to chase the half"
-  }
+  },
+  "loCardAria": "Low hand card",
+  "loBadge": "LO"
 }
