@@ -80,6 +80,31 @@ describe('WaspPage', () => {
     expect(screen.getByText(/Stock|ストック/)).toBeInTheDocument();
   });
 
+  it('renders a face-up slot without a card as an empty-labelled button (defensive guard)', async () => {
+    // A face-up card with no card object should not crash; the aria-label guard
+    // falls back to an empty string.
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [[{ card: null, faceUp: true }], [], [], [], [], [], []],
+    });
+    const { container } = renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(container.querySelector('button[aria-label=""]')).toBeInTheDocument();
+  });
+
+  it("adds a 'selected' hint to the aria-label of the picked card and removes it on deselect", async () => {
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByRole('button', { name: /選択中/ })).not.toBeInTheDocument();
+    // Select the top card of a column.
+    fireEvent.click(screen.getByRole('button', { name: '♠ K' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ K 選択中' })).toBeInTheDocument());
+    // Re-clicking deselects and restores the plain label.
+    fireEvent.click(screen.getByRole('button', { name: '♠ K 選択中' }));
+    await waitFor(() => expect(screen.queryByRole('button', { name: /選択中/ })).not.toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '♠ K' })).toBeInTheDocument();
+  });
+
   it('shows game clear phase', async () => {
     mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<WaspPage />);
