@@ -22,6 +22,7 @@ import { usePresidentGame } from '../hooks/usePresidentGame';
 import { gameTheme } from '../styles/gameTheme';
 import type { PresidentResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import {
   formatPresidentState,
   PRESIDENT_HELP,
@@ -241,7 +242,14 @@ function PresidentPageContent() {
                 {state.tableCards.length === 0 ? (
                   <span className="text-ds-text-muted text-sm self-center">{t('label.tableEmpty')}</span>
                 ) : (
-                  state.tableCards.map((c, i) => <AnimatedCard key={i} card={c} width={cardWidth * 0.9} />)
+                  state.tableCards.map((c, i) => (
+                    // Wrap each display-only table card in a role="img" group so
+                    // screen readers announce it as a single named unit (the card),
+                    // independent of the inner <img alt>. Visuals are unchanged.
+                    <span key={i} role="img" aria-label={cardAlt(c)}>
+                      <AnimatedCard card={c} width={cardWidth * 0.9} />
+                    </span>
+                  ))
                 )}
               </div>
             </div>
