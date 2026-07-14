@@ -69,5 +69,7 @@
     "playerHand": "Your hand. Playable cards are highlighted.",
     "actionButtons": "Select actions such as Bid, Pass, Declare Trump, or Play depending on the phase.",
     "resetButton": "Press the reset button to start a new game."
-  }
+  },
+  "bidAmountLabel": "Bid amount (min {{min}})",
+  "bidTooLow": "Bid must be at least {{min}}."
 }

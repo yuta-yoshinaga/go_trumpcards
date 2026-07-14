@@ -3,6 +3,7 @@ import type { pinochleApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { ChipBetInput } from '../components/common/ChipBetInput';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -148,7 +149,9 @@ function PinochlePageContent() {
 
   useEffect(() => {
     if (state?.highestBid && state.highestBid > 0) {
-      setBidAmount(state.highestBid + 1);
+      // Pinochle bids move in 5s; start at the next multiple of 5 above the
+      // current high (e.g. high 25 → 30) so the steppers land on clean values.
+      setBidAmount(Math.ceil((state.highestBid + 1) / 5) * 5);
     } else {
       setBidAmount(20);
     }
@@ -217,6 +220,10 @@ function PinochlePageContent() {
   const isBidTurn = phase === PinochlePhase.BID && state.players?.[state.bidPlayerIdx]?.isHuman;
   const isTrumpTurn = phase === PinochlePhase.TRUMP && state.players?.[state.currentPlayerIdx]?.isHuman;
   const isPlayTurn = phase === PinochlePhase.PLAY && state.players?.[state.currentPlayerIdx]?.isHuman;
+  // Bids must strictly beat the current highest (or start at 20). Validate on the
+  // client so an empty (NaN) or too-low value can't be submitted for a server error.
+  const minBid = state.highestBid > 0 ? state.highestBid + 1 : 20;
+  const bidInvalid = Number.isNaN(bidAmount) || bidAmount < minBid;
   const isGameEnd = phase === PinochlePhase.GAME_END || state.gameEndFlag;
 
   return (
@@ -440,19 +447,40 @@ function PinochlePageContent() {
               {/* Bid */}
               {isBidTurn && (
                 <>
-                  <input
-                    type="number"
-                    min={state.highestBid > 0 ? state.highestBid + 1 : 20}
+                  <ChipBetInput
+                    id="pinochle-bid"
+                    label={t('bidAmountLabel', { min: minBid })}
                     value={bidAmount}
-                    onChange={(e) => setBidAmount(Number(e.target.value))}
-                    className="border rounded px-2 py-1 w-20 text-sm"
+                    onChange={setBidAmount}
+                    min={minBid}
+                    step={5}
+                    showSteppers
+                    autoClamp={false}
+                    disabled={loading}
+                    invalid={bidInvalid}
+                    describedBy={bidInvalid ? 'pinochle-bid-error' : undefined}
                   />
-                  <button type="button" className={btnPrimary} onClick={() => handleBid(bidAmount)} disabled={loading}>
+                  <button
+                    type="button"
+                    // aria-disabled (not HTML disabled) while invalid so the button stays
+                    // focusable and its state is announced; the click is guarded.
+                    className={`${btnPrimary}${bidInvalid ? ' opacity-50 cursor-not-allowed' : ''}`}
+                    onClick={() => {
+                      if (!bidInvalid) handleBid(bidAmount);
+                    }}
+                    disabled={loading}
+                    aria-disabled={bidInvalid || undefined}
+                  >
                     {t('bid')}
                   </button>
                   <button type="button" className={btnOutline} onClick={handlePass} disabled={loading}>
                     {t('pass')}
                   </button>
+                  {bidInvalid && (
+                    <p id="pinochle-bid-error" role="alert" className="text-ds-error text-xs w-full text-center">
+                      {t('bidTooLow', { min: minBid })}
+                    </p>
+                  )}
                 </>
               )}
 
