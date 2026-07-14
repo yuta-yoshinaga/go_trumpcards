@@ -75,11 +75,17 @@ describe('RussianSolitairePage', () => {
     await waitFor(() => expect(screen.getByText(/手数/)).toBeInTheDocument());
   });
 
-  it('shows the face-down rule note and labels face-down cards', async () => {
+  it('shows the face-down rule note and gives face-down cards concise positional labels', async () => {
     renderWithProviders(<RussianSolitairePage />);
     await waitFor(() => expect(screen.getByTestId('rs-facedown-rule')).toBeInTheDocument());
-    // The playing state has face-down cards; each exposes the rule as its label.
-    expect(screen.getAllByLabelText(/移動できません/).length).toBeGreaterThan(0);
+    // The rule text lives only in the note, not repeated on every card label.
+    expect(screen.queryByLabelText(/移動できません/)).not.toBeInTheDocument();
+    // Each face-down card exposes a short label with its column and position.
+    // Columns use the same 0-based index shown in the visible column header:
+    // column 1 has one face-down card at the top; column 2 has two.
+    expect(screen.getByLabelText('列1、上から1枚目、裏向き')).toBeInTheDocument();
+    expect(screen.getByLabelText('列2、上から1枚目、裏向き')).toBeInTheDocument();
+    expect(screen.getByLabelText('列2、上から2枚目、裏向き')).toBeInTheDocument();
   });
 
   it('shows game clear phase', async () => {
