@@ -166,6 +166,9 @@ describe('CanfieldPage', () => {
       expect(details.tagName.toLowerCase()).toBe('details');
       // Collapsed by default (no open attribute).
       expect(details).not.toHaveAttribute('open');
+      // The summary carries the (1-based) column number so panels are distinguishable.
+      expect(details).toHaveTextContent('列 1 の操作');
+      expect(screen.getByTestId('cf-col-actions-1')).toHaveTextContent('列 2 の操作');
     } finally {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: orig });
       window.dispatchEvent(new Event('resize'));
