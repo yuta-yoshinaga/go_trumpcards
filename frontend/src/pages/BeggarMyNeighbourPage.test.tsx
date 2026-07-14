@@ -132,6 +132,41 @@ describe('BeggarMyNeighbourPage', () => {
     expect(stack).toHaveAttribute('data-pile-size', '3');
   });
 
+  it('announces the current phase in a polite live region', async () => {
+    renderWithProviders(<BeggarMyNeighbourPage />); // baseState: PLAY phase
+    const region = await screen.findByTestId('bmn-phase-announce');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toHaveTextContent('フェーズ: プレイ中');
+  });
+
+  it('announces the penalty countdown during PAY_PENALTY', async () => {
+    mockExec.mockResolvedValueOnce(penaltyState);
+    renderWithProviders(<BeggarMyNeighbourPage />);
+    const region = await screen.findByTestId('bmn-phase-announce');
+    await waitFor(() => expect(region).toHaveTextContent('フェーズ: ペナルティ支払い中。残りペナルティ 3 枚'));
+  });
+
+  it('conveys pile counts via accessible text and hides the decorative visuals', async () => {
+    mockExec.mockResolvedValueOnce(penaltyState);
+    renderWithProviders(<BeggarMyNeighbourPage />);
+    // Counts are readable as plain text (no redundant aria-label on the card visuals).
+    await waitFor(() => expect(screen.getByText(/場の山.*3/)).toBeInTheDocument());
+    expect(screen.getAllByText(/山札.*26/).length).toBeGreaterThan(0);
+    // The decorative pile stack is hidden from assistive tech.
+    const stack = screen.getByTestId('bmn-central-pile-stack');
+    expect(stack).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('renders a role=alert ErrorAlert (not a bare button) on error', async () => {
+    // Mount succeeds so the page (not the skeleton) is shown, then a step fails.
+    renderWithProviders(<BeggarMyNeighbourPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    mockExec.mockRejectedValueOnce(new Error('network error'));
+    fireEvent.click(screen.getByTestId('step-button'));
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+  });
+
   it('caps the central pile stack at 10 cards visually', async () => {
     mockExec.mockResolvedValueOnce({ ...penaltyState, centralPileSize: 15 });
     renderWithProviders(<BeggarMyNeighbourPage />);

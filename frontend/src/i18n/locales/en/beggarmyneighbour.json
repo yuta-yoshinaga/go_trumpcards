@@ -35,5 +35,7 @@
     "stepButton": "Press this button to play the next card.",
     "autoplayButton": "Press this button to auto-play until the game ends.",
     "resetButton": "Start a new game."
-  }
+  },
+  "phaseAnnounce": "Phase: {{phase}}",
+  "phaseAnnouncePenalty": "Phase: {{phase}}. Penalty remaining {{count}} cards"
 }

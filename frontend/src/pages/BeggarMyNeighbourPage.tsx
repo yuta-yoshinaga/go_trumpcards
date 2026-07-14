@@ -4,6 +4,7 @@ import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
+import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
@@ -135,6 +136,13 @@ function BeggarMyNeighbourPageContent() {
         ? t('phase.collect')
         : t('phase.play');
 
+  // Phase transitions (and the penalty countdown) are conveyed only by the
+  // central-pile ring color, so mirror them into an sr-only live region.
+  const phaseAnnouncement =
+    state.phase === BeggarMyNeighbourPhase.PAY_PENALTY
+      ? t('phaseAnnouncePenalty', { phase: phaseName, count: state.penaltyRemaining })
+      : t('phaseAnnounce', { phase: phaseName });
+
   return (
     <GamePageShell
       title={tc('nav.beggarmyneighbour')}
@@ -155,11 +163,12 @@ function BeggarMyNeighbourPageContent() {
       ) : (
         <>
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
-            {error && (
-              <button type="button" onClick={retry} className="text-ds-error underline">
-                {error}
-              </button>
-            )}
+            <ErrorAlert message={error} onRetry={retry} />
+
+            {/* Announce the phase (and penalty countdown) to screen readers. */}
+            <div className="sr-only" role="status" aria-live="polite" data-testid="bmn-phase-announce">
+              {phaseAnnouncement}
+            </div>
 
             {/* CPU pile */}
             <div className="flex items-center justify-center gap-4" data-tutorial="bmn-cpu-pile">
@@ -168,14 +177,18 @@ function BeggarMyNeighbourPageContent() {
                   {tc('player.cpu', { id: 1 })} — {t('label.drawPile')}: {cpu.drawPileSize} / {t('label.discardPile')}:{' '}
                   {cpu.discardPileSize}
                 </div>
-                {cpu.drawPileSize > 0 ? (
-                  <AnimatedCardBack width={cardWidth * 0.9} />
-                ) : (
-                  <div
-                    className="rounded border border-white/20"
-                    style={{ width: cardWidth * 0.9, height: cardWidth * 0.9 * 1.4 }}
-                  />
-                )}
+                {/* Decorative: the count is already conveyed by the text line above,
+                    so hide the card back from AT to avoid a redundant double read. */}
+                <div aria-hidden="true">
+                  {cpu.drawPileSize > 0 ? (
+                    <AnimatedCardBack width={cardWidth * 0.9} />
+                  ) : (
+                    <div
+                      className="rounded border border-white/20"
+                      style={{ width: cardWidth * 0.9, height: cardWidth * 0.9 * 1.4 }}
+                    />
+                  )}
+                </div>
               </div>
             </div>
 
@@ -196,6 +209,7 @@ function BeggarMyNeighbourPageContent() {
                 {state.centralPileSize > 0 ? (
                   <div
                     className="relative mx-auto mt-1"
+                    aria-hidden="true"
                     data-testid="bmn-central-pile-stack"
                     data-pile-size={state.centralPileSize}
                     style={{
@@ -235,14 +249,17 @@ function BeggarMyNeighbourPageContent() {
                   {tc('player.you')} — {t('label.drawPile')}: {human.drawPileSize} / {t('label.discardPile')}:{' '}
                   {human.discardPileSize}
                 </div>
-                {human.drawPileSize > 0 ? (
-                  <AnimatedCardBack width={cardWidth * 0.9} />
-                ) : (
-                  <div
-                    className="rounded border border-white/20"
-                    style={{ width: cardWidth * 0.9, height: cardWidth * 0.9 * 1.4 }}
-                  />
-                )}
+                {/* Decorative: count is in the text line above; hide from AT. */}
+                <div aria-hidden="true">
+                  {human.drawPileSize > 0 ? (
+                    <AnimatedCardBack width={cardWidth * 0.9} />
+                  ) : (
+                    <div
+                      className="rounded border border-white/20"
+                      style={{ width: cardWidth * 0.9, height: cardWidth * 0.9 * 1.4 }}
+                    />
+                  )}
+                </div>
               </div>
             </div>
 
