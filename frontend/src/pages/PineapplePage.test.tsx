@@ -248,6 +248,40 @@ describe('PineapplePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', undefined, { cardIdxs: [0] }));
   });
 
+  it('warns via a live region when clicking past the discard cap', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+
+    // Cap is 1 (3 dealt → discard 1). Selecting card 0 reaches the cap; no warning yet.
+    fireEvent.click(cardButtons[0]);
+    expect(screen.queryByTestId('pn-discard-limit-announce')).not.toBeInTheDocument();
+
+    // Clicking a second, unselected card is over the cap → the warning appears.
+    fireEvent.click(cardButtons[1]);
+    const announce = await screen.findByTestId('pn-discard-limit-announce');
+    expect(announce).toHaveAttribute('role', 'status');
+    expect(announce).toHaveAttribute('aria-live', 'polite');
+    expect(announce).toHaveTextContent('選択できるのは1枚まで');
+  });
+
+  it('describes the discard cap on the hand group and does not warn on normal deselect', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+
+    const group = cardButtons[0].closest('[aria-describedby]');
+    expect(group).toHaveAttribute('aria-describedby', 'pn-discard-limit-desc');
+    expect(document.getElementById('pn-discard-limit-desc')).toHaveTextContent('最大1枚');
+
+    // Selecting then deselecting the same card is normal — no warning.
+    fireEvent.click(cardButtons[0]);
+    fireEvent.click(cardButtons[0]);
+    expect(screen.queryByTestId('pn-discard-limit-announce')).not.toBeInTheDocument();
+  });
+
   it('a card click is inert once the confirm step has started', async () => {
     mockExec.mockResolvedValue(discardState);
     renderWithProviders(<PineapplePage />);
