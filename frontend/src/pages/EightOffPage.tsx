@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { EightOffMoveZone, eightoffApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -27,7 +27,7 @@ import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { Card, EightOffResponse } from '../types/card';
+import type { Card, EightOffHint, EightOffResponse } from '../types/card';
 import { EightOffPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -36,6 +36,18 @@ import { formatEightoffState } from '../utils/cli/formatters/eightoffFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
+
+/** Localized "<zone> <n>" label for a hint move endpoint (n omitted when col < 0, e.g. any-foundation). */
+function eightOffZoneLabel(t: (key: string) => string, zone: string, col: number): string {
+  const base = zone === 'freecell' ? t('freecell') : zone === 'foundation' ? t('foundation') : t('tableau');
+  return col >= 0 ? `${base} ${col + 1}` : base;
+}
+
+/** The card a hint suggests moving: the free-cell card, or the tableau card at [fromCol][cardIndex]. */
+function eightOffHintCard(state: EightOffResponse, hint: EightOffHint): Card | null {
+  if (hint.fromZone === 'freecell') return state.freeCells[hint.fromCol] ?? null;
+  return state.tableau[hint.fromCol]?.[hint.cardIndex] ?? null;
+}
 
 /** Eight Off tutorial step definitions. */
 const EO_TUTORIAL_STEPS: TutorialStep[] = [
@@ -100,6 +112,7 @@ function EightOffPageContent() {
     hintError,
     selectedSource,
     hint,
+    hintNonce,
     handleReset,
     handleGiveUp,
     handleHint,
@@ -110,6 +123,28 @@ function EightOffPageContent() {
     handleSelectTarget,
     isAutoCompleting,
   } = useEightOffGame();
+  // Screen-reader announcement for the hint (visually it is only ring highlights).
+  // Driven off hintNonce so it fires once per hint request, reading the current
+  // hint/state snapshot; a null hint after a request means no legal move exists.
+  const [hintAnnounce, setHintAnnounce] = useState('');
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally react only to a new hint request (hintNonce); adding hint/state/t would re-run on unrelated updates and re-announce.
+  useEffect(() => {
+    // Skip on a failed hint fetch (hintError set, hint left null) so we don't
+    // wrongly announce "no moves" alongside the network-error banner.
+    if (hintNonce === 0 || !state || hintError) return;
+    if (!hint) {
+      setHintAnnounce(t('hintNoMoves'));
+      return;
+    }
+    const card = eightOffHintCard(state, hint);
+    setHintAnnounce(
+      t('hintAnnouncement', {
+        card: card ? cardAlt(card) : '',
+        from: eightOffZoneLabel(t, hint.fromZone, hint.fromCol),
+        to: eightOffZoneLabel(t, hint.toZone, hint.toCol),
+      }),
+    );
+  }, [hintNonce]);
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -464,7 +499,12 @@ function EightOffPageContent() {
               </div>
             </div>
 
-            {/* Hint is shown via ring highlights on the suggested source card and target zone. */}
+            {/* Hint is shown visually via ring highlights on the suggested source card
+                and target zone; this sr-only live region conveys the same move (or the
+                no-move result) to screen readers. */}
+            <div className="sr-only" role="status" aria-live="polite" data-testid="eo-hint-announce">
+              {hintAnnounce}
+            </div>
             {frontendHintEnabled && frontendHint && (
               <div className="flex justify-center">
                 <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />

@@ -22,6 +22,19 @@ export function useEightOffGame() {
     [base.runAction],
   );
 
+  // Bumped every time a hint is requested so the page can announce the result
+  // (a move, or "no moves available") even when two requests yield the same
+  // hint value — a null hint after a request is indistinguishable from the
+  // initial null without this signal.
+  const [hintNonce, setHintNonce] = useState(0);
+  // Depend on the stable base.handleHint reference, not the whole `base` object
+  // (which is re-created whenever state/loading change), so this callback stays stable.
+  const baseHandleHint = base.handleHint;
+  const handleHint = useCallback(async () => {
+    await baseHandleHint();
+    setHintNonce((n) => n + 1);
+  }, [baseHandleHint]);
+
   const handleSelectSource = useCallback((zone: EightOffMoveZone) => {
     setSelectedSource((prev) => {
       if (
@@ -55,9 +68,10 @@ export function useEightOffGame() {
     exec: base.apiCall,
     selectedSource,
     hint: base.hint,
+    hintNonce,
     handleReset: base.handleReset,
     handleGiveUp: base.handleGiveUp,
-    handleHint: base.handleHint,
+    handleHint,
     handleAutoComplete: base.handleAutoComplete,
     handleUndo: base.handleUndo,
     handleUndoEscape,
