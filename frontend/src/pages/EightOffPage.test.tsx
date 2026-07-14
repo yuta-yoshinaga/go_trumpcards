@@ -206,6 +206,82 @@ describe('EightOffPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
   });
 
+  it('announces the hinted move (tableau source) in a polite live region', async () => {
+    renderWithProviders(<EightOffPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    // playingState.tableau[0][0] is ♠ K; hint moves it to a foundation.
+    mockExec.mockResolvedValue(withHintFromColState);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    const region = await screen.findByTestId('eo-hint-announce');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    await waitFor(() => expect(region).toHaveTextContent('ヒント: ♠ K を タブロー 1 から ファンデーション へ移動'));
+  });
+
+  it('announces a free-cell source hint by resolving the free-cell card', async () => {
+    // Mount with a free cell occupied so state.freeCells[0] stays ♦ 7 (handleHint
+    // updates only the hint, not state).
+    mockExec.mockResolvedValue(withFreeCellCardState);
+    renderWithProviders(<EightOffPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValue({
+      ...withFreeCellCardState,
+      hint: { fromZone: 'freecell', fromCol: 0, cardIndex: -1, toZone: 'tableau', toCol: 3 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    const region = await screen.findByTestId('eo-hint-announce');
+    await waitFor(() => expect(region).toHaveTextContent('ヒント: ♦ 7 を フリーセル 1 から タブロー 4 へ移動'));
+  });
+
+  it('announces that no moves are available when the hint request yields none', async () => {
+    renderWithProviders(<EightOffPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValue({ ...playingState, hint: undefined });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    const region = await screen.findByTestId('eo-hint-announce');
+    await waitFor(() => expect(region).toHaveTextContent('移動可能な手がありません'));
+  });
+
+  it('keeps the hint live region empty before any hint is requested', async () => {
+    renderWithProviders(<EightOffPage />);
+    const region = await screen.findByTestId('eo-hint-announce');
+    expect(region).toHaveTextContent('');
+  });
+
+  it('announces an empty card name when a free-cell hint points at an empty cell', async () => {
+    renderWithProviders(<EightOffPage />); // playingState: all free cells null
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromZone: 'freecell', fromCol: 0, cardIndex: -1, toZone: 'tableau', toCol: 3 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    const region = await screen.findByTestId('eo-hint-announce');
+    await waitFor(() => expect(region).toHaveTextContent('ヒント: を フリーセル 1 から タブロー 4 へ移動'));
+  });
+
+  it('announces an empty card name when a tableau hint points at a missing card', async () => {
+    renderWithProviders(<EightOffPage />); // playingState.tableau[2] is empty
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromZone: 'tableau', fromCol: 2, cardIndex: 0, toZone: 'foundation', toCol: -1 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    const region = await screen.findByTestId('eo-hint-announce');
+    await waitFor(() => expect(region).toHaveTextContent('ヒント: を タブロー 3 から ファンデーション へ移動'));
+  });
+
   it('handleAutoComplete called on autocomplete button click', async () => {
     renderWithProviders(<EightOffPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'オートコンプリート' })).toBeInTheDocument());
