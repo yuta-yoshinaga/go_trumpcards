@@ -124,6 +124,24 @@ describe('SoloWhistPage', () => {
     await waitFor(() => expect(screen.getByTestId('sw-highest-bid')).toHaveTextContent('まだ入札なし'));
   });
 
+  it('exposes the declarer line as a polite live region', async () => {
+    renderWithProviders(<SoloWhistPage />);
+    const line = await screen.findByTestId('solowhist-declarer');
+    expect(line).toHaveAttribute('role', 'status');
+    expect(line).toHaveAttribute('aria-live', 'polite');
+    expect(line.className).not.toContain('animate-pulse');
+  });
+
+  it('pulses the declarer line when the contract is decided', async () => {
+    // Mount with an undecided contract, then a bid resolves it (declarerIdx -1 → 0).
+    mockExec.mockResolvedValue(makeSoloWhistState({ declarerIdx: -1 }));
+    renderWithProviders(<SoloWhistPage />);
+    const bidSolo = await screen.findByTestId('bid-1');
+    mockExec.mockResolvedValue(makeSoloWhistState({ declarerIdx: 0, contract: 1, isHumanBidTurn: false }));
+    fireEvent.click(bidSolo);
+    await waitFor(() => expect(screen.getByTestId('solowhist-declarer').className).toContain('animate-pulse'));
+  });
+
   it('renders the play phase with the human cards and the declarer badge', async () => {
     mockExec.mockResolvedValue(playPhaseState);
     renderWithProviders(<SoloWhistPage />);
