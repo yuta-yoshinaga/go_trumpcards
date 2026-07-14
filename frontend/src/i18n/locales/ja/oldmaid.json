@@ -67,5 +67,6 @@
   "bubble": {
     "drewFrom": "← {{from}} から",
     "drewAndPaired": "← {{from}} から (ペア成立)"
-  }
+  },
+  "keyHints": "D: 引く / S: シャッフル"
 }

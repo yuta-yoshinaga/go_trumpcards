@@ -83,6 +83,20 @@ describe('OldMaidPage', () => {
     );
   });
 
+  it('shows keyboard shortcut hints and aria-keyshortcuts on the human turn', async () => {
+    await startGame();
+    expect(screen.getByTestId('oldmaid-key-hints')).toHaveTextContent('D: 引く / S: シャッフル');
+    expect(screen.getByRole('button', { name: 'ランダムに引く' })).toHaveAttribute('aria-keyshortcuts', 'D');
+    expect(screen.getByRole('button', { name: 'シャッフル' })).toHaveAttribute('aria-keyshortcuts', 'S');
+  });
+
+  it('hides the key hints on a CPU turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<OldMaidPage />);
+    await waitFor(() => expect(screen.getAllByText('あなた').length).toBeGreaterThan(0));
+    expect(screen.queryByTestId('oldmaid-key-hints')).not.toBeInTheDocument();
+  });
+
   it('renders skeleton while API call is pending on mount', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<OldMaidPage />);
