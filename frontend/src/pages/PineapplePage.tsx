@@ -150,6 +150,11 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   // on every repeated over-limit attempt, even with identical text.
   const [limitAnnounce, setLimitAnnounce] = useState('');
   const [limitNonce, setLimitNonce] = useState(0);
+  // Mirror the selection in a ref so toggleDiscard can read it without listing
+  // selectedDiscards as a dependency — otherwise the callback (and the global
+  // keydown listener in useCardKeyboardNav) would be re-created on every toggle.
+  const selectedDiscardsRef = useRef<number[]>(selectedDiscards);
+  selectedDiscardsRef.current = selectedDiscards;
   const turnStartRef = useRef(0);
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode(variant);
@@ -185,11 +190,13 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
     }
   }, [state]);
 
-  // Reset discard selection (and any pending confirm) when leaving discard phase
+  // Reset discard selection (and any pending confirm / limit banner) when leaving
+  // the discard phase, so a stale over-limit warning can't outlive it.
   useEffect(() => {
     if (!state?.isDiscardPhase) {
       setSelectedDiscards([]);
       setDiscardConfirming(false);
+      setLimitAnnounce('');
     }
   }, [state?.isDiscardPhase]);
 
@@ -296,10 +303,11 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   const toggleDiscard = useCallback(
     (idx: number) => {
       if (!canDiscard || discardConfirming) return;
-      const isSelected = selectedDiscards.includes(idx);
+      const current = selectedDiscardsRef.current;
+      const isSelected = current.includes(idx);
       // Selecting a new card while already at the cap is ignored — but tell the
       // user why (live region + shake) instead of silently swallowing the click.
-      if (!isSelected && selectedDiscards.length >= discardCount) {
+      if (!isSelected && current.length >= discardCount) {
         setLimitAnnounce(t('discard.limitReached', { count: discardCount }));
         setLimitNonce((n) => n + 1);
         return;
@@ -307,7 +315,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
       setLimitAnnounce('');
       setSelectedDiscards((prev) => (prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]));
     },
-    [canDiscard, discardConfirming, discardCount, selectedDiscards, t],
+    [canDiscard, discardConfirming, discardCount, t],
   );
   const discardConfirm = useCallback(() => {
     if (selectedDiscards.length !== discardCount) return;
