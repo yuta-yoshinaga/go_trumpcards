@@ -216,21 +216,24 @@ function FiftyOnePageContent() {
             <div className="py-3 bg-black/20 rounded-lg" data-tutorial="fo-table-cards">
               <div className="text-center text-xs text-ds-text-muted mb-2">{t('label.tableCards')}</div>
               <div className="flex justify-center gap-2">
-                {state.tableCards.map((c, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => isHumanTurn && setSelectedTableIdx(i === selectedTableIdx ? null : i)}
-                    disabled={!isHumanTurn}
-                    aria-label={cardAlt(c)}
-                    aria-pressed={isHumanTurn ? selectedTableIdx === i : undefined}
-                    className={`rounded transition-all ${
-                      selectedTableIdx === i ? 'ring-2 ring-ds-warning -translate-y-1' : ''
-                    } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
-                  >
-                    <AnimatedCard card={c} width={cardWidth * 0.9} />
-                  </button>
-                ))}
+                {state.tableCards.map((c, i) => {
+                  const isSelected = selectedTableIdx === i;
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => isHumanTurn && setSelectedTableIdx(isSelected ? null : i)}
+                      disabled={!isHumanTurn}
+                      aria-label={cardAlt(c)}
+                      aria-pressed={isHumanTurn ? isSelected : undefined}
+                      className={`rounded transition-all ${
+                        isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
+                      } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
+                    >
+                      <AnimatedCard card={c} width={cardWidth * 0.9} />
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -269,21 +272,24 @@ function FiftyOnePageContent() {
                 })}
               </ul>
               <div className="flex justify-center gap-2">
-                {human.cards.map((c, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => isHumanTurn && setSelectedHandIdx(i === selectedHandIdx ? null : i)}
-                    disabled={!isHumanTurn}
-                    aria-label={cardAlt(c)}
-                    aria-pressed={isHumanTurn ? selectedHandIdx === i : undefined}
-                    className={`rounded transition-all ${
-                      selectedHandIdx === i ? 'ring-2 ring-ds-info -translate-y-2' : ''
-                    } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
-                  >
-                    <AnimatedCard card={c} width={cardWidth} />
-                  </button>
-                ))}
+                {human.cards.map((c, i) => {
+                  const isSelected = selectedHandIdx === i;
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => isHumanTurn && setSelectedHandIdx(isSelected ? null : i)}
+                      disabled={!isHumanTurn}
+                      aria-label={cardAlt(c)}
+                      aria-pressed={isHumanTurn ? isSelected : undefined}
+                      className={`rounded transition-all ${
+                        isSelected ? 'ring-2 ring-ds-info -translate-y-2' : ''
+                      } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
+                    >
+                      <AnimatedCard card={c} width={cardWidth} />
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
