@@ -59,6 +59,7 @@
   "previewFront": "Front",
   "previewMiddle": "Middle",
   "previewBack": "Back",
+  "cardAssignedAria": "{{card}} ({{row}})",
   "foulWarning": "Foul: Hands must be arranged so that Back ≧ Middle ≧ Front",
   "royalty": "Royalty: +{{points}}",
   "tutorial": {

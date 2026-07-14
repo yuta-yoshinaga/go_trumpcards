@@ -139,7 +139,7 @@ test.describe('Chinese Poker E2E', () => {
     // A naive "first 3 → front, next 5 → middle" split is almost always a foul
     // (front ≤ middle ≤ back is violated), which the server rejects — so the
     // arrangement must be rank-aware to reliably reach the END phase.
-    const cards = page.locator('[data-tutorial="cp-set-hands"] button[aria-label^="Card"]');
+    const cards = page.locator('[data-testid^="cp-hand-card-"]');
     await expect(cards.first()).toBeVisible({ timeout: 10_000 });
     const count = await cards.count();
 

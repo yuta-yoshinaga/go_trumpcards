@@ -28,6 +28,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card, ChinesePokerResponse } from '../types/card';
 import { ChinesePokerPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { chinesePokerIsFoul } from '../utils/chinesePokerFoul';
 import { CHINESEPOKER_HELP, parseChinesepokerCommand } from '../utils/cli/commands/chinesepokerCommands';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -259,10 +260,18 @@ function ChinesePokerPageContent() {
                     <button
                       key={`p-${card.design}-${card.value}-${i}`}
                       type="button"
+                      data-testid={`cp-hand-card-${i}`}
                       onClick={() => toggleCard(i)}
                       className={`relative transition-transform ${ringClass(assignments[i])}`}
                       aria-pressed={!!assignments[i]}
-                      aria-label={`Card ${i}`}
+                      aria-label={
+                        assignments[i]
+                          ? t('cardAssignedAria', {
+                              card: cardAlt(card),
+                              row: t(assignments[i] === 'front' ? 'previewFront' : 'previewMiddle'),
+                            })
+                          : cardAlt(card)
+                      }
                     >
                       <AnimatedCard card={card} width={cardWidth} />
                       {assignments[i] && (
