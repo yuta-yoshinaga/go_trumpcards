@@ -287,7 +287,8 @@
       "halfPot": "1/2 Pot",
       "pot": "Pot",
       "max": "Max"
-    }
+    },
+    "keyHints": "C: コール / R: ベット・レイズ / K: チェック / F: フォールド / A: オールイン"
   },
   "button": {
     "reset": "リセット",

@@ -105,29 +105,70 @@ export function BettingControls({
       </div>
       {hasOutstandingBet ? (
         <>
-          <button type="button" className={`${btnPokerPrimary} min-w-[80px]`} disabled={loading} onClick={onCall}>
+          <button
+            type="button"
+            className={`${btnPokerPrimary} min-w-[80px]`}
+            disabled={loading}
+            onClick={onCall}
+            aria-keyshortcuts="c"
+          >
             {t('action.call')}
           </button>
-          <button type="button" className={`${btnPokerAccent} min-w-[80px]`} disabled={!canBet} onClick={onRaise}>
+          <button
+            type="button"
+            className={`${btnPokerAccent} min-w-[80px]`}
+            disabled={!canBet}
+            onClick={onRaise}
+            aria-keyshortcuts="r"
+          >
             {t('action.raise')}
           </button>
         </>
       ) : (
         <>
-          <button type="button" className={`${btnPokerAccent} min-w-[80px]`} disabled={!canBet} onClick={onBet}>
+          <button
+            type="button"
+            className={`${btnPokerAccent} min-w-[80px]`}
+            disabled={!canBet}
+            onClick={onBet}
+            aria-keyshortcuts="r"
+          >
             {t('action.bet')}
           </button>
-          <button type="button" className={`${btnPokerPrimary} min-w-[80px]`} disabled={loading} onClick={onCheck}>
+          <button
+            type="button"
+            className={`${btnPokerPrimary} min-w-[80px]`}
+            disabled={loading}
+            onClick={onCheck}
+            aria-keyshortcuts="k"
+          >
             {t('action.check')}
           </button>
         </>
       )}
-      <button type="button" className={`${btnPokerMuted} min-w-[80px]`} disabled={loading} onClick={onFold}>
+      <button
+        type="button"
+        className={`${btnPokerMuted} min-w-[80px]`}
+        disabled={loading}
+        onClick={onFold}
+        aria-keyshortcuts="f"
+      >
         {t('action.fold')}
       </button>
-      <button type="button" className={`${btnPokerAllIn} min-w-[80px]`} disabled={loading} onClick={onAllIn}>
+      <button
+        type="button"
+        className={`${btnPokerAllIn} min-w-[80px]`}
+        disabled={loading}
+        onClick={onAllIn}
+        aria-keyshortcuts="a"
+      >
         {t('action.allIn')}
       </button>
+      {/* Keyboard shortcut hint. BettingControls only renders while the human can
+          act, so the shortcuts are always live here — advertising them is safe. */}
+      <p className="text-game-text-muted text-xs mt-2" data-testid="betting-key-hints">
+        {t('betting.keyHints')}
+      </p>
     </div>
   );
 }
