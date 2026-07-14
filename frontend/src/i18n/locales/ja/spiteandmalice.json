@@ -23,6 +23,8 @@
   "moveCount": "手数",
   "endTurn": "ターン終了",
   "discard": "ディスカード",
+  "discardNeedHand": "先に手札のカードを選択してください",
+  "discardReady": "手札を選択済みです。ディスカードできます",
   "autoComplete": "自動完成",
   "selectSource": "出すカードを選んでください",
   "selectFoundation": "出すファウンデーションを選んでください",

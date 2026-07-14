@@ -351,6 +351,7 @@ function SpiteAndMalicePageContent() {
               label={t('label.side')}
               discardLabel={t('discard')}
               discardEnabled={selectionIsHand}
+              discardHint={selectionIsHand ? t('discardReady') : t('discardNeedHand')}
             />
           </div>
 
@@ -624,6 +625,7 @@ function SideRow({
   label,
   discardLabel,
   discardEnabled,
+  discardHint,
 }: {
   sides: [Card[], Card[], Card[], Card[]];
   cardWidth: number;
@@ -635,10 +637,16 @@ function SideRow({
   label: string;
   discardLabel: string;
   discardEnabled: boolean;
+  discardHint: string;
 }) {
   return (
     <div className="flex flex-col items-center gap-2" data-tutorial={dataTutorial}>
       <span className="text-sm text-ds-secondary">{cpuLabel ? `CPU ${label}` : label}</span>
+      {/* Shared reason for the discard buttons' disabled state (they all gate on
+          a selected hand card), announced via aria-describedby below. */}
+      <span id="sam-discard-hint" className="sr-only" data-testid="sam-discard-hint">
+        {discardHint}
+      </span>
       <div className="grid grid-cols-4 gap-2">
         {sides.map((pile, idx) => {
           const top = pile.length > 0 ? pile[pile.length - 1] : undefined;
@@ -671,6 +679,7 @@ function SideRow({
                 className={`${btnPrimary} text-xs px-2 py-1`}
                 onClick={() => onDiscard(idx)}
                 disabled={!discardEnabled}
+                aria-describedby="sam-discard-hint"
               >
                 {discardLabel}
               </button>

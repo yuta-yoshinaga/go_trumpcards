@@ -23,6 +23,8 @@
   "moveCount": "Moves",
   "endTurn": "End turn",
   "discard": "Discard",
+  "discardNeedHand": "Select a hand card first",
+  "discardReady": "Hand card selected — ready to discard",
   "autoComplete": "Auto Complete",
   "selectSource": "Select a card to play",
   "selectFoundation": "Select a foundation",
