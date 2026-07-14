@@ -73,10 +73,35 @@ describe('ScorpionPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it("adds a 'selected' hint to the aria-label of the picked source card", async () => {
+    renderWithProviders(<ScorpionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // Base labels carry no selection hint.
+    expect(screen.getByRole('button', { name: '♠ K' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /選択中/ })).not.toBeInTheDocument();
+    // Selecting the top card of a column marks it selected in its label.
+    fireEvent.click(screen.getByRole('button', { name: '♠ K' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ K 選択中' })).toBeInTheDocument());
+    // Other cards keep their plain, hint-free label.
+    expect(screen.getByRole('button', { name: '♥ 8' })).toBeInTheDocument();
+  });
+
   it('shows move count and stock', async () => {
     renderWithProviders(<ScorpionPage />);
     await waitFor(() => expect(screen.getByText(/手数/)).toBeInTheDocument());
     expect(screen.getByText(/Stock|ストック/)).toBeInTheDocument();
+  });
+
+  it('renders a face-up slot without a card as an empty-labelled button (defensive guard)', async () => {
+    // A face-up card with no card object should not crash; the aria-label guard
+    // falls back to an empty string.
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [[{ card: null, faceUp: true }], [], [], [], [], [], []],
+    });
+    const { container } = renderWithProviders(<ScorpionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(container.querySelector('button[aria-label=""]')).toBeInTheDocument();
   });
 
   it('shows game clear phase', async () => {
