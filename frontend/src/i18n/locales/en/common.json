@@ -287,7 +287,9 @@
       "halfPot": "1/2 Pot",
       "pot": "Pot",
       "max": "Max"
-    }
+    },
+    "keyHintsOutstanding": "C: Call / R: Raise / F: Fold / A: All-in",
+    "keyHintsNormal": "K: Check / R: Bet / F: Fold / A: All-in"
   },
   "button": {
     "reset": "Reset",
