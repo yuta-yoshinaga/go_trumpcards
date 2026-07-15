@@ -135,6 +135,32 @@ describe('AllFoursPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, undefined, 0));
   });
 
+  it('reads out the trump suit and turn-up by name', async () => {
+    renderWithProviders(<AllFoursPage />); // trumpSuit 3 = ♥, turnUp ♥7
+    expect(await screen.findByRole('img', { name: '切り札: ハート' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'めくり札: ハート7' })).toBeInTheDocument();
+  });
+
+  it('spells a face-card turn-up with its letter (♠J → スペードJ)', async () => {
+    mockExec.mockResolvedValueOnce({ ...baseState, trumpSuit: 1, turnUp: { design: 'SPADE', value: 11 } });
+    renderWithProviders(<AllFoursPage />);
+    expect(await screen.findByRole('img', { name: 'めくり札: スペードJ' })).toBeInTheDocument();
+  });
+
+  it('exposes the hint toggle as a labelled checkbox in the settings panel', async () => {
+    renderWithProviders(<AllFoursPage />);
+    const toggle = await screen.findByRole('checkbox', { name: /ヒント/ });
+    expect(toggle).toBeInTheDocument();
+  });
+
+  it('reads the trump as unset and omits the turn-up before it is decided', async () => {
+    mockExec.mockResolvedValueOnce({ ...baseState, trumpSuit: 0, turnUp: null });
+    renderWithProviders(<AllFoursPage />);
+    expect(await screen.findByRole('img', { name: '切り札: 未確定' })).toBeInTheDocument();
+    // No turn-up card is shown before it is flipped.
+    expect(screen.queryByRole('img', { name: /めくり札/ })).not.toBeInTheDocument();
+  });
+
   it('shows winner message at game end', async () => {
     mockExec.mockResolvedValueOnce(gameEndState);
     renderWithProviders(<AllFoursPage />);
