@@ -9,6 +9,7 @@
   "helpAutoComplete": "  ac                   オートコンプリート",
   "foundationHeader": "Foundation: ",
   "reserveHeader": "リザーブ: ",
+  "stalemateEscape": "脱出には undo を {{count}} 回（undo コマンド）実行してください",
   "columnLabel": "列{{col}}:",
   "promptToZone": "移動先の列、または組札なら 'f'",
   "hintFrom": "タブロー列{{col}}[{{idx}}]",

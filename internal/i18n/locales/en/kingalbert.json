@@ -9,6 +9,7 @@
   "helpAutoComplete": "  ac                   auto-complete",
   "foundationHeader": "Foundation: ",
   "reserveHeader": "Reserve: ",
+  "stalemateEscape": "Undo {{count}} time(s) (undo command) to escape",
   "columnLabel": "Column {{col}}:",
   "promptToZone": "destination column or 'f' for foundation",
   "hintFrom": "tableau column {{col}}[{{idx}}]",
