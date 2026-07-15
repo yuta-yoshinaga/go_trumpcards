@@ -333,9 +333,7 @@ function MariasPageContent() {
                 role="status"
                 aria-live="polite"
                 aria-label={t('marriageAvailable', {
-                  list: marriages
-                    .map((m) => `${m.suitKey ? t(`suitName.${m.suitKey}`) : m.symbol} K-Q +${m.points}`)
-                    .join('、'),
+                  list: marriages.map((m) => `${t(`suitName.${m.suitKey}`)} K-Q +${m.points}`).join('、'),
                 })}
               >
                 <span aria-hidden="true">
