@@ -34,5 +34,8 @@
     "board": "From the top: foundations (A→K ascending by suit), the shared tableau (alternating colour, descending), and each player's reserve, waste and hand.",
     "controls": "Pick a card to move, then send it to a foundation or a tableau column. When you run out of moves, discard to end your turn. If the CPU leaves a forced move, call Stop! to catch it.",
     "resetButton": "Press this button to restart the game from the beginning."
-  }
+  },
+  "slotCardZone": "{{card}} ({{zone}})",
+  "slotEmptyZone": "{{zone}} (empty)",
+  "foundationZone": "foundation {{n}}"
 }
