@@ -17,6 +17,7 @@
   "trump": "Trump {{suit}}",
   "pot": "Pot {{n}}",
   "potIncrease": "+{{n}}",
+  "potIncreaseAnnounce": "Pot +{{delta}} (total {{total}})",
   "target": "Target {{n}}",
   "cards": "{{count}} cards",
   "roundTricks": "{{count}} round tricks",
