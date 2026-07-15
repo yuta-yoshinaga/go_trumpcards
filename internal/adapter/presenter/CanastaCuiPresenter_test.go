@@ -68,6 +68,41 @@ func TestCanastaCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "[フリーズ]")
+		// Draw phase with a frozen pile also shows the pickup-restriction note.
+		assert.Contains(t, result, "捨て札は凍結中")
+	})
+
+	t.Run("meld phase shows the score-tiered initial-meld minimum", func(t *testing.T) {
+		m, players := setupCanastaCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.CanastaPhaseMeld)
+		// Human (player 0), no initial meld, cumulative 0 -> 50-point band.
+		players[0].SetCumulativeScore(0)
+		players[0].SetHasInitMeld(false)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "初回メルド最低点: 50点")
+	})
+
+	t.Run("meld phase minimum rises with the score band", func(t *testing.T) {
+		m, players := setupCanastaCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.CanastaPhaseMeld)
+		players[0].SetCumulativeScore(1500) // 1500-2999 band -> 90
+		players[0].SetHasInitMeld(false)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "初回メルド最低点: 90点")
+	})
+
+	t.Run("meld phase hides the minimum once the initial meld is done", func(t *testing.T) {
+		m, players := setupCanastaCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.CanastaPhaseMeld)
+		players[0].SetHasInitMeld(true)
+
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, "初回メルド最低点")
 	})
 
 	t.Run("discard top shown", func(t *testing.T) {
