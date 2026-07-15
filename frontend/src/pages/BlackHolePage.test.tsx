@@ -106,6 +106,17 @@ describe('BlackHolePage', () => {
     expect(screen.getByTestId('card-0-1').className).toContain('ring-ds-success');
     // The non-adjacent fan top is never marked.
     expect(otherTop).not.toHaveAttribute('data-hinted-legal');
+    // Non-visual channels: aria-label gains "置けます" and the live region lists it.
+    expect(screen.getByTestId('card-0-1')).toHaveAttribute('aria-label', '♣ 6（ファン1） · 置けます');
+    expect(screen.getByTestId('bh-hint-announce')).toHaveTextContent('置けるカード: ♣ 6（ファン1）');
+  });
+
+  it('labels fan cards and the black hole for screen readers', async () => {
+    mockExec.mockResolvedValue(makeState({ blackHole: [card('DIAMOND', 6)] }));
+    renderWithProviders(<BlackHolePage />);
+    // fan0 top ♣6, hole ♦6.
+    expect(await screen.findByRole('button', { name: '♣ 6（ファン1）' })).toBeInTheDocument();
+    expect(screen.getByTestId('bh-hole-top')).toHaveAttribute('aria-label', 'ブラックホール: ♦ 6');
   });
 
   it('clears the hint highlight on reset even though moveCount stays 0', async () => {
