@@ -19,6 +19,9 @@ func setupKlondikeCuiMockDefaults(kg *interfaces.MockKlondikeGame) {
 	kg.On("GetStockCount").Return(24).Maybe()
 	kg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	kg.On("IsStalemate").Return(false).Maybe()
+	kg.On("GetDrawCount").Return(1).Maybe()
+	kg.On("GetScore").Return(0).Maybe()
+	kg.On("GetScoringMode").Return(domain.KlondikeScoringNone).Maybe()
 
 	var tableau [domain.KlondikeTableauCnt][]*domain.KlondikeTableauCard
 	for i := 0; i < domain.KlondikeTableauCnt; i++ {
@@ -52,6 +55,45 @@ func TestKlondikeCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "Waste: [空]")
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "手数: 0")
+		// Header surfaces draw mode, scoring mode, and the running score.
+		assert.Contains(t, result, "ドロー: 1枚 / スコアリング: なし / スコア: 0")
+	})
+
+	t.Run("three-draw shows a waste fan with only the top playable", func(t *testing.T) {
+		kg := new(interfaces.MockKlondikeGame)
+		setupKlondikeCuiMockDefaults(kg)
+		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetDrawCount")
+		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetWaste")
+		kg.On("GetDrawCount").Return(3)
+		kg.On("GetWaste").Return([]*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 2, false),
+			domain.NewCard(domain.CardDesignHeart, 5, false),
+			domain.NewCard(domain.CardDesignClover, 9, false),
+		})
+
+		p := new(KlondikeCuiPresenter)
+		result := p.Output(kg, nil)
+		assert.Contains(t, result, "ドロー: 3枚")
+		// All three shown, the top (last) card marked playable.
+		assert.Contains(t, result, "SPADE 2")
+		assert.Contains(t, result, "CLOVER 9*")
+		assert.Contains(t, result, "末尾*のみ操作可")
+	})
+
+	t.Run("vegas game clear shows final score", func(t *testing.T) {
+		kg := new(interfaces.MockKlondikeGame)
+		setupKlondikeCuiMockDefaults(kg)
+		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetPhase")
+		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetScoringMode")
+		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetScore")
+		kg.On("GetPhase").Return(domain.KlondikePhaseGameClear)
+		kg.On("GetScoringMode").Return(domain.KlondikeScoringVegas)
+		kg.On("GetScore").Return(320)
+
+		p := new(KlondikeCuiPresenter)
+		result := p.Output(kg, nil)
+		assert.Contains(t, result, "ゲームクリア！")
+		assert.Contains(t, result, "スコア: 320")
 	})
 
 	t.Run("with waste card", func(t *testing.T) {
