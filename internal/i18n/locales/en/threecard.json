@@ -23,5 +23,7 @@
   "dealerWins": "Dealer wins!",
   "playerFolded": "Player folded.",
   "push": "Push!",
+  "anteBonusPayoutLine": "Ante bonus payout: {{payout}}",
+  "pairPlusPayoutLine": "Pair Plus payout: {{payout}}",
   "totalPayoutLine": "total payout: {{payout}}"
 }
