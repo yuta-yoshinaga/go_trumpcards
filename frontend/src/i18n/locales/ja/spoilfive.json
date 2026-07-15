@@ -17,6 +17,7 @@
   "trump": "切り札 {{suit}}",
   "pot": "ポット {{n}}",
   "potIncrease": "+{{n}}",
+  "potIncreaseAnnounce": "ポット +{{delta}}（合計 {{total}}）",
   "target": "目標 {{n}}点",
   "cards": "{{count}}枚",
   "roundTricks": "今ラウンド {{count}}トリック",

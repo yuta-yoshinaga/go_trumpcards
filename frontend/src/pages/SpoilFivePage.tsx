@@ -242,10 +242,17 @@ function SpoilFivePageContent() {
                 <span
                   data-testid="spoilfive-pot-delta"
                   className="ml-1 text-sm font-semibold text-ds-warning motion-safe:animate-pulse"
+                  aria-hidden="true"
                 >
                   {t('potIncrease', { n: potDelta })}
                 </span>
               )}
+              {/* Screen-reader announcement of the pot change: a self-contained live
+                  region so a spoiled round carrying the pot forward is spoken even
+                  though the visual "+NN" pulse is transient and colour-only. */}
+              <span className="sr-only" role="status" aria-live="polite" data-testid="spoilfive-pot-announce">
+                {potDelta > 0 ? t('potIncreaseAnnounce', { delta: potDelta, total: state.pot }) : ''}
+              </span>
             </div>
 
             <div className={lgTwoColGrid}>
