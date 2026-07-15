@@ -480,18 +480,25 @@ function KoenigrufenPageContent() {
                 </>
               )}
               {canCall &&
-                CALL_SUITS.map((s) => (
-                  <button
-                    key={s.suit}
-                    type="button"
-                    className={btnPrimary}
-                    onClick={() => handleCallKing(s.suit)}
-                    disabled={loading || heldKingSuits.has(s.suit)}
-                    aria-label={t(s.labelKey)}
-                  >
-                    {s.glyph} {t(s.labelKey)}
-                  </button>
-                ))}
+                CALL_SUITS.map((s) => {
+                  const held = heldKingSuits.has(s.suit);
+                  const reason = held ? t('callKingHeldReason') : undefined;
+                  // Wrap in a span so the explanatory tooltip still shows on the disabled button.
+                  return (
+                    <span key={s.suit} title={reason} className="inline-flex">
+                      <button
+                        type="button"
+                        className={`${btnPrimary} ${held ? 'line-through' : ''}`}
+                        onClick={() => handleCallKing(s.suit)}
+                        disabled={loading || held}
+                        aria-label={reason ? `${t(s.labelKey)} — ${reason}` : t(s.labelKey)}
+                        data-testid={`call-king-${s.suit}`}
+                      >
+                        {s.glyph} {t(s.labelKey)}
+                      </button>
+                    </span>
+                  );
+                })}
               {canDiscard && (
                 <button
                   type="button"

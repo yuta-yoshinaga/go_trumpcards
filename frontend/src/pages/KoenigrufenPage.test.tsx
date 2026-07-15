@@ -304,11 +304,27 @@ describe('KoenigrufenPage', () => {
   it('renders the call phase with four suit buttons and disables a held King suit', async () => {
     mockExec.mockResolvedValue(callPhaseState);
     renderWithProviders(<KoenigrufenPage />);
-    // Declarer holds the King of Hearts, so Hearts is disabled; the other three are enabled.
-    expect(await screen.findByRole('button', { name: 'ハート' })).toBeDisabled();
+    // Declarer holds the King of Hearts, so Hearts (suit 3) is disabled; the other three are enabled.
+    const hearts = await screen.findByTestId('call-king-3');
+    expect(hearts).toBeDisabled();
     expect(screen.getByRole('button', { name: 'スペード' })).toBeEnabled();
     expect(screen.getByRole('button', { name: 'クラブ' })).toBeEnabled();
     expect(screen.getByRole('button', { name: 'ダイヤ' })).toBeEnabled();
+  });
+
+  it('explains why a held-King suit cannot be called (aria-label + title, strike-through)', async () => {
+    mockExec.mockResolvedValue(callPhaseState);
+    renderWithProviders(<KoenigrufenPage />);
+    const hearts = await screen.findByTestId('call-king-3');
+    const reason = '既にこのスートの王を保有しているため呼べません';
+    expect(hearts).toHaveAttribute('aria-label', `ハート — ${reason}`);
+    expect(hearts.className).toContain('line-through');
+    // The tooltip lives on the wrapping span (disabled buttons suppress native tooltips).
+    expect(hearts.closest('span')).toHaveAttribute('title', reason);
+    // An enabled suit keeps its plain label and no reason.
+    const spade = screen.getByTestId('call-king-1');
+    expect(spade).toHaveAttribute('aria-label', 'スペード');
+    expect(spade.closest('span')).not.toHaveAttribute('title');
   });
 
   it('calling a King dispatches callking with the suit index', async () => {
