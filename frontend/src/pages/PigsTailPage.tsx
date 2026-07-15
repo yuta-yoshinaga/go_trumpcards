@@ -18,12 +18,15 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import i18n from '../i18n';
 import { badgeErrorColors } from '../styles/badgeStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, PigsTailResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { valueName } from '../utils/cardUtils';
-import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { parsePigtailCommand, pigtailHelp } from '../utils/cli/commands/pigtailCommands';
+import { formatPigtailState } from '../utils/cli/formatters/pigtailFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 
 const SUIT_SYMBOLS: Record<string, string> = {
   SPADE: '♠',
@@ -93,33 +96,17 @@ function PigsTailPageContent() {
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('pigtail');
   type PtArgs = Parameters<typeof pigtailApi.exec>;
+  // pigtailHelp() reads i18n internally, so depend on i18n.language to
+  // re-localize the CLI help after a runtime language switch.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: i18n.language drives help re-localization
   const cliConfig: CliGameConfig<PigsTailResponse, PtArgs> = useMemo(
     () => ({
       gameName: 'pigtail',
-      parseCommand: (input: string): CliParseResult<PtArgs> => {
-        const cmd = input.trim().toLowerCase();
-        if (cmd === 'reset' || cmd === 'r') return { args: ['reset'] };
-        if (cmd === 'draw' || cmd === 'd') return { args: ['draw'] };
-        return { error: `Unknown command: ${cmd}` };
-      },
-      formatResponse: (s: PigsTailResponse) => {
-        const lines: string[] = [];
-        const phase = s.gameEndFlag ? 'End' : 'Play';
-        lines.push(`Phase: ${phase} | Circle: ${s.circleCount} | Center: ${s.centerCount}`);
-        for (const p of s.players) {
-          const tag = p.isHuman ? 'You' : `CPU ${p.id}`;
-          lines.push(`${tag}: ${p.cardCount} cards`);
-        }
-        if (s.lastDrawCard) {
-          const card = `${s.lastDrawCard.design[0]}${s.lastDrawCard.value}`;
-          lines.push(`Last: ${card} ${s.lastPenalty ? '(PENALTY)' : '(safe)'}`);
-        }
-        if (s.message) lines.push(s.message);
-        return lines.join('\n');
-      },
-      helpText: ['d/draw  - Draw a card', 'r/reset - Reset game'],
+      parseCommand: parsePigtailCommand,
+      formatResponse: formatPigtailState,
+      helpText: pigtailHelp(),
     }),
-    [],
+    [i18n.language],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
