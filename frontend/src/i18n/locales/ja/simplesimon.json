@@ -1,5 +1,9 @@
 {
-  "phase": { "playing": "プレイ中", "gameClear": "ゲームクリア", "gameOver": "ゲームオーバー" },
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
   "title": "シンプル・サイモン",
   "completedSuits": "完成スート: {{count}} / 4",
   "moveCount": "手数: {{count}}",
@@ -19,5 +23,7 @@
     "rules": "同スートでK〜Aの完全な降順列が揃うと自動的に除去されます。4スート全て除去でクリアです。ストックはありません。",
     "actionButtons": "ヒント・元に戻す・ギブアップなどの操作ボタンです。",
     "resetButton": "新しいゲームを始めるボタンです。"
-  }
+  },
+  "cardPosAria": "{{card}}（列{{col}}・上から{{pos}}枚目）",
+  "emptyColAria": "列{{col}}（空）"
 }

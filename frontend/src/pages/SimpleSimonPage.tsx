@@ -18,6 +18,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card } from '../types/card';
 import { SimpleSimonPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 
 /** Simple Simon tutorial step definitions. */
 const SS_TUTORIAL_STEPS: TutorialStep[] = [
@@ -121,22 +122,28 @@ function SimpleSimonPageContent() {
           onClick={canAct ? () => clickColumn(col) : undefined}
           disabled={!canAct}
           title={t('empty')}
+          aria-label={t('emptyColAria', { col: col + 1 })}
           data-testid={`column-${col}-drop`}
         />
       ) : (
-        column.map((c, i) => (
-          <button
-            type="button"
-            key={`col-${col}-${i}`}
-            className={`rounded ${selected && selected.col === col && i >= selected.idx ? 'ring-2 ring-ds-warning' : ''}`}
-            style={{ marginTop: i === 0 ? 0 : -Math.round(w * 1.05) }}
-            onClick={canAct ? () => clickCard(col, i) : undefined}
-            disabled={!canAct}
-            data-testid={`card-${col}-${i}`}
-          >
-            <CardImage card={c} width={w} />
-          </button>
-        ))
+        column.map((c, i) => {
+          const inSelectedRun = Boolean(selected && selected.col === col && i >= selected.idx);
+          return (
+            <button
+              type="button"
+              key={`col-${col}-${i}`}
+              className={`rounded ${inSelectedRun ? 'ring-2 ring-ds-warning' : ''}`}
+              style={{ marginTop: i === 0 ? 0 : -Math.round(w * 1.05) }}
+              onClick={canAct ? () => clickCard(col, i) : undefined}
+              disabled={!canAct}
+              data-testid={`card-${col}-${i}`}
+              aria-label={t('cardPosAria', { card: cardAlt(c), col: col + 1, pos: i + 1 })}
+              aria-pressed={inSelectedRun}
+            >
+              <CardImage card={c} width={w} />
+            </button>
+          );
+        })
       )}
     </div>
   );
@@ -162,7 +169,7 @@ function SimpleSimonPageContent() {
           {state.columns.map((column, i) => renderColumn(column, i))}
         </div>
         {canAct && (
-          <div className="mt-2 text-ds-text-primary text-xs">
+          <div className="mt-2 text-ds-text-primary text-xs" role="status" data-testid="ss-guidance">
             {selected === null ? t('selectSource') : t('selectDestination')}
           </div>
         )}
