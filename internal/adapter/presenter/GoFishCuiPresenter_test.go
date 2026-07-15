@@ -26,10 +26,10 @@ func TestGoFishCuiPresenter_Output_KnownRanks(t *testing.T) {
 	p := new(presenter.GoFishCuiPresenter)
 	m := setupGoFishMock()
 	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetKnownRanks")
-	m.On("GetKnownRanks").Return(map[int][]int{1: {7, 9}})
+	m.On("GetKnownRanks").Return(map[int][]int{1: {1, 13}})
 	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPlayer")
 	human := domain.NewGoFishPlayer(true)
-	human.AddCard(domain.NewCard(domain.CardDesignSpade, 7, false)) // human also holds rank 7
+	human.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false)) // human also holds the Ace
 	m.On("GetPlayer", 0).Return(human)
 	for i := 1; i < 4; i++ {
 		m.On("GetPlayer", i).Return(domain.NewGoFishPlayer(false))
@@ -37,7 +37,9 @@ func TestGoFishCuiPresenter_Output_KnownRanks(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "既知ランク")
-	assert.Contains(t, result, "7*") // human holds rank 7 -> strong ask target
+	// Ranks render as card-face labels: Ace starred (human holds it), King as K.
+	assert.Contains(t, result, "A* K")
+	assert.NotContains(t, result, "13")
 }
 
 func TestGoFishCuiPresenter_Output_GameEnd(t *testing.T) {
@@ -87,18 +89,20 @@ func TestGoFishCuiPresenter_Output_AskSuccess(t *testing.T) {
 	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastBookRank")
 	m.On("GetLastAskPlayerIdx").Return(0)
 	m.On("GetLastAskTargetIdx").Return(1)
-	m.On("GetLastAskRank").Return(7)
+	m.On("GetLastAskRank").Return(13)
 	m.On("GetLastAskSuccess").Return(true)
 	m.On("GetLastCardsReceived").Return([]*domain.Card{
-		domain.NewCard(domain.CardDesignSpade, 7, false),
+		domain.NewCard(domain.CardDesignSpade, 13, false),
 	})
 	m.On("GetLastBookFormed").Return(true)
-	m.On("GetLastBookRank").Return(7)
+	m.On("GetLastBookRank").Return(1)
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "ランク 7")
+	// King asked, Ace booked → both render as card-face labels, not 13/1.
+	assert.Contains(t, result, "ランク K")
 	assert.Contains(t, result, "1枚もらった")
 	assert.Contains(t, result, "ブック完成")
+	assert.NotContains(t, result, "ランク 13")
 }
 
 // TestGoFishCuiPresenter_Output_AskFail exercises the Go-Fish failure branch
