@@ -136,6 +136,10 @@ function PrimeroPageContent() {
   const playerBadge = (p: PrimeroResponse['players'][number]): string =>
     p.out ? t('badge.out') : p.isWinner ? t('badge.winner') : p.folded ? t('badge.folded') : t('badge.active');
 
+  /** A colour-independent glyph for each player state (WCAG 1.4.1). */
+  const playerBadgeIcon = (p: PrimeroResponse['players'][number]): string =>
+    p.out ? '—' : p.isWinner ? '👑' : p.folded ? '×' : '●';
+
   const handleManualReset = () => {
     hideActionLog();
     reset();
@@ -229,16 +233,25 @@ function PrimeroPageContent() {
             {/* Players */}
             <div className="mb-2 p-2 rounded bg-black/30" data-tutorial="primero-players">
               <div className="mb-1 text-ds-text-primary text-sm">{t('playersTitle')}</div>
-              {state.players.map((p) => (
-                <div
-                  key={p.id}
-                  className={`text-sm py-0.5 ${p.isWinner ? 'text-ds-success' : 'text-ds-text-muted'} ${p.isHuman ? 'font-semibold' : ''}`}
-                >
-                  {playerLabel(p.id, p.isHuman)} — {t('chips', { amount: p.chips })} ·{' '}
-                  {t('roundBet', { amount: p.roundBet })} · [{playerBadge(p)}]
-                  {p.handName ? ` · ${handName(p.handName)}` : ''}
-                </div>
-              ))}
+              <ul className="list-none">
+                {state.players.map((p) => {
+                  const isCurrentTurn = !isGameEnd && state.currentPlayerIdx === p.id;
+                  return (
+                    <li
+                      key={p.id}
+                      data-testid={`primero-player-${p.id}`}
+                      aria-label={t('playerRowLabel', { name: playerLabel(p.id, p.isHuman), status: playerBadge(p) })}
+                      className={`text-sm py-0.5 ${p.isWinner ? 'text-ds-success' : 'text-ds-text-muted'} ${p.isHuman ? 'font-semibold' : ''} ${
+                        isCurrentTurn ? 'border-l-2 border-ds-accent pl-1' : ''
+                      }`}
+                    >
+                      {playerLabel(p.id, p.isHuman)} — {t('chips', { amount: p.chips })} ·{' '}
+                      {t('roundBet', { amount: p.roundBet })} · <span aria-hidden="true">{playerBadgeIcon(p)} </span>[
+                      {playerBadge(p)}]{p.handName ? ` · ${handName(p.handName)}` : ''}
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
 
             {/* Revealed hands at result */}
