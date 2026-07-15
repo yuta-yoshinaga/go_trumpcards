@@ -12,6 +12,17 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// golfAdjacentRank reports whether two ranks differ by one, treating King(13)
+// and Ace(1) as adjacent — matching the domain's isAdjacentRank and the
+// frontend's isGolfAdjacent (K-A wrap included).
+func golfAdjacentRank(v1, v2 int) bool {
+	diff := v1 - v2
+	if diff < 0 {
+		diff = -diff
+	}
+	return diff == 1 || diff == 12
+}
+
 // GolfCuiPresenter renders the Golf Solitaire CUI view.
 type GolfCuiPresenter struct{}
 
@@ -20,6 +31,13 @@ func (pr *GolfCuiPresenter) Output(g interfaces.GolfGame, lastErr error) string 
 	return buildCuiOutput(i18n.T("golf.helpTitle"), func(b *strings.Builder) {
 		layout := g.GetLayout()
 
+		// Waste top drives the ±1 playable check for exposed tableau cards.
+		waste := g.GetWaste()
+		var wasteTop *domain.Card
+		if len(waste) > 0 {
+			wasteTop = waste[len(waste)-1]
+		}
+
 		// Tableau (each row prints 7 columns)
 		for row := range domain.GolfRowCnt {
 			for col := range domain.GolfColCnt {
@@ -27,13 +45,19 @@ func (pr *GolfCuiPresenter) Output(g interfaces.GolfGame, lastErr error) string 
 					b.WriteString("  ")
 				}
 				gc := layout[col][row]
-				if gc == nil || gc.Removed {
+				switch {
+				case gc == nil || gc.Removed:
 					b.WriteString("    ")
-				} else if g.IsExposed(col, row) {
+				case g.IsExposed(col, row) && wasteTop != nil && golfAdjacentRank(gc.Card.GetValue(), wasteTop.GetValue()):
+					// Exposed and ±1 from the waste top: playable now (trailing *).
+					b.WriteString(i18n.Tf("golf.playableCard",
+						"col", strconv.Itoa(col),
+						"card", cuiCardStr(gc.Card)))
+				case g.IsExposed(col, row):
 					b.WriteString(i18n.Tf("golf.exposedCard",
 						"col", strconv.Itoa(col),
 						"card", cuiCardStr(gc.Card)))
-				} else {
+				default:
 					b.WriteString("   " + cuiCardStr(gc.Card))
 				}
 			}
@@ -45,7 +69,6 @@ func (pr *GolfCuiPresenter) Output(g interfaces.GolfGame, lastErr error) string 
 		// Stock + waste
 		b.WriteString(i18n.Tf("golf.stockLine",
 			"count", strconv.Itoa(g.GetStockCount())))
-		waste := g.GetWaste()
 		if len(waste) > 0 {
 			b.WriteString(i18n.Tf("golf.wasteCard",
 				"card", cuiCardStr(waste[len(waste)-1])))
