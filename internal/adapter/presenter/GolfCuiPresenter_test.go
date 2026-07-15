@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
@@ -50,6 +51,34 @@ func TestGolfCuiPresenterOutput_Playing(t *testing.T) {
 	assert.Contains(t, result, "Golf")
 	assert.Contains(t, result, "Stock: 16枚")
 	assert.Contains(t, result, "手数: 0")
+}
+
+func TestGolfCuiPresenterOutput_PlayableMarker(t *testing.T) {
+	gg := new(interfaces.MockGolfGame)
+	gg.On("GetPhase").Return(domain.GolfPhasePlaying).Maybe()
+	gg.On("GetMoveCount").Return(0).Maybe()
+	gg.On("GetStockCount").Return(10).Maybe()
+	gg.On("IsStalemate").Return(false).Maybe()
+	// Waste top is K(13): adjacent to Q(12) normally and to A(1) via K-A wrap.
+	gg.On("GetWaste").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 13, false)}).Maybe()
+
+	bottom := domain.GolfRowCnt - 1
+	var layout [domain.GolfColCnt][domain.GolfRowCnt]*domain.GolfCard
+	layout[0][bottom] = &domain.GolfCard{Card: domain.NewCard(domain.CardDesignSpade, 12, false)} // adjacent -> playable
+	layout[1][bottom] = &domain.GolfCard{Card: domain.NewCard(domain.CardDesignSpade, 1, false)}  // K-A wrap -> playable
+	layout[2][bottom] = &domain.GolfCard{Card: domain.NewCard(domain.CardDesignSpade, 8, false)}  // not adjacent
+	gg.On("GetLayout").Return(layout).Maybe()
+	gg.On("IsExposed", 0, bottom).Return(true).Maybe()
+	gg.On("IsExposed", 1, bottom).Return(true).Maybe()
+	gg.On("IsExposed", 2, bottom).Return(true).Maybe()
+	gg.On("IsExposed", mock.Anything, mock.Anything).Return(false).Maybe()
+
+	p := &GolfCuiPresenter{}
+	result := p.Output(gg, nil)
+	assert.Contains(t, result, "(0)SPADE 12*")   // adjacent
+	assert.Contains(t, result, "(1)SPADE 1*")    // K-A wrap
+	assert.Contains(t, result, "(2)SPADE 8")     // exposed, not adjacent
+	assert.NotContains(t, result, "(2)SPADE 8*") // no marker on non-adjacent
 }
 
 func TestGolfCuiPresenterOutput_Error(t *testing.T) {
