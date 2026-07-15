@@ -41,6 +41,9 @@ func TestTriPeaksCuiPresenterOutput_Playing(t *testing.T) {
 	assert.Contains(t, result, "TriPeaks")
 	assert.Contains(t, result, "Stock: 23枚")
 	assert.Contains(t, result, "手数: 0")
+	// No waste top -> nothing playable; stock remains, so draw is recommended.
+	assert.Contains(t, result, "今出せるカード: 0枚")
+	assert.Contains(t, result, "ドロー推奨")
 }
 
 func TestTriPeaksCuiPresenterOutput_PlayableAndBlocked(t *testing.T) {
@@ -71,6 +74,9 @@ func TestTriPeaksCuiPresenterOutput_PlayableAndBlocked(t *testing.T) {
 	assert.Contains(t, result, "[--]")
 	// (3,2) is exposed but not adjacent -> plain coordinate format, no marker.
 	assert.Contains(t, result, "(3,2)")
+	// Exactly one exposed card is playable, so no draw recommendation.
+	assert.Contains(t, result, "今出せるカード: 1枚")
+	assert.NotContains(t, result, "ドロー推奨")
 }
 
 func TestTriPeaksCuiPresenterOutput_Error(t *testing.T) {
@@ -97,6 +103,9 @@ func TestTriPeaksCuiPresenterOutput_Stalemate(t *testing.T) {
 	p := &TriPeaksCuiPresenter{}
 	result := p.Output(tg, nil)
 	assert.Contains(t, result, "手詰まり")
+	// Nothing playable but the stock is empty, so no draw recommendation.
+	assert.Contains(t, result, "今出せるカード: 0枚")
+	assert.NotContains(t, result, "ドロー推奨")
 }
 
 func TestTriPeaksCuiPresenterOutput_GameClear(t *testing.T) {
