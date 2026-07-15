@@ -95,6 +95,28 @@ func TestCanastaCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "初回メルド最低点: 90点")
 	})
 
+	t.Run("meld phase minimum is 15 for a negative score", func(t *testing.T) {
+		m, players := setupCanastaCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.CanastaPhaseMeld)
+		players[0].SetCumulativeScore(-100) // negative band -> 15
+		players[0].SetHasInitMeld(false)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "初回メルド最低点: 15点")
+	})
+
+	t.Run("meld phase minimum is 120 at 3000+", func(t *testing.T) {
+		m, players := setupCanastaCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.CanastaPhaseMeld)
+		players[0].SetCumulativeScore(3000) // 3000+ band -> 120
+		players[0].SetHasInitMeld(false)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "初回メルド最低点: 120点")
+	})
+
 	t.Run("meld phase hides the minimum once the initial meld is done", func(t *testing.T) {
 		m, players := setupCanastaCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
