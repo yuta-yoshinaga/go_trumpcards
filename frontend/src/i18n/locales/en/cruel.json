@@ -39,5 +39,23 @@
   },
   "nav": {
     "cruel": "Cruel"
+  },
+  "cli": {
+    "help": [
+      "m <from> <to>  Move top card between tableau columns",
+      "m <from> f     Move tableau top card to foundation",
+      "s              Shift (rebuild tableau)",
+      "g              Give up",
+      "h              Hint",
+      "ac             Auto-complete",
+      "u              Undo",
+      "r              Reset"
+    ],
+    "error": {
+      "invalidSource": "Invalid source column",
+      "invalidDestination": "Invalid destination",
+      "usageMove": "Usage: m <fromCol> <toCol|f>",
+      "unknownCommand": "Unknown command: {{cmd}}"
+    }
   }
 }
