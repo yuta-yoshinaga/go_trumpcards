@@ -171,15 +171,9 @@ function KnockoutWhistPageContent() {
             ? ` — ${t('eliminated')}`
             : ` — ${t('roundTricks', { count: p.roundTricks })} · ${t('dogbones', { count: p.dogbones })}`}
         </span>
-        {isLeader && (
-          <span className={`px-1.5 py-0.5 rounded text-xs ${badgeInfoColors}`} aria-label={t('leader')}>
-            {t('leader')}
-          </span>
-        )}
+        {isLeader && <span className={`px-1.5 py-0.5 rounded text-xs ${badgeInfoColors}`}>{t('leader')}</span>}
         {isRoundWinner && (
-          <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`} aria-label={t('roundWinner')}>
-            {t('roundWinner')}
-          </span>
+          <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>{t('roundWinner')}</span>
         )}
       </div>
     );

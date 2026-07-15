@@ -122,10 +122,10 @@ describe('KnockoutWhistPage', () => {
     }
   });
 
-  it('renders the leader badge with an opaque, high-contrast surface and an aria-label', async () => {
+  it('renders the leader badge with an opaque, high-contrast surface', async () => {
     // Default state: leadPlayerIdx 0 → the human is the leader.
     renderWithProviders(<KnockoutWhistPage />);
-    const badge = await screen.findByLabelText('リーダー');
+    const badge = await screen.findByText('リーダー');
     // Opaque surface token (badgeInfoColors) instead of the old translucent bg-white/20.
     expect(badge.className).toContain('bg-ds-surface');
     expect(badge.className).not.toContain('bg-white/20');
