@@ -24,6 +24,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { KempsResponse } from '../types/card';
 import { KempsPhase, KempsSignal } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { KEMPS_HELP, parseKempsCommand } from '../utils/cli/commands/kempsCommands';
 import { formatKempsState } from '../utils/cli/formatters/kempsFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -243,6 +244,10 @@ function KempsPageContent() {
                 {t('fieldLabel')}
                 {canSwap && selectedHand !== null ? ` — ${t('fieldNotice')}` : ''}
               </div>
+              {/* Describes the swap-pending state for each field button (sr-only). */}
+              <span id="kemps-swap-pending" className="sr-only">
+                {t('swapPending')}
+              </span>
               <div className="flex gap-1 flex-wrap">
                 {state.field.map((c, i) => {
                   const card = <CardImage key={`field-${c.design}-${c.value}-${i}`} card={c} width={cardWidth} />;
@@ -253,7 +258,9 @@ function KempsPageContent() {
                       onClick={() => handleFieldClick(i)}
                       disabled={loading}
                       className="p-0 bg-transparent border-0 cursor-pointer disabled:cursor-not-allowed"
-                      aria-label={t('swapButton')}
+                      aria-label={t('swapCardAria', { card: cardAlt(c) })}
+                      aria-describedby="kemps-swap-pending"
+                      data-testid={`kemps-field-${i}`}
                     >
                       {card}
                     </button>
@@ -320,7 +327,8 @@ function KempsPageContent() {
                         disabled={loading}
                         aria-pressed={selected}
                         className={`p-0 bg-transparent border-2 rounded cursor-pointer disabled:cursor-not-allowed ${selected ? 'border-ds-warning' : 'border-transparent'}`}
-                        aria-label={t('selectHandCard')}
+                        aria-label={t('selectHandCardAria', { card: cardAlt(c) })}
+                        data-testid={`kemps-hand-${i}`}
                       >
                         {card}
                       </button>

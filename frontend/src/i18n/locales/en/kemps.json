@@ -50,5 +50,8 @@
     "signal": "Set your secret signal (Sound / Blink). Your partner uses it to tell you they have four of a kind.",
     "declare": "When four of a kind is made, the declare window opens. Declare Kemps! to score, or Counter-Kemps! if you spot an opponent's signal.",
     "resetButton": "Use this button to reset the game at any time."
-  }
+  },
+  "selectHandCardAria": "Select {{card}}",
+  "swapCardAria": "Swap with {{card}}",
+  "swapPending": "A hand card is selected; choose a field card to swap with."
 }
