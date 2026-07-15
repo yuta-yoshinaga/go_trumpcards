@@ -267,6 +267,7 @@ function HachiHachiPageContent() {
                 <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
                 <div className="overflow-x-auto">
                   <table className="mx-auto text-sm border-collapse">
+                    <caption className="sr-only">{t('roundResult.caption')}</caption>
                     <thead>
                       <tr className="text-ds-text-muted">
                         <th className="px-2 py-1 text-left">{t('roundResult.player')}</th>
@@ -288,10 +289,21 @@ function HachiHachiPageContent() {
                             data-testid={`hachihachi-score-row-${s.playerIdx}`}
                             data-best={best || undefined}
                           >
-                            <td className="px-2 py-1 text-left">{p ? seatName(p) : `P${s.playerIdx}`}</td>
+                            <td className="px-2 py-1 text-left">
+                              {best && <span aria-hidden="true">👑 </span>}
+                              {best && <span className="sr-only">{t('roundResult.bestLabel')} </span>}
+                              {p ? seatName(p) : `P${s.playerIdx}`}
+                            </td>
                             <td className="px-2 py-1 text-right">{s.rawScore}</td>
                             <td className="px-2 py-1 text-right">{s.bonus}</td>
-                            <td className="px-2 py-1 text-right">{sign}</td>
+                            <td className="px-2 py-1 text-right">
+                              <span aria-hidden="true">{sign}</span>
+                              <span className="sr-only">
+                                {s.delta >= 0
+                                  ? t('roundResult.deltaGain', { n: s.delta })
+                                  : t('roundResult.deltaLoss', { n: -s.delta })}
+                              </span>
+                            </td>
                             <td className="px-2 py-1 text-left">{s.yaku.length > 0 ? yakuList(s.yaku) : '—'}</td>
                           </tr>
                         );

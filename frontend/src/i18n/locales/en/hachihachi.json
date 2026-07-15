@@ -32,7 +32,11 @@
     "raw": "Raw",
     "bonus": "Yaku pts",
     "delta": "Delta",
-    "yaku": "Yaku"
+    "yaku": "Yaku",
+    "caption": "Round settlement table (raw, bonus and delta per player)",
+    "bestLabel": "Top score",
+    "deltaGain": "gained {{n}}",
+    "deltaLoss": "lost {{n}}"
   },
   "result": {
     "title": "Final Scores",

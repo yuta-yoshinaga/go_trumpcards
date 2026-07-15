@@ -32,7 +32,11 @@
     "raw": "素点",
     "bonus": "役点",
     "delta": "差分",
-    "yaku": "出来役"
+    "yaku": "出来役",
+    "caption": "ラウンド精算表（プレイヤー別の素点・役点・差分）",
+    "bestLabel": "最高得点",
+    "deltaGain": "{{n}}点獲得",
+    "deltaLoss": "{{n}}点失点"
   },
   "result": {
     "title": "最終得点",
