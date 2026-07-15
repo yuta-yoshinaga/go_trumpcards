@@ -47,6 +47,6 @@ export function parseCruelCommand(input: string): CliParseResult<CruelArgs> {
       return { error: i18n.t('cruel:cli.error.usageMove') };
     }
     default:
-      return { error: i18n.t('cruel:cli.error.unknownCommand', { cmd: cmd ?? '' }) };
+      return { error: i18n.t('cruel:cli.error.unknownCommand', { cmd }) };
   }
 }

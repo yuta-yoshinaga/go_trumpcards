@@ -25,6 +25,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
+import i18n from '../i18n';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -116,6 +117,9 @@ function CruelPageContent() {
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('cruel');
+  // cruelHelp() reads i18n internally, so depend on i18n.language to
+  // re-localize the CLI help after a runtime language switch.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: i18n.language drives help re-localization
   const cruelCliConfig: CliGameConfig<CruelResponse, Parameters<typeof cruelApi.exec>> = useMemo(
     () => ({
       gameName: 'cruel',
@@ -123,7 +127,7 @@ function CruelPageContent() {
       formatResponse: formatCruelState,
       helpText: cruelHelp(),
     }),
-    [],
+    [i18n.language],
   );
   const { handleCommand } = useCliGame(apiExec, cruelCliConfig, state, {
     addInput,
