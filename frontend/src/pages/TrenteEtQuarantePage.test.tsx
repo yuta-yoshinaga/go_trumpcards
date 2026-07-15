@@ -83,6 +83,21 @@ describe('TrenteEtQuarantePage', () => {
     expect(screen.getByTestId(`teq-bet-${TrenteEtQuaranteBetType.INVERSE}`)).toBeInTheDocument();
   });
 
+  it('highlights the selected bet with a check mark and always shows the descriptions', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<TrenteEtQuarantePage />);
+    // Couleur/Inverse meanings are shown as static text (not only tooltips).
+    await waitFor(() => expect(screen.getByText('最初のカードの色が勝ち色と一致')).toBeInTheDocument());
+    expect(screen.getByText('最初のカードの色が勝ち色と不一致')).toBeInTheDocument();
+    // Selecting Rouge marks it pressed with a ✓; the previously selected Noir is not.
+    fireEvent.click(screen.getByTestId(`teq-bet-${TrenteEtQuaranteBetType.ROUGE}`));
+    const rouge = screen.getByTestId(`teq-bet-${TrenteEtQuaranteBetType.ROUGE}`);
+    expect(rouge).toHaveAttribute('aria-pressed', 'true');
+    expect(rouge).toHaveTextContent('✓');
+    expect(rouge.className).toContain('ring-2');
+    expect(screen.getByTestId(`teq-bet-${TrenteEtQuaranteBetType.NOIR}`)).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('deals with the selected bet type and stake', async () => {
     mockApi.mockResolvedValue(betState);
     renderWithProviders(<TrenteEtQuarantePage />);

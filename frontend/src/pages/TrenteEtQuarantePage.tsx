@@ -215,21 +215,35 @@ function TrenteEtQuarantePageContent() {
             {isBetPhase && (
               <div className="flex flex-col items-center gap-3 pb-2" data-tutorial="teq-bet-controls">
                 {/* biome-ignore lint/a11y/useSemanticElements: a flex row of bet buttons; fieldset would break the layout */}
-                <div className="flex flex-wrap justify-center gap-2" role="group" aria-label={t('label.betType')}>
-                  {BET_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.type}
-                      type="button"
-                      aria-pressed={betType === opt.type}
-                      title={t(opt.descKey)}
-                      className={betType === opt.type ? btnPrimary : btnSecondary}
-                      onClick={() => setBetType(opt.type)}
-                      disabled={loading}
-                      data-testid={`teq-bet-${opt.type}`}
-                    >
-                      {t(opt.labelKey)}
-                    </button>
-                  ))}
+                <div
+                  className="flex flex-wrap justify-center items-start gap-2"
+                  role="group"
+                  aria-label={t('label.betType')}
+                >
+                  {BET_OPTIONS.map((opt) => {
+                    const selected = betType === opt.type;
+                    return (
+                      <div key={opt.type} className="flex flex-col items-center w-24">
+                        <button
+                          type="button"
+                          aria-pressed={selected}
+                          title={t(opt.descKey)}
+                          className={`w-full ${selected ? `${btnPrimary} ring-2 ring-white` : btnSecondary}`}
+                          onClick={() => setBetType(opt.type)}
+                          disabled={loading}
+                          data-testid={`teq-bet-${opt.type}`}
+                        >
+                          {/* Shape cue for the current choice, in addition to the colour. */}
+                          {selected && <span aria-hidden="true">✓ </span>}
+                          {t(opt.labelKey)}
+                        </button>
+                        {/* Couleur/Inverse are opaque on sight — keep the meaning always visible. */}
+                        <span className="mt-0.5 text-[10px] leading-tight text-ds-text-muted text-center">
+                          {t(opt.descKey)}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
                 <ChipBetInput
                   id="trenteetquarante-bet-amount"
