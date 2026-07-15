@@ -21,6 +21,11 @@
   "promptDiscardHelp": "d <idx>・・・カードを捨てる",
   "promptKnockHelp": "k <idx>・・・ノック (デッドウッド5点以下で宣言)",
   "promptDealtTonk": "配牌Tonk成立！",
+  "knockerMeldsHeader": "[ノッカーのメルド]",
+  "knockerMeldLine": "メルド{{idx}}({{type}}): {{cards}}",
+  "meldSet": "セット",
+  "meldRun": "ラン",
+  "revealedHand": "{{name}}の手札: {{cards}}",
   "promptRoundEnd": "ラウンド終了",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ"
 }

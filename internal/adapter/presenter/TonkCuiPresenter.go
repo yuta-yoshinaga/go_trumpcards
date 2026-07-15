@@ -51,6 +51,47 @@ func tonkPlayerStr(player *domain.TonkPlayer, i int) string {
 	return b.String()
 }
 
+// tonkMeldIsSet reports whether a meld is a set (same rank) rather than a run.
+func tonkMeldIsSet(meld []*domain.Card) bool {
+	if len(meld) == 0 {
+		return false
+	}
+	rank := meld[0].GetValue()
+	for _, c := range meld {
+		if c.GetValue() != rank {
+			return false
+		}
+	}
+	return true
+}
+
+// writeTonkKnockerMelds lists the knocker's melds with a set/run label.
+func writeTonkKnockerMelds(b *strings.Builder, melds [][]*domain.Card) {
+	if len(melds) == 0 {
+		return
+	}
+	b.WriteString(color.Bold(i18n.T("tonk.knockerMeldsHeader")) + "\n")
+	for i, meld := range melds {
+		typeLabel := i18n.T("tonk.meldRun")
+		if tonkMeldIsSet(meld) {
+			typeLabel = i18n.T("tonk.meldSet")
+		}
+		b.WriteString(i18n.Tf("tonk.knockerMeldLine",
+			"idx", strconv.Itoa(i+1),
+			"type", typeLabel,
+			"cards", cuiCardSliceStr(meld)) + "\n")
+	}
+}
+
+// tonkHandCards returns a player's remaining cards as a slice.
+func tonkHandCards(player *domain.TonkPlayer) []*domain.Card {
+	cards := make([]*domain.Card, player.GetCardsSize())
+	for i := range cards {
+		cards[i] = player.GetCard(i)
+	}
+	return cards
+}
+
 // TonkCuiPresenter renders the Tonk CUI view.
 type TonkCuiPresenter struct{}
 
@@ -106,6 +147,17 @@ func (p *TonkCuiPresenter) Output(g interfaces.TonkGame, lastErr error) string {
 		case domain.TonkPhaseRoundEnd:
 			if g.GetIsTonk() {
 				b.WriteString(i18n.T("tonk.promptDealtTonk") + "\n")
+			}
+			// Reveal the knocker's melds and each CPU's remaining hand so the
+			// round score has visible justification (parity with the web panel).
+			writeTonkKnockerMelds(b, g.GetKnockerMelds())
+			for i := 0; i < g.GetPlayerCnt(); i++ {
+				cp := g.GetPlayer(i)
+				if !cp.GetIsHuman() && cp.GetCardsSize() > 0 {
+					b.WriteString(i18n.Tf("tonk.revealedHand",
+						"name", cuiPlayerName(cp, i),
+						"cards", cuiCardSliceStr(tonkHandCards(cp))) + "\n")
+				}
 			}
 			b.WriteString(i18n.T("tonk.promptRoundEnd") + "\n")
 			b.WriteString(i18n.T("tonk.promptRoundEndHelp") + "\n")
