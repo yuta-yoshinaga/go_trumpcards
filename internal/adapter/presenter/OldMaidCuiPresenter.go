@@ -11,6 +11,10 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// oldMaidMaxDrawHistory is the maximum number of most-recent draw-history
+// entries shown in the CUI; older entries are summarized as an omitted count.
+const oldMaidMaxDrawHistory = 10
+
 // oldMaidPlayerStr returns the display string for a single OldMaid player.
 func oldMaidPlayerStr(player *domain.OldMaidPlayer, i int) string {
 	var b strings.Builder
@@ -84,11 +88,18 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 			}
 		}
 
-		// Draw history
+		// Draw history (cap to the most recent entries so a long game doesn't
+		// flood the terminal; the full log stays available via ActionLogOutput).
 		drawHistory := om.GetDrawHistory()
 		if len(drawHistory) > 0 {
 			b.WriteString(color.Bold(i18n.T("oldmaid.drawHistoryHeader")) + "\n")
-			for i, entry := range drawHistory {
+			start := 0
+			if len(drawHistory) > oldMaidMaxDrawHistory {
+				start = len(drawHistory) - oldMaidMaxDrawHistory
+				b.WriteString(i18n.Tf("oldmaid.drawHistoryOmitted", "count", strconv.Itoa(start)) + "\n")
+			}
+			for i := start; i < len(drawHistory); i++ {
+				entry := drawHistory[i]
 				drawer := cuiPlayerName(om.GetPlayer(entry.DrawPlayerIdx), entry.DrawPlayerIdx)
 				from := cuiPlayerName(om.GetPlayer(entry.DrawFromIdx), entry.DrawFromIdx)
 				b.WriteString(i18n.Tf("oldmaid.drawHistoryEntry",

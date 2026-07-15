@@ -1,6 +1,7 @@
 package presenter_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -342,6 +343,36 @@ func TestOldMaidCuiPresenter_DrawHistory(t *testing.T) {
 		assert.Contains(t, result, "1. あなたがCPU 1から引いた (2組捨て) [あなた上がり]")
 		assert.Contains(t, result, "2. CPU 2がCPU 3から引いた")
 		assert.NotContains(t, result, "2. CPU 2がCPU 3から引いた (")
+	})
+
+	t.Run("exactly 10 entries shown in full without omission summary", func(t *testing.T) {
+		om, _ := setupOldMaidCuiTest()
+		om.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		entries := make([]*domain.OldMaidDrawHistoryEntry, 0, 10)
+		for range 10 {
+			entries = append(entries, &domain.OldMaidDrawHistoryEntry{DrawPlayerIdx: 0, DrawFromIdx: 1})
+		}
+		om.SetDrawHistory(entries)
+		result := top.Output(om, nil)
+		assert.Contains(t, result, "1. あなたがCPU 1から引いた")
+		assert.Contains(t, result, "10. あなたがCPU 1から引いた")
+		assert.NotContains(t, result, "…他")
+	})
+
+	t.Run("over 10 entries shows only latest 10 plus omission summary", func(t *testing.T) {
+		om, _ := setupOldMaidCuiTest()
+		om.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		entries := make([]*domain.OldMaidDrawHistoryEntry, 0, 13)
+		for range 13 {
+			entries = append(entries, &domain.OldMaidDrawHistoryEntry{DrawPlayerIdx: 0, DrawFromIdx: 1})
+		}
+		om.SetDrawHistory(entries)
+		result := top.Output(om, nil)
+		// 3 oldest entries omitted; entries 4..13 (real 1-based indices) remain.
+		assert.Contains(t, result, "…他3件（棋譜は log コマンドで参照可）")
+		assert.Equal(t, 10, strings.Count(result, "から引いた"))
+		assert.Contains(t, result, "4. あなたがCPU 1から引いた")  // first shown = real index 4
+		assert.Contains(t, result, "13. あなたがCPU 1から引いた") // last shown = real index 13
 	})
 }
 

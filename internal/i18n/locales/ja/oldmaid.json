@@ -15,6 +15,7 @@
   "drawActionDiscard": "。{{count}}組捨てました",
   "cpuActionsHeader": "[CPUの行動]",
   "drawHistoryHeader": "[引き履歴]",
+  "drawHistoryOmitted": "…他{{count}}件（棋譜は log コマンドで参照可）",
   "drawHistoryEntry": "{{idx}}. {{drawer}}が{{from}}から引いた",
   "drawHistoryDiscard": " ({{count}}組捨て)",
   "drawHistoryFinished": " [{{name}}上がり]",
