@@ -37,6 +37,35 @@ func TestFaroCuiPresenter_Output_BettingPhase(t *testing.T) {
 	assert.Contains(t, result, "ターン: 0/24")
 }
 
+func TestFaroCuiPresenter_Output_FaceRankLabels(t *testing.T) {
+	p := new(FaroCuiPresenter)
+	m := new(interfaces.MockFaroGame)
+	m.On("GetChips").Return(1000)
+	m.On("GetPhase").Return(domain.FaroPhaseBetting)
+	m.On("GetTurnsPlayed").Return(0)
+	m.On("GetTurnsTotal").Return(domain.FaroTurnsPerDeal)
+	m.On("GetRemainingCount").Return(51)
+	m.On("GetBetRanks").Return([]int{1, 11, 12, 13, 8})
+	m.On("GetBets").Return(map[int]*domain.FaroBet{
+		1: {Amount: 50}, 11: {Amount: 60}, 12: {Amount: 70}, 13: {Amount: 80}, 8: {Amount: 90},
+	})
+	m.On("GetLastTurn").Return((*domain.FaroTurnResult)(nil))
+	m.On("GetCallCards").Return(([]*domain.Card)(nil))
+	m.On("GetCallOrder").Return(([]int)(nil))
+	m.On("GetCallWon").Return(false)
+	m.On("GetTotalPayout").Return(0)
+	m.On("GetGameEndFlag").Return(false)
+
+	result := p.Output(m, nil)
+	assert.Contains(t, result, "ランク A: 50")
+	assert.Contains(t, result, "ランク J: 60")
+	assert.Contains(t, result, "ランク Q: 70")
+	assert.Contains(t, result, "ランク K: 80")
+	assert.Contains(t, result, "ランク 8: 90") // 2-10 stay numeric
+	assert.NotContains(t, result, "ランク 1:")
+	assert.NotContains(t, result, "ランク 13:")
+}
+
 func TestFaroCuiPresenter_Output_Error(t *testing.T) {
 	p := new(FaroCuiPresenter)
 	m := new(interfaces.MockFaroGame)

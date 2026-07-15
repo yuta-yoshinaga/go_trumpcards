@@ -35,7 +35,7 @@ func (fp *FaroCuiPresenter) Output(f interfaces.FaroGame, lastErr error) string 
 			if b.Copper {
 				tag = " " + i18n.T("faro.copperTag")
 			}
-			sb.WriteString(i18n.Tf("faro.betLine", "rank", strconv.Itoa(r), "amount", strconv.Itoa(b.Amount)) + tag + "\n")
+			sb.WriteString(i18n.Tf("faro.betLine", "rank", cuiRankLabel(r), "amount", strconv.Itoa(b.Amount)) + tag + "\n")
 		}
 	}
 
