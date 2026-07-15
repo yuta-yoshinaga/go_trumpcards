@@ -62,6 +62,20 @@ describe('SimpleSimonPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 1, cardIndex: 0, toCol: 0 }));
   });
 
+  it('labels cards with name+position and reflects selection with aria-pressed', async () => {
+    renderWithProviders(<SimpleSimonPage />);
+    // column[1] is ♠8 at the top → "♠ 8（列2・上から1枚目）".
+    const src = await screen.findByTestId('card-1-0');
+    expect(src).toHaveAttribute('aria-label', '♠ 8（列2・上から1枚目）');
+    expect(src).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(src);
+    expect(screen.getByTestId('card-1-0')).toHaveAttribute('aria-pressed', 'true');
+    // Empty column drop targets are named too.
+    expect(screen.getByTestId('column-2-drop')).toHaveAttribute('aria-label', '列3（空）');
+    // The selection guidance is a live region.
+    expect(screen.getByTestId('ss-guidance')).toHaveAttribute('role', 'status');
+  });
+
   it('moves onto an empty column', async () => {
     renderWithProviders(<SimpleSimonPage />);
     const srcCard = await screen.findByTestId('card-0-0');
