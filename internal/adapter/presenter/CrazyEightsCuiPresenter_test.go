@@ -82,6 +82,53 @@ func TestCrazyEightsCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "捨て札: HEART 7")
 	})
 
+	t.Run("legal cards are starred on the human's play turn", func(t *testing.T) {
+		m, players := setupCrazyEightsCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardTop")
+		m.On("GetDiscardTop").Return(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))  // suit match -> legal
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))  // no match -> not legal
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 7, false)) // rank match -> legal
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))  // eight -> always legal
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "[0]HEART 5*")
+		assert.Contains(t, result, "[1]SPADE 3")
+		assert.NotContains(t, result, "[1]SPADE 3*")
+		assert.Contains(t, result, "[2]CLOVER 7*")
+		assert.Contains(t, result, "[3]SPADE 8*")
+	})
+
+	t.Run("chosen suit governs legality after an eight is played", func(t *testing.T) {
+		m, players := setupCrazyEightsCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardTop")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetChosenSuit")
+		m.On("GetDiscardTop").Return(domain.NewCard(domain.CardDesignSpade, 8, false))
+		m.On("GetChosenSuit").Return(domain.CardDesignHeart)
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))  // matches chosen suit -> legal
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))  // spade, not 8 -> not legal
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 8, false)) // eight -> always legal
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "[0]HEART 2*")
+		assert.Contains(t, result, "[1]SPADE 3")
+		assert.NotContains(t, result, "[1]SPADE 3*")
+		assert.Contains(t, result, "[2]CLOVER 8*")
+	})
+
+	t.Run("no legal markers when it is not the human's turn", func(t *testing.T) {
+		m, players := setupCrazyEightsCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardTop")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+		m.On("GetDiscardTop").Return(domain.NewCard(domain.CardDesignHeart, 7, false))
+		m.On("GetCurrentPlayerIdx").Return(1)                                // a CPU is to act
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false)) // would be legal if marked
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "[0]HEART 5")
+		assert.NotContains(t, result, "[0]HEART 5*")
+	})
+
 	t.Run("discard top nil hides section", func(t *testing.T) {
 		m, _ := setupCrazyEightsCuiMockWithPlayers()
 
