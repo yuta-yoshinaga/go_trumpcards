@@ -40,5 +40,24 @@
   "nav": {
     "easthaven": "Easthaven"
   },
-  "moveHereAriaLabel": "Empty tableau column {{col}} (move here)"
+  "moveHereAriaLabel": "Empty tableau column {{col}} (move here)",
+  "cli": {
+    "help": [
+      "m <from> <to>  Move top card between tableau columns",
+      "m t <col> f    Move tableau to foundation",
+      "m t <col> <idx> t <col>  Move a run by index",
+      "d              Deal one card to every column",
+      "g              Give up",
+      "h              Hint",
+      "ac             Auto-complete",
+      "u              Undo",
+      "r              Reset"
+    ],
+    "error": {
+      "invalidColumn": "Invalid column",
+      "invalidArg": "Invalid arg",
+      "usageMove": "Usage: m <fromCol> <toCol> | m t <col> f | m t <col> <idx> t <col>",
+      "unknownCommand": "Unknown command: {{cmd}}"
+    }
+  }
 }
