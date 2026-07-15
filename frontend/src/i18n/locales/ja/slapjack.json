@@ -46,5 +46,26 @@
     "playerPile": "あなたのストックです。なくなると負けです。",
     "stepButton": "このボタンでカードをめくります。",
     "slapButton": "場のトップがJのとき素早く叩きます。J以外で叩くとペナルティです。"
+  },
+  "cli": {
+    "help": [
+      "s/step  - ストックのトップを場に出す",
+      "j/slap  - 場札を叩く（Jが出たとき）",
+      "tick    - CPUを1ステップ進める",
+      "r/reset - ゲームをリセット",
+      "l/log   - アクションログを表示"
+    ],
+    "phase": {
+      "play": "プレイ中",
+      "end": "終了"
+    },
+    "summary": "フェーズ: {{phase}} | 場札: {{pile}} | トップ: {{top}} | 手番: P{{turn}}",
+    "you": "あなた",
+    "cpu": "CPU",
+    "playerStock": "{{tag}}: ストック={{stock}}",
+    "error": {
+      "unknown": "不明なコマンド: {{cmd}}",
+      "unknownSuggest": "不明なコマンド: {{cmd}}。もしかして: {{suggestion}}？"
+    }
   }
 }

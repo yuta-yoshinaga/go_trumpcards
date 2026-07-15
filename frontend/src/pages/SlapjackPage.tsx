@@ -22,11 +22,14 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { useReflexShortcuts } from '../hooks/useReflexShortcuts';
+import i18n from '../i18n';
 import { gameTheme } from '../styles/gameTheme';
 import type { SlapjackResponse } from '../types/card';
 import { SlapjackEventKind, SlapjackPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { parseSlapjackCommand, slapjackHelp } from '../utils/cli/commands/slapjackCommands';
+import { formatSlapjackState } from '../utils/cli/formatters/slapjackFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 
 type SlapjackArgs = Parameters<typeof slapjackApi.exec>;
 
@@ -124,39 +127,17 @@ function SlapjackPageContent() {
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('slapjack');
+  // slapjackHelp() reads i18n internally, so depend on i18n.language to
+  // re-localize the CLI help after a runtime language switch.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: i18n.language drives help re-localization
   const cliConfig: CliGameConfig<SlapjackResponse, SlapjackArgs> = useMemo(
     () => ({
       gameName: 'slapjack',
-      parseCommand: (input: string): CliParseResult<SlapjackArgs> => {
-        const cmd = input.trim().toLowerCase();
-        if (cmd === 'reset' || cmd === 'r') return { args: ['reset'] };
-        if (cmd === 'step' || cmd === 's') return { args: ['step'] };
-        if (cmd === 'slap' || cmd === 'j') return { args: ['slap'] };
-        if (cmd === 'tick') return { args: ['tick'] };
-        if (cmd === 'log' || cmd === 'l') return { args: ['log'] };
-        return { error: `Unknown command: ${cmd}` };
-      },
-      formatResponse: (s: SlapjackResponse) => {
-        const lines: string[] = [];
-        const phase = s.phase === SlapjackPhase.GAME_END ? 'End' : 'Play';
-        const top = s.topCard ? `${s.topCard.value}` : '--';
-        lines.push(`Phase: ${phase} | Pile: ${s.centerPileSize} | Top: ${top} | Turn: P${s.currentTurnIdx}`);
-        for (const p of s.players) {
-          const tag = p.isHuman ? 'You' : 'CPU';
-          lines.push(`${tag}: stock=${p.stockSize}`);
-        }
-        if (s.message) lines.push(s.message);
-        return lines.join('\n');
-      },
-      helpText: [
-        's/step  - Flip top of stock onto pile',
-        'j/slap  - Slap the pile (when J is on top)',
-        'tick    - Advance CPU by one tick',
-        'r/reset - Reset game',
-        'l/log   - Show action log',
-      ],
+      parseCommand: parseSlapjackCommand,
+      formatResponse: formatSlapjackState,
+      helpText: slapjackHelp(),
     }),
-    [],
+    [i18n.language],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
