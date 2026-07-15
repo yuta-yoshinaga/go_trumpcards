@@ -98,18 +98,23 @@ describe('KempsPage', () => {
 
   it('selecting a hand card then a field card dispatches swap', async () => {
     renderWithProviders(<KempsPage />);
-    const handButtons = await screen.findAllByRole('button', { name: '手札を選ぶ' });
-    fireEvent.click(handButtons[1]);
-    const fieldButtons = await screen.findAllByRole('button', { name: 'このカードと交換' });
+    // Hand[1] is ♥2, field[2] is ♣7 — buttons are now named by their card.
+    const heart2 = await screen.findByRole('button', { name: '♥ 2 を選択' });
+    expect(heart2).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(heart2);
+    expect(screen.getByRole('button', { name: '♥ 2 を選択' })).toHaveAttribute('aria-pressed', 'true');
+    const clover7 = await screen.findByRole('button', { name: '♣ 7 と交換' });
+    // The swap-pending state is described for SR.
+    expect(clover7).toHaveAttribute('aria-describedby', 'kemps-swap-pending');
     mockExec.mockClear();
-    fireEvent.click(fieldButtons[2]);
+    fireEvent.click(clover7);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('swap', { handIndex: 1, fieldIndex: 2 }));
   });
 
   it('does not show field swap buttons until a hand card is selected', async () => {
     renderWithProviders(<KempsPage />);
     await waitFor(() => expect(screen.getByText(/プレイヤー/)).toBeInTheDocument());
-    expect(screen.queryByRole('button', { name: 'このカードと交換' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /と交換$/ })).not.toBeInTheDocument();
   });
 
   it('dispatches pass on the exchange turn', async () => {
