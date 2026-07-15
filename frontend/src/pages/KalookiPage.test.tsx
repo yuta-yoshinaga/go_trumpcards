@@ -162,6 +162,16 @@ describe('KalookiPage', () => {
     expect(addGroup).toBeDisabled();
   });
 
+  it('labels hand cards by name and reflects selection with aria-pressed', async () => {
+    mockExec.mockResolvedValue(meldState);
+    renderWithProviders(<KalookiPage />);
+    // baseHand[0] is ♠5 → cardAlt reads "♠ 5".
+    const first = await screen.findByRole('button', { name: '♠ 5' });
+    expect(first).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(first);
+    expect(screen.getByRole('button', { name: '♠ 5' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('stages a meld group and submits the meld with meldGroups', async () => {
     mockExec.mockResolvedValue(meldState);
     renderWithProviders(<KalookiPage />);
