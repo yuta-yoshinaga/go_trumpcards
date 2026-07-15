@@ -62,6 +62,18 @@ describe('LooPage', () => {
     });
   });
 
+  it('marks each player Play/Pass with an icon and a status aria-label', async () => {
+    renderWithProviders(<LooPage />); // player 0 playing, player 3 passing
+    const playing = await screen.findByTestId('loo-status-0');
+    expect(playing).toHaveAttribute('role', 'status');
+    expect(playing).toHaveTextContent('●');
+    expect(playing).toHaveAttribute('aria-label', expect.stringContaining('参加'));
+    expect(playing).toHaveAttribute('title'); // risk tooltip
+    const passing = screen.getByTestId('loo-status-3');
+    expect(passing).toHaveTextContent('○');
+    expect(passing).toHaveAttribute('aria-label', expect.stringContaining('降り'));
+  });
+
   it('renders the decide phase with play and pass buttons', async () => {
     mockExec.mockResolvedValue(decidePhaseState);
     renderWithProviders(<LooPage />);

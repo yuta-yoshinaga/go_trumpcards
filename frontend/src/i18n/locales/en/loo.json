@@ -52,5 +52,7 @@
     "playButton": "Once a card is selected, play it with this button. In the Decide phase choose Play or Pass.",
     "info": "Loo (Lanterloo) is a 4-player (you + 3 CPU) pot-based gambling trick-taker on a 52-card deck. Each player is dealt five cards, and the turn-up card sets trump. Everyone antes into a carried-over pot, then decides to play or pass. Participants fight five must-follow / must-head tricks, each trick winning one-fifth of the pot. A participant who wins no trick is 'looed' and pays a penalty into the next deal's pot. There is no target score — it is a repeating deal loop where you build up chips.",
     "resetButton": "Use the reset button to start a new game."
-  }
+  },
+  "statusAria": "{{name}}: {{status}}",
+  "playRiskTooltip": "If you play and win no trick this round, you pay into the pool"
 }
