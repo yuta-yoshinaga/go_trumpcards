@@ -25,7 +25,9 @@ import { gameTheme } from '../styles/gameTheme';
 import type { SixCardGolfResponse, SixCardGolfSlot } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
-import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { parseSixCardGolfCommand } from '../utils/cli/commands/sixcardgolfCommands';
+import { formatSixCardGolfState } from '../utils/cli/formatters/sixcardgolfFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 import { sixCardGolfColumnScores } from '../utils/sixCardGolfColumnScores';
 
 const runner = sixcardgolfApi;
@@ -64,57 +66,10 @@ const TUTORIAL_STEPS: TutorialStep[] = [
 
 type ApiArgs = Parameters<typeof runner.exec>;
 
-function parseSCGCommand(input: string): CliParseResult<ApiArgs> {
-  const parts = input.trim().split(/\s+/);
-  const cmd = parts[0]?.toLowerCase();
-  const posArg = parts[1] ? Number.parseInt(parts[1], 10) : undefined;
-  switch (cmd) {
-    case 'r':
-    case 'reset':
-      return { args: [{ command: 'reset' }] };
-    case 'fi':
-    case 'flipinitial':
-      if (posArg === undefined || Number.isNaN(posArg)) return { error: 'Usage: fi <pos>' };
-      return { args: [{ command: 'flipinitial', position: posArg }] };
-    case 'ds':
-    case 'drawstock':
-      return { args: [{ command: 'drawstock' }] };
-    case 'dd':
-    case 'drawdiscard':
-      return { args: [{ command: 'drawdiscard' }] };
-    case 'sw':
-    case 'swap':
-      if (posArg === undefined || Number.isNaN(posArg)) return { error: 'Usage: sw <pos>' };
-      return { args: [{ command: 'swap', position: posArg }] };
-    case 'di':
-    case 'discard':
-      return { args: [{ command: 'discard' }] };
-    case 'fl':
-    case 'flip':
-      if (posArg === undefined || Number.isNaN(posArg)) return { error: 'Usage: fl <pos>' };
-      return { args: [{ command: 'flip', position: posArg }] };
-    case 'sf':
-    case 'skipflip':
-      return { args: [{ command: 'skipflip' }] };
-    case 'nr':
-    case 'nextround':
-      return { args: [{ command: 'nextround' }] };
-    case 'l':
-    case 'log':
-      return { args: [{ command: 'log' }] };
-    default:
-      return { error: `Unknown: ${cmd}` };
-  }
-}
-
-function formatSCGState(s: SixCardGolfResponse): string {
-  return `Round ${s.roundNumber}/${s.totalRounds} | Phase ${s.phase}`;
-}
-
 const cliConfig: CliGameConfig<SixCardGolfResponse, ApiArgs> = {
   gameName: 'sixcardgolf',
-  parseCommand: parseSCGCommand,
-  formatResponse: formatSCGState,
+  parseCommand: parseSixCardGolfCommand,
+  formatResponse: formatSixCardGolfState,
   helpText: [
     'fi <pos>       Flip initial card at position',
     'ds             Draw from stock',
@@ -254,6 +209,7 @@ function SixCardGolfPageContent() {
                     key={`${player.id}-${sIdx}`}
                     slot={slot}
                     pos={sIdx}
+                    faceDownLabel={t('gridSlotFaceDownAria', { pos: sIdx + 1 })}
                     cardWidth={cardWidth}
                     isHumanGrid={player.isHuman}
                     phase={phase}
@@ -384,6 +340,7 @@ function SixCardGolfPageContent() {
 function GridSlotButton({
   slot,
   pos,
+  faceDownLabel,
   cardWidth,
   isHumanGrid,
   phase,
@@ -395,6 +352,7 @@ function GridSlotButton({
 }: {
   slot: SixCardGolfSlot;
   pos: number;
+  faceDownLabel: string;
   cardWidth: number;
   isHumanGrid: boolean;
   phase: number;
@@ -431,7 +389,7 @@ function GridSlotButton({
       style={{ width: cardWidth + 8 }}
       onClick={handleClick}
       disabled={!clickable}
-      aria-label={slot.faceUp && slot.card ? cardAlt(slot.card) : `Position ${pos} (face down)`}
+      aria-label={slot.faceUp && slot.card ? cardAlt(slot.card) : faceDownLabel}
     >
       {slot.faceUp && slot.card ? (
         <AnimatedCard card={slot.card} width={cardWidth} />
