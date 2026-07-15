@@ -12,6 +12,21 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// thirtyOneSuitSymbol maps a card design to its (locale-independent) suit symbol.
+func thirtyOneSuitSymbol(suit int) string {
+	switch suit {
+	case domain.CardDesignSpade:
+		return "♠"
+	case domain.CardDesignClover:
+		return "♣"
+	case domain.CardDesignHeart:
+		return "♥"
+	case domain.CardDesignDiamond:
+		return "♦"
+	}
+	return "?"
+}
+
 // thirtyOnePlayerStr returns the display string for a single ThirtyOne player.
 func thirtyOnePlayerStr(g interfaces.ThirtyOneGame, player *domain.ThirtyOnePlayer, i int) string {
 	var b strings.Builder
@@ -30,6 +45,15 @@ func thirtyOnePlayerStr(g interfaces.ThirtyOneGame, player *domain.ThirtyOnePlay
 		"cards", strconv.Itoa(player.GetCardsSize())) + "\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		// Per-suit totals mirror the web suit-score badges so the human can see
+		// which suit to build toward 31 and which cards to discard.
+		scores := player.SuitScores()
+		b.WriteString(i18n.Tf("thirtyone.suitBreakdown",
+			"spade", strconv.Itoa(scores[domain.CardDesignSpade]),
+			"clover", strconv.Itoa(scores[domain.CardDesignClover]),
+			"heart", strconv.Itoa(scores[domain.CardDesignHeart]),
+			"diamond", strconv.Itoa(scores[domain.CardDesignDiamond]),
+			"best", thirtyOneSuitSymbol(player.BestSuit())) + "\n")
 	}
 	return b.String()
 }
