@@ -68,5 +68,8 @@
     "discardHigh": "引いたカードは高いので捨てましょう",
     "columnMatch": "列一致を狙えます！",
     "flipCard": "伏せ札をめくりましょう"
-  }
+  },
+  "gridSlotFaceDownAria": "位置{{pos}}（裏向き）",
+  "cliUsagePos": "使い方: {{cmd}} <位置>",
+  "cliUnknown": "不明なコマンド: {{cmd}}"
 }
