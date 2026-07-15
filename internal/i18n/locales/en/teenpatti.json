@@ -10,6 +10,8 @@
   "gameEnd": "Game over! Player {{player}} wins the match!",
   "promptBetting": "Betting phase: your turn.",
   "promptBettingHelp": "s=see  b=call  rs <n>=raise  f=fold  sh=show  ss=side show",
+  "promptRaiseRange": "Raise range: {{min}}-{{max}} (use rs <n>)",
+  "promptRaiseUnavailable": "Not enough chips to raise.",
   "promptSideShow": "{{requester}} requests a side show with {{target}}.",
   "promptSideShowYou": "You are being challenged — accept or decline.",
   "promptSideShowHelp": "ac=accept  dc=decline",
