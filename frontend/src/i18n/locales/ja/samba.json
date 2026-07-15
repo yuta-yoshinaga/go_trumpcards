@@ -50,6 +50,8 @@
     "tooMany": "選択は2枚までです"
   },
   "frozenIndicator": "❄️ フリーズ",
+  "frozenAnnounceOn": "捨札が凍結されました。取得には同種の条件札2枚が必要です。",
+  "frozenAnnounceOff": "捨札の凍結が解除されました。",
   "selectMeld": "メルドするカードを選択してください",
   "result": {
     "humanWin": "あなたのチームの勝利！",

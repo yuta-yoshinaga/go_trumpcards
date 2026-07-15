@@ -49,6 +49,18 @@ describe('SambaPage', () => {
     expect(screen.getByTestId('sa-team-scores')).toBeInTheDocument();
   });
 
+  it('announces when the discard pile becomes frozen', async () => {
+    renderWithProviders(<SambaPage />);
+    const announce = await screen.findByTestId('sa-frozen-announce');
+    expect(announce).toHaveAttribute('role', 'status');
+    expect(announce).toHaveAttribute('aria-live', 'polite');
+    expect(announce).toHaveTextContent(''); // no transition yet
+    // A draw resolves to a frozen state → isFrozen false→true triggers the announcement.
+    mockExec.mockResolvedValue(makeSambaState({ isFrozen: true }));
+    fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
+    await waitFor(() => expect(screen.getByTestId('sa-frozen-announce')).toHaveTextContent('捨札が凍結されました'));
+  });
+
   it('calls drawstock command when button clicked', async () => {
     renderWithProviders(<SambaPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument());

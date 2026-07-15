@@ -50,6 +50,8 @@
     "tooMany": "Select at most 2 cards"
   },
   "frozenIndicator": "❄️ Frozen",
+  "frozenAnnounceOn": "The discard pile is frozen. Taking it now needs two matching natural cards.",
+  "frozenAnnounceOff": "The discard pile is no longer frozen.",
   "selectMeld": "Select cards to meld",
   "result": {
     "humanWin": "Your team wins!",
