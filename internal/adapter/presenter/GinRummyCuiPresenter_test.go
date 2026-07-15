@@ -24,6 +24,7 @@ func setupGinRummyCuiMock() *interfaces.MockGinRummyGame {
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	m.On("GetKnockerMelds").Return(([][]*domain.Card)(nil)).Maybe()
 	return m
 }
 
@@ -203,6 +204,30 @@ func TestGinRummyCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "レイオフフェーズ")
 		assert.Contains(t, result, "lo")
+	})
+
+	t.Run("layoff phase lists knocker melds with set/run labels", func(t *testing.T) {
+		m, _ := setupGinRummyCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetKnockerMelds")
+		m.On("GetPhase").Return(domain.GinRummyPhaseLayoff)
+		m.On("GetKnockerMelds").Return([][]*domain.Card{
+			{ // set of 7s
+				domain.NewCard(domain.CardDesignSpade, 7, false),
+				domain.NewCard(domain.CardDesignHeart, 7, false),
+				domain.NewCard(domain.CardDesignDiamond, 7, false),
+			},
+			{ // run of clubs 4-5-6
+				domain.NewCard(domain.CardDesignClover, 4, false),
+				domain.NewCard(domain.CardDesignClover, 5, false),
+				domain.NewCard(domain.CardDesignClover, 6, false),
+			},
+		})
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "[ノッカーのメルド]")
+		assert.Contains(t, result, "メルド1(セット):")
+		assert.Contains(t, result, "メルド2(ラン):")
 	})
 
 	t.Run("round end phase shows next command", func(t *testing.T) {
