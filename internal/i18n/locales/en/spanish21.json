@@ -1,3 +1,12 @@
 {
-  "helpTitle": "Spanish 21"
+  "helpTitle": "Spanish 21",
+  "bonus.fivecard21": "5-card 21 bonus",
+  "bonus.sixcard21": "6-card 21 bonus",
+  "bonus.sevencard21": "7+card 21 bonus",
+  "bonus.678.mixed": "6-7-8 (mixed suits)",
+  "bonus.678.samesuit": "6-7-8 (same suit)",
+  "bonus.678.spade": "6-7-8 (all spades)",
+  "bonus.777.mixed": "7-7-7 (mixed suits)",
+  "bonus.777.samesuit": "7-7-7 (same suit)",
+  "bonus.777.spade": "7-7-7 (all spades)"
 }
