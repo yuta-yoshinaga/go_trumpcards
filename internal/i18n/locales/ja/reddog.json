@@ -19,5 +19,10 @@
   "playerWins": "プレイヤーの勝ち！",
   "playerLoses": "プレイヤーの負け。",
   "push": "プッシュ。",
-  "totalPayoutLine": "合計払戻し: {{payout}}"
+  "totalPayoutLine": "合計払戻し: {{payout}}",
+  "hintRaiseRec": "レイズ推奨",
+  "hintStayRec": "ステイ推奨",
+  "hintSpread": "スプレッド {{spread}}（勝てるランク: {{ranks}}）→ {{rec}}",
+  "hintBetFirst": "まずベットしてください。",
+  "hintGameOver": "ゲームは終了しています。"
 }

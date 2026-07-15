@@ -181,6 +181,55 @@ func TestRedDogWinningRanksStr(t *testing.T) {
 	assert.Equal(t, "", redDogWinningRanksStr([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)}))
 }
 
+func TestRedDogCuiPresenter_HintOutput_RaiseRecommended(t *testing.T) {
+	p := new(RedDogCuiPresenter)
+	m := new(interfaces.MockRedDogGame)
+	cards := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 3, false),
+		domain.NewCard(domain.CardDesignHeart, 11, false), // spread 3..11 -> 7 winning ranks
+	}
+	m.On("GetPhase").Return(domain.RedDogPhaseSpreadDecision)
+	m.On("GetSpread").Return(7)
+	m.On("GetInitialCards").Return(cards)
+
+	result := p.HintOutput(m)
+	assert.Contains(t, result, "スプレッド 7")
+	assert.Contains(t, result, "レイズ推奨")
+	assert.Contains(t, result, "勝てるランク: 4, 5, 6, 7, 8, 9, 10")
+}
+
+func TestRedDogCuiPresenter_HintOutput_StayRecommended(t *testing.T) {
+	p := new(RedDogCuiPresenter)
+	m := new(interfaces.MockRedDogGame)
+	cards := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 5, false),
+		domain.NewCard(domain.CardDesignHeart, 10, false),
+	}
+	m.On("GetPhase").Return(domain.RedDogPhaseSpreadDecision)
+	m.On("GetSpread").Return(4)
+	m.On("GetInitialCards").Return(cards)
+
+	result := p.HintOutput(m)
+	assert.Contains(t, result, "スプレッド 4")
+	assert.Contains(t, result, "ステイ推奨")
+}
+
+func TestRedDogCuiPresenter_HintOutput_BetPhase(t *testing.T) {
+	p := new(RedDogCuiPresenter)
+	for _, phase := range []int{domain.RedDogPhaseBet, domain.RedDogPhaseInitialDealt} {
+		m := new(interfaces.MockRedDogGame)
+		m.On("GetPhase").Return(phase)
+		assert.Contains(t, p.HintOutput(m), "まずベットしてください")
+	}
+}
+
+func TestRedDogCuiPresenter_HintOutput_GameOver(t *testing.T) {
+	p := new(RedDogCuiPresenter)
+	m := new(interfaces.MockRedDogGame)
+	m.On("GetPhase").Return(domain.RedDogPhaseEnd)
+	assert.Contains(t, p.HintOutput(m), "ゲームは終了しています")
+}
+
 func TestRedDogCuiPresenter_ActionLogOutput(t *testing.T) {
 	p := new(RedDogCuiPresenter)
 	m := new(interfaces.MockRedDogGame)
