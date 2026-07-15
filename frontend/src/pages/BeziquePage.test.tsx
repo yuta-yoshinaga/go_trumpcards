@@ -103,6 +103,20 @@ describe('BeziquePage', () => {
     expect(screen.getByTestId('meld-skip')).toBeInTheDocument();
   });
 
+  it('gives each meld button a suit-named aria-label inside a labelled group', async () => {
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<BeziquePage />);
+    // Marriage of ♠ (type 0, suit 1) reads the suit by name, not the glyph.
+    const marriage = await screen.findByTestId('meld-0');
+    expect(marriage).toHaveAttribute('aria-label', 'スペードの結婚 (K+Q)を宣言 +20点');
+    // A non-suited meld (bezique) omits the suit.
+    expect(screen.getByTestId('meld-1')).toHaveAttribute('aria-label', 'ベジーク (♠Q+♦J)を宣言 +40点');
+    // The melds are bundled in a labelled group.
+    const group = screen.getByRole('group', { name: '宣言するメルドを選んでください:' });
+    expect(group).toBeInTheDocument();
+    expect(group).toContainElement(marriage);
+  });
+
   it('dispatches a meld declaration when a meld button is clicked', async () => {
     mockExec.mockResolvedValue(meldPhaseState);
     renderWithProviders(<BeziquePage />);

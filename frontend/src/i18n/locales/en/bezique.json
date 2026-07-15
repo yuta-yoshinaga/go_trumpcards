@@ -31,6 +31,14 @@
   "nextRound": "Next Deal",
   "target": "Target: {{points}} pts",
   "meldPrompt": "Choose a meld to declare:",
+  "meldMarriageName": "{{suit}} {{name}}",
+  "meldDeclareLabel": "Declare {{name}} +{{points}} pts",
+  "suitName": {
+    "spade": "Spade",
+    "club": "Club",
+    "heart": "Heart",
+    "diamond": "Diamond"
+  },
   "meldShort": "meld",
   "meldName": {
     "marriage": "Marriage (K+Q)",

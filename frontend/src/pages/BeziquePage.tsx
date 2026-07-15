@@ -35,6 +35,9 @@ import type { CliGameConfig } from '../utils/cli/types';
 /** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 = undeclared). */
 const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 
+/** Suit-name i18n key suffixes indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 unused). */
+const SUIT_KEYS = ['', 'spade', 'club', 'heart', 'diamond'] as const;
+
 /** Meld-name i18n key suffixes indexed by meld type (0=marriage … 5=four jacks). */
 const MELD_NAME_KEYS = ['marriage', 'bezique', 'fourAces', 'fourKings', 'fourQueens', 'fourJacks'] as const;
 
@@ -139,6 +142,16 @@ function BeziquePageContent() {
     const name = t(`meldName.${MELD_NAME_KEYS[m.type] ?? 'marriage'}`);
     const suit = m.type === 0 && m.suit >= 1 && m.suit <= 4 ? ` ${SUIT_SYMBOLS[m.suit]}` : '';
     return `${name}${suit} (+${m.points})`;
+  };
+
+  /** Builds a screen-reader label naming the suit (a marriage is suit-specific) and points. */
+  const meldAriaLabel = (m: BeziqueMeld): string => {
+    const name = t(`meldName.${MELD_NAME_KEYS[m.type] ?? 'marriage'}`);
+    const fullName =
+      m.type === 0 && m.suit >= 1 && m.suit <= 4
+        ? t('meldMarriageName', { suit: t(`suitName.${SUIT_KEYS[m.suit]}`), name })
+        : name;
+    return t('meldDeclareLabel', { name: fullName, points: m.points });
   };
 
   const handleManualReset = () => {
@@ -329,19 +342,27 @@ function BeziquePageContent() {
               )}
               {isHumanMeldTurn && (
                 <>
-                  <span className="text-xs text-ds-text-muted self-center mr-1">{t('meldPrompt')}</span>
-                  {state.availableMelds.map((m, i) => (
-                    <button
-                      key={`${m.type}-${m.suit}`}
-                      type="button"
-                      className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
-                      onClick={() => handleMeld(i)}
-                      disabled={loading}
-                      data-testid={`meld-${i}`}
-                    >
-                      {meldLabel(m)}
-                    </button>
-                  ))}
+                  {/* Fieldset groups the meld buttons; the sr-only legend names the group
+                      (the visible prompt is aria-hidden to avoid a duplicate announcement). */}
+                  <fieldset className="contents">
+                    <legend className="sr-only">{t('meldPrompt')}</legend>
+                    <span aria-hidden="true" className="text-xs text-ds-text-muted self-center mr-1">
+                      {t('meldPrompt')}
+                    </span>
+                    {state.availableMelds.map((m, i) => (
+                      <button
+                        key={`${m.type}-${m.suit}`}
+                        type="button"
+                        className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                        onClick={() => handleMeld(i)}
+                        disabled={loading}
+                        data-testid={`meld-${i}`}
+                        aria-label={meldAriaLabel(m)}
+                      >
+                        {meldLabel(m)}
+                      </button>
+                    ))}
+                  </fieldset>
                   <button
                     type="button"
                     className={btnSuccess}

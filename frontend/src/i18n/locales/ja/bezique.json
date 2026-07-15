@@ -31,6 +31,14 @@
   "nextRound": "次のディール",
   "target": "目標: {{points}}点",
   "meldPrompt": "宣言するメルドを選んでください:",
+  "meldMarriageName": "{{suit}}の{{name}}",
+  "meldDeclareLabel": "{{name}}を宣言 +{{points}}点",
+  "suitName": {
+    "spade": "スペード",
+    "club": "クラブ",
+    "heart": "ハート",
+    "diamond": "ダイヤ"
+  },
   "meldShort": "メルド",
   "meldName": {
     "marriage": "結婚 (K+Q)",
