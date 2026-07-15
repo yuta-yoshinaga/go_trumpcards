@@ -19,14 +19,15 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import i18n from '../i18n';
 import { useSound } from '../providers/SoundProvider';
 import { focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { SixCardGolfResponse, SixCardGolfSlot } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
-import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { parseSixCardGolfCommand } from '../utils/cli/commands/sixcardgolfCommands';
+import { formatSixCardGolfState } from '../utils/cli/formatters/sixcardgolfFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 import { sixCardGolfColumnScores } from '../utils/sixCardGolfColumnScores';
 
 const runner = sixcardgolfApi;
@@ -65,59 +66,10 @@ const TUTORIAL_STEPS: TutorialStep[] = [
 
 type ApiArgs = Parameters<typeof runner.exec>;
 
-function parseSCGCommand(input: string): CliParseResult<ApiArgs> {
-  // Module-level parser → use the i18n instance directly (frontend/CLAUDE.md convention).
-  const usage = (cmd: string) => ({ error: i18n.t('sixcardgolf:cliUsagePos', { cmd }) });
-  const parts = input.trim().split(/\s+/);
-  const cmd = parts[0]?.toLowerCase();
-  const posArg = parts[1] ? Number.parseInt(parts[1], 10) : undefined;
-  switch (cmd) {
-    case 'r':
-    case 'reset':
-      return { args: [{ command: 'reset' }] };
-    case 'fi':
-    case 'flipinitial':
-      if (posArg === undefined || Number.isNaN(posArg)) return usage('fi');
-      return { args: [{ command: 'flipinitial', position: posArg }] };
-    case 'ds':
-    case 'drawstock':
-      return { args: [{ command: 'drawstock' }] };
-    case 'dd':
-    case 'drawdiscard':
-      return { args: [{ command: 'drawdiscard' }] };
-    case 'sw':
-    case 'swap':
-      if (posArg === undefined || Number.isNaN(posArg)) return usage('sw');
-      return { args: [{ command: 'swap', position: posArg }] };
-    case 'di':
-    case 'discard':
-      return { args: [{ command: 'discard' }] };
-    case 'fl':
-    case 'flip':
-      if (posArg === undefined || Number.isNaN(posArg)) return usage('fl');
-      return { args: [{ command: 'flip', position: posArg }] };
-    case 'sf':
-    case 'skipflip':
-      return { args: [{ command: 'skipflip' }] };
-    case 'nr':
-    case 'nextround':
-      return { args: [{ command: 'nextround' }] };
-    case 'l':
-    case 'log':
-      return { args: [{ command: 'log' }] };
-    default:
-      return { error: i18n.t('sixcardgolf:cliUnknown', { cmd: cmd ?? '' }) };
-  }
-}
-
-function formatSCGState(s: SixCardGolfResponse): string {
-  return `Round ${s.roundNumber}/${s.totalRounds} | Phase ${s.phase}`;
-}
-
 const cliConfig: CliGameConfig<SixCardGolfResponse, ApiArgs> = {
   gameName: 'sixcardgolf',
-  parseCommand: parseSCGCommand,
-  formatResponse: formatSCGState,
+  parseCommand: parseSixCardGolfCommand,
+  formatResponse: formatSixCardGolfState,
   helpText: [
     'fi <pos>       Flip initial card at position',
     'ds             Draw from stock',
