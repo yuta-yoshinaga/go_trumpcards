@@ -2,6 +2,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -122,6 +123,27 @@ func TestPageOneCuiPresenter_Output(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 		players[0].SetHasDeclared(true)
 		result := p.Output(m, nil)
+		assert.Contains(t, result, "[PAGE ONE!]")
+	})
+
+	t.Run("last-card warning shown for undeclared single-card player", func(t *testing.T) {
+		m, players := setupPageOneCuiMockWithPlayers()
+		// CPU 1 sits on its last card without declaring → warning; others have 2 cards.
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "残り1枚！")
+		// Only the single-card, undeclared player is warned (one occurrence).
+		assert.Equal(t, 1, strings.Count(result, "残り1枚！"))
+	})
+
+	t.Run("no last-card warning once the player has declared", func(t *testing.T) {
+		m, players := setupPageOneCuiMockWithPlayers()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].SetHasDeclared(true)
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, "残り1枚！")
 		assert.Contains(t, result, "[PAGE ONE!]")
 	})
 }
