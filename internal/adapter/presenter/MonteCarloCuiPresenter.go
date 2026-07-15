@@ -68,11 +68,29 @@ func (pr *MonteCarloCuiPresenter) HintOutput(g interfaces.MonteCarloGame) string
 	if hint.Action == domain.MonteCarloHintActionDeal {
 		return i18n.T("montecarlo.hintLineDeal") + "\n"
 	}
+	board := g.GetBoard()
+	c1 := monteCarloBoardCard(board, hint.FromR, hint.FromC)
+	c2 := monteCarloBoardCard(board, hint.ToR, hint.ToC)
+	if c1 != nil && c2 != nil {
+		return i18n.Tf("montecarlo.hintLineRemoveCard",
+			"r1", strconv.Itoa(hint.FromR), "c1", strconv.Itoa(hint.FromC), "card1", cuiCardStr(c1),
+			"r2", strconv.Itoa(hint.ToR), "c2", strconv.Itoa(hint.ToC), "card2", cuiCardStr(c2)) + "\n"
+	}
+	// Fallback: coordinates only if a board cell is unreadable (nil-guard).
 	return i18n.Tf("montecarlo.hintLineRemove",
 		"r1", strconv.Itoa(hint.FromR),
 		"c1", strconv.Itoa(hint.FromC),
 		"r2", strconv.Itoa(hint.ToR),
 		"c2", strconv.Itoa(hint.ToC)) + "\n"
+}
+
+// monteCarloBoardCard safely reads a board cell, returning nil for out-of-range
+// coordinates so the hint never panics.
+func monteCarloBoardCard(board [domain.MonteCarloGridSize][domain.MonteCarloGridSize]*domain.Card, r, c int) *domain.Card {
+	if r < 0 || r >= domain.MonteCarloGridSize || c < 0 || c >= domain.MonteCarloGridSize {
+		return nil
+	}
+	return board[r][c]
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

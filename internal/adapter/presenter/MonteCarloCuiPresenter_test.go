@@ -87,16 +87,36 @@ func TestMonteCarloCuiPresenter_Output(t *testing.T) {
 }
 
 func TestMonteCarloCuiPresenter_HintOutput(t *testing.T) {
-	t.Run("with remove hint", func(t *testing.T) {
+	t.Run("with remove hint includes both card faces", func(t *testing.T) {
 		g := new(interfaces.MockMonteCarloGame)
 		g.On("Hint").Return(&domain.MonteCarloHint{
 			Action: domain.MonteCarloHintActionRemove,
 			FromR:  0, FromC: 1, ToR: 1, ToC: 2,
 		})
+		var board [domain.MonteCarloGridSize][domain.MonteCarloGridSize]*domain.Card
+		board[0][1] = domain.NewCard(domain.CardDesignSpade, 7, false)
+		board[1][2] = domain.NewCard(domain.CardDesignHeart, 7, false)
+		g.On("GetBoard").Return(board)
 
 		p := new(MonteCarloCuiPresenter)
 		result := p.HintOutput(g)
-		assert.Contains(t, result, "ヒント")
+		assert.Contains(t, result, "(0,1)")
+		assert.Contains(t, result, "(1,2)")
+		assert.Contains(t, result, cuiCardStr(board[0][1]))
+		assert.Contains(t, result, cuiCardStr(board[1][2]))
+	})
+
+	t.Run("with remove hint falls back to coordinates when a cell is empty", func(t *testing.T) {
+		g := new(interfaces.MockMonteCarloGame)
+		g.On("Hint").Return(&domain.MonteCarloHint{
+			Action: domain.MonteCarloHintActionRemove,
+			FromR:  0, FromC: 1, ToR: 1, ToC: 2,
+		})
+		var board [domain.MonteCarloGridSize][domain.MonteCarloGridSize]*domain.Card // all nil
+		g.On("GetBoard").Return(board)
+
+		p := new(MonteCarloCuiPresenter)
+		result := p.HintOutput(g)
 		assert.Contains(t, result, "(0,1)")
 		assert.Contains(t, result, "(1,2)")
 	})
