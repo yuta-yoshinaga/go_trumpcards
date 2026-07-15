@@ -91,6 +91,10 @@ func (rp *RussianPokerCuiPresenter) Output(g interfaces.RussianPokerGame, lastEr
 		sb.WriteString(color.Yellow(i18n.T("russianpoker.forceQualifyGuide")) + "\n")
 	}
 
+	if g.GetPhase() == domain.RussianPokerPhaseSelect {
+		sb.WriteString(color.Yellow(i18n.T("russianpoker.selectGuide")) + "\n")
+	}
+
 	if g.GetGameEndFlag() {
 		sb.WriteString(i18n.Tf("russianpoker.anteLine", "ante", strconv.Itoa(g.GetAnteBet())) + "\n")
 		if g.GetPlayBet() > 0 {
@@ -112,6 +116,14 @@ func (rp *RussianPokerCuiPresenter) Output(g interfaces.RussianPokerGame, lastEr
 		case domain.GameResultDraw:
 			sb.WriteString(color.Yellow(i18n.T("russianpoker.push")) + "\n")
 		default:
+		}
+		// Per-bet payout breakdown (omitted when zero) so the player sees which
+		// bet paid, matching the web payout-breakdown.
+		if ante := g.GetAntePayout(); ante != 0 {
+			sb.WriteString(i18n.Tf("russianpoker.antePayoutLine", "payout", strconv.Itoa(ante)) + "\n")
+		}
+		if play := g.GetPlayPayout(); play != 0 {
+			sb.WriteString(i18n.Tf("russianpoker.playPayoutLine", "payout", strconv.Itoa(play)) + "\n")
 		}
 		sb.WriteString(i18n.Tf("russianpoker.totalPayoutLine", "payout", strconv.Itoa(g.GetTotalPayout())) + "\n")
 		sb.WriteString("----------\n")

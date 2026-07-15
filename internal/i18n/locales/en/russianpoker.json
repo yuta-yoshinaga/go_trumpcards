@@ -32,5 +32,8 @@
   "dealerWins": "Dealer wins!",
   "playerFolded": "Player folded.",
   "push": "Push!",
+  "selectGuide": "Choose the number of the card to discard",
+  "antePayoutLine": "Ante payout: {{payout}}",
+  "playPayoutLine": "Play payout: {{payout}}",
   "totalPayoutLine": "total payout: {{payout}}"
 }
