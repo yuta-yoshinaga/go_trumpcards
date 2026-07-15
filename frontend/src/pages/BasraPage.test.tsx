@@ -72,6 +72,22 @@ describe('BasraPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0, tableIndices: [0] }));
   });
 
+  it('marks capture candidates and selected table cards with shape + aria (not colour)', async () => {
+    renderWithProviders(<BasraPage />);
+    const table0 = await screen.findByTestId('table-card-0');
+    // Before selecting a hand card, table-card-0 is just its name.
+    expect(table0).toHaveAttribute('aria-label', '♠ 5');
+    // Selecting hand card 0 makes table card 0 a capture candidate (✓ badge + aria).
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    expect(screen.getByTestId('table-card-0')).toHaveAttribute('aria-label', '♠ 5、キャプチャ可能');
+    expect(screen.getByTestId('table-card-0')).toHaveTextContent('✓');
+    // Selecting the table card flips to selected (● badge + aria-pressed).
+    fireEvent.click(screen.getByTestId('table-card-0'));
+    expect(screen.getByTestId('table-card-0')).toHaveAttribute('aria-label', '♠ 5、選択済み');
+    expect(screen.getByTestId('table-card-0')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('table-card-0')).toHaveTextContent('●');
+  });
+
   it('trailing (no table cards) dispatches play with an empty capture set', async () => {
     renderWithProviders(<BasraPage />);
     const handCard = await screen.findByTestId('hand-card-1');
