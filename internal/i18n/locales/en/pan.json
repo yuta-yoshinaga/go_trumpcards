@@ -18,9 +18,10 @@
   "promptDrawHelpStock": "ds: draw from stock",
   "promptDrawHelpDiscard": "dd: draw the discard top",
   "promptPlay": "{{name}} to act (play phase)",
-  "promptPlayHelpMeld": "m <idx...>: lay down a meld",
-  "promptPlayHelpLayoff": "lo <owner> <meld> <idx>: lay off a card",
-  "promptPlayHelpDiscard": "d <idx>: discard a card",
+  "promptPlayHelpMeld": "m <idx...>: lay down a meld (e.g. m 0 1 2)",
+  "promptPlayHelpLayoff": "lo <owner> <meld> <idx>: lay off a card (e.g. lo 1 0 3)",
+  "promptPlayHelpDiscard": "d <idx>: discard a card (e.g. d 4)",
+  "promptPlayHelpNote": "A meld is 3+ cards of the same rank or a same-suit run. Melds containing valle (special) cards collect chips.",
   "promptRoundEnd": "Round complete",
   "promptRoundEndHelp": "nr / nextround: advance to next round"
 }
