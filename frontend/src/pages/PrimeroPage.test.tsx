@@ -179,4 +179,17 @@ describe('PrimeroPage', () => {
     renderWithProviders(<PrimeroPage />);
     await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたの勝利です！')).toBeInTheDocument());
   });
+
+  it('marks player states with a colour-independent icon and a status aria-label', async () => {
+    mockExec.mockResolvedValue(resultState);
+    renderWithProviders(<PrimeroPage />);
+    const winner = await screen.findByTestId('primero-player-0');
+    // Winner: crown glyph + status in the row aria-label.
+    expect(winner).toHaveTextContent('👑');
+    expect(winner).toHaveAttribute('aria-label', expect.stringContaining('勝者'));
+    // Folded player: × glyph + status.
+    const folded = screen.getByTestId('primero-player-2');
+    expect(folded).toHaveTextContent('×');
+    expect(folded).toHaveAttribute('aria-label', expect.stringContaining('降りた'));
+  });
 });
