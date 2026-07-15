@@ -39,5 +39,8 @@
     "rows": "配られたカードを3段（トップ3枚・ミドル5枚・ボトム5枚）に置いていきます。",
     "place": "配られたカードを置く段を選びましょう。一度置いたカードは動かせません。",
     "resetButton": "ゲームを最初からやり直すにはこのボタンを押します。"
-  }
+  },
+  "rowAriaEmpty": "{{label}} {{count}}枚",
+  "rowAriaFilled": "{{label}} {{count}}枚: {{cards}}",
+  "pendingAnnounce": "配置待ち: {{card}}"
 }

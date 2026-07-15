@@ -117,6 +117,24 @@ describe('OpenFaceChinesePage', () => {
     expect(screen.getByTestId('place-back')).toBeInTheDocument();
   });
 
+  it('announces the pending card and labels rows for screen readers', async () => {
+    renderWithProviders(<OpenFaceChinesePage />); // currentCard ♠A, human placing
+    const announce = await screen.findByTestId('ofc-pending-announce');
+    expect(announce).toHaveAttribute('role', 'status');
+    expect(announce).toHaveAttribute('aria-live', 'polite');
+    expect(announce).toHaveTextContent('配置待ち: ♠ A');
+    // Each row is a named group; both players' empty top rows report their count.
+    expect(screen.getAllByRole('group', { name: /トップ（3枚） 0枚/ }).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('names a filled row with its card contents', async () => {
+    mockExec.mockResolvedValue(roundEndState); // human top row = ♠2 ♥3 ♣4
+    renderWithProviders(<OpenFaceChinesePage />);
+    await waitFor(() =>
+      expect(screen.getByRole('group', { name: 'トップ（3枚） 3枚: ♠ 2, ♥ 3, ♣ 4' })).toBeInTheDocument(),
+    );
+  });
+
   it('places into the top row', async () => {
     renderWithProviders(<OpenFaceChinesePage />);
     const btn = await screen.findByTestId('place-front');

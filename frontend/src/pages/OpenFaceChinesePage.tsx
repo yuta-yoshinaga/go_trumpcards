@@ -22,6 +22,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card, OpenFaceChinesePlayer, OpenFaceChineseResponse } from '../types/card';
 import { OpenFaceChinesePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { OPENFACECHINESE_HELP, parseOpenfacechineseCommand } from '../utils/cli/commands/openfacechineseCommands';
 import { formatOpenfacechineseState } from '../utils/cli/formatters/openfacechineseFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -120,24 +121,35 @@ function OpenFaceChinesePageContent() {
   const playerName = (player: OpenFaceChinesePlayer) => (player.isHuman ? t('you') : t('cpu', { n: player.id }));
 
   /** Renders a single row of a player's board, padding empty slots up to `capacity`. */
-  const renderRow = (label: string, cards: Card[], capacity: number, keyPrefix: string) => (
-    <div className="flex flex-col gap-1">
-      <span className="text-ds-text-muted text-[11px]">{label}</span>
-      <div className="flex gap-1 flex-wrap">
-        {cards.map((c, i) => (
-          <CardImage key={`${keyPrefix}-${i}`} card={c} width={Math.round(cardWidth * 0.62)} />
-        ))}
-        {Array.from({ length: Math.max(0, capacity - cards.length) }).map((_, i) => (
-          <div
-            key={`${keyPrefix}-empty-${i}`}
-            className="rounded border border-dashed border-white/20 bg-black/20"
-            style={{ width: Math.round(cardWidth * 0.62), height: Math.round(cardWidth * 0.62 * 1.4) }}
-            aria-hidden="true"
-          />
-        ))}
-      </div>
-    </div>
-  );
+  const renderRow = (label: string, cards: Card[], capacity: number, keyPrefix: string) => {
+    // A fieldset+legend names the whole row for SR (count + card contents), since
+    // the empty slots are decorative and biome forbids role="group" on a div.
+    const cardNames = cards.map(cardAlt).join(', ');
+    const rowAria = cardNames
+      ? t('rowAriaFilled', { label, count: cards.length, cards: cardNames })
+      : t('rowAriaEmpty', { label, count: cards.length });
+    return (
+      <fieldset className="flex flex-col gap-1 border-0 p-0 m-0" data-testid={`ofc-row-${keyPrefix}`}>
+        <legend className="sr-only">{rowAria}</legend>
+        <span className="text-ds-text-muted text-[11px]" aria-hidden="true">
+          {label}
+        </span>
+        <div className="flex gap-1 flex-wrap">
+          {cards.map((c, i) => (
+            <CardImage key={`${keyPrefix}-${i}`} card={c} width={Math.round(cardWidth * 0.62)} />
+          ))}
+          {Array.from({ length: Math.max(0, capacity - cards.length) }).map((_, i) => (
+            <div
+              key={`${keyPrefix}-empty-${i}`}
+              className="rounded border border-dashed border-white/20 bg-black/20"
+              style={{ width: Math.round(cardWidth * 0.62), height: Math.round(cardWidth * 0.62 * 1.4) }}
+              aria-hidden="true"
+            />
+          ))}
+        </div>
+      </fieldset>
+    );
+  };
 
   return (
     <GamePageShell
@@ -166,6 +178,11 @@ function OpenFaceChinesePageContent() {
               <span className="font-semibold text-ds-warning">{t('round', { round: state.roundNumber })}</span>
               {human && <span className="text-ds-text-muted">{t('totalScore', { score: human.totalScore })}</span>}
             </div>
+
+            {/* Announce the pending card by name whenever it changes (persistent region). */}
+            <span className="sr-only" role="status" aria-live="polite" data-testid="ofc-pending-announce">
+              {canPlace && state.currentCard ? t('pendingAnnounce', { card: cardAlt(state.currentCard) }) : ''}
+            </span>
 
             {/* Pending card to place */}
             {canPlace && state.currentCard && (
@@ -219,8 +236,16 @@ function OpenFaceChinesePageContent() {
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-ds-text-primary text-sm font-semibold">{playerName(p)}</span>
                     <div className="flex items-center gap-2 text-xs">
-                      {p.fouled && <span className="text-ds-error font-semibold">{t('fouled')}</span>}
-                      {p.fantasyland && <span className="text-ds-accent font-semibold">{t('fantasyland')}</span>}
+                      {p.fouled && (
+                        <span className="text-ds-error font-semibold" role="status">
+                          {t('fouled')}
+                        </span>
+                      )}
+                      {p.fantasyland && (
+                        <span className="text-ds-accent font-semibold" role="status">
+                          {t('fantasyland')}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="flex flex-col gap-2">

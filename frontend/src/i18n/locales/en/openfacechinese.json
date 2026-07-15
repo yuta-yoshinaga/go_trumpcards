@@ -39,5 +39,8 @@
     "rows": "Place each dealt card into one of three rows (Top 3, Middle 5, Bottom 5).",
     "place": "Pick the row to place the dealt card. Once placed, a card cannot be moved.",
     "resetButton": "Press this button to restart the game from the beginning."
-  }
+  },
+  "rowAriaEmpty": "{{label}} {{count}} cards",
+  "rowAriaFilled": "{{label}} {{count}} cards: {{cards}}",
+  "pendingAnnounce": "To place: {{card}}"
 }
