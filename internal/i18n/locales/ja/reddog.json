@@ -3,6 +3,7 @@
   "helpBet": "  b <金額>             ベット (アンテを賭けて2枚配る)",
   "helpRaise": "  raise <金額>         レイズ (最大アンテと同額)",
   "helpStay": "  s                    ステイ (レイズせず3枚目を引く)",
+  "helpHint": "  h                    ヒント (ステイ/レイズの推奨)",
   "chipsLine": "チップ: {{chips}}",
   "phaseLine": "フェーズ: {{phase}}",
   "anteLine": "アンテ: {{ante}}",

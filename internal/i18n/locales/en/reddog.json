@@ -3,6 +3,7 @@
   "helpBet": "  b <amount>           bet (places ante and deals 2 cards)",
   "helpRaise": "  raise <amount>       raise (up to ante)",
   "helpStay": "  s                    stay (draw third card without raising)",
+  "helpHint": "  h                    hint (stay/raise recommendation)",
   "chipsLine": "chips: {{chips}}",
   "phaseLine": "phase: {{phase}}",
   "anteLine": "ante: {{ante}}",
