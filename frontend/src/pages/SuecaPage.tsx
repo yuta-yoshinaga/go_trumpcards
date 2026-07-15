@@ -34,6 +34,8 @@ import { playerName } from '../utils/playerUtils';
 
 /** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 unused). */
 const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
+/** Suit id → `suitName.*` i18n key (1=♠ .. 4=♦). */
+const SUIT_KEYS = ['', 'spade', 'club', 'heart', 'diamond'] as const;
 
 /** Sueca tutorial step definitions. */
 const SUECA_TUTORIAL_STEPS: TutorialStep[] = [
@@ -136,6 +138,9 @@ function SuecaPageContent() {
   const canPlay = isPlayPhase && isHumanTurn;
   const humanTeam = humanIdx % 2;
   const trumpSymbol = SUIT_SYMBOLS[state.trumpSuit] ?? '?';
+  // Spoken trump: the suit name (not the ♠♣♥♦ glyph, which SRs read poorly).
+  const trumpSuitName = SUIT_KEYS[state.trumpSuit] ? t(`suitName.${SUIT_KEYS[state.trumpSuit]}`) : trumpSymbol;
+  const trumpAriaLabel = t('trump', { suit: trumpSuitName });
 
   const handleManualReset = () => {
     hideActionLog();
@@ -201,7 +206,9 @@ function SuecaPageContent() {
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span>{t('trump', { suit: trumpSymbol })}</span>
+              <span role="img" aria-label={trumpAriaLabel}>
+                <span aria-hidden="true">{t('trump', { suit: trumpSymbol })}</span>
+              </span>
             </div>
 
             <div className={lgTwoColGrid}>
@@ -221,8 +228,13 @@ function SuecaPageContent() {
                 {/* Team game points */}
                 <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
                   {/* Trump kept in the always-visible sidebar so it isn't lost off-screen on mobile. */}
-                  <div className="mb-1 text-ds-text-primary font-semibold" data-testid="sueca-sidebar-trump">
-                    {t('trump', { suit: trumpSymbol })}
+                  <div
+                    className="mb-1 text-ds-text-primary font-semibold"
+                    data-testid="sueca-sidebar-trump"
+                    role="img"
+                    aria-label={trumpAriaLabel}
+                  >
+                    <span aria-hidden="true">{t('trump', { suit: trumpSymbol })}</span>
                   </div>
                   <div>{t('teamScore', { team: t('team.a'), score: state.teamGamePoints[0] ?? 0 })}</div>
                   <div>{t('teamScore', { team: t('team.b'), score: state.teamGamePoints[1] ?? 0 })}</div>
