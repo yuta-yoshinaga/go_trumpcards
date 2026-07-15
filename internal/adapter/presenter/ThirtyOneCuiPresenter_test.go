@@ -64,6 +64,15 @@ func TestThirtyOneCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, p.Output(m, nil), "あなたのベストスート合計:")
 	})
 
+	t.Run("human suit-score breakdown shown under the hand", func(t *testing.T) {
+		m, players := setupThirtyOneCuiMock()
+		// ♠A(11) + ♥5(5): best suit is spades.
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "スート別: ♠11 ♣0 ♥5 ♦0（ベスト: ♠）")
+	})
+
 	t.Run("knock notice shown when someone has knocked", func(t *testing.T) {
 		m, _ := setupThirtyOneCuiMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetKnockerIdx")
