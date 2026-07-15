@@ -38,5 +38,6 @@
     "pile": "The centre pile. The top card and pile size are shown here.",
     "hand": "Your hand. Click a card to play it onto the pile. Capture the pile by matching the top rank or with a Jack.",
     "resetButton": "Use this button to reset the game at any time."
-  }
+  },
+  "playCardAria": "Play {{card}}"
 }

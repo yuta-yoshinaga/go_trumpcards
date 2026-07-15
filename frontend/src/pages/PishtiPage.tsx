@@ -23,6 +23,7 @@ import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { PishtiResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { PISHTI_HELP, parsePishtiCommand } from '../utils/cli/commands/pishtiCommands';
 import { formatPishtiState } from '../utils/cli/formatters/pishtiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -300,7 +301,7 @@ function PishtiPageContent() {
                       isHumanTurn ? 'cursor-pointer hover:opacity-90 hover:-translate-y-1' : 'cursor-default'
                     }`}
                     data-testid={`hand-card-${i}`}
-                    aria-label={t('playButton')}
+                    aria-label={t('playCardAria', { card: cardAlt(c) })}
                   >
                     <CardImage card={c} width={cardWidth} />
                   </button>
@@ -310,7 +311,11 @@ function PishtiPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {isHumanTurn && <div className="text-ds-text-muted text-xs mb-2">{t('turnNotice')}</div>}
+            {isHumanTurn && (
+              <div className="text-ds-text-muted text-xs mb-2" role="status" data-testid="pishti-turn-notice">
+                {t('turnNotice')}
+              </div>
+            )}
 
             <div className="flex flex-wrap gap-2 items-center">
               {isGameEnd && (

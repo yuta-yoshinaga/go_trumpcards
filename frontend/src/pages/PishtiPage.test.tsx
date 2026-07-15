@@ -105,6 +105,15 @@ describe('PishtiPage', () => {
     expect(screen.getByTestId('hand-card-3')).toBeInTheDocument();
   });
 
+  it('names each hand card in its aria-label and announces the turn', async () => {
+    renderWithProviders(<PishtiPage />);
+    // hand[0] is ♠5 → "♠ 5 を出す".
+    expect(await screen.findByRole('button', { name: '♠ 5 を出す' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♦ A を出す' })).toBeInTheDocument();
+    // The turn notice is a live region so turn arrival is announced.
+    expect(screen.getByTestId('pishti-turn-notice')).toHaveAttribute('role', 'status');
+  });
+
   it('plays a hand card on the human turn', async () => {
     renderWithProviders(<PishtiPage />);
     const cardBtn = await screen.findByTestId('hand-card-1');
