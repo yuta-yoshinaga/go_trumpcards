@@ -70,6 +70,23 @@ func (p *IndianPokerCuiPresenter) Output(ip interfaces.IndianPokerGame, lastErr 
 			if ip.GetPhase() == domain.IndianPokerPhaseBetting && player.GetIsHuman() && !player.GetFolded() {
 				b.WriteString(i18n.Tf("indianpoker.equityLine",
 					"pct", strconv.Itoa(ip.GetEstimatedStrength(i))) + "\n")
+
+				// On the human's turn, spell out the amount to call, the minimum
+				// raise, and the max bet so the decision needs no mental math
+				// (mirrors the web BettingControls inputs).
+				if ip.GetCurrentTurn() == i {
+					_, maxBet := domain.CalculateBettingLimits(cfg.BettingLimit, ip.GetPot(), ip.GetLastBet())
+					toCall := ip.GetLastBet() - player.GetCurrentBet()
+					if toCall <= 0 {
+						b.WriteString(i18n.Tf("indianpoker.checkAvailableLine",
+							"max", strconv.Itoa(maxBet)) + "\n")
+					} else {
+						b.WriteString(i18n.Tf("indianpoker.betInfoLine",
+							"call", strconv.Itoa(toCall),
+							"minraise", strconv.Itoa(ip.GetMinRaise()),
+							"max", strconv.Itoa(maxBet)) + "\n")
+					}
+				}
 			}
 		}
 

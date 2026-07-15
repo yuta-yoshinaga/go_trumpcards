@@ -27,6 +27,8 @@
   "cardLine": "  カード: {{card}}",
   "cardHidden": "  カード: ??",
   "equityLine": "  推定勝率: {{pct}}%",
+  "betInfoLine": "  コール: {{call}} / ミニマムレイズ: {{minraise}} / 上限: {{max}}",
+  "checkAvailableLine": "  チェック可能 / 上限: {{max}}",
   "cpuActionsHeader": "[CPU行動]",
   "cpuActionLine": "  Player {{idx}}: {{action}}",
   "cpuActionAmount": " ({{amount}})",
