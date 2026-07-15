@@ -87,6 +87,22 @@ const SUIT_LABELS: Readonly<Record<number, string>> = {
   4: '♦',
 };
 
+/** Suit-name i18n key suffixes indexed by trump-suit number (1=♠ 2=♣ 3=♥ 4=♦). */
+const SUIT_NAME_KEYS: Readonly<Record<number, string>> = {
+  1: 'spade',
+  2: 'club',
+  3: 'heart',
+  4: 'diamond',
+};
+
+/** Suit-name i18n key suffixes indexed by card design string. */
+const SUIT_NAME_BY_DESIGN: Readonly<Record<string, string>> = {
+  SPADE: 'spade',
+  CLOVER: 'club',
+  HEART: 'heart',
+  DIAMOND: 'diamond',
+};
+
 const SUIT_DESIGNS: Readonly<Record<string, string>> = {
   SPADE: '♠',
   CLOVER: '♣',
@@ -217,18 +233,31 @@ function AllFoursPageContent() {
               <span>{t('round', { n: state.roundNumber })}</span>
               <span>{t('trick', { n: state.trickNumber })}</span>
               <span>{t('dealer', { name: findPlayerName(state.players, state.dealerIdx) })}</span>
-              <span>
-                {t('trumpSuit', {
-                  suit: state.trumpSuit === 0 ? t('trumpUnset') : (SUIT_LABELS[state.trumpSuit] ?? '?'),
+              {/* Trump: symbol shown, suit read out by name to avoid "black spade symbol". */}
+              <span
+                role="img"
+                aria-label={t('trumpSuit', {
+                  suit: state.trumpSuit === 0 ? t('trumpUnset') : t(`suitName.${SUIT_NAME_KEYS[state.trumpSuit]}`, '?'),
                 })}
+              >
+                <span aria-hidden="true">
+                  {t('trumpSuit', {
+                    suit: state.trumpSuit === 0 ? t('trumpUnset') : (SUIT_LABELS[state.trumpSuit] ?? '?'),
+                  })}
+                </span>
               </span>
-              {state.turnUp && <span>{t('turnUp', { card: cardLabel(state.turnUp) })}</span>}
+              {state.turnUp && (
+                <span
+                  role="img"
+                  aria-label={t('turnUp', {
+                    card: `${t(`suitName.${SUIT_NAME_BY_DESIGN[state.turnUp.design] ?? ''}`, state.turnUp.design)}${VALUE_LABELS[state.turnUp.value] ?? state.turnUp.value}`,
+                  })}
+                >
+                  <span aria-hidden="true">{t('turnUp', { card: cardLabel(state.turnUp) })}</span>
+                </span>
+              )}
             </div>
 
-            <label className="flex items-center gap-1 text-ds-text-primary text-xs justify-center mb-2 cursor-pointer">
-              <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
-              {tc('hint.toggle', { ns: 'tutorial' })}
-            </label>
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
 
             <div data-tutorial="af-score-table" className="overflow-x-auto mb-3">
@@ -335,6 +364,13 @@ function AllFoursPageContent() {
                       value: pointLimit,
                       options: [5, 7, 9, 11, 15, 21].map((v) => ({ value: v, label: String(v) })),
                       onSelect: (v) => handleConfigChange('pointLimit', Number(v)),
+                    },
+                    {
+                      type: 'checkbox',
+                      id: 'frontendHint',
+                      label: tc('hint.toggle', { ns: 'tutorial' }),
+                      checked: hintEnabled,
+                      onToggle: setHintEnabled,
                     },
                   ],
                 },

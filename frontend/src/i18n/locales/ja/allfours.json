@@ -63,5 +63,11 @@
     "playButton": "カードを選んだらこのボタンで出します。",
     "scoreTable": "スコア表です。High/Low/Jack/Game の4ポイントを競い、先に7点で勝利です。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "suitName": {
+    "spade": "スペード",
+    "club": "クラブ",
+    "heart": "ハート",
+    "diamond": "ダイヤ"
   }
 }
