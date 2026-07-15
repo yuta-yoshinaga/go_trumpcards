@@ -55,6 +55,11 @@ func (p *BakersDozenCuiPresenter) Output(bd interfaces.BakersDozenGame, lastErr 
 				b.WriteString(" " + i18n.T("cuiEmptyCol"))
 			} else {
 				b.WriteString(bakersDozenColumnStr(colCards))
+				// A column down to its last card is at risk of emptying, and empty
+				// columns can never be refilled — flag it so the risk is visible.
+				if len(colCards) == 1 {
+					b.WriteString(" " + color.Yellow(i18n.T("bakersdozen.oneCardWarning")))
+				}
 			}
 			b.WriteString("\n")
 		}
@@ -68,6 +73,7 @@ func (p *BakersDozenCuiPresenter) Output(bd interfaces.BakersDozenGame, lastErr 
 			if bd.IsStalemate() {
 				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
 			}
+			b.WriteString(i18n.T("bakersdozen.emptyColNote") + "\n")
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(bd.GetMoveCount())) + "\n")
 		case domain.BakersDozenPhaseGameClear:
