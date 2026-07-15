@@ -25,6 +25,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { CuarentaAction, CuarentaResponse } from '../types/card';
 import { CuarentaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { CUARENTA_HELP, parseCuarentaCommand } from '../utils/cli/commands/cuarentaCommands';
 import { formatCuarentaState } from '../utils/cli/formatters/cuarentaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -166,7 +167,15 @@ function CuarentaPageContent() {
     if (a.isLimpia) badges.push(t('limpia'));
     const captured = a.capturedCards.length;
     return (
-      <div key={`act-${a.playerIdx}`} className="text-sm text-ds-text-muted flex items-center gap-2 flex-wrap py-0.5">
+      <div
+        key={`act-${a.playerIdx}`}
+        className="text-sm text-ds-text-muted flex items-center gap-2 flex-wrap py-0.5"
+        // On the human's freshest bonus play, announce the row so the caída/ronda/
+        // limpia badges reach SR users (they were visual/audio-only before).
+        role={celebrate && badges.length > 0 ? 'status' : undefined}
+        aria-live={celebrate && badges.length > 0 ? 'polite' : undefined}
+        data-testid={celebrate && badges.length > 0 ? 'cuarenta-bonus-announce' : undefined}
+      >
         <span className="font-semibold text-ds-text-primary">{playerLabel(a.playerIdx, a.playerIdx === 0)}</span>
         {a.playedCard && <CardImage card={a.playedCard} width={Math.round(cardWidth * 0.6)} />}
         <span>{captured > 0 ? t('captured', { count: captured }) : t('laidDown')}</span>
@@ -318,7 +327,7 @@ function CuarentaPageContent() {
                       isHumanTurn ? 'cursor-pointer hover:opacity-90 hover:-translate-y-1' : 'cursor-default'
                     }`}
                     data-testid={`hand-card-${i}`}
-                    aria-label={t('playButton')}
+                    aria-label={t('playCardAria', { card: cardAlt(c) })}
                   >
                     <CardImage card={c} width={cardWidth} />
                   </button>

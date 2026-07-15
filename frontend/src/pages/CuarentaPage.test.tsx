@@ -123,6 +123,13 @@ describe('CuarentaPage', () => {
     expect(screen.getByTestId('hand-card-4')).toBeInTheDocument();
   });
 
+  it('names each hand card in its aria-label', async () => {
+    renderWithProviders(<CuarentaPage />);
+    // hand[0] is ♠5, hand[2] is ♦A.
+    expect(await screen.findByRole('button', { name: '♠ 5 を出す' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♦ A を出す' })).toBeInTheDocument();
+  });
+
   it('plays a hand card on the human turn', async () => {
     renderWithProviders(<CuarentaPage />);
     const cardBtn = await screen.findByTestId('hand-card-1');
@@ -167,6 +174,10 @@ describe('CuarentaPage', () => {
     const popped = screen.getAllByTestId('cuarenta-bonus-pop');
     expect(popped.length).toBeGreaterThan(0);
     expect(popped[0].className).toContain('motion-safe:animate-bounce');
+    // ...and the bonus row is announced to assistive tech.
+    const announce = screen.getByTestId('cuarenta-bonus-announce');
+    expect(announce).toHaveAttribute('role', 'status');
+    expect(announce).toHaveAttribute('aria-live', 'polite');
   });
 
   it('chimes once when a fresh human bonus lands, but not on a plain play', async () => {
