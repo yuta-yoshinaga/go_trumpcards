@@ -46,5 +46,26 @@
     "playerPile": "Your stock. You lose if it empties.",
     "stepButton": "Flip the top card of your stock.",
     "slapButton": "Slap when the top is a Jack. Wrong slaps cost you a card."
+  },
+  "cli": {
+    "help": [
+      "s/step  - Flip top of stock onto pile",
+      "j/slap  - Slap the pile (when J is on top)",
+      "tick    - Advance CPU by one tick",
+      "r/reset - Reset game",
+      "l/log   - Show action log"
+    ],
+    "phase": {
+      "play": "Play",
+      "end": "End"
+    },
+    "summary": "Phase: {{phase}} | Pile: {{pile}} | Top: {{top}} | Turn: P{{turn}}",
+    "you": "You",
+    "cpu": "CPU",
+    "playerStock": "{{tag}}: stock={{stock}}",
+    "error": {
+      "unknown": "Unknown command: {{cmd}}",
+      "unknownSuggest": "Unknown command: {{cmd}}. Did you mean: {{suggestion}}?"
+    }
   }
 }
