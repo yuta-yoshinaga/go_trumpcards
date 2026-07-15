@@ -47,6 +47,27 @@ func TestOsmosisCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ストック: 34枚")
 		assert.Contains(t, result, "ウェイスト: [空]")
 		assert.Contains(t, result, "手数: 0")
+		// Row 0 has cards -> any rank; row 1 (empty, row 0 seeded) -> base rank 7.
+		assert.Contains(t, result, "任意ランク")
+		assert.Contains(t, result, "[置ける: 7]")
+	})
+
+	t.Run("lower row lists ranks present in the row above", func(t *testing.T) {
+		og := new(interfaces.MockOsmosisGame)
+		setupOsmosisCuiMockDefaults(og)
+		og.ExpectedCalls = filterCalls(og.ExpectedCalls, "GetFoundation")
+		var f [domain.OsmosisFoundationCnt][]*domain.Card
+		// Row 0 holds 7,8,9; row 1 holds only 7 -> row 1 may still take 8 and 9.
+		f[0] = []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 7, false),
+			domain.NewCard(domain.CardDesignSpade, 8, false),
+			domain.NewCard(domain.CardDesignSpade, 9, false),
+		}
+		f[1] = []*domain.Card{domain.NewCard(domain.CardDesignHeart, 7, false)}
+		og.On("GetFoundation").Return(f)
+		p := new(OsmosisCuiPresenter)
+		result := p.Output(og, nil)
+		assert.Contains(t, result, "[置ける: 8 9]")
 	})
 
 	t.Run("waste card", func(t *testing.T) {

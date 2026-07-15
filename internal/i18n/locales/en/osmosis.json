@@ -27,6 +27,7 @@
   "hintFromReserve": "reserve col {{col}}",
   "hintFromWaste": "waste",
   "hintToFoundation": "foundation {{idx}}",
+  "allowedRanks": "[playable: {{ranks}}]",
   "anyRank": "any rank",
   "hintLine": "Hint: {{from}} → {{to}} (allowed: {{allowed}})"
 }
