@@ -69,6 +69,44 @@ func TestTeenPattiCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "SPADE")
 	})
 
+	t.Run("betting raise range: blind human sees full-chip ceiling", func(t *testing.T) {
+		m, players := tpSetupMockWithPlayers()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		// Blind, 30 chips, stake 1 → min 2, max 30.
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "レイズ可能額: 2〜30")
+	})
+
+	t.Run("betting raise range: seen human ceiling is halved", func(t *testing.T) {
+		m, players := tpSetupMockWithPlayers()
+		players[0].SetSeen(true)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		// Seen pays double, so 30 chips → max 15.
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "レイズ可能額: 2〜15")
+	})
+
+	t.Run("betting raise range: unavailable when chips are too low", func(t *testing.T) {
+		m := tpSetupBaseMock()
+		poor := domain.NewTeenPattiPlayer(true, 1) // 1 chip, stake 1 → min 2 > max 1
+		players := []*domain.TeenPattiPlayer{poor, tpMakePlayers()[1], tpMakePlayers()[2], tpMakePlayers()[3]}
+		m.On("GetPlayerCnt").Return(domain.TeenPattiPlayerCnt)
+		for i, pl := range players {
+			m.On("GetPlayer", i).Return(pl)
+		}
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "チップ不足のためレイズできません")
+	})
+
+	t.Run("betting raise range is omitted on a CPU turn", func(t *testing.T) {
+		m, _ := tpSetupMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+		m.On("GetCurrentPlayerIdx").Return(1) // a CPU seat
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, "レイズ可能額")
+		assert.NotContains(t, result, "チップ不足")
+	})
+
 	t.Run("side show phase shows player names, not raw indices", func(t *testing.T) {
 		i18n.SetLang("en")
 		defer i18n.SetLang("ja")

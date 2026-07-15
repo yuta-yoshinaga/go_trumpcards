@@ -69,6 +69,29 @@ func teenPattiPlayerNameAt(g interfaces.TeenPattiGame, idx int) string {
 	return cuiPlayerName(player, idx)
 }
 
+// teenPattiRaiseRangeStr returns the betting-phase raise guidance line for a
+// human turn: the affordable min..max, or an "unavailable" notice when the
+// player is too short on chips. Empty on a CPU turn (mirrors Three Card Brag).
+func teenPattiRaiseRangeStr(g interfaces.TeenPattiGame) string {
+	player := g.GetPlayer(g.GetCurrentPlayerIdx())
+	if player == nil || !player.GetIsHuman() {
+		return ""
+	}
+	minRaise := g.GetStake() + 1
+	maxRaise := player.GetChips()
+	if player.GetSeen() {
+		// Seen players pay double the stake to call/raise, halving the affordable ceiling.
+		maxRaise = player.GetChips() / 2
+	}
+	if maxRaise < minRaise {
+		return i18n.T("teenpatti.promptRaiseUnavailable") + "\n"
+	}
+	return i18n.Tf("teenpatti.promptRaiseRange",
+		"min", strconv.Itoa(minRaise),
+		"max", strconv.Itoa(maxRaise),
+	) + "\n"
+}
+
 // TeenPattiCuiPresenter renders the Teen Patti CUI view.
 type TeenPattiCuiPresenter struct{}
 
@@ -99,6 +122,7 @@ func (p *TeenPattiCuiPresenter) Output(g interfaces.TeenPattiGame, lastErr error
 		case domain.TeenPattiPhaseBetting:
 			b.WriteString(i18n.T("teenpatti.promptBetting") + "\n")
 			b.WriteString(i18n.T("teenpatti.promptBettingHelp") + "\n")
+			b.WriteString(teenPattiRaiseRangeStr(g))
 		case domain.TeenPattiPhaseSideShow:
 			targetIdx := g.GetSideShowTarget()
 			b.WriteString(i18n.Tf("teenpatti.promptSideShow",

@@ -10,6 +10,8 @@
   "gameEnd": "ゲーム終了！ プレイヤー{{player}} の優勝です！",
   "promptBetting": "ベッティングフェーズ: あなたの手番です。",
   "promptBettingHelp": "s=見る  b=コール  rs <n>=レイズ  f=降りる  sh=ショー  ss=サイドショー申請",
+  "promptRaiseRange": "レイズ可能額: {{min}}〜{{max}} (rs <n> で指定)",
+  "promptRaiseUnavailable": "チップ不足のためレイズできません。",
   "promptSideShow": "{{requester}} が {{target}} にサイドショーを要求しました。",
   "promptSideShowYou": "あなたが要求されています。受諾するか辞退してください。",
   "promptSideShowHelp": "ac=受諾  dc=辞退",
