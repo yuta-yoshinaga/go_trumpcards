@@ -144,6 +144,39 @@ describe('NapPage', () => {
     expect(screen.queryByTestId('bid-0')).not.toBeInTheDocument();
   });
 
+  it('shows the declarer trick progress toward the contract during play', async () => {
+    // contract 3, declarer won 0, all 5 tricks still to play.
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<NapPage />);
+    const progress = await screen.findByTestId('nap-declarer-progress');
+    expect(progress).toHaveTextContent('宣言者: 0 / 3 トリック（残り5トリック）');
+    expect(progress).toHaveAttribute('role', 'status');
+    expect(progress).not.toHaveTextContent('達成不可');
+    expect(progress.className).not.toContain('text-ds-error');
+  });
+
+  it('marks the contract as unreachable once too few tricks remain', async () => {
+    // contract 4, declarer has 0 tricks, opponents have taken 2 → only 3 remain, so 4 is impossible.
+    const unreachableState = makeNapState({
+      phase: 1,
+      declarerIdx: 0,
+      contract: 4,
+      isHumanBidTurn: false,
+      isHumanTurn: true,
+      players: [
+        { id: 0, isHuman: true, cardCount: 3, cards: [], trickCount: 0, score: 0, isDeclarer: true },
+        { id: 1, isHuman: false, cardCount: 3, cards: [], trickCount: 1, score: 0, isDeclarer: false },
+        { id: 2, isHuman: false, cardCount: 3, cards: [], trickCount: 1, score: 0, isDeclarer: false },
+        { id: 3, isHuman: false, cardCount: 3, cards: [], trickCount: 0, score: 0, isDeclarer: false },
+      ],
+    });
+    mockExec.mockResolvedValue(unreachableState);
+    renderWithProviders(<NapPage />);
+    const progress = await screen.findByTestId('nap-declarer-progress');
+    expect(progress).toHaveTextContent('達成不可');
+    expect(progress.className).toContain('text-ds-error');
+  });
+
   it('renders trick end with the next trick button', async () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<NapPage />);
