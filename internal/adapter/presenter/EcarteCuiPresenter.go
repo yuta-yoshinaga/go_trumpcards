@@ -110,7 +110,20 @@ func ecarteWritePrompt(sb *strings.Builder, b interfaces.EcarteGame) {
 	case domain.EcartePhaseExchange:
 		sb.WriteString(i18n.Tf("ecarte.promptCurrentPlayer",
 			"name", cuiPlayerName(b.GetPlayer(currentIdx), currentIdx)) + "\n")
-		sb.WriteString(i18n.T(ecarteNegPromptKey(b.GetNegStep())) + "\n")
+		step := b.GetNegStep()
+		sb.WriteString(i18n.T(ecarteNegPromptKey(step)) + "\n")
+		// On a discard step, spell out the upper bound (you cannot discard more
+		// cards than the stock can replace) so the player need not compute it.
+		if step == domain.EcarteNegElderDiscard || step == domain.EcarteNegDealerDiscard {
+			stock := b.GetStockRemaining()
+			maxDiscard := stock
+			if player := b.GetPlayer(currentIdx); player != nil && player.GetCardsSize() < maxDiscard {
+				maxDiscard = player.GetCardsSize()
+			}
+			sb.WriteString(i18n.Tf("ecarte.promptDiscardLimit",
+				"max", strconv.Itoa(maxDiscard),
+				"stock", strconv.Itoa(stock)) + "\n")
+		}
 	case domain.EcartePhasePlay:
 		sb.WriteString(i18n.Tf("ecarte.promptCurrentPlayer",
 			"name", cuiPlayerName(b.GetPlayer(currentIdx), currentIdx)) + "\n")

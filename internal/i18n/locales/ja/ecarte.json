@@ -16,6 +16,7 @@
   "promptElderDecide": "propose・・・交換を提案 / stand・・・勝負する",
   "promptDealerRespond": "accept・・・提案を承諾 / refuse・・・提案を拒否",
   "promptDiscard": "discard <idx...>・・・捨て札を選んで引き直す",
+  "promptDiscardLimit": "捨てる枚数は最大{{max}}枚です (山札残{{stock}})",
   "promptPlay": "play <idx>・・・カードを出す",
   "promptRoundEnd": "ディール終了",
   "promptRoundEndHelp": "next・・・次のディールへ",
