@@ -19,6 +19,7 @@
   "adjutantCard": "Adjutant card: {{card}}",
   "adjutantRevealed": " (revealed)",
   "adjutantHidden": " (hidden)",
+  "armyProgress": "Napoleon army: {{collected}}/{{bid}} faces",
   "highestBid": "Highest bid: {{bid}}",
   "gameEndNapoleonWin": "Game over! The Napoleon side wins!",
   "gameEndAlliedWin": "Game over! The Allied side wins!",

@@ -98,6 +98,29 @@ func (p *NapoleonCuiPresenter) Output(n interfaces.NapoleonGame, lastErr error) 
 			b.WriteString("\n")
 		}
 
+		// Napoleon-army face-card progress vs the bid target. The adjutant's
+		// captures are only added once revealed, to avoid leaking their identity
+		// (mirrors the web napoleonFaceProgress logic).
+		if n.GetPhase() == domain.NapoleonPhasePlay {
+			napIdx := n.GetNapoleonIdx()
+			if napIdx >= 0 {
+				collected := n.GetPlayer(napIdx).GetPictureCards()
+				if n.GetAdjutantRevealed() {
+					if adjIdx := n.GetAdjutantIdx(); adjIdx >= 0 && adjIdx != napIdx {
+						collected += n.GetPlayer(adjIdx).GetPictureCards()
+					}
+				}
+				bid := n.GetHighestBid()
+				line := i18n.Tf("napoleon.armyProgress",
+					"collected", strconv.Itoa(collected),
+					"bid", strconv.Itoa(bid))
+				if bid > 0 && collected >= bid {
+					line = color.Green(line)
+				}
+				b.WriteString(line + "\n")
+			}
+		}
+
 		// Player rows
 		for i := 0; i < n.GetPlayerCnt(); i++ {
 			b.WriteString(napoleonPlayerStr(n.GetPlayer(i), i, n.GetAdjutantRevealed()))
