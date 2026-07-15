@@ -24,6 +24,7 @@ import { btnDanger, btnOutline, btnPrimary, focusRingWhite } from '../styles/but
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, KalookiResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { KALOOKI_HELP, parseKalookiCommand } from '../utils/cli/commands/kalookiCommands';
 import { formatKalookiState } from '../utils/cli/formatters/kalookiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -372,13 +373,20 @@ function KalookiPageContent() {
               <div className="flex flex-wrap gap-1">
                 {humanPlayer.cards.map((c: Card, idx: number) => {
                   const isSelected = selectedCards.includes(idx);
-                  const isInGroup = meldGroups.some((g) => g.includes(idx));
+                  const groupIdx = meldGroups.findIndex((g) => g.includes(idx));
+                  const isInGroup = groupIdx >= 0;
+                  const ariaLabel = isInGroup
+                    ? t('cardInGroup', { card: cardAlt(c), group: groupIdx + 1 })
+                    : cardAlt(c);
                   return (
                     <button
                       type="button"
                       key={`${idx}-${c.design}-${c.value}`}
                       onClick={() => toggleCard(idx)}
                       disabled={isInGroup}
+                      aria-label={ariaLabel}
+                      aria-pressed={isSelected}
+                      data-testid={`kalooki-hand-${idx}`}
                       className={`${focusRingWhite} ${isSelected ? 'ring-2 ring-ds-warning' : ''} ${
                         isInGroup ? 'opacity-40' : ''
                       }`}

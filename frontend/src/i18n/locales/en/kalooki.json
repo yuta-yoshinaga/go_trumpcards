@@ -39,5 +39,6 @@
     "table": "Each player lays melds (sets/runs) face up on the table. Your first meld must meet the opening points shown at the top.",
     "hand": "Pick cards from your hand to build meld groups. Jokers act as wild cards.",
     "actions": "Draw → meld/lay off → discard one card, in that order."
-  }
+  },
+  "cardInGroup": "{{card}} (added to group {{group}})"
 }
