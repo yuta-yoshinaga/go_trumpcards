@@ -40,6 +40,11 @@ func TestPresidentInteractor_Method(t *testing.T) {
 		assert.Equal(t, mockOutput, pi.Reset())
 	})
 
+	t.Run("Hint delegates to the presenter", func(t *testing.T) {
+		ppMock.On("HintOutput", mock.Anything).Return("hint_output")
+		assert.Equal(t, "hint_output", pi.Hint())
+	})
+
 	t.Run("Play pass", func(t *testing.T) {
 		assert.Equal(t, mockOutput, pi.Play([]int{}))
 	})

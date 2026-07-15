@@ -25,6 +25,11 @@ func (_m *MockPresidentInteractor) Play(indices []int) string {
 	return ret.Get(0).(string)
 }
 
+func (_m *MockPresidentInteractor) Hint() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
 // GetConfig モック
 func (_m *MockPresidentInteractor) GetConfig() domain.PresidentConfig {
 	ret := _m.Called()

@@ -14,6 +14,8 @@ type PresidentInteractorIF interface {
 	Reset() string
 	// Play 人間プレイヤーがカードを出す (または パスする)
 	Play(indices []int) string
+	// Hint ヒント取得
+	Hint() string
 	// ResetWithConfig 設定を変更してゲームを初期化
 	ResetWithConfig(config domain.PresidentConfig) string
 	// GetConfig 現在の設定を返す
@@ -54,6 +56,11 @@ func (pi *PresidentInteractor) Play(indices []int) string {
 		pi.runCpuTurns()
 	}
 	return pi.pp.Output(pi.Game, err)
+}
+
+// Hint ヒント取得
+func (pi *PresidentInteractor) Hint() string {
+	return pi.pp.HintOutput(pi.Game)
 }
 
 // GetConfig 現在の設定を返す

@@ -113,3 +113,9 @@ func (pwp *PresidentWebPresenter) buildResultMessage(pg interfaces.PresidentGame
 func (pwp *PresidentWebPresenter) ActionLogOutput(pg interfaces.PresidentGame) string {
 	return actionLogOutputJSON(pg)
 }
+
+// HintOutput ヒントを出力する。Web ではヒントはクライアント側 (useGameHint) で
+// 算出するため、通常の状態出力を返す。PresidentPresenter インタフェースを満たすための実装。
+func (pwp *PresidentWebPresenter) HintOutput(pg interfaces.PresidentGame) string {
+	return pwp.Output(pg, nil)
+}

@@ -48,3 +48,11 @@ func TestPresidentWebPresenter_ActionLog(t *testing.T) {
 	out := p.ActionLogOutput(pg)
 	assert.NotEmpty(t, out)
 }
+
+func TestPresidentWebPresenter_HintOutput(t *testing.T) {
+	// Web hints are client-side, so HintOutput mirrors Output.
+	p := new(presenter.PresidentWebPresenter)
+	players := makePresidentPlayersForPresenter()
+	pg := domain.NewPresident(domain.NewTrumpCards(0), players, domain.DefaultPresidentConfig())
+	assert.Equal(t, p.Output(pg, nil), p.HintOutput(pg))
+}

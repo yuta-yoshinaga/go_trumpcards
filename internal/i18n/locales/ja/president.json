@@ -2,6 +2,7 @@
   "helpTitle": "President (プレジデント)",
   "helpPlay": "  p [idx ...]          カードを出す (インデックスなし=パス)",
   "helpPass": "  p                    パス",
+  "helpHint": "  h | hint             最弱の合法手を推奨",
   "helpLog": "  log | l              棋譜を表示",
   "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "helpSetRule": "  sr <rule> <0|1>      ルール切替 (sr list で一覧表示)",
@@ -24,5 +25,8 @@
   "rankVicePresident": "副大統領",
   "rankViceScum": "副スカム",
   "rankScum": "スカム",
-  "rankUnknown": "不明"
+  "rankUnknown": "不明",
+  "hintPlay": "推奨: 手札 [{{idxs}}] ({{cards}}) を出す",
+  "hintPass": "推奨: 出せる手がないのでパス (p) しましょう。",
+  "hintNotYourTurn": "今はあなたの番ではありません。"
 }

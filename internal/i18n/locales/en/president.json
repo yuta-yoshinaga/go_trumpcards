@@ -2,6 +2,7 @@
   "helpTitle": "President / Scum",
   "helpPlay": "  p [idx ...]          play cards (no index = pass)",
   "helpPass": "  p                    pass",
+  "helpHint": "  h | hint             suggest the weakest legal play",
   "helpLog": "  log | l              show action log",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "helpSetRule": "  sr <rule> <0|1>      toggle local rule (sr list to show all)",
@@ -24,5 +25,8 @@
   "rankVicePresident": "Vice-President",
   "rankViceScum": "Vice-Scum",
   "rankScum": "Scum",
-  "rankUnknown": "unknown"
+  "rankUnknown": "unknown",
+  "hintPlay": "Suggestion: play hand [{{idxs}}] ({{cards}})",
+  "hintPass": "Suggestion: no legal play — pass (p).",
+  "hintNotYourTurn": "It is not your turn right now."
 }
