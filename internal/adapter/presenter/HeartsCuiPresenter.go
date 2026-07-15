@@ -10,12 +10,18 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// heartsPlayerStr returns the display string for a single Hearts player.
-func heartsPlayerStr(player *domain.HeartsPlayer, i int) string {
+// heartsPlayerStr returns the display string for a single Hearts player. The
+// cumulative score is highlighted once a player passes 80% of the point limit,
+// since reaching it ends the game (and loses).
+func heartsPlayerStr(player *domain.HeartsPlayer, i, pointLimit int) string {
 	var b strings.Builder
+	cum := strconv.Itoa(player.GetCumulativeScore())
+	if pointLimit > 0 && player.GetCumulativeScore()*100 >= pointLimit*80 {
+		cum = color.Yellow(cum)
+	}
 	b.WriteString(i18n.Tf("hearts.playerLine",
 		"name", cuiPlayerName(player, i),
-		"cum", strconv.Itoa(player.GetCumulativeScore()),
+		"cum", cum,
 		"round", strconv.Itoa(player.GetRoundScore()),
 		"cards", strconv.Itoa(player.GetCardsSize()),
 		"tricks", strconv.Itoa(player.GetTrickCount()),
@@ -43,8 +49,22 @@ func (p *HeartsCuiPresenter) Output(h interfaces.HeartsGame, lastErr error) stri
 			b.WriteString(i18n.T("hearts.heartsBrokenNo") + "\n")
 		}
 
+		// Point-limit progress: the highest cumulative score is closest to ending
+		// the game (whoever reaches the limit loses), so surface it and the limit.
+		pointLimit := h.GetConfig().PointLimit
+		leaderIdx, maxScore := 0, -1
 		for i := 0; i < h.GetPlayerCnt(); i++ {
-			b.WriteString(heartsPlayerStr(h.GetPlayer(i), i))
+			if s := h.GetPlayer(i).GetCumulativeScore(); s > maxScore {
+				maxScore, leaderIdx = s, i
+			}
+		}
+		b.WriteString(i18n.Tf("hearts.limitProgress",
+			"limit", strconv.Itoa(pointLimit),
+			"name", cuiPlayerName(h.GetPlayer(leaderIdx), leaderIdx),
+			"score", strconv.Itoa(maxScore)) + "\n")
+
+		for i := 0; i < h.GetPlayerCnt(); i++ {
+			b.WriteString(heartsPlayerStr(h.GetPlayer(i), i, pointLimit))
 		}
 
 		b.WriteString("----------\n")

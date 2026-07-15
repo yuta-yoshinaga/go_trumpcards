@@ -9,6 +9,7 @@
   "round": "Round: {{round}}  Trick: {{trick}}",
   "heartsBrokenYes": "Hearts broken: yes",
   "heartsBrokenNo": "Hearts broken: no",
+  "limitProgress": "Limit: {{limit}} pts / most: {{name}} {{score}} pts",
   "playerLine": "{{name}}: cum {{cum}}pt round {{round}}pt {{cards}} cards, {{tricks}} tricks",
   "gameEnd": "Game over! {{name}} wins!",
   "promptPass": "Pass phase: {{direction}}",
