@@ -69,6 +69,19 @@ describe('ThreeCardBragPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet'));
   });
 
+  it('labels the raise steppers and announces the amount', async () => {
+    renderWithProviders(<ThreeCardBragPage />);
+    const inc = await screen.findByRole('button', { name: 'レイズ額を増やす' });
+    const dec = screen.getByRole('button', { name: 'レイズ額を減らす' });
+    const amount = screen.getByTestId('tcb-raise-amount');
+    expect(amount).toHaveAttribute('aria-live', 'polite');
+    const before = amount.textContent;
+    fireEvent.click(inc);
+    expect(amount.textContent).not.toBe(before);
+    // The decrease button exists and is operable.
+    expect(dec).toBeEnabled();
+  });
+
   it('dispatches fold when the Fold button is clicked', async () => {
     renderWithProviders(<ThreeCardBragPage />);
     const btn = await screen.findByRole('button', { name: 'フォールド' });
