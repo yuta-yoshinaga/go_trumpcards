@@ -72,5 +72,6 @@
   "bidHighest": "Highest bid: {{name}}",
   "bidNone": "none",
   "bidTooLow": "Must exceed the current highest bid",
-  "misereBadge": "Special"
+  "misereBadge": "Special",
+  "misereDesc": "Misère is a special contract aiming to win no tricks; failing it costs heavily."
 }

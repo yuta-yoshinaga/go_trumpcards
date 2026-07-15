@@ -361,9 +361,10 @@ function PreferencePageContent() {
                     const tooLow = b.value !== PreferenceContract.PASS && b.value <= highestBid;
                     const disabled = loading || tooLow;
                     const isMisere = b.value === PreferenceContract.MISERE;
+                    const reason = tooLow ? t('bidTooLow') : undefined;
                     return (
                       // Wrap in a span so the explanatory tooltip still shows on a disabled button.
-                      <span key={b.value} title={tooLow ? t('bidTooLow') : undefined} className="inline-flex">
+                      <span key={b.value} title={reason} className="inline-flex">
                         <button
                           type="button"
                           className={`px-3 py-2 rounded-lg text-white text-sm disabled:opacity-40 ${
@@ -372,11 +373,18 @@ function PreferencePageContent() {
                           onClick={() => handleBid(b.value)}
                           disabled={disabled}
                           aria-disabled={disabled}
+                          aria-label={reason ? `${t(b.key)} — ${reason}` : undefined}
+                          aria-describedby={isMisere ? 'preference-misere-desc' : undefined}
                           data-testid={`bid-${b.value}`}
                         >
                           {t(b.key)}
                           {isMisere && <span className="ml-1 text-[10px] opacity-80">{t('misereBadge')}</span>}
                         </button>
+                        {isMisere && (
+                          <span id="preference-misere-desc" className="sr-only">
+                            {t('misereDesc')}
+                          </span>
+                        )}
                       </span>
                     );
                   })}

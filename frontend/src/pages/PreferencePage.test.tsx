@@ -121,17 +121,22 @@ describe('PreferencePage', () => {
     expect(banner).toHaveTextContent('ミゼール');
   });
 
-  it('explains via tooltip why a too-low bid is disabled', async () => {
+  it('explains via tooltip and aria-label why a too-low bid is disabled', async () => {
     mockExec.mockResolvedValue(makePreferenceState({ bids: [2, 0, 0] }));
     renderWithProviders(<PreferencePage />);
     const six = await screen.findByTestId('bid-1');
     expect(six.closest('span')).toHaveAttribute('title', '現在の最高入札を上回る必要があります');
+    // The button name itself carries the reason for SR users.
+    expect(six).toHaveAttribute('aria-label', 'シックス — 現在の最高入札を上回る必要があります');
   });
 
-  it('marks the Misère bid as a special contract', async () => {
+  it('marks the Misère bid as a special contract with a described risk', async () => {
     renderWithProviders(<PreferencePage />);
     const misere = await screen.findByTestId('bid-2');
     expect(misere).toHaveTextContent('特殊');
+    // The risk explanation is available to screen readers via aria-describedby.
+    expect(misere).toHaveAttribute('aria-describedby', 'preference-misere-desc');
+    expect(document.getElementById('preference-misere-desc')).toHaveTextContent(/ミゼール/);
   });
 
   it('renders the play phase with the human cards and the declarer badge', async () => {
