@@ -10,8 +10,10 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { KbdBadge } from '../components/KbdBadge';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -114,6 +116,21 @@ function CuckooPageContent() {
 
   const { cardWidth } = useCardDimensions();
   const phaseNames = usePhaseNames('cuckoo', CUCKOO_PHASE_KEYS);
+
+  // Keyboard shortcuts: keep/swap on a TURN, refuse/accept when targeted for a swap.
+  // Enabled only on the human's active turn (see the per-binding `enabled` flags).
+  const kbIsHumanTurn = state?.phase === CuckooPhase.TURN && state.currentPlayerIdx === 0 && !state.gameEndFlag;
+  const kbIsRefuseTarget = state?.phase === CuckooPhase.REFUSE && state.pendingSwapTo === 0 && !state.gameEndFlag;
+  const actionBindings = useMemo(
+    () => [
+      { key: 'k', action: () => exec('keep'), enabled: kbIsHumanTurn },
+      { key: 's', action: () => exec('swap'), enabled: kbIsHumanTurn },
+      { key: 'r', action: () => exec('refuse'), enabled: kbIsRefuseTarget },
+      { key: 'a', action: () => exec('accept'), enabled: kbIsRefuseTarget },
+    ],
+    [exec, kbIsHumanTurn, kbIsRefuseTarget],
+  );
+  useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
 
   if (!state)
     return <GameSkeleton gameKey="cuckoo" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 1 }} />;
@@ -256,9 +273,11 @@ function CuckooPageContent() {
                 <>
                   <button type="button" className={btnSuccess} onClick={() => exec('keep')} disabled={loading}>
                     {t('keepButton')}
+                    <KbdBadge label="K" />
                   </button>
                   <button type="button" className={btnPrimary} onClick={() => exec('swap')} disabled={loading}>
                     {humanIsDealer ? t('swapDealerButton') : t('swapButton')}
+                    <KbdBadge label="S" />
                   </button>
                 </>
               )}
@@ -267,9 +286,11 @@ function CuckooPageContent() {
                 <>
                   <button type="button" className={btnWarning} onClick={() => exec('refuse')} disabled={loading}>
                     {t('refuseButton')}
+                    <KbdBadge label="R" />
                   </button>
                   <button type="button" className={btnSuccess} onClick={() => exec('accept')} disabled={loading}>
                     {t('acceptButton')}
+                    <KbdBadge label="A" />
                   </button>
                 </>
               )}
