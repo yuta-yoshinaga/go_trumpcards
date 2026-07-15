@@ -18,6 +18,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card, RussianBankPlayer } from '../types/card';
 import { RussianBankPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 
 /** Source-zone codes matching the Go `RussianBankZone` enum. */
 const ZONE_RESERVE = 0;
@@ -112,11 +113,36 @@ function RussianBankPageContent() {
   };
 
   /** Renders a single card (or a dashed empty slot). */
-  const slot = (card: Card | undefined, key: string, onClick?: () => void, highlighted = false) => {
+  const slot = (
+    card: Card | undefined,
+    key: string,
+    onClick?: () => void,
+    highlighted = false,
+    zoneName?: string,
+    // `source` slots (reserve/waste) are selectable move-origins → expose aria-pressed.
+    source = false,
+  ) => {
     const cls = `rounded ${highlighted ? 'ring-2 ring-ds-warning' : ''} ${onClick ? 'cursor-pointer' : ''}`;
+    const label = card
+      ? zoneName
+        ? t('slotCardZone', { card: cardAlt(card), zone: zoneName })
+        : cardAlt(card)
+      : zoneName
+        ? t('slotEmptyZone', { zone: zoneName })
+        : t('empty');
+    const ariaPressed = source ? highlighted : undefined;
     if (card) {
       return (
-        <button type="button" key={key} className={cls} onClick={onClick} disabled={!onClick} data-testid={key}>
+        <button
+          type="button"
+          key={key}
+          className={cls}
+          onClick={onClick}
+          disabled={!onClick}
+          data-testid={key}
+          aria-label={label}
+          aria-pressed={ariaPressed}
+        >
           <CardImage card={card} width={w} />
         </button>
       );
@@ -130,7 +156,8 @@ function RussianBankPageContent() {
         onClick={onClick}
         disabled={!onClick}
         data-testid={key}
-        aria-label={t('empty')}
+        aria-label={label}
+        aria-pressed={ariaPressed}
       />
     );
   };
@@ -157,6 +184,8 @@ function RussianBankPageContent() {
               ? () => pickSource(ZONE_RESERVE, opponent, 0, t(opponent ? 'srcOppReserve' : 'srcReserve'))
               : undefined,
             selected?.zone === ZONE_RESERVE && selected.fromOpp === opponent,
+            t(opponent ? 'srcOppReserve' : 'srcReserve'),
+            true,
           )}
         </div>
         <div className="flex flex-col items-center gap-0.5">
@@ -166,6 +195,8 @@ function RussianBankPageContent() {
             `waste-${p.id}`,
             canAct ? () => pickSource(ZONE_WASTE, opponent, 0, t(opponent ? 'srcOppWaste' : 'srcWaste')) : undefined,
             selected?.zone === ZONE_WASTE && selected.fromOpp === opponent,
+            t(opponent ? 'srcOppWaste' : 'srcWaste'),
+            true,
           )}
         </div>
         <div className="flex flex-col items-center gap-0.5">
@@ -199,7 +230,13 @@ function RussianBankPageContent() {
           <span className="text-ds-text-muted text-[11px]">{t('foundationsLabel')}</span>
           <div className="flex gap-1 flex-wrap mt-0.5">
             {state.foundations.map((f, i) =>
-              slot(f[f.length - 1], `foundation-${i}`, selected ? sendToFoundation : undefined),
+              slot(
+                f[f.length - 1],
+                `foundation-${i}`,
+                selected ? sendToFoundation : undefined,
+                false,
+                t('foundationZone', { n: i + 1 }),
+              ),
             )}
           </div>
         </div>
@@ -216,6 +253,11 @@ function RussianBankPageContent() {
                 onClick={canAct ? () => sendToTableau(i) : undefined}
                 disabled={!canAct}
                 data-testid={`tableau-${i}`}
+                aria-label={
+                  col.length > 0
+                    ? t('slotCardZone', { card: cardAlt(col[col.length - 1]), zone: t('srcTableau', { col: i + 1 }) })
+                    : t('slotEmptyZone', { zone: t('srcTableau', { col: i + 1 }) })
+                }
               >
                 {col.length > 0 ? (
                   <CardImage card={col[col.length - 1]} width={w} />
@@ -254,7 +296,9 @@ function RussianBankPageContent() {
 
           {!isGameEnd && selected && (
             <>
-              <span className="text-ds-text-primary text-xs">{t('selectedSource', { src: selected.label })}</span>
+              <span className="text-ds-text-primary text-xs" role="status" data-testid="rb-selected-source">
+                {t('selectedSource', { src: selected.label })}
+              </span>
               <button
                 type="button"
                 className={btnSuccess}

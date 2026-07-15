@@ -82,6 +82,22 @@ describe('RussianBankPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pf', { zone: 0, fromOpp: false, col: 0 }));
   });
 
+  it('labels slots by card + zone and marks the selected source aria-pressed', async () => {
+    renderWithProviders(<RussianBankPage />);
+    // Reserve top is ♦7 in the human's reserve.
+    const reserve = await screen.findByTestId('reserve-0');
+    expect(reserve).toHaveAttribute('aria-label', '♦ 7（自リザーブ）');
+    expect(reserve).toHaveAttribute('aria-pressed', 'false');
+    // An empty tableau column names its zone.
+    expect(screen.getByTestId('tableau-0')).toHaveAttribute('aria-label', 'タブロー1（空き）');
+    // Selecting the reserve flips aria-pressed and announces the source.
+    fireEvent.click(reserve);
+    expect(screen.getByTestId('reserve-0')).toHaveAttribute('aria-pressed', 'true');
+    const src = screen.getByTestId('rb-selected-source');
+    expect(src).toHaveAttribute('role', 'status');
+    expect(src).toHaveTextContent('自リザーブ');
+  });
+
   it('selects a source then moves it to a tableau column', async () => {
     renderWithProviders(<RussianBankPage />);
     const reserve = await screen.findByTestId('reserve-0');
