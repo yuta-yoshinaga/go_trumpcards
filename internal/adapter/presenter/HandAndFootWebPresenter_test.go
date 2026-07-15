@@ -230,3 +230,10 @@ func TestHandAndFootWebPresenter_ActionLogOutput(t *testing.T) {
 		m.AssertExpectations(t)
 	})
 }
+
+func TestHandAndFootWebPresenter_HintOutput(t *testing.T) {
+	// Web hints are client-side, so HintOutput mirrors Output.
+	p := new(presenter.HandAndFootWebPresenter)
+	m, _ := setupHandAndFootWebMockWithPlayers()
+	assert.Equal(t, p.Output(m, nil), p.HintOutput(m))
+}

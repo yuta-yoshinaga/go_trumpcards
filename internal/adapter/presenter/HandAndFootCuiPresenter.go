@@ -133,6 +133,27 @@ func (p *HandAndFootCuiPresenter) Output(g interfaces.HandAndFootGame, lastErr e
 	})
 }
 
+// HintOutput lists the meld groups the human can currently form, reusing the
+// shared domain suggestion logic. Returns a "no meld" message when none exist.
+func (p *HandAndFootCuiPresenter) HintOutput(g interfaces.HandAndFootGame) string {
+	if !g.IsHumanTurn() {
+		return i18n.T("handandfoot.hintNotYourTurn") + "\n"
+	}
+	melds := g.SuggestMelds(g.GetCurrentPlayerIdx())
+	if len(melds) == 0 {
+		return i18n.T("handandfoot.hintNone") + "\n"
+	}
+	parts := make([]string, len(melds))
+	for i, group := range melds {
+		cards := make([]string, len(group))
+		for j, c := range group {
+			cards[j] = cuiCardStr(c)
+		}
+		parts[i] = "[" + strings.Join(cards, " ") + "]"
+	}
+	return color.Yellow(i18n.Tf("handandfoot.hintMeld", "melds", strings.Join(parts, ", "))) + "\n"
+}
+
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *HandAndFootCuiPresenter) ActionLogOutput(g interfaces.HandAndFootGame) string {
 	return actionLogOutputText(g)

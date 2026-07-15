@@ -7,6 +7,7 @@
   "helpDiscard": "  d <idx>              discard a card",
   "helpGoOut": "  go                   go out (in foot + required canastas)",
   "helpNextRound": "  nr                   next round",
+  "helpHint": "  h | hint             show meld candidates you can play",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "helpSetLimit": "  sl <n>               point limit",
   "header": "Round: {{round}}  Stock: {{stock}}  Discard: {{discard}}",
@@ -37,5 +38,8 @@
   "discardPhase": "Discard phase.",
   "roundEnd": "The round has ended.",
   "result.humanWin": "Game over! Your team wins!",
-  "result.cpuWin": "Game over! The CPU team wins!"
+  "result.cpuWin": "Game over! The CPU team wins!",
+  "hintMeld": "[HINT: meld candidates {{melds}}]",
+  "hintNone": "No melds can be played right now.",
+  "hintNotYourTurn": "It is not your turn right now."
 }

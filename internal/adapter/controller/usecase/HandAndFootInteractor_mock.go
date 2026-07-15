@@ -53,6 +53,10 @@ func (_m *MockHandAndFootInteractor) GetConfig() domain.HandAndFootConfig {
 	return _m.Called().Get(0).(domain.HandAndFootConfig)
 }
 
+func (_m *MockHandAndFootInteractor) Hint() string {
+	return _m.Called().String(0)
+}
+
 func (_m *MockHandAndFootInteractor) ActionLog() string {
 	return _m.Called().String(0)
 }

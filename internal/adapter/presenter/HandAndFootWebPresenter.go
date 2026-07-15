@@ -126,3 +126,9 @@ func (p *HandAndFootWebPresenter) buildMessage(g interfaces.HandAndFootGame, las
 func (p *HandAndFootWebPresenter) ActionLogOutput(g interfaces.HandAndFootGame) string {
 	return actionLogOutputJSON(g)
 }
+
+// HintOutput ヒントを出力する。Web ではヒントはクライアント側 (useGameHint) で
+// 算出するため、通常の状態出力を返す。HandAndFootPresenter インタフェースを満たすための実装。
+func (p *HandAndFootWebPresenter) HintOutput(g interfaces.HandAndFootGame) string {
+	return p.Output(g, nil)
+}

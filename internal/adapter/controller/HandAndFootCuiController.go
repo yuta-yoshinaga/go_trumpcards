@@ -16,6 +16,7 @@ var handAndFootNoArgCommands = cuiutil.NewCommandMap[usecase.HandAndFootInteract
 	Add(usecase.HandAndFootInteractorIF.SkipMeld, "sm", "skipmeld").
 	Add(usecase.HandAndFootInteractorIF.GoOut, "go", "goout").
 	Add(usecase.HandAndFootInteractorIF.NextRound, "nr", "nextround").
+	Add(usecase.HandAndFootInteractorIF.Hint, "h", "hint").
 	Add(usecase.HandAndFootInteractorIF.ActionLog, "log", "l")
 
 // handAndFootArgfulCommands lists alias names for argful commands handled in the

@@ -2651,6 +2651,7 @@ var gameRegistry = []GameRegistryEntry{
 					"handandfoot.helpDiscard",
 					"handandfoot.helpGoOut",
 					"handandfoot.helpNextRound",
+					"handandfoot.helpHint",
 				},
 				ExtraCommandLines: []string{"  l                    action log"},
 				SettingKeys: []string{
