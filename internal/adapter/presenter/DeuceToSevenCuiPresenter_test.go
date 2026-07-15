@@ -118,15 +118,19 @@ func TestDeuceToSevenCuiPresenter_HintOutput(t *testing.T) {
 		dt.SetPhase(domain.DeuceToSevenPhaseDraw)
 		dt.SetCurrentTurn(0)
 		for _, c := range []*domain.Card{
-			domain.NewCard(domain.CardDesignSpade, 2, false),
-			domain.NewCard(domain.CardDesignHeart, 2, false), // paired rank → discard the dup
-			domain.NewCard(domain.CardDesignDiamond, 13, false),
-			domain.NewCard(domain.CardDesignClover, 12, false),
-			domain.NewCard(domain.CardDesignSpade, 11, false),
+			domain.NewCard(domain.CardDesignSpade, 2, false),   // idx 0 — kept
+			domain.NewCard(domain.CardDesignHeart, 3, false),   // idx 1 — kept
+			domain.NewCard(domain.CardDesignDiamond, 4, false), // idx 2 — kept
+			domain.NewCard(domain.CardDesignClover, 13, false), // idx 3 — discard (K)
+			domain.NewCard(domain.CardDesignSpade, 12, false),  // idx 4 — discard (Q)
 		} {
 			players[0].AddCard(c)
 		}
-		assert.Contains(t, pres.HintOutput(dt), "交換")
+		out := pres.HintOutput(dt)
+		assert.Contains(t, out, "交換")
+		// The copy-paste command must be space-separated so `e` parses every index
+		// (discards are ordered highest-value first: K=idx3, Q=idx4).
+		assert.Contains(t, out, "e 3 4")
 	})
 
 	t.Run("recommends standing pat on a made low", func(t *testing.T) {

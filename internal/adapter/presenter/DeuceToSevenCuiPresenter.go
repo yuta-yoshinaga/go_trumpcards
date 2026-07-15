@@ -156,7 +156,9 @@ func (dcp *DeuceToSevenCuiPresenter) HintOutput(g interfaces.DeuceToSevenGame) s
 		cardParts[i] = cuiCardStr(human.GetCard(hi))
 	}
 	return i18n.Tf("deucetoseven.hintExchange",
-		"idxs", strings.Join(idxParts, ", "), "cards", strings.Join(cardParts, ",")) + "\n"
+		"idxs", strings.Join(idxParts, ", "),
+		"cards", strings.Join(cardParts, ","),
+		"cmd", strings.Join(idxParts, " ")) + "\n"
 }
 
 // ActionLogOutput renders the action log as plain text.

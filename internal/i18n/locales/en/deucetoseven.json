@@ -34,7 +34,7 @@
   "resultName": "  {{name}}",
   "wonAmount": " → won {{total}} chips",
   "gameEnd": "Game over",
-  "hintExchange": "Suggestion: exchange hand [{{idxs}}] ({{cards}}) with e {{idxs}}",
+  "hintExchange": "Suggestion: exchange hand [{{idxs}}] ({{cards}}) with e {{cmd}}",
   "hintStandPat": "Suggestion: made low — stand pat (s).",
   "hintNotYourTurn": "It is not your draw phase right now."
 }
