@@ -109,3 +109,11 @@ func TestCassinoWebPresenter_ActionLog(t *testing.T) {
 	out := p.ActionLogOutput(cg)
 	assert.NotEmpty(t, out)
 }
+
+func TestCassinoWebPresenter_HintOutput(t *testing.T) {
+	// Web hints are client-side, so HintOutput mirrors Output.
+	p := new(presenter.CassinoWebPresenter)
+	players := makeCassinoPlayersForPresenter()
+	cg := domain.NewCassino(domain.NewTrumpCards(0), players, domain.DefaultCassinoConfig())
+	assert.Equal(t, p.Output(cg, nil), p.HintOutput(cg))
+}

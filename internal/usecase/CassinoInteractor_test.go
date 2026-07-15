@@ -40,6 +40,11 @@ func TestCassinoInteractor_Methods(t *testing.T) {
 		assert.Equal(t, mockOutput, ci.Reset())
 	})
 
+	t.Run("Hint delegates to the presenter", func(t *testing.T) {
+		ppMock.On("HintOutput", mock.Anything).Return("hint_output")
+		assert.Equal(t, "hint_output", ci.Hint())
+	})
+
 	t.Run("Take with nothing returns error output", func(t *testing.T) {
 		// After Reset the player has 4 cards. A legal take depends on the deal.
 		// Without knowing specific cards, just assert output string type.
