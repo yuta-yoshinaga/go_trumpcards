@@ -25,6 +25,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { SpoonsResponse } from '../types/card';
 import { SpoonsPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseSpoonsCommand, SPOONS_HELP } from '../utils/cli/commands/spoonsCommands';
 import { formatSpoonsState } from '../utils/cli/formatters/spoonsFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -267,7 +268,8 @@ function SpoonsPageContent() {
                         onClick={() => exec('pass', { cardIndex: i })}
                         disabled={loading}
                         className="p-0 bg-transparent border-0 cursor-pointer disabled:cursor-not-allowed"
-                        aria-label={t('passButton')}
+                        aria-label={t('passCardAria', { card: cardAlt(c) })}
+                        data-testid={`spoons-pass-${i}`}
                       >
                         {card}
                       </button>
@@ -288,7 +290,13 @@ function SpoonsPageContent() {
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="spoons-grab">
               {state.grabWindowOpen && !isGameEnd && (
                 <>
-                  <span className="text-ds-warning text-sm font-semibold mr-1">{t('grabNotice')}</span>
+                  <span
+                    className="text-ds-warning text-sm font-semibold mr-1"
+                    role="alert"
+                    data-testid="spoons-grab-notice"
+                  >
+                    {t('grabNotice')}
+                  </span>
                   <button
                     type="button"
                     className={`${btnWarning} motion-safe:animate-pulse`}

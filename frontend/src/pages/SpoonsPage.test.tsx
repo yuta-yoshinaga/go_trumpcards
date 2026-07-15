@@ -98,16 +98,19 @@ describe('SpoonsPage', () => {
     expect(screen.getByText(/山札: 36/)).toBeInTheDocument();
   });
 
-  it('renders the human hand as pass buttons on the human pass turn', async () => {
+  it('renders the human hand as pass buttons naming each card', async () => {
     renderWithProviders(<SpoonsPage />);
-    await waitFor(() => expect(screen.getAllByRole('button', { name: '渡す' }).length).toBe(4));
+    // Each pass button names the card it would hand over (e.g. ♠A → "♠ A を渡す").
+    await waitFor(() => expect(screen.getAllByRole('button', { name: /を渡す$/ }).length).toBe(4));
+    expect(screen.getByRole('button', { name: '♠ A を渡す' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♣ 3 を渡す' })).toBeInTheDocument();
   });
 
   it('dispatches pass with the clicked card index', async () => {
     renderWithProviders(<SpoonsPage />);
-    const buttons = await screen.findAllByRole('button', { name: '渡す' });
+    const clover = await screen.findByRole('button', { name: '♣ 3 を渡す' }); // hand index 2
     mockExec.mockClear();
-    fireEvent.click(buttons[2]);
+    fireEvent.click(clover);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pass', { cardIndex: 2 }));
   });
 
@@ -115,7 +118,14 @@ describe('SpoonsPage', () => {
     mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1, isHumanTurn: false }));
     renderWithProviders(<SpoonsPage />);
     await waitFor(() => expect(screen.getByText(/プレイヤー/)).toBeInTheDocument());
-    expect(screen.queryByRole('button', { name: '渡す' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /を渡す$/ })).not.toBeInTheDocument();
+  });
+
+  it('announces the grab window opening via role=alert', async () => {
+    mockExec.mockResolvedValue(grabState);
+    renderWithProviders(<SpoonsPage />);
+    const notice = await screen.findByTestId('spoons-grab-notice');
+    expect(notice).toHaveAttribute('role', 'alert');
   });
 
   it('shows the grab button when the grab window is open and dispatches grab', async () => {
@@ -137,7 +147,7 @@ describe('SpoonsPage', () => {
   it('chimes once when the grab window opens (false→true)', async () => {
     // Mount in the pass phase (window closed) → no chime yet.
     renderWithProviders(<SpoonsPage />);
-    const buttons = await screen.findAllByRole('button', { name: '渡す' });
+    const buttons = await screen.findAllByRole('button', { name: /を渡す$/ });
     expect(mockPlaySound).not.toHaveBeenCalled();
     // Passing a card opens the grab window in the response → chime fires once.
     mockExec.mockResolvedValueOnce(grabState);
@@ -154,7 +164,7 @@ describe('SpoonsPage', () => {
 
   it('does not re-chime while the grab window stays open across updates', async () => {
     renderWithProviders(<SpoonsPage />);
-    const buttons = await screen.findAllByRole('button', { name: '渡す' });
+    const buttons = await screen.findAllByRole('button', { name: /を渡す$/ });
     mockExec.mockResolvedValueOnce(grabState);
     fireEvent.click(buttons[0]);
     await waitFor(() => expect(mockPlaySound).toHaveBeenCalledTimes(1));
