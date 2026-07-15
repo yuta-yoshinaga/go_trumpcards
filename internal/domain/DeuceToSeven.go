@@ -778,6 +778,57 @@ func (d *DeuceToSeven) cpuDecideExchange(idx int) []int {
 // discard: pair duplicates and high cards (value 9+ or Ace), keeping the lowest
 // distinct cards (2..8). If keeping every card would leave a made straight or
 // flush (no natural discard), the single highest card is dropped to break it.
+// SuggestExchange は playerIdx の推奨交換カードインデックスを返す。空 (nil) の場合は
+// 完成ロー (スタンドパット) 推奨。既に 8 以下で完成したローならスタンドパットを推奨し、
+// それ以外は deuceToSevenDiscardIndices の交換候補を返す。
+func (d *DeuceToSeven) SuggestExchange(playerIdx int) []int {
+	players := d.GetPlayers()
+	if playerIdx < 0 || playerIdx >= len(players) {
+		return nil
+	}
+	pl := players[playerIdx]
+	if deuceToSevenIsPatLow(pl) {
+		return nil
+	}
+	return deuceToSevenDiscardIndices(pl)
+}
+
+// deuceToSevenIsPatLow は手札が完成ロー (8 以下で立てられるパット) かを判定する。
+// 条件: 5 枚がすべて異なるランクで 8 以下 (エースは高札扱いで不可)、かつストレートでも
+// フラッシュでもないこと。
+func deuceToSevenIsPatLow(pl *DeuceToSevenPlayer) bool {
+	if pl.GetCardsSize() != 5 {
+		return false
+	}
+	ranks := make([]int, 0, 5)
+	firstSuit := pl.GetCard(0).GetDesign()
+	flush := true
+	seen := make(map[int]bool, 5)
+	for i := 0; i < 5; i++ {
+		c := pl.GetCard(i)
+		v := c.GetValue()
+		if v == 1 {
+			v = 14 // Ace is always high (bad for low)
+		}
+		if v > 8 || seen[v] {
+			return false // too high or paired
+		}
+		seen[v] = true
+		ranks = append(ranks, v)
+		if c.GetDesign() != firstSuit {
+			flush = false
+		}
+	}
+	if flush {
+		return false
+	}
+	sort.Ints(ranks)
+	if ranks[len(ranks)-1]-ranks[0] == 4 {
+		return false // 5 distinct consecutive ranks = straight
+	}
+	return true
+}
+
 func deuceToSevenDiscardIndices(pl *DeuceToSevenPlayer) []int {
 	type cardInfo struct{ idx, low int } // low = 2-7 value with Ace = 14
 	n := pl.GetCardsSize()

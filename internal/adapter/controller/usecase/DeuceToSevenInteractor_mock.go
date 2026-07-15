@@ -50,6 +50,11 @@ func (m *MockDeuceToSevenInteractor) Stand() string {
 	return ret.Get(0).(string)
 }
 
+func (m *MockDeuceToSevenInteractor) Hint() string {
+	ret := m.Called()
+	return ret.Get(0).(string)
+}
+
 // ActionLog mock.
 func (m *MockDeuceToSevenInteractor) ActionLog() string {
 	ret := m.Called()

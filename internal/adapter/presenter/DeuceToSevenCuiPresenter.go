@@ -127,6 +127,40 @@ func (dcp *DeuceToSevenCuiPresenter) Output(g interfaces.DeuceToSevenGame, lastE
 	})
 }
 
+// HintOutput recommends which cards to exchange (or to stand pat) during the
+// human's draw phase, reusing the shared domain suggestion logic.
+func (dcp *DeuceToSevenCuiPresenter) HintOutput(g interfaces.DeuceToSevenGame) string {
+	if g.GetGameEndFlag() || g.GetPhase() != domain.DeuceToSevenPhaseDraw {
+		return i18n.T("deucetoseven.hintNotYourTurn") + "\n"
+	}
+	players := g.GetPlayers()
+	humanSeat := -1
+	for i, pl := range players {
+		if pl != nil && pl.GetIsHuman() {
+			humanSeat = i
+			break
+		}
+	}
+	if humanSeat < 0 || g.GetCurrentTurn() != humanSeat {
+		return i18n.T("deucetoseven.hintNotYourTurn") + "\n"
+	}
+	ex := g.SuggestExchange(humanSeat)
+	if len(ex) == 0 {
+		return i18n.T("deucetoseven.hintStandPat") + "\n"
+	}
+	human := players[humanSeat]
+	idxParts := make([]string, len(ex))
+	cardParts := make([]string, len(ex))
+	for i, hi := range ex {
+		idxParts[i] = strconv.Itoa(hi)
+		cardParts[i] = cuiCardStr(human.GetCard(hi))
+	}
+	return i18n.Tf("deucetoseven.hintExchange",
+		"idxs", strings.Join(idxParts, ", "),
+		"cards", strings.Join(cardParts, ","),
+		"cmd", strings.Join(idxParts, " ")) + "\n"
+}
+
 // ActionLogOutput renders the action log as plain text.
 func (dcp *DeuceToSevenCuiPresenter) ActionLogOutput(g interfaces.DeuceToSevenGame) string {
 	return actionLogOutputText(g)

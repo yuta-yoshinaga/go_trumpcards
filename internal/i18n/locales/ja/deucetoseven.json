@@ -8,6 +8,7 @@
   "helpAllIn": "  a                    オールイン",
   "helpExchange": "  e [0-4]              カード交換 (例: e 0 2)",
   "helpStand": "  s                    スタンドパット (交換なし)",
+  "helpHint": "  h | hint             交換すべきカードの推奨を表示",
   "helpBettingLimit": "  bl [0-2]             ベッティングリミット (0=Fixed, 1=PotLimit, 2=NoLimit)",
   "helpCpuCount": "  scc [1-3]            CPU人数",
   "outputTitle": "2-7 Triple Draw (Deuce to Seven Lowball)",
@@ -32,5 +33,8 @@
   "resultHand": "  {{name}}: {{hand}}",
   "resultName": "  {{name}}",
   "wonAmount": " → {{total}}チップ獲得",
-  "gameEnd": "ゲーム終了"
+  "gameEnd": "ゲーム終了",
+  "hintExchange": "推奨: 手札 [{{idxs}}] ({{cards}}) を交換 (e {{cmd}})",
+  "hintStandPat": "推奨: 完成ロー。スタンドパット (s) しましょう。",
+  "hintNotYourTurn": "今はあなたのドローフェーズではありません。"
 }

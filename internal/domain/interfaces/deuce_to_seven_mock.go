@@ -43,6 +43,15 @@ func (m *MockDeuceToSevenGame) GetPlayers() []*domain.DeuceToSevenPlayer {
 	return ret.Get(0).([]*domain.DeuceToSevenPlayer)
 }
 
+// SuggestExchange mock.
+func (m *MockDeuceToSevenGame) SuggestExchange(playerIdx int) []int {
+	ret := m.Called(playerIdx)
+	if v := ret.Get(0); v != nil {
+		return v.([]int)
+	}
+	return nil
+}
+
 // GetPhase mock.
 func (m *MockDeuceToSevenGame) GetPhase() int {
 	ret := m.Called()

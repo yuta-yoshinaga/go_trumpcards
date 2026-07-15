@@ -1092,6 +1092,7 @@ var gameRegistry = []GameRegistryEntry{
 					"deucetoseven.helpAllIn",
 					"deucetoseven.helpExchange",
 					"deucetoseven.helpStand",
+					"deucetoseven.helpHint",
 				},
 				SettingKeys: []string{"deucetoseven.helpBettingLimit", "deucetoseven.helpCpuCount"},
 			})

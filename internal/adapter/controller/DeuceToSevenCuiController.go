@@ -44,6 +44,7 @@ func (dcc *DeuceToSevenCuiController) Exec(command string) string {
 		[]string{
 			"e", "exchange", "s", "stand", "b", "bet", "c", "call", "ra", "raise",
 			"f", "fold", "ck", "check", "a", "allin",
+			"h", "hint",
 			"bl", "bettinglimit", "scc", "setcpucount", "mai", "metaai",
 			"log", "l",
 		},
@@ -54,6 +55,8 @@ func (dcc *DeuceToSevenCuiController) Exec(command string) string {
 				return cuiutil.PrependSkippedWarning(dcc.di.Exchange(indices), skipped), true
 			case "s", "stand":
 				return dcc.di.Stand(), true
+			case "h", "hint":
+				return dcc.di.Hint(), true
 			case "b", "bet":
 				amount := parseCuiAmount(args)
 				return dcc.di.Action(domain.DeuceToSevenActionBet, amount, 0), true
