@@ -48,6 +48,16 @@ func TestDeuceToSevenInteractor_Reset(t *testing.T) {
 	mg.AssertCalled(t, "Reset")
 }
 
+func TestDeuceToSevenInteractor_Hint(t *testing.T) {
+	mg, mp := newDeuceToSevenMocks()
+	di := usecase.NewDeuceToSevenInteractor(mg, mp)
+
+	mp.On("HintOutput", mg).Return("hint output")
+
+	assert.Equal(t, "hint output", di.Hint())
+	mp.AssertCalled(t, "HintOutput", mg)
+}
+
 func TestDeuceToSevenInteractor_Reset_Error(t *testing.T) {
 	mg, mp := newDeuceToSevenMocks()
 	di := usecase.NewDeuceToSevenInteractor(mg, mp)

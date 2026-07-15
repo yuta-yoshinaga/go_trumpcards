@@ -8,6 +8,7 @@
   "helpAllIn": "  a                    all-in",
   "helpExchange": "  e [0-4]              exchange cards (e.g. e 0 2)",
   "helpStand": "  s                    stand pat (no exchange)",
+  "helpHint": "  h | hint             suggest which cards to exchange",
   "helpBettingLimit": "  bl [0-2]             betting limit (0=Fixed, 1=PotLimit, 2=NoLimit)",
   "helpCpuCount": "  scc [1-3]            CPU player count",
   "outputTitle": "2-7 Triple Draw (Deuce to Seven Lowball)",
@@ -32,5 +33,8 @@
   "resultHand": "  {{name}}: {{hand}}",
   "resultName": "  {{name}}",
   "wonAmount": " → won {{total}} chips",
-  "gameEnd": "Game over"
+  "gameEnd": "Game over",
+  "hintExchange": "Suggestion: exchange hand [{{idxs}}] ({{cards}}) with e {{idxs}}",
+  "hintStandPat": "Suggestion: made low — stand pat (s).",
+  "hintNotYourTurn": "It is not your draw phase right now."
 }

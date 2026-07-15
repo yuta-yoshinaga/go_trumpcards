@@ -153,3 +153,10 @@ func TestDeuceToSevenWebPresenter_ActionLogOutput(t *testing.T) {
 	got := pres.ActionLogOutput(dt)
 	assert.NotEmpty(t, got)
 }
+
+func TestDeuceToSevenWebPresenter_HintOutput(t *testing.T) {
+	// Web hints are client-side, so HintOutput mirrors Output.
+	pres := new(presenter.DeuceToSevenWebPresenter)
+	dt, _ := makeDeuceToSevenForPresenter()
+	assert.Equal(t, pres.Output(dt, nil), pres.HintOutput(dt))
+}
