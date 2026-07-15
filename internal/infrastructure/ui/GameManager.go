@@ -1193,6 +1193,7 @@ var gameRegistry = []GameRegistryEntry{
 					"sevenbridge.helpLayoff",
 					"sevenbridge.helpDiscard",
 					"sevenbridge.helpNextRound",
+					"sevenbridge.helpHint",
 				},
 				SettingKeys: []string{"sevenbridge.helpSetDifficulty", "sevenbridge.helpSetLimit"},
 			})

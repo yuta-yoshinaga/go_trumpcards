@@ -7,6 +7,7 @@
   "helpLayoff": "  lo <pIdx> <mIdx> <cIdx>  add a card to an existing meld",
   "helpDiscard": "  d <idx>              discard a card",
   "helpNextRound": "  nr                   next round",
+  "helpHint": "  h | hint             suggest a meld or discard",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "helpSetLimit": "  sl <n>               point limit",
   "header": "Round: {{round}}  Stock: {{stock}}",
@@ -23,5 +24,9 @@
   "promptPlayHelpLayoff": "lo <pIdx> <mIdx> <cIdx>: add a card to an existing meld",
   "promptPlayHelpDiscard": "d <idx>: discard a card",
   "promptRoundEnd": "Round complete",
-  "promptRoundEndHelp": "nr / nextround: advance to next round"
+  "promptRoundEndHelp": "nr / nextround: advance to next round",
+  "hintMeld": "Suggestion: meld hand [{{idxs}}] ({{cards}}) with m {{idxs}}",
+  "hintDiscard": "Suggestion: discard hand {{idx}} ({{card}}) with d {{idx}}",
+  "hintNoMove": "No move can be recommended.",
+  "hintNotYourTurn": "It is not your play phase right now."
 }

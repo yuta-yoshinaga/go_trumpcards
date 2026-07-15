@@ -49,6 +49,10 @@ func (_m *MockSevenBridgeInteractor) NextRound() string {
 	return _m.Called().String(0)
 }
 
+func (_m *MockSevenBridgeInteractor) Hint() string {
+	return _m.Called().String(0)
+}
+
 func (_m *MockSevenBridgeInteractor) GetConfig() domain.SevenBridgeConfig {
 	return _m.Called().Get(0).(domain.SevenBridgeConfig)
 }

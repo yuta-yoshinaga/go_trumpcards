@@ -693,6 +693,29 @@ func (g *SevenBridge) findChiIndices(playerIdx int, top *Card) ([]int, bool) {
 }
 
 // findBestMeldIndices プレイヤーの手札から最大のメルド（3 枚以上）を探す
+// SuggestMeld は playerIdx の最善メルド (手札インデックス) を返す。メルドできる組が
+// 無ければ nil。CUI ヒント用に findBestMeldIndices を公開する薄いラッパー。
+func (g *SevenBridge) SuggestMeld(playerIdx int) []int {
+	p := g.GetPlayer(playerIdx)
+	if p == nil {
+		return nil
+	}
+	if idxs, ok := g.findBestMeldIndices(p); ok {
+		return idxs
+	}
+	return nil
+}
+
+// SuggestDiscard は playerIdx の推奨ディスカード手札インデックスを返す。手札が無ければ -1。
+// CUI ヒント用に chooseCpuDiscard を公開する薄いラッパー。
+func (g *SevenBridge) SuggestDiscard(playerIdx int) int {
+	p := g.GetPlayer(playerIdx)
+	if p == nil || p.GetCardsSize() == 0 {
+		return -1
+	}
+	return g.chooseCpuDiscard(p)
+}
+
 func (g *SevenBridge) findBestMeldIndices(p *SevenBridgePlayer) ([]int, bool) {
 	n := p.GetCardsSize()
 	// セット候補

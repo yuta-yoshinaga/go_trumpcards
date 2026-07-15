@@ -7,6 +7,7 @@
   "helpLayoff": "  lo <pIdx> <mIdx> <cIdx>  既存メルドにカード追加",
   "helpDiscard": "  d <idx>              カードを捨てる",
   "helpNextRound": "  nr                   次のラウンドへ",
+  "helpHint": "  h | hint             メルド/ディスカードの推奨を表示",
   "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "helpSetLimit": "  sl <n>               ポイント上限",
   "header": "ラウンド: {{round}}  山札: {{stock}}枚",
@@ -23,5 +24,9 @@
   "promptPlayHelpLayoff": "lo <pIdx> <mIdx> <cIdx>・・・既存メルドにカード追加",
   "promptPlayHelpDiscard": "d <idx>・・・カードを捨てる",
   "promptRoundEnd": "ラウンド終了",
-  "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ"
+  "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
+  "hintMeld": "推奨: 手札 [{{idxs}}] ({{cards}}) でメルド (m {{idxs}})",
+  "hintDiscard": "推奨: 手札 {{idx}} ({{card}}) を捨てる (d {{idx}})",
+  "hintNoMove": "推奨できる手がありません。",
+  "hintNotYourTurn": "今はあなたのプレイフェーズではありません。"
 }

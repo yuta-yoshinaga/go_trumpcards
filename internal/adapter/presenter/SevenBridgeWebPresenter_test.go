@@ -165,3 +165,10 @@ func TestSevenBridgeWebPresenter_ActionLogOutput(t *testing.T) {
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "draw_stock")
 }
+
+func TestSevenBridgeWebPresenter_HintOutput(t *testing.T) {
+	// Web hints are client-side, so HintOutput mirrors Output.
+	p := new(presenter.SevenBridgeWebPresenter)
+	m, _ := setupSevenBridgeWebMockWithPlayers()
+	assert.Equal(t, p.Output(m, nil), p.HintOutput(m))
+}

@@ -32,6 +32,8 @@ type SevenBridgeInteractorIF interface {
 	NextRound() string
 	// GetConfig 現在の設定を取得
 	GetConfig() domain.SevenBridgeConfig
+	// Hint ヒント取得
+	Hint() string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
@@ -150,6 +152,11 @@ func (ci *SevenBridgeInteractor) GetConfig() domain.SevenBridgeConfig {
 // ActionLog 棋譜を出力する
 func (ci *SevenBridgeInteractor) ActionLog() string {
 	return ci.gp.ActionLogOutput(ci.Game)
+}
+
+// Hint ヒント取得
+func (ci *SevenBridgeInteractor) Hint() string {
+	return ci.gp.HintOutput(ci.Game)
 }
 
 // runCpuTurns CPU ターンを連続で処理する

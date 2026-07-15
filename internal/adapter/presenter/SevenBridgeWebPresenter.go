@@ -100,3 +100,9 @@ func (p *SevenBridgeWebPresenter) buildMessage(g interfaces.SevenBridgeGame, las
 func (p *SevenBridgeWebPresenter) ActionLogOutput(g interfaces.SevenBridgeGame) string {
 	return actionLogOutputJSON(g)
 }
+
+// HintOutput ヒントを出力する。Web ではヒントはクライアント側 (useGameHint) で
+// 算出するため、通常の状態出力を返す。SevenBridgePresenter インタフェースを満たすための実装。
+func (p *SevenBridgeWebPresenter) HintOutput(g interfaces.SevenBridgeGame) string {
+	return p.Output(g, nil)
+}

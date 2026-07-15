@@ -150,6 +150,42 @@ func TestSevenBridgeCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestSevenBridgeCuiPresenter_HintOutput(t *testing.T) {
+	p := new(presenter.SevenBridgeCuiPresenter)
+
+	newHintMock := func() *interfaces.MockSevenBridgeGame {
+		m := new(interfaces.MockSevenBridgeGame)
+		human := domain.NewSevenBridgePlayer(true)
+		for _, v := range []int{3, 3, 3, 8} {
+			human.AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
+		}
+		m.On("GetPhase").Return(domain.SevenBridgePhasePlay)
+		m.On("IsHumanTurn").Return(true)
+		m.On("GetCurrentPlayerIdx").Return(0)
+		m.On("GetPlayer", 0).Return(human)
+		return m
+	}
+
+	t.Run("recommends a meld when one is available", func(t *testing.T) {
+		m := newHintMock()
+		m.On("SuggestMeld", 0).Return([]int{0, 1, 2})
+		assert.Contains(t, p.HintOutput(m), "メルド")
+	})
+
+	t.Run("recommends a discard when no meld is available", func(t *testing.T) {
+		m := newHintMock()
+		m.On("SuggestMeld", 0).Return(([]int)(nil))
+		m.On("SuggestDiscard", 0).Return(3)
+		assert.Contains(t, p.HintOutput(m), "捨てる")
+	})
+
+	t.Run("declines outside the human's play phase", func(t *testing.T) {
+		m := new(interfaces.MockSevenBridgeGame)
+		m.On("GetPhase").Return(domain.SevenBridgePhaseDraw)
+		assert.Contains(t, p.HintOutput(m), "プレイフェーズではありません")
+	})
+}
+
 func TestSevenBridgeCuiPresenter_ActionLogOutput(t *testing.T) {
 	orig := color.NoColor()
 	color.SetNoColor(true)
