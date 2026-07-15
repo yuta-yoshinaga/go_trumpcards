@@ -19,6 +19,8 @@
   "promptDiscardHelp": "d <idx,idx>: discard 2 to the crib",
   "promptPegging": "{{name}} to act (pegging phase)",
   "promptPeggingHelp": "p <idx>: play a card",
+  "legalPegLegend": "Playable: {{indices}}",
+  "mustGo": "No playable card → declare go",
   "promptPeggingGo": "go: declare Go",
   "promptShow": "Show phase",
   "promptShowHelp": "sn / shownext: next score calculation",
