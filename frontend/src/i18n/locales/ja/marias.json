@@ -17,6 +17,12 @@
   "trick": "トリック {{n}}",
   "trump": "切り札: {{suit}}",
   "marriageAvailable": "マリッジ可能: {{list}}",
+  "suitName": {
+    "spade": "スペード",
+    "club": "クラブ",
+    "heart": "ハート",
+    "diamond": "ダイヤ"
+  },
   "cards": "{{count}}枚",
   "tricks": "{{count}}トリック",
   "currentTrick": "現在のトリック",
