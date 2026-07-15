@@ -106,12 +106,28 @@ describe('KnockoutWhistPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('selecttrump', { trumpSuit: 3 }));
   });
 
-  it('greys out an eliminated player panel', async () => {
+  it('greys out an eliminated player panel with a readable (not too faint) dim', async () => {
     const eliminatedState = makeKnockoutWhistState();
     eliminatedState.players[1] = { ...eliminatedState.players[1], eliminated: true, dogbones: 0 };
     mockExec.mockResolvedValue(eliminatedState);
-    renderWithProviders(<KnockoutWhistPage />);
+    const { container } = renderWithProviders(<KnockoutWhistPage />);
     await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
     expect(screen.getAllByText(/脱落/).length).toBeGreaterThan(0);
+    // Eliminated rows keep the strike-through but use a lighter dim for WCAG-AA legibility.
+    const rows = container.querySelectorAll('[data-eliminated="true"]');
+    expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) {
+      expect(row.className).toContain('opacity-70');
+      expect(row.className).not.toContain('opacity-40');
+    }
+  });
+
+  it('renders the leader badge with an opaque, high-contrast surface', async () => {
+    // Default state: leadPlayerIdx 0 → the human is the leader.
+    renderWithProviders(<KnockoutWhistPage />);
+    const badge = await screen.findByText('リーダー');
+    // Opaque surface token (badgeInfoColors) instead of the old translucent bg-white/20.
+    expect(badge.className).toContain('bg-ds-surface');
+    expect(badge.className).not.toContain('bg-white/20');
   });
 });
