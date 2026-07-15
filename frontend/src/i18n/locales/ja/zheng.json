@@ -46,5 +46,10 @@
     "pairRun": "連続ペア",
     "bomb": "爆弾",
     "jokerBomb": "ジョーカーボム"
+  },
+  "announce": {
+    "yourTurn": "あなたの手番です",
+    "yourTurnLead": "あなたの手番です。リードなのでパスできません。",
+    "finished": "あがりました（{{rank}}）"
   }
 }

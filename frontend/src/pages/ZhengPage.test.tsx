@@ -96,6 +96,34 @@ describe('ZhengPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0]));
   });
 
+  it('exposes a polite turn/finish live region', async () => {
+    renderWithProviders(<ZhengPage />);
+    const announce = await screen.findByTestId('zheng-turn-announce');
+    expect(announce).toHaveAttribute('role', 'status');
+    expect(announce).toHaveAttribute('aria-live', 'polite');
+    // No transition has occurred on first render, so it starts empty.
+    expect(announce).toHaveTextContent('');
+  });
+
+  it('announces when the human finishes (rank named)', async () => {
+    renderWithProviders(<ZhengPage />);
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    // The play resolves to a state where the human has gone out first (rank 1).
+    mockExec.mockResolvedValue(
+      makeState({
+        currentTurn: 1,
+        players: [
+          player(0, true, [], { isFinished: true, rank: 1 }),
+          player(1, false, []),
+          player(2, false, []),
+          player(3, false, []),
+        ],
+      }),
+    );
+    fireEvent.click(screen.getByTestId('play-button'));
+    await waitFor(() => expect(screen.getByTestId('zheng-turn-announce')).toHaveTextContent('あがりました'));
+  });
+
   it('disables play and shows a reason for an invalid combination', async () => {
     renderWithProviders(<ZhengPage />);
     // Select ♠3 + ♥5 (two different ranks) → not a legal combo.
