@@ -11,6 +11,7 @@
   "helpAllIn": "  a                    オールイン",
   "helpBettingLimit": "  bl [0-2]             ベッティングリミット (0=Fixed, 1=PotLimit, 2=NoLimit)",
   "helpTournament": "  tm [0-1]             トーナメントモード",
+  "mandatoryRuleLine": "※手札{{hole}}枚のうちちょうど2枚＋ボード3枚を使用",
   "tournamentLine": "トーナメント ハンド#{{hand}} SB:{{sb}} BB:{{bb}} (レベルアップ:{{levelup}}ハンド毎)",
   "rebuyLine": "リバイ: {{chips}}チップ (最大{{max}}回, {{period}}ハンド目まで)",
   "addonLine": "アドオン: {{chips}}チップ ({{after}}ハンド目に提供)",
