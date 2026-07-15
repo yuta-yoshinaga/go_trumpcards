@@ -104,6 +104,21 @@ describe('HachiHachiPage', () => {
     expect(screen.getByTestId('hachihachi-score-row-2')).toBeInTheDocument();
   });
 
+  it('conveys the best row and delta signs without relying on colour', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<HachiHachiPage />);
+    await waitFor(() => expect(screen.getByTestId('hachihachi-round-result')).toBeInTheDocument());
+    // The best row carries a crown glyph and an sr-only "top score" label.
+    const bestRow = screen.getByTestId('hachihachi-score-row-0');
+    expect(bestRow).toHaveTextContent('👑');
+    expect(bestRow).toHaveTextContent('最高得点');
+    // Delta signs read meaningfully: +52 → gained, -8 → lost.
+    expect(bestRow).toHaveTextContent('52点獲得');
+    expect(screen.getByTestId('hachihachi-score-row-1')).toHaveTextContent('8点失点');
+    // The table names itself via a caption.
+    expect(screen.getByText('ラウンド精算表（プレイヤー別の素点・役点・差分）')).toBeInTheDocument();
+  });
+
   it('renders the game-end result with a winner banner', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<HachiHachiPage />);
