@@ -114,7 +114,7 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	} else {
 		b.WriteString("\n")
 		if dealer.GetCardsSize() > 0 {
-			fmt.Fprintf(&b, "%s,\n", cuiCardStr(dealer.GetCard(0)))
+			fmt.Fprintf(&b, "%s, %s\n", cuiCardStr(dealer.GetCard(0)), i18n.T("blackjack.hiddenCard"))
 		}
 	}
 	b.WriteString("----------\n")
