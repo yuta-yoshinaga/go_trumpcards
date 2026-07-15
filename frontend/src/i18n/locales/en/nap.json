@@ -31,6 +31,8 @@
   "contract": "Contract: {{contract}}",
   "contractUndecided": "Contract: undecided",
   "declarerLine": "Declarer: {{name}} — {{contract}}",
+  "declarerProgress": "Declarer: {{won}} / {{needed}} tricks (remaining {{remaining}})",
+  "contractUnreachable": "Contract unreachable",
   "bidLabel": "Bid",
   "playButton": "Play",
   "nextTrick": "Next Trick",

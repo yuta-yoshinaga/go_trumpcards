@@ -35,6 +35,9 @@ import { playerName } from '../utils/playerUtils';
 /** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 = no trump). */
 const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 
+/** Total tricks in a Nap round (5 cards dealt to each player). */
+const NAP_TOTAL_TRICKS = 5;
+
 /** Maps a Nap contract/bid value (0/2/3/4/5) to its i18n key suffix. */
 const CONTRACT_KEYS: Readonly<Record<number, string>> = {
   [NapContract.PASS]: 'pass',
@@ -161,6 +164,17 @@ function NapPageContent() {
   const contractName =
     state.declarerIdx >= 0 ? t(`contractName.${CONTRACT_KEYS[state.contract] ?? 'pass'}`) : t('contractUndecided');
 
+  // Declarer progress toward the contract. In Nap a round is 5 tricks and the
+  // contract value (2/3/4/5) is exactly the number of tricks the declarer must
+  // win, so we can show won/needed and whether it's still reachable.
+  const declarer = state.declarerIdx >= 0 ? state.players[state.declarerIdx] : undefined;
+  const tricksPlayed = state.players.reduce((sum, p) => sum + p.trickCount, 0);
+  const tricksRemaining = NAP_TOTAL_TRICKS - tricksPlayed;
+  const declarerWon = declarer?.trickCount ?? 0;
+  const tricksStillNeeded = state.contract - declarerWon;
+  const contractUnreachable = tricksStillNeeded > tricksRemaining;
+  const showDeclarerProgress = (isPlayPhase || isTrickEnd) && state.declarerIdx >= 0;
+
   const handleManualReset = () => {
     hideActionLog();
     reset();
@@ -237,6 +251,22 @@ function NapPageContent() {
                   })
                 : t('contractUndecided')}
             </div>
+
+            {showDeclarerProgress && (
+              <div
+                className={`text-center mb-2 text-sm ${contractUnreachable ? 'text-ds-error font-semibold' : 'text-ds-text-muted'}`}
+                data-testid="nap-declarer-progress"
+                role="status"
+                aria-live="polite"
+              >
+                {t('declarerProgress', {
+                  won: declarerWon,
+                  needed: state.contract,
+                  remaining: tricksRemaining,
+                })}
+                {contractUnreachable && <span className="ml-2">{t('contractUnreachable')}</span>}
+              </div>
+            )}
 
             <div className={lgTwoColGrid}>
               {/* Left: play area */}

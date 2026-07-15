@@ -31,6 +31,8 @@
   "contract": "契約: {{contract}}",
   "contractUndecided": "契約: 未決定",
   "declarerLine": "宣言者: {{name}} — {{contract}}",
+  "declarerProgress": "宣言者: {{won}} / {{needed}} トリック（残り{{remaining}}トリック）",
+  "contractUnreachable": "達成不可",
   "bidLabel": "入札",
   "playButton": "出す",
   "nextTrick": "次のトリック",
