@@ -84,6 +84,13 @@ func (tp *ThreeCardCuiPresenter) Output(tc interfaces.ThreeCardGame, lastErr err
 			sb.WriteString(color.Yellow(i18n.T("threecard.push")) + "\n")
 		default:
 		}
+		// Side-bet / bonus payout breakdown (omitted when zero to stay concise).
+		if bonus := tc.GetAnteBonusPayout(); bonus != 0 {
+			sb.WriteString(i18n.Tf("threecard.anteBonusPayoutLine", "payout", strconv.Itoa(bonus)) + "\n")
+		}
+		if pairPlus := tc.GetPairPlusPayout(); pairPlus != 0 {
+			sb.WriteString(i18n.Tf("threecard.pairPlusPayoutLine", "payout", strconv.Itoa(pairPlus)) + "\n")
+		}
 		sb.WriteString(i18n.Tf("threecard.totalPayoutLine", "payout", strconv.Itoa(tc.GetTotalPayout())) + "\n")
 		sb.WriteString("----------\n")
 	}
