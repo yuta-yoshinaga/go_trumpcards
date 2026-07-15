@@ -62,6 +62,10 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		assert.Contains(t, output, "フェーズ: ACTION")
 		assert.Contains(t, output, "ベット=100")
 		assert.Contains(t, output, "SPADE 5")
+		// In-progress dealer shows the up-card plus a hidden-card placeholder, with no trailing comma.
+		assert.Contains(t, output, "[??]")
+		assert.Contains(t, output, "CLOVER 10, [??]")
+		assert.NotContains(t, output, "CLOVER 10,\n")
 	})
 	t.Run("success Output end phase lose", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)

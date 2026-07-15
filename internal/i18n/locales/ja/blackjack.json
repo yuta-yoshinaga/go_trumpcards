@@ -17,6 +17,7 @@
   "multiHandLine": "マルチハンド: {{count}} ハンド",
   "phaseLine": "フェーズ: {{phase}}",
   "dealerLabel": "ディーラー",
+  "hiddenCard": "[??]",
   "playerLabel": "プレイヤー",
   "scoreSuffix": " スコア ",
   "handLabel": "ハンド {{idx}}",

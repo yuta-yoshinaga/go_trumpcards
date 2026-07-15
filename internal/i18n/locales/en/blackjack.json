@@ -17,6 +17,7 @@
   "multiHandLine": "multi-hand: {{count}} hands",
   "phaseLine": "phase: {{phase}}",
   "dealerLabel": "dealer",
+  "hiddenCard": "[??]",
   "playerLabel": "player",
   "scoreSuffix": " score ",
   "handLabel": "hand {{idx}}",
