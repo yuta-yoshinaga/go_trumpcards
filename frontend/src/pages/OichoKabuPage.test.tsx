@@ -143,6 +143,17 @@ describe('OichoKabuPage', () => {
     expect(screen.getByText(/200/)).toBeInTheDocument();
   });
 
+  it('exposes each hand rank by name and the result as a live region', async () => {
+    mockApi.mockResolvedValue(winState); // playerRank 9 (Kabu), bankerRank 7
+    renderWithProviders(<OichoKabuPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument());
+    // Player rank 9 is named (Kabu, strongest); a plain rank (7) is not.
+    expect(screen.getByRole('img', { name: '子（あなた）の目9（カブ、最強）' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: '親の目7' })).toBeInTheDocument();
+    // The payout/result block is announced.
+    expect(screen.getByTestId('payout-breakdown')).toHaveAttribute('role', 'status');
+  });
+
   it('reads from useCliMode', async () => {
     mockApi.mockResolvedValue(betState);
     renderWithProviders(<OichoKabuPage />);

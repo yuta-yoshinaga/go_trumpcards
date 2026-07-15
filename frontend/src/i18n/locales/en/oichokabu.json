@@ -40,5 +40,11 @@
   "hint": {
     "drawLow": "Your kabu is low (0–3) — drawing a third card is favorable",
     "standHigh": "Your kabu is high enough — standing is the basic play"
-  }
+  },
+  "rankName": {
+    "0": "Buta, weakest",
+    "9": "Kabu, strongest"
+  },
+  "rankAriaLabelNamed": "{{hand}} score {{rank}} ({{name}})",
+  "rankAriaLabelPlain": "{{hand}} score {{rank}}"
 }
