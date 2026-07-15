@@ -21,6 +21,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, useKnockoutWhistGame } from '../hooks/useKnockoutWhistGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { badgeInfoColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -161,7 +162,7 @@ function KnockoutWhistPageContent() {
     return (
       <div
         key={p.id}
-        className={`py-0.5 flex items-center gap-2 ${p.eliminated ? 'opacity-40 line-through' : ''}`}
+        className={`py-0.5 flex items-center gap-2 ${p.eliminated ? 'opacity-70 line-through' : ''}`}
         data-eliminated={p.eliminated ? 'true' : 'false'}
       >
         <span className={p.eliminated ? '' : 'text-ds-text-muted'}>
@@ -171,10 +172,14 @@ function KnockoutWhistPageContent() {
             : ` — ${t('roundTricks', { count: p.roundTricks })} · ${t('dogbones', { count: p.dogbones })}`}
         </span>
         {isLeader && (
-          <span className="px-1.5 py-0.5 rounded bg-white/20 text-ds-text-primary text-xs">{t('leader')}</span>
+          <span className={`px-1.5 py-0.5 rounded text-xs ${badgeInfoColors}`} aria-label={t('leader')}>
+            {t('leader')}
+          </span>
         )}
         {isRoundWinner && (
-          <span className="px-1.5 py-0.5 rounded bg-ds-warning/30 text-ds-warning text-xs">{t('roundWinner')}</span>
+          <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`} aria-label={t('roundWinner')}>
+            {t('roundWinner')}
+          </span>
         )}
       </div>
     );
