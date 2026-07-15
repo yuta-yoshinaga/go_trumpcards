@@ -29,5 +29,23 @@
   "hint": {
     "draw": "Your turn — draw a card from the circle.",
     "afterPenalty": "Previous draw caused a penalty. Draw again."
+  },
+  "cli": {
+    "help": ["d/draw  - Draw a card", "r/reset - Reset game"],
+    "phase": {
+      "play": "Play",
+      "end": "End"
+    },
+    "summary": "Phase: {{phase}} | Circle: {{circle}} | Center: {{center}}",
+    "you": "You",
+    "cpu": "CPU {{id}}",
+    "playerCards": "{{tag}}: {{count}} cards",
+    "penalty": "(PENALTY)",
+    "safe": "(safe)",
+    "last": "Last: {{card}} {{status}}",
+    "error": {
+      "unknown": "Unknown command: {{cmd}}",
+      "unknownSuggest": "Unknown command: {{cmd}}. Did you mean: {{suggestion}}?"
+    }
   }
 }

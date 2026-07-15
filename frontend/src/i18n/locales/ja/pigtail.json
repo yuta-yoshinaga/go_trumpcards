@@ -29,5 +29,23 @@
   "hint": {
     "draw": "あなたの番です。山札から1枚引きましょう",
     "afterPenalty": "前のターンはペナルティでした。再度カードを引きます"
+  },
+  "cli": {
+    "help": ["d/draw  - カードを1枚引く", "r/reset - ゲームをリセット"],
+    "phase": {
+      "play": "プレイ中",
+      "end": "終了"
+    },
+    "summary": "フェーズ: {{phase}} | 輪: {{circle}} | 中央: {{center}}",
+    "you": "あなた",
+    "cpu": "CPU {{id}}",
+    "playerCards": "{{tag}}: {{count}}枚",
+    "penalty": "（ペナルティ）",
+    "safe": "（セーフ）",
+    "last": "最後: {{card}} {{status}}",
+    "error": {
+      "unknown": "不明なコマンド: {{cmd}}",
+      "unknownSuggest": "不明なコマンド: {{cmd}}。もしかして: {{suggestion}}？"
+    }
   }
 }
