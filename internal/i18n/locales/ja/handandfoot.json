@@ -7,6 +7,7 @@
   "helpDiscard": "  d <idx>              カードを捨てる",
   "helpGoOut": "  go                   上がる (フット取り込み＋必要カナスタ)",
   "helpNextRound": "  nr                   次のラウンドへ",
+  "helpHint": "  h | hint             出せるメルド候補を表示",
   "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "helpSetLimit": "  sl <n>               ポイント上限",
   "header": "ラウンド: {{round}}  山札: {{stock}}枚  廃棄山: {{discard}}枚",
@@ -37,5 +38,8 @@
   "discardPhase": "ディスカードフェーズです。",
   "roundEnd": "ラウンドが終了しました。",
   "result.humanWin": "ゲーム終了！ あなたのチームの勝ち！",
-  "result.cpuWin": "ゲーム終了！ CPUチームの勝ち！"
+  "result.cpuWin": "ゲーム終了！ CPUチームの勝ち！",
+  "hintMeld": "[HINT: メルド候補 {{melds}}]",
+  "hintNone": "いま出せるメルドはありません。",
+  "hintNotYourTurn": "今はあなたの番ではありません。"
 }

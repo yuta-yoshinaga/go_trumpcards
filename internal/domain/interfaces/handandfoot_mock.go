@@ -24,6 +24,13 @@ func (m *MockHandAndFootGame) PlayerDrawFromDiscard(naturalPairIndices []int) er
 func (m *MockHandAndFootGame) PlayerMeld(meldGroups [][]int) error {
 	return m.Called(meldGroups).Error(0)
 }
+func (m *MockHandAndFootGame) SuggestMelds(playerIdx int) [][]*domain.Card {
+	ret := m.Called(playerIdx)
+	if v := ret.Get(0); v != nil {
+		return v.([][]*domain.Card)
+	}
+	return nil
+}
 func (m *MockHandAndFootGame) PlayerSkipMeld() error { return m.Called().Error(0) }
 func (m *MockHandAndFootGame) PlayerDiscard(cardIndex int) error {
 	return m.Called(cardIndex).Error(0)

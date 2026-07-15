@@ -32,6 +32,16 @@ func TestNewHandAndFootInteractor_NilGuards(t *testing.T) {
 	})
 }
 
+func TestHandAndFootInteractor_Hint(t *testing.T) {
+	pMock := new(presenter.MockHandAndFootPresenter)
+	gameMock := new(interfaces.MockHandAndFootGame)
+	pMock.On("HintOutput", gameMock).Return("hint output")
+
+	ci := usecase.NewHandAndFootInteractor(gameMock, pMock)
+	assert.Equal(t, "hint output", ci.Hint())
+	pMock.AssertCalled(t, "HintOutput", gameMock)
+}
+
 func TestHandAndFootInteractor_Reset(t *testing.T) {
 	mockOutput := `{"phase":0}`
 	pMock := new(presenter.MockHandAndFootPresenter)

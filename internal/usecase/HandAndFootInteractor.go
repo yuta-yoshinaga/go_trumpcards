@@ -32,6 +32,8 @@ type HandAndFootInteractorIF interface {
 	NextRound() string
 	// GetConfig 現在の設定を取得
 	GetConfig() domain.HandAndFootConfig
+	// Hint ヒント取得
+	Hint() string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
@@ -151,6 +153,11 @@ func (ci *HandAndFootInteractor) NextRound() string {
 // GetConfig 現在の設定を取得
 func (ci *HandAndFootInteractor) GetConfig() domain.HandAndFootConfig {
 	return ci.Game.GetConfig()
+}
+
+// Hint ヒント取得
+func (ci *HandAndFootInteractor) Hint() string {
+	return ci.gp.HintOutput(ci.Game)
 }
 
 // ActionLog 棋譜を出力する

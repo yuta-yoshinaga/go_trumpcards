@@ -156,6 +156,43 @@ func TestHandAndFootCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestHandAndFootCuiPresenter_HintOutput(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.HandAndFootCuiPresenter)
+
+	t.Run("lists meld candidates", func(t *testing.T) {
+		m := new(interfaces.MockHandAndFootGame)
+		m.On("IsHumanTurn").Return(true)
+		m.On("GetCurrentPlayerIdx").Return(0)
+		m.On("SuggestMelds", 0).Return([][]*domain.Card{
+			{
+				domain.NewCard(domain.CardDesignSpade, 7, false),
+				domain.NewCard(domain.CardDesignHeart, 7, false),
+				domain.NewCard(domain.CardDesignClover, 7, false),
+			},
+		})
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "メルド候補")
+		assert.Contains(t, result, "7")
+	})
+
+	t.Run("no meld available", func(t *testing.T) {
+		m := new(interfaces.MockHandAndFootGame)
+		m.On("IsHumanTurn").Return(true)
+		m.On("GetCurrentPlayerIdx").Return(0)
+		m.On("SuggestMelds", 0).Return(([][]*domain.Card)(nil))
+		assert.Contains(t, p.HintOutput(m), "出せるメルドはありません")
+	})
+
+	t.Run("not the human's turn", func(t *testing.T) {
+		m := new(interfaces.MockHandAndFootGame)
+		m.On("IsHumanTurn").Return(false)
+		assert.Contains(t, p.HintOutput(m), "あなたの番ではありません")
+	})
+}
+
 func TestHandAndFootCuiPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.HandAndFootCuiPresenter)
 
