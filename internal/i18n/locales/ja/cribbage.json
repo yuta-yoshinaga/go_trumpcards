@@ -19,6 +19,8 @@
   "promptDiscardHelp": "d <idx,idx>・・・クリブに2枚捨てる",
   "promptPegging": "手番: {{name}} (ペギングフェーズ)",
   "promptPeggingHelp": "p <idx>・・・カードを出す",
+  "legalPegLegend": "出せる手札: {{indices}}",
+  "mustGo": "出せる札がありません → go を宣言してください",
   "promptPeggingGo": "go・・・Goを宣言する",
   "promptShow": "ショーフェーズ",
   "promptShowHelp": "sn / shownext・・・次のスコア計算",
