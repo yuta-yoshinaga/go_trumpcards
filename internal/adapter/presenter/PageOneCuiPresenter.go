@@ -18,6 +18,12 @@ func pageOnePlayerStr(player *domain.PageOnePlayer, i int) string {
 	if player.GetHasDeclared() {
 		declared = " " + i18n.T("pageone.declaredBadge")
 	}
+	// Warn when a player sits on their last card without declaring "Page One",
+	// mirroring the web cpuAtOne badge (mutually exclusive with declaredBadge).
+	warning := ""
+	if !player.GetHasDeclared() && player.GetCardsSize() == 1 {
+		warning = " " + color.Red(i18n.T("pageone.lastCardWarning"))
+	}
 	fmt.Fprintf(&b, "%s\n",
 		i18n.Tf("pageone.playerLine",
 			"name", name,
@@ -25,6 +31,7 @@ func pageOnePlayerStr(player *domain.PageOnePlayer, i int) string {
 			"round", fmt.Sprintf("%d", player.GetRoundScore()),
 			"cards", fmt.Sprintf("%d", player.GetCardsSize()),
 			"declared", declared,
+			"warning", warning,
 		),
 	)
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
