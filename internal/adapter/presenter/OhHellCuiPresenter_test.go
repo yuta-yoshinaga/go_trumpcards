@@ -81,6 +81,27 @@ func TestOhHellCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ビッド3は不可")
 	})
 
+	t.Run("bid phase over summary (undeclared excluded)", func(t *testing.T) {
+		m, players := setupOhHellCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.OhHellPhaseBid)
+		players[0].SetBid(6)
+		players[1].SetBid(6)
+		// players[2], [3] left at -1 (undeclared) → excluded from the total.
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ビッド合計: 12 / 手札枚数: 10 (オーバー)")
+	})
+
+	t.Run("bid phase under summary", func(t *testing.T) {
+		m, players := setupOhHellCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.OhHellPhaseBid)
+		players[0].SetBid(2)
+		players[1].SetBid(3)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ビッド合計: 5 / 手札枚数: 10 (アンダー)")
+	})
+
 	t.Run("trick end", func(t *testing.T) {
 		m, _ := setupOhHellCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
