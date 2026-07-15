@@ -19,6 +19,7 @@
   "adjutantCard": "副官カード: {{card}}",
   "adjutantRevealed": " (公開済み)",
   "adjutantHidden": " (非公開)",
+  "armyProgress": "ナポレオン軍: {{collected}}/{{bid}}枚",
   "highestBid": "最高ビッド: {{bid}}",
   "gameEndNapoleonWin": "ゲーム終了！ ナポレオン軍の勝利です！",
   "gameEndAlliedWin": "ゲーム終了！ 連合軍の勝利です！",

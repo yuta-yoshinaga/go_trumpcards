@@ -24,6 +24,8 @@ func setupNapoleonCuiMock() *interfaces.MockNapoleonGame {
 	m.On("GetAdjutantCard").Return((*domain.Card)(nil))
 	m.On("GetAdjutantRevealed").Return(false)
 	m.On("GetHighestBid").Return(0)
+	m.On("GetNapoleonIdx").Return(-1)
+	m.On("GetAdjutantIdx").Return(-1)
 	m.On("GetCurrentTrick").Return([]*domain.NapoleonTrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.NapoleonPhasePlay)
@@ -120,6 +122,44 @@ func TestNapoleonCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "最高ビッド: 14")
+	})
+
+	// napoleonArmyMock configures Napoleon(0) + adjutant(1) with the given face
+	// captures, bid, and reveal state for the army-progress tests.
+	napoleonArmyMock := func(napFaces, adjFaces, bid int, revealed bool) *interfaces.MockNapoleonGame {
+		m, players := setupNapoleonCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetNapoleonIdx")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetAdjutantIdx")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHighestBid")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetAdjutantRevealed")
+		m.On("GetNapoleonIdx").Return(0)
+		m.On("GetAdjutantIdx").Return(1)
+		m.On("GetHighestBid").Return(bid)
+		m.On("GetAdjutantRevealed").Return(revealed)
+		players[0].SetPictureCards(napFaces)
+		players[1].SetPictureCards(adjFaces)
+		return m
+	}
+
+	t.Run("army progress excludes adjutant faces while hidden", func(t *testing.T) {
+		m := napoleonArmyMock(5, 3, 14, false)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ナポレオン軍: 5/14枚")
+	})
+
+	t.Run("army progress adds adjutant faces once revealed", func(t *testing.T) {
+		m := napoleonArmyMock(5, 3, 14, true)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ナポレオン軍: 8/14枚")
+	})
+
+	t.Run("army progress turns green once the bid is met", func(t *testing.T) {
+		origNo := color.NoColor()
+		color.SetNoColor(false)
+		defer color.SetNoColor(origNo)
+		m := napoleonArmyMock(14, 0, 14, false)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, color.Green("ナポレオン軍: 14/14枚"))
 	})
 
 	t.Run("player with scores and tricks and pictureCards", func(t *testing.T) {
