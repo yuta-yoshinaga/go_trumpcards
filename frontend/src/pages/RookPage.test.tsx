@@ -129,6 +129,9 @@ describe('RookPage', () => {
     renderWithProviders(<RookPage />);
     for (let i = 0; i < 5; i++) fireEvent.click(await screen.findByTestId(`hand-card-${i}`));
     const exchangeBtn = screen.getByTestId('exchange-button');
+    // Each colour button carries a letter cue in addition to the colour name.
+    expect(screen.getByTestId('trump-choice-1')).toHaveTextContent('R');
+    expect(screen.getByTestId('trump-choice-3')).toHaveTextContent('G');
     // still disabled until a trump color is chosen
     expect(exchangeBtn).toBeDisabled();
     fireEvent.click(screen.getByTestId('trump-choice-3'));
@@ -149,11 +152,15 @@ describe('RookPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0 }));
   });
 
-  it('shows the trump color swatch once declared', async () => {
+  it('shows the trump color swatch once declared, named for screen readers', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 2, currentPlayerIdx: 0, contractBid: 75, trumpColor: 1 }));
     renderWithProviders(<RookPage />);
-    expect(await screen.findByTestId('trump-swatch')).toBeInTheDocument();
-    expect(screen.getByTestId('trump-name')).toBeInTheDocument();
+    const swatch = await screen.findByTestId('trump-swatch');
+    // The colour dot itself is named (not colour-only) for SR.
+    expect(swatch).toHaveAttribute('role', 'img');
+    expect(swatch).toHaveAttribute('aria-label', '赤');
+    // The visible label carries the letter cue and is hidden from SR to avoid a repeat.
+    expect(screen.getByTestId('trump-name')).toHaveTextContent('R 赤');
   });
 
   it('advances to the next trick', async () => {

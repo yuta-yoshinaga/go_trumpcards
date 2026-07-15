@@ -48,11 +48,14 @@ const ROOK_DISCARD_COUNT = 5;
  * 4=black). The `ink` hex mirrors `CardFace`'s INK_COLORS so the swatch reads
  * the same as the drawn cards, never a French suit symbol.
  */
-const TRUMP_COLORS: { id: number; nameKey: string; ink: string }[] = [
-  { id: 1, nameKey: 'color.red', ink: '#B83A3A' },
-  { id: 2, nameKey: 'color.gold', ink: '#B8892E' },
-  { id: 3, nameKey: 'color.green', ink: '#2E7D46' },
-  { id: 4, nameKey: 'color.black', ink: '#1A1A1A' },
+// Rook cards have no French suit, so colour is the only identifier — carry a
+// language-neutral letter (R/Y/G/B) alongside the colour so it isn't conveyed
+// by hue alone (WCAG 1.4.1).
+const TRUMP_COLORS: { id: number; nameKey: string; ink: string; sym: string }[] = [
+  { id: 1, nameKey: 'color.red', ink: '#B83A3A', sym: 'R' },
+  { id: 2, nameKey: 'color.gold', ink: '#B8892E', sym: 'Y' },
+  { id: 3, nameKey: 'color.green', ink: '#2E7D46', sym: 'G' },
+  { id: 4, nameKey: 'color.black', ink: '#1A1A1A', sym: 'B' },
 ];
 
 /** Tutorial steps for Rook. */
@@ -147,11 +150,10 @@ function RookPageContent() {
             ? t('phase.roundEnd')
             : t('phase.play');
 
-  const trumpName =
-    state.trumpColor >= 1
-      ? t(TRUMP_COLORS.find((c) => c.id === state.trumpColor)?.nameKey ?? '')
-      : t('trumpUndeclared');
-  const trumpInk = TRUMP_COLORS.find((c) => c.id === state.trumpColor)?.ink;
+  const trumpMeta = TRUMP_COLORS.find((c) => c.id === state.trumpColor);
+  const trumpName = state.trumpColor >= 1 ? t(trumpMeta?.nameKey ?? '') : t('trumpUndeclared');
+  const trumpInk = trumpMeta?.ink;
+  const trumpSym = trumpMeta?.sym ?? '';
 
   // Bid options: strictly above the current highest bid, within [70, 120] step 5.
   const minSelectableBid = Math.max(
@@ -210,12 +212,17 @@ function RookPageContent() {
                   <>
                     <span>{t('contractLine', { value: state.contractBid })}</span>
                     <span
-                      aria-hidden
+                      role="img"
+                      aria-label={trumpName}
                       className="inline-block h-3 w-3 rounded-full border border-white/40"
                       style={{ backgroundColor: trumpInk }}
                       data-testid="trump-swatch"
                     />
-                    <span data-testid="trump-name">{trumpName}</span>
+                    {/* Visible letter + name (aria-hidden — the swatch already names the colour). */}
+                    <span data-testid="trump-name" aria-hidden="true">
+                      {trumpSym ? `${trumpSym} ` : ''}
+                      {trumpName}
+                    </span>
                   </>
                 ) : state.highestBid > 0 ? (
                   <span>{t('highestBid', { value: state.highestBid })}</span>
@@ -401,6 +408,9 @@ function RookPageContent() {
                       }`}
                       style={{ backgroundColor: c.ink }}
                     >
+                      <span aria-hidden="true" className="font-bold">
+                        {c.sym}
+                      </span>
                       {t(c.nameKey)}
                     </button>
                   ))}
