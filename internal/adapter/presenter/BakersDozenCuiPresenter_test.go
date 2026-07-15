@@ -49,6 +49,34 @@ func TestBakersDozenCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "Foundation")
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "手数: 0")
+		// Playing phase surfaces the empty-column caveat; no column is at 1 card.
+		assert.Contains(t, result, "空列は再利用できません")
+		assert.NotContains(t, result, "残り1枚")
+	})
+
+	t.Run("single-card column is flagged with a warning marker", func(t *testing.T) {
+		bg := new(interfaces.MockBakersDozenGame)
+		setupBakersDozenCuiMockDefaults(bg)
+		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "GetTableau")
+		var tableau [domain.BakersDozenTableauCnt][]*domain.BakersDozenTableauCard
+		// Column 0 has a single card (at-risk); the rest keep four.
+		tableau[0] = []*domain.BakersDozenTableauCard{
+			{Card: domain.NewCard(domain.CardDesignSpade, 5, false), FaceUp: true},
+		}
+		for i := 1; i < domain.BakersDozenTableauCnt; i++ {
+			tableau[i] = make([]*domain.BakersDozenTableauCard, 4)
+			for j := range 4 {
+				tableau[i][j] = &domain.BakersDozenTableauCard{
+					Card:   domain.NewCard(domain.CardDesignHeart, j+1, false),
+					FaceUp: true,
+				}
+			}
+		}
+		bg.On("GetTableau").Return(tableau)
+		p := new(BakersDozenCuiPresenter)
+
+		result := p.Output(bg, nil)
+		assert.Contains(t, result, "残り1枚")
 	})
 
 	t.Run("with error", func(t *testing.T) {

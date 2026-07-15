@@ -6,6 +6,8 @@
   "helpHint": "  h                    ヒント",
   "helpAutoComplete": "  ac                   オートコンプリート",
   "foundationHeader": "Foundation: ",
+  "oneCardWarning": "(!残り1枚)",
+  "emptyColNote": "注意: 空列は再利用できません",
   "columnLabel": "列{{col}}:",
   "hintFrom": "タブロー列{{col}}[{{idx}}]",
   "hintToFoundation": "ファンデーション",
