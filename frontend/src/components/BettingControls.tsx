@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next';
+import { useIsMobile } from '../hooks/useCardDimensions';
 import { btnPokerAccent, btnPokerAllIn, btnPokerMuted, btnPokerPrimary } from '../styles/buttonStyles';
 import { ChipBetInput } from './common/ChipBetInput';
+import { KbdBadge } from './KbdBadge';
 
 interface BettingControlsProps {
   inputId: string;
@@ -38,6 +40,9 @@ export function BettingControls({
   onAllIn,
 }: BettingControlsProps) {
   const { t } = useTranslation('common');
+  // Per-button key hints are a desktop affordance; on touch there's no keyboard.
+  const isMobile = useIsMobile();
+  const kbd = (label: string) => (isMobile ? null : <KbdBadge label={label} />);
   const max = maxBetAmount ?? 0;
   const hasMax = max > 0;
   const isOutOfRange = Number.isNaN(betAmount) || betAmount < minRaise || (hasMax && betAmount > max);
@@ -113,6 +118,7 @@ export function BettingControls({
             aria-keyshortcuts="c"
           >
             {t('action.call')}
+            {kbd('C')}
           </button>
           <button
             type="button"
@@ -122,6 +128,7 @@ export function BettingControls({
             aria-keyshortcuts="r"
           >
             {t('action.raise')}
+            {kbd('R')}
           </button>
         </>
       ) : (
@@ -134,6 +141,7 @@ export function BettingControls({
             aria-keyshortcuts="r"
           >
             {t('action.bet')}
+            {kbd('R')}
           </button>
           <button
             type="button"
@@ -143,6 +151,7 @@ export function BettingControls({
             aria-keyshortcuts="k"
           >
             {t('action.check')}
+            {kbd('K')}
           </button>
         </>
       )}
@@ -154,6 +163,7 @@ export function BettingControls({
         aria-keyshortcuts="f"
       >
         {t('action.fold')}
+        {kbd('F')}
       </button>
       <button
         type="button"
@@ -163,6 +173,7 @@ export function BettingControls({
         aria-keyshortcuts="a"
       >
         {t('action.allIn')}
+        {kbd('A')}
       </button>
       {/* Keyboard shortcut hint. BettingControls only renders while the human can
           act, so the shortcuts are always live here. Show only the actions that are
