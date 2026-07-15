@@ -110,7 +110,7 @@ func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string
 			b.WriteString("----------\n")
 			b.WriteString(color.Bold(i18n.T("omaha.cpuActionsHeader")) + "\n")
 			for _, action := range cpuActions {
-				b.WriteString(i18n.Tf("omaha.cpuActionLine", "idx", strconv.Itoa(action.PlayerIdx), "action", cuiBettingActionName(action.Action)))
+				b.WriteString(i18n.Tf("omaha.cpuActionLine", "name", cuiPlayerName(o.GetPlayer(action.PlayerIdx), action.PlayerIdx), "action", cuiBettingActionName(action.Action)))
 				if action.Amount > 0 {
 					b.WriteString(i18n.Tf("omaha.cpuActionAmount", "amount", strconv.Itoa(action.Amount)))
 				}

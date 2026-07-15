@@ -27,7 +27,7 @@
   "playerBet": " ベット:{{bet}}",
   "humanHand": "  手札: {{cards}}",
   "cpuActionsHeader": "[CPU行動]",
-  "cpuActionLine": "  Player {{idx}}: {{action}}",
+  "cpuActionLine": "  {{name}}: {{action}}",
   "cpuActionAmount": " ({{amount}})",
   "resultsHeader": "[結果]",
   "resultMucked": "  {{name}}: マック",

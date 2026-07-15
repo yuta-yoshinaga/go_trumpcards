@@ -27,7 +27,7 @@
   "playerBet": " bet:{{bet}}",
   "humanHand": "  hand: {{cards}}",
   "cpuActionsHeader": "[CPU actions]",
-  "cpuActionLine": "  Player {{idx}}: {{action}}",
+  "cpuActionLine": "  {{name}}: {{action}}",
   "cpuActionAmount": " ({{amount}})",
   "resultsHeader": "[Results]",
   "resultMucked": "  {{name}}: muck",
