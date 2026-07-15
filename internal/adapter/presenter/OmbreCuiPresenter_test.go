@@ -130,11 +130,21 @@ func TestOmbreCuiPresenter_HintOutput(t *testing.T) {
 		assert.NotEmpty(t, result)
 	})
 
-	t.Run("hint no card indices", func(t *testing.T) {
+	t.Run("bid decision hint shows the action, not an empty card list", func(t *testing.T) {
 		m, _ := setupOmbreCuiMockWithPlayers()
 		m.On("GetHint").Return(&domain.OmbreHint{CardIndices: nil, Reason: "bid_solo"})
 		result := p.HintOutput(m)
-		assert.NotEmpty(t, result)
+		assert.Contains(t, result, "ソロ")  // recommended action name
+		assert.Contains(t, result, "を推奨") // hintDecision format
+		assert.NotContains(t, result, "HINT: -")
+	})
+
+	t.Run("non-bid empty-card hint falls back to the card line", func(t *testing.T) {
+		m, _ := setupOmbreCuiMockWithPlayers()
+		m.On("GetHint").Return(&domain.OmbreHint{CardIndices: nil, Reason: "discard_low"})
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "-") // hintCard fallback keeps the placeholder
+		assert.NotContains(t, result, "を推奨")
 	})
 }
 

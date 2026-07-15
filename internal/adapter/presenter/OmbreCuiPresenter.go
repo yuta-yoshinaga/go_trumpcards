@@ -161,9 +161,24 @@ func (p *OmbreCuiPresenter) HintOutput(g interfaces.OmbreGame) string {
 			"cards", strings.Join(cards, ", "),
 			"reason", reason)) + "\n"
 	}
+	// Bid-phase decisions carry no cards; render them as an action recommendation
+	// instead of the meaningless "recommended cards: -" line.
+	if actionKey, ok := ombreBidActionKeys[hint.Reason]; ok {
+		return color.Yellow(i18n.Tf("ombre.hintDecision",
+			"action", i18n.T(actionKey),
+			"reason", reason)) + "\n"
+	}
 	return color.Yellow(i18n.Tf("ombre.hintCard",
 		"cards", "-",
 		"reason", reason)) + "\n"
+}
+
+// ombreBidActionKeys maps bid-phase hint-reason identifiers to the i18n key for
+// the recommended action name (Entrar / Solo / Pass).
+var ombreBidActionKeys = map[string]string{
+	"bid_entrar": "ombre.hintActionEntrar",
+	"bid_solo":   "ombre.hintActionSolo",
+	"bid_pass":   "ombre.hintActionPass",
 }
 
 // ombreHintReasonKeys maps Ombre-specific hint-reason identifiers to i18n keys.

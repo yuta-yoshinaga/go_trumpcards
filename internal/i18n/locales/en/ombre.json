@@ -40,5 +40,9 @@
   "hintReasonDiscardLow": "Cannot follow suit — discard a low card",
   "hintReasonBidEntrar": "Solid hand — declare entrar",
   "hintReasonBidSolo": "Very strong hand — declare solo",
-  "hintReasonBidPass": "Weak hand — pass"
+  "hintReasonBidPass": "Weak hand — pass",
+  "hintDecision": "[HINT: recommend {{action}} ({{reason}})]",
+  "hintActionEntrar": "Entrar",
+  "hintActionSolo": "Solo",
+  "hintActionPass": "Pass"
 }
