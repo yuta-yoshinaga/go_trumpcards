@@ -91,15 +91,43 @@ func (bp *BaccaratCuiPresenter) Output(b interfaces.BaccaratGame, lastErr error)
 		default:
 		}
 		sb.WriteString(i18n.Tf("baccarat.payoutLine", "payout", strconv.Itoa(b.GetPayout())) + "\n")
+		// Pair side-bet outcomes (only rendered for rounds that placed one).
+		for _, r := range b.GetSideBetResults() {
+			if r.Payout > 0 {
+				sb.WriteString(color.Green(i18n.Tf("baccarat.sideBetWin",
+					"type", r.BetTypeName(),
+					"payout", strconv.Itoa(r.Payout))) + "\n")
+			} else {
+				sb.WriteString(i18n.Tf("baccarat.sideBetLose",
+					"type", r.BetTypeName()) + "\n")
+			}
+		}
 		sb.WriteString("----------\n")
 	}
 
 	// Big-road history (also useful while betting); skip when empty.
 	if history := b.GetHistory(); len(history) > 0 {
-		if len(history) > baccaratHistoryMaxShown {
-			history = history[len(history)-baccaratHistoryMaxShown:]
+		// Count over the full history before truncating the displayed symbols.
+		pCount, bCount, tCount := 0, 0, 0
+		for _, r := range history {
+			switch r {
+			case domain.BaccaratResultPlayer:
+				pCount++
+			case domain.BaccaratResultBanker:
+				bCount++
+			case domain.BaccaratResultTie:
+				tCount++
+			}
 		}
-		sb.WriteString(i18n.Tf("baccarat.historyHeader", "symbols", baccaratHistorySymbols(history)) + "\n")
+		shown := history
+		if len(shown) > baccaratHistoryMaxShown {
+			shown = shown[len(shown)-baccaratHistoryMaxShown:]
+		}
+		sb.WriteString(i18n.Tf("baccarat.historyHeader", "symbols", baccaratHistorySymbols(shown)) + "\n")
+		sb.WriteString(i18n.Tf("baccarat.historyCounts",
+			"p", strconv.Itoa(pCount),
+			"b", strconv.Itoa(bCount),
+			"t", strconv.Itoa(tCount)) + "\n")
 	}
 
 	return sb.String()
