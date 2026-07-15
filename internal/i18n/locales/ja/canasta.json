@@ -24,6 +24,8 @@
   "promptDrawHelpStock": "ds・・・山札から引く",
   "promptDrawHelpDiscard": "dd <idx,idx>・・・捨て札の山を取る (ナチュラルペアのインデックス)",
   "promptMeld": "手番: {{name}} (メルドフェーズ)",
+  "initialMeldRequirement": "初回メルド最低点: {{min}}点（現在の累計 {{score}}点）",
+  "frozenPickupNote": "捨て札は凍結中: 取るには手札の自然な2枚で捨て札トップと同ランクの組が必要",
   "promptMeldHelp": "m <idx,idx,idx;idx,idx,idx>・・・メルドを出す (;でグループ区切り)",
   "promptSkipMeld": "sm・・・メルドせずにスキップ",
   "promptDiscard": "手番: {{name}} (ディスカードフェーズ)",

@@ -24,6 +24,8 @@
   "promptDrawHelpStock": "ds: draw from stock",
   "promptDrawHelpDiscard": "dd <idx,idx>: take the discard pile (natural pair indices)",
   "promptMeld": "{{name}} to act (meld phase)",
+  "initialMeldRequirement": "Initial meld minimum: {{min}} pts (cumulative {{score}})",
+  "frozenPickupNote": "Discard pile frozen: taking it needs a natural pair matching the top card",
   "promptMeldHelp": "m <idx,idx,idx;idx,idx,idx>: lay down meld(s) (; separates groups)",
   "promptSkipMeld": "sm: skip melding",
   "promptDiscard": "{{name}} to act (discard phase)",
