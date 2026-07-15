@@ -92,6 +92,34 @@ func (p *SevenBridgeCuiPresenter) Output(g interfaces.SevenBridgeGame, lastErr e
 	})
 }
 
+// HintOutput suggests a meld (or a discard when no meld is available) for the
+// human's play phase, reusing the shared domain suggestion logic.
+func (p *SevenBridgeCuiPresenter) HintOutput(g interfaces.SevenBridgeGame) string {
+	if g.GetPhase() != domain.SevenBridgePhasePlay || !g.IsHumanTurn() {
+		return i18n.T("sevenbridge.hintNotYourTurn") + "\n"
+	}
+	idx := g.GetCurrentPlayerIdx()
+	human := g.GetPlayer(idx)
+	if human == nil {
+		return i18n.T("sevenbridge.hintNotYourTurn") + "\n"
+	}
+	if meld := g.SuggestMeld(idx); len(meld) > 0 {
+		idxStrs := make([]string, len(meld))
+		cards := make([]string, len(meld))
+		for i, hi := range meld {
+			idxStrs[i] = strconv.Itoa(hi)
+			cards[i] = cuiCardStr(human.GetCard(hi))
+		}
+		return i18n.Tf("sevenbridge.hintMeld",
+			"idxs", strings.Join(idxStrs, ", "), "cards", strings.Join(cards, ",")) + "\n"
+	}
+	if d := g.SuggestDiscard(idx); d >= 0 && d < human.GetCardsSize() {
+		return i18n.Tf("sevenbridge.hintDiscard",
+			"idx", strconv.Itoa(d), "card", cuiCardStr(human.GetCard(d))) + "\n"
+	}
+	return i18n.T("sevenbridge.hintNoMove") + "\n"
+}
+
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SevenBridgeCuiPresenter) ActionLogOutput(g interfaces.SevenBridgeGame) string {
 	return actionLogOutputText(g)

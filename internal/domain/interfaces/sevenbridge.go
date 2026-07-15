@@ -23,6 +23,10 @@ type SevenBridgeGame interface {
 	PlayerLayoff(targetPlayerIdx, meldIdx, cardIndex int) error
 	// PlayerDiscard プレイヤーがカードを捨てる
 	PlayerDiscard(cardIndex int) error
+	// SuggestMeld playerIdx の最善メルド (手札インデックス) を返す。無ければ nil
+	SuggestMeld(playerIdx int) []int
+	// SuggestDiscard playerIdx の推奨ディスカード手札インデックスを返す。無ければ -1
+	SuggestDiscard(playerIdx int) int
 	// CpuPlay CPU プレイヤーが 1 ターン実行する
 	CpuPlay()
 

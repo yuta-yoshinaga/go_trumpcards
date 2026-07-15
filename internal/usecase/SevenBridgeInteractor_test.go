@@ -53,6 +53,15 @@ func TestSevenBridgeInteractor_Reset(t *testing.T) {
 	gameMock.AssertCalled(t, "Reset")
 }
 
+func TestSevenBridgeInteractor_Hint(t *testing.T) {
+	pMock, gameMock := setupSevenBridgeMocks()
+	pMock.On("HintOutput", gameMock).Return("hint_output")
+
+	ci := usecase.NewSevenBridgeInteractor(gameMock, pMock)
+	assert.Equal(t, "hint_output", ci.Hint())
+	pMock.AssertCalled(t, "HintOutput", gameMock)
+}
+
 func TestSevenBridgeInteractor_ResetWithConfig_Valid(t *testing.T) {
 	pMock, gameMock := setupSevenBridgeMocks()
 	cfg := domain.SevenBridgeConfig{CpuDifficulty: domain.SevenBridgeCpuDifficultyHard, PointLimit: 200}
