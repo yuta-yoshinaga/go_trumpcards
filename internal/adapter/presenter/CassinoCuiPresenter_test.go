@@ -78,6 +78,58 @@ func TestCassinoCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestCassinoCuiPresenter_HintOutput(t *testing.T) {
+	p := new(presenter.CassinoCuiPresenter)
+
+	setup := func() *domain.Cassino {
+		players := makeCassinoPlayersForPresenter()
+		cg := domain.NewCassino(domain.NewTrumpCards(0), players, domain.DefaultCassinoConfig())
+		cg.SetPhase(domain.CassinoPhasePlayerTurn)
+		cg.SetCurrentTurn(0)
+		return cg
+	}
+
+	t.Run("recommends a take when the table can be captured", func(t *testing.T) {
+		cg := setup()
+		cg.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		cg.SetTableCards([]*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 2, false),
+			domain.NewCard(domain.CardDesignSpade, 3, false),
+		})
+		out := p.HintOutput(cg)
+		assert.Contains(t, out, "捕獲")
+	})
+
+	t.Run("recommends a build when a combined value is held", func(t *testing.T) {
+		cg := setup()
+		cg.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		cg.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignClover, 8, false))
+		cg.SetTableCards([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)})
+		out := p.HintOutput(cg)
+		assert.Contains(t, out, "ビルド")
+	})
+
+	t.Run("recommends trailing when nothing can be captured or built", func(t *testing.T) {
+		cg := setup()
+		cg.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		cg.SetTableCards([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 7, false)})
+		out := p.HintOutput(cg)
+		assert.Contains(t, out, "場に置く")
+	})
+
+	t.Run("declines when it is not the human's turn", func(t *testing.T) {
+		cg := setup()
+		cg.SetCurrentTurn(1)
+		assert.Contains(t, p.HintOutput(cg), "あなたの番ではありません")
+	})
+
+	t.Run("declines outside the play phase", func(t *testing.T) {
+		cg := setup()
+		cg.SetPhase(domain.CassinoPhaseRoundEnd)
+		assert.Contains(t, p.HintOutput(cg), "あなたの番ではありません")
+	})
+}
+
 func TestCassinoCuiPresenter_ActionLog(t *testing.T) {
 	p := new(presenter.CassinoCuiPresenter)
 	players := makeCassinoPlayersForPresenter()

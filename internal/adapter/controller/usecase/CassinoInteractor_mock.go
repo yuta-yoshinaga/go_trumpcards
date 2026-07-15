@@ -38,6 +38,11 @@ func (_m *MockCassinoInteractor) Build(handIdx int, tableIdxs []int, declaredVal
 }
 
 // Trail モック
+func (_m *MockCassinoInteractor) Hint() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
 func (_m *MockCassinoInteractor) Trail(handIdx int) string {
 	ret := _m.Called(handIdx)
 	return ret.Get(0).(string)

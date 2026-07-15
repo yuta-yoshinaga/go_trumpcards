@@ -171,3 +171,10 @@ func (cwp *CassinoWebPresenter) buildResultMessage(cg interfaces.CassinoGame) st
 func (cwp *CassinoWebPresenter) ActionLogOutput(cg interfaces.CassinoGame) string {
 	return actionLogOutputJSON(cg)
 }
+
+// HintOutput ヒントを出力する。Web ではヒントはクライアント側 (useGameHint /
+// suggestCassinoAction) で算出するため、通常の状態出力を返す。CassinoPresenter
+// インタフェースを満たすための実装。
+func (cwp *CassinoWebPresenter) HintOutput(cg interfaces.CassinoGame) string {
+	return cwp.Output(cg, nil)
+}

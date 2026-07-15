@@ -132,6 +132,50 @@ func cassinoCardShort(c *domain.Card) string {
 	return cuiCardSliceStr([]*domain.Card{c})
 }
 
+// HintOutput recommends a take / build / trail for the human's turn, reusing
+// the shared domain suggestion logic.
+func (p *CassinoCuiPresenter) HintOutput(cg interfaces.CassinoGame) string {
+	if cg.GetPhase() != domain.CassinoPhasePlayerTurn || !cg.IsHumanTurn() {
+		return i18n.T("cassino.hintNotYourTurn") + "\n"
+	}
+	human := cg.GetPlayer(cg.GetCurrentTurn())
+	if human == nil {
+		return i18n.T("cassino.hintNotYourTurn") + "\n"
+	}
+	hand := make([]*domain.Card, human.GetCardsSize())
+	for i := range hand {
+		hand[i] = human.GetCard(i)
+	}
+	hint := domain.SuggestCassinoMove(hand, cg.GetTableCards(), cg.GetBuilds())
+	if hint == nil || hint.HandIdx < 0 || hint.HandIdx >= len(hand) {
+		return i18n.T("cassino.hintNoMove") + "\n"
+	}
+	card := cuiCardStr(hand[hint.HandIdx])
+	switch hint.Action {
+	case domain.CassinoHintTake:
+		return i18n.Tf("cassino.hintTake",
+			"card", card, "idxs", cassinoJoinIdxs(hint.TableIdxs)) + "\n"
+	case domain.CassinoHintBuild:
+		return i18n.Tf("cassino.hintBuild",
+			"card", card, "value", strconv.Itoa(hint.Value)) + "\n"
+	default:
+		return i18n.Tf("cassino.hintTrail", "card", card) + "\n"
+	}
+}
+
+// cassinoJoinIdxs renders 0-based table indices as a comma-separated string,
+// or a dash when the capture is builds-only.
+func cassinoJoinIdxs(idxs []int) string {
+	if len(idxs) == 0 {
+		return "-"
+	}
+	parts := make([]string, len(idxs))
+	for i, v := range idxs {
+		parts[i] = strconv.Itoa(v)
+	}
+	return strings.Join(parts, ", ")
+}
+
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *CassinoCuiPresenter) ActionLogOutput(cg interfaces.CassinoGame) string {
 	return actionLogOutputText(cg)

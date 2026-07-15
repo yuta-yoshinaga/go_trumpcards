@@ -1225,6 +1225,7 @@ var gameRegistry = []GameRegistryEntry{
 					"cassino.helpBuild",
 					"cassino.helpTrail",
 					"cassino.helpNext",
+					"cassino.helpHint",
 					"cassino.helpLog",
 				},
 				SettingKeys: []string{

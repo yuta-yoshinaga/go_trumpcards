@@ -88,7 +88,7 @@ func (c *CassinoCuiController) Exec(command string) string {
 		},
 		[]string{
 			"take", "t", "build", "b", "trail", "tr", "next", "n",
-			"sd", "setdifficulty", "sr", "setrule", "log", "l",
+			"h", "hint", "sd", "setdifficulty", "sr", "setrule", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -100,6 +100,8 @@ func (c *CassinoCuiController) Exec(command string) string {
 				return c.handleTrail(args)
 			case "n", "next":
 				return c.ci.NextRound(), true
+			case "h", "hint":
+				return c.ci.Hint(), true
 			case "sd", "setdifficulty":
 				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
 					cfg := c.ci.GetConfig()
