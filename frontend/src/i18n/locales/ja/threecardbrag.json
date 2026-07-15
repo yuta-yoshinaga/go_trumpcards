@@ -43,6 +43,8 @@
   "betButton": "ベット ({{amount}})",
   "raiseButton": "レイズ ({{amount}})",
   "raisePrompt": "レイズ額:",
+  "raiseDecrease": "レイズ額を減らす",
+  "raiseIncrease": "レイズ額を増やす",
   "foldButton": "フォールド",
   "showButton": "ショー",
   "nextRound": "次のディール",

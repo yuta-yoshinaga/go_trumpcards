@@ -43,6 +43,8 @@
   "betButton": "Bet ({{amount}})",
   "raiseButton": "Raise ({{amount}})",
   "raisePrompt": "Raise to:",
+  "raiseDecrease": "Decrease raise amount",
+  "raiseIncrease": "Increase raise amount",
   "foldButton": "Fold",
   "showButton": "Show",
   "nextRound": "Next Deal",

@@ -346,11 +346,15 @@ function ThreeCardBragPageContent() {
                       className={btnSecondary}
                       onClick={() => setRaiseStake((a) => Math.max(state.stake + 1, a - 1))}
                       disabled={loading}
-                      aria-label="-"
+                      aria-label={t('raiseDecrease')}
                     >
                       −
                     </button>
-                    <span className="text-ds-text-primary text-sm min-w-[4rem] text-center">
+                    <span
+                      className="text-ds-text-primary text-sm min-w-[4rem] text-center"
+                      aria-live="polite"
+                      data-testid="tcb-raise-amount"
+                    >
                       {t('raisePrompt')} {raiseStake}
                     </span>
                     <button
@@ -358,7 +362,7 @@ function ThreeCardBragPageContent() {
                       className={btnSecondary}
                       onClick={() => setRaiseStake((a) => a + 1)}
                       disabled={loading}
-                      aria-label="+"
+                      aria-label={t('raiseIncrease')}
                     >
                       ＋
                     </button>
