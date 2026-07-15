@@ -31,5 +31,6 @@
   "hintTakeDiscard": "The top discard fills slot {{slot}} -- worth taking.",
   "hintTakeDiscardWild": "The top discard is a wild -- take it and place it in any slot.",
   "hintDrawStock": "The discard is not useful. Draw from the stock.",
-  "hintGameOver": "The game is over."
+  "hintGameOver": "The game is over.",
+  "hintNotYourTurn": "It is not your turn right now."
 }

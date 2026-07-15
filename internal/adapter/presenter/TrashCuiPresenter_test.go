@@ -158,6 +158,16 @@ func TestTrashCuiPresenter_HintOutput(t *testing.T) {
 		assert.Contains(t, out, "山札から引き")
 	})
 
+	t.Run("declines advice when it is not the human's turn", func(t *testing.T) {
+		tg := buildTrashMock(trashMockOpts{
+			phase:      domain.TrashPhasePlayerTurn,
+			current:    domain.TrashCpuIdx,
+			discardTop: domain.NewCard(domain.CardDesignHeart, 5, false),
+		})
+		out := p.HintOutput(tg)
+		assert.Contains(t, out, "あなたの番ではありません")
+	})
+
 	t.Run("game over reports the game is finished", func(t *testing.T) {
 		tg := buildTrashMock(trashMockOpts{phase: domain.TrashPhaseGameOver, winner: 1, winnerSet: true})
 		out := p.HintOutput(tg)

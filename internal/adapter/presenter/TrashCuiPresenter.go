@@ -105,6 +105,11 @@ func trashSlotFor(c *domain.Card) int {
 // HintOutput suggests where the drawn/wild card should go, or whether the
 // face-up discard is worth taking on the player's turn.
 func (p *TrashCuiPresenter) HintOutput(t interfaces.TrashGame) string {
+	// Advice is always for the human's board, so it only makes sense on the
+	// human's turn — the same phases apply to the CPU mid-resolution.
+	if t.GetPhase() != domain.TrashPhaseGameOver && t.GetCurrent() != domain.TrashHumanIdx {
+		return i18n.T("trash.hintNotYourTurn") + "\n"
+	}
 	switch t.GetPhase() {
 	case domain.TrashPhaseAwaitWild:
 		slots := trashHumanFaceDownSlots(t)
