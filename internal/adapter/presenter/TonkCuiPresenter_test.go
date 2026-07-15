@@ -24,6 +24,7 @@ func setupTonkCuiMock() *interfaces.MockTonkGame {
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetIsTonk").Return(false)
+	m.On("GetKnockerMelds").Return(([][]*domain.Card)(nil)).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	return m
 }
@@ -179,6 +180,41 @@ func TestTonkCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "配牌Tonk成立")
+	})
+
+	t.Run("round end reveals knocker melds and CPU hands", func(t *testing.T) {
+		m, players := setupTonkCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetKnockerMelds")
+		m.On("GetPhase").Return(domain.TonkPhaseRoundEnd)
+		m.On("GetKnockerMelds").Return([][]*domain.Card{
+			{ // set of 7s
+				domain.NewCard(domain.CardDesignSpade, 7, false),
+				domain.NewCard(domain.CardDesignHeart, 7, false),
+				domain.NewCard(domain.CardDesignClover, 7, false),
+			},
+			{ // run of clubs 4-5-6
+				domain.NewCard(domain.CardDesignClover, 4, false),
+				domain.NewCard(domain.CardDesignClover, 5, false),
+				domain.NewCard(domain.CardDesignClover, 6, false),
+			},
+		})
+		// The CPU's remaining hand is revealed at round end.
+		players[1].AddCard(domain.NewCard(domain.CardDesignDiamond, 12, false))
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "[ノッカーのメルド]")
+		assert.Contains(t, result, "メルド1(セット):")
+		assert.Contains(t, result, "メルド2(ラン):")
+		assert.Contains(t, result, "CPU 1の手札: DIAMOND 12")
+	})
+
+	t.Run("CPU hands are not revealed during play", func(t *testing.T) {
+		m, players := setupTonkCuiMockWithPlayers()
+		players[1].AddCard(domain.NewCard(domain.CardDesignDiamond, 12, false))
+
+		result := p.Output(m, nil) // default phase is Draw
+		assert.NotContains(t, result, "CPU 1の手札:")
 	})
 }
 
