@@ -229,7 +229,16 @@ function LooPageContent() {
                         className={`px-1.5 py-0.5 rounded text-xs ${
                           p.playing ? 'bg-ds-accent/30 text-ds-accent' : 'bg-black/40 text-ds-text-muted'
                         }`}
+                        role="status"
+                        aria-label={t('statusAria', {
+                          name: playerName(p.id, p.isHuman),
+                          status: p.playing ? t('statusPlay') : t('statusPass'),
+                        })}
+                        title={t('playRiskTooltip')}
+                        data-testid={`loo-status-${p.id}`}
                       >
+                        {/* Colour-independent icon (● play / ○ pass) alongside the label. */}
+                        <span aria-hidden="true">{p.playing ? '● ' : '○ '}</span>
                         {p.playing ? t('statusPlay') : t('statusPass')}
                       </span>
                     </div>
