@@ -38,5 +38,6 @@
     "table": "The central table. Play a same-rank card to capture all matching table cards.",
     "hand": "Your hand. Click a card to play it — capture same-rank cards, or lay it on the table.",
     "resetButton": "Use this button to reset the game at any time."
-  }
+  },
+  "playCardAria": "Play {{card}}"
 }
