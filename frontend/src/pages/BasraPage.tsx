@@ -24,6 +24,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BasraResponse } from '../types/card';
 import { BasraPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { BASRA_HELP, parseBasraCommand } from '../utils/cli/commands/basraCommands';
 import { formatBasraState } from '../utils/cli/formatters/basraFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -183,14 +184,20 @@ function BasraPageContent() {
                 ) : (
                   state.tableCards.map((c, i) => {
                     const isCandidate = captureCandidates.has(i);
+                    const isSelected = tableIndices.includes(i);
+                    const ariaLabel = isSelected
+                      ? t('tableSelectedAria', { card: cardAlt(c) })
+                      : isCandidate
+                        ? t('tableCandidateAria', { card: cardAlt(c) })
+                        : cardAlt(c);
                     return (
                       <button
                         key={i}
                         type="button"
                         onClick={() => isHumanTurn && toggleTable(i)}
                         disabled={!isHumanTurn}
-                        className={`rounded transition-all ${
-                          tableIndices.includes(i)
+                        className={`relative rounded transition-all ${
+                          isSelected
                             ? 'ring-2 ring-ds-warning -translate-y-1'
                             : isCandidate
                               ? 'ring-2 ring-ds-success motion-safe:animate-pulse'
@@ -198,8 +205,27 @@ function BasraPageContent() {
                         } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
                         data-testid={`table-card-${i}`}
                         data-capture-candidate={isCandidate || undefined}
+                        aria-label={ariaLabel}
+                        aria-pressed={isSelected}
                       >
                         <AnimatedCard card={c} width={cardWidth * 0.9} />
+                        {/* Colour-independent shape cue: ✓ badge for a capturable card,
+                            filled ● dot for a selected one. */}
+                        {isSelected ? (
+                          <span
+                            aria-hidden="true"
+                            className="absolute -top-1 -right-1 rounded-full bg-ds-warning text-white text-[10px] leading-none px-1 py-0.5"
+                          >
+                            ●
+                          </span>
+                        ) : isCandidate ? (
+                          <span
+                            aria-hidden="true"
+                            className="absolute -top-1 -right-1 rounded-full bg-ds-success text-white text-[10px] leading-none px-1 py-0.5"
+                          >
+                            ✓
+                          </span>
+                        ) : null}
                       </button>
                     );
                   })
