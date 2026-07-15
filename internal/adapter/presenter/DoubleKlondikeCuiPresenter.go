@@ -74,6 +74,22 @@ func (p *DoubleKlondikeCuiPresenter) Output(g interfaces.DoubleKlondikeGame, las
 	})
 }
 
+// doubleKlondikeZoneName localises a hint zone identifier (waste / tableau /
+// foundation). Unknown identifiers fall back to the raw string so the hint never
+// panics or renders empty.
+func doubleKlondikeZoneName(zone string) string {
+	switch zone {
+	case "waste":
+		return i18n.T("doubleklondike.zoneWaste")
+	case "tableau":
+		return i18n.T("doubleklondike.zoneTableau")
+	case "foundation":
+		return i18n.T("doubleklondike.zoneFoundation")
+	default:
+		return zone
+	}
+}
+
 // HintOutput emits the current hint.
 func (p *DoubleKlondikeCuiPresenter) HintOutput(g interfaces.DoubleKlondikeGame) string {
 	hint := g.GetHint()
@@ -81,9 +97,9 @@ func (p *DoubleKlondikeCuiPresenter) HintOutput(g interfaces.DoubleKlondikeGame)
 		return i18n.T("cuiHintNone") + "\n"
 	}
 	return color.Yellow(i18n.Tf("doubleklondike.hintLine",
-		"from", hint.FromZone,
+		"from", doubleKlondikeZoneName(hint.FromZone),
 		"fromCol", strconv.Itoa(hint.FromCol),
-		"to", hint.ToZone,
+		"to", doubleKlondikeZoneName(hint.ToZone),
 		"toCol", strconv.Itoa(hint.ToCol))) + "\n"
 }
 
