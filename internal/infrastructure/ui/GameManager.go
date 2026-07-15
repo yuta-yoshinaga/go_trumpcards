@@ -1174,6 +1174,7 @@ var gameRegistry = []GameRegistryEntry{
 					"trash.helpDraw",
 					"trash.helpPlace",
 					"trash.helpCpu",
+					"trash.helpHint",
 					"trash.helpLog",
 				},
 			})

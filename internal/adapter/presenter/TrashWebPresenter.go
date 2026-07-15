@@ -52,6 +52,12 @@ func (p *TrashWebPresenter) ActionLogOutput(t interfaces.TrashGame) string {
 	return actionLogToJSON(t.GetActionLog())
 }
 
+// HintOutput ヒントを出力する。Web ではヒントはクライアント側 (useGameHint) で
+// 算出するため、通常の状態出力を返す。TrashPresenter インタフェースを満たすための実装。
+func (p *TrashWebPresenter) HintOutput(t interfaces.TrashGame) string {
+	return p.Output(t, nil)
+}
+
 // buildBase は共通フィールドを詰めたレスポンスオブジェクトを返す
 func (p *TrashWebPresenter) buildBase(t interfaces.TrashGame) *controller.TrashWebOutput {
 	resObj := new(controller.TrashWebOutput)

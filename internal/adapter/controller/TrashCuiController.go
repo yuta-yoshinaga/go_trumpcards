@@ -23,7 +23,7 @@ func (c *TrashCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return c.ti.Reset() },
-		[]string{"d", "draw", "p", "place", "cpu", "log", "l"},
+		[]string{"d", "draw", "p", "place", "cpu", "h", "hint", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "d", "draw":
@@ -32,6 +32,8 @@ func (c *TrashCuiController) Exec(command string) string {
 				return c.handlePlace(args), true
 			case "cpu":
 				return c.ti.CpuStep(), true
+			case "h", "hint":
+				return c.ti.Hint(), true
 			default:
 				result, handled := handleCuiLog(cmd, c.ti.ActionLog)
 				return result, handled

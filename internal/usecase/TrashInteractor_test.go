@@ -44,6 +44,17 @@ func TestTrashInteractorReset(t *testing.T) {
 	tg.AssertCalled(t, "Reset")
 }
 
+func TestTrashInteractorHint(t *testing.T) {
+	tg := newMockTrashGame()
+	tp := newMockTrashPresenter()
+	ti := NewTrashInteractor(tg, tp)
+
+	tp.On("HintOutput", tg).Return("hint_output")
+
+	assert.Equal(t, "hint_output", ti.Hint())
+	tp.AssertCalled(t, "HintOutput", tg)
+}
+
 func TestTrashInteractorDraw(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		tg := newMockTrashGame()
