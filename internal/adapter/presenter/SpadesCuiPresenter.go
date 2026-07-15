@@ -11,17 +11,28 @@ import (
 )
 
 // spadesPlayerStr returns the display string for a single Spades player.
-func spadesPlayerStr(player *domain.SpadesPlayer, i int) string {
+func spadesPlayerStr(player *domain.SpadesPlayer, i, bagThreshold int) string {
 	var b strings.Builder
 	bidStr := i18n.T("spades.bidPending")
 	if player.GetBid() >= 0 {
 		bidStr = strconv.Itoa(player.GetBid())
 	}
+	// Highlight the bag count as it nears the penalty threshold (each threshold
+	// of accumulated bags costs 100 points), red within 1 and yellow within 2.
+	bagsStr := strconv.Itoa(player.GetBags())
+	if bagThreshold > 0 {
+		switch remaining := bagThreshold - player.GetBags(); {
+		case remaining <= 1:
+			bagsStr = color.Red(bagsStr)
+		case remaining <= 2:
+			bagsStr = color.Yellow(bagsStr)
+		}
+	}
 	b.WriteString(i18n.Tf("spades.playerLine",
 		"name", cuiPlayerName(player, i),
 		"bid", bidStr,
 		"tricks", strconv.Itoa(player.GetTrickCount()),
-		"bags", strconv.Itoa(player.GetBags()),
+		"bags", bagsStr,
 		"cum", strconv.Itoa(player.GetCumulativeScore()),
 		"round", strconv.Itoa(player.GetRoundScore()),
 		"cards", strconv.Itoa(player.GetCardsSize()),
@@ -49,8 +60,22 @@ func (p *SpadesCuiPresenter) Output(s interfaces.SpadesGame, lastErr error) stri
 			b.WriteString(i18n.T("spades.spadesBrokenNo") + "\n")
 		}
 
+		// Point-limit progress: whoever reaches the limit first wins, so surface
+		// the limit and the current leader (highest cumulative score).
+		cfg := s.GetConfig()
+		leaderIdx, maxScore := 0, s.GetPlayer(0).GetCumulativeScore()
+		for i := 1; i < s.GetPlayerCnt(); i++ {
+			if score := s.GetPlayer(i).GetCumulativeScore(); score > maxScore {
+				maxScore, leaderIdx = score, i
+			}
+		}
+		b.WriteString(i18n.Tf("spades.limitProgress",
+			"limit", strconv.Itoa(cfg.PointLimit),
+			"name", cuiPlayerName(s.GetPlayer(leaderIdx), leaderIdx),
+			"score", strconv.Itoa(maxScore)) + "\n")
+
 		for i := 0; i < s.GetPlayerCnt(); i++ {
-			b.WriteString(spadesPlayerStr(s.GetPlayer(i), i))
+			b.WriteString(spadesPlayerStr(s.GetPlayer(i), i, cfg.BagPenaltyThreshold))
 		}
 
 		b.WriteString("----------\n")

@@ -10,6 +10,7 @@
   "spadesBrokenYes": "Spades broken: yes",
   "spadesBrokenNo": "Spades broken: no",
   "bidPending": "no bid",
+  "limitProgress": "Limit: {{limit}} pts / leader: {{name}} {{score}} pts",
   "playerLine": "{{name}}: bid={{bid}} won {{tricks}} tricks, bags {{bags}}, cum {{cum}}pt round {{round}}pt {{cards}} cards",
   "gameEnd": "Game over! {{name}} wins!",
   "promptBid": "Bid phase — {{name}} to act",
