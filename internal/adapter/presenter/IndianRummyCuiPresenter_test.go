@@ -36,6 +36,10 @@ func setupIndianRummyCuiMock(phase domain.IndianRummyPhase, gameEnd bool) (*inte
 	m.On("GetPlayerCnt").Return(2)
 	m.On("GetPlayer", 0).Return(players[0])
 	m.On("GetPlayer", 1).Return(players[1])
+	m.On("PlayerDeadwoodValue", 0).Return(10).Maybe()
+	m.On("PlayerDeadwoodValue", 1).Return(20).Maybe()
+	m.On("PlayerHasPureSequence", 0).Return(false).Maybe()
+	m.On("PlayerHasPureSequence", 1).Return(false).Maybe()
 	return m, players
 }
 
@@ -51,11 +55,25 @@ func TestIndianRummyCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, out, "ワイルドジョーカー")
 	})
 
-	t.Run("discard phase", func(t *testing.T) {
+	t.Run("discard phase shows deadwood and unmet pure sequence", func(t *testing.T) {
 		m, _ := setupIndianRummyCuiMock(domain.IndianRummyPhaseDiscard, false)
 		out := p.Output(m, nil)
 		assert.NotEmpty(t, out)
 		assert.Contains(t, out, "ディスカードフェーズ")
+		assert.Contains(t, out, "デッドウッド: 10 点")
+		assert.Contains(t, out, "純シーケンス未成立")
+	})
+
+	t.Run("discard phase shows pure sequence met", func(t *testing.T) {
+		m, _ := setupIndianRummyCuiMock(domain.IndianRummyPhaseDiscard, false)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "PlayerHasPureSequence")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "PlayerDeadwoodValue")
+		m.On("PlayerHasPureSequence", 0).Return(true).Maybe()
+		m.On("PlayerDeadwoodValue", 0).Return(0).Maybe()
+		out := p.Output(m, nil)
+		assert.Contains(t, out, "デッドウッド: 0 点")
+		assert.Contains(t, out, "純シーケンス成立")
+		assert.NotContains(t, out, "純シーケンス未成立")
 	})
 
 	t.Run("round end", func(t *testing.T) {

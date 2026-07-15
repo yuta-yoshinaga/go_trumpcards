@@ -72,6 +72,18 @@ func (p *IndianRummyCuiPresenter) Output(g interfaces.IndianRummyGame, lastErr e
 			currentIdx := g.GetCurrentPlayerIdx()
 			b.WriteString(i18n.Tf("indianrummy.promptDiscard",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
+			// A misdeclaration is heavily penalized here, so surface the human's
+			// current deadwood and whether the mandatory pure sequence is met
+			// (parity with GinRummy's deadwood/knock hints).
+			if g.GetPlayer(currentIdx).GetIsHuman() {
+				b.WriteString(i18n.Tf("indianrummy.deadwoodLine",
+					"value", strconv.Itoa(g.PlayerDeadwoodValue(currentIdx))) + "\n")
+				if g.PlayerHasPureSequence(currentIdx) {
+					b.WriteString(color.Green(i18n.T("indianrummy.pureSequenceMet")) + "\n")
+				} else {
+					b.WriteString(color.Yellow(i18n.T("indianrummy.pureSequenceUnmet")) + "\n")
+				}
+			}
 			b.WriteString(i18n.T("indianrummy.promptDiscardHelp") + "\n")
 			b.WriteString(i18n.T("indianrummy.promptDeclareHelp") + "\n")
 		case domain.IndianRummyPhaseRoundEnd:
