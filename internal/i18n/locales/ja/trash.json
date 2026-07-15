@@ -3,6 +3,7 @@
   "helpDraw": "  d, draw             山札から1枚引く",
   "helpPlace": "  p, place <pos>      ワイルドを位置 <pos> に配置 (例: p 7)",
   "helpCpu": "  cpu                 CPUのターンを1ステップ進める",
+  "helpHint": "  h, hint             配置候補などのヒントを表示",
   "helpLog": "  log, l              棋譜を表示",
   "promptPosition": "配置する位置 (1〜10) を入力してください:",
   "playerTurn": "あなたのターンです。山札から引いてください",

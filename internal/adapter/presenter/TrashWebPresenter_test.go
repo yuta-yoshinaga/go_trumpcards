@@ -184,3 +184,10 @@ func TestTrashWebPresenter_ActionLogOutput(t *testing.T) {
 		assert.Contains(t, result, "entries")
 	})
 }
+
+func TestTrashWebPresenter_HintOutput(t *testing.T) {
+	// Web hints are computed client-side, so HintOutput mirrors Output.
+	tg := buildTrashMock(trashMockOpts{})
+	p := new(TrashWebPresenter)
+	assert.Equal(t, p.Output(tg, nil), p.HintOutput(tg))
+}

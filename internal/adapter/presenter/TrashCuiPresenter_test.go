@@ -133,6 +133,31 @@ func TestTrashCuiPresenter_HintOutput(t *testing.T) {
 		assert.Contains(t, out, "山札から引き")
 	})
 
+	t.Run("await wild with no open slots falls back to game over", func(t *testing.T) {
+		slots := make([]domain.TrashSlot, domain.TrashSlotCnt)
+		for i := range slots {
+			slots[i] = domain.TrashSlot{Card: domain.NewCard(domain.CardDesignSpade, i+1, false), FaceUp: true}
+		}
+		tg := buildTrashMock(trashMockOpts{phase: domain.TrashPhaseAwaitWild, p0Slots: slots})
+		out := p.HintOutput(tg)
+		assert.Contains(t, out, "ゲームは終了")
+	})
+
+	t.Run("player turn draws when the discard's slot is already filled", func(t *testing.T) {
+		slots := make([]domain.TrashSlot, domain.TrashSlotCnt)
+		for i := range slots {
+			// Slot 5 (index 4) is already filled, so a drawn 5 has nowhere to go.
+			slots[i] = domain.TrashSlot{Card: domain.NewCard(domain.CardDesignSpade, i+1, false), FaceUp: i == 4}
+		}
+		tg := buildTrashMock(trashMockOpts{
+			phase:      domain.TrashPhasePlayerTurn,
+			discardTop: domain.NewCard(domain.CardDesignHeart, 5, false),
+			p0Slots:    slots,
+		})
+		out := p.HintOutput(tg)
+		assert.Contains(t, out, "山札から引き")
+	})
+
 	t.Run("game over reports the game is finished", func(t *testing.T) {
 		tg := buildTrashMock(trashMockOpts{phase: domain.TrashPhaseGameOver, winner: 1, winnerSet: true})
 		out := p.HintOutput(tg)

@@ -3,6 +3,7 @@
   "helpDraw": "  d, draw             Draw the top stock card",
   "helpPlace": "  p, place <pos>      Place the wild at position <pos> (e.g. p 7)",
   "helpCpu": "  cpu                 Advance the CPU's turn by one step",
+  "helpHint": "  h, hint             Show a placement hint",
   "helpLog": "  log, l              Show action log",
   "promptPosition": "Enter target position (1-10):",
   "playerTurn": "Your turn. Draw from the stock",
