@@ -107,7 +107,10 @@ func (pp *PineappleCuiPresenter) Output(p interfaces.PineappleGame, lastErr erro
 		if p.GetPhase() == domain.PineapplePhaseDiscard {
 			b.WriteString("----------\n")
 			b.WriteString(i18n.T("pineapple.discardHeader") + "\n")
-			b.WriteString(i18n.T("pineapple.discardPrompt") + "\n")
+			// The number of cards to discard is variant-dependent (Pineapple keeps
+			// 2 of 3, Irish Poker keeps 2 of 4), so derive it from the deal count.
+			discardCount := p.GetInitialDealCount() - 2
+			b.WriteString(i18n.Tf("pineapple.discardPrompt", "count", strconv.Itoa(discardCount)) + "\n")
 		}
 
 		results := p.GetRoundResults()

@@ -43,7 +43,7 @@
   "cpuActionLine": "  Player {{idx}}: {{action}}",
   "cpuActionAmount": " ({{amount}})",
   "discardHeader": "--- ディスカードフェーズ ---",
-  "discardPrompt": "手札から1枚選んでディスカードしてください",
+  "discardPrompt": "手札から{{count}}枚選んでディスカードしてください",
   "resultsHeader": "[結果]",
   "resultMucked": "  {{name}}: マック",
   "resultHand": "  {{name}}: {{hand}}{{kickers}}",

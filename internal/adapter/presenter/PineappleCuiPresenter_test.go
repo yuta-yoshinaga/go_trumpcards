@@ -34,6 +34,7 @@ func setupPineappleCuiMock() *interfaces.MockPineappleGame {
 	m.On("GetGameEndFlag").Return(false)
 	m.On("IsMuckAvailable").Return(false)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	m.On("GetInitialDealCount").Return(3).Maybe()
 	return m
 }
 
@@ -125,6 +126,24 @@ func TestPineappleCuiPresenter_Output(t *testing.T) {
 		m.On("GetGameEndFlag").Return(true)
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "ゲーム終了")
+	})
+
+	t.Run("discard prompt says 1 card for a 3-card deal (Pineapple)", func(t *testing.T) {
+		m, _ := setupPineappleCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.PineapplePhaseDiscard)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "手札から1枚選んで")
+	})
+
+	t.Run("discard prompt says 2 cards for a 4-card deal (Irish Poker)", func(t *testing.T) {
+		m, _ := setupPineappleCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetInitialDealCount")
+		m.On("GetPhase").Return(domain.PineapplePhaseDiscard)
+		m.On("GetInitialDealCount").Return(4)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "手札から2枚選んで")
 	})
 }
 
