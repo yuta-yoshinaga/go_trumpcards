@@ -22,3 +22,8 @@ func (_m *MockTrashPresenter) ActionLogOutput(t interfaces.TrashGame) string {
 	ret := _m.Called(t)
 	return ret.String(0)
 }
+
+func (_m *MockTrashPresenter) HintOutput(t interfaces.TrashGame) string {
+	ret := _m.Called(t)
+	return ret.String(0)
+}

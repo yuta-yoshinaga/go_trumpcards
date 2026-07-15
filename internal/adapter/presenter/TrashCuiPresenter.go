@@ -73,6 +73,62 @@ func (p *TrashCuiPresenter) Output(t interfaces.TrashGame, lastErr error) string
 	})
 }
 
+// trashHumanFaceDownSlots returns the 1-based positions of the human's slots
+// that are still unfilled (face down) — the valid targets for a wild card.
+func trashHumanFaceDownSlots(t interfaces.TrashGame) []string {
+	var out []string
+	for i, s := range t.GetPlayerSlots(domain.TrashHumanIdx) {
+		if !s.FaceUp {
+			out = append(out, strconv.Itoa(i+1))
+		}
+	}
+	return out
+}
+
+// trashIsWild reports whether a card is a Trash wild (King or Joker).
+func trashIsWild(c *domain.Card) bool {
+	return c != nil && (c.GetDesign() == domain.CardDesignJoker || c.GetValue() == 13)
+}
+
+// trashSlotFor returns the 1-based slot a rank-value card fills, or 0 for
+// end-turn/wild cards that have no fixed slot.
+func trashSlotFor(c *domain.Card) int {
+	if c == nil || c.GetDesign() == domain.CardDesignJoker {
+		return 0
+	}
+	if v := c.GetValue(); v >= 1 && v <= domain.TrashSlotCnt {
+		return v
+	}
+	return 0
+}
+
+// HintOutput suggests where the drawn/wild card should go, or whether the
+// face-up discard is worth taking on the player's turn.
+func (p *TrashCuiPresenter) HintOutput(t interfaces.TrashGame) string {
+	switch t.GetPhase() {
+	case domain.TrashPhaseAwaitWild:
+		slots := trashHumanFaceDownSlots(t)
+		if len(slots) == 0 {
+			return i18n.T("trash.hintGameOver") + "\n"
+		}
+		// Filling the highest open position first keeps the low ranks — which
+		// you are equally likely to draw — available to place themselves.
+		rec := slots[len(slots)-1]
+		return i18n.Tf("trash.hintWild", "slots", strings.Join(slots, ", "), "rec", rec) + "\n"
+	case domain.TrashPhasePlayerTurn:
+		top := t.GetDiscardTop()
+		if trashIsWild(top) && len(trashHumanFaceDownSlots(t)) > 0 {
+			return i18n.T("trash.hintTakeDiscardWild") + "\n"
+		}
+		if slot := trashSlotFor(top); slot > 0 && !t.GetPlayerSlots(domain.TrashHumanIdx)[slot-1].FaceUp {
+			return i18n.Tf("trash.hintTakeDiscard", "slot", strconv.Itoa(slot)) + "\n"
+		}
+		return i18n.T("trash.hintDrawStock") + "\n"
+	default:
+		return i18n.T("trash.hintGameOver") + "\n"
+	}
+}
+
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *TrashCuiPresenter) ActionLogOutput(t interfaces.TrashGame) string {
 	if t.GetPhase() != domain.TrashPhaseGameOver {

@@ -31,6 +31,11 @@ func (_m *MockTrashInteractor) CpuStep() string {
 	return ret.Get(0).(string)
 }
 
+func (_m *MockTrashInteractor) Hint() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
 func (_m *MockTrashInteractor) ActionLog() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)
