@@ -127,7 +127,65 @@ func (p *PreferenceCuiPresenter) writePrompt(b *strings.Builder, g interfaces.Pr
 		b.WriteString(i18n.T("preference.promptTrickEndHelp") + "\n")
 	case domain.PreferencePhaseRoundEnd:
 		b.WriteString(i18n.T("preference.promptRoundEnd") + "\n")
+		p.writeRoundEndResult(b, g)
 		b.WriteString(i18n.T("preference.promptRoundEndHelp") + "\n")
+	}
+}
+
+// writeRoundEndResult appends the declarer's contract outcome and a one-line
+// trick tally for every player, matching the information the Web view already
+// shows in its round-result block.
+func (p *PreferenceCuiPresenter) writeRoundEndResult(b *strings.Builder, g interfaces.PreferenceGame) {
+	declIdx := g.GetDeclarerIdx()
+	if declIdx < 0 {
+		return
+	}
+	decl := g.GetPlayer(declIdx)
+	if decl == nil {
+		return
+	}
+	contract := g.GetContract()
+	declTricks := decl.GetTrickCount()
+	// Six/Seven/Eight need at least the target tricks; Misère needs exactly zero.
+	achieved := declTricks >= preferenceContractTarget(contract)
+	if contract == domain.PreferenceBidMisere {
+		achieved = declTricks == 0
+	}
+	outcome := i18n.T("preference.contractFailed")
+	if achieved {
+		outcome = i18n.T("preference.contractAchieved")
+	}
+	b.WriteString(i18n.Tf("preference.promptRoundEndResult",
+		"name", cuiPlayerName(decl, declIdx),
+		"contract", preferenceBidName(int(contract)),
+		"tricks", strconv.Itoa(declTricks),
+		"outcome", outcome) + "\n")
+
+	entries := make([]string, 0, g.GetPlayerCnt())
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		player := g.GetPlayer(i)
+		if player == nil {
+			continue
+		}
+		entries = append(entries, i18n.Tf("preference.roundEndTrickEntry",
+			"name", cuiPlayerName(player, i),
+			"tricks", strconv.Itoa(player.GetTrickCount())))
+	}
+	b.WriteString(i18n.Tf("preference.roundEndTricks", "list", strings.Join(entries, ", ")) + "\n")
+}
+
+// preferenceContractTarget returns the number of tricks a Six/Seven/Eight
+// contract requires (0 for Misère / Pass, which are handled separately).
+func preferenceContractTarget(bid domain.PreferenceBid) int {
+	switch bid {
+	case domain.PreferenceBidSix:
+		return 6
+	case domain.PreferenceBidSeven:
+		return 7
+	case domain.PreferenceBidEight:
+		return 8
+	default:
+		return 0
 	}
 }
 

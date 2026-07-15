@@ -97,6 +97,101 @@ func TestPreferenceCuiPresenter_Output(t *testing.T) {
 		assert.NotEmpty(t, result)
 	})
 
+	t.Run("round end shows the declarer's contract as achieved", func(t *testing.T) {
+		m, players := setupPreferenceCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.PreferencePhaseRoundEnd)
+		// Declarer (seat 0) took 6 tricks on a Six contract → achieved.
+		for range 6 {
+			players[0].AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 7, false)})
+		}
+		players[1].AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 7, false)})
+		players[2].AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignClover, 7, false)})
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "達成")
+		assert.NotContains(t, result, "失敗")
+		// Per-player trick tally is present.
+		assert.Contains(t, result, "各プレイヤーのトリック数")
+	})
+
+	t.Run("round end shows the declarer's contract as failed", func(t *testing.T) {
+		m, players := setupPreferenceCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.PreferencePhaseRoundEnd)
+		// Declarer took only 2 tricks on a Six contract → failed.
+		for range 2 {
+			players[0].AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 7, false)})
+		}
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "失敗")
+	})
+
+	t.Run("round end with no declarer skips the result line", func(t *testing.T) {
+		m, _ := setupPreferenceCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDeclarerIdx")
+		m.On("GetPhase").Return(domain.PreferencePhaseRoundEnd)
+		m.On("GetDeclarerIdx").Return(-1)
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, "各プレイヤーのトリック数")
+	})
+
+	t.Run("round end with a nil declarer player skips the result", func(t *testing.T) {
+		m, players := setupPreferenceCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPlayer")
+		m.On("GetPhase").Return(domain.PreferencePhaseRoundEnd)
+		m.On("GetPlayer", 0).Return((*domain.PreferencePlayer)(nil)) // declarer missing
+		m.On("GetPlayer", 1).Return(players[1])
+		m.On("GetPlayer", 2).Return(players[2])
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, "各プレイヤーのトリック数")
+	})
+
+	t.Run("round end skips a nil player in the trick tally", func(t *testing.T) {
+		m, players := setupPreferenceCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPlayer")
+		m.On("GetPhase").Return(domain.PreferencePhaseRoundEnd)
+		m.On("GetPlayer", 0).Return(players[0]) // declarer present
+		m.On("GetPlayer", 1).Return((*domain.PreferencePlayer)(nil))
+		m.On("GetPlayer", 2).Return(players[2])
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "各プレイヤーのトリック数")
+	})
+
+	// Each contract has a distinct trick target; a Misère is achieved by taking zero.
+	contractCases := []struct {
+		name     string
+		contract domain.PreferenceBid
+		tricks   int
+		achieved bool
+	}{
+		{"misere achieved with zero tricks", domain.PreferenceBidMisere, 0, true},
+		{"misere failed with a trick", domain.PreferenceBidMisere, 1, false},
+		{"seven achieved", domain.PreferenceBidSeven, 7, true},
+		{"eight failed", domain.PreferenceBidEight, 7, false},
+	}
+	for _, tc := range contractCases {
+		t.Run("round end "+tc.name, func(t *testing.T) {
+			m, players := setupPreferenceCuiMockWithPlayers()
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetContract")
+			m.On("GetPhase").Return(domain.PreferencePhaseRoundEnd)
+			m.On("GetContract").Return(tc.contract)
+			for range tc.tricks {
+				players[0].AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 7, false)})
+			}
+			result := p.Output(m, nil)
+			if tc.achieved {
+				assert.Contains(t, result, "達成")
+				assert.NotContains(t, result, "失敗")
+			} else {
+				assert.Contains(t, result, "失敗")
+			}
+		})
+	}
+
 	t.Run("game end banner", func(t *testing.T) {
 		m, _ := setupPreferenceCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
