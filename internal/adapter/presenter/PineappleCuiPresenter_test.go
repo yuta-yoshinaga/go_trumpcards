@@ -35,6 +35,7 @@ func setupPineappleCuiMock() *interfaces.MockPineappleGame {
 	m.On("IsMuckAvailable").Return(false)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetInitialDealCount").Return(3).Maybe()
+	m.On("IsDiscardAfterFlopBetting").Return(false).Maybe()
 	return m
 }
 
@@ -144,6 +145,30 @@ func TestPineappleCuiPresenter_Output(t *testing.T) {
 		m.On("GetInitialDealCount").Return(4)
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "手札から2枚選んで")
+	})
+
+	t.Run("title is plain Pineapple for a 3-card pre-flop-discard deal", func(t *testing.T) {
+		m, _ := setupPineappleCuiMockWithPlayers()
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "パイナップルポーカー")
+		assert.NotContains(t, result, "クレイジー")
+		assert.NotContains(t, result, "アイリッシュ")
+	})
+
+	t.Run("title is Crazy Pineapple when discarding after flop betting", func(t *testing.T) {
+		m, _ := setupPineappleCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsDiscardAfterFlopBetting")
+		m.On("IsDiscardAfterFlopBetting").Return(true)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "クレイジーパイナップル")
+	})
+
+	t.Run("title is Irish Poker for a 4-card deal", func(t *testing.T) {
+		m, _ := setupPineappleCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetInitialDealCount")
+		m.On("GetInitialDealCount").Return(4)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "アイリッシュポーカー")
 	})
 }
 

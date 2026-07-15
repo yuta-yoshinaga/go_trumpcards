@@ -203,6 +203,12 @@ func (_m *MockPineappleGame) GetInitialDealCount() int {
 	return ret.Int(0)
 }
 
+// IsDiscardAfterFlopBetting モック
+func (_m *MockPineappleGame) IsDiscardAfterFlopBetting() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}
+
 // Rebuy モック
 func (_m *MockPineappleGame) Rebuy() error {
 	ret := _m.Called()
