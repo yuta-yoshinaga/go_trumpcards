@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { sambaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -159,6 +159,23 @@ function SambaPageContent() {
     enabled: !!isHumanTurn && !loading,
   });
 
+  // Announce freeze/thaw transitions: freezing changes the draw rules (you now
+  // need two matching cards to take the discard pile), so it must reach SR users
+  // beyond the colour/badge cue.
+  const [frozenMsg, setFrozenMsg] = useState('');
+  const prevFrozenRef = useRef<boolean | null>(null);
+  useEffect(() => {
+    const frozen = state?.isFrozen;
+    if (frozen == null) return;
+    const prev = prevFrozenRef.current;
+    prevFrozenRef.current = frozen;
+    if (prev != null && prev !== frozen) {
+      setFrozenMsg(frozen ? t('frozenAnnounceOn') : t('frozenAnnounceOff'));
+      const id = setTimeout(() => setFrozenMsg(''), 3000);
+      return () => clearTimeout(id);
+    }
+  }, [state?.isFrozen, t]);
+
   if (!state) {
     return (
       <GameSkeleton
@@ -230,6 +247,10 @@ function SambaPageContent() {
                 {t('drawPile', { count: state.drawPileCount })} / {t('discardPile', { count: state.discardPileCount })}
               </span>
               {state.isFrozen && <span className="ml-2 text-ds-info font-bold">[{t('frozen')}]</span>}
+              {/* Self-contained live region announcing freeze/thaw transitions. */}
+              <span className="sr-only" role="status" aria-live="polite" data-testid="sa-frozen-announce">
+                {frozenMsg}
+              </span>
             </div>
             <div className="text-ds-text-muted text-center mb-2 text-sm" data-testid="sa-team-scores">
               {t('teamScores', { a: state.teamScores[0] ?? 0, b: state.teamScores[1] ?? 0 })}
