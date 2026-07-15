@@ -250,7 +250,7 @@ function AllFoursPageContent() {
                 <span
                   role="img"
                   aria-label={t('turnUp', {
-                    card: `${t(`suitName.${SUIT_NAME_BY_DESIGN[state.turnUp.design] ?? ''}`, state.turnUp.design)}${VALUE_LABELS[state.turnUp.value] ?? state.turnUp.value}`,
+                    card: `${t(`suitName.${SUIT_NAME_BY_DESIGN[state.turnUp.design]}`, state.turnUp.design)}${VALUE_LABELS[state.turnUp.value] ?? state.turnUp.value}`,
                   })}
                 >
                   <span aria-hidden="true">{t('turnUp', { card: cardLabel(state.turnUp) })}</span>

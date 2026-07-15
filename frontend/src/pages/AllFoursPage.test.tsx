@@ -141,6 +141,12 @@ describe('AllFoursPage', () => {
     expect(screen.getByRole('img', { name: 'めくり札: ハート7' })).toBeInTheDocument();
   });
 
+  it('spells a face-card turn-up with its letter (♠J → スペードJ)', async () => {
+    mockExec.mockResolvedValueOnce({ ...baseState, trumpSuit: 1, turnUp: { design: 'SPADE', value: 11 } });
+    renderWithProviders(<AllFoursPage />);
+    expect(await screen.findByRole('img', { name: 'めくり札: スペードJ' })).toBeInTheDocument();
+  });
+
   it('exposes the hint toggle as a labelled checkbox in the settings panel', async () => {
     renderWithProviders(<AllFoursPage />);
     const toggle = await screen.findByRole('checkbox', { name: /ヒント/ });
