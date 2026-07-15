@@ -64,6 +64,6 @@ export function parseEasthavenCommand(input: string): CliParseResult<EasthavenAr
       return { error: i18n.t('easthaven:cli.error.usageMove') };
     }
     default:
-      return { error: i18n.t('easthaven:cli.error.unknownCommand', { cmd: cmd ?? '' }) };
+      return { error: i18n.t('easthaven:cli.error.unknownCommand', { cmd }) };
   }
 }
