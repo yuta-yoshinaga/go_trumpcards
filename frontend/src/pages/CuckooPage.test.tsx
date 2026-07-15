@@ -152,6 +152,35 @@ describe('CuckooPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('accept'));
   });
 
+  it('supports k/s keyboard shortcuts on the human turn', async () => {
+    renderWithProviders(<CuckooPage />);
+    await screen.findByRole('button', { name: 'キープ' });
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'k' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('keep'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 's' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('swap'));
+  });
+
+  it('supports r/a keyboard shortcuts only when targeted for a swap', async () => {
+    mockExec.mockResolvedValue(refuseState);
+    renderWithProviders(<CuckooPage />);
+    await screen.findByRole('button', { name: '受け入れる' });
+    mockExec.mockClear();
+    // keep/swap keys are inactive in the refuse phase.
+    fireEvent.keyDown(document, { key: 'k' });
+    fireEvent.keyDown(document, { key: 'a' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('accept'));
+    expect(mockExec).not.toHaveBeenCalledWith('keep');
+  });
+
+  it('shows keyboard hints on the action buttons', async () => {
+    renderWithProviders(<CuckooPage />);
+    const keep = await screen.findByRole('button', { name: 'キープ' });
+    expect(keep.querySelector('kbd')).toHaveTextContent('K');
+  });
+
   it('shows the round-loser reveal and dispatches nextround', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<CuckooPage />);
