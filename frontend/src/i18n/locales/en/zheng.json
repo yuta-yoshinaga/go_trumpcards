@@ -46,5 +46,10 @@
     "pairRun": "Pair Run",
     "bomb": "Bomb",
     "jokerBomb": "Joker Bomb"
+  },
+  "announce": {
+    "yourTurn": "It's your turn",
+    "yourTurnLead": "It's your turn. You're leading, so you can't pass.",
+    "finished": "You finished ({{rank}})"
   }
 }

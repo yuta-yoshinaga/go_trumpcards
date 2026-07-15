@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -90,6 +90,25 @@ function ZhengPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('zheng', state);
+
+  // Announce turn arrival, the lead-can't-pass rule, and the human's own finish —
+  // CPU turns advance silently otherwise, leaving SR users unaware their turn came.
+  const [liveMsg, setLiveMsg] = useState('');
+  const prevAnnounceRef = useRef<{ turn: boolean; finished: boolean } | null>(null);
+  useEffect(() => {
+    if (!state || state.players.length < 4) return;
+    const turn = state.currentTurn === 0 && !state.gameEndFlag;
+    const finished = state.players[0]?.isFinished ?? false;
+    const lead = state.tableCards.length === 0;
+    const prev = prevAnnounceRef.current;
+    prevAnnounceRef.current = { turn, finished };
+    if (!prev) return;
+    if (finished && !prev.finished) {
+      setLiveMsg(t('announce.finished', { rank: t(`rank.${state.players[0]?.rank}`) }));
+    } else if (turn && !prev.turn) {
+      setLiveMsg(lead ? t('announce.yourTurnLead') : t('announce.yourTurn'));
+    }
+  }, [state, t]);
 
   // Values match the Go domain constants: 0=Normal, 1=Easy, 2=Hard (ZhengConfig.go).
   const difficultyOptions = useMemo(
@@ -275,6 +294,10 @@ function ZhengPageContent() {
           <ReplaySpeedSettingsPanel />
 
           <GameFooter className={`${gameTheme.zheng.footer} px-4 py-2.5`}>
+            {/* Polite live region for turn/pass/finish transitions. */}
+            <span className="sr-only" role="status" aria-live="polite" data-testid="zheng-turn-announce">
+              {liveMsg}
+            </span>
             {showInvalidCombo && (
               <p
                 role="status"
