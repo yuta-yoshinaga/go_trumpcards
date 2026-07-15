@@ -39,6 +39,11 @@ func omahaTitleKey(holeCards int, hiLo bool) string {
 func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string {
 	titleKey := omahaTitleKey(o.GetHoleCardCount(), o.GetIsHiLo())
 	return buildCuiOutput(i18n.T(titleKey), func(b *strings.Builder) {
+		// Omaha's defining pitfall: exactly two hole cards must be used. Surface
+		// it every render (the count adapts for Big O's five hole cards).
+		b.WriteString(i18n.Tf("omaha.mandatoryRuleLine",
+			"hole", strconv.Itoa(o.GetHoleCardCount())) + "\n")
+
 		cfg := o.GetConfig()
 		if cfg.TournamentMode {
 			b.WriteString(i18n.Tf("omaha.tournamentLine",

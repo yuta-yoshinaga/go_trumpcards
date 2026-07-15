@@ -45,6 +45,8 @@ func TestOmahaCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "あなた")
 		assert.Contains(t, result, "♠10")
 		assert.Contains(t, result, "♥11")
+		// The must-use-2 rule line is always shown; standard Omaha deals 4 holes.
+		assert.Contains(t, result, "手札4枚のうちちょうど2枚")
 	})
 
 	t.Run("community cards displayed", func(t *testing.T) {
