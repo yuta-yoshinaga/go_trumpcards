@@ -1206,6 +1206,7 @@ var gameRegistry = []GameRegistryEntry{
 				CommandKeys: []string{
 					"president.helpPlay",
 					"president.helpPass",
+					"president.helpHint",
 					"president.helpLog",
 				},
 				SettingKeys: []string{

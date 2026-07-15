@@ -13,6 +13,8 @@ type PresidentGame interface {
 	IsHumanTurn() bool
 	// PlayerPlay プレイヤーがカードを出す
 	PlayerPlay(indices []int) error
+	// SuggestWeakestPlay playerIdx の最弱の合法手 (手札インデックス) を返す。合法手が無ければ nil
+	SuggestWeakestPlay(playerIdx int) []int
 	// CpuPlay CPUプレイヤーが1ターン実行する
 	CpuPlay()
 	// SetConfig ゲーム設定をセットする
