@@ -50,3 +50,9 @@ func (rp *RedDogWebPresenter) Output(rd interfaces.RedDogGame, lastErr error) st
 func (rp *RedDogWebPresenter) ActionLogOutput(rd interfaces.RedDogGame) string {
 	return actionLogOutputJSON(rd)
 }
+
+// HintOutput ヒントを出力する。Web ではヒントはクライアント側 (useGameHint) で
+// 算出するため、通常の状態出力を返す。RedDogPresenter インタフェースを満たすための実装。
+func (rp *RedDogWebPresenter) HintOutput(rd interfaces.RedDogGame) string {
+	return rp.Output(rd, nil)
+}

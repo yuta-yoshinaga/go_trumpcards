@@ -117,6 +117,30 @@ func (rp *RedDogCuiPresenter) Output(rd interfaces.RedDogGame, lastErr error) st
 	return sb.String()
 }
 
+// redDogRaiseThreshold はレイズを推奨する最小スプレッド。スプレッド（勝てるランク数）が
+// これ以上なら3枚目が的中する確率が5割を超えるため、最大レイズが有利になる。
+const redDogRaiseThreshold = 7
+
+// HintOutput スプレッドの広さからステイ/レイズの推奨を出力する
+func (rp *RedDogCuiPresenter) HintOutput(rd interfaces.RedDogGame) string {
+	switch rd.GetPhase() {
+	case domain.RedDogPhaseSpreadDecision:
+		spread := rd.GetSpread()
+		rec := i18n.T("reddog.hintStayRec")
+		if spread >= redDogRaiseThreshold {
+			rec = i18n.T("reddog.hintRaiseRec")
+		}
+		return i18n.Tf("reddog.hintSpread",
+			"spread", strconv.Itoa(spread),
+			"ranks", redDogWinningRanksStr(rd.GetInitialCards()),
+			"rec", rec) + "\n"
+	case domain.RedDogPhaseBet, domain.RedDogPhaseInitialDealt:
+		return i18n.T("reddog.hintBetFirst") + "\n"
+	default:
+		return i18n.T("reddog.hintGameOver") + "\n"
+	}
+}
+
 // ActionLogOutput 棋譜をテキスト出力
 func (rp *RedDogCuiPresenter) ActionLogOutput(rd interfaces.RedDogGame) string {
 	return actionLogOutputText(rd)

@@ -29,6 +29,11 @@ func (m *MockRedDogInteractor) Stay() string {
 	return args.String(0)
 }
 
+func (m *MockRedDogInteractor) Hint() string {
+	args := m.Called()
+	return args.String(0)
+}
+
 func (m *MockRedDogInteractor) ActionLog() string {
 	args := m.Called()
 	return args.String(0)

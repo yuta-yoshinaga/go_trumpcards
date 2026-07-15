@@ -1054,7 +1054,7 @@ var gameRegistry = []GameRegistryEntry{
 				domain.NewDefaultRedDog(), new(presenter.RedDogCuiPresenter))),
 			CuiHelpSpec{
 				TitleKey:          "reddog.helpTitle",
-				CommandKeys:       []string{"reddog.helpBet", "reddog.helpRaise", "reddog.helpStay"},
+				CommandKeys:       []string{"reddog.helpBet", "reddog.helpRaise", "reddog.helpStay", "reddog.helpHint"},
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},

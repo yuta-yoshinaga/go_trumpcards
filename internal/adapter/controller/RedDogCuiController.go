@@ -25,7 +25,7 @@ func (rc *RedDogCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return rc.ci.Reset() },
-		[]string{"b", "bet", "raise", "s", "stay", "log"},
+		[]string{"b", "bet", "raise", "s", "stay", "h", "hint", "log"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bet":
@@ -42,6 +42,8 @@ func (rc *RedDogCuiController) Exec(command string) string {
 				return rc.ci.Raise(amount), true
 			case "s", "stay":
 				return rc.ci.Stay(), true
+			case "h", "hint":
+				return rc.ci.Hint(), true
 			default:
 				return handleCuiLog(cmd, rc.ci.ActionLog)
 			}
