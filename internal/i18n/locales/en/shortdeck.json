@@ -9,6 +9,7 @@
   "helpBettingLimit": "  bl [0-2]             betting limit (0=Fixed, 1=PotLimit, 2=NoLimit)",
   "helpTournament": "  tm [0-1]             tournament mode",
   "outputTitle": "Short Deck Hold'em",
+  "ruleReminderLine": "* 36-card deck: flush beats full house / A-6-7-8-9 is a straight",
   "tournamentLine": "Tournament hand #{{hand}} SB:{{sb}} BB:{{bb}} (level-up every {{levelup}} hands)",
   "rebuyLine": "Rebuy: {{chips}} chips (max {{max}}, through hand {{period}})",
   "addonLine": "Add-on: {{chips}} chips (offered after hand {{after}})",

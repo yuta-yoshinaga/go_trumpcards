@@ -44,6 +44,9 @@ func TestShortDeckCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "あなた")
 		assert.Contains(t, result, "♠10")
 		assert.Contains(t, result, "♥11")
+		// The Short Deck rule reminder is always shown.
+		assert.Contains(t, result, "フラッシュ＞フルハウス")
+		assert.Contains(t, result, "A-6-7-8-9")
 	})
 
 	t.Run("community cards displayed", func(t *testing.T) {
