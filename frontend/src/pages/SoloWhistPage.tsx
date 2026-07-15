@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { soloWhistApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -128,6 +128,22 @@ function SoloWhistPageContent() {
   const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('solowhist', SOLO_WHIST_PHASE_KEYS);
 
+  // Transient pulse when the contract is decided (declarerIdx: -1 → a real seat) —
+  // a plan-shaping event (esp. misère) that's otherwise easy to miss in the small text row.
+  const [contractPulse, setContractPulse] = useState(false);
+  const prevDeclarerRef = useRef<number | null>(null);
+  useEffect(() => {
+    const declarer = state?.declarerIdx ?? null;
+    if (declarer == null) return;
+    const prev = prevDeclarerRef.current;
+    prevDeclarerRef.current = declarer;
+    if (prev != null && prev < 0 && declarer >= 0) {
+      setContractPulse(true);
+      const id = setTimeout(() => setContractPulse(false), 2500);
+      return () => clearTimeout(id);
+    }
+  }, [state?.declarerIdx]);
+
   if (!state)
     return <GameSkeleton gameKey="solowhist" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 13 }} />;
 
@@ -223,7 +239,14 @@ function SoloWhistPageContent() {
               <span>{t('target', { points: state.config.targetPoints })}</span>
             </div>
 
-            <div className="text-ds-text-muted text-center mb-2 text-sm">
+            <div
+              className={`text-ds-text-muted text-center mb-2 text-sm${
+                contractPulse ? ' motion-safe:animate-pulse text-ds-accent font-semibold' : ''
+              }`}
+              data-testid="solowhist-declarer"
+              role="status"
+              aria-live="polite"
+            >
               {state.declarerIdx >= 0
                 ? t('declarerLine', {
                     name: playerName(state.declarerIdx, state.players[state.declarerIdx]?.isHuman ?? false),
