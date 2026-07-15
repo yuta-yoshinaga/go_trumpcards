@@ -46,6 +46,9 @@ describe('BettingControls', () => {
     expect(screen.getByRole('button', { name: 'レイズ' })).toHaveAttribute('aria-keyshortcuts', 'r');
     expect(screen.getByRole('button', { name: 'フォールド' })).toHaveAttribute('aria-keyshortcuts', 'f');
     expect(screen.getByRole('button', { name: 'オールイン' })).toHaveAttribute('aria-keyshortcuts', 'a');
+    // Desktop: each button also carries a visible <kbd> key chip (aria-hidden, so the name is unchanged).
+    expect(screen.getByRole('button', { name: 'コール' }).querySelector('kbd')).toHaveTextContent('C');
+    expect(screen.getByRole('button', { name: 'フォールド' }).querySelector('kbd')).toHaveTextContent('F');
   });
 
   it('renders the check/bet key-hint line and aria-keyshortcuts when there is no outstanding bet', () => {
