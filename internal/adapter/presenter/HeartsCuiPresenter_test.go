@@ -88,6 +88,30 @@ func TestHeartsCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "CPU 1: 累積0点 ラウンド0点 1枚 0トリック")
 		assert.Contains(t, result, "手番: あなた")
 		assert.Contains(t, result, "play <idx>")
+		// Point-limit progress line (default limit 100, all at 0 → leader score 0).
+		assert.Contains(t, result, "上限: 100点")
+		assert.Contains(t, result, "最多失点:")
+	})
+
+	t.Run("progress line names the highest-scoring player", func(t *testing.T) {
+		m, players := setupHeartsCuiMockWithPlayers()
+		players[2].SetCumulativeScore(42)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "最多失点: CPU 2 42点")
+	})
+
+	t.Run("cumulative score over 80% of the limit is highlighted", func(t *testing.T) {
+		// Colors are enabled here so the ANSI yellow wrapper is observable.
+		origNo := color.NoColor()
+		color.SetNoColor(false)
+		defer color.SetNoColor(origNo)
+		m, players := setupHeartsCuiMockWithPlayers()
+		players[1].SetCumulativeScore(85) // >= 80% of 100
+		players[0].SetCumulativeScore(10) // below threshold
+		result := p.Output(m, nil)
+		yellow := color.Yellow("85")
+		assert.Contains(t, result, yellow)
+		assert.NotContains(t, result, color.Yellow("10"))
 	})
 
 	t.Run("hearts broken shows あり", func(t *testing.T) {
