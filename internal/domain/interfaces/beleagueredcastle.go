@@ -29,4 +29,6 @@ type BeleagueredCastleGame interface {
 	AllFaceUp() bool
 	// IsStalemate 手詰まり状態を取得する
 	IsStalemate() bool
+	// UndoToEscape 手詰まりから抜けるために必要なアンドゥ回数を取得する
+	UndoToEscape() int
 }

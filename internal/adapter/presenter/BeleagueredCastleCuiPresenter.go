@@ -67,6 +67,12 @@ func (p *BeleagueredCastleCuiPresenter) Output(bc interfaces.BeleagueredCastleGa
 		case domain.BeleagueredCastlePhasePlaying:
 			if bc.IsStalemate() {
 				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
+				// Tell the player how many undos escape the dead end, and the command
+				// to use, matching the web StalemateEscapeButton.
+				if n := bc.UndoToEscape(); n > 0 {
+					b.WriteString(color.Yellow(i18n.Tf("beleagueredcastle.undoToEscape",
+						"count", strconv.Itoa(n))) + "\n")
+				}
 			}
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(bc.GetMoveCount())) + "\n")
