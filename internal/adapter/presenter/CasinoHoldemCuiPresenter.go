@@ -133,3 +133,15 @@ func (cp *CasinoHoldemCuiPresenter) phaseStr(phase int) string {
 		return i18n.T("casinoholdem.phaseUnknown")
 	}
 }
+
+// HintOutput advises call/fold after the flop using basic strategy (call with a
+// pair or better, or an Ace/King; otherwise fold). Other phases get no hint.
+func (p *CasinoHoldemCuiPresenter) HintOutput(g interfaces.CasinoHoldemGame) string {
+	if g.GetPhase() != domain.CasinoHoldemPhaseFlop {
+		return i18n.T("casinoholdem.hintNone") + "\n"
+	}
+	if g.RecommendCall() {
+		return color.Yellow(i18n.T("casinoholdem.hintCall")) + "\n"
+	}
+	return color.Yellow(i18n.T("casinoholdem.hintFold")) + "\n"
+}

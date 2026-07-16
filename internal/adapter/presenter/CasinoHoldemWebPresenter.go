@@ -67,6 +67,12 @@ func (cp *CasinoHoldemWebPresenter) ActionLogOutput(g interfaces.CasinoHoldemGam
 	return actionLogOutputJSON(g)
 }
 
+// HintOutput はヒントを返す。Web ではクライアント側でヒントを算出するため、
+// 状態出力にフォールバックする (CUI プレゼンターのみが専用ヒントを返す)。
+func (cp *CasinoHoldemWebPresenter) HintOutput(g interfaces.CasinoHoldemGame) string {
+	return cp.Output(g, nil)
+}
+
 // casinoHoldemMaskDealerHand returns the dealer hand with all cards masked
 // while the showdown has not yet happened.
 func casinoHoldemMaskDealerHand(cards []*domain.Card) []*controller.WebOutputCard {

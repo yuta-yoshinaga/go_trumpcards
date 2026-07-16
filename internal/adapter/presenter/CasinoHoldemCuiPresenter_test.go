@@ -7,6 +7,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupCasinoHoldemCuiMockDefaults(m *interfaces.MockCasinoHoldemGame) {
@@ -306,4 +307,28 @@ func TestCasinoHoldemCuiPresenter_PhaseStr_Unknown(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "フェーズ: UNKNOWN")
+}
+
+func TestCasinoHoldemCuiPresenter_HintOutput(t *testing.T) {
+	p := new(CasinoHoldemCuiPresenter)
+
+	t.Run("recommends call when advised", func(t *testing.T) {
+		m := new(interfaces.MockCasinoHoldemGame)
+		m.On("GetPhase").Return(domain.CasinoHoldemPhaseFlop)
+		m.On("RecommendCall").Return(true)
+		assert.Contains(t, p.HintOutput(m), i18n.T("casinoholdem.hintCall"))
+	})
+
+	t.Run("recommends fold when not advised", func(t *testing.T) {
+		m := new(interfaces.MockCasinoHoldemGame)
+		m.On("GetPhase").Return(domain.CasinoHoldemPhaseFlop)
+		m.On("RecommendCall").Return(false)
+		assert.Contains(t, p.HintOutput(m), i18n.T("casinoholdem.hintFold"))
+	})
+
+	t.Run("no hint outside the flop phase", func(t *testing.T) {
+		m := new(interfaces.MockCasinoHoldemGame)
+		m.On("GetPhase").Return(domain.CasinoHoldemPhaseBet)
+		assert.Contains(t, p.HintOutput(m), i18n.T("casinoholdem.hintNone"))
+	})
 }

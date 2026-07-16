@@ -270,3 +270,11 @@ func TestCasinoHoldemWebPresenter_ActionLogOutput(t *testing.T) {
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "entries")
 }
+
+func TestCasinoHoldemWebPresenter_HintOutput(t *testing.T) {
+	m := new(interfaces.MockCasinoHoldemGame)
+	setupCasinoHoldemWebMockDefaults(m)
+	p := new(CasinoHoldemWebPresenter)
+	// The web presenter computes hints client-side, so HintOutput mirrors Output.
+	assert.Equal(t, p.Output(m, nil), p.HintOutput(m))
+}
