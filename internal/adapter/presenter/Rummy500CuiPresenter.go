@@ -103,3 +103,52 @@ func (p *Rummy500CuiPresenter) Output(g interfaces.Rummy500Game, lastErr error) 
 func (p *Rummy500CuiPresenter) ActionLogOutput(g interfaces.Rummy500Game) string {
 	return actionLogOutputText(g)
 }
+
+// rummy500MeldCandidates returns up to `limit` index triples of the player's
+// hand that form a valid meld. Reusing the domain validator, a 3-card subset is
+// enough: any longer set/run contains a valid 3-card meld, so at least one
+// representative surfaces for the player to build on.
+func rummy500MeldCandidates(player *domain.Rummy500Player, limit int) [][]int {
+	n := player.GetCardsSize()
+	cards := make([]*domain.Card, n)
+	for i := 0; i < n; i++ {
+		cards[i] = player.GetCard(i)
+	}
+	var out [][]int
+	for i := 0; i < n && len(out) < limit; i++ {
+		for j := i + 1; j < n && len(out) < limit; j++ {
+			for k := j + 1; k < n && len(out) < limit; k++ {
+				if domain.Rummy500IsValidMeld([]*domain.Card{cards[i], cards[j], cards[k]}) {
+					out = append(out, []int{i, j, k})
+				}
+			}
+		}
+	}
+	return out
+}
+
+// HintOutput lists meldable index groups from the human's hand during the play
+// phase; when none exist it advises discarding. Other phases and non-human turns
+// get no hint.
+func (p *Rummy500CuiPresenter) HintOutput(g interfaces.Rummy500Game) string {
+	if g.GetPhase() != domain.Rummy500PhasePlay || !g.IsHumanTurn() {
+		return i18n.T("rummy500.hintNone") + "\n"
+	}
+	player := g.GetPlayer(g.GetCurrentPlayerIdx())
+	if player == nil {
+		return i18n.T("rummy500.hintNone") + "\n"
+	}
+	cands := rummy500MeldCandidates(player, 3)
+	if len(cands) == 0 {
+		return color.Yellow(i18n.T("rummy500.hintNoMeld")) + "\n"
+	}
+	groups := make([]string, len(cands))
+	for gi, group := range cands {
+		idxs := make([]string, len(group))
+		for i, idx := range group {
+			idxs[i] = "[" + strconv.Itoa(idx) + "]" + cuiCardStr(player.GetCard(idx))
+		}
+		groups[gi] = "(" + strings.Join(idxs, " ") + ")"
+	}
+	return color.Yellow(i18n.Tf("rummy500.hintMeld", "cands", strings.Join(groups, " / "))) + "\n"
+}

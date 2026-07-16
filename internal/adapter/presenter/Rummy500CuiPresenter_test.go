@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,6 +13,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupRummy500CuiMock() *interfaces.MockRummy500Game {
@@ -128,4 +130,50 @@ func TestRummy500CuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetGameEndFlag").Return(false)
 	out := p.ActionLogOutput(m)
 	assert.NotEmpty(t, out)
+}
+
+func TestRummy500CuiPresenter_HintOutput(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.Rummy500CuiPresenter)
+
+	playPhase := func() (*interfaces.MockRummy500Game, []*domain.Rummy500Player) {
+		m, players := setupRummy500CuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.Rummy500PhasePlay)
+		m.On("IsHumanTurn").Return(true)
+		return m, players
+	}
+
+	t.Run("lists meld candidates", func(t *testing.T) {
+		m, players := playPhase()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 8, false))
+		out := p.HintOutput(m)
+		prefix := strings.SplitN(i18n.T("rummy500.hintMeld"), "{{", 2)[0]
+		assert.Contains(t, out, prefix)
+	})
+
+	t.Run("advises discarding when no meld is possible", func(t *testing.T) {
+		m, players := playPhase()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 11, false))
+		assert.Contains(t, p.HintOutput(m), i18n.T("rummy500.hintNoMeld"))
+	})
+
+	t.Run("no hint during the draw phase", func(t *testing.T) {
+		m, _ := setupRummy500CuiMockWithPlayers()
+		m.On("IsHumanTurn").Return(true)
+		assert.Contains(t, p.HintOutput(m), i18n.T("rummy500.hintNone"))
+	})
+
+	t.Run("no hint on a CPU turn", func(t *testing.T) {
+		m, _ := playPhase()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsHumanTurn")
+		m.On("IsHumanTurn").Return(false)
+		assert.Contains(t, p.HintOutput(m), i18n.T("rummy500.hintNone"))
+	})
 }

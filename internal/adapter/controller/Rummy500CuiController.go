@@ -32,6 +32,7 @@ func (c *Rummy500CuiController) Exec(command string) string {
 			"ds", "drawstock", "dd", "drawdiscard",
 			"m", "meld", "lo", "layoff", "d", "discard",
 			"nr", "nextround",
+			"h", "hint",
 			"sd", "setdifficulty", "sl", "setlimit", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
@@ -68,7 +69,7 @@ func (c *Rummy500CuiController) Exec(command string) string {
 					return c.ci.ResetWithConfig(cfg)
 				})
 			default:
-				return handleCuiLog(cmd, c.ci.ActionLog)
+				return handleCuiHintAndLog(cmd, c.ci.Hint, c.ci.ActionLog)
 			}
 		},
 	)

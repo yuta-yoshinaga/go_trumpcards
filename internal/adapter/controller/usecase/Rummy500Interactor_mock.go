@@ -53,6 +53,11 @@ func (_m *MockRummy500Interactor) ActionLog() string {
 	return _m.Called().String(0)
 }
 
+// Hint モック
+func (_m *MockRummy500Interactor) Hint() string {
+	return _m.Called().String(0)
+}
+
 func (_m *MockRummy500Interactor) Snapshot() ([]byte, error) {
 	ret := _m.Called()
 	return ret.Get(0).([]byte), ret.Error(1)
