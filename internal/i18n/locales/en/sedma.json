@@ -17,5 +17,6 @@
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
   "hintReasonLeadLow": "Lead a low card to conserve points",
   "hintReasonCapture": "Capture the trick (same rank or a 7)",
-  "hintReasonDiscardLow": "Cannot/should not capture — discard a low card"
+  "hintReasonDiscardLow": "Cannot/should not capture — discard a low card",
+  "trickWinner": "{{name}} won the trick (+{{points}} pts)"
 }
