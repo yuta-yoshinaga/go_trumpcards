@@ -34,5 +34,6 @@
   "promptDiscardHelp": "d <idx>: discard a card",
   "promptGoOutHelp": "go: go out (team needs 2+ completed melds)",
   "promptRoundEnd": "Round complete",
-  "promptRoundEndHelp": "nr / nextround: advance to next round"
+  "promptRoundEndHelp": "nr / nextround: advance to next round",
+  "promptDrawHelpFrozen": "  Note (frozen): taking the discard requires showing two natural matching cards from hand"
 }

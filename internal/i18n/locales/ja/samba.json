@@ -34,5 +34,6 @@
   "promptDiscardHelp": "d <idx>・・・カードを捨てる",
   "promptGoOutHelp": "go・・・上がる (チームで2個以上の完成メルドが必要)",
   "promptRoundEnd": "ラウンド終了",
-  "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ"
+  "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
+  "promptDrawHelpFrozen": "  ※凍結中: 捨札の取得には手札から同ランクの札2枚の提示が必要"
 }
