@@ -83,6 +83,16 @@ func (p *SuecaCuiPresenter) Output(g interfaces.SuecaGame, lastErr error) string
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
 			b.WriteString(i18n.T("sueca.promptPlayHelp") + "\n")
 		case domain.SuecaPhaseTrickEnd:
+			// The trick winner leads the next trick, so name them and their team
+			// (parity with the web trick-winner banner).
+			winnerIdx := g.GetLeadPlayerIdx()
+			teamLabel := "A"
+			if domain.SuecaTeamOf(winnerIdx) == 1 {
+				teamLabel = "B"
+			}
+			b.WriteString(i18n.Tf("sueca.trickWinner",
+				"name", cuiPlayerName(g.GetPlayer(winnerIdx), winnerIdx),
+				"team", teamLabel) + "\n")
 			b.WriteString(i18n.T("sueca.promptTrickEnd") + "\n")
 			b.WriteString(i18n.T("sueca.promptTrickEndHelp") + "\n")
 		case domain.SuecaPhaseRoundEnd:
