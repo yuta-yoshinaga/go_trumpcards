@@ -42,6 +42,16 @@ func (p *EgyptianRatscrewCuiPresenter) Output(g interfaces.EgyptianRatscrewGame,
 		if g.GetChanceRemaining() > 0 {
 			b.WriteString(color.Yellow(i18n.Tf("egyptianratscrew.promptChance",
 				"count", strconv.Itoa(g.GetChanceRemaining()))) + "\n")
+			// Name who must answer the chance (web shows chanceResponder) and, when
+			// a face card currently sits on top, which card is demanding it.
+			responder := i18n.T("egyptianratscrew.responderCpu")
+			if g.GetCurrentTurnIdx() == 0 {
+				responder = i18n.T("egyptianratscrew.responderHuman")
+			}
+			b.WriteString(i18n.Tf("egyptianratscrew.chanceResponder", "name", responder) + "\n")
+			if c := g.GetTopCard(); c != nil && g.IsTopFaceCard() {
+				b.WriteString(i18n.Tf("egyptianratscrew.chanceTrigger", "card", cuiCardStr(c)) + "\n")
+			}
 		}
 		if g.IsSlappable() {
 			b.WriteString(color.Yellow(i18n.T("egyptianratscrew.promptSlappable")) + "\n")

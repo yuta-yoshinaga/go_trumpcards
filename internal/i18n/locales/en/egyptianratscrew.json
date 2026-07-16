@@ -26,5 +26,9 @@
   "chanceWinCpu": "CPU won the chance battle and took the pile...",
   "winHuman": "You win!",
   "winCpu": "CPU wins...",
-  "winDraw": "Draw"
+  "winDraw": "Draw",
+  "chanceResponder": "Responder: {{name}}",
+  "responderHuman": "You",
+  "responderCpu": "CPU",
+  "chanceTrigger": "Triggered by: {{card}}"
 }
