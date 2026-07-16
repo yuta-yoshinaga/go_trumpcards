@@ -35,6 +35,7 @@ func setupSuecaCuiMock() *interfaces.MockSuecaGame {
 	m.On("GetWinnerTeam").Return(-1)
 	m.On("GetRoundCardPoints").Return([domain.SuecaTeamCnt]int{0, 0})
 	m.On("GetTeamGamePoints").Return([domain.SuecaTeamCnt]int{0, 0})
+	m.On("GetLeadPlayerIdx").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	return m
 }
@@ -64,12 +65,23 @@ func TestSuecaCuiPresenter_Output(t *testing.T) {
 		assert.NotEmpty(t, result)
 	})
 
-	t.Run("trick end prompt", func(t *testing.T) {
+	t.Run("trick end shows the winning player and team A", func(t *testing.T) {
 		m, _ := setupSuecaCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.SuecaPhaseTrickEnd)
+		// Lead player 0 (you) -> team A won the trick.
 		result := p.Output(m, nil)
-		assert.NotEmpty(t, result)
+		assert.Contains(t, result, "（チームA）がトリックを獲得")
+	})
+
+	t.Run("trick end shows team B for an odd-index winner", func(t *testing.T) {
+		m, _ := setupSuecaCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLeadPlayerIdx")
+		m.On("GetPhase").Return(domain.SuecaPhaseTrickEnd)
+		m.On("GetLeadPlayerIdx").Return(1) // CPU 1 -> team B
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "CPU 1（チームB）がトリックを獲得")
 	})
 
 	t.Run("round end prompt", func(t *testing.T) {
