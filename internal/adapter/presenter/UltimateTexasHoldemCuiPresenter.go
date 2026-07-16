@@ -24,6 +24,19 @@ func (up *UltimateTexasHoldemCuiPresenter) Output(g interfaces.UltimateTexasHold
 	fmt.Fprintf(&sb, "%s\n", i18n.Tf("ultimatetexasholdem.chipsLine", "chips", strconv.Itoa(g.GetChips())))
 	fmt.Fprintf(&sb, "%s\n", i18n.Tf("ultimatetexasholdem.phaseLine", "phase", up.phaseStr(g.GetPhase())))
 
+	// During play (not the final result block), surface the current bets so the
+	// player can size the play-bet multiple; omitted before the ante is placed.
+	if !g.GetGameEndFlag() && g.GetAnteBet() > 0 {
+		fmt.Fprintf(&sb, "%s\n", i18n.Tf("ultimatetexasholdem.anteLine", "ante", strconv.Itoa(g.GetAnteBet())))
+		fmt.Fprintf(&sb, "%s\n", i18n.Tf("ultimatetexasholdem.blindLine", "blind", strconv.Itoa(g.GetBlindBet())))
+		if g.GetTripsBet() > 0 {
+			fmt.Fprintf(&sb, "%s\n", i18n.Tf("ultimatetexasholdem.tripsLine", "trips", strconv.Itoa(g.GetTripsBet())))
+		}
+		if play := g.GetPlayBet(); play > 0 {
+			fmt.Fprintf(&sb, "%s\n", i18n.Tf("ultimatetexasholdem.playBetLine", "play", strconv.Itoa(play)))
+		}
+	}
+
 	if community := g.GetCommunity(); len(community) > 0 {
 		sb.WriteString("--- " + color.Bold(i18n.T("ultimatetexasholdem.boardHeader")) + " ---\n")
 		parts := make([]string, len(community))
