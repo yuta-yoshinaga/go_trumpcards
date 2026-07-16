@@ -31,5 +31,6 @@
   "promptAwaitingWord": "Declaration phase (secret rule)",
   "promptAwaitingWordHelp": "dw <word>: say a word",
   "promptRoundEnd": "Round complete",
-  "promptRoundEndHelp": "nr / nextround: advance to next round"
+  "promptRoundEndHelp": "nr / nextround: advance to next round",
+  "compliance": "Rule compliance: {{count}}/{{total}} (hint unlocks at {{total}})"
 }
