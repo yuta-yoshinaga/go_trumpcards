@@ -24,6 +24,14 @@ func (p *DoudizhuCuiPresenter) Output(dg interfaces.DoudizhuGame, lastErr error)
 		if phase == domain.DoudizhuPhaseBid {
 			b.WriteString(color.BoldYellow(i18n.T("doudizhu.phaseBid")) + "\n")
 			fmt.Fprintf(b, "%s: %d\n", i18n.T("doudizhu.highestBid"), dg.GetHighestBid())
+			// Name whose bid it is and, on the human's turn, how to respond —
+			// play/end phases already carry this much context.
+			curIdx := dg.GetCurrentTurn()
+			b.WriteString(i18n.Tf("doudizhu.currentBidder",
+				"name", cuiPlayerName(dg.GetPlayer(curIdx), curIdx)) + "\n")
+			if dg.IsHumanTurn() {
+				b.WriteString(i18n.T("doudizhu.promptBid") + "\n")
+			}
 		}
 
 		for idx := 0; idx < dg.GetPlayerCnt(); idx++ {
@@ -53,13 +61,9 @@ func (p *DoudizhuCuiPresenter) Output(dg interfaces.DoudizhuGame, lastErr error)
 			scores := dg.GetScores()
 			b.WriteString(color.BoldYellow(i18n.T("doudizhu.gameEnd")) + "\n")
 			for idx := 0; idx < dg.GetPlayerCnt(); idx++ {
-				player := dg.GetPlayer(idx)
-				var name string
-				if player.GetIsHuman() {
-					name = i18n.T("doudizhu.you")
-				} else {
-					name = fmt.Sprintf("CPU %d", idx)
-				}
+				// Use the shared name helper so the end-score names match every
+				// other phase instead of a locally hardcoded "CPU %d".
+				name := cuiPlayerName(dg.GetPlayer(idx), idx)
 				fmt.Fprintf(b, "%s: %d\n", name, scores[idx])
 			}
 		}

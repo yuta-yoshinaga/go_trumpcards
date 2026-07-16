@@ -13,5 +13,7 @@
   "kittyCards": "底牌",
   "tableCards": "場",
   "playerFinished": " (上がり)",
-  "playerCardCount": " ({{count}}枚)"
+  "playerCardCount": " ({{count}}枚)",
+  "currentBidder": "現在の入札者: {{name}}",
+  "promptBid": "入札してください（b 0-3、0=パス）"
 }
