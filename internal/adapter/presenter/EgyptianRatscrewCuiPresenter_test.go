@@ -5,6 +5,7 @@ package presenter_test
 import (
 	"encoding/json"
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,6 +13,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestEgyptianRatscrewCuiPresenter_Output(t *testing.T) {
@@ -105,9 +107,17 @@ func TestEgyptianRatscrewCuiPresenter_Output(t *testing.T) {
 		_ = json.Unmarshal(data, &raw)
 		raw["cr"], _ = json.Marshal(2)
 		raw["ci"], _ = json.Marshal(0)
+		raw["ct"], _ = json.Marshal(0) // human must answer the chance
+		// A King sits on top, so the trigger line renders.
+		raw["cp"], _ = json.Marshal([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 13, true)})
 		newData, _ := json.Marshal(raw)
 		_ = json.Unmarshal(newData, g)
-		assert.Contains(t, p.Output(g, nil), "チャンスバトル中")
+		out := p.Output(g, nil)
+		assert.Contains(t, out, "チャンスバトル中")
+		assert.Contains(t, out, i18n.Tf("egyptianratscrew.chanceResponder",
+			"name", i18n.T("egyptianratscrew.responderHuman")))
+		triggerPrefix := strings.SplitN(i18n.T("egyptianratscrew.chanceTrigger"), "{{", 2)[0]
+		assert.Contains(t, out, triggerPrefix)
 	})
 
 	t.Run("last event correct slap (pair) by human", func(t *testing.T) {
