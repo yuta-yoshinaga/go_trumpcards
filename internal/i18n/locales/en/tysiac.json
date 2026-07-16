@@ -31,5 +31,7 @@
   "hintReasonDiscardLow": "Cannot follow suit — discard a low card",
   "hintReasonBidRaise": "Strong hand — raise the bid",
   "hintReasonBidPass": "Weak hand — pass",
-  "hintReasonTalonDiscard": "Give away your weakest card"
+  "hintReasonTalonDiscard": "Give away your weakest card",
+  "headerInfo": "Contract: {{contract}} / Target: {{target}}",
+  "headerBid": "Current bid: {{bid}}"
 }

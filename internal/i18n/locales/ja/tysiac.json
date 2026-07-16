@@ -31,5 +31,7 @@
   "hintReasonDiscardLow": "フォローできないので低い札を捨てる",
   "hintReasonBidRaise": "強い手なのでビッドを上げる",
   "hintReasonBidPass": "弱い手なのでパスする",
-  "hintReasonTalonDiscard": "最も弱い札を渡す"
+  "hintReasonTalonDiscard": "最も弱い札を渡す",
+  "headerInfo": "契約: {{contract}} / 目標: {{target}}",
+  "headerBid": "現在ビッド: {{bid}}"
 }

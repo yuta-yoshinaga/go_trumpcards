@@ -59,6 +59,20 @@ func (p *TysiacCuiPresenter) Output(g interfaces.TysiacGame, lastErr error) stri
 			"trick", strconv.Itoa(g.GetTrickNumber()),
 			"trump", tysiacSuitSymbol(g.GetTrumpSuit())) + "\n")
 
+		// Surface the declarer's contract obligation and the match target during
+		// play (not only at round end), plus the live bid while bidding.
+		contractStr := "-"
+		if c := g.GetContract(); c > 0 {
+			contractStr = strconv.Itoa(c)
+		}
+		b.WriteString(i18n.Tf("tysiac.headerInfo",
+			"contract", contractStr,
+			"target", strconv.Itoa(g.GetConfig().TargetPoints)) + "\n")
+		if g.GetPhase() == domain.TysiacPhaseBid {
+			b.WriteString(i18n.Tf("tysiac.headerBid",
+				"bid", strconv.Itoa(g.GetCurrentBid())) + "\n")
+		}
+
 		for i := 0; i < g.GetPlayerCnt(); i++ {
 			b.WriteString(tysiacPlayerStr(g, i))
 		}
