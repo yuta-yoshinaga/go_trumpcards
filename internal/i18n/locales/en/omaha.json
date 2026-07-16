@@ -43,5 +43,6 @@
   "muckPrompt": "Muck? (m=muck / sh=show)",
   "rebuyPrompt": "Rebuy? ({{chips}} chips, used {{used}}/{{max}}) (rb=rebuy / sr=skip)",
   "addonPrompt": "Add-on? ({{chips}} chips) (ad=addon / sa=skip)",
-  "gameEnd": "Game over"
+  "gameEnd": "Game over",
+  "hiLoRuleLine": "Low: five distinct cards 8-or-lower (8 or Better); if none qualifies, Hi takes the whole pot"
 }

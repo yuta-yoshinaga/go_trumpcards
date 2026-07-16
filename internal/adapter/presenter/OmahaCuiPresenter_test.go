@@ -25,6 +25,15 @@ func makeOmahaForPresenter() (*domain.Omaha, []*domain.OmahaPlayer) {
 	return h, players
 }
 
+func makeOmahaHiLoForPresenter() *domain.Omaha {
+	tc := domain.NewTrumpCards(0)
+	players := []*domain.OmahaPlayer{
+		domain.NewOmahaPlayer(true, domain.HoldemStyleTAG),
+		domain.NewOmahaPlayer(false, domain.HoldemStyleLAP),
+	}
+	return domain.NewOmahaHiLo(tc, players, domain.DefaultOmahaConfig())
+}
+
 func TestOmahaCuiPresenter_Output(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)
@@ -47,6 +56,15 @@ func TestOmahaCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "♥11")
 		// The must-use-2 rule line is always shown; standard Omaha deals 4 holes.
 		assert.Contains(t, result, "手札4枚のうちちょうど2枚")
+		// Hi-only game → no low-qualifier rule line.
+		assert.NotContains(t, result, i18n.T("omaha.hiLoRuleLine"))
+	})
+
+	t.Run("hi-lo game shows the eight-or-better low rule", func(t *testing.T) {
+		h := makeOmahaHiLoForPresenter()
+		h.SetPhase(domain.OmahaPhasePreFlop)
+		result := p.Output(h, nil)
+		assert.Contains(t, result, i18n.T("omaha.hiLoRuleLine"))
 	})
 
 	t.Run("community cards displayed", func(t *testing.T) {
