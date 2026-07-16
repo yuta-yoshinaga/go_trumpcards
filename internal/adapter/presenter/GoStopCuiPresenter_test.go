@@ -2,6 +2,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestGoStopCuiPresenter_Output_PlayPhase(t *testing.T) {
@@ -43,6 +45,18 @@ func TestGoStopCuiPresenter_Output_AllPhases(t *testing.T) {
 	g.SetPhase(domain.GoStopPhasePlay)
 	g.SetFieldCards(nil)
 	assert.NotEmpty(t, p.Output(g, nil))
+}
+
+func TestGoStopCuiPresenter_CategoryCounts(t *testing.T) {
+	g := domain.NewDefaultGoStop()
+	g.Reset()
+	g.SetCurrentTurn(0)
+	g.GetPlayer(0).AddCaptured(gostopGwang3Cards()) // 3 光 (Gwang)
+	p := new(presenter.GoStopCuiPresenter)
+	out := p.Output(g, nil)
+	assert.Contains(t, out, strings.Split(i18n.T("gostop.categoryCounts"), "{{")[0])
+	// The three captured Gwang are counted in the category line.
+	assert.Contains(t, out, "光3")
 }
 
 func TestGoStopCuiPresenter_HintOutput(t *testing.T) {
