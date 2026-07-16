@@ -259,3 +259,11 @@ func TestOasisPokerWebPresenter_ActionLogOutput(t *testing.T) {
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "entries")
 }
+
+func TestOasisPokerWebPresenter_HintOutput(t *testing.T) {
+	m := new(interfaces.MockOasisPokerGame)
+	setupOasisPokerWebMockDefaults(m)
+	p := new(OasisPokerWebPresenter)
+	// The web presenter computes hints client-side, so HintOutput mirrors Output.
+	assert.Equal(t, p.Output(m, nil), p.HintOutput(m))
+}

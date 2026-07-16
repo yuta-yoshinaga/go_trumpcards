@@ -26,6 +26,8 @@ type OasisPokerInteractorIF interface {
 	Fold() string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
+	// Hint ヒントを出力する
+	Hint() string
 }
 
 // OasisPokerInteractor オアシスポーカーインタラクタークラス
@@ -76,6 +78,11 @@ func (oi *OasisPokerInteractor) Fold() string {
 // ActionLog 棋譜を出力する
 func (oi *OasisPokerInteractor) ActionLog() string {
 	return oi.op.ActionLogOutput(oi.Game)
+}
+
+// Hint ヒントを出力する
+func (oi *OasisPokerInteractor) Hint() string {
+	return oi.op.HintOutput(oi.Game)
 }
 
 // RestoreOasisPokerInteractor deserialises JSON into an OasisPokerInteractor.

@@ -42,6 +42,9 @@ func (m *MockOasisPokerGame) Fold() error {
 	return args.Error(0)
 }
 
+func (m *MockOasisPokerGame) RecommendPlay() bool {
+	return m.Called().Bool(0)
+}
 func (m *MockOasisPokerGame) GetPlayerHand() []*domain.Card {
 	args := m.Called()
 	if args.Get(0) == nil {
