@@ -13,5 +13,7 @@
   "gameClear": "ゲームクリア！",
   "gameOver": "ゲームオーバー",
   "hintAvailable": "ヒントあり",
-  "noHint": "ヒントなし"
+  "noHint": "ヒントなし",
+  "lockedMark": "*",
+  "lockedLegend": "* = 再配布で保持されるカード"
 }
