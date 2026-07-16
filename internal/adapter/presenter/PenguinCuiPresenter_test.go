@@ -24,6 +24,20 @@ func TestPenguinCuiPresenterOutputPlaying(t *testing.T) {
 	assert.Contains(t, result, "手数:")
 }
 
+func TestPenguinCuiPresenterOutputBaseRankLabels(t *testing.T) {
+	p := new(PenguinCuiPresenter)
+	// Face-rank base values render as A/J/Q/K, matching the web baseRankLabel.
+	cases := map[int]string{1: "A", 11: "J", 12: "Q", 13: "K", 7: "7"}
+	for rank, label := range cases {
+		g := domain.NewPenguin(domain.NewTrumpCards(0))
+		g.Reset()
+		g.SetPhase(domain.PenguinPhasePlaying)
+		g.SetBaseRank(rank)
+		result := p.Output(g, nil)
+		assert.Contains(t, result, "BaseRank: "+label)
+	}
+}
+
 func TestPenguinCuiPresenterOutputGameClear(t *testing.T) {
 	p := new(PenguinCuiPresenter)
 	g := domain.NewPenguin(domain.NewTrumpCards(0))

@@ -50,8 +50,9 @@ func (p *PenguinCuiPresenter) Output(pg interfaces.PenguinGame, lastErr error) s
 		}
 		b.WriteString("\n")
 
-		// Base rank
-		b.WriteString(i18n.Tf("penguin.baseRankLabel", "rank", strconv.Itoa(pg.GetBaseRank())))
+		// Base rank — render 1/11/12/13 as A/J/Q/K (matching the web baseRankLabel
+		// and cuiCardStr) rather than a raw number.
+		b.WriteString(i18n.Tf("penguin.baseRankLabel", "rank", cuiRankLabel(pg.GetBaseRank())))
 		b.WriteString("\n")
 
 		b.WriteString("----------\n")
