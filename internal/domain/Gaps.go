@@ -443,6 +443,10 @@ func (g *Gaps) GetMoveCount() int { return g.moveCount }
 // GetGrid は盤面を返す。
 func (g *Gaps) GetGrid() [GapsRowCnt][GapsColCnt]GapsCell { return g.grid }
 
+// GetLockedPrefixLengths は各行のロック済み接頭辞の長さ（再配布で保持される
+// 先頭カード数）を返す。プレゼンターがロック済みカードを可視化するために使う。
+func (g *Gaps) GetLockedPrefixLengths() [GapsRowCnt]int { return g.lockedPrefixLengths() }
+
 // SetGrid は盤面を設定する（テスト用）。
 func (g *Gaps) SetGrid(grid [GapsRowCnt][GapsColCnt]GapsCell) { g.grid = grid }
 

@@ -13,5 +13,7 @@
   "gameClear": "Game Clear!",
   "gameOver": "Game Over",
   "hintAvailable": "Hint available",
-  "noHint": "No hint"
+  "noHint": "No hint",
+  "lockedMark": "*",
+  "lockedLegend": "* = kept on redeal"
 }

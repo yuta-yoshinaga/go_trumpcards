@@ -19,6 +19,7 @@ type GapsCuiPresenter struct{}
 func (pr *GapsCuiPresenter) Output(g interfaces.GapsGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("gaps.helpTitle"), func(b *strings.Builder) {
 		grid := g.GetGrid()
+		locks := g.GetLockedPrefixLengths()
 		for r := 0; r < domain.GapsRowCnt; r++ {
 			for c := 0; c < domain.GapsColCnt; c++ {
 				if c > 0 {
@@ -32,6 +33,10 @@ func (pr *GapsCuiPresenter) Output(g interfaces.GapsGame, lastErr error) string 
 						"row", strconv.Itoa(r),
 						"col", strconv.Itoa(c),
 						"card", cuiCardStr(cell)))
+					// Mark cards in the row's locked prefix — those kept on a redeal.
+					if c < locks[r] {
+						b.WriteString(i18n.T("gaps.lockedMark"))
+					}
 				}
 			}
 			b.WriteString("\n")
@@ -41,6 +46,7 @@ func (pr *GapsCuiPresenter) Output(g interfaces.GapsGame, lastErr error) string 
 			"used", strconv.Itoa(g.GetRedealsUsed()),
 			"remaining", strconv.Itoa(g.GetRedealsRemaining())))
 		b.WriteString("\n")
+		b.WriteString(i18n.T("gaps.lockedLegend") + "\n")
 		b.WriteString("----------\n")
 		cuiErrorBlock(b, lastErr)
 		switch g.GetPhase() {
