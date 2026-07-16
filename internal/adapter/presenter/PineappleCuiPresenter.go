@@ -100,7 +100,16 @@ func (pp *PineappleCuiPresenter) Output(p interfaces.PineappleGame, lastErr erro
 			b.WriteString("\n")
 
 			if player.GetIsHuman() && !player.GetFolded() {
-				b.WriteString(i18n.Tf("pineapple.humanHand", "cards", cuiCardListStrEmoji(player)) + "\n")
+				cards := cuiCardListStrEmoji(player)
+				// The discard prompt asks for a card number, so show an indexed
+				// hand until the human has discarded.
+				if p.GetPhase() == domain.PineapplePhaseDiscard {
+					discardDone := p.GetDiscardDone()
+					if i >= len(discardDone) || !discardDone[i] {
+						cards = cuiIndexedCardListStrEmoji(player)
+					}
+				}
+				b.WriteString(i18n.Tf("pineapple.humanHand", "cards", cards) + "\n")
 			}
 		}
 
