@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,6 +11,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupSpiderCuiMockDefaults(sg *interfaces.MockSpiderGame) {
@@ -18,6 +20,7 @@ func setupSpiderCuiMockDefaults(sg *interfaces.MockSpiderGame) {
 	sg.On("GetStockCount").Return(50).Maybe()
 	sg.On("GetCompletedSuits").Return(0).Maybe()
 	sg.On("GetScore").Return(500).Maybe()
+	sg.On("GetDifficulty").Return(domain.SpiderDifficulty1Suit).Maybe()
 	sg.On("IsStalemate").Return(false).Maybe()
 
 	var tableau [domain.SpiderTableauCnt][]*domain.SpiderTableauCard
@@ -50,6 +53,26 @@ func TestSpiderCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "スコア: 500")
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "手数: 0")
+		// Difficulty/deals header is shown; no column is empty so no deal warning.
+		assert.Contains(t, result, strings.Split(i18n.T("spider.difficultyLine"), "{{")[0])
+		assert.NotContains(t, result, i18n.T("spider.dealBlockedEmpty"))
+	})
+
+	t.Run("deal-blocked warning when a column is empty", func(t *testing.T) {
+		sg := new(interfaces.MockSpiderGame)
+		setupSpiderCuiMockDefaults(sg)
+		sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "GetTableau")
+		var tableau [domain.SpiderTableauCnt][]*domain.SpiderTableauCard
+		for i := 1; i < domain.SpiderTableauCnt; i++ { // column 0 left empty
+			tableau[i] = []*domain.SpiderTableauCard{
+				{Card: domain.NewCard(domain.CardDesignSpade, 1, false), FaceUp: true},
+			}
+		}
+		sg.On("GetTableau").Return(tableau)
+		p := new(SpiderCuiPresenter)
+		result := p.Output(sg, nil)
+		// Stock remains (default 50) and column 0 is empty → deal is blocked.
+		assert.Contains(t, result, i18n.T("spider.dealBlockedEmpty"))
 	})
 
 	t.Run("with error", func(t *testing.T) {

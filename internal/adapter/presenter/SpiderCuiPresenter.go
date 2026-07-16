@@ -37,20 +37,33 @@ func (p *SpiderCuiPresenter) Output(s interfaces.SpiderGame, lastErr error) stri
 			"total", strconv.Itoa(domain.SpiderFoundationCnt),
 			"stock", strconv.Itoa(s.GetStockCount()),
 			"score", strconv.Itoa(s.GetScore())) + "\n")
+		// The difficulty (suit count) and remaining deals (a deal lays one card per
+		// column, so stock/10) match the web header.
+		b.WriteString(i18n.Tf("spider.difficultyLine",
+			"suits", strconv.Itoa(int(s.GetDifficulty())),
+			"deals", strconv.Itoa(s.GetStockCount()/domain.SpiderTableauCnt)) + "\n")
 
 		b.WriteString("----------\n")
 
 		// Tableau
 		tableau := s.GetTableau()
+		emptyColumn := false
 		for col := range domain.SpiderTableauCnt {
 			colCards := tableau[col]
 			b.WriteString(i18n.Tf("spider.columnLabel", "col", strconv.Itoa(col)))
 			if len(colCards) == 0 {
+				emptyColumn = true
 				b.WriteString(" " + i18n.T("cuiEmptyCol"))
 			} else {
 				b.WriteString(spiderColumnStr(colCards))
 			}
 			b.WriteString("\n")
+		}
+
+		// A deal is blocked while any column is empty (and stock remains); warn up
+		// front instead of only surfacing the rejection as an error.
+		if emptyColumn && s.GetStockCount() > 0 {
+			b.WriteString(color.Yellow(i18n.T("spider.dealBlockedEmpty")) + "\n")
 		}
 
 		b.WriteString("----------\n")
