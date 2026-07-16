@@ -393,6 +393,10 @@ func (g *LaBelleLucie) GetMoveCount() int { return g.moveCount }
 // GetRedealsLeft 残り再シャッフル回数。
 func (g *LaBelleLucie) GetRedealsLeft() int { return g.redealsLeft }
 
+// HasAnyLegalMove はファウンデーション手・扇間移動のいずれかが存在するかを返す
+// (合法手がなければリディールが必要)。
+func (g *LaBelleLucie) HasAnyLegalMove() bool { return g.hasAnyLegalMove() }
+
 // GetFans 扇の一覧を返す。
 func (g *LaBelleLucie) GetFans() [][]*Card { return g.fans }
 
