@@ -2,6 +2,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -19,6 +20,19 @@ func TestPrimeroCuiPresenter_OutputBettingPhase(t *testing.T) {
 	// Title and round line should be present.
 	assert.Contains(t, out, "プリメロ")
 	assert.Contains(t, out, "ラウンド")
+}
+
+func TestPrimeroCuiPresenter_OutputBettingShowsCallNeed(t *testing.T) {
+	g := domain.NewDefaultPrimero()
+	require.Equal(t, domain.PrimeroPhaseBetting, g.GetPhase())
+	p := new(presenter.PrimeroCuiPresenter)
+	out := p.Output(g, nil)
+
+	actor := g.GetPlayer(g.GetCurrentPlayerIdx())
+	need := g.GetCurrentBet() - actor.GetRoundBet()
+	raiseTo := g.GetCurrentBet() + g.GetAnte()
+	assert.Contains(t, out, "必要 "+strconv.Itoa(need))
+	assert.Contains(t, out, strconv.Itoa(raiseTo))
 }
 
 func TestPrimeroCuiPresenter_OutputError(t *testing.T) {
