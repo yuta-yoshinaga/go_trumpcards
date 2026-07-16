@@ -61,6 +61,7 @@ type stubVideoPokerPresenter struct{}
 
 func (s *stubVideoPokerPresenter) Output(_ interfaces.VideoPokerGame, _ error) string { return `{}` }
 func (s *stubVideoPokerPresenter) ActionLogOutput(_ interfaces.VideoPokerGame) string { return `{}` }
+func (s *stubVideoPokerPresenter) HintOutput(_ interfaces.VideoPokerGame) string      { return `{}` }
 
 // stubHeartsPresenter implements presenter.HeartsPresenter (GamePresenter + HintOutput)
 type stubHeartsPresenter struct{}

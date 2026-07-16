@@ -110,3 +110,12 @@ func TestVideoPokerInteractor_ActionLog(t *testing.T) {
 	result := vi.ActionLog()
 	assert.Equal(t, "log output", result)
 }
+
+func TestVideoPokerInteractor_Hint(t *testing.T) {
+	mockGame := new(interfaces.MockVideoPokerGame)
+	mockPresenter := new(presenter.MockVideoPokerPresenter)
+	vi := NewVideoPokerInteractor(mockGame, mockPresenter)
+
+	mockPresenter.On("HintOutput", mockGame).Return("hint output")
+	assert.Equal(t, "hint output", vi.Hint())
+}

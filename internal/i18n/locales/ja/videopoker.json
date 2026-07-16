@@ -13,5 +13,8 @@
   "betLine": "ベット: {{bet}} コイン",
   "winLine": "{{handName}}! あなたの勝利です！",
   "noWin": "役なし。",
-  "payoutLine": "払戻し: {{payout}}"
+  "payoutLine": "払戻し: {{payout}}",
+  "hintNone": "現在ヒントはありません。",
+  "hintHold": "ホールド推奨: {{cards}}（h <idx...> でホールド）",
+  "hintHoldNone": "ホールド推奨なし。5枚すべて引き直しを検討してください。"
 }

@@ -18,6 +18,7 @@ func newMockVideoPokerInteractor() *usecase.MockVideoPokerInteractor {
 	m.On("Hold", []int{0, 2, 4}).Return("hold result")
 	m.On("Hold", []int{}).Return("hold none result")
 	m.On("ActionLog").Return("action log result")
+	m.On("Hint").Return("hint result")
 	return m
 }
 
@@ -129,4 +130,11 @@ func TestVideoPokerCuiController_Empty(t *testing.T) {
 
 	result := c.Exec("")
 	assert.Contains(t, result, "'help' でコマンド一覧を表示します。")
+}
+
+func TestVideoPokerCuiController_Hint(t *testing.T) {
+	m := newMockVideoPokerInteractor()
+	c := controller.NewVideoPokerCuiController(m)
+	assert.Equal(t, "hint result", c.Exec("hint"))
+	m.AssertCalled(t, "Hint")
 }

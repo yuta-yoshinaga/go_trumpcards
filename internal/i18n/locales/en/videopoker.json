@@ -13,5 +13,8 @@
   "betLine": "bet: {{bet}} coin(s)",
   "winLine": "{{handName}}! You win!",
   "noWin": "No winning hand.",
-  "payoutLine": "payout: {{payout}}"
+  "payoutLine": "payout: {{payout}}",
+  "hintNone": "No hint available.",
+  "hintHold": "Hold recommendation: {{cards}} (h <idx...> to hold)",
+  "hintHoldNone": "Nothing to hold; consider redrawing all five."
 }

@@ -139,3 +139,11 @@ func TestVideoPokerWebPresenter_ActionLogOutput(t *testing.T) {
 		assert.Len(t, out.Entries, 1)
 	})
 }
+
+func TestVideoPokerWebPresenter_HintOutput(t *testing.T) {
+	m := new(interfaces.MockVideoPokerGame)
+	setupVideoPokerWebMockDefaults(m)
+	p := new(VideoPokerWebPresenter)
+	// The web presenter computes hints client-side, so HintOutput mirrors Output.
+	assert.Equal(t, p.Output(m, nil), p.HintOutput(m))
+}

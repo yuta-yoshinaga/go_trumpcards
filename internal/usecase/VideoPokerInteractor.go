@@ -20,6 +20,8 @@ type VideoPokerInteractorIF interface {
 	Hold(indices []int) string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
+	// Hint ヒントを出力する
+	Hint() string
 }
 
 // VideoPokerInteractor ビデオポーカーインタラクタークラス
@@ -55,6 +57,11 @@ func (vi *VideoPokerInteractor) Hold(indices []int) string {
 // ActionLog 棋譜を出力する
 func (vi *VideoPokerInteractor) ActionLog() string {
 	return vi.vpp.ActionLogOutput(vi.Game)
+}
+
+// Hint ヒントを出力する
+func (vi *VideoPokerInteractor) Hint() string {
+	return vi.vpp.HintOutput(vi.Game)
 }
 
 // RestoreVideoPokerInteractor deserialises JSON into a VideoPokerInteractor.
