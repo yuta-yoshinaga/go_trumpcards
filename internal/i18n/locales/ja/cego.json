@@ -44,5 +44,6 @@
   "hintReasonLeadHigh": "あなたはデクレアラー — 強い札でリードして主導権を取る",
   "hintReasonLeadLow": "あなたは対戦側 — 安い札でリードして温存する",
   "hintReasonFollowWin": "勝てる — トリックを取る",
-  "hintReasonFollowDuck": "勝てない/取るべきでない — 低い札を出す"
+  "hintReasonFollowDuck": "勝てない/取るべきでない — 低い札を出す",
+  "declarerLine": "宣言者: {{name}}（契約: {{contract}}）が全員と対戦"
 }
