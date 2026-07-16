@@ -44,5 +44,9 @@
   "hintReasonBetEnvido": "Hand is strong — bet",
   "hintReasonBetOrdago": "Hand is very strong — go all in",
   "hintReasonBetQuiero": "Hand beats opponent — accept",
-  "hintReasonBetNoQuiero": "Hand is beaten — decline"
+  "hintReasonBetNoQuiero": "Hand is beaten — decline",
+  "resultDeferred": "Paso (deferred to showdown)",
+  "resultAccepted": "Quiero (showdown)",
+  "resultAwarded": "No quiero (awarded)",
+  "resultOrdago": "Ordago accepted"
 }
