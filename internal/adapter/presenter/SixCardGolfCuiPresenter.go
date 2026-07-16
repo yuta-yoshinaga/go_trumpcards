@@ -124,3 +124,31 @@ func scgPlayerName(player *domain.SixCardGolfPlayer, idx int) string {
 func (p *SixCardGolfCuiPresenter) ActionLogOutput(g interfaces.SixCardGolfGame) string {
 	return actionLogOutputText(g)
 }
+
+// HintOutput recommends a draw source (PlayerTurn) or a swap/discard for the
+// drawn card (DrawPending), mirroring the CPU's own evaluation so the advice
+// matches how the game scores. Other phases and non-human turns get no hint.
+func (p *SixCardGolfCuiPresenter) HintOutput(g interfaces.SixCardGolfGame) string {
+	if !g.IsHumanTurn() {
+		return i18n.T("sixcardgolf.hintNone") + "\n"
+	}
+	switch g.GetPhase() {
+	case domain.SixCardGolfPhasePlayerTurn:
+		if g.ShouldDrawFromDiscard() {
+			return color.Yellow(i18n.Tf("sixcardgolf.hintDrawDiscard",
+				"card", cuiCardStr(g.GetDiscardTop()))) + "\n"
+		}
+		return color.Yellow(i18n.T("sixcardgolf.hintDrawStock")) + "\n"
+	case domain.SixCardGolfPhaseDrawPending:
+		pos, formsPair := g.RecommendedSwap()
+		if pos < 0 {
+			return color.Yellow(i18n.T("sixcardgolf.hintDiscard")) + "\n"
+		}
+		if formsPair {
+			return color.Yellow(i18n.Tf("sixcardgolf.hintSwapPair", "pos", strconv.Itoa(pos))) + "\n"
+		}
+		return color.Yellow(i18n.Tf("sixcardgolf.hintSwap", "pos", strconv.Itoa(pos))) + "\n"
+	default:
+		return i18n.T("sixcardgolf.hintNone") + "\n"
+	}
+}

@@ -672,6 +672,50 @@ func (g *SixCardGolf) ScorePlayer(playerIdx int) int {
 	return total
 }
 
+// ShouldDrawFromDiscard は捨て札トップを引くべきか (スコア <= 3 の低いカード) を返す。
+// CPU の cpuDraw と同じ基準で、PlayerTurn の CUI ヒントが利用する。
+func (g *SixCardGolf) ShouldDrawFromDiscard() bool {
+	top := g.GetDiscardTop()
+	return top != nil && g.sixCardGolfCardScore(top) <= 3
+}
+
+// RecommendedSwap は引いたカードを交換すべき最良のグリッド位置と、それが列ペアを
+// 完成させるかを返す。交換より捨てが良ければ pos = -1。DrawPending 以外・引いた
+// カードなしでも pos = -1。CPU の cpuSwapOrDiscard と同じ評価ロジックを用いる。
+func (g *SixCardGolf) RecommendedSwap() (pos int, formsPair bool) {
+	if g.phase != SixCardGolfPhaseDrawPending || g.drawnCard == nil {
+		return -1, false
+	}
+	p := g.players[g.currentPlayerIdx]
+	if p == nil {
+		return -1, false
+	}
+	drawnScore := g.sixCardGolfCardScore(g.drawnCard)
+	bestPos, bestGain, bestPair := -1, 0, false
+	for i := 0; i < SixCardGolfGridSize; i++ {
+		s := p.Grid[i]
+		pair := g.wouldColumnMatch(g.currentPlayerIdx, i, g.drawnCard)
+		var gain int
+		if s.FaceUp {
+			gain = g.sixCardGolfCardScore(s.Card) - drawnScore
+			if pair {
+				gain = g.sixCardGolfCardScore(s.Card) + drawnScore
+			}
+		} else if drawnScore <= 3 {
+			gain = 5 - drawnScore
+			if pair {
+				gain = 10
+			}
+		} else {
+			continue
+		}
+		if gain > bestGain {
+			bestGain, bestPos, bestPair = gain, i, pair
+		}
+	}
+	return bestPos, bestPair
+}
+
 // sixCardGolfCardScore カード1枚のスコア
 func (g *SixCardGolf) sixCardGolfCardScore(c *Card) int {
 	if c == nil {

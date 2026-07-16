@@ -112,3 +112,9 @@ func (p *SixCardGolfWebPresenter) buildMessage(g interfaces.SixCardGolfGame, las
 func (p *SixCardGolfWebPresenter) ActionLogOutput(g interfaces.SixCardGolfGame) string {
 	return actionLogOutputJSON(g)
 }
+
+// HintOutput はヒントを返す。Web ではクライアント側でヒントを算出するため、
+// 状態出力にフォールバックする (CUI プレゼンターのみが専用ヒントを返す)。
+func (p *SixCardGolfWebPresenter) HintOutput(g interfaces.SixCardGolfGame) string {
+	return p.Output(g, nil)
+}

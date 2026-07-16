@@ -34,6 +34,8 @@ type SixCardGolfInteractorIF interface {
 	GetConfig() domain.SixCardGolfConfig
 	// ActionLog 棋譜
 	ActionLog() string
+	// Hint ヒントを出力する
+	Hint() string
 }
 
 // SixCardGolfInteractor シックスカードゴルフインタラクター
@@ -170,6 +172,11 @@ func (ci *SixCardGolfInteractor) GetConfig() domain.SixCardGolfConfig {
 // ActionLog 棋譜
 func (ci *SixCardGolfInteractor) ActionLog() string {
 	return ci.gp.ActionLogOutput(ci.Game)
+}
+
+// Hint ヒントを出力する
+func (ci *SixCardGolfInteractor) Hint() string {
+	return ci.gp.HintOutput(ci.Game)
 }
 
 // runCpuTurns CPUターンループ
