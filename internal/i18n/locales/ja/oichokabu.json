@@ -18,5 +18,7 @@
   "playerWins": "子の勝ち！",
   "bankerWins": "親の勝ち。",
   "push": "引き分け (プッシュ)。",
-  "totalPayoutLine": "合計払戻し: {{payout}}"
+  "totalPayoutLine": "合計払戻し: {{payout}}",
+  "maxBetHint": "最大ベット: {{max}}（bet <額> で賭ける）",
+  "drawHint": "draw で1枚引く / stand で確定"
 }

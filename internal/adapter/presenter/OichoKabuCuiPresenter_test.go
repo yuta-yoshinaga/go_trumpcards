@@ -10,6 +10,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupOichoKabuCuiMockDefaults(m *interfaces.MockOichoKabuGame) {
@@ -35,6 +36,8 @@ func TestOichoKabuCuiPresenter_Output_BetPhase(t *testing.T) {
 	assert.Contains(t, result, "チップ: 1000")
 	assert.Contains(t, result, "BET")
 	assert.Contains(t, result, "伏せ札")
+	// Betting hint spells out the ceiling (current chips).
+	assert.Contains(t, result, i18n.Tf("oichokabu.maxBetHint", "max", "1000"))
 }
 
 func TestOichoKabuCuiPresenter_Output_Error(t *testing.T) {
@@ -63,6 +66,8 @@ func TestOichoKabuCuiPresenter_Output_DrawPhase(t *testing.T) {
 	assert.Contains(t, result, "掛け金: 100")
 	assert.Contains(t, result, "手札: 7,2")
 	assert.Contains(t, result, "伏せ札", "banker hand hidden during draw")
+	// Draw hint spells out the draw/stand choice.
+	assert.Contains(t, result, i18n.T("oichokabu.drawHint"))
 }
 
 func TestOichoKabuCuiPresenter_Output_EndWin(t *testing.T) {

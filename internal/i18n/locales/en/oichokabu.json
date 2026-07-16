@@ -18,5 +18,7 @@
   "playerWins": "Player wins!",
   "bankerWins": "Banker wins.",
   "push": "Push.",
-  "totalPayoutLine": "total payout: {{payout}}"
+  "totalPayoutLine": "total payout: {{payout}}",
+  "maxBetHint": "Max bet: {{max}} (bet <amount> to wager)",
+  "drawHint": "draw to take a card / stand to hold"
 }
