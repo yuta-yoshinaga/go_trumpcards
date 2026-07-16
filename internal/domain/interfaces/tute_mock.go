@@ -180,6 +180,15 @@ func (_m *MockTuteGame) CanHumanDeclareMarriage() bool {
 	return ret.Get(0).(bool)
 }
 
+// GetHumanDeclarableMarriageSuits モック
+func (_m *MockTuteGame) GetHumanDeclarableMarriageSuits() []int {
+	ret := _m.Called()
+	if v := ret.Get(0); v != nil {
+		return v.([]int)
+	}
+	return nil
+}
+
 // CanHumanDeclareTute モック
 func (_m *MockTuteGame) CanHumanDeclareTute() bool {
 	ret := _m.Called()

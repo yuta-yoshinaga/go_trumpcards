@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,6 +13,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func makeTutePlayers() []*domain.TutePlayer {
@@ -34,6 +36,7 @@ func setupTuteCuiMock() *interfaces.MockTuteGame {
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetWinnerTeam").Return(-1)
 	m.On("CanHumanDeclareMarriage").Return(false)
+	m.On("GetHumanDeclarableMarriageSuits").Return(([]int)(nil))
 	m.On("CanHumanDeclareTute").Return(false)
 	m.On("GetRoundTeamPoints").Return([domain.TuteTeamCnt]int{0, 0})
 	m.On("GetTeamScores").Return([domain.TuteTeamCnt]int{0, 0})
@@ -72,6 +75,19 @@ func TestTuteCuiPresenter_Output(t *testing.T) {
 		m.On("CanHumanDeclareMarriage").Return(true)
 		result := p.Output(m, nil)
 		assert.NotEmpty(t, result)
+	})
+
+	t.Run("marriage prompt lists declarable suits with trump mark", func(t *testing.T) {
+		m, _ := setupTuteCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "CanHumanDeclareMarriage")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHumanDeclarableMarriageSuits")
+		m.On("CanHumanDeclareMarriage").Return(true)
+		// Trump is spades (default mock); heart is a plain marriage.
+		m.On("GetHumanDeclarableMarriageSuits").Return([]int{domain.CardDesignSpade, domain.CardDesignHeart})
+		result := p.Output(m, nil)
+		assert.Contains(t, result, strings.Split(i18n.T("tute.promptMarriageSuits"), "{{")[0])
+		// The trump suit (spades) carries the +40 marker.
+		assert.Contains(t, result, i18n.T("tute.marriageTrumpMark"))
 	})
 
 	t.Run("play phase with tute prompt", func(t *testing.T) {

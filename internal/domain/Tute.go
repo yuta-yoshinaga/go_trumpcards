@@ -848,6 +848,23 @@ func (g *Tute) CanHumanDeclareMarriage() bool {
 	return g.cpuMarriageSuit(human) > 0
 }
 
+// GetHumanDeclarableMarriageSuits returns the suits (1..CardDesignMax) for which
+// the human may currently declare a K+Q marriage — the human leads and holds an
+// unclaimed suit's King and Queen. Empty when no declaration is possible now.
+func (g *Tute) GetHumanDeclarableMarriageSuits() []int {
+	human := g.findHumanIdx()
+	if human < 0 {
+		return nil
+	}
+	var suits []int
+	for suit := 1; suit <= CardDesignMax; suit++ {
+		if g.canDeclareMarriage(human, suit) {
+			suits = append(suits, suit)
+		}
+	}
+	return suits
+}
+
 // CanHumanDeclareTute 人間が今 Tute を宣言できるか。
 func (g *Tute) CanHumanDeclareTute() bool {
 	human := g.findHumanIdx()
