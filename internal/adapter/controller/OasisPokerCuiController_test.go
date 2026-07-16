@@ -23,6 +23,7 @@ func newMockOasisPokerInteractor() *usecase.MockOasisPokerInteractor {
 	m.On("Play").Return("play result")
 	m.On("Fold").Return("fold result")
 	m.On("ActionLog").Return("action log result")
+	m.On("Hint").Return("hint result")
 	return m
 }
 
@@ -153,4 +154,12 @@ func TestOasisPokerCuiController_Empty(t *testing.T) {
 
 	result := c.Exec("")
 	assert.Contains(t, result, "'help' でコマンド一覧を表示します。")
+}
+
+func TestOasisPokerCuiController_Hint(t *testing.T) {
+	m := newMockOasisPokerInteractor()
+	c := controller.NewOasisPokerCuiController(m)
+	assert.Equal(t, "hint result", c.Exec("h"))
+	assert.Equal(t, "hint result", c.Exec("hint"))
+	m.AssertCalled(t, "Hint")
 }

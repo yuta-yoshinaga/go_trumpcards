@@ -27,7 +27,7 @@ func (oc *OasisPokerCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return oc.oi.Reset() },
-		[]string{"b", "bet", "e", "exchange", "s", "stand", "p", "play", "f", "fold", "log", "l"},
+		[]string{"b", "bet", "e", "exchange", "s", "stand", "p", "play", "f", "fold", "h", "hint", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bet":
@@ -53,7 +53,7 @@ func (oc *OasisPokerCuiController) Exec(command string) string {
 			case "f", "fold":
 				return oc.oi.Fold(), true
 			default:
-				return handleCuiLog(cmd, oc.oi.ActionLog)
+				return handleCuiHintAndLog(cmd, oc.oi.Hint, oc.oi.ActionLog)
 			}
 		},
 	)

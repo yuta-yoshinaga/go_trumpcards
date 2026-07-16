@@ -56,4 +56,6 @@ type OasisPokerGame interface {
 	GetDealerHandRank() int
 	// GetChips チップを取得する
 	GetChips() int
+	// RecommendPlay はアクションフェーズでプレイを推奨するかを返す
+	RecommendPlay() bool
 }
