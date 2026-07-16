@@ -401,6 +401,9 @@ func (g *PageOne) GetValidPlayIndices(playerIdx int) []int {
 // --- Private methods ---
 
 // isValidPlay カードがプレイ可能か判定 (スートまたはランクが一致)
+// IsValidPlay は現在の場状態を踏まえカードがプレイ可能かを返す (公開版; CUI ヒントが利用)。
+func (g *PageOne) IsValidPlay(card *Card) bool { return g.isValidPlay(card) }
+
 func (g *PageOne) isValidPlay(card *Card) bool {
 	top := g.GetDiscardTop()
 	if top == nil {

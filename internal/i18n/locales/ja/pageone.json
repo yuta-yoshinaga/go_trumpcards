@@ -22,5 +22,8 @@
   "cmdSkip": "skip・・・宣言をスキップ（ペナルティ: 2枚引く）",
   "roundEnd": "ラウンド終了",
   "cmdNextRound": "nr / nextround・・・次のラウンドへ",
-  "gameEnd": "ゲーム終了！ {{name}}の勝利です！"
+  "gameEnd": "ゲーム終了！ {{name}}の勝利です！",
+  "hintNone": "現在ヒントはありません。",
+  "hintPlayable": "出せるカード: {{cards}}（p <idx> で出す）",
+  "hintDraw": "出せるカードがありません。d でドローしてください。"
 }

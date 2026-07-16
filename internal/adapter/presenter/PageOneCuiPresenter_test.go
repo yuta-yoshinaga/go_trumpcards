@@ -11,6 +11,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupPageOneCuiMock() *interfaces.MockPageOneGame {
@@ -168,5 +169,50 @@ func TestPageOneCuiPresenter_ActionLogOutput(t *testing.T) {
 		m.On("GetGameEndFlag").Return(false)
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, "棋譜はありません")
+	})
+}
+
+func TestPageOneCuiPresenter_HintOutput(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.PageOneCuiPresenter)
+
+	t.Run("lists only playable card indices", func(t *testing.T) {
+		m, players := setupPageOneCuiMockWithPlayers()
+		m.On("IsHumanTurn").Return(true)
+		playable := domain.NewCard(domain.CardDesignHeart, 5, false)
+		unplayable := domain.NewCard(domain.CardDesignSpade, 9, false)
+		players[0].AddCard(playable)
+		players[0].AddCard(unplayable)
+		m.On("IsValidPlay", playable).Return(true)
+		m.On("IsValidPlay", unplayable).Return(false)
+
+		out := p.HintOutput(m)
+		assert.Contains(t, out, i18n.Tf("pageone.hintPlayable", "cards", "[0]HEART 5"))
+		assert.NotContains(t, out, "[1]")
+	})
+
+	t.Run("advises drawing when nothing is playable", func(t *testing.T) {
+		m, players := setupPageOneCuiMockWithPlayers()
+		m.On("IsHumanTurn").Return(true)
+		c := domain.NewCard(domain.CardDesignSpade, 9, false)
+		players[0].AddCard(c)
+		m.On("IsValidPlay", c).Return(false)
+		assert.Contains(t, p.HintOutput(m), i18n.T("pageone.hintDraw"))
+	})
+
+	t.Run("no hint on a CPU turn", func(t *testing.T) {
+		m, _ := setupPageOneCuiMockWithPlayers()
+		m.On("IsHumanTurn").Return(false)
+		assert.Contains(t, p.HintOutput(m), i18n.T("pageone.hintNone"))
+	})
+
+	t.Run("no hint outside the play phase", func(t *testing.T) {
+		m, _ := setupPageOneCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.PageOnePhaseRoundEnd)
+		m.On("IsHumanTurn").Return(true)
+		assert.Contains(t, p.HintOutput(m), i18n.T("pageone.hintNone"))
 	})
 }
