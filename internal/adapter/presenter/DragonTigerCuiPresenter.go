@@ -12,6 +12,10 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// dragonTigerHistoryMaxShown caps the trailing run of results shown so a long
+// shoe does not overflow the terminal line.
+const dragonTigerHistoryMaxShown = 20
+
 // DragonTigerCuiPresenter ドラゴンタイガーCUIプレゼンタークラス
 type DragonTigerCuiPresenter struct{}
 
@@ -82,6 +86,43 @@ func (dp *DragonTigerCuiPresenter) Output(dt interfaces.DragonTigerGame, lastErr
 			}
 			b.WriteString(i18n.Tf("dragontiger.oddsLine", "type", i18n.T(betTypeKey), "odds", strconv.Itoa(odds)) + "\n")
 			b.WriteString(i18n.Tf("dragontiger.payoutLine", "payout", strconv.Itoa(dt.GetPayout())) + "\n")
+		}
+
+		// Big-road history: recent results as a colored D/T/= row plus totals.
+		if history := dt.GetHistory(); len(history) > 0 {
+			dCount, tCount, tieCount := 0, 0, 0
+			for _, r := range history {
+				switch r {
+				case domain.DragonTigerResultDragon:
+					dCount++
+				case domain.DragonTigerResultTiger:
+					tCount++
+				case domain.DragonTigerResultTie:
+					tieCount++
+				}
+			}
+			shown := history
+			if len(shown) > dragonTigerHistoryMaxShown {
+				shown = shown[len(shown)-dragonTigerHistoryMaxShown:]
+			}
+			syms := make([]string, len(shown))
+			for i, r := range shown {
+				switch r {
+				case domain.DragonTigerResultDragon:
+					syms[i] = color.Red("D")
+				case domain.DragonTigerResultTiger:
+					syms[i] = color.Yellow("T")
+				case domain.DragonTigerResultTie:
+					syms[i] = "="
+				default:
+					syms[i] = "?"
+				}
+			}
+			b.WriteString(i18n.Tf("dragontiger.historyLine", "symbols", strings.Join(syms, " ")) + "\n")
+			b.WriteString(i18n.Tf("dragontiger.historyCounts",
+				"d", strconv.Itoa(dCount),
+				"t", strconv.Itoa(tCount),
+				"tie", strconv.Itoa(tieCount)) + "\n")
 		}
 	})
 }
