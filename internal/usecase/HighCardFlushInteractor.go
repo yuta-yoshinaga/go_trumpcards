@@ -22,6 +22,8 @@ type HighCardFlushInteractorIF interface {
 	Fold() string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
+	// Hint ヒントを出力する
+	Hint() string
 }
 
 // HighCardFlushInteractor ハイカードフラッシュインタラクタークラス
@@ -62,6 +64,11 @@ func (hi *HighCardFlushInteractor) Fold() string {
 // ActionLog 棋譜を出力する
 func (hi *HighCardFlushInteractor) ActionLog() string {
 	return hi.hp.ActionLogOutput(hi.Game)
+}
+
+// Hint ヒントを出力する
+func (hi *HighCardFlushInteractor) Hint() string {
+	return hi.hp.HintOutput(hi.Game)
 }
 
 // RestoreHighCardFlushInteractor deserialises JSON into a HighCardFlushInteractor.

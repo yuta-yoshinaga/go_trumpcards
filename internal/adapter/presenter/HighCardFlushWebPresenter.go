@@ -77,3 +77,9 @@ func (hp *HighCardFlushWebPresenter) Output(hcf interfaces.HighCardFlushGame, la
 func (hp *HighCardFlushWebPresenter) ActionLogOutput(hcf interfaces.HighCardFlushGame) string {
 	return actionLogOutputJSON(hcf)
 }
+
+// HintOutput はヒントを返す。Web ではクライアント側でヒントを算出するため、
+// 状態出力にフォールバックする (CUI プレゼンターのみが専用ヒントを返す)。
+func (hp *HighCardFlushWebPresenter) HintOutput(hcf interfaces.HighCardFlushGame) string {
+	return hp.Output(hcf, nil)
+}

@@ -20,5 +20,8 @@
   "dealerWins": "Dealer wins!",
   "playerFolded": "Player folded.",
   "push": "Push!",
-  "totalPayoutLine": "total payout: {{payout}}"
+  "totalPayoutLine": "total payout: {{payout}}",
+  "hintNone": "No hint available.",
+  "hintRaise": "Recommended: Raise (your flush meets the dealer qualifying length)",
+  "hintFold": "Recommended: Fold (your flush is below the dealer qualifying length)"
 }

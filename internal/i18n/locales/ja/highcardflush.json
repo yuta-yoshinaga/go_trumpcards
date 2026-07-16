@@ -20,5 +20,8 @@
   "dealerWins": "ディーラーの勝ち！",
   "playerFolded": "プレイヤーがフォールド。",
   "push": "プッシュ！",
-  "totalPayoutLine": "合計払戻し: {{payout}}"
+  "totalPayoutLine": "合計払戻し: {{payout}}",
+  "hintNone": "現在ヒントはありません。",
+  "hintRaise": "推奨: レイズ（フラッシュ長がディーラーの条件を満たします）",
+  "hintFold": "推奨: フォールド（フラッシュ長がディーラーの条件に届きません）"
 }
