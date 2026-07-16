@@ -10,5 +10,7 @@
   "redealsLine": "Redeals left: {{count}}",
   "hintToFan": "fan {{idx}}",
   "hintToFoundation": "a foundation",
-  "hintLine": "[HINT: move fan {{from}} to {{to}}]"
+  "hintLine": "[HINT: move fan {{from}} to {{to}}]",
+  "foundationCount": "({{count}} cards)",
+  "redealRecommended": "No legal moves. Redeal recommended (nr)."
 }
