@@ -2,21 +2,36 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestDoudizhuCuiPresenter_Output_BidPhase(t *testing.T) {
 	dg := newDoudizhuForPresenter()
 	dg.Reset()
+	// Put the human on turn so the bid prompt renders.
+	humanIdx := 0
+	for i := 0; i < dg.GetPlayerCnt(); i++ {
+		if dg.GetPlayer(i).GetIsHuman() {
+			humanIdx = i
+			break
+		}
+	}
+	dg.SetCurrentTurn(humanIdx)
 
 	p := new(presenter.DoudizhuCuiPresenter)
 	out := p.Output(dg, nil)
 	assert.NotEmpty(t, out)
+	// The current bidder line and the human bid prompt should both appear.
+	bidderPrefix := strings.SplitN(i18n.T("doudizhu.currentBidder"), "{{", 2)[0]
+	assert.Contains(t, out, bidderPrefix)
+	assert.Contains(t, out, i18n.T("doudizhu.promptBid"))
 }
 
 func TestDoudizhuCuiPresenter_Output_PlayPhase(t *testing.T) {
