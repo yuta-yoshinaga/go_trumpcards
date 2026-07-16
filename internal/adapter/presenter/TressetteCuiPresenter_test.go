@@ -2,6 +2,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,6 +11,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupTressetteCuiMock() *interfaces.MockTressetteGame {
@@ -18,6 +20,7 @@ func setupTressetteCuiMock() *interfaces.MockTressetteGame {
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetTeamScores").Return([domain.TressetteTeamCnt]int{0, 0})
 	m.On("GetTeamRoundThirds").Return([domain.TressetteTeamCnt]int{0, 0})
+	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetCurrentTrick").Return([]*domain.TressetteTrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.TressettePhasePlay)
@@ -63,12 +66,19 @@ func TestTressetteCuiPresenter_Output(t *testing.T) {
 		assert.NotEmpty(t, result)
 	})
 
-	t.Run("round end prompt", func(t *testing.T) {
+	t.Run("round end shows team breakdown and last-trick team", func(t *testing.T) {
 		m, _ := setupTressetteCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTeamRoundThirds")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLeadPlayerIdx")
 		m.On("GetPhase").Return(domain.TressettePhaseRoundEnd)
+		m.On("GetTeamRoundThirds").Return([domain.TressetteTeamCnt]int{7, 4})
+		m.On("GetLeadPlayerIdx").Return(1) // team B took the last trick
 		result := p.Output(m, nil)
-		assert.NotEmpty(t, result)
+		assert.Contains(t, result, strings.Split(i18n.T("tressette.roundBreakdown"), "{{")[0])
+		// Each team's thirds appear (7 and 4).
+		assert.Contains(t, result, "thirds7")
+		assert.Contains(t, result, "thirds4")
 	})
 
 	t.Run("game end banner", func(t *testing.T) {
