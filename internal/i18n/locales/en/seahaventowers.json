@@ -25,5 +25,6 @@
   "promptToZoneFromCell": "Enter destination (t = tableau, f = foundation):",
   "invalidFromZone": "invalid source zone: {{val}}",
   "invalidToZone": "invalid destination zone: {{val}}",
-  "moveUsage": "usage: m t <col> [<idx>] t|f|c <toCol|cell>"
+  "moveUsage": "usage: m t <col> [<idx>] t|f|c <toCol|cell>",
+  "supermoveLine": "Max cards per move: {{limit}} (empty reserved cells {{reserved}})"
 }
