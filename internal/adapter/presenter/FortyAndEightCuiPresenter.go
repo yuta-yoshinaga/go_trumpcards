@@ -35,6 +35,9 @@ func (p *FortyAndEightCuiPresenter) Output(ft interfaces.FortyAndEightGame, last
 			if i != 0 {
 				b.WriteString(" | ")
 			}
+			// Label each pile with its move-command index (matching the tableau's
+			// column labels) so the eight piles are individually identifiable.
+			b.WriteString(i18n.Tf("fortyandeight.foundationLabel", "idx", strconv.Itoa(i)))
 			pile := foundation[i]
 			if len(pile) == 0 {
 				b.WriteString(i18n.T("cuiEmptyCol"))

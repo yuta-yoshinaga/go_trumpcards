@@ -55,6 +55,9 @@ func TestFortyAndEightCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "手数: 0")
 		assert.Contains(t, result, "操作: m で移動")
+		// Each foundation pile carries its move-command index label.
+		assert.Contains(t, result, "[f0]")
+		assert.Contains(t, result, "[f7]")
 	})
 
 	t.Run("with waste card", func(t *testing.T) {
