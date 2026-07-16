@@ -93,6 +93,17 @@ func (p *SevenCardStudCuiPresenter) Output(s interfaces.SevenCardStudGame, lastE
 				if holeCards := player.GetHoleCards(); len(holeCards) > 0 {
 					b.WriteString(i18n.Tf("sevencardstud.holeCards", "cards", cuiCardSliceStrEmoji(holeCards)) + "\n")
 				}
+				// In Razz (lowball) the goal is the lowest hand; surface the human's
+				// current best low, since the shared high-hand view never shows it.
+				if s.GetIsLowball() {
+					if low, complete := domain.SevenCardStudRazzBestLow(player.GetAllCards()); len(low) > 0 {
+						key := "sevencardstud.razzLowIncomplete"
+						if complete {
+							key = "sevencardstud.razzLowComplete"
+						}
+						b.WriteString(i18n.Tf(key, "cards", cuiCardSliceStrEmoji(low)) + "\n")
+					}
+				}
 			}
 		}
 

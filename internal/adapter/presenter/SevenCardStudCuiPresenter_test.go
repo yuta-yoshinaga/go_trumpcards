@@ -37,6 +37,40 @@ func TestSevenCardStudCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "♣5")
 	})
 
+	t.Run("razz mode shows the human's current best low", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.SevenCardStudPlayer{
+			domain.NewSevenCardStudPlayer(true, domain.HoldemStyleTAG),
+			domain.NewSevenCardStudPlayer(false, domain.HoldemStyleLAP),
+		}
+		s := domain.NewRazz(tc, players, domain.DefaultSevenCardStudConfig())
+		s.SetPhase(domain.SevenCardStudPhaseThirdStreet)
+		// A completed low: 2-3-4-5-7.
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignClover, 4, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+
+		result := p.Output(s, nil)
+		assert.Contains(t, result, "現在のベストロー")
+	})
+
+	t.Run("razz mode shows incomplete low with fewer than five cards", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.SevenCardStudPlayer{
+			domain.NewSevenCardStudPlayer(true, domain.HoldemStyleTAG),
+			domain.NewSevenCardStudPlayer(false, domain.HoldemStyleLAP),
+		}
+		s := domain.NewRazz(tc, players, domain.DefaultSevenCardStudConfig())
+		s.SetPhase(domain.SevenCardStudPhaseThirdStreet)
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignClover, 4, false))
+
+		result := p.Output(s, nil)
+		assert.Contains(t, result, "未完成")
+	})
+
 	t.Run("action prompt shows call amount on human betting turn", func(t *testing.T) {
 		s, players := makeSevenCardStudForPresenter()
 		s.SetPhase(domain.SevenCardStudPhaseThirdStreet)
