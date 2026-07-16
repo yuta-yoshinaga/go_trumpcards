@@ -90,10 +90,16 @@ func (p *DoubtCuiPresenter) Output(d interfaces.DoubtGame, lastErr error) string
 		if cpuActions := d.GetCpuActions(); len(cpuActions) > 0 {
 			b.WriteString(color.Bold(i18n.T("doubt.cpuActionsHeader")) + "\n")
 			for _, action := range cpuActions {
-				b.WriteString(i18n.Tf("doubt.cpuActionLine",
+				// Surface the CPU's tell (nervous behaviour) so the CLI player has
+				// the same read-the-opponent cue the web UI shows.
+				line := i18n.Tf("doubt.cpuActionLine",
 					"name", cuiPlayerName(d.GetPlayer(action.PlayerIdx), action.PlayerIdx),
 					"value", strconv.Itoa(action.ClaimedValue),
-					"count", strconv.Itoa(action.CardCount)) + "\n")
+					"count", strconv.Itoa(action.CardCount))
+				if action.HasTell {
+					line += " " + color.Yellow(i18n.T("doubt.tell"))
+				}
+				b.WriteString(line + "\n")
 			}
 		}
 
