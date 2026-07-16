@@ -21,5 +21,6 @@
   "hintFromWaste": "ウェイスト",
   "hintToFoundation": "ファンデーション",
   "hintToTableau": "タブロー列{{col}}",
-  "hintLine": "ヒント: {{from}} → {{to}}"
+  "hintLine": "ヒント: {{from}} → {{to}}",
+  "foundationLabel": "[f{{idx}}]"
 }
