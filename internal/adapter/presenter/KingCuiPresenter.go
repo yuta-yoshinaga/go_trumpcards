@@ -65,6 +65,19 @@ func (p *KingCuiPresenter) Output(kg interfaces.KingGame, lastErr error) string 
 		if kg.GetPhase() == domain.KingPhaseSelectContract {
 			b.WriteString(i18n.Tf("king.selectPrompt",
 				"name", cuiPlayerName(kg.GetPlayer(kg.GetDealerIdx()), kg.GetDealerIdx())) + "\n")
+			// List the still-available contracts with their selection indices, so the
+			// dealer need not recall which of the seven deals are already spent.
+			used := kg.GetUsedContracts()
+			var remaining []string
+			for i := 0; i < domain.KingContractCnt; i++ {
+				if !used[i] {
+					remaining = append(remaining, "["+strconv.Itoa(i)+"]"+kingContractLabel(i))
+				}
+			}
+			if len(remaining) > 0 {
+				b.WriteString(i18n.Tf("king.remainingContracts",
+					"contracts", strings.Join(remaining, ", ")) + "\n")
+			}
 		} else if kg.GetPhase() == domain.KingPhaseDealEnd {
 			b.WriteString(i18n.T("king.dealEndPrompt") + "\n")
 		} else {
