@@ -1,6 +1,7 @@
 package presenter
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -8,6 +9,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupVideoPokerCuiMockDefaults(m *interfaces.MockVideoPokerGame) {
@@ -212,4 +214,60 @@ func TestVideoPokerCuiPresenter_cardStr_NilCard(t *testing.T) {
 	p := new(VideoPokerCuiPresenter)
 	m := new(interfaces.MockVideoPokerGame)
 	assert.Equal(t, "??", p.cardStr(m, nil))
+}
+
+func TestVideoPokerCuiPresenter_HintOutput(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(VideoPokerCuiPresenter)
+
+	deucesDraw := func(hand []*domain.Card) *interfaces.MockVideoPokerGame {
+		m := new(interfaces.MockVideoPokerGame)
+		m.On("GetPhase").Return(domain.VideoPokerPhaseDraw)
+		m.On("GetVariantName").Return("deuceswild")
+		m.On("GetHand").Return(hand)
+		return m
+	}
+
+	t.Run("holds deuces and a made pair", func(t *testing.T) {
+		hand := []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 2, false),  // deuce (wild)
+			domain.NewCard(domain.CardDesignHeart, 8, false),  // pair of 8s
+			domain.NewCard(domain.CardDesignClover, 8, false), // pair of 8s
+			domain.NewCard(domain.CardDesignDiamond, 5, false),
+			domain.NewCard(domain.CardDesignSpade, 11, false),
+		}
+		out := p.HintOutput(deucesDraw(hand))
+		prefix := strings.SplitN(i18n.T("videopoker.hintHold"), "{{", 2)[0]
+		assert.Contains(t, out, prefix)
+		assert.Contains(t, out, "[0]") // deuce
+		assert.Contains(t, out, "[1]") // pair
+		assert.Contains(t, out, "[2]") // pair
+		assert.NotContains(t, out, "[3]")
+	})
+
+	t.Run("recommends redraw with no deuces or pair", func(t *testing.T) {
+		hand := []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 3, false),
+			domain.NewCard(domain.CardDesignHeart, 7, false),
+			domain.NewCard(domain.CardDesignClover, 9, false),
+			domain.NewCard(domain.CardDesignDiamond, 11, false),
+			domain.NewCard(domain.CardDesignSpade, 13, false),
+		}
+		assert.Contains(t, p.HintOutput(deucesDraw(hand)), i18n.T("videopoker.hintHoldNone"))
+	})
+
+	t.Run("no hint for a non-deuceswild variant", func(t *testing.T) {
+		m := new(interfaces.MockVideoPokerGame)
+		m.On("GetPhase").Return(domain.VideoPokerPhaseDraw)
+		m.On("GetVariantName").Return("jacksorbetter")
+		assert.Contains(t, p.HintOutput(m), i18n.T("videopoker.hintNone"))
+	})
+
+	t.Run("no hint outside the draw phase", func(t *testing.T) {
+		m := new(interfaces.MockVideoPokerGame)
+		m.On("GetPhase").Return(domain.VideoPokerPhaseBet)
+		assert.Contains(t, p.HintOutput(m), i18n.T("videopoker.hintNone"))
+	})
 }

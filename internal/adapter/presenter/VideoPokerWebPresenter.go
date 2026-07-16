@@ -53,3 +53,9 @@ func (vpp *VideoPokerWebPresenter) Output(vp interfaces.VideoPokerGame, lastErr 
 func (vpp *VideoPokerWebPresenter) ActionLogOutput(vp interfaces.VideoPokerGame) string {
 	return actionLogOutputJSON(vp)
 }
+
+// HintOutput はヒントを返す。Web ではクライアント側でヒントを算出するため、
+// 状態出力にフォールバックする (CUI プレゼンターのみが専用ヒントを返す)。
+func (vpp *VideoPokerWebPresenter) HintOutput(vp interfaces.VideoPokerGame) string {
+	return vpp.Output(vp, nil)
+}

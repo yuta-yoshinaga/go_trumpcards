@@ -94,3 +94,46 @@ func (vpp *VideoPokerCuiPresenter) phaseStr(phase int) string {
 		return i18n.T("videopoker.phaseUnknown")
 	}
 }
+
+// videoPokerDeucesWildHold returns a hold mask for Deuces Wild: always hold the
+// wild deuces, plus any rank group of two or more (a made pair or better).
+func videoPokerDeucesWildHold(hand []*domain.Card) []bool {
+	hold := make([]bool, len(hand))
+	rankIdx := map[int][]int{}
+	for i, c := range hand {
+		if c.GetValue() == 2 { // deuces are wild
+			hold[i] = true
+			continue
+		}
+		rankIdx[c.GetValue()] = append(rankIdx[c.GetValue()], i)
+	}
+	for _, idxs := range rankIdx {
+		if len(idxs) >= 2 {
+			for _, i := range idxs {
+				hold[i] = true
+			}
+		}
+	}
+	return hold
+}
+
+// HintOutput recommends which cards to hold during the draw phase of Deuces
+// Wild (hold all deuces and any made pair-or-better). Other variants and phases
+// get no hint.
+func (p *VideoPokerCuiPresenter) HintOutput(g interfaces.VideoPokerGame) string {
+	if g.GetPhase() != domain.VideoPokerPhaseDraw || g.GetVariantName() != "deuceswild" {
+		return i18n.T("videopoker.hintNone") + "\n"
+	}
+	hand := g.GetHand()
+	hold := videoPokerDeucesWildHold(hand)
+	var parts []string
+	for i, h := range hold {
+		if h {
+			parts = append(parts, "["+strconv.Itoa(i)+"]"+cuiCardStr(hand[i]))
+		}
+	}
+	if len(parts) == 0 {
+		return color.Yellow(i18n.T("videopoker.hintHoldNone")) + "\n"
+	}
+	return color.Yellow(i18n.Tf("videopoker.hintHold", "cards", strings.Join(parts, " "))) + "\n"
+}
