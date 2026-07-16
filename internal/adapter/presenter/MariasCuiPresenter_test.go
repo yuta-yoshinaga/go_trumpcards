@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,6 +13,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func makeMariasPlayers() []*domain.MariasPlayer {
@@ -72,12 +74,16 @@ func TestMariasCuiPresenter_Output(t *testing.T) {
 		assert.NotEmpty(t, result)
 	})
 
-	t.Run("round end prompt", func(t *testing.T) {
+	t.Run("round end shows defenders total", func(t *testing.T) {
 		m, _ := setupMariasCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundCardPoints")
 		m.On("GetPhase").Return(domain.MariasPhaseRoundEnd)
+		// Soloist (idx 0) took 40; the two defenders took 30 + 20 = 50.
+		m.On("GetRoundCardPoints").Return([domain.MariasPlayerCnt]int{40, 30, 20})
 		result := p.Output(m, nil)
-		assert.NotEmpty(t, result)
+		assert.Contains(t, result, strings.Split(i18n.T("marias.promptRoundEndDefenders"), "{{")[0])
+		assert.Contains(t, result, "50")
 	})
 
 	t.Run("game end banner", func(t *testing.T) {
