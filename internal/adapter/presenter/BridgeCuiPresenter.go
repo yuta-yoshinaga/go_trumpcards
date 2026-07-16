@@ -141,6 +141,18 @@ func (p *BridgeCuiPresenter) Output(b interfaces.BridgeGame, lastErr error) stri
 		}
 		switch b.GetPhase() {
 		case domain.BridgePhaseBid:
+			// Show the auction so far (partner signals, doubles) so the human need
+			// not track it from memory; omitted before the first bid.
+			if history := b.GetBidHistory(); len(history) > 0 {
+				entries := make([]string, len(history))
+				for i, e := range history {
+					entries[i] = i18n.Tf("bridge.bidHistoryEntry",
+						"name", cuiPlayerName(b.GetPlayer(e.PlayerIdx), e.PlayerIdx),
+						"bid", bridgeBidEntryStr(e))
+				}
+				sb.WriteString(i18n.Tf("bridge.bidHistory",
+					"bids", strings.Join(entries, " → ")) + "\n")
+			}
 			bidIdx := b.GetBidPlayerIdx()
 			sb.WriteString(i18n.Tf("bridge.promptBid",
 				"name", cuiPlayerName(b.GetPlayer(bidIdx), bidIdx)) + "\n")
@@ -205,6 +217,15 @@ func bridgeBidTypeStr(bidType int) string {
 		return i18n.T(key)
 	}
 	return i18n.Tf("bridge.bidUnknown", "n", strconv.Itoa(bidType))
+}
+
+// bridgeBidEntryStr formats one auction entry: "1♣" for a normal bid, or the
+// localized pass/double/redouble label.
+func bridgeBidEntryStr(e *domain.BridgeBidEntry) string {
+	if e.BidType == domain.BridgeBidNormal {
+		return strconv.Itoa(e.Level) + bridgeBidSuitName(e.Suit)
+	}
+	return bridgeBidTypeStr(int(e.BidType))
 }
 
 // bridgeHintReasonKeys maps Bridge-specific hint-reason identifiers to

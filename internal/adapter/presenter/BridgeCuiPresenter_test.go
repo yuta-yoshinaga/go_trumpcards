@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -273,6 +274,26 @@ func TestBridgeCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "ビッドフェーズ: あなたの番")
 		assert.Contains(t, result, "b <type>")
+		// No auction history before the first bid.
+		assert.NotContains(t, result, strings.Split(i18n.T("bridge.bidHistory"), "{{")[0])
+	})
+
+	t.Run("bid phase shows the auction history", func(t *testing.T) {
+		m, _ := setupBridgeCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetBidHistory")
+		m.On("GetPhase").Return(domain.BridgePhaseBid)
+		m.On("GetBidHistory").Return([]*domain.BridgeBidEntry{
+			{PlayerIdx: 0, BidType: domain.BridgeBidNormal, Level: 1, Suit: domain.BridgeBidSuitClub},
+			{PlayerIdx: 1, BidType: domain.BridgeBidPass},
+			{PlayerIdx: 2, BidType: domain.BridgeBidDouble},
+		})
+		result := p.Output(m, nil)
+		// Auction header, the 1♣ normal bid (level + clover suit), and the labels.
+		assert.Contains(t, result, strings.Split(i18n.T("bridge.bidHistory"), "{{")[0])
+		assert.Contains(t, result, "1CLOVER")
+		assert.Contains(t, result, i18n.T("bridge.bidPass"))
+		assert.Contains(t, result, i18n.T("bridge.bidDouble"))
 	})
 
 	t.Run("trick end phase shows next command", func(t *testing.T) {
