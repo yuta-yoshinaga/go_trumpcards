@@ -16,9 +16,10 @@
   "promptTurn": "手番: {{name}}",
   "promptDrawHelp": "dr・・・山札から1枚引く (ターン終了)",
   "promptNewMeldHelp": "nm <i j k...>・・・手札から新しいメルドを作る",
-  "promptLayoffHelp": "lo <meldIdx handIdx>・・・既存メルドに手札を足す",
+  "promptLayoffHelp": "layoff <メルドidx> <手札idx>・・・場のメルド({{count}}件)に手札を付ける（例: layoff 0 2）",
   "promptRoundEnd": "ラウンド終了",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "turnPhase": "あなたの手番です。引くかプレイしてください。",
-  "roundEnd": "ラウンド終了。次のラウンドへ進んでください。"
+  "roundEnd": "ラウンド終了。次のラウンドへ進んでください。",
+  "promptLayoffNone": "レイオフ不可: 場にメルドがありません"
 }
