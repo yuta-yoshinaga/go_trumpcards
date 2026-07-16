@@ -45,5 +45,6 @@
   "hintReasonKeepBest": "keep your strongest 5 cards",
   "hintReasonStrongHand": "strong hand — worth raising",
   "hintReasonMediumHand": "decent hand — call to see more",
-  "hintReasonWeakHand": "weak hand — better to fold"
+  "hintReasonWeakHand": "weak hand — better to fold",
+  "promptPassTo": "→ pass {{count}} card(s) left to {{name}}"
 }

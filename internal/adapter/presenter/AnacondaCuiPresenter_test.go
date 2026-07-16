@@ -2,12 +2,14 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestAnacondaCuiPresenter_OutputPassPhase(t *testing.T) {
@@ -18,6 +20,20 @@ func TestAnacondaCuiPresenter_OutputPassPhase(t *testing.T) {
 	assert.Contains(t, out, "アナコンダ")
 	assert.Contains(t, out, "ラウンド")
 	assert.Contains(t, out, "パスフェーズ")
+	// The pass prompt names the recipient (the next player to the left).
+	assert.Contains(t, out, strings.Split(i18n.T("anaconda.promptPassTo"), "{{")[0])
+}
+
+func TestAnacondaCuiPresenter_PassNoRecipientWhenAlone(t *testing.T) {
+	g := domain.NewDefaultAnaconda()
+	// Eliminate every non-human seat → the human is the only participant, so
+	// there is no one to pass to and the direction line is omitted.
+	for i := 1; i < g.GetPlayerCnt(); i++ {
+		g.GetPlayer(i).SetOut(true)
+	}
+	p := new(presenter.AnacondaCuiPresenter)
+	out := p.Output(g, nil)
+	assert.NotContains(t, out, strings.Split(i18n.T("anaconda.promptPassTo"), "{{")[0])
 }
 
 func TestAnacondaCuiPresenter_OutputError(t *testing.T) {

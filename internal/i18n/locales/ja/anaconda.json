@@ -45,5 +45,6 @@
   "hintReasonKeepBest": "最強の5枚を残す",
   "hintReasonStrongHand": "強い手 — レイズの価値あり",
   "hintReasonMediumHand": "そこそこの手 — コールで様子見",
-  "hintReasonWeakHand": "弱い手 — 降りるのが無難"
+  "hintReasonWeakHand": "弱い手 — 降りるのが無難",
+  "promptPassTo": "→ 左隣の {{name}} へ {{count}} 枚渡す"
 }
