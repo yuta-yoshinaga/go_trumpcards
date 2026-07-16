@@ -36,6 +36,22 @@ func (bcp *BadugiCuiPresenter) Output(g interfaces.BadugiGame, lastErr error) st
 			b.WriteString(i18n.Tf("badugi.limitLine", "name", domain.BettingLimitNames[cfg.BettingLimit]) + "\n")
 		}
 
+		// During betting, show the minimum raise and (where applicable) the max bet
+		// so the human can size a bet without trial-and-error error messages.
+		if g.GetPhase() != domain.BadugiPhaseEnd {
+			minRaise := strconv.Itoa(g.GetMinRaise())
+			switch cfg.BettingLimit {
+			case domain.BettingLimitPotLimit:
+				_, maxBet := domain.CalculateBettingLimits(cfg.BettingLimit, g.GetPot(), g.GetLastBet())
+				b.WriteString(i18n.Tf("badugi.betLimitsMax",
+					"min", minRaise, "max", strconv.Itoa(maxBet)) + "\n")
+			case domain.BettingLimitNoLimit:
+				b.WriteString(i18n.Tf("badugi.betLimitsNoCap", "min", minRaise) + "\n")
+			default:
+				b.WriteString(i18n.Tf("badugi.betLimitsMin", "min", minRaise) + "\n")
+			}
+		}
+
 		b.WriteString("----------\n")
 		isEnd := g.GetPhase() == domain.BadugiPhaseEnd
 		for i, pl := range players {

@@ -52,6 +52,33 @@ func TestBadugiCuiPresenter_Output_ShowsHumanHand(t *testing.T) {
 	}
 }
 
+func TestBadugiCuiPresenter_Output_ShowsBetLimits(t *testing.T) {
+	pres := new(presenter.BadugiCuiPresenter)
+
+	// Fixed limit (default) → min raise only, no cap line.
+	bd, _ := makeBadugiForPresenter()
+	out := pres.Output(bd, nil)
+	assert.Contains(t, out, "最小レイズ:")
+	assert.NotContains(t, out, "上限")
+
+	// Pot-limit → a max bet is shown.
+	bdPot, _ := makeBadugiForPresenter()
+	cfg := bdPot.GetConfig()
+	cfg.BettingLimit = domain.BettingLimitPotLimit
+	bdPot.SetConfig(cfg)
+	outPot := pres.Output(bdPot, nil)
+	assert.Contains(t, outPot, "上限:")
+	assert.NotContains(t, outPot, "上限: なし")
+
+	// No-limit → unlimited note.
+	bdNo, _ := makeBadugiForPresenter()
+	cfg2 := bdNo.GetConfig()
+	cfg2.BettingLimit = domain.BettingLimitNoLimit
+	bdNo.SetConfig(cfg2)
+	outNo := pres.Output(bdNo, nil)
+	assert.Contains(t, outNo, "上限: なし")
+}
+
 func TestBadugiCuiPresenter_HintOutput_StandPat(t *testing.T) {
 	pres := new(presenter.BadugiCuiPresenter)
 	bd, players := makeBadugiForPresenter()
