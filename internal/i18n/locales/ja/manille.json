@@ -18,5 +18,6 @@
   "hintReasonLeadLow": "低い札でリードして温存する",
   "hintReasonFollowWin": "得点があるので勝ちに行く",
   "hintReasonFollowDuck": "取れない／取る価値がないのでダック",
-  "hintReasonDiscardLow": "フォローできないので低い札を捨てる"
+  "hintReasonDiscardLow": "フォローできないので低い札を捨てる",
+  "rankHelp": "ランク順: 10 > A > K > Q > J > 9 > 8 > 7（得点: 10=5, A=4, K=3, Q=2, J=1）"
 }
