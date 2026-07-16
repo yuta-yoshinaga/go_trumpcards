@@ -40,6 +40,28 @@ func tablanetPlayerStr(g interfaces.TablanetGame, idx int) string {
 		"tabla", strconv.Itoa(player.GetTablaCount())) + "\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		// Annotate which table cards each hand card can capture, reusing the
+		// domain's capture computation (GetCaptureOptions). Cards that capture
+		// nothing get no note; the map is empty outside the play phase.
+		if opts := g.GetCaptureOptions(idx); len(opts) > 0 {
+			var notes []string
+			for h := 0; h < player.GetCardsSize(); h++ {
+				tableIdxs := opts[h]
+				if len(tableIdxs) == 0 {
+					continue
+				}
+				marks := make([]string, len(tableIdxs))
+				for j, ti := range tableIdxs {
+					marks[j] = "[" + strconv.Itoa(ti) + "]"
+				}
+				notes = append(notes, i18n.Tf("tablanet.captureHint",
+					"hand", "["+strconv.Itoa(h)+"]"+cuiCardStr(player.GetCard(h)),
+					"table", strings.Join(marks, "")))
+			}
+			if len(notes) > 0 {
+				b.WriteString(strings.Join(notes, "  ") + "\n")
+			}
+		}
 	}
 	return b.String()
 }
