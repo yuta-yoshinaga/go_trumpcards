@@ -29,5 +29,6 @@
   "hintReasonFollowCut": "Trump the trick",
   "hintReasonFollowWin": "Win the trick",
   "hintReasonFollowDump": "Discard a low card",
-  "hintReasonMarriage": "Declare a marriage for bonus points"
+  "hintReasonMarriage": "Declare a marriage for bonus points",
+  "promptMarriageCards": "Declarable: {{cards}}"
 }
