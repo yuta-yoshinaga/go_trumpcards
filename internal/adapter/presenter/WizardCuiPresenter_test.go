@@ -11,6 +11,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupWizardCuiMock() *interfaces.MockWizardGame {
@@ -61,6 +62,21 @@ func TestWizardCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "手札枚数: 1")
 		assert.Contains(t, result, "切り札:")
 		assert.Contains(t, result, "手番:")
+		// Empty trick → no established lead suit yet.
+		assert.Contains(t, result, i18n.T("wizard.leadNone"))
+	})
+
+	t.Run("play phase names the lead suit", func(t *testing.T) {
+		m, _ := setupWizardCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
+		// A Jester (skipped) then a heart establishes hearts as the lead suit.
+		m.On("GetCurrentTrick").Return([]*domain.WizardTrickCard{
+			{PlayerIdx: 1, Card: domain.NewCard(domain.WizardDesignJester, 1, false)},
+			{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 9, false)},
+		})
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "HEART")
+		assert.NotContains(t, result, i18n.T("wizard.leadNone"))
 	})
 
 	t.Run("renders wizard and jester cards in hand", func(t *testing.T) {

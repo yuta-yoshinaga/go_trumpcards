@@ -23,5 +23,7 @@
   "promptRoundEndHelp": "nr / nextround — advance to the next round",
   "hintNone": "No hint available.",
   "hintBid": "[HINT: bid {{bid}} ({{reason}})]",
-  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]"
+  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "promptLead": "Trick {{trick}} / Lead suit: {{lead}}",
+  "leadNone": "none (no follow constraint)"
 }
