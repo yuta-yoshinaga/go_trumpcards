@@ -44,6 +44,12 @@ func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string
 		b.WriteString(i18n.Tf("omaha.mandatoryRuleLine",
 			"hole", strconv.Itoa(o.GetHoleCardCount())) + "\n")
 
+		// In Hi-Lo the split's low qualifier (eight-or-better) is easy to miss from
+		// the title alone, so spell it out during play — not just in the result.
+		if o.GetIsHiLo() {
+			b.WriteString(i18n.T("omaha.hiLoRuleLine") + "\n")
+		}
+
 		cfg := o.GetConfig()
 		if cfg.TournamentMode {
 			b.WriteString(i18n.Tf("omaha.tournamentLine",

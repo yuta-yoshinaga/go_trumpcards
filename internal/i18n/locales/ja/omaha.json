@@ -43,5 +43,6 @@
   "muckPrompt": "マックしますか? (m=マック / sh=ショー)",
   "rebuyPrompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済) (rb=リバイ / sr=スキップ)",
   "addonPrompt": "アドオンしますか? ({{chips}}チップ) (ad=アドオン / sa=スキップ)",
-  "gameEnd": "ゲーム終了"
+  "gameEnd": "ゲーム終了",
+  "hiLoRuleLine": "※ロー: 8以下5枚(8 or Better)。不成立時はHiが総取り"
 }
