@@ -14,12 +14,21 @@ import (
 )
 
 // memoryCellStr returns the display string for a single Memory board cell.
-func memoryCellStr(bc *domain.MemoryBoardCard, pos int) string {
+// A face-up cell is highlighted so the two flipped cards stand out — green when
+// the current result is a match, yellow otherwise. Colour codes are added around
+// the already-padded label, so the visible column width is unchanged.
+func memoryCellStr(bc *domain.MemoryBoardCard, pos int, resultMatch bool) string {
 	if bc.Taken {
 		return fmt.Sprintf("[%2d]%-10s", pos, "")
 	}
 	if bc.FaceUp {
-		return fmt.Sprintf("[%2d]%-10s", pos, cuiCardStr(bc.Card))
+		label := fmt.Sprintf("%-10s", cuiCardStr(bc.Card))
+		if resultMatch {
+			label = color.Green(label)
+		} else {
+			label = color.Yellow(label)
+		}
+		return fmt.Sprintf("[%2d]%s", pos, label)
 	}
 	// Face-down: distinguish previously-seen cells (*?) from unseen ones (??).
 	if bc.Visited {
@@ -34,6 +43,19 @@ type MemoryCuiPresenter struct{}
 // Output renders the current game state for the active locale (#1699).
 func (p *MemoryCuiPresenter) Output(m interfaces.MemoryGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("memory.helpTitle"), func(b *strings.Builder) {
+		board := m.GetBoard()
+
+		// Progress: how many of the 26 pairs remain unmatched (taken pairs are the
+		// sum of every player's captured pairs).
+		matched := 0
+		for i := 0; i < m.GetPlayerCnt(); i++ {
+			matched += m.GetPlayer(i).GetPairCount()
+		}
+		totalPairs := domain.MemoryBoardSize / 2
+		b.WriteString(i18n.Tf("memory.progressLine",
+			"remaining", strconv.Itoa(totalPairs-matched),
+			"total", strconv.Itoa(totalPairs)) + "\n")
+
 		// Players
 		for i := 0; i < m.GetPlayerCnt(); i++ {
 			player := m.GetPlayer(i)
@@ -44,19 +66,26 @@ func (p *MemoryCuiPresenter) Output(m interfaces.MemoryGame, lastErr error) stri
 
 		b.WriteString("----------\n")
 
-		// Render the 4×13 board
-		board := m.GetBoard()
+		// Render the 4×13 board; highlight the flipped (face-up) cells.
+		resultMatch := m.GetPhase() == domain.MemoryPhaseResult && m.GetLastMatchResult()
 		for row := 0; row < 4; row++ {
 			rowParts := make([]string, 13)
 			for col := 0; col < 13; col++ {
 				pos := row*13 + col
-				rowParts[col] = memoryCellStr(board[pos], pos)
+				rowParts[col] = memoryCellStr(board[pos], pos, resultMatch)
 			}
 			b.WriteString(strings.Join(rowParts, " "))
 			b.WriteString("\n")
 		}
 
+		visited := 0
+		for _, cell := range board {
+			if cell.Visited {
+				visited++
+			}
+		}
 		b.WriteString(i18n.T("memory.visitedLegend") + "\n")
+		b.WriteString(i18n.Tf("memory.visitedCountLegend", "count", strconv.Itoa(visited)) + "\n")
 		b.WriteString("----------\n")
 
 		cuiErrorBlock(b, lastErr)
