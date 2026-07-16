@@ -58,5 +58,14 @@
   "addonPrompt": "Add-on? ({{chips}} chips) (ad=addon / sa=skip)",
   "gameEnd": "Game over",
   "razzLowComplete": "Best low: {{cards}}",
-  "razzLowIncomplete": "Best low (incomplete): {{cards}}"
+  "razzLowIncomplete": "Best low (incomplete): {{cards}}",
+  "hintNone": "No hint available.",
+  "hint": "Recommended: {{action}} ({{reason}})",
+  "hintContinue": "Continue (call/bet)",
+  "hintFold": "Fold",
+  "hintReasonPair": "a pair or better",
+  "hintReasonFlush": "three to a flush",
+  "hintReasonStraight": "three to a straight",
+  "hintReasonHigh": "three high cards",
+  "hintReasonFold": "no qualifying starting hand"
 }

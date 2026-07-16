@@ -499,3 +499,11 @@ func TestSevenCardStudCuiController_Log(t *testing.T) {
 	assert.Equal(t, "log output", c.Exec("log"))
 	assert.Equal(t, "log output", c.Exec("l"))
 }
+
+func TestSevenCardStudCuiController_Hint(t *testing.T) {
+	mi := new(usecase.MockSevenCardStudInteractor)
+	c := NewSevenCardStudCuiController(mi)
+	mi.On("Hint").Return("hint output")
+	assert.Equal(t, "hint output", c.Exec("h"))
+	assert.Equal(t, "hint output", c.Exec("hint"))
+}

@@ -10,6 +10,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestSevenCardStudCuiPresenter_Output(t *testing.T) {
@@ -501,5 +502,78 @@ func TestSevenCardStudCuiPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(mockGame)
 		assert.Contains(t, result, "棋譜はありません")
 		mockGame.AssertExpectations(t)
+	})
+}
+
+func TestSevenCardStudCuiPresenter_HintOutput(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.SevenCardStudCuiPresenter)
+
+	c := func(suit, val int) *domain.Card { return domain.NewCard(suit, val, false) }
+	set := func(s *domain.SevenCardStud, players []*domain.SevenCardStudPlayer, cards ...*domain.Card) {
+		s.SetPhase(domain.SevenCardStudPhaseThirdStreet)
+		s.SetCurrentTurn(0)
+		players[0].ClearCards()
+		players[0].AddHoleCard(cards[0])
+		players[0].AddHoleCard(cards[1])
+		players[0].AddDoorCard(cards[2])
+	}
+
+	cases := []struct {
+		name      string
+		cards     []*domain.Card
+		continue_ bool
+		reason    string
+	}{
+		{"pair", []*domain.Card{c(domain.CardDesignSpade, 8), c(domain.CardDesignHeart, 8), c(domain.CardDesignClover, 2)}, true, "sevencardstud.hintReasonPair"},
+		{"three flush", []*domain.Card{c(domain.CardDesignSpade, 4), c(domain.CardDesignSpade, 8), c(domain.CardDesignSpade, 12)}, true, "sevencardstud.hintReasonFlush"},
+		{"three straight", []*domain.Card{c(domain.CardDesignSpade, 6), c(domain.CardDesignHeart, 7), c(domain.CardDesignClover, 8)}, true, "sevencardstud.hintReasonStraight"},
+		{"Q-K-A wheel straight", []*domain.Card{c(domain.CardDesignSpade, 1), c(domain.CardDesignHeart, 12), c(domain.CardDesignClover, 13)}, true, "sevencardstud.hintReasonStraight"},
+		{"three high", []*domain.Card{c(domain.CardDesignSpade, 1), c(domain.CardDesignHeart, 13), c(domain.CardDesignClover, 11)}, true, "sevencardstud.hintReasonHigh"},
+		{"junk folds", []*domain.Card{c(domain.CardDesignSpade, 2), c(domain.CardDesignHeart, 5), c(domain.CardDesignClover, 9)}, false, "sevencardstud.hintReasonFold"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			s, players := makeSevenCardStudForPresenter()
+			set(s, players, tc.cards...)
+			out := p.HintOutput(s)
+			assert.Contains(t, out, i18n.T(tc.reason))
+			if tc.continue_ {
+				assert.Contains(t, out, i18n.T("sevencardstud.hintContinue"))
+			} else {
+				assert.Contains(t, out, i18n.T("sevencardstud.hintFold"))
+			}
+		})
+	}
+
+	t.Run("no hint on a CPU turn", func(t *testing.T) {
+		s, _ := makeSevenCardStudForPresenter()
+		s.SetPhase(domain.SevenCardStudPhaseThirdStreet)
+		s.SetCurrentTurn(1) // CPU
+		assert.Contains(t, p.HintOutput(s), i18n.T("sevencardstud.hintNone"))
+	})
+
+	t.Run("no hint outside third street", func(t *testing.T) {
+		s, _ := makeSevenCardStudForPresenter()
+		s.SetPhase(domain.SevenCardStudPhaseFifthStreet)
+		s.SetCurrentTurn(0)
+		assert.Contains(t, p.HintOutput(s), i18n.T("sevencardstud.hintNone"))
+	})
+
+	t.Run("no hint in Razz (lowball)", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.SevenCardStudPlayer{
+			domain.NewSevenCardStudPlayer(true, domain.HoldemStyleTAG),
+			domain.NewSevenCardStudPlayer(false, domain.HoldemStyleLAP),
+		}
+		s := domain.NewRazz(tc, players, domain.DefaultSevenCardStudConfig())
+		s.SetPhase(domain.SevenCardStudPhaseThirdStreet)
+		s.SetCurrentTurn(0)
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		assert.Contains(t, p.HintOutput(s), i18n.T("sevencardstud.hintNone"))
 	})
 }

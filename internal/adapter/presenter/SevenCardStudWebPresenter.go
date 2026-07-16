@@ -227,6 +227,12 @@ func (p *SevenCardStudWebPresenter) ActionLogOutput(s interfaces.SevenCardStudGa
 	return actionLogOutputJSON(s)
 }
 
+// HintOutput はヒントを返す。Web ではクライアント側でヒントを算出するため、
+// 状態出力にフォールバックする (CUI プレゼンターのみが専用ヒントを返す)。
+func (p *SevenCardStudWebPresenter) HintOutput(s interfaces.SevenCardStudGame) string {
+	return p.Output(s, nil)
+}
+
 // getHandName ハンドランクから名前を返す
 func (p *SevenCardStudWebPresenter) getHandName(rank int) string {
 	if rank >= 0 && rank < len(domain.PokerHandNames) {
