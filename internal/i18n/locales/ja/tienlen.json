@@ -11,5 +11,13 @@
   "playerYou": "あなた",
   "yourTurn": "あなたのターンです",
   "comboRulesHint": "役: 連番>3カード>ペア>シングル。場と同じ枚数・同じ種類で、より強いランクのみ出せます（連番は同枚数で最高ランク比較）。",
-  "actionPass": "パス"
+  "actionPass": "パス",
+  "tableComboType": "[型: {{type}}]",
+  "comboSingle": "シングル",
+  "comboPair": "ペア",
+  "comboTriple": "トリプル",
+  "comboStraight": "ストレート",
+  "comboThreePairRun": "3連ペア",
+  "comboFourOfAKind": "フォーカード",
+  "comboInvalid": "不明"
 }

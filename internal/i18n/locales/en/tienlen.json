@@ -11,5 +11,13 @@
   "playerYou": "You",
   "yourTurn": "Your turn",
   "comboRulesHint": "Ranks: run > triple > pair > single. Match the table's count and type and beat its rank (runs compare by length then top rank).",
-  "actionPass": "pass"
+  "actionPass": "pass",
+  "tableComboType": "[combo: {{type}}]",
+  "comboSingle": "Single",
+  "comboPair": "Pair",
+  "comboTriple": "Triple",
+  "comboStraight": "Straight",
+  "comboThreePairRun": "Three-pair run",
+  "comboFourOfAKind": "Four of a kind",
+  "comboInvalid": "Unknown"
 }

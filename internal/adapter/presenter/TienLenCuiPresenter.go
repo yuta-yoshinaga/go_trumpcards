@@ -30,6 +30,26 @@ func tienLenPlayerStr(player *domain.TienLenPlayer, i int) string {
 	return b.String()
 }
 
+// tienLenPlayTypeLabel returns the i18n label for a table combo type.
+func tienLenPlayTypeLabel(pt domain.TienLenPlayType) string {
+	switch pt {
+	case domain.TienLenPlaySingle:
+		return i18n.T("tienlen.comboSingle")
+	case domain.TienLenPlayPair:
+		return i18n.T("tienlen.comboPair")
+	case domain.TienLenPlayTriple:
+		return i18n.T("tienlen.comboTriple")
+	case domain.TienLenPlayStraight:
+		return i18n.T("tienlen.comboStraight")
+	case domain.TienLenPlayThreePairRun:
+		return i18n.T("tienlen.comboThreePairRun")
+	case domain.TienLenPlayFourOfAKind:
+		return i18n.T("tienlen.comboFourOfAKind")
+	default:
+		return i18n.T("tienlen.comboInvalid")
+	}
+}
+
 // TienLenCuiPresenter renders the Tien Len CUI view.
 type TienLenCuiPresenter struct{}
 
@@ -43,10 +63,16 @@ func (p *TienLenCuiPresenter) Output(tg interfaces.TienLenGame, lastErr error) s
 		b.WriteString("----------\n")
 
 		if tg.GetTableCards() != nil {
-			b.WriteString(i18n.T("tienlen.tableCards") + ": " + cuiCardSliceStr(tg.GetTableCards()) + "\n")
+			// Name the combo on the table (pair/straight/…) so the player knows
+			// what shape they must beat, matching the web tableCombo display.
+			b.WriteString(i18n.T("tienlen.tableCards") + ": " + cuiCardSliceStr(tg.GetTableCards()) +
+				" " + i18n.Tf("tienlen.tableComboType", "type", tienLenPlayTypeLabel(tg.GetTablePlayType())) + "\n")
 		} else {
 			b.WriteString(i18n.T("tienlen.tableEmpty") + "\n")
 		}
+
+		// Unify error display with other presenters (red, right after the board).
+		cuiErrorBlock(b, lastErr)
 
 		if tg.GetGameEndFlag() {
 			b.WriteString(i18n.T("tienlen.gameEnd") + "\n")
@@ -78,10 +104,6 @@ func (p *TienLenCuiPresenter) Output(tg interfaces.TienLenGame, lastErr error) s
 				// (and self-diagnose an invalid combo shown in the error line).
 				b.WriteString(i18n.T("tienlen.comboRulesHint") + "\n")
 			}
-		}
-
-		if lastErr != nil {
-			b.WriteString(lastErr.Error() + "\n")
 		}
 	})
 }
