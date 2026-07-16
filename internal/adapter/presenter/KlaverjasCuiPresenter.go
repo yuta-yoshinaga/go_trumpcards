@@ -93,9 +93,17 @@ func (p *KlaverjasCuiPresenter) Output(g interfaces.KlaverjasGame, lastErr error
 			b.WriteString(i18n.T("klaverjas.promptTrickEndHelp") + "\n")
 		case domain.KlaverjasPhaseRoundEnd:
 			pts := g.GetRoundCardPoints()
+			roem := g.GetRoundRoem()
 			b.WriteString(i18n.Tf("klaverjas.promptRoundEnd",
 				"ptsA", strconv.Itoa(pts[0]),
 				"ptsB", strconv.Itoa(pts[1])) + "\n")
+			// Card points alone omit the Roem bonuses; show each team's Roem and the
+			// card-points+Roem total so the final round score is complete.
+			b.WriteString(i18n.Tf("klaverjas.promptRoundEndRoem",
+				"roemA", strconv.Itoa(roem[0]),
+				"roemB", strconv.Itoa(roem[1]),
+				"totalA", strconv.Itoa(pts[0]+roem[0]),
+				"totalB", strconv.Itoa(pts[1]+roem[1])) + "\n")
 			b.WriteString(i18n.T("klaverjas.promptRoundEndHelp") + "\n")
 		}
 	})

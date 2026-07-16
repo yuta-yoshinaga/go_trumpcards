@@ -18,5 +18,6 @@
   "hintReasonLeadLow": "低い札でリードして温存する",
   "hintReasonFollowWin": "得点があるので勝ちに行く",
   "hintReasonFollowDuck": "取れない／取る価値がないのでダック",
-  "hintReasonDiscardLow": "フォローできないので低い札を捨てる"
+  "hintReasonDiscardLow": "フォローできないので低い札を捨てる",
+  "promptRoundEndRoem": "Roem: A +{{roemA}} / B +{{roemB}}（合計 A {{totalA}} / B {{totalB}}）"
 }
