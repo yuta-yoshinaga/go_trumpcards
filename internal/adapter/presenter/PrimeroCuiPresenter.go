@@ -91,8 +91,15 @@ func (p *PrimeroCuiPresenter) Output(g interfaces.PrimeroGame, lastErr error) st
 
 		switch g.GetPhase() {
 		case domain.PrimeroPhaseBetting:
+			// Spell out what the acting player must add to call and the total a
+			// raise reaches, so the human isn't left computing it by hand. The
+			// acting seat is always valid here and never bets past the current
+			// level, so need = currentBet - roundBet stays non-negative.
+			actor := g.GetPlayer(g.GetCurrentPlayerIdx())
 			b.WriteString(i18n.Tf("primero.promptBetting",
 				"bet", strconv.Itoa(g.GetCurrentBet()),
+				"need", strconv.Itoa(g.GetCurrentBet()-actor.GetRoundBet()),
+				"raiseTo", strconv.Itoa(g.GetCurrentBet()+g.GetAnte()),
 			) + "\n")
 		case domain.PrimeroPhaseResult:
 			b.WriteString(p.resultLine(g))
