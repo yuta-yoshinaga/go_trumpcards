@@ -116,6 +116,12 @@ func (p *NapCuiPresenter) writePrompt(b *strings.Builder, g interfaces.NapGame) 
 		b.WriteString(i18n.Tf("nap.promptBid",
 			"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx),
 			"contract", napBidName(int(g.GetContract()))) + "\n")
+		// Name who holds the current high bid (matching the web UI's bidHighest
+		// line); before anyone bids there is no holder, so the line is omitted.
+		if declIdx := g.GetDeclarerIdx(); declIdx >= 0 {
+			b.WriteString(i18n.Tf("nap.promptBidHolder",
+				"name", cuiPlayerName(g.GetPlayer(declIdx), declIdx)) + "\n")
+		}
 		b.WriteString(i18n.T("nap.promptBidHelp") + "\n")
 	case domain.NapPhasePlay:
 		currentIdx := g.GetCurrentPlayerIdx()
