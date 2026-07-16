@@ -41,5 +41,6 @@
   "hintReasonLeadHigh": "あなたはデクレアラー側 — 強い札でリードして主導権を取る",
   "hintReasonLeadLow": "あなたは対戦側 — 安い札でリードして温存する",
   "hintReasonFollowWin": "勝てる — トリックを取る",
-  "hintReasonFollowDuck": "勝てない/取るべきでない — 低い札を出す"
+  "hintReasonFollowDuck": "勝てない/取るべきでない — 低い札を出す",
+  "promptTalonLegend": "埋め不可: キング・トゥルル（パガト/XXI/スキュース）。平トランプは埋められる平札が6枚未満のときのみ可。"
 }
