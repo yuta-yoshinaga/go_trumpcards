@@ -23,6 +23,14 @@ func looTrumpLabel(suit int) string {
 	return suitNames[suit]
 }
 
+// looSignedInt は符号付きでチップ増減を表示する (正なら "+" を前置)。
+func looSignedInt(n int) string {
+	if n > 0 {
+		return "+" + strconv.Itoa(n)
+	}
+	return strconv.Itoa(n)
+}
+
 // looPlayingLabel は参加状態の表示を返す。
 func looPlayingLabel(playing bool) string {
 	if playing {
@@ -84,6 +92,24 @@ func (p *LooCuiPresenter) Output(g interfaces.LooGame, lastErr error) string {
 			b.WriteString(i18n.T("loo.promptTrickEnd") + "\n")
 		case domain.LooPhaseRoundEnd:
 			b.WriteString(i18n.T("loo.promptRoundEnd") + "\n")
+			if det := g.GetLastDealDetail(); det != nil {
+				// Name who was looed (penalised) and show each player's chip change
+				// this deal, matching the web round-result breakdown.
+				if len(det.Looed) > 0 {
+					names := make([]string, len(det.Looed))
+					for i, idx := range det.Looed {
+						names[i] = cuiPlayerName(g.GetPlayer(idx), idx)
+					}
+					b.WriteString(color.Red(i18n.Tf("loo.looedList",
+						"names", strings.Join(names, ", "))) + "\n")
+				}
+				for i := 0; i < g.GetPlayerCnt(); i++ {
+					delta := det.Gained[i] // 0 when the player didn't participate
+					b.WriteString(i18n.Tf("loo.chipDeltaLine",
+						"name", cuiPlayerName(g.GetPlayer(i), i),
+						"delta", looSignedInt(delta)) + "\n")
+				}
+			}
 		}
 		b.WriteString(i18n.T("loo.promptHelp") + "\n")
 	})

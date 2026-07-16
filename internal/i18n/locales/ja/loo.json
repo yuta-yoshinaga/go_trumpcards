@@ -21,5 +21,7 @@
   "hintReasonLeadHigh": "強い札でリードして主導権を握る",
   "hintReasonFollowWin": "勝てる札を出してトリックを取る",
   "hintReasonDiscardLow": "取れないので低い札を捨てる",
-  "result.chips": "ディール終了！ チップ: {{chips}}"
+  "result.chips": "ディール終了！ チップ: {{chips}}",
+  "looedList": "ルー（罰）: {{names}}",
+  "chipDeltaLine": "  {{name}}: {{delta}}"
 }
