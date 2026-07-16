@@ -38,5 +38,6 @@
   "trickEnd": "トリック終了",
   "roundEnd": "ラウンド終了",
   "result.humanWin": "ゲーム終了！ あなたの勝ち！",
-  "result.cpuWin": "ゲーム終了！ プレイヤー{{player}}の勝ち！"
+  "result.cpuWin": "ゲーム終了！ プレイヤー{{player}}の勝ち！",
+  "promptBidHolder": "現在の最高入札者: {{name}}"
 }
