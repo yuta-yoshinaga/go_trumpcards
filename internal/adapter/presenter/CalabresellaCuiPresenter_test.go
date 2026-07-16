@@ -12,6 +12,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func makeCalabresellaPlayers() []*domain.CalabresellaPlayer {
@@ -91,12 +92,18 @@ func TestCalabresellaCuiPresenter_Output(t *testing.T) {
 		assert.NotEmpty(t, result)
 	})
 
-	t.Run("round end prompt", func(t *testing.T) {
+	t.Run("round end lists all players thirds with roles", func(t *testing.T) {
 		m, _ := setupCalabresellaCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundThirds")
 		m.On("GetPhase").Return(domain.CalabresellaPhaseRoundEnd)
+		// Soloist (index 0) takes 5, the two coalition players 3 each → 11 total.
+		m.On("GetRoundThirds").Return([domain.CalabresellaPlayerCnt]int{5, 3, 3})
 		result := p.Output(m, nil)
-		assert.NotEmpty(t, result)
+		assert.Contains(t, result, i18n.T("calabresella.roleCoalition"))
+		// Each player's thirds appear in the breakdown: soloist 5, coalition 3 each.
+		assert.Contains(t, result, "5/3")
+		assert.Contains(t, result, "3/3")
 	})
 
 	t.Run("game end banner", func(t *testing.T) {

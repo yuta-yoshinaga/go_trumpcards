@@ -114,6 +114,19 @@ func (p *CalabresellaCuiPresenter) Output(g interfaces.CalabresellaGame, lastErr
 			b.WriteString(i18n.Tf("calabresella.promptRoundEnd",
 				"soloist", cuiPlayerName(g.GetPlayer(soloist), soloist),
 				"thirds", strconv.Itoa(soloistThirds)) + "\n")
+			// Break down every player's thirds with their role: the 11 thirds are
+			// split between the soloist and the two-player coalition, so the CUI
+			// should show each share, not just the soloist's.
+			for i := 0; i < g.GetPlayerCnt(); i++ {
+				role := i18n.T("calabresella.roleCoalition")
+				if i == soloist {
+					role = i18n.T("calabresella.roleSoloist")
+				}
+				b.WriteString(i18n.Tf("calabresella.thirdsLine",
+					"name", cuiPlayerName(g.GetPlayer(i), i),
+					"role", role,
+					"thirds", strconv.Itoa(thirds[i])) + "\n")
+			}
 			b.WriteString(i18n.T("calabresella.promptRoundEndHelp") + "\n")
 		}
 	})
