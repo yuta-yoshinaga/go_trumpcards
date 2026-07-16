@@ -133,6 +133,13 @@ func (p *SheepsheadCuiPresenter) Output(g interfaces.SheepsheadGame, lastErr err
 			b.WriteString(i18n.Tf("sheepshead.promptRoundEnd",
 				"pts", strconv.Itoa(g.GetRoundPickerPoints()),
 				"mult", strconv.Itoa(g.GetRoundMultiplier())) + "\n")
+			// Points and multiplier alone don't say who won; spell out the picker
+			// team's result and the chip direction.
+			if g.GetRoundPickerWon() {
+				b.WriteString(color.Green(i18n.T("sheepshead.roundPickerWon")) + "\n")
+			} else {
+				b.WriteString(color.Red(i18n.T("sheepshead.roundPickerLost")) + "\n")
+			}
 			b.WriteString(i18n.T("sheepshead.promptRoundEndHelp") + "\n")
 		}
 	})
