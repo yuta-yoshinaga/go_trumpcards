@@ -220,4 +220,12 @@ func TestMacauCuiPresenter_HintOutput(t *testing.T) {
 		m.On("IsHumanTurn").Return(false)
 		assert.Contains(t, p.HintOutput(m), i18n.T("macau.hintNone"))
 	})
+
+	t.Run("no hint when the current player is nil", func(t *testing.T) {
+		m := setupMacauCuiMock()
+		m.On("GetPlayerCnt").Return(4)
+		m.On("GetPlayer", 0).Return((*domain.MacauPlayer)(nil))
+		m.On("IsHumanTurn").Return(true)
+		assert.Contains(t, p.HintOutput(m), i18n.T("macau.hintNone"))
+	})
 }
