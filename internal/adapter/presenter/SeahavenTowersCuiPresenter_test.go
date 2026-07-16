@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -23,6 +24,23 @@ func TestSeahavenTowersCuiPresenterOutputPlaying(t *testing.T) {
 	assert.Contains(t, result, "Reserved:")
 	assert.Contains(t, result, "Foundation:")
 	assert.Contains(t, result, "手数:")
+}
+
+func TestSeahavenTowersCuiPresenterSupermoveLine(t *testing.T) {
+	p := new(SeahavenTowersCuiPresenter)
+	// empty reserved cells → one-move limit (1 + empties).
+	for empties, limit := range map[int]int{0: 1, 1: 2, 2: 3} {
+		s := domain.NewSeahavenTowers(domain.NewTrumpCards(0))
+		s.Reset()
+		s.SetPhase(domain.SeahavenTowersPhasePlaying)
+		var cells [domain.SeahavenTowersCellCnt]*domain.Card
+		for i := 0; i < domain.SeahavenTowersCellCnt-empties; i++ {
+			cells[i] = domain.NewCard(domain.CardDesignSpade, i+1, false)
+		}
+		s.SetFreeCells(cells)
+		result := p.Output(s, nil)
+		assert.Contains(t, result, "一括移動可能: 最大"+strconv.Itoa(limit)+"枚")
+	}
 }
 
 func TestSeahavenTowersCuiPresenterOutputGameClear(t *testing.T) {

@@ -76,6 +76,17 @@ func (p *SeahavenTowersCuiPresenter) Output(s interfaces.SeahavenTowersGame, las
 			if s.IsStalemate() {
 				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
 			}
+			// Show the one-move stack limit (1 + empty reserved cells, the web
+			// formula) so the human isn't surprised by a rejected multi-card move.
+			emptyReserved := 0
+			for i := 0; i < domain.SeahavenTowersCellCnt; i++ {
+				if cells[i] == nil {
+					emptyReserved++
+				}
+			}
+			b.WriteString(i18n.Tf("seahaventowers.supermoveLine",
+				"limit", strconv.Itoa(1+emptyReserved),
+				"reserved", strconv.Itoa(emptyReserved)) + "\n")
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(s.GetMoveCount())) + "\n")
 		case domain.SeahavenTowersPhaseGameClear:
