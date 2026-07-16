@@ -44,11 +44,18 @@ func (p *FlowerGardenCuiPresenter) Output(bc interfaces.FlowerGardenGame, lastEr
 		}
 		b.WriteString("\n")
 
-		// Reserve (the bouquet)
+		// Reserve (the bouquet). Wrap the 16 cards across rows so the labelled
+		// list doesn't overflow an 80-column terminal (the tableau wraps too).
 		b.WriteString(i18n.T("flowergarden.reserveHeader"))
 		reserve := bc.GetReserve()
+		const reservePerRow = 8
 		for i := range reserve {
-			if i != 0 {
+			switch {
+			case i == 0:
+				// first card follows the header directly
+			case i%reservePerRow == 0:
+				b.WriteString("\n")
+			default:
 				b.WriteString(" ")
 			}
 			fmt.Fprintf(b, "[r%d]", i)

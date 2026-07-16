@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -58,6 +59,21 @@ func TestFlowerGardenCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "Foundation")
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "手数: 0")
+		// The 16 reserve cards wrap across rows: r0 and r8 land on different lines.
+		assert.Contains(t, result, "[r0]")
+		assert.Contains(t, result, "[r15]")
+		var r0Line, r8Line string
+		for _, l := range strings.Split(result, "\n") {
+			if strings.Contains(l, "[r0]") {
+				r0Line = l
+			}
+			if strings.Contains(l, "[r8]") {
+				r8Line = l
+			}
+		}
+		assert.NotEmpty(t, r0Line)
+		assert.NotEmpty(t, r8Line)
+		assert.NotContains(t, r0Line, "[r8]") // wrapped onto a separate row
 	})
 
 	t.Run("with error", func(t *testing.T) {
