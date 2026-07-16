@@ -34,5 +34,6 @@
   "hintReasonDiscardLow": "Cannot follow suit — discard a low card",
   "hintReasonBidChiamo": "Solid hand — call chiamo",
   "hintReasonBidSolo": "Very strong hand — declare solo",
-  "hintReasonBidPass": "Weak hand — pass"
+  "hintReasonBidPass": "Weak hand — pass",
+  "thirdsLine": "  {{name}} ({{role}}): {{thirds}}/3"
 }
