@@ -22,6 +22,7 @@ func newMockHighCardFlushInteractor() *usecase.MockHighCardFlushInteractor {
 	m.On("Raise", 3).Return("raise 3x result")
 	m.On("Fold").Return("fold result")
 	m.On("ActionLog").Return("action log result")
+	m.On("Hint").Return("hint result")
 	return m
 }
 
@@ -108,6 +109,13 @@ func TestHighCardFlushCuiController_ActionLog(t *testing.T) {
 	c := controller.NewHighCardFlushCuiController(m)
 	assert.Equal(t, "action log result", c.Exec("log"))
 	assert.Equal(t, "action log result", c.Exec("l"))
+}
+
+func TestHighCardFlushCuiController_Hint(t *testing.T) {
+	m := newMockHighCardFlushInteractor()
+	c := controller.NewHighCardFlushCuiController(m)
+	assert.Equal(t, "hint result", c.Exec("h"))
+	assert.Equal(t, "hint result", c.Exec("hint"))
 }
 
 func TestHighCardFlushCuiController_Unknown(t *testing.T) {

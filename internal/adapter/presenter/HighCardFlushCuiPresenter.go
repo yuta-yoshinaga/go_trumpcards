@@ -102,3 +102,16 @@ func (hp *HighCardFlushCuiPresenter) phaseStr(phase int) string {
 		return i18n.T("highcardflush.phaseUnknown")
 	}
 }
+
+// HintOutput emits a raise/fold recommendation during the action phase. Basic
+// strategy: raise once the player's longest flush reaches the dealer's
+// qualifying length (3); otherwise fold. Other phases have no decision to advise.
+func (hp *HighCardFlushCuiPresenter) HintOutput(hcf interfaces.HighCardFlushGame) string {
+	if hcf.GetPhase() != domain.HighCardFlushPhaseAction {
+		return i18n.T("highcardflush.hintNone") + "\n"
+	}
+	if hcf.GetPlayerFlushLen() >= domain.HighCardFlushDealerMinFlushLen {
+		return color.Yellow(i18n.T("highcardflush.hintRaise")) + "\n"
+	}
+	return color.Yellow(i18n.T("highcardflush.hintFold")) + "\n"
+}
