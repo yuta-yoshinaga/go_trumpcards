@@ -12,6 +12,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func makeSpoilFivePlayers() []*domain.SpoilFivePlayer {
@@ -30,6 +31,7 @@ func setupSpoilFiveCuiMock() *interfaces.MockSpoilFiveGame {
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetTrumpSuit").Return(domain.CardDesignSpade)
 	m.On("GetPot").Return(5)
+	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetRoundWinnerIdx").Return(-1)
 	m.On("GetCurrentTrick").Return(([]*domain.SpoilFiveTrickCard)(nil))
 	m.On("GetGameEndFlag").Return(false)
@@ -56,11 +58,14 @@ func TestSpoilFiveCuiPresenter_Output(t *testing.T) {
 	defer color.SetNoColor(orig)
 	p := new(presenter.SpoilFiveCuiPresenter)
 
-	t.Run("play phase shows current player", func(t *testing.T) {
+	t.Run("play phase shows current player and lead marker", func(t *testing.T) {
 		m, players := setupSpoilFiveCuiMockWithPlayers()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
 		result := p.Output(m, nil)
 		assert.NotEmpty(t, result)
+		// The lead player (seat 0) is flagged; no round winner during play.
+		assert.Contains(t, result, i18n.T("spoilfive.leaderMark"))
+		assert.NotContains(t, result, i18n.T("spoilfive.winnerMark"))
 	})
 
 	t.Run("trick end prompt", func(t *testing.T) {
@@ -79,6 +84,8 @@ func TestSpoilFiveCuiPresenter_Output(t *testing.T) {
 		m.On("GetRoundWinnerIdx").Return(0)
 		result := p.Output(m, nil)
 		assert.NotEmpty(t, result)
+		// Seat 0 is the round winner → the winner marker appears.
+		assert.Contains(t, result, i18n.T("spoilfive.winnerMark"))
 	})
 
 	t.Run("round end spoil prompt", func(t *testing.T) {
