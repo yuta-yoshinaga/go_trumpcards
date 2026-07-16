@@ -31,6 +31,24 @@ func TestShitheadCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "手番:")
 	})
 
+	t.Run("facedown blind turn lists indexed slots", func(t *testing.T) {
+		s := newShitheadForPresenter()
+		s.Reset() // currentTurn = 0 (the human)
+		// Empty the human's hand and face-up piles so the current source is the
+		// face-down (blind) pile, leaving three concealed slots.
+		human := s.GetPlayer(0)
+		human.Reset()
+		human.AddFaceDown(domain.NewCard(domain.CardDesignSpade, 1, false))
+		human.AddFaceDown(domain.NewCard(domain.CardDesignHeart, 2, false))
+		human.AddFaceDown(domain.NewCard(domain.CardDesignClover, 3, false))
+
+		result := p.Output(s, nil)
+		// All three blind slots are listed with concealed (??) faces.
+		assert.Contains(t, result, "[0]??")
+		assert.Contains(t, result, "[1]??")
+		assert.Contains(t, result, "[2]??")
+	})
+
 	t.Run("error message rendered", func(t *testing.T) {
 		s := newShitheadForPresenter()
 		s.Reset()
