@@ -53,7 +53,8 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		assert.Contains(t, result, "[0]SPADE 6")
 		assert.Contains(t, result, "CPU 1: 1枚")
 		assert.Contains(t, result, "ボード:")
-		assert.Contains(t, result, "SPADE: 7〜7")
+		// Only the seed 7 is on the board initially (positions 1..13 shown).
+		assert.Contains(t, result, "SPADE: _ _ _ _ _ _ 7 _ _ _ _ _ _")
 		assert.Contains(t, result, "手番: あなた")
 	})
 
@@ -82,10 +83,10 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		_ = s.PlayerPlay(0) // play 6♠ → minVal[Spade] = 6
+		_ = s.PlayerPlay(0) // play 6♠ → 6 and 7 now placed on spades
 
 		result := tsp.Output(s, nil)
-		assert.Contains(t, result, "SPADE: 6〜7")
+		assert.Contains(t, result, "SPADE: _ _ _ _ _ 6 7 _ _ _ _ _ _")
 	})
 
 	t.Run("success Output game ended", func(t *testing.T) {
