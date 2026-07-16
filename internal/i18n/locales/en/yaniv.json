@@ -20,5 +20,7 @@
   "promptYanivResult": "{{name}} declares Yaniv and wins the round!",
   "promptAsafResult": "{{name}}'s Yaniv is Asaf! +30 penalty",
   "promptRoundEnd": "Round complete",
-  "promptRoundEndHelp": "nr / nextround: advance to next round"
+  "promptRoundEndHelp": "nr / nextround: advance to next round",
+  "limitLine": "Score limit: {{limit}} (out if exceeded)",
+  "nearOut": " ⚠near out"
 }

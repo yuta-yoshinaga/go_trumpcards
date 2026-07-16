@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,6 +13,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupYanivCuiMock() (*interfaces.MockYanivGame, []*domain.YanivPlayer) {
@@ -27,6 +29,7 @@ func setupYanivCuiMock() (*interfaces.MockYanivGame, []*domain.YanivPlayer) {
 	m.On("GetCallerIdx").Return(-1)
 	m.On("GetIsAsaf").Return(false)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	m.On("GetConfig").Return(domain.DefaultYanivConfig())
 	m.On("GetPlayerCnt").Return(4)
 	for i := 0; i < 4; i++ {
 		m.On("GetPlayer", i).Return(players[i])
@@ -52,6 +55,17 @@ func TestYanivCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "山札: 39")
 		assert.Contains(t, result, "ディスカードフェーズ")
 		assert.Contains(t, result, "[0]SPADE 9")
+		// Header shows the configured score limit; no one is near out yet.
+		assert.Contains(t, result, strings.Split(i18n.T("yaniv.limitLine"), "{{")[0])
+		assert.NotContains(t, result, i18n.T("yaniv.nearOut"))
+	})
+
+	t.Run("player near the score limit is warned", func(t *testing.T) {
+		m, players := setupYanivCuiMock()
+		// Default limit is 200 → 80% = 160; a score above that flags near-out.
+		players[1].SetScore(180)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, i18n.T("yaniv.nearOut"))
 	})
 
 	t.Run("yaniv help shown when hand low", func(t *testing.T) {

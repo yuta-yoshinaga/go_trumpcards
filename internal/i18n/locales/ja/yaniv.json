@@ -20,5 +20,7 @@
   "promptYanivResult": "{{name}} が Yaniv を宣言してラウンドに勝利!",
   "promptAsafResult": "{{name}} の Yaniv はアサフ! +30点のペナルティ",
   "promptRoundEnd": "ラウンド終了",
-  "promptRoundEndHelp": "nr / nextround: 次のラウンドへ"
+  "promptRoundEndHelp": "nr / nextround: 次のラウンドへ",
+  "limitLine": "スコア上限: {{limit}}（超過で脱落）",
+  "nearOut": " ⚠脱落間近"
 }
