@@ -10,6 +10,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func makePokerCuiForPresenter() (*domain.Poker, []*domain.PokerPlayer) {
@@ -44,6 +45,17 @@ func TestPokerCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "あなた")
 		assert.Contains(t, result, "♠10")
 		assert.Contains(t, result, "♥11")
+		// The deal phase shows its name and the betting-command prompt.
+		assert.Contains(t, result, i18n.T("poker.phaseDeal"))
+		assert.Contains(t, result, i18n.T("poker.promptBet"))
+	})
+
+	t.Run("exchange phase shows exchange prompt", func(t *testing.T) {
+		p, _ := makePokerCuiForPresenter()
+		p.SetPhase(domain.PokerPhaseExchange)
+		result := pres.Output(p, nil)
+		assert.Contains(t, result, i18n.T("poker.phaseExchange"))
+		assert.Contains(t, result, i18n.T("poker.promptExchange"))
 	})
 
 	t.Run("CPU player info with play style name", func(t *testing.T) {
