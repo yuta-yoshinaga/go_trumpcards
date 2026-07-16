@@ -798,6 +798,10 @@ func (g *SoloWhist) SetContract(b SoloWhistBid) { g.contract = b }
 // GetBids 各プレイヤーの入札を取得
 func (g *SoloWhist) GetBids() [SoloWhistPlayerCnt]SoloWhistBid { return g.bids }
 
+// GetBidDone は各プレイヤーが入札済みか（true=済み）を返す。未入札とパスを
+// 区別できるよう、プレゼンター向けに公開する。
+func (g *SoloWhist) GetBidDone() [SoloWhistPlayerCnt]bool { return g.bidDone }
+
 // GetTrumpSuit 切り札スート取得 (0=なし)
 func (g *SoloWhist) GetTrumpSuit() int { return g.trumpSuit }
 

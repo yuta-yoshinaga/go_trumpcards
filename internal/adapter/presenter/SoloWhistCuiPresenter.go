@@ -114,6 +114,20 @@ func (p *SoloWhistCuiPresenter) writePrompt(b *strings.Builder, g interfaces.Sol
 		b.WriteString(i18n.Tf("solowhist.promptBid",
 			"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx),
 			"contract", soloWhistBidName(int(g.GetContract()))) + "\n")
+		// List every player's declared bid (pass included) so later bidders can see
+		// the auction; players who have not yet bid show "-".
+		bids := g.GetBids()
+		bidDone := g.GetBidDone()
+		entries := make([]string, g.GetPlayerCnt())
+		for i := 0; i < g.GetPlayerCnt(); i++ {
+			state := "-"
+			if bidDone[i] {
+				state = soloWhistBidName(int(bids[i]))
+			}
+			entries[i] = cuiPlayerName(g.GetPlayer(i), i) + "=" + state
+		}
+		b.WriteString(i18n.Tf("solowhist.bidHistory",
+			"bids", strings.Join(entries, ", ")) + "\n")
 		b.WriteString(i18n.T("solowhist.promptBidHelp") + "\n")
 	case domain.SoloWhistPhasePlay:
 		currentIdx := g.GetCurrentPlayerIdx()

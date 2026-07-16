@@ -57,6 +57,8 @@ type SoloWhistGame interface {
 	GetContract() domain.SoloWhistBid
 	// GetBids 各プレイヤーの入札を取得する
 	GetBids() [domain.SoloWhistPlayerCnt]domain.SoloWhistBid
+	// GetBidDone 各プレイヤーが入札済みかを取得する (未入札とパスの区別用)
+	GetBidDone() [domain.SoloWhistPlayerCnt]bool
 	// GetTrumpSuit 切り札スートを取得する (0=なし)
 	GetTrumpSuit() int
 	// GetPlayerScores プレイヤー別累積点を取得する
