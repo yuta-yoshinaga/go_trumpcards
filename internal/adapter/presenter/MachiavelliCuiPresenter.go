@@ -83,7 +83,14 @@ func (p *MachiavelliCuiPresenter) Output(g interfaces.MachiavelliGame, lastErr e
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
 			b.WriteString(i18n.T("machiavelli.promptDrawHelp") + "\n")
 			b.WriteString(i18n.T("machiavelli.promptNewMeldHelp") + "\n")
-			b.WriteString(i18n.T("machiavelli.promptLayoffHelp") + "\n")
+			// Spell out the layoff argument format and how many table melds it can
+			// target; when the table is empty, layoff is impossible.
+			if meldCount := len(g.GetTable()); meldCount > 0 {
+				b.WriteString(i18n.Tf("machiavelli.promptLayoffHelp",
+					"count", strconv.Itoa(meldCount)) + "\n")
+			} else {
+				b.WriteString(i18n.T("machiavelli.promptLayoffNone") + "\n")
+			}
 		case domain.MachiavelliPhaseRoundEnd:
 			b.WriteString(i18n.T("machiavelli.promptRoundEnd") + "\n")
 			b.WriteString(i18n.T("machiavelli.promptRoundEndHelp") + "\n")
