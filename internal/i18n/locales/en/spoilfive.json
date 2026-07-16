@@ -18,5 +18,7 @@
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
   "hintReasonLeadHigh": "Lead a high card to seize the trick",
   "hintReasonTakeTrick": "Play to win this trick (3 tricks takes the pot)",
-  "hintReasonDiscardLow": "Cannot win — discard a low card"
+  "hintReasonDiscardLow": "Cannot win — discard a low card",
+  "leaderMark": "▶(lead) ",
+  "winnerMark": "★(winner) "
 }
