@@ -105,6 +105,21 @@ func (p *FourCardPokerCuiPresenter) Output(g interfaces.FourCardPokerGame, lastE
 			sb.WriteString(color.Yellow(i18n.T("fourcardpoker.push")) + "\n")
 		default:
 		}
+		// Break the total down by payout bucket (matching the web breakdown);
+		// list only the non-zero buckets, as the web UI does.
+		for _, item := range []struct {
+			key    string
+			amount int
+		}{
+			{"fourcardpoker.antePayoutLine", g.GetAntePayout()},
+			{"fourcardpoker.playPayoutLine", g.GetPlayPayout()},
+			{"fourcardpoker.anteBonusPayoutLine", g.GetAnteBonusPayout()},
+			{"fourcardpoker.acesUpPayoutLine", g.GetAcesUpPayout()},
+		} {
+			if item.amount != 0 {
+				sb.WriteString(i18n.Tf(item.key, "payout", strconv.Itoa(item.amount)) + "\n")
+			}
+		}
 		sb.WriteString(i18n.Tf("fourcardpoker.totalPayoutLine", "payout", strconv.Itoa(g.GetTotalPayout())) + "\n")
 		sb.WriteString("----------\n")
 	}
