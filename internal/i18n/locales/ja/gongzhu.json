@@ -28,5 +28,6 @@
   "hintReasonExposeSheep": "♦J（羊）を公開して得点を倍に",
   "hintReasonExposeNone": "公開せず様子を見る",
   "hintReasonDiscardPig": "♠Q（豚）を捨てるチャンス",
-  "hintReasonDiscardHearts": "ハートを捨てる"
+  "hintReasonDiscardHearts": "ハートを捨てる",
+  "capturedLine": "  獲得: {{cards}}"
 }

@@ -28,5 +28,6 @@
   "hintReasonExposeSheep": "Expose the ♦J (sheep) to double its value",
   "hintReasonExposeNone": "Hold back and don't expose",
   "hintReasonDiscardPig": "A chance to dump the ♠Q (pig)",
-  "hintReasonDiscardHearts": "Discard hearts"
+  "hintReasonDiscardHearts": "Discard hearts",
+  "capturedLine": "  Taken: {{cards}}"
 }

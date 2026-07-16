@@ -1,6 +1,7 @@
 package presenter_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -50,6 +51,21 @@ func TestGongZhuCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "Gong Zhu")
 		assert.NotEmpty(t, result)
+	})
+
+	t.Run("captured point cards are listed per player", func(t *testing.T) {
+		m, players := setupGongZhuCuiMockWithPlayers()
+		// CPU 1 took a trick containing the pig (♠Q), a heart, and a plain card.
+		players[1].AddTrick([]*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 12, false),  // pig -> shown
+			domain.NewCard(domain.CardDesignHeart, 5, false),   // heart -> shown
+			domain.NewCard(domain.CardDesignClover, 3, false),  // plain -> not shown
+			domain.NewCard(domain.CardDesignDiamond, 8, false), // plain -> not shown
+		})
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "獲得: SPADE 12 HEART 5")
+		// Only the one capturing player gets a line; the others took nothing.
+		assert.Equal(t, 1, strings.Count(result, "獲得:"))
 	})
 
 	t.Run("expose phase prompt", func(t *testing.T) {
