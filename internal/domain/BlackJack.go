@@ -671,6 +671,11 @@ func (b *BlackJack) SetMultiHandCount(count int) {
 	b.multiHandCount = count
 }
 
+// SetBonusKeys 成立したバリアントボーナスのi18nキー一覧を設定（テスト用）
+func (b *BlackJack) SetBonusKeys(keys []string) {
+	b.bonusKeys = keys
+}
+
 // GetPerfectPairsBet Perfect Pairsベット額取得
 func (b *BlackJack) GetPerfectPairsBet() int {
 	return b.perfectPairsBet
