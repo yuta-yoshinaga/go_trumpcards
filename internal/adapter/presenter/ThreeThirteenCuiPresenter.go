@@ -14,13 +14,20 @@ import (
 
 // threeThirteenPlayerStr returns the display string for a single Three Thirteen player.
 func threeThirteenPlayerStr(g interfaces.ThreeThirteenGame, player *domain.ThreeThirteenPlayer, i int) string {
+	// A CPU's deadwood is hidden information (its hand isn't public); reveal it
+	// only for the human, or once all hands are shown at round/game end.
+	revealed := g.GetPhase() == domain.ThreeThirteenPhaseRoundEnd || g.GetGameEndFlag()
+	deadwoodStr := "?"
+	if player.GetIsHuman() || revealed {
+		deadwoodStr = strconv.Itoa(g.GetPlayerDeadwoodValue(i))
+	}
 	var b strings.Builder
 	b.WriteString(i18n.Tf("threethirteen.playerLine",
 		"name", cuiPlayerName(player, i),
 		"cum", strconv.Itoa(player.GetCumulativeScore()),
 		"round", strconv.Itoa(player.GetRoundScore()),
 		"cards", strconv.Itoa(player.GetCardsSize()),
-		"deadwood", strconv.Itoa(g.GetPlayerDeadwoodValue(i))) + "\n")
+		"deadwood", deadwoodStr) + "\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player) + "\n")
 	}
