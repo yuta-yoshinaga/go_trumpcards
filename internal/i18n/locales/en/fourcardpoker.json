@@ -20,5 +20,9 @@
   "dealerWins": "Dealer wins!",
   "playerFolded": "Player folded.",
   "push": "Push!",
-  "totalPayoutLine": "total payout: {{payout}}"
+  "totalPayoutLine": "total payout: {{payout}}",
+  "antePayoutLine": "Ante payout: {{payout}}",
+  "playPayoutLine": "Play payout: {{payout}}",
+  "anteBonusPayoutLine": "Ante bonus: {{payout}}",
+  "acesUpPayoutLine": "Aces Up: {{payout}}"
 }
