@@ -39,5 +39,6 @@
   "hintCallSuit": "[HINT: call {{suit}} ({{reason}})]",
   "hintCallSuitAlone": "[HINT: call {{suit}} (go alone) ({{reason}})]",
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
-  "hintReasonDiscardWeakest": "discard the weakest card"
+  "hintReasonDiscardWeakest": "discard the weakest card",
+  "sittingOut": " 💤(sitting out)"
 }

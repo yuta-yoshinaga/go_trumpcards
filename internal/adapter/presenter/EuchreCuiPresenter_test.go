@@ -2,6 +2,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,6 +11,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // setupEuchreCuiMock creates a MockEuchreGame with sensible defaults for CUI tests.
@@ -115,6 +117,15 @@ func TestEuchreCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "ゴーアローン: あなた")
+		// Player 0's same-team partner (seat 2) sits out → marker shown exactly once.
+		assert.Contains(t, result, i18n.T("euchre.sittingOut"))
+		assert.Equal(t, 1, strings.Count(result, i18n.T("euchre.sittingOut")))
+	})
+
+	t.Run("no sitting-out marker in a normal hand", func(t *testing.T) {
+		m, _ := setupEuchreCuiMockWithPlayers()
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, i18n.T("euchre.sittingOut"))
 	})
 
 	t.Run("team scores shown", func(t *testing.T) {
