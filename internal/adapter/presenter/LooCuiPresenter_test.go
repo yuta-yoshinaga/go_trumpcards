@@ -2,12 +2,15 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestLooCuiPresenter_Output_DecidePhase(t *testing.T) {
@@ -41,6 +44,28 @@ func TestLooCuiPresenter_Output_AllPhases(t *testing.T) {
 
 	// エラー出力。
 	assert.NotEmpty(t, p.Output(g, errors.New("boom")))
+}
+
+func TestLooCuiPresenter_Output_RoundEndShowsLooed(t *testing.T) {
+	g := domain.NewDefaultLoo()
+	g.Reset()
+	// Two players in; player 1 takes zero tricks and is looed.
+	g.GetPlayer(0).SetPlaying(true)
+	g.GetPlayer(1).SetPlaying(true)
+	g.GetPlayer(2).SetPlaying(false)
+	g.GetPlayer(3).SetPlaying(false)
+	g.SetRoundTricks([domain.LooPlayerCnt]int{domain.LooTrickCount, 0, 0, 0})
+	g.SetPhase(domain.LooPhaseRoundEnd)
+	g.ScoreRound()
+	require.NotNil(t, g.GetLastDealDetail())
+	require.Contains(t, g.GetLastDealDetail().Looed, 1)
+
+	p := new(presenter.LooCuiPresenter)
+	out := p.Output(g, nil)
+	looedPrefix := strings.SplitN(i18n.T("loo.looedList"), "{{", 2)[0]
+	assert.Contains(t, out, looedPrefix)
+	// Player 0 swept the pot, so their chip delta is shown with a + sign.
+	assert.Contains(t, out, "+")
 }
 
 func TestLooCuiPresenter_HintOutput(t *testing.T) {
