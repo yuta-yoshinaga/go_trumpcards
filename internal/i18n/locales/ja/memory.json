@@ -11,5 +11,7 @@
   "resultMatch": "ペアが揃いました！",
   "resultMismatch": "残念、不一致です。",
   "promptNextHelp": "n・・・次へ",
-  "gameEnd": "ゲーム終了！ {{name}}の勝利です！"
+  "gameEnd": "ゲーム終了！ {{name}}の勝利です！",
+  "progressLine": "残り {{remaining}} ペア / 全 {{total}} ペア",
+  "visitedCountLegend": "既出セル数: {{count}}"
 }

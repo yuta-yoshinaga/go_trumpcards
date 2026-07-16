@@ -11,5 +11,7 @@
   "resultMatch": "match!",
   "resultMismatch": "no match.",
   "promptNextHelp": "n: next",
-  "gameEnd": "Game over! {{name}} wins!"
+  "gameEnd": "Game over! {{name}} wins!",
+  "progressLine": "Remaining: {{remaining}} / {{total}} pairs",
+  "visitedCountLegend": "Seen cells: {{count}}"
 }
