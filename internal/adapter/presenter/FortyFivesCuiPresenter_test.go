@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,6 +13,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func makeFortyFivesPlayers() []*domain.FortyFivesPlayer {
@@ -35,6 +37,7 @@ func setupFortyFivesCuiMock() *interfaces.MockFortyFivesGame {
 	m.On("GetDeclarerIdx").Return(0)
 	m.On("GetContract").Return(domain.FortyFivesBidTwenty)
 	m.On("GetBids").Return([domain.FortyFivesPlayerCnt]domain.FortyFivesBid{domain.FortyFivesBidTwenty, domain.FortyFivesBidPass, domain.FortyFivesBidPass, domain.FortyFivesBidPass})
+	m.On("GetBidDone").Return([domain.FortyFivesPlayerCnt]bool{true, true, false, false})
 	m.On("GetWinnerTeam").Return(-1)
 	m.On("GetTeamScores").Return([domain.FortyFivesTeamCnt]int{0, 0})
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
@@ -75,6 +78,9 @@ func TestFortyFivesCuiPresenter_Output(t *testing.T) {
 		m.On("GetTrumpSuit").Return(0)
 		result := p.Output(m, nil)
 		assert.NotEmpty(t, result)
+		// The bid-history line lists every player: seat 0 bid, seat 2 has not (shown "-").
+		assert.Contains(t, result, strings.Split(i18n.T("fortyfives.bidHistory"), "{{")[0])
+		assert.Contains(t, result, "=-") // an un-bid player renders as "-"
 	})
 
 	t.Run("trick end prompt", func(t *testing.T) {
