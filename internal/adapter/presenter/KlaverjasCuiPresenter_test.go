@@ -12,6 +12,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func makeKlaverjasPlayers() []*domain.KlaverjasPlayer {
@@ -73,12 +74,18 @@ func TestKlaverjasCuiPresenter_Output(t *testing.T) {
 		assert.NotEmpty(t, result)
 	})
 
-	t.Run("round end prompt", func(t *testing.T) {
+	t.Run("round end shows roem breakdown and total", func(t *testing.T) {
 		m, _ := setupKlaverjasCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundCardPoints")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundRoem")
 		m.On("GetPhase").Return(domain.KlaverjasPhaseRoundEnd)
+		m.On("GetRoundCardPoints").Return([domain.KlaverjasTeamCnt]int{62, 40})
+		m.On("GetRoundRoem").Return([domain.KlaverjasTeamCnt]int{20, 0})
 		result := p.Output(m, nil)
-		assert.NotEmpty(t, result)
+		// Team A: 62 card points + 20 Roem = 82 total.
+		assert.Contains(t, result, i18n.Tf("klaverjas.promptRoundEndRoem",
+			"roemA", "20", "roemB", "0", "totalA", "82", "totalB", "40"))
 	})
 
 	t.Run("game end banner", func(t *testing.T) {
