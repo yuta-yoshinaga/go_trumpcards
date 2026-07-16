@@ -224,6 +224,32 @@ func (p *SevenCardStudPlayer) EvalBestHandRazz() int {
 	return p.handRank
 }
 
+// SevenCardStudRazzBestLow returns the strongest 5-card Razz low from cards and
+// whether it is complete. With fewer than 5 cards the low cannot be made yet, so
+// the cards are returned sorted ascending (Ace low) for a progress display and
+// complete is false. This is a pure, non-mutating read used by the CUI. It lives
+// here (not hand_eval.go) because it depends on combinations, which only ships in
+// the casino worker build.
+func SevenCardStudRazzBestLow(cards []*Card) (best []*Card, complete bool) {
+	if len(cards) < 5 {
+		sorted := make([]*Card, len(cards))
+		copy(sorted, cards)
+		sort.Slice(sorted, func(i, j int) bool {
+			return sorted[i].GetValue() < sorted[j].GetValue()
+		})
+		return sorted, false
+	}
+	bestRank := -1
+	for _, combo := range combinations(cards, 5) {
+		rank := evalRazzHand(combo)
+		if bestRank == -1 || rank < bestRank || (rank == bestRank && compareRazzCards(combo, best) < 0) {
+			bestRank = rank
+			best = append([]*Card(nil), combo...)
+		}
+	}
+	return best, true
+}
+
 // EvalVisibleHand 表向き札のみからハンドを評価 (ベッティング順序決定用)
 // 5枚未満の場合はハイカード比較用にソートした値を返す
 func (p *SevenCardStudPlayer) EvalVisibleHand() int {
