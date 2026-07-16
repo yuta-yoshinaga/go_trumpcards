@@ -7,9 +7,13 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupAcesUpCuiMockDefaults(g *interfaces.MockAcesUpGame) {
@@ -19,6 +23,8 @@ func setupAcesUpCuiMockDefaults(g *interfaces.MockAcesUpGame) {
 	g.On("GetDiscardCount").Return(4).Maybe()
 	g.On("IsStalemate").Return(false).Maybe()
 	g.On("GetColumns").Return(sampleAcesUpColumns()).Maybe()
+	g.On("CanRemove", mock.AnythingOfType("int")).Return(false).Maybe()
+	g.On("CanMove", mock.AnythingOfType("int")).Return(false).Maybe()
 }
 
 func TestAcesUpCuiPresenterOutput_Playing(t *testing.T) {
@@ -32,6 +38,35 @@ func TestAcesUpCuiPresenterOutput_Playing(t *testing.T) {
 	assert.Contains(t, result, "Discard: 4枚")
 	assert.Contains(t, result, "手数: 0")
 	assert.Contains(t, result, "[空]") // col2 is empty
+}
+
+func TestAcesUpCuiPresenterOutput_TopCardMarkers(t *testing.T) {
+	g := new(interfaces.MockAcesUpGame)
+	g.On("GetPhase").Return(domain.AcesUpPhasePlaying).Maybe()
+	g.On("GetMoveCount").Return(0).Maybe()
+	g.On("GetStockCount").Return(44).Maybe()
+	g.On("GetDiscardCount").Return(4).Maybe()
+	g.On("IsStalemate").Return(false).Maybe()
+	g.On("GetColumns").Return(sampleAcesUpColumns()).Maybe()
+	// Column 0 top card is removable; column 1 top card is movable.
+	g.On("CanRemove", 0).Return(true)
+	g.On("CanMove", 0).Return(false)
+	g.On("CanRemove", 1).Return(false)
+	g.On("CanMove", 1).Return(true)
+	g.On("CanRemove", mock.AnythingOfType("int")).Return(false).Maybe()
+	g.On("CanMove", mock.AnythingOfType("int")).Return(false).Maybe()
+
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	p := &AcesUpCuiPresenter{}
+	result := p.Output(g, nil)
+	// The markers attach to the top-card bracket ("]*" / "]>"), distinguishing
+	// them from the "* =" / "> =" glyphs in the always-present legend line.
+	assert.Contains(t, result, "]*") // removable marker on col 0's top card
+	assert.Contains(t, result, "]>") // movable marker on col 1's top card
+	assert.Contains(t, result, i18n.T("acesup.markerLegend"))
 }
 
 func TestAcesUpCuiPresenterOutput_Error(t *testing.T) {

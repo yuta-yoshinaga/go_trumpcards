@@ -13,5 +13,6 @@
   "hintRemove": "ヒント: カード除去: 列{{col}}",
   "hintMove": "ヒント: 列{{col}}を空き列へ移動",
   "hintDraw": "ヒント: 各列にカードを配ってください",
-  "hintUnknown": "ヒント: 不明"
+  "hintUnknown": "ヒント: 不明",
+  "markerLegend": "マーカー: * = 捨て可能 / > = 空き列へ移動可能"
 }

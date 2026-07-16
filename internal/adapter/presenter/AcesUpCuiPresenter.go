@@ -31,6 +31,15 @@ func (pr *AcesUpCuiPresenter) Output(g interfaces.AcesUpGame, lastErr error) str
 					}
 					if i == len(col)-1 {
 						b.WriteString(i18n.Tf("acesup.topCard", "card", cuiCardStr(card)))
+						// Mirror the web UI's enabled/draggable state: mark a top card
+						// removable (*) when a higher same-suit card sits elsewhere, and
+						// movable (>) only when an empty column exists to receive it.
+						if g.CanRemove(c) {
+							b.WriteString(color.Green("*"))
+						}
+						if g.CanMove(c) {
+							b.WriteString(color.Yellow(">"))
+						}
 					} else {
 						b.WriteString(cuiCardStr(card))
 					}
@@ -43,6 +52,7 @@ func (pr *AcesUpCuiPresenter) Output(g interfaces.AcesUpGame, lastErr error) str
 		b.WriteString(i18n.Tf("acesup.stockLine", "count", strconv.Itoa(g.GetStockCount())))
 		b.WriteString(i18n.Tf("acesup.discardLine", "count", strconv.Itoa(g.GetDiscardCount())))
 		b.WriteString("\n")
+		b.WriteString(i18n.T("acesup.markerLegend") + "\n")
 		b.WriteString("----------\n")
 
 		cuiErrorBlock(b, lastErr)
