@@ -10,5 +10,7 @@
   "gameEnd": "ゲーム終了！ {{name}}の勝利です！",
   "promptCurrentPlayer": "手番: {{name}}",
   "promptPlayHelp": "play <idx>・・・スートかランクが一致するカードを出す",
-  "promptDrawHelp": "draw・・・出せなければ山札から引く (7ペナルティ中はまとめて引く)"
+  "promptDrawHelp": "draw・・・出せなければ山札から引く (7ペナルティ中はまとめて引く)",
+  "legalPlays": "出せる札: {{cards}}",
+  "noLegalPlay": "出せる札がありません → draw で引いてください"
 }

@@ -10,5 +10,7 @@
   "gameEnd": "Game over! {{name}} wins!",
   "promptCurrentPlayer": "{{name}} to play",
   "promptPlayHelp": "play <idx>: play a card matching suit or rank",
-  "promptDrawHelp": "draw: draw when stuck (takes the whole 7-penalty stack)"
+  "promptDrawHelp": "draw: draw when stuck (takes the whole 7-penalty stack)",
+  "legalPlays": "Playable: {{cards}}",
+  "noLegalPlay": "No playable card → use draw to take a card"
 }

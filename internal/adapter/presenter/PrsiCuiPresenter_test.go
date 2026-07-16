@@ -2,6 +2,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,7 +11,14 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
+
+// prsiLegalPrefix returns the "playable cards" line text up to the placeholder,
+// so assertions match regardless of the substituted card list.
+func prsiLegalPrefix() string {
+	return strings.Split(i18n.T("prsi.legalPlays"), "{{")[0]
+}
 
 func setupPrsiCuiMock() *interfaces.MockPrsiGame {
 	m := new(interfaces.MockPrsiGame)
@@ -63,6 +71,52 @@ func TestPrsiCuiPresenter_Output(t *testing.T) {
 
 		out := p.Output(m, nil)
 		assert.Contains(t, out, "4") // penalty count appears
+	})
+
+	t.Run("legal cards listed for the human", func(t *testing.T) {
+		m, players := setupPrsiCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardTop")
+		m.On("GetDiscardTop").Return(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 13, false)) // suit match → legal
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))  // rank match → legal
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 8, false)) // neither → illegal
+
+		out := p.Output(m, nil)
+		assert.Contains(t, out, prsiLegalPrefix())
+		assert.Contains(t, out, "[0]")
+		assert.Contains(t, out, "[1]")
+	})
+
+	t.Run("penalty allows only sevens", func(t *testing.T) {
+		m, players := setupPrsiCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardTop")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPenaltyDrawCount")
+		m.On("GetDiscardTop").Return(domain.NewCard(domain.CardDesignHeart, 7, false))
+		m.On("GetPenaltyDrawCount").Return(2)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))  // seven → legal under penalty
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 13, false)) // non-seven → illegal
+
+		out := p.Output(m, nil)
+		lines := strings.Split(out, "\n")
+		var legalLine string
+		for _, l := range lines {
+			if strings.Contains(l, prsiLegalPrefix()) {
+				legalLine = l
+			}
+		}
+		// Only the seven ([0]) is legal; the king ([1]) is excluded from the line.
+		assert.Contains(t, legalLine, "[0]")
+		assert.NotContains(t, legalLine, "[1]")
+	})
+
+	t.Run("no legal card shows draw guidance", func(t *testing.T) {
+		m, players := setupPrsiCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardTop")
+		m.On("GetDiscardTop").Return(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 8, false)) // neither suit nor rank
+
+		out := p.Output(m, nil)
+		assert.Contains(t, out, i18n.T("prsi.noLegalPlay"))
 	})
 
 	t.Run("error block rendered", func(t *testing.T) {
