@@ -34,6 +34,7 @@ var sevenCardStudNoArgCommands = cuiutil.NewCommandMap[usecase.SevenCardStudInte
 	Add(usecase.SevenCardStudInteractorIF.SkipAddon, "sa", "skipaddon").
 	Add(usecase.SevenCardStudInteractorIF.Muck, "m", "muck").
 	Add(usecase.SevenCardStudInteractorIF.ShowHand, "sh", "show").
+	Add(usecase.SevenCardStudInteractorIF.Hint, "h", "hint").
 	Add(usecase.SevenCardStudInteractorIF.ActionLog, "log", "l")
 
 // sevenCardStudArgfulCommands lists alias names for argful commands handled in

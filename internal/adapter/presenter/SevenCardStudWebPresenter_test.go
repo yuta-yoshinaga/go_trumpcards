@@ -472,3 +472,11 @@ func TestSevenCardStudWebPresenter_ActionLogOutput(t *testing.T) {
 		mockGame.AssertExpectations(t)
 	})
 }
+
+func TestSevenCardStudWebPresenter_HintOutput(t *testing.T) {
+	s, _ := makeSevenCardStudForPresenter()
+	s.SetPhase(domain.SevenCardStudPhaseThirdStreet)
+	p := new(presenter.SevenCardStudWebPresenter)
+	// The web presenter computes hints client-side, so HintOutput mirrors Output.
+	assert.Equal(t, p.Output(s, nil), p.HintOutput(s))
+}
