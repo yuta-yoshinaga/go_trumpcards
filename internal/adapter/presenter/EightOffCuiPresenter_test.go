@@ -25,6 +25,29 @@ func TestEightOffCuiPresenterOutputPlaying(t *testing.T) {
 	assert.Contains(t, result, "手数:")
 }
 
+func TestEightOffCuiPresenterSupermoveLine(t *testing.T) {
+	p := new(EightOffCuiPresenter)
+	e := domain.NewEightOff(domain.NewTrumpCards(0))
+	e.Reset()
+	e.SetPhase(domain.EightOffPhasePlaying)
+
+	// 6 free cells filled (2 empty) and 7 columns occupied (1 empty) →
+	// (1 + 2) * 2^1 = 6 cards movable at once.
+	var cells [domain.EightOffCellCnt]*domain.Card
+	for i := 0; i < 6; i++ {
+		cells[i] = domain.NewCard(domain.CardDesignSpade, i+1, false)
+	}
+	e.SetFreeCells(cells)
+	var tableau [domain.EightOffTableauCnt][]*domain.Card
+	for col := 0; col < 7; col++ {
+		tableau[col] = []*domain.Card{domain.NewCard(domain.CardDesignHeart, col+1, false)}
+	}
+	e.SetTableau(tableau)
+
+	result := p.Output(e, nil)
+	assert.Contains(t, result, "一度に移動可能: 6枚")
+}
+
 func TestEightOffCuiPresenterOutputGameClear(t *testing.T) {
 	p := new(EightOffCuiPresenter)
 	e := domain.NewEightOff(domain.NewTrumpCards(0))

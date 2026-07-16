@@ -19,5 +19,6 @@
   "hintToFoundation": "foundation",
   "hintToTableau": "tableau column {{col}}",
   "hintToFreeCell": "free cell {{col}}",
-  "hintLine": "Hint: {{from}} → {{to}}"
+  "hintLine": "Hint: {{from}} → {{to}}",
+  "supermoveLine": "Max cards per move: {{limit}} (free cells {{cells}}, empty columns {{cols}})"
 }
