@@ -70,8 +70,24 @@ func (p *CariocaCuiPresenter) Output(g interfaces.CariocaGame, lastErr error) st
 			"total", strconv.Itoa(domain.CariocaTotalRounds),
 			"stock", strconv.Itoa(g.GetDrawPileCount())) + "\n")
 
+		contract := g.GetCurrentContract()
 		b.WriteString(i18n.Tf("carioca.contractLine",
-			"contract", cariocaContractDescription(g.GetCurrentContract())) + "\n")
+			"contract", cariocaContractDescription(contract)) + "\n")
+		// Expand each slot's detailed requirement (a set is same-rank, a run is a
+		// same-suit sequence) with its index, plus the meld slot-index syntax, so
+		// the human knows exactly what each slot needs and how to target it.
+		for i, slot := range contract.Slots {
+			detail := i18n.Tf("carioca.slotDetailRun", "n", strconv.Itoa(slot.Size))
+			if slot.Kind == domain.ContractSlotSet {
+				detail = i18n.Tf("carioca.slotDetailSet", "n", strconv.Itoa(slot.Size))
+			}
+			b.WriteString(i18n.Tf("carioca.slotLine",
+				"idx", strconv.Itoa(i),
+				"detail", detail) + "\n")
+		}
+		if len(contract.Slots) > 0 {
+			b.WriteString(i18n.T("carioca.meldSyntaxHint") + "\n")
+		}
 
 		if top := g.GetDiscardTop(); top != nil {
 			b.WriteString(i18n.Tf("carioca.discardLine", "card", cuiCardStr(top)) + "\n")

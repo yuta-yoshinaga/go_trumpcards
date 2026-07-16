@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,6 +12,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupCariocaCuiMock(phase domain.CariocaPhase, gameEnd bool) (*interfaces.MockCariocaGame, []*domain.CariocaPlayer) {
@@ -53,6 +55,9 @@ func TestCariocaCuiPresenter_Output(t *testing.T) {
 		assert.NotEmpty(t, out)
 		assert.Contains(t, out, "カリオカ")
 		assert.Contains(t, out, "ラウンド")
+		// Each contract slot is expanded with its index and the meld syntax hint.
+		assert.Contains(t, out, strings.Split(i18n.T("carioca.slotLine"), "{{")[0])
+		assert.Contains(t, out, i18n.T("carioca.meldSyntaxHint"))
 	})
 
 	t.Run("play phase", func(t *testing.T) {
