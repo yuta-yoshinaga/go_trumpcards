@@ -538,3 +538,13 @@ func TestPageOne_UnmarshalJSON_Invalid(t *testing.T) {
 	var jsonErr *json.SyntaxError
 	assert.True(t, errors.As(err, &jsonErr) || err != nil)
 }
+
+func TestPageOne_IsValidPlay(t *testing.T) {
+	g := newTestPageOne()
+	g.Reset()
+	setupPageOnePlayPhase(g, 0, domain.NewCard(domain.CardDesignSpade, 5, false))
+
+	assert.True(t, g.IsValidPlay(domain.NewCard(domain.CardDesignSpade, 3, false)), "same suit is playable")
+	assert.True(t, g.IsValidPlay(domain.NewCard(domain.CardDesignHeart, 5, false)), "same rank is playable")
+	assert.False(t, g.IsValidPlay(domain.NewCard(domain.CardDesignHeart, 7, false)), "different suit and rank is not playable")
+}

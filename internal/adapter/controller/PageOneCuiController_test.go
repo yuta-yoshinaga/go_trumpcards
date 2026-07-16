@@ -26,8 +26,17 @@ func TestPageOneCuiController_Exec(t *testing.T) {
 		m.On("SkipDeclare").Return(mockOutput)
 		m.On("NextRound").Return(mockOutput)
 		m.On("ActionLog").Return(mockOutput)
+		m.On("Hint").Return(mockOutput)
 		return m
 	}
+
+	t.Run("hint h", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewPageOneCuiController(m)
+		assert.Equal(t, mockOutput, c.Exec("h"))
+		assert.Equal(t, mockOutput, c.Exec("hint"))
+		m.AssertCalled(t, "Hint")
+	})
 
 	t.Run("quit q", func(t *testing.T) {
 		c := controller.NewPageOneCuiController(newMock())

@@ -98,3 +98,10 @@ func TestPageOneWebPresenter_ActionLogOutput(t *testing.T) {
 	result := p.ActionLogOutput(m)
 	assert.NotEmpty(t, result)
 }
+
+func TestPageOneWebPresenter_HintOutput(t *testing.T) {
+	m := setupPageOneWebMock()
+	p := new(presenter.PageOneWebPresenter)
+	// The web presenter computes hints client-side, so HintOutput mirrors Output.
+	assert.Equal(t, p.Output(m, nil), p.HintOutput(m))
+}

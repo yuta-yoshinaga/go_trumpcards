@@ -28,6 +28,8 @@ type PageOneInteractorIF interface {
 	GetConfig() domain.PageOneConfig
 	// ActionLog 棋譜を出力する
 	ActionLog() string
+	// Hint ヒントを出力する
+	Hint() string
 }
 
 // PageOneInteractor ページワンインタラクタークラス
@@ -125,6 +127,11 @@ func (ci *PageOneInteractor) GetConfig() domain.PageOneConfig {
 // ActionLog 棋譜を出力する
 func (ci *PageOneInteractor) ActionLog() string {
 	return ci.gp.ActionLogOutput(ci.Game)
+}
+
+// Hint ヒントを出力する
+func (ci *PageOneInteractor) Hint() string {
+	return ci.gp.HintOutput(ci.Game)
 }
 
 // runCpuTurns ゲームが終わるか人間の手番またはラウンド/ゲーム終了になるまでCPUターンを実行

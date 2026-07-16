@@ -81,3 +81,9 @@ func (p *PageOneWebPresenter) buildMessage(g interfaces.PageOneGame, lastErr err
 func (p *PageOneWebPresenter) ActionLogOutput(g interfaces.PageOneGame) string {
 	return actionLogOutputJSON(g)
 }
+
+// HintOutput はヒントを返す。Web ではクライアント側でヒントを算出するため、
+// 状態出力にフォールバックする (CUI プレゼンターのみが専用ヒントを返す)。
+func (p *PageOneWebPresenter) HintOutput(g interfaces.PageOneGame) string {
+	return p.Output(g, nil)
+}
