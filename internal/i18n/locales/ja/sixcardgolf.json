@@ -21,5 +21,11 @@
   "promptFlip": "伏せ札をめくれます (fl <pos>) またはスキップ (sf)",
   "promptNextRound": "ラウンド終了 (nr で次のラウンドへ)",
   "playerLine": "{{name}} (累計={{cum}}, R={{round}}){{marker}}",
-  "scoreLine": "  Score: {{score}}"
+  "scoreLine": "  Score: {{score}}",
+  "hintNone": "現在ヒントはありません。",
+  "hintDrawDiscard": "推奨: 捨て札 {{card}} を引く（dd）— 低いカードです",
+  "hintDrawStock": "推奨: 山札から引く（ds）",
+  "hintSwap": "推奨: 引いたカードを位置 {{pos}} と交換（sw {{pos}}）",
+  "hintSwapPair": "推奨: 位置 {{pos}} と交換（sw {{pos}}）— 列ペアが成立します",
+  "hintDiscard": "推奨: 引いたカードを捨てる（di）"
 }

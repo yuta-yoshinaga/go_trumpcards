@@ -29,7 +29,7 @@ func (c *SixCardGolfCuiController) Exec(command string) string {
 			"sw", "swap", "di", "discard", "fl", "flip", "sf", "skipflip",
 			"nr", "nextround",
 			"sd", "setdifficulty", "sp", "setplayers", "sr", "setrounds",
-			"log", "l",
+			"h", "hint", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -68,7 +68,7 @@ func (c *SixCardGolfCuiController) Exec(command string) string {
 					return c.ci.ResetWithConfig(cfg)
 				})
 			default:
-				return handleCuiLog(cmd, c.ci.ActionLog)
+				return handleCuiHintAndLog(cmd, c.ci.Hint, c.ci.ActionLog)
 			}
 		},
 	)

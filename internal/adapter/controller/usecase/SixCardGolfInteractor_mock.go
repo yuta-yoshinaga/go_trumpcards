@@ -61,6 +61,11 @@ func (_m *MockSixCardGolfInteractor) ActionLog() string {
 	return _m.Called().String(0)
 }
 
+// Hint モック
+func (_m *MockSixCardGolfInteractor) Hint() string {
+	return _m.Called().String(0)
+}
+
 // Snapshot モック
 func (_m *MockSixCardGolfInteractor) Snapshot() ([]byte, error) {
 	ret := _m.Called()

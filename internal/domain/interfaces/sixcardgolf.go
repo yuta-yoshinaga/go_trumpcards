@@ -60,4 +60,8 @@ type SixCardGolfGame interface {
 	GetCanFlip() bool
 	// GetFinalTurnTrigger 最終ターントリガーのプレイヤーインデックス
 	GetFinalTurnTrigger() int
+	// ShouldDrawFromDiscard 捨て札トップを引くべきか
+	ShouldDrawFromDiscard() bool
+	// RecommendedSwap 引いたカードの推奨交換位置 (-1=捨て) と列ペア成立可否
+	RecommendedSwap() (pos int, formsPair bool)
 }
