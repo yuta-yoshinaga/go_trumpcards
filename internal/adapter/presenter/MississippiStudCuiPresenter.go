@@ -58,6 +58,13 @@ func (mp *MississippiStudCuiPresenter) Output(g interfaces.MississippiStudGame, 
 			))
 		}
 
+		// During the streets, show the accumulated bet and what a fold forfeits;
+		// the game-end block prints totalBet separately, so guard against dupes.
+		if !g.GetGameEndFlag() && g.GetTotalBet() > 0 {
+			fmt.Fprintf(b, "%s\n", i18n.Tf("mississippistud.totalBetLine", "bet", strconv.Itoa(g.GetTotalBet())))
+			fmt.Fprintf(b, "%s\n", i18n.Tf("mississippistud.foldLossLine", "loss", strconv.Itoa(g.GetTotalBet())))
+		}
+
 		cuiErrorBlock(b, lastErr)
 
 		if g.GetGameEndFlag() {

@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -39,6 +40,8 @@ func TestMississippiStudCuiPresenter_Output_AntePhase(t *testing.T) {
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "1000")
 	assert.Contains(t, result, "ANTE")
+	// No bet placed yet → no fold-loss note.
+	assert.NotContains(t, result, strings.Split(i18n.T("mississippistud.foldLossLine"), "{{")[0])
 }
 
 func TestMississippiStudCuiPresenter_Output_Error(t *testing.T) {
@@ -83,6 +86,8 @@ func TestMississippiStudCuiPresenter_Output_ThirdSt(t *testing.T) {
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "3RD")
 	assert.Contains(t, result, "??") // community masked
+	// During the street, the accumulated bet and fold-loss note are shown.
+	assert.Contains(t, result, strings.Split(i18n.T("mississippistud.foldLossLine"), "{{")[0])
 }
 
 func TestMississippiStudCuiPresenter_Output_Win(t *testing.T) {
