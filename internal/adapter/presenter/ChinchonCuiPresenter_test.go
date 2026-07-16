@@ -4,14 +4,17 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func makeChinchonPlayers() []*domain.ChinchonPlayer {
@@ -37,6 +40,8 @@ func setupChinchonCuiMock(phase domain.ChinchonPhase, ended bool, winner int) (*
 	m.On("GetPlayerCnt").Return(2)
 	m.On("GetPlayer", 0).Return(players[0])
 	m.On("GetPlayer", 1).Return(players[1])
+	m.On("GetPlayerDeadwoodValue", mock.Anything).Return(15)
+	m.On("GetKnockThreshold").Return(5)
 	return m, players
 }
 
@@ -53,6 +58,22 @@ func TestChinchonCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "Chinchón (チンチョン)")
 		assert.Contains(t, result, "ラウンド: 1")
+		// Human deadwood (default 15) is shown but above the threshold → no knock note.
+		assert.Contains(t, result, strings.Split(i18n.T("chinchon.deadwoodLine"), "{{")[0])
+		assert.NotContains(t, result, i18n.T("chinchon.knockReady"))
+	})
+
+	t.Run("human deadwood at threshold shows knock-ready, cpu hidden", func(t *testing.T) {
+		m, players := setupChinchonCuiMock(domain.ChinchonPhaseDiscard, false, -1)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPlayerDeadwoodValue")
+		m.On("GetPlayerDeadwoodValue", 0).Return(3) // human, at/under threshold 5
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false)) // CPU also holds cards
+		result := p.Output(m, nil)
+		assert.Contains(t, result, i18n.T("chinchon.knockReady"))
+		// Only the human's deadwood line appears; the CPU's stays hidden.
+		prefix := strings.Split(i18n.T("chinchon.deadwoodLine"), "{{")[0]
+		assert.Equal(t, 1, strings.Count(result, prefix))
 	})
 
 	t.Run("discard phase prompt", func(t *testing.T) {

@@ -234,6 +234,26 @@ func TestChinchon_KnockZeroDeadwood(t *testing.T) {
 	assert.Equal(t, 0, domain.CalcDeadwoodValue(g.GetKnockerDeadwood()))
 }
 
+func TestChinchon_GetPlayerDeadwoodValue(t *testing.T) {
+	g := newTestChinchon(2)
+	g.Reset()
+	chClearState(g)
+	// A full 7-card heart run melds completely → deadwood 0.
+	chSetHand(g.GetPlayer(0),
+		chCard(domain.CardDesignHeart, 1),
+		chCard(domain.CardDesignHeart, 2),
+		chCard(domain.CardDesignHeart, 3),
+		chCard(domain.CardDesignHeart, 4),
+		chCard(domain.CardDesignHeart, 5),
+		chCard(domain.CardDesignHeart, 6),
+		chCard(domain.CardDesignHeart, 7),
+	)
+	assert.Equal(t, 0, g.GetPlayerDeadwoodValue(0))
+	assert.Equal(t, g.GetConfig().KnockThreshold, g.GetKnockThreshold())
+	// Out-of-range index returns 0 rather than panicking.
+	assert.Equal(t, 0, g.GetPlayerDeadwoodValue(99))
+}
+
 func TestChinchon_DrawFromStock(t *testing.T) {
 	g := newTestChinchon(2)
 	g.Reset()

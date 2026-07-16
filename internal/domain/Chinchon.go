@@ -743,6 +743,19 @@ func (g *Chinchon) IsHumanTurn() bool {
 	return g.players[g.currentPlayerIdx].GetIsHuman()
 }
 
+// GetPlayerDeadwoodValue はプレイヤーの手札を最善メルド分割したときのデッドウッド点を返す（プレゼンター向け）。
+func (g *Chinchon) GetPlayerDeadwoodValue(i int) int {
+	p := g.GetPlayer(i)
+	if p == nil {
+		return 0
+	}
+	_, dead := chinchonFindBestMelds(handCards(p))
+	return CalcDeadwoodValue(dead)
+}
+
+// GetKnockThreshold はノック可能なデッドウッド点の上限（この値以下でノック可）を返す。
+func (g *Chinchon) GetKnockThreshold() int { return g.config.KnockThreshold }
+
 // GetConfig 設定取得
 func (g *Chinchon) GetConfig() ChinchonConfig { return g.config }
 

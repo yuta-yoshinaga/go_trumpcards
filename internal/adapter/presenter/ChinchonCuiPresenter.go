@@ -46,6 +46,20 @@ func (p *ChinchonCuiPresenter) Output(g interfaces.ChinchonGame, lastErr error) 
 
 		for i := 0; i < g.GetPlayerCnt(); i++ {
 			b.WriteString(chinchonPlayerStr(g.GetPlayer(i), i))
+			// Show the human's current deadwood (the core knock-timing signal),
+			// green with a "knock ready" note once at or below the threshold. CPU
+			// deadwood stays hidden so hands are not exposed mid-round.
+			if player := g.GetPlayer(i); player != nil && player.GetIsHuman() && player.GetCardsSize() > 0 {
+				deadwood := g.GetPlayerDeadwoodValue(i)
+				threshold := g.GetKnockThreshold()
+				line := i18n.Tf("chinchon.deadwoodLine",
+					"value", strconv.Itoa(deadwood),
+					"threshold", strconv.Itoa(threshold))
+				if deadwood <= threshold {
+					line = color.Green(line + " " + i18n.T("chinchon.knockReady"))
+				}
+				b.WriteString(line + "\n")
+			}
 		}
 
 		// レイオフフェーズではノッカーのメルドを表示する。
