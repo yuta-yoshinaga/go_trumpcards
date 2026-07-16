@@ -39,5 +39,6 @@
   "hintCallSuit": "[HINT: {{suit}}をコール ({{reason}})]",
   "hintCallSuitAlone": "[HINT: {{suit}}をコール (ゴーアローン) ({{reason}})]",
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
-  "hintReasonDiscardWeakest": "最弱カードを捨てる"
+  "hintReasonDiscardWeakest": "最弱カードを捨てる",
+  "sittingOut": " 💤（休み）"
 }
