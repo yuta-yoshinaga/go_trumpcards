@@ -32,6 +32,8 @@ type MacauInteractorIF interface {
 	GetConfig() domain.MacauConfig
 	// ActionLog 棋譜を出力する
 	ActionLog() string
+	// Hint ヒントを出力する
+	Hint() string
 	// IsHumanChooseSuitTurn reports whether the human just played an 8 and the
 	// game is now waiting for them to pick a suit.
 	IsHumanChooseSuitTurn() bool
@@ -148,6 +150,11 @@ func (ci *MacauInteractor) GetConfig() domain.MacauConfig {
 // ActionLog 棋譜を出力する
 func (ci *MacauInteractor) ActionLog() string {
 	return ci.gp.ActionLogOutput(ci.Game)
+}
+
+// Hint ヒントを出力する
+func (ci *MacauInteractor) Hint() string {
+	return ci.gp.HintOutput(ci.Game)
 }
 
 // IsHumanChooseSuitTurn reports whether the game is currently waiting for the

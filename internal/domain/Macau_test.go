@@ -130,6 +130,18 @@ func TestMacau_GetDiscardTop(t *testing.T) {
 	assert.Equal(t, card, g.GetDiscardTop())
 }
 
+func TestMacau_IsValidPlay(t *testing.T) {
+	g := newTestMacau()
+	g.Reset()
+	g.SetDiscardPile([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)})
+	g.SetChosenSuit(-1)
+	g.SetPenaltyDrawCount(0)
+
+	assert.True(t, g.IsValidPlay(domain.NewCard(domain.CardDesignSpade, 3, false)), "same suit is playable")
+	assert.True(t, g.IsValidPlay(domain.NewCard(domain.CardDesignHeart, 5, false)), "same rank is playable")
+	assert.False(t, g.IsValidPlay(domain.NewCard(domain.CardDesignHeart, 7, false)), "different suit and rank is not playable")
+}
+
 func TestMacau_GetValidPlayIndices(t *testing.T) {
 	g := newTestMacau()
 	g.Reset()

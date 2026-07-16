@@ -61,4 +61,6 @@ type MacauGame interface {
 	GetPlayerCnt() int
 	// GetPlayer 指定インデックスのプレイヤーを取得する
 	GetPlayer(i int) *domain.MacauPlayer
+	// IsValidPlay カードが現在の場状態でプレイ可能かを返す
+	IsValidPlay(card *domain.Card) bool
 }

@@ -45,6 +45,9 @@ func (m *MockMacauGame) GetPlayerCnt() int           { return m.Called().Int(0) 
 func (m *MockMacauGame) GetPlayer(i int) *domain.MacauPlayer {
 	return m.Called(i).Get(0).(*domain.MacauPlayer)
 }
+func (m *MockMacauGame) IsValidPlay(card *domain.Card) bool {
+	return m.Called(card).Bool(0)
+}
 func (m *MockMacauGame) GetActionLog() []*domain.ActionLogEntry {
 	return m.Called().Get(0).([]*domain.ActionLogEntry)
 }

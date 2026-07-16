@@ -53,6 +53,11 @@ func (_m *MockMacauInteractor) ActionLog() string {
 	return _m.Called().String(0)
 }
 
+// Hint モック
+func (_m *MockMacauInteractor) Hint() string {
+	return _m.Called().String(0)
+}
+
 // Snapshot モック
 func (_m *MockMacauInteractor) Snapshot() ([]byte, error) {
 	ret := _m.Called()
