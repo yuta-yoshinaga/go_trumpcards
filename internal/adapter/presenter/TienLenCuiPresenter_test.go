@@ -12,6 +12,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupTienLenCuiMock() (*interfaces.MockTienLenGame, []*domain.TienLenPlayer) {
@@ -19,6 +20,7 @@ func setupTienLenCuiMock() (*interfaces.MockTienLenGame, []*domain.TienLenPlayer
 	players := makeTienLenPlayers()
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetTableCards").Return(([]*domain.Card)(nil))
+	m.On("GetTablePlayType").Return(domain.TienLenPlayInvalid)
 	m.On("GetCpuActions").Return(([]*domain.TienLenAction)(nil))
 	m.On("IsHumanTurn").Return(true)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
@@ -60,6 +62,8 @@ func TestTienLenCuiPresenter_Output(t *testing.T) {
 		m, _ := setupTienLenCuiMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTableCards")
 		m.On("GetTableCards").Return([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 3, false)})
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTablePlayType")
+		m.On("GetTablePlayType").Return(domain.TienLenPlaySingle)
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCpuActions")
 		m.On("GetCpuActions").Return([]*domain.TienLenAction{
 			{PlayerIdx: 1, PlayedCards: nil},
@@ -68,6 +72,8 @@ func TestTienLenCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "場")
 		assert.Contains(t, result, "CPU 1")
+		// The table combo type is named alongside the cards.
+		assert.Contains(t, result, i18n.Tf("tienlen.tableComboType", "type", i18n.T("tienlen.comboSingle")))
 	})
 
 	t.Run("finished player shown", func(t *testing.T) {
