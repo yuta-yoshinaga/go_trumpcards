@@ -13,7 +13,6 @@ import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { KbdBadge } from '../components/KbdBadge';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -202,8 +201,8 @@ function CasinoWarPageContent() {
               <div className="mb-4">
                 <div className="text-ds-info font-bold text-center mb-1">{t('label.burnCards')}</div>
                 <div className="flex justify-center gap-2 flex-wrap">
-                  {state.burnCards.map((_, i) => (
-                    <AnimatedCardBack key={`burn-${i}`} width={cardWidth} />
+                  {state.burnCards.map((c, i) => (
+                    <AnimatedCard key={`burn-${i}`} card={c} width={cardWidth} />
                   ))}
                 </div>
               </div>

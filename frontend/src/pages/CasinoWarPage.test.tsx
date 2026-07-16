@@ -190,6 +190,10 @@ describe('CasinoWarPage', () => {
     mockApi.mockResolvedValue(warDealtState);
     renderWithProviders(<CasinoWarPage />);
     await waitFor(() => expect(screen.getByText(/burn|焼き札|焼/i)).toBeInTheDocument());
+    // Burn cards are shown face-up (as AnimatedCard), matching the CUI — no backs.
+    expect(screen.queryAllByTestId('animated-card-back')).toHaveLength(0);
+    // 2 main + 3 burn + 2 war cards are all rendered face-up.
+    expect(screen.getAllByTestId('animated-card')).toHaveLength(7);
   });
 
   it('renders the CLI terminal when useCliMode reports cliEnabled', async () => {
