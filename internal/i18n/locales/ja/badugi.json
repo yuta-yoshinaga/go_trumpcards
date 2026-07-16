@@ -35,5 +35,8 @@
   "resultHand": "  {{name}}: {{hand}}",
   "resultName": "  {{name}}",
   "wonAmount": " → {{total}}チップ獲得",
-  "gameEnd": "ゲーム終了"
+  "gameEnd": "ゲーム終了",
+  "betLimitsMax": "最小レイズ: {{min}} / 上限: {{max}}",
+  "betLimitsNoCap": "最小レイズ: {{min}} / 上限: なし",
+  "betLimitsMin": "最小レイズ: {{min}}"
 }
