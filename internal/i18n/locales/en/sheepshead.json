@@ -38,5 +38,7 @@
   "hintReasonLeadLow": "Lead a low card to conserve points",
   "hintReasonFollowWin": "Points on the table — win the trick",
   "hintReasonFollowDuck": "Cannot/should not win — duck",
-  "hintReasonDiscardLow": "Cannot follow suit — discard a low card"
+  "hintReasonDiscardLow": "Cannot follow suit — discard a low card",
+  "roundPickerWon": "Picker team won (receives chips)",
+  "roundPickerLost": "Picker team lost (pays chips)"
 }

@@ -38,5 +38,7 @@
   "hintReasonLeadLow": "低い札でリードして温存する",
   "hintReasonFollowWin": "得点があるので勝ちに行く",
   "hintReasonFollowDuck": "取れない／取る価値がないのでダック",
-  "hintReasonDiscardLow": "フォローできないので低い札を捨てる"
+  "hintReasonDiscardLow": "フォローできないので低い札を捨てる",
+  "roundPickerWon": "ピッカー組の勝ち（相手からチップを受け取る）",
+  "roundPickerLost": "ピッカー組の負け（相手へチップを支払う）"
 }
