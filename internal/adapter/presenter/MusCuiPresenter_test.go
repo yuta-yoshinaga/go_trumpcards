@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,6 +13,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func makeMusPlayers() []*domain.MusPlayer {
@@ -124,15 +126,29 @@ func TestMusCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "boom")
 	})
 
-	t.Run("betting results shown when in betting phase", func(t *testing.T) {
-		m, _ := setupMusCuiMockWithPlayers()
-		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
-		m.On("GetPhase").Return(domain.MusPhaseChica)
-		for ri := 0; ri < domain.MusRoundCnt; ri++ {
-			m.On("GetResult", ri).Return(domain.MusRoundResult{Kind: domain.MusResultDeferred, Stake: 1, Team: -1})
+	t.Run("betting results show localized kind names, not raw ints", func(t *testing.T) {
+		// Each result kind renders by its localized name, covering every branch.
+		for _, tc := range []struct {
+			kind  int
+			label string
+		}{
+			{domain.MusResultDeferred, i18n.T("mus.resultDeferred")},
+			{domain.MusResultAccepted, i18n.T("mus.resultAccepted")},
+			{domain.MusResultAwarded, i18n.T("mus.resultAwarded")},
+			{domain.MusResultOrdago, i18n.T("mus.resultOrdago")},
+		} {
+			m, _ := setupMusCuiMockWithPlayers()
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetResult")
+			m.On("GetPhase").Return(domain.MusPhaseChica)
+			for ri := 0; ri < domain.MusRoundCnt; ri++ {
+				m.On("GetResult", ri).Return(domain.MusRoundResult{Kind: tc.kind, Stake: 1, Team: -1})
+			}
+			result := p.Output(m, nil)
+			assert.Contains(t, result, tc.label)
+			// A raw kind int must not leak into the result line.
+			assert.NotContains(t, result, "種別="+strconv.Itoa(tc.kind))
 		}
-		result := p.Output(m, nil)
-		assert.NotEmpty(t, result)
 	})
 }
 

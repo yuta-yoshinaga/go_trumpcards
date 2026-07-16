@@ -44,5 +44,9 @@
   "hintReasonBetEnvido": "手が強い ― 賭ける",
   "hintReasonBetOrdago": "手が非常に強い ― 全賭けする",
   "hintReasonBetQuiero": "相手に勝っている ― 受ける",
-  "hintReasonBetNoQuiero": "相手に負けている ― 降りる"
+  "hintReasonBetNoQuiero": "相手に負けている ― 降りる",
+  "resultDeferred": "パソ（ショーダウン持ち越し）",
+  "resultAccepted": "キエロ（ショーダウン）",
+  "resultAwarded": "ノキエロ（即時獲得）",
+  "resultOrdago": "オルダゴ受諾"
 }
