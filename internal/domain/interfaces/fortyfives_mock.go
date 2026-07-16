@@ -152,6 +152,12 @@ func (_m *MockFortyFivesGame) GetBids() [domain.FortyFivesPlayerCnt]domain.Forty
 	return ret.Get(0).([domain.FortyFivesPlayerCnt]domain.FortyFivesBid)
 }
 
+// GetBidDone モック
+func (_m *MockFortyFivesGame) GetBidDone() [domain.FortyFivesPlayerCnt]bool {
+	ret := _m.Called()
+	return ret.Get(0).([domain.FortyFivesPlayerCnt]bool)
+}
+
 // GetTrumpSuit モック
 func (_m *MockFortyFivesGame) GetTrumpSuit() int {
 	ret := _m.Called()
