@@ -117,6 +117,11 @@ func (p *SambaCuiPresenter) Output(g interfaces.SambaGame, lastErr error) string
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
 			b.WriteString(i18n.T("samba.promptDrawHelpStock") + "\n")
 			b.WriteString(i18n.T("samba.promptDrawHelpDiscard") + "\n")
+			// While the pile is frozen, taking the discard requires showing two
+			// natural matching cards from hand — spell out that extra condition.
+			if g.GetIsFrozen() {
+				b.WriteString(i18n.T("samba.promptDrawHelpFrozen") + "\n")
+			}
 		case domain.SambaPhaseMeld:
 			currentIdx := g.GetCurrentPlayerIdx()
 			b.WriteString(i18n.Tf("samba.promptMeld",
