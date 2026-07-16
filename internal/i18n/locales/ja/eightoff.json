@@ -19,5 +19,6 @@
   "hintToFoundation": "ファンデーション",
   "hintToTableau": "タブロー列{{col}}",
   "hintToFreeCell": "フリーセル{{col}}",
-  "hintLine": "ヒント: {{from}} → {{to}}"
+  "hintLine": "ヒント: {{from}} → {{to}}",
+  "supermoveLine": "一度に移動可能: {{limit}}枚（空きセル{{cells}}・空き列{{cols}}）"
 }

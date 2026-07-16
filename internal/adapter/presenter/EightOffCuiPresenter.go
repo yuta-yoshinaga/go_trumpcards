@@ -76,6 +76,25 @@ func (p *EightOffCuiPresenter) Output(e interfaces.EightOffGame, lastErr error) 
 			if e.IsStalemate() {
 				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
 			}
+			// Show how many cards can be moved as one stack — (1 + empty free
+			// cells) * 2^(empty columns), the same formula the web UI uses — so the
+			// human isn't surprised by a rejected multi-card move.
+			emptyCells := 0
+			for i := 0; i < domain.EightOffCellCnt; i++ {
+				if freeCells[i] == nil {
+					emptyCells++
+				}
+			}
+			emptyCols := 0
+			for col := 0; col < domain.EightOffTableauCnt; col++ {
+				if len(tableau[col]) == 0 {
+					emptyCols++
+				}
+			}
+			b.WriteString(i18n.Tf("eightoff.supermoveLine",
+				"limit", strconv.Itoa((1+emptyCells)<<emptyCols),
+				"cells", strconv.Itoa(emptyCells),
+				"cols", strconv.Itoa(emptyCols)) + "\n")
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(e.GetMoveCount())) + "\n")
 		case domain.EightOffPhaseGameClear:
