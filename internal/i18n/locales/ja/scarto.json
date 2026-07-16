@@ -27,5 +27,8 @@
   "hintReasonLeadLow": "安い札でリードして点札を温存する",
   "hintReasonFollowWin": "勝てる — トリックを取って点を集める",
   "hintReasonFollowDuck": "勝てない — 低い札を捨てる",
-  "hintReasonPlayExcuse": "エクスキューズを出す — 自分で保持し、取られない"
+  "hintReasonPlayExcuse": "エクスキューズを出す — 自分で保持し、取られない",
+  "discardableList": "捨て可能: {{cards}}",
+  "discardableNone": "なし",
+  "discardableLegend": "※ 切り札・エクスキューズ・絵札は捨てられません"
 }

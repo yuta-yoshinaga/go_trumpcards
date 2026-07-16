@@ -27,5 +27,8 @@
   "hintReasonLeadLow": "Lead a low card to conserve your point cards",
   "hintReasonFollowWin": "You can win — take the trick to gather points",
   "hintReasonFollowDuck": "Cannot win — throw a low card",
-  "hintReasonPlayExcuse": "Play the Excuse — you keep it and it cannot be captured"
+  "hintReasonPlayExcuse": "Play the Excuse — you keep it and it cannot be captured",
+  "discardableList": "Discardable: {{cards}}",
+  "discardableNone": "none",
+  "discardableLegend": "Note: trumps, the Excuse, and court cards cannot be discarded"
 }
