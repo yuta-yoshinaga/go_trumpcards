@@ -25,5 +25,7 @@
   "hintReasonFollowDuck": "Cannot/should not win — duck",
   "hintReasonDiscardLow": "Cannot follow suit — discard a low card",
   "hintReasonDeclareMarriage": "Declare a marriage for bonus points",
-  "hintReasonDeclareTute": "Declare Tute for an instant win!"
+  "hintReasonDeclareTute": "Declare Tute for an instant win!",
+  "promptMarriageSuits": "Declarable: {{suits}}",
+  "marriageTrumpMark": "(trump +40)"
 }
