@@ -21,5 +21,6 @@
   "phaseUnknown": "UNKNOWN",
   "playerWins": "プレイヤーの勝ち！",
   "playerLoses": "プレイヤーの負け。",
-  "push": "プッシュ。"
+  "push": "プッシュ。",
+  "foldLossLine": "フォールド時の損失: {{loss}}"
 }
