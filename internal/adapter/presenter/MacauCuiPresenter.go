@@ -99,3 +99,30 @@ func (p *MacauCuiPresenter) Output(g interfaces.MacauGame, lastErr error) string
 func (p *MacauCuiPresenter) ActionLogOutput(g interfaces.MacauGame) string {
 	return actionLogOutputText(g)
 }
+
+// HintOutput lists the human's currently playable card indices. During a
+// penalty chain IsValidPlay already restricts to counter cards, so the same
+// scan works; when nothing is playable it advises drawing (or, mid-penalty,
+// accepting the accumulated penalty).
+func (p *MacauCuiPresenter) HintOutput(g interfaces.MacauGame) string {
+	if g.GetPhase() != domain.MacauPhasePlay || !g.IsHumanTurn() {
+		return i18n.T("macau.hintNone") + "\n"
+	}
+	player := g.GetPlayer(g.GetCurrentPlayerIdx())
+	if player == nil {
+		return i18n.T("macau.hintNone") + "\n"
+	}
+	var parts []string
+	for i := 0; i < player.GetCardsSize(); i++ {
+		if g.IsValidPlay(player.GetCard(i)) {
+			parts = append(parts, "["+strconv.Itoa(i)+"]"+cuiCardStr(player.GetCard(i)))
+		}
+	}
+	if len(parts) == 0 {
+		if g.GetPenaltyDrawCount() > 0 {
+			return color.Yellow(i18n.T("macau.hintReceivePenalty")) + "\n"
+		}
+		return color.Yellow(i18n.T("macau.hintDraw")) + "\n"
+	}
+	return color.Yellow(i18n.Tf("macau.hintPlayable", "cards", strings.Join(parts, " "))) + "\n"
+}

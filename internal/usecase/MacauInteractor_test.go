@@ -350,6 +350,16 @@ func TestMacauInteractor_ActionLog(t *testing.T) {
 	pMock.AssertExpectations(t)
 }
 
+func TestMacauInteractor_Hint(t *testing.T) {
+	pMock := new(presenter.MockMacauPresenter)
+	gameMock := new(interfaces.MockMacauGame)
+	pMock.On("HintOutput", gameMock).Return("hint")
+
+	ci := usecase.NewMacauInteractor(gameMock, pMock)
+	assert.Equal(t, "hint", ci.Hint())
+	pMock.AssertExpectations(t)
+}
+
 func TestMacauInteractor_IsHumanTurnHelpers(t *testing.T) {
 	t.Run("IsHumanChooseSuitTurn", func(t *testing.T) {
 		pMock := new(presenter.MockMacauPresenter)

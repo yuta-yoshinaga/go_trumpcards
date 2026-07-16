@@ -477,6 +477,10 @@ func (g *Macau) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // --- Private methods ---
 
+// IsValidPlay は現在の場状態 (捨て札トップ・宣言スート・ペナルティ連鎖) を踏まえ
+// カードがプレイ可能かを返す (公開版; CUI ヒントが利用する)。
+func (g *Macau) IsValidPlay(card *Card) bool { return g.isValidPlay(card) }
+
 // isValidPlay カードがプレイ可能か判定
 func (g *Macau) isValidPlay(card *Card) bool {
 	// ペナルティ中は2のみ重ねられる

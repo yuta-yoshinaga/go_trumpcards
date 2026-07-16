@@ -24,5 +24,9 @@
   "promptMustDeclare": "宣言フェーズ (手札が残り1枚)",
   "promptMustDeclareHelp": "dc / declare・・・「マカオ！」と宣言 / sk / skipdeclare・・・宣言せずペナルティ",
   "promptRoundEnd": "ラウンド終了",
-  "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ"
+  "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
+  "hintNone": "現在ヒントはありません。",
+  "hintPlayable": "出せるカード: {{cards}}",
+  "hintDraw": "出せるカードがありません。d でドローしてください。",
+  "hintReceivePenalty": "カウンターできるカードがありません。d でペナルティを受けてください。"
 }

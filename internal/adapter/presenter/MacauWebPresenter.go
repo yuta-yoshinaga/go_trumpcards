@@ -91,3 +91,9 @@ func (p *MacauWebPresenter) buildMessage(g interfaces.MacauGame, lastErr error) 
 func (p *MacauWebPresenter) ActionLogOutput(g interfaces.MacauGame) string {
 	return actionLogOutputJSON(g)
 }
+
+// HintOutput はヒントを返す。Web ではクライアント側でヒントを算出するため、
+// 状態出力にフォールバックする (CUI プレゼンターのみが専用ヒントを返す)。
+func (p *MacauWebPresenter) HintOutput(g interfaces.MacauGame) string {
+	return p.Output(g, nil)
+}
