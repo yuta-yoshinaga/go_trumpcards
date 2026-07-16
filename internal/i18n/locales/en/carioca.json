@@ -31,5 +31,9 @@
   "promptPlayHelpLayoff": "lo <pIdx> <mIdx> <cIdx>: add a card to an existing meld",
   "promptPlayHelpDiscard": "d <idx>: discard a card",
   "promptRoundEnd": "Round complete",
-  "promptRoundEndHelp": "nr / nextround: advance to next round"
+  "promptRoundEndHelp": "nr / nextround: advance to next round",
+  "slotDetailSet": "{{n}} of the same rank",
+  "slotDetailRun": "{{n}} consecutive of the same suit",
+  "slotLine": "  Slot [{{idx}}]: {{detail}}",
+  "meldSyntaxHint": "  meld <slot> <card indices> (e.g. meld 0 1 2 3)"
 }
