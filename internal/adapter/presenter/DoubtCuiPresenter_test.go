@@ -1,6 +1,7 @@
 package presenter_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -9,6 +10,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func makeDoubtGameForPresenter() (*domain.Doubt, []*domain.DoubtPlayer) {
@@ -197,6 +199,19 @@ func TestDoubtCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "「3」を2枚")
 		assert.Contains(t, result, "CPU 2")
 		assert.Contains(t, result, "「5」を1枚")
+	})
+
+	t.Run("CPU tell shown only when HasTell is true", func(t *testing.T) {
+		game, _ := makeDoubtGameForPresenter()
+		game.SetCpuActions([]*domain.DoubtCpuAction{
+			{PlayerIdx: 1, ClaimedValue: 3, CardCount: 2, HasTell: true},
+			{PlayerIdx: 2, ClaimedValue: 5, CardCount: 1, HasTell: false},
+		})
+
+		result := p.Output(game, nil)
+		tell := i18n.T("doubt.tell")
+		// The tell appears exactly once — for the HasTell CPU only.
+		assert.Equal(t, 1, strings.Count(result, tell))
 	})
 
 	t.Run("error message shown", func(t *testing.T) {
