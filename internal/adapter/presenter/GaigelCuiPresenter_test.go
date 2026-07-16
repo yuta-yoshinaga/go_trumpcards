@@ -1,6 +1,7 @@
 package presenter_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -9,6 +10,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupGaigelCuiMock() *interfaces.MockGaigelGame {
@@ -77,7 +79,7 @@ func TestGaigelCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "切り札: 未確定")
 	})
 
-	t.Run("marriage available prompt", func(t *testing.T) {
+	t.Run("marriage available prompt lists candidate cards", func(t *testing.T) {
 		m, players := setupGaigelCuiMockWithPlayers()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))
@@ -86,6 +88,24 @@ func TestGaigelCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "マリアージュ")
+		// The human's K/Q candidate indices are enumerated.
+		assert.Contains(t, result, strings.Split(i18n.T("gaigel.promptMarriageCards"), "{{")[0])
+		assert.Contains(t, result, "[0]")
+		assert.Contains(t, result, "[1]")
+	})
+
+	t.Run("cpu turn does not leak marriage cards", func(t *testing.T) {
+		m, players := setupGaigelCuiMockWithPlayers()
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetMarriageIndices")
+		m.On("GetCurrentPlayerIdx").Return(1) // a CPU
+		m.On("GetMarriageIndices", 1).Return([]int{0, 1})
+
+		result := p.Output(m, nil)
+		// Generic hint may show, but the CPU's specific candidate cards must not.
+		assert.NotContains(t, result, strings.Split(i18n.T("gaigel.promptMarriageCards"), "{{")[0])
 	})
 
 	t.Run("phase: trick end", func(t *testing.T) {

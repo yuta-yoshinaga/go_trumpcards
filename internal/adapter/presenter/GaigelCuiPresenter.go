@@ -78,8 +78,18 @@ func (p *GaigelCuiPresenter) Output(g interfaces.GaigelGame, lastErr error) stri
 			currentIdx := g.GetCurrentPlayerIdx()
 			out.WriteString(i18n.Tf("gaigel.promptCurrentPlayer",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
-			if len(g.GetMarriageIndices(currentIdx)) > 0 {
+			if idxs := g.GetMarriageIndices(currentIdx); len(idxs) > 0 {
 				out.WriteString(i18n.T("gaigel.promptMarriageHint") + "\n")
+				// On the human's turn, name the K/Q cards (and their hand indices)
+				// that can be declared; never for a CPU, to avoid leaking its hand.
+				if human := g.GetPlayer(currentIdx); human != nil && human.GetIsHuman() {
+					cards := make([]string, len(idxs))
+					for i, idx := range idxs {
+						cards[i] = "[" + strconv.Itoa(idx) + "]" + cuiCardStr(human.GetCard(idx))
+					}
+					out.WriteString(i18n.Tf("gaigel.promptMarriageCards",
+						"cards", strings.Join(cards, ", ")) + "\n")
+				}
 			}
 			out.WriteString(i18n.T("gaigel.promptPlayHelp") + "\n")
 		case domain.GaigelPhaseTrickEnd:
