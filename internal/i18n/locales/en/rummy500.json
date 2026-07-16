@@ -27,5 +27,8 @@
   "playPhase": "Play phase",
   "roundEnd": "Round end",
   "winnerHuman": "You win!",
-  "winnerCpu": "CPU {{idx}} wins"
+  "winnerCpu": "CPU {{idx}} wins",
+  "hintNone": "No hint available.",
+  "hintMeld": "Meld candidates: {{cands}} (m <idx...> to lay down)",
+  "hintNoMeld": "No meldable combination. Consider discarding with d <idx>."
 }

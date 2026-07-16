@@ -32,6 +32,8 @@ type Rummy500InteractorIF interface {
 	GetConfig() domain.Rummy500Config
 	// ActionLog 棋譜を出力する
 	ActionLog() string
+	// Hint ヒントを出力する
+	Hint() string
 }
 
 // Rummy500Interactor Rummy 500インタラクタークラス
@@ -134,6 +136,11 @@ func (ci *Rummy500Interactor) GetConfig() domain.Rummy500Config {
 // ActionLog 棋譜を出力する
 func (ci *Rummy500Interactor) ActionLog() string {
 	return ci.gp.ActionLogOutput(ci.Game)
+}
+
+// Hint ヒントを出力する
+func (ci *Rummy500Interactor) Hint() string {
+	return ci.gp.HintOutput(ci.Game)
 }
 
 // runCpuTurns CPUターンを連続実行

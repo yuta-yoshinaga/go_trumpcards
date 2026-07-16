@@ -353,3 +353,11 @@ func TestRestoreRummy500Interactor(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, ci)
 }
+
+func TestRummy500Interactor_Hint(t *testing.T) {
+	pMock := new(presenter.MockRummy500Presenter)
+	pMock.On("HintOutput", mock.Anything).Return("hint output")
+	gameMock := new(interfaces.MockRummy500Game)
+	ci := usecase.NewRummy500Interactor(gameMock, pMock)
+	assert.Equal(t, "hint output", ci.Hint())
+}

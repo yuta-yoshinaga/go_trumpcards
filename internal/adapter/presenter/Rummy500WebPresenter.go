@@ -103,3 +103,9 @@ func (p *Rummy500WebPresenter) buildMessage(g interfaces.Rummy500Game, lastErr e
 func (p *Rummy500WebPresenter) ActionLogOutput(g interfaces.Rummy500Game) string {
 	return actionLogOutputJSON(g)
 }
+
+// HintOutput はヒントを返す。Web ではクライアント側でヒントを算出するため、
+// 状態出力にフォールバックする (CUI プレゼンターのみが専用ヒントを返す)。
+func (p *Rummy500WebPresenter) HintOutput(g interfaces.Rummy500Game) string {
+	return p.Output(g, nil)
+}
