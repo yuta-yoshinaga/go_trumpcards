@@ -462,6 +462,27 @@ func (c *CasinoHoldem) GetBonusBet() int { return c.bonusBet }
 // GetCallBet コールベット額（2×アンテ）
 func (c *CasinoHoldem) GetCallBet() int { return c.callBet }
 
+// RecommendCall はフロップ後にコール (2×アンテ) を推奨するかを返す。基本戦略として
+// ワンペア以上、または A/K を含むときコール、それ以外はフォールドを推奨する。
+// (プレイヤーハンドランクはショーダウンまで設定されないため、その場で評価する。)
+func (c *CasinoHoldem) RecommendCall() bool {
+	cards := make([]*Card, 0, len(c.playerHand)+len(c.community))
+	cards = append(cards, c.playerHand...)
+	cards = append(cards, c.community...)
+	if len(cards) < 5 {
+		return true
+	}
+	if evalFiveCardHand(cards[:5]) >= PokerHandOnePair {
+		return true
+	}
+	for _, cc := range cards {
+		if v := cc.GetValue(); v == 1 || v == 13 { // Ace or King
+			return true
+		}
+	}
+	return false
+}
+
 // GetResult ゲーム結果
 func (c *CasinoHoldem) GetResult() GameResult { return c.result }
 

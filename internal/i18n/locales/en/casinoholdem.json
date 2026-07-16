@@ -22,5 +22,8 @@
   "dealerWins": "Dealer wins!",
   "playerFolded": "Player folded.",
   "push": "Push!",
-  "totalPayoutLine": "total payout: {{payout}}"
+  "totalPayoutLine": "total payout: {{payout}}",
+  "hintNone": "No hint available.",
+  "hintCall": "Recommended: Call (2x ante) — a pair or better, or an Ace/King",
+  "hintFold": "Recommended: Fold — no qualifying hand"
 }

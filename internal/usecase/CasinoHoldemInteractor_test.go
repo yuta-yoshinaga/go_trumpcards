@@ -127,3 +127,12 @@ func TestRestoreCasinoHoldemInteractor(t *testing.T) {
 		assert.Equal(t, ci.Game.GetBonusBet(), restored.Game.GetBonusBet())
 	})
 }
+
+func TestCasinoHoldemInteractor_Hint(t *testing.T) {
+	mockGame := new(interfaces.MockCasinoHoldemGame)
+	mockPresenter := new(presenter.MockCasinoHoldemPresenter)
+	ci := NewCasinoHoldemInteractor(mockGame, mockPresenter)
+
+	mockPresenter.On("HintOutput", mockGame).Return("hint output")
+	assert.Equal(t, "hint output", ci.Hint())
+}

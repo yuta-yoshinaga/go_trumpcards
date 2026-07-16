@@ -22,6 +22,8 @@ type CasinoHoldemInteractorIF interface {
 	Fold() string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
+	// Hint ヒントを出力する
+	Hint() string
 }
 
 // CasinoHoldemInteractor カジノホールデムインタラクタークラス
@@ -62,6 +64,11 @@ func (ci *CasinoHoldemInteractor) Fold() string {
 // ActionLog 棋譜を出力する
 func (ci *CasinoHoldemInteractor) ActionLog() string {
 	return ci.cp.ActionLogOutput(ci.Game)
+}
+
+// Hint ヒントを出力する
+func (ci *CasinoHoldemInteractor) Hint() string {
+	return ci.cp.HintOutput(ci.Game)
 }
 
 // RestoreCasinoHoldemInteractor deserialises JSON into a CasinoHoldemInteractor.

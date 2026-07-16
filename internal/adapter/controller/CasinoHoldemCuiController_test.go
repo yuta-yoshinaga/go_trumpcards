@@ -19,6 +19,7 @@ func newMockCasinoHoldemInteractor() *usecase.MockCasinoHoldemInteractor {
 	m.On("Call").Return("call result")
 	m.On("Fold").Return("fold result")
 	m.On("ActionLog").Return("action log result")
+	m.On("Hint").Return("hint result")
 	return m
 }
 
@@ -106,4 +107,12 @@ func TestCasinoHoldemCuiController_Empty(t *testing.T) {
 	c := controller.NewCasinoHoldemCuiController(m)
 	result := c.Exec("")
 	assert.Contains(t, result, "'help' でコマンド一覧を表示します。")
+}
+
+func TestCasinoHoldemCuiController_Hint(t *testing.T) {
+	m := newMockCasinoHoldemInteractor()
+	c := controller.NewCasinoHoldemCuiController(m)
+	assert.Equal(t, "hint result", c.Exec("h"))
+	assert.Equal(t, "hint result", c.Exec("hint"))
+	m.AssertCalled(t, "Hint")
 }

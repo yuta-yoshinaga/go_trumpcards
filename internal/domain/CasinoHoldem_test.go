@@ -626,3 +626,37 @@ func TestCasinoHoldem_ActionLog(t *testing.T) {
 	// bet → deal → flop → fold → result
 	assert.GreaterOrEqual(t, len(log), 5)
 }
+
+func TestCasinoHoldem_RecommendCall(t *testing.T) {
+	newFlop := func(hole, community []*domain.Card) *domain.CasinoHoldem {
+		g := domain.NewDefaultCasinoHoldem()
+		g.SetPlayerHand(hole)
+		g.SetCommunity(community)
+		g.SetPhase(domain.CasinoHoldemPhaseFlop)
+		return g
+	}
+
+	t.Run("call with a pair", func(t *testing.T) {
+		g := newFlop(
+			makeHandCH(cd{domain.CardDesignSpade, 8}, cd{domain.CardDesignHeart, 8}),
+			makeHandCH(cd{domain.CardDesignClover, 3}, cd{domain.CardDesignDiamond, 5}, cd{domain.CardDesignSpade, 9}),
+		)
+		assert.True(t, g.RecommendCall())
+	})
+
+	t.Run("call with an ace high", func(t *testing.T) {
+		g := newFlop(
+			makeHandCH(cd{domain.CardDesignSpade, 1}, cd{domain.CardDesignHeart, 7}),
+			makeHandCH(cd{domain.CardDesignClover, 3}, cd{domain.CardDesignDiamond, 5}, cd{domain.CardDesignSpade, 9}),
+		)
+		assert.True(t, g.RecommendCall())
+	})
+
+	t.Run("fold with junk", func(t *testing.T) {
+		g := newFlop(
+			makeHandCH(cd{domain.CardDesignSpade, 3}, cd{domain.CardDesignHeart, 7}),
+			makeHandCH(cd{domain.CardDesignClover, 9}, cd{domain.CardDesignDiamond, 11}, cd{domain.CardDesignSpade, 5}),
+		)
+		assert.False(t, g.RecommendCall())
+	})
+}
