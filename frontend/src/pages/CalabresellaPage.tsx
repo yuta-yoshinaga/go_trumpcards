@@ -144,6 +144,10 @@ function CalabresellaPageContent() {
   const canBid = isBidPhase && state.currentBidderIdx === humanIdx;
   const canDiscard = isDiscardPhase && state.soloistIdx === humanIdx;
   const canPlay = isPlayPhase && isHumanTurn;
+  // The soloist takes the 4-card monte (16 cards) and discards down to the regulation
+  // 12-card hand (CalabresellaHandSize in the backend).
+  const REGULATION_HAND_SIZE = 12;
+  const discardRemaining = humanPlayer ? Math.max(0, humanPlayer.cards.length - REGULATION_HAND_SIZE) : 0;
 
   const handleManualReset = () => {
     hideActionLog();
@@ -309,12 +313,12 @@ function CalabresellaPageContent() {
                 {t('bidPhase')}
               </div>
             )}
-            {canDiscard && (
+            {canDiscard && discardRemaining > 0 && (
               <div
                 className="mb-1 text-center text-sm text-ds-accent font-semibold"
                 data-testid="calabresella-discard-prompt"
               >
-                {t('discardPhase')}
+                {t('discardPhaseRemaining', { count: discardRemaining })}
               </div>
             )}
             {humanPlayer && (
@@ -364,8 +368,9 @@ function CalabresellaPageContent() {
                   className={btnPrimary}
                   onClick={handleDiscard}
                   disabled={loading || selectedCardIndices.length !== 1}
+                  data-testid="calabresella-discard-button"
                 >
-                  {t('discardCard')}
+                  {discardRemaining > 0 ? `${t('discardCard')} (${discardRemaining})` : t('discardCard')}
                 </button>
               )}
               {canPlay && (
