@@ -31,6 +31,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { chinesePokerIsFoul } from '../utils/chinesePokerFoul';
 import { CHINESEPOKER_HELP, parseChinesepokerCommand } from '../utils/cli/commands/chinesepokerCommands';
+import { formatChinesePokerState } from '../utils/cli/formatters/chinesepokerFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 
 const FRONT_RANK_KEYS: Record<number, string> = {
@@ -100,7 +101,7 @@ function ChinesePokerPageContent() {
     () => ({
       gameName: 'chinesepoker',
       parseCommand: parseChinesepokerCommand,
-      formatResponse: () => '',
+      formatResponse: formatChinesePokerState,
       helpText: CHINESEPOKER_HELP,
     }),
     [],
