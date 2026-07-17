@@ -25,6 +25,8 @@ import { gameTheme } from '../styles/gameTheme';
 import type { DurakResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { DURAK_HELP, parseDurakCommand } from '../utils/cli/commands/durakCommands';
+import { formatDurakState } from '../utils/cli/formatters/durakFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 
@@ -96,9 +98,9 @@ function DurakPageContent() {
   const durakCliConfig: CliGameConfig<DurakResponse, Parameters<typeof gameExec>> = useMemo(
     () => ({
       gameName: 'durak',
-      parseCommand: (_cmd: string) => ({ error: 'CLI not supported' }) as const,
-      formatResponse: (_res: DurakResponse): string => '',
-      helpText: [] as string[],
+      parseCommand: parseDurakCommand,
+      formatResponse: formatDurakState,
+      helpText: DURAK_HELP,
     }),
     [],
   );
