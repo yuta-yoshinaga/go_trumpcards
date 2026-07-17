@@ -86,6 +86,26 @@ describe('ThreeThirteenPage', () => {
     await waitFor(() => expect(screen.getByTestId('threethirteen-deadwood-indicator')).toBeInTheDocument());
   });
 
+  it('badges wild-rank cards in the hand and on the discard top', async () => {
+    // Aces wild: the ♠A in hand and the ♣A discard top both match wildRank 1.
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      wildRank: 1,
+      discardTop: { design: 'CLOVER', value: 1 },
+    });
+    renderWithProviders(<ThreeThirteenPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    // One hand card (♠A) + the discard top (♣A) → two wild badges. The ♥J is not wild.
+    expect(screen.getAllByTestId('tt-wild-badge')).toHaveLength(2);
+  });
+
+  it('shows no wild badges when no card matches the wild rank', async () => {
+    // Default wildRank 4: neither the ♠A/♥J hand nor the ♥7 discard top matches.
+    renderWithProviders(<ThreeThirteenPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    expect(screen.queryByTestId('tt-wild-badge')).not.toBeInTheDocument();
+  });
+
   it('renders draw phase with human cards', async () => {
     renderWithProviders(<ThreeThirteenPage />);
     await waitFor(() => {

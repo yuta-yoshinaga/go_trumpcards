@@ -24,7 +24,7 @@ import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { ThreeThirteenResponse } from '../types/card';
+import type { Card, ThreeThirteenResponse } from '../types/card';
 import { ThreeThirteenPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -155,6 +155,20 @@ function ThreeThirteenPageContent() {
   const isRoundEnd = state.phase === ThreeThirteenPhase.ROUND_END;
   const isGameEnd = state.phase === ThreeThirteenPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = (isDrawPhase || isDiscardPhase) && state.players[state.currentPlayerIdx]?.isHuman === true;
+
+  // The wild rank changes each round; flag matching cards so players don't have to cross-check the header.
+  const isWildCard = (card: Card): boolean => card.value === state.wildRank;
+  const wildBadge = (card: Card) =>
+    isWildCard(card) ? (
+      <span
+        aria-hidden="true"
+        className="absolute top-0.5 right-0.5 px-1 rounded bg-ds-accent text-ds-text-on-accent text-[8px] font-extrabold tracking-wider shadow-md pointer-events-none"
+        data-testid="tt-wild-badge"
+      >
+        {t('wildBadge')}
+      </span>
+    ) : null;
+
   // Lowest cumulative score wins, so highlight the leader (fewest points).
   const humanDeadwood = humanPlayer?.deadwood ?? null;
 
@@ -220,9 +234,17 @@ function ThreeThirteenPageContent() {
                 {/* Discard pile top */}
                 {state.discardTop && (
                   <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3" data-tutorial="tt-draw-area">
-                    <AnimatedCard card={state.discardTop} width={cardWidth} />
+                    <div
+                      className={`relative inline-block rounded ${isWildCard(state.discardTop) ? 'ring-2 ring-ds-accent' : ''}`}
+                    >
+                      <AnimatedCard card={state.discardTop} width={cardWidth} />
+                      {wildBadge(state.discardTop)}
+                    </div>
                     <div className="text-ds-text-muted text-sm">
                       <div>{t('discardTop')}</div>
+                      {isWildCard(state.discardTop) && (
+                        <div className="text-ds-accent font-semibold">{t('wildAria')}</div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -309,9 +331,11 @@ function ThreeThirteenPageContent() {
                     type="button"
                     key={`${card.design}-${card.value}-${idx}`}
                     onClick={() => toggleCard(idx)}
-                    aria-label={cardAlt(card)}
+                    aria-label={`${cardAlt(card)}${isWildCard(card) ? ` ${t('wildAria')}` : ''}`}
                     aria-pressed={selectedCardIndices.includes(idx)}
-                    className={`transition-transform ${focusRingCard}`}
+                    className={`relative transition-transform ${focusRingCard} ${
+                      isWildCard(card) ? 'ring-2 ring-ds-accent' : ''
+                    }`}
                     style={{
                       background: 'none',
                       padding: 0,
@@ -321,6 +345,7 @@ function ThreeThirteenPageContent() {
                     }}
                   >
                     <AnimatedCard card={card} width={cardWidth} />
+                    {wildBadge(card)}
                   </button>
                 ))}
               </div>
