@@ -1,6 +1,8 @@
 import { useCallback, useMemo, useState } from 'react';
-import type { SpideretteMoveZone } from '../api/gameApi';
+import type { SpideretteMoveZone, spideretteApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { DropZone } from '../components/DropZone';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -15,6 +17,8 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useResponsiveTableau } from '../hooks/useResponsiveTableau';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
@@ -22,9 +26,13 @@ import { useSpideretteGame } from '../hooks/useSpideretteGame';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
+import type { SpideretteResponse } from '../types/card';
 import { SpiderettePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { parseSpideretteCommand, SPIDERETTE_HELP } from '../utils/cli/commands/spideretteCommands';
+import { formatSpideretteState } from '../utils/cli/formatters/spideretteFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
 const SPDT_TUTORIAL_STEPS: TutorialStep[] = [
@@ -94,6 +102,18 @@ function SpiderettePageContent() {
     isAutoCompleting,
   } = game;
   const runCmd = game.exec;
+
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('spiderette');
+  const cliConfig: CliGameConfig<SpideretteResponse, Parameters<typeof spideretteApi.exec>> = useMemo(
+    () => ({
+      gameName: 'spiderette',
+      parseCommand: parseSpideretteCommand,
+      formatResponse: formatSpideretteState,
+      helpText: SPIDERETTE_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(runCmd, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const tableau = useResponsiveTableau(TABLEAU_COLS, { padX: 32, gapPx: 2 });
   const isPlayingForKbd = state?.phase === SpiderettePhase.PLAYING;
@@ -195,6 +215,7 @@ function SpiderettePageContent() {
           <span className="ml-3">
             {t('score')}: {state.score}
           </span>
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
       }
       headerEnd={
@@ -203,216 +224,233 @@ function SpiderettePageContent() {
         </span>
       }
     >
-      <LandscapeBanner message={t('landscapeBanner')} />
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <LandscapeBanner message={t('landscapeBanner')} />
 
-      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
-        <div className="flex gap-2 mb-3 items-start">
-          <div className="text-center" data-tutorial="spdt-stock-pile">
-            <div className="text-game-text-muted text-xs mb-1">
-              {t('stock')} ({state.stockCount})
+          <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+            <div className="flex gap-2 mb-3 items-start">
+              <div className="text-center" data-tutorial="spdt-stock-pile">
+                <div className="text-game-text-muted text-xs mb-1">
+                  {t('stock')} ({state.stockCount})
+                </div>
+                {state.stockCount > 0 ? (
+                  <AnimatedCardBack
+                    width={tableau.cw}
+                    onClick={isPlaying ? handleDealGuarded : undefined}
+                    ariaLabel={t('deal')}
+                  />
+                ) : (
+                  <div
+                    style={{ width: tableau.cw, height: tableau.ch }}
+                    className="rounded border border-white/20 flex items-center justify-center text-game-text-muted text-xs"
+                  >
+                    {t('empty')}
+                  </div>
+                )}
+                {state.stockCount > 0 && (
+                  <div className="text-game-text-muted text-xs mt-1">
+                    {t('dealsRemaining', { count: dealsRemaining })}
+                  </div>
+                )}
+              </div>
             </div>
-            {state.stockCount > 0 ? (
-              <AnimatedCardBack
-                width={tableau.cw}
-                onClick={isPlaying ? handleDealGuarded : undefined}
-                ariaLabel={t('deal')}
-              />
-            ) : (
-              <div
-                style={{ width: tableau.cw, height: tableau.ch }}
-                className="rounded border border-white/20 flex items-center justify-center text-game-text-muted text-xs"
-              >
-                {t('empty')}
+
+            <div className="relative">
+              <div className="flex gap-0.5 sm:gap-1 mb-3" data-tutorial="spdt-tableau">
+                {state.tableau.map((col, colIdx) => {
+                  const tableauColZone: SpideretteMoveZone = { zone: 'tableau', col: colIdx };
+                  return (
+                    <div
+                      key={`col-${colIdx.toString()}`}
+                      data-testid={`spdt-col-${colIdx.toString()}`}
+                      className={
+                        isHintTargetCol(colIdx)
+                          ? 'flex-1 min-w-0 rounded ring-1 ring-ds-success animate-pulse'
+                          : 'flex-1 min-w-0'
+                      }
+                    >
+                      <DropZone
+                        isDropTarget={dnd.isDropTarget(tableauColZone)}
+                        onDragOver={dnd.handleDragOver(tableauColZone)}
+                        onDrop={dnd.handleDrop(tableauColZone)}
+                        onDragLeave={dnd.handleDragLeave}
+                        className="relative block"
+                      >
+                        <div className="relative" style={{ minHeight: tableau.ch }}>
+                          {col.length === 0 ? (
+                            <button
+                              key={`empty-${colIdx.toString()}-${emptyDealAttemptKey.toString()}`}
+                              type="button"
+                              onClick={() => handleSelectTarget(tableauColZone)}
+                              disabled={!isPlaying || loading || !selectedSource}
+                              style={{ height: tableau.ch }}
+                              data-testid={`spdt-empty-col-${colIdx.toString()}`}
+                              className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${emptyDealAttemptKey > 0 ? ' animate-shake border-ds-warning text-ds-warning' : ''}`}
+                            >
+                              {t('empty')}
+                            </button>
+                          ) : (
+                            col.map((tc, cardIdx) => {
+                              const cardZone: SpideretteMoveZone = { zone: 'tableau', col: colIdx, cardIndex: cardIdx };
+                              return (
+                                <div
+                                  key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
+                                  className="absolute left-0 right-0"
+                                  style={{ top: cardIdx * tableau.co }}
+                                >
+                                  {tc.faceUp && tc.card ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        if (selectedSource) {
+                                          if (selectedSource.col !== colIdx) {
+                                            handleSelectTarget(tableauColZone);
+                                          } else {
+                                            handleSelectSource(cardZone);
+                                          }
+                                        } else {
+                                          handleSelectSource(cardZone);
+                                        }
+                                      }}
+                                      disabled={!isPlaying || loading}
+                                      aria-label={cardAlt(tc.card)}
+                                      aria-pressed={isSourceSelected(colIdx, cardIdx)}
+                                      draggable={isPlaying && !loading}
+                                      onDragStart={dnd.handleDragStart(cardZone)}
+                                      onDragEnd={dnd.handleDragEnd}
+                                      data-testid={`spdt-card-${colIdx.toString()}-${cardIdx.toString()}`}
+                                      className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected(colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : isHintSource(colIdx, cardIdx) ? 'ring-2 ring-ds-info animate-pulse' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                                    >
+                                      <AnimatedCard
+                                        card={tc.card}
+                                        width={tableau.cw}
+                                        draggable={false}
+                                        style={{ width: '100%' }}
+                                      />
+                                    </button>
+                                  ) : (
+                                    <AnimatedCardBack width={tableau.cw} style={{ width: '100%' }} />
+                                  )}
+                                </div>
+                              );
+                            })
+                          )}
+                          {col.length > 0 && <div style={{ height: (col.length - 1) * tableau.co + tableau.ch }} />}
+                        </div>
+                      </DropZone>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {hint && (
+              <div className="text-ds-warning text-sm mb-2" role="status" aria-live="polite">
+                {t('hintAvailable')}: {t('tableau')} {hint.fromCol} [{hint.cardIndex}] → {t('tableau')} {hint.toCol}
               </div>
             )}
-            {state.stockCount > 0 && (
-              <div className="text-game-text-muted text-xs mt-1">{t('dealsRemaining', { count: dealsRemaining })}</div>
-            )}
-          </div>
-        </div>
 
-        <div className="relative">
-          <div className="flex gap-0.5 sm:gap-1 mb-3" data-tutorial="spdt-tableau">
-            {state.tableau.map((col, colIdx) => {
-              const tableauColZone: SpideretteMoveZone = { zone: 'tableau', col: colIdx };
-              return (
-                <div
-                  key={`col-${colIdx.toString()}`}
-                  data-testid={`spdt-col-${colIdx.toString()}`}
-                  className={
-                    isHintTargetCol(colIdx)
-                      ? 'flex-1 min-w-0 rounded ring-1 ring-ds-success animate-pulse'
-                      : 'flex-1 min-w-0'
-                  }
-                >
-                  <DropZone
-                    isDropTarget={dnd.isDropTarget(tableauColZone)}
-                    onDragOver={dnd.handleDragOver(tableauColZone)}
-                    onDrop={dnd.handleDrop(tableauColZone)}
-                    onDragLeave={dnd.handleDragLeave}
-                    className="relative block"
-                  >
-                    <div className="relative" style={{ minHeight: tableau.ch }}>
-                      {col.length === 0 ? (
-                        <button
-                          key={`empty-${colIdx.toString()}-${emptyDealAttemptKey.toString()}`}
-                          type="button"
-                          onClick={() => handleSelectTarget(tableauColZone)}
-                          disabled={!isPlaying || loading || !selectedSource}
-                          style={{ height: tableau.ch }}
-                          data-testid={`spdt-empty-col-${colIdx.toString()}`}
-                          className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${emptyDealAttemptKey > 0 ? ' animate-shake border-ds-warning text-ds-warning' : ''}`}
-                        >
-                          {t('empty')}
-                        </button>
-                      ) : (
-                        col.map((tc, cardIdx) => {
-                          const cardZone: SpideretteMoveZone = { zone: 'tableau', col: colIdx, cardIndex: cardIdx };
-                          return (
-                            <div
-                              key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
-                              className="absolute left-0 right-0"
-                              style={{ top: cardIdx * tableau.co }}
-                            >
-                              {tc.faceUp && tc.card ? (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    if (selectedSource) {
-                                      if (selectedSource.col !== colIdx) {
-                                        handleSelectTarget(tableauColZone);
-                                      } else {
-                                        handleSelectSource(cardZone);
-                                      }
-                                    } else {
-                                      handleSelectSource(cardZone);
-                                    }
-                                  }}
-                                  disabled={!isPlaying || loading}
-                                  aria-label={cardAlt(tc.card)}
-                                  aria-pressed={isSourceSelected(colIdx, cardIdx)}
-                                  draggable={isPlaying && !loading}
-                                  onDragStart={dnd.handleDragStart(cardZone)}
-                                  onDragEnd={dnd.handleDragEnd}
-                                  data-testid={`spdt-card-${colIdx.toString()}-${cardIdx.toString()}`}
-                                  className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected(colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : isHintSource(colIdx, cardIdx) ? 'ring-2 ring-ds-info animate-pulse' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
-                                >
-                                  <AnimatedCard
-                                    card={tc.card}
-                                    width={tableau.cw}
-                                    draggable={false}
-                                    style={{ width: '100%' }}
-                                  />
-                                </button>
-                              ) : (
-                                <AnimatedCardBack width={tableau.cw} style={{ width: '100%' }} />
-                              )}
-                            </div>
-                          );
-                        })
-                      )}
-                      {col.length > 0 && <div style={{ height: (col.length - 1) * tableau.co + tableau.ch }} />}
-                    </div>
-                  </DropZone>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {hint && (
-          <div className="text-ds-warning text-sm mb-2" role="status" aria-live="polite">
-            {t('hintAvailable')}: {t('tableau')} {hint.fromCol} [{hint.cardIndex}] → {t('tableau')} {hint.toCol}
-          </div>
-        )}
-
-        {/* Announce the empty-column deal guard for screen readers; the key
+            {/* Announce the empty-column deal guard for screen readers; the key
             forces a remount on each blocked attempt so it re-announces, mirroring
             the visual shake animation. */}
-        {emptyDealAttemptKey > 0 && (
-          <div
-            key={`deal-warn-${emptyDealAttemptKey.toString()}`}
-            className="sr-only"
-            role="status"
-            aria-live="assertive"
-          >
-            {t('cannotDealEmptyColExists')}
+            {emptyDealAttemptKey > 0 && (
+              <div
+                key={`deal-warn-${emptyDealAttemptKey.toString()}`}
+                className="sr-only"
+                role="status"
+                aria-live="assertive"
+              >
+                {t('cannotDealEmptyColExists')}
+              </div>
+            )}
+
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+
+            <ActionLogSection
+              isEndPhase={isEnded}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
           </div>
-        )}
 
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+          <SettingsPanel title={tc('settings.title')} groups={[]} />
 
-        <ActionLogSection
-          isEndPhase={isEnded}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
-      </div>
-
-      <SettingsPanel title={tc('settings.title')} groups={[]} />
-
-      <GameFooter className={`${gameTheme.spiderette.footer} px-4 py-2.5`}>
-        <ErrorAlert message={error ?? hintError} onRetry={retry} />
-        <div className="flex gap-2 items-center flex-wrap">
-          {isPlaying && (
-            <div data-tutorial="spdt-controls">
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={handleDealGuarded}
-                disabled={loading || isAutoCompleting}
-                title={dealBlockedByEmpty ? t('cannotDealEmptyColExists') : undefined}
-              >
-                {t('deal')}
-              </button>
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={handleUndo}
-                disabled={loading || isAutoCompleting || !state.canUndo}
-              >
-                {t('undo')}
-              </button>
-              {state.isStalemate && (
-                <StalemateEscapeButton
-                  undoToEscape={state.undoToEscape ?? 0}
-                  onEscape={handleUndoEscape}
-                  disabled={loading || isAutoCompleting}
-                />
+          <GameFooter className={`${gameTheme.spiderette.footer} px-4 py-2.5`}>
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
+            <div className="flex gap-2 items-center flex-wrap">
+              {isPlaying && (
+                <div data-tutorial="spdt-controls">
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleDealGuarded}
+                    disabled={loading || isAutoCompleting}
+                    title={dealBlockedByEmpty ? t('cannotDealEmptyColExists') : undefined}
+                  >
+                    {t('deal')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleUndo}
+                    disabled={loading || isAutoCompleting || !state.canUndo}
+                  >
+                    {t('undo')}
+                  </button>
+                  {state.isStalemate && (
+                    <StalemateEscapeButton
+                      undoToEscape={state.undoToEscape ?? 0}
+                      onEscape={handleUndoEscape}
+                      disabled={loading || isAutoCompleting}
+                    />
+                  )}
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={handleHint}
+                    disabled={loading || isAutoCompleting}
+                  >
+                    {t('hint')}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
+                    onClick={handleAutoComplete}
+                    disabled={loading || isAutoCompleting || !autoCompleteReady}
+                    data-testid="autocomplete-button"
+                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
+                  >
+                    {t('autoComplete')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnDanger}
+                    onClick={confirmGiveUpAction}
+                    disabled={loading || isAutoCompleting}
+                  >
+                    {t('giveup')}
+                  </button>
+                </div>
               )}
-              <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || isAutoCompleting}>
-                {t('hint')}
-              </button>
-              <button
-                type="button"
-                className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
-                onClick={handleAutoComplete}
-                disabled={loading || isAutoCompleting || !autoCompleteReady}
-                data-testid="autocomplete-button"
-                title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
-              >
-                {t('autoComplete')}
-              </button>
-              <button
-                type="button"
-                className={btnDanger}
-                onClick={confirmGiveUpAction}
-                disabled={loading || isAutoCompleting}
-              >
-                {t('giveup')}
-              </button>
+              <GameResetButton
+                isGameEnd={isEnded}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="spdt-reset-button"
+              />
             </div>
-          )}
-          <GameResetButton
-            isGameEnd={isEnded}
-            onReset={handleManualReset}
-            requestConfirm={requestConfirm}
-            loading={loading}
-            dataTutorial="spdt-reset-button"
-          />
-        </div>
-      </GameFooter>
+          </GameFooter>
+        </>
+      )}
     </GamePageShell>
   );
 }
