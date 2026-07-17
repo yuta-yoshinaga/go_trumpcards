@@ -65,6 +65,9 @@
     "opponentTeamWin": "相手チームの勝ち"
   },
   "hintPlay": "おすすめの一手",
+  "hintOrderUpTake": "おすすめ: 取る",
+  "hintOrderUpPass": "おすすめ: パス",
+  "hintCallSuit": "おすすめ: {{suit}}を宣言",
   "hintReason": {
     "strategic_pickup": "手札が強いので取る",
     "pass_recommended": "手札が弱いのでパス",
