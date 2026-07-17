@@ -697,6 +697,20 @@ describe('DaifugoPage', () => {
     expect(screen.getByRole('button', { name: '選択して出す' })).toBeInTheDocument();
   });
 
+  it('clears the whole selection with the deselect button', async () => {
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
+    const clearBtn = screen.getByTestId('daifugo-clear-selection');
+    // Disabled with nothing selected.
+    expect(clearBtn).toBeDisabled();
+    // Select a card → the deselect button activates.
+    fireEvent.click(screen.getByAltText('♠ 3'));
+    expect(clearBtn).not.toBeDisabled();
+    // Clicking it empties the selection (the play button goes back to disabled).
+    fireEvent.click(clearBtn);
+    expect(screen.getByRole('button', { name: '選択して出す' })).toBeDisabled();
+  });
+
   it('settings panel renders checkbox labels', async () => {
     renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText('ルール設定')).toBeInTheDocument());

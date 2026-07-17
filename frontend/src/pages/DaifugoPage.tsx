@@ -471,6 +471,15 @@ function DaifugoPageContent() {
               >
                 {playButtonLabel}
               </button>
+              <button
+                type="button"
+                className={`${btnSecondary} min-w-[90px]`}
+                disabled={loading || selectedIndices.length === 0}
+                onClick={clearSelection}
+                data-testid="daifugo-clear-selection"
+              >
+                {t('clearSelectionButton')}
+              </button>
             </div>
           </GameFooter>
         </>
