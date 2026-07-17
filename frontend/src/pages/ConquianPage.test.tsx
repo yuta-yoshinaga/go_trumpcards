@@ -101,7 +101,39 @@ const meldsDisplayState: ConquianResponse = {
   ],
 };
 
+// Human has laid a 3-card set and a 6-card run (9 of 11 melded, 2 remaining ->
+// the "close to winning" highlight should appear).
+const meldProgressState: ConquianResponse = {
+  ...meldPhaseState,
+  players: [
+    {
+      ...drawPhaseState.players[0],
+      melds: [
+        {
+          cards: [
+            { design: 'SPADE', value: 5 },
+            { design: 'HEART', value: 5 },
+            { design: 'CLOVER', value: 5 },
+          ],
+        },
+        {
+          cards: [
+            { design: 'DIAMOND', value: 3 },
+            { design: 'DIAMOND', value: 4 },
+            { design: 'DIAMOND', value: 5 },
+            { design: 'DIAMOND', value: 6 },
+            { design: 'DIAMOND', value: 7 },
+            { design: 'DIAMOND', value: 8 },
+          ],
+        },
+      ],
+    },
+    { id: 1, isHuman: false, cardCount: 10, cards: [], melds: [], wins: 1 },
+  ],
+};
+
 beforeEach(() => {
+  localStorage.clear();
   mockExec.mockResolvedValue(drawPhaseState);
 });
 
@@ -368,6 +400,26 @@ describe('ConquianPage', () => {
     expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
     fireEvent.click(cardBtn);
     expect(cardBtn).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('shows meld progress toward 11 for the human and CPU', async () => {
+    renderWithProviders(<ConquianPage />);
+    const humanProgress = await screen.findByTestId('conquian-meld-progress');
+    // Fresh game: nobody has melded yet.
+    expect(humanProgress).toHaveTextContent('メルド 0/11');
+    expect(screen.getByTestId('conquian-meld-progress-cpu-1')).toHaveTextContent('メルド 0/11');
+  });
+
+  it('counts melded cards and highlights the final stretch', async () => {
+    mockExec.mockResolvedValue(meldProgressState);
+    renderWithProviders(<ConquianPage />);
+    const humanProgress = await screen.findByTestId('conquian-meld-progress');
+    // 3 + 6 = 9 melded of 11.
+    expect(humanProgress).toHaveTextContent('メルド 9/11');
+    expect(humanProgress).toHaveTextContent('あと 2 枚');
+    const bar = humanProgress.querySelector('[role="progressbar"]');
+    expect(bar).toHaveAttribute('aria-valuenow', '9');
+    expect(bar).toHaveAttribute('aria-valuemax', '11');
   });
 
   it('renders tutorial button', async () => {

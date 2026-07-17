@@ -26,7 +26,7 @@ import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { ConquianResponse } from '../types/card';
+import type { ConquianPlayerData, ConquianResponse } from '../types/card';
 import { ConquianPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -34,6 +34,9 @@ import { CONQUIAN_HELP, parseConquianCommand } from '../utils/cli/commands/conqu
 import { formatConquianState } from '../utils/cli/formatters/conquianFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+
+/** Total cards a player must lay in table melds to win a Conquian round. */
+const CONQUIAN_MELD_TARGET = 11;
 
 const CONQUIAN_PHASE_KEYS: Readonly<Record<number, string>> = {
   [ConquianPhase.DRAW]: 'draw',
@@ -107,6 +110,37 @@ function ConquianPageContent() {
 
   const humanPlayer = state?.players.find((p) => p.isHuman);
   const humanCardCount = humanPlayer?.cards?.length ?? 0;
+
+  // Meld-progress indicator: count the cards laid across a player's table melds
+  // toward the 11-card win condition, highlighting the final stretch (<=2 left).
+  const renderMeldProgress = (p: ConquianPlayerData, testId: string) => {
+    const melded = p.melds.reduce((sum, m) => sum + m.cards.length, 0);
+    const remaining = CONQUIAN_MELD_TARGET - melded;
+    const isClose = remaining > 0 && remaining <= 2;
+    const pct = Math.min(100, (melded / CONQUIAN_MELD_TARGET) * 100);
+    const label = t('meldProgress', { count: melded, total: CONQUIAN_MELD_TARGET });
+    return (
+      <div data-testid={testId} className="mt-1">
+        <div className="flex items-center justify-between text-xs mb-0.5">
+          <span className="text-ds-text-muted">{label}</span>
+          {isClose && <span className="text-ds-warning font-bold">{t('meldRemaining', { count: remaining })}</span>}
+        </div>
+        <div
+          role="progressbar"
+          aria-label={label}
+          aria-valuemin={0}
+          aria-valuemax={CONQUIAN_MELD_TARGET}
+          aria-valuenow={melded}
+          className="h-1.5 w-full rounded-sm bg-white/15 overflow-hidden"
+        >
+          <div
+            className={`h-full rounded-sm ${isClose ? 'bg-ds-warning' : 'bg-ds-accent'}`}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      </div>
+    );
+  };
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('conquian');
   const cliConfig: CliGameConfig<ConquianResponse, Parameters<typeof conquianApi.exec>> = useMemo(
@@ -267,6 +301,7 @@ function ConquianPageContent() {
                         {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                         {t('wins', { count: p.wins })}
                       </div>
+                      {renderMeldProgress(p, `conquian-meld-progress-cpu-${p.id}`)}
                       {/* Reveal CPU cards at round/game end */}
                       {(isRoundEnd || isGameEnd) && p.cards.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1">
@@ -326,6 +361,9 @@ function ConquianPageContent() {
               <div className="text-xs font-bold mb-1 text-ds-info" data-testid="conquian-forced-use">
                 {t('forcedUse')}
               </div>
+            )}
+            {humanPlayer && (
+              <div className="mb-2 max-w-xs">{renderMeldProgress(humanPlayer, 'conquian-meld-progress')}</div>
             )}
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="cq-player-hand">

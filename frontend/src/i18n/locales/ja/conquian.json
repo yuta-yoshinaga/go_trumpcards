@@ -23,6 +23,8 @@
   "scoresWins": "勝利",
   "melds": "メルド",
   "tableMelds": "テーブルメルド",
+  "meldProgress": "メルド {{count}}/{{total}}",
+  "meldRemaining": "あと {{count}} 枚",
   "drawStockButton": "山札から引く",
   "drawDiscardButton": "捨て札から引く",
   "meldButton": "メルドする",
