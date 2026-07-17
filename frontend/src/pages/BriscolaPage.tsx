@@ -70,6 +70,10 @@ function BriscolaPageContent() {
     void dispatch('next');
   }, [dispatch]);
 
+  const handleHint = useCallback(() => {
+    void dispatch('hint');
+  }, [dispatch]);
+
   // Keyboard hand selection: number keys highlight a card, Enter plays it,
   // Escape clears. Mouse/touch still plays a card directly on click.
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
@@ -255,11 +259,24 @@ function BriscolaPageContent() {
           </div>
         )}
 
+        {/* Server hint text (populated by the hint command). */}
+        {state.hint && (
+          <p className="mt-3 text-sm text-ds-accent" data-testid="briscola-hint">
+            {t('hint.available')}: {t(`hint.${state.hint.reason}`)}
+            {state.hint.cardIndex !== undefined && ` ${t('hint.card', { index: state.hint.cardIndex })}`}
+          </p>
+        )}
+
         {/* Phase-specific controls */}
         <div className="mt-4 flex flex-wrap gap-2">
           {isTrickEnd && (
             <button type="button" className={btnSuccess} onClick={handleNext} disabled={loading}>
               {t('actions.next')}
+            </button>
+          )}
+          {isHumanTurn && (
+            <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
+              {t('actions.hint')}
             </button>
           )}
           <button type="button" className={btnPrimary} onClick={() => requestConfirm(handleReset)} disabled={loading}>
