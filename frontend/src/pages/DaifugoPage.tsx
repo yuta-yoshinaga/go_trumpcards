@@ -311,7 +311,14 @@ function DaifugoPageContent() {
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleDrop}
             >
-              <div className="text-ds-text-primary font-bold mb-1.5">{t('tableCards')}</div>
+              <div className="text-ds-text-primary font-bold mb-1.5">
+                {t('tableCards')}
+                {tableCount > 0 && state.lastPlayPlayerIdx >= 0 && (
+                  <span className="ml-2 text-xs font-normal text-ds-text-muted" data-testid="daifugo-last-player">
+                    {t('lastPlayedBy', { name: findPlayerName(state.players, state.lastPlayPlayerIdx) })}
+                  </span>
+                )}
+              </div>
               <div className="flex flex-wrap gap-1">
                 {!state.tableCards || state.tableCards.length === 0 ? (
                   <span className="text-ds-text-muted">{t('tableEmpty')}</span>

@@ -14,6 +14,7 @@
   "selectToPlay": "カードをクリックして選択",
   "tableCards": "場札",
   "tableEmpty": "（なし）",
+  "lastPlayedBy": "（{{name}} が出した）",
   "playButton": "選択して出す",
   "passButton": "渡す",
   "clearSelectionButton": "選択解除",

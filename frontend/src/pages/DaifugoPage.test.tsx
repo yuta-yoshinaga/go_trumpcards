@@ -1355,4 +1355,20 @@ describe('DaifugoPage', () => {
       vi.useRealTimers();
     }
   });
+
+  it('shows who played the current table cards', async () => {
+    // cpuTurnState: table has cards, lastPlayPlayerIdx 0 (you).
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByTestId('daifugo-last-player')).toBeInTheDocument());
+    expect(screen.getByTestId('daifugo-last-player')).toHaveTextContent('あなた');
+  });
+
+  it('hides the played-by badge when the table has been flushed', async () => {
+    // humanTurnState: empty table, lastPlayPlayerIdx -1.
+    mockExec.mockResolvedValue(humanTurnState);
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText('（なし）')).toBeInTheDocument());
+    expect(screen.queryByTestId('daifugo-last-player')).not.toBeInTheDocument();
+  });
 });
