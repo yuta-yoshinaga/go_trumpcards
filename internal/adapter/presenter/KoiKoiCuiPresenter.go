@@ -87,6 +87,34 @@ func koikoiPlayerStr(g interfaces.KoiKoiGame, idx int) string {
 	return b.String()
 }
 
+// koikoiDecisionInfoStr describes the stakes of a koi-koi / shobu decision:
+// the points locked in by calling shobu now (pending × the koi-koi multiplier)
+// and both players' current cumulative scores, so the CLI player can weigh the
+// reward against the risk of being overtaken by continuing.
+func koikoiDecisionInfoStr(g interfaces.KoiKoiGame) string {
+	// Calling shobu now scores pending × 2 once any koi-koi has been declared
+	// this round (mirrors KoiKoi.endRound).
+	mult := 1
+	if g.GetKoikoiCount() >= 1 {
+		mult = 2
+	}
+	confirmed := g.GetPendingPoints() * mult
+
+	humanIdx, oppIdx := 0, 1
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		if g.GetPlayer(i).GetIsHuman() {
+			humanIdx = i
+			oppIdx = (i + 1) % g.GetPlayerCnt()
+			break
+		}
+	}
+	return i18n.Tf("koikoi.promptDecisionInfo",
+		"confirmed", strconv.Itoa(confirmed),
+		"mult", strconv.Itoa(mult),
+		"you", strconv.Itoa(g.GetPlayer(humanIdx).GetScore()),
+		"opp", strconv.Itoa(g.GetPlayer(oppIdx).GetScore()))
+}
+
 // Output renders the current game state for the active locale.
 func (p *KoiKoiCuiPresenter) Output(g interfaces.KoiKoiGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("koikoi.helpTitle"), func(b *strings.Builder) {
@@ -112,6 +140,7 @@ func (p *KoiKoiCuiPresenter) Output(g interfaces.KoiKoiGame, lastErr error) stri
 			b.WriteString(i18n.Tf("koikoi.promptDecision",
 				"yaku", koikoiYakuStr(g.GetPendingYaku()),
 				"points", strconv.Itoa(g.GetPendingPoints())) + "\n")
+			b.WriteString(koikoiDecisionInfoStr(g) + "\n")
 		case domain.KoiKoiPhaseRoundEnd:
 			b.WriteString(koikoiRoundResultStr(g) + "\n")
 		case domain.KoiKoiPhaseGameEnd:

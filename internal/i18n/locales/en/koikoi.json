@@ -10,6 +10,7 @@
   "playerLine": "{{name}}: hand {{hand}}  captured: {{captured}}  score: {{score}}  yaku: {{yaku}} [{{points}}]",
   "promptPlay": "Turn: {{name}}",
   "promptDecision": "Yaku formed: {{yaku}} = {{points}} pts. Type kk (Koi-Koi) to continue, sb (Shobu) to score now.",
+  "promptDecisionInfo": "Shobu locks in {{confirmed}} pts (x{{mult}}) — current totals: you {{you}} vs opponent {{opp}}.",
   "promptGameEnd": "Game over. Type nr to start a new game.",
   "promptHelp": "p <h> [f] to play (f = field card on a 2-way match). kk=Koi-Koi, sb=Shobu, nr=next",
   "roundWin": "{{name}} wins the round! {{yaku}} -> {{total}} pts (x{{mult}})",

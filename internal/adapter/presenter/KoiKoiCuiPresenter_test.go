@@ -21,6 +21,26 @@ func TestKoiKoiCuiPresenter_Output_PlayPhase(t *testing.T) {
 	assert.Contains(t, out, "[0]") // human indexed hand + indexed field
 }
 
+func TestKoiKoiCuiPresenter_Output_DecisionInfo(t *testing.T) {
+	p := new(presenter.KoiKoiCuiPresenter)
+
+	g := domain.NewDefaultKoiKoi()
+	g.Reset()
+	g.SetPhase(domain.KoiKoiPhaseKoiKoiDecision)
+
+	// No koi-koi yet → the shobu multiplier is x1 (ja locale renders "倍率×1").
+	out := p.Output(g, nil)
+	assert.Contains(t, out, "×1")
+	// Both players' current cumulative scores are shown.
+	assert.Contains(t, out, "あなた")
+	assert.Contains(t, out, "相手")
+
+	// Once a koi-koi has been declared this round, the multiplier becomes x2.
+	g.SetKoikoiCount(1)
+	out = p.Output(g, nil)
+	assert.Contains(t, out, "×2")
+}
+
 func TestKoiKoiCuiPresenter_Output_AllPhases(t *testing.T) {
 	p := new(presenter.KoiKoiCuiPresenter)
 
