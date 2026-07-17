@@ -351,6 +351,13 @@ function StreetsAndAlleysPageContent() {
                           </button>
                         )}
                       </DropZone>
+                      <div
+                        data-testid={`sa-foundation-progress-${idx.toString()}`}
+                        className={`text-xs mt-1 tabular-nums ${pile.length === 13 ? 'text-ds-success' : 'text-game-text-muted'}`}
+                      >
+                        {pile.length === 13 && <span aria-hidden="true">✓ </span>}
+                        {t('foundationProgress', { count: pile.length })}
+                      </div>
                     </div>
                   );
                 })}
