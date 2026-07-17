@@ -9,6 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -280,6 +281,9 @@ function SpiteAndMalicePageContent() {
               },
             ]}
           />
+          {hintEnabled && currentHint ? (
+            <HintTooltip reason={t(currentHint.reason)} confidence={currentHint.confidence} />
+          ) : null}
           <LandscapeBanner message={t('landscapeBanner', { defaultValue: '' })} />
 
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8 space-y-4">
