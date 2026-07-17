@@ -24,6 +24,7 @@
   "bidPhase": "入札フェーズ — レイズ（+10）またはパス。",
   "talonPhase": "タロン交換 — 各対戦相手に1枚ずつカードを渡します。",
   "bidRaise": "レイズ +10",
+  "bidRaiseTo": "レイズ（{{points}}）",
   "bidPass": "パス",
   "giveCard": "カードを渡す",
   "marriageAvailable": "マリッジ可能: {{list}}",
