@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { piquetApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -250,5 +250,22 @@ describe('PiquetPage', () => {
     const lostBadge = await screen.findByTestId('piquet-meld-badge');
     // scoredBy:1 (younger) → human lost → error palette (border signal, readable text).
     expect(lostBadge).toHaveClass('text-ds-text-primary', 'border-ds-error');
+  });
+
+  it('shows the hint button while the human can act and dispatches the hint command', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<PiquetPage />);
+    const hintBtn = await screen.findByRole('button', { name: 'ヒント' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(makeState());
+    fireEvent.click(hintBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('h'));
+  });
+
+  it('renders the play hint text when a card suggestion is present', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: PiquetPhase.PLAY, hint: { cardIndex: 3, reason: 'lowest' } }));
+    renderWithProviders(<PiquetPage />);
+    const hint = await screen.findByTestId('piquet-hint');
+    expect(hint).toHaveTextContent('[3]');
   });
 });

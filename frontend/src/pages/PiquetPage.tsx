@@ -220,6 +220,11 @@ function PiquetPageContent() {
             {t('nextDeal')}
           </button>
         ) : null}
+        {humanCanPlay || humanCanExchange ? (
+          <button type="button" onClick={game.handleHint} className={btnSuccess} disabled={loading}>
+            {t('hintButton')}
+          </button>
+        ) : null}
         <GameResetButton
           isGameEnd={inGameEndPhase}
           onReset={game.handleReset}
@@ -227,6 +232,14 @@ function PiquetPageContent() {
           loading={loading}
         />
       </div>
+
+      {state.hint ? (
+        <p className="mt-2 text-sm text-ds-accent" data-testid="piquet-hint">
+          {state.hint.cardIndex !== undefined
+            ? t('hintPlay', { index: state.hint.cardIndex })
+            : t('hintDiscard', { indices: (state.hint.discardIndices ?? []).join(', ') })}
+        </p>
+      ) : null}
 
       {state.declResults.length > 0 ? <DeclarationList results={state.declResults} elderIdx={elderIdx} /> : null}
 
