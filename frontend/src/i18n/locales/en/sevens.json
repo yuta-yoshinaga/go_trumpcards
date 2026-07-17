@@ -8,6 +8,7 @@
   "passUnlimited": "∞",
   "clickPlayable": "Click a playable card",
   "mustPass": "No playable cards — please pass",
+  "passRemaining": "Pass ({{count}} left)",
   "playTitle": "Play: {{design}} {{value}}",
   "rankLabel": "#{{rank}}",
   "placeAriaLabel": "Place at {{suit}} {{value}}",

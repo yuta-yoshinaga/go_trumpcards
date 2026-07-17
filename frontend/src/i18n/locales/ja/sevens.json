@@ -8,6 +8,7 @@
   "passUnlimited": "∞",
   "clickPlayable": "出せるカードをクリック",
   "mustPass": "出せるカードがありません — パスしてください",
+  "passRemaining": "パス (残り{{count}}回)",
   "playTitle": "出す: {{design}} {{value}}",
   "rankLabel": "{{rank}}位",
   "placeAriaLabel": "{{suit}} {{value}} に配置",
