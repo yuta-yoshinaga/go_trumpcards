@@ -20,7 +20,9 @@
   "emptyFoundationAriaLabel": "{{suit}} ファンデーション (空)",
   "emptyFreecellAriaLabel": "フリーセル {{idx}} (空)",
   "emptyColumnAriaLabel": "空き列（{{rank}} のみ置けます）",
-  "supermoveLimitTooltip": "一度に動かせるのは{{limit}}枚までです",
+  "supermoveLimitTooltip": "一度に動かせるのは{{limit}}枚まで（空きセル{{cells}}・空き列{{cols}}）",
+  "supermoveBadge": "最大移動: {{limit}}枚",
+  "supermoveBadgeTooltip": "一度に動かせる最大枚数（空きセル{{cells}}・空き列{{cols}}）。空きが増えるほど多く動かせます",
   "tutorial": {
     "freeCells": "7つのフリーセルです。初期配置で3セルが使用済みの状態からスタートします。空きセルが多いほど多くのカードを一度に移動できます。",
     "foundation": "ファンデーションです。各スートを基準ランクから順番に積み上げます（Kの次はAに回ります）。",
