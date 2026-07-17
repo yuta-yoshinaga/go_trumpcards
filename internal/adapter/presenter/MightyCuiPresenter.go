@@ -71,6 +71,36 @@ func mightyPlayerStr(player *domain.MightyPlayer, i int, partnerRevealed bool) s
 // MightyCuiPresenter renders the Mighty CUI view.
 type MightyCuiPresenter struct{}
 
+// mightyKittyLine returns an indexed list of the kitty cards as they now sit in
+// the declarer's hand (the kitty is merged in when this phase begins), so the CUI
+// player can see exactly which hand indices to discard. Returns "" when there is
+// no human-visible kitty to show. The indices shown match those the `e` (exchange)
+// command consumes.
+func mightyKittyLine(m interfaces.MightyGame) string {
+	declarer := m.GetPlayer(m.GetDeclarerIdx())
+	if declarer == nil {
+		return ""
+	}
+	kitty := m.GetKitty()
+	parts := make([]string, 0, len(kitty))
+	for _, kc := range kitty {
+		if kc == nil {
+			continue
+		}
+		for i := 0; i < declarer.GetCardsSize(); i++ {
+			hc := declarer.GetCard(i)
+			if hc != nil && hc.GetDesign() == kc.GetDesign() && hc.GetValue() == kc.GetValue() {
+				parts = append(parts, "["+strconv.Itoa(i)+"]"+mightyCuiCardStr(hc))
+				break
+			}
+		}
+	}
+	if len(parts) == 0 {
+		return ""
+	}
+	return i18n.T("mighty.promptKittyCards") + " " + strings.Join(parts, "  ")
+}
+
 // Output renders the current game state for the active locale.
 func (p *MightyCuiPresenter) Output(m interfaces.MightyGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("mighty.helpTitle"), func(b *strings.Builder) {
@@ -139,6 +169,9 @@ func (p *MightyCuiPresenter) Output(m interfaces.MightyGame, lastErr error) stri
 			b.WriteString(i18n.T("mighty.promptTrumpSuitLegend") + "\n")
 		case domain.MightyPhaseKittyExchange:
 			b.WriteString(i18n.T("mighty.promptKittyHeader") + "\n")
+			if line := mightyKittyLine(m); line != "" {
+				b.WriteString(line + "\n")
+			}
 			b.WriteString(i18n.T("mighty.promptKittyHelp") + "\n")
 		case domain.MightyPhasePlay:
 			currentIdx := m.GetCurrentPlayerIdx()

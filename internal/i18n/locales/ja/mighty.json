@@ -32,6 +32,7 @@
   "promptTrumpDeclareHelp": "コマンド: t <suit> <partnerSuit> <partnerVal>",
   "promptTrumpSuitLegend": "  suit: -1=No-Trump 1=♠ 2=♣ 3=♥ 4=♦   partnerSuit: 0=Joker 1=♠ 2=♣ 3=♥ 4=♦",
   "promptKittyHeader": "場札(キティ)が手札に加わりました。3枚を捨ててください",
+  "promptKittyCards": "キティのカード(手札内の位置):",
   "promptKittyHelp": "コマンド: e <i> <j> <k>",
   "promptPlayTurn": "プレイフェーズ: {{name}}の番",
   "promptPlayHelp": "コマンド: p <idx>   ジョーカーをリードする時は jl <idx> <suit>",
