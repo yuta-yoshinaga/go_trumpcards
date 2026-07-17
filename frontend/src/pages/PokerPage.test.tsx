@@ -1481,4 +1481,18 @@ describe('PokerPage', () => {
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', undefined, 10, undefined, expect.any(Number)));
   });
+
+  it('shows the lowball hand-rank reference only in lowball mode', async () => {
+    mockExec.mockResolvedValue({ ...dealState, isLowball: true });
+    renderWithProviders(<PokerPage />);
+    expect(await screen.findByTestId('pk-lowball-reference')).toBeInTheDocument();
+  });
+
+  it('hides the lowball reference in normal (non-lowball) mode', async () => {
+    mockExec.mockResolvedValue(dealState); // isLowball: false
+    renderWithProviders(<PokerPage />);
+    // Wait for the deal phase to render before asserting the reference is absent.
+    await screen.findByRole('button', { name: 'ベット' });
+    expect(screen.queryByTestId('pk-lowball-reference')).not.toBeInTheDocument();
+  });
 });

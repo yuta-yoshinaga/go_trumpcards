@@ -20,6 +20,13 @@
   "cpuExchangeEntry": "Player {{idx}}: {{count}}枚交換",
   "exchangeCount": "交換: {{count}}枚",
   "lowball": "2-7 ローボール",
+  "lowballRank": {
+    "title": "2-7 ローボール 役早見表",
+    "best": "最強: 7-5-4-3-2（スート違い）",
+    "aceHigh": "A は常に最高位（＝ロー狙いでは最も弱い）",
+    "straightFlushCount": "ストレート・フラッシュは成立扱い（ローでは不利）",
+    "goal": "ペア・ストレート・フラッシュを避けた最も低い5枚を目指す"
+  },
   "lowballMode": "2-7 ローボール モード",
   "cardSelected": "(交換選択中)",
   "settings": {

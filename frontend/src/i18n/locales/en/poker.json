@@ -20,6 +20,13 @@
   "cpuExchangeEntry": "Player {{idx}}: exchanged {{count}} card(s)",
   "exchangeCount": "Exchanged: {{count}}",
   "lowball": "2-7 Lowball",
+  "lowballRank": {
+    "title": "2-7 Lowball hand guide",
+    "best": "Best: 7-5-4-3-2 (unsuited)",
+    "aceHigh": "Aces are always high (the worst card for a low)",
+    "straightFlushCount": "Straights and flushes count against you",
+    "goal": "Aim for the lowest 5 cards with no pair, straight, or flush"
+  },
   "lowballMode": "2-7 Lowball Mode",
   "cardSelected": "(selected for exchange)",
   "settings": {

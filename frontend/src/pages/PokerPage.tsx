@@ -231,6 +231,21 @@ function PokerPageContent() {
         <>
           {/* Scrollable: CPU players + logs */}
           <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
+            {/* Lowball hand-rank quick reference (only meaningful in 2-7 lowball). */}
+            {state?.isLowball && (
+              <details className="mb-2" data-testid="pk-lowball-reference">
+                <summary className="cursor-pointer select-none text-ds-text-primary text-sm font-bold py-1">
+                  {t('lowballRank.title')}
+                </summary>
+                <ul className="list-disc list-inside text-ds-text-muted text-xs py-1 space-y-0.5">
+                  <li className="text-ds-text-primary font-semibold">{t('lowballRank.best')}</li>
+                  <li>{t('lowballRank.aceHigh')}</li>
+                  <li>{t('lowballRank.straightFlushCount')}</li>
+                  <li>{t('lowballRank.goal')}</li>
+                </ul>
+              </details>
+            )}
+
             {/* CPU players */}
             {(() => {
               const cpuCards = cpuPlayers.map((p) => (
