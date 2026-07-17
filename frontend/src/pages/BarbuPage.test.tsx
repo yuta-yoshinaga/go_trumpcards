@@ -131,6 +131,29 @@ describe('BarbuPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('p', { handIndex: 0 }));
   });
 
+  it('labels each trick card with the player who played it and marks the lead', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'play',
+        currentContract: 0,
+        currentTurn: 2,
+        currentTrick: [
+          { playerIdx: 1, card: card('HEART', 10) },
+          { playerIdx: 0, card: card('HEART', 12) },
+        ],
+      }),
+    );
+    renderWithProviders(<BarbuPage />);
+    const trickCards = await screen.findAllByTestId('bb-trick-card');
+    expect(trickCards).toHaveLength(2);
+    // Lead card (index 0) was played by CPU 1 and carries the lead marker (▸).
+    expect(trickCards[0]).toHaveTextContent('CPU 1');
+    expect(trickCards[0]).toHaveTextContent('▸');
+    // Follow card was played by the human; no lead marker on it.
+    expect(trickCards[1]).toHaveTextContent('あなた');
+    expect(trickCards[1]).not.toHaveTextContent('▸');
+  });
+
   it('shows a pass button in Dominoes and passes when no card is playable', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 'play', currentContract: 6, currentTurn: 0, dominoPlayable: [] }));
     renderWithProviders(<BarbuPage />);

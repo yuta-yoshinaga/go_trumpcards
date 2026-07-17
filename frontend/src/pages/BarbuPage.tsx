@@ -292,9 +292,28 @@ function BarbuPageContent() {
                       {state.currentTrick.length === 0 ? (
                         <span className="text-ds-text-muted text-sm self-center">—</span>
                       ) : (
-                        state.currentTrick.map((tcard, i) => (
-                          <AnimatedCard key={i} card={tcard.card} width={cardWidth * 0.9} />
-                        ))
+                        state.currentTrick.map((tcard, i) => {
+                          const tp = state.players[tcard.playerIdx];
+                          const tIsHuman = tp?.isHuman === true;
+                          const isLead = i === 0;
+                          return (
+                            <div key={i} className="text-center" data-testid="bb-trick-card">
+                              <div className={`inline-block rounded ${isLead ? 'ring-2 ring-ds-info' : ''}`}>
+                                <AnimatedCard card={tcard.card} width={cardWidth * 0.9} />
+                              </div>
+                              <div
+                                className={`text-xs mt-1 ${tIsHuman ? 'text-ds-accent font-semibold' : 'text-ds-text-muted'}`}
+                              >
+                                {isLead && (
+                                  <span aria-hidden="true" className="mr-0.5" title={t('label.lead')}>
+                                    ▸
+                                  </span>
+                                )}
+                                {tIsHuman ? tc('player.you') : tc('player.cpu', { id: tp?.id ?? tcard.playerIdx })}
+                              </div>
+                            </div>
+                          );
+                        })
                       )}
                     </div>
                   </>

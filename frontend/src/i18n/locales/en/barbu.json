@@ -48,7 +48,8 @@
     "yourTricks": "Tricks",
     "selectTrump": "Pick a trump suit",
     "you": "You",
-    "cpu": "CPU {{id}}"
+    "cpu": "CPU {{id}}",
+    "lead": "Lead"
   },
   "button": {
     "play": "Play",
