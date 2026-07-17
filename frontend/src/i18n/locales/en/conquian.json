@@ -23,6 +23,8 @@
   "scoresWins": "Wins",
   "melds": "Melds",
   "tableMelds": "Table Melds",
+  "meldProgress": "Melds {{count}}/{{total}}",
+  "meldRemaining": "{{count}} to go",
   "drawStockButton": "Draw Stock",
   "drawDiscardButton": "Draw Discard",
   "meldButton": "Meld",
