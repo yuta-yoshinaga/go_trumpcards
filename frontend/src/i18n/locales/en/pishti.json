@@ -39,5 +39,6 @@
     "hand": "Your hand. Click a card to play it onto the pile. Capture the pile by matching the top rank or with a Jack.",
     "resetButton": "Use this button to reset the game at any time."
   },
-  "playCardAria": "Play {{card}}"
+  "playCardAria": "Play {{card}}",
+  "captureHint": "can capture the pile"
 }
