@@ -32,6 +32,8 @@
   "buryTooMany": "{{count}} too many selected; choose exactly 3",
   "buryButtonDisabledAria": "Bury 3 (select {{count}} more card(s) first)",
   "buryButtonTooManyAria": "Bury 3 (deselect {{count}} card(s) — exactly 3 required)",
+  "bidPreview": "Selected total = {{count}} declared tricks",
+  "bidLegend": "Suit values: ♦=0  ♠=1  ♥=2  ♣=3",
   "currentTrick": "Current Trick",
   "scores": "Scores",
   "scoresPlayer": "Player",

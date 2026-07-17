@@ -207,6 +207,36 @@ describe('NinetyNinePage', () => {
     expect(screen.getByTestId('nn-bury-progress')).toHaveTextContent('3枚選択しました。埋めるボタンで確定できます');
   });
 
+  it('shows a live declared-trick preview that matches the domain suit mapping, plus a legend', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<NinetyNinePage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    // Legend is visible throughout the bid phase.
+    expect(screen.getByTestId('nn-bid-legend')).toHaveTextContent('スート対応: ♦=0 ♠=1 ♥=2 ♣=3');
+
+    // No cards selected yet: total is 0.
+    const preview = screen.getByTestId('nn-bid-preview');
+    expect(preview).toHaveAttribute('aria-live', 'polite');
+    expect(preview).toHaveTextContent('選択中の合計 = 宣言 0 トリック');
+
+    // ♠ A → +1 (SPADE=1).
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    expect(screen.getByTestId('nn-bid-preview')).toHaveTextContent('選択中の合計 = 宣言 1 トリック');
+
+    // ♥ J → +2 (HEART=2) ⇒ 3.
+    fireEvent.click(screen.getByAltText('♥ J').closest('button') as HTMLButtonElement);
+    expect(screen.getByTestId('nn-bid-preview')).toHaveTextContent('選択中の合計 = 宣言 3 トリック');
+
+    // ♣ 5 → +3 (CLOVER=3) ⇒ 6, the declared bid for these exact 3 cards.
+    fireEvent.click(screen.getByAltText('♣ 5').closest('button') as HTMLButtonElement);
+    expect(screen.getByTestId('nn-bid-preview')).toHaveTextContent('選択中の合計 = 宣言 6 トリック');
+
+    // ♦ 8 → +0 (DIAMOND=0): total stays 6.
+    fireEvent.click(screen.getByAltText('♦ 8').closest('button') as HTMLButtonElement);
+    expect(screen.getByTestId('nn-bid-preview')).toHaveTextContent('選択中の合計 = 宣言 6 トリック');
+  });
+
   it('announces an over-selection message instead of a negative count when more than 3 are picked', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<NinetyNinePage />);

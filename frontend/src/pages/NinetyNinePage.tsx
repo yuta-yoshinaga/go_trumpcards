@@ -36,6 +36,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { NINETYNINE_HELP, parseNinetynineCommand } from '../utils/cli/commands/ninetynineCommands';
 import { formatNinetynineState } from '../utils/cli/formatters/ninetynineFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { ninetynineDeclaredTricks } from '../utils/hints/ninetynineHint';
 import { playerName } from '../utils/playerUtils';
 
 /** Number of cards the human must bury during the bid phase. */
@@ -185,6 +186,13 @@ function NinetyNinePageContent() {
   const buryRemaining = Math.max(0, BURY_COUNT - burySelectedCount);
   const buryOverBy = Math.max(0, burySelectedCount - BURY_COUNT);
   const buryReady = burySelectedCount === BURY_COUNT;
+  // Live declared-trick preview: sum of the currently-selected cards' suit
+  // bid values (♦=0 ♠=1 ♥=2 ♣=3). Equals the bid the backend registers once
+  // exactly 3 cards are selected, and updates immediately on every change.
+  const burySelectedCards = selectedCardIndices
+    .map((i) => humanPlayer?.cards[i])
+    .filter((c): c is NonNullable<typeof c> => c != null);
+  const buryPreviewTricks = ninetynineDeclaredTricks(burySelectedCards);
 
   const dealerName = playerName(
     state.players[state.dealerIdx]?.id ?? state.dealerIdx,
@@ -269,6 +277,20 @@ function NinetyNinePageContent() {
                         : buryOverBy > 0
                           ? t('buryTooMany', { count: buryOverBy })
                           : t('buryRemaining', { count: buryRemaining })}
+                    </div>
+                    {/* Live declared-trick preview + suit→value legend so the player can
+                        see what bid their current 3-card selection will produce without
+                        memorising the suit mapping. Announced politely as it updates. */}
+                    <div
+                      className="text-sm text-ds-text-primary mt-1"
+                      role="status"
+                      aria-live="polite"
+                      data-testid="nn-bid-preview"
+                    >
+                      {t('bidPreview', { count: buryPreviewTricks })}
+                    </div>
+                    <div className="text-xs text-ds-text-muted" data-testid="nn-bid-legend">
+                      {t('bidLegend')}
                     </div>
                   </div>
                 )}
