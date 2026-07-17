@@ -18,6 +18,7 @@ import { gameTheme } from '../styles/gameTheme';
 import { BlackHolePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { valueName } from '../utils/cardUtils';
 
 /** Black Hole tutorial step definitions. */
 const BH_TUTORIAL_STEPS: TutorialStep[] = [
@@ -116,6 +117,11 @@ function BlackHolePageContent() {
       : [],
   );
 
+  // Ranks currently accepted by the hole: the hole top's rank ±1, clamped to
+  // [1, 13] with no A↔K wrap (matching the Go domain's blackHoleAdjacent). At the
+  // A/K ends only one neighbour survives the clamp, so a single rank is shown.
+  const acceptableRanks = holeTop ? [holeTop.value - 1, holeTop.value + 1].filter((v) => v >= 1 && v <= 13) : [];
+
   // Spoken hint result: list the playable fan-top cards (or "none"), shown only
   // while the visual highlight is active.
   const hintAnnounce = !showLegalHint
@@ -206,6 +212,21 @@ function BlackHolePageContent() {
             {holeTop ? <CardImage card={holeTop} width={w} /> : null}
           </div>
           <div className="text-ds-text-muted text-xs">{t('moveCount', { count: state.moveCount })}</div>
+          {/* Always-on readout of which rank(s) the hole accepts next, plus the
+              current legal-move count (warning colour when no move remains). */}
+          <div className="flex flex-col gap-0.5 text-xs" data-testid="bh-acceptable">
+            <span className="text-ds-text-primary">
+              {acceptableRanks.length > 0
+                ? t('acceptableRanks', { ranks: acceptableRanks.map(valueName).join(' / ') })
+                : t('acceptableRanksNone')}
+            </span>
+            <span
+              className={legalFans.size === 0 ? 'text-ds-warning' : 'text-ds-text-muted'}
+              data-testid="bh-legal-count"
+            >
+              {t('legalMoveCount', { count: legalFans.size })}
+            </span>
+          </div>
         </div>
 
         {/* Hint result also spoken (colour/animation is not enough). */}

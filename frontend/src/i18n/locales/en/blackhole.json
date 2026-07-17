@@ -29,5 +29,8 @@
   "holeEmptyAria": "Black hole: empty",
   "hintPlayable": "playable",
   "hintLegalFans": "Playable: {{list}}",
-  "hintNoLegal": "No playable card"
+  "hintNoLegal": "No playable card",
+  "acceptableRanks": "Playable ranks: {{ranks}}",
+  "acceptableRanksNone": "Playable ranks: none",
+  "legalMoveCount": "Legal moves: {{count}}"
 }

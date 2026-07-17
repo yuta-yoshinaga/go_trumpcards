@@ -29,5 +29,8 @@
   "holeEmptyAria": "ブラックホール: 空",
   "hintPlayable": "置けます",
   "hintLegalFans": "置けるカード: {{list}}",
-  "hintNoLegal": "置けるカードがありません"
+  "hintNoLegal": "置けるカードがありません",
+  "acceptableRanks": "受け入れ可能: {{ranks}}",
+  "acceptableRanksNone": "受け入れ可能: なし",
+  "legalMoveCount": "合法手: {{count}}"
 }
