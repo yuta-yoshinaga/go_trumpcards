@@ -275,20 +275,49 @@ function CanastaPageContent() {
                         {playerName(p.id, p.isHuman)} - {t('melds')}
                         {p.hasCanasta && <span className="ml-2 text-ds-warning">★</span>}
                       </div>
-                      {p.melds.map((m, mi) => (
-                        <div key={mi} className="flex flex-wrap gap-1 mb-1">
-                          <span className="text-xs text-ds-text-muted self-center mr-1">
-                            {m.isCanasta
-                              ? m.isNatural
-                                ? t('naturalCanasta')
-                                : t('mixedCanasta')
-                              : `(${m.cards.length})`}
-                          </span>
-                          {m.cards.map((card, ci) => (
-                            <AnimatedCard key={`meld-${pi}-${mi}-${ci}`} card={card} width={cardWidth * 0.6} />
-                          ))}
-                        </div>
-                      ))}
+                      {p.melds.map((m, mi) => {
+                        // Same-rank cards are collapsed into an overlapping stack so a meld
+                        // occupies ~one card of height; the <details> expands to the full spread.
+                        const meldW = cardWidth * 0.6;
+                        const canastaLabel = m.isCanasta
+                          ? m.isNatural
+                            ? t('naturalCanasta')
+                            : t('mixedCanasta')
+                          : null;
+                        return (
+                          <details key={mi} className="mb-1" data-testid={`ca-meld-${pi}-${mi}`}>
+                            <summary
+                              className="flex items-center gap-2 cursor-pointer list-none marker:hidden"
+                              title={t('meldExpand')}
+                            >
+                              <div className="relative flex items-center shrink-0">
+                                {m.cards.map((card, ci) => (
+                                  <div
+                                    key={`meld-stack-${pi}-${mi}-${ci}`}
+                                    style={{ marginLeft: ci === 0 ? 0 : -meldW * 0.72, zIndex: ci }}
+                                  >
+                                    <AnimatedCard card={card} width={meldW} silent />
+                                  </div>
+                                ))}
+                              </div>
+                              <span
+                                className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-black/50 text-ds-text-primary"
+                                data-testid={`ca-meld-badge-${pi}-${mi}`}
+                              >
+                                {m.cards.length}
+                              </span>
+                              {canastaLabel && (
+                                <span className="text-xs font-bold text-ds-warning">★ {canastaLabel}</span>
+                              )}
+                            </summary>
+                            <div className="flex flex-wrap gap-1 mt-1 pl-2">
+                              {m.cards.map((card, ci) => (
+                                <AnimatedCard key={`meld-${pi}-${mi}-${ci}`} card={card} width={meldW} silent />
+                              ))}
+                            </div>
+                          </details>
+                        );
+                      })}
                       {p.red3s.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1">
                           <span className="text-xs text-ds-error self-center mr-1">{t('red3s')}</span>
