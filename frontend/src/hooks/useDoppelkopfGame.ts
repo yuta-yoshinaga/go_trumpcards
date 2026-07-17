@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { type DoppelkopfConfigInput, doppelkopfApi } from '../api/gameApi';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
@@ -39,6 +39,18 @@ export function useDoppelkopfGame() {
   }, [clearSelection]);
 
   const { state, loading, error, exec, retry } = useGameApi(doppelkopfApi.exec, { onSuccess });
+
+  const [hintLoading, setHintLoading] = useState(false);
+
+  /** Requests a play hint from the server; guards against double-clicks. */
+  const handleHint = useCallback(async () => {
+    setHintLoading(true);
+    try {
+      await exec('hint');
+    } finally {
+      setHintLoading(false);
+    }
+  }, [exec]);
 
   /** Resets the game, applying the current config. */
   const reset = useCallback(() => {
@@ -82,5 +94,7 @@ export function useDoppelkopfGame() {
     handleAnnounce,
     handleNextTrick,
     handleNextRound,
+    handleHint,
+    hintLoading,
   };
 }

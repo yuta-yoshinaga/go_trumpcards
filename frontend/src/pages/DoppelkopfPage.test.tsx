@@ -81,6 +81,15 @@ describe('DoppelkopfPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0 }));
   });
 
+  it('shows the hint button on the human turn and requests a hint', async () => {
+    renderWithProviders(<DoppelkopfPage />);
+    const hintBtn = await screen.findByRole('button', { name: 'ヒント' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(hintBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+  });
+
   it('shows the Re announce button when the human is Re and can announce', async () => {
     mockExec.mockResolvedValue(announceState);
     renderWithProviders(<DoppelkopfPage />);
