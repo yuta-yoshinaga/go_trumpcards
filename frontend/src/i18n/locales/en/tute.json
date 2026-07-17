@@ -47,6 +47,12 @@
     "teamA": "Team A points: {{points}}",
     "teamB": "Team B points: {{points}}"
   },
+  "declaredMarriages": {
+    "title": "Declared marriages",
+    "declared": "Declared",
+    "undeclared": "Not declared",
+    "trumpNote": "Trump suit scores +40"
+  },
   "hintAvailable": "Hint",
   "hint": {
     "lead_low": "Lead a low card to preserve strength",
