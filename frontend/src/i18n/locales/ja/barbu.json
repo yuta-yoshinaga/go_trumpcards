@@ -48,7 +48,8 @@
     "yourTricks": "トリック",
     "selectTrump": "切札スートを選んでください",
     "you": "あなた",
-    "cpu": "CPU {{id}}"
+    "cpu": "CPU {{id}}",
+    "lead": "リード"
   },
   "button": {
     "play": "出す",
