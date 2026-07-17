@@ -53,5 +53,19 @@
     "followDuck": "Cannot/should not win, so duck",
     "givePartner": "Partner is winning, so give them point cards",
     "discardLow": "Cannot follow, so discard a low card"
+  },
+  "pointLegend": {
+    "title": "Card Points",
+    "cardCol": "Card",
+    "pointCol": "Points",
+    "ace": "A (Ace)",
+    "aceValue": "1 pt",
+    "figures": "K / Q / J / 2 / 3",
+    "figuresValue": "1/3 pt",
+    "others": "Others (4-7, 10)",
+    "othersValue": "0 pt",
+    "lastTrick": "Last trick (ultima)",
+    "lastTrickValue": "+1/3 pt",
+    "note": "Each round totals 11 points. First team to reach the target (default 21) wins."
   }
 }
