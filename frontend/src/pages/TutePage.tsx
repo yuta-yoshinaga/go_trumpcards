@@ -231,6 +231,27 @@ function TutePageContent() {
                   </div>
                 </div>
 
+                {/* Declared marriage suits (persistent readout of state.declaredSuits) */}
+                <div
+                  className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                  data-testid="tute-declared-marriages"
+                >
+                  <div className="mb-1 text-ds-text-primary">{t('declaredMarriages.title')}</div>
+                  {([1, 2, 3, 4] as const).map((suit) => {
+                    const declared = state.declaredSuits[suit] ?? false;
+                    return (
+                      <div key={suit} className="py-0.5">
+                        <span className="mr-1">{SUIT_SYMBOLS[suit]}</span>
+                        {suit === state.trumpSuit && <span className="mr-1 text-ds-warning">★</span>}
+                        <span className={declared ? 'text-ds-text-primary' : ''}>
+                          {declared ? t('declaredMarriages.declared') : t('declaredMarriages.undeclared')}
+                        </span>
+                      </div>
+                    );
+                  })}
+                  <div className="mt-1 text-xs">{t('declaredMarriages.trumpNote')}</div>
+                </div>
+
                 {/* Players: cards / tricks */}
                 {isMobile ? (
                   <details className="mb-2 p-2 rounded bg-black/30">

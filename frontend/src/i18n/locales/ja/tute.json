@@ -47,6 +47,12 @@
     "teamA": "チームAの獲得点: {{points}}",
     "teamB": "チームBの獲得点: {{points}}"
   },
+  "declaredMarriages": {
+    "title": "宣言済みマリッジ",
+    "declared": "宣言済",
+    "undeclared": "未宣言",
+    "trumpNote": "切り札スートは +40 点"
+  },
   "hintAvailable": "ヒント",
   "hint": {
     "lead_low": "低い札でリードして温存することを推奨",
