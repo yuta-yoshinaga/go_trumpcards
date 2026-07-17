@@ -224,6 +224,16 @@ function KlondikePageContent() {
     selectedSource.col === col &&
     selectedSource.cardIndex === cardIndex;
 
+  // Ring highlight tying the hint to the real board cards, mirroring CruelPage:
+  // blue on the source, green on the destination. `hint` is fetched via the hint
+  // command and clears on the next move, so the rings clear when acted upon.
+  const HINT_FROM_RING = 'ring-2 ring-ds-info motion-safe:animate-pulse';
+  const HINT_TO_RING = 'ring-2 ring-ds-success motion-safe:animate-pulse';
+  const isHintFromWaste = hint !== null && hint.fromZone === 'waste';
+  const isHintFromTableau = (col: number, cardIdx: number) =>
+    hint !== null && hint.fromZone === 'tableau' && hint.fromCol === col && hint.cardIndex === cardIdx;
+  const isHintTo = (zone: string, col: number) => hint !== null && hint.toZone === zone && hint.toCol === col;
+
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
@@ -339,7 +349,7 @@ function KlondikePageContent() {
                                 draggable={isPlaying && !loading}
                                 onDragStart={dnd.handleDragStart({ zone: 'waste' })}
                                 onDragEnd={dnd.handleDragEnd}
-                                className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste') ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource({ zone: 'waste' }) ? 'opacity-50' : ''}`}
+                                className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste') ? 'ring-2 ring-ds-warning' : isHintFromWaste ? HINT_FROM_RING : ''} ${dnd.isDragSource({ zone: 'waste' }) ? 'opacity-50' : ''}`}
                               >
                                 <AnimatedCard card={card} width={kl.cw} draggable={false} />
                               </button>
@@ -369,7 +379,10 @@ function KlondikePageContent() {
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: KlondikeMoveZone = { zone: 'foundation', col: idx };
                   return (
-                    <div key={`f-${idx.toString()}`} className="text-center">
+                    <div
+                      key={`f-${idx.toString()}`}
+                      className={`text-center rounded ${isHintTo('foundation', idx) ? HINT_TO_RING : ''}`}
+                    >
                       <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
                       <DropZone
                         isDropTarget={dnd.isDropTarget(foundationZone)}
@@ -419,7 +432,10 @@ function KlondikePageContent() {
               {state.tableau.map((col, colIdx) => {
                 const tableauColZone: KlondikeMoveZone = { zone: 'tableau', col: colIdx };
                 return (
-                  <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
+                  <div
+                    key={`col-${colIdx.toString()}`}
+                    className={`flex-1 min-w-0 rounded ${isHintTo('tableau', colIdx) ? HINT_TO_RING : ''}`}
+                  >
                     <DropZone
                       isDropTarget={dnd.isDropTarget(tableauColZone)}
                       onDragOver={dnd.handleDragOver(tableauColZone)}
@@ -467,7 +483,7 @@ function KlondikePageContent() {
                                     draggable={isPlaying && !loading}
                                     onDragStart={dnd.handleDragStart(cardZone)}
                                     onDragEnd={dnd.handleDragEnd}
-                                    className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                                    className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : isHintFromTableau(colIdx, cardIdx) ? HINT_FROM_RING : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
                                   >
                                     <AnimatedCard
                                       card={tc.card}
