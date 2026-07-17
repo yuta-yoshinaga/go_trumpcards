@@ -407,7 +407,7 @@ function WaspPageContent() {
                         key={`empty-${colIdx.toString()}-${emptyDealAttemptKey.toString()}`}
                         type="button"
                         className={`border-2 border-dashed border-game-border rounded-lg flex items-center justify-center text-game-text-muted ${focusRingWhite} ${
-                          selectedSource ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''
+                          selectedSource ? 'ring-2 ring-ds-success cursor-pointer' : ''
                         }${emptyDealAttemptKey > 0 ? ' animate-shake border-ds-warning text-ds-warning' : ''}`}
                         style={{ width: sc.cw, height: sc.ch }}
                         onClick={() => selectedSource && handleSelectTarget('tableau', colIdx)}
