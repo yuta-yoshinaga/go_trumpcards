@@ -33,7 +33,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { HEARTS_HELP, parseHeartsCommand } from '../utils/cli/commands/heartsCommands';
 import { formatHeartsState } from '../utils/cli/formatters/heartsFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { heartsIllegalReasonKey, heartsLegalPlayIndices } from '../utils/heartsLegal';
+import { heartsLegalPlayIndices } from '../utils/heartsLegal';
 import { heartsPassTarget } from '../utils/heartsPass';
 import { shootTheMoonAlertIdx } from '../utils/heartsShootMoonAlert';
 import { playerName } from '../utils/playerUtils';
@@ -201,8 +201,6 @@ function HeartsPageContent() {
   };
   const legalPlayIndices =
     isHumanTurn && humanPlayer ? heartsLegalPlayIndices(humanPlayer.cards, heartsPlayCtx) : undefined;
-  const illegalReasonKey = isHumanTurn && humanPlayer ? heartsIllegalReasonKey(humanPlayer.cards, heartsPlayCtx) : null;
-  const illegalTooltip = t(illegalReasonKey ?? 'illegalReason.cannotPlay');
 
   return (
     <GamePageShell
@@ -447,8 +445,6 @@ function HeartsPageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="ht"
-                validIndices={legalPlayIndices}
-                restrictedTooltip={illegalTooltip}
                 legalIndices={legalPlayIndices}
               />
             )}

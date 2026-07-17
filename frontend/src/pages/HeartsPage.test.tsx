@@ -944,7 +944,7 @@ describe('HeartsPage', () => {
       ],
     });
 
-    it('rings only follow-suit cards and dims the off-suit card with a reason tooltip', async () => {
+    it('rings only follow-suit cards and leaves the off-suit card clickable (no hard block)', async () => {
       mockExec.mockResolvedValue(followSuitState);
       renderWithProviders(<HeartsPage />);
       await waitFor(() => expect(screen.getByAltText('♦ 8')).toBeInTheDocument());
@@ -952,19 +952,19 @@ describe('HeartsPage', () => {
       const diamond = screen.getByAltText('♦ 8').closest('button') as HTMLButtonElement;
       const spade = screen.getByAltText('♠ 9').closest('button') as HTMLButtonElement;
 
-      // Legal follow-suit card is ringed (data-legal) and not dimmed.
+      // Legal follow-suit card is ringed (data-legal).
       expect(diamond).toHaveAttribute('data-legal', 'true');
       expect(diamond.className).toContain('ring-ds-success');
-      expect(diamond.className).not.toContain('opacity-50');
 
-      // Illegal off-suit card is dimmed with the follow-suit reason tooltip.
+      // Illegal off-suit card gets no ring, but stays clickable — the server remains
+      // authoritative (the highlight is a visual aid, not a hard block).
       expect(spade).not.toHaveAttribute('data-legal');
-      expect(spade.className).toContain('opacity-50');
-      expect(spade).toHaveAttribute('title', 'リードスートに従ってください');
-      expect(spade).toHaveAttribute('aria-disabled', 'true');
+      expect(spade.className).not.toContain('ring-ds-success');
+      expect(spade).not.toHaveAttribute('aria-disabled');
+      expect(spade.className).not.toContain('cursor-not-allowed');
     });
 
-    it('dims a heart lead before hearts are broken with a reason tooltip', async () => {
+    it('rings only non-heart leads before hearts are broken (heart lead left un-ringed)', async () => {
       const leadState = makeHeartsState({
         trickNumber: 3,
         heartsBroken: false,
@@ -996,9 +996,9 @@ describe('HeartsPage', () => {
       const spade = screen.getByAltText('♠ 9').closest('button') as HTMLButtonElement;
 
       expect(spade).toHaveAttribute('data-legal', 'true');
+      expect(spade.className).toContain('ring-ds-success');
       expect(heart).not.toHaveAttribute('data-legal');
-      expect(heart.className).toContain('opacity-50');
-      expect(heart).toHaveAttribute('title', 'ハートはまだブレイクされていません');
+      expect(heart.className).not.toContain('ring-ds-success');
     });
 
     it('does not ring or dim cards when it is not the human turn', async () => {
