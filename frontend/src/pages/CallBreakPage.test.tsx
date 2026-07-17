@@ -233,7 +233,15 @@ describe('CallBreakPage', () => {
   it('renders spades-broken status text', async () => {
     mockExec.mockResolvedValue(spadesBrokenState);
     renderWithProviders(<CallBreakPage />);
-    await waitFor(() => expect(screen.getByText('スペードブレイク済')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getAllByText('スペードブレイク済').length).toBeGreaterThan(0));
+  });
+
+  it('shows a persistent spades-break indicator in the footer hand area', async () => {
+    mockExec.mockResolvedValue(spadesBrokenState);
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('cb-spades-break-footer')).toHaveTextContent('スペードブレイク済');
+    });
   });
 
   it('shows decimal score in the score table (cumulativeScore 41 → 4.1)', async () => {
