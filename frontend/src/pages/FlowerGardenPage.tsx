@@ -274,30 +274,31 @@ function FlowerGardenPageContent() {
   const renderReserveCell = (cellIdx: number) => {
     const reserveCard = state.reserve[cellIdx];
     const reserveZone: FlowerGardenMoveZone = { zone: 'reserve', col: cellIdx };
-    if (!reserveCard) {
-      return (
-        <div
-          key={`r-${cellIdx.toString()}`}
-          className="rounded border border-dashed border-white/10"
-          style={{ width: dims.cw, height: dims.ch }}
-        />
-      );
-    }
+    // Number each bouquet slot 0..15 to match formatHintZone's raw reserve col
+    // (and the CUI's [r0]..[r15]), so players can map hint text to a card.
     return (
-      <button
-        key={`r-${cellIdx.toString()}`}
-        type="button"
-        onClick={() => game.handleSelectSource(reserveZone)}
-        disabled={!isPlaying || loading}
-        aria-label={cardAlt(reserveCard)}
-        aria-pressed={isSourceSelected('reserve', cellIdx)}
-        draggable={isPlaying && !loading}
-        onDragStart={dnd.handleDragStart(reserveZone)}
-        onDragEnd={dnd.handleDragEnd}
-        className={`p-0 border-0 bg-transparent rounded cursor-pointer ${focusRingWhite} ${isSourceSelected('reserve', cellIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(reserveZone) ? 'opacity-50' : ''}`}
-      >
-        <AnimatedCard card={reserveCard} width={dims.cw} draggable={false} />
-      </button>
+      <div key={`r-${cellIdx.toString()}`} className="flex flex-col items-center">
+        {reserveCard ? (
+          <button
+            type="button"
+            onClick={() => game.handleSelectSource(reserveZone)}
+            disabled={!isPlaying || loading}
+            aria-label={cardAlt(reserveCard)}
+            aria-pressed={isSourceSelected('reserve', cellIdx)}
+            draggable={isPlaying && !loading}
+            onDragStart={dnd.handleDragStart(reserveZone)}
+            onDragEnd={dnd.handleDragEnd}
+            className={`p-0 border-0 bg-transparent rounded cursor-pointer ${focusRingWhite} ${isSourceSelected('reserve', cellIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(reserveZone) ? 'opacity-50' : ''}`}
+          >
+            <AnimatedCard card={reserveCard} width={dims.cw} draggable={false} />
+          </button>
+        ) : (
+          <div className="rounded border border-dashed border-white/10" style={{ width: dims.cw, height: dims.ch }} />
+        )}
+        <span className="text-xs text-ds-text-muted mt-0.5" aria-hidden="true">
+          #{cellIdx}
+        </span>
+      </div>
     );
   };
 
