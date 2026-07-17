@@ -21,6 +21,24 @@ func TestMichiganCuiPresenter_OutputBetPhase(t *testing.T) {
 	assert.Contains(t, out, "ブードル")
 }
 
+func TestMichiganCuiPresenter_OutputBetHint(t *testing.T) {
+	p := new(presenter.MichiganCuiPresenter)
+
+	// Held: the human holds the card that claims boodle 0 → it is recommended.
+	g := domain.NewDefaultMichigan()
+	bc := g.GetBoodle(0).GetCard()
+	g.GetPlayer(0).AddCard(domain.NewCard(bc.GetDesign(), bc.GetValue(), false))
+	out := p.Output(g, nil)
+	assert.Contains(t, out, "推奨")
+	assert.Contains(t, out, "boodle0")
+
+	// None: an empty human hand holds no boodle cards → the even-spread tip shows.
+	g2 := domain.NewDefaultMichigan()
+	g2.GetPlayer(0).ClearHand()
+	out2 := p.Output(g2, nil)
+	assert.Contains(t, out2, "均等")
+}
+
 func TestMichiganCuiPresenter_OutputPlayPhase(t *testing.T) {
 	g := domain.NewDefaultMichigan()
 	require.NoError(t, g.PlaceHumanBet(michiganWebEvenBet(g.GetBetBudget())))
