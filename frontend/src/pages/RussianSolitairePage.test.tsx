@@ -56,6 +56,9 @@ const gameOverState: RussianSolitaireResponse = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // Clear the persisted rule-dismissed flag so it never leaks across tests
+  // (a dismissed flag left in localStorage would hide the banner in later tests).
+  localStorage.clear();
   mockExec.mockResolvedValue(playingState);
 });
 
@@ -86,6 +89,22 @@ describe('RussianSolitairePage', () => {
     expect(screen.getByLabelText('列1、上から1枚目、裏向き')).toBeInTheDocument();
     expect(screen.getByLabelText('列2、上から1枚目、裏向き')).toBeInTheDocument();
     expect(screen.getByLabelText('列2、上から2枚目、裏向き')).toBeInTheDocument();
+  });
+
+  it('dismisses the face-down rule note, persists it, and keeps it hidden on remount', async () => {
+    const { unmount } = renderWithProviders(<RussianSolitairePage />);
+    await waitFor(() => expect(screen.getByTestId('rs-facedown-rule')).toBeInTheDocument());
+
+    // Clicking the close control hides the note and persists the dismissal.
+    fireEvent.click(screen.getByRole('button', { name: 'ルール説明を閉じる' }));
+    expect(screen.queryByTestId('rs-facedown-rule')).not.toBeInTheDocument();
+    expect(localStorage.getItem('russiansolitaire-rules-dismissed')).toBe('true');
+
+    // On a fresh remount the persisted flag keeps the banner hidden.
+    unmount();
+    renderWithProviders(<RussianSolitairePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByTestId('rs-facedown-rule')).not.toBeInTheDocument();
   });
 
   it('shows game clear phase', async () => {

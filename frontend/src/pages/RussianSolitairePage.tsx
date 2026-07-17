@@ -24,6 +24,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useLocalStorageToggle } from '../hooks/useLocalStorageToggle';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSound } from '../providers/SoundProvider';
@@ -131,6 +132,11 @@ function RussianSolitairePageContent() {
    * tail to make the moving block visually unambiguous.
    */
   const [hoveredBlock, setHoveredBlock] = useState<{ col: number; cardIdx: number } | null>(null);
+
+  // The face-down rule is a one-time onboarding note: show it until the player
+  // dismisses it, then keep it hidden across resets and future visits so it no
+  // longer permanently occupies the space above the tableau (issue #3155).
+  const [rulesDismissed, setRulesDismissed] = useLocalStorageToggle('russiansolitaire-rules-dismissed', false);
 
   const {
     hint: frontendHint,
@@ -387,9 +393,19 @@ function RussianSolitairePageContent() {
             </div>
 
             {/* Tableau */}
-            <p className="text-game-text-muted text-xs text-center mb-1" data-testid="rs-facedown-rule">
-              {t('faceDownRule')}
-            </p>
+            {!rulesDismissed && (
+              <div className="flex items-center justify-center gap-1 mb-1" data-testid="rs-facedown-rule" role="note">
+                <p className="text-game-text-muted text-xs text-center">{t('faceDownRule')}</p>
+                <button
+                  type="button"
+                  onClick={() => setRulesDismissed(true)}
+                  aria-label={t('dismissRule')}
+                  className={`shrink-0 px-2 py-1 text-game-text-muted hover:text-game-text text-sm leading-none ${focusRingWhite} rounded`}
+                >
+                  ×
+                </button>
+              </div>
+            )}
             <div className="flex gap-1 sm:gap-2 justify-center" data-tutorial="rs-tableau">
               {state.tableau.map((col, colIdx) => (
                 <div key={colIdx} className="flex flex-col items-center" style={{ width: rs.cw }}>
