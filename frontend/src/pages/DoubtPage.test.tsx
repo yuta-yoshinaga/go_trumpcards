@@ -1334,4 +1334,29 @@ describe('DoubtPage', () => {
     renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
+
+  it('highlights and pre-selects the honest next value (last claim + 1)', async () => {
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      lastAction: { playerIdx: 1, claimedValue: 5, cardCount: 1, isBluff: false },
+    });
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    const honest = screen.getByTestId('doubt-honest-value');
+    expect(honest).toHaveTextContent('6');
+    // The honest value is pre-selected so an honest play needs no extra tap.
+    expect(honest).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('wraps the honest next value from 13 back to A', async () => {
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      lastAction: { playerIdx: 1, claimedValue: 13, cardCount: 1, isBluff: false },
+    });
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    expect(screen.getByTestId('doubt-honest-value')).toHaveTextContent('A');
+  });
 });
