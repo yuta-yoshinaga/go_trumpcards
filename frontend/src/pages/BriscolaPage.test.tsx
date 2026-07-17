@@ -207,4 +207,20 @@ describe('BriscolaPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
+
+  it('shows the hint button on the human turn and requests a hint', async () => {
+    renderWithProviders(<BriscolaPage />);
+    const hintBtn = await screen.findByRole('button', { name: 'ヒント' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(makeState());
+    fireEvent.click(hintBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+  });
+
+  it('renders the server hint text with the translated reason when present', async () => {
+    mockExec.mockResolvedValue(makeState({ hint: { cardIndex: 2, reason: 'lead_trump' } }));
+    renderWithProviders(<BriscolaPage />);
+    const hint = await screen.findByTestId('briscola-hint');
+    expect(hint).toHaveTextContent('切り札でリードして主導権を握りましょう');
+  });
 });

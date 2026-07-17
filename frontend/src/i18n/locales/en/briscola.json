@@ -23,6 +23,16 @@
     "reset": "Reset",
     "hint": "Hint"
   },
+  "hint": {
+    "available": "Hint",
+    "card": "Suggested card: [{{index}}]",
+    "lead_trump": "Lead a trump to seize the initiative",
+    "lead_low": "Lead a low card to keep your point cards",
+    "lead_value": "Play a high-value card to score",
+    "follow_cut": "Cut the trick with a trump",
+    "follow_win": "Win with a stronger card of the same suit",
+    "follow_dump": "You can't win — dump a low card"
+  },
   "result": {
     "youWin": "You win! ({{p0}}-{{p1}})",
     "cpuWin": "CPU wins ({{p0}}-{{p1}})",
