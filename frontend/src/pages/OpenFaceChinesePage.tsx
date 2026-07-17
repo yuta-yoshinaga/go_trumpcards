@@ -117,6 +117,8 @@ function OpenFaceChinesePageContent() {
 
   const handlePlace = (row: number) => exec('place', { row });
   const handleNext = () => exec('nextround');
+  const handleHint = () => exec('hint');
+  const rowNames = ['front', 'middle', 'back'] as const;
 
   const playerName = (player: OpenFaceChinesePlayer) => (player.isHuman ? t('you') : t('cpu', { n: player.id }));
 
@@ -221,7 +223,18 @@ function OpenFaceChinesePageContent() {
                   >
                     {t('place.back')}
                   </button>
+                  <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
+                    {t('hint.button')}
+                  </button>
                 </div>
+                {state.hint && (
+                  <p className="text-center text-sm text-ds-accent mt-1" data-testid="ofc-hint">
+                    {t('hint.text', {
+                      row: t(`rows.${rowNames[state.hint.row] ?? 'back'}`),
+                      reason: t(`hint.${state.hint.reason}`),
+                    })}
+                  </p>
+                )}
               </div>
             )}
 
