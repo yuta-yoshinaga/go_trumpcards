@@ -16,6 +16,7 @@
   "tableEmpty": "(empty)",
   "playButton": "Play Selected",
   "passButton": "Pass",
+  "clearSelectionButton": "Clear selection",
   "discardButton": "Discard",
   "sevenPassBanner": "[7-Pass] Give 1 card to {{target}}",
   "tenDiscardBanner": "[10-Discard] Select 1 card to discard",

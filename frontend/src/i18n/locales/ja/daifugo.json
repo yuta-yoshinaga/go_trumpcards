@@ -16,6 +16,7 @@
   "tableEmpty": "（なし）",
   "playButton": "選択して出す",
   "passButton": "渡す",
+  "clearSelectionButton": "選択解除",
   "discardButton": "捨てる",
   "sevenPassBanner": "【7渡し】{{target}}にカードを1枚渡してください",
   "tenDiscardBanner": "【10捨て】捨てるカードを1枚選択してください",
