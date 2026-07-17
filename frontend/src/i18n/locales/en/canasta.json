@@ -27,6 +27,7 @@
   "red3s": "Red 3s",
   "naturalCanasta": "Natural Canasta",
   "mixedCanasta": "Mixed Canasta",
+  "meldExpand": "Tap to expand all cards",
   "drawStockButton": "Draw from stock",
   "drawDiscardButton": "Pick up discard",
   "meldButton": "Meld",
