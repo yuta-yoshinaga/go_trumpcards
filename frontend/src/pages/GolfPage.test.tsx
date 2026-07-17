@@ -306,4 +306,18 @@ describe('GolfPage', () => {
     const badge = await screen.findByTestId('combo-badge');
     expect(badge.className).toContain('bg-ds-error');
   });
+
+  it('pulses the stock pile when a draw hint is active', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<GolfPage />);
+    await waitFor(() => expect(screen.getByText('捨て札')).toBeInTheDocument());
+    // The hint is fetched via the hint command; a draw hint should pulse the stock.
+    mockExec.mockResolvedValue({ ...playingState, hint: { type: 'draw', col: -1 } });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => {
+      const stock = screen.getByTestId('golf-stock');
+      expect(stock.className).toContain('ring-ds-warning');
+      expect(stock.className).toContain('animate-pulse');
+    });
+  });
 });
