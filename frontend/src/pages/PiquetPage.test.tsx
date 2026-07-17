@@ -268,4 +268,11 @@ describe('PiquetPage', () => {
     const hint = await screen.findByTestId('piquet-hint');
     expect(hint).toHaveTextContent('[3]');
   });
+
+  it('renders the discard hint text when discard indices are suggested', async () => {
+    mockExec.mockResolvedValue(makeState({ hint: { discardIndices: [1, 2], reason: 'lowest' } }));
+    renderWithProviders(<PiquetPage />);
+    const hint = await screen.findByTestId('piquet-hint');
+    expect(hint).toHaveTextContent('1, 2');
+  });
 });
