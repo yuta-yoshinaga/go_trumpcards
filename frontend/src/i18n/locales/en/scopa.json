@@ -21,7 +21,8 @@
     "noTakeCandidate": "No capture candidates",
     "yourCaptures": "Captures",
     "cpuStats": "{{cards}} cards / {{score}} pt",
-    "humanStats": "Hand {{cards}} / Captured {{captured}} / Scopa {{scopa}} / Total {{score}} pt"
+    "humanStats": "Hand {{cards}} / Captured {{captured}} / Scopa {{scopa}} / Total {{score}} pt",
+    "roundEnd": "Round over — review the score, then continue to the next round"
   },
   "button": {
     "take": "Take",

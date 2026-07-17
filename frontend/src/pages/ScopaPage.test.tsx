@@ -199,6 +199,26 @@ describe('ScopaPage', () => {
     );
   });
 
+  it('hides the next-round button and round-end banner during normal play', async () => {
+    renderWithProviders(<ScopaPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('next-round-button')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('sc-round-end-banner')).not.toBeInTheDocument();
+  });
+
+  it('shows the round-end banner and a working next-round button when the round ends', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 'roundEnd', currentTurn: 1 }));
+    renderWithProviders(<ScopaPage />);
+    await waitFor(() => expect(screen.getByTestId('sc-round-end-banner')).toBeInTheDocument());
+    const nextRound = screen.getByTestId('next-round-button');
+    expect(nextRound).toBeInTheDocument();
+    expect(nextRound).not.toBeDisabled();
+
+    mockExec.mockClear();
+    fireEvent.click(nextRound);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('n'));
+  });
+
   it('shows loading state when state has fewer than 2 players', async () => {
     mockExec.mockResolvedValue(
       makeState({
