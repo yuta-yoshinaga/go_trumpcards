@@ -35,6 +35,18 @@
     "primero": "Primero",
     "numerus": "Numerus"
   },
+  "handLegend": {
+    "title": "Hand ranking (strongest first)",
+    "current": "Your current hand",
+    "rankCol": "#",
+    "handCol": "Hand",
+    "descCol": "Description",
+    "fluxus": "All four cards of one suit. Compared by prime-point total.",
+    "supremus": "One card of each suit (Primero) with a point total of 50 or more. Compared by total.",
+    "primero": "One card of each suit, point total below 50. Compared by total.",
+    "numerus": "None of the above. Compared by the total of the strongest single suit.",
+    "pointsNote": "Prime points: 7=21, 6=18, A=16, 5=15, 4=14, 3=13, 2=12, face=10 (8, 9, 10 are removed from the 40-card deck)."
+  },
   "callButton": "Call",
   "raiseButton": "Raise (Vie)",
   "foldButton": "Fold",
