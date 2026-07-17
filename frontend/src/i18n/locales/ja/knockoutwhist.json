@@ -28,6 +28,7 @@
   "you": "あなた",
   "cpu": "CPU {{id}}",
   "eliminated": "脱落",
+  "spectatorBanner": "あなたは脱落しました — 観戦中（残り {{n}}人）",
   "leader": "リーダー",
   "roundWinner": "ラウンド勝者",
   "playButton": "出す",

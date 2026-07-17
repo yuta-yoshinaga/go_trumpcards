@@ -28,6 +28,7 @@
   "you": "You",
   "cpu": "CPU {{id}}",
   "eliminated": "Knocked out",
+  "spectatorBanner": "You've been knocked out — spectating ({{n}} left)",
   "leader": "Leader",
   "roundWinner": "Round winner",
   "playButton": "Play",
