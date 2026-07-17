@@ -243,6 +243,19 @@ function TichuPageContent() {
           <GameMessageBox messageCode={state.messageCode} messageParams={state.messageParams} message={state.message} />
           {hint && hintEnabled && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
 
+          {/* Live cumulative team scores (visible during declare/play) */}
+          {!isGameEnd && (
+            <div className="flex justify-center gap-4 text-sm text-ds-text-primary" data-testid="tichu-score-bar">
+              <span className={humanTeam === 0 ? 'font-bold text-ds-accent' : ''}>
+                {t('label.teamA')}: {state.scores[0]}
+              </span>
+              <span className={humanTeam === 1 ? 'font-bold text-ds-accent' : ''}>
+                {t('label.teamB')}: {state.scores[1]}
+              </span>
+              {state.isOneTwo && <span className="text-xs opacity-75">{t('label.oneTwo')}</span>}
+            </div>
+          )}
+
           {/* CPU areas */}
           <div className="flex justify-around gap-2" data-tutorial="tichu-cpus">
             {state.players
