@@ -437,6 +437,9 @@ function CallBreakPageContent() {
           <GameFooter className={`${gameTheme.callbreak.footer} px-4 py-2.5`}>
             {humanPlayer && (
               <>
+                <div className="mb-1 text-ds-text-muted text-xs" role="status" data-testid="cb-spades-break-footer">
+                  {state.spadesBroken ? t('spadesBroken') : t('spadesNotBroken')}
+                </div>
                 {humanPlayer.bid >= 0 && (
                   <div className="mb-1 text-ds-text-muted text-xs">
                     <div>
