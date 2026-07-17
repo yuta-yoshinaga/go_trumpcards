@@ -26,6 +26,8 @@
   "playButton": "Play",
   "captureButton": "Capture",
   "trailButton": "Trail",
+  "tablaButton": "Tabla Capture!",
+  "tablaReady": "Tabla!",
   "newGame": "New Game",
   "result": {
     "title": "Final Scores",

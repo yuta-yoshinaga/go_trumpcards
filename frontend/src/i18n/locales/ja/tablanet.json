@@ -26,6 +26,8 @@
   "playButton": "出す",
   "captureButton": "捕獲",
   "trailButton": "トレイル",
+  "tablaButton": "タブラ捕獲！",
+  "tablaReady": "タブラ！",
   "newGame": "新しいゲーム",
   "result": {
     "title": "最終得点",

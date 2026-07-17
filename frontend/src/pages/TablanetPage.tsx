@@ -158,6 +158,19 @@ function TablanetPageContent() {
     handIndex !== null && isHumanTurn ? new Set(state.captureOptions[handIndex] ?? []) : new Set<number>();
   const canPlay = isHumanTurn && handIndex !== null;
 
+  // Tabla (sweep) is possible when the selected non-Jack card can capture EVERY
+  // table card, clearing the board. Jack sweeps are excluded (they never score a
+  // tabla). This mirrors the backend award rule (Tablanet.go applyPlay) and is
+  // derived purely from captureOptions + tableCards.length as the issue requires.
+  const selectedHandCard = handIndex !== null ? (human?.cards[handIndex] ?? null) : null;
+  const selectedIsJack = selectedHandCard?.value === 11;
+  const tablaPossible =
+    isHumanTurn &&
+    handIndex !== null &&
+    !selectedIsJack &&
+    state.tableCards.length > 0 &&
+    captureCandidates.size === state.tableCards.length;
+
   const winnerNames = state.winners.map((i) => (state.players[i]?.isHuman ? t('you') : t('cpu', { id: i }))).join(', ');
 
   const humanStats = human
@@ -209,8 +222,24 @@ function TablanetPageContent() {
             </div>
 
             {/* Table cards */}
-            <div className="py-3 bg-black/20 rounded-lg" data-tutorial="tablanet-table-cards">
-              <div className="text-center text-xs text-ds-text-muted mb-2">{t('table')}</div>
+            <div
+              className={`py-3 rounded-lg transition-all ${
+                tablaPossible ? 'bg-ds-success/20 ring-2 ring-ds-success motion-safe:animate-pulse' : 'bg-black/20'
+              }`}
+              data-tutorial="tablanet-table-cards"
+              data-tabla-ready={tablaPossible || undefined}
+            >
+              <div className="text-center text-xs text-ds-text-muted mb-2">
+                {t('table')}
+                {tablaPossible && (
+                  <span
+                    className="ml-2 px-2 py-0.5 rounded-full bg-ds-success text-ds-text-primary text-xs font-bold"
+                    data-testid="tablanet-tabla-badge"
+                  >
+                    {t('tablaReady')}
+                  </span>
+                )}
+              </div>
               <div className="flex justify-center gap-2 min-h-[60px] flex-wrap">
                 {state.tableCards.length === 0 ? (
                   <span className="text-ds-text-muted text-sm self-center">{t('tableEmpty')}</span>
@@ -352,8 +381,14 @@ function TablanetPageContent() {
           <GameFooter className={`${gameTheme.tablanet.footer} px-4 py-2.5`}>
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="tablanet-actions">
               {!isGameEnd && isHumanTurn && (
-                <button type="button" className={btnPrimary} onClick={playCard} disabled={loading || !canPlay}>
-                  {tableIndices.length > 0 ? t('captureButton') : t('playButton')}
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={playCard}
+                  disabled={loading || !canPlay}
+                  data-testid="tablanet-play-button"
+                >
+                  {tablaPossible ? t('tablaButton') : tableIndices.length > 0 ? t('captureButton') : t('playButton')}
                 </button>
               )}
               {isGameEnd && (
