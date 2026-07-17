@@ -85,6 +85,32 @@ describe('ManillePage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
   });
 
+  it('shows the trick winner and team in a status banner at trick end', async () => {
+    // leadPlayerIdx 0 = the human (Team A), so their own-team banner appears.
+    mockExec.mockResolvedValue(trickEndState);
+    renderWithProviders(<ManillePage />);
+    const banner = await screen.findByTestId('manille-trick-winner');
+    expect(banner).toHaveTextContent('あなた（チームA）がトリック獲得');
+    expect(banner).toHaveClass('text-ds-accent');
+    expect(banner).toHaveAttribute('role', 'status');
+    expect(banner).toHaveAttribute('aria-live', 'polite');
+  });
+
+  it('shows an opponent-team win without own-team emphasis', async () => {
+    mockExec.mockResolvedValue({ ...trickEndState, leadPlayerIdx: 1 });
+    renderWithProviders(<ManillePage />);
+    const banner = await screen.findByTestId('manille-trick-winner');
+    expect(banner).toHaveTextContent('チームB');
+    expect(banner).not.toHaveClass('text-ds-accent');
+  });
+
+  it('does not show the trick-winner banner during play', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<ManillePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('manille-trick-winner')).not.toBeInTheDocument();
+  });
+
   it('renders round end with the next round button and the round result', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<ManillePage />);

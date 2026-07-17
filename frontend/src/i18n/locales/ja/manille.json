@@ -23,6 +23,7 @@
   "you": "あなた",
   "cpu": "CPU {{id}}",
   "yourTeam": "あなたのチーム",
+  "trickWinner": "{{name}}（{{team}}）がトリック獲得",
   "team": {
     "a": "チームA",
     "b": "チームB"
