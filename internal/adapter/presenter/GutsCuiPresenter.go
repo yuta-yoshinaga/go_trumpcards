@@ -104,7 +104,9 @@ func (p *GutsCuiPresenter) Output(g interfaces.GutsGame, lastErr error) string {
 // resultLine はラウンド結果の 1 行 (色付き) を返す。
 func (p *GutsCuiPresenter) resultLine(g interfaces.GutsGame) string {
 	if g.GetWinnerIdx() < 0 {
-		return color.Yellow(i18n.T("guts.result.carry")) + "\n"
+		return color.Yellow(i18n.Tf("guts.result.carry",
+			"pot", strconv.Itoa(g.GetCarryPot()),
+			"count", strconv.Itoa(g.GetCarryCount()))) + "\n"
 	}
 	switch g.GetResult() {
 	case domain.GutsResultWin:
