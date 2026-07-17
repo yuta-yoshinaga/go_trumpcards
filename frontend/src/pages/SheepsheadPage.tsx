@@ -10,6 +10,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
@@ -254,6 +255,19 @@ function SheepsheadPageContent() {
             <div className={lgTwoColGrid}>
               {/* Left: play area */}
               <div>
+                {/* Blind: face-down cards, shown only during the Pick phase before a picker takes them. */}
+                {isPickPhase && state.blindCount > 0 && (
+                  <div className="mb-3" data-testid="sh-blind-display">
+                    <div className="text-ds-text-muted text-sm mb-1 text-center">
+                      {t('blind')} ({state.blindCount})
+                    </div>
+                    <div className="flex justify-center gap-2">
+                      {Array.from({ length: state.blindCount }).map((_, i) => (
+                        <AnimatedCardBack key={i} width={cardWidth} dealDelay={i * 0.08} />
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <TrickDisplay
                   currentTrick={state.currentTrick}
                   players={state.players}

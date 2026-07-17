@@ -118,6 +118,22 @@ describe('SheepsheadPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pick', { pick: false }));
   });
 
+  it('visualizes the blind as face-down cards in the pick phase', async () => {
+    mockExec.mockResolvedValue(pickPhaseState);
+    renderWithProviders(<SheepsheadPage />);
+    const blind = await screen.findByTestId('sh-blind-display');
+    expect(blind).toBeInTheDocument();
+    // blindCount is 2, so two face-down card backs are rendered.
+    expect(screen.getAllByTestId('animated-card-back')).toHaveLength(2);
+  });
+
+  it('does not show the blind display outside the pick phase', async () => {
+    mockExec.mockResolvedValue(buryPhaseState);
+    renderWithProviders(<SheepsheadPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /埋める/ })).toBeInTheDocument());
+    expect(screen.queryByTestId('sh-blind-display')).not.toBeInTheDocument();
+  });
+
   it('renders the bury button for the picker in the bury phase', async () => {
     mockExec.mockResolvedValue(buryPhaseState);
     renderWithProviders(<SheepsheadPage />);
