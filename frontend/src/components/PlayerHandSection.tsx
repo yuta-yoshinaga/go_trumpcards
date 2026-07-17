@@ -46,6 +46,14 @@ export interface PlayerHandSectionProps {
   trumpIndices?: number[];
   /** Accessible label / tooltip describing why the ringed cards are marked (e.g. "trump"). */
   trumpTitle?: string;
+  /**
+   * Optional indices of cards that are legal to play this turn. When provided,
+   * these cards get an additive success ring (`ring-ds-success`) so the player
+   * can see at a glance which cards may be played. Unlike `validIndices`, this
+   * only adds the ring; use it together with `validIndices` to also dim the
+   * illegal cards.
+   */
+  legalIndices?: number[];
 }
 
 /**
@@ -65,11 +73,13 @@ export function PlayerHandSection({
   highlightIndices,
   trumpIndices,
   trumpTitle,
+  legalIndices,
 }: PlayerHandSectionProps) {
   const dataTutorial = `${dataTutorialPrefix}-player-hand`;
   const isRestricted = (idx: number): boolean => validIndices != null && !validIndices.includes(idx);
   const isHighlighted = (idx: number): boolean => highlightIndices?.includes(idx) ?? false;
   const isTrump = (idx: number): boolean => trumpIndices?.includes(idx) ?? false;
+  const isLegal = (idx: number): boolean => legalIndices?.includes(idx) ?? false;
 
   if (isMobile) {
     return (
@@ -84,6 +94,7 @@ export function PlayerHandSection({
         highlightIndices={highlightIndices}
         trumpIndices={trumpIndices}
         trumpTitle={trumpTitle}
+        legalIndices={legalIndices}
       />
     );
   }
@@ -95,6 +106,7 @@ export function PlayerHandSection({
         const restricted = isRestricted(idx);
         const highlighted = isHighlighted(idx);
         const trump = isTrump(idx);
+        const legal = isLegal(idx);
         // When a highlight list is active, dim the non-highlighted (and unselected) cards.
         // Skip already-restricted cards so the two opacity classes never collide.
         const dimmed = highlightIndices != null && !highlighted && !isSelected && !restricted;
@@ -113,7 +125,8 @@ export function PlayerHandSection({
             aria-disabled={restricted || undefined}
             title={restricted ? restrictedTooltip : trump ? trumpTitle : undefined}
             data-trump={trump || undefined}
-            className={`transition-transform ${focusRingCard} ${restricted ? 'opacity-50 cursor-not-allowed' : ''} ${dimmed ? 'opacity-60' : ''}`}
+            data-legal={legal || undefined}
+            className={`transition-transform ${focusRingCard} ${legal ? 'rounded-lg ring-2 ring-ds-success' : ''} ${restricted ? 'opacity-50 cursor-not-allowed' : ''} ${dimmed ? 'opacity-60' : ''}`}
             style={{
               background: 'none',
               padding: 0,

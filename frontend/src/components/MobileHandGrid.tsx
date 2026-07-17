@@ -61,6 +61,11 @@ interface MobileHandGridProps {
   trumpIndices?: number[];
   /** Accessible tooltip describing why the ringed cards are marked (e.g. "trump"). */
   trumpTitle?: string;
+  /**
+   * Optional indices of cards legal to play this turn. When provided, these
+   * cards get an additive success ring so the player can see the legal plays.
+   */
+  legalIndices?: number[];
 }
 
 /**
@@ -80,6 +85,7 @@ export function MobileHandGrid({
   highlightIndices,
   trumpIndices,
   trumpTitle,
+  legalIndices,
 }: MobileHandGridProps) {
   const viewportWidth = useWindowWidth();
   const reduced = useReducedMotion();
@@ -87,6 +93,7 @@ export function MobileHandGrid({
   const isRestricted = (idx: number): boolean => validIndices != null && !validIndices.includes(idx);
   const isHighlighted = (idx: number): boolean => highlightIndices?.includes(idx) ?? false;
   const isTrump = (idx: number): boolean => trumpIndices?.includes(idx) ?? false;
+  const isLegal = (idx: number): boolean => legalIndices?.includes(idx) ?? false;
 
   const useTwoRows = cards.length >= TWO_ROW_THRESHOLD;
   const splitAt = useTwoRows ? Math.ceil(cards.length / 2) : cards.length;
@@ -114,6 +121,7 @@ export function MobileHandGrid({
               const restricted = isRestricted(globalIdx);
               const highlighted = isHighlighted(globalIdx);
               const trump = isTrump(globalIdx);
+              const legal = isLegal(globalIdx);
               const dimmed = highlightIndices != null && !highlighted && !isSelected && !restricted;
               return (
                 <button
@@ -130,7 +138,8 @@ export function MobileHandGrid({
                   aria-disabled={restricted || undefined}
                   title={restricted ? restrictedTooltip : trump ? trumpTitle : undefined}
                   data-trump={trump || undefined}
-                  className={`${focusRingCard} ${restricted ? 'opacity-50 cursor-not-allowed' : ''} ${dimmed ? 'opacity-60' : ''}`}
+                  data-legal={legal || undefined}
+                  className={`${focusRingCard} ${legal ? 'rounded-lg ring-2 ring-ds-success' : ''} ${restricted ? 'opacity-50 cursor-not-allowed' : ''} ${dimmed ? 'opacity-60' : ''}`}
                   style={{
                     background: 'none',
                     padding: 0,
