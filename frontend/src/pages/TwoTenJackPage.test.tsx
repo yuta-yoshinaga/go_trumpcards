@@ -135,6 +135,20 @@ describe('TwoTenJackPage', () => {
     expect(screen.queryByTestId('tt-declare-prompt')).not.toBeInTheDocument();
   });
 
+  it('shows a CPU-declaring indicator while a CPU declares trump', async () => {
+    mockExec.mockResolvedValue(declarePhaseCpuState);
+    renderWithProviders(<TwoTenJackPage />);
+    await waitFor(() => expect(screen.getByTestId('tt-cpu-declaring')).toBeInTheDocument());
+    expect(screen.getByTestId('tt-cpu-declaring')).toHaveTextContent('CPUが切り札を宣言中');
+  });
+
+  it('does not show the CPU-declaring indicator when the human declares', async () => {
+    mockExec.mockResolvedValue(declarePhaseState);
+    renderWithProviders(<TwoTenJackPage />);
+    await waitFor(() => expect(screen.getByTestId('tt-declare-prompt')).toBeInTheDocument());
+    expect(screen.queryByTestId('tt-cpu-declaring')).not.toBeInTheDocument();
+  });
+
   it('dispatches declare command when a suit button is clicked', async () => {
     mockExec.mockResolvedValue(declarePhaseState);
     renderWithProviders(<TwoTenJackPage />);

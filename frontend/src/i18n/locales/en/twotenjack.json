@@ -31,6 +31,7 @@
   "team1": "Opponents (1,3)",
   "declarePhase": "Declare the trump suit (♠/♣/♥/♦)",
   "declarePrompt": "Choose trump →",
+  "cpuDeclaring": "CPU is declaring trump...",
   "playButton": "Play",
   "nextTrick": "Next Trick",
   "nextRound": "Next Round",
