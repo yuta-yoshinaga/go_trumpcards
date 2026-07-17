@@ -187,6 +187,32 @@ describe('WaspPage', () => {
     expect(emptyCol).toHaveAttribute('aria-label', expect.stringContaining('任意カード可'));
   });
 
+  it('shows a persistent success ring on empty columns while a source is selected (touch-friendly)', async () => {
+    const state = {
+      ...playingState,
+      tableau: [
+        [{ card: card('SPADE', 13), faceUp: true }],
+        [], // empty column
+        [],
+        [],
+        [],
+        [],
+        [],
+      ],
+    };
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const emptyCol = screen.getByTestId('sc-empty-col-1');
+    // No source selected yet → no persistent ring.
+    expect(emptyCol.className).not.toContain('ring-ds-success');
+    // Select ♠K as the move source (no hover event fired).
+    fireEvent.click(screen.getByRole('button', { name: '♠ K' }));
+    await waitFor(() => expect(screen.getByTestId('sc-empty-col-1').className).toContain('ring-ds-success'));
+    // The highlight is persistent, not hover-gated.
+    expect(screen.getByTestId('sc-empty-col-1').className).not.toContain('hover:ring');
+  });
+
   it('deal button exposes empty-column reason via title when blocked', async () => {
     const stateWithEmptyCol: WaspResponse = {
       ...playingState,
