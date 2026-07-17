@@ -30,6 +30,11 @@ import { CUARENTA_HELP, parseCuarentaCommand } from '../utils/cli/commands/cuare
 import { formatCuarentaState } from '../utils/cli/formatters/cuarentaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 
+/** Cards a team must capture in a round to earn the extra "más de veinte" points. */
+const CUARENTA_CAPTURE_BONUS = 20;
+/** Captured-card count from which a team's counter is highlighted as approaching the bonus. */
+const CUARENTA_CAPTURE_NEAR = CUARENTA_CAPTURE_BONUS - 1;
+
 /** CPU difficulty options for the Cuarenta settings panel. */
 const CPU_DIFFICULTY_OPTIONS = [
   { value: 0, label: 'easy' },
@@ -152,6 +157,12 @@ function CuarentaPageContent() {
   const humanPlayer = state.players.find((p) => p.isHuman);
   // Team A = seats {0,2}; the human (seat 0) is on Team A.
   const humanTeam = humanPlayer?.team ?? 0;
+
+  // Per-team captured-card totals this round: capturing 20+ cards earns the
+  // "más de veinte" bonus, so the running tally matters mid-round (#3563).
+  const teamCaptured = state.teamScores.map((_, team) =>
+    state.players.reduce((sum, p) => (p.team === team ? sum + p.capturedCount : sum), 0),
+  );
   const winningTeam = state.roundWinners.length === 1 ? state.roundWinners[0] : -1;
   const humanWon = isGameEnd && state.roundWinners.includes(humanTeam);
 
@@ -242,16 +253,27 @@ function CuarentaPageContent() {
               <span>{t('deck', { count: state.remainingDeck })}</span>
             </div>
 
-            {/* Team scores */}
+            {/* Team scores + running captured-card totals (20+ earns a bonus) */}
             <div className="mb-2 p-2 rounded bg-black/30 flex justify-center gap-6" data-tutorial="cuarenta-teams">
-              {state.teamScores.map((score, team) => (
-                <span
-                  key={`team-${team}`}
-                  className={`text-sm font-semibold ${team === humanTeam ? 'text-ds-warning' : 'text-ds-text-primary'}`}
-                >
-                  {t('teamScore', { name: teamLabel(team), score, target: state.config.targetScore })}
-                </span>
-              ))}
+              {state.teamScores.map((score, team) => {
+                const captured = teamCaptured[team] ?? 0;
+                const nearBonus = captured >= CUARENTA_CAPTURE_NEAR;
+                return (
+                  <div key={`team-${team}`} className="flex flex-col items-center gap-0.5">
+                    <span
+                      className={`text-sm font-semibold ${team === humanTeam ? 'text-ds-warning' : 'text-ds-text-primary'}`}
+                    >
+                      {t('teamScore', { name: teamLabel(team), score, target: state.config.targetScore })}
+                    </span>
+                    <span
+                      className={`text-xs font-semibold ${nearBonus ? 'text-ds-accent' : 'text-ds-text-muted'}`}
+                      data-testid={`cuarenta-team-captured-${team}`}
+                    >
+                      {t('teamCaptured', { count: captured })}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
 
             {/* Players (team / hand / captured / current turn) */}
