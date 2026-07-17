@@ -8,6 +8,8 @@
   "stock": "山札",
   "waste": "捨て札",
   "moveCount": "手数",
+  "peakRemaining": "ピーク残り",
+  "peakCleared": "ピーク制覇！",
   "combo": "コンボ ×{{count}}",
   "draw": "引く",
   "giveup": "ギブアップ",

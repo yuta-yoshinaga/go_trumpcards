@@ -8,6 +8,8 @@
   "stock": "Stock",
   "waste": "Waste",
   "moveCount": "Moves",
+  "peakRemaining": "Peaks left",
+  "peakCleared": "Peak cleared!",
   "combo": "Combo ×{{count}}",
   "draw": "Draw",
   "giveup": "Give Up",
