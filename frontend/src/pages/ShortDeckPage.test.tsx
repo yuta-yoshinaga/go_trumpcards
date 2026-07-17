@@ -341,6 +341,19 @@ describe('ShortDeckPage', () => {
     expect(marker).toHaveAttribute('aria-label', 'ショートデック特殊ルール：フラッシュ > フルハウス');
   });
 
+  it('toggles the rank-override note on tap so touch users can read it', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<ShortDeckPage />);
+    const marker = await screen.findByTestId('shortdeck-handname-rule');
+    // It is a real button (focusable, activatable), not a hover-only span.
+    expect(marker.tagName).toBe('BUTTON');
+    expect(screen.queryByTestId('shortdeck-rule-note')).not.toBeInTheDocument();
+    fireEvent.click(marker);
+    expect(screen.getByTestId('shortdeck-rule-note')).toHaveTextContent('ショートデック特殊ルール');
+    fireEvent.click(marker);
+    expect(screen.queryByTestId('shortdeck-rule-note')).not.toBeInTheDocument();
+  });
+
   it('shows CPU cards face-up during showdown when not folded', async () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<ShortDeckPage />);
