@@ -88,10 +88,29 @@ describe('SixCardGolfPage', () => {
     expect(screen.getAllByRole('button', { name: '♠ 3' }).length).toBeGreaterThan(0);
   });
 
-  it('does not show the column breakdown during active play', async () => {
-    mockExec.mockResolvedValue(makeState({ phase: 1 /* player turn */ }));
+  it('shows the human column breakdown during active play, marking uncertain columns', async () => {
+    const faceDownGrid = [
+      slot(5),
+      slot(3),
+      slot(7),
+      { card: null, faceUp: false } as unknown as SixCardGolfSlot, // column 0 bottom still hidden
+      slot(9),
+      slot(2),
+    ];
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 1, // player turn
+        players: [
+          { id: 0, isHuman: true, grid: faceDownGrid, roundScore: 0, cumulativeScore: 0, allFaceUp: false },
+          { id: 1, isHuman: false, grid: [...faceDownGrid], roundScore: 0, cumulativeScore: 0, allFaceUp: false },
+        ],
+      }),
+    );
     renderWithProviders(<SixCardGolfPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalled());
-    await waitFor(() => expect(screen.queryByTestId('scg-column-scores')).not.toBeInTheDocument());
+    // The breakdown is now visible mid-play.
+    await screen.findByTestId('scg-column-scores');
+    // Column 0 has a hidden bottom card → uncertain "+?" display; column 1 is fully revealed.
+    expect(screen.getByTestId('scg-column-score-0')).toHaveTextContent('+?');
+    expect(screen.getByTestId('scg-column-score-1')).not.toHaveTextContent('+?');
   });
 });

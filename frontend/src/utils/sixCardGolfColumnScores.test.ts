@@ -26,23 +26,33 @@ describe('sixCardGolfColumnScores', () => {
     expect(cols).toHaveLength(3);
     expect(cols.map((c) => c.score)).toEqual([7, 11, 15]);
     expect(cols.every((c) => !c.isPair)).toBe(true);
+    // All cards face up → no column is uncertain.
+    expect(cols.every((c) => !c.hasHidden)).toBe(true);
   });
 
   it('cancels a matched column to zero', () => {
     // Column 0 is a pair (5 over 5) → 0; column 1 is K over K → pair 0.
     const grid = [slot(5), slot(13), slot(2), slot(5), slot(13), slot(9)];
     const cols = sixCardGolfColumnScores(grid);
-    expect(cols[0]).toEqual({ score: 0, isPair: true });
-    expect(cols[1]).toEqual({ score: 0, isPair: true });
-    expect(cols[2]).toEqual({ score: 11, isPair: false });
+    expect(cols[0]).toEqual({ score: 0, isPair: true, hasHidden: false });
+    expect(cols[1]).toEqual({ score: 0, isPair: true, hasHidden: false });
+    expect(cols[2]).toEqual({ score: 11, isPair: false, hasHidden: false });
   });
 
-  it('ignores face-down cards in the total', () => {
+  it('ignores face-down cards in the total and flags the column uncertain', () => {
     const grid = [slot(8), slot(4), slot(2), slot(6, false), slot(4, false), slot(2)];
     const cols = sixCardGolfColumnScores(grid);
-    // col0: 8 + (face-down) = 8; col1: 4 + (face-down) = 4 (no pair, bottom hidden); col2: 2+2 pair → 0
-    expect(cols[0]).toEqual({ score: 8, isPair: false });
-    expect(cols[1]).toEqual({ score: 4, isPair: false });
-    expect(cols[2]).toEqual({ score: 0, isPair: true });
+    // col0: 8 + (face-down) = 8, uncertain; col1: 4 + (face-down) = 4, uncertain; col2: 2+2 pair → 0, certain.
+    expect(cols[0]).toEqual({ score: 8, isPair: false, hasHidden: true });
+    expect(cols[1]).toEqual({ score: 4, isPair: false, hasHidden: true });
+    expect(cols[2]).toEqual({ score: 0, isPair: true, hasHidden: false });
+  });
+
+  it('marks a column uncertain when a slot has no card yet', () => {
+    const grid = [slot(8), slot(4), slot(2), slot(null), slot(6), slot(9)];
+    const cols = sixCardGolfColumnScores(grid);
+    expect(cols[0].hasHidden).toBe(true); // bottom slot has no card
+    expect(cols[1].hasHidden).toBe(false);
+    expect(cols[2].hasHidden).toBe(false);
   });
 });

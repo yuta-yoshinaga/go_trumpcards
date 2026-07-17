@@ -221,7 +221,7 @@ function SixCardGolfPageContent() {
                   />
                 ))}
               </div>
-              {player.isHuman && (phase === SCG_PHASE_ROUND_OVER || isGameEnd) && (
+              {player.isHuman && (
                 <div className="mt-1 grid grid-cols-3 gap-1" data-testid="scg-column-scores">
                   {sixCardGolfColumnScores(player.grid).map((col, cIdx) => (
                     <span
@@ -231,7 +231,9 @@ function SixCardGolfPageContent() {
                         col.isPair ? 'bg-ds-success text-white' : 'bg-ds-surface-elevated text-ds-text-muted'
                       }`}
                     >
-                      {t('label.columnScore', { score: col.score })}
+                      {col.hasHidden
+                        ? t('label.columnScoreUncertain', { score: col.score })
+                        : t('label.columnScore', { score: col.score })}
                     </span>
                   ))}
                 </div>

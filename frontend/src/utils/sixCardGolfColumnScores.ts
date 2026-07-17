@@ -25,6 +25,8 @@ export interface SixCardGolfColumnScore {
   score: number;
   /** True when both cards are face up and share the same value (cancels to 0). */
   isPair: boolean;
+  /** True when at least one card in the column is still face down (score not yet certain). */
+  hasHidden: boolean;
 }
 
 /**
@@ -39,15 +41,17 @@ export function sixCardGolfColumnScores(grid: SixCardGolfSlot[]): SixCardGolfCol
   for (let col = 0; col < SIX_CARD_GOLF_COLUMNS; col++) {
     const top = grid[col];
     const bot = grid[col + SIX_CARD_GOLF_COLUMNS];
+    // A slot with no face-up card (face down, or no card yet) keeps the column uncertain.
+    const hasHidden = !(top?.faceUp && top.card != null) || !(bot?.faceUp && bot.card != null);
     const isPair =
       !!top?.faceUp && !!bot?.faceUp && top.card != null && bot.card != null && top.card.value === bot.card.value;
     if (isPair) {
-      result.push({ score: 0, isPair: true });
+      result.push({ score: 0, isPair: true, hasHidden: false });
       continue;
     }
     const topScore = top?.faceUp ? sixCardGolfCardScore(top.card) : 0;
     const botScore = bot?.faceUp ? sixCardGolfCardScore(bot.card) : 0;
-    result.push({ score: topScore + botScore, isPair: false });
+    result.push({ score: topScore + botScore, isPair: false, hasHidden });
   }
   return result;
 }
