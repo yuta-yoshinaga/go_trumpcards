@@ -128,6 +128,9 @@ function ScopaPageContent() {
   }
 
   const isGameEnd = state.gameEndFlag;
+  // A round finished but the game continues — surface the round boundary and the
+  // "next round" control instead of letting the deal-again flow slip by silently.
+  const isRoundEnd = state.phase === 'roundEnd';
   const humanWon = isGameEnd && state.roundWinners.includes(0);
   const takeCandidateIndices =
     handIndex !== null && isHumanTurn
@@ -263,6 +266,16 @@ function ScopaPageContent() {
               </div>
             </div>
 
+            {isRoundEnd && (
+              <div
+                role="status"
+                className="text-center text-sm font-medium text-ds-info bg-ds-info/10 border border-ds-info/30 rounded-lg py-2 px-3"
+                data-testid="sc-round-end-banner"
+              >
+                {t('label.roundEnd')}
+              </div>
+            )}
+
             <GameMessageBox
               message={state.message}
               messageCode={state.messageCode}
@@ -326,15 +339,17 @@ function ScopaPageContent() {
               >
                 {t('button.lay')}
               </button>
-              <button
-                type="button"
-                onClick={handleNextRound}
-                disabled={loading || !isGameEnd === false}
-                className="px-4 py-2 rounded-lg bg-ds-info/70 text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm hidden"
-                data-testid="next-round-button"
-              >
-                {t('button.nextRound')}
-              </button>
+              {isRoundEnd && (
+                <button
+                  type="button"
+                  onClick={handleNextRound}
+                  disabled={loading}
+                  className="px-4 py-2 rounded-lg bg-ds-info/70 text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                  data-testid="next-round-button"
+                >
+                  {t('button.nextRound')}
+                </button>
+              )}
               <GameResetButton
                 isGameEnd={isGameEnd}
                 onReset={onReset}
