@@ -17,6 +17,7 @@
   "round": "Round {{n}}",
   "trick": "Trick {{n}}",
   "trump": "Trump: {{suit}}",
+  "trumpRevealBanner": "Trump revealed: {{suit}}",
   "noTrump": "none",
   "hiddenTrump": "Hidden",
   "cards": "{{count}} cards",

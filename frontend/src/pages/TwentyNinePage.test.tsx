@@ -141,6 +141,24 @@ describe('TwentyNinePage', () => {
     expect(screen.getByText('落札者')).toBeInTheDocument();
   });
 
+  it('flashes a trump-reveal banner when the hidden trump becomes revealed', async () => {
+    // Start on a human play turn with the trump still hidden.
+    mockExec.mockResolvedValue({ ...playPhaseState, trumpRevealed: false });
+    renderWithProviders(<TwentyNinePage />);
+    const card = await screen.findByAltText('♥ Q');
+    expect(screen.queryByTestId('tn-trump-reveal-banner')).not.toBeInTheDocument();
+
+    // Play a card; the resolved state now has the trump revealed (♥ = suit 3).
+    fireEvent.click(card);
+    const playBtn = await screen.findByRole('button', { name: '出す' });
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(playBtn);
+
+    const banner = await screen.findByTestId('tn-trump-reveal-banner');
+    expect(banner).toHaveTextContent('♥');
+    expect(banner).toHaveAttribute('role', 'status');
+  });
+
   it('shows live round card points during play', async () => {
     mockExec.mockResolvedValue(makeTwentyNineState({ phase: 1, isHumanBidTurn: false, roundTeamPoints: [12, 7] }));
     renderWithProviders(<TwentyNinePage />);
