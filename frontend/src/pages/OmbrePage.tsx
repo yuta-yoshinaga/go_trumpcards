@@ -30,6 +30,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { OMBRE_HELP, parseOmbreCommand } from '../utils/cli/commands/ombreCommands';
 import { formatOmbreState } from '../utils/cli/formatters/ombreFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { MATADOR_NAME_KEY, matadorRank } from '../utils/ombreMatadors';
 import { playerName } from '../utils/playerUtils';
 
 /** Ombre tutorial step definitions. */
@@ -157,6 +158,16 @@ function OmbrePageContent() {
   const canPlay = isPlayPhase && isHumanTurn;
 
   const trumpLabel = state.trumpSuit >= 1 ? t(SUIT_KEYS[state.trumpSuit] ?? 'suitNone') : t('suitNone');
+
+  // Badge the three matadors (Spadille ♠A / Manille = trump 7 / Basto ♣A) in
+  // the human's hand once trump is decided. Ring only — never blocks clicks.
+  const matadorBadgeFor = (idx: number): { glyph: string; title: string } | null => {
+    const card = humanPlayer?.cards[idx];
+    if (!card) return null;
+    const rank = matadorRank(card, state.trumpSuit);
+    if (rank === null) return null;
+    return { glyph: String(rank), title: t(MATADOR_NAME_KEY[rank]) };
+  };
 
   const handleManualReset = () => {
     hideActionLog();
@@ -333,6 +344,7 @@ function OmbrePageContent() {
                 dataTutorialPrefix="ombre"
                 validIndices={canPlay ? state.playableIndices : undefined}
                 restrictedTooltip={t('playButton')}
+                cardBadgeFor={matadorBadgeFor}
               />
             )}
 

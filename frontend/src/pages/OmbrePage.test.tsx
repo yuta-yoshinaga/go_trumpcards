@@ -140,4 +140,50 @@ describe('OmbrePage', () => {
     await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
   });
+
+  it('badges Spadille (♠A) in the hand when trump is decided', async () => {
+    // Default state: trump = spades, hand[2] = ♠A → Spadille (rank 1).
+    renderWithProviders(<OmbrePage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    const badge = screen.getByTestId('card-role-badge-2');
+    expect(badge).toHaveTextContent('1');
+    expect(badge).toHaveAttribute('title', 'スパディーユ (♠A)');
+  });
+
+  it('badges all three matadors including the trump-suit Manille (heart trump → ♥7)', async () => {
+    const matadorHand = makeOmbreState({
+      trumpSuit: 3, // hearts
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 3,
+          cards: [
+            { design: 'SPADE', value: 1 }, // Spadille → 1
+            { design: 'CLOVER', value: 1 }, // Basto → 3
+            { design: 'HEART', value: 7 }, // Manille (heart trump) → 2
+          ],
+          trickCount: 0,
+          score: 0,
+          isOmbre: true,
+        },
+        { id: 1, isHuman: false, cardCount: 3, cards: [], trickCount: 0, score: 0, isOmbre: false },
+        { id: 2, isHuman: false, cardCount: 3, cards: [], trickCount: 0, score: 0, isOmbre: false },
+      ],
+      playableIndices: [0, 1, 2],
+    });
+    mockExec.mockResolvedValue(matadorHand);
+    renderWithProviders(<OmbrePage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    expect(screen.getByTestId('card-role-badge-0')).toHaveTextContent('1'); // Spadille
+    expect(screen.getByTestId('card-role-badge-1')).toHaveTextContent('3'); // Basto
+    expect(screen.getByTestId('card-role-badge-2')).toHaveTextContent('2'); // Manille
+  });
+
+  it('shows no matador badge while trump is undecided (bid phase)', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<OmbrePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'エントラール' })).toBeInTheDocument());
+    expect(screen.queryByTestId('card-role-badge-2')).not.toBeInTheDocument();
+  });
 });

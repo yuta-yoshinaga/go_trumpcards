@@ -1,6 +1,7 @@
 import { focusRingCard, highlightCardStyle, selectedCardStyle, trumpRingStyle } from '../styles/cardStyles';
 import type { Card } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
+import { CardRoleBadge } from './CardRoleBadge';
 import { MobileHandGrid } from './MobileHandGrid';
 import { AnimatedCard } from './motion/AnimatedCard';
 
@@ -54,6 +55,13 @@ export interface PlayerHandSectionProps {
    * illegal cards.
    */
   legalIndices?: number[];
+  /**
+   * Optional per-card corner badge (e.g. a game-specific role marker such as
+   * Ombre's matador rank). Returns the badge glyph + tooltip for a card index,
+   * or `null` to render no badge. Applied to both the desktop and mobile
+   * layouts.
+   */
+  cardBadgeFor?: (idx: number) => { glyph: string; title: string } | null;
 }
 
 /**
@@ -74,6 +82,7 @@ export function PlayerHandSection({
   trumpIndices,
   trumpTitle,
   legalIndices,
+  cardBadgeFor,
 }: PlayerHandSectionProps) {
   const dataTutorial = `${dataTutorialPrefix}-player-hand`;
   const isRestricted = (idx: number): boolean => validIndices != null && !validIndices.includes(idx);
@@ -95,6 +104,7 @@ export function PlayerHandSection({
         trumpIndices={trumpIndices}
         trumpTitle={trumpTitle}
         legalIndices={legalIndices}
+        cardBadgeFor={cardBadgeFor}
       />
     );
   }
@@ -110,6 +120,7 @@ export function PlayerHandSection({
         // When a highlight list is active, dim the non-highlighted (and unselected) cards.
         // Skip already-restricted cards so the two opacity classes never collide.
         const dimmed = highlightIndices != null && !highlighted && !isSelected && !restricted;
+        const badge = cardBadgeFor?.(idx);
         return (
           <button
             type="button"
@@ -131,6 +142,7 @@ export function PlayerHandSection({
               background: 'none',
               padding: 0,
               borderRadius: 8,
+              position: 'relative',
               // Selection takes visual priority; otherwise show the highlight border.
               ...(isSelected ? selectedCardStyle(true) : highlighted ? highlightCardStyle() : selectedCardStyle(false)),
               // Trump ring stacks additively (outline) on top of the border above.
@@ -139,6 +151,7 @@ export function PlayerHandSection({
             }}
           >
             <AnimatedCard card={card} width={cardWidth} />
+            {badge && <CardRoleBadge idx={idx} glyph={badge.glyph} title={badge.title} />}
           </button>
         );
       })}
