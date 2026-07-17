@@ -16,6 +16,7 @@
   "currentLow": "現在のロー: {{low}}",
   "currentLowIncomplete": "ロー未完成（5枚揃わず）",
   "anteBringIn": "アンティ/ブリングイン",
+  "bringIn": "ブリングイン",
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
   "rebuy": {
     "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",

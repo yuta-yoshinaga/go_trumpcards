@@ -218,6 +218,14 @@ function RazzPageContent() {
   const humanIdx = state?.players?.findIndex((p) => p.isHuman) ?? 0;
   const humanRebuyCount = state?.rebuyCounts?.[humanIdx] ?? 0;
   const cpuPlayers = useMemo(() => state?.players?.filter((p) => !p.isHuman) ?? [], [state?.players]);
+  // Bring-in player (highest door card, posts the forced bet). Shown only during 3rd street,
+  // the single round where the bring-in is relevant. `bringInPlayerIdx` indexes into state.players.
+  const bringInIdx = state?.bringInPlayerIdx ?? -1;
+  const bringInPlayerId =
+    phase === SevenCardStudPhase.THIRD_STREET && bringInIdx >= 0 ? state?.players?.[bringInIdx]?.id : undefined;
+  const bringInCardClass = 'ring-2 ring-game-status-active rounded p-0.5';
+  const bringInBadgeClass =
+    'inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 bg-game-status-active text-game-text-strong';
 
   const actionBindings = useMemo(
     () => [
@@ -306,6 +314,11 @@ function RazzPageContent() {
                     )}
                     {p.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
                     {p.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
+                    {p.id === bringInPlayerId && (
+                      <span data-testid={`razz-bringin-badge-${p.id}`} className={bringInBadgeClass}>
+                        {t('bringIn')}
+                      </span>
+                    )}
                     {isShowdown && !p.folded && p.handName && (
                       <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
                         {p.handName}
@@ -314,7 +327,7 @@ function RazzPageContent() {
                   </div>
                   {/* Door cards (always visible) */}
                   <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
-                  <div className="flex flex-wrap gap-1 mb-1">
+                  <div className={`flex flex-wrap gap-1 mb-1 ${p.id === bringInPlayerId ? bringInCardClass : ''}`}>
                     {p.doorCards?.length
                       ? p.doorCards.map((card) => (
                           <AnimatedCard
@@ -405,6 +418,11 @@ function RazzPageContent() {
                   )}
                   {humanPlayer.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
+                  {humanPlayer.id === bringInPlayerId && (
+                    <span data-testid={`razz-bringin-badge-${humanPlayer.id}`} className={bringInBadgeClass}>
+                      {t('bringIn')}
+                    </span>
+                  )}
                   {razzLow && (
                     <span
                       data-testid="razz-best-low"
@@ -421,7 +439,9 @@ function RazzPageContent() {
                 </div>
                 {/* Door cards */}
                 <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
-                <div className="flex flex-wrap gap-1.5 mb-1">
+                <div
+                  className={`flex flex-wrap gap-1.5 mb-1 ${humanPlayer.id === bringInPlayerId ? bringInCardClass : ''}`}
+                >
                   {humanPlayer.doorCards?.length
                     ? humanPlayer.doorCards.map((card) => (
                         <AnimatedCard
