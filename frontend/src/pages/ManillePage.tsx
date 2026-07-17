@@ -232,6 +232,27 @@ function ManillePageContent() {
                   label={t('currentTrick')}
                   dataTutorial="manille-trick-display"
                 />
+                {/* At TrickEnd leadPlayerIdx is the trick winner (they lead next), so show who took it. */}
+                {isTrickEnd &&
+                  (() => {
+                    const winnerIdx = state.leadPlayerIdx;
+                    const isMyTeam = winnerIdx % 2 === humanTeam;
+                    return (
+                      <div
+                        className={`my-2 p-2 rounded text-center text-sm font-semibold ${
+                          isMyTeam ? 'bg-ds-accent/15 text-ds-accent' : 'bg-black/30 text-ds-text-muted'
+                        }`}
+                        role="status"
+                        aria-live="polite"
+                        data-testid="manille-trick-winner"
+                      >
+                        {t('trickWinner', {
+                          name: playerName(winnerIdx, state.players[winnerIdx]?.isHuman ?? false),
+                          team: winnerIdx % 2 === 0 ? t('team.a') : t('team.b'),
+                        })}
+                      </div>
+                    );
+                  })()}
               </div>
 
               {/* Right: info sidebar */}
