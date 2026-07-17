@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { twentyNineApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -126,6 +126,22 @@ function TwentyNinePageContent() {
   const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('twentynine', TWENTY_NINE_PHASE_KEYS);
 
+  // Flash a transient banner the moment the hidden trump is revealed mid-play,
+  // so the reveal is not missed while a CPU is playing (mirrors SpoilFive's potDelta).
+  const [showTrumpBanner, setShowTrumpBanner] = useState(false);
+  const prevTrumpRevealedRef = useRef<boolean | null>(null);
+  useEffect(() => {
+    const revealed = state?.trumpRevealed;
+    if (revealed == null) return;
+    const prev = prevTrumpRevealedRef.current;
+    prevTrumpRevealedRef.current = revealed;
+    if (prev === false && revealed === true) {
+      setShowTrumpBanner(true);
+      const id = setTimeout(() => setShowTrumpBanner(false), 3000);
+      return () => clearTimeout(id);
+    }
+  }, [state?.trumpRevealed]);
+
   if (!state)
     return <GameSkeleton gameKey="twentynine" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 8 }} />;
 
@@ -143,11 +159,8 @@ function TwentyNinePageContent() {
 
   const canPlay = isPlayPhase && isHumanTurn;
   // The trump suit is hidden until trumpRevealed flips true mid-play.
-  const trumpSymbol = !state.trumpRevealed
-    ? t('hiddenTrump')
-    : state.trumpSuit === 0
-      ? t('noTrump')
-      : (SUIT_SYMBOLS[state.trumpSuit] ?? '?');
+  const revealedTrumpSymbol = state.trumpSuit === 0 ? t('noTrump') : (SUIT_SYMBOLS[state.trumpSuit] ?? '?');
+  const trumpSymbol = !state.trumpRevealed ? t('hiddenTrump') : revealedTrumpSymbol;
 
   // The current highest (non-pass) bid; a new non-pass bid must beat it.
   const highestBid = Math.max(0, ...state.bids);
@@ -221,6 +234,16 @@ function TwentyNinePageContent() {
               <span className="mr-4">{t('trump', { suit: trumpSymbol })}</span>
               <span>{t('target', { points: state.config.targetPoints })}</span>
             </div>
+
+            {showTrumpBanner && (
+              <div
+                role="status"
+                data-testid="tn-trump-reveal-banner"
+                className="mx-auto mb-2 w-fit rounded-lg bg-ds-warning/20 px-4 py-1.5 text-center font-semibold text-ds-warning motion-safe:animate-pulse"
+              >
+                {t('trumpRevealBanner', { suit: revealedTrumpSymbol })}
+              </div>
+            )}
 
             <div className="text-ds-text-muted text-center mb-2 text-sm">
               {state.declarerIdx >= 0

@@ -17,6 +17,7 @@
   "round": "ラウンド {{n}}",
   "trick": "トリック {{n}}",
   "trump": "切り札: {{suit}}",
+  "trumpRevealBanner": "切り札公開: {{suit}}",
   "noTrump": "なし",
   "hiddenTrump": "非公開",
   "cards": "{{count}}枚",
