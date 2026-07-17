@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { escobaApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeEscobaState } from '../test/stateFactories';
-import { EscobaPage } from './EscobaPage';
+import { EscobaPage, escobaCardValue, escobaSelectionSum } from './EscobaPage';
 
 vi.mock('../api/gameApi', () => ({
   escobaApi: { exec: vi.fn() },
@@ -185,5 +185,61 @@ describe('EscobaPage', () => {
     renderWithProviders(<EscobaPage />);
     await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
     localStorage.removeItem('cli-mode-escoba');
+  });
+
+  it('hides the 15-counter until a hand card is selected, then shows a running sum', async () => {
+    renderWithProviders(<EscobaPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('escoba-sum-indicator')).not.toBeInTheDocument();
+    // hand[0] = ♠7 (value 7); no table cards selected yet.
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    const counter = await screen.findByTestId('escoba-sum-indicator');
+    expect(counter).toHaveTextContent('7 / 15');
+    expect(counter.className).toContain('text-ds-text-muted');
+  });
+
+  it('turns the counter success-green when the selection sums to exactly 15', async () => {
+    renderWithProviders(<EscobaPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('hand-card-0')); // 7
+    fireEvent.click(screen.getByTestId('table-card-0')); // +4
+    fireEvent.click(screen.getByTestId('table-card-1')); // +4 => 15
+    const counter = await screen.findByTestId('escoba-sum-indicator');
+    expect(counter).toHaveTextContent('15 / 15');
+    expect(counter.className).toContain('text-ds-success');
+  });
+
+  it('turns the counter error-red when the selection exceeds 15', async () => {
+    renderWithProviders(<EscobaPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-2')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('hand-card-2')); // ♦11 => value 8
+    fireEvent.click(screen.getByTestId('table-card-0')); // +4
+    fireEvent.click(screen.getByTestId('table-card-1')); // +4 => 16
+    const counter = await screen.findByTestId('escoba-sum-indicator');
+    expect(counter).toHaveTextContent('16 / 15');
+    expect(counter.className).toContain('text-ds-error');
+  });
+});
+
+describe('escoba capture-sum helpers', () => {
+  it('values pip cards as their rank and face cards as 8/9/10', () => {
+    expect(escobaCardValue({ design: 'SPADE', value: 1 })).toBe(1);
+    expect(escobaCardValue({ design: 'SPADE', value: 7 })).toBe(7);
+    expect(escobaCardValue({ design: 'SPADE', value: 11 })).toBe(8);
+    expect(escobaCardValue({ design: 'SPADE', value: 12 })).toBe(9);
+    expect(escobaCardValue({ design: 'SPADE', value: 13 })).toBe(10);
+  });
+
+  it('sums the hand card plus the selected table cards', () => {
+    const table = [
+      { design: 'SPADE' as const, value: 4 },
+      { design: 'HEART' as const, value: 4 },
+      { design: 'CLOVER' as const, value: 6 },
+    ];
+    expect(escobaSelectionSum({ design: 'SPADE', value: 7 }, table, [0, 1])).toBe(15);
+    expect(escobaSelectionSum({ design: 'SPADE', value: 7 }, table, [])).toBe(7);
+    expect(escobaSelectionSum(null, table, [0, 1])).toBe(8);
+    // Out-of-range indices are ignored.
+    expect(escobaSelectionSum({ design: 'SPADE', value: 1 }, table, [9])).toBe(1);
   });
 });
