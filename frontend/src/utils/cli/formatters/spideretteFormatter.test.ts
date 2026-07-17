@@ -22,6 +22,7 @@ const baseState: SpideretteResponse = {
   moveCount: 3,
   canUndo: true,
   isStalemate: false,
+  message: '',
 };
 
 describe('formatSpideretteState', () => {
