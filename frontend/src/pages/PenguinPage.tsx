@@ -243,6 +243,13 @@ function PenguinPageContent() {
           <span>
             {t('baseRank')}: {baseRankLabel(state.baseRank)}
           </span>
+          <span data-testid="pg-supermove-badge" title={t('supermoveBadgeTooltip')}>
+            {t('supermoveBadge', {
+              limit: supermoveLimit,
+              cells: emptyFreeCells,
+              cols: emptyTableauCols,
+            })}
+          </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
       }
@@ -449,7 +456,11 @@ function PenguinPageContent() {
                                       onBlur={() => setHoveredStack(null)}
                                       title={
                                         exceedsSupermove
-                                          ? t('supermoveLimitTooltip', { limit: supermoveLimit })
+                                          ? t('supermoveLimitTooltip', {
+                                              limit: supermoveLimit,
+                                              cells: emptyFreeCells,
+                                              cols: emptyTableauCols,
+                                            })
                                           : undefined
                                       }
                                       data-supermove-blocked={exceedsSupermove ? 'true' : undefined}
