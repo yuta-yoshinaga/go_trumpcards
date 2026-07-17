@@ -31,7 +31,7 @@ import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { IndianRummyResponse } from '../types/card';
+import type { Card, IndianRummyResponse } from '../types/card';
 import { IndianRummyPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -180,6 +180,21 @@ function IndianRummyPageContent() {
   const revealCpu = isRoundEnd || isGameEnd;
   const isHumanTurn = (isDrawPhase || isDiscardPhase) && state.players[state.currentPlayerIdx]?.isHuman === true;
 
+  // A card counts as wild when it is a printed joker or shares the rank of the round's wild joker.
+  const wildValue = state.wildJoker?.value;
+  const isWildCard = (card: Card): boolean =>
+    card.design === 'JOKER' || (wildValue !== undefined && card.value === wildValue);
+  const wildBadge = (card: Card) =>
+    isWildCard(card) ? (
+      <span
+        aria-hidden="true"
+        className="absolute top-0.5 right-0.5 px-1 rounded bg-ds-info text-ds-text-on-accent text-[8px] font-extrabold tracking-wider shadow-md pointer-events-none"
+        data-testid="ir-wild-badge"
+      >
+        {t('wildBadge')}
+      </span>
+    ) : null;
+
   return (
     <GamePageShell
       title={tc('nav.indianrummy')}
@@ -300,11 +315,16 @@ function IndianRummyPageContent() {
                       {revealCpu && p.cards.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1">
                           {p.cards.map((card, idx) => (
-                            <AnimatedCard
+                            <div
                               key={`cpu-${p.id}-${card.design}-${card.value}-${idx}`}
-                              card={card}
-                              width={cardWidth * 0.8}
-                            />
+                              className={`relative inline-block rounded ${
+                                isWildCard(card) ? 'ring-2 ring-ds-info' : ''
+                              }`}
+                            >
+                              <AnimatedCard card={card} width={cardWidth * 0.8} />
+                              {isWildCard(card) && <span className="sr-only">{t('wildAria')}</span>}
+                              {wildBadge(card)}
+                            </div>
                           ))}
                         </div>
                       )}
@@ -360,9 +380,11 @@ function IndianRummyPageContent() {
                     type="button"
                     key={`${card.design}-${card.value}-${idx}`}
                     onClick={() => toggleCard(idx)}
-                    aria-label={cardAlt(card)}
+                    aria-label={`${cardAlt(card)}${isWildCard(card) ? ` ${t('wildAria')}` : ''}`}
                     aria-pressed={selectedCardIndices.includes(idx)}
-                    className={`transition-transform ${focusRingCard}`}
+                    className={`relative transition-transform ${focusRingCard} ${
+                      isWildCard(card) ? 'ring-2 ring-ds-info' : ''
+                    }`}
                     style={{
                       background: 'none',
                       padding: 0,
@@ -372,6 +394,7 @@ function IndianRummyPageContent() {
                     }}
                   >
                     <AnimatedCard card={card} width={cardWidth} />
+                    {wildBadge(card)}
                   </button>
                 ))}
               </div>

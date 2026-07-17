@@ -124,6 +124,37 @@ describe('IndianRummyPage', () => {
     });
   });
 
+  it('marks wild-rank cards in the human hand with a WILD badge', async () => {
+    const wildInHandState: IndianRummyResponse = {
+      ...drawPhaseState,
+      players: [
+        player({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'DIAMOND', value: 5 }, // matches wildJoker rank 5 -> wild
+            { design: 'JOKER', value: 0 }, // printed joker -> wild
+          ],
+        }),
+        drawPhaseState.players[1],
+      ],
+    };
+    mockExec.mockResolvedValue(wildInHandState);
+    renderWithProviders(<IndianRummyPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    // Two of the three hand cards are wild (the rank-5 card and the printed joker).
+    expect(screen.getAllByTestId('ir-wild-badge')).toHaveLength(2);
+    // The non-wild ace carries no wild annotation in its label.
+    expect(screen.getByRole('button', { name: '♠ A' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /♦ 5 .*ワイルド/ })).toBeInTheDocument();
+  });
+
+  it('marks wild-rank cards in revealed CPU hands with a WILD badge', async () => {
+    mockExec.mockResolvedValue(roundEndCpuCardsState);
+    renderWithProviders(<IndianRummyPage />);
+    // CPU hand has a rank-5 card (DIAMOND 5) matching the wild joker.
+    await waitFor(() => expect(screen.getAllByTestId('ir-wild-badge').length).toBeGreaterThanOrEqual(1));
+  });
+
   it('renders draw stock and draw discard buttons on human draw turn', async () => {
     renderWithProviders(<IndianRummyPage />);
     await waitFor(() => {
