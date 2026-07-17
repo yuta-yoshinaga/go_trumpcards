@@ -36,7 +36,15 @@ const gameEndState = makeTablanetState({
   },
 });
 
+// A play-phase state where the human's non-Jack card 0 (value 5) can capture
+// EVERY table card (both indices), so selecting it makes a tabla possible. Card 1
+// is a Jack (value 11) whose sweep must NOT count as a tabla.
+const tablaReadyState = makeTablanetState({
+  captureOptions: { 0: [0, 1], 1: [0, 1] },
+});
+
 beforeEach(() => {
+  localStorage.clear();
   mockExec.mockReset();
   mockExec.mockResolvedValue(playPhaseState);
 });
@@ -173,5 +181,30 @@ describe('TablanetPage', () => {
     mockExec.mockResolvedValue(gameEndState);
     fireEvent.click(nextBtn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+  });
+
+  it('highlights the table and switches the button label when a tabla is possible', async () => {
+    mockExec.mockResolvedValue(tablaReadyState);
+    renderWithProviders(<TablanetPage />);
+    const handCard = await screen.findByTestId('hand-card-0');
+
+    // Before selecting a card, no tabla emphasis.
+    expect(screen.queryByTestId('tablanet-tabla-badge')).not.toBeInTheDocument();
+    expect(screen.getByTestId('tablanet-play-button')).toHaveTextContent('出す');
+
+    // Selecting the non-Jack sweep card reveals the tabla badge + button label.
+    fireEvent.click(handCard);
+    expect(screen.getByTestId('tablanet-tabla-badge')).toHaveTextContent('タブラ！');
+    expect(screen.getByTestId('tablanet-play-button')).toHaveTextContent('タブラ捕獲！');
+  });
+
+  it('does not treat a Jack sweep as a tabla', async () => {
+    mockExec.mockResolvedValue(tablaReadyState);
+    renderWithProviders(<TablanetPage />);
+    // Card 1 is a Jack: even though it can clear the table, it never scores a tabla.
+    const jackCard = await screen.findByTestId('hand-card-1');
+    fireEvent.click(jackCard);
+    expect(screen.queryByTestId('tablanet-tabla-badge')).not.toBeInTheDocument();
+    expect(screen.getByTestId('tablanet-play-button')).not.toHaveTextContent('タブラ捕獲！');
   });
 });
