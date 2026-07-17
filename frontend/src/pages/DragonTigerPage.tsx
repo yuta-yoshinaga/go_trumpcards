@@ -31,7 +31,16 @@ import { DRAGONTIGER_CLI_HELP, parseDragonTigerCommand } from '../utils/cli/comm
 import { formatDragonTigerState } from '../utils/cli/formatters/dragontigerFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 
-const DT_TUTORIAL_STEPS: TutorialStep[] = [];
+const DT_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="dt-bet-controls"]',
+    messageKey: 'tutorial.betControls',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  { target: '[data-tutorial="dt-cards"]', messageKey: 'tutorial.cards', placement: 'bottom', advanceOn: 'next' },
+  { target: '[data-tutorial="dt-bigroad"]', messageKey: 'tutorial.bigRoad', placement: 'top', advanceOn: 'next' },
+];
 
 /** Renders the Dragon Tiger game page (#1684). */
 export const DragonTigerPage = withTutorial(DragonTigerPageContent, 'dragontiger', DT_TUTORIAL_STEPS);
@@ -136,6 +145,7 @@ function DragonTigerPageContent() {
         <>
           <div
             data-testid="card-area"
+            data-tutorial="dt-cards"
             className={[`overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`, !isBetPhase && 'flex-1']
               .filter(Boolean)
               .join(' ')}
@@ -172,7 +182,7 @@ function DragonTigerPageContent() {
             )}
 
             {state.history.length > 0 && (
-              <div className="mb-4" data-testid="bigroad">
+              <div className="mb-4" data-testid="bigroad" data-tutorial="dt-bigroad">
                 <div className="text-ds-text-primary text-center text-sm font-bold mb-1">{t('label.bigRoad')}</div>
                 <div className="mx-auto max-w-3xl">
                   <RoadmapTrendBar
@@ -234,7 +244,7 @@ function DragonTigerPageContent() {
             <ErrorAlert message={error} onRetry={retry} />
             <SettingsPanel title={tc('settings.title')} groups={[]} />
             {isBetPhase && (
-              <div className="flex flex-col items-center gap-2 pb-2">
+              <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="dt-bet-controls">
                 <ChipBetInput
                   id="dragontiger-bet-amount"
                   label={t('label.bet')}

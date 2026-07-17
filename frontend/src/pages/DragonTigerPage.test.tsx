@@ -111,6 +111,20 @@ describe('DragonTigerPage', () => {
     });
   });
 
+  it('anchors the tutorial steps to the bet controls and card area', async () => {
+    const { container } = renderWithProviders(<DragonTigerPage />);
+    await waitFor(() => expect(container.querySelector('[data-tutorial="dt-bet-controls"]')).toBeInTheDocument());
+    expect(container.querySelector('[data-tutorial="dt-cards"]')).toBeInTheDocument();
+  });
+
+  it('runs a tutorial that explains the Tie 8:1 payout', async () => {
+    renderWithProviders(<DragonTigerPage />);
+    const startBtn = await screen.findByRole('button', { name: 'チュートリアル' });
+    fireEvent.click(startBtn);
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toHaveTextContent('8:1');
+  });
+
   it('issues a reset on mount', async () => {
     renderWithProviders(<DragonTigerPage />);
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset'));
