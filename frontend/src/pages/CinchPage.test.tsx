@@ -37,6 +37,17 @@ const roundEndState = makeCinchState({
     gained: { 0: 6, 1: -1, 2: -1, 3: -1 },
   },
 });
+const setBackState = makeCinchState({
+  phase: 4,
+  lastDealDetail: {
+    trumpSuit: 1,
+    bidderIdx: 1,
+    bid: 8,
+    setBack: true,
+    points: { 0: 4, 1: 5, 2: 3, 3: 2 },
+    gained: { 0: 1, 1: -8, 2: 1, 3: 1 },
+  },
+});
 const gameEndState = makeCinchState({
   phase: 5,
   gameEndFlag: true,
@@ -155,6 +166,25 @@ describe('CinchPage', () => {
     renderWithProviders(<CinchPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のディール' })).toBeInTheDocument());
     expect(screen.getByText('ディール結果')).toBeInTheDocument();
+  });
+
+  it('shows the bidder detail without a set-back row when the bid is made', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<CinchPage />);
+    const detail = await screen.findByTestId('cinch-bidder-detail');
+    // Made-bid detail is not styled with the danger color and no set-back row is present.
+    expect(detail).not.toHaveClass('text-ds-error');
+    expect(screen.queryByTestId('cinch-setback-row')).not.toBeInTheDocument();
+  });
+
+  it('emphasizes the bidder detail and set-back row when the bidder is set back', async () => {
+    mockExec.mockResolvedValue(setBackState);
+    renderWithProviders(<CinchPage />);
+    const detail = await screen.findByTestId('cinch-bidder-detail');
+    // Set-back bidder detail is emphasized with the danger color.
+    expect(detail).toHaveClass('text-ds-error');
+    // The bidder's gained row is highlighted as a set-back row.
+    expect(screen.getByTestId('cinch-setback-row')).toBeInTheDocument();
   });
 
   it('renders the game end message', async () => {

@@ -38,6 +38,8 @@
   "dealResult": {
     "title": "Deal Result",
     "setBack": "The bidding side was set back (bid not made).",
+    "bidderMade": "Bidder {{name}}: bid {{bid}} → captured {{captured}} ({{delta}} pts)",
+    "bidderSet": "Bidder {{name}}: bid {{bid}} → captured {{captured}} → set back {{delta}} pts",
     "gained": "{{name}} gained: {{points}} pts"
   },
   "hintAvailable": "Hint",
