@@ -225,6 +225,24 @@ describe('TichuPage', () => {
     await waitFor(() => expect(screen.getByTestId('tichu-bomb-badge-0')).toBeInTheDocument());
   });
 
+  it('play phase: shows the live team-score bar with the human team highlighted', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 'play', scores: [30, 70] }));
+    renderWithProviders(<TichuPage />);
+    const bar = await screen.findByTestId('tichu-score-bar');
+    expect(bar).toHaveTextContent(/チームA.*30/);
+    expect(bar).toHaveTextContent(/チームB.*70/);
+    // Human (P0) is on team A, so Team A is emphasised.
+    const teamA = screen.getByText(/チームA.*30/);
+    expect(teamA).toHaveClass('text-ds-accent');
+  });
+
+  it('end phase: hides the live score bar (only the result block shows scores)', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 'end', gameEndFlag: true, scores: [100, 0] }));
+    renderWithProviders(<TichuPage />);
+    await waitFor(() => expect(screen.getByText(/あなたのチームの勝利/)).toBeInTheDocument());
+    expect(screen.queryByTestId('tichu-score-bar')).not.toBeInTheDocument();
+  });
+
   it('end phase: shows team scores, the win banner, and the one-two note', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 'end', gameEndFlag: true, isOneTwo: true, scores: [200, -100] }));
     renderWithProviders(<TichuPage />);
