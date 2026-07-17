@@ -5,6 +5,7 @@
   "playersTitle": "プレイヤー",
   "team": "チーム{{name}}",
   "teamScore": "{{name}}: {{score}} / {{target}}点",
+  "teamCaptured": "獲得 {{count}}枚",
   "captured": "捕獲 {{count}}枚",
   "table": "場",
   "tableCount": "{{count}}枚",

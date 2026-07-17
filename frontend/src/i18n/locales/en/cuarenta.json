@@ -5,6 +5,7 @@
   "playersTitle": "Players",
   "team": "Team {{name}}",
   "teamScore": "{{name}}: {{score}} / {{target}}",
+  "teamCaptured": "Captured {{count}}",
   "captured": "captured {{count}}",
   "table": "Table",
   "tableCount": "{{count}} cards",

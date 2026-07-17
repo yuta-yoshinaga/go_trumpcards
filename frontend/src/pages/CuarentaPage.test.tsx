@@ -117,6 +117,50 @@ describe('CuarentaPage', () => {
     expect(screen.getAllByText(/捕獲 0枚/).length).toBe(4);
   });
 
+  it('sums each team captured-card total from its two players', async () => {
+    // Team A = seats {0,2}: 8 + 5 = 13; Team B = seats {1,3}: 6 + 1 = 7.
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          makePlayer({ id: 0, team: 0, isHuman: true, capturedCount: 8 }),
+          makePlayer({ id: 1, team: 1, capturedCount: 6 }),
+          makePlayer({ id: 2, team: 0, capturedCount: 5 }),
+          makePlayer({ id: 3, team: 1, capturedCount: 1 }),
+        ],
+      }),
+    );
+    renderWithProviders(<CuarentaPage />);
+    await waitFor(() => expect(screen.getByTestId('cuarenta-team-captured-0')).toHaveTextContent('獲得 13枚'));
+    expect(screen.getByTestId('cuarenta-team-captured-1')).toHaveTextContent('獲得 7枚');
+  });
+
+  it('highlights a team counter as it approaches the 20-card bonus', async () => {
+    // Team A at 19 (approaching) is emphasized; Team B at 7 is not.
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          makePlayer({ id: 0, team: 0, isHuman: true, capturedCount: 10 }),
+          makePlayer({ id: 1, team: 1, capturedCount: 4 }),
+          makePlayer({ id: 2, team: 0, capturedCount: 9 }),
+          makePlayer({ id: 3, team: 1, capturedCount: 3 }),
+        ],
+      }),
+    );
+    renderWithProviders(<CuarentaPage />);
+    const teamA = await screen.findByTestId('cuarenta-team-captured-0');
+    expect(teamA).toHaveTextContent('獲得 19枚');
+    expect(teamA.className).toContain('text-ds-accent');
+    const teamB = screen.getByTestId('cuarenta-team-captured-1');
+    expect(teamB.className).not.toContain('text-ds-accent');
+  });
+
+  it('resets team captured totals to zero on a fresh round', async () => {
+    // Default fixture has all capturedCount 0 — both team counters read 0.
+    renderWithProviders(<CuarentaPage />);
+    await waitFor(() => expect(screen.getByTestId('cuarenta-team-captured-0')).toHaveTextContent('獲得 0枚'));
+    expect(screen.getByTestId('cuarenta-team-captured-1')).toHaveTextContent('獲得 0枚');
+  });
+
   it('renders the human hand cards', async () => {
     renderWithProviders(<CuarentaPage />);
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
