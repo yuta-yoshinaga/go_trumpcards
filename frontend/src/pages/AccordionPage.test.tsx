@@ -225,6 +225,28 @@ describe('AccordionPage', () => {
     expect(screen.getByRole('button', { name: /0:/ }).dataset.hoverTarget).toBe('false');
   });
 
+  it('selecting a pile persistently highlights its legal merge targets without hover (touch parity)', async () => {
+    // pile 3 (SPADE 9) can merge onto pile 0 (SPADE 7) at offset 3 (suit match).
+    mockExec.mockResolvedValue({
+      ...playingState,
+      piles: [
+        { cards: [card('SPADE', 7)], size: 1 },
+        { cards: [card('HEART', 2)], size: 1 },
+        { cards: [card('CLOVER', 3)], size: 1 },
+        { cards: [card('SPADE', 9)], size: 1 },
+      ],
+    });
+    renderWithProviders(<AccordionPage />);
+    const pile3 = await screen.findByRole('button', { name: /^3:/ });
+    // Select via click only — no mouseEnter, mimicking a touch device.
+    fireEvent.click(pile3);
+    const pile0 = screen.getByRole('button', { name: /^0:/ });
+    await waitFor(() => expect(pile0.dataset.legalTarget).toBe('true'));
+    expect(pile0.className).toContain('ring-ds-success');
+    // Adjacent pile (index 2, CLOVER 3) shares neither suit nor rank with SPADE 9.
+    expect(screen.getByRole('button', { name: /^2:/ }).dataset.legalTarget).toBe('false');
+  });
+
   it('shows error alert when API fails on mount', async () => {
     mockExec.mockRejectedValue(new Error('network error'));
     renderWithProviders(<AccordionPage />);
