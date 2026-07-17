@@ -28,23 +28,14 @@ import type { BlackJackSwitchResponse, Card } from '../types/card';
 import { BlackJackSwitchPhase, BlackJackSwitchResult } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { blackjackSwitchPreviewScores } from '../utils/blackjackSwitchPreview';
+import { BLACKJACKSWITCH_HELP, parseBlackjackSwitchCommand } from '../utils/cli/commands/blackjackswitchCommands';
+import { formatBlackjackSwitchState } from '../utils/cli/formatters/blackjackswitchFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 
 const BJSWITCH_TUTORIAL_STEPS: TutorialStep[] = [];
 
-const BJSWITCH_CLI_HELP: string[] = [];
-
 // Mirrors the backend BJSwitchMaxBet (per-hand cap in internal/domain/BlackJackSwitch.go).
 const BJSWITCH_MAX_BET = 10000;
-
-/** Stub CLI parser — Blackjack Switch ships GUI-only for now (#1669 minimum). */
-function parseBlackjackSwitchCommand(): { error: string } {
-  return { error: 'CLI commands are not yet implemented for Blackjack Switch.' };
-}
-
-function formatBlackjackSwitchState(_state: BlackJackSwitchResponse | null): string {
-  return 'CLI mode is not implemented for Blackjack Switch.';
-}
 
 /** Renders the Blackjack Switch game page (#1669). */
 export const BlackJackSwitchPage = withTutorial(BlackJackSwitchPageContent, 'blackjackswitch', BJSWITCH_TUTORIAL_STEPS);
@@ -66,7 +57,7 @@ function BlackJackSwitchPageContent() {
       gameName: 'blackjackswitch',
       parseCommand: parseBlackjackSwitchCommand,
       formatResponse: formatBlackjackSwitchState,
-      helpText: BJSWITCH_CLI_HELP,
+      helpText: BLACKJACKSWITCH_HELP,
     }),
     [],
   );
