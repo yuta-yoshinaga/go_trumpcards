@@ -248,4 +248,16 @@ describe('SpiteAndMalicePage', () => {
     await waitFor(() => expect(screen.getAllByText(/ゲームオーバー|Game Over/).length).toBeGreaterThan(0));
     expect(screen.queryByTestId('sam-autocomplete-btn')).not.toBeInTheDocument();
   });
+
+  it('shows the HintTooltip reason when hints are enabled and a hint is available', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      hint: { source: 'goal', index: 0, foundationIdx: 0, discard: false },
+    });
+    renderWithProviders(<SpiteAndMalicePage />);
+    const toggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
+    if (!(toggle as HTMLInputElement).checked) fireEvent.click(toggle);
+    const tooltip = await screen.findByTestId('hint-tooltip');
+    expect(tooltip).toHaveTextContent('ゴールパイルのトップをファウンデーションに出せます');
+  });
 });
