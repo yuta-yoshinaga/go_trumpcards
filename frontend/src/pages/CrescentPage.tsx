@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import type { CrescentMoveZone } from '../api/gameApi';
+import type { CrescentMoveZone, crescentApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -32,6 +32,9 @@ import type { CrescentResponse } from '../types/card';
 import { CrescentPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { CRESCENT_HELP, parseCrescentCommand } from '../utils/cli/commands/crescentCommands';
+import { formatCrescentState } from '../utils/cli/formatters/crescentFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 
@@ -112,14 +115,14 @@ function CrescentPageContent() {
     isAutoCompleting,
   } = useCrescentGame();
 
-  // CLI mode (stub — full parity comes later)
+  // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('crescent');
-  const cliConfig = useMemo(
+  const cliConfig: CliGameConfig<CrescentResponse, Parameters<typeof crescentApi.exec>> = useMemo(
     () => ({
-      gameName: 'crescent' as const,
-      parseCommand: (_cmd: string) => ({ error: 'CLI not supported' }) as const,
-      formatResponse: (_res: CrescentResponse): string => '',
-      helpText: [] as string[],
+      gameName: 'crescent',
+      parseCommand: parseCrescentCommand,
+      formatResponse: formatCrescentState,
+      helpText: CRESCENT_HELP,
     }),
     [],
   );
