@@ -135,6 +135,13 @@ function DoubtPageContent() {
   const showClaimInput = selectedCardIndices.length > 0 && isHumanTurn && state?.phase === 0;
 
   const isHumanPlayTurn = isHumanTurn && state?.phase === 0;
+  // The "honest" next value is the last claim + 1, wrapping 13 → 1 (or 1 at the start).
+  const honestValue = state?.lastAction != null ? (state.lastAction.claimedValue % 13) + 1 : 1;
+  // Preset the claim selection to the honest value when the human's play turn begins,
+  // so honest plays don't require hunting for the right button each turn.
+  useEffect(() => {
+    if (isHumanPlayTurn) setClaimedValue(honestValue);
+  }, [isHumanPlayTurn, honestValue, setClaimedValue]);
   const humanPlayer = state?.players.find((p) => p.isHuman);
 
   useCardKeyboardNav({
@@ -526,9 +533,12 @@ function DoubtPageContent() {
                           className={
                             claimedValue === v
                               ? `${btnSecondary} min-w-[44px] ring-2 ring-ds-warning ${focusRingAccent}`
-                              : `${btnSecondary} min-w-[44px] ${focusRingAccent}`
+                              : v === honestValue
+                                ? `${btnSecondary} min-w-[44px] ring-2 ring-ds-success ${focusRingAccent}`
+                                : `${btnSecondary} min-w-[44px] ${focusRingAccent}`
                           }
                           aria-pressed={claimedValue === v}
+                          data-testid={v === honestValue ? 'doubt-honest-value' : undefined}
                           onClick={() => setClaimedValue(v)}
                           disabled={loading}
                         >
