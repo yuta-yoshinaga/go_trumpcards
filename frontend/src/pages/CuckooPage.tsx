@@ -71,6 +71,10 @@ const CUCKOO_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
+/** Rank value of a King (A=1 … K=13). Only a King holder may refuse an incoming
+ * swap; mirrors `CuckooKingValue` in `internal/domain/Cuckoo.go`. */
+const CUCKOO_KING_VALUE = 13;
+
 const CUCKOO_PHASE_KEYS: Readonly<Record<number, string>> = {
   [CuckooPhase.TURN]: 'turn',
   [CuckooPhase.REFUSE]: 'refuse',
@@ -121,14 +125,17 @@ function CuckooPageContent() {
   // Enabled only on the human's active turn (see the per-binding `enabled` flags).
   const kbIsHumanTurn = state?.phase === CuckooPhase.TURN && state.currentPlayerIdx === 0 && !state.gameEndFlag;
   const kbIsRefuseTarget = state?.phase === CuckooPhase.REFUSE && state.pendingSwapTo === 0 && !state.gameEndFlag;
+  // Refusing is only legal for a King holder; the 'r' shortcut is gated on it so
+  // it cannot fire a server error, while 'a' (accept) stays available regardless.
+  const kbHumanHasKing = state?.players.find((p) => p.isHuman)?.card?.value === CUCKOO_KING_VALUE;
   const actionBindings = useMemo(
     () => [
       { key: 'k', action: () => exec('keep'), enabled: kbIsHumanTurn },
       { key: 's', action: () => exec('swap'), enabled: kbIsHumanTurn },
-      { key: 'r', action: () => exec('refuse'), enabled: kbIsRefuseTarget },
+      { key: 'r', action: () => exec('refuse'), enabled: kbIsRefuseTarget && kbHumanHasKing },
       { key: 'a', action: () => exec('accept'), enabled: kbIsRefuseTarget },
     ],
-    [exec, kbIsHumanTurn, kbIsRefuseTarget],
+    [exec, kbIsHumanTurn, kbIsRefuseTarget, kbHumanHasKing],
   );
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
 
@@ -145,6 +152,9 @@ function CuckooPageContent() {
   const humanWon = isGameEnd && state.winnerIdx === 0;
   // The dealer swaps with the stock instead of the next player.
   const humanIsDealer = humanPlayer ? state.dealerIdx === humanPlayer.id : false;
+  // Only a King holder may refuse an incoming swap; drives the refuse button's
+  // dynamic label and disabled state.
+  const humanHasKing = humanPlayer?.card?.value === CUCKOO_KING_VALUE;
 
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
 
@@ -266,7 +276,11 @@ function CuckooPageContent() {
             <ErrorAlert message={error} onRetry={retry} />
 
             {isHumanTurn && <div className="text-ds-text-muted text-xs mb-2">{t('turnNotice')}</div>}
-            {isHumanRefuseTarget && <div className="text-ds-text-muted text-xs mb-2">{t('refuseNotice')}</div>}
+            {isHumanRefuseTarget && (
+              <div className="text-ds-text-muted text-xs mb-2" data-testid="cuckoo-refuse-notice">
+                {humanHasKing ? t('refuseNoticeKing') : t('refuseNoticeNoKing')}
+              </div>
+            )}
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="cuckoo-actions">
               {isHumanTurn && (
@@ -284,8 +298,15 @@ function CuckooPageContent() {
 
               {isHumanRefuseTarget && (
                 <>
-                  <button type="button" className={btnWarning} onClick={() => exec('refuse')} disabled={loading}>
-                    {t('refuseButton')}
+                  <button
+                    type="button"
+                    className={btnWarning}
+                    onClick={() => exec('refuse')}
+                    disabled={loading || !humanHasKing}
+                    title={humanHasKing ? undefined : t('refuseNoKingReason')}
+                    data-testid="cuckoo-refuse-button"
+                  >
+                    {humanHasKing ? t('refuseKingButton') : t('refuseButton')}
                     <KbdBadge label="R" />
                   </button>
                   <button type="button" className={btnSuccess} onClick={() => exec('accept')} disabled={loading}>
