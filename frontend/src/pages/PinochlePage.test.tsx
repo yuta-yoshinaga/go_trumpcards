@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { pinochleApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -422,12 +422,15 @@ describe('PinochlePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
   });
 
-  it('renders trick cards on table', async () => {
+  it('renders trick cards with localized player names (not P0/P1)', async () => {
     mockExec.mockResolvedValue(trickEndState);
-    renderWithProviders(<PinochlePage />);
-    await waitFor(() => {
-      expect(screen.getByText('P0')).toBeInTheDocument();
-    });
+    const { container } = renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(container.querySelector('[data-tutorial="pn-trick-display"]')).toBeInTheDocument());
+    const trick = container.querySelector('[data-tutorial="pn-trick-display"]') as HTMLElement;
+    // playerIdx 0 is the human ("あなた"), playerIdx 1 a CPU ("CPU 1").
+    expect(within(trick).getByText('あなた')).toBeInTheDocument();
+    expect(within(trick).getByText('CPU 1')).toBeInTheDocument();
+    expect(within(trick).queryByText('P0')).not.toBeInTheDocument();
   });
 
   it('renders game end state', async () => {

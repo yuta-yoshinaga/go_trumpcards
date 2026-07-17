@@ -318,12 +318,19 @@ function PinochlePageContent() {
               <div className="mb-3 p-2 rounded bg-black/40" data-tutorial="pn-trick-display">
                 <div className="text-ds-text-muted text-sm mb-1">{t('table')}:</div>
                 <div className="flex gap-2 justify-center">
-                  {state.currentTrick.map((tc, i) => (
-                    <div key={i} className="text-center">
-                      <AnimatedCard card={tc.card} width={cardWidth * 0.8} />
-                      <div className="text-xs text-ds-text-muted mt-1">P{tc.playerIdx}</div>
-                    </div>
-                  ))}
+                  {state.currentTrick.map((tc, i) => {
+                    const isHuman = state.players[tc.playerIdx]?.isHuman === true;
+                    return (
+                      <div key={i} className="text-center">
+                        <AnimatedCard card={tc.card} width={cardWidth * 0.8} />
+                        <div
+                          className={`text-xs mt-1 ${isHuman ? 'text-ds-accent font-semibold' : 'text-ds-text-muted'}`}
+                        >
+                          {playerName(tc.playerIdx, isHuman)}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
