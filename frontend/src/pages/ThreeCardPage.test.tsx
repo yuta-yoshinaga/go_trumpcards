@@ -162,6 +162,31 @@ describe('ThreeCardPage', () => {
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
   });
 
+  it('shows the ante and play-required amounts during action phase', async () => {
+    mockExec.mockResolvedValue(actionPhaseState);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByTestId('action-bet-slip')).toBeInTheDocument());
+    const slip = screen.getByTestId('action-bet-slip');
+    expect(slip).toHaveTextContent('アンテ: 100');
+    expect(slip).toHaveTextContent('プレイに必要: 100');
+    // pairPlusBet is 0 in this fixture → the pair-plus row is omitted
+    expect(slip).not.toHaveTextContent('ペアプラス');
+  });
+
+  it('shows the pair-plus row in the action bet slip when pair plus is wagered', async () => {
+    mockExec.mockResolvedValue({ ...actionPhaseState, pairPlusBet: 50 });
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByTestId('action-bet-slip')).toBeInTheDocument());
+    expect(screen.getByTestId('action-bet-slip')).toHaveTextContent('ペアプラス: 50');
+  });
+
+  it('does not show the action bet slip during bet phase', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    expect(screen.queryByTestId('action-bet-slip')).not.toBeInTheDocument();
+  });
+
   it('shows end phase with player wins', async () => {
     mockExec.mockResolvedValueOnce(actionPhaseState).mockResolvedValueOnce(endPhasePlayerWins);
     renderWithProviders(<ThreeCardPage />);
