@@ -135,4 +135,26 @@ describe('GoFishPlayerArea', () => {
     expect(queen).not.toHaveAttribute('data-matched');
     expect(queen?.className).not.toContain('bg-ds-warning');
   });
+
+  it('omits the book-ranks chip row when the player has no completed books', () => {
+    renderWithProviders(<GoFishPlayerArea player={cpuPlayer} isSelected={false} onSelect={vi.fn()} disabled={false} />);
+    expect(screen.queryByTestId('book-ranks-1')).not.toBeInTheDocument();
+  });
+
+  it("renders each of a CPU's completed book ranks with the localized rank label", () => {
+    const withBooks: GoFishPlayerData = {
+      ...cpuPlayer,
+      books: [
+        { rank: 1, cards: [] },
+        { rank: 13, cards: [] },
+      ],
+    };
+    renderWithProviders(<GoFishPlayerArea player={withBooks} isSelected={false} onSelect={vi.fn()} disabled={false} />);
+    const row = screen.getByTestId('book-ranks-1');
+    const chips = row.querySelectorAll('[data-rank]');
+    expect(chips).toHaveLength(2);
+    // valueName(1) → 'A', valueName(13) → 'K'
+    expect(row.textContent).toContain('A');
+    expect(row.textContent).toContain('K');
+  });
 });
