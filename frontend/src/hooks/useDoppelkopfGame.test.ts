@@ -56,6 +56,15 @@ describe('useDoppelkopfGame', () => {
     expect(mockExec).toHaveBeenCalledWith('announce');
   });
 
+  it('handleHint dispatches the hint command and toggles hintLoading', async () => {
+    const { result } = renderHook(() => useDoppelkopfGame(), { wrapper: createWrapper() });
+    await act(async () => {
+      await result.current.handleHint();
+    });
+    expect(mockExec).toHaveBeenCalledWith('hint');
+    expect(result.current.hintLoading).toBe(false);
+  });
+
   it('handleNextTrick / handleNextRound dispatch their commands', async () => {
     const { result } = renderHook(() => useDoppelkopfGame(), { wrapper: createWrapper() });
     await act(async () => {

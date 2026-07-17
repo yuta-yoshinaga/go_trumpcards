@@ -90,6 +90,8 @@ function DoppelkopfPageContent() {
     handleAnnounce,
     handleNextTrick,
     handleNextRound,
+    handleHint,
+    hintLoading,
   } = useDoppelkopfGame();
 
   // Fetch a fresh game on mount.
@@ -321,6 +323,11 @@ function DoppelkopfPageContent() {
                   disabled={loading || selectedCardIndices.length !== 1}
                 >
                   {t('playButton')}
+                </button>
+              )}
+              {canPlay && (
+                <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
+                  {tc('button.hint')}
                 </button>
               )}
               {state.canAnnounce && (
