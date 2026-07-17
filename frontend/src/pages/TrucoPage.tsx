@@ -22,6 +22,7 @@ import { cardAlt } from '../utils/cardAlt';
 /** Tutorial steps for the Truco page. */
 const TRUCO_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="truco-score"]', messageKey: 'tutorial.score', placement: 'bottom', advanceOn: 'next' },
+  { target: '[data-tutorial="truco-rankref"]', messageKey: 'tutorial.rankRef', placement: 'bottom', advanceOn: 'next' },
   { target: '[data-tutorial="truco-trick"]', messageKey: 'tutorial.trick', placement: 'bottom', advanceOn: 'next' },
   { target: '[data-tutorial="truco-hand"]', messageKey: 'tutorial.hand', placement: 'top', advanceOn: 'next' },
   { target: '[data-tutorial="truco-call"]', messageKey: 'tutorial.call', placement: 'top', advanceOn: 'next' },
@@ -166,6 +167,25 @@ function TrucoPageContent() {
             {t('header.stake')}: {state.handStake} ({levelLabel(state.acceptedLevel)})
           </span>
         </div>
+
+        <details
+          className="my-3 p-2 rounded bg-black/30 max-w-md mx-auto"
+          data-testid="truco-rank-ref"
+          data-tutorial="truco-rankref"
+        >
+          <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('rankRef.title')}</summary>
+          <div className="mt-2 text-ds-text-muted text-xs space-y-1">
+            <div>
+              <span className="font-semibold text-ds-text-primary">{t('rankRef.matadores')}</span>
+              <div className="mt-0.5">{t('rankRef.matadoresOrder')}</div>
+            </div>
+            <div>
+              <span className="font-semibold text-ds-text-primary">{t('rankRef.common')}</span>
+              <div className="mt-0.5">{t('rankRef.commonOrder')}</div>
+            </div>
+            <div className="pt-1">{t('rankRef.note')}</div>
+          </div>
+        </details>
 
         <div className="flex flex-wrap items-start gap-4 mb-4">
           <div className="p-2 rounded bg-black/30 text-ds-text-muted text-sm">
