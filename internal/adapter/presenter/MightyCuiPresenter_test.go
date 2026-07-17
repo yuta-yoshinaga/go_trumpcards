@@ -34,6 +34,8 @@ func setupMightyCuiMock() *interfaces.MockMightyGame {
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetConfig").Return(domain.DefaultMightyConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	m.On("GetDeclarerIdx").Return(0)
+	m.On("GetKitty").Return([]*domain.Card{})
 	return m
 }
 
@@ -196,6 +198,29 @@ func TestMightyCuiPresenter_Output(t *testing.T) {
 		m.On("GetWinnerTeam").Return(domain.MightyWinnerOpposition)
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "野党")
+	})
+
+	t.Run("kitty phase lists kitty cards with hand indices", func(t *testing.T) {
+		m, players := setupMightyCuiMockWithPlayers()
+		// Declarer (player 0, human) hand — the kitty is merged in and sorted.
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))  // idx 0
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))  // idx 1
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 9, false)) // idx 2
+		kitty := []*domain.Card{
+			domain.NewCard(domain.CardDesignHeart, 5, false),
+			domain.NewCard(domain.CardDesignClover, 9, false),
+		}
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.MightyPhaseKittyExchange)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetKitty")
+		m.On("GetKitty").Return(kitty)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "キティのカード")
+		// The kitty cards are shown at their positions in the declarer's hand,
+		// matching the indices the `e` (exchange) command consumes.
+		assert.Contains(t, result, "[1]HEART 5")
+		assert.Contains(t, result, "[2]CLOVER 9")
 	})
 
 	t.Run("phase prompts", func(t *testing.T) {
