@@ -192,4 +192,27 @@ describe('PrimeroPage', () => {
     expect(folded).toHaveTextContent('×');
     expect(folded).toHaveAttribute('aria-label', expect.stringContaining('降りた'));
   });
+
+  it('renders the hand-ranking legend with all four categories in strength order', async () => {
+    mockExec.mockResolvedValue(bettingState);
+    renderWithProviders(<PrimeroPage />);
+    const legend = await screen.findByTestId('primero-hand-legend');
+    expect(legend).toHaveTextContent('役の一覧（強い順）');
+    // All four Primero hand categories, strongest first.
+    expect(screen.getByTestId('primero-hand-legend-row-fluxus')).toBeInTheDocument();
+    expect(screen.getByTestId('primero-hand-legend-row-supremus')).toBeInTheDocument();
+    expect(screen.getByTestId('primero-hand-legend-row-primero')).toBeInTheDocument();
+    expect(screen.getByTestId('primero-hand-legend-row-numerus')).toBeInTheDocument();
+  });
+
+  it('highlights the human current hand inside the legend', async () => {
+    mockExec.mockResolvedValue(resultState);
+    renderWithProviders(<PrimeroPage />);
+    // The human hand in resultState is "primero".
+    const currentRow = await screen.findByTestId('primero-hand-legend-row-primero');
+    expect(currentRow).toHaveAttribute('aria-current', 'true');
+    expect(currentRow).toHaveTextContent('現在の役');
+    // A non-matching row is not marked current.
+    expect(screen.getByTestId('primero-hand-legend-row-fluxus')).not.toHaveAttribute('aria-current');
+  });
 });
