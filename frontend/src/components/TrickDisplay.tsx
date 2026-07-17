@@ -28,6 +28,10 @@ export interface TrickDisplayProps {
   label: string;
   /** Value for the `data-tutorial` attribute (e.g. `"ht-trick-display"`). */
   dataTutorial?: string;
+  /** When set (e.g. the trick winner at TRICK_END), that player's card gets a gold ring + WIN badge. */
+  winnerIdx?: number;
+  /** Localised badge/announcement text for the winning card (defaults to "WIN"). */
+  winnerLabel?: string;
 }
 
 /**
@@ -41,7 +45,15 @@ export interface TrickDisplayProps {
  * team's color (blue) or the opposing team's color (red) to make ally/opponent
  * relationships scannable at a glance.
  */
-export function TrickDisplay({ currentTrick, players, cardWidth, label, dataTutorial }: TrickDisplayProps) {
+export function TrickDisplay({
+  currentTrick,
+  players,
+  cardWidth,
+  label,
+  dataTutorial,
+  winnerIdx,
+  winnerLabel,
+}: TrickDisplayProps) {
   if (currentTrick.length === 0) {
     return null;
   }
@@ -59,7 +71,15 @@ export function TrickDisplay({ currentTrick, players, cardWidth, label, dataTuto
           const team = player?.team;
           const isAlly = hasTeams && team !== undefined && team === humanTeam;
           const isFoe = hasTeams && team !== undefined && team !== humanTeam;
-          const wrapperClass = isAlly ? 'ring-2 ring-ds-info rounded' : isFoe ? 'ring-2 ring-ds-error rounded' : '';
+          const isWinner = winnerIdx !== undefined && winnerIdx === trickCard.playerIdx;
+          // The winning card's gold ring takes visual priority over the ally/foe team rings.
+          const wrapperClass = isWinner
+            ? 'ring-2 ring-ds-warning rounded motion-safe:animate-pulse'
+            : isAlly
+              ? 'ring-2 ring-ds-info rounded'
+              : isFoe
+                ? 'ring-2 ring-ds-error rounded'
+                : '';
           const labelClass = isAlly
             ? 'text-ds-info font-semibold'
             : isFoe
@@ -68,11 +88,20 @@ export function TrickDisplay({ currentTrick, players, cardWidth, label, dataTuto
           return (
             <div
               key={`trick-${trickCard.playerIdx}`}
-              className="text-center"
+              className="relative text-center"
               data-team={team ?? undefined}
               data-team-role={isAlly ? 'ally' : isFoe ? 'foe' : undefined}
+              data-trick-winner={isWinner || undefined}
             >
               <AnimatedCard card={trickCard.card} width={cardWidth} wrapperClassName={wrapperClass || undefined} />
+              {isWinner && (
+                <span
+                  data-testid="trick-winner-badge"
+                  className="absolute top-0 right-0 px-1 rounded bg-ds-warning text-ds-text-on-accent text-[8px] font-extrabold tracking-wider shadow-md pointer-events-none"
+                >
+                  {winnerLabel ?? 'WIN'}
+                </span>
+              )}
               <div className={`text-xs mt-1 ${labelClass}`}>
                 {playerName(player?.id ?? trickCard.playerIdx, player?.isHuman ?? false)}
               </div>

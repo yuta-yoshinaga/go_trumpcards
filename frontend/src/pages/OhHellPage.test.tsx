@@ -369,6 +369,23 @@ describe('OhHellPage', () => {
     );
   });
 
+  it('highlights the trick winner card at trick end', async () => {
+    // trickEndState.leadPlayerIdx is 0, so the trick winner badge appears.
+    mockExec.mockResolvedValue(trickEndState);
+    renderWithProviders(<OhHellPage />);
+    await waitFor(() => expect(screen.getByTestId('trick-winner-badge')).toBeInTheDocument());
+  });
+
+  it('does not highlight a trick winner during active play', async () => {
+    mockExec.mockResolvedValue({
+      ...trickEndState,
+      phase: 1, // PLAY
+    });
+    renderWithProviders(<OhHellPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
+  });
+
   it('shows next round button on round end', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<OhHellPage />);

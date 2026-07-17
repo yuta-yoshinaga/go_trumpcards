@@ -87,4 +87,32 @@ describe('TrickDisplay', () => {
     );
     expect(container.querySelector('[data-team-role]')).not.toBeInTheDocument();
   });
+
+  it('highlights the winning card with a badge when winnerIdx is set', () => {
+    const { container } = render(
+      <TrickDisplay
+        currentTrick={trick}
+        players={players}
+        cardWidth={40}
+        label="label"
+        winnerIdx={1}
+        winnerLabel="勝ち"
+      />,
+    );
+    const badge = screen.getByTestId('trick-winner-badge');
+    expect(badge).toHaveTextContent('勝ち');
+    // Exactly one card is flagged the winner.
+    expect(container.querySelectorAll('[data-trick-winner="true"]')).toHaveLength(1);
+  });
+
+  it('shows no winner highlight when winnerIdx is omitted', () => {
+    const { container } = render(<TrickDisplay currentTrick={trick} players={players} cardWidth={40} label="label" />);
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
+    expect(container.querySelector('[data-trick-winner]')).not.toBeInTheDocument();
+  });
+
+  it('defaults the winner badge text to WIN', () => {
+    render(<TrickDisplay currentTrick={trick} players={players} cardWidth={40} label="label" winnerIdx={0} />);
+    expect(screen.getByTestId('trick-winner-badge')).toHaveTextContent('WIN');
+  });
 });
