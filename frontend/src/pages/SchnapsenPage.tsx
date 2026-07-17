@@ -1,7 +1,9 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { schnapsenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -12,6 +14,8 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -21,6 +25,9 @@ import type { SchnapsenResponse } from '../types/card';
 import { SchnapsenPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt, suitSymbol } from '../utils/cardAlt';
+import { parseSchnapsenCommand, SCHNAPSEN_HELP } from '../utils/cli/commands/schnapsenCommands';
+import { formatSchnapsenState } from '../utils/cli/formatters/schnapsenFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 
 /** Card design → Schnapsen trump-suit id (1=♠ 2=♣ 3=♥ 4=♦). */
 const DESIGN_TO_SUIT: Readonly<Record<string, number>> = { SPADE: 1, CLOVER: 2, HEART: 3, DIAMOND: 4 };
@@ -58,6 +65,18 @@ function SchnapsenPageContent() {
   } = useGameApi<SchnapsenResponse, Parameters<typeof schnapsenApi.exec>>(schnapsenApi.exec);
   const { cardWidth } = useCardDimensions();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('schnapsen', state);
+
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('schnapsen');
+  const cliConfig: CliGameConfig<SchnapsenResponse, Parameters<typeof schnapsenApi.exec>> = useMemo(
+    () => ({
+      gameName: 'schnapsen',
+      parseCommand: parseSchnapsenCommand,
+      formatResponse: formatSchnapsenState,
+      helpText: SCHNAPSEN_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(dispatch, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   // Initial reset on mount.
   useEffect(() => {
@@ -128,171 +147,191 @@ function SchnapsenPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
-      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
-        <div className="text-ds-text-primary text-center mb-3">
-          <span className="mr-4">
-            {t('header.trick')}: {state.trickNumber}
-          </span>
-          <span className="mr-4">
-            {t('header.stock')}: {state.stockRemaining}
-          </span>
-          <span className="mr-4">
-            {t('header.points')} — {t('header.you')}: {human?.points ?? 0} / {t('header.cpu')}: {cpu?.points ?? 0}
-          </span>
-          <span className="text-ds-accent" data-testid="schnapsen-phase">
-            {state.isEndgame ? t('header.phase2') : t('header.phase1')}
-          </span>
-        </div>
-
-        {/* CPU info + trump upcard */}
-        <div className="flex flex-wrap items-start gap-4 mb-4">
-          <div className="p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-            {t('header.cpu')}: {cpu?.cardCount ?? 0} / {t('header.tricks')}: {cpu?.trickCount ?? 0}
-          </div>
-          <div
-            className="flex items-center gap-2 rounded bg-black/30 p-2"
-            data-testid="schnapsen-stock"
-            data-tutorial="schnapsen-trump"
-          >
-            <span className="text-ds-text-muted text-sm">
-              {state.trumpCard ? t('header.trump') : t('header.trumpNone')}
-            </span>
-            {state.trumpCard ? (
-              <div
-                className="relative"
-                style={{ width: Math.round(cardWidth * 1.1), height: Math.round(cardWidth * 0.95) }}
-              >
-                <div
-                  className="absolute left-0 top-1/2"
-                  style={{ transform: 'translateY(-50%) rotate(90deg)', transformOrigin: 'left center' }}
-                >
-                  <CardImage card={state.trumpCard} width={Math.round(cardWidth * 0.7)} />
-                </div>
-                {state.stockRemaining > 0 && (
-                  <div
-                    className="absolute left-1/2 top-1/2 -translate-y-1/2"
-                    style={{ transform: 'translate(0,-50%)' }}
-                  >
-                    <div className="relative">
-                      {Array.from({ length: Math.min(state.stockRemaining, 4) }, (_, i) => (
-                        <div key={`back-${i.toString()}`} className="absolute" style={{ top: i * -1.5, left: i * 1.5 }}>
-                          <AnimatedCardBack width={Math.round(cardWidth * 0.7)} />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : null}
-          </div>
-        </div>
-
-        {/* Current trick */}
-        <div data-tutorial="schnapsen-trick">
-          <TrickDisplay
-            currentTrick={state.currentTrick}
-            players={state.players}
-            cardWidth={cardWidth}
-            label={t('currentTrick')}
-          />
-        </div>
-
-        {/* Result banner */}
-        {resultBanner && (
-          <div className="text-center text-xl my-4 text-ds-accent font-semibold" role="status">
-            {resultBanner}
-          </div>
-        )}
-
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-        <ErrorAlert message={error} onRetry={retry} />
-
-        {/* Human hand */}
-        {human && human.cards.length > 0 && (
-          <div className="mt-4" data-tutorial="schnapsen-hand">
-            <div className="text-ds-text-muted text-sm mb-1">
-              {t('header.you')}: {human.cardCount} / {t('header.tricks')}: {human.trickCount}
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+            <div className="text-ds-text-primary text-center mb-3">
+              <span className="mr-4">
+                {t('header.trick')}: {state.trickNumber}
+              </span>
+              <span className="mr-4">
+                {t('header.stock')}: {state.stockRemaining}
+              </span>
+              <span className="mr-4">
+                {t('header.points')} — {t('header.you')}: {human?.points ?? 0} / {t('header.cpu')}: {cpu?.points ?? 0}
+              </span>
+              <span className="text-ds-accent" data-testid="schnapsen-phase">
+                {state.isEndgame ? t('header.phase2') : t('header.phase1')}
+              </span>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {human.cards.map((card, idx) => {
-                const playable = isHumanTurn && (!restrictPlays || validPlaySet.has(idx));
-                return (
-                  <div key={`${card.design}-${card.value}-${idx}`} className="flex flex-col items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => handlePlay(idx)}
-                      disabled={loading || !playable}
-                      aria-label={t('actions.playAria', { card: cardAlt(card) })}
-                      className="disabled:opacity-50"
+
+            {/* CPU info + trump upcard */}
+            <div className="flex flex-wrap items-start gap-4 mb-4">
+              <div className="p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+                {t('header.cpu')}: {cpu?.cardCount ?? 0} / {t('header.tricks')}: {cpu?.trickCount ?? 0}
+              </div>
+              <div
+                className="flex items-center gap-2 rounded bg-black/30 p-2"
+                data-testid="schnapsen-stock"
+                data-tutorial="schnapsen-trump"
+              >
+                <span className="text-ds-text-muted text-sm">
+                  {state.trumpCard ? t('header.trump') : t('header.trumpNone')}
+                </span>
+                {state.trumpCard ? (
+                  <div
+                    className="relative"
+                    style={{ width: Math.round(cardWidth * 1.1), height: Math.round(cardWidth * 0.95) }}
+                  >
+                    <div
+                      className="absolute left-0 top-1/2"
+                      style={{ transform: 'translateY(-50%) rotate(90deg)', transformOrigin: 'left center' }}
                     >
-                      <CardImage card={card} width={cardWidth} />
-                    </button>
-                    {isHumanTurn && marriageSet.has(idx) && (
-                      <button
-                        type="button"
-                        onClick={() => handleMarriage(idx)}
-                        disabled={loading}
-                        className={`${btnWarning} text-xs px-2 py-1`}
-                        data-testid={`schnapsen-marriage-${idx.toString()}`}
-                        aria-label={t('actions.marriageAria', {
-                          suit: suitSymbol(card.design),
-                          points: DESIGN_TO_SUIT[card.design] === state.trumpSuit ? 40 : 20,
-                        })}
+                      <CardImage card={state.trumpCard} width={Math.round(cardWidth * 0.7)} />
+                    </div>
+                    {state.stockRemaining > 0 && (
+                      <div
+                        className="absolute left-1/2 top-1/2 -translate-y-1/2"
+                        style={{ transform: 'translate(0,-50%)' }}
                       >
-                        👑 {t('actions.marriage')}
-                      </button>
+                        <div className="relative">
+                          {Array.from({ length: Math.min(state.stockRemaining, 4) }, (_, i) => (
+                            <div
+                              key={`back-${i.toString()}`}
+                              className="absolute"
+                              style={{ top: i * -1.5, left: i * 1.5 }}
+                            >
+                              <AnimatedCardBack width={Math.round(cardWidth * 0.7)} />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     )}
                   </div>
-                );
-              })}
+                ) : null}
+              </div>
             </div>
-          </div>
-        )}
 
-        {/* Frontend hint */}
-        {hintEnabled && hint && (
-          <div className="mt-3 flex justify-center">
-            <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
-          </div>
-        )}
+            {/* Current trick */}
+            <div data-tutorial="schnapsen-trick">
+              <TrickDisplay
+                currentTrick={state.currentTrick}
+                players={state.players}
+                cardWidth={cardWidth}
+                label={t('currentTrick')}
+              />
+            </div>
 
-        {/* Phase-specific controls */}
-        <div className="mt-4 flex flex-wrap gap-2" data-tutorial="schnapsen-actions">
-          {isTrickEnd && (
-            <button type="button" className={btnSuccess} onClick={handleNext} disabled={loading}>
-              {t('actions.next')}
-            </button>
-          )}
-          <button type="button" className={btnPrimary} onClick={() => requestConfirm(handleReset)} disabled={loading}>
-            {t('actions.reset')}
-          </button>
-        </div>
+            {/* Result banner */}
+            {resultBanner && (
+              <div className="text-center text-xl my-4 text-ds-accent font-semibold" role="status">
+                {resultBanner}
+              </div>
+            )}
 
-        <SettingsPanel
-          title={tc('settings.title')}
-          groups={[
-            {
-              items: [
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+            <ErrorAlert message={error} onRetry={retry} />
+
+            {/* Human hand */}
+            {human && human.cards.length > 0 && (
+              <div className="mt-4" data-tutorial="schnapsen-hand">
+                <div className="text-ds-text-muted text-sm mb-1">
+                  {t('header.you')}: {human.cardCount} / {t('header.tricks')}: {human.trickCount}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {human.cards.map((card, idx) => {
+                    const playable = isHumanTurn && (!restrictPlays || validPlaySet.has(idx));
+                    return (
+                      <div key={`${card.design}-${card.value}-${idx}`} className="flex flex-col items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handlePlay(idx)}
+                          disabled={loading || !playable}
+                          aria-label={t('actions.playAria', { card: cardAlt(card) })}
+                          className="disabled:opacity-50"
+                        >
+                          <CardImage card={card} width={cardWidth} />
+                        </button>
+                        {isHumanTurn && marriageSet.has(idx) && (
+                          <button
+                            type="button"
+                            onClick={() => handleMarriage(idx)}
+                            disabled={loading}
+                            className={`${btnWarning} text-xs px-2 py-1`}
+                            data-testid={`schnapsen-marriage-${idx.toString()}`}
+                            aria-label={t('actions.marriageAria', {
+                              suit: suitSymbol(card.design),
+                              points: DESIGN_TO_SUIT[card.design] === state.trumpSuit ? 40 : 20,
+                            })}
+                          >
+                            👑 {t('actions.marriage')}
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Frontend hint */}
+            {hintEnabled && hint && (
+              <div className="mt-3 flex justify-center">
+                <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
+              </div>
+            )}
+
+            {/* Phase-specific controls */}
+            <div className="mt-4 flex flex-wrap gap-2" data-tutorial="schnapsen-actions">
+              {isTrickEnd && (
+                <button type="button" className={btnSuccess} onClick={handleNext} disabled={loading}>
+                  {t('actions.next')}
+                </button>
+              )}
+              <button
+                type="button"
+                className={btnPrimary}
+                onClick={() => requestConfirm(handleReset)}
+                disabled={loading}
+              >
+                {t('actions.reset')}
+              </button>
+            </div>
+
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[
                 {
-                  type: 'checkbox' as const,
-                  id: 'frontendHint',
-                  label: tc('hint.toggle', { ns: 'tutorial' }),
-                  checked: hintEnabled,
-                  onToggle: setHintEnabled,
+                  items: [
+                    {
+                      type: 'checkbox' as const,
+                      id: 'frontendHint',
+                      label: tc('hint.toggle', { ns: 'tutorial' }),
+                      checked: hintEnabled,
+                      onToggle: setHintEnabled,
+                    },
+                  ],
                 },
-              ],
-            },
-          ]}
-        />
-      </div>
+              ]}
+            />
+          </div>
 
-      <ActionLogSection
-        isEndPhase={isGameEnd}
-        actionLog={actionLog}
-        showActionLog={showActionLog}
-        hideActionLog={hideActionLog}
-      />
+          <ActionLogSection
+            isEndPhase={isGameEnd}
+            actionLog={actionLog}
+            showActionLog={showActionLog}
+            hideActionLog={hideActionLog}
+          />
+        </>
+      )}
     </GamePageShell>
   );
 }
