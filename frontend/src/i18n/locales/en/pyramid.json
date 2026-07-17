@@ -43,6 +43,7 @@
   "a11y": {
     "blocked": "(blocked)",
     "selected": "(selected)",
-    "pairCandidate": "(pairs to 13)"
+    "pairCandidate": "(pairs to 13)",
+    "kingRemovable": "(K, removable alone)"
   }
 }

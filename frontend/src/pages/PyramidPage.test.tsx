@@ -102,7 +102,7 @@ describe('PyramidPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
     await waitFor(() => expect(screen.getByLabelText('♦ 3')).toHaveClass('ring-ds-warning'));
     expect(screen.getByLabelText('♠ 10')).toHaveClass('ring-ds-warning');
-    expect(screen.getByLabelText('♥ K')).not.toHaveClass('ring-ds-warning');
+    expect(screen.getByLabelText(/♥ K/)).not.toHaveClass('ring-ds-warning');
   });
 
   it('shows only the hint ring when a card is both hinted and a pair candidate', async () => {
@@ -123,15 +123,15 @@ describe('PyramidPage', () => {
 
   it('rings the king cell for a king hint and clears it on the next card click', async () => {
     renderWithProviders(<PyramidPage />);
-    await waitFor(() => expect(screen.getByLabelText('♥ K')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByLabelText(/♥ K/)).toBeInTheDocument());
 
     mockExec.mockResolvedValueOnce({ ...playingState, hint: { type: 'king', row1: 2, col1: 2, row2: -1, col2: -1 } });
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
-    await waitFor(() => expect(screen.getByLabelText('♥ K')).toHaveClass('ring-ds-warning'));
+    await waitFor(() => expect(screen.getByLabelText(/♥ K/)).toHaveClass('ring-ds-warning'));
 
     // Any card interaction clears the hint highlight.
     fireEvent.click(screen.getByLabelText('♦ 3'));
-    await waitFor(() => expect(screen.getByLabelText('♥ K')).not.toHaveClass('ring-ds-warning'));
+    await waitFor(() => expect(screen.getByLabelText(/♥ K/)).not.toHaveClass('ring-ds-warning'));
   });
 
   it('renders skeleton when no state', () => {
@@ -321,6 +321,38 @@ describe('PyramidPage', () => {
     );
     // No pair-candidate attribute should appear anywhere because partnerValue stays null for Kings.
     expect(document.querySelectorAll('[data-pair-candidate="true"]')).toHaveLength(0);
+  });
+
+  it('marks an exposed King as removable-alone with a success ring and aria hint', async () => {
+    renderWithProviders(<PyramidPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+    // ♥ K is exposed in row 2 → flagged as removable alone.
+    const kingButton = screen.getByAltText('♥ K').closest('button') as HTMLButtonElement;
+    expect(kingButton).toHaveAttribute('data-king-removable', 'true');
+    expect(kingButton.className).toContain('ring-ds-success');
+    // The always-on King ring must not reuse the pulsing pair-candidate style.
+    expect(kingButton.className).not.toContain('animate-pulse');
+    expect(kingButton).toHaveAttribute('aria-label', '♥ K （単独除去可能なK）');
+  });
+
+  it('does not mark a covered King or a non-King exposed card as removable-alone', async () => {
+    renderWithProviders(<PyramidPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+    // ♠ K in row 0 is covered (exposed:false) → no marker.
+    const coveredKing = screen.getByAltText('♠ K').closest('button') as HTMLButtonElement;
+    expect(coveredKing).not.toHaveAttribute('data-king-removable');
+    // ♦ 3 is exposed but not a King → no marker.
+    const nonKing = screen.getByAltText('♦ 3').closest('button') as HTMLButtonElement;
+    expect(nonKing).not.toHaveAttribute('data-king-removable');
+  });
+
+  it('marks a King on top of the waste as removable-alone', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('SPADE', 13)] });
+    renderWithProviders(<PyramidPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+    const wasteButton = screen.getByRole('button', { name: '♠ K （単独除去可能なK）' });
+    expect(wasteButton).toHaveAttribute('data-king-removable', 'true');
+    expect(wasteButton.className).toContain('ring-ds-success');
   });
 
   it('clicking same card twice deselects it', async () => {
