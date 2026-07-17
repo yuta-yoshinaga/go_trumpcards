@@ -417,6 +417,19 @@ function TwoTenJackPageContent() {
                   {t('declarePrompt')}
                 </span>
               )}
+              {isDeclarePhase && !isHumanDeclarer && (
+                <span
+                  data-testid="tt-cpu-declaring"
+                  role="status"
+                  className="flex items-center gap-2 text-ds-info text-sm font-medium w-full sm:w-auto"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="inline-block w-3 h-3 rounded-full border-2 border-ds-info border-t-transparent motion-safe:animate-spin"
+                  />
+                  {t('cpuDeclaring')}
+                </span>
+              )}
               {isHumanDeclarer &&
                 SUIT_OPTIONS.map((suit) => (
                   <button
