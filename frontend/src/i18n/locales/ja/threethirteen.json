@@ -15,6 +15,8 @@
   },
   "round": "ラウンド {{n}}/11",
   "wildRank": "ワイルド: {{rank}}",
+  "wildBadge": "WILD",
+  "wildAria": "（ワイルド）",
   "dealCount": "手札枚数: {{count}}",
   "drawPile": "山札: {{count}}枚",
   "discardTop": "捨て札",
