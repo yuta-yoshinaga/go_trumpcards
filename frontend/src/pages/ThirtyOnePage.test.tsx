@@ -95,6 +95,43 @@ describe('ThirtyOnePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
   });
 
+  it('summarizes life losses at round end', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: ThirtyOnePhase.ROUND_END, roundWinnerIdx: 0, roundLosers: [1] }));
+    renderWithProviders(<ThirtyOnePage />);
+    const summary = await screen.findByTestId('thirtyone-round-summary');
+    expect(summary).toHaveTextContent('CPU 1 がライフを1つ失った');
+    // No 31 achiever and player 1 not eliminated in this fixture.
+    expect(screen.queryByTestId('thirtyone-achiever')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('eliminated-1')).not.toBeInTheDocument();
+  });
+
+  it('highlights the 31 achiever and newly eliminated players in the summary', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: ThirtyOnePhase.ROUND_END,
+        thirtyOneIdx: 2,
+        roundLosers: [1, 3],
+        players: [
+          player(0, true, [card('SPADE', 3)]),
+          player(1, false, [], { lives: 1 }),
+          player(2, false, []),
+          player(3, false, [], { lives: 0, isEliminated: true }),
+        ],
+      }),
+    );
+    renderWithProviders(<ThirtyOnePage />);
+    expect(await screen.findByTestId('thirtyone-achiever')).toHaveTextContent('CPU 2 が31達成');
+    // Player 3 dropped to 0 lives → shown as eliminated; player 1 merely lost a life.
+    expect(screen.getByTestId('eliminated-3')).toBeInTheDocument();
+    expect(screen.queryByTestId('eliminated-1')).not.toBeInTheDocument();
+  });
+
+  it('states when nobody lost a life at round end', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: ThirtyOnePhase.ROUND_END, roundLosers: [] }));
+    renderWithProviders(<ThirtyOnePage />);
+    expect(await screen.findByTestId('no-life-loss')).toBeInTheDocument();
+  });
+
   it('reveals CPU lives at all times', async () => {
     renderWithProviders(<ThirtyOnePage />);
     await screen.findByTestId('draw-stock-button');

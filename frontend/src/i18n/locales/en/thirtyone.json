@@ -40,5 +40,12 @@
     "playerHand": "Your hand. Build the highest total in a single suit (aim for 31!).",
     "actionButtons": "Draw from stock or discard, then discard a card — or knock to stand pat.",
     "resetButton": "Start a new game."
+  },
+  "roundSummary": {
+    "title": "Round Result",
+    "thirtyOne": "{{name}} hit 31! Everyone else loses a life",
+    "lifeLost": "{{name}} lost a life",
+    "eliminated": "out",
+    "noLoss": "No player lost a life this round"
   }
 }
