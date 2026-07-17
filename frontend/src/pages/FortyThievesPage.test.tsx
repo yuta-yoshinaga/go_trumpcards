@@ -548,6 +548,18 @@ describe('FortyThievesPage', () => {
     expect(drawBtn).toBeDisabled();
   });
 
+  it('ring-highlights the hinted source card after requesting a hint', async () => {
+    renderWithProviders(<FortyThievesPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    // withHintState: waste top ♣3 → tableau column 3.
+    mockExec.mockResolvedValue(withHintState);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => {
+      const wasteBtn = screen.getByRole('button', { name: '♣ 3' });
+      expect(wasteBtn.className).toContain('ring-ds-info');
+    });
+  });
+
   describe('drag and drop', () => {
     function buildDataTransfer() {
       const store: Record<string, string> = {};

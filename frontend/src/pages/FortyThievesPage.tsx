@@ -205,6 +205,14 @@ function FortyThievesPageContent() {
   const hintCardName = hintCard ? cardAlt(hintCard) : '';
   const hintDest = hint ? formatHintZone(t, hint.toZone, hint.toCol) : '';
 
+  // Ring highlight tying the hint text to the actual source/target cards, mirroring
+  // Yukon/RussianSolitaire. Clears automatically once the move is played (hint → null).
+  const HINT_RING = 'ring-2 ring-ds-info motion-safe:animate-pulse';
+  const isHintFromWaste = hint !== null && hint.fromZone === 'waste';
+  const isHintFromTableau = (col: number, cardIdx: number) =>
+    hint !== null && hint.fromZone === 'tableau' && hint.fromCol === col && hint.cardIndex === cardIdx;
+  const isHintTo = (zone: string, col: number) => hint !== null && hint.toZone === zone && hint.toCol === col;
+
   const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
     selectedSource !== null &&
     selectedSource.zone === zone &&
@@ -287,7 +295,7 @@ function FortyThievesPageContent() {
                       draggable={isPlaying && !loading}
                       onDragStart={dnd.handleDragStart({ zone: 'waste' })}
                       onDragEnd={dnd.handleDragEnd}
-                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste') ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource({ zone: 'waste' }) ? 'opacity-50' : ''}`}
+                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste') ? 'ring-2 ring-ds-warning' : isHintFromWaste ? HINT_RING : ''} ${dnd.isDragSource({ zone: 'waste' }) ? 'opacity-50' : ''}`}
                     >
                       <AnimatedCard card={wasteDisplay[0]} width={ft.cw} draggable={false} />
                     </button>
@@ -309,7 +317,10 @@ function FortyThievesPageContent() {
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: FortyThievesMoveZone = { zone: 'foundation', col: idx };
                   return (
-                    <div key={`f-${idx.toString()}`} className="text-center">
+                    <div
+                      key={`f-${idx.toString()}`}
+                      className={`text-center rounded ${isHintTo('foundation', idx) ? HINT_RING : ''}`}
+                    >
                       <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
                       <DropZone
                         isDropTarget={dnd.isDropTarget(foundationZone)}
@@ -359,7 +370,10 @@ function FortyThievesPageContent() {
               {state.tableau.map((col, colIdx) => {
                 const tableauColZone: FortyThievesMoveZone = { zone: 'tableau', col: colIdx };
                 return (
-                  <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
+                  <div
+                    key={`col-${colIdx.toString()}`}
+                    className={`flex-1 min-w-0 rounded ${isHintTo('tableau', colIdx) ? HINT_RING : ''}`}
+                  >
                     <DropZone
                       isDropTarget={dnd.isDropTarget(tableauColZone)}
                       onDragOver={dnd.handleDragOver(tableauColZone)}
@@ -407,7 +421,7 @@ function FortyThievesPageContent() {
                                     draggable={isPlaying && !loading}
                                     onDragStart={dnd.handleDragStart(cardZone)}
                                     onDragEnd={dnd.handleDragEnd}
-                                    className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                                    className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : isHintFromTableau(colIdx, cardIdx) ? HINT_RING : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
                                   >
                                     <AnimatedCard
                                       card={tc.card}
