@@ -186,15 +186,6 @@ function CaribbeanStudPageContent() {
               messageParams={state.messageParams}
             />
 
-            <label className="flex items-center gap-1 text-ds-text-primary text-xs justify-center mb-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={frontendHintEnabled}
-                onChange={(e) => setFrontendHintEnabled(e.target.checked)}
-              />
-              {tc('hint.toggle', { ns: 'tutorial' })}
-            </label>
-
             {frontendHintEnabled && frontendHint && (
               <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
             )}
@@ -321,7 +312,22 @@ function CaribbeanStudPageContent() {
 
           <GameFooter className={`${gameTheme.caribbeanstud.footer} px-4 pt-3`}>
             <ErrorAlert message={error} onRetry={retry} />
-            <SettingsPanel title={t('settings.title')} groups={[]} />
+            <SettingsPanel
+              title={t('settings.title')}
+              groups={[
+                {
+                  items: [
+                    {
+                      type: 'checkbox',
+                      id: 'frontendHint',
+                      label: tc('hint.toggle', { ns: 'tutorial' }),
+                      checked: frontendHintEnabled,
+                      onToggle: setFrontendHintEnabled,
+                    },
+                  ],
+                },
+              ]}
+            />
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="csp-bet-controls">
                 <ChipBetInput
