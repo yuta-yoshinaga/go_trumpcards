@@ -39,5 +39,6 @@
     "russiansolitaire": "Russian Solitaire"
   },
   "faceDownRule": "Face-down cards can't be moved — only face-up cards are playable",
+  "dismissRule": "Dismiss rule note",
   "faceDownCardLabel": "Column {{col}}, card {{pos}} from top, face down"
 }
