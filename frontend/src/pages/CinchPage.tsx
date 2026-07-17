@@ -41,6 +41,9 @@ const SUIT_KEYS: Readonly<Record<number, string>> = { 1: 'spade', 2: 'club', 3: 
 /** Hearts and diamonds render red; spades and clubs stay the default text color. */
 const isRedSuit = (suit: number): boolean => suit === 3 || suit === 4;
 
+/** Format a signed match-point delta for display (e.g. 6 -> "+6", -8 -> "-8", 0 -> "0"). */
+const signedDelta = (n: number): string => (n > 0 ? `+${n}` : String(n));
+
 /** Selectable trump suits named by the bid winner. */
 const TRUMP_SUITS = [1, 2, 3, 4] as const;
 
@@ -304,17 +307,34 @@ function CinchPageContent() {
                     data-testid="cinch-deal-result"
                   >
                     <div className="mb-1 text-ds-text-primary">{t('dealResult.title')}</div>
-                    {state.lastDealDetail.setBack && (
-                      <div className="text-ds-error mb-1">{t('dealResult.setBack')}</div>
-                    )}
-                    {state.players.map((p) => (
-                      <div key={p.id}>
-                        {t('dealResult.gained', {
-                          name: playerName(p.id, p.isHuman),
-                          points: state.lastDealDetail?.gained[p.id] ?? 0,
+                    {state.lastDealDetail.bidderIdx >= 0 && (
+                      <div
+                        className={`mb-1 ${state.lastDealDetail.setBack ? 'text-ds-error font-semibold' : 'text-ds-text-primary'}`}
+                        data-testid="cinch-bidder-detail"
+                      >
+                        {t(state.lastDealDetail.setBack ? 'dealResult.bidderSet' : 'dealResult.bidderMade', {
+                          name: playerName(state.lastDealDetail.bidderIdx, state.lastDealDetail.bidderIdx === humanIdx),
+                          bid: state.lastDealDetail.bid,
+                          captured: state.lastDealDetail.points[state.lastDealDetail.bidderIdx] ?? 0,
+                          delta: signedDelta(state.lastDealDetail.gained[state.lastDealDetail.bidderIdx] ?? 0),
                         })}
                       </div>
-                    ))}
+                    )}
+                    {state.players.map((p) => {
+                      const isSetBackRow = p.id === state.lastDealDetail?.bidderIdx && state.lastDealDetail?.setBack;
+                      return (
+                        <div
+                          key={p.id}
+                          className={isSetBackRow ? 'text-ds-error font-semibold' : undefined}
+                          data-testid={isSetBackRow ? 'cinch-setback-row' : undefined}
+                        >
+                          {t('dealResult.gained', {
+                            name: playerName(p.id, p.isHuman),
+                            points: state.lastDealDetail?.gained[p.id] ?? 0,
+                          })}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>

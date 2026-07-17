@@ -38,6 +38,8 @@
   "dealResult": {
     "title": "ディール結果",
     "setBack": "ビッダー側がセットバック（ビッド未達）。",
+    "bidderMade": "ビッダー {{name}}: {{bid}} 約束 → {{captured}}点 獲得（{{delta}}点）",
+    "bidderSet": "ビッダー {{name}}: {{bid}} 約束 → {{captured}}点 獲得 → セットバック {{delta}}点",
     "gained": "{{name}} 獲得: {{points}}点"
   },
   "hintAvailable": "ヒント",
