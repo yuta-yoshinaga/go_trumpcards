@@ -76,6 +76,40 @@ const discardPhaseState: HandAndFootResponse = {
   messageCode: 'handandfoot.discardPhase',
 };
 
+// A discard-phase state where the human has met every go-out requirement:
+// entered their foot and their team holds both a natural and a mixed canasta.
+const goOutReadyState: HandAndFootResponse = {
+  ...discardPhaseState,
+  players: [{ ...basePlayers[0], inFoot: true }, basePlayers[1]],
+  teams: [
+    {
+      team: 0,
+      melds: [
+        { cards: [], isNatural: true, isCanasta: true, rank: 7 },
+        { cards: [], isNatural: false, isCanasta: true, rank: 10 },
+      ],
+      red3Count: 0,
+      red3s: [],
+    },
+    { team: 1, melds: [], red3Count: 0, red3s: [] },
+  ],
+};
+
+// Human is in their foot and has a natural canasta but no mixed canasta yet.
+const goOutNeedBlackState: HandAndFootResponse = {
+  ...discardPhaseState,
+  players: [{ ...basePlayers[0], inFoot: true }, basePlayers[1]],
+  teams: [
+    {
+      team: 0,
+      melds: [{ cards: [], isNatural: true, isCanasta: true, rank: 7 }],
+      red3Count: 0,
+      red3s: [],
+    },
+    { team: 1, melds: [], red3Count: 0, red3s: [] },
+  ],
+};
+
 const roundEndState: HandAndFootResponse = {
   ...drawPhaseState,
   phase: 3,
@@ -170,6 +204,40 @@ describe('HandAndFootPage', () => {
     renderWithProviders(<HandAndFootPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '捨てる' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: '上がる' })).toBeInTheDocument();
+  });
+
+  it('disables go out and explains the unmet requirement when the player is not in their foot', async () => {
+    mockExec.mockResolvedValue(discardPhaseState);
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '上がる' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '上がる' })).toBeDisabled();
+    expect(screen.getByTestId('hf-go-out-guidance')).toHaveTextContent('まだフットに入っていないため上がれません');
+  });
+
+  it('shows the missing canasta reason when the player is in foot but lacks a mixed canasta', async () => {
+    mockExec.mockResolvedValue(goOutNeedBlackState);
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByTestId('hf-go-out-guidance')).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '上がる' })).toBeDisabled();
+    expect(screen.getByTestId('hf-go-out-guidance')).toHaveTextContent('黒（ミックス）カナスタが不足しています');
+  });
+
+  it('enables go out and confirms readiness once every requirement is met', async () => {
+    mockExec.mockResolvedValue(goOutReadyState);
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByTestId('hf-go-out-guidance')).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '上がる' })).not.toBeDisabled();
+    expect(screen.getByTestId('hf-go-out-guidance')).toHaveTextContent('上がれます');
+  });
+
+  it('calls goout command when go out is clicked while ready', async () => {
+    mockExec.mockResolvedValue(goOutReadyState);
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '上がる' })).not.toBeDisabled());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(roundEndState);
+    fireEvent.click(screen.getByRole('button', { name: '上がる' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('goout'));
   });
 
   it('shows next round button at round end', async () => {
