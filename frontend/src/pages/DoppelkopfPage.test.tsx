@@ -41,6 +41,32 @@ const gameEndState = makeDoppelkopfState({
 });
 const cpuTurnState = makeDoppelkopfState({ currentPlayerIdx: 1, canAnnounce: false });
 
+// A hand mixing trumps (♥10, ♦K, ♣Q) with fail cards (♠A, ♣10) for highlight tests.
+const mixedHandState = makeDoppelkopfState({
+  canAnnounce: false,
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 5,
+      cards: [
+        { design: 'HEART', value: 10 }, // trump (Dulle)
+        { design: 'SPADE', value: 1 }, // fail (♠A)
+        { design: 'DIAMOND', value: 13 }, // trump (♦K)
+        { design: 'CLOVER', value: 10 }, // fail (♣10)
+        { design: 'CLOVER', value: 12 }, // trump (♣Q)
+      ],
+      trickCount: 0,
+      chips: 20,
+      isRe: false,
+    },
+    { id: 1, isHuman: false, cardCount: 5, cards: [], trickCount: 0, chips: 20, isRe: false },
+    { id: 2, isHuman: false, cardCount: 5, cards: [], trickCount: 0, chips: 20, isRe: false },
+    { id: 3, isHuman: false, cardCount: 5, cards: [], trickCount: 0, chips: 20, isRe: false },
+  ],
+  playableIndices: [0, 1, 2, 3, 4],
+});
+
 beforeEach(() => {
   mockExec.mockReset();
   mockExec.mockResolvedValue(playPhaseState);
@@ -138,5 +164,30 @@ describe('DoppelkopfPage', () => {
     renderWithProviders(<DoppelkopfPage />);
     await waitFor(() => expect(screen.getByAltText('♥ 10')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
+  });
+
+  it('renders the collapsible trump ordering legend', async () => {
+    renderWithProviders(<DoppelkopfPage />);
+    const legend = await screen.findByTestId('dk-trump-legend');
+    expect(legend).toBeInTheDocument();
+    expect(legend).toContainHTML('details');
+    expect(screen.getByText('切り札序列')).toBeInTheDocument();
+    // The strongest and weakest trumps appear in the ordering.
+    expect(screen.getByText('♥10')).toBeInTheDocument();
+    expect(screen.getByText('♦9')).toBeInTheDocument();
+  });
+
+  it('rings trump cards in the hand and leaves fail cards unmarked', async () => {
+    mockExec.mockResolvedValue(mixedHandState);
+    renderWithProviders(<DoppelkopfPage />);
+    await screen.findByAltText('♥ 10');
+    // Trumps: ♥10 (Dulle), ♦K, ♣Q.
+    for (const alt of ['♥ 10', '♦ K', '♣ Q']) {
+      expect(screen.getByAltText(alt).closest('button')).toHaveAttribute('data-trump', 'true');
+    }
+    // Fail cards: ♠A, ♣10.
+    for (const alt of ['♠ A', '♣ 10']) {
+      expect(screen.getByAltText(alt).closest('button')).not.toHaveAttribute('data-trump');
+    }
   });
 });
