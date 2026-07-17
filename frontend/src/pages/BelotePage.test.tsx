@@ -283,4 +283,27 @@ describe('BelotePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, expect.any(Object)));
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
+
+  it('shows the hint button during the bid phase and requests a hint', async () => {
+    renderWithProviders(<BelotePage />); // default state is BID_PICK_UP, human's bid turn
+    const btn = await screen.findByRole('button', { name: 'ヒント' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initialState);
+    fireEvent.click(btn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+  });
+
+  it('renders an order-up bid hint (take/pass) after requesting it', async () => {
+    mockExec.mockResolvedValue(makeState({ hint: { orderUp: true, reason: 'strong' } }));
+    renderWithProviders(<BelotePage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByText(/おすすめ: 取る/)).toBeInTheDocument());
+  });
+
+  it('renders a call-trump suit bid hint after requesting it', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: BelotePhase.BID_CALL_TRUMP, hint: { suit: 1, reason: 'strong' } }));
+    renderWithProviders(<BelotePage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByText(/を宣言/)).toBeInTheDocument());
+  });
 });

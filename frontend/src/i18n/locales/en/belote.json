@@ -65,6 +65,9 @@
     "opponentTeamWin": "Opponent team wins!"
   },
   "hintPlay": "Recommended card",
+  "hintOrderUpTake": "Recommended: take",
+  "hintOrderUpPass": "Recommended: pass",
+  "hintCallSuit": "Recommended: call {{suit}}",
   "hintReason": {
     "strategic_pickup": "Take based on hand strength",
     "pass_recommended": "Pass with weak hand",

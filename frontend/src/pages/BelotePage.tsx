@@ -404,10 +404,18 @@ function BelotePageContent() {
         {hint && (
           <div className="text-ds-warning text-sm mb-2">
             {/* hint.reason is a raw backend identifier; translate via hintReason.*,
-                falling back to a generic label for any unknown reason. */}
-            {`${t('hintPlay')}: [${hint.cardIndex ?? '-'}] (${t(`hintReason.${hint.reason}`, {
-              defaultValue: t('hintReason.fallback'),
-            })})`}
+                falling back to a generic label. The hint shape depends on the phase:
+                orderUp (take/pass) and suit (call trump) during bidding, cardIndex in play. */}
+            {(() => {
+              const reason = t(`hintReason.${hint.reason}`, { defaultValue: t('hintReason.fallback') });
+              if (hint.orderUp !== undefined) {
+                return `${hint.orderUp ? t('hintOrderUpTake') : t('hintOrderUpPass')} (${reason})`;
+              }
+              if (hint.suit !== undefined) {
+                return `${t('hintCallSuit', { suit: t(SUIT_LABEL_KEYS[hint.suit]) })} (${reason})`;
+              }
+              return `${t('hintPlay')}: [${hint.cardIndex ?? '-'}] (${reason})`;
+            })()}
           </div>
         )}
 
@@ -442,20 +450,20 @@ function BelotePageContent() {
             </span>
           )}
 
+          {(isHumanTurn || isHumanBidTurn) && (
+            <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
+              {tc('button.hint')}
+            </button>
+          )}
           {isHumanTurn && (
-            <>
-              <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
-                {tc('button.hint')}
-              </button>
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={handlePlay}
-                disabled={loading || selectedCardIndices.length !== 1}
-              >
-                {t('playButton')}
-              </button>
-            </>
+            <button
+              type="button"
+              className={btnPrimary}
+              onClick={handlePlay}
+              disabled={loading || selectedCardIndices.length !== 1}
+            >
+              {t('playButton')}
+            </button>
           )}
           {isTrickEnd && (
             <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
