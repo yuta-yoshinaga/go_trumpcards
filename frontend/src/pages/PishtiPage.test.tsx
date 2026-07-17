@@ -72,6 +72,9 @@ const gameEndState = makeState({
 });
 
 beforeEach(() => {
+  // Clear persisted CLI-mode state so an earlier CLI-toggle test does not leave the
+  // terminal enabled and hide the hand in later tests.
+  localStorage.clear();
   mockExec.mockReset();
   mockExec.mockResolvedValue(playState);
 });
@@ -241,5 +244,33 @@ describe('PishtiPage', () => {
     const toggle = screen.getByRole('button', { name: /CLI/i });
     fireEvent.click(toggle);
     await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
+  });
+
+  it('highlights capturing hand cards: Jack in accent, pile-top match in success', async () => {
+    // Pile top is rank 5, so the SPADE 5 (index 0) captures (success); HEART J (index 1)
+    // always captures (accent); DIAMOND A (2) and CLOVER 9 (3) do not.
+    mockExec.mockResolvedValue(makeState({ pile: [card('CLOVER', 5)], pileTop: card('CLOVER', 5) }));
+    renderWithProviders(<PishtiPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    expect(screen.getByTestId('hand-card-0').className).toContain('ring-ds-success');
+    expect(screen.getByTestId('hand-card-1').className).toContain('ring-ds-accent');
+    expect(screen.getByTestId('hand-card-2').className).not.toContain('ring-ds-');
+    expect(screen.getByTestId('hand-card-3').className).not.toContain('ring-ds-');
+  });
+
+  it('highlights only the Jack when the pile is empty', async () => {
+    mockExec.mockResolvedValue(makeState({ pile: [], pileTop: null, pileCount: 0 }));
+    renderWithProviders(<PishtiPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-1')).toBeInTheDocument());
+    expect(screen.getByTestId('hand-card-1').className).toContain('ring-ds-accent');
+    expect(screen.getByTestId('hand-card-0').className).not.toContain('ring-ds-');
+  });
+
+  it('does not highlight capturing cards on a CPU turn', async () => {
+    mockExec.mockResolvedValue(makeState({ currentTurn: 1, pile: [card('CLOVER', 5)], pileTop: card('CLOVER', 5) }));
+    renderWithProviders(<PishtiPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-1')).toBeInTheDocument());
+    expect(screen.getByTestId('hand-card-1').className).not.toContain('ring-ds-');
+    expect(screen.getByTestId('hand-card-0').className).not.toContain('ring-ds-');
   });
 });

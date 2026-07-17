@@ -21,7 +21,7 @@ import { useSound } from '../providers/SoundProvider';
 import { btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { PishtiResponse } from '../types/card';
+import type { Card, PishtiResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { PISHTI_HELP, parsePishtiCommand } from '../utils/cli/commands/pishtiCommands';
@@ -166,6 +166,17 @@ function PishtiPageContent() {
   const isHumanTurn = state.phase === 'play' && state.currentTurn === 0 && !isGameEnd;
   const humanWon = isGameEnd && state.winners.includes(0);
 
+  // On the human's turn, hint which cards can capture the pile: a Jack takes the whole
+  // pile (accent), and a card matching the pile-top rank captures it (success). Pure
+  // client-side derivation from pileTop + the hand.
+  const JACK_VALUE = 11;
+  const captureRing = (c: Card): string => {
+    if (!isHumanTurn) return '';
+    if (c.value === JACK_VALUE) return 'ring-2 ring-ds-accent motion-safe:animate-pulse';
+    if (state.pileTop && c.value === state.pileTop.value) return 'ring-2 ring-ds-success motion-safe:animate-pulse';
+    return '';
+  };
+
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
 
   const handleManualReset = () => {
@@ -299,9 +310,13 @@ function PishtiPageContent() {
                     disabled={!isHumanTurn || loading}
                     className={`rounded transition-all ${
                       isHumanTurn ? 'cursor-pointer hover:opacity-90 hover:-translate-y-1' : 'cursor-default'
-                    }`}
+                    } ${captureRing(c)}`}
                     data-testid={`hand-card-${i}`}
-                    aria-label={t('playCardAria', { card: cardAlt(c) })}
+                    aria-label={
+                      captureRing(c)
+                        ? `${t('playCardAria', { card: cardAlt(c) })} — ${t('captureHint')}`
+                        : t('playCardAria', { card: cardAlt(c) })
+                    }
                   >
                     <CardImage card={c} width={cardWidth} />
                   </button>
