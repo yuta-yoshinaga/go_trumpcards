@@ -185,6 +185,10 @@ function ThirtyOnePageContent() {
   const isRoundEnd = state.phase === ThirtyOnePhase.ROUND_END;
   const isHumanTurn = state.currentPlayerIdx === 0 && !isGameEnd && (isDraw || isDiscard);
   const human = state.players[0];
+  const roundPlayerLabel = (idx: number) => {
+    const p = state.players[idx];
+    return p?.isHuman ? tc('player.you') : tc('player.cpu', { id: p?.id ?? idx });
+  };
   const phaseName = isGameEnd
     ? t('phase.end')
     : isRoundEnd
@@ -371,6 +375,47 @@ function ThirtyOnePageContent() {
           />
 
           <GameFooter className={`${gameTheme.thirtyone.footer} px-4 py-2.5`}>
+            {isRoundEnd && (
+              <div
+                role="status"
+                data-testid="thirtyone-round-summary"
+                className="mb-2 p-2 rounded-lg bg-black/30 text-sm text-center space-y-1"
+              >
+                <div className="font-semibold text-ds-text-primary">{t('roundSummary.title')}</div>
+                {state.thirtyOneIdx >= 0 && (
+                  <div className="text-ds-success font-medium" data-testid="thirtyone-achiever">
+                    {t('roundSummary.thirtyOne', { name: roundPlayerLabel(state.thirtyOneIdx) })}
+                  </div>
+                )}
+                {state.roundLosers.length > 0 ? (
+                  <ul className="text-ds-text-muted">
+                    {state.roundLosers.map((idx) => {
+                      const p = state.players[idx];
+                      const out = !!p && (p.isEliminated || p.lives <= 0);
+                      return (
+                        <li
+                          key={idx}
+                          data-testid={`life-loss-${idx}`}
+                          className={out ? 'text-ds-error font-medium' : ''}
+                        >
+                          {t('roundSummary.lifeLost', { name: roundPlayerLabel(idx) })}
+                          <span className="ml-1 motion-safe:animate-pulse" aria-hidden="true">
+                            💔
+                          </span>
+                          {out && (
+                            <span className="ml-1" data-testid={`eliminated-${idx}`}>
+                              💀 {t('roundSummary.eliminated')}
+                            </span>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : (
+                  <div data-testid="no-life-loss">{t('roundSummary.noLoss')}</div>
+                )}
+              </div>
+            )}
             <div className="flex gap-2 justify-center flex-wrap" data-tutorial="to-action-buttons">
               <button
                 type="button"
