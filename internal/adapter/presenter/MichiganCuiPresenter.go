@@ -63,6 +63,43 @@ func michiganPlayerStr(g interfaces.MichiganGame, i int) string {
 	return b.String()
 }
 
+// michiganBetHintStr suggests which boodles to weight when placing bets: a boodle
+// is worth backing when the human already holds the exact card that claims it. The
+// boodle index matches the positional argument of the `b <♥> <♣> <♦> <♠>` command.
+func michiganBetHintStr(g interfaces.MichiganGame) string {
+	human := -1
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		if pl := g.GetPlayer(i); pl != nil && pl.GetIsHuman() {
+			human = i
+			break
+		}
+	}
+	if human < 0 {
+		return ""
+	}
+	player := g.GetPlayer(human)
+	held := make([]string, 0, g.GetBoodleCnt())
+	for i := 0; i < g.GetBoodleCnt(); i++ {
+		bd := g.GetBoodle(i)
+		if bd == nil || bd.GetCard() == nil {
+			continue
+		}
+		bc := bd.GetCard()
+		for j := 0; j < player.GetCardsSize(); j++ {
+			hc := player.GetCard(j)
+			if hc != nil && hc.GetDesign() == bc.GetDesign() && hc.GetValue() == bc.GetValue() {
+				held = append(held, i18n.Tf("michigan.betHintHold",
+					"card", cuiCardStr(bc), "idx", strconv.Itoa(i)))
+				break
+			}
+		}
+	}
+	if len(held) == 0 {
+		return i18n.T("michigan.betHintNone")
+	}
+	return i18n.T("michigan.betHintHeader") + " " + strings.Join(held, ", ")
+}
+
 // Output renders the current game state for the active locale.
 func (p *MichiganCuiPresenter) Output(g interfaces.MichiganGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("michigan.helpTitle"), func(b *strings.Builder) {
@@ -99,6 +136,7 @@ func (p *MichiganCuiPresenter) Output(g interfaces.MichiganGame, lastErr error) 
 		switch g.GetPhase() {
 		case domain.MichiganPhaseBet:
 			b.WriteString(i18n.Tf("michigan.promptBet", "budget", strconv.Itoa(g.GetBetBudget())) + "\n")
+			b.WriteString(michiganBetHintStr(g) + "\n")
 		case domain.MichiganPhasePlay:
 			if g.IsHumanTurn() {
 				b.WriteString(i18n.Tf("michigan.promptPlay", "indices", michiganIndicesStr(g.GetPlayableIndices())) + "\n")
