@@ -90,6 +90,16 @@ describe('BeleagueredCastlePage', () => {
     await waitFor(() => expect(screen.getAllByLabelText(/組札 1枚/).length).toBe(4));
   });
 
+  it('labels all eight tableau columns with their 0-based index (matching hint text)', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    await waitFor(() => expect(screen.getByText('#0')).toBeInTheDocument());
+    // Columns are numbered #0..#7 to match formatHintZone's raw fromCol/toCol.
+    for (let i = 0; i < 8; i++) {
+      expect(screen.getByText(`#${i}`)).toBeInTheDocument();
+    }
+  });
+
   it('gives each empty tableau column a distinct column-numbered aria-label', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BeleagueredCastlePage />);

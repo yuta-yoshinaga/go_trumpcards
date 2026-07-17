@@ -195,6 +195,9 @@ function BeleagueredCastlePageContent() {
     const tableauColZone: BeleagueredCastleMoveZone = { zone: 'tableau', col: colIdx };
     return (
       <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
+        <div className="text-center text-xs text-ds-text-muted mb-0.5" aria-hidden="true">
+          #{colIdx}
+        </div>
         <DropZone
           isDropTarget={dnd.isDropTarget(tableauColZone)}
           onDragOver={dnd.handleDragOver(tableauColZone)}
