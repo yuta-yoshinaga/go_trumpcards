@@ -130,6 +130,26 @@ beforeEach(() => {
   mockExec.mockResolvedValue(playPhaseState);
 });
 
+/** Human following a HEART lead while holding HEART, SPADE, and a Wizard card. */
+const followSuitState: WizardResponse = {
+  ...playPhaseState,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 1,
+  currentTrick: [{ playerIdx: 1, card: { design: 'HEART', value: 5 } }],
+  players: [
+    {
+      ...playPhaseState.players[0],
+      cardCount: 3,
+      cards: [
+        { design: 'SPADE', value: 1 },
+        { design: 'HEART', value: 11 },
+        { design: 'JOKER', value: 1, label: 'Wizard', glyph: '✦', deck: 'wizard' },
+      ],
+    },
+    ...playPhaseState.players.slice(1),
+  ],
+};
+
 describe('WizardPage', () => {
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
@@ -596,5 +616,41 @@ describe('WizardPage', () => {
     } finally {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     }
+  });
+
+  describe('legal-play highlighting', () => {
+    it('rings every card when leading (empty trick)', async () => {
+      mockExec.mockResolvedValue(playPhaseState);
+      renderWithProviders(<WizardPage />);
+      const spade = await screen.findByRole('button', { name: '♠ A' });
+      const heart = screen.getByRole('button', { name: '♥ J' });
+      expect(spade.className).toContain('ring-ds-success');
+      expect(heart.className).toContain('ring-ds-success');
+      expect(spade).not.toHaveAttribute('title');
+    });
+
+    it('rings only led-suit and Wizard/Jester cards when following, dimming the rest', async () => {
+      mockExec.mockResolvedValue(followSuitState);
+      renderWithProviders(<WizardPage />);
+      const heart = await screen.findByRole('button', { name: '♥ J' });
+      const wizard = screen.getByRole('button', { name: 'Wizard ✦' });
+      const spade = screen.getByRole('button', { name: '♠ A' });
+      // Must follow HEART: the held HEART and the always-legal Wizard are ringed.
+      expect(heart.className).toContain('ring-ds-success');
+      expect(wizard.className).toContain('ring-ds-success');
+      // The off-suit SPADE is illegal while a HEART is held: dimmed with a reason tooltip.
+      expect(spade.className).toContain('opacity-50');
+      expect(spade.className).not.toContain('ring-ds-success');
+      expect(spade).toHaveAttribute('title');
+      expect(spade).toHaveAttribute('aria-describedby', 'wiz-illegal-reason');
+    });
+
+    it('does not highlight the hand off the human play turn', async () => {
+      mockExec.mockResolvedValue({ ...playPhaseState, currentPlayerIdx: 1 });
+      renderWithProviders(<WizardPage />);
+      const spade = await screen.findByRole('button', { name: '♠ A' });
+      expect(spade.className).not.toContain('ring-ds-success');
+      expect(spade.className).not.toContain('opacity-50');
+    });
   });
 });
