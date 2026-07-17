@@ -207,6 +207,24 @@ describe('FreeCellPage', () => {
     expect(screen.queryByTestId('freecell-autocomplete-ready-badge')).not.toBeInTheDocument();
   });
 
+  it('enables the auto-complete button (no tooltip) when the board is ready (#3035)', async () => {
+    renderWithProviders(<FreeCellPage />); // default playingState is ready
+    const btn = await screen.findByTestId('autocomplete-button');
+    expect(btn).toBeEnabled();
+    expect(btn).not.toHaveAttribute('title');
+  });
+
+  it('disables the auto-complete button with a reason tooltip when not ready (#3035)', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [[card('SPADE', 2), card('HEART', 5)], [], [], [], [], [], [], []],
+    });
+    renderWithProviders(<FreeCellPage />);
+    const btn = await screen.findByTestId('autocomplete-button');
+    expect(btn).toBeDisabled();
+    expect(btn).toHaveAttribute('title', 'すべてのカードをファウンデーションへ直接送れる状態になるとクリックできます');
+  });
+
   it('give up button opens a confirm dialog and only dispatches giveup after confirm', async () => {
     renderWithProviders(<FreeCellPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeInTheDocument());

@@ -10,6 +10,7 @@
   "giveup": "ギブアップ",
   "hint": "ヒント",
   "autoComplete": "オートコンプリート",
+  "autoCompleteNotReady": "すべてのカードをファウンデーションへ直接送れる状態になるとクリックできます",
   "undo": "元に戻す",
   "moveCount": "手数",
   "empty": "空",
