@@ -266,7 +266,11 @@ function GolfPageContent() {
                           aria-label={cardAlt(gc.card)}
                           data-testid={isPlayable ? 'golf-playable' : undefined}
                           className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
-                            isHinted && exposed ? 'ring-2 ring-ds-warning' : isPlayable ? 'ring-2 ring-ds-success' : ''
+                            isHinted && exposed
+                              ? 'ring-2 ring-ds-warning motion-safe:animate-pulse'
+                              : isPlayable
+                                ? 'ring-2 ring-ds-success'
+                                : ''
                           } ${!exposed ? 'opacity-60' : ''}`}
                         >
                           <AnimatedCard card={gc.card} width={effectiveCardWidth} />
@@ -285,11 +289,20 @@ function GolfPageContent() {
                   {t('stock')} ({state.stockCount})
                 </div>
                 {state.stockCount > 0 ? (
-                  <AnimatedCardBack
-                    width={effectiveCardWidth}
-                    onClick={isPlaying ? handleDraw : undefined}
-                    ariaLabel={t('draw')}
-                  />
+                  <div
+                    data-testid="golf-stock"
+                    className={
+                      hint?.type === 'draw'
+                        ? 'inline-block rounded ring-2 ring-ds-warning motion-safe:animate-pulse'
+                        : 'inline-block'
+                    }
+                  >
+                    <AnimatedCardBack
+                      width={effectiveCardWidth}
+                      onClick={isPlaying ? handleDraw : undefined}
+                      ariaLabel={t('draw')}
+                    />
+                  </div>
                 ) : (
                   <div
                     style={{ width: effectiveCardWidth, height: cardHeight }}
