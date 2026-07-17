@@ -53,5 +53,19 @@
     "followDuck": "取れない／取る価値がないのでダック推奨",
     "givePartner": "味方が勝っているので得点札を渡す",
     "discardLow": "フォローできないので低い札を捨てる"
+  },
+  "pointLegend": {
+    "title": "点数の凡例",
+    "cardCol": "カード",
+    "pointCol": "点数",
+    "ace": "A（エース）",
+    "aceValue": "1点",
+    "figures": "K・Q・J・2・3",
+    "figuresValue": "1/3点",
+    "others": "その他（4〜7・10）",
+    "othersValue": "0点",
+    "lastTrick": "最終トリック（ラスト取り）",
+    "lastTrickValue": "+1/3点",
+    "note": "1ラウンドの合計は11点。先に目標点（既定21点）へ達したチームの勝ち。"
   }
 }

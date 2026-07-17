@@ -111,4 +111,17 @@ describe('TressettePage', () => {
     const team1 = screen.getByTestId('tr-thirds-1');
     expect(team1.querySelectorAll('.bg-ds-accent')).toHaveLength(0);
   });
+
+  it('renders a collapsible card-point legend with the scoring values', async () => {
+    mockExec.mockResolvedValue(makeTressetteState());
+    renderWithProviders(<TressettePage />);
+
+    const legend = await screen.findByTestId('tr-point-legend');
+    // Summary is always present; the point values render inside the details.
+    expect(legend).toHaveTextContent('点数の凡例');
+    expect(legend).toHaveTextContent('1点');
+    expect(legend).toHaveTextContent('1/3点');
+    expect(legend).toHaveTextContent('+1/3点');
+    expect(legend).toHaveTextContent('0点');
+  });
 });
