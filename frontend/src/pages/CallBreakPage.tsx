@@ -403,6 +403,22 @@ function CallBreakPageContent() {
             </div>
 
             <div data-tutorial="cb-bags-info">
+              <div
+                className="my-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                role="status"
+                aria-label={t('bagsAria')}
+                data-testid="cb-bags-counter"
+              >
+                <span className="mr-2">{t('bags')}:</span>
+                {state.players.map((p) => {
+                  const bags = p.bid >= 0 ? Math.max(0, p.trickCount - p.bid) : 0;
+                  return (
+                    <span key={p.id} className="mr-3" data-testid={`cb-bags-${p.id.toString()}`}>
+                      {t('bagsValue', { name: playerName(p.id, p.isHuman), n: bags })}
+                    </span>
+                  );
+                })}
+              </div>
               <GameMessageBox
                 message={state.message}
                 messageCode={state.messageCode}
