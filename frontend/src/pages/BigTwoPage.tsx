@@ -4,6 +4,7 @@ import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ReplaySpeedSettingsPanel } from '../components/common/ReplaySpeedSettingsPanel';
 import { SettingsPanel } from '../components/common/SettingsPanel';
+import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
@@ -161,11 +162,7 @@ function BigTwoPageContent() {
       ) : (
         <>
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
-            {error && (
-              <button type="button" onClick={retry} className="text-ds-error underline">
-                {error}
-              </button>
-            )}
+            <ErrorAlert message={error} onRetry={retry} />
 
             {/* CPU players */}
             <div className="flex justify-center gap-6 flex-wrap" data-tutorial="bt-cpu-area">

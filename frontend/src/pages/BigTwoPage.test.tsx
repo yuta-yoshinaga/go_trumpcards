@@ -102,14 +102,17 @@ describe('BigTwoPage', () => {
     expect(screen.queryByTestId('play-button')).not.toBeInTheDocument();
   });
 
-  it('shows a retry button when an action fails', async () => {
+  it('shows the shared ErrorAlert with a retry button when an action fails', async () => {
     renderWithProviders(<BigTwoPage />);
     const passBtn = await screen.findByTestId('pass-button');
     mockExec.mockRejectedValueOnce(new Error('boom'));
     fireEvent.click(passBtn);
-    const retry = await screen.findByText(NETWORK_ERROR_MESSAGE());
+    // The error now surfaces via the shared ErrorAlert (role=alert), not a bare underline button.
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(NETWORK_ERROR_MESSAGE());
+    mockExec.mockClear();
     mockExec.mockResolvedValue(makeState());
-    fireEvent.click(retry);
+    fireEvent.click(screen.getByRole('button', { name: '再試行' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', []));
   });
 
