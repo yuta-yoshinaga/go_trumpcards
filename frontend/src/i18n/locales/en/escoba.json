@@ -60,5 +60,6 @@
     "playerHand": "Your hand. Select a card to act.",
     "actions": "Choose Take (select table cards summing to 15) or Lay (select none).",
     "resetButton": "Reset the game."
-  }
+  },
+  "sumIndicator": "Sum {{sum}} / {{target}}"
 }
