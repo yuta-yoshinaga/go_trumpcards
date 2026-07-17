@@ -51,6 +51,20 @@ export function highlightCardStyle(): React.CSSProperties {
 }
 
 /**
+ * Return inline styles for a subtle "trump" marker ring. Uses `outline`
+ * (not `border`/`boxShadow`) so it stacks additively on top of the selection
+ * and playable borders without clobbering them — a trump card can be selected
+ * or restricted and still show its ring. Applied e.g. to Doppelkopf trumps.
+ */
+export function trumpRingStyle(): React.CSSProperties {
+  return {
+    outline: '2px solid var(--color-ds-accent)',
+    outlineOffset: '1px',
+    borderRadius: 8,
+  };
+}
+
+/**
  * Return adjusted overlap margin for a card that is adjacent to a selected card on mobile.
  * Reduces the negative overlap by EXPANSION_GAP_PX, effectively widening the visible area.
  * Returns the original overlap when the card is not adjacent to a selection.

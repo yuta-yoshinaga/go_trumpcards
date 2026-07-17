@@ -30,6 +30,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { DOPPELKOPF_HELP, parseDoppelkopfCommand } from '../utils/cli/commands/doppelkopfCommands';
 import { formatDoppelkopfState } from '../utils/cli/formatters/doppelkopfFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { DOPPELKOPF_TRUMP_ORDER, isDoppelkopfTrump } from '../utils/doppelkopfTrump';
 import { playerName } from '../utils/playerUtils';
 
 /** Doppelkopf tutorial step definitions. */
@@ -128,6 +129,14 @@ function DoppelkopfPageContent() {
   const humanIdx = state.players.findIndex((p) => p.isHuman);
   const isHumanTurn = state.currentPlayerIdx === humanIdx;
 
+  // Indices of the human's trump cards (♦ any, all Q/J, ♥10) for hand highlighting.
+  const trumpIndices = humanPlayer
+    ? humanPlayer.cards.reduce<number[]>((acc, card, idx) => {
+        if (isDoppelkopfTrump(card)) acc.push(idx);
+        return acc;
+      }, [])
+    : [];
+
   const isPlayPhase = state.phase === DoppelkopfPhase.PLAY;
   const isTrickEnd = state.phase === DoppelkopfPhase.TRICK_END;
   const isRoundEnd = state.phase === DoppelkopfPhase.ROUND_END;
@@ -218,6 +227,24 @@ function DoppelkopfPageContent() {
 
               {/* Right: info sidebar */}
               <div data-tutorial="dk-info">
+                {/* Trump ordering legend (collapsible) */}
+                <details className="mb-2 p-2 rounded bg-black/30" data-testid="dk-trump-legend">
+                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                    {t('trumpLegend.title')}
+                  </summary>
+                  <div className="mt-1 text-ds-text-muted text-xs">
+                    <div className="mb-1">{t('trumpLegend.caption')}</div>
+                    <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5">
+                      {DOPPELKOPF_TRUMP_ORDER.map((symbol, i) => (
+                        <span key={symbol} className="inline-flex items-center gap-1">
+                          <span className="font-mono text-ds-text-primary">{symbol}</span>
+                          {i < DOPPELKOPF_TRUMP_ORDER.length - 1 && <span aria-hidden="true">&gt;</span>}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </details>
+
                 {/* Your team / announcements */}
                 <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
                   <div>
@@ -299,6 +326,8 @@ function DoppelkopfPageContent() {
                 dataTutorialPrefix="dk"
                 validIndices={canPlay ? state.playableIndices : undefined}
                 restrictedTooltip={t('playButton')}
+                trumpIndices={trumpIndices}
+                trumpTitle={t('trumpLegend.badgeTitle')}
               />
             )}
 

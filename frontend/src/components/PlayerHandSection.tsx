@@ -1,4 +1,4 @@
-import { focusRingCard, highlightCardStyle, selectedCardStyle } from '../styles/cardStyles';
+import { focusRingCard, highlightCardStyle, selectedCardStyle, trumpRingStyle } from '../styles/cardStyles';
 import type { Card } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
 import { MobileHandGrid } from './MobileHandGrid';
@@ -38,6 +38,14 @@ export interface PlayerHandSectionProps {
    * remaining (non-highlighted, non-selected) cards are dimmed to draw the eye.
    */
   highlightIndices?: number[];
+  /**
+   * Optional indices to mark with a subtle additive ring (e.g. trump cards).
+   * Unlike `highlightIndices`, this neither dims the other cards nor overrides
+   * the selection/restriction borders — it stacks on top via `outline`.
+   */
+  trumpIndices?: number[];
+  /** Accessible label / tooltip describing why the ringed cards are marked (e.g. "trump"). */
+  trumpTitle?: string;
 }
 
 /**
@@ -55,10 +63,13 @@ export function PlayerHandSection({
   validIndices,
   restrictedTooltip,
   highlightIndices,
+  trumpIndices,
+  trumpTitle,
 }: PlayerHandSectionProps) {
   const dataTutorial = `${dataTutorialPrefix}-player-hand`;
   const isRestricted = (idx: number): boolean => validIndices != null && !validIndices.includes(idx);
   const isHighlighted = (idx: number): boolean => highlightIndices?.includes(idx) ?? false;
+  const isTrump = (idx: number): boolean => trumpIndices?.includes(idx) ?? false;
 
   if (isMobile) {
     return (
@@ -71,6 +82,8 @@ export function PlayerHandSection({
         validIndices={validIndices}
         restrictedTooltip={restrictedTooltip}
         highlightIndices={highlightIndices}
+        trumpIndices={trumpIndices}
+        trumpTitle={trumpTitle}
       />
     );
   }
@@ -81,6 +94,7 @@ export function PlayerHandSection({
         const isSelected = selectedCardIndices.includes(idx);
         const restricted = isRestricted(idx);
         const highlighted = isHighlighted(idx);
+        const trump = isTrump(idx);
         // When a highlight list is active, dim the non-highlighted (and unselected) cards.
         // Skip already-restricted cards so the two opacity classes never collide.
         const dimmed = highlightIndices != null && !highlighted && !isSelected && !restricted;
@@ -97,7 +111,8 @@ export function PlayerHandSection({
             // cards remain focusable for keyboard / screen-reader users — they
             // need to reach the tooltip that explains why the card is illegal.
             aria-disabled={restricted || undefined}
-            title={restricted ? restrictedTooltip : undefined}
+            title={restricted ? restrictedTooltip : trump ? trumpTitle : undefined}
+            data-trump={trump || undefined}
             className={`transition-transform ${focusRingCard} ${restricted ? 'opacity-50 cursor-not-allowed' : ''} ${dimmed ? 'opacity-60' : ''}`}
             style={{
               background: 'none',
@@ -105,6 +120,8 @@ export function PlayerHandSection({
               borderRadius: 8,
               // Selection takes visual priority; otherwise show the highlight border.
               ...(isSelected ? selectedCardStyle(true) : highlighted ? highlightCardStyle() : selectedCardStyle(false)),
+              // Trump ring stacks additively (outline) on top of the border above.
+              ...(trump ? trumpRingStyle() : {}),
               boxSizing: 'border-box',
             }}
           >
