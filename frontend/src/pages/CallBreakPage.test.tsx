@@ -98,6 +98,20 @@ describe('CallBreakPage', () => {
     });
   });
 
+  it('shows a bags counter with each player overtricks derived from bid and tricks', async () => {
+    const bagsState = makeCallBreakState({
+      players: makeCallBreakState().players.map((p, i) =>
+        // Player 0 (human): bid 3, 5 tricks -> 2 bags; others below/at bid -> 0.
+        i === 0 ? { ...p, bid: 3, trickCount: 5 } : { ...p, bid: 4, trickCount: 1 },
+      ),
+    });
+    mockExec.mockResolvedValue(bagsState);
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => expect(screen.getByTestId('cb-bags-counter')).toBeInTheDocument());
+    expect(screen.getByTestId('cb-bags-0')).toHaveTextContent('2');
+    expect(screen.getByTestId('cb-bags-1')).toHaveTextContent('0');
+  });
+
   it('renders bid phase with a 1-13 bid button group', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<CallBreakPage />);

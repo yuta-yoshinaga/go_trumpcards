@@ -32,6 +32,9 @@
   "scoresTricks": "Tricks",
   "scoresRound": "Round",
   "scoresTotal": "Total",
+  "bags": "Bags (overtricks)",
+  "bagsAria": "Bags per player",
+  "bagsValue": "{{name}}: {{n}}",
   "bidButton": "Bid",
   "bidSelectLabel": "Select your bid",
   "playButton": "Play",
@@ -65,7 +68,7 @@
     "playerHand": "Your hand. You must follow the lead suit, and you must trump with a spade if void.",
     "playButton": "Press this button to play the selected card.",
     "scoreTable": "Score table. Making your bid scores bid + 0.1 per overtrick (e.g. bid 4, take 5 -> 4.1). Missing the bid loses -bid points.",
-    "bagsInfo": "Call Break has no bag penalty. The game runs for 5 fixed rounds and the highest cumulative score wins.",
+    "bagsInfo": "Shows each player's bags (overtricks). Each overtrick scores +0.1. Call Break has no bag penalty; the game runs for 5 fixed rounds and the highest cumulative score wins.",
     "resetButton": "Press the reset button to start a new game."
   },
   "hint": {
