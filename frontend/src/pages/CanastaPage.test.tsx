@@ -167,6 +167,28 @@ describe('CanastaPage', () => {
     expect(screen.getByRole('button', { name: '上がる' })).toBeInTheDocument();
   });
 
+  it('disables go out and shows the reason while the player has no canasta', async () => {
+    mockExec.mockResolvedValue(discardPhaseState); // hasCanasta: false
+    renderWithProviders(<CanastaPage />);
+    const goOut = await screen.findByTestId('ca-go-out-button');
+    expect(goOut).toBeDisabled();
+    const reason = screen.getByTestId('ca-go-out-reason');
+    expect(reason).toHaveTextContent('ゴーアウトするには完成したカナスタ（7枚メルド）が1組以上必要です');
+    expect(goOut).toHaveAttribute('aria-describedby', 'ca-go-out-reason');
+  });
+
+  it('enables go out and hides the reason once a canasta is completed', async () => {
+    mockExec.mockResolvedValue({
+      ...discardPhaseState,
+      players: [{ ...basePlayers[0], hasCanasta: true }, basePlayers[1]],
+    });
+    renderWithProviders(<CanastaPage />);
+    const goOut = await screen.findByTestId('ca-go-out-button');
+    expect(goOut).toBeEnabled();
+    expect(screen.queryByTestId('ca-go-out-reason')).not.toBeInTheDocument();
+    expect(goOut).not.toHaveAttribute('aria-describedby');
+  });
+
   it('shows next round button at round end', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<CanastaPage />);

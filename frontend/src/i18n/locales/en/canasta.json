@@ -37,6 +37,7 @@
   "skipMeldButton": "Skip",
   "discardButton": "Discard",
   "goOutButton": "Go out",
+  "goOutReason": "Going out requires at least one completed canasta (7-card meld)",
   "nextRound": "Next round",
   "selectPair": "Select a pair (2 natural cards matching the top discard)",
   "drawDiscardReason": {
