@@ -97,6 +97,14 @@ const SUIT_DESIGNS: Readonly<Record<string, string>> = {
   DIAMOND: '♦',
 };
 
+/** Maps the numeric `trumpSuit` (1–4) to the matching card `design` string. */
+const SUIT_NUM_TO_DESIGN: Readonly<Record<number, string>> = {
+  1: 'SPADE',
+  2: 'CLOVER',
+  3: 'HEART',
+  4: 'DIAMOND',
+};
+
 const VALUE_LABELS: Readonly<Record<number, string>> = {
   1: 'A',
   11: 'J',
@@ -279,7 +287,14 @@ function PitchPageContent() {
               <span>{t('round', { n: state.roundNumber })}</span>
               <span>{t('trick', { n: state.trickNumber })}</span>
               <span>{t('dealer', { name: findPlayerName(state.players, state.dealerIdx) })}</span>
-              <span>
+              <span
+                data-testid="pt-trump-indicator"
+                className={
+                  state.trumpSuit === 0
+                    ? 'opacity-60'
+                    : 'rounded px-1.5 py-0.5 font-semibold ring-1 ring-ds-warning text-ds-warning'
+                }
+              >
                 {t('trumpSuit', {
                   suit: state.trumpSuit === 0 ? t('trumpUnset') : (SUIT_LABELS[state.trumpSuit] ?? '?'),
                 })}
@@ -334,17 +349,56 @@ function PitchPageContent() {
               {state.currentTrick.length === 0 ? (
                 <div className="opacity-50">—</div>
               ) : (
-                <div className="flex flex-wrap gap-2">
-                  {state.currentTrick.map((tc) => (
-                    <div
-                      key={`${tc.playerIdx}-${tc.card.design}-${tc.card.value}`}
-                      className="flex flex-col items-center"
-                    >
-                      <span className="text-[10px] opacity-60">{findPlayerName(state.players, tc.playerIdx)}</span>
-                      <CardImage card={tc.card} width={cardWidth} />
-                    </div>
-                  ))}
-                </div>
+                <>
+                  <div className="flex flex-wrap gap-2">
+                    {state.currentTrick.map((tc, idx) => {
+                      const leadDesign = state.currentTrick[0]?.card.design;
+                      const trumpDesign = SUIT_NUM_TO_DESIGN[state.trumpSuit];
+                      const isLead = idx === 0;
+                      const isTrump = trumpDesign !== undefined && tc.card.design === trumpDesign;
+                      const isLeadSuit = !isTrump && tc.card.design === leadDesign;
+                      const ringClass = isTrump ? 'ring-2 ring-ds-warning' : isLeadSuit ? 'ring-2 ring-ds-info' : '';
+                      return (
+                        <div
+                          key={`${tc.playerIdx}-${tc.card.design}-${tc.card.value}`}
+                          className="flex flex-col items-center gap-0.5"
+                        >
+                          <span className="text-[10px] opacity-60">{findPlayerName(state.players, tc.playerIdx)}</span>
+                          <div className={`relative inline-block rounded ${ringClass}`}>
+                            <CardImage card={tc.card} width={cardWidth} />
+                            {isLead && (
+                              <span
+                                data-testid="pt-trick-lead-badge"
+                                className="absolute -top-1 -left-1 rounded bg-ds-info px-1 py-0.5 text-[9px] font-bold leading-none text-white shadow"
+                              >
+                                {t('leadBadge')}
+                              </span>
+                            )}
+                            {isTrump && (
+                              <span
+                                data-testid="pt-trick-trump-badge"
+                                title={t('trickLegend.trump')}
+                                className="absolute -top-1 -right-1 rounded-full bg-ds-warning px-1 py-0.5 text-[10px] font-bold leading-none text-white shadow"
+                              >
+                                {SUIT_LABELS[state.trumpSuit] ?? '?'}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div data-testid="pt-trick-legend" className="mt-2 flex flex-wrap gap-3 text-[10px] opacity-70">
+                    <span className="inline-flex items-center gap-1">
+                      <span className="inline-block h-3 w-3 rounded-sm ring-2 ring-ds-info" />
+                      {t('trickLegend.lead')}
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <span className="inline-block h-3 w-3 rounded-sm ring-2 ring-ds-warning" />
+                      {t('trickLegend.trump')}
+                    </span>
+                  </div>
+                </>
               )}
             </div>
 

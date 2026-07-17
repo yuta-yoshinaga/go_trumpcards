@@ -31,6 +31,11 @@
   "bidPass": "Pass",
   "bidNone": "Not bid",
   "currentTrick": "Current trick",
+  "leadBadge": "Lead",
+  "trickLegend": {
+    "lead": "Lead suit",
+    "trump": "Trump"
+  },
   "scores": "Scores",
   "scoresPlayer": "Player",
   "scoresBid": "Bid",

@@ -79,6 +79,18 @@ const playState: PitchResponse = {
   players: bidState.players.map((p, i) => (i === 0 ? { ...p, bid: 3 } : { ...p, bid: 0 })),
 };
 
+// A play-phase trick with trump = SPADE (1); lead card is a HEART, so HEART is
+// the lead suit, and the SPADE card is a trump cut.
+const trickState: PitchResponse = {
+  ...playState,
+  trumpSuit: 1,
+  currentTrick: [
+    { playerIdx: 3, card: makeCard('HEART', 9) },
+    { playerIdx: 0, card: makeCard('HEART', 4) },
+    { playerIdx: 1, card: makeCard('SPADE', 12) },
+  ],
+};
+
 const gameEndState: PitchResponse = {
   ...bidState,
   phase: PitchPhase.GAME_END,
@@ -230,6 +242,27 @@ describe('PitchPage', () => {
     const badge = await screen.findByTestId('pitch-game-pips-badge');
     expect(badge.className).toContain('min-h-[44px]');
     expect(badge.className).toContain('min-w-[44px]');
+  });
+
+  it('emphasizes the lead card and trump cards in the current trick', async () => {
+    mockApi.mockResolvedValue(trickState);
+    renderWithProviders(<PitchPage />);
+
+    // Lead badge is on the first card of the trick, whose wrapper is ringed as
+    // the lead suit (HEART here, distinct from the trump ring color).
+    const leadBadge = await screen.findByTestId('pt-trick-lead-badge');
+    expect(leadBadge).toHaveTextContent('リード');
+    expect(leadBadge.parentElement?.className).toContain('ring-ds-info');
+
+    // Trump card carries a suit-symbol badge (non-color cue) and an orange ring.
+    const trumpBadge = screen.getByTestId('pt-trick-trump-badge');
+    expect(trumpBadge).toHaveTextContent('♠');
+    expect(trumpBadge.parentElement?.className).toContain('ring-ds-warning');
+
+    // The header trump indicator is emphasized once trump is set.
+    expect(screen.getByTestId('pt-trump-indicator').className).toContain('ring-ds-warning');
+    // Legend explains both rings.
+    expect(screen.getByTestId('pt-trick-legend')).toBeInTheDocument();
   });
 
   it('closes the pips popover on Escape and on an outside click', async () => {

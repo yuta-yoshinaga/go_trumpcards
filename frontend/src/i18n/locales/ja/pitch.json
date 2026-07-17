@@ -31,6 +31,11 @@
   "bidPass": "パス",
   "bidNone": "未ビッド",
   "currentTrick": "現在のトリック",
+  "leadBadge": "リード",
+  "trickLegend": {
+    "lead": "リードスート",
+    "trump": "トランプ"
+  },
   "scores": "スコア",
   "scoresPlayer": "プレイヤー",
   "scoresBid": "ビッド",
