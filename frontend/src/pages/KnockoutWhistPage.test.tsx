@@ -30,6 +30,7 @@ const gameEndState = makeKnockoutWhistState({
 const cpuTurnState = makeKnockoutWhistState({ currentPlayerIdx: 1, isHumanTurn: false });
 
 beforeEach(() => {
+  localStorage.clear();
   mockExec.mockReset();
   mockExec.mockResolvedValue(playPhaseState);
 });
@@ -120,6 +121,38 @@ describe('KnockoutWhistPage', () => {
       expect(row.className).toContain('opacity-70');
       expect(row.className).not.toContain('opacity-40');
     }
+  });
+
+  // Build a state whose human (seat 0) is knocked out, using a fresh players array so the
+  // shared base fixture (referenced by makeKnockoutWhistState's shallow spread) is not mutated.
+  const eliminatedHumanState = (overrides?: Parameters<typeof makeKnockoutWhistState>[0]) => {
+    const base = makeKnockoutWhistState(overrides);
+    return {
+      ...base,
+      players: base.players.map((p) => (p.isHuman ? { ...p, eliminated: true, dogbones: 0 } : p)),
+    };
+  };
+
+  it('shows the spectator banner while the human is eliminated and the match continues', async () => {
+    mockExec.mockResolvedValue(eliminatedHumanState({ isHumanTurn: false, currentPlayerIdx: 1, activeCount: 2 }));
+    renderWithProviders(<KnockoutWhistPage />);
+    const banner = await screen.findByTestId('kw-spectator-banner');
+    expect(banner).toHaveAttribute('role', 'status');
+    expect(banner).toHaveTextContent('観戦中');
+    expect(banner).toHaveTextContent('残り 2人');
+  });
+
+  it('does not show the spectator banner while the human is still active', async () => {
+    renderWithProviders(<KnockoutWhistPage />);
+    await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
+    expect(screen.queryByTestId('kw-spectator-banner')).not.toBeInTheDocument();
+  });
+
+  it('does not show the spectator banner once the game has ended', async () => {
+    mockExec.mockResolvedValue(eliminatedHumanState({ phase: 3, gameEndFlag: true, winnerPlayer: 1, activeCount: 1 }));
+    renderWithProviders(<KnockoutWhistPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('kw-spectator-banner')).not.toBeInTheDocument();
   });
 
   it('renders the leader badge with an opaque, high-contrast surface', async () => {

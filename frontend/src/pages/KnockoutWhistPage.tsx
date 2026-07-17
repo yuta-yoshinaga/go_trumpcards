@@ -147,7 +147,10 @@ function KnockoutWhistPageContent() {
   const isTrumpSelect = state.phase === KnockoutWhistPhase.TRUMP_SELECT;
   const isGameEnd = state.phase === KnockoutWhistPhase.GAME_END || state.gameEndFlag;
 
-  const canPlay = isPlayPhase && isHumanTurn && !(state.players[humanIdx]?.eliminated ?? false);
+  const isHumanEliminated = state.players[humanIdx]?.eliminated ?? false;
+  const canPlay = isPlayPhase && isHumanTurn && !isHumanEliminated;
+  // Show a spectator banner while the human is knocked out but the match continues among the CPUs.
+  const showSpectatorBanner = isHumanEliminated && !isGameEnd;
   const trumpSymbol = SUIT_SYMBOLS[state.trumpSuit] ?? '?';
 
   const handleManualReset = () => {
@@ -227,6 +230,16 @@ function KnockoutWhistPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {showSpectatorBanner && (
+              <div
+                role="status"
+                data-testid="kw-spectator-banner"
+                className="mb-3 p-2 rounded border border-ds-warning/50 bg-black/30 text-ds-warning text-center text-sm font-medium"
+              >
+                {t('spectatorBanner', { n: state.activeCount })}
+              </div>
+            )}
+
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span className="mr-4">{t('handSize', { n: state.handSize })}</span>
