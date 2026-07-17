@@ -23,6 +23,12 @@ afterEach(async () => {
 });
 
 describe('ScoponePage', () => {
+  it('renders the GameSkeleton while the initial state is loading', () => {
+    mockExec.mockReturnValue(new Promise(() => undefined));
+    renderWithProviders(<ScoponePage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
   it('calls reset on mount with the short "r" command', async () => {
     renderWithProviders(<ScoponePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('r'));

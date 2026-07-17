@@ -9,6 +9,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -125,9 +126,10 @@ function ScoponePageContent() {
 
   if (!state || !human) {
     return (
-      <div className={`flex-1 flex items-center justify-center ${gameTheme.scopone.bg} text-ds-text-muted`} aria-busy>
-        {tc('skeleton.loading')}
-      </div>
+      <GameSkeleton
+        gameKey="scopone"
+        layout={{ kind: 'trick-taking', opponents: 3, trickArea: true, footerHandSize: 10 }}
+      />
     );
   }
 
