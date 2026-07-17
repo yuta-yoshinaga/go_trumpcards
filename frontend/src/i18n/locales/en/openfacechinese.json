@@ -23,6 +23,13 @@
   "fantasyland": "Fantasyland reached!",
   "roundEndTitle": "Round over",
   "next": "Next round",
+  "hint": {
+    "button": "Hint",
+    "text": "Suggested: {{row}} — {{reason}}",
+    "strong_back": "Weight your strongest cards to the bottom",
+    "weak_front": "Keep the top row weak to stay safe",
+    "balance": "Balance the rows"
+  },
   "gameEnd": "Game over",
   "phase": {
     "placing": "Placing",

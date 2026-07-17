@@ -23,6 +23,13 @@
   "fantasyland": "ファンタジーランド達成！",
   "roundEndTitle": "ラウンド終了",
   "next": "次のラウンドへ",
+  "hint": {
+    "button": "ヒント",
+    "text": "推奨: {{row}} — {{reason}}",
+    "strong_back": "強い組み合わせはボトムに寄せましょう",
+    "weak_front": "トップは弱めにまとめて安全に",
+    "balance": "バランス良く配置しましょう"
+  },
   "gameEnd": "ゲーム終了",
   "phase": {
     "placing": "配置",

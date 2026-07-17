@@ -192,4 +192,19 @@ describe('OpenFaceChinesePage', () => {
     await waitFor(() => expect(screen.getByRole('log')).toBeInTheDocument());
     expect(screen.queryByTestId('place-front')).not.toBeInTheDocument();
   });
+
+  it('dispatches hint when the hint button is clicked', async () => {
+    renderWithProviders(<OpenFaceChinesePage />);
+    const btn = await screen.findByRole('button', { name: 'ヒント' });
+    mockExec.mockClear();
+    fireEvent.click(btn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+  });
+
+  it('renders the suggested row and reason when a hint is present', async () => {
+    mockExec.mockResolvedValue(makeState({ hint: { row: 2, reason: 'strong_back' } }));
+    renderWithProviders(<OpenFaceChinesePage />);
+    const hint = await screen.findByTestId('ofc-hint');
+    expect(hint).toHaveTextContent('強い組み合わせはボトムに寄せましょう');
+  });
 });
