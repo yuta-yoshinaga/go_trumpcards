@@ -32,6 +32,8 @@
   "buryTooMany": "{{count}} 枚多く選択されています。ちょうど3枚にしてください",
   "buryButtonDisabledAria": "3枚埋める（あと {{count}} 枚のカード選択が必要です）",
   "buryButtonTooManyAria": "3枚埋める（{{count}} 枚多いため選択を減らしてください）",
+  "bidPreview": "選択中の合計 = 宣言 {{count}} トリック",
+  "bidLegend": "スート対応: ♦=0  ♠=1  ♥=2  ♣=3",
   "currentTrick": "現在のトリック",
   "scores": "スコア",
   "scoresPlayer": "プレイヤー",

@@ -10,6 +10,37 @@ const SUIT_NUM_TO_DESIGN: Readonly<Record<number, Card['design']>> = {
   4: 'DIAMOND',
 };
 
+/**
+ * Maps a buried card's suit to its Ninety-Nine bid value.
+ *
+ * Mirrors `ninetyNineSuitBidValue` in `internal/domain/NinetyNine.go` exactly:
+ * ♦=0, ♠=1, ♥=2, ♣=3. Any other design (e.g. JOKER) contributes 0.
+ */
+export function ninetynineBidValue(design: Card['design']): number {
+  switch (design) {
+    case 'DIAMOND':
+      return 0;
+    case 'SPADE':
+      return 1;
+    case 'HEART':
+      return 2;
+    case 'CLOVER':
+      return 3;
+    default:
+      return 0;
+  }
+}
+
+/**
+ * Sums the bid values of the given cards to compute the declared trick count.
+ *
+ * When exactly the 3 buried cards are passed, the result (0-9) equals the bid
+ * the backend will register. Used for the live bid preview during selection.
+ */
+export function ninetynineDeclaredTricks(cards: readonly Card[]): number {
+  return cards.reduce((sum, c) => sum + ninetynineBidValue(c.design), 0);
+}
+
 /** Returns a frontend HintResult for Ninety-Nine, or null if no suggestion. */
 export function getNinetyNineHint(state: NinetyNineResponse): HintResult | null {
   const human = state.players.find((p) => p.isHuman);
