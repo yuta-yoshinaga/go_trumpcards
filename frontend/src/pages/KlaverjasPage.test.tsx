@@ -75,6 +75,31 @@ describe('KlaverjasPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
   });
 
+  it('shows the winning team in a status banner at trick end', async () => {
+    // leadPlayerIdx 0 -> Team A won the trick.
+    mockExec.mockResolvedValue(trickEndState);
+    renderWithProviders(<KlaverjasPage />);
+    const banner = await screen.findByTestId('klaverjas-trick-winner');
+    expect(banner).toHaveTextContent('チームA がトリック獲得');
+    expect(banner).toHaveAttribute('role', 'status');
+    expect(banner).toHaveAttribute('aria-live', 'polite');
+  });
+
+  it('attributes the trick to Team B when an odd-seat player leads next', async () => {
+    mockExec.mockResolvedValue({ ...trickEndState, leadPlayerIdx: 1 });
+    renderWithProviders(<KlaverjasPage />);
+    await waitFor(() =>
+      expect(screen.getByTestId('klaverjas-trick-winner')).toHaveTextContent('チームB がトリック獲得'),
+    );
+  });
+
+  it('does not show the trick-winner banner during play', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<KlaverjasPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('klaverjas-trick-winner')).not.toBeInTheDocument();
+  });
+
   it('renders round end with the next round button and the round result', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<KlaverjasPage />);

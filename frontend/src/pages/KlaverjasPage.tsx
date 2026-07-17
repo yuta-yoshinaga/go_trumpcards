@@ -230,6 +230,17 @@ function KlaverjasPageContent() {
                   label={t('currentTrick')}
                   dataTutorial="klaverjas-trick-display"
                 />
+                {/* At TrickEnd leadPlayerIdx is the trick winner, so their team is shown before Next Trick. */}
+                {isTrickEnd && (
+                  <div
+                    className="my-2 p-2 rounded bg-ds-accent/15 text-center text-sm font-semibold text-ds-accent"
+                    role="status"
+                    aria-live="polite"
+                    data-testid="klaverjas-trick-winner"
+                  >
+                    {t('trickWinner', { team: state.leadPlayerIdx % 2 === 0 ? t('team.a') : t('team.b') })}
+                  </div>
+                )}
               </div>
 
               {/* Right: info sidebar */}

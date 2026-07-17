@@ -23,7 +23,9 @@
   "you": "You",
   "cpu": "CPU {{id}}",
   "yourTeam": "Your Team",
-  "roem": { "title": "Roem (bonus)" },
+  "roem": {
+    "title": "Roem (bonus)"
+  },
   "team": {
     "a": "Team A",
     "b": "Team B"
@@ -31,6 +33,7 @@
   "teamScore": "{{team}}: {{score}} pts",
   "playButton": "Play",
   "nextTrick": "Next Trick",
+  "trickWinner": "{{team}} won the trick",
   "nextRound": "Next Round",
   "roundResult": {
     "title": "Round Result",
