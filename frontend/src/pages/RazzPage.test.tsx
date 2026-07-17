@@ -915,6 +915,31 @@ describe('RazzPage', () => {
   });
 
   // ---- Seventh street: 3 hole card placeholders ----
+  // ---- bring-in indicator ----
+  it('shows the bring-in badge on the human when they post the bring-in during 3rd street', async () => {
+    // thirdStreetState has bringInPlayerIdx 0 → the human (id 0).
+    mockExec.mockResolvedValue(thirdStreetState);
+    renderWithProviders(<RazzPage />);
+    const badge = await screen.findByTestId('razz-bringin-badge-0');
+    expect(badge).toHaveTextContent('ブリングイン');
+  });
+
+  it('shows the bring-in badge on the CPU indicated by bringInPlayerIdx during 3rd street', async () => {
+    mockExec.mockResolvedValue({ ...thirdStreetState, bringInPlayerIdx: 1 });
+    renderWithProviders(<RazzPage />);
+    // bringInPlayerIdx 1 → CPU with id 1; the human (id 0) must not carry the badge.
+    expect(await screen.findByTestId('razz-bringin-badge-1')).toHaveTextContent('ブリングイン');
+    expect(screen.queryByTestId('razz-bringin-badge-0')).not.toBeInTheDocument();
+  });
+
+  it('hides the bring-in badge outside of 3rd street', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<RazzPage />);
+    await waitFor(() => expect(screen.getByText('ショーダウン')).toBeInTheDocument());
+    expect(screen.queryByTestId('razz-bringin-badge-0')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('razz-bringin-badge-1')).not.toBeInTheDocument();
+  });
+
   it('shows 3 face-down placeholders for human hole cards on seventh street', async () => {
     mockExec.mockResolvedValue({
       ...thirdStreetState,
