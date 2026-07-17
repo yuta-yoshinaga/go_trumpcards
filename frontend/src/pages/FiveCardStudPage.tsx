@@ -35,7 +35,9 @@ import { gameTheme } from '../styles/gameTheme';
 import type { FiveCardStudResponse } from '../types/card';
 import { FiveCardStudPhase, FiveCardStudRebuyPhaseType } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { FIVECARDSTUD_HELP, parseFiveCardStudCommand } from '../utils/cli/commands/fiveCardStudCommands';
+import { formatFiveCardStudState } from '../utils/cli/formatters/fiveCardStudFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
 
 /** Five Card Stud tutorial step definitions. */
@@ -100,60 +102,9 @@ function FiveCardStudPageContent() {
   const cliConfig: CliGameConfig<FiveCardStudResponse, FcsArgs> = useMemo(
     () => ({
       gameName: 'fivecardstud',
-      parseCommand: (input: string): CliParseResult<FcsArgs> => {
-        const parts = input.trim().split(/\s+/);
-        const cmd = parts[0]?.toLowerCase() ?? '';
-        const amount = parts[1] ? Number.parseInt(parts[1], 10) : undefined;
-        const validCmds = [
-          'reset',
-          'fold',
-          'check',
-          'call',
-          'bet',
-          'raise',
-          'allin',
-          'rebuy',
-          'skiprebuy',
-          'addon',
-          'skipaddon',
-          'muck',
-          'show',
-        ] as const;
-        type Cmd = (typeof validCmds)[number];
-        if (validCmds.includes(cmd as Cmd)) {
-          return { args: [cmd as Cmd, amount] };
-        }
-        return { error: `Unknown command: ${cmd}` };
-      },
-      formatResponse: (s: FiveCardStudResponse) => {
-        const lines: string[] = [];
-        lines.push(`Phase: ${phaseNames[s.phase] ?? 'Init'} | Pot: ${s.pot}`);
-        for (const p of s.players) {
-          const tag = p.isHuman ? 'You' : `CPU ${p.id}`;
-          const door = p.doorCards.map((c) => `${c.design[0]}${c.value}`).join(' ');
-          const hole = p.holeCards.map((c) => `${c.design[0]}${c.value}`).join(' ');
-          lines.push(
-            `${tag}: chips=${p.chips} door=[${door}] hole=[${hole}]${p.folded ? ' FOLDED' : ''}${p.allIn ? ' ALL-IN' : ''}`,
-          );
-        }
-        if (s.message) lines.push(s.message);
-        return lines.join('\n');
-      },
-      helpText: [
-        'f/fold      - Fold',
-        'ck/check    - Check',
-        'c/call      - Call',
-        'b/bet <amt> - Bet',
-        'ra/raise <amt> - Raise',
-        'a/allin     - All-in',
-        'rebuy       - Rebuy chips',
-        'skiprebuy   - Skip rebuy',
-        'addon       - Add-on chips',
-        'skipaddon   - Skip add-on',
-        'muck        - Muck hand',
-        'show        - Show hand',
-        'r/reset     - Reset game',
-      ],
+      parseCommand: parseFiveCardStudCommand,
+      formatResponse: (s: FiveCardStudResponse) => formatFiveCardStudState(s, phaseNames),
+      helpText: FIVECARDSTUD_HELP,
     }),
     [phaseNames],
   );
