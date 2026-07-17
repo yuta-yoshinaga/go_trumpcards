@@ -35,6 +35,9 @@ import { playerName } from '../utils/playerUtils';
 /** Suit symbols indexed by suit number (0=unset, 1=♠ 2=♣ 3=♥ 4=♦). */
 const SUIT_SYMBOLS = ['-', '♠', '♣', '♥', '♦'] as const;
 
+/** Bid increment applied by a raise (mirrors backend `TysiacBidStep`). */
+const TYSIAC_BID_STEP = 10;
+
 /** Card design string → suit number (1=♠ 2=♣ 3=♥ 4=♦), to align with SUIT_SYMBOLS / trumpSuit. */
 const DESIGN_TO_SUIT: Readonly<Record<string, number>> = { SPADE: 1, CLOVER: 2, HEART: 3, DIAMOND: 4 };
 
@@ -333,8 +336,11 @@ function TysiacPageContent() {
           {/* Footer */}
           <GameFooter className={`${gameTheme.tysiac.footer} px-4 py-2.5`}>
             {isBidPhase && (
-              <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="tysiac-bid-prompt">
-                {t('bidPhase')}
+              <div className="mb-1 text-center" data-testid="tysiac-bid-prompt">
+                <div className="text-sm text-ds-accent font-semibold">{t('bidPhase')}</div>
+                <div className="text-sm text-ds-text-primary font-semibold" data-testid="tysiac-current-bid">
+                  {t('currentBid', { points: state.currentBid })}
+                </div>
               </div>
             )}
             {canDiscard && (
@@ -379,8 +385,14 @@ function TysiacPageContent() {
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="tysiac-action-buttons">
               {canBid && (
                 <>
-                  <button type="button" className={btnPrimary} onClick={() => handleBid(true)} disabled={loading}>
-                    {t('bidRaise')}
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={() => handleBid(true)}
+                    disabled={loading}
+                    data-testid="tysiac-bid-raise"
+                  >
+                    {t('bidRaiseTo', { points: state.currentBid + TYSIAC_BID_STEP })}
                   </button>
                   <button type="button" className={btnSecondary} onClick={() => handleBid(false)} disabled={loading}>
                     {t('bidPass')}

@@ -24,6 +24,7 @@
   "bidPhase": "Bidding phase — raise (+10) or pass.",
   "talonPhase": "Talon exchange — give a card to each opponent.",
   "bidRaise": "Raise +10",
+  "bidRaiseTo": "Raise ({{points}})",
   "bidPass": "Pass",
   "giveCard": "Give card",
   "marriageAvailable": "Marriage available: {{list}}",

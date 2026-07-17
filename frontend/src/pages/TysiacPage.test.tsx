@@ -42,6 +42,7 @@ const gameEndState = makeTysiacState({
 const cpuTurnState = makeTysiacState({ currentPlayerIdx: 1, isHumanTurn: false });
 
 beforeEach(() => {
+  localStorage.clear();
   mockExec.mockReset();
   mockExec.mockResolvedValue(playPhaseState);
 });
@@ -83,14 +84,38 @@ describe('TysiacPage', () => {
   it('renders the bid phase with raise and pass buttons', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<TysiacPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'レイズ +10' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'レイズ（110）' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'パス' })).toBeInTheDocument();
+  });
+
+  it('shows the next bid amount on the raise button and the current bid near the controls', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<TysiacPage />);
+    // Raise button label reflects currentBid (100) + step (10).
+    await waitFor(() => expect(screen.getByTestId('tysiac-bid-raise')).toHaveTextContent('レイズ（110）'));
+    // Current highest bid is shown right by the bid controls.
+    expect(screen.getByTestId('tysiac-current-bid')).toHaveTextContent('入札: 100');
+  });
+
+  it('reflects a higher current bid in the raise-button next amount', async () => {
+    mockExec.mockResolvedValue(makeTysiacState({ phase: 0, currentPlayerIdx: 0, isHumanTurn: true, currentBid: 130 }));
+    renderWithProviders(<TysiacPage />);
+    await waitFor(() => expect(screen.getByTestId('tysiac-bid-raise')).toHaveTextContent('レイズ（140）'));
+    expect(screen.getByTestId('tysiac-current-bid')).toHaveTextContent('入札: 130');
+  });
+
+  it('hides the bid display once bidding is over (talon phase)', async () => {
+    mockExec.mockResolvedValue(talonPhaseState);
+    renderWithProviders(<TysiacPage />);
+    await waitFor(() => expect(screen.getByTestId('tysiac-talon-prompt')).toBeInTheDocument());
+    expect(screen.queryByTestId('tysiac-current-bid')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('tysiac-bid-raise')).not.toBeInTheDocument();
   });
 
   it('raising the bid dispatches bid with raise=true', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<TysiacPage />);
-    const raiseBtn = await screen.findByRole('button', { name: 'レイズ +10' });
+    const raiseBtn = await screen.findByRole('button', { name: 'レイズ（110）' });
     mockExec.mockClear();
     mockExec.mockResolvedValue(bidPhaseState);
     fireEvent.click(raiseBtn);
