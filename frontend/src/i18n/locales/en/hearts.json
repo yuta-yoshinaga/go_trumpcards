@@ -51,6 +51,13 @@
     "discard_hearts": "Discard hearts",
     "discard_high": "Discard a high card"
   },
+  "illegalReason": {
+    "cannotPlay": "This card cannot be played right now",
+    "mustLeadTwoClubs": "You must lead the first trick with the 2♣",
+    "heartsNotBroken": "Hearts have not been broken yet",
+    "mustFollowSuit": "You must follow the lead suit",
+    "noPointsFirstTrick": "No hearts or Q♠ may be played on the first trick"
+  },
   "tutorial": {
     "passArea": "In the pass phase, select 3 cards to pass to another player.",
     "trickDisplay": "The current trick. Each player plays one card.",

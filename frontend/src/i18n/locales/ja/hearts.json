@@ -51,6 +51,13 @@
     "discard_hearts": "ハートを捨てる",
     "discard_high": "高いカードを捨てる"
   },
+  "illegalReason": {
+    "cannotPlay": "このカードは今は出せません",
+    "mustLeadTwoClubs": "最初のトリックは2♣でリードしてください",
+    "heartsNotBroken": "ハートはまだブレイクされていません",
+    "mustFollowSuit": "リードスートに従ってください",
+    "noPointsFirstTrick": "最初のトリックではハートとQ♠を出せません"
+  },
   "tutorial": {
     "passArea": "パスフェーズでは3枚のカードを選んで隣のプレイヤーに渡します。",
     "trickDisplay": "現在のトリックです。各プレイヤーが1枚ずつカードを出します。",
