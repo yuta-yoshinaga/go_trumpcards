@@ -19,7 +19,7 @@
   "promptDeclare": "宣言してください: i（イン / 残る）または o（アウト / 降りる）",
   "promptResult": "ラウンド終了。n で次のラウンドへ。",
   "promptHelp": "i / o で宣言、n で次のラウンド",
-  "result.carry": "誰も残りませんでした — ポットは次へ持ち越しです。",
+  "result.carry": "全員アウト — ポット {{pot}} を次ラウンドへ持ち越し（{{count}} 回連続）。",
   "result.win": "あなたがポットを獲得！",
   "result.lose": "あなたの負け — ポットをマッチします。",
   "result.cpuWin": "CPU {{player}} がポットを獲得。",

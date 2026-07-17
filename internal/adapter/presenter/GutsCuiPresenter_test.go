@@ -2,6 +2,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -44,6 +45,10 @@ func TestGutsCuiPresenter_OutputResultCarry(t *testing.T) {
 	p := new(presenter.GutsCuiPresenter)
 	out := p.Output(g, nil)
 	assert.NotEmpty(t, out)
+	// The carry line reports the carried-over pot and the consecutive-carry count.
+	assert.Equal(t, 1, g.GetCarryCount())
+	assert.Contains(t, out, strconv.Itoa(g.GetCarryPot()))
+	assert.Contains(t, out, "持ち越し")
 }
 
 func TestGutsCuiPresenter_OutputGameEnd(t *testing.T) {
