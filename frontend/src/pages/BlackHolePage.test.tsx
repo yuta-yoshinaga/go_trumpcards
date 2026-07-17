@@ -132,6 +132,41 @@ describe('BlackHolePage', () => {
     await waitFor(() => expect(screen.getByTestId('card-0-1')).not.toHaveAttribute('data-hinted-legal'));
   });
 
+  it('always shows the acceptable ranks (hole top ±1) and the legal-move count', async () => {
+    // Hole top 7 → accepts 6 and 8. fan0 top ♣6 is legal, fan1 top ♦10 is not.
+    mockExec.mockResolvedValue(makeState({ blackHole: [card('SPADE', 7)] }));
+    renderWithProviders(<BlackHolePage />);
+    const readout = await screen.findByTestId('bh-acceptable');
+    expect(readout).toHaveTextContent('受け入れ可能: 6 / 8');
+    const count = screen.getByTestId('bh-legal-count');
+    expect(count).toHaveTextContent('合法手: 1');
+    expect(count.className).toContain('text-ds-text-muted');
+  });
+
+  it('shows only one side of the acceptable ranks at the A and K ends', async () => {
+    // Hole top A(1): no wrap, so only rank 2 is acceptable.
+    mockExec.mockResolvedValue(makeState({ blackHole: [card('SPADE', 1)] }));
+    const { unmount } = renderWithProviders(<BlackHolePage />);
+    expect(await screen.findByTestId('bh-acceptable')).toHaveTextContent('受け入れ可能: 2');
+    unmount();
+
+    // Hole top K(13): only rank Q(12) is acceptable.
+    mockExec.mockResolvedValue(makeState({ blackHole: [card('SPADE', 13)] }));
+    renderWithProviders(<BlackHolePage />);
+    expect(await screen.findByTestId('bh-acceptable')).toHaveTextContent('受け入れ可能: Q');
+  });
+
+  it('marks the legal-move count with a warning colour when no move remains', async () => {
+    // Hole top 7, but neither fan top is ±1 (fan0 ♣6 replaced by ♦Q, fan1 ♦10).
+    const stuck = makeState({ blackHole: [card('SPADE', 7)] });
+    stuck.fans[0] = [card('DIAMOND', 12)];
+    mockExec.mockResolvedValue(stuck);
+    renderWithProviders(<BlackHolePage />);
+    const count = await screen.findByTestId('bh-legal-count');
+    expect(count).toHaveTextContent('合法手: 0');
+    expect(count.className).toContain('text-ds-warning');
+  });
+
   it('does not ring an A-K wrap (no wrap in Black Hole)', async () => {
     // Hole top A(1): only rank 2 is adjacent — K(13) must NOT highlight.
     const wrap = makeState({ blackHole: [card('SPADE', 1)] });
