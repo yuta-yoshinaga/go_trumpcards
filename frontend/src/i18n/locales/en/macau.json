@@ -53,6 +53,16 @@
     "magicCards": "Magic cards: 2=draw two (stackable), 7=skip, 8=wild, J=reverse.",
     "resetButton": "Use the reset button to start a new game."
   },
+  "magicRef": {
+    "title": "Magic Cards",
+    "cardHeader": "Card",
+    "effectHeader": "Effect",
+    "two": "Next player draws 2 (stack another 2 to pass the penalty on)",
+    "seven": "Skip the next player",
+    "eight": "Wild — choose any suit, playable anytime",
+    "jack": "Reverse the play direction",
+    "note": "Declare \"Macau!\" when down to your last card (forgetting costs a 2-card penalty)"
+  },
   "hint": {
     "playMatchingSuit": "Play a card of the matching suit",
     "playMatchingValue": "Play a card of the matching rank",

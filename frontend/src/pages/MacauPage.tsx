@@ -268,6 +268,43 @@ function MacauPageContent() {
                   </div>
                 )}
 
+                {/* Magic card effect reference */}
+                <details className="my-3 bg-black/30 rounded-lg w-full max-w-sm" data-testid="macau-magic-reference">
+                  <summary className="cursor-pointer select-none px-4 py-2 text-ds-text-primary font-bold text-sm">
+                    {t('magicRef.title')}
+                  </summary>
+                  <div className="px-4 pb-3 text-ds-text-muted text-sm">
+                    <table className="w-full">
+                      <thead>
+                        <tr>
+                          <th scope="col" className="text-left w-10">
+                            {t('magicRef.cardHeader')}
+                          </th>
+                          <th scope="col" className="text-left">
+                            {t('magicRef.effectHeader')}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(
+                          [
+                            ['2', 'two'],
+                            ['7', 'seven'],
+                            ['8', 'eight'],
+                            ['J', 'jack'],
+                          ] as const
+                        ).map(([label, key]) => (
+                          <tr key={key}>
+                            <td className="font-bold text-ds-text-primary align-top">{label}</td>
+                            <td>{t(`magicRef.${key}`)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    <p className="mt-2">{t('magicRef.note')}</p>
+                  </div>
+                </details>
+
                 {hasPenalty && (
                   <div
                     className="my-2 p-2 rounded bg-ds-warning/20 text-ds-warning text-sm font-semibold"

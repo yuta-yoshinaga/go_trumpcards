@@ -278,4 +278,16 @@ describe('MacauPage', () => {
     renderWithProviders(<MacauPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
+
+  it('renders the magic card reference panel with domain-accurate effects', async () => {
+    renderWithProviders(<MacauPage />);
+    const panel = await screen.findByTestId('macau-magic-reference');
+    expect(panel).toBeInTheDocument();
+    // Panel content mirrors the Go domain magic-card effects (Macau.go).
+    expect(panel).toHaveTextContent('マジックカード一覧');
+    expect(panel).toHaveTextContent('次のプレイヤーが2枚ドロー（2を重ねてペナルティ累積可）');
+    expect(panel).toHaveTextContent('次のプレイヤーをスキップ');
+    expect(panel).toHaveTextContent('ワイルド — 好きなスートを指定、いつでも出せる');
+    expect(panel).toHaveTextContent('プレイ方向を反転（リバース）');
+  });
 });
