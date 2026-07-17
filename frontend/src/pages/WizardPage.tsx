@@ -40,6 +40,10 @@ import { formatWizardState } from '../utils/cli/formatters/wizardFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { ohHellBidSummary } from '../utils/ohHellBid';
 import { playerName } from '../utils/playerUtils';
+import { isWizardLegalPlay } from '../utils/wizardLegal';
+
+/** DOM id linking each illegal card button to the shared screen-reader reason text. */
+const WIZARD_ILLEGAL_REASON_ID = 'wiz-illegal-reason';
 
 /** Wizard tutorial step definitions. */
 const WIZARD_TUTORIAL_STEPS: TutorialStep[] = [
@@ -197,6 +201,20 @@ function WizardPageContent() {
         state.handSize,
       )
     : null;
+
+  // On the human's play turn, compute which hand cards are legal to play so the
+  // UI can highlight them. Mirrors Wizard.validatePlay in internal/domain/Wizard.go:
+  // Wizard/Jester are always legal; a normal card must follow the led suit while
+  // the player still holds it. `undefined` off-turn leaves every card unstyled.
+  const trickCards = state.currentTrick.map((tc) => tc.card);
+  const humanHand = humanPlayer?.cards ?? [];
+  const legalIndices =
+    isHumanTurn && humanPlayer
+      ? humanHand.reduce<number[]>((acc, card, idx) => {
+          if (isWizardLegalPlay(card, trickCards, humanHand)) acc.push(idx);
+          return acc;
+        }, [])
+      : undefined;
 
   return (
     <GamePageShell
@@ -465,28 +483,46 @@ function WizardPageContent() {
                   onToggle={toggleCard}
                   cardWidth={cardWidth}
                   dataTutorial="wiz-player-hand"
+                  validIndices={legalIndices}
+                  restrictedTooltip={t('illegalHint')}
                 />
               ) : (
                 <div className="flex flex-wrap gap-1 mb-2" data-tutorial="wiz-player-hand">
-                  {humanPlayer.cards.map((card, idx) => (
-                    <button
-                      type="button"
-                      key={`${card.design}-${card.value}-${idx}`}
-                      onClick={() => toggleCard(idx)}
-                      aria-label={cardAlt(card)}
-                      aria-pressed={selectedCardIndices.includes(idx)}
-                      className={`transition-transform ${focusRingCard}`}
-                      style={{
-                        background: 'none',
-                        padding: 0,
-                        borderRadius: 8,
-                        ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      <AnimatedCard card={card} width={cardWidth} />
-                    </button>
-                  ))}
+                  {/* Shared screen-reader reason, referenced by every illegal card via
+                      aria-describedby so the "why" is announced (title alone is skipped by SRs). */}
+                  <span id={WIZARD_ILLEGAL_REASON_ID} className="sr-only">
+                    {t('illegalHint')}
+                  </span>
+                  {humanPlayer.cards.map((card, idx) => {
+                    // On the human's play turn, ring the legal cards and dim the rest with a
+                    // reason tooltip so the follow-suit obligation is visible before playing.
+                    const legal = legalIndices == null || legalIndices.includes(idx);
+                    const showLegal = legalIndices != null;
+                    return (
+                      <button
+                        type="button"
+                        key={`${card.design}-${card.value}-${idx}`}
+                        onClick={() => toggleCard(idx)}
+                        aria-label={cardAlt(card)}
+                        aria-pressed={selectedCardIndices.includes(idx)}
+                        title={showLegal && !legal ? t('illegalHint') : undefined}
+                        aria-describedby={showLegal && !legal ? WIZARD_ILLEGAL_REASON_ID : undefined}
+                        data-legal={showLegal ? legal : undefined}
+                        className={`transition-transform ${focusRingCard} ${
+                          showLegal && legal ? 'rounded-lg ring-2 ring-ds-success' : ''
+                        } ${showLegal && !legal ? 'opacity-50' : ''}`}
+                        style={{
+                          background: 'none',
+                          padding: 0,
+                          borderRadius: 8,
+                          ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        <AnimatedCard card={card} width={cardWidth} />
+                      </button>
+                    );
+                  })}
                 </div>
               ))}
 

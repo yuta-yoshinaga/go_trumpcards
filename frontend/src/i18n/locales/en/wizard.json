@@ -1,4 +1,5 @@
 {
+  "illegalHint": "Can't play this card (you must follow the led suit you still hold)",
   "phase": {
     "bid": "Bid",
     "play": "Play",
