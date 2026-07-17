@@ -91,6 +91,17 @@ describe('FlowerGardenPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '♦ 7' })).toBeInTheDocument());
   });
 
+  it('labels all 16 bouquet slots with their 0-based index (matching hint text)', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<FlowerGardenPage />);
+    // Slots are numbered #0..#15 to match formatHintZone's raw reserve col and
+    // the CUI's [r0]..[r15], so hint text maps to a visible card.
+    await waitFor(() => expect(screen.getByText('#0')).toBeInTheDocument());
+    for (let i = 0; i < 16; i++) {
+      expect(screen.getByText(`#${i}`)).toBeInTheDocument();
+    }
+  });
+
   it('selecting a reserve card marks it as selected', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<FlowerGardenPage />);
