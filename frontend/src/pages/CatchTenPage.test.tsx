@@ -144,4 +144,13 @@ describe('CatchTenPage', () => {
     expect(team0Chips.length).toBeGreaterThan(0);
     expect(team1Chips.length).toBeGreaterThan(0);
   });
+
+  it('names the recommended card (suit + rank) in the hint text', async () => {
+    renderWithProviders(<CatchTenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    // cardIndex 0 in the human hand is ♠ A.
+    mockExec.mockResolvedValueOnce(makeState({ hint: { cardIndex: 0, reason: 'lead_strong' } }));
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByText(/♠ A/)).toBeInTheDocument());
+  });
 });

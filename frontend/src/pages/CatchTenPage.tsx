@@ -31,6 +31,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { CatchTenPlayerData, CatchTenResponse } from '../types/card';
 import { CatchTenPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { CATCHTEN_HELP, parseCatchTenCommand } from '../utils/cli/commands/catchtenCommands';
 import { formatCatchTenState } from '../utils/cli/formatters/catchtenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -476,6 +477,7 @@ function CatchTenPageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="ct"
+                highlightIndices={isHumanTurn && hint?.cardIndex !== undefined ? [hint.cardIndex] : undefined}
               />
             )}
 
@@ -483,7 +485,11 @@ function CatchTenPageContent() {
 
             {hint && (
               <div className="text-ds-warning text-sm mb-2">
-                {`${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
+                {(() => {
+                  const card = hint.cardIndex !== undefined ? humanPlayer?.cards[hint.cardIndex] : undefined;
+                  const name = card ? cardAlt(card) : '-';
+                  return `${t('hintPlay')}: ${name} [${hint.cardIndex ?? '-'}] (${t(`hintReason.${hint.reason}`)})`;
+                })()}
               </div>
             )}
 
