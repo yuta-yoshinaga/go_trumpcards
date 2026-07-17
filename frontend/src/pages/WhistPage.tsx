@@ -32,6 +32,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { WhistResponse } from '../types/card';
 import { WhistPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseWhistCommand, WHIST_HELP } from '../utils/cli/commands/whistCommands';
 import { formatWhistState } from '../utils/cli/formatters/whistFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -438,6 +439,7 @@ function WhistPageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="wh"
+                highlightIndices={isHumanTurn && hint?.cardIndex !== undefined ? [hint.cardIndex] : undefined}
               />
             )}
 
@@ -449,9 +451,12 @@ function WhistPageContent() {
                     added, add its key under hintReason in whist.json (ja/en).
                     Unknown reasons fall back to hintReason.fallback instead of
                     showing the raw key. */}
-                {`${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`, {
-                  defaultValue: t('hintReason.fallback'),
-                })})`}
+                {(() => {
+                  const reason = t(`hintReason.${hint.reason}`, { defaultValue: t('hintReason.fallback') });
+                  const card = hint.cardIndex !== undefined ? humanPlayer?.cards[hint.cardIndex] : undefined;
+                  const name = card ? cardAlt(card) : '-';
+                  return `${t('hintPlay')}: ${name} [${hint.cardIndex ?? '-'}] (${reason})`;
+                })()}
               </div>
             )}
 
