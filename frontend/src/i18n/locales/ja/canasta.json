@@ -37,6 +37,7 @@
   "skipMeldButton": "スキップ",
   "discardButton": "捨てる",
   "goOutButton": "上がる",
+  "goOutReason": "ゴーアウトするには完成したカナスタ（7枚メルド）が1組以上必要です",
   "nextRound": "次のラウンド",
   "selectPair": "ペアを選択してください（トップカードと同ランクの2枚）",
   "drawDiscardReason": {

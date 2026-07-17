@@ -94,6 +94,9 @@ function CanastaPageContent() {
 
   const humanPlayer = state?.players.find((p) => p.isHuman);
   const humanCardCount = humanPlayer?.cards?.length ?? 0;
+  // The server rejects a go-out unless the player holds at least one completed
+  // canasta (Canasta.PlayerGoOut -> HasCanasta()); mirror that guard client-side.
+  const canGoOut = humanPlayer?.hasCanasta === true;
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('canasta');
   const cliConfig: CliGameConfig<CanastaResponse, Parameters<typeof canastaApi.exec>> = useMemo(
@@ -464,9 +467,26 @@ function CanastaPageContent() {
                   >
                     {t('discardButton')}
                   </button>
-                  <button type="button" className={btnSuccess} onClick={handleGoOut} disabled={loading}>
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={handleGoOut}
+                    disabled={loading || !canGoOut}
+                    title={canGoOut ? undefined : t('goOutReason')}
+                    aria-describedby={canGoOut ? undefined : 'ca-go-out-reason'}
+                    data-testid="ca-go-out-button"
+                  >
                     {t('goOutButton')}
                   </button>
+                  {!canGoOut && (
+                    <div
+                      id="ca-go-out-reason"
+                      data-testid="ca-go-out-reason"
+                      className="w-full text-xs text-ds-text-muted"
+                    >
+                      {t('goOutReason')}
+                    </div>
+                  )}
                 </>
               )}
               {isRoundEnd && (
