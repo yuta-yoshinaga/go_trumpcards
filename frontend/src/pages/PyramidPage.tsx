@@ -180,6 +180,8 @@ function PyramidPageContent() {
   const wasteTopCard = state.waste.length > 0 ? state.waste[state.waste.length - 1] : null;
   const isWastePairCandidate =
     partnerValue !== null && !isSelected('waste') && wasteTopCard !== null && wasteTopCard.value === partnerValue;
+  // The waste top is always exposed; a King there is removable alone (issue #3082).
+  const isWasteExposedKing = wasteTopCard !== null && wasteTopCard.value === 13 && !isSelected('waste');
 
   // Calculate pyramid layout dimensions
   const maxCols = 7; // bottom row has 7 cards
@@ -260,6 +262,10 @@ function PyramidPageContent() {
                         exposed &&
                         pc.card.value === partnerValue &&
                         !isSelected('pyramid', rowIdx, colIdx);
+                      // A King (13) is removable alone once exposed — surface that
+                      // affordance so players don't hunt for a nonexistent partner
+                      // (issue #3082). Selected/hint states take visual precedence.
+                      const isExposedKing = exposed && pc.card.value === 13 && !isSelected('pyramid', rowIdx, colIdx);
                       // Server hint targets (-1 sentinels for king/waste never match a cell).
                       const isHintTarget =
                         !!hint &&
@@ -274,7 +280,9 @@ function PyramidPageContent() {
                           ? ` ${t('a11y.selected')}`
                           : isPairCandidate
                             ? ` ${t('a11y.pairCandidate')}`
-                            : '';
+                            : isExposedKing
+                              ? ` ${t('a11y.kingRemovable')}`
+                              : '';
                       return (
                         <div key={`pc-${rowIdx.toString()}-${colIdx.toString()}`} className="absolute" style={{ left }}>
                           <button
@@ -287,6 +295,7 @@ function PyramidPageContent() {
                             aria-label={`${cardAlt(pc.card)}${statusSuffix}`}
                             aria-pressed={cellSelected}
                             data-pair-candidate={isPairCandidate ? 'true' : undefined}
+                            data-king-removable={isExposedKing ? 'true' : undefined}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
                               isSelected('pyramid', rowIdx, colIdx)
                                 ? 'ring-2 ring-ds-warning'
@@ -294,7 +303,9 @@ function PyramidPageContent() {
                                   ? 'ring-2 ring-ds-warning animate-pulse'
                                   : isPairCandidate
                                     ? 'ring-2 ring-ds-success animate-pulse'
-                                    : ''
+                                    : isExposedKing
+                                      ? 'ring-2 ring-ds-success'
+                                      : ''
                             } ${!exposed ? 'opacity-60' : ''}`}
                           >
                             <AnimatedCard card={pc.card} width={effectiveCardWidth} />
@@ -338,12 +349,13 @@ function PyramidPageContent() {
                     type="button"
                     onClick={() => handleSelectCard({ zone: 'waste' }, wasteTopCard.value)}
                     disabled={!isPlaying || loading}
-                    aria-label={cardAlt(wasteTopCard)}
+                    aria-label={`${cardAlt(wasteTopCard)}${isWasteExposedKing ? ` ${t('a11y.kingRemovable')}` : ''}`}
                     aria-pressed={isSelected('waste')}
                     data-pair-candidate={isWastePairCandidate ? 'true' : undefined}
+                    data-king-removable={isWasteExposedKing ? 'true' : undefined}
                     className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
                       isSelected('waste') ? 'ring-2 ring-ds-warning' : ''
-                    } ${isWastePairCandidate ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
+                    } ${isWastePairCandidate ? 'ring-2 ring-ds-success animate-pulse' : isWasteExposedKing ? 'ring-2 ring-ds-success' : ''}`}
                   >
                     <AnimatedCard card={wasteTopCard} width={effectiveCardWidth} />
                   </button>

@@ -43,6 +43,7 @@
   "a11y": {
     "blocked": "（ブロック中）",
     "selected": "（選択中）",
-    "pairCandidate": "（合計13の相手）"
+    "pairCandidate": "（合計13の相手）",
+    "kingRemovable": "（単独除去可能なK）"
   }
 }
