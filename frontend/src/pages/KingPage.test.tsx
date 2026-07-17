@@ -77,6 +77,19 @@ describe('KingPage', () => {
     expect(screen.getByRole('button', { name: 'ノートリック' })).toBeInTheDocument();
   });
 
+  it('shows achieve/avoid badges on the contract buttons', async () => {
+    mockExec.mockResolvedValue(selectPhaseState);
+    renderWithProviders(<KingPage />);
+    await waitFor(() => expect(screen.getByTestId('king-select-prompt')).toBeInTheDocument());
+    // No Hearts (contract 1) is an avoid contract targeting hearts.
+    const avoidBadge = screen.getByTestId('king-contract-badge-1');
+    expect(avoidBadge).toHaveTextContent('回避');
+    expect(avoidBadge).toHaveTextContent('♥');
+    // King (Trump) (contract 6) is the only achieve contract.
+    const achieveBadge = screen.getByTestId('king-contract-badge-6');
+    expect(achieveBadge).toHaveTextContent('獲得');
+  });
+
   it('choosing a non-trump contract dispatches contract with trumpSuit -1', async () => {
     mockExec.mockResolvedValue(selectPhaseState);
     renderWithProviders(<KingPage />);

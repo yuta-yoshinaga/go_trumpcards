@@ -36,6 +36,19 @@
     "5": "Lose points for every Jack/King you capture.",
     "6": "Lose points for taking a trick with the King (trump in play)."
   },
+  "contractType": {
+    "achieve": "Achieve",
+    "avoid": "Avoid"
+  },
+  "contractIcon": {
+    "0": "All tricks",
+    "1": "♥",
+    "2": "Q",
+    "3": "K♥",
+    "4": "Last 2",
+    "5": "J·K",
+    "6": "All tricks"
+  },
   "selectContractPrompt": "You are the dealer — choose this deal's contract.",
   "selectContractCpu": "CPU {{id}} is choosing a contract…",
   "selectTrumpPrompt": "Choose the trump suit for King (Trump).",

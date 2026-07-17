@@ -20,6 +20,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, useKingGame } from '../hooks/useKingGame';
+import { badgeErrorColors, badgeSuccessColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -354,18 +355,35 @@ function KingPageContent() {
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="king-action-buttons">
               {canSelect && pendingTrumpContract === null && (
                 <div className="flex flex-wrap gap-2" data-testid="king-contract-buttons">
-                  {state.usedContracts.map((used, contract) => (
-                    <button
-                      key={contract}
-                      type="button"
-                      className={btnSecondary}
-                      onClick={() => handleContractClick(contract)}
-                      disabled={loading || used}
-                      title={t(`contractDesc.${contract}`)}
-                    >
-                      {t(`contracts.${contract}`)}
-                    </button>
-                  ))}
+                  {state.usedContracts.map((used, contract) => {
+                    // Contract 6 (King/Trump) rewards taking tricks; every other
+                    // contract penalises capturing its target cards. See
+                    // internal/domain/King.go for the authoritative classification.
+                    const isAchieve = contract === KING_TRUMP_CONTRACT;
+                    return (
+                      <button
+                        key={contract}
+                        type="button"
+                        className={`${btnSecondary} flex flex-col items-center gap-1`}
+                        onClick={() => handleContractClick(contract)}
+                        disabled={loading || used}
+                        title={t(`contractDesc.${contract}`)}
+                        data-testid={`king-contract-${contract}`}
+                      >
+                        <span className={used ? 'line-through opacity-60' : ''}>{t(`contracts.${contract}`)}</span>
+                        <span
+                          className="flex items-center gap-1 text-xs"
+                          aria-hidden="true"
+                          data-testid={`king-contract-badge-${contract}`}
+                        >
+                          <span className={`rounded px-1 py-0.5 ${isAchieve ? badgeSuccessColors : badgeErrorColors}`}>
+                            {t(`contractType.${isAchieve ? 'achieve' : 'avoid'}`)}
+                          </span>
+                          <span>{t(`contractIcon.${contract}`)}</span>
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
               {canSelect && pendingTrumpContract !== null && (
