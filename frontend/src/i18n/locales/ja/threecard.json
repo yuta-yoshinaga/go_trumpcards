@@ -34,6 +34,11 @@
     "pairPlus": "ペアプラス",
     "total": "合計"
   },
+  "betSlip": {
+    "ante": "アンテ",
+    "pairPlus": "ペアプラス",
+    "playRequired": "プレイに必要"
+  },
   "handRank": {
     "1": "ハイカード",
     "2": "ペア",

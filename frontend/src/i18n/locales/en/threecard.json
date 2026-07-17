@@ -34,6 +34,11 @@
     "pairPlus": "Pair Plus",
     "total": "Total"
   },
+  "betSlip": {
+    "ante": "Ante",
+    "pairPlus": "Pair Plus",
+    "playRequired": "To Play"
+  },
   "handRank": {
     "1": "High Card",
     "2": "Pair",

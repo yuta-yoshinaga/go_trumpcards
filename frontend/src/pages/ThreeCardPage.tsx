@@ -215,6 +215,23 @@ function ThreeCardPageContent() {
               </div>
             )}
 
+            {/* Bet slip during action phase — mirrors the end-phase payout breakdown */}
+            {isActionPhase && (
+              <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="action-bet-slip">
+                <div>
+                  {t('betSlip.ante')}: {state.anteBet}
+                </div>
+                {state.pairPlusBet > 0 && (
+                  <div>
+                    {t('betSlip.pairPlus')}: {state.pairPlusBet}
+                  </div>
+                )}
+                <div className="font-bold mt-1">
+                  {t('betSlip.playRequired')}: {state.anteBet}
+                </div>
+              </div>
+            )}
+
             {/* Player Hand */}
             {state.playerHand.length > 0 && (
               <div className="mb-4" data-tutorial="tc-results">
