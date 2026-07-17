@@ -33,6 +33,7 @@ import type { YukonResponse } from '../types/card';
 import { YukonPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { parseYukonCommand, YUKON_HELP } from '../utils/cli/commands/yukonCommands';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
@@ -71,53 +72,6 @@ const YK_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** CLI help text for Yukon. */
-const YUKON_HELP = [
-  'm <from> <to>  Move between tableau columns (top card)',
-  'm t <col> f    Move tableau to foundation',
-  'g              Give up',
-  'h              Hint',
-  'ac             Auto-complete',
-  'u              Undo',
-  'r              Reset',
-];
-
-/** Parse a Yukon CLI command into API call arguments. */
-function parseYukonCommand(input: string): { args: Parameters<typeof yukonApi.exec> } | { error: string } {
-  const parts = input.trim().split(/\s+/);
-  const cmd = parts[0]?.toLowerCase();
-  switch (cmd) {
-    case 'r':
-    case 'reset':
-      return { args: ['reset'] };
-    case 'g':
-    case 'giveup':
-      return { args: ['giveup'] };
-    case 'h':
-    case 'hint':
-      return { args: ['hint'] };
-    case 'ac':
-    case 'autocomplete':
-      return { args: ['autocomplete'] };
-    case 'u':
-    case 'undo':
-      return { args: ['undo'] };
-    case 'm':
-    case 'move': {
-      if (parts.length === 3) {
-        const from = Number.parseInt(parts[1], 10);
-        const to = Number.parseInt(parts[2], 10);
-        if (Number.isNaN(from) || Number.isNaN(to)) return { error: 'Invalid column' };
-        return {
-          args: ['move', { zone: 'tableau', col: from, cardIndex: -1 }, { zone: 'tableau', col: to }],
-        };
-      }
-      return { error: 'Usage: m <fromCol> <toCol>' };
-    }
-    default:
-      return { error: `Unknown command: ${cmd}` };
-  }
-}
-
 /** Format Yukon state for CLI display. */
 function formatYukonState(state: YukonResponse): string {
   const lines: string[] = [];
