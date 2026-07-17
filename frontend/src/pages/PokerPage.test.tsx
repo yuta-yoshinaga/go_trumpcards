@@ -794,6 +794,32 @@ describe('PokerPage', () => {
     await waitFor(() => expect((betInput as HTMLInputElement).value).toBe('10'));
   });
 
+  it('preserves a typed raise amount across a state update that keeps the same minRaise (#2980)', async () => {
+    mockExec.mockResolvedValue({ ...dealState, minRaise: 10 });
+    renderWithProviders(<PokerPage />);
+    const betInput = await screen.findByLabelText('ベット額:');
+    await waitFor(() => expect((betInput as HTMLInputElement).value).toBe('10'));
+    fireEvent.change(betInput, { target: { value: '80' } });
+    expect((betInput as HTMLInputElement).value).toBe('80');
+    // A CPU action arrives (state changes) but minRaise is unchanged.
+    mockExec.mockResolvedValue({ ...dealState, minRaise: 10, message: 'CPU acted' });
+    fireEvent.click(screen.getByRole('button', { name: 'チェック' }));
+    await waitFor(() => expect(screen.getByText('CPU acted')).toBeInTheDocument());
+    expect((betInput as HTMLInputElement).value).toBe('80');
+  });
+
+  it('bumps betAmount when minRaise rises (#2980)', async () => {
+    mockExec.mockResolvedValue({ ...dealState, minRaise: 10 });
+    renderWithProviders(<PokerPage />);
+    const betInput = await screen.findByLabelText('ベット額:');
+    await waitFor(() => expect((betInput as HTMLInputElement).value).toBe('10'));
+    fireEvent.change(betInput, { target: { value: '30' } });
+    // A raise lifts minRaise; the input follows the new minimum.
+    mockExec.mockResolvedValue({ ...dealState, minRaise: 60 });
+    fireEvent.click(screen.getByRole('button', { name: 'チェック' }));
+    await waitFor(() => expect((betInput as HTMLInputElement).value).toBe('60'));
+  });
+
   // ---- button click handlers ----
   it('calls bet command with betAmount', async () => {
     mockExec.mockResolvedValue(dealState);

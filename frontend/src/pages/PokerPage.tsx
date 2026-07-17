@@ -129,13 +129,14 @@ function PokerPageContent() {
   const [cpuMetaAI, setCpuMetaAI] = useState(false);
   const turnStartRef = useRef(0);
 
+  // Sync the raise amount to the current minimum only when that minimum actually
+  // changes (a raise, or a new round). Keying on `state` would re-run on every CPU
+  // action and clobber the amount the player is typing (#2980).
+  const minRaiseValue = state?.minRaise;
   useEffect(() => {
-    if (state?.minRaise && state.minRaise > 0) {
-      setBetAmount(state.minRaise);
-    } else if (state) {
-      setBetAmount(10);
-    }
-  }, [state]);
+    if (minRaiseValue === undefined) return;
+    setBetAmount(minRaiseValue > 0 ? minRaiseValue : 10);
+  }, [minRaiseValue]);
 
   useEffect(() => {
     if (state && state.currentTurn === state.players?.find((p) => p.isHuman)?.id) {
