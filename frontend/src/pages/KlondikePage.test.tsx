@@ -517,6 +517,18 @@ describe('KlondikePage', () => {
     expect(screen.getByTestId('kl-hint-card')).toBeInTheDocument();
   });
 
+  it('ring-highlights the hint source (info) and destination (success) on the board', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    // withHintState: waste (face-up source) → tableau column 3 (destination).
+    mockExec.mockResolvedValue(withHintState);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => {
+      expect(document.querySelector('.ring-ds-info')).not.toBeNull();
+      expect(document.querySelector('.ring-ds-success')).not.toBeNull();
+    });
+  });
+
   it('omits the hint card image when the source card cannot be resolved', async () => {
     // Mount with an empty waste, then surface a waste-sourced hint → no source card.
     mockExec.mockResolvedValueOnce(playingNoWasteState);
