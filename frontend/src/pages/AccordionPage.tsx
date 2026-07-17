@@ -341,12 +341,20 @@ function AccordionPageContent() {
               {(() => {
                 const hoverTargets =
                   isPlaying && hoveredIdx !== null ? new Set(accordionLegalTargets(state.piles, hoveredIdx)) : null;
+                // Touch devices never fire mouseenter, so also paint the selected
+                // pile's legal -1/-3 targets persistently once it is picked (#3190).
+                const selectedTargets =
+                  isPlaying && selectedIdx !== null ? new Set(accordionLegalTargets(state.piles, selectedIdx)) : null;
                 return state.piles.map((pile, idx) => {
                   const top = pile.cards[0];
                   const isSelected = selectedIdx === idx;
                   const hintFrom = state.hint?.fromIdx === idx;
                   const hintTo = state.hint?.toIdx === idx;
                   const isHoverTarget = hoverTargets?.has(idx) ?? false;
+                  const isSelectedTarget = selectedTargets?.has(idx) ?? false;
+                  // Highlight legal targets whether reached by hover (mouse) or by
+                  // selecting a source pile (touch/keyboard) so all inputs get parity.
+                  const isLegalTarget = isHoverTarget || isSelectedTarget;
                   // When a pile is selected, spell out its legal merge offsets (1/3)
                   // in the aria-label so screen-reader users learn where it can go (#2596).
                   const mergeSuffix =
@@ -371,7 +379,7 @@ function AccordionPageContent() {
                         isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
                       } ${hintFrom ? 'ring-2 ring-ds-info animate-pulse' : ''} ${
                         hintTo ? 'ring-2 ring-ds-success animate-pulse' : ''
-                      } ${isHoverTarget && !isSelected && !hintTo && !hintFrom ? 'ring-2 ring-ds-success' : ''}`}
+                      } ${isLegalTarget && !isSelected && !hintTo && !hintFrom ? 'ring-2 ring-ds-success' : ''}`}
                       onClick={() => handlePileClick(idx)}
                       onMouseEnter={isPlaying ? () => setHoveredIdx(idx) : undefined}
                       onMouseLeave={() => setHoveredIdx((cur) => (cur === idx ? null : cur))}
@@ -379,6 +387,7 @@ function AccordionPageContent() {
                       onBlur={() => setHoveredIdx((cur) => (cur === idx ? null : cur))}
                       disabled={!isPlaying}
                       data-hover-target={isHoverTarget ? 'true' : 'false'}
+                      data-legal-target={isLegalTarget ? 'true' : 'false'}
                       aria-label={`${baseLabel}${mergeSuffix}`}
                     >
                       {top && <AnimatedCard card={top} width={cardWidth} />}
