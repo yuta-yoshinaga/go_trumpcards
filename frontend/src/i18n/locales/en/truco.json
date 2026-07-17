@@ -49,6 +49,15 @@
     "score": "Match score. The first player to reach the target score wins.",
     "trick": "Cards played to the table. The matadores (special cards) are strongest and follow their own ranking.",
     "hand": "Your hand — click a card to play it.",
-    "call": "Calling Truco raises the stake (Truco → Retruco → Vale Cuatro). The opponent may accept, decline, or re-raise."
+    "call": "Calling Truco raises the stake (Truco → Retruco → Vale Cuatro). The opponent may accept, decline, or re-raise.",
+    "rankRef": "Open \"Card strength\" to see the unique ranking order, including the matadores."
+  },
+  "rankRef": {
+    "title": "Card strength (strongest first)",
+    "matadores": "Matadores (special top cards)",
+    "matadoresOrder": "1♠ > 1♣ > 7♠ > 7♦",
+    "common": "Common cards",
+    "commonOrder": "3 > 2 > 1 > K > Q > J > 7 > 6 > 5 > 4",
+    "note": "The four matadores always rank highest. The plain 1s and 7s exclude the matadores. 8/9/10 are not used."
   }
 }

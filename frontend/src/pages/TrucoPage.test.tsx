@@ -109,9 +109,19 @@ describe('TrucoPage', () => {
     mockExec.mockResolvedValue(makeState({ currentTrick: [{ playerIdx: 1, card: card('CLOVER', 4) }] }));
     const { container } = renderWithProviders(<TrucoPage />);
     await waitFor(() => expect(screen.getByText(/マッチ得点/)).toBeInTheDocument());
-    for (const target of ['truco-score', 'truco-trick', 'truco-hand', 'truco-call']) {
+    for (const target of ['truco-score', 'truco-rankref', 'truco-trick', 'truco-hand', 'truco-call']) {
       expect(container.querySelector(`[data-tutorial="${target}"]`)).not.toBeNull();
     }
+  });
+
+  it('renders the collapsible card-strength reference panel', async () => {
+    renderWithProviders(<TrucoPage />);
+    await waitFor(() => expect(screen.getByTestId('truco-rank-ref')).toBeInTheDocument());
+    // Panel content mirrors the Go domain strength order (matadores first).
+    expect(screen.getByText('カードの強さ（強い順）')).toBeInTheDocument();
+    expect(screen.getByText('マタドール（特殊札・最強）')).toBeInTheDocument();
+    expect(screen.getByText('1♠ ＞ 1♣ ＞ 7♠ ＞ 7♦')).toBeInTheDocument();
+    expect(screen.getByText('3 ＞ 2 ＞ 1 ＞ K ＞ Q ＞ J ＞ 7 ＞ 6 ＞ 5 ＞ 4')).toBeInTheDocument();
   });
 
   it('shows human hand as 3 play buttons', async () => {
