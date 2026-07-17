@@ -83,6 +83,15 @@ describe('WhistPage', () => {
     await waitFor(() => expect(screen.getByText(/トランプでカット/)).toBeInTheDocument());
   });
 
+  it('names the recommended card (suit + rank) in the hint text, not just its index', async () => {
+    renderWithProviders(<WhistPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    // cardIndex 0 in the human hand is ♠ A.
+    mockExec.mockResolvedValueOnce(makeState({ hint: { cardIndex: 0, reason: 'trump_cut' } }));
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByText(/♠ A/)).toBeInTheDocument());
+  });
+
   it('falls back to generic text for an unknown hint reason', async () => {
     renderWithProviders(<WhistPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
