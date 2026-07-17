@@ -17,6 +17,8 @@
   "round": "ラウンド {{n}}/{{total}}",
   "drawPile": "山札: {{count}}枚",
   "wildJoker": "ワイルドジョーカー",
+  "wildBadge": "WILD",
+  "wildAria": "（ワイルド）",
   "discardTop": "捨て札",
   "cards": "{{count}}枚",
   "cumulativeScore": "累計: {{score}}",

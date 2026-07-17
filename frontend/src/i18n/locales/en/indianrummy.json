@@ -17,6 +17,8 @@
   "round": "Round {{n}}/{{total}}",
   "drawPile": "Draw pile: {{count}} cards",
   "wildJoker": "Wild Joker",
+  "wildBadge": "WILD",
+  "wildAria": "(wild)",
   "discardTop": "Discard",
   "cards": "{{count}} cards",
   "cumulativeScore": "Total: {{score}}",
