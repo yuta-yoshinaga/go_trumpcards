@@ -83,6 +83,7 @@ const cpuWinState = makeState({
 });
 
 beforeEach(() => {
+  localStorage.clear();
   mockExec.mockReset();
   mockPlaySound.mockReset();
   mockExec.mockResolvedValue(playState);
@@ -180,6 +181,32 @@ describe('CuarentaPage', () => {
     mockExec.mockClear();
     fireEvent.click(cardBtn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { handIndex: 1 }));
+  });
+
+  it('rings capturable table cards while a hand card is focused, then clears on blur', async () => {
+    // hand[3] is ♣7; table[0] is ♣7 (equal rank → capturable), table[1] is ♥3.
+    renderWithProviders(<CuarentaPage />);
+    const handCard = await screen.findByTestId('hand-card-3');
+    // No preview yet: nothing is ringed.
+    expect(screen.getByTestId('cuarenta-table-card-0')).not.toHaveAttribute('data-capturable');
+
+    fireEvent.focus(handCard);
+    await waitFor(() => expect(screen.getByTestId('cuarenta-table-card-0')).toHaveAttribute('data-capturable', 'true'));
+    expect(screen.getByTestId('cuarenta-table-card-0').className).toContain('ring-ds-success');
+    // The non-matching table card stays un-ringed.
+    expect(screen.getByTestId('cuarenta-table-card-1')).not.toHaveAttribute('data-capturable');
+
+    fireEvent.blur(handCard);
+    await waitFor(() => expect(screen.getByTestId('cuarenta-table-card-0')).not.toHaveAttribute('data-capturable'));
+  });
+
+  it('does not ring any table card when it is not the human turn', async () => {
+    mockExec.mockResolvedValue(makeState({ currentTurn: 2 }));
+    renderWithProviders(<CuarentaPage />);
+    const handCard = await screen.findByTestId('hand-card-3');
+    fireEvent.focus(handCard);
+    // Hover preview is suppressed off-turn — no capturable ring appears.
+    expect(screen.getByTestId('cuarenta-table-card-0')).not.toHaveAttribute('data-capturable');
   });
 
   it('shows the empty-table label when the table is empty', async () => {
