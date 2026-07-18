@@ -12,7 +12,7 @@
   },
   "drawPile": "Draw pile: {{count}} cards",
   "stock": "Stock",
-  "stockAria": "Draw from stock ({{count}} cards left)",
+  "stockAria": "Draw a card from the stock ({{count}} left)",
   "discardTop": "Discard",
   "penalty": "Penalty: {{count}} — stack a 7 or draw",
   "cards": "{{count}} cards",
