@@ -251,20 +251,56 @@ function TysiacPageContent() {
 
               {/* Right: info sidebar */}
               <div data-tutorial="tysiac-info">
-                {/* Per-player match scores with Declarer badge */}
+                {/* Per-player match scores with Declarer badge + progress toward the target */}
                 <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                  {state.players.map((p) => (
-                    <div key={p.id} className="py-0.5 flex items-center gap-2">
-                      <span className={p.isDeclarer ? 'text-ds-warning font-semibold' : ''}>
-                        {playerName(p.id, p.isHuman)}: {t('score', { score: p.score })}
-                      </span>
-                      {p.isDeclarer && (
-                        <span className="px-1.5 py-0.5 rounded bg-ds-warning/30 text-ds-warning text-xs">
-                          {t('declarerBadge')}
-                        </span>
-                      )}
-                    </div>
-                  ))}
+                  {state.players.map((p) => {
+                    const target = state.config.targetPoints;
+                    const pct = Math.max(0, Math.min(100, (p.score / target) * 100));
+                    // Warn once a player is within striking distance of the target (>80%).
+                    const isNearWin = p.score / target > 0.8;
+                    // Declarer forecast: score if this round's contract is met, marked on the bar.
+                    const forecastPct =
+                      p.isDeclarer && state.contract > 0
+                        ? Math.max(0, Math.min(100, ((p.score + state.contract) / target) * 100))
+                        : null;
+                    const barLabel = t('progressLabel', { score: p.score, target });
+                    return (
+                      <div key={p.id} className="py-0.5">
+                        <div className="flex items-center gap-2">
+                          <span className={p.isDeclarer ? 'text-ds-warning font-semibold' : ''}>
+                            {playerName(p.id, p.isHuman)}: {t('score', { score: p.score })}
+                          </span>
+                          {p.isDeclarer && (
+                            <span className="px-1.5 py-0.5 rounded bg-ds-warning/30 text-ds-warning text-xs">
+                              {t('declarerBadge')}
+                            </span>
+                          )}
+                        </div>
+                        <div
+                          role="progressbar"
+                          aria-label={barLabel}
+                          aria-valuemin={0}
+                          aria-valuemax={target}
+                          aria-valuenow={Math.max(0, p.score)}
+                          data-testid={`tysiac-progress-${p.id}`}
+                          className="relative mt-0.5 h-1.5 w-full rounded-sm bg-white/15 overflow-hidden"
+                        >
+                          <div
+                            className={`h-full rounded-sm ${isNearWin ? 'bg-ds-warning' : 'bg-ds-accent'}`}
+                            style={{ width: `${pct}%` }}
+                          />
+                          {forecastPct !== null && (
+                            <div
+                              data-testid={`tysiac-forecast-${p.id}`}
+                              aria-hidden="true"
+                              className="absolute top-0 h-full border-l border-dashed border-ds-text-primary"
+                              style={{ left: `${forecastPct}%` }}
+                            />
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {/* Players: cards / tricks */}

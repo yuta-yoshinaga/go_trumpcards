@@ -177,4 +177,61 @@ describe('TysiacPage', () => {
     await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
   });
+
+  it('renders a progress bar toward the target for each player', async () => {
+    const state = makeTysiacState({
+      players: [
+        { id: 0, isHuman: true, cardCount: 7, cards: [], trickCount: 0, score: 250, isDeclarer: false },
+        { id: 1, isHuman: false, cardCount: 7, cards: [], trickCount: 0, score: 500, isDeclarer: false },
+        { id: 2, isHuman: false, cardCount: 7, cards: [], trickCount: 0, score: 100, isDeclarer: false },
+      ],
+    });
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<TysiacPage />);
+    const bar0 = await screen.findByTestId('tysiac-progress-0');
+    expect(bar0).toHaveAttribute('role', 'progressbar');
+    expect(bar0).toHaveAttribute('aria-valuemax', '1000');
+    expect(bar0).toHaveAttribute('aria-valuenow', '250');
+    expect(screen.getByTestId('tysiac-progress-1')).toHaveAttribute('aria-valuenow', '500');
+    expect(screen.getByTestId('tysiac-progress-2')).toHaveAttribute('aria-valuenow', '100');
+    // Below 80%: accent (non-warning) fill.
+    expect(bar0.querySelector('.bg-ds-accent')).not.toBeNull();
+    expect(bar0.querySelector('.bg-ds-warning')).toBeNull();
+  });
+
+  it('turns the bar to the warning color once a player passes 80% of the target', async () => {
+    const state = makeTysiacState({
+      players: [
+        { id: 0, isHuman: true, cardCount: 7, cards: [], trickCount: 0, score: 850, isDeclarer: false },
+        { id: 1, isHuman: false, cardCount: 7, cards: [], trickCount: 0, score: 400, isDeclarer: false },
+        { id: 2, isHuman: false, cardCount: 7, cards: [], trickCount: 0, score: 800, isDeclarer: false },
+      ],
+    });
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<TysiacPage />);
+    const bar0 = await screen.findByTestId('tysiac-progress-0');
+    // 850/1000 = 85% > 80% → warning fill.
+    expect(bar0.querySelector('.bg-ds-warning')).not.toBeNull();
+    // Exactly 80% is not "over" 80% → still accent.
+    expect(screen.getByTestId('tysiac-progress-2').querySelector('.bg-ds-warning')).toBeNull();
+  });
+
+  it('overlays the contract-forecast marker on the Declarer bar only', async () => {
+    const state = makeTysiacState({
+      players: [
+        { id: 0, isHuman: true, cardCount: 7, cards: [], trickCount: 0, score: 300, isDeclarer: true },
+        { id: 1, isHuman: false, cardCount: 7, cards: [], trickCount: 0, score: 200, isDeclarer: false },
+        { id: 2, isHuman: false, cardCount: 7, cards: [], trickCount: 0, score: 100, isDeclarer: false },
+      ],
+      contract: 120,
+    });
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<TysiacPage />);
+    const marker = await screen.findByTestId('tysiac-forecast-0');
+    // (300 + 120) / 1000 = 42%.
+    expect(marker).toHaveStyle({ left: '42%' });
+    // Non-declarers get no forecast marker.
+    expect(screen.queryByTestId('tysiac-forecast-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('tysiac-forecast-2')).not.toBeInTheDocument();
+  });
 });
