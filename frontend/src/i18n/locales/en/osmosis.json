@@ -31,6 +31,13 @@
   "frontendHint": {
     "moveToFoundation": "A card can seep into a foundation"
   },
+  "kbd": {
+    "draw": "D",
+    "hint": "H",
+    "autoComplete": "A",
+    "undo": "Z",
+    "giveUp": "G"
+  },
   "tutorial": {
     "foundation": "Four vertical foundation rows. The top row collects one suit in any order; lower rows accept only ranks already present in the row directly above (osmosis).",
     "reserve": "Four reserve columns. Move the top card of any column to a foundation.",

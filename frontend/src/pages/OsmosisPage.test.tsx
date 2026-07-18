@@ -162,6 +162,74 @@ describe('OsmosisPage', () => {
     expect(screen.getByRole('button', { name: '元に戻す' })).toBeDisabled();
   });
 
+  it('advertises the keyboard shortcuts on the action buttons', async () => {
+    renderWithProviders(<OsmosisPage />);
+    const draw = await screen.findByRole('button', { name: '引く' });
+    expect(draw).toHaveAttribute('aria-keyshortcuts', 'd');
+    expect(draw.querySelector('kbd')?.textContent).toBe('D');
+    // KbdBadge text is aria-hidden, so button accessible names stay clean.
+    expect(screen.getByRole('button', { name: 'ヒント' })).toHaveAttribute('aria-keyshortcuts', 'h');
+    expect(screen.getByRole('button', { name: '自動完成' })).toHaveAttribute('aria-keyshortcuts', 'a');
+    expect(screen.getByRole('button', { name: '元に戻す' })).toHaveAttribute('aria-keyshortcuts', 'z');
+    expect(screen.getByRole('button', { name: 'ギブアップ' })).toHaveAttribute('aria-keyshortcuts', 'g');
+  });
+
+  it('fires draw when the d key is pressed while playing', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'd' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
+  });
+
+  it('fires hint when the h key is pressed', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'h' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+  });
+
+  it('fires autocomplete when the a key is pressed', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'a' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
+  });
+
+  it('fires undo when the z key is pressed', async () => {
+    mockExec.mockResolvedValue({ ...playingState, canUndo: true });
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'z' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
+  });
+
+  it('routes the g key through the give-up confirm dialog', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'g' });
+    // The key must not dispatch giveup directly — it opens the confirm dialog first.
+    expect(mockExec).not.toHaveBeenCalledWith('giveup');
+    expect(screen.getByText('投了確認')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
+  });
+
+  it('does not fire shortcuts once the game has ended', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'd' });
+    fireEvent.keyDown(document.body, { key: 'h' });
+    expect(mockExec).not.toHaveBeenCalledWith('draw');
+    expect(mockExec).not.toHaveBeenCalledWith('hint');
+  });
+
   it('shows game clear phase', async () => {
     mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<OsmosisPage />);
